@@ -52,6 +52,7 @@ async function main() {
   const store = await getStore();
 
   const app = express();
+  app.set('trust proxy', 1);
   app.use(express.json({ limit: '2mb' }));
   app.use(express.urlencoded({ extended: true }));
   app.use(cookieParser());
@@ -185,6 +186,7 @@ async function main() {
       res.cookie(COOKIE, token, {
         httpOnly: true,
         sameSite: 'lax',
+        secure: process.env.NODE_ENV === 'production',
         maxAge: SESSION_DAYS * 86400000
       });
       res.json({ ok: true, admin: { id: admin.id, email: admin.email, name: admin.name } });
@@ -266,9 +268,9 @@ async function main() {
     res.status(400).json({ ok: false, error: err.message || 'Upload failed.' });
   });
 
-  app.listen(PORT, function () {
-    console.log('Spectrum Display running at http://localhost:' + PORT);
-    console.log('Admin: http://localhost:' + PORT + '/admin.html');
+  app.listen(PORT, '0.0.0.0', function () {
+    console.log('Spectrum Display running on port ' + PORT);
+    console.log('Admin: /admin.html');
   });
 }
 

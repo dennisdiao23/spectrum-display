@@ -42,9 +42,7 @@ Visit http://localhost:3000
 ### Admin catalog
 
 1. Open http://localhost:3000/admin.html
-2. Sign in with:
-   - Email: `admin@spectrumdisplay.com`
-   - Password: `ChangeMe!Admin`
+2. Sign in with `admin@spectrumdisplay.com` and the admin password stored in your local `.env` (`ADMIN_PASSWORD`).
 3. Add or edit products, including photos, pitches, cabinet size, and $/m² pricing.
 
 Without Supabase keys, data is stored locally in `data/spectrum.db`.
