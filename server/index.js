@@ -7,7 +7,6 @@ const cookieParser = require('cookie-parser');
 const bcrypt = require('bcryptjs');
 const multer = require('multer');
 const { getStore } = require('./store');
-const dbUtil = require('./db');
 
 const ROOT = path.join(__dirname, '..');
 const COOKIE = 'spectrum_admin';
@@ -30,6 +29,15 @@ function slugify(value) {
     .replace(/[^a-z0-9]+/g, '-')
     .replace(/^-+|-+$/g, '')
     .slice(0, 48);
+}
+
+function parseJson(value, fallback) {
+  if (Array.isArray(value)) return value;
+  try {
+    return JSON.parse(value || '');
+  } catch {
+    return fallback;
+  }
 }
 
 function parsePitches(value) {
@@ -111,7 +119,7 @@ async function main() {
     if (!seriesId) throw new Error('Series / model id is required.');
     const pitches = parsePitches(body.pitches);
     if (!pitches.length) throw new Error('Add at least one pixel pitch.');
-    const existingGallery = existing ? dbUtil.parseJson(existing.gallery, []) : [];
+    const existingGallery = existing ? parseJson(existing.gallery, []) : [];
     let image = existing ? (existing.image || '') : '';
     const saved = await saveFiles(files);
     if (saved.imageUrl) image = saved.imageUrl;
