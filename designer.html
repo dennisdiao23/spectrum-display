@@ -1,0 +1,2654 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <script src="js/i18n-boot.js"></script>
+  <link rel="stylesheet" href="css/site-header.css" />
+  <title>Project Designer | Spectrum Display</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    body { font-family: 'Inter', system-ui, sans-serif; }
+    :root {
+      --nav-h: var(--site-header-h, calc(5.75rem + 10px));
+      --designer-bar-h: 3.75rem;
+      --content-gap: 1.5rem;
+    }
+    body.designer-app {
+      padding-top: var(--nav-h);
+    }
+    .designer-layout {
+      display: grid;
+      gap: 2rem;
+    }
+    .designer-toolbar {
+      position: sticky;
+      top: var(--nav-h);
+      z-index: 40;
+      height: var(--designer-bar-h);
+      overflow: hidden;
+      background: rgba(2, 6, 23, 0.9);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border-bottom: 1px solid #1e293b;
+    }
+    @media (min-width: 1024px) {
+      .designer-layout {
+        grid-template-columns: minmax(18rem, 26rem) minmax(0, 1fr);
+        align-items: start;
+      }
+      .preview-pane {
+        position: sticky;
+        top: calc(var(--nav-h) + var(--designer-bar-h) + var(--content-gap));
+        align-self: start;
+        height: calc(100vh - var(--nav-h) - var(--designer-bar-h) - var(--content-gap));
+        max-height: calc(100vh - var(--nav-h) - var(--designer-bar-h) - var(--content-gap));
+        overflow: hidden;
+        display: flex;
+        flex-direction: column;
+        background: #020617;
+      }
+      .preview-pane .preview-frame {
+        flex: 1 1 auto;
+        height: auto;
+        min-height: 12rem;
+        max-height: 40rem;
+      }
+    }
+    .preview-frame {
+      background: #0a0f1a;
+      border: 10px solid #1e293b;
+      border-radius: 6px;
+      box-shadow: 
+        0 0 0 1px #334155,
+        0 25px 50px -12px rgba(0,0,0,0.8),
+        inset 0 0 60px rgba(0,0,0,0.5);
+      position: relative;
+      overflow: hidden;
+      height: 360px;
+    }
+    @media (min-width: 640px) and (max-width: 1023px) {
+      .preview-frame {
+        height: clamp(
+          22rem,
+          calc(100vh - var(--nav-h) - var(--designer-bar-h) - var(--content-gap) - 16rem),
+          40rem
+        );
+      }
+    }
+    
+    .wall-container {
+      position: relative;
+      display: inline-block;
+      width: fit-content;
+      height: fit-content;
+      overflow: visible;
+    }
+
+    .wall-dim {
+      position: absolute;
+      pointer-events: none;
+      z-index: 6;
+      color: #e0f2fe;
+    }
+    .wall-dim-label {
+      font-size: 13px;
+      font-weight: 700;
+      letter-spacing: 0.03em;
+      white-space: nowrap;
+      line-height: 1.2;
+      text-align: center;
+      color: #f8fafc;
+      background: rgba(2, 6, 23, 0.88);
+      border: 1px solid rgba(56, 189, 248, 0.75);
+      border-radius: 999px;
+      padding: 3px 9px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.45);
+    }
+    .wall-dim-w {
+      left: 0;
+      right: 0;
+      bottom: 100%;
+      margin-bottom: 8px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 5px;
+    }
+    .wall-dim-w .wall-dim-line {
+      width: 100%;
+      height: 10px;
+      border-top: 2px solid #38bdf8;
+      position: relative;
+    }
+    .wall-dim-w .wall-dim-line::before,
+    .wall-dim-w .wall-dim-line::after {
+      content: '';
+      position: absolute;
+      top: -6px;
+      width: 2px;
+      height: 12px;
+      background: #38bdf8;
+    }
+    .wall-dim-w .wall-dim-line::before { left: 0; }
+    .wall-dim-w .wall-dim-line::after { right: 0; }
+
+    .wall-dim-h {
+      top: 0;
+      bottom: 0;
+      left: 100%;
+      margin-left: 18px;
+      display: flex;
+      flex-direction: row;
+      align-items: center;
+      gap: 8px;
+    }
+    .wall-dim-h .wall-dim-line {
+      height: 100%;
+      width: 10px;
+      border-left: 2px solid #38bdf8;
+      position: relative;
+    }
+    .wall-dim-h .wall-dim-line::before,
+    .wall-dim-h .wall-dim-line::after {
+      content: '';
+      position: absolute;
+      left: -6px;
+      height: 2px;
+      width: 12px;
+      background: #38bdf8;
+    }
+    .wall-dim-h .wall-dim-line::before { top: 0; }
+    .wall-dim-h .wall-dim-line::after { bottom: 0; }
+    .wall-dim-h .wall-dim-label {
+      writing-mode: vertical-rl;
+      transform: rotate(180deg);
+    }
+
+    .wall-dim-d {
+      position: absolute;
+      top: 8px;
+      right: 10px;
+      z-index: 7;
+      pointer-events: none;
+      font-size: 16px;
+      font-weight: 800;
+      color: #fff;
+      letter-spacing: 0.02em;
+      line-height: 1;
+      text-shadow: 0 1px 4px rgba(0,0,0,0.9);
+    }
+    .wall-dim-d[hidden] { display: none; }
+    
+    .cabinet-grid {
+      display: grid;
+      gap: 1.5px;
+      background: #020617;
+      position: relative;
+      z-index: 2;
+    }
+    .cabinet-grid.showing-content {
+      background: transparent;
+    }
+    .cabinet-grid.showing-content .cabinet {
+      background: transparent;
+      box-shadow: inset 0 0 0 1px rgba(0,0,0,0.35);
+    }
+    
+    .cabinet {
+      position: relative;
+      background: #0c4a6e;
+      overflow: hidden;
+    }
+    
+    /* Realistic LED module look */
+    .cabinet::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background-image: 
+        linear-gradient(rgba(14,165,233,0.15) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(14,165,233,0.15) 1px, transparent 1px);
+      background-size: 4px 4px;
+      opacity: 0.6;
+      pointer-events: none;
+    }
+    
+    .cabinet.has-content {
+      background: transparent;
+    }
+    
+    .cabinet.has-content::before {
+      opacity: 0.25;
+      mix-blend-mode: overlay;
+    }
+    
+    /* Content image layer behind the grid */
+    .content-layer {
+      position: absolute;
+      left: 0;
+      top: 0;
+      z-index: 1;
+      background-size: cover;
+      background-position: center;
+      background-repeat: no-repeat;
+      filter: brightness(1) contrast(1.05);
+      pointer-events: none;
+    }
+    
+    .content-layer.empty {
+      background-image: linear-gradient(135deg, #0ea5e9 0%, #0369a1 40%, #0c4a6e 100%) !important;
+    }
+    
+    /* Subtle scanline / screen effect */
+    .screen-overlay {
+      position: absolute;
+      inset: 0;
+      z-index: 3;
+      pointer-events: none;
+      background: repeating-linear-gradient(
+        0deg,
+        transparent,
+        transparent 2px,
+        rgba(0,0,0,0.03) 2px,
+        rgba(0,0,0,0.03) 4px
+      );
+      mix-blend-mode: multiply;
+    }
+    
+    .glow-edge {
+      box-shadow: 0 0 20px rgba(14, 165, 233, 0.25);
+    }
+
+    .preview-viewport {
+      position: absolute;
+      inset: 0;
+      overflow: hidden;
+      cursor: grab;
+      touch-action: none;
+      user-select: none;
+    }
+    .preview-viewport.is-panning {
+      cursor: grabbing;
+    }
+    .scene-bg {
+      position: absolute;
+      inset: 0;
+      z-index: 0;
+      background: #0a0f1a;
+      background-size: cover;
+      background-position: center;
+      background-repeat: no-repeat;
+    }
+    .scene-bg.photo-mode { }
+
+    .wall-transform {
+      position: absolute;
+      left: 50%;
+      top: 50%;
+      z-index: 2;
+      display: flex;
+      align-items: flex-end;
+      gap: 28px;
+      transform: translate(-50%, -50%) scale(1);
+      transform-origin: center center;
+      will-change: transform;
+    }
+    .wall-balance {
+      flex-shrink: 0;
+      width: 0;
+      pointer-events: none;
+    }
+    .wall-transform.has-figure .wall-balance {
+      width: calc(var(--figure-h, 120px) * 276 / 864);
+    }
+
+    .scale-figure {
+      display: none;
+      flex-shrink: 0;
+      position: relative;
+      width: calc(var(--figure-h, 120px) * 276 / 864);
+      height: var(--figure-h, 120px);
+      pointer-events: none;
+      overflow: visible;
+    }
+    .scale-figure.is-on {
+      display: block;
+    }
+    .scale-figure img {
+      position: absolute;
+      left: 50%;
+      bottom: 0;
+      height: 864px;
+      width: auto;
+      max-width: none;
+      transform: translateX(-50%) scale(var(--figure-scale, 0.14));
+      transform-origin: bottom center;
+      pointer-events: none;
+      user-select: none;
+    }
+
+    .cabinet-label {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 600;
+      color: #f8fafc;
+      text-shadow: 0 1px 2px rgba(0,0,0,0.85);
+      z-index: 2;
+      pointer-events: none;
+      line-height: 1;
+      letter-spacing: 0.02em;
+    }
+    .cabinet-grid.labels-off .cabinet-label {
+      display: none;
+    }
+
+    .cabinet-grid.wiring-mode {
+      background: #0f172a;
+    }
+    .cabinet-grid.wiring-mode .cabinet,
+    .cabinet-grid.wiring-mode .cabinet.has-content {
+      background: #1e293b;
+      box-shadow: inset 0 0 0 1px #334155;
+    }
+    .cabinet-grid.wiring-mode .cabinet::before {
+      display: none;
+    }
+    .cabinet-grid.wiring-mode .cabinet-label {
+      color: #94a3b8;
+      text-shadow: none;
+    }
+    .rear-ports {
+      position: absolute;
+      left: 50%;
+      bottom: 12%;
+      transform: translateX(-50%);
+      display: flex;
+      gap: 18%;
+      z-index: 2;
+      pointer-events: none;
+    }
+    .rear-ports span {
+      width: 22%;
+      min-width: 3px;
+      aspect-ratio: 1;
+      border-radius: 1px;
+    }
+    .rear-ports .d { background: #38bdf8; }
+    .rear-ports .p { background: #fbbf24; }
+
+    .wiring-overlay {
+      position: absolute;
+      left: 0;
+      top: 0;
+      z-index: 4;
+      pointer-events: none;
+      overflow: visible;
+    }
+    .wiring-overlay[hidden] {
+      display: none;
+    }
+    .content-layer.wiring-hidden,
+    .screen-overlay.wiring-hidden {
+      visibility: hidden;
+    }
+
+    .zoom-controls {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+    }
+    .zoom-controls input[type="range"] {
+      -webkit-appearance: none;
+      appearance: none;
+      height: 4px;
+      background: #334155;
+      border-radius: 2px;
+      outline: none;
+    }
+    .zoom-controls input[type="range"]::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      width: 14px;
+      height: 14px;
+      border-radius: 50%;
+      background: #0ea5e9;
+      cursor: pointer;
+      border: 2px solid #e0f2fe;
+    }
+
+    #spec-overlay {
+      position: fixed;
+      inset: 0;
+      z-index: 80;
+      background: rgba(2, 6, 23, 0.92);
+      display: none;
+      flex-direction: column;
+      padding: 16px;
+    }
+    #spec-overlay.is-open { display: flex; }
+    #spec-overlay iframe {
+      flex: 1;
+      width: 100%;
+      border: 0;
+      border-radius: 8px;
+      background: #fff;
+    }
+  </style>
+</head>
+<body class="designer-app bg-slate-950 text-slate-100 antialiased">
+  <header class="site-header" id="site-header">
+    <div class="site-header-inner">
+      <div class="site-header-top">
+        <a href="index.html" class="site-brand">
+          <img src="assets/spectrum-logo.png" alt="Spectrum" class="site-brand-logo" />
+        </a>
+        <div class="site-utils">
+          <div class="site-drop" id="hdr-signin-drop">
+            <button type="button" class="site-util" aria-haspopup="true">
+              <svg fill="none" stroke="currentColor" stroke-width="1.7" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 7.5a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.5 19.5a7.5 7.5 0 0115 0"/></svg>
+              <span class="site-util-label site-util-guest" data-i18n="nav.signin">Sign in</span>
+              <span class="site-util-label site-util-user" id="hdr-user-name"></span>
+            </button>
+            <div class="site-drop-panel">
+              <div class="site-guest">
+                <h3 data-i18n="nav.myAccount">My Account</h3>
+                <ul class="site-account-roles">
+                  <li data-i18n="nav.benefitOrders">Place orders quickly and easily</li>
+                  <li data-i18n="nav.benefitTrack">View orders and track your shipping status</li>
+                  <li data-i18n="nav.benefitList">Create and access a list of your products</li>
+                  <li data-i18n="nav.benefitProjects">View Saved Projects</li>
+                </ul>
+                <div class="site-drop-actions">
+                  <a href="account.html" class="site-btn-primary" data-i18n="nav.signin">Sign in</a>
+                  <a href="account.html?mode=register" class="site-btn-ghost" data-i18n="nav.createAccount">Create account</a>
+                </div>
+              </div>
+              <div class="site-logged">
+                <h3 id="hdr-user-name-panel"></h3>
+                <p id="hdr-user-role"></p>
+                <div class="site-drop-list">
+                  <a href="account.html" data-i18n="nav.myAccount">My Account</a>
+                  <button type="button" id="hdr-logout" data-i18n="nav.signout">Sign out</button>
+                </div>
+              </div>
+            </div>
+          </div>
+          <a href="contact.html" class="site-util">
+            <svg fill="none" stroke="currentColor" stroke-width="1.7" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M21.75 6.75v10.5a2.25 2.25 0 01-2.25 2.25h-15a2.25 2.25 0 01-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0019.5 4.5h-15a2.25 2.25 0 00-2.25 2.25m19.5 0v.243a2.25 2.25 0 01-1.07 1.916l-7.5 4.615a2.25 2.25 0 01-2.36 0L3.32 8.91a2.25 2.25 0 01-1.07-1.916V6.75"/></svg>
+            <span class="site-util-label" data-i18n="nav.contactUs">Contact Us</span>
+          </a>
+          <div class="site-drop" id="hdr-lang-drop">
+            <button type="button" class="site-util" aria-label="Language">
+              <svg fill="none" stroke="currentColor" stroke-width="1.7" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 21a9 9 0 100-18 9 9 0 000 18zM3.6 9h16.8M3.6 15h16.8M12 3c2.5 3.2 2.5 14.8 0 18M12 3c-2.5 3.2-2.5 14.8 0 18"/></svg>
+              <span class="site-util-label" id="hdr-lang-label">English</span>
+            </button>
+            <div class="site-drop-panel site-lang-panel">
+              <button type="button" data-set-lang="en">English</button>
+              <button type="button" data-set-lang="es">Español</button>
+              <button type="button" data-set-lang="fr">Français</button>
+              <button type="button" data-set-lang="ko">한국어</button>
+              <button type="button" data-set-lang="ja">日本語</button>
+              <button type="button" data-set-lang="zh">中文</button>
+            </div>
+          </div>
+          <a href="cart.html" class="site-util site-cart" aria-label="Cart">
+            <svg fill="none" stroke="currentColor" stroke-width="1.7" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"/></svg>
+            <span class="site-cart-count" id="cart-count">0</span>
+          </a>
+          <button type="button" class="site-util site-menu-btn" id="hdr-menu-btn" aria-label="Menu">
+            <svg fill="none" stroke="currentColor" stroke-width="1.7" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h16"/></svg>
+          </button>
+        </div>
+      </div>
+      <nav class="site-nav" id="site-nav">
+        <a href="index.html" data-i18n="nav.home">Home</a>
+        <a href="products.html" data-i18n="nav.products">Products</a>
+        <a href="designer.html" class="is-active" data-i18n="nav.designer">Project Designer</a>
+      </nav>
+    </div>
+  </header>
+
+  <header class="designer-toolbar">
+    <div class="site-wrap h-[var(--designer-bar-h)] flex items-center justify-between gap-3">
+      <div class="min-w-0">
+        <h1 class="text-base sm:text-lg font-bold leading-tight truncate" data-i18n="nav.designer">Project Designer</h1>
+        <p class="hidden md:block text-xs leading-tight text-slate-400 truncate" data-i18n="designer.subtitle">Configure your LED wall, preview cabinets, and share your design.</p>
+      </div>
+      <div class="flex items-center gap-2 shrink-0">
+        <button id="share-btn" class="inline-flex items-center gap-2 px-3 sm:px-4 py-1.5 rounded-full border border-slate-600 hover:border-sky-500 text-sm font-medium transition whitespace-nowrap">
+          <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z"/></svg>
+          <span class="hidden sm:inline" data-i18n="designer.copy">Copy Share Link</span>
+          <span class="sm:hidden" data-i18n="designer.link">Link</span>
+        </button>
+        <span id="share-toast" class="hidden text-xs text-sky-400">Link copied!</span>
+        <button id="pdf-btn" type="button" class="inline-flex items-center gap-2 px-3 sm:px-4 py-1.5 rounded-full border border-slate-600 hover:border-sky-500 text-sm font-medium transition whitespace-nowrap">
+          <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 3v6h6"/></svg>
+          <span class="hidden sm:inline" data-i18n="designer.pdf">Export PDF</span>
+          <span class="sm:hidden">PDF</span>
+        </button>
+        <button id="save-project-btn" type="button" class="inline-flex items-center gap-2 px-3 sm:px-4 py-1.5 rounded-full border border-sky-600/60 bg-sky-500/10 hover:bg-sky-500/20 text-sky-300 text-sm font-medium transition whitespace-nowrap">
+          <span class="hidden sm:inline" data-i18n="designer.save">Save to Account</span>
+          <span class="sm:hidden" data-i18n="designer.saveShort">Save</span>
+        </button>
+        <span id="save-toast" class="hidden text-xs text-sky-400">Saved!</span>
+      </div>
+    </div>
+  </header>
+
+  <section class="designer-main pb-20" style="padding-top: var(--content-gap)">
+    <div class="site-wrap designer-layout">
+      
+      <!-- Controls -->
+      <div class="space-y-5">
+        <!-- 1. Product -->
+        <div class="p-5 rounded-2xl border border-slate-800 bg-slate-900/60 space-y-4">
+          <h2 class="font-semibold text-base" data-i18n="designer.choose">1. Choose Product</h2>
+          
+          <div>
+            <label class="block text-xs text-slate-400 mb-1" data-i18n="designer.brand">Brand</label>
+            <select id="brand" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-sky-500">
+              <option value="trt">TRT</option>
+              <option value="gloshine">Gloshine</option>
+              <option value="bako">BAKO</option>
+              <option value="diao">DIAO (Exclusive)</option>
+              <option value="element">Element (Exclusive)</option>
+              <option value="custom" data-i18n="designer.custom">Custom Panel</option>
+            </select>
+          </div>
+
+          <div id="catalog-product" class="space-y-4">
+            <div>
+              <label class="block text-xs text-slate-400 mb-1">Series / Model</label>
+              <select id="series" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-sky-500"></select>
+            </div>
+
+            <div>
+              <label class="block text-xs text-slate-400 mb-1">Pixel Pitch</label>
+              <select id="pitch" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-sky-500"></select>
+            </div>
+            
+            <div class="text-xs text-slate-500" id="cabinet-info">Cabinet: 600 × 337.5 mm</div>
+          </div>
+
+          <div id="custom-product" class="hidden space-y-4">
+            <div>
+              <label class="block text-xs text-slate-400 mb-1">Panel name</label>
+              <input id="custom-name" type="text" value="Custom Panel" maxlength="80" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-sky-500" placeholder="Custom Panel">
+            </div>
+            <div class="grid grid-cols-2 gap-3">
+              <div>
+                <label class="block text-xs text-slate-400 mb-1">Cabinet W (mm)</label>
+                <input id="custom-w" type="number" step="0.5" min="50" max="2000" value="500" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-sky-500">
+              </div>
+              <div>
+                <label class="block text-xs text-slate-400 mb-1">Cabinet H (mm)</label>
+                <input id="custom-h" type="number" step="0.5" min="50" max="2000" value="500" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-sky-500">
+              </div>
+            </div>
+            <div class="flex flex-wrap gap-1.5 text-xs">
+              <button type="button" class="custom-size-preset px-2.5 py-1 rounded-full border border-slate-700 hover:border-sky-500 text-slate-300" data-w="500" data-h="500" data-lbs="16">500×500</button>
+              <button type="button" class="custom-size-preset px-2.5 py-1 rounded-full border border-slate-700 hover:border-sky-500 text-slate-300" data-w="600" data-h="337.5" data-lbs="10">600×337.5</button>
+              <button type="button" class="custom-size-preset px-2.5 py-1 rounded-full border border-slate-700 hover:border-sky-500 text-slate-300" data-w="640" data-h="480" data-lbs="20">640×480</button>
+              <button type="button" class="custom-size-preset px-2.5 py-1 rounded-full border border-slate-700 hover:border-sky-500 text-slate-300" data-w="1000" data-h="500" data-lbs="32">1000×500</button>
+            </div>
+            <div class="grid grid-cols-2 gap-3">
+              <div>
+                <label class="block text-xs text-slate-400 mb-1">Pixel pitch (mm)</label>
+                <input id="custom-pitch" type="number" step="0.01" min="0.4" max="20" value="2.5" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-sky-500">
+              </div>
+              <div>
+                <label class="block text-xs text-slate-400 mb-1">Power peak (W/m²)</label>
+                <input id="custom-pmax" type="number" step="10" min="1" max="5000" value="500" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-sky-500">
+              </div>
+            </div>
+            <div class="grid grid-cols-2 gap-3">
+              <div>
+                <label class="block text-xs text-slate-400 mb-1">Panel Weight (lbs)</label>
+                <input id="custom-weight" type="number" step="0.5" min="1" max="500" value="16" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-sky-500">
+              </div>
+              <div>
+                <label class="block text-xs text-slate-400 mb-1">Price ($/m²)</label>
+                <input id="custom-price" type="number" step="10" min="0" max="50000" value="1000" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-sky-500">
+              </div>
+            </div>
+            <p class="text-xs text-slate-500">Not a catalog product. Size, resolution, power, and price use the values you enter.</p>
+            <div class="pt-3 border-t border-slate-800 space-y-2">
+              <div class="flex items-center justify-between gap-2">
+                <label class="text-xs text-slate-400">Saved for this account</label>
+                <span id="custom-save-toast" class="hidden text-xs text-sky-400">Saved</span>
+              </div>
+              <div id="custom-saved-list" class="space-y-1.5 max-h-44 overflow-y-auto"></div>
+              <p id="custom-saved-empty" class="text-xs text-slate-500">Sign in to save panels to your account. They only appear for that account.</p>
+              <button type="button" id="save-custom-panel-btn" class="w-full inline-flex items-center justify-center gap-2 px-4 py-2 rounded-full border border-sky-600/60 bg-sky-500/10 hover:bg-sky-500/20 text-sky-300 text-sm font-medium transition">
+                Save panel to account
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- 2. Size -->
+        <div class="p-5 rounded-2xl border border-slate-800 bg-slate-900/60 space-y-4">
+          <div class="flex items-center justify-between gap-2">
+            <h2 class="font-semibold text-base" data-i18n="designer.wallSize">2. Screen Size</h2>
+            <div class="flex rounded-full border border-slate-600 overflow-hidden text-xs font-medium">
+              <button type="button" id="unit-ft" class="unit-btn px-3.5 py-1.5 bg-sky-500/20 text-sky-300 border-r border-slate-600" data-unit="ft">Feet / in</button>
+              <button type="button" id="unit-m" class="unit-btn px-3.5 py-1.5 text-slate-400 hover:text-white hover:bg-slate-800" data-unit="m">Meters (m)</button>
+            </div>
+          </div>
+          
+          <!-- Meters inputs -->
+          <div id="size-m" class="hidden grid grid-cols-2 gap-3">
+            <div>
+              <label class="block text-xs text-slate-400 mb-1">Width (m)</label>
+              <input id="width" type="number" step="0.1" min="0.5" max="80" value="3.6" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-sky-500">
+            </div>
+            <div>
+              <label class="block text-xs text-slate-400 mb-1">Height (m)</label>
+              <input id="height" type="number" step="0.1" min="0.5" max="60" value="2.025" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-sky-500">
+            </div>
+          </div>
+
+          <!-- Feet / inches inputs -->
+          <div id="size-ft" class="space-y-3">
+            <div class="grid grid-cols-2 gap-3">
+              <div>
+                <label class="block text-xs text-slate-400 mb-1">Width</label>
+                <div class="flex gap-1.5">
+                  <input id="width-ft" type="number" step="1" min="0" max="260" value="11" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-2 py-2 text-sm focus:outline-none focus:border-sky-500" placeholder="ft">
+                  <span class="text-xs text-slate-500 self-center">ft</span>
+                  <input id="width-in" type="number" step="1" min="0" max="11" value="10" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-2 py-2 text-sm focus:outline-none focus:border-sky-500" placeholder="in">
+                  <span class="text-xs text-slate-500 self-center">in</span>
+                </div>
+              </div>
+              <div>
+                <label class="block text-xs text-slate-400 mb-1">Height</label>
+                <div class="flex gap-1.5">
+                  <input id="height-ft" type="number" step="1" min="0" max="200" value="6" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-2 py-2 text-sm focus:outline-none focus:border-sky-500" placeholder="ft">
+                  <span class="text-xs text-slate-500 self-center">ft</span>
+                  <input id="height-in" type="number" step="1" min="0" max="11" value="8" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-2 py-2 text-sm focus:outline-none focus:border-sky-500" placeholder="in">
+                  <span class="text-xs text-slate-500 self-center">in</span>
+                </div>
+              </div>
+            </div>
+            <p class="text-xs text-slate-500" id="ft-metric-hint">≈ 3.60 m × 2.03 m</p>
+          </div>
+
+          <div id="size-presets" class="flex flex-wrap gap-1.5 text-xs">
+            <button type="button" class="size-preset px-2.5 py-1 rounded-full border border-slate-700 text-slate-400 hover:text-white hover:border-sky-500" data-w="2.4" data-h="1.35" data-diag="108">108"</button>
+            <button type="button" class="size-preset px-2.5 py-1 rounded-full border border-slate-700 text-slate-400 hover:text-white hover:border-sky-500" data-w="3" data-h="1.6875" data-diag="136">136"</button>
+            <button type="button" class="size-preset px-2.5 py-1 rounded-full border border-slate-700 text-slate-400 hover:text-white hover:border-sky-500" data-w="3.6" data-h="2.025" data-diag="163">163"</button>
+            <button type="button" class="size-preset px-2.5 py-1 rounded-full border border-slate-700 text-slate-400 hover:text-white hover:border-sky-500" data-w="4.8" data-h="2.7" data-diag="217">217"</button>
+            <button type="button" class="size-preset px-2.5 py-1 rounded-full border border-slate-700 text-slate-400 hover:text-white hover:border-sky-500" data-w="6" data-h="3.375" data-diag="271">271"</button>
+            <button type="button" class="size-preset px-2.5 py-1 rounded-full border border-slate-700 text-slate-400 hover:text-white hover:border-sky-500" data-w="7.2" data-h="4.05" data-diag="325">325"</button>
+          </div>
+
+          <div class="space-y-2">
+            <div class="flex items-center justify-between gap-2">
+              <label class="block text-xs text-slate-400">Aspect Ratio Lock</label>
+              <div class="flex rounded-full border border-slate-600 overflow-hidden text-xs font-medium">
+                <button type="button" class="aspect-mode-btn px-3 py-1.5 text-slate-400 hover:text-white hover:bg-slate-800 border-r border-slate-600" data-aspect-mode="lock">Lock</button>
+                <button type="button" class="aspect-mode-btn px-3 py-1.5 bg-sky-500/20 text-sky-300" data-aspect-mode="free">Free</button>
+              </div>
+            </div>
+            <div class="flex flex-wrap gap-1.5 text-xs font-medium">
+              <button type="button" class="aspect-btn px-2.5 py-1 rounded-full border border-slate-700 text-slate-400 hover:text-white hover:border-sky-500" data-aspect="16:9">16:9</button>
+              <button type="button" class="aspect-btn px-2.5 py-1 rounded-full border border-slate-700 text-slate-400 hover:text-white hover:border-sky-500" data-aspect="21:9">21:9</button>
+              <button type="button" class="aspect-btn px-2.5 py-1 rounded-full border border-slate-700 text-slate-400 hover:text-white hover:border-sky-500" data-aspect="32:9">32:9</button>
+              <button type="button" class="aspect-btn px-2.5 py-1 rounded-full border border-slate-700 text-slate-400 hover:text-white hover:border-sky-500" data-aspect="4:3">4:3</button>
+              <button type="button" class="aspect-btn px-2.5 py-1 rounded-full border border-slate-700 text-slate-400 hover:text-white hover:border-sky-500" data-aspect="1:1">1:1</button>
+            </div>
+            <p class="text-xs text-slate-500" id="aspect-actual">Free size · height and width set independently</p>
+          </div>
+
+          <div class="pt-3 border-t border-slate-800 space-y-3">
+            <label class="block text-xs text-slate-400">Screen Count</label>
+            <div class="grid grid-cols-2 gap-3">
+              <div>
+                <label class="block text-xs text-slate-500 mb-1">Wide</label>
+                <input id="screens-w" type="number" step="1" min="1" max="100" value="6" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-sky-500">
+              </div>
+              <div>
+                <label class="block text-xs text-slate-500 mb-1">High</label>
+                <input id="screens-h" type="number" step="1" min="1" max="100" value="6" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-sky-500">
+              </div>
+            </div>
+            <p class="text-xs text-slate-500" id="screen-count-total">36 screens (6 × 6)</p>
+            <div class="space-y-2">
+              <label class="block text-xs text-slate-400">Resolution</label>
+              <div class="flex flex-wrap gap-1.5 text-xs font-medium">
+                <button type="button" class="res-preset-btn px-2.5 py-1 rounded-full border border-slate-700 text-slate-400 hover:text-white hover:border-sky-500" data-res="2k">2K</button>
+                <button type="button" class="res-preset-btn px-2.5 py-1 rounded-full border border-slate-700 text-slate-400 hover:text-white hover:border-sky-500" data-res="4k">4K</button>
+                <button type="button" class="res-preset-btn px-2.5 py-1 rounded-full border border-slate-700 text-slate-400 hover:text-white hover:border-sky-500" data-res="8k">8K</button>
+              </div>
+              <p class="text-xs text-slate-500" id="res-preset-hint">2K 1920×1080 · 4K 3840×2160 · 8K 7680×4320</p>
+            </div>
+            <p class="text-xs text-slate-500">Wall size snaps to whole cabinets. The preview shows that real wall, fitted to the frame.</p>
+          </div>
+        </div>
+
+        <!-- 3. Install -->
+        <div class="p-5 rounded-2xl border border-slate-800 bg-slate-900/60 space-y-4">
+          <h2 class="font-semibold text-base" data-i18n="designer.install">3. Install</h2>
+          <div class="space-y-2">
+            <label class="block text-xs text-slate-400">Mount</label>
+            <div class="flex flex-wrap gap-1.5 text-xs font-medium">
+              <button type="button" class="mount-btn px-2.5 py-1 rounded-full border border-sky-500 bg-sky-500/20 text-sky-300" data-mount="wall">Wall</button>
+              <button type="button" class="mount-btn px-2.5 py-1 rounded-full border border-slate-700 text-slate-400 hover:text-white hover:border-sky-500" data-mount="stack">Ground stack</button>
+              <button type="button" class="mount-btn px-2.5 py-1 rounded-full border border-slate-700 text-slate-400 hover:text-white hover:border-sky-500" data-mount="truss">Truss hang</button>
+              <button type="button" class="mount-btn px-2.5 py-1 rounded-full border border-slate-700 text-slate-400 hover:text-white hover:border-sky-500" data-mount="legs">Legs</button>
+            </div>
+          </div>
+          <div class="space-y-2">
+            <label class="block text-xs text-slate-400">Voltage</label>
+            <div class="flex flex-wrap gap-1.5 text-xs font-medium">
+              <button type="button" class="volt-btn px-2.5 py-1 rounded-full border border-sky-500 bg-sky-500/20 text-sky-300" data-volt="120">120V</button>
+              <button type="button" class="volt-btn px-2.5 py-1 rounded-full border border-slate-700 text-slate-400 hover:text-white hover:border-sky-500" data-volt="208">208V</button>
+              <button type="button" class="volt-btn px-2.5 py-1 rounded-full border border-slate-700 text-slate-400 hover:text-white hover:border-sky-500" data-volt="230">230V</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- 4. Results -->
+        <div class="p-5 rounded-2xl border border-slate-800 bg-slate-900/60">
+          <h2 class="font-semibold text-base mb-3" data-i18n="designer.summary">4. Project Summary</h2>
+          <div class="space-y-2.5 text-sm">
+            <div class="flex justify-between"><span class="text-slate-400" data-i18n="designer.size">Wall Size</span><span id="res-size" class="font-medium text-right text-xs sm:text-sm">—</span></div>
+            <div class="flex justify-between"><span class="text-slate-400" data-i18n="designer.area">Total Area</span><span id="res-area" class="font-medium">—</span></div>
+            <div class="flex justify-between"><span class="text-slate-400" data-i18n="designer.res">Resolution</span><span id="res-resolution" class="font-medium text-right">—</span></div>
+            <div class="flex justify-between"><span class="text-slate-400" data-i18n="designer.minView">Min viewing</span><span id="res-viewing-min" class="font-medium">—</span></div>
+            <div class="flex justify-between"><span class="text-slate-400" data-i18n="designer.recView">Recommended</span><span id="res-viewing-rec" class="font-medium">—</span></div>
+            <div class="flex justify-between"><span class="text-slate-400" data-i18n="designer.cabs">Cabinets</span><span id="res-cabinets" class="font-medium">—</span></div>
+            <div class="flex justify-between"><span class="text-slate-400" data-i18n="designer.weight">Est. Weight</span><span id="res-weight" class="font-medium">—</span></div>
+            <div class="flex justify-between"><span class="text-slate-400" data-i18n="designer.powerAvg">Power (avg)</span><span id="res-power" class="font-medium">—</span></div>
+            <div class="flex justify-between"><span class="text-slate-400" data-i18n="designer.powerPeak">Power (peak)</span><span id="res-power-peak" class="font-medium">—</span></div>
+            <div class="flex justify-between"><span class="text-slate-400" data-i18n="designer.circuits">Circuits</span><span id="res-circuits" class="font-medium">—</span></div>
+            <div class="flex justify-between"><span class="text-slate-400" data-i18n="designer.ports">Data ports</span><span id="res-ports" class="font-medium">—</span></div>
+            <div class="flex justify-between"><span class="text-slate-400" data-i18n="designer.processor">Processor</span><span id="res-processor" class="font-medium">—</span></div>
+            <div class="flex justify-between border-t border-slate-800 pt-2.5 mt-1"><span class="text-slate-400" data-i18n="designer.estPrice">Est. Price</span><span id="res-price" class="font-semibold text-sky-400">—</span></div>
+          </div>
+          <a id="quote-btn" href="contact.html" class="mt-5 w-full inline-flex justify-center items-center px-5 py-2.5 rounded-full bg-sky-500 hover:bg-sky-400 text-white font-semibold text-sm transition">
+            Request Quote for This Design
+          </a>
+        </div>
+      </div>
+
+      <!-- Preview -->
+      <div class="preview-pane min-w-0">
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-3 shrink-0">
+            <h2 class="font-semibold text-base" data-i18n="designer.preview">Live Wall Preview</h2>
+            <div class="flex flex-wrap items-center gap-4">
+              <div class="text-sm text-slate-400" id="preview-label">11'10" × 6'8"  ·  3,840 × 2,160  (6×6)</div>
+              <div class="zoom-controls">
+                <button id="zoom-out" type="button" class="w-7 h-7 rounded-full border border-slate-600 hover:border-sky-500 text-slate-300 text-sm flex items-center justify-center" title="Zoom out">−</button>
+                <input id="zoom-slider" type="range" min="15" max="350" value="100" step="5" class="w-28 sm:w-36">
+                <button id="zoom-in" type="button" class="w-7 h-7 rounded-full border border-slate-600 hover:border-sky-500 text-slate-300 text-sm flex items-center justify-center" title="Zoom in">+</button>
+                <span id="zoom-value" class="text-xs text-slate-400 w-10 text-right">100%</span>
+                <button id="zoom-reset" type="button" class="text-xs px-2 py-1 rounded border border-slate-700 hover:border-sky-500 text-slate-400" title="Reset view">Reset</button>
+              </div>
+            </div>
+          </div>
+          
+          <div class="preview-frame">
+            <div class="preview-viewport" id="preview-viewport">
+              <div class="scene-bg" id="scene-bg"></div>
+              <div class="wall-transform" id="wall-transform">
+                <div class="scale-figure is-on" id="scale-figure" title="1.75 m adult for scale">
+                  <img src="assets/content/scale-figure.png" alt="" width="276" height="864">
+                </div>
+                <div class="wall-container glow-edge" id="wall-wrapper">
+                  <div class="content-layer empty" id="content-layer"></div>
+                  <div id="wall-preview" class="cabinet-grid relative labels-off"></div>
+                  <svg class="wiring-overlay" id="wiring-overlay" hidden></svg>
+                  <div class="screen-overlay" id="screen-overlay"></div>
+                  <div class="wall-dim wall-dim-w" aria-hidden="true">
+                    <span class="wall-dim-label" id="dim-width">—</span>
+                    <span class="wall-dim-line"></span>
+                  </div>
+                  <div class="wall-dim wall-dim-h" aria-hidden="true">
+                    <span class="wall-dim-line"></span>
+                    <span class="wall-dim-label" id="dim-height">—</span>
+                  </div>
+                  <div class="wall-dim-d" id="dim-diag-wrap" hidden>
+                    <span id="dim-diag">—</span>
+                  </div>
+                </div>
+                <div class="wall-balance" id="wall-balance" aria-hidden="true"></div>
+              </div>
+            </div>
+          </div>
+
+          <div class="mt-3 flex flex-wrap items-center gap-x-6 gap-y-2 shrink-0">
+            <div class="flex items-center gap-1.5 text-xs font-medium">
+              <span class="text-slate-500 mr-1">View</span>
+              <button type="button" class="view-btn px-2.5 py-1 rounded-full border border-sky-500 bg-sky-500/20 text-sky-300" data-view="front">Front</button>
+              <button type="button" class="view-btn px-2.5 py-1 rounded-full border border-slate-700 text-slate-400 hover:text-white hover:border-sky-500" data-view="wiring">Wiring</button>
+            </div>
+            <div class="flex items-center gap-1.5 text-xs font-medium">
+              <span class="text-slate-500 mr-1">Scale</span>
+              <button type="button" class="figure-btn px-2.5 py-1 rounded-full border border-slate-700 text-slate-400 hover:text-white hover:border-sky-500" data-figure="off">Off</button>
+              <button type="button" class="figure-btn px-2.5 py-1 rounded-full border border-sky-500 bg-sky-500/20 text-sky-300" data-figure="person">Person</button>
+            </div>
+            <div class="flex items-center gap-1.5 text-xs font-medium">
+              <span class="text-slate-500 mr-1">Labels</span>
+              <button type="button" class="label-mode-btn px-2.5 py-1 rounded-full border border-sky-500 bg-sky-500/20 text-sky-300" data-labels="off">Off</button>
+              <button type="button" class="label-mode-btn px-2.5 py-1 rounded-full border border-slate-700 text-slate-400 hover:text-white hover:border-sky-500" data-labels="num">123</button>
+              <button type="button" class="label-mode-btn px-2.5 py-1 rounded-full border border-slate-700 text-slate-400 hover:text-white hover:border-sky-500" data-labels="grid">A1</button>
+            </div>
+          </div>
+
+          <div class="mt-4 space-y-4 shrink-0">
+            <!-- Background -->
+            <div class="p-4 rounded-xl border border-slate-800 bg-slate-900/50 space-y-3">
+              <div class="flex flex-wrap items-center justify-between gap-2">
+                <h3 class="text-sm font-semibold text-slate-200">Background</h3>
+                <div class="flex flex-wrap gap-2 items-center">
+                  <label class="cursor-pointer">
+                    <input type="file" id="bg-upload" accept="image/*" class="hidden">
+                    <span class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-slate-600 hover:border-sky-500 text-xs text-slate-300 transition">Upload Background</span>
+                  </label>
+                  <button id="clear-bg" type="button" class="px-3 py-1.5 rounded-lg border border-slate-700 hover:border-red-500 text-xs text-slate-400 hover:text-red-400 transition">Clear BG</button>
+                </div>
+              </div>
+              <p id="bg-upload-name" class="text-xs text-slate-500"></p>
+              <p class="text-xs text-slate-500">Default dark backdrop. Upload an image for a custom setting.</p>
+            </div>
+
+            <!-- Preview Content (on wall) -->
+            <div class="p-4 rounded-xl border border-slate-800 bg-slate-900/50 space-y-3">
+              <div class="flex flex-wrap items-center justify-between gap-3">
+                <h3 class="text-sm font-semibold text-slate-200">Preview Content (on wall)</h3>
+                <select id="content-select" class="bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm text-slate-200 focus:outline-none focus:border-sky-500 min-w-[180px]">
+                  <option value="gradient">Default</option>
+                  <option value="city">City</option>
+                  <option value="nature">Nature</option>
+                  <option value="abstract">Abstract</option>
+                  <option value="sports">Sports</option>
+                  <option value="news">News</option>
+                  <option value="logo">Brand</option>
+                  <option value="concert">Concert</option>
+                </select>
+              </div>
+              <p class="text-xs text-slate-500">Sample content shown on the LED wall for customer previews.</p>
+            </div>
+
+            <div class="flex flex-wrap gap-4 text-xs text-slate-500">
+              <div class="flex items-center gap-2"><span class="w-3 h-3 rounded-sm bg-sky-600 border border-sky-400/40"></span> Individual LED cabinets</div>
+              <div id="wiring-legend" class="hidden items-center gap-4">
+                <span class="inline-flex items-center gap-1.5"><span class="w-4 h-0.5 bg-sky-400"></span> Data</span>
+                <span class="inline-flex items-center gap-1.5"><span class="w-4 h-0.5 bg-amber-400"></span> Power</span>
+              </div>
+              <div>Drag wall to move · Scroll wheel or slider = zoom · Reset centers the wall</div>
+            </div>
+          </div>
+
+          <div class="mt-5 p-4 rounded-xl bg-slate-900/50 border border-slate-800 text-sm text-slate-400">
+            <strong class="text-slate-200">Note:</strong> This is a planning visualization. Final cabinet count, exact resolution, mounting method, and pricing are confirmed by our team after reviewing site conditions and content requirements.
+          </div>
+      </div>
+    </div>
+  </section>
+
+  <div id="spec-overlay" aria-hidden="true">
+    <div class="flex justify-end gap-2 mb-3">
+      <button type="button" id="spec-print-btn" class="px-4 py-2 rounded-full bg-sky-500 hover:bg-sky-400 text-white text-sm font-medium">Print / Save as PDF</button>
+      <button type="button" id="spec-close-btn" class="px-4 py-2 rounded-full border border-slate-600 hover:border-slate-400 text-sm font-medium">Close</button>
+    </div>
+    <iframe id="spec-frame" title="Project spec sheet"></iframe>
+  </div>
+
+  <footer class="border-t border-slate-800 py-10 px-4 text-center text-sm text-slate-500">
+    <p>© 2026 Spectrum Display Inc. • spectrumdisplay.com</p>
+  </footer>
+
+  <script src="js/products-data.js"></script>
+  <script src="js/catalog-api.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="js/supabase-client.js"></script>
+  <script src="js/auth.js"></script>
+  <script src="js/site-header.js"></script>
+  <script src="js/i18n.js"></script>
+  <script>
+    // Shared product catalog (edit js/products-data.js to update site-wide)
+    const products = window.SPECTRUM_PRODUCTS;
+    if (!products) {
+      console.error('SPECTRUM_PRODUCTS missing — check js/products-data.js');
+      alert('Product data failed to load. Make sure the js/folder is next to designer.html (unzip the full site).');
+    }
+
+    // Sample content (CSS gradients / patterns as fallbacks)
+        const samples = {
+      gradient: null,
+      city: 'url(assets/content/city.jpg)',
+      nature: 'url(assets/content/nature.jpg)',
+      abstract: 'url(assets/content/abstract.jpg)',
+      sports: 'url(assets/content/sports.jpg)',
+      news: 'url(assets/content/news.jpg)',
+      logo: 'url(assets/content/logo.jpg)',
+      concert: 'url(assets/content/concert.jpg)'
+    };
+
+
+    const brandEl = document.getElementById('brand');
+    const seriesEl = document.getElementById('series');
+    const pitchEl = document.getElementById('pitch');
+    const customNameEl = document.getElementById('custom-name');
+    const customWEl = document.getElementById('custom-w');
+    const customHEl = document.getElementById('custom-h');
+    const customPitchEl = document.getElementById('custom-pitch');
+    const customWeightEl = document.getElementById('custom-weight');
+    const customPriceEl = document.getElementById('custom-price');
+    const customPmaxEl = document.getElementById('custom-pmax');
+    const widthEl = document.getElementById('width');
+    const heightEl = document.getElementById('height');
+    const widthFtEl = document.getElementById('width-ft');
+    const widthInEl = document.getElementById('width-in');
+    const heightFtEl = document.getElementById('height-ft');
+    const heightInEl = document.getElementById('height-in');
+    const screensWEl = document.getElementById('screens-w');
+    const screensHEl = document.getElementById('screens-h');
+    const screenCountTotalEl = document.getElementById('screen-count-total');
+    const aspectActualEl = document.getElementById('aspect-actual');
+    let syncingScreens = false;
+    let sizeUnit = 'ft'; // 'm' or 'ft'
+    let lastSizeAxis = 'w';
+    const ASPECTS = { free: null, '16:9': 16 / 9, '21:9': 21 / 9, '32:9': 32 / 9, '4:3': 4 / 3, '1:1': 1 };
+    let aspectLock = 'free';
+    let lastAspectChoice = '16:9';
+    let mountType = 'wall';
+    let voltage = 120;
+    const CIRCUIT_AMPS = 20;
+    const CIRCUIT_DERATE = 0.8;
+    const PIXELS_PER_PORT = 650000;
+    const UHD_PIXELS = 3840 * 2160;
+    const MOUNT_LABELS = { wall: 'Wall', stack: 'Ground stack', truss: 'Truss hang', legs: 'Legs' };
+    const PERSON_HEIGHT_M = 1.75;
+    let figureMode = 'person';
+    let labelMode = 'off';
+    let viewMode = 'front';
+    const DATA_COLORS = ['#38bdf8', '#22d3ee', '#818cf8', '#2dd4bf', '#60a5fa'];
+    const POWER_COLORS = ['#fbbf24', '#fb923c', '#f59e0b', '#fcd34d'];
+
+    function setChoiceButtons(selector, attr, value) {
+      document.querySelectorAll(selector).forEach(b => {
+        const on = String(b.getAttribute(attr)) === String(value);
+        b.classList.toggle('bg-sky-500/20', on);
+        b.classList.toggle('text-sky-300', on);
+        b.classList.toggle('border-sky-500', on);
+        b.classList.toggle('border-slate-700', !on);
+        b.classList.toggle('text-slate-400', !on);
+      });
+    }
+    function setMount(value, opts) {
+      if (!MOUNT_LABELS[value]) value = 'wall';
+      mountType = value;
+      setChoiceButtons('.mount-btn', 'data-mount', value);
+      if (!opts || !opts.skipApply) updateDesign();
+    }
+    function setVoltage(value, opts) {
+      const v = parseInt(value, 10);
+      voltage = (v === 208 || v === 230) ? v : 120;
+      setChoiceButtons('.volt-btn', 'data-volt', voltage);
+      if (!opts || !opts.skipApply) updateDesign();
+    }
+    function setFigureMode(value, opts) {
+      figureMode = value === 'off' ? 'off' : 'person';
+      setChoiceButtons('.figure-btn', 'data-figure', figureMode);
+      if (!opts || !opts.skipApply) updateDesign();
+    }
+    function setLabelMode(value, opts) {
+      if (value !== 'num' && value !== 'grid') value = 'off';
+      labelMode = value;
+      setChoiceButtons('.label-mode-btn', 'data-labels', value);
+      if (!opts || !opts.skipApply) updateDesign();
+    }
+    function setViewMode(value, opts) {
+      viewMode = value === 'wiring' ? 'wiring' : 'front';
+      setChoiceButtons('.view-btn', 'data-view', viewMode);
+      if (!opts || !opts.skipApply) updateDesign();
+    }
+    function serpentineOrder(cols, rows) {
+      const order = [];
+      for (let r = 0; r < rows; r++) {
+        if (r % 2 === 0) {
+          for (let c = 0; c < cols; c++) order.push({ r: r, c: c });
+        } else {
+          for (let c = cols - 1; c >= 0; c--) order.push({ r: r, c: c });
+        }
+      }
+      return order;
+    }
+    function chunkEven(list, n) {
+      const count = Math.max(1, Math.min(n, list.length));
+      const size = Math.ceil(list.length / count);
+      const chunks = [];
+      for (let i = 0; i < list.length; i += size) chunks.push(list.slice(i, i + size));
+      return chunks;
+    }
+    function cellCenter(c, r, cellW, cellH, gap) {
+      return {
+        x: c * (cellW + gap) + cellW / 2,
+        y: r * (cellH + gap) + cellH / 2
+      };
+    }
+    function drawWiringOverlay(svg, cols, rows, cellW, cellH, dataPorts, circuits) {
+      const gap = 1.5;
+      const W = cols * cellW + (cols - 1) * gap;
+      const H = rows * cellH + (rows - 1) * gap;
+      svg.setAttribute('viewBox', '0 0 ' + W + ' ' + H);
+      svg.setAttribute('width', String(W));
+      svg.setAttribute('height', String(H));
+      svg.style.width = W + 'px';
+      svg.style.height = H + 'px';
+      while (svg.firstChild) svg.removeChild(svg.firstChild);
+
+      const ns = 'http://www.w3.org/2000/svg';
+      const order = serpentineOrder(cols, rows);
+      const dataChunks = chunkEven(order, dataPorts);
+      const powerChunks = chunkEven(order, circuits);
+      const stroke = Math.max(1.2, Math.min(2.5, cellW * 0.08));
+
+      function polyline(pts, color, width, dash) {
+        if (pts.length < 2) return;
+        const el = document.createElementNS(ns, 'polyline');
+        el.setAttribute('points', pts.map(p => p.x + ',' + p.y).join(' '));
+        el.setAttribute('fill', 'none');
+        el.setAttribute('stroke', color);
+        el.setAttribute('stroke-width', String(width));
+        el.setAttribute('stroke-linecap', 'round');
+        el.setAttribute('stroke-linejoin', 'round');
+        el.setAttribute('opacity', '0.9');
+        if (dash) el.setAttribute('stroke-dasharray', dash);
+        svg.appendChild(el);
+      }
+      function startDot(pt, color, label) {
+        const g = document.createElementNS(ns, 'g');
+        const c = document.createElementNS(ns, 'circle');
+        c.setAttribute('cx', String(pt.x));
+        c.setAttribute('cy', String(pt.y));
+        c.setAttribute('r', String(Math.max(3, cellW * 0.14)));
+        c.setAttribute('fill', color);
+        g.appendChild(c);
+        if (cellW >= 16 && label) {
+          const t = document.createElementNS(ns, 'text');
+          t.setAttribute('x', String(pt.x));
+          t.setAttribute('y', String(pt.y - Math.max(5, cellH * 0.22)));
+          t.setAttribute('text-anchor', 'middle');
+          t.setAttribute('fill', color);
+          t.setAttribute('font-size', String(Math.max(7, Math.min(11, cellW * 0.28))));
+          t.setAttribute('font-family', 'Inter, system-ui, sans-serif');
+          t.setAttribute('font-weight', '600');
+          t.textContent = label;
+          g.appendChild(t);
+        }
+        svg.appendChild(g);
+      }
+
+      powerChunks.forEach((chunk, i) => {
+        const pts = chunk.map(p => cellCenter(p.c, p.r, cellW, cellH, gap));
+        polyline(pts, POWER_COLORS[i % POWER_COLORS.length], stroke + 0.8, '5 4');
+        if (pts[0]) startDot(pts[0], POWER_COLORS[i % POWER_COLORS.length], 'P' + (i + 1));
+      });
+      dataChunks.forEach((chunk, i) => {
+        const pts = chunk.map(p => cellCenter(p.c, p.r, cellW, cellH, gap));
+        polyline(pts, DATA_COLORS[i % DATA_COLORS.length], stroke);
+        if (pts[0]) startDot(pts[0], DATA_COLORS[i % DATA_COLORS.length], 'D' + (i + 1));
+      });
+    }
+    function rowLetter(n) {
+      let s = '';
+      let i = n + 1;
+      while (i > 0) {
+        i -= 1;
+        s = String.fromCharCode(65 + (i % 26)) + s;
+        i = Math.floor(i / 26);
+      }
+      return s;
+    }
+
+    const SCREEN_MAX = 100;
+    const GRID_GAP_PX = 1.5;
+    const RES_PRESETS = {
+      '2k': { w: 1920, h: 1080, label: '2K' },
+      '4k': { w: 3840, h: 2160, label: '4K' },
+      '8k': { w: 7680, h: 4320, label: '8K' }
+    };
+    const RES_PITCH_MAX = { '2k': Infinity, '4k': 6.0, '8k': 3.0 };
+    function resolutionPresetAllowed(key, pitch) {
+      const max = RES_PITCH_MAX[key];
+      if (max == null) return true;
+      return pitch <= max;
+    }
+    /** Integer pixels in one cabinet. 16:9 cabinets use 16×9 LED groups (P0.93 → 640×360). */
+    function cabinetPixels(series, pitch) {
+      const cabWmm = (series.cabinetW || 0) * 1000;
+      const cabHmm = (series.cabinetH || 0) * 1000;
+      const p = Math.max(Number(pitch) || 0.1, 0.01);
+      const ratio = cabHmm > 0 ? cabWmm / cabHmm : 1;
+      if (Math.abs(ratio - 16 / 9) < 0.02) {
+        const groups = Math.max(1, Math.round(cabWmm / p / 16));
+        return { w: groups * 16, h: groups * 9 };
+      }
+      if (Math.abs(ratio - 4 / 3) < 0.02) {
+        const groups = Math.max(1, Math.round(cabWmm / p / 16));
+        return { w: groups * 16, h: groups * 12 };
+      }
+      return {
+        w: Math.max(1, Math.round(cabWmm / p)),
+        h: Math.max(1, Math.round(cabHmm / p))
+      };
+    }
+    function wallPixels(series, pitch, cols, rows) {
+      const cab = cabinetPixels(series, pitch);
+      return { w: cols * cab.w, h: rows * cab.h, cab };
+    }
+
+    function getAspectRatio() {
+      return ASPECTS[aspectLock] || null;
+    }
+    function fmtFtIn(m) {
+      const v = ftInFromMeters(m);
+      return v.ft + "'" + v.inch + '"';
+    }
+    function isSizeFieldFocused() {
+      const a = document.activeElement;
+      return a === widthEl || a === heightEl || a === widthFtEl || a === widthInEl || a === heightFtEl || a === heightInEl;
+    }
+    function commitSnappedWallSize(actualW, actualH) {
+      const wStr = (Math.round(actualW * 100) / 100).toFixed(2);
+      const hStr = (Math.round(actualH * 100) / 100).toFixed(2);
+      if (String(widthEl.value) !== wStr) widthEl.value = wStr;
+      if (String(heightEl.value) !== hStr) heightEl.value = hStr;
+      syncFtFromMeters();
+    }
+    function fitWallToPreview(cols, rows, cabinetW, cabinetH) {
+      const viewport = document.getElementById('preview-viewport');
+      const rect = viewport ? viewport.getBoundingClientRect() : { width: 640, height: 460 };
+      const availW = Math.max(80, rect.width * 0.666);
+      const availH = Math.max(80, rect.height * 0.823);
+      const wallAspect = (cols * cabinetW) / Math.max(rows * cabinetH, 0.001);
+      const actualH = rows * cabinetH;
+      const figureOn = figureMode === 'person' && viewMode !== 'wiring';
+      const figHfrac = PERSON_HEIGHT_M / Math.max(actualH, 0.3);
+      const figAspect = 276 / 864;
+      const figGap = 28;
+      let wallH = availH;
+      let wallW = wallH * wallAspect;
+      if (wallW > availW) {
+        wallW = availW;
+        wallH = wallW / wallAspect;
+      }
+      if (figureOn) {
+        const figW = Math.max(12, figHfrac * wallH) * figAspect;
+        const totalW = wallW + 2 * (figW + figGap);
+        const maxGroup = Math.max(120, rect.width * 0.98);
+        if (totalW > maxGroup) {
+          const scale = maxGroup / totalW;
+          wallW *= scale;
+          wallH *= scale;
+        }
+      }
+      const cellW = Math.max(2, (wallW - (cols - 1) * GRID_GAP_PX) / cols);
+      const cellH = Math.max(2, (wallH - (rows - 1) * GRID_GAP_PX) / rows);
+      return { cellW: cellW, cellH: cellH };
+    }
+    function snapToLockedAspect(axis) {
+      const series = getCurrentSeries();
+      const ratio = getAspectRatio();
+      if (!ratio || !series) return;
+      const ax = axis || lastSizeAxis || 'w';
+      let cols, rows;
+      if (ax === 'h') {
+        rows = Math.max(1, Math.min(SCREEN_MAX, Math.round((parseFloat(heightEl.value) || series.cabinetH) / series.cabinetH)));
+        cols = Math.max(1, Math.min(SCREEN_MAX, Math.round((rows * series.cabinetH * ratio) / series.cabinetW)));
+      } else {
+        cols = Math.max(1, Math.min(SCREEN_MAX, Math.round((parseFloat(widthEl.value) || series.cabinetW) / series.cabinetW)));
+        rows = Math.max(1, Math.min(SCREEN_MAX, Math.round((cols * series.cabinetW) / ratio / series.cabinetH)));
+      }
+      widthEl.value = (Math.round(cols * series.cabinetW * 100) / 100).toFixed(2);
+      heightEl.value = (Math.round(rows * series.cabinetH * 100) / 100).toFixed(2);
+      if (screensWEl) screensWEl.value = cols;
+      if (screensHEl) screensHEl.value = rows;
+      syncFtFromMeters();
+    }
+    function applyAspectKeepWidth() {
+      snapToLockedAspect('w');
+    }
+    function applyAspectKeepHeight() {
+      snapToLockedAspect('h');
+    }
+    function matchingAspectKey(actualW, actualH) {
+      const actual = actualH > 0 ? actualW / actualH : 0;
+      let best = null;
+      let bestErr = 0.035;
+      Object.keys(ASPECTS).forEach(k => {
+        const target = ASPECTS[k];
+        if (!target) return;
+        const err = Math.abs(actual / target - 1);
+        if (err < bestErr) {
+          bestErr = err;
+          best = k;
+        }
+      });
+      return best;
+    }
+    function paintAspectMode() {
+      const locked = aspectLock !== 'free';
+      document.querySelectorAll('.aspect-mode-btn').forEach(b => {
+        const on = (b.getAttribute('data-aspect-mode') === 'lock') === locked;
+        b.classList.toggle('bg-sky-500/20', on);
+        b.classList.toggle('text-sky-300', on);
+        b.classList.toggle('text-slate-400', !on);
+      });
+    }
+    function paintAspectButtons(activeKey) {
+      document.querySelectorAll('.aspect-btn').forEach(b => {
+        const on = !!activeKey && b.dataset.aspect === activeKey;
+        b.classList.toggle('bg-sky-500/20', on);
+        b.classList.toggle('text-sky-300', on);
+        b.classList.toggle('border-sky-500', on);
+        b.classList.toggle('border-slate-700', !on);
+        b.classList.toggle('text-slate-400', !on);
+      });
+    }
+    function setAspectMode(mode, opts) {
+      if (mode === 'free') {
+        aspectLock = 'free';
+      } else {
+        const series = getCurrentSeries();
+        let key = lastAspectChoice;
+        if (series) {
+          const cols = Math.max(1, Math.round((parseFloat(widthEl.value) || 1) / series.cabinetW));
+          const rows = Math.max(1, Math.round((parseFloat(heightEl.value) || 1) / series.cabinetH));
+          const matched = matchingAspectKey(cols * series.cabinetW, rows * series.cabinetH);
+          if (matched) key = matched;
+        }
+        if (!ASPECTS[key]) key = '16:9';
+        aspectLock = key;
+        lastAspectChoice = key;
+      }
+      paintAspectMode();
+      if (!opts || !opts.skipApply) {
+        if (getAspectRatio()) {
+          if (lastSizeAxis === 'h') applyAspectKeepHeight();
+          else applyAspectKeepWidth();
+        }
+        updateDesign();
+      }
+    }
+    function setAspectLock(value, opts) {
+      if (value === 'free') {
+        setAspectMode('free', opts);
+        return;
+      }
+      if (!Object.prototype.hasOwnProperty.call(ASPECTS, value) || !ASPECTS[value]) value = '16:9';
+      lastAspectChoice = value;
+      aspectLock = value;
+      paintAspectMode();
+      if (!opts || !opts.skipApply) {
+        if (getAspectRatio()) {
+          if (lastSizeAxis === 'h') applyAspectKeepHeight();
+          else applyAspectKeepWidth();
+        }
+        updateDesign();
+      }
+    }
+    const M_PER_FT = 0.3048;
+    const M_PER_IN = 0.0254;
+
+    function metersFromFtIn(ft, inch) {
+      return (parseFloat(ft) || 0) * M_PER_FT + (parseFloat(inch) || 0) * M_PER_IN;
+    }
+    function ftInFromMeters(m) {
+      const totalIn = m / M_PER_IN;
+      let ft = Math.floor(totalIn / 12);
+      let inch = Math.round(totalIn - ft * 12);
+      if (inch === 12) { ft += 1; inch = 0; }
+      return { ft, inch };
+    }
+    function syncFtFromMeters() {
+      const w = Math.max(0.5, parseFloat(widthEl.value) || 1);
+      const h = Math.max(0.5, parseFloat(heightEl.value) || 1);
+      const W = ftInFromMeters(w);
+      const H = ftInFromMeters(h);
+      widthFtEl.value = W.ft;
+      widthInEl.value = W.inch;
+      heightFtEl.value = H.ft;
+      heightInEl.value = H.inch;
+      document.getElementById('ft-metric-hint').textContent =
+        '≈ ' + w.toFixed(2) + ' m × ' + h.toFixed(2) + ' m';
+    }
+    function syncMetersFromFt() {
+      const w = Math.max(0.5, metersFromFtIn(widthFtEl.value, widthInEl.value));
+      const h = Math.max(0.5, metersFromFtIn(heightFtEl.value, heightInEl.value));
+      widthEl.value = (Math.round(w * 100) / 100).toFixed(2);
+      heightEl.value = (Math.round(h * 100) / 100).toFixed(2);
+      document.getElementById('ft-metric-hint').textContent =
+        '≈ ' + w.toFixed(2) + ' m × ' + h.toFixed(2) + ' m';
+    }
+    function setSizeUnit(unit) {
+      sizeUnit = unit;
+      document.getElementById('size-m').classList.toggle('hidden', unit !== 'm');
+      document.getElementById('size-ft').classList.toggle('hidden', unit !== 'ft');
+      document.querySelectorAll('.unit-btn').forEach(b => {
+        const on = b.dataset.unit === unit;
+        b.classList.toggle('bg-sky-500/20', on);
+        b.classList.toggle('text-sky-300', on);
+        b.classList.toggle('text-slate-400', !on);
+      });
+      if (unit === 'ft') syncFtFromMeters();
+      updateDesign();
+    }
+    document.getElementById('unit-m').addEventListener('click', () => setSizeUnit('m'));
+    document.getElementById('unit-ft').addEventListener('click', () => setSizeUnit('ft'));
+    [widthFtEl, widthInEl].forEach(el => {
+      el.addEventListener('input', () => {
+        lastSizeAxis = 'w';
+        syncMetersFromFt();
+        if (getAspectRatio()) applyAspectKeepWidth();
+        updateDesign();
+      });
+    });
+    [heightFtEl, heightInEl].forEach(el => {
+      el.addEventListener('input', () => {
+        lastSizeAxis = 'h';
+        syncMetersFromFt();
+        if (getAspectRatio()) applyAspectKeepHeight();
+        updateDesign();
+      });
+    });
+    document.querySelectorAll('.aspect-mode-btn').forEach(btn => {
+      btn.addEventListener('click', () => setAspectMode(btn.getAttribute('data-aspect-mode')));
+    });
+    document.querySelectorAll('.aspect-btn').forEach(btn => {
+      btn.addEventListener('click', () => setAspectLock(btn.dataset.aspect));
+    });
+    document.querySelectorAll('.mount-btn').forEach(btn => {
+      btn.addEventListener('click', () => setMount(btn.dataset.mount));
+    });
+    document.querySelectorAll('.volt-btn').forEach(btn => {
+      btn.addEventListener('click', () => setVoltage(btn.dataset.volt));
+    });
+    document.querySelectorAll('.figure-btn').forEach(btn => {
+      btn.addEventListener('click', () => setFigureMode(btn.dataset.figure));
+    });
+    document.querySelectorAll('.label-mode-btn').forEach(btn => {
+      btn.addEventListener('click', () => setLabelMode(btn.dataset.labels));
+    });
+    document.querySelectorAll('.view-btn').forEach(btn => {
+      btn.addEventListener('click', () => setViewMode(btn.dataset.view));
+    });
+    const preview = document.getElementById('wall-preview');
+    const contentLayer = document.getElementById('content-layer');
+    const wallWrapper = document.getElementById('wall-wrapper');
+    let currentImageUrl = null;
+    let lastSpec = null;
+
+    function clampNum(n, min, max, fallback) {
+      const v = parseFloat(n);
+      if (!isFinite(v)) return fallback;
+      return Math.min(max, Math.max(min, v));
+    }
+    function isCustomPanel() {
+      return brandEl.value === 'custom';
+    }
+    function getBrandName() {
+      if (isCustomPanel()) return 'Custom';
+      return (products && products[brandEl.value]) ? products[brandEl.value].name : '';
+    }
+    function getPitch() {
+      if (isCustomPanel()) return clampNum(customPitchEl.value, 0.4, 20, 2.5);
+      return parseFloat(pitchEl.value);
+    }
+    function defaultPanelLbs(w, h) {
+      const wNum = parseFloat(w);
+      const hNum = parseFloat(h);
+      if (!isFinite(wNum) || !isFinite(hNum)) return null;
+      const presets = [
+        [500, 500, 16],
+        [600, 337.5, 10],
+        [640, 480, 20],
+        [1000, 500, 32]
+      ];
+      for (let i = 0; i < presets.length; i++) {
+        const pw = presets[i][0], ph = presets[i][1], lbs = presets[i][2];
+        if (Math.abs(wNum - pw) < 0.05 && Math.abs(hNum - ph) < 0.05) return lbs;
+        if (Math.abs(wNum - ph) < 0.05 && Math.abs(hNum - pw) < 0.05) return lbs;
+      }
+      return null;
+    }
+    function applyDefaultPanelWeight() {
+      const lbs = defaultPanelLbs(customWEl.value, customHEl.value);
+      if (lbs != null) customWeightEl.value = String(lbs);
+    }
+    function getCustomSeries() {
+      const wmm = clampNum(customWEl.value, 50, 2000, 500);
+      const hmm = clampNum(customHEl.value, 50, 2000, 500);
+      const pitch = getPitch();
+      const name = (customNameEl.value || '').trim() || 'Custom Panel';
+      const panelLbs = clampNum(customWeightEl.value, 1, 500, 16);
+      const cabArea = Math.max((wmm / 1000) * (hmm / 1000), 0.001);
+      return {
+        id: 'custom',
+        name: name,
+        pitches: [pitch],
+        pricePerM2: clampNum(customPriceEl.value, 0, 50000, 1000),
+        panelWeightLbs: panelLbs,
+        weightPerM2: (panelLbs * 0.45359237) / cabArea,
+        powerAvg: Math.round(clampNum(customPmaxEl.value, 1, 5000, 500) * 0.4),
+        powerMax: clampNum(customPmaxEl.value, 1, 5000, 500),
+        cabinetW: wmm / 1000,
+        cabinetH: hmm / 1000,
+        type: 'Custom'
+      };
+    }
+    function setCustomMode(on) {
+      const catalog = document.getElementById('catalog-product');
+      const custom = document.getElementById('custom-product');
+      if (catalog) catalog.classList.toggle('hidden', on);
+      if (custom) custom.classList.toggle('hidden', !on);
+      if (on) renderSavedCustomPanels();
+    }
+    function applyCustomState(state) {
+      if (!state) return;
+      if (state.cname != null) customNameEl.value = state.cname;
+      if (state.cw != null && state.cw !== '') customWEl.value = state.cw;
+      if (state.ch != null && state.ch !== '') customHEl.value = state.ch;
+      if (state.pitch != null && state.pitch !== '') customPitchEl.value = state.pitch;
+      if (state.wt != null && state.wt !== '') customWeightEl.value = state.wt;
+      if (state.price != null && state.price !== '') customPriceEl.value = state.price;
+      if (state.pmax != null && state.pmax !== '') customPmaxEl.value = state.pmax;
+    }
+    function customShareFields() {
+      return {
+        cname: customNameEl.value || 'Custom Panel',
+        cw: String(customWEl.value),
+        ch: String(customHEl.value),
+        wt: String(customWeightEl.value),
+        price: String(customPriceEl.value),
+        pmax: String(customPmaxEl.value)
+      };
+    }
+    function getCustomPanelPayload() {
+      const series = getCustomSeries();
+      return {
+        name: series.name,
+        w: Math.round(series.cabinetW * 1000 * 10) / 10,
+        h: Math.round(series.cabinetH * 1000 * 10) / 10,
+        pitch: series.pitches[0],
+        type: series.type,
+        weight: series.panelWeightLbs,
+        price: series.pricePerM2,
+        pavg: series.powerAvg,
+        pmax: series.powerMax
+      };
+    }
+    function loadCustomPanelRecord(panel) {
+      if (!panel) return;
+      applyCustomState({
+        cname: panel.name,
+        cw: panel.w,
+        ch: panel.h,
+        pitch: panel.pitch,
+        ctype: panel.type,
+        wt: panel.weight,
+        price: panel.price,
+        pavg: panel.pavg,
+        pmax: panel.pmax
+      });
+      if (brandEl.value !== 'custom') {
+        brandEl.value = 'custom';
+        setCustomMode(true);
+      }
+      updateDesign();
+    }
+    function renderSavedCustomPanels() {
+      const list = document.getElementById('custom-saved-list');
+      const empty = document.getElementById('custom-saved-empty');
+      const btn = document.getElementById('save-custom-panel-btn');
+      if (!list || !empty) return;
+      const loggedIn = window.SpectrumAuth && SpectrumAuth.isLoggedIn();
+      if (btn) btn.textContent = loggedIn ? 'Save panel to account' : 'Sign in to save panel';
+      if (!loggedIn) {
+        list.innerHTML = '';
+        empty.textContent = 'Sign in to save panels to your account. They only appear for that account.';
+        empty.classList.remove('hidden');
+        return;
+      }
+      const panels = SpectrumAuth.listCustomPanels();
+      if (!panels.length) {
+        list.innerHTML = '';
+        empty.textContent = 'No saved panels on this account yet.';
+        empty.classList.remove('hidden');
+        return;
+      }
+      empty.classList.add('hidden');
+      list.innerHTML = panels.map(p => {
+        const label = escHtml(p.name || 'Custom Panel');
+        const meta = escHtml((p.w || '?') + ' × ' + (p.h || '?') + ' mm · P' + (p.pitch || '?'));
+        return '<div class="flex items-center justify-between gap-2 px-2.5 py-1.5 rounded-lg border border-slate-800 bg-slate-950/60">'
+          + '<button type="button" class="load-custom-panel min-w-0 text-left" data-id="' + escHtml(p.id) + '">'
+          + '<div class="text-xs font-medium text-slate-200 truncate">' + label + '</div>'
+          + '<div class="text-[11px] text-slate-500 truncate">' + meta + '</div></button>'
+          + '<button type="button" class="del-custom-panel shrink-0 text-[11px] text-slate-500 hover:text-red-400" data-id="' + escHtml(p.id) + '">Delete</button>'
+          + '</div>';
+      }).join('');
+      list.querySelectorAll('.load-custom-panel').forEach(btnEl => {
+        btnEl.addEventListener('click', () => {
+          const panel = panels.find(x => x.id === btnEl.dataset.id);
+          loadCustomPanelRecord(panel);
+        });
+      });
+      list.querySelectorAll('.del-custom-panel').forEach(btnEl => {
+        btnEl.addEventListener('click', async () => {
+          await SpectrumAuth.deleteCustomPanel(btnEl.dataset.id);
+          renderSavedCustomPanels();
+        });
+      });
+    }
+    function flashCustomSaveToast(msg) {
+      const toast = document.getElementById('custom-save-toast');
+      if (!toast) return;
+      toast.textContent = msg || 'Saved';
+      toast.classList.remove('hidden');
+      setTimeout(() => toast.classList.add('hidden'), 2200);
+    }
+    async function saveCustomPanelToAccount() {
+      const payload = getCustomPanelPayload();
+      if (!window.SpectrumAuth || !SpectrumAuth.isLoggedIn()) {
+        if (confirm('Sign in to save this custom panel to your account. Go to Account page?')) {
+          sessionStorage.setItem('spectrumPendingCustomPanel', JSON.stringify(payload));
+          sessionStorage.setItem('spectrumAuthNext', 'designer-custom');
+          window.location.href = 'account.html?next=designer-custom';
+        }
+        return;
+      }
+      const result = await SpectrumAuth.saveCustomPanel(payload);
+      if (result.ok) {
+        flashCustomSaveToast('Saved to your account');
+        renderSavedCustomPanels();
+      } else {
+        alert(result.error || 'Could not save panel');
+      }
+    }
+    async function tryPendingCustomPanelSave() {
+      try {
+        const raw = sessionStorage.getItem('spectrumPendingCustomPanel');
+        if (!raw) return;
+        if (!window.SpectrumAuth || !SpectrumAuth.isLoggedIn()) return;
+        sessionStorage.removeItem('spectrumPendingCustomPanel');
+        const panel = JSON.parse(raw);
+        brandEl.value = 'custom';
+        loadCustomPanelRecord(panel);
+        const result = await SpectrumAuth.saveCustomPanel(panel);
+        setCustomMode(true);
+        renderSavedCustomPanels();
+        if (result.ok) flashCustomSaveToast('Saved to your account');
+      } catch (e) {
+        console.error(e);
+      }
+    }
+    function loadOpenedCustomPanel() {
+      try {
+        const raw = sessionStorage.getItem('spectrumOpenCustomPanel');
+        if (!raw) return false;
+        sessionStorage.removeItem('spectrumOpenCustomPanel');
+        const panel = JSON.parse(raw);
+        brandEl.value = 'custom';
+        loadCustomPanelRecord(panel);
+        setCustomMode(true);
+        renderSavedCustomPanels();
+        return true;
+      } catch (e) {
+        return false;
+      }
+    }
+
+    function getCurrentSeries() {
+      if (isCustomPanel()) return getCustomSeries();
+      if (!products) return null;
+      const brand = brandEl.value;
+      if (!products[brand]) return null;
+      const seriesId = seriesEl.value;
+      return products[brand].series.find(s => s.id === seriesId) || products[brand].series[0] || null;
+    }
+
+    function populateSeries() {
+      if (isCustomPanel()) {
+        setCustomMode(true);
+        updateDesign();
+        return;
+      }
+      if (!products || !products[brandEl.value]) return;
+      setCustomMode(false);
+      const brand = brandEl.value;
+      const list = products[brand].series;
+      seriesEl.innerHTML = list.map(s => `<option value="${s.id}">${s.name}</option>`).join('');
+      populatePitch();
+    }
+
+    function populatePitch() {
+      const series = getCurrentSeries();
+      if (!series) return;
+      pitchEl.innerHTML = series.pitches.map(p => `<option value="${p}">${p} mm</option>`).join('');
+      document.getElementById('cabinet-info').textContent = 
+        `Cabinet: ${(series.cabinetW * 1000).toFixed(0)} × ${(series.cabinetH * 1000).toFixed(1)} mm`;
+      updateDesign();
+    }
+
+    function updateDesign() {
+      const series = getCurrentSeries();
+      if (!series) return;
+      if (getAspectRatio() && !syncingScreens) {
+        snapToLockedAspect(lastSizeAxis);
+      }
+      const presetsEl = document.getElementById('size-presets');
+      if (presetsEl) {
+        const is600x337 = Math.abs(series.cabinetW - 0.6) < 0.002 && Math.abs(series.cabinetH - 0.3375) < 0.002;
+        presetsEl.classList.toggle('hidden', !is600x337);
+      }
+      const pitch = getPitch();
+      const w = Math.max(0.5, parseFloat(widthEl.value) || 1);
+      const h = Math.max(0.5, parseFloat(heightEl.value) || 1);
+
+      // Exact cabinet count based on real dimensions
+      const cols = Math.max(1, Math.round(w / series.cabinetW));
+      const rows = Math.max(1, Math.round(h / series.cabinetH));
+      const cabinets = cols * rows;
+
+      if (!syncingScreens) {
+        if (screensWEl && String(screensWEl.value) !== String(cols)) screensWEl.value = cols;
+        if (screensHEl && String(screensHEl.value) !== String(rows)) screensHEl.value = rows;
+      }
+      if (screenCountTotalEl) {
+        screenCountTotalEl.textContent = cabinets + ' screens (' + cols + ' × ' + rows + ')';
+      }
+      
+      // Actual rendered size (snapped to cabinets)
+      const actualW = cols * series.cabinetW;
+      const actualH = rows * series.cabinetH;
+      if (!syncingScreens && !isSizeFieldFocused()) {
+        commitSnappedWallSize(actualW, actualH);
+      }
+
+      if (aspectActualEl) {
+        const actualRatio = actualH > 0 ? (actualW / actualH) : 0;
+        const cabWmm = Math.round(series.cabinetW * 1000);
+        const cabHmm = Math.round(series.cabinetH * 1000);
+        const matched = matchingAspectKey(actualW, actualH);
+        paintAspectMode();
+        if (aspectLock === 'free') {
+          paintAspectButtons(matched);
+          aspectActualEl.textContent = matched
+            ? 'Free · wall matches ' + matched
+            : 'Free size · wall ' + actualRatio.toFixed(2) + ':1';
+        } else {
+          paintAspectButtons(aspectLock);
+          const cabIsLock = Math.abs((series.cabinetW / series.cabinetH) - getAspectRatio()) < 0.03;
+          if (cabIsLock && cols === rows) {
+            aspectActualEl.textContent = aspectLock + ' locked · ' + cols + ' × ' + rows + ' cabinets (each panel is ' + cabWmm + ' × ' + cabHmm + ' mm, already ' + aspectLock + ')';
+          } else {
+            aspectActualEl.textContent = aspectLock + ' locked · ' + cols + ' × ' + rows + ' cabinets · wall ' + actualRatio.toFixed(2) + ':1';
+          }
+        }
+      }
+
+      // Native wall resolution = integer pixels per cabinet × grid
+      const pxMap = wallPixels(series, pitch, cols, rows);
+      const pxW = pxMap.w;
+      const pxH = pxMap.h;
+      const ppcW = pxMap.cab.w;
+      const ppcH = pxMap.cab.h;
+      document.querySelectorAll('.res-preset-btn').forEach(btn => {
+        const spec = RES_PRESETS[btn.dataset.res];
+        if (!spec) return;
+        const allowed = resolutionPresetAllowed(btn.dataset.res, pitch);
+        btn.classList.toggle('hidden', !allowed);
+        if (!allowed) return;
+        const needC = Math.max(1, Math.min(SCREEN_MAX, Math.ceil(spec.w / ppcW)));
+        const needR = Math.max(1, Math.min(SCREEN_MAX, Math.ceil(spec.h / ppcH)));
+        const on = cols === needC && rows === needR;
+        btn.classList.toggle('bg-sky-500/20', on);
+        btn.classList.toggle('text-sky-300', on);
+        btn.classList.toggle('border-sky-500', on);
+        btn.classList.toggle('border-slate-700', !on);
+        btn.classList.toggle('text-slate-400', !on);
+      });
+      const resHint = document.getElementById('res-preset-hint');
+      if (resHint) {
+        const parts = [];
+        if (resolutionPresetAllowed('2k', pitch)) parts.push('2K 1920×1080');
+        if (resolutionPresetAllowed('4k', pitch)) parts.push('4K 3840×2160');
+        if (resolutionPresetAllowed('8k', pitch)) parts.push('8K 7680×4320');
+        resHint.textContent = parts.join(' · ');
+      }
+
+      const actualArea = actualW * actualH;
+      const weightKg = actualArea * series.weightPerM2;
+      const weightLbs = isCustomPanel()
+        ? Math.round(cabinets * (series.panelWeightLbs || 16))
+        : Math.round(weightKg * 2.20462262);
+      const power = Math.round(actualArea * series.powerAvg);
+      const powerPeak = Math.round(actualArea * (series.powerMax || series.powerAvg * 2.5));
+      const wattsPerCircuit = voltage * CIRCUIT_AMPS * CIRCUIT_DERATE;
+      const circuits = Math.max(1, Math.ceil(powerPeak / wattsPerCircuit));
+      const totalPx = pxW * pxH;
+      const dataPorts = Math.max(1, Math.ceil(totalPx / PIXELS_PER_PORT));
+      const processorCount = Math.max(1, Math.ceil(totalPx / UHD_PIXELS));
+      const processorLabel = (pxW <= 1920 && pxH <= 1080) ? 'HD' : '4K';
+      const processorText = (processorLabel === 'HD')
+        ? '1 × HD'
+        : processorCount + ' × 4K';
+      const basePrice = Math.round(actualArea * series.pricePerM2);
+
+      // Results
+      // area label set below with dual units
+      document.getElementById('res-resolution').textContent = pxW.toLocaleString() + ' × ' + pxH.toLocaleString() + ' px';
+      const minViewM = pitch;
+      const recLoM = pitch * 2;
+      const recHiM = pitch * 3;
+      const minEl = document.getElementById('res-viewing-min');
+      const recEl = document.getElementById('res-viewing-rec');
+      if (minEl && recEl) {
+        if (sizeUnit === 'ft') {
+          minEl.textContent = fmtFtIn(minViewM);
+          recEl.textContent = fmtFtIn(recLoM) + ' – ' + fmtFtIn(recHiM);
+        } else {
+          minEl.textContent = minViewM.toFixed(1) + ' m';
+          recEl.textContent = recLoM.toFixed(1) + ' – ' + recHiM.toFixed(1) + ' m';
+        }
+      }
+      document.getElementById('res-cabinets').textContent = cabinets + ' (' + cols + ' × ' + rows + ')';
+      document.getElementById('res-weight').textContent = '~' + weightLbs.toLocaleString() + ' lbs';
+      document.getElementById('res-power').textContent = '~' + power.toLocaleString() + ' W';
+      const peakEl = document.getElementById('res-power-peak');
+      if (peakEl) peakEl.textContent = '~' + powerPeak.toLocaleString() + ' W';
+      const circEl = document.getElementById('res-circuits');
+      if (circEl) circEl.textContent = circuits + ' × ' + CIRCUIT_AMPS + 'A @ ' + voltage + 'V';
+      const portsEl = document.getElementById('res-ports');
+      if (portsEl) portsEl.textContent = String(dataPorts);
+      const procEl = document.getElementById('res-processor');
+      if (procEl) procEl.textContent = processorText;
+      document.getElementById('res-price').textContent = '$' + basePrice.toLocaleString();
+      const Wft = ftInFromMeters(actualW);
+      const Hft = ftInFromMeters(actualH);
+      document.getElementById('preview-label').textContent =
+        Wft.ft + "'" + Wft.inch + '" × ' + Hft.ft + "'" + Hft.inch + '"  ·  ' +
+        pxW.toLocaleString() + ' × ' + pxH.toLocaleString() + '  (' + cols + '×' + rows + ')';
+      const dimW = document.getElementById('dim-width');
+      const dimH = document.getElementById('dim-height');
+      const dimD = document.getElementById('dim-diag');
+      const dimDWrap = document.getElementById('dim-diag-wrap');
+      const IN_PER_M = 39.37007874;
+      const FT_PER_M = 3.280839895;
+      const diagIn = Math.sqrt(Math.pow(actualW * IN_PER_M, 2) + Math.pow(actualH * IN_PER_M, 2));
+      const showDiag = diagIn < 350;
+      if (dimW) dimW.textContent = (actualW * FT_PER_M).toFixed(1) + ' ft';
+      if (dimH) dimH.textContent = (actualH * FT_PER_M).toFixed(1) + ' ft';
+      if (dimDWrap) dimDWrap.hidden = !showDiag;
+      if (showDiag && dimD) {
+        dimD.textContent = Math.round(diagIn) + '"';
+      }
+      document.querySelectorAll('.size-preset').forEach(btn => {
+        const target = parseFloat(btn.getAttribute('data-diag'));
+        const on = isFinite(target) && Math.abs(diagIn - target) < 1.5;
+        btn.classList.toggle('bg-sky-500/20', on);
+        btn.classList.toggle('text-sky-300', on);
+        btn.classList.toggle('border-sky-500', on);
+        btn.classList.toggle('border-slate-700', !on);
+        btn.classList.toggle('text-slate-400', !on);
+      });
+      const sizeEl = document.getElementById('res-size');
+      if (sizeEl) {
+        sizeEl.textContent = actualW.toFixed(2) + ' × ' + actualH.toFixed(2) + ' m  ·  ' +
+          Wft.ft + "'" + Wft.inch + '" × ' + Hft.ft + "'" + Hft.inch + '"';
+      }
+      // Also show area in sq ft
+      const areaFt = actualArea * 10.7639;
+      document.getElementById('res-area').textContent =
+        actualArea.toFixed(2) + ' m²  (' + areaFt.toFixed(1) + ' ft²)';
+
+      // Build cabinet grid fitted to the preview frame, keeping real cabinet aspect
+      const maxDisplayCols = Math.min(cols, 100);
+      const maxDisplayRows = Math.min(rows, 100);
+      const fitted = fitWallToPreview(maxDisplayCols, maxDisplayRows, series.cabinetW, series.cabinetH);
+      const cellW = fitted.cellW;
+      const cellH = fitted.cellH;
+
+      preview.style.gridTemplateColumns = `repeat(${maxDisplayCols}, ${cellW}px)`;
+      preview.style.gridTemplateRows = `repeat(${maxDisplayRows}, ${cellH}px)`;
+      preview.style.width = (maxDisplayCols * cellW + (maxDisplayCols - 1) * GRID_GAP_PX) + 'px';
+      preview.style.height = (maxDisplayRows * cellH + (maxDisplayRows - 1) * GRID_GAP_PX) + 'px';
+
+      // Match content layer size
+      contentLayer.style.width = preview.style.width;
+      contentLayer.style.height = preview.style.height;
+
+      preview.innerHTML = '';
+      const wiringOn = viewMode === 'wiring';
+      const hasContent = !wiringOn && (!!currentImageUrl || contentLayer.classList.contains('has-sample'));
+      preview.classList.toggle('showing-content', hasContent);
+      preview.classList.toggle('wiring-mode', wiringOn);
+      preview.classList.toggle('labels-off', labelMode === 'off');
+      contentLayer.classList.toggle('wiring-hidden', wiringOn);
+      const screenOverlay = document.getElementById('screen-overlay');
+      if (screenOverlay) screenOverlay.classList.toggle('wiring-hidden', wiringOn);
+      const wiringSvg = document.getElementById('wiring-overlay');
+      const wiringLegend = document.getElementById('wiring-legend');
+      if (wiringLegend) {
+        wiringLegend.classList.toggle('hidden', !wiringOn);
+        wiringLegend.classList.toggle('inline-flex', wiringOn);
+      }
+
+      const labelSize = Math.max(7, Math.min(12, Math.round(cellW * 0.28)));
+      const showPorts = wiringOn && cellW >= 10;
+      for (let i = 0; i < maxDisplayCols * maxDisplayRows; i++) {
+        const r = Math.floor(i / maxDisplayCols);
+        const c = i % maxDisplayCols;
+        const div = document.createElement('div');
+        div.className = 'cabinet' + (hasContent ? ' has-content' : '');
+        if (labelMode !== 'off') {
+          const span = document.createElement('span');
+          span.className = 'cabinet-label';
+          span.style.fontSize = labelSize + 'px';
+          span.textContent = labelMode === 'grid' ? (rowLetter(r) + (c + 1)) : String(i + 1);
+          div.appendChild(span);
+        }
+        if (showPorts) {
+          const ports = document.createElement('div');
+          ports.className = 'rear-ports';
+          ports.innerHTML = '<span class="d"></span><span class="p"></span>';
+          div.appendChild(ports);
+        }
+        preview.appendChild(div);
+      }
+
+      if (wiringSvg) {
+        wiringSvg.hidden = !wiringOn;
+        if (wiringOn) {
+          drawWiringOverlay(wiringSvg, maxDisplayCols, maxDisplayRows, cellW, cellH, dataPorts, circuits);
+        }
+      }
+
+      const figEl = document.getElementById('scale-figure');
+      const figureOn = figureMode === 'person' && viewMode !== 'wiring';
+      const transformRoot = document.getElementById('wall-transform');
+      if (transformRoot) transformRoot.classList.toggle('has-figure', figureOn);
+      if (figEl) {
+        figEl.classList.toggle('is-on', figureOn);
+        const wallHpx = parseFloat(preview.style.height) || 1;
+        const figH = Math.max(18, (PERSON_HEIGHT_M / Math.max(actualH, 0.3)) * wallHpx);
+        figEl.style.setProperty('--figure-h', figH + 'px');
+        figEl.style.setProperty('--figure-scale', String(figH / 864));
+        if (transformRoot) transformRoot.style.setProperty('--figure-h', figH + 'px');
+      }
+
+      lastSpec = {
+        brand: getBrandName(),
+        series: series.name,
+        pitch: pitch,
+        cabinet: Math.round(series.cabinetW * 1000) + ' × ' + Math.round(series.cabinetH * 1000) + ' mm',
+        type: series.type || '',
+        cols: cols,
+        rows: rows,
+        cabinets: cabinets,
+        actualW: actualW,
+        actualH: actualH,
+        sizeM: actualW.toFixed(2) + ' × ' + actualH.toFixed(2) + ' m',
+        sizeFt: Wft.ft + "'" + Wft.inch + '" × ' + Hft.ft + "'" + Hft.inch + '"',
+        area: actualArea.toFixed(2) + ' m²  (' + areaFt.toFixed(1) + ' ft²)',
+        resolution: pxW.toLocaleString() + ' × ' + pxH.toLocaleString() + ' px',
+        viewMin: document.getElementById('res-viewing-min').textContent,
+        viewRec: document.getElementById('res-viewing-rec').textContent,
+        weight: '~' + weightLbs.toLocaleString() + ' lbs',
+        powerAvg: '~' + power.toLocaleString() + ' W',
+        powerPeak: '~' + powerPeak.toLocaleString() + ' W',
+        circuits: circuits + ' × ' + CIRCUIT_AMPS + 'A @ ' + voltage + 'V',
+        ports: String(dataPorts),
+        processor: processorText,
+        price: '$' + basePrice.toLocaleString(),
+        mount: MOUNT_LABELS[mountType] || mountType,
+        voltage: voltage + 'V',
+        aspect: aspectLock === 'free' ? 'Free' : aspectLock,
+        designerUrl: window.location.href
+      };
+
+      // Quote / save CTA
+      const brandName = getBrandName();
+      const q = `?product=${encodeURIComponent(brandName + ' ' + series.name)}&pitch=${pitch}mm&size=${w}x${h}m&area=${actualArea.toFixed(2)}&cabinets=${cabinets}&mount=${mountType}&volt=${voltage}&peak=${powerPeak}W&circuits=${circuits}&ports=${dataPorts}`;
+      syncSummaryCta('contact.html' + q);
+
+      // Update shareable URL without reloading
+      updateShareUrl();
+    }
+
+    function isLoggedIn() {
+      return !!(window.SpectrumAuth && SpectrumAuth.isLoggedIn());
+    }
+    function flashSaveToast(msg) {
+      const toast = document.getElementById('save-toast');
+      if (!toast) return;
+      toast.textContent = msg || 'Saved!';
+      toast.classList.remove('hidden');
+      setTimeout(() => toast.classList.add('hidden'), 2500);
+    }
+    function syncSummaryCta(quoteHref) {
+      const btn = document.getElementById('quote-btn');
+      if (!btn) return;
+      if (isCustomPanel()) {
+        if (isLoggedIn()) {
+          btn.textContent = (typeof t === 'function' ? t('designer.saveAcct') : 'Save to Account');
+          btn.href = '#';
+          btn.dataset.mode = 'save';
+        } else {
+          btn.textContent = (typeof t === 'function' ? t('designer.signInSave') : 'Sign in to Save');
+          btn.href = 'account.html?next=designer-custom';
+          btn.dataset.mode = 'signin';
+        }
+        return;
+      }
+      btn.textContent = (typeof t === 'function' ? t('designer.quote') : 'Request Quote for This Design');
+      btn.href = quoteHref || 'contact.html';
+      btn.dataset.mode = 'quote';
+    }
+    async function saveCurrentProject() {
+      if (!isLoggedIn()) {
+        sessionStorage.setItem('spectrumAuthNext', 'designer-custom');
+        window.location.href = 'account.html?next=designer-custom';
+        return false;
+      }
+      const series = getCurrentSeries();
+      if (!series) return false;
+      const brand = brandEl.value;
+      const brandName = getBrandName();
+      const w = parseFloat(widthEl.value) || 1;
+      const h = parseFloat(heightEl.value) || 1;
+      const pitch = getPitch();
+      const cols = Math.max(1, Math.round(w / series.cabinetW));
+      const rows = Math.max(1, Math.round(h / series.cabinetH));
+      updateShareUrl();
+      const qs = new URLSearchParams({
+        brand: brand,
+        series: isCustomPanel() ? 'custom' : seriesEl.value,
+        pitch: String(pitch),
+        w: String(w),
+        h: String(h),
+        unit: sizeUnit || 'ft',
+        ar: aspectLock || 'free',
+        mount: mountType || 'wall',
+        volt: String(voltage),
+        fig: figureMode || 'person',
+        labels: labelMode || 'off',
+        view: viewMode || 'front'
+      });
+      if (isCustomPanel()) {
+        const extra = customShareFields();
+        Object.keys(extra).forEach(k => qs.set(k, extra[k]));
+      }
+      const designerUrl = 'designer.html?' + qs.toString();
+      const result = await SpectrumAuth.saveProject({
+        brand: brand,
+        brandName: brandName,
+        series: isCustomPanel() ? 'custom' : seriesEl.value,
+        seriesName: series.name,
+        pitch: pitch,
+        width: w,
+        height: h,
+        unit: sizeUnit || 'ft',
+        ar: aspectLock || 'free',
+        mount: mountType || 'wall',
+        volt: voltage,
+        fig: figureMode || 'person',
+        labels: labelMode || 'off',
+        view: viewMode || 'front',
+        cabinets: cols * rows,
+        designerUrl: designerUrl,
+        cname: isCustomPanel() ? customNameEl.value : undefined,
+        cw: isCustomPanel() ? customWEl.value : undefined,
+        ch: isCustomPanel() ? customHEl.value : undefined,
+        wt: isCustomPanel() ? customWeightEl.value : undefined,
+        price: isCustomPanel() ? customPriceEl.value : undefined,
+        pmax: isCustomPanel() ? customPmaxEl.value : undefined
+      });
+      if (result.ok) {
+        flashSaveToast('Saved to your account!');
+        return true;
+      }
+      alert(result.error || 'Could not save');
+      return false;
+    }
+
+    function updateShareUrl() {
+      const params = new URLSearchParams({
+        brand: brandEl.value,
+        series: isCustomPanel() ? 'custom' : seriesEl.value,
+        pitch: String(getPitch()),
+        w: widthEl.value,
+        h: heightEl.value,
+        unit: typeof sizeUnit !== 'undefined' ? sizeUnit : 'ft',
+        ar: aspectLock || 'free',
+        mount: mountType || 'wall',
+        volt: String(voltage),
+        fig: figureMode || 'person',
+        labels: labelMode || 'off',
+        view: viewMode || 'front'
+      });
+      if (isCustomPanel()) {
+        const extra = customShareFields();
+        Object.keys(extra).forEach(k => params.set(k, extra[k]));
+      }
+      const newUrl = window.location.pathname + '?' + params.toString();
+      history.replaceState(null, '', newUrl);
+    }
+
+    function applyProjectState(state) {
+      if (!state || !products) return false;
+      const brand = state.brand;
+      if (!brand) return false;
+      if (brand !== 'custom' && !products[brand]) return false;
+      brandEl.value = brand;
+      if (brand === 'custom') applyCustomState(state);
+      populateSeries();
+      if (brand !== 'custom') {
+        if (state.series) {
+          const exists = Array.from(seriesEl.options).some(o => o.value === state.series);
+          if (exists) seriesEl.value = state.series;
+        }
+        populatePitch();
+        if (state.pitch != null && state.pitch !== '') {
+          const p = String(state.pitch);
+          const target = parseFloat(p);
+          let matched = false;
+          Array.from(pitchEl.options).forEach(o => {
+            if (o.value === p || parseFloat(o.value) === target) {
+              pitchEl.value = o.value;
+              matched = true;
+            }
+          });
+          if (!matched && pitchEl.options.length) {
+            let best = pitchEl.options[0].value, bestDiff = Infinity;
+            Array.from(pitchEl.options).forEach(o => {
+              const d = Math.abs(parseFloat(o.value) - target);
+              if (d < bestDiff) { bestDiff = d; best = o.value; }
+            });
+            pitchEl.value = best;
+          }
+        }
+      }
+      if (state.width != null && state.width !== '') widthEl.value = state.width;
+      if (state.w != null && state.w !== '') widthEl.value = state.w;
+      if (state.height != null && state.height !== '') heightEl.value = state.height;
+      if (state.h != null && state.h !== '') heightEl.value = state.h;
+      if (state.ar) setAspectLock(state.ar, { skipApply: true });
+      if (state.mount) setMount(state.mount, { skipApply: true });
+      if (state.volt) setVoltage(state.volt, { skipApply: true });
+      if (state.fig) setFigureMode(state.fig, { skipApply: true });
+      if (state.labels) setLabelMode(state.labels, { skipApply: true });
+      if (state.view) setViewMode(state.view, { skipApply: true });
+      if (state.unit === 'm') setSizeUnit('m');
+      else setSizeUnit('ft');
+      updateDesign();
+      return true;
+    }
+
+    function loadFromUrl() {
+      const params = new URLSearchParams(window.location.search);
+      if (!params.has('brand')) return false;
+      return applyProjectState({
+        brand: params.get('brand'),
+        series: params.get('series'),
+        pitch: params.get('pitch'),
+        w: params.get('w'),
+        h: params.get('h'),
+        unit: params.get('unit'),
+        ar: params.get('ar'),
+        mount: params.get('mount'),
+        volt: params.get('volt'),
+        fig: params.get('fig'),
+        labels: params.get('labels'),
+        view: params.get('view'),
+        cname: params.get('cname'),
+        cw: params.get('cw'),
+        ch: params.get('ch'),
+        ctype: params.get('ctype'),
+        wt: params.get('wt'),
+        price: params.get('price'),
+        pavg: params.get('pavg'),
+        pmax: params.get('pmax')
+      });
+    }
+
+    function loadSavedProject() {
+      try {
+        const raw = sessionStorage.getItem('spectrumOpenProject');
+        if (!raw) return false;
+        sessionStorage.removeItem('spectrumOpenProject');
+        const proj = JSON.parse(raw);
+        return applyProjectState(proj);
+      } catch (e) {
+        console.error(e);
+        return false;
+      }
+    }
+
+    // Image upload
+    function applySampleContent(key) {
+      if (currentImageUrl) {
+        URL.revokeObjectURL(currentImageUrl);
+        currentImageUrl = null;
+      }
+      if (key === 'gradient' || !samples[key]) {
+        contentLayer.style.backgroundImage = '';
+        contentLayer.classList.remove('has-sample');
+        contentLayer.classList.add('empty');
+      } else {
+        contentLayer.style.backgroundImage = samples[key];
+        contentLayer.style.backgroundSize = 'cover';
+        contentLayer.style.backgroundPosition = 'center';
+        contentLayer.style.backgroundRepeat = 'no-repeat';
+        contentLayer.classList.remove('empty');
+        contentLayer.classList.add('has-sample');
+      }
+      updateDesign();
+    }
+
+    document.getElementById('content-select').addEventListener('change', function() {
+      applySampleContent(this.value);
+    });
+    applySampleContent(document.getElementById('content-select').value);
+
+    // Share button
+    document.getElementById('share-btn').addEventListener('click', async () => {
+      updateShareUrl();
+      const url = window.location.href;
+      try {
+        await navigator.clipboard.writeText(url);
+        const toast = document.getElementById('share-toast');
+        toast.classList.remove('hidden');
+        setTimeout(() => toast.classList.add('hidden'), 2000);
+      } catch (err) {
+        prompt('Copy this link:', url);
+      }
+    });
+
+    function escHtml(s) {
+      return String(s == null ? '' : s)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;');
+    }
+
+    function specRow(label, value) {
+      return '<tr><th>' + escHtml(label) + '</th><td>' + escHtml(value) + '</td></tr>';
+    }
+
+    function schematicHtml(spec) {
+      const ratio = (spec.actualW / Math.max(spec.actualH, 0.01)).toFixed(4);
+      if (spec.cabinets > 800) {
+        return '<div class="schematic-box" style="aspect-ratio:' + ratio + '"></div>'
+          + '<p class="note">' + spec.cols + ' × ' + spec.rows + ' cabinets</p>';
+      }
+      const cells = new Array(spec.cabinets + 1).join('<i></i>');
+      return '<div class="schematic" style="grid-template-columns:repeat(' + spec.cols + ',minmax(0,1fr));aspect-ratio:' + ratio + '">'
+        + cells + '</div>';
+    }
+
+    function buildSpecHtml(spec) {
+      const date = new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
+      const title = spec.brand + ' ' + spec.series + ' · ' + spec.cols + '×' + spec.rows;
+      const productLine = [spec.brand, spec.series, spec.type].filter(Boolean).join(' · ');
+      return '<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"/>'
+        + '<title>' + escHtml(title) + ' | Spectrum Display</title>'
+        + '<style>'
+        + '*{box-sizing:border-box}body{margin:0;font-family:Inter,Segoe UI,system-ui,sans-serif;color:#0f172a;background:#fff}'
+        + '.sheet{max-width:8.5in;margin:0 auto;padding:0.55in 0.6in 0.45in}'
+        + '.bar{height:6px;background:linear-gradient(90deg,#0ea5e9,#38bdf8);margin:-0.55in -0.6in 0.4in}'
+        + 'header{display:flex;justify-content:space-between;align-items:flex-start;gap:16px;border-bottom:1px solid #e2e8f0;padding-bottom:16px;margin-bottom:18px}'
+        + '.brand{display:flex;align-items:center;gap:10px}'
+        + '.mark{width:32px;height:32px;border-radius:8px;background:#0ea5e9;color:#fff;font-weight:800;display:flex;align-items:center;justify-content:center;font-size:16px}'
+        + '.co{font-weight:700;font-size:15px;letter-spacing:.02em}'
+        + '.sub{font-size:11px;color:#64748b;margin-top:2px}'
+        + '.meta{text-align:right;font-size:11px;color:#64748b;line-height:1.5}'
+        + 'h1{font-size:22px;margin:0 0 4px;letter-spacing:-.02em}'
+        + '.lead{font-size:13px;color:#475569;margin:0 0 18px}'
+        + '.grid{display:grid;grid-template-columns:1.35fr .85fr;gap:22px;align-items:start}'
+        + 'table{width:100%;border-collapse:collapse;font-size:12px}'
+        + 'th{text-align:left;color:#64748b;font-weight:500;width:38%;padding:6px 10px 6px 0;border-bottom:1px solid #f1f5f9;vertical-align:top}'
+        + 'td{padding:6px 0;border-bottom:1px solid #f1f5f9;font-weight:600}'
+        + 'h2{font-size:11px;text-transform:uppercase;letter-spacing:.08em;color:#64748b;margin:0 0 10px}'
+        + '.schematic{display:grid;gap:1px;background:#cbd5e1;border:1px solid #94a3b8;width:100%;max-height:2.6in}'
+        + '.schematic i{background:#0f172a;display:block;min-height:2px}'
+        + '.schematic-box{width:100%;background:#0f172a;border:1px solid #94a3b8}'
+        + '.note{font-size:11px;color:#64748b;margin:8px 0 0;text-align:center}'
+        + '.price{margin-top:18px;padding:12px 14px;background:#f0f9ff;border:1px solid #bae6fd;border-radius:8px}'
+        + '.price strong{font-size:18px;color:#0369a1}'
+        + '.price span{display:block;font-size:11px;color:#0369a1;margin-bottom:2px;text-transform:uppercase;letter-spacing:.06em}'
+        + 'footer{margin-top:22px;padding-top:12px;border-top:1px solid #e2e8f0;font-size:10px;color:#64748b;line-height:1.45}'
+        + '.noprint{margin:16px 0 0;text-align:right}'
+        + '.noprint button{font:inherit;font-size:13px;padding:8px 16px;border:0;border-radius:999px;background:#0ea5e9;color:#fff;cursor:pointer}'
+        + '@media print{body{-webkit-print-color-adjust:exact;print-color-adjust:exact}.noprint{display:none}.sheet{padding:0} .bar{margin:0 0 16px}}'
+        + '@page{size:letter;margin:.55in}'
+        + '</style></head><body><div class="sheet">'
+        + '<div class="bar"></div>'
+        + '<header><div class="brand"><div class="mark">S</div><div><div class="co">Spectrum Display Inc.</div>'
+        + '<div class="sub">spectrumdisplay.com</div></div></div>'
+        + '<div class="meta">Project spec sheet<br>' + escHtml(date) + '</div></header>'
+        + '<h1>' + escHtml(title) + '</h1>'
+        + '<p class="lead">' + escHtml(productLine) + ' · P' + escHtml(String(spec.pitch)) + ' mm</p>'
+        + '<div class="grid"><div>'
+        + '<h2>Configuration</h2><table>'
+        + specRow('Product', productLine)
+        + specRow('Pixel pitch', 'P' + spec.pitch + ' mm')
+        + specRow('Cabinet', spec.cabinet)
+        + specRow('Grid', spec.cols + ' × ' + spec.rows + '  (' + spec.cabinets + ' cabinets)')
+        + specRow('Wall size', spec.sizeM + '  /  ' + spec.sizeFt)
+        + specRow('Area', spec.area)
+        + specRow('Aspect', spec.aspect)
+        + specRow('Resolution', spec.resolution)
+        + specRow('Min viewing', spec.viewMin)
+        + specRow('Recommended', spec.viewRec)
+        + '</table>'
+        + '<h2 style="margin-top:18px">Install &amp; power</h2><table>'
+        + specRow('Mount', spec.mount)
+        + specRow('Voltage', spec.voltage)
+        + specRow('Weight (est.)', spec.weight)
+        + specRow('Power (avg)', spec.powerAvg)
+        + specRow('Power (peak)', spec.powerPeak)
+        + specRow('Circuits', spec.circuits)
+        + specRow('Data ports', spec.ports)
+        + specRow('Processor', spec.processor)
+        + '</table>'
+        + '<div class="price"><span>Estimated price</span><strong>' + escHtml(spec.price) + '</strong></div>'
+        + '</div><div>'
+        + '<h2>Cabinet layout</h2>'
+        + schematicHtml(spec)
+        + '</div></div>'
+        + '<footer>Estimates only — not a formal quote. Power, weight, circuits, and processor counts are typical for this series and grid; confirm on site. Prices exclude installation, structure, processing extras, and freight. '
+        + 'Open this design: ' + escHtml(spec.designerUrl) + '<br>© 2026 Spectrum Display Inc. · spectrumdisplay.com</footer>'
+        + '<div class="noprint"><button type="button" onclick="window.print()">Print / Save as PDF</button></div>'
+        + '</div></body></html>';
+    }
+
+    function exportSpecSheet() {
+      updateDesign();
+      if (!lastSpec) return;
+      const html = buildSpecHtml(lastSpec);
+      const overlay = document.getElementById('spec-overlay');
+      const frame = document.getElementById('spec-frame');
+      frame.srcdoc = html;
+      overlay.classList.add('is-open');
+      overlay.setAttribute('aria-hidden', 'false');
+    }
+
+    document.getElementById('pdf-btn').addEventListener('click', exportSpecSheet);
+    document.getElementById('spec-close-btn').addEventListener('click', () => {
+      const overlay = document.getElementById('spec-overlay');
+      overlay.classList.remove('is-open');
+      overlay.setAttribute('aria-hidden', 'true');
+      document.getElementById('spec-frame').srcdoc = '';
+    });
+    document.getElementById('spec-print-btn').addEventListener('click', () => {
+      const frame = document.getElementById('spec-frame');
+      try {
+        frame.contentWindow.focus();
+        frame.contentWindow.print();
+      } catch (err) {
+        alert('Use Ctrl+P in the spec sheet, then choose Save as PDF.');
+      }
+    });
+
+    // Events
+    brandEl.addEventListener('change', populateSeries);
+    seriesEl.addEventListener('change', populatePitch);
+    pitchEl.addEventListener('change', updateDesign);
+    ['custom-name', 'custom-w', 'custom-h', 'custom-pitch', 'custom-weight', 'custom-price', 'custom-pmax'].forEach(id => {
+      const el = document.getElementById(id);
+      if (!el) return;
+      el.addEventListener('input', () => {
+        if (id === 'custom-w' || id === 'custom-h') applyDefaultPanelWeight();
+        updateDesign();
+      });
+      el.addEventListener('change', updateDesign);
+    });
+    document.querySelectorAll('.custom-size-preset').forEach(btn => {
+      btn.addEventListener('click', () => {
+        customWEl.value = btn.dataset.w;
+        customHEl.value = btn.dataset.h;
+        if (btn.dataset.lbs) customWeightEl.value = btn.dataset.lbs;
+        else applyDefaultPanelWeight();
+        updateDesign();
+      });
+    });
+    document.getElementById('save-custom-panel-btn').addEventListener('click', saveCustomPanelToAccount);
+    widthEl.addEventListener('input', () => {
+      lastSizeAxis = 'w';
+      if (getAspectRatio()) applyAspectKeepWidth();
+      if (sizeUnit === 'ft') syncFtFromMeters();
+      updateDesign();
+    });
+    heightEl.addEventListener('input', () => {
+      lastSizeAxis = 'h';
+      if (getAspectRatio()) applyAspectKeepHeight();
+      if (sizeUnit === 'ft') syncFtFromMeters();
+      updateDesign();
+    });
+    [widthEl, heightEl, widthFtEl, widthInEl, heightFtEl, heightInEl].forEach(el => {
+      if (!el) return;
+      el.addEventListener('blur', () => {
+        const series = getCurrentSeries();
+        if (!series) return;
+        const w = Math.max(0.5, parseFloat(widthEl.value) || 1);
+        const h = Math.max(0.5, parseFloat(heightEl.value) || 1);
+        const cols = Math.max(1, Math.min(SCREEN_MAX, Math.round(w / series.cabinetW)));
+        const rows = Math.max(1, Math.min(SCREEN_MAX, Math.round(h / series.cabinetH)));
+        commitSnappedWallSize(cols * series.cabinetW, rows * series.cabinetH);
+        updateDesign();
+      });
+    });
+
+    function applyScreenCount(axis) {
+      const series = getCurrentSeries();
+      if (!series) return;
+      if (screensWEl.value === '' || screensHEl.value === '') return;
+      lastSizeAxis = axis === 'h' ? 'h' : 'w';
+      if (axis === 'h') {
+        const rows = Math.max(1, Math.min(SCREEN_MAX, Math.round(parseFloat(screensHEl.value) || 1)));
+        heightEl.value = (rows * series.cabinetH).toFixed(2);
+      } else {
+        const cols = Math.max(1, Math.min(SCREEN_MAX, Math.round(parseFloat(screensWEl.value) || 1)));
+        widthEl.value = (cols * series.cabinetW).toFixed(2);
+      }
+      if (getAspectRatio()) {
+        snapToLockedAspect(lastSizeAxis);
+      } else {
+        const cols = Math.max(1, Math.min(SCREEN_MAX, Math.round(parseFloat(screensWEl.value) || 1)));
+        const rows = Math.max(1, Math.min(SCREEN_MAX, Math.round(parseFloat(screensHEl.value) || 1)));
+        screensWEl.value = cols;
+        screensHEl.value = rows;
+        widthEl.value = (Math.round(cols * series.cabinetW * 100) / 100).toFixed(2);
+        heightEl.value = (Math.round(rows * series.cabinetH * 100) / 100).toFixed(2);
+        syncFtFromMeters();
+      }
+      syncingScreens = true;
+      updateDesign();
+      syncingScreens = false;
+    }
+    screensWEl.addEventListener('input', () => applyScreenCount('w'));
+    screensHEl.addEventListener('input', () => applyScreenCount('h'));
+
+    function applyResolutionPreset(key) {
+      const series = getCurrentSeries();
+      const spec = RES_PRESETS[key];
+      const pitch = getPitch();
+      if (!series || !spec || !resolutionPresetAllowed(key, pitch)) return;
+      const cab = cabinetPixels(series, pitch);
+      const cols = Math.max(1, Math.min(SCREEN_MAX, Math.ceil(spec.w / cab.w)));
+      const rows = Math.max(1, Math.min(SCREEN_MAX, Math.ceil(spec.h / cab.h)));
+      lastSizeAxis = 'w';
+      screensWEl.value = cols;
+      screensHEl.value = rows;
+      widthEl.value = (Math.round(cols * series.cabinetW * 100) / 100).toFixed(2);
+      heightEl.value = (Math.round(rows * series.cabinetH * 100) / 100).toFixed(2);
+      syncFtFromMeters();
+      syncingScreens = true;
+      updateDesign();
+      syncingScreens = false;
+    }
+    document.querySelectorAll('.res-preset-btn').forEach(btn => {
+      btn.addEventListener('click', () => applyResolutionPreset(btn.dataset.res));
+    });
+
+    document.querySelectorAll('.size-preset').forEach(btn => {
+      btn.addEventListener('click', () => {
+        lastSizeAxis = 'w';
+        widthEl.value = btn.dataset.w;
+        heightEl.value = btn.dataset.h;
+        if (getAspectRatio()) applyAspectKeepWidth();
+        if (sizeUnit === 'ft') syncFtFromMeters();
+        updateDesign();
+      });
+    });
+
+    function syncBrandOptions() {
+      if (!brandEl || !products) return;
+      const current = brandEl.value;
+      const customOpt = brandEl.querySelector('option[value="custom"]');
+      const customHtml = customOpt ? customOpt.outerHTML : '<option value="custom">Custom Panel</option>';
+      const brandHtml = Object.keys(products).map(function (id) {
+        return '<option value="' + id + '">' + (products[id].name || id) + '</option>';
+      }).join('');
+      brandEl.innerHTML = brandHtml + customHtml;
+      if ([].some.call(brandEl.options, function (o) { return o.value === current; })) {
+        brandEl.value = current;
+      }
+    }
+    window.addEventListener('spectrum:catalog', function () {
+      syncBrandOptions();
+      populateSeries();
+    });
+
+    // Init — restore saved project (session) or URL query
+    populateSeries();
+    if (!loadSavedProject()) loadFromUrl();
+    loadOpenedCustomPanel();
+    async function refreshAuthUi() {
+      await tryPendingCustomPanelSave();
+      if (isCustomPanel()) renderSavedCustomPanels();
+      updateDesign();
+    }
+    refreshAuthUi();
+    window.addEventListener('spectrum:auth', refreshAuthUi);
+    if (window.SpectrumAuth && SpectrumAuth.ready) SpectrumAuth.ready.then(refreshAuthUi);
+
+    // ========== Zoom & Pan ==========
+    const viewport = document.getElementById('preview-viewport');
+    const transformEl = document.getElementById('wall-transform');
+    const zoomSlider = document.getElementById('zoom-slider');
+    const zoomValue = document.getElementById('zoom-value');
+    let zoom = 1;
+    let panX = 0;
+    let panY = 0;
+    let isPanning = false;
+    let startX = 0;
+    let startY = 0;
+    let startPanX = 0;
+    let startPanY = 0;
+
+    if (typeof ResizeObserver !== 'undefined' && viewport) {
+      let fitResizeTimer = null;
+      const ro = new ResizeObserver(() => {
+        clearTimeout(fitResizeTimer);
+        fitResizeTimer = setTimeout(updateDesign, 80);
+      });
+      ro.observe(viewport);
+    }
+    requestAnimationFrame(updateDesign);
+    window.addEventListener('spectrum:lang', function() {
+      if (typeof updateDesign === 'function') updateDesign();
+    });
+
+    function applyTransform() {
+      transformEl.style.left = '50%';
+      transformEl.style.top = '50%';
+      transformEl.style.transform =
+        'translate(calc(-50% + ' + panX + 'px), calc(-50% + ' + panY + 'px)) scale(' + zoom + ')';
+      transformEl.style.transformOrigin = 'center center';
+      if (wallWrapper) wallWrapper.style.transform = 'none';
+      if (zoomSlider) zoomSlider.value = String(Math.round(zoom * 100));
+      if (zoomValue) zoomValue.textContent = Math.round(zoom * 100) + '%';
+    }
+
+    function setZoom(newZoom, centerX, centerY) {
+      const prev = zoom;
+      zoom = Math.min(3.5, Math.max(0.15, newZoom));
+      if (centerX != null && centerY != null && prev > 0) {
+        const rect = viewport.getBoundingClientRect();
+        const cx = centerX - rect.left - rect.width / 2;
+        const cy = centerY - rect.top - rect.height / 2;
+        panX = cx - (cx - panX) * (zoom / prev);
+        panY = cy - (cy - panY) * (zoom / prev);
+      }
+      applyTransform();
+    }
+
+    function resetView() {
+      zoom = 1;
+      panX = 0;
+      panY = 0;
+      applyTransform();
+    }
+
+    zoomSlider.addEventListener('input', () => setZoom(parseInt(zoomSlider.value, 10) / 100));
+    document.getElementById('zoom-in').addEventListener('click', () => setZoom(zoom + 0.1));
+    document.getElementById('zoom-out').addEventListener('click', () => setZoom(zoom - 0.1));
+    document.getElementById('zoom-reset').addEventListener('click', resetView);
+
+    viewport.addEventListener('wheel', (e) => {
+      e.preventDefault();
+      setZoom(zoom + (e.deltaY > 0 ? -0.08 : 0.08), e.clientX, e.clientY);
+    }, { passive: false });
+
+    viewport.addEventListener('mousedown', (e) => {
+      if (e.button !== 0) return;
+      isPanning = true;
+      viewport.classList.add('is-panning');
+      startX = e.clientX;
+      startY = e.clientY;
+      startPanX = panX;
+      startPanY = panY;
+      e.preventDefault();
+    });
+    window.addEventListener('mousemove', (e) => {
+      if (!isPanning) return;
+      panX = startPanX + (e.clientX - startX);
+      panY = startPanY + (e.clientY - startY);
+      applyTransform();
+    });
+    window.addEventListener('mouseup', () => {
+      isPanning = false;
+      viewport.classList.remove('is-panning');
+    });
+
+    applyTransform();
+
+    // Touch support (pinch zoom + pan)
+    let lastTouchDist = 0;
+    let lastTouchMid = null;
+    viewport.addEventListener('touchstart', (e) => {
+      if (e.touches.length === 1) {
+        isPanning = true;
+        startX = e.touches[0].clientX;
+        startY = e.touches[0].clientY;
+        startPanX = panX;
+        startPanY = panY;
+      } else if (e.touches.length === 2) {
+        isPanning = false;
+        const dx = e.touches[0].clientX - e.touches[1].clientX;
+        const dy = e.touches[0].clientY - e.touches[1].clientY;
+        lastTouchDist = Math.hypot(dx, dy);
+        lastTouchMid = {
+          x: (e.touches[0].clientX + e.touches[1].clientX) / 2,
+          y: (e.touches[0].clientY + e.touches[1].clientY) / 2
+        };
+      }
+    }, { passive: true });
+    viewport.addEventListener('touchmove', (e) => {
+      e.preventDefault();
+      if (e.touches.length === 1 && isPanning) {
+        panX = startPanX + (e.touches[0].clientX - startX);
+        panY = startPanY + (e.touches[0].clientY - startY);
+        applyTransform();
+      } else if (e.touches.length === 2 && lastTouchDist) {
+        const dx = e.touches[0].clientX - e.touches[1].clientX;
+        const dy = e.touches[0].clientY - e.touches[1].clientY;
+        const dist = Math.hypot(dx, dy);
+        const mid = {
+          x: (e.touches[0].clientX + e.touches[1].clientX) / 2,
+          y: (e.touches[0].clientY + e.touches[1].clientY) / 2
+        };
+        setZoom(zoom * (dist / lastTouchDist), mid.x, mid.y);
+        lastTouchDist = dist;
+        lastTouchMid = mid;
+      }
+    }, { passive: false });
+    viewport.addEventListener('touchend', () => {
+      isPanning = false;
+      lastTouchDist = 0;
+    });
+
+    applyTransform();
+
+    // Background: dark default + optional upload
+    const sceneBg = document.getElementById('scene-bg');
+    let customBgUrl = null;
+
+    function resetBackground() {
+      if (customBgUrl) {
+        URL.revokeObjectURL(customBgUrl);
+        customBgUrl = null;
+      }
+      sceneBg.style.backgroundImage = '';
+      sceneBg.classList.remove('photo-mode');
+      const nameEl = document.getElementById('bg-upload-name');
+      if (nameEl) nameEl.textContent = '';
+      const up = document.getElementById('bg-upload');
+      if (up) up.value = '';
+    }
+
+    document.getElementById('bg-upload').addEventListener('change', function(e) {
+      const file = e.target.files[0];
+      if (!file) return;
+      if (customBgUrl) URL.revokeObjectURL(customBgUrl);
+      customBgUrl = URL.createObjectURL(file);
+      sceneBg.style.backgroundImage = 'url(' + customBgUrl + ')';
+      sceneBg.style.backgroundSize = 'cover';
+      sceneBg.style.backgroundPosition = 'center';
+      sceneBg.classList.add('photo-mode');
+      document.getElementById('bg-upload-name').textContent = 'Custom: ' + file.name;
+    });
+
+    document.getElementById('clear-bg').addEventListener('click', function() {
+      resetBackground();
+    });
+
+    resetBackground();
+    // Cart count
+    function updateCartCount() {
+      const cart = JSON.parse(localStorage.getItem('spectrumCart') || '[]');
+      const el = document.getElementById('cart-count');
+      if (el) el.textContent = cart.reduce((s, i) => s + (i.qty || 1), 0);
+    }
+    updateCartCount();
+  
+    document.getElementById('save-project-btn').addEventListener('click', function() {
+      if (!isLoggedIn()) {
+        if (confirm('Sign in to save this project to your account. Go to Account page?')) {
+          window.location.href = 'account.html';
+        }
+        return;
+      }
+      saveCurrentProject();
+    });
+    document.getElementById('quote-btn').addEventListener('click', function(e) {
+      const mode = this.dataset.mode;
+      if (mode === 'save') {
+        e.preventDefault();
+        saveCurrentProject();
+      } else if (mode === 'signin') {
+        sessionStorage.setItem('spectrumAuthNext', 'designer-custom');
+      }
+    });
+
+    let previewResizeTimer = 0;
+    window.addEventListener('resize', function() {
+      clearTimeout(previewResizeTimer);
+      previewResizeTimer = setTimeout(updateDesign, 120);
+    });
+
+  </script>
+</body>
+</html>

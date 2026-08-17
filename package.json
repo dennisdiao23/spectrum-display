@@ -1,0 +1,17 @@
+{
+  "name": "spectrum-display",
+  "private": true,
+  "version": "1.0.0",
+  "description": "Spectrum Display website with product catalog and admin login",
+  "scripts": {
+    "start": "node server/index.js"
+  },
+  "dependencies": {
+    "@supabase/supabase-js": "^2.57.4",
+    "bcryptjs": "^2.4.3",
+    "cookie-parser": "^1.4.7",
+    "dotenv": "^16.4.7",
+    "express": "^4.21.2",
+    "multer": "1.4.5-lts.2"
+  }
+}

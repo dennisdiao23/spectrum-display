@@ -1,0 +1,381 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <script src="js/i18n-boot.js"></script>
+  <link rel="stylesheet" href="css/site-header.css" />
+  <title>Products | Spectrum Display</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>body { font-family: 'Inter', system-ui, sans-serif; }</style>
+</head>
+<body class="bg-slate-950 text-slate-100 antialiased">
+  <header class="site-header" id="site-header">
+    <div class="site-header-inner">
+      <div class="site-header-top">
+        <a href="index.html" class="site-brand">
+          <img src="assets/spectrum-logo.png" alt="Spectrum" class="site-brand-logo" />
+        </a>
+        <div class="site-utils">
+          <div class="site-drop" id="hdr-signin-drop">
+            <button type="button" class="site-util" aria-haspopup="true">
+              <svg fill="none" stroke="currentColor" stroke-width="1.7" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 7.5a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.5 19.5a7.5 7.5 0 0115 0"/></svg>
+              <span class="site-util-label site-util-guest" data-i18n="nav.signin">Sign in</span>
+              <span class="site-util-label site-util-user" id="hdr-user-name"></span>
+            </button>
+            <div class="site-drop-panel">
+              <div class="site-guest">
+                <h3 data-i18n="nav.myAccount">My Account</h3>
+                <ul class="site-account-roles">
+                  <li data-i18n="nav.benefitOrders">Place orders quickly and easily</li>
+                  <li data-i18n="nav.benefitTrack">View orders and track your shipping status</li>
+                  <li data-i18n="nav.benefitList">Create and access a list of your products</li>
+                  <li data-i18n="nav.benefitProjects">View Saved Projects</li>
+                </ul>
+                <div class="site-drop-actions">
+                  <a href="account.html" class="site-btn-primary" data-i18n="nav.signin">Sign in</a>
+                  <a href="account.html?mode=register" class="site-btn-ghost" data-i18n="nav.createAccount">Create account</a>
+                </div>
+              </div>
+              <div class="site-logged">
+                <h3 id="hdr-user-name-panel"></h3>
+                <p id="hdr-user-role"></p>
+                <div class="site-drop-list">
+                  <a href="account.html" data-i18n="nav.myAccount">My Account</a>
+                  <button type="button" id="hdr-logout" data-i18n="nav.signout">Sign out</button>
+                </div>
+              </div>
+            </div>
+          </div>
+          <a href="contact.html" class="site-util">
+            <svg fill="none" stroke="currentColor" stroke-width="1.7" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M21.75 6.75v10.5a2.25 2.25 0 01-2.25 2.25h-15a2.25 2.25 0 01-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0019.5 4.5h-15a2.25 2.25 0 00-2.25 2.25m19.5 0v.243a2.25 2.25 0 01-1.07 1.916l-7.5 4.615a2.25 2.25 0 01-2.36 0L3.32 8.91a2.25 2.25 0 01-1.07-1.916V6.75"/></svg>
+            <span class="site-util-label" data-i18n="nav.contactUs">Contact Us</span>
+          </a>
+          <div class="site-drop" id="hdr-lang-drop">
+            <button type="button" class="site-util" aria-label="Language">
+              <svg fill="none" stroke="currentColor" stroke-width="1.7" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 21a9 9 0 100-18 9 9 0 000 18zM3.6 9h16.8M3.6 15h16.8M12 3c2.5 3.2 2.5 14.8 0 18M12 3c-2.5 3.2-2.5 14.8 0 18"/></svg>
+              <span class="site-util-label" id="hdr-lang-label">English</span>
+            </button>
+            <div class="site-drop-panel site-lang-panel">
+              <button type="button" data-set-lang="en">English</button>
+              <button type="button" data-set-lang="es">Español</button>
+              <button type="button" data-set-lang="fr">Français</button>
+              <button type="button" data-set-lang="ko">한국어</button>
+              <button type="button" data-set-lang="ja">日本語</button>
+              <button type="button" data-set-lang="zh">中文</button>
+            </div>
+          </div>
+          <a href="cart.html" class="site-util site-cart" aria-label="Cart">
+            <svg fill="none" stroke="currentColor" stroke-width="1.7" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"/></svg>
+            <span class="site-cart-count" id="cart-count">0</span>
+          </a>
+          <button type="button" class="site-util site-menu-btn" id="hdr-menu-btn" aria-label="Menu">
+            <svg fill="none" stroke="currentColor" stroke-width="1.7" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h16"/></svg>
+          </button>
+        </div>
+      </div>
+      <nav class="site-nav" id="site-nav">
+        <a href="index.html" data-i18n="nav.home">Home</a>
+        <a href="products.html" class="is-active" data-i18n="nav.products">Products</a>
+        <a href="designer.html" data-i18n="nav.designer">Project Designer</a>
+      </nav>
+    </div>
+  </header>
+
+  <section class="pt-8 pb-8 border-b border-slate-800">
+    <div class="site-wrap">
+      <h1 class="text-3xl sm:text-4xl font-bold mb-2" data-i18n="products.h1">LED Display Products</h1>
+      <p class="text-slate-400" data-i18n="products.lead">Configure and order online • Real-time pricing • Expert support available</p>
+    </div>
+  </section>
+
+  <section class="py-8">
+    <div class="site-wrap flex flex-col lg:flex-row gap-8">
+      <!-- Filters sidebar -->
+      <aside class="lg:w-64 flex-shrink-0">
+        <div class="sticky top-[calc(var(--site-header-h)+1rem)] space-y-6">
+          <div>
+            <h3 class="text-sm font-semibold uppercase tracking-wider text-slate-400 mb-3" data-i18n="products.category">Category</h3>
+            <div class="space-y-2 text-sm">
+              <label class="flex items-center gap-2 cursor-pointer"><input type="checkbox" class="rounded border-slate-600 bg-slate-800 text-sky-500" checked> <span data-i18n="products.indoor">Indoor Fine Pitch</span></label>
+              <label class="flex items-center gap-2 cursor-pointer"><input type="checkbox" class="rounded border-slate-600 bg-slate-800 text-sky-500" checked> <span data-i18n="products.outdoor">Outdoor</span></label>
+              <label class="flex items-center gap-2 cursor-pointer"><input type="checkbox" class="rounded border-slate-600 bg-slate-800 text-sky-500" checked> <span data-i18n="products.rental">Rental / Touring</span></label>
+              <label class="flex items-center gap-2 cursor-pointer"><input type="checkbox" class="rounded border-slate-600 bg-slate-800 text-sky-500"> <span data-i18n="products.transparent">Transparent / Creative</span></label>
+              <label class="flex items-center gap-2 cursor-pointer"><input type="checkbox" class="rounded border-slate-600 bg-slate-800 text-sky-500"> <span data-i18n="products.aio">All-in-One</span></label>
+            </div>
+          </div>
+          <div>
+            <h3 class="text-sm font-semibold uppercase tracking-wider text-slate-400 mb-3" data-i18n="products.brand">Brand</h3>
+            <div class="space-y-2 text-sm">
+              <label class="flex items-center gap-2 cursor-pointer"><input type="checkbox" class="rounded border-slate-600 bg-slate-800 text-sky-500" checked> TRT</label>
+              <label class="flex items-center gap-2 cursor-pointer"><input type="checkbox" class="rounded border-slate-600 bg-slate-800 text-sky-500" checked> Gloshine</label>
+              <label class="flex items-center gap-2 cursor-pointer"><input type="checkbox" class="rounded border-slate-600 bg-slate-800 text-sky-500" checked> BAKO</label>
+              <label class="flex items-center gap-2 cursor-pointer"><input type="checkbox" class="rounded border-slate-600 bg-slate-800 text-sky-500" checked> Element</label>
+              <label class="flex items-center gap-2 cursor-pointer"><input type="checkbox" class="rounded border-slate-600 bg-slate-800 text-sky-500" checked> DIAO</label>
+            </div>
+          </div>
+          <div>
+            <h3 class="text-sm font-semibold uppercase tracking-wider text-slate-400 mb-3">Pixel Pitch</h3>
+            <div class="space-y-2 text-sm">
+              <label class="flex items-center gap-2 cursor-pointer"><input type="checkbox" class="rounded border-slate-600 bg-slate-800 text-sky-500"> ≤ 1.5 mm</label>
+              <label class="flex items-center gap-2 cursor-pointer"><input type="checkbox" class="rounded border-slate-600 bg-slate-800 text-sky-500"> 1.5 – 2.5 mm</label>
+              <label class="flex items-center gap-2 cursor-pointer"><input type="checkbox" class="rounded border-slate-600 bg-slate-800 text-sky-500"> 2.5 – 4.0 mm</label>
+              <label class="flex items-center gap-2 cursor-pointer"><input type="checkbox" class="rounded border-slate-600 bg-slate-800 text-sky-500"> > 4.0 mm</label>
+            </div>
+          </div>
+        </div>
+      </aside>
+
+      <!-- Product grid -->
+      <div class="flex-1">
+        <div class="flex items-center justify-between mb-6">
+          <p class="text-sm text-slate-400"><span id="product-count">12</span> products</p>
+          <select class="bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-sm">
+            <option>Featured</option>
+            <option>Price: Low to High</option>
+            <option>Price: High to Low</option>
+            <option>Newest</option>
+          </select>
+        </div>
+
+        <div class="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-4" id="product-grid">
+          <a href="product.html?brand=trt&series=discovery" class="group rounded-xl border border-slate-800 bg-slate-950 overflow-hidden hover:border-sky-500/40 transition block" data-brand="trt">
+            <div class="aspect-[4/3] bg-slate-900 relative overflow-hidden">
+              
+              <img src="assets/products/discovery.jpg" alt="Discovery Series" class="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition duration-300" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';" />
+              <div class="absolute inset-0 hidden items-center justify-center bg-gradient-to-br from-slate-800 to-slate-900">
+                <div class="text-center"><div class="text-2xl font-bold text-slate-600">P0.93</div><div class="text-xs text-slate-500">Fixed</div></div>
+              </div>
+            </div>
+            <div class="p-3">
+              <div class="text-[11px] text-sky-400 font-medium">TRT</div>
+              <h3 class="font-semibold text-sm mt-0.5 group-hover:text-sky-300">Discovery Series</h3>
+              <p class="text-xs text-slate-400 mt-1 line-clamp-2">0.93–2.5 mm • Fine pitch COB for retail, corporate lobbies, and control rooms.</p>
+              <div class="mt-2 flex items-baseline gap-1">
+                <span class="text-sm font-bold">From $7,000</span><span class="text-xs text-slate-500">/m²</span>
+              </div>
+            </div>
+          </a>
+          <a href="product.html?brand=trt&series=ledposter" class="group rounded-xl border border-slate-800 bg-slate-950 overflow-hidden hover:border-sky-500/40 transition block" data-brand="trt">
+            <div class="aspect-[4/3] bg-slate-900 relative overflow-hidden">
+              
+              <img src="assets/products/ledposter.jpg" alt="LedPoster" class="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition duration-300" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';" />
+              <div class="absolute inset-0 hidden items-center justify-center bg-gradient-to-br from-slate-800 to-slate-900">
+                <div class="text-center"><div class="text-2xl font-bold text-slate-600">P1.9</div><div class="text-xs text-slate-500">Poster</div></div>
+              </div>
+            </div>
+            <div class="p-3">
+              <div class="text-[11px] text-sky-400 font-medium">TRT</div>
+              <h3 class="font-semibold text-sm mt-0.5 group-hover:text-sky-300">LedPoster</h3>
+              <p class="text-xs text-slate-400 mt-1 line-clamp-2">1.9–2.5 mm • Digital poster and window displays with high brightness.</p>
+              <div class="mt-2 flex items-baseline gap-1">
+                <span class="text-sm font-bold">From $1,650</span><span class="text-xs text-slate-500">/m²</span>
+              </div>
+            </div>
+          </a>
+          <a href="product.html?brand=gloshine&series=mvultra" class="group rounded-xl border border-slate-800 bg-slate-950 overflow-hidden hover:border-sky-500/40 transition block" data-brand="gloshine">
+            <div class="aspect-[4/3] bg-slate-900 relative overflow-hidden">
+              <span class="absolute top-2 left-2 px-1.5 py-0.5 rounded bg-sky-500/20 text-sky-300 text-[10px] font-medium z-10">Rental</span>
+              <img src="assets/products/mvultra.jpg" alt="MV Ultra (Rental)" class="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition duration-300" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';" />
+              <div class="absolute inset-0 hidden items-center justify-center bg-gradient-to-br from-slate-800 to-slate-900">
+                <div class="text-center"><div class="text-2xl font-bold text-slate-600">P1.5</div><div class="text-xs text-slate-500">Rental</div></div>
+              </div>
+            </div>
+            <div class="p-3">
+              <div class="text-[11px] text-sky-400 font-medium">Gloshine</div>
+              <h3 class="font-semibold text-sm mt-0.5 group-hover:text-sky-300">MV Ultra (Rental)</h3>
+              <p class="text-xs text-slate-400 mt-1 line-clamp-2">1.5–2.6 mm • Fast-deploy rental panels for events and touring.</p>
+              <div class="mt-2 flex items-baseline gap-1">
+                <span class="text-sm font-bold">From $1,450</span><span class="text-xs text-slate-500">/m²</span>
+              </div>
+            </div>
+          </a>
+          <a href="product.html?brand=gloshine&series=dn" class="group rounded-xl border border-slate-800 bg-slate-950 overflow-hidden hover:border-sky-500/40 transition block" data-brand="gloshine">
+            <div class="aspect-[4/3] bg-slate-900 relative overflow-hidden">
+              
+              <img src="assets/products/dn.jpg" alt="DN Outdoor" class="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition duration-300" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';" />
+              <div class="absolute inset-0 hidden items-center justify-center bg-gradient-to-br from-slate-800 to-slate-900">
+                <div class="text-center"><div class="text-2xl font-bold text-slate-600">P2.6</div><div class="text-xs text-slate-500">Outdoor</div></div>
+              </div>
+            </div>
+            <div class="p-3">
+              <div class="text-[11px] text-sky-400 font-medium">Gloshine</div>
+              <h3 class="font-semibold text-sm mt-0.5 group-hover:text-sky-300">DN Outdoor</h3>
+              <p class="text-xs text-slate-400 mt-1 line-clamp-2">2.6–3.91 mm • High-brightness outdoor facades and DOOH.</p>
+              <div class="mt-2 flex items-baseline gap-1">
+                <span class="text-sm font-bold">From $1,280</span><span class="text-xs text-slate-500">/m²</span>
+              </div>
+            </div>
+          </a>
+          <a href="product.html?brand=bako&series=finepitch" class="group rounded-xl border border-slate-800 bg-slate-950 overflow-hidden hover:border-sky-500/40 transition block" data-brand="bako">
+            <div class="aspect-[4/3] bg-slate-900 relative overflow-hidden">
+              
+              <img src="assets/products/finepitch.jpg" alt="Fine Pitch COB 600x337.5" class="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition duration-300" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';" />
+              <div class="absolute inset-0 hidden items-center justify-center bg-gradient-to-br from-slate-800 to-slate-900">
+                <div class="text-center"><div class="text-2xl font-bold text-slate-600">P0.93</div><div class="text-xs text-slate-500">Fixed</div></div>
+              </div>
+            </div>
+            <div class="p-3">
+              <div class="text-[11px] text-sky-400 font-medium">BAKO</div>
+              <h3 class="font-semibold text-sm mt-0.5 group-hover:text-sky-300">Fine Pitch COB 600x337.5</h3>
+              <p class="text-xs text-slate-400 mt-1 line-clamp-2">0.93–1.87 mm • Control-room grade micro pitch COB cabinets.</p>
+              <div class="mt-2 flex items-baseline gap-1">
+                <span class="text-sm font-bold">From $3,200</span><span class="text-xs text-slate-500">/m²</span>
+              </div>
+            </div>
+          </a>
+          <a href="product.html?brand=bako&series=diamond" class="group rounded-xl border border-slate-800 bg-slate-950 overflow-hidden hover:border-sky-500/40 transition block" data-brand="bako">
+            <div class="aspect-[4/3] bg-slate-900 relative overflow-hidden">
+              <span class="absolute top-2 left-2 px-1.5 py-0.5 rounded bg-sky-500/20 text-sky-300 text-[10px] font-medium z-10">Rental</span>
+              <img src="assets/products/diamond.jpg" alt="Diamond Rental" class="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition duration-300" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';" />
+              <div class="absolute inset-0 hidden items-center justify-center bg-gradient-to-br from-slate-800 to-slate-900">
+                <div class="text-center"><div class="text-2xl font-bold text-slate-600">P2.6</div><div class="text-xs text-slate-500">Rental</div></div>
+              </div>
+            </div>
+            <div class="p-3">
+              <div class="text-[11px] text-sky-400 font-medium">BAKO</div>
+              <h3 class="font-semibold text-sm mt-0.5 group-hover:text-sky-300">Diamond Rental</h3>
+              <p class="text-xs text-slate-400 mt-1 line-clamp-2">2.6–3.91 mm • Lightweight rental for stages and events.</p>
+              <div class="mt-2 flex items-baseline gap-1">
+                <span class="text-sm font-bold">From $1,100</span><span class="text-xs text-slate-500">/m²</span>
+              </div>
+            </div>
+          </a>
+          <a href="product.html?brand=diao&series=pro" class="group rounded-xl border border-slate-800 bg-slate-950 overflow-hidden hover:border-sky-500/40 transition block" data-brand="diao">
+            <div class="aspect-[4/3] bg-slate-900 relative overflow-hidden">
+              <span class="absolute top-2 left-2 px-1.5 py-0.5 rounded bg-sky-500/20 text-sky-300 text-[10px] font-medium z-10">Exclusive</span>
+              <img src="assets/products/diao-pro.jpg" alt="DIAO Pro Fixed" class="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition duration-300" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';" />
+              <div class="absolute inset-0 hidden items-center justify-center bg-gradient-to-br from-slate-800 to-slate-900">
+                <div class="text-center"><div class="text-2xl font-bold text-slate-600">P1.5</div><div class="text-xs text-slate-500">Fixed</div></div>
+              </div>
+            </div>
+            <div class="p-3">
+              <div class="text-[11px] text-sky-400 font-medium">DIAO</div>
+              <h3 class="font-semibold text-sm mt-0.5 group-hover:text-sky-300">DIAO Pro Fixed</h3>
+              <p class="text-xs text-slate-400 mt-1 line-clamp-2">1.5–2.5 mm • Exclusive Spectrum fixed install with strong value.</p>
+              <div class="mt-2 flex items-baseline gap-1">
+                <span class="text-sm font-bold">From $980</span><span class="text-xs text-slate-500">/m²</span>
+              </div>
+            </div>
+          </a>
+          <a href="product.html?brand=diao&series=value" class="group rounded-xl border border-slate-800 bg-slate-950 overflow-hidden hover:border-sky-500/40 transition block" data-brand="diao">
+            <div class="aspect-[4/3] bg-slate-900 relative overflow-hidden">
+              <span class="absolute top-2 left-2 px-1.5 py-0.5 rounded bg-sky-500/20 text-sky-300 text-[10px] font-medium z-10">Exclusive</span>
+              <img src="assets/products/diao-value.jpg" alt="DIAO Value" class="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition duration-300" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';" />
+              <div class="absolute inset-0 hidden items-center justify-center bg-gradient-to-br from-slate-800 to-slate-900">
+                <div class="text-center"><div class="text-2xl font-bold text-slate-600">P2.5</div><div class="text-xs text-slate-500">Fixed</div></div>
+              </div>
+            </div>
+            <div class="p-3">
+              <div class="text-[11px] text-sky-400 font-medium">DIAO</div>
+              <h3 class="font-semibold text-sm mt-0.5 group-hover:text-sky-300">DIAO Value</h3>
+              <p class="text-xs text-slate-400 mt-1 line-clamp-2">2.5–4.0 mm • Budget-friendly fixed walls for commercial spaces.</p>
+              <div class="mt-2 flex items-baseline gap-1">
+                <span class="text-sm font-bold">From $720</span><span class="text-xs text-slate-500">/m²</span>
+              </div>
+            </div>
+          </a>
+          <a href="product.html?brand=element&series=rental" class="group rounded-xl border border-slate-800 bg-slate-950 overflow-hidden hover:border-sky-500/40 transition block" data-brand="element">
+            <div class="aspect-[4/3] bg-slate-900 relative overflow-hidden">
+              <span class="absolute top-2 left-2 px-1.5 py-0.5 rounded bg-sky-500/20 text-sky-300 text-[10px] font-medium z-10">Exclusive</span>
+              <img src="assets/products/element-rental.jpg" alt="Element Rental" class="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition duration-300" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';" />
+              <div class="absolute inset-0 hidden items-center justify-center bg-gradient-to-br from-slate-800 to-slate-900">
+                <div class="text-center"><div class="text-2xl font-bold text-slate-600">P2.6</div><div class="text-xs text-slate-500">Rental</div></div>
+              </div>
+            </div>
+            <div class="p-3">
+              <div class="text-[11px] text-sky-400 font-medium">Element</div>
+              <h3 class="font-semibold text-sm mt-0.5 group-hover:text-sky-300">Element Rental</h3>
+              <p class="text-xs text-slate-400 mt-1 line-clamp-2">2.6–3.9 mm • Exclusive lightweight rental for events.</p>
+              <div class="mt-2 flex items-baseline gap-1">
+                <span class="text-sm font-bold">From $1,050</span><span class="text-xs text-slate-500">/m²</span>
+              </div>
+            </div>
+          </a>
+          <a href="product.html?brand=element&series=creative" class="group rounded-xl border border-slate-800 bg-slate-950 overflow-hidden hover:border-sky-500/40 transition block" data-brand="element">
+            <div class="aspect-[4/3] bg-slate-900 relative overflow-hidden">
+              <span class="absolute top-2 left-2 px-1.5 py-0.5 rounded bg-sky-500/20 text-sky-300 text-[10px] font-medium z-10">Creative</span>
+              <img src="assets/products/element-creative.jpg" alt="Element Creative / XR" class="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition duration-300" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';" />
+              <div class="absolute inset-0 hidden items-center justify-center bg-gradient-to-br from-slate-800 to-slate-900">
+                <div class="text-center"><div class="text-2xl font-bold text-slate-600">P1.9</div><div class="text-xs text-slate-500">Creative</div></div>
+              </div>
+            </div>
+            <div class="p-3">
+              <div class="text-[11px] text-sky-400 font-medium">Element</div>
+              <h3 class="font-semibold text-sm mt-0.5 group-hover:text-sky-300">Element Creative / XR</h3>
+              <p class="text-xs text-slate-400 mt-1 line-clamp-2">1.9–2.6 mm • Creative and XR volumes with flexible form factors.</p>
+              <div class="mt-2 flex items-baseline gap-1">
+                <span class="text-sm font-bold">From $1,380</span><span class="text-xs text-slate-500">/m²</span>
+              </div>
+            </div>
+          </a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <footer class="border-t border-slate-800 py-12 px-4 text-center text-sm text-slate-500 mt-12">
+    <p>© 2026 Spectrum Display</p>
+  </footer>
+  <script src="js/products-data.js"></script>
+  <script src="js/catalog-api.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="js/supabase-client.js"></script>
+  <script src="js/auth.js"></script>
+  <script src="js/site-header.js"></script>
+  <script src="js/i18n.js"></script>
+  <script>
+    function updateCartCount() {
+      const cart = JSON.parse(localStorage.getItem('spectrumCart') || '[]');
+      const el = document.getElementById('cart-count');
+      if (el) el.textContent = cart.reduce((s, i) => s + (i.qty || 1), 0);
+    }
+    updateCartCount();
+
+    function renderProducts(filterBrand) {
+      const grid = document.getElementById('product-grid');
+      if (!grid || !window.SPECTRUM_PRODUCT_LIST) return;
+      let list = window.SPECTRUM_PRODUCT_LIST.slice();
+      if (filterBrand) list = list.filter(p => p.brandId === filterBrand);
+      grid.innerHTML = list.map(p => {
+        const pitchMain = 'P' + (p.pitches && p.pitches[0] ? p.pitches[0] : '');
+        const badge = p.badge
+          ? '<span class="absolute top-2 left-2 px-1.5 py-0.5 rounded bg-sky-500/20 text-sky-300 text-[10px] font-medium z-10">' + p.badge + '</span>'
+          : '';
+        const photo = p.image
+          ? '<img src="' + p.image + '" alt="' + String(p.name || '').replace(/"/g, '') + '" class="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition duration-300" onerror="this.style.display=\'none\'">'
+          : '';
+        const href = 'product.html?brand=' + encodeURIComponent(p.brandId) + '&series=' + encodeURIComponent(p.id);
+        return (
+          '<a href="' + href + '" class="group rounded-xl border border-slate-800 bg-slate-950 overflow-hidden hover:border-sky-500/40 transition block" data-brand="' + p.brandId + '">' +
+            '<div class="aspect-[4/3] bg-gradient-to-br from-slate-800 to-slate-900 relative flex items-center justify-center overflow-hidden">' +
+              badge + photo +
+              '<div class="text-center"><div class="text-2xl font-bold text-slate-600">' + pitchMain + '</div>' +
+              '<div class="text-[10px] text-slate-500">' + (p.type || 'LED') + '</div></div>' +
+            '</div>' +
+            '<div class="p-3">' +
+              '<div class="text-[11px] text-sky-400 font-medium">' + p.brandName + '</div>' +
+              '<h3 class="font-semibold text-sm mt-0.5 group-hover:text-sky-300">' + p.name + '</h3>' +
+              '<p class="text-xs text-slate-400 mt-1 line-clamp-2">' + p.pitchLabel + ' • ' + (p.description || '') + '</p>' +
+              '<div class="mt-2 flex items-baseline gap-1">' +
+                '<span class="text-sm font-bold">' + p.priceLabel + '</span>' +
+                '<span class="text-xs text-slate-500">/m²</span>' +
+              '</div>' +
+            '</div>' +
+          '</a>'
+        );
+      }).join('');
+      const countEl = document.getElementById('product-count');
+      if (countEl) countEl.textContent = String(list.length);
+    }
+
+    const params = new URLSearchParams(window.location.search);
+    renderProducts(params.get('brand') || null);
+    window.addEventListener('spectrum:catalog', function () {
+      renderProducts(params.get('brand') || null);
+    });
+  </script>
+  <script src="js/i18n.js"></script>
+</body>
+</html>

@@ -1,0 +1,535 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <script src="js/i18n-boot.js"></script>
+  <link rel="stylesheet" href="css/site-header.css" />
+  <title>Account | Spectrum Display</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    body { font-family: 'Inter', system-ui, sans-serif; }
+  </style>
+</head>
+<body class="bg-slate-950 text-slate-100 antialiased min-h-screen">
+  <header class="site-header" id="site-header">
+    <div class="site-header-inner">
+      <div class="site-header-top">
+        <a href="index.html" class="site-brand">
+          <img src="assets/spectrum-logo.png" alt="Spectrum" class="site-brand-logo" />
+        </a>
+        <div class="site-utils">
+          <div class="site-drop" id="hdr-signin-drop">
+            <button type="button" class="site-util" aria-haspopup="true">
+              <svg fill="none" stroke="currentColor" stroke-width="1.7" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 7.5a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.5 19.5a7.5 7.5 0 0115 0"/></svg>
+              <span class="site-util-label site-util-guest" data-i18n="nav.signin">Sign in</span>
+              <span class="site-util-label site-util-user" id="hdr-user-name"></span>
+            </button>
+            <div class="site-drop-panel">
+              <div class="site-guest">
+                <h3 data-i18n="nav.myAccount">My Account</h3>
+                <ul class="site-account-roles">
+                  <li data-i18n="nav.benefitOrders">Place orders quickly and easily</li>
+                  <li data-i18n="nav.benefitTrack">View orders and track your shipping status</li>
+                  <li data-i18n="nav.benefitList">Create and access a list of your products</li>
+                  <li data-i18n="nav.benefitProjects">View Saved Projects</li>
+                </ul>
+                <div class="site-drop-actions">
+                  <a href="account.html" class="site-btn-primary" data-i18n="nav.signin">Sign in</a>
+                  <a href="account.html?mode=register" class="site-btn-ghost" data-i18n="nav.createAccount">Create account</a>
+                </div>
+              </div>
+              <div class="site-logged">
+                <h3 id="hdr-user-name-panel"></h3>
+                <p id="hdr-user-role"></p>
+                <div class="site-drop-list">
+                  <a href="account.html" data-i18n="nav.myAccount">My Account</a>
+                  <button type="button" id="hdr-logout" data-i18n="nav.signout">Sign out</button>
+                </div>
+              </div>
+            </div>
+          </div>
+          <a href="contact.html" class="site-util">
+            <svg fill="none" stroke="currentColor" stroke-width="1.7" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M21.75 6.75v10.5a2.25 2.25 0 01-2.25 2.25h-15a2.25 2.25 0 01-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0019.5 4.5h-15a2.25 2.25 0 00-2.25 2.25m19.5 0v.243a2.25 2.25 0 01-1.07 1.916l-7.5 4.615a2.25 2.25 0 01-2.36 0L3.32 8.91a2.25 2.25 0 01-1.07-1.916V6.75"/></svg>
+            <span class="site-util-label" data-i18n="nav.contactUs">Contact Us</span>
+          </a>
+          <div class="site-drop" id="hdr-lang-drop">
+            <button type="button" class="site-util" aria-label="Language">
+              <svg fill="none" stroke="currentColor" stroke-width="1.7" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 21a9 9 0 100-18 9 9 0 000 18zM3.6 9h16.8M3.6 15h16.8M12 3c2.5 3.2 2.5 14.8 0 18M12 3c-2.5 3.2-2.5 14.8 0 18"/></svg>
+              <span class="site-util-label" id="hdr-lang-label">English</span>
+            </button>
+            <div class="site-drop-panel site-lang-panel">
+              <button type="button" data-set-lang="en">English</button>
+              <button type="button" data-set-lang="es">Español</button>
+              <button type="button" data-set-lang="fr">Français</button>
+              <button type="button" data-set-lang="ko">한국어</button>
+              <button type="button" data-set-lang="ja">日本語</button>
+              <button type="button" data-set-lang="zh">中文</button>
+            </div>
+          </div>
+          <a href="cart.html" class="site-util site-cart" aria-label="Cart">
+            <svg fill="none" stroke="currentColor" stroke-width="1.7" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"/></svg>
+            <span class="site-cart-count" id="cart-count">0</span>
+          </a>
+          <button type="button" class="site-util site-menu-btn" id="hdr-menu-btn" aria-label="Menu">
+            <svg fill="none" stroke="currentColor" stroke-width="1.7" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h16"/></svg>
+          </button>
+        </div>
+      </div>
+      <nav class="site-nav" id="site-nav">
+        <a href="index.html" data-i18n="nav.home">Home</a>
+        <a href="products.html" data-i18n="nav.products">Products</a>
+        <a href="designer.html" data-i18n="nav.designer">Project Designer</a>
+      </nav>
+    </div>
+  </header>
+
+  <main class="pt-10 pb-16">
+    <div class="site-wrap">
+
+      <!-- LOGIN / REGISTER -->
+      <div id="auth-panel" class="hidden max-w-md mx-auto">
+        <div class="text-center mb-8">
+          <h1 class="text-3xl font-bold mb-2" data-i18n="account.h1">Customer &amp; Dealer Account</h1>
+          <p class="text-slate-400 text-sm" data-i18n="account.lead">Sign in to save Project Designer layouts, custom panels, track orders, and manage your profile.</p>
+        </div>
+
+        <div class="rounded-2xl border border-slate-800 bg-slate-900/60 p-6 sm:p-8 space-y-5">
+          <div class="flex rounded-full border border-slate-700 overflow-hidden text-sm font-medium">
+            <button type="button" id="tab-signin" class="flex-1 py-2.5 bg-sky-500/20 text-sky-300" data-i18n="account.signin">Sign in</button>
+            <button type="button" id="tab-register" class="flex-1 py-2.5 text-slate-400 hover:text-white" data-i18n="account.create">Create account</button>
+          </div>
+
+          <button type="button" id="google-btn" class="w-full flex items-center justify-center gap-3 px-4 py-3 rounded-xl border border-slate-600 bg-white text-slate-900 font-medium text-sm hover:bg-slate-100 transition">
+            <svg class="w-5 h-5" viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>
+            <span data-i18n="account.google">Continue with Google</span>
+          </button>
+          <p class="text-xs text-slate-500 text-center -mt-2">Google sign-in uses your Spectrum account. If it isn’t connected yet, use email.</p>
+
+          <div class="relative flex items-center gap-3 text-xs text-slate-500">
+            <div class="flex-1 h-px bg-slate-800"></div>
+            <span data-i18n="account.orEmail">or email</span>
+            <div class="flex-1 h-px bg-slate-800"></div>
+          </div>
+
+          <form id="auth-form" class="space-y-4">
+            <div id="name-field" class="hidden">
+              <label class="block text-xs text-slate-400 mb-1">Full name</label>
+              <input id="auth-name" type="text" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:border-sky-500" placeholder="Your name" />
+            </div>
+            <div id="role-field" class="hidden">
+              <label class="block text-xs text-slate-400 mb-1">Account type</label>
+              <select id="auth-role" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2.5 text-sm">
+                <option value="customer">Customer / End user</option>
+                <option value="dealer">Dealer / Integrator</option>
+              </select>
+            </div>
+            <div>
+              <label class="block text-xs text-slate-400 mb-1">Email</label>
+              <input id="auth-email" type="email" required autocomplete="email" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:border-sky-500" placeholder="you@company.com" />
+            </div>
+            <div>
+              <label class="block text-xs text-slate-400 mb-1">Password</label>
+              <input id="auth-password" type="password" required minlength="6" autocomplete="current-password" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:border-sky-500" placeholder="Min. 6 characters" />
+            </div>
+            <p id="auth-error" class="hidden text-sm text-red-400"></p>
+            <button type="submit" id="auth-submit" class="w-full py-3 rounded-full bg-sky-500 hover:bg-sky-400 text-white font-semibold text-sm transition">Sign in</button>
+          </form>
+        </div>
+      </div>
+
+      <!-- DASHBOARD -->
+      <div id="dash-panel" class="hidden">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
+          <div>
+            <h1 class="text-3xl font-bold" data-i18n="account.my">My Account</h1>
+            <p class="text-slate-400 text-sm mt-1">Welcome back, <span id="dash-name" class="text-slate-200 font-medium">—</span>
+              <span id="dash-role-badge" class="ml-2 text-xs px-2 py-0.5 rounded-full bg-sky-500/20 text-sky-300"></span>
+            </p>
+          </div>
+          <button type="button" id="logout-btn" class="self-start px-4 py-2 rounded-full border border-slate-600 text-sm text-slate-300 hover:border-sky-500 hover:text-white transition" data-i18n="account.signout">Sign out</button>
+        </div>
+
+        <!-- Tabs -->
+        <div class="flex flex-wrap gap-2 mb-6 border-b border-slate-800 pb-3">
+          <button type="button" data-tab="projects" class="dash-tab px-4 py-2 rounded-full text-sm font-medium bg-sky-500/20 text-sky-300" data-i18n="account.projects">Saved projects</button>
+          <button type="button" data-tab="panels" class="dash-tab px-4 py-2 rounded-full text-sm font-medium text-slate-400 hover:text-white" data-i18n="account.panels">Custom panels</button>
+          <button type="button" data-tab="orders" class="dash-tab px-4 py-2 rounded-full text-sm font-medium text-slate-400 hover:text-white" data-i18n="account.orders">Orders</button>
+          <button type="button" data-tab="profile" class="dash-tab px-4 py-2 rounded-full text-sm font-medium text-slate-400 hover:text-white" data-i18n="account.info">Account info</button>
+        </div>
+
+        <!-- Projects -->
+        <div id="tab-projects" class="dash-section space-y-4">
+          <div class="flex items-center justify-between">
+            <p class="text-sm text-slate-400">Designs you saved from Project Designer.</p>
+            <a href="designer.html" class="text-sm text-sky-400 hover:text-sky-300 font-medium">Open Designer →</a>
+          </div>
+          <div id="projects-list" class="space-y-3"></div>
+          <p id="projects-empty" class="hidden text-center py-12 text-slate-500 text-sm rounded-2xl border border-dashed border-slate-800">
+            No saved projects yet.<br />
+            <a href="designer.html" class="text-sky-400 hover:text-sky-300 mt-2 inline-block">Create a wall design and click Save to Account</a>
+          </p>
+        </div>
+
+        <!-- Custom panels -->
+        <div id="tab-panels" class="dash-section hidden space-y-4">
+          <div class="flex items-center justify-between">
+            <p class="text-sm text-slate-400">Custom LED panels saved to this account only.</p>
+            <a href="designer.html?brand=custom" class="text-sm text-sky-400 hover:text-sky-300 font-medium">Open Custom Panel →</a>
+          </div>
+          <div id="panels-list" class="space-y-3"></div>
+          <p id="panels-empty" class="hidden text-center py-12 text-slate-500 text-sm rounded-2xl border border-dashed border-slate-800">
+            No custom panels saved yet.<br />
+            <a href="designer.html?brand=custom" class="text-sky-400 hover:text-sky-300 mt-2 inline-block">Configure a Custom Panel and save it to your account</a>
+          </p>
+        </div>
+
+        <!-- Orders -->
+        <div id="tab-orders" class="dash-section hidden space-y-4">
+          <p class="text-sm text-slate-400">Orders from cart checkout and sample history. New cart checkouts appear here with status Processing.</p>
+          <div id="orders-list" class="space-y-3"></div>
+          <p id="orders-empty" class="hidden text-center py-12 text-slate-500 text-sm rounded-2xl border border-dashed border-slate-800">No orders yet.</p>
+        </div>
+
+        <!-- Profile -->
+        <div id="tab-profile" class="dash-section hidden">
+          <form id="profile-form" class="max-w-lg space-y-4 rounded-2xl border border-slate-800 bg-slate-900/50 p-6">
+            <div>
+              <label class="block text-xs text-slate-400 mb-1">Full name</label>
+              <input id="prof-name" type="text" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:border-sky-500" />
+            </div>
+            <div>
+              <label class="block text-xs text-slate-400 mb-1">Email</label>
+              <input id="prof-email" type="email" disabled class="w-full bg-slate-900 border border-slate-800 rounded-lg px-3 py-2.5 text-sm text-slate-500" />
+            </div>
+            <div>
+              <label class="block text-xs text-slate-400 mb-1">Company</label>
+              <input id="prof-company" type="text" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:border-sky-500" placeholder="Optional" />
+            </div>
+            <div>
+              <label class="block text-xs text-slate-400 mb-1">Phone</label>
+              <input id="prof-phone" type="tel" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:border-sky-500" placeholder="Optional" />
+            </div>
+            <div>
+              <label class="block text-xs text-slate-400 mb-1">Account type</label>
+              <select id="prof-role" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2.5 text-sm">
+                <option value="customer">Customer / End user</option>
+                <option value="dealer">Dealer / Integrator</option>
+              </select>
+            </div>
+            <p id="profile-msg" class="hidden text-sm text-sky-400"></p>
+            <button type="submit" class="px-6 py-2.5 rounded-full bg-sky-500 hover:bg-sky-400 text-white text-sm font-semibold transition">Save changes</button>
+          </form>
+        </div>
+      </div>
+
+    </div>
+  </main>
+
+  <footer class="border-t border-slate-800 py-10 px-4 text-center text-sm text-slate-500">
+    <p>© 2026 Spectrum Display Inc. • spectrumdisplay.com</p>
+  </footer>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="js/supabase-client.js"></script>
+  <script src="js/auth.js"></script>
+  <script src="js/site-header.js"></script>
+  <script src="js/i18n.js"></script>
+  <script>
+    const Auth = window.SpectrumAuth;
+
+    function updateCartCount() {
+      const cart = JSON.parse(localStorage.getItem('spectrumCart') || '[]');
+      const el = document.getElementById('cart-count');
+      if (el) el.textContent = cart.reduce((s, i) => s + (i.qty || 1), 0);
+    }
+    updateCartCount();
+
+    let mode = 'signin'; // or register
+
+    function showAuth() {
+      document.getElementById('auth-panel').classList.remove('hidden');
+      document.getElementById('dash-panel').classList.add('hidden');
+    }
+    function showDash() {
+      document.getElementById('auth-panel').classList.add('hidden');
+      document.getElementById('dash-panel').classList.remove('hidden');
+      renderDash();
+    }
+
+    function setMode(m) {
+      mode = m;
+      const isReg = m === 'register';
+      document.getElementById('tab-signin').className = 'flex-1 py-2.5 ' + (isReg ? 'text-slate-400 hover:text-white' : 'bg-sky-500/20 text-sky-300');
+      document.getElementById('tab-register').className = 'flex-1 py-2.5 ' + (isReg ? 'bg-sky-500/20 text-sky-300' : 'text-slate-400 hover:text-white');
+      document.getElementById('name-field').classList.toggle('hidden', !isReg);
+      document.getElementById('role-field').classList.toggle('hidden', !isReg);
+      document.getElementById('auth-submit').textContent = isReg ? 'Create account' : 'Sign in';
+      document.getElementById('auth-error').classList.add('hidden');
+      document.getElementById('auth-password').autocomplete = isReg ? 'new-password' : 'current-password';
+    }
+    document.getElementById('tab-signin').onclick = () => setMode('signin');
+    document.getElementById('tab-register').onclick = () => setMode('register');
+
+    document.getElementById('auth-form').onsubmit = async (e) => {
+      e.preventDefault();
+      const email = document.getElementById('auth-email').value;
+      const password = document.getElementById('auth-password').value;
+      const err = document.getElementById('auth-error');
+      err.classList.add('hidden');
+      let result;
+      if (mode === 'register') {
+        result = await Auth.register({
+          email,
+          password,
+          name: document.getElementById('auth-name').value,
+          role: document.getElementById('auth-role').value
+        });
+      } else {
+        result = await Auth.login({ email, password });
+      }
+      if (result.needsConfirm) {
+        err.textContent = result.error;
+        err.classList.remove('hidden');
+        return;
+      }
+      if (!result.ok) {
+        err.textContent = result.error;
+        err.classList.remove('hidden');
+        return;
+      }
+      afterAuthSuccess();
+    };
+
+    document.getElementById('google-btn').onclick = async () => {
+      const result = await Auth.loginWithGoogle();
+      if (!result.ok) {
+        const err = document.getElementById('auth-error');
+        err.textContent = result.error;
+        err.classList.remove('hidden');
+      }
+    };
+
+    document.getElementById('logout-btn').onclick = async () => {
+      await Auth.logout();
+      showAuth();
+      setMode('signin');
+    };
+
+    // Dashboard tabs
+    document.querySelectorAll('.dash-tab').forEach(btn => {
+      btn.onclick = () => {
+        document.querySelectorAll('.dash-tab').forEach(b => {
+          b.className = 'dash-tab px-4 py-2 rounded-full text-sm font-medium text-slate-400 hover:text-white';
+        });
+        btn.className = 'dash-tab px-4 py-2 rounded-full text-sm font-medium bg-sky-500/20 text-sky-300';
+        document.querySelectorAll('.dash-section').forEach(s => s.classList.add('hidden'));
+        document.getElementById('tab-' + btn.dataset.tab).classList.remove('hidden');
+      };
+    });
+
+    function renderDash() {
+      const profile = Auth.getFullProfile();
+      if (!profile) { showAuth(); return; }
+      document.getElementById('dash-name').textContent = profile.name || profile.email;
+      document.getElementById('dash-role-badge').textContent = profile.role === 'dealer' ? 'Dealer' : 'Customer';
+
+      // Projects
+      const projects = Auth.listProjects();
+      const list = document.getElementById('projects-list');
+      const empty = document.getElementById('projects-empty');
+      if (!projects.length) {
+        list.innerHTML = '';
+        empty.classList.remove('hidden');
+      } else {
+        empty.classList.add('hidden');
+        list.innerHTML = projects.map(p => {
+          const title = (p.brandName || '') + ' ' + (p.seriesName || 'Design');
+          const size = (p.width || '?') + ' × ' + (p.height || '?') + ' m';
+          const pitch = p.pitch ? p.pitch + ' mm' : '';
+          const when = p.savedAt ? new Date(p.savedAt).toLocaleString() : '';
+          const qs = new URLSearchParams();
+          if (p.brand) qs.set('brand', p.brand);
+          if (p.series) qs.set('series', p.series);
+          if (p.pitch != null && p.pitch !== '') qs.set('pitch', String(p.pitch));
+          if (p.width != null && p.width !== '') qs.set('w', String(p.width));
+          if (p.height != null && p.height !== '') qs.set('h', String(p.height));
+          if (p.unit) qs.set('unit', p.unit);
+          const url = 'designer.html?' + qs.toString();
+          return '<div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-4 rounded-xl border border-slate-800 bg-slate-900/50">' +
+            '<div><div class="font-medium">' + title + '</div>' +
+            '<div class="text-xs text-slate-400 mt-1">' + size + (pitch ? ' · ' + pitch : '') + (p.cabinets ? ' · ' + p.cabinets + ' cabinets' : '') + '</div>' +
+            '<div class="text-xs text-slate-500 mt-0.5">' + when + '</div></div>' +
+            '<div class="flex gap-2">' +
+            '<button type="button" class="open-project px-3 py-1.5 rounded-full border border-slate-600 text-xs hover:border-sky-500 text-slate-300" data-open="' + p.id + '">Open</button>' +
+            '<button type="button" data-del="' + p.id + '" class="del-project px-3 py-1.5 rounded-full border border-slate-700 text-xs text-slate-500 hover:border-red-500 hover:text-red-400">Delete</button>' +
+            '</div></div>';
+        }).join('');
+        list.querySelectorAll('.del-project').forEach(btn => {
+          btn.onclick = async () => {
+            await Auth.deleteProject(btn.dataset.del);
+            renderDash();
+          };
+        });
+        list.querySelectorAll('.open-project').forEach(btn => {
+          btn.onclick = () => {
+            const proj = projects.find(x => x.id === btn.dataset.open);
+            if (!proj) return;
+            // Store full project so designer can restore even if URL query is stripped (file://)
+            sessionStorage.setItem('spectrumOpenProject', JSON.stringify(proj));
+            const qs = new URLSearchParams();
+            if (proj.brand) qs.set('brand', proj.brand);
+            if (proj.series) qs.set('series', proj.series);
+            if (proj.pitch != null) qs.set('pitch', String(proj.pitch));
+            if (proj.width != null) qs.set('w', String(proj.width));
+            if (proj.height != null) qs.set('h', String(proj.height));
+            if (proj.unit) qs.set('unit', proj.unit);
+            window.location.href = 'designer.html?' + qs.toString();
+          };
+        });
+      }
+
+      // Custom panels (this account only)
+      const panels = Auth.listCustomPanels();
+      const plist = document.getElementById('panels-list');
+      const pempty = document.getElementById('panels-empty');
+      if (!panels.length) {
+        plist.innerHTML = '';
+        pempty.classList.remove('hidden');
+      } else {
+        pempty.classList.add('hidden');
+        plist.innerHTML = panels.map(p => {
+          const title = p.name || 'Custom Panel';
+          const meta = (p.w || '?') + ' × ' + (p.h || '?') + ' mm · P' + (p.pitch || '?') + (p.type ? ' · ' + p.type : '');
+          const when = p.savedAt ? new Date(p.savedAt).toLocaleString() : '';
+          return '<div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-4 rounded-xl border border-slate-800 bg-slate-900/50">' +
+            '<div><div class="font-medium">' + title.replace(/</g, '&lt;') + '</div>' +
+            '<div class="text-xs text-slate-400 mt-1">' + meta.replace(/</g, '&lt;') + '</div>' +
+            '<div class="text-xs text-slate-500 mt-0.5">' + when + '</div></div>' +
+            '<div class="flex gap-2">' +
+            '<button type="button" class="open-panel px-3 py-1.5 rounded-full border border-slate-600 text-xs hover:border-sky-500 text-slate-300" data-open="' + p.id + '">Open</button>' +
+            '<button type="button" data-del="' + p.id + '" class="del-panel px-3 py-1.5 rounded-full border border-slate-700 text-xs text-slate-500 hover:border-red-500 hover:text-red-400">Delete</button>' +
+            '</div></div>';
+        }).join('');
+        plist.querySelectorAll('.del-panel').forEach(btn => {
+          btn.onclick = async () => {
+            await Auth.deleteCustomPanel(btn.dataset.del);
+            renderDash();
+          };
+        });
+        plist.querySelectorAll('.open-panel').forEach(btn => {
+          btn.onclick = () => {
+            const panel = panels.find(x => x.id === btn.dataset.open);
+            if (!panel) return;
+            sessionStorage.setItem('spectrumOpenCustomPanel', JSON.stringify(panel));
+            window.location.href = 'designer.html?brand=custom';
+          };
+        });
+      }
+
+      // Orders
+      const orders = Auth.listOrders();
+      const olist = document.getElementById('orders-list');
+      const oempty = document.getElementById('orders-empty');
+      if (!orders.length) {
+        olist.innerHTML = '';
+        oempty.classList.remove('hidden');
+      } else {
+        oempty.classList.add('hidden');
+        olist.innerHTML = orders.map(o => {
+          const items = (o.items || []).map(i => i.name + ' × ' + i.qty + (i.unit ? ' ' + i.unit : '')).join(', ');
+          const statusColor = o.status === 'Delivered' ? 'text-emerald-400' : o.status === 'Shipped' ? 'text-sky-400' : 'text-amber-300';
+          return '<div class="p-4 rounded-xl border border-slate-800 bg-slate-900/50">' +
+            '<div class="flex flex-wrap items-center justify-between gap-2">' +
+            '<span class="font-medium">' + o.id + '</span>' +
+            '<span class="text-xs ' + statusColor + '">' + (o.status || '') + '</span></div>' +
+            '<div class="text-xs text-slate-400 mt-1">' + (o.date || '') + ' · $' + (o.total || 0).toLocaleString() + '</div>' +
+            '<div class="text-sm text-slate-300 mt-2">' + items + '</div></div>';
+        }).join('');
+      }
+
+      // Profile
+      document.getElementById('prof-name').value = profile.name || '';
+      document.getElementById('prof-email').value = profile.email || '';
+      document.getElementById('prof-company').value = profile.company || '';
+      document.getElementById('prof-phone').value = profile.phone || '';
+      document.getElementById('prof-role').value = profile.role || 'customer';
+    }
+
+    document.getElementById('profile-form').onsubmit = async (e) => {
+      e.preventDefault();
+      const r = await Auth.updateProfile({
+        name: document.getElementById('prof-name').value,
+        company: document.getElementById('prof-company').value,
+        phone: document.getElementById('prof-phone').value,
+        role: document.getElementById('prof-role').value
+      });
+      const msg = document.getElementById('profile-msg');
+      if (r.ok) {
+        msg.textContent = 'Saved.';
+        msg.classList.remove('hidden');
+        document.getElementById('dash-name').textContent = r.user.name;
+        document.getElementById('dash-role-badge').textContent = r.user.role === 'dealer' ? 'Dealer' : 'Customer';
+      } else {
+        msg.textContent = r.error || 'Could not save.';
+        msg.classList.remove('hidden');
+      }
+    };
+
+    function openDashTab(name) {
+      const btn = document.querySelector('.dash-tab[data-tab="' + name + '"]');
+      if (btn) btn.click();
+    }
+
+    function afterAuthSuccess() {
+      const params = new URLSearchParams(window.location.search);
+      const next = params.get('next') || sessionStorage.getItem('spectrumAuthNext') || '';
+      sessionStorage.removeItem('spectrumAuthNext');
+      if (next === 'designer-custom') {
+        window.location.href = 'designer.html?brand=custom';
+        return;
+      }
+      showDash();
+      tryPendingCheckout();
+    }
+
+    // After login from cart checkout, place pending cart
+    function tryPendingCheckout() {
+      if (sessionStorage.getItem('spectrumPendingCheckout') !== '1') return;
+      if (!Auth.isLoggedIn()) return;
+      const cart = JSON.parse(localStorage.getItem('spectrumCart') || '[]');
+      sessionStorage.removeItem('spectrumPendingCheckout');
+      if (!cart.length) return;
+      const total = cart.reduce((s, i) => s + (i.price || 0) * (i.qty || 1), 0);
+      const result = Auth.createOrder({ items: cart, total });
+      if (result.ok) {
+        localStorage.setItem('spectrumCart', '[]');
+        alert('Order ' + result.order.id + ' placed from your cart!');
+        showDash();
+        openDashTab('orders');
+      }
+    }
+
+    function bootAccount() {
+      const urlTab = new URLSearchParams(window.location.search).get('tab');
+      const next = new URLSearchParams(window.location.search).get('next');
+      const urlMode = new URLSearchParams(window.location.search).get('mode');
+      if (Auth.isLoggedIn()) {
+        if (next === 'designer-custom') {
+          window.location.href = 'designer.html?brand=custom';
+        } else {
+          showDash();
+          if (urlTab === 'orders' || urlTab === 'projects' || urlTab === 'profile' || urlTab === 'panels') openDashTab(urlTab);
+          tryPendingCheckout();
+        }
+      } else {
+        showAuth();
+        setMode(urlMode === 'register' ? 'register' : 'signin');
+      }
+    }
+
+    (Auth.ready || Promise.resolve()).then(bootAccount);
+  </script>
+</body>
+</html>

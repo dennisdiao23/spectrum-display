@@ -1,0 +1,332 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Admin | Spectrum Display</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>body { font-family: 'Inter', system-ui, sans-serif; }</style>
+</head>
+<body class="bg-slate-950 text-slate-100 antialiased min-h-screen">
+  <header class="border-b border-slate-800 bg-slate-950">
+    <div class="max-w-6xl mx-auto px-4 py-4 flex items-center justify-between gap-3">
+      <div>
+        <a href="index.html" class="text-xs text-slate-500 hover:text-sky-300">← Site</a>
+        <h1 class="text-lg font-bold">Product Admin</h1>
+      </div>
+      <div class="flex items-center gap-3">
+        <span id="admin-name" class="text-sm text-slate-400"></span>
+        <button id="logout-btn" type="button" class="hidden px-3 py-1.5 rounded-full border border-slate-600 text-sm hover:border-sky-500">Sign out</button>
+      </div>
+    </div>
+  </header>
+
+  <main class="max-w-6xl mx-auto px-4 py-8">
+    <section id="login-panel" class="max-w-md mx-auto">
+      <h2 class="text-2xl font-bold mb-2">Admin sign in</h2>
+      <p class="text-sm text-slate-400 mb-6">Add and edit products, photos, and pricing. Default local login is in the README.</p>
+      <form id="login-form" class="rounded-2xl border border-slate-800 bg-slate-900/60 p-6 space-y-4">
+        <div>
+          <label class="block text-xs text-slate-400 mb-1">Email</label>
+          <input id="login-email" type="email" required class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:border-sky-500" placeholder="admin@spectrumdisplay.com">
+        </div>
+        <div>
+          <label class="block text-xs text-slate-400 mb-1">Password</label>
+          <input id="login-password" type="password" required class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:border-sky-500">
+        </div>
+        <p id="login-error" class="hidden text-sm text-red-400"></p>
+        <button type="submit" class="w-full py-2.5 rounded-full bg-sky-500 hover:bg-sky-400 text-white font-semibold text-sm">Sign in</button>
+      </form>
+    </section>
+
+    <section id="dash-panel" class="hidden space-y-8">
+      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+        <p class="text-slate-400 text-sm">Products in the database appear on the Products page and Project Designer.</p>
+        <button id="new-btn" type="button" class="px-4 py-2 rounded-full bg-sky-500 hover:bg-sky-400 text-white text-sm font-semibold">Add product</button>
+      </div>
+
+      <div id="form-wrap" class="hidden rounded-2xl border border-slate-800 bg-slate-900/50 p-5">
+        <h2 id="form-title" class="font-semibold text-lg mb-4">New product</h2>
+        <form id="product-form" class="grid sm:grid-cols-2 gap-4">
+          <input type="hidden" id="product-id">
+          <div>
+            <label class="block text-xs text-slate-400 mb-1">Brand</label>
+            <select id="brand-id" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm"></select>
+          </div>
+          <div>
+            <label class="block text-xs text-slate-400 mb-1">Or new brand name</label>
+            <input id="brand-name" type="text" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm" placeholder="Leave blank to use selected brand">
+          </div>
+          <div>
+            <label class="block text-xs text-slate-400 mb-1">Product / series name</label>
+            <input id="name" required type="text" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm">
+          </div>
+          <div>
+            <label class="block text-xs text-slate-400 mb-1">Series id (url slug)</label>
+            <input id="series-id" type="text" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm" placeholder="auto from name">
+          </div>
+          <div>
+            <label class="block text-xs text-slate-400 mb-1">Type</label>
+            <select id="type" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm">
+              <option>Fixed</option>
+              <option>Rental</option>
+              <option>Outdoor</option>
+              <option>Poster</option>
+              <option>Creative</option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-xs text-slate-400 mb-1">Badge</label>
+            <input id="badge" type="text" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm" placeholder="Exclusive, Rental…">
+          </div>
+          <div class="sm:col-span-2">
+            <label class="block text-xs text-slate-400 mb-1">Description</label>
+            <textarea id="description" rows="2" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm"></textarea>
+          </div>
+          <div>
+            <label class="block text-xs text-slate-400 mb-1">Pixel pitches (mm, comma separated)</label>
+            <input id="pitches" required type="text" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm" placeholder="1.25, 1.56, 1.87">
+          </div>
+          <div>
+            <label class="block text-xs text-slate-400 mb-1">Price per m² ($)</label>
+            <input id="price" required type="number" min="0" step="1" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm">
+          </div>
+          <div>
+            <label class="block text-xs text-slate-400 mb-1">Weight kg / m²</label>
+            <input id="weight" type="number" min="0" step="0.1" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm">
+          </div>
+          <div>
+            <label class="block text-xs text-slate-400 mb-1">Power avg / peak (W / m²)</label>
+            <div class="grid grid-cols-2 gap-2">
+              <input id="power-avg" type="number" min="0" step="1" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm" placeholder="Avg">
+              <input id="power-max" type="number" min="0" step="1" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm" placeholder="Peak">
+            </div>
+          </div>
+          <div>
+            <label class="block text-xs text-slate-400 mb-1">Cabinet W × H (mm)</label>
+            <div class="grid grid-cols-2 gap-2">
+              <input id="cab-w" type="number" min="1" step="0.5" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm" placeholder="500">
+              <input id="cab-h" type="number" min="1" step="0.5" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm" placeholder="500">
+            </div>
+          </div>
+          <div>
+            <label class="block text-xs text-slate-400 mb-1">Main photo</label>
+            <input id="image" type="file" accept="image/jpeg,image/png,image/webp,image/gif" class="w-full text-sm text-slate-400">
+            <img id="image-preview" alt="" class="hidden mt-2 h-24 rounded-lg object-cover border border-slate-800">
+          </div>
+          <div>
+            <label class="block text-xs text-slate-400 mb-1">More photos</label>
+            <input id="gallery" type="file" accept="image/jpeg,image/png,image/webp,image/gif" multiple class="w-full text-sm text-slate-400">
+          </div>
+          <p id="form-error" class="sm:col-span-2 hidden text-sm text-red-400"></p>
+          <div class="sm:col-span-2 flex gap-2">
+            <button type="submit" class="px-5 py-2 rounded-full bg-sky-500 hover:bg-sky-400 text-white text-sm font-semibold">Save product</button>
+            <button id="cancel-btn" type="button" class="px-5 py-2 rounded-full border border-slate-600 text-sm">Cancel</button>
+          </div>
+        </form>
+      </div>
+
+      <div id="product-table" class="grid sm:grid-cols-2 xl:grid-cols-3 gap-4"></div>
+    </section>
+  </main>
+
+  <script>
+    const loginPanel = document.getElementById('login-panel');
+    const dashPanel = document.getElementById('dash-panel');
+    const formWrap = document.getElementById('form-wrap');
+    const table = document.getElementById('product-table');
+    let brands = [];
+    let editingId = null;
+
+    function showError(id, msg) {
+      const el = document.getElementById(id);
+      el.textContent = msg || '';
+      el.classList.toggle('hidden', !msg);
+    }
+
+    async function api(url, opts) {
+      const res = await fetch(url, Object.assign({ credentials: 'same-origin' }, opts || {}));
+      const data = await res.json().catch(function () { return {}; });
+      if (!res.ok) throw new Error(data.error || 'Request failed');
+      return data;
+    }
+
+    function showDash(admin) {
+      loginPanel.classList.add('hidden');
+      dashPanel.classList.remove('hidden');
+      document.getElementById('logout-btn').classList.remove('hidden');
+      document.getElementById('admin-name').textContent = admin.name || admin.email;
+    }
+
+    function fillBrands(selected) {
+      const sel = document.getElementById('brand-id');
+      sel.innerHTML = brands.map(function (b) {
+        return '<option value="' + b.id + '"' + (b.id === selected ? ' selected' : '') + '>' + b.name + '</option>';
+      }).join('') + '<option value="">+ New brand</option>';
+    }
+
+    function metersToMm(m) {
+      const n = Number(m);
+      if (!n) return '';
+      return Math.round(n * 1000 * 10) / 10;
+    }
+
+    function resetForm() {
+      editingId = null;
+      document.getElementById('product-form').reset();
+      document.getElementById('product-id').value = '';
+      document.getElementById('form-title').textContent = 'New product';
+      document.getElementById('image-preview').classList.add('hidden');
+      showError('form-error', '');
+      fillBrands(brands[0] && brands[0].id);
+    }
+
+    function openForm(product) {
+      resetForm();
+      formWrap.classList.remove('hidden');
+      if (!product) return;
+      editingId = product.dbId;
+      document.getElementById('form-title').textContent = 'Edit ' + product.name;
+      document.getElementById('product-id').value = product.dbId;
+      fillBrands(product.brandId);
+      document.getElementById('name').value = product.name;
+      document.getElementById('series-id').value = product.id;
+      document.getElementById('type').value = product.type || 'Fixed';
+      document.getElementById('badge').value = product.badge || '';
+      document.getElementById('description').value = product.description || '';
+      document.getElementById('pitches').value = (product.pitches || []).join(', ');
+      document.getElementById('price').value = product.pricePerM2;
+      document.getElementById('weight').value = product.weightPerM2;
+      document.getElementById('power-avg').value = product.powerAvg;
+      document.getElementById('power-max').value = product.powerMax;
+      document.getElementById('cab-w').value = metersToMm(product.cabinetW);
+      document.getElementById('cab-h').value = metersToMm(product.cabinetH);
+      if (product.image) {
+        const img = document.getElementById('image-preview');
+        img.src = product.image;
+        img.classList.remove('hidden');
+      }
+    }
+
+    function renderProducts(list) {
+      table.innerHTML = list.map(function (p) {
+        const img = p.image
+          ? '<img src="' + p.image + '" alt="" class="w-full h-36 object-cover">'
+          : '<div class="h-36 bg-slate-900 flex items-center justify-center text-slate-600 text-sm">No photo</div>';
+        return (
+          '<article class="rounded-xl border border-slate-800 overflow-hidden bg-slate-950">' +
+            img +
+            '<div class="p-3 space-y-1">' +
+              '<div class="text-[11px] text-sky-400">' + (p.brandName || '') + '</div>' +
+              '<h3 class="font-semibold text-sm">' + p.name + '</h3>' +
+              '<p class="text-xs text-slate-400">' + (p.pitchLabel || '') + ' · ' + (p.priceLabel || '') + '/m²</p>' +
+              '<div class="pt-2 flex gap-2">' +
+                '<button type="button" class="edit-btn text-xs px-3 py-1 rounded-full border border-slate-600 hover:border-sky-500" data-id="' + p.dbId + '">Edit</button>' +
+                '<button type="button" class="del-btn text-xs px-3 py-1 rounded-full border border-slate-700 text-red-400 hover:border-red-500" data-id="' + p.dbId + '">Delete</button>' +
+              '</div>' +
+            '</div>' +
+          '</article>'
+        );
+      }).join('') || '<p class="text-slate-500 text-sm">No products yet.</p>';
+    }
+
+    async function loadDash() {
+      const [brandData, productData] = await Promise.all([
+        api('/api/admin/brands'),
+        api('/api/admin/products')
+      ]);
+      brands = brandData.brands || [];
+      fillBrands(brands[0] && brands[0].id);
+      renderProducts(productData.products || []);
+    }
+
+    document.getElementById('login-form').addEventListener('submit', async function (e) {
+      e.preventDefault();
+      showError('login-error', '');
+      try {
+        const data = await api('/api/admin/login', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            email: document.getElementById('login-email').value,
+            password: document.getElementById('login-password').value
+          })
+        });
+        showDash(data.admin);
+        await loadDash();
+      } catch (err) {
+        showError('login-error', err.message);
+      }
+    });
+
+    document.getElementById('logout-btn').addEventListener('click', async function () {
+      await api('/api/admin/logout', { method: 'POST' });
+      location.reload();
+    });
+
+    document.getElementById('new-btn').addEventListener('click', function () {
+      openForm(null);
+      formWrap.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    });
+    document.getElementById('cancel-btn').addEventListener('click', function () {
+      formWrap.classList.add('hidden');
+      resetForm();
+    });
+
+    table.addEventListener('click', async function (e) {
+      const edit = e.target.closest('.edit-btn');
+      const del = e.target.closest('.del-btn');
+      if (edit) {
+        const data = await api('/api/admin/products/' + edit.dataset.id);
+        openForm(data.product);
+        formWrap.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }
+      if (del && confirm('Delete this product?')) {
+        await api('/api/admin/products/' + del.dataset.id, { method: 'DELETE' });
+        await loadDash();
+      }
+    });
+
+    document.getElementById('product-form').addEventListener('submit', async function (e) {
+      e.preventDefault();
+      showError('form-error', '');
+      const fd = new FormData();
+      const newBrand = document.getElementById('brand-name').value.trim();
+      fd.append('brandId', newBrand ? '' : document.getElementById('brand-id').value);
+      fd.append('brandName', newBrand || '');
+      fd.append('name', document.getElementById('name').value);
+      fd.append('seriesId', document.getElementById('series-id').value);
+      fd.append('type', document.getElementById('type').value);
+      fd.append('badge', document.getElementById('badge').value);
+      fd.append('description', document.getElementById('description').value);
+      fd.append('pitches', document.getElementById('pitches').value);
+      fd.append('pricePerM2', document.getElementById('price').value);
+      fd.append('weightPerM2', document.getElementById('weight').value);
+      fd.append('powerAvg', document.getElementById('power-avg').value);
+      fd.append('powerMax', document.getElementById('power-max').value);
+      fd.append('cabinetWmm', document.getElementById('cab-w').value);
+      fd.append('cabinetHmm', document.getElementById('cab-h').value);
+      const image = document.getElementById('image').files[0];
+      if (image) fd.append('image', image);
+      Array.from(document.getElementById('gallery').files).forEach(function (f) { fd.append('gallery', f); });
+      try {
+        const url = editingId ? '/api/admin/products/' + editingId : '/api/admin/products';
+        await api(url, { method: editingId ? 'PUT' : 'POST', body: fd });
+        formWrap.classList.add('hidden');
+        resetForm();
+        await loadDash();
+      } catch (err) {
+        showError('form-error', err.message);
+      }
+    });
+
+    api('/api/admin/me').then(function (data) {
+      if (data.ok && data.admin) {
+        showDash(data.admin);
+        return loadDash();
+      }
+    }).catch(function () {});
+  </script>
+</body>
+</html>
