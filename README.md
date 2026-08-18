@@ -54,12 +54,16 @@ The SPECTRUM project is already connected. Copy `.env.example` to `.env` if need
 Products, brands, and the admin login live in Supabase. New photos go to the `product-images` storage bucket.
 
 
+### Contact form
+
+The contact page posts to `/api/contact`. Set `CONTACT_TO_EMAIL` plus either:
+
+- **Resend:** `RESEND_API_KEY` (and optionally `CONTACT_FROM_EMAIL`)
+- **SMTP:** `SMTP_HOST`, `SMTP_PORT`, `SMTP_USER`, `SMTP_PASS` (Gmail: smtp.gmail.com, port 465, an [App Password](https://myaccount.google.com/apppasswords))
+
+Inquiries are also stored in the `contact_inquiries` table in Supabase.
+
 ## Next Steps
 
-1. **Logo** – You mentioned you don’t have one yet. I can generate logo concepts for Spectrum Display.
-2. Real product photos & exact models/pricing for DIAO and Element.
-3. Connect the contact form to your email / CRM.
-4. Point spectrumdisplay.com (GoDaddy) to the hosted site (Netlify / Vercel / Cloudflare Pages are free & easy).
-5. Point spectrumdisplay.com at the hosted site once the Node server is deployed.
-
-Tell me if you want logo options, more product pages, color changes, or anything else.
+1. Real product photos & exact models/pricing for DIAO and Element.
+2. Cart / orders still live in this browser only (`localStorage`).

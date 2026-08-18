@@ -7,6 +7,7 @@ const cookieParser = require('cookie-parser');
 const bcrypt = require('bcryptjs');
 const multer = require('multer');
 const { getStore } = require('./store');
+const { sendContactEmail, mailConfigured } = require('./mail');
 
 const ROOT = path.join(__dirname, '..');
 const COOKIE = 'spectrum_admin';
@@ -143,6 +144,60 @@ async function main() {
       gallery
     };
   }
+
+  const contactHits = new Map();
+  function contactRateLimited(ip) {
+    const now = Date.now();
+    const windowMs = 60 * 60 * 1000;
+    const list = (contactHits.get(ip) || []).filter((t) => now - t < windowMs);
+    if (list.length >= 5) {
+      contactHits.set(ip, list);
+      return true;
+    }
+    list.push(now);
+    contactHits.set(ip, list);
+    return false;
+  }
+
+  app.post('/api/contact', async function (req, res, next) {
+    try {
+      if (String(req.body.website || '').trim()) {
+        return res.json({ ok: true });
+      }
+      const ip = String(req.ip || req.headers['x-forwarded-for'] || 'unknown').split(',')[0].trim();
+      if (contactRateLimited(ip)) {
+        return res.status(429).json({ ok: false, error: 'Too many messages. Please try again later.' });
+      }
+      const inquiry = {
+        name: String(req.body.name || '').trim().slice(0, 120),
+        company: String(req.body.company || '').trim().slice(0, 160),
+        email: String(req.body.email || '').trim().slice(0, 160),
+        phone: String(req.body.phone || '').trim().slice(0, 60),
+        projectType: String(req.body.projectType || '').trim().slice(0, 160),
+        message: String(req.body.message || '').trim().slice(0, 4000)
+      };
+      if (!inquiry.name) return res.status(400).json({ ok: false, error: 'Name is required.' });
+      if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(inquiry.email)) {
+        return res.status(400).json({ ok: false, error: 'A valid email is required.' });
+      }
+      try {
+        await store.saveContactInquiry(inquiry);
+      } catch (err) {
+        console.error('Could not store contact inquiry:', err.message || err);
+      }
+      if (!mailConfigured()) {
+        return res.status(503).json({
+          ok: false,
+          error: 'The contact form is not connected to email yet. Please try again later.'
+        });
+      }
+      await sendContactEmail(inquiry);
+      res.json({ ok: true });
+    } catch (err) {
+      console.error('Contact form error:', err.message || err);
+      res.status(502).json({ ok: false, error: 'Could not send the message. Please try again.' });
+    }
+  });
 
   app.get('/api/config', function (_req, res) {
     res.json({

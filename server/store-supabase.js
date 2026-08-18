@@ -238,6 +238,18 @@ function createSupabaseStore() {
       const { error } = await supabase.from('sessions').delete().eq('token', token);
       throwIf(error);
     },
+    async saveContactInquiry(inquiry) {
+      const { error } = await supabase.from('contact_inquiries').insert({
+        name: inquiry.name,
+        company: inquiry.company || '',
+        email: inquiry.email,
+        phone: inquiry.phone || '',
+        project_type: inquiry.projectType || '',
+        message: inquiry.message || ''
+      });
+      throwIf(error, 'Could not save the inquiry.');
+      return true;
+    },
     async saveUpload(file) {
       const ext = path.extname(file.originalname || '').toLowerCase();
       const safeExt = ['.jpg', '.jpeg', '.png', '.webp', '.gif'].includes(ext) ? ext : '.jpg';
