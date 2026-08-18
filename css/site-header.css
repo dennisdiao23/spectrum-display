@@ -306,14 +306,14 @@ body:not(.designer-app) {
   .site-menu-btn { display: none !important; }
   .site-util-label { display: none !important; }
   #hdr-signin-drop { display: none; }
-  .site-utils { gap: 0; }
+  .site-utils { gap: 0.4rem; }
   .site-util {
-    height: 2.4rem;
-    padding: 0 0.22rem;
+    height: 2.64rem;
+    padding: 0 0.3rem;
   }
   .site-util svg {
-    width: 1.4rem;
-    height: 1.4rem;
+    width: 1.54rem;
+    height: 1.54rem;
   }
   .site-header-top { min-height: 2.2rem; }
   .site-drop-panel { width: min(20rem, calc(100vw - 1.5rem)); }
