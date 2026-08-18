@@ -87,6 +87,9 @@ function createSqliteStore() {
     async deleteSession(token) {
       db.prepare('DELETE FROM sessions WHERE token = ?').run(token);
     },
+    async saveContactInquiry() {
+      return true;
+    },
     async saveUpload(file) {
       const ext = path.extname(file.originalname || '').toLowerCase();
       const safeExt = ['.jpg', '.jpeg', '.png', '.webp', '.gif'].includes(ext) ? ext : '.jpg';

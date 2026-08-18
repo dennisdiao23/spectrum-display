@@ -66,3 +66,26 @@ drop policy if exists product_images_public_read on storage.objects;
 create policy product_images_public_read
 on storage.objects for select
 using (bucket_id = 'product-images');
+
+create table if not exists public.contact_inquiries (
+  id bigint generated always as identity primary key,
+  name text not null,
+  company text not null default '',
+  email text not null,
+  phone text not null default '',
+  project_type text not null default '',
+  message text not null default '',
+  created_at timestamptz not null default now()
+);
+
+alter table public.contact_inquiries enable row level security;
+
+drop policy if exists contact_inquiries_admin_all on public.contact_inquiries;
+create policy contact_inquiries_admin_all
+on public.contact_inquiries
+for all
+using (public.is_spectrum_admin())
+with check (public.is_spectrum_admin());
+
+grant select, insert on public.contact_inquiries to anon, authenticated;
+grant all on public.contact_inquiries to service_role;
