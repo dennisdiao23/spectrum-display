@@ -1,71 +1,87 @@
-# Spectrum Display Inc. — Website Prototype
+# Spectrum Display Inc.
 
-**Company**: Spectrum Display Inc.  
-**Live site**: https://www.spectrumdisplay.com  
+LED catalog site for **Spectrum Display Inc.**
 
-**How the stack stays up** (GoDaddy, Railway, GitHub, Supabase, Google, Resend): see [HOW-IT-RUNS.md](HOW-IT-RUNS.md).  
+**Live site:** https://www.spectrumdisplay.com
 
-Modern LED display distributor website featuring:
+This is the durable place to look things up later. Chat history can get summarized when it gets long — do not keep token/session reports. Put lasting facts here and in [HOW-IT-RUNS.md](HOW-IT-RUNS.md).
 
-- **Online sales experience** inspired by Dell.com (catalog, configurator, cart, transparent pricing)
-- **Product pages** inspired by DJI.com (immersive layout, sticky buy bar, specs tabs)
+## How it stays online
 
-## The 5 Brands
+| Piece | Job |
+|---|---|
+| **GoDaddy** | Domain + DNS. `www` points at Railway. Bare `spectrumdisplay.com` forwards to www. |
+| **Railway** | Runs the website (`npm start`). Merge to **`main`** deploys. |
+| **GitHub** | This repo. Not the live site by itself. |
+| **Supabase** | Catalog, customer Sign in, saved projects, contact copies, product photos. |
+| **Google** | Continue with Google. |
+| **Resend → Gmail** | Contact form emails `dennisdiao@diaoinc.com`. |
 
-| Brand     | Type                  | Notes |
-|-----------|-----------------------|-------|
-| **TRT**   | Partner (Transtech)   | Fine pitch, Discovery series, LedPoster, US support |
-| **Gloshin** | Partner (Gloshine)  | Rental, transparent Vanish, fixed & outdoor |
-| **BAKO**  | Partner               | Fine pitch COB, Diamond rental, all-in-ones |
-| **DIAO**  | Exclusive (yours)     | Value-driven professional fixed install line |
-| **Element** | Exclusive (yours)   | Performance rental & creative / XR series |
+Full map, env var names, DNS, and “if X breaks look here”: **[HOW-IT-RUNS.md](HOW-IT-RUNS.md)**.
+
+Hosting is **Railway only** (not Netlify or Vercel).
+
+## Brands
+
+| Brand | Type | Notes |
+|---|---|---|
+| **TRT** | Partner (Transtech) | Fine pitch, Discovery series, LedPoster, US support |
+| **Gloshin** | Partner (Gloshine) | Rental, transparent Vanish, fixed & outdoor |
+| **BAKO** | Partner | Fine pitch COB, Diamond rental, all-in-ones |
+| **DIAO** | Exclusive | Value-driven professional fixed install |
+| **Element** | Exclusive | Performance rental & creative / XR |
 
 ## Pages
 
-- `index.html` – Homepage
-- `brands.html` – Brand showcase
-- `products.html` – Catalog with filters
-- `product.html` – Detailed product + configurator (TRT Discovery example)
-- `cart.html` – Cart (localStorage)
-- `contact.html` – Quote / contact form
+| File | Page |
+|---|---|
+| `index.html` | Homepage |
+| `brands.html` | Brand showcase |
+| `products.html` | Catalog with filters |
+| `product.html` | Product + configurator |
+| `designer.html` | Designer / saved projects (needs Sign in) |
+| `account.html` | Customer Sign in / account |
+| `cart.html` | Cart (**this browser only** — `localStorage`) |
+| `contact.html` | Quote / contact form (emails you) |
+| `admin.html` | Catalog admin (separate from customer Sign in) |
 
-## How to Preview
-
-Open `index.html`, or run the local server (needed for the product database and admin):
+## Preview on this PC
 
 ```bash
-cd spectrum-display
 npm install
 npm start
 ```
 
-Visit http://localhost:3000
+Open http://localhost:3000
+
+Copy `.env.example` to `.env` for local keys. With Supabase vars, you use the live catalog. Without them, data is a local SQLite file at `data/spectrum.db`.
+
+**See mobile on a PC:** in Chrome, open the site → **F12** → **Ctrl + Shift + M**. Pick a phone at the top (for example iPhone 12 Pro) and refresh. That is a size preview, not a real iPhone.
 
 ### Admin catalog
 
-1. Open http://localhost:3000/admin.html
-2. Sign in with `admin@spectrumdisplay.com` and the admin password stored in your local `.env` (`ADMIN_PASSWORD`).
-3. Add or edit products, including photos, pitches, cabinet size, and $/m² pricing.
+1. Open http://localhost:3000/admin.html (or `/admin.html` on the live site).
+2. Sign in as `admin@spectrumdisplay.com` with the password in local `.env` (`ADMIN_PASSWORD`) when using SQLite. Live admin already exists in Supabase.
+3. Add or edit products, photos, pitches, cabinet size, and $/m².
 
-Without Supabase keys, data is stored locally in `data/spectrum.db`.
-
-### Supabase (recommended)
-
-The SPECTRUM project is already connected. Copy `.env.example` to `.env` if needed, then `npm start`.
-
-Products, brands, and the admin login live in Supabase. New photos go to the `product-images` storage bucket.
-
+Customer **Sign in** on the public site is not the admin login.
 
 ### Contact form
 
-The contact page posts to `/api/contact`. Set `CONTACT_TO_EMAIL` plus either:
+The contact page posts to `/api/contact`. Production uses **Resend**. Inquiries are also stored in Supabase `contact_inquiries`.
 
-- **Resend:** `RESEND_API_KEY` (and optionally `CONTACT_FROM_EMAIL`)
-- **SMTP:** `SMTP_HOST`, `SMTP_PORT`, `SMTP_USER`, `SMTP_PASS` (Gmail: smtp.gmail.com, port 465, an [App Password](https://myaccount.google.com/apppasswords))
+Do not put API keys or `SPECTRUM_ADMIN_SECRET` in this repo.
 
-Inquiries are also stored in the `contact_inquiries` table in Supabase.
+## How updates go live
 
-## Next Steps
+1. Edit files (local Cursor or Cloud Agent).
+2. Commit and merge to **`main`**.
+3. Watch Railway **web** until the deploy is **SUCCESS**.
+4. Check https://www.spectrumdisplay.com
 
-1. Real product photos & exact models/pricing for DIAO and Element.
-2. Cart / orders still live in this browser only (`localStorage`).
+After Cloud Agent changes, on your PC: `git pull origin main`. OneDrive does not update GitHub.
+
+## Not done yet (on purpose)
+
+1. Real product photos and exact models/pricing for DIAO and Element.
+2. Cart / orders stay in **this browser only**. They are not shared across phones and are not stored in Supabase.
