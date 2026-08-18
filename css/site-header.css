@@ -315,7 +315,13 @@ body:not(.designer-app) {
     width: 1.54rem;
     height: 1.54rem;
   }
-  .site-header-top { min-height: 2.2rem; }
+  .site-header-top {
+    min-height: 2.64rem;
+    align-items: center;
+  }
+  .site-brand {
+    margin-top: 0.2rem;
+  }
   .site-drop-panel { width: min(20rem, calc(100vw - 1.5rem)); }
   .sticky-buy { bottom: var(--site-tabbar-h) !important; }
   body:has(.sticky-buy) {
