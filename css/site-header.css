@@ -296,7 +296,7 @@ body:not(.designer-app) {
 @media (max-width: 767px) {
   :root {
     --site-header-h: calc(4.5rem + 10px);
-    --site-tabbar-h: calc(4rem + env(safe-area-inset-bottom, 0px));
+    --site-tabbar-h: calc(6.5rem + env(safe-area-inset-bottom, 0px));
     --logo-h: 2.2rem;
   }
   body {
@@ -325,8 +325,9 @@ body:not(.designer-app) {
     right: 0;
     bottom: 0;
     z-index: 50;
+    box-sizing: border-box;
     height: var(--site-tabbar-h);
-    padding: 0.2rem 0.15rem env(safe-area-inset-bottom, 0px);
+    padding: 0.7rem 0.2rem calc(2.15rem + env(safe-area-inset-bottom, 0px));
     background: rgba(2, 6, 23, 0.96);
     backdrop-filter: blur(18px);
     -webkit-backdrop-filter: blur(18px);
@@ -337,29 +338,29 @@ body:not(.designer-app) {
     display: flex;
     flex-direction: column;
     align-items: center;
-    justify-content: center;
-    gap: 0.18rem;
-    min-height: 3.5rem;
-    padding: 0.35rem 0.2rem 0.25rem;
+    justify-content: flex-start;
+    gap: 0.22rem;
+    min-height: 0;
+    padding: 0.15rem 0.2rem 0;
     color: #64748b;
     text-decoration: none;
     font-size: 0.6875rem;
     font-weight: 600;
     letter-spacing: 0.01em;
-    border-radius: 0.65rem;
-    border-top: 2px solid transparent;
     -webkit-tap-highlight-color: transparent;
     touch-action: manipulation;
   }
   .site-tabbar a svg {
-    width: 1.45rem;
-    height: 1.45rem;
+    width: 1.5rem;
+    height: 1.5rem;
     flex-shrink: 0;
   }
   .site-tabbar a.is-active {
+    color: #64748b;
+  }
+  .site-tabbar a.is-active svg {
     color: #38bdf8;
-    background: rgba(14, 165, 233, 0.1);
-    border-top-color: #38bdf8;
+    stroke-width: 2;
   }
   html[data-lang="ja"] .site-tabbar a,
   html[data-lang="ko"] .site-tabbar a,
