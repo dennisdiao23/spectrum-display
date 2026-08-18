@@ -296,7 +296,7 @@ body:not(.designer-app) {
 @media (max-width: 767px) {
   :root {
     --site-header-h: calc(4.5rem + 10px);
-    --site-tabbar-h: calc(6.5rem + env(safe-area-inset-bottom, 0px));
+    --site-tabbar-h: calc(6.5rem - 20px + env(safe-area-inset-bottom, 0px));
     --logo-h: 2.2rem;
   }
   body {
@@ -344,7 +344,7 @@ body:not(.designer-app) {
     z-index: 50;
     box-sizing: border-box;
     height: var(--site-tabbar-h);
-    padding: 0.7rem 0.2rem calc(2.15rem + env(safe-area-inset-bottom, 0px));
+    padding: 0.7rem 0.2rem calc(2.15rem - 20px + env(safe-area-inset-bottom, 0px));
     background: rgba(2, 6, 23, 0.96);
     backdrop-filter: blur(18px);
     -webkit-backdrop-filter: blur(18px);
