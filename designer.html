@@ -77,6 +77,52 @@
         );
       }
     }
+    @media (max-width: 1023px) {
+      .designer-toolbar {
+        position: relative;
+        top: auto;
+      }
+      .preview-pane {
+        display: contents;
+      }
+      .preview-sticky {
+        order: -1;
+        position: sticky;
+        top: var(--nav-h);
+        z-index: 35;
+        background: #020617;
+        padding: 0.4rem 0 0.55rem;
+        margin: 0 calc(-1 * var(--site-gutter));
+        padding-left: var(--site-gutter);
+        padding-right: var(--site-gutter);
+        border-bottom: 1px solid #1e293b;
+        box-shadow: 0 10px 24px rgba(0, 0, 0, 0.35);
+      }
+      .preview-sticky h2 {
+        display: none;
+      }
+      .preview-sticky .preview-frame {
+        height: 11.25rem;
+        max-height: 32vh;
+      }
+      .preview-sticky #preview-label {
+        font-size: 0.7rem;
+      }
+      .preview-sticky .zoom-controls input[type="range"] {
+        width: 5.5rem;
+      }
+      .designer-controls {
+        order: 0;
+      }
+      .preview-extras {
+        order: 1;
+      }
+    }
+    @media (max-width: 767px) {
+      .preview-sticky .preview-frame {
+        height: 10.25rem;
+      }
+    }
     
     .wall-container {
       position: relative;
@@ -543,7 +589,7 @@
     <div class="site-wrap designer-layout">
       
       <!-- Controls -->
-      <div class="space-y-5">
+      <div class="designer-controls space-y-5">
         <!-- 1. Product -->
         <div class="p-5 rounded-2xl border border-slate-800 bg-slate-900/60 space-y-4">
           <h2 class="font-semibold text-base" data-i18n="designer.choose">1. Choose Product</h2>
@@ -778,6 +824,7 @@
 
       <!-- Preview -->
       <div class="preview-pane min-w-0">
+          <div class="preview-sticky">
           <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-3 shrink-0">
             <h2 class="font-semibold text-base" data-i18n="designer.preview">Live Wall Preview</h2>
             <div class="flex flex-wrap items-center gap-4">
@@ -820,7 +867,9 @@
               </div>
             </div>
           </div>
+          </div>
 
+          <div class="preview-extras">
           <div class="mt-3 flex flex-wrap items-center gap-x-6 gap-y-2 shrink-0">
             <div class="flex items-center gap-1.5 text-xs font-medium">
               <span class="text-slate-500 mr-1">View</span>
@@ -887,6 +936,7 @@
 
           <div class="mt-5 p-4 rounded-xl bg-slate-900/50 border border-slate-800 text-sm text-slate-400">
             <strong class="text-slate-200">Note:</strong> This is a planning visualization. Final cabinet count, exact resolution, mounting method, and pricing are confirmed by our team after reviewing site conditions and content requirements.
+          </div>
           </div>
       </div>
     </div>
