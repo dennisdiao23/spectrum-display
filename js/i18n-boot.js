@@ -11,12 +11,16 @@
   html.setAttribute('data-lang', lang);
   html.lang = lang === 'zh' ? 'zh-CN' : lang;
   if (lang !== 'en') html.classList.add('i18n-wait');
+  var vp = document.querySelector('meta[name="viewport"]');
+  if (vp && vp.content.indexOf('viewport-fit') === -1) {
+    vp.content += ', viewport-fit=cover';
+  }
 
   var css = document.createElement('style');
   css.id = 'spectrum-i18n-boot-css';
   css.textContent =
-    ':root{--site-header-h:calc(5.75rem + 10px)}' +
-    '@media (max-width:767px){:root{--site-header-h:calc(4.5rem + 10px)}}' +
+    ':root{--site-header-h:calc(5.75rem + 10px);--site-tabbar-h:0px}' +
+    '@media (max-width:767px){:root{--site-header-h:calc(4.5rem + 10px);--site-tabbar-h:calc(4rem + env(safe-area-inset-bottom,0px))}body{padding-bottom:var(--site-tabbar-h)}}' +
     'html.i18n-wait{visibility:hidden}' +
     '.site-header{height:var(--site-header-h);box-sizing:border-box}' +
     '.site-header [data-i18n],.site-nav a,.site-util{white-space:nowrap}';

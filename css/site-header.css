@@ -1,6 +1,7 @@
 /* Spectrum Display — Alienware-style site header (fixed height, no layout jump) */
 :root {
   --site-header-h: calc(5.75rem + 10px);
+  --site-tabbar-h: 0px;
   --logo-h: 2.85rem;
   --logo-text-inset: calc(var(--logo-h) * 76 / 205 - 20px);
   --site-gutter: 1rem;
@@ -295,21 +296,74 @@ body:not(.designer-app) {
 @media (max-width: 767px) {
   :root {
     --site-header-h: calc(4.5rem + 10px);
+    --site-tabbar-h: calc(4rem + env(safe-area-inset-bottom, 0px));
     --logo-h: 2.2rem;
   }
-  .site-nav {
-    display: none;
-    padding-left: var(--logo-text-inset);
-    padding-bottom: 0.35rem;
-    gap: 0.9rem;
+  body {
+    padding-bottom: var(--site-tabbar-h);
   }
-  .site-header.is-nav-open {
-    height: auto;
-    min-height: var(--site-header-h);
-  }
-  .site-header.is-nav-open .site-nav { display: flex; flex-wrap: wrap; }
-  .site-menu-btn { display: inline-flex; }
+  .site-nav { display: none !important; }
+  .site-menu-btn { display: none !important; }
   .site-util-label { display: none !important; }
   .site-header-top { min-height: 2.2rem; }
   .site-drop-panel { width: min(20rem, calc(100vw - 1.5rem)); }
+  .sticky-buy { bottom: var(--site-tabbar-h) !important; }
+  body:has(.sticky-buy) {
+    padding-bottom: calc(var(--site-tabbar-h) + 4.75rem);
+  }
+}
+
+.site-tabbar {
+  display: none;
+}
+@media (max-width: 767px) {
+  .site-tabbar {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    position: fixed;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 50;
+    height: var(--site-tabbar-h);
+    padding: 0.2rem 0.15rem env(safe-area-inset-bottom, 0px);
+    background: rgba(2, 6, 23, 0.96);
+    backdrop-filter: blur(18px);
+    -webkit-backdrop-filter: blur(18px);
+    border-top: 1px solid #1e293b;
+    box-shadow: 0 -12px 28px rgba(0, 0, 0, 0.4);
+  }
+  .site-tabbar a {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 0.18rem;
+    min-height: 3.5rem;
+    padding: 0.35rem 0.2rem 0.25rem;
+    color: #64748b;
+    text-decoration: none;
+    font-size: 0.6875rem;
+    font-weight: 600;
+    letter-spacing: 0.01em;
+    border-radius: 0.65rem;
+    border-top: 2px solid transparent;
+    -webkit-tap-highlight-color: transparent;
+    touch-action: manipulation;
+  }
+  .site-tabbar a svg {
+    width: 1.45rem;
+    height: 1.45rem;
+    flex-shrink: 0;
+  }
+  .site-tabbar a.is-active {
+    color: #38bdf8;
+    background: rgba(14, 165, 233, 0.1);
+    border-top-color: #38bdf8;
+  }
+  html[data-lang="ja"] .site-tabbar a,
+  html[data-lang="ko"] .site-tabbar a,
+  html[data-lang="zh"] .site-tabbar a {
+    font-size: 0.625rem;
+  }
 }
