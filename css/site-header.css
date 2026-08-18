@@ -305,6 +305,16 @@ body:not(.designer-app) {
   .site-nav { display: none !important; }
   .site-menu-btn { display: none !important; }
   .site-util-label { display: none !important; }
+  #hdr-signin-drop { display: none; }
+  .site-utils { gap: 0; }
+  .site-util {
+    height: 2.4rem;
+    padding: 0 0.22rem;
+  }
+  .site-util svg {
+    width: 1.4rem;
+    height: 1.4rem;
+  }
   .site-header-top { min-height: 2.2rem; }
   .site-drop-panel { width: min(20rem, calc(100vw - 1.5rem)); }
   .sticky-buy { bottom: var(--site-tabbar-h) !important; }
