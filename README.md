@@ -1,7 +1,9 @@
 # Spectrum Display Inc. — Website Prototype
 
 **Company**: Spectrum Display Inc.  
-**Domain**: spectrumdisplay.com  
+**Live site**: https://www.spectrumdisplay.com  
+
+**How the stack stays up** (GoDaddy, Railway, GitHub, Supabase, Google, Resend): see [HOW-IT-RUNS.md](HOW-IT-RUNS.md).  
 
 Modern LED display distributor website featuring:
 
