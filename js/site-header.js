@@ -58,7 +58,47 @@
     });
   }
 
+  function icon(path) {
+    return '<svg fill="none" stroke="currentColor" stroke-width="1.7" viewBox="0 0 24 24" aria-hidden="true">' + path + '</svg>';
+  }
+
+  function injectTabbar() {
+    if ($('#site-tabbar') || !document.body) return;
+    var nav = document.createElement('nav');
+    nav.className = 'site-tabbar';
+    nav.id = 'site-tabbar';
+    nav.setAttribute('aria-label', 'Main');
+    nav.innerHTML =
+      '<a href="index.html" data-tab="home">' +
+        icon('<path stroke-linecap="round" stroke-linejoin="round" d="M3 10.5L12 3l9 7.5V20a1.5 1.5 0 01-1.5 1.5H14v-6H10v6H4.5A1.5 1.5 0 013 20V10.5z"/>') +
+        '<span data-i18n="nav.home">Home</span></a>' +
+      '<a href="products.html" data-tab="products">' +
+        icon('<path stroke-linecap="round" stroke-linejoin="round" d="M4.5 4.5h6v6h-6v-6zm9 0h6v6h-6v-6zm-9 9h6v6h-6v-6zm9 0h6v6h-6v-6z"/>') +
+        '<span data-i18n="nav.products">Products</span></a>' +
+      '<a href="designer.html" data-tab="designer">' +
+        icon('<path stroke-linecap="round" stroke-linejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931zM16.862 4.487L19.5 7.125M18 14v4.75A2.25 2.25 0 0115.75 21H5.25A2.25 2.25 0 013 18.75V8.25A2.25 2.25 0 015.25 6H10"/>') +
+        '<span data-i18n="nav.tabDesigner">Designer</span></a>' +
+      '<a href="account.html" data-tab="account">' +
+        icon('<path stroke-linecap="round" stroke-linejoin="round" d="M15.75 7.5a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.5 19.5a7.5 7.5 0 0115 0"/>') +
+        '<span data-i18n="nav.account">Account</span></a>';
+    document.body.appendChild(nav);
+
+    var file = (location.pathname.split('/').pop() || 'index.html').toLowerCase();
+    var tab = '';
+    if (!file || file === 'index.html') tab = 'home';
+    else if (file === 'products.html' || file === 'product.html') tab = 'products';
+    else if (file === 'designer.html') tab = 'designer';
+    else if (file === 'account.html') tab = 'account';
+    $all('[data-tab]', nav).forEach(function (a) {
+      var on = tab && a.getAttribute('data-tab') === tab;
+      a.classList.toggle('is-active', on);
+      if (on) a.setAttribute('aria-current', 'page');
+      else a.removeAttribute('aria-current');
+    });
+  }
+
   function boot() {
+    injectTabbar();
     var header = $('.site-header');
     if (!header) return;
 
