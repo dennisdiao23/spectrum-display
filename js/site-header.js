@@ -69,12 +69,12 @@
     nav.id = 'site-tabbar';
     nav.setAttribute('aria-label', 'Main');
     nav.innerHTML =
-      '<a href="index.html" data-tab="home">' +
-        icon('<path stroke-linecap="round" stroke-linejoin="round" d="M3 10.5L12 3l9 7.5V20a1.5 1.5 0 01-1.5 1.5H14v-6H10v6H4.5A1.5 1.5 0 013 20V10.5z"/>') +
-        '<span data-i18n="nav.home">Home</span></a>' +
       '<a href="products.html" data-tab="products">' +
         icon('<path stroke-linecap="round" stroke-linejoin="round" d="M4.5 4.5h6v6h-6v-6zm9 0h6v6h-6v-6zm-9 9h6v6h-6v-6zm9 0h6v6h-6v-6z"/>') +
         '<span data-i18n="nav.products">Products</span></a>' +
+      '<a href="solutions.html" data-tab="solutions">' +
+        icon('<path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6A2.25 2.25 0 016 3.75h12A2.25 2.25 0 0120.25 6v8.25A2.25 2.25 0 0118 16.5H6a2.25 2.25 0 01-2.25-2.25V6zM8.25 19.5h7.5"/>') +
+        '<span data-i18n="nav.solutions">Solutions</span></a>' +
       '<a href="designer.html" data-tab="designer">' +
         icon('<path stroke-linecap="round" stroke-linejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931zM16.862 4.487L19.5 7.125M18 14v4.75A2.25 2.25 0 0115.75 21H5.25A2.25 2.25 0 013 18.75V8.25A2.25 2.25 0 015.25 6H10"/>') +
         '<span data-i18n="nav.tabDesigner">Calculator</span></a>' +
@@ -85,8 +85,8 @@
 
     var file = (location.pathname.split('/').pop() || 'index.html').toLowerCase();
     var tab = '';
-    if (!file || file === 'index.html') tab = 'home';
-    else if (file === 'products.html' || file === 'product.html') tab = 'products';
+    if (file === 'products.html' || file === 'product.html') tab = 'products';
+    else if (file === 'solutions.html') tab = 'solutions';
     else if (file === 'designer.html') tab = 'designer';
     else if (file === 'account.html') tab = 'account';
     $all('[data-tab]', nav).forEach(function (a) {
