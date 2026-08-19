@@ -2,7 +2,7 @@
 :root {
   --site-header-h: 4rem;
   --site-tabbar-h: 0px;
-  --logo-h: 2.15rem;
+  --logo-h: calc(var(--site-header-h) - 0.2rem);
   --logo-text-inset: calc(var(--logo-h) * 76 / 205 - 20px);
   --site-gutter: 1rem;
 }
@@ -53,11 +53,12 @@ body:not(.designer-app) {
   display: flex;
   flex-direction: row;
   align-items: center;
-  justify-content: flex-start;
+  justify-content: space-between;
   gap: 0.35rem;
   width: 100%;
   height: 100%;
   min-height: 0;
+  position: relative;
 }
 .site-brand {
   display: flex;
@@ -65,7 +66,10 @@ body:not(.designer-app) {
   text-decoration: none;
   flex-shrink: 0;
   line-height: 0;
-  margin-left: -20px;
+  height: 100%;
+  overflow: hidden;
+  margin-left: -12px;
+  z-index: 2;
 }
 .site-brand-logo {
   display: block;
@@ -78,6 +82,7 @@ body:not(.designer-app) {
   align-items: center;
   gap: 0.15rem;
   flex-shrink: 0;
+  z-index: 2;
 }
 .site-util {
   display: inline-flex;
@@ -117,11 +122,12 @@ body:not(.designer-app) {
 .site-nav {
   display: flex;
   align-items: center;
+  justify-content: center;
   gap: 0.05rem;
   height: 2.25rem;
   min-height: 0;
-  padding-left: 0.15rem;
-  flex: 1 1 auto;
+  padding-left: 0;
+  flex: 0 0 auto;
   min-width: 0;
 }
 .site-nav-item {
@@ -561,8 +567,12 @@ body:not(.designer-app) {
   color: #64748b;
 }
 @media (min-width: 768px) {
-  .site-brand {
-    margin-left: -12px;
+  .site-nav {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    z-index: 1;
   }
   .site-utils {
     gap: 0.1rem;
@@ -604,7 +614,6 @@ body:not(.designer-app) {
   :root {
     --site-header-h: 3.35rem;
     --site-tabbar-h: calc(6.5rem - 35px + env(safe-area-inset-bottom, 0px));
-    --logo-h: 1.75rem;
   }
   body {
     padding-bottom: var(--site-tabbar-h);
