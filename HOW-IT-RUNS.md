@@ -168,6 +168,34 @@ Gmail App Passwords were **not** available on this account. That is why we use R
 
 ---
 
+### 8. Google Search — so www.spectrumdisplay.com shows up in Google
+
+This is separate from **Continue with Google** (customer Sign in). Search Console is how Google learns the site exists.
+
+| | |
+|---|---|
+| **What it is** | Google’s dashboard for indexing `spectrumdisplay.com`. |
+| **Dashboard** | https://search.google.com/search-console |
+| **Account** | `dennisdiao@diaoinc.com` |
+| **If it breaks** | Searching the domain or “Spectrum Display” does not show this site. Other companies (`spectrumdisplay.cn`, `spectrum-display.com`) can still rank first for the brand name. |
+
+The site is crawlable. Google just has to be asked, then given time. Code already has `robots.txt`, `/sitemap.xml`, and page titles/descriptions.
+
+**One-time setup (you do this in the browser):**
+
+1. Merge this work to **`main`** and wait until Railway **web** is **SUCCESS**.
+2. Open https://search.google.com/search-console with `dennisdiao@diaoinc.com`.
+3. Add property → **Domain** → `spectrumdisplay.com` (covers www and no-www).
+4. Google shows a **TXT** record. In GoDaddy → DNS → add **TXT**, Name `@`, Value = the string Google gives you. Wait until Google says verified (can take minutes to a day).
+5. In Search Console: **Sitemaps** → submit `https://www.spectrumdisplay.com/sitemap.xml`.
+6. **URL inspection** → paste `https://www.spectrumdisplay.com/` → **Request indexing**.
+
+Do **not** paste the Google TXT value into GitHub. It lives in GoDaddy only.
+
+Indexing is not instant. `site:spectrumdisplay.com` should start showing pages after Google crawls. Ranking for “Spectrum Display” against older companies can still take longer.
+
+---
+
 ## Smaller pieces (site still loads if these wobble)
 
 | App / piece | Job | If it breaks |
@@ -195,6 +223,7 @@ Leave NS (`ns37` / `ns38`) and SOA alone.
 | A | `@` | GoDaddy forwarding IPs | No-www → www (do not delete; they have a lock/info icon) |
 | TXT / MX | `send` / `resend._domainkey.send` | Resend values | Contact email |
 | TXT | `_dmarc` | DMARC policy | Email reputation |
+| TXT | `@` | Google Search Console value (after you add the property) | Proves you own the domain for Google search |
 | CNAME | `pay` | GoDaddy commerce | Optional GoDaddy feature |
 
 **Forwarding tab:** `spectrumdisplay.com` → `https://www.spectrumdisplay.com`, 301, no masking.
@@ -211,6 +240,7 @@ Leave NS (`ns37` / `ns38`) and SOA alone.
 6. Google OAuth **published** so any Google user can Continue with Google.
 7. **Contact form** emails you via **Resend** → Gmail; copy stored in Supabase.
 8. **GitHub `main` → Railway** auto-deploy turned on.
+9. **Google Search Console** — `robots.txt`, sitemap, page descriptions. You still verify the domain in Search Console (see section 8).
 
 ---
 
@@ -228,6 +258,7 @@ Leave NS (`ns37` / `ns38`) and SOA alone.
 | Admin cannot add products | `admin.html` (not customer Sign in); `SPECTRUM_ADMIN_SECRET` |
 | Merged on GitHub, site unchanged | Railway must show a new deploy for that commit on **main** |
 | Cart empty on another phone | Expected — cart is not in Supabase |
+| Domain not in Google search | Search Console property + sitemap (section 8). Not a Railway outage. |
 
 ---
 

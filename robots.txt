@@ -1,0 +1,9 @@
+User-agent: *
+Allow: /
+
+Disallow: /admin.html
+Disallow: /cart.html
+Disallow: /account.html
+Disallow: /api/
+
+Sitemap: https://www.spectrumdisplay.com/sitemap.xml

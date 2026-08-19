@@ -5,7 +5,19 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <script src="js/i18n-boot.js"></script>
   <link rel="stylesheet" href="css/site-header.css" />
-  <title>Discovery Series | Spectrum Display</title>
+  <title>LED Video Wall | Spectrum Display</title>
+  <meta name="description" content="Configure LED video wall cabinets, pixel pitch, and pricing from Spectrum Display Inc., a US distributor of professional indoor, outdoor, and rental LED displays." />
+  <link rel="canonical" href="https://www.spectrumdisplay.com/product.html" />
+  <meta property="og:type" content="website" />
+  <meta property="og:site_name" content="Spectrum Display" />
+  <meta property="og:title" content="LED Video Wall | Spectrum Display" />
+  <meta property="og:description" content="Configure LED video wall cabinets, pixel pitch, and pricing from Spectrum Display Inc." />
+  <meta property="og:url" content="https://www.spectrumdisplay.com/product.html" />
+  <meta property="og:image" content="https://www.spectrumdisplay.com/assets/products/discovery.jpg" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="LED Video Wall | Spectrum Display" />
+  <meta name="twitter:description" content="Configure LED video wall cabinets, pixel pitch, and pricing from Spectrum Display Inc." />
+  <script src="js/seo.js"></script>
   <script src="https://cdn.tailwindcss.com"></script>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
   <style>
@@ -347,8 +359,21 @@
           h.textContent = productName;
         }
       });
+      const pageTitle = productName + ' | Spectrum Display';
       const titleEl = document.querySelector('title');
-      if (titleEl) titleEl.textContent = productName + ' | Spectrum Display';
+      if (titleEl) titleEl.textContent = pageTitle;
+      const desc = (seriesData && seriesData.description)
+        ? seriesData.description
+        : ('Configure ' + productName + ' LED video wall cabinets and pricing from Spectrum Display Inc.');
+      if (window.spectrumSetSeo) {
+        window.spectrumSetSeo({
+          title: pageTitle,
+          description: desc,
+          url: 'https://www.spectrumdisplay.com/product.html?brand=' +
+            encodeURIComponent(brandId) + '&series=' + encodeURIComponent(seriesId),
+          image: seriesData && seriesData.image
+        });
+      }
       // Product image from catalog
       const hero = document.getElementById('product-hero-img');
       const fallback = document.getElementById('product-hero-fallback');

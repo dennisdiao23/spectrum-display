@@ -65,7 +65,72 @@ async function main() {
   app.use(express.json({ limit: '2mb' }));
   app.use(express.urlencoded({ extended: true }));
   app.use(cookieParser());
+  app.use(function (req, res, next) {
+    const host = String(req.hostname || '').toLowerCase();
+    const file = String(req.path || '').toLowerCase();
+    const privatePage = file === '/admin.html' || file === '/cart.html' || file === '/account.html';
+    if (host.endsWith('.up.railway.app') || privatePage) {
+      res.set('X-Robots-Tag', 'noindex, nofollow');
+    }
+    next();
+  });
   app.use('/uploads', express.static(path.join(ROOT, 'uploads')));
+
+  const SITE = 'https://www.spectrumdisplay.com';
+
+  function xmlEscape(value) {
+    return String(value)
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;');
+  }
+
+  function sitemapUrl(loc, changefreq, priority, lastmod) {
+    return (
+      '  <url>\n' +
+      '    <loc>' + xmlEscape(loc) + '</loc>\n' +
+      (lastmod ? '    <lastmod>' + lastmod + '</lastmod>\n' : '') +
+      '    <changefreq>' + changefreq + '</changefreq>\n' +
+      '    <priority>' + priority + '</priority>\n' +
+      '  </url>\n'
+    );
+  }
+
+  app.get('/sitemap.xml', async function (_req, res) {
+    const today = new Date().toISOString().slice(0, 10);
+    let xml =
+      '<?xml version="1.0" encoding="UTF-8"?>\n' +
+      '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n';
+    [
+      ['/', 'weekly', '1.0'],
+      ['/products.html', 'weekly', '0.9'],
+      ['/solutions.html', 'monthly', '0.8'],
+      ['/designer.html', 'monthly', '0.8'],
+      ['/contact.html', 'monthly', '0.7'],
+      ['/support.html', 'monthly', '0.6']
+    ].forEach(function (page) {
+      xml += sitemapUrl(SITE + page[0], page[1], page[2], today);
+    });
+    try {
+      const products = await store.listProducts();
+      products.forEach(function (product) {
+        const loc =
+          SITE +
+          '/product.html?brand=' +
+          encodeURIComponent(product.brandId) +
+          '&series=' +
+          encodeURIComponent(product.id);
+        xml += sitemapUrl(loc, 'weekly', '0.7', today);
+      });
+    } catch (err) {
+      console.error('Could not add products to sitemap:', err.message || err);
+    }
+    xml += '</urlset>\n';
+    res.set('Content-Type', 'application/xml; charset=utf-8');
+    res.set('Cache-Control', 'public, max-age=3600');
+    res.send(xml);
+  });
 
   async function currentAdmin(req) {
     const token = req.cookies[COOKIE];
