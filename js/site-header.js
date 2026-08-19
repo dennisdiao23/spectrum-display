@@ -34,7 +34,9 @@
     var header = $('.site-header');
     if (!header) return;
     var session = window.SpectrumAuth && SpectrumAuth.getSession && SpectrumAuth.getSession();
-    header.classList.toggle('is-logged-in', !!session);
+    var on = !!session;
+    document.documentElement.classList.toggle('is-logged-in', on);
+    header.classList.toggle('is-logged-in', on);
     var name = session ? (session.name || session.email || '') : '';
     var nameEl = $('#hdr-user-name');
     var namePanel = $('#hdr-user-name-panel');

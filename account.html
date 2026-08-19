@@ -514,6 +514,10 @@
         window.location.href = 'designer.html?brand=custom';
         return;
       }
+      if (/^[a-z0-9._-]+\.html(\?[-a-zA-Z0-9._=&%]*)?$/.test(next)) {
+        window.location.href = next;
+        return;
+      }
       showDash();
       tryPendingCheckout();
     }
@@ -536,17 +540,20 @@
     }
 
     function bootAccount() {
-      const urlTab = new URLSearchParams(window.location.search).get('tab');
-      const next = new URLSearchParams(window.location.search).get('next');
-      const urlMode = new URLSearchParams(window.location.search).get('mode');
+      const params = new URLSearchParams(window.location.search);
+      const urlTab = params.get('tab');
+      const next = params.get('next');
+      const urlMode = params.get('mode');
+      if (next) sessionStorage.setItem('spectrumAuthNext', next);
       if (Auth.isLoggedIn()) {
-        if (next === 'designer-custom') {
-          window.location.href = 'designer.html?brand=custom';
-        } else {
-          showDash();
-          if (urlTab === 'orders' || urlTab === 'projects' || urlTab === 'profile' || urlTab === 'panels') openDashTab(urlTab);
-          tryPendingCheckout();
+        const pending = next || sessionStorage.getItem('spectrumAuthNext') || '';
+        if (pending === 'designer-custom' || /^[a-z0-9._-]+\.html(\?[-a-zA-Z0-9._=&%]*)?$/.test(pending)) {
+          afterAuthSuccess();
+          return;
         }
+        showDash();
+        if (urlTab === 'orders' || urlTab === 'projects' || urlTab === 'profile' || urlTab === 'panels') openDashTab(urlTab);
+        tryPendingCheckout();
       } else {
         showAuth();
         setMode(urlMode === 'register' ? 'register' : 'signin');

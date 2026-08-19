@@ -712,7 +712,7 @@
                 <label class="block text-xs text-slate-400 mb-1">Panel Weight (lbs)</label>
                 <input id="custom-weight" type="number" step="0.5" min="1" max="500" value="16" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-sky-500">
               </div>
-              <div>
+              <div class="pricing-only">
                 <label class="block text-xs text-slate-400 mb-1">Price ($/m²)</label>
                 <input id="custom-price" type="number" step="10" min="0" max="50000" value="1000" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-sky-500">
               </div>
@@ -870,7 +870,8 @@
             <div class="flex justify-between"><span class="text-slate-400" data-i18n="designer.circuits">Circuits</span><span id="res-circuits" class="font-medium">—</span></div>
             <div class="flex justify-between"><span class="text-slate-400" data-i18n="designer.ports">Data ports</span><span id="res-ports" class="font-medium">—</span></div>
             <div class="flex justify-between"><span class="text-slate-400" data-i18n="designer.processor">Processor</span><span id="res-processor" class="font-medium">—</span></div>
-            <div class="flex justify-between border-t border-slate-800 pt-2.5 mt-1"><span class="text-slate-400" data-i18n="designer.estPrice">Est. Price</span><span id="res-price" class="font-semibold text-sky-400">—</span></div>
+            <div class="flex justify-between border-t border-slate-800 pt-2.5 mt-1 pricing-only"><span class="text-slate-400" data-i18n="designer.estPrice">Est. Price</span><span id="res-price" class="font-semibold text-sky-400">—</span></div>
+            <div class="flex justify-between border-t border-slate-800 pt-2.5 mt-1 guest-pricing"><span class="text-slate-400">Est. Price</span><a href="account.html" class="font-semibold text-sky-400" data-i18n="price.signIn">Sign in for pricing</a></div>
           </div>
           <a id="quote-btn" href="contact.html" class="mt-5 w-full inline-flex justify-center items-center px-5 py-2.5 rounded-full bg-sky-500 hover:bg-sky-400 text-white font-semibold text-sm transition">
             Request Quote for This Design
@@ -1883,7 +1884,9 @@
       if (portsEl) portsEl.textContent = String(dataPorts);
       const procEl = document.getElementById('res-processor');
       if (procEl) procEl.textContent = processorText;
-      document.getElementById('res-price').textContent = '$' + basePrice.toLocaleString();
+      document.getElementById('res-price').textContent = (window.SpectrumAuth && SpectrumAuth.isLoggedIn && SpectrumAuth.isLoggedIn())
+        ? ('$' + basePrice.toLocaleString())
+        : '—';
       const Wft = ftInFromMeters(actualW);
       const Hft = ftInFromMeters(actualH);
       const sizeLabel = Wft.ft + "'" + Wft.inch + '" × ' + Hft.ft + "'" + Hft.inch + '"';
@@ -2026,7 +2029,9 @@
         circuits: circuits + ' × ' + CIRCUIT_AMPS + 'A @ ' + voltage + 'V',
         ports: String(dataPorts),
         processor: processorText,
-        price: '$' + basePrice.toLocaleString(),
+        price: (window.SpectrumAuth && SpectrumAuth.isLoggedIn && SpectrumAuth.isLoggedIn())
+          ? ('$' + basePrice.toLocaleString())
+          : '',
         mount: MOUNT_LABELS[mountType] || mountType,
         voltage: voltage + 'V',
         aspect: aspectLock === 'free' ? 'Free' : aspectLock,
@@ -2379,7 +2384,9 @@
         + specRow('Data ports', spec.ports)
         + specRow('Processor', spec.processor)
         + '</table>'
-        + '<div class="price"><span>Estimated price</span><strong>' + escHtml(spec.price) + '</strong></div>'
+        + (spec.price
+          ? '<div class="price"><span>Estimated price</span><strong>' + escHtml(spec.price) + '</strong></div>'
+          : '')
         + '</div><div>'
         + '<h2>Cabinet layout</h2>'
         + schematicHtml(spec)

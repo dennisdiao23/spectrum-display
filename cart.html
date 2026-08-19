@@ -110,6 +110,11 @@
   <section class="pt-10 pb-16">
     <div class="site-wrap">
       <h1 class="text-3xl font-bold mb-8" data-i18n="cart.h1">Your Cart</h1>
+      <div id="cart-gated" class="hidden text-center py-16">
+        <p class="text-lg text-slate-300 mb-4" data-i18n="cart.needSignIn">Sign in to view your cart</p>
+        <a id="cart-signin" href="account.html?next=cart.html" class="inline-flex px-6 py-3 rounded-full bg-sky-500 hover:bg-sky-400 text-white font-semibold" data-i18n="nav.signin">Sign in</a>
+      </div>
+      <div id="cart-body">
       <div id="cart-items" class="space-y-4 mb-8">
         <!-- filled by JS -->
       </div>
@@ -127,6 +132,7 @@
           <button type="button" id="checkout-btn" class="flex-1 px-6 py-3 rounded-full bg-sky-500 hover:bg-sky-400 text-white font-semibold" data-i18n="cart.checkout">Request Quote / Checkout</button>
           <a href="contact.html" class="flex-1 px-6 py-3 rounded-full border border-slate-600 text-center hover:border-slate-400 font-medium" data-i18n="cart.talk">Talk to Sales</a>
         </div>
+      </div>
       </div>
     </div>
   </section>
@@ -186,6 +192,21 @@
       if (el) el.textContent = cart.reduce((s, i) => s + (i.qty || 1), 0);
     }
 
+    function showCartForUser() {
+      const gated = document.getElementById('cart-gated');
+      const body = document.getElementById('cart-body');
+      const loggedIn = window.SpectrumAuth && SpectrumAuth.isLoggedIn && SpectrumAuth.isLoggedIn();
+      if (!loggedIn) {
+        if (gated) gated.classList.remove('hidden');
+        if (body) body.classList.add('hidden');
+        return;
+      }
+      if (gated) gated.classList.add('hidden');
+      if (body) body.classList.remove('hidden');
+      renderCart();
+      updateCartCount();
+    }
+
     document.getElementById('checkout-btn').addEventListener('click', async function() {
       const cart = JSON.parse(localStorage.getItem('spectrumCart') || '[]');
       if (!cart.length) {
@@ -196,7 +217,7 @@
       if (!window.SpectrumAuth || !SpectrumAuth.isLoggedIn()) {
         if (confirm('Sign in to place this order and track it under Account → Orders. Go to Account?')) {
           sessionStorage.setItem('spectrumPendingCheckout', '1');
-          window.location.href = 'account.html';
+          window.location.href = 'account.html?next=cart.html';
         }
         return;
       }
@@ -212,8 +233,12 @@
       window.location.href = 'account.html?tab=orders';
     });
 
-    renderCart();
-    updateCartCount();
+    if (window.SpectrumAuth && SpectrumAuth.ready) {
+      SpectrumAuth.ready.then(showCartForUser);
+    } else {
+      showCartForUser();
+    }
+    window.addEventListener('spectrum:auth', showCartForUser);
   </script>
 </body>
 </html>

@@ -22,6 +22,8 @@
     ':root{--site-header-h:4rem;--site-tabbar-h:0px}' +
     '@media (max-width:767px){:root{--site-header-h:3.35rem;--site-tabbar-h:calc(6.5rem - 35px + env(safe-area-inset-bottom,0px))}body{padding-bottom:var(--site-tabbar-h)}}' +
     'html.i18n-wait{visibility:hidden}' +
+    'html:not(.is-logged-in) .pricing-only,html:not(.is-logged-in) .site-cart{display:none!important}' +
+    'html.is-logged-in .guest-pricing{display:none!important}' +
     '.site-header{height:var(--site-header-h);box-sizing:border-box}' +
     '.site-header [data-i18n],.site-nav a,.site-util{white-space:nowrap}';
   document.head.appendChild(css);

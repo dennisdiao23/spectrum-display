@@ -42,7 +42,7 @@ Hosting is **Railway only** (not Netlify or Vercel).
 | `support.html` | Support |
 | `designer.html` | Designer / saved projects (needs Sign in) |
 | `account.html` | Customer Sign in / account |
-| `cart.html` | Cart (**this browser only** — `localStorage`) |
+| `cart.html` | Cart (only after Sign in — **this browser only**) |
 | `contact.html` | Quote / contact form (emails you) |
 | `admin.html` | Catalog admin (separate from customer Sign in) |
 
@@ -101,4 +101,4 @@ After Cloud Agent changes, on your PC: `git pull origin main`. OneDrive does not
 ## Not done yet (on purpose)
 
 1. Real product photos and exact models/pricing for DIAO and Element.
-2. Cart / orders stay in **this browser only**. They are not shared across phones and are not stored in Supabase.
+2. Cart / orders stay in **this browser only**. They are not shared across phones and are not stored in Supabase. **Prices and the cart only show after Sign in.**

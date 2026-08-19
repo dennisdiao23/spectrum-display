@@ -206,7 +206,7 @@ Indexing is not instant. `site:spectrumdisplay.com` should start showing pages a
 | **Supabase JS CDN** | Customer auth in the browser | Sign in / saved projects fail. Catalog may still load via `/api/catalog`. |
 | **Let’s Encrypt (via Railway)** | HTTPS padlock on **www** | Browser warns on www. |
 | **GoDaddy SSL** | HTTPS on the **apex forward** | `https://spectrumdisplay.com` (no www) looks Not secure, but www can still be fine. |
-| **localStorage cart / orders** | Cart in **this browser only** | Not a server. Clearing cookies/cache empties cart. Not shared across phones. |
+| **localStorage cart / orders** | Cart in **this browser only**, and only after Sign in | Not a server. Guests do not see prices or cart. Clearing cookies/cache empties cart. Not shared across phones. |
 
 **Not used for hosting:** Netlify, Vercel. The site is Railway only.
 

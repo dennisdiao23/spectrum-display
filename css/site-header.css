@@ -49,6 +49,18 @@ body:not(.designer-app) {
   padding-left: var(--site-gutter);
   padding-right: var(--site-gutter);
 }
+html:not(.is-logged-in) .pricing-only,
+html:not(.is-logged-in) .site-cart {
+  display: none !important;
+}
+html.is-logged-in .guest-pricing {
+  display: none !important;
+}
+.guest-pricing {
+  color: #38bdf8;
+  text-decoration: none;
+  font-weight: 600;
+}
 .site-header-top {
   display: flex;
   flex-direction: row;
