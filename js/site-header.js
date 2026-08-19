@@ -97,13 +97,266 @@
     });
   }
 
+  function chevron() {
+    return '<svg class="site-nav-chevron" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M6 9l6 6 6-6"/></svg>';
+  }
+
+  var PRODUCT_MEGA = {
+    popular: {
+      title: 'Popular',
+      lead: 'Most requested LED cabinets for new walls and upgrades.',
+      items: [
+        { name: 'Discovery Series', href: 'product.html?brand=trt&series=discovery', tag: 'TRT' },
+        { name: 'LedPoster', href: 'product.html?brand=trt&series=ledposter', tag: 'TRT' },
+        { name: 'Fine Pitch COB', href: 'product.html?brand=bako&series=finepitch', tag: 'BAKO' },
+        { name: 'MV Ultra (Rental)', href: 'product.html?brand=gloshine&series=mvultra', tag: 'GLO' },
+        { name: 'Diamond Rental', href: 'product.html?brand=bako&series=diamond', tag: 'BAKO' },
+        { name: 'DIAO Pro Fixed', href: 'product.html?brand=diao&series=pro', tag: 'DIAO' }
+      ]
+    },
+    cob: {
+      title: 'COB',
+      lead: 'Chip-on-board cabinets for close viewing and high contrast.',
+      items: [
+        { name: 'Discovery Series', href: 'product.html?brand=trt&series=discovery', tag: 'TRT' },
+        { name: 'Fine Pitch COB', href: 'product.html?brand=bako&series=finepitch', tag: 'BAKO' }
+      ]
+    },
+    rental: {
+      title: 'Rental',
+      lead: 'Lightweight touring panels for events, stages, and XR.',
+      items: [
+        { name: 'MV Ultra (Rental)', href: 'product.html?brand=gloshine&series=mvultra', tag: 'GLO' },
+        { name: 'Diamond Rental', href: 'product.html?brand=bako&series=diamond', tag: 'BAKO' },
+        { name: 'Element Rental', href: 'product.html?brand=element&series=rental', tag: 'ELT' }
+      ]
+    },
+    indoor: {
+      title: 'Indoor Fine Pitch',
+      lead: 'Control rooms, retail, lobbies, and broadcast walls.',
+      items: [
+        { name: 'Discovery Series', href: 'product.html?brand=trt&series=discovery', tag: 'TRT' },
+        { name: 'Fine Pitch COB', href: 'product.html?brand=bako&series=finepitch', tag: 'BAKO' },
+        { name: 'LedPoster', href: 'product.html?brand=trt&series=ledposter', tag: 'TRT' },
+        { name: 'DIAO Pro Fixed', href: 'product.html?brand=diao&series=pro', tag: 'DIAO' },
+        { name: 'Element Creative / XR', href: 'product.html?brand=element&series=creative', tag: 'ELT' }
+      ]
+    },
+    outdoor: {
+      title: 'Outdoor',
+      lead: 'High-brightness façades, DOOH, and outdoor spectaculars.',
+      items: [
+        { name: 'DN Outdoor', href: 'product.html?brand=gloshine&series=dn', tag: 'GLO' },
+        { name: 'DIAO Value', href: 'product.html?brand=diao&series=value', tag: 'DIAO' }
+      ]
+    }
+  };
+
+  function productGridHtml(items) {
+    return items.map(function (item) {
+      return '<a href="' + item.href + '"><span class="site-mega-dot">' + item.tag + '</span><span>' + item.name + '</span></a>';
+    }).join('');
+  }
+
+  function renderProductMega(key) {
+    var data = PRODUCT_MEGA[key] || PRODUCT_MEGA.popular;
+    var title = document.getElementById('mega-prod-title');
+    var lead = document.getElementById('mega-prod-lead');
+    var grid = document.getElementById('mega-prod-grid');
+    if (title) title.textContent = data.title;
+    if (lead) lead.textContent = data.lead;
+    if (grid) grid.innerHTML = productGridHtml(data.items);
+    $all('.site-mega-cat').forEach(function (btn) {
+      btn.classList.toggle('is-active', btn.getAttribute('data-cat') === key);
+    });
+  }
+
+  function injectNav() {
+    var nav = $('#site-nav');
+    if (!nav) return;
+    var file = (location.pathname.split('/').pop() || 'index.html').toLowerCase();
+    nav.innerHTML =
+      '<div class="site-nav-item" data-mega="products">' +
+        '<button type="button" class="site-nav-link' + (file === 'products.html' || file === 'product.html' ? ' is-active' : '') + '" aria-expanded="false" aria-haspopup="true">' +
+          '<span data-i18n="nav.products">Products</span>' + chevron() +
+        '</button>' +
+      '</div>' +
+      '<a class="site-nav-link" href="products.html?cat=micro-led" data-i18n="nav.microLed">Micro LED TV</a>' +
+      '<a class="site-nav-link" href="products.html?cat=cob" data-i18n="nav.cob">COB</a>' +
+      '<div class="site-nav-item" data-mega="solutions">' +
+        '<button type="button" class="site-nav-link' + (file === 'solutions.html' ? ' is-active' : '') + '" aria-expanded="false" aria-haspopup="true">' +
+          '<span data-i18n="nav.solutions">Solutions</span>' + chevron() +
+        '</button>' +
+      '</div>';
+
+    var header = $('.site-header');
+    if (!header || $('#site-mega-products')) return;
+
+    var prod = document.createElement('div');
+    prod.id = 'site-mega-products';
+    prod.className = 'site-mega-panel';
+    prod.innerHTML =
+      '<div class="site-mega-products">' +
+        '<div class="site-mega-cats" role="tablist">' +
+          '<button type="button" class="site-mega-cat is-active" data-cat="popular">Popular <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/></svg></button>' +
+          '<button type="button" class="site-mega-cat" data-cat="cob">COB <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/></svg></button>' +
+          '<button type="button" class="site-mega-cat" data-cat="rental">Rental <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/></svg></button>' +
+          '<button type="button" class="site-mega-cat" data-cat="indoor">Indoor Fine Pitch <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/></svg></button>' +
+          '<button type="button" class="site-mega-cat" data-cat="outdoor">Outdoor <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/></svg></button>' +
+        '</div>' +
+        '<div class="site-mega-body">' +
+          '<h3 id="mega-prod-title">Popular</h3>' +
+          '<p id="mega-prod-lead">Most requested LED cabinets for new walls and upgrades.</p>' +
+          '<div class="site-mega-grid" id="mega-prod-grid"></div>' +
+        '</div>' +
+      '</div>' +
+      '<div class="site-mega-foot">' +
+        '<a href="products.html">View all products →</a>' +
+        '<a href="designer.html">LED Wall Calculator →</a>' +
+      '</div>';
+    header.appendChild(prod);
+    renderProductMega('popular');
+
+    var sol = document.createElement('div');
+    sol.id = 'site-mega-solutions';
+    sol.className = 'site-mega-panel';
+    sol.innerHTML =
+      '<div class="site-mega-solutions">' +
+        '<div class="site-mega-col">' +
+          '<h4>By industry</h4>' +
+          '<a href="solutions.html#corporate">Corporate</a>' +
+          '<a href="solutions.html#control-rooms">Control rooms</a>' +
+          '<a href="solutions.html#retail">Retail</a>' +
+          '<a href="solutions.html#education">Education</a>' +
+          '<a href="solutions.html#broadcast">Broadcast</a>' +
+          '<a href="solutions.html#sports">Sports & events</a>' +
+          '<a href="solutions.html#worship">House of worship</a>' +
+          '<a href="solutions.html#hospitality">Hospitality</a>' +
+        '</div>' +
+        '<div class="site-mega-col">' +
+          '<h4>By audience</h4>' +
+          '<a href="solutions.html#integrators">Integrators & dealers</a>' +
+          '<a href="solutions.html#end-users">End users</a>' +
+          '<a href="solutions.html#rental-houses">Rental houses</a>' +
+          '<div class="mega-sub">Applications</div>' +
+          '<a href="products.html?cat=indoor">Indoor fine pitch</a>' +
+          '<a href="products.html?cat=outdoor">Outdoor</a>' +
+          '<a href="products.html?cat=rental">Rental & touring</a>' +
+        '</div>' +
+        '<div class="site-mega-col">' +
+          '<h4>Technologies</h4>' +
+          '<a href="products.html?cat=cob">COB</a>' +
+          '<a href="products.html?cat=micro-led">Micro LED TV</a>' +
+          '<a href="solutions.html#fine-pitch">Fine pitch walls</a>' +
+          '<a href="brands.html">Our brands</a>' +
+        '</div>' +
+        '<div class="site-mega-col">' +
+          '<h4>Tools</h4>' +
+          '<a href="designer.html">LED Wall Calculator</a>' +
+          '<a href="support.html">Support</a>' +
+          '<a href="contact.html">Contact Sales</a>' +
+          '<a href="account.html">Sign in</a>' +
+        '</div>' +
+      '</div>' +
+      '<div class="site-mega-foot">' +
+        '<a href="solutions.html">Explore all solutions →</a>' +
+        '<a href="contact.html">Talk to sales →</a>' +
+      '</div>';
+    header.appendChild(sol);
+  }
+
+  function injectSalesCta() {
+    var utils = $('.site-utils');
+    if (!utils || utils.querySelector('.site-cta')) return;
+    var contact = utils.querySelector('a.site-util[href="contact.html"]');
+    var html =
+      '<a href="support.html" class="site-util site-support-link"><span data-i18n="nav.support">Support</span></a>' +
+      '<a href="contact.html" class="site-cta" data-i18n="nav.contactSales">Contact Sales</a>' +
+      '<a href="contact.html" class="site-util site-contact-icon" aria-label="Contact Sales">' +
+        '<svg fill="none" stroke="currentColor" stroke-width="1.7" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M21.75 6.75v10.5a2.25 2.25 0 01-2.25 2.25h-15a2.25 2.25 0 01-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0019.5 4.5h-15a2.25 2.25 0 00-2.25 2.25m19.5 0v.243a2.25 2.25 0 01-1.07 1.916l-7.5 4.615a2.25 2.25 0 01-2.36 0L3.32 8.91a2.25 2.25 0 01-1.07-1.916V6.75"/></svg>' +
+      '</a>';
+    if (contact) {
+      contact.insertAdjacentHTML('beforebegin', html);
+      contact.remove();
+    } else {
+      var lang = $('#hdr-lang-drop');
+      if (lang) lang.insertAdjacentHTML('beforebegin', html);
+      else utils.insertAdjacentHTML('afterbegin', html);
+    }
+  }
+
+  function closeMegas() {
+    $all('.site-mega-panel.is-open').forEach(function (el) { el.classList.remove('is-open'); });
+    $all('.site-nav-item.is-open').forEach(function (el) {
+      el.classList.remove('is-open');
+      var btn = el.querySelector('.site-nav-link');
+      if (btn) btn.setAttribute('aria-expanded', 'false');
+    });
+  }
+
+  function bindMegas() {
+    var header = $('.site-header');
+    if (!header) return;
+    var closeTimer = null;
+    function cancelClose() { if (closeTimer) { clearTimeout(closeTimer); closeTimer = null; } }
+    function scheduleClose() {
+      cancelClose();
+      closeTimer = setTimeout(closeMegas, 180);
+    }
+    $all('.site-nav-item[data-mega]').forEach(function (item) {
+      var name = item.getAttribute('data-mega');
+      var panel = name === 'products' ? $('#site-mega-products') : $('#site-mega-solutions');
+      var btn = item.querySelector('.site-nav-link');
+      function open() {
+        cancelClose();
+        closeMegas();
+        closeAll();
+        item.classList.add('is-open');
+        if (btn) btn.setAttribute('aria-expanded', 'true');
+        if (panel) panel.classList.add('is-open');
+      }
+      item.addEventListener('mouseenter', open);
+      item.addEventListener('focusin', open);
+      if (btn) {
+        btn.addEventListener('click', function (e) {
+          e.preventDefault();
+          e.stopPropagation();
+          if (item.classList.contains('is-open')) closeMegas();
+          else open();
+        });
+      }
+    });
+    $all('.site-mega-panel').forEach(function (panel) {
+      panel.addEventListener('mouseenter', cancelClose);
+      panel.addEventListener('mouseleave', scheduleClose);
+    });
+    var nav = $('#site-nav');
+    if (nav) {
+      nav.addEventListener('mouseleave', function (e) {
+        var next = e.relatedTarget;
+        if (next && next.closest && next.closest('.site-mega-panel')) return;
+        scheduleClose();
+      });
+      $all('a.site-nav-link', nav).forEach(function (a) {
+        a.addEventListener('mouseenter', closeMegas);
+      });
+    }
+    $all('.site-mega-cat').forEach(function (btn) {
+      btn.addEventListener('mouseenter', function () { renderProductMega(btn.getAttribute('data-cat')); });
+      btn.addEventListener('click', function () { renderProductMega(btn.getAttribute('data-cat')); });
+    });
+  }
+
   function boot() {
     injectTabbar();
+    injectNav();
+    injectSalesCta();
     var header = $('.site-header');
     if (!header) return;
 
     bindDrop($('#hdr-signin-drop'));
     bindDrop($('#hdr-lang-drop'));
+    bindMegas();
 
     $all('[data-set-lang]').forEach(function (btn) {
       btn.addEventListener('click', function () {
@@ -137,8 +390,9 @@
     }
 
     document.addEventListener('click', function (e) {
-      if (header.contains(e.target) && (e.target.closest && e.target.closest('.site-drop, #hdr-menu-btn'))) return;
+      if (header.contains(e.target) && (e.target.closest && e.target.closest('.site-drop, #hdr-menu-btn, .site-nav-item, .site-mega-panel'))) return;
       closeAll();
+      closeMegas();
       header.classList.remove('is-nav-open');
     });
 

@@ -5,13 +5,16 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <script src="js/i18n-boot.js"></script>
   <link rel="stylesheet" href="css/site-header.css" />
-  <title>Contact | Spectrum Display</title>
+  <title>Support | Spectrum Display</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
-  <style>body { font-family: 'Inter', system-ui, sans-serif; }</style>
+  <style>
+    body { font-family: 'Inter', system-ui, sans-serif; }
+    .sol-section { scroll-margin-top: calc(var(--site-header-h) + 1.25rem); }
+  </style>
 </head>
 <body class="bg-slate-950 text-slate-100 antialiased">
-  <header class="site-header" id="site-header">
+<header class="site-header" id="site-header">
     <div class="site-header-inner">
       <div class="site-header-top">
         <a href="index.html" class="site-brand">
@@ -94,128 +97,41 @@
       </nav>
     </div>
   </header>
-
-  <section class="pt-12 pb-16">
-    <div class="site-wrap">
-      <h1 class="text-4xl font-bold mb-4" data-i18n="contact.h1">Talk to an LED Specialist</h1>
-      <p class="text-slate-400 mb-10" data-i18n="contact.lead">Whether you need a quick quote on standard cabinets or a full system design for a complex multi-surface project, our team is ready to help.</p>
-
-      <form id="contact-form" class="space-y-6">
-        <div class="hidden" aria-hidden="true">
-          <label>Website</label>
-          <input type="text" name="website" tabindex="-1" autocomplete="off">
+  <section class="pt-12 pb-20">
+    <div class="site-wrap max-w-3xl">
+      <h1 class="text-3xl sm:text-4xl font-bold mb-3">Support</h1>
+      <p class="text-slate-400 mb-10">Technical help, warranty, shipping, and a direct line to Spectrum Display.</p>
+      <div class="grid sm:grid-cols-2 gap-4 mb-12">
+        <a href="contact.html" class="p-5 rounded-2xl border border-slate-800 bg-slate-900/60 hover:border-sky-500/40 transition">
+          <div class="font-semibold mb-1">Contact Sales</div>
+          <p class="text-sm text-slate-400">Quotes, sizing, and project design. We typically reply within 48 hours.</p>
+        </a>
+        <a href="designer.html" class="p-5 rounded-2xl border border-slate-800 bg-slate-900/60 hover:border-sky-500/40 transition">
+          <div class="font-semibold mb-1">LED Wall Calculator</div>
+          <p class="text-sm text-slate-400">Build a wall, see cabinets, power, and an estimated price.</p>
+        </a>
+      </div>
+      <div class="space-y-8 text-slate-300">
+        <div id="tech" class="sol-section">
+          <h2 class="text-xl font-semibold text-white mb-2">Technical resources</h2>
+          <p class="text-sm leading-relaxed">Need drawings, load data, or a processor recommendation? Email <a class="text-sky-400" href="mailto:dennisdiao@diaoinc.com">dennisdiao@diaoinc.com</a> with your product and wall size. We will send spec sheets and a suggested BOM.</p>
         </div>
-        <div class="grid sm:grid-cols-2 gap-6">
-          <div>
-            <label class="block text-sm font-medium mb-2" data-i18n="contact.name">Name</label>
-            <input name="name" type="text" required class="w-full bg-slate-900 border border-slate-700 rounded-lg px-4 py-3 focus:outline-none focus:border-sky-500">
-          </div>
-          <div>
-            <label class="block text-sm font-medium mb-2" data-i18n="contact.company">Company</label>
-            <input name="company" type="text" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-4 py-3 focus:outline-none focus:border-sky-500">
-          </div>
+        <div id="warranty" class="sol-section">
+          <h2 class="text-xl font-semibold text-white mb-2">Warranty</h2>
+          <p class="text-sm leading-relaxed">Catalog products are manufacturer-warranty backed. Spectrum adds support for sizing, install questions, and spare planning. Warranty terms follow the brand on your order.</p>
         </div>
-        <div class="grid sm:grid-cols-2 gap-6">
-          <div>
-            <label class="block text-sm font-medium mb-2" data-i18n="contact.email">Email</label>
-            <input name="email" type="email" required class="w-full bg-slate-900 border border-slate-700 rounded-lg px-4 py-3 focus:outline-none focus:border-sky-500">
-          </div>
-          <div>
-            <label class="block text-sm font-medium mb-2" data-i18n="contact.phone">Phone</label>
-            <input name="phone" type="tel" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-4 py-3 focus:outline-none focus:border-sky-500">
-          </div>
+        <div id="shipping" class="sol-section">
+          <h2 class="text-xl font-semibold text-white mb-2">Shipping &amp; returns</h2>
+          <p class="text-sm leading-relaxed">Most standard cabinets ship from US warehouses in 5–10 business days after confirmation. Returns and DOA swaps are handled case by case — contact us before sending product back.</p>
         </div>
-        <div>
-          <label class="block text-sm font-medium mb-2" data-i18n="contact.projectType">Project Type</label>
-          <select name="projectType" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-4 py-3 focus:outline-none focus:border-sky-500">
-            <option data-i18n="contact.pt1">Indoor fine pitch / control room</option>
-            <option data-i18n="contact.pt2">Outdoor / DOOH / façade</option>
-            <option data-i18n="contact.pt3">Rental / touring / event</option>
-            <option data-i18n="contact.pt4">Retail / corporate lobby</option>
-            <option data-i18n="contact.pt5">XR / virtual production</option>
-            <option data-i18n="contact.pt6">Other / not sure</option>
-          </select>
-        </div>
-        <div>
-          <label class="block text-sm font-medium mb-2" data-i18n="contact.message">Message / Requirements</label>
-          <textarea name="message" rows="5" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-4 py-3 focus:outline-none focus:border-sky-500" data-i18n-placeholder="contact.placeholder" placeholder="Approximate size (m² or diagonal), viewing distance, indoor/outdoor, budget range, timeline..."></textarea>
-        </div>
-        <p id="contact-status" class="text-sm hidden" role="status"></p>
-        <button type="submit" id="contact-submit" class="w-full sm:w-auto px-8 py-3 rounded-full bg-sky-500 hover:bg-sky-400 text-white font-semibold" data-i18n="contact.send">Send Message</button>
-      </form>
-
-      <div class="mt-16 grid sm:grid-cols-3 gap-8 text-sm">
-        <div>
-          <div class="font-semibold mb-1" data-i18n="contact.sales">Sales</div>
-          <div class="text-slate-400">dennisdiao@diaoinc.com</div>
-        </div>
-        <div>
-          <div class="font-semibold mb-1" data-i18n="contact.support">Support</div>
-          <div class="text-slate-400">dennisdiao@diaoinc.com</div>
-        </div>
-        <div>
-          <div class="font-semibold mb-1" data-i18n="contact.hq">Headquarters</div>
-          <div class="text-slate-400" data-i18n="contact.hqAddr">Los Angeles / San Gabriel Valley area, CA</div>
+        <div id="dealer" class="sol-section">
+          <h2 class="text-xl font-semibold text-white mb-2">Dealer portal</h2>
+          <p class="text-sm leading-relaxed">Integrators can <a class="text-sky-400" href="account.html">create an account</a> as Dealer / Integrator to save calculator projects and custom panels.</p>
         </div>
       </div>
     </div>
   </section>
-<script>
-  const params = new URLSearchParams(window.location.search);
-  const product = params.get('product');
-  const size = params.get('size');
-  const pitch = params.get('pitch');
-  const area = params.get('area');
-  const cabinets = params.get('cabinets');
-  if (product || size) {
-    const ta = document.querySelector('textarea');
-    if (ta) {
-      let msg = 'I designed a wall in the LED Wall Calculator:\n';
-      if (product) msg += 'Product: ' + product + '\n';
-      if (pitch) msg += 'Pitch: ' + pitch + '\n';
-      if (size) msg += 'Size: ' + size + '\n';
-      if (area) msg += 'Area: ' + area + ' m²\n';
-      if (cabinets) msg += 'Cabinets: ' + cabinets + '\n';
-      msg += '\nPlease provide a formal quote.';
-      ta.value = msg;
-    }
-  }
 
-  const form = document.getElementById('contact-form');
-  const statusEl = document.getElementById('contact-status');
-  const submitBtn = document.getElementById('contact-submit');
-  function showStatus(kind, text) {
-    statusEl.className = 'text-sm ' + (kind === 'ok' ? 'text-emerald-400' : 'text-rose-400');
-    statusEl.textContent = text;
-    statusEl.classList.remove('hidden');
-  }
-  if (form) {
-    form.addEventListener('submit', async function (event) {
-      event.preventDefault();
-      const t = window.SpectrumI18n && window.SpectrumI18n.t ? window.SpectrumI18n.t.bind(window.SpectrumI18n) : function (k, d) { return d; };
-      submitBtn.disabled = true;
-      showStatus('ok', t('contact.sending', 'Sending…'));
-      try {
-        const data = Object.fromEntries(new FormData(form).entries());
-        const res = await fetch('/api/contact', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
-          body: JSON.stringify(data)
-        });
-        const json = await res.json().catch(function () { return {}; });
-        if (!res.ok || !json.ok) {
-          throw new Error(json.error || t('contact.error', 'Could not send the message. Please try again.'));
-        }
-        form.reset();
-        showStatus('ok', t('contact.success', 'Thanks — we received your message and will get back to you by email.'));
-      } catch (err) {
-        showStatus('err', err.message || t('contact.error', 'Could not send the message. Please try again.'));
-      } finally {
-        submitBtn.disabled = false;
-      }
-    });
-  }
-</script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="js/supabase-client.js"></script>
   <script src="js/auth.js"></script>
