@@ -20,7 +20,7 @@
   css.id = 'spectrum-i18n-boot-css';
   css.textContent =
     ':root{--site-header-h:calc(5.75rem + 10px);--site-tabbar-h:0px}' +
-    '@media (max-width:767px){:root{--site-header-h:calc(4.5rem + 10px);--site-tabbar-h:calc(6.5rem - 40px + env(safe-area-inset-bottom,0px))}body{padding-bottom:var(--site-tabbar-h)}}' +
+    '@media (max-width:767px){:root{--site-header-h:3.35rem;--site-tabbar-h:calc(6.5rem - 35px + env(safe-area-inset-bottom,0px))}body{padding-bottom:var(--site-tabbar-h)}}' +
     'html.i18n-wait{visibility:hidden}' +
     '.site-header{height:var(--site-header-h);box-sizing:border-box}' +
     '.site-header [data-i18n],.site-nav a,.site-util{white-space:nowrap}';
