@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <script src="js/i18n-boot.js"></script>
   <link rel="stylesheet" href="css/site-header.css" />
-  <title>Project Designer | Spectrum Display</title>
+  <title>LED Wall Calculator | Spectrum Display</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
   <style>
@@ -569,7 +569,7 @@
       <nav class="site-nav" id="site-nav">
         <a href="index.html" data-i18n="nav.home">Home</a>
         <a href="products.html" data-i18n="nav.products">Products</a>
-        <a href="designer.html" class="is-active" data-i18n="nav.designer">Project Designer</a>
+        <a href="designer.html" class="is-active" data-i18n="nav.designer">LED Wall Calculator</a>
       </nav>
     </div>
   </header>
@@ -577,7 +577,10 @@
   <header class="designer-toolbar">
     <div class="site-wrap h-[var(--designer-bar-h)] flex items-center justify-between gap-3">
       <div class="min-w-0">
-        <h1 class="text-base sm:text-lg font-bold leading-tight truncate" data-i18n="nav.designer">Project Designer</h1>
+        <h1 class="text-base sm:text-lg font-bold leading-tight truncate">
+          <span class="hidden md:inline" data-i18n="nav.designer">LED Wall Calculator</span>
+          <span class="md:hidden" data-i18n="nav.tabDesigner">Calculator</span>
+        </h1>
         <p class="hidden md:block text-xs leading-tight text-slate-400 truncate" data-i18n="designer.subtitle">Configure your LED wall, preview cabinets, and share your design.</p>
       </div>
       <div class="flex items-center gap-2 shrink-0">
