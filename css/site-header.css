@@ -526,7 +526,7 @@ body:not(.designer-app) {
   gap: 0;
   padding: 1.35rem 0.5rem 1rem;
   overflow: hidden;
-  border-radius: 1rem 1rem 0 0;
+  border-radius: 0;
 }
 .site-mega-col {
   padding: 0 1.15rem;

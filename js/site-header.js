@@ -299,7 +299,8 @@
     if (!panel || !item) return;
     var header = $('.site-header');
     var top = header ? header.getBoundingClientRect().bottom : item.getBoundingClientRect().bottom;
-    var triggerLeft = item.getBoundingClientRect().left;
+    var label = item.querySelector('.site-nav-link span') || item;
+    var triggerLeft = label.getBoundingClientRect().left;
     var gutter = 16;
     var preferred = Math.min(72 * 16, window.innerWidth - gutter * 2);
     var roomRight = window.innerWidth - triggerLeft - gutter;
