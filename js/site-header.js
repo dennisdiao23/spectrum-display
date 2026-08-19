@@ -77,7 +77,7 @@
         '<span data-i18n="nav.products">Products</span></a>' +
       '<a href="designer.html" data-tab="designer">' +
         icon('<path stroke-linecap="round" stroke-linejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931zM16.862 4.487L19.5 7.125M18 14v4.75A2.25 2.25 0 0115.75 21H5.25A2.25 2.25 0 013 18.75V8.25A2.25 2.25 0 015.25 6H10"/>') +
-        '<span data-i18n="nav.tabDesigner">Designer</span></a>' +
+        '<span data-i18n="nav.tabDesigner">Calculator</span></a>' +
       '<a href="account.html" data-tab="account">' +
         icon('<path stroke-linecap="round" stroke-linejoin="round" d="M15.75 7.5a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.5 19.5a7.5 7.5 0 0115 0"/>') +
         '<span data-i18n="nav.account">Account</span></a>';

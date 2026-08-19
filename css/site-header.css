@@ -303,7 +303,8 @@ body:not(.designer-app) {
     padding-bottom: var(--site-tabbar-h);
   }
   .site-header-inner {
-    padding: 0.3rem var(--site-gutter) 0.25rem;
+    padding: 0 var(--site-gutter);
+    justify-content: center;
   }
   .site-nav { display: none !important; }
   .site-menu-btn { display: none !important; }

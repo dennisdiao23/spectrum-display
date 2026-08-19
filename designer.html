@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <script src="js/i18n-boot.js"></script>
   <link rel="stylesheet" href="css/site-header.css" />
-  <title>Project Designer | Spectrum Display</title>
+  <title>LED Wall Calculator | Spectrum Display</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
   <style>
@@ -78,9 +78,8 @@
       }
     }
     @media (max-width: 1023px) {
-      .designer-toolbar {
-        position: relative;
-        top: auto;
+      :root {
+        --content-gap: 0.2rem;
       }
       .preview-pane {
         display: contents;
@@ -88,10 +87,10 @@
       .preview-sticky {
         order: -1;
         position: sticky;
-        top: var(--nav-h);
+        top: calc(var(--nav-h) + var(--designer-bar-h));
         z-index: 35;
         background: #020617;
-        padding: 0.4rem 0 0.55rem;
+        padding: 0.15rem 0 0.4rem;
         margin: 0 calc(-1 * var(--site-gutter));
         padding-left: var(--site-gutter);
         padding-right: var(--site-gutter);
@@ -105,11 +104,12 @@
         height: 16.5rem;
         max-height: 46vh;
       }
-      .preview-sticky #preview-label {
-        font-size: 0.7rem;
+      .preview-sticky .preview-meta {
+        margin-bottom: 0.35rem;
+        gap: 0.5rem;
       }
-      .preview-sticky .zoom-controls input[type="range"] {
-        width: 5.5rem;
+      .preview-sticky .preview-meta-left {
+        font-size: 0.7rem;
       }
       .designer-controls {
         order: 0;
@@ -118,10 +118,25 @@
         order: 1;
       }
     }
+    .preview-mobile {
+      display: none;
+    }
     @media (max-width: 767px) {
       .preview-sticky .preview-frame {
         height: 17.5rem;
         max-height: 50vh;
+      }
+      .preview-desktop {
+        display: none;
+      }
+      .preview-mobile {
+        display: inline;
+      }
+      .zoom-controls #zoom-out,
+      .zoom-controls #zoom-in,
+      .zoom-controls #zoom-slider,
+      .zoom-controls #zoom-value {
+        display: none;
       }
     }
     
@@ -554,7 +569,7 @@
       <nav class="site-nav" id="site-nav">
         <a href="index.html" data-i18n="nav.home">Home</a>
         <a href="products.html" data-i18n="nav.products">Products</a>
-        <a href="designer.html" class="is-active" data-i18n="nav.designer">Project Designer</a>
+        <a href="designer.html" class="is-active" data-i18n="nav.designer">LED Wall Calculator</a>
       </nav>
     </div>
   </header>
@@ -562,7 +577,10 @@
   <header class="designer-toolbar">
     <div class="site-wrap h-[var(--designer-bar-h)] flex items-center justify-between gap-3">
       <div class="min-w-0">
-        <h1 class="text-base sm:text-lg font-bold leading-tight truncate" data-i18n="nav.designer">Project Designer</h1>
+        <h1 class="text-base sm:text-lg font-bold leading-tight truncate">
+          <span class="hidden md:inline" data-i18n="nav.designer">LED Wall Calculator</span>
+          <span class="md:hidden" data-i18n="nav.tabDesigner">Calculator</span>
+        </h1>
         <p class="hidden md:block text-xs leading-tight text-slate-400 truncate" data-i18n="designer.subtitle">Configure your LED wall, preview cabinets, and share your design.</p>
       </div>
       <div class="flex items-center gap-2 shrink-0">
@@ -826,17 +844,22 @@
       <!-- Preview -->
       <div class="preview-pane min-w-0">
           <div class="preview-sticky">
-          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-3 shrink-0">
-            <h2 class="font-semibold text-base" data-i18n="designer.preview">Live Wall Preview</h2>
-            <div class="flex flex-wrap items-center gap-4">
-              <div class="text-sm text-slate-400" id="preview-label">11'10" × 6'8"  ·  3,840 × 2,160  (6×6)</div>
-              <div class="zoom-controls">
-                <button id="zoom-out" type="button" class="w-7 h-7 rounded-full border border-slate-600 hover:border-sky-500 text-slate-300 text-sm flex items-center justify-center" title="Zoom out">−</button>
-                <input id="zoom-slider" type="range" min="15" max="350" value="100" step="5" class="w-28 sm:w-36">
-                <button id="zoom-in" type="button" class="w-7 h-7 rounded-full border border-slate-600 hover:border-sky-500 text-slate-300 text-sm flex items-center justify-center" title="Zoom in">+</button>
-                <span id="zoom-value" class="text-xs text-slate-400 w-10 text-right">100%</span>
-                <button id="zoom-reset" type="button" class="text-xs px-2 py-1 rounded border border-slate-700 hover:border-sky-500 text-slate-400" title="Reset view">Reset</button>
-              </div>
+          <div class="preview-meta flex items-center justify-between gap-3 mb-3 shrink-0">
+            <h2 class="font-semibold text-base hidden lg:block" data-i18n="designer.preview">Live Wall Preview</h2>
+            <div class="preview-meta-left text-sm text-slate-400 min-w-0 truncate">
+              <span id="preview-size">11'10" × 6'8"</span>
+              <span class="preview-desktop">
+                · <span id="preview-resolution">3,840 × 2,160</span>
+                (<span id="preview-grid">6×6</span>)
+              </span>
+              <span class="preview-mobile"> · <span id="preview-screens">36 screens</span></span>
+            </div>
+            <div class="zoom-controls shrink-0">
+              <button id="zoom-out" type="button" class="w-7 h-7 rounded-full border border-slate-600 hover:border-sky-500 text-slate-300 text-sm flex items-center justify-center" title="Zoom out">−</button>
+              <input id="zoom-slider" type="range" min="15" max="350" value="100" step="5" class="w-28 sm:w-36">
+              <button id="zoom-in" type="button" class="w-7 h-7 rounded-full border border-slate-600 hover:border-sky-500 text-slate-300 text-sm flex items-center justify-center" title="Zoom in">+</button>
+              <span id="zoom-value" class="text-xs text-slate-400 w-10 text-right">100%</span>
+              <button id="zoom-reset" type="button" class="text-xs px-2 py-1 rounded border border-slate-700 hover:border-sky-500 text-slate-400" title="Reset view">Reset</button>
             </div>
           </div>
           
@@ -1826,9 +1849,15 @@
       document.getElementById('res-price').textContent = '$' + basePrice.toLocaleString();
       const Wft = ftInFromMeters(actualW);
       const Hft = ftInFromMeters(actualH);
-      document.getElementById('preview-label').textContent =
-        Wft.ft + "'" + Wft.inch + '" × ' + Hft.ft + "'" + Hft.inch + '"  ·  ' +
-        pxW.toLocaleString() + ' × ' + pxH.toLocaleString() + '  (' + cols + '×' + rows + ')';
+      const sizeLabel = Wft.ft + "'" + Wft.inch + '" × ' + Hft.ft + "'" + Hft.inch + '"';
+      const previewSizeEl = document.getElementById('preview-size');
+      const previewResEl = document.getElementById('preview-resolution');
+      const previewGridEl = document.getElementById('preview-grid');
+      const previewScreensEl = document.getElementById('preview-screens');
+      if (previewSizeEl) previewSizeEl.textContent = sizeLabel;
+      if (previewResEl) previewResEl.textContent = pxW.toLocaleString() + ' × ' + pxH.toLocaleString();
+      if (previewGridEl) previewGridEl.textContent = cols + '×' + rows;
+      if (previewScreensEl) previewScreensEl.textContent = cabinets + ' screens';
       const dimW = document.getElementById('dim-width');
       const dimH = document.getElementById('dim-height');
       const dimD = document.getElementById('dim-diag');
