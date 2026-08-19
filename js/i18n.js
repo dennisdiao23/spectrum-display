@@ -17,11 +17,12 @@
     en: {
       'title.index': 'Spectrum Display | Premium LED Display Distributor',
       'title.brands': 'Our Brands | Spectrum Display',
-      'title.products': 'Products | Spectrum Display',
-      'title.product': 'Product | Spectrum Display',
+      'title.products': 'LED Display Products | Spectrum Display',
+      'title.product': 'LED Video Wall | Spectrum Display',
+      'title.designer': 'LED Wall Calculator | Spectrum Display',
       'title.support': 'Support | Spectrum Display',
-      'title.solutions': 'Solutions | Spectrum Display',
-      'title.contact': 'Contact | Spectrum Display',
+      'title.solutions': 'LED Display Solutions | Spectrum Display',
+      'title.contact': 'Contact Sales | Spectrum Display',
       'title.cart': 'Cart | Spectrum Display',
       'title.account': 'Account | Spectrum Display',
       'nav.home': 'Home',
@@ -254,7 +255,7 @@
       'title.designer': 'Calculadora de muro LED | Spectrum Display',
       'title.support': 'Soporte | Spectrum Display',
       'title.solutions': 'Soluciones | Spectrum Display',
-      'title.contact': 'Contacto | Spectrum Display',
+      'title.contact': 'Contactar ventas | Spectrum Display',
       'title.cart': 'Carrito | Spectrum Display',
       'title.account': 'Cuenta | Spectrum Display',
       'nav.home': 'Inicio',
@@ -1433,7 +1434,9 @@
 
     const page = (location.pathname.split('/').pop() || 'index.html').replace('.html', '') || 'index';
     const titleKey = 'title.' + page;
-    if (T.en[titleKey]) document.title = t(titleKey);
+    if (T.en[titleKey] && !(page === 'product' && location.search)) {
+      document.title = t(titleKey);
+    }
 
     document.querySelectorAll('[data-i18n]').forEach(el => {
       const key = el.getAttribute('data-i18n');

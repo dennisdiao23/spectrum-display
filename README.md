@@ -36,9 +36,10 @@ Hosting is **Railway only** (not Netlify or Vercel).
 | File | Page |
 |---|---|
 | `index.html` | Homepage |
-| `brands.html` | Brand showcase |
 | `products.html` | Catalog with filters |
 | `product.html` | Product + configurator |
+| `solutions.html` | Solutions |
+| `support.html` | Support |
 | `designer.html` | Designer / saved projects (needs Sign in) |
 | `account.html` | Customer Sign in / account |
 | `cart.html` | Cart (**this browser only** — `localStorage`) |
@@ -76,6 +77,17 @@ Customer **Sign in** on the public site is not the admin login.
 The contact page posts to `/api/contact`. Production uses **Resend**. Inquiries are also stored in Supabase `contact_inquiries`.
 
 Do not put API keys or `SPECTRUM_ADMIN_SECRET` in this repo.
+
+## Google search
+
+The site is not hidden from Google. It just was not submitted. After this is live on **`main`**:
+
+1. Open [Google Search Console](https://search.google.com/search-console) as `dennisdiao@diaoinc.com`.
+2. Add **Domain** property `spectrumdisplay.com` and add the TXT record in GoDaddy DNS.
+3. Submit sitemap `https://www.spectrumdisplay.com/sitemap.xml`.
+4. Request indexing for `https://www.spectrumdisplay.com/`.
+
+Full steps: [HOW-IT-RUNS.md](HOW-IT-RUNS.md) section 8.
 
 ## How updates go live
 
