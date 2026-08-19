@@ -88,7 +88,7 @@ flowchart TB
 | **If it breaks** | You cannot save work, or Railway does not deploy (check Railway is still connected to this repo / `main`). The live site can still run on the last good deploy. |
 
 **Your PC copy:** `C:\Users\denni\OneDrive\Desktop\spectrum-display`  
-OneDrive does **not** update GitHub. After Cloud Agent changes: `git pull origin main` on the PC.
+OneDrive does **not** update GitHub. After Cloud Agent changes, pull and review on localhost — full steps: [LOCAL-REVIEW.md](LOCAL-REVIEW.md).
 
 ---
 

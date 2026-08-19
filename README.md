@@ -47,16 +47,21 @@ Hosting is **Railway only** (not Netlify or Vercel).
 
 ## Preview on this PC
 
+**Full steps (Cloud Cursor → git pull → localhost):** [LOCAL-REVIEW.md](LOCAL-REVIEW.md)
+
 ```bash
+cd C:\Users\denni\OneDrive\Desktop\spectrum-display
+git checkout main
+git pull origin main
 npm install
 npm start
 ```
 
-Open http://localhost:3000
+Open http://localhost:3000 — Designer: http://localhost:3000/designer.html
 
 Copy `.env.example` to `.env` for local keys. With Supabase vars, you use the live catalog. Without them, data is a local SQLite file at `data/spectrum.db`.
 
-**See mobile on a PC:** in Chrome, open the site → **F12** → **Ctrl + Shift + M**. Pick a phone at the top (for example iPhone 12 Pro) and refresh. That is a size preview, not a real iPhone.
+**See mobile on a PC:** in Chrome, open the site → **F12** → **Ctrl + Shift + M**. Pick a phone at the top (for example iPhone 12 Pro) and refresh. That is a size preview, not a real iPhone. If the page looks old: Ctrl+C, pull again, `npm start`, then **Ctrl + F5**.
 
 ### Admin catalog
 
