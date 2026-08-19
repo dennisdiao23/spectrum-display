@@ -160,17 +160,50 @@
     }).join('');
   }
 
+  function megaProductsInnerHtml() {
+    return (
+      '<div class="site-mega-products">' +
+        '<div class="site-mega-cats" role="tablist">' +
+          '<button type="button" class="site-mega-cat is-active" data-cat="popular">Popular <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/></svg></button>' +
+          '<button type="button" class="site-mega-cat" data-cat="cob">COB <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/></svg></button>' +
+          '<button type="button" class="site-mega-cat" data-cat="rental">Rental <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/></svg></button>' +
+          '<button type="button" class="site-mega-cat" data-cat="indoor">Indoor Fine Pitch <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/></svg></button>' +
+          '<button type="button" class="site-mega-cat" data-cat="outdoor">Outdoor <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/></svg></button>' +
+        '</div>' +
+        '<div class="site-mega-body">' +
+          '<h3 data-mega-title>Popular</h3>' +
+          '<p data-mega-lead>Most requested LED cabinets for new walls and upgrades.</p>' +
+          '<div class="site-mega-grid" data-mega-grid></div>' +
+        '</div>' +
+      '</div>' +
+      '<div class="site-mega-foot">' +
+        '<a href="products.html">View all products →</a>' +
+        '<a href="designer.html">LED Wall Calculator →</a>' +
+      '</div>'
+    );
+  }
+
+  function megaCatFromUrl() {
+    var cat = (new URLSearchParams(location.search).get('cat') || '').toLowerCase();
+    var map = { cob: 'cob', rental: 'rental', indoor: 'indoor', outdoor: 'outdoor', 'micro-led': 'indoor' };
+    return map[cat] || 'popular';
+  }
+
   function renderProductMega(key) {
     var data = PRODUCT_MEGA[key] || PRODUCT_MEGA.popular;
-    var title = document.getElementById('mega-prod-title');
-    var lead = document.getElementById('mega-prod-lead');
-    var grid = document.getElementById('mega-prod-grid');
-    if (title) title.textContent = data.title;
-    if (lead) lead.textContent = data.lead;
-    if (grid) grid.innerHTML = productGridHtml(data.items);
+    $all('[data-mega-title]').forEach(function (el) { el.textContent = data.title; });
+    $all('[data-mega-lead]').forEach(function (el) { el.textContent = data.lead; });
+    $all('[data-mega-grid]').forEach(function (el) { el.innerHTML = productGridHtml(data.items); });
     $all('.site-mega-cat').forEach(function (btn) {
       btn.classList.toggle('is-active', btn.getAttribute('data-cat') === key);
     });
+  }
+
+  function injectMobileProductBrowse() {
+    var host = $('#mobile-product-mega');
+    if (!host || host.getAttribute('data-ready')) return;
+    host.setAttribute('data-ready', '1');
+    host.innerHTML = megaProductsInnerHtml();
   }
 
   function injectNav() {
@@ -198,27 +231,9 @@
     var prod = document.createElement('div');
     prod.id = 'site-mega-products';
     prod.className = 'site-mega-panel';
-    prod.innerHTML =
-      '<div class="site-mega-products">' +
-        '<div class="site-mega-cats" role="tablist">' +
-          '<button type="button" class="site-mega-cat is-active" data-cat="popular">Popular <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/></svg></button>' +
-          '<button type="button" class="site-mega-cat" data-cat="cob">COB <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/></svg></button>' +
-          '<button type="button" class="site-mega-cat" data-cat="rental">Rental <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/></svg></button>' +
-          '<button type="button" class="site-mega-cat" data-cat="indoor">Indoor Fine Pitch <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/></svg></button>' +
-          '<button type="button" class="site-mega-cat" data-cat="outdoor">Outdoor <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/></svg></button>' +
-        '</div>' +
-        '<div class="site-mega-body">' +
-          '<h3 id="mega-prod-title">Popular</h3>' +
-          '<p id="mega-prod-lead">Most requested LED cabinets for new walls and upgrades.</p>' +
-          '<div class="site-mega-grid" id="mega-prod-grid"></div>' +
-        '</div>' +
-      '</div>' +
-      '<div class="site-mega-foot">' +
-        '<a href="products.html">View all products →</a>' +
-        '<a href="designer.html">LED Wall Calculator →</a>' +
-      '</div>';
+    prod.innerHTML = megaProductsInnerHtml();
     header.appendChild(prod);
-    renderProductMega('popular');
+    renderProductMega(megaCatFromUrl());
 
     var sol = document.createElement('div');
     sol.id = 'site-mega-solutions';
@@ -440,6 +455,8 @@
   function boot() {
     injectTabbar();
     injectNav();
+    injectMobileProductBrowse();
+    renderProductMega(megaCatFromUrl());
     injectSalesCta();
     var header = $('.site-header');
     if (!header) return;
