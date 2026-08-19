@@ -390,13 +390,12 @@ body:not(.designer-app) {
 .site-mega-panel {
   display: none;
   position: fixed;
-  top: calc(var(--site-header-h) + 0.4rem);
-  left: 50%;
-  transform: translateX(-50%);
+  top: var(--site-header-h);
+  left: 0;
   width: min(72rem, calc(100vw - 2 * var(--site-gutter)));
   background: #0f172a;
   border: 1px solid #334155;
-  border-radius: 1rem;
+  border-radius: 0 0 1rem 1rem;
   box-shadow: 0 28px 64px rgba(0, 0, 0, 0.55);
   z-index: 60;
   overflow: visible;
@@ -407,8 +406,8 @@ body:not(.designer-app) {
   position: absolute;
   left: 0;
   right: 0;
-  top: -0.55rem;
-  height: 0.55rem;
+  top: -0.35rem;
+  height: 0.35rem;
 }
 .site-mega-panel.is-open {
   display: block;
@@ -418,7 +417,7 @@ body:not(.designer-app) {
   grid-template-columns: 15.5rem minmax(0, 1fr);
   min-height: 22rem;
   overflow: hidden;
-  border-radius: 1rem 1rem 0 0;
+  border-radius: 0;
 }
 .site-mega-cats {
   background: #020617;
