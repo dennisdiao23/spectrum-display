@@ -51,7 +51,48 @@
         <a href="index.html" class="site-brand">
           <img src="assets/spectrum-logo.png" alt="Spectrum" class="site-brand-logo" />
         </a>
+        <nav class="site-nav" id="site-nav">
+          <div class="site-nav-item" data-mega="products">
+            <button type="button" class="site-nav-link" aria-expanded="false" aria-haspopup="true">
+              <span data-i18n="nav.products">Products</span>
+              <svg class="site-nav-chevron" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M6 9l6 6 6-6"/></svg>
+            </button>
+          </div>
+          <a class="site-nav-link" href="products.html?cat=micro-led" data-i18n="nav.microLed">Micro LED TV</a>
+          <a class="site-nav-link" href="products.html?cat=cob" data-i18n="nav.cob">COB</a>
+          <div class="site-nav-item" data-mega="solutions">
+            <button type="button" class="site-nav-link" aria-expanded="false" aria-haspopup="true">
+              <span data-i18n="nav.solutions">Solutions</span>
+              <svg class="site-nav-chevron" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M6 9l6 6 6-6"/></svg>
+            </button>
+          </div>
+          <a class="site-nav-link" href="designer.html" data-i18n="nav.designer">LED Wall Calculator</a>
+        </nav>
         <div class="site-utils">
+          <div class="site-drop" id="hdr-search-drop">
+            <button type="button" class="site-util site-icon-btn" aria-label="Search" aria-haspopup="true">
+              <svg fill="none" stroke="currentColor" stroke-width="1.7" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z"/></svg>
+            </button>
+            <div class="site-drop-panel site-search-panel">
+              <form id="hdr-search-form" action="products.html" method="get">
+                <input id="hdr-search-input" name="q" type="search" autocomplete="off" placeholder="Search products" data-i18n-placeholder="nav.searchPlaceholder" />
+              </form>
+              <div class="site-search-results" id="hdr-search-results"></div>
+            </div>
+          </div>
+          <div class="site-drop" id="hdr-lang-drop">
+            <button type="button" class="site-util site-icon-btn" aria-label="Language" aria-haspopup="true">
+              <svg fill="none" stroke="currentColor" stroke-width="1.7" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 21a9 9 0 100-18 9 9 0 000 18zM3.6 9h16.8M3.6 15h16.8M12 3c2.5 3.2 2.5 14.8 0 18M12 3c-2.5 3.2-2.5 14.8 0 18"/></svg>
+            </button>
+            <div class="site-drop-panel site-lang-panel">
+              <button type="button" data-set-lang="en">English</button>
+              <button type="button" data-set-lang="es">Español</button>
+              <button type="button" data-set-lang="fr">Français</button>
+              <button type="button" data-set-lang="ko">한국어</button>
+              <button type="button" data-set-lang="ja">日本語</button>
+              <button type="button" data-set-lang="zh">中文</button>
+            </div>
+          </div>
           <div class="site-drop" id="hdr-signin-drop">
             <button type="button" class="site-util" aria-haspopup="true">
               <svg fill="none" stroke="currentColor" stroke-width="1.7" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 7.5a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.5 19.5a7.5 7.5 0 0115 0"/></svg>
@@ -82,25 +123,12 @@
               </div>
             </div>
           </div>
-          <a href="contact.html" class="site-util">
+          <a href="support.html" class="site-util site-support-link"><span data-i18n="nav.support">Support</span></a>
+          <a href="contact.html" class="site-cta" data-i18n="nav.contactSales">Contact Sales</a>
+          <a href="contact.html" class="site-util site-contact-icon" aria-label="Contact Sales">
             <svg fill="none" stroke="currentColor" stroke-width="1.7" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M21.75 6.75v10.5a2.25 2.25 0 01-2.25 2.25h-15a2.25 2.25 0 01-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0019.5 4.5h-15a2.25 2.25 0 00-2.25 2.25m19.5 0v.243a2.25 2.25 0 01-1.07 1.916l-7.5 4.615a2.25 2.25 0 01-2.36 0L3.32 8.91a2.25 2.25 0 01-1.07-1.916V6.75"/></svg>
-            <span class="site-util-label" data-i18n="nav.contactUs">Contact Us</span>
           </a>
-          <div class="site-drop" id="hdr-lang-drop">
-            <button type="button" class="site-util" aria-label="Language">
-              <svg fill="none" stroke="currentColor" stroke-width="1.7" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 21a9 9 0 100-18 9 9 0 000 18zM3.6 9h16.8M3.6 15h16.8M12 3c2.5 3.2 2.5 14.8 0 18M12 3c-2.5 3.2-2.5 14.8 0 18"/></svg>
-              <span class="site-util-label" id="hdr-lang-label">English</span>
-            </button>
-            <div class="site-drop-panel site-lang-panel">
-              <button type="button" data-set-lang="en">English</button>
-              <button type="button" data-set-lang="es">Español</button>
-              <button type="button" data-set-lang="fr">Français</button>
-              <button type="button" data-set-lang="ko">한국어</button>
-              <button type="button" data-set-lang="ja">日本語</button>
-              <button type="button" data-set-lang="zh">中文</button>
-            </div>
-          </div>
-          <a href="cart.html" class="site-util site-cart" aria-label="Cart">
+          <a href="cart.html" class="site-util site-cart site-icon-btn" aria-label="Cart">
             <svg fill="none" stroke="currentColor" stroke-width="1.7" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"/></svg>
             <span class="site-cart-count" id="cart-count">0</span>
           </a>
@@ -109,11 +137,6 @@
           </button>
         </div>
       </div>
-      <nav class="site-nav" id="site-nav">
-        <a href="index.html" class="is-active" data-i18n="nav.home">Home</a>
-        <a href="products.html" data-i18n="nav.products">Products</a>
-        <a href="designer.html" data-i18n="nav.designer">LED Wall Calculator</a>
-      </nav>
     </div>
   </header>
 
@@ -421,9 +444,9 @@
       <div>
         <h4 class="font-semibold mb-4 text-sm uppercase tracking-wider text-slate-300" data-i18n="footer.products">Products</h4>
         <ul class="space-y-2 text-sm text-slate-400">
-          <li><a href="products.html" class="hover:text-white" data-i18n="footer.indoor">Indoor LED</a></li>
-          <li><a href="products.html" class="hover:text-white" data-i18n="footer.outdoor">Outdoor LED</a></li>
-          <li><a href="products.html" class="hover:text-white" data-i18n="footer.rental">Rental Systems</a></li>
+          <li><a href="products.html?cat=indoor" class="hover:text-white" data-i18n="footer.indoor">Indoor LED</a></li>
+          <li><a href="products.html?cat=outdoor" class="hover:text-white" data-i18n="footer.outdoor">Outdoor LED</a></li>
+          <li><a href="products.html?cat=rental" class="hover:text-white" data-i18n="footer.rental">Rental Systems</a></li>
           <li><a href="products.html" class="hover:text-white" data-i18n="footer.processors">Processors & Accessories</a></li>
         </ul>
       </div>
@@ -431,16 +454,18 @@
         <h4 class="font-semibold mb-4 text-sm uppercase tracking-wider text-slate-300" data-i18n="footer.company">Company</h4>
         <ul class="space-y-2 text-sm text-slate-400">
           <li><a href="products.html" class="hover:text-white" data-i18n="footer.ourBrands">Our Brands</a></li>
-          <li><a href="contact.html" class="hover:text-white" data-i18n="nav.contact">Contact</a></li>
+          <li><a href="solutions.html" class="hover:text-white" data-i18n="nav.solutions">Solutions</a></li>
+          <li><a href="support.html" class="hover:text-white" data-i18n="nav.support">Support</a></li>
+          <li><a href="contact.html" class="hover:text-white" data-i18n="nav.contactSales">Contact Sales</a></li>
         </ul>
       </div>
       <div>
         <h4 class="font-semibold mb-4 text-sm uppercase tracking-wider text-slate-300" data-i18n="footer.support">Support</h4>
         <ul class="space-y-2 text-sm text-slate-400">
-          <li><a href="#" class="hover:text-white" data-i18n="footer.tech">Technical Resources</a></li>
-          <li><a href="#" class="hover:text-white" data-i18n="footer.warranty">Warranty</a></li>
-          <li><a href="#" class="hover:text-white" data-i18n="footer.shipping">Shipping & Returns</a></li>
-          <li><a href="#" class="hover:text-white" data-i18n="footer.dealer">Dealer Portal</a></li>
+          <li><a href="support.html#tech" class="hover:text-white" data-i18n="footer.tech">Technical Resources</a></li>
+          <li><a href="support.html#warranty" class="hover:text-white" data-i18n="footer.warranty">Warranty</a></li>
+          <li><a href="support.html#shipping" class="hover:text-white" data-i18n="footer.shipping">Shipping & Returns</a></li>
+          <li><a href="account.html" class="hover:text-white" data-i18n="footer.dealer">Dealer Portal</a></li>
         </ul>
       </div>
     </div>

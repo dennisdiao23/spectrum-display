@@ -21,6 +21,7 @@ window.SPECTRUM_PRODUCTS = {
         type: 'Fixed',
         description: 'Fine pitch COB for retail, corporate lobbies, and control rooms.',
         badge: null,
+        cats: ['cob', 'indoor', 'popular', 'micro-led'],
         image: 'assets/products/discovery.jpg'
       },
       {
@@ -36,6 +37,7 @@ window.SPECTRUM_PRODUCTS = {
         type: 'Poster',
         description: 'Digital poster and window displays with high brightness.',
         badge: null,
+        cats: ['indoor', 'popular', 'micro-led'],
         image: 'assets/products/ledposter.jpg'
       }
     ]
@@ -57,6 +59,7 @@ window.SPECTRUM_PRODUCTS = {
         type: 'Rental',
         description: 'Fast-deploy rental panels for events and touring.',
         badge: 'Rental',
+        cats: ['rental', 'popular'],
         image: 'assets/products/mvultra.jpg'
       },
       {
@@ -72,6 +75,7 @@ window.SPECTRUM_PRODUCTS = {
         type: 'Outdoor',
         description: 'High-brightness outdoor facades and DOOH.',
         badge: null,
+        cats: ['outdoor'],
         image: 'assets/products/dn.jpg'
       }
     ]
@@ -93,6 +97,7 @@ window.SPECTRUM_PRODUCTS = {
         type: 'Fixed',
         description: 'Control-room grade micro pitch COB cabinets.',
         badge: null,
+        cats: ['cob', 'indoor', 'popular'],
         image: 'assets/products/finepitch.jpg'
       },
       {
@@ -108,6 +113,7 @@ window.SPECTRUM_PRODUCTS = {
         type: 'Rental',
         description: 'Lightweight rental for stages and events.',
         badge: 'Rental',
+        cats: ['rental', 'popular'],
         image: 'assets/products/diamond.jpg'
       }
     ]
@@ -129,6 +135,7 @@ window.SPECTRUM_PRODUCTS = {
         type: 'Fixed',
         description: 'Exclusive Spectrum fixed install with strong value.',
         badge: 'Exclusive',
+        cats: ['indoor', 'popular'],
         image: 'assets/products/diao-pro.jpg'
       },
       {
@@ -144,6 +151,7 @@ window.SPECTRUM_PRODUCTS = {
         type: 'Fixed',
         description: 'Budget-friendly fixed walls for commercial spaces.',
         badge: 'Exclusive',
+        cats: ['outdoor'],
         image: 'assets/products/diao-value.jpg'
       }
     ]
@@ -165,6 +173,7 @@ window.SPECTRUM_PRODUCTS = {
         type: 'Rental',
         description: 'Exclusive lightweight rental for events.',
         badge: 'Exclusive',
+        cats: ['rental'],
         image: 'assets/products/element-rental.jpg'
       },
       {
@@ -180,6 +189,7 @@ window.SPECTRUM_PRODUCTS = {
         type: 'Creative',
         description: 'Creative and XR volumes with flexible form factors.',
         badge: 'Creative',
+        cats: ['indoor'],
         image: 'assets/products/element-creative.jpg'
       }
     ]
