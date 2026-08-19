@@ -2,7 +2,7 @@
 :root {
   --site-header-h: 4rem;
   --site-tabbar-h: 0px;
-  --logo-h: calc(var(--site-header-h) - 0.2rem);
+  --logo-h: 2.15rem;
   --logo-text-inset: calc(var(--logo-h) * 76 / 205 - 20px);
   --site-gutter: 1rem;
 }
@@ -53,12 +53,11 @@ body:not(.designer-app) {
   display: flex;
   flex-direction: row;
   align-items: center;
-  justify-content: space-between;
+  justify-content: flex-start;
   gap: 0.35rem;
   width: 100%;
   height: 100%;
   min-height: 0;
-  position: relative;
 }
 .site-brand {
   display: flex;
@@ -66,14 +65,11 @@ body:not(.designer-app) {
   text-decoration: none;
   flex-shrink: 0;
   line-height: 0;
-  height: 100%;
-  overflow: hidden;
-  margin-left: -12px;
-  z-index: 2;
+  margin-left: -20px;
 }
 .site-brand-logo {
   display: block;
-  height: calc(var(--site-header-h) * 1.42);
+  height: var(--logo-h);
   width: auto;
   mix-blend-mode: screen;
 }
@@ -82,7 +78,6 @@ body:not(.designer-app) {
   align-items: center;
   gap: 0.15rem;
   flex-shrink: 0;
-  z-index: 2;
 }
 .site-util {
   display: inline-flex;
@@ -122,23 +117,12 @@ body:not(.designer-app) {
 .site-nav {
   display: flex;
   align-items: center;
-  justify-content: center;
   gap: 0.05rem;
-  position: absolute;
-  left: 0;
-  right: 0;
-  top: 0;
-  bottom: 0;
-  height: auto;
+  height: 2.25rem;
   min-height: 0;
-  padding-left: 0;
-  pointer-events: none;
-  z-index: 1;
-}
-.site-nav a,
-.site-nav button,
-.site-nav-item {
-  pointer-events: auto;
+  padding-left: 0.15rem;
+  flex: 1 1 auto;
+  min-width: 0;
 }
 .site-nav-item {
   display: inline-flex;
@@ -577,6 +561,9 @@ body:not(.designer-app) {
   color: #64748b;
 }
 @media (min-width: 768px) {
+  .site-brand {
+    margin-left: -12px;
+  }
   .site-utils {
     gap: 0.1rem;
   }
@@ -617,6 +604,7 @@ body:not(.designer-app) {
   :root {
     --site-header-h: 3.35rem;
     --site-tabbar-h: calc(6.5rem - 35px + env(safe-area-inset-bottom, 0px));
+    --logo-h: 1.75rem;
   }
   body {
     padding-bottom: var(--site-tabbar-h);
