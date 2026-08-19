@@ -295,6 +295,30 @@
     });
   }
 
+  function placeMega(panel, item) {
+    if (!panel || !item) return;
+    var header = $('.site-header');
+    var top = header ? header.getBoundingClientRect().bottom : item.getBoundingClientRect().bottom;
+    var label = item.querySelector('.site-nav-link span') || item;
+    var triggerLeft = label.getBoundingClientRect().left;
+    var gutter = 16;
+    var preferred = Math.min(72 * 16, window.innerWidth - gutter * 2);
+    var roomRight = window.innerWidth - triggerLeft - gutter;
+    var left = triggerLeft;
+    var width = preferred;
+    if (roomRight >= 480) {
+      width = Math.min(preferred, roomRight);
+    } else {
+      left = Math.max(gutter, window.innerWidth - preferred - gutter);
+      width = Math.min(preferred, window.innerWidth - left - gutter);
+    }
+    panel.style.top = Math.round(top) + 'px';
+    panel.style.left = Math.round(left) + 'px';
+    panel.style.width = Math.round(width) + 'px';
+    panel.style.right = 'auto';
+    panel.style.transform = 'none';
+  }
+
   function bindMegas() {
     var header = $('.site-header');
     if (!header) return;
@@ -314,7 +338,10 @@
         closeAll();
         item.classList.add('is-open');
         if (btn) btn.setAttribute('aria-expanded', 'true');
-        if (panel) panel.classList.add('is-open');
+        if (panel) {
+          panel.classList.add('is-open');
+          placeMega(panel, item);
+        }
       }
       item.addEventListener('mouseenter', open);
       item.addEventListener('focusin', open);
@@ -348,6 +375,13 @@
     });
     $all('.site-utils .site-drop, .site-support-link, .site-cta').forEach(function (el) {
       el.addEventListener('mouseenter', closeMegas);
+    });
+    window.addEventListener('resize', function () {
+      var openItem = $('.site-nav-item.is-open');
+      if (!openItem) return;
+      var name = openItem.getAttribute('data-mega');
+      var panel = name === 'products' ? $('#site-mega-products') : $('#site-mega-solutions');
+      placeMega(panel, openItem);
     });
   }
 
