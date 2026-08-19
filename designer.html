@@ -49,11 +49,17 @@
         flex-direction: column;
         background: #020617;
       }
+      .preview-sticky {
+        display: flex;
+        flex-direction: column;
+        flex: 1 1 auto;
+        min-height: 0;
+      }
       .preview-pane .preview-frame {
         flex: 1 1 auto;
         height: auto;
-        min-height: 12rem;
-        max-height: 40rem;
+        min-height: 28rem;
+        max-height: none;
       }
     }
     .preview-frame {
@@ -99,10 +105,6 @@
       }
       .preview-sticky h2 {
         display: none;
-      }
-      .preview-sticky .preview-frame {
-        height: 16.5rem;
-        max-height: 46vh;
       }
       .preview-sticky .preview-meta {
         margin-bottom: 0.35rem;
