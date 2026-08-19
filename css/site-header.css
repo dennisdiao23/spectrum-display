@@ -2,7 +2,7 @@
 :root {
   --site-header-h: 4rem;
   --site-tabbar-h: 0px;
-  --logo-h: 2.15rem;
+  --logo-h: 3.25rem;
   --logo-text-inset: calc(var(--logo-h) * 76 / 205 - 20px);
   --site-gutter: 1rem;
 }
@@ -117,11 +117,12 @@ body:not(.designer-app) {
 .site-nav {
   display: flex;
   align-items: center;
+  justify-content: center;
   gap: 0.05rem;
   height: 2.25rem;
   min-height: 0;
-  padding-left: 0.15rem;
-  flex: 1 1 auto;
+  padding-left: 0;
+  flex: 0 0 auto;
   min-width: 0;
 }
 .site-nav-item {
@@ -561,10 +562,21 @@ body:not(.designer-app) {
   color: #64748b;
 }
 @media (min-width: 768px) {
+  .site-header-top {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+    align-items: center;
+    column-gap: 0.75rem;
+  }
   .site-brand {
-    margin-left: -12px;
+    justify-self: start;
+    margin-left: -8px;
+  }
+  .site-nav {
+    justify-self: center;
   }
   .site-utils {
+    justify-self: end;
     gap: 0.1rem;
   }
 }
@@ -604,7 +616,7 @@ body:not(.designer-app) {
   :root {
     --site-header-h: 3.35rem;
     --site-tabbar-h: calc(6.5rem - 35px + env(safe-area-inset-bottom, 0px));
-    --logo-h: 1.75rem;
+    --logo-h: 2.45rem;
   }
   body {
     padding-bottom: var(--site-tabbar-h);
