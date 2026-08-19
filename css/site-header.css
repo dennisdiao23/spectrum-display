@@ -295,32 +295,35 @@ body:not(.designer-app) {
 }
 @media (max-width: 767px) {
   :root {
-    --site-header-h: calc(4.5rem + 10px);
-    --site-tabbar-h: calc(6.5rem - 40px + env(safe-area-inset-bottom, 0px));
-    --logo-h: 2.2rem;
+    --site-header-h: 3.35rem;
+    --site-tabbar-h: calc(6.5rem - 35px + env(safe-area-inset-bottom, 0px));
+    --logo-h: 1.75rem;
   }
   body {
     padding-bottom: var(--site-tabbar-h);
+  }
+  .site-header-inner {
+    padding: 0.3rem var(--site-gutter) 0.25rem;
   }
   .site-nav { display: none !important; }
   .site-menu-btn { display: none !important; }
   .site-util-label { display: none !important; }
   #hdr-signin-drop { display: none; }
-  .site-utils { gap: 0.4rem; }
+  .site-utils { gap: 0.3rem; }
   .site-util {
-    height: 2.64rem;
-    padding: 0 0.3rem;
+    height: 2rem;
+    padding: 0 0.25rem;
   }
   .site-util svg {
-    width: 1.54rem;
-    height: 1.54rem;
+    width: 1.22rem;
+    height: 1.22rem;
   }
   .site-header-top {
-    min-height: 2.64rem;
+    min-height: 2rem;
     align-items: center;
   }
   .site-brand {
-    margin-top: 0.2rem;
+    margin-top: 0;
     margin-left: -10px;
   }
   .site-drop-panel { width: min(20rem, calc(100vw - 1.5rem)); }
@@ -344,7 +347,7 @@ body:not(.designer-app) {
     z-index: 50;
     box-sizing: border-box;
     height: var(--site-tabbar-h);
-    padding: 0.7rem 0.2rem calc(2.15rem - 40px + env(safe-area-inset-bottom, 0px));
+    padding: 0.7rem 0.2rem calc(2.15rem - 35px + env(safe-area-inset-bottom, 0px));
     background: rgba(2, 6, 23, 0.96);
     backdrop-filter: blur(18px);
     -webkit-backdrop-filter: blur(18px);
