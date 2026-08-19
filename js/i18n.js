@@ -39,6 +39,7 @@
       'nav.shop': 'Shop Now',
       'nav.lang': 'Language',
       'nav.signin': 'Sign in',
+      'nav.searchPlaceholder': 'Search products',
       'nav.contactUs': 'Contact Us',
       'nav.chat': 'Chat',
       'nav.createAccount': 'Create account',

@@ -187,7 +187,8 @@
         '<button type="button" class="site-nav-link' + (file === 'solutions.html' ? ' is-active' : '') + '" aria-expanded="false" aria-haspopup="true">' +
           '<span data-i18n="nav.solutions">Solutions</span>' + chevron() +
         '</button>' +
-      '</div>';
+      '</div>' +
+      '<a class="site-nav-link' + (file === 'designer.html' ? ' is-active' : '') + '" href="designer.html" data-i18n="nav.designer">LED Wall Calculator</a>';
 
     var header = $('.site-header');
     if (!header || $('#site-mega-products')) return;
@@ -345,6 +346,59 @@
       btn.addEventListener('mouseenter', function () { renderProductMega(btn.getAttribute('data-cat')); });
       btn.addEventListener('click', function () { renderProductMega(btn.getAttribute('data-cat')); });
     });
+    $all('.site-utils .site-drop, .site-support-link, .site-cta').forEach(function (el) {
+      el.addEventListener('mouseenter', closeMegas);
+    });
+  }
+
+  function bindSearch() {
+    var wrap = $('#hdr-search-drop');
+    if (!wrap) return;
+    bindDrop(wrap);
+    var input = $('#hdr-search-input');
+    var results = $('#hdr-search-results');
+    function matches(p, q) {
+      var hay = [p.name, p.brandName, p.description, p.type, p.id].join(' ').toLowerCase();
+      return hay.indexOf(q) !== -1;
+    }
+    if (input) {
+      input.addEventListener('input', function () { render(input.value); });
+      wrap.addEventListener('mouseenter', function () {
+        closeMegas();
+        setTimeout(function () { input.focus(); }, 40);
+      });
+    }
+    function render(q) {
+      if (!results) return;
+      q = (q || '').trim().toLowerCase();
+      if (!q) {
+        results.innerHTML = '';
+        return;
+      }
+      var catalog = window.SPECTRUM_PRODUCT_LIST || [];
+      if (!catalog.length) {
+        results.innerHTML = '<a href="products.html?q=' + encodeURIComponent(q) + '">Search “' + q.replace(/[<>]/g, '') + '”</a>';
+        return;
+      }
+      var list = catalog.filter(function (p) {
+        return matches(p, q);
+      }).slice(0, 8);
+      if (!list.length) {
+        results.innerHTML = '<div class="site-search-empty">No matching products</div>';
+        return;
+      }
+      results.innerHTML = list.map(function (p) {
+        var href = 'product.html?brand=' + encodeURIComponent(p.brandId) + '&series=' + encodeURIComponent(p.id);
+        return '<a href="' + href + '">' + (p.brandName || '') + ' · ' + p.name + '</a>';
+      }).join('');
+    }
+    var form = $('#hdr-search-form');
+    if (form) {
+      form.addEventListener('submit', function (e) {
+        var q = ((input && input.value) || '').trim();
+        if (!q) e.preventDefault();
+      });
+    }
   }
 
   function boot() {
@@ -356,6 +410,7 @@
 
     bindDrop($('#hdr-signin-drop'));
     bindDrop($('#hdr-lang-drop'));
+    bindSearch();
     bindMegas();
 
     $all('[data-set-lang]').forEach(function (btn) {
