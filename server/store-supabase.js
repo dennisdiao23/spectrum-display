@@ -255,14 +255,14 @@ function createSupabaseStore() {
         supabase.from('custom_panels').select('*').eq('user_id', id).order('updated_at', { ascending: false }),
         supabase.from('orders').select('*').eq('user_id', id).order('created_at', { ascending: false })
       ]);
-      throwIf(projects.error, 'Could not load saved projects.');
-      throwIf(panels.error, 'Could not load custom panels.');
-      throwIf(orders.error, 'Could not load orders.');
+      if (projects.error) console.error('saved_projects', projects.error.message);
+      if (panels.error) console.error('custom_panels', panels.error.message);
+      if (orders.error) console.error('orders', orders.error.message);
       return {
         profile: profile,
-        projects: projects.data || [],
-        panels: panels.data || [],
-        orders: orders.data || []
+        projects: projects.error ? [] : (projects.data || []),
+        panels: panels.error ? [] : (panels.data || []),
+        orders: orders.error ? [] : (orders.data || [])
       };
     },
     async updateAccount(id, patch) {

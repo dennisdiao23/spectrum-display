@@ -175,3 +175,6 @@ create policy orders_admin_all on public.orders
 for all
 using (public.is_spectrum_admin())
 with check (public.is_spectrum_admin());
+
+grant select, insert, update, delete on public.saved_projects to anon, authenticated;
+grant select, insert, update, delete on public.custom_panels to anon, authenticated;

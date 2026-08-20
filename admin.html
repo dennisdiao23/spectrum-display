@@ -169,6 +169,7 @@
                   <th class="py-3 px-4 font-medium">Type</th>
                   <th class="py-3 px-4 font-medium">Company</th>
                   <th class="py-3 px-4 font-medium">Created</th>
+                  <th class="py-3 px-4 font-medium"></th>
                 </tr>
               </thead>
               <tbody id="accounts-table" class="text-slate-200"></tbody>
@@ -379,12 +380,13 @@
             '<td class="py-3 px-4"><span class="text-xs px-2 py-0.5 rounded-full bg-sky-500/15 text-sky-300">' + esc(roleLabel(a.role)) + '</span></td>' +
             '<td class="py-3 px-4 text-slate-400">' + esc(a.company || '—') + '</td>' +
             '<td class="py-3 px-4 text-slate-500">' + esc(when) + '</td>' +
+            '<td class="py-3 px-4 text-right"><span class="text-sky-400 text-xs font-medium">Open →</span></td>' +
             '</tr>';
-        }).join('') || '<tr><td class="py-6 px-4 text-slate-500" colspan="5">No accounts yet. Site Sign in accounts (not this admin login) appear here.</td></tr>';
+        }).join('') || '<tr><td class="py-6 px-4 text-slate-500" colspan="6">No accounts yet. Site Sign in accounts (not this admin login) appear here.</td></tr>';
       } catch (err) {
         errEl.textContent = err.message || 'Could not load accounts.';
         errEl.classList.remove('hidden');
-        tb.innerHTML = '<tr><td class="py-6 px-4 text-slate-500" colspan="5">Could not load accounts.</td></tr>';
+        tb.innerHTML = '<tr><td class="py-6 px-4 text-slate-500" colspan="6">Could not load accounts.</td></tr>';
       }
     }
 
@@ -425,19 +427,27 @@
     }
 
     async function openAccount(id) {
-      const data = await api('/api/admin/accounts/' + encodeURIComponent(id));
-      const account = data.account;
-      const p = account.profile || {};
-      document.getElementById('accounts-list-wrap').classList.add('hidden');
-      document.getElementById('account-detail').classList.remove('hidden');
-      document.getElementById('acct-id').value = p.id;
-      document.getElementById('acct-name').value = p.name || '';
-      document.getElementById('acct-email').value = p.email || '';
-      document.getElementById('acct-role').value = (p.role === 'dealer' || p.role === 'sales') ? p.role : 'customer';
-      document.getElementById('acct-company').value = p.company || '';
-      document.getElementById('acct-phone').value = p.phone || '';
-      document.getElementById('acct-msg').classList.add('hidden');
-      renderAccountLists(account);
+      const errEl = document.getElementById('accounts-error');
+      errEl.classList.add('hidden');
+      try {
+        const data = await api('/api/admin/accounts/' + encodeURIComponent(id));
+        const account = data.account;
+        if (!account || !account.profile) throw new Error('Account not found.');
+        const p = account.profile || {};
+        document.getElementById('accounts-list-wrap').classList.add('hidden');
+        document.getElementById('account-detail').classList.remove('hidden');
+        document.getElementById('acct-id').value = p.id;
+        document.getElementById('acct-name').value = p.name || '';
+        document.getElementById('acct-email').value = p.email || '';
+        document.getElementById('acct-role').value = (p.role === 'dealer' || p.role === 'sales') ? p.role : 'customer';
+        document.getElementById('acct-company').value = p.company || '';
+        document.getElementById('acct-phone').value = p.phone || '';
+        document.getElementById('acct-msg').classList.add('hidden');
+        renderAccountLists(account);
+      } catch (err) {
+        errEl.textContent = err.message || 'Could not open this account.';
+        errEl.classList.remove('hidden');
+      }
     }
 
     document.getElementById('tab-products').addEventListener('click', function () {
