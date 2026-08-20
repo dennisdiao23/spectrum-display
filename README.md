@@ -15,7 +15,7 @@ This is the durable place to look things up later. Chat history can get summariz
 | **GitHub** | This repo. Not the live site by itself. |
 | **Supabase** | Catalog, customer Sign in, saved projects, contact copies, product photos. |
 | **Google** | Continue with Google. |
-| **Resend → Gmail** | Contact form emails `dennisdiao@diaoinc.com`. |
+| **Resend → Gmail** | Contact form emails `sales@spectrumdisplay.com`. |
 
 Full map, env var names, DNS, and “if X breaks look here”: **[HOW-IT-RUNS.md](HOW-IT-RUNS.md)**.
 

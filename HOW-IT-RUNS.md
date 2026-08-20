@@ -68,7 +68,7 @@ flowchart TB
 | `SUPABASE_ANON_KEY` | Public key the site uses to talk to Supabase |
 | `SPECTRUM_ADMIN_SECRET` | Lets the server write catalog as admin |
 | `NODE_ENV=production` | Secure cookies, production mode |
-| `CONTACT_TO_EMAIL` | Inbox: `dennisdiao@diaoinc.com` |
+| `CONTACT_TO_EMAIL` | Inbox: `sales@spectrumdisplay.com` |
 | `CONTACT_FROM_EMAIL` | `Spectrum Display <hello@send.spectrumdisplay.com>` |
 | `RESEND_API_KEY` | Password for sending mail |
 | `PORT` | Set by Railway (do not hardcode) |
@@ -149,7 +149,7 @@ Email/password Sign in does **not** need Google. Only the Google button does.
 | **What it is** | Sends the contact form to your Gmail. |
 | **Dashboard** | https://resend.com |
 | **From** | `hello@send.spectrumdisplay.com` |
-| **To** | `dennisdiao@diaoinc.com` |
+| **To** | `sales@spectrumdisplay.com` |
 | **Domain** | `send.spectrumdisplay.com` must stay **Verified** (DNS on GoDaddy). |
 | **If it breaks** | Form says it failed, or you get no email. Check Resend **Logs**, Railway logs (`Contact form error`), and GoDaddy records for `send`. |
 
@@ -161,7 +161,7 @@ Inquiries are also stored in Supabase `contact_inquiries` even if mail fails (if
 
 | | |
 |---|---|
-| **Inbox** | `dennisdiao@diaoinc.com` |
+| **Inbox** | `sales@spectrumdisplay.com` (forward to your Gmail if that mailbox is not open yet) |
 | **What it does** | Receives Resend messages. Reply-To is the visitor’s email. |
 | **If it breaks** | Check **Spam**. From address is `hello@send.spectrumdisplay.com`. |
 
