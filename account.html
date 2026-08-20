@@ -142,13 +142,6 @@
               <label class="block text-xs text-slate-400 mb-1">Full name</label>
               <input id="auth-name" type="text" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:border-sky-500" placeholder="Your name" />
             </div>
-            <div id="role-field" class="hidden">
-              <label class="block text-xs text-slate-400 mb-1">Account type</label>
-              <select id="auth-role" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2.5 text-sm">
-                <option value="customer">Customer / End user</option>
-                <option value="dealer">Dealer / Integrator</option>
-              </select>
-            </div>
             <div>
               <label class="block text-xs text-slate-400 mb-1">Email</label>
               <input id="auth-email" type="email" required autocomplete="email" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:border-sky-500" placeholder="you@company.com" />
@@ -237,10 +230,8 @@
             </div>
             <div>
               <label class="block text-xs text-slate-400 mb-1">Account type</label>
-              <select id="prof-role" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2.5 text-sm">
-                <option value="customer">Customer / End user</option>
-                <option value="dealer">Dealer / Integrator</option>
-              </select>
+              <input id="prof-role" type="text" disabled class="w-full bg-slate-900 border border-slate-800 rounded-lg px-3 py-2.5 text-sm text-slate-500" />
+              <p class="text-xs text-slate-500 mt-1">New accounts are Customer. Dealer and Sales types are set by Spectrum in Admin.</p>
             </div>
             <p id="profile-msg" class="hidden text-sm text-sky-400"></p>
             <button type="submit" class="px-6 py-2.5 rounded-full bg-sky-500 hover:bg-sky-400 text-white text-sm font-semibold transition">Save changes</button>
@@ -288,7 +279,6 @@
       document.getElementById('tab-signin').className = 'flex-1 py-2.5 ' + (isReg ? 'text-slate-400 hover:text-white' : 'bg-sky-500/20 text-sky-300');
       document.getElementById('tab-register').className = 'flex-1 py-2.5 ' + (isReg ? 'bg-sky-500/20 text-sky-300' : 'text-slate-400 hover:text-white');
       document.getElementById('name-field').classList.toggle('hidden', !isReg);
-      document.getElementById('role-field').classList.toggle('hidden', !isReg);
       document.getElementById('auth-submit').textContent = isReg ? 'Create account' : 'Sign in';
       document.getElementById('auth-error').classList.add('hidden');
       document.getElementById('auth-password').autocomplete = isReg ? 'new-password' : 'current-password';
@@ -307,8 +297,7 @@
         result = await Auth.register({
           email,
           password,
-          name: document.getElementById('auth-name').value,
-          role: document.getElementById('auth-role').value
+          name: document.getElementById('auth-name').value
         });
       } else {
         result = await Auth.login({ email, password });
@@ -357,7 +346,7 @@
       const profile = Auth.getFullProfile();
       if (!profile) { showAuth(); return; }
       document.getElementById('dash-name').textContent = profile.name || profile.email;
-      document.getElementById('dash-role-badge').textContent = profile.role === 'dealer' ? 'Dealer' : 'Customer';
+      document.getElementById('dash-role-badge').textContent = (Auth.roleLabel && Auth.roleLabel(profile.role)) || 'Customer';
 
       // Projects
       const projects = Auth.listProjects();
@@ -478,7 +467,7 @@
       document.getElementById('prof-email').value = profile.email || '';
       document.getElementById('prof-company').value = profile.company || '';
       document.getElementById('prof-phone').value = profile.phone || '';
-      document.getElementById('prof-role').value = profile.role || 'customer';
+      document.getElementById('prof-role').value = (Auth.roleLabel && Auth.roleLabel(profile.role)) || 'Customer';
     }
 
     document.getElementById('profile-form').onsubmit = async (e) => {
@@ -486,15 +475,14 @@
       const r = await Auth.updateProfile({
         name: document.getElementById('prof-name').value,
         company: document.getElementById('prof-company').value,
-        phone: document.getElementById('prof-phone').value,
-        role: document.getElementById('prof-role').value
+        phone: document.getElementById('prof-phone').value
       });
       const msg = document.getElementById('profile-msg');
       if (r.ok) {
         msg.textContent = 'Saved.';
         msg.classList.remove('hidden');
         document.getElementById('dash-name').textContent = r.user.name;
-        document.getElementById('dash-role-badge').textContent = r.user.role === 'dealer' ? 'Dealer' : 'Customer';
+        document.getElementById('dash-role-badge').textContent = (Auth.roleLabel && Auth.roleLabel(r.user.role)) || 'Customer';
       } else {
         msg.textContent = r.error || 'Could not save.';
         msg.classList.remove('hidden');
@@ -523,14 +511,14 @@
     }
 
     // After login from cart checkout, place pending cart
-    function tryPendingCheckout() {
+    async function tryPendingCheckout() {
       if (sessionStorage.getItem('spectrumPendingCheckout') !== '1') return;
       if (!Auth.isLoggedIn()) return;
       const cart = JSON.parse(localStorage.getItem('spectrumCart') || '[]');
       sessionStorage.removeItem('spectrumPendingCheckout');
       if (!cart.length) return;
       const total = cart.reduce((s, i) => s + (i.price || 0) * (i.qty || 1), 0);
-      const result = Auth.createOrder({ items: cart, total });
+      const result = await Auth.createOrder({ items: cart, total });
       if (result.ok) {
         localStorage.setItem('spectrumCart', '[]');
         alert('Order ' + result.order.id + ' placed from your cart!');

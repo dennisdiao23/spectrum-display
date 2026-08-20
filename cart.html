@@ -222,7 +222,7 @@
         return;
       }
       const total = cart.reduce((s, i) => s + (i.price || 0) * (i.qty || 1), 0);
-      const result = SpectrumAuth.createOrder({ items: cart, total });
+      const result = await SpectrumAuth.createOrder({ items: cart, total });
       if (!result.ok) {
         alert(result.error || 'Could not place order');
         return;

@@ -114,8 +114,9 @@ OneDrive does **not** update GitHub. After Cloud Agent changes, pull and review 
 | `brands`, `products` | Public catalog |
 | `admins`, `sessions` | Catalog admin at `/admin.html` (not customer Sign in) |
 | `app_config` | Admin secret check |
-| `profiles` | Customer accounts |
+| `profiles` | Site accounts. Role is `customer` (default), `dealer`, or `sales`. Only Admin can change type. |
 | `saved_projects`, `custom_panels` | Designer saves (online, per user) |
+| `orders` | Cart checkouts stored online so Admin can see them |
 | `contact_inquiries` | Copy of each contact-form submit |
 
 **Storage:** bucket `product-images` (public product photos).
