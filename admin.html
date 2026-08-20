@@ -14,7 +14,7 @@
     <div class="max-w-6xl mx-auto px-4 py-4 flex items-center justify-between gap-3">
       <div>
         <a href="index.html" class="text-xs text-slate-500 hover:text-sky-300">← Site</a>
-        <h1 class="text-lg font-bold">Product Admin</h1>
+        <h1 class="text-lg font-bold">Spectrum Admin</h1>
       </div>
       <div class="flex items-center gap-3">
         <span id="admin-name" class="text-sm text-slate-400"></span>
@@ -26,7 +26,7 @@
   <main class="max-w-6xl mx-auto px-4 py-8">
     <section id="login-panel" class="max-w-md mx-auto">
       <h2 class="text-2xl font-bold mb-2">Admin sign in</h2>
-      <p class="text-sm text-slate-400 mb-6">Add and edit products, photos, and pricing. Default local login is in the README.</p>
+      <p class="text-sm text-slate-400 mb-6">Products, photos, pricing, and customer accounts. Default local login is in the README.</p>
       <form id="login-form" class="rounded-2xl border border-slate-800 bg-slate-900/60 p-6 space-y-4">
         <div>
           <label class="block text-xs text-slate-400 mb-1">Email</label>
@@ -42,6 +42,12 @@
     </section>
 
     <section id="dash-panel" class="hidden space-y-8">
+      <div class="flex flex-wrap gap-2 border-b border-slate-800 pb-3">
+        <button type="button" id="tab-products" class="admin-tab px-4 py-2 rounded-full text-sm font-medium bg-sky-500/20 text-sky-300">Products</button>
+        <button type="button" id="tab-accounts" class="admin-tab px-4 py-2 rounded-full text-sm font-medium text-slate-400 hover:text-white">Accounts</button>
+      </div>
+
+      <div id="products-section" class="space-y-8">
       <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <p class="text-slate-400 text-sm">Products in the database appear on the Products page and LED Wall Calculator.</p>
         <button id="new-btn" type="button" class="px-4 py-2 rounded-full bg-sky-500 hover:bg-sky-400 text-white text-sm font-semibold">Add product</button>
@@ -129,6 +135,74 @@
       </div>
 
       <div id="product-table" class="grid sm:grid-cols-2 xl:grid-cols-3 gap-4"></div>
+      </div>
+
+      <div id="accounts-section" class="hidden space-y-6">
+        <div id="accounts-list-wrap">
+          <p class="text-slate-400 text-sm mb-4">All customer sign-ins. Open an account to see orders, saved calculator projects, custom panels, and to set Customer / Dealer / Sales.</p>
+          <div class="overflow-x-auto rounded-2xl border border-slate-800">
+            <table class="w-full text-sm">
+              <thead class="text-left text-slate-400 border-b border-slate-800">
+                <tr>
+                  <th class="py-3 px-4 font-medium">Name</th>
+                  <th class="py-3 px-4 font-medium">Email</th>
+                  <th class="py-3 px-4 font-medium">Type</th>
+                  <th class="py-3 px-4 font-medium">Company</th>
+                  <th class="py-3 px-4 font-medium">Created</th>
+                </tr>
+              </thead>
+              <tbody id="accounts-table" class="text-slate-200"></tbody>
+            </table>
+          </div>
+        </div>
+        <div id="account-detail" class="hidden space-y-6">
+          <button type="button" id="account-back" class="text-sm text-sky-400 hover:text-sky-300">← All accounts</button>
+          <form id="account-form" class="rounded-2xl border border-slate-800 bg-slate-900/50 p-5 grid sm:grid-cols-2 gap-4">
+            <input type="hidden" id="acct-id">
+            <div>
+              <label class="block text-xs text-slate-400 mb-1">Name</label>
+              <input id="acct-name" type="text" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm">
+            </div>
+            <div>
+              <label class="block text-xs text-slate-400 mb-1">Email</label>
+              <input id="acct-email" type="email" disabled class="w-full bg-slate-900 border border-slate-800 rounded-lg px-3 py-2 text-sm text-slate-500">
+            </div>
+            <div>
+              <label class="block text-xs text-slate-400 mb-1">Account type</label>
+              <select id="acct-role" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm">
+                <option value="customer">Customer</option>
+                <option value="dealer">Dealer</option>
+                <option value="sales">Sales</option>
+              </select>
+              <p class="text-xs text-slate-500 mt-1">Only admin can change this. Dealer and Sales see Background and Preview Content on the calculator.</p>
+            </div>
+            <div>
+              <label class="block text-xs text-slate-400 mb-1">Company</label>
+              <input id="acct-company" type="text" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm">
+            </div>
+            <div>
+              <label class="block text-xs text-slate-400 mb-1">Phone</label>
+              <input id="acct-phone" type="text" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm">
+            </div>
+            <p id="acct-msg" class="sm:col-span-2 hidden text-sm text-sky-400"></p>
+            <div class="sm:col-span-2">
+              <button type="submit" class="px-5 py-2 rounded-full bg-sky-500 hover:bg-sky-400 text-white text-sm font-semibold">Save account</button>
+            </div>
+          </form>
+          <div>
+            <h3 class="font-semibold mb-3">Orders</h3>
+            <div id="acct-orders" class="space-y-2 text-sm"></div>
+          </div>
+          <div>
+            <h3 class="font-semibold mb-3">Saved calculator projects</h3>
+            <div id="acct-projects" class="space-y-2 text-sm"></div>
+          </div>
+          <div>
+            <h3 class="font-semibold mb-3">Custom panels</h3>
+            <div id="acct-panels" class="space-y-2 text-sm"></div>
+          </div>
+        </div>
+      </div>
     </section>
   </main>
 
@@ -241,6 +315,139 @@
       fillBrands(brands[0] && brands[0].id);
       renderProducts(productData.products || []);
     }
+
+    function roleLabel(role) {
+      if (role === 'dealer') return 'Dealer';
+      if (role === 'sales') return 'Sales';
+      return 'Customer';
+    }
+
+    function esc(s) {
+      return String(s == null ? '' : s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/"/g, '&quot;');
+    }
+
+    function emptyNote(text) {
+      return '<p class="text-slate-500 text-sm rounded-xl border border-dashed border-slate-800 p-4">' + esc(text) + '</p>';
+    }
+
+    function showAdminTab(name) {
+      const productsOn = name === 'products';
+      document.getElementById('products-section').classList.toggle('hidden', !productsOn);
+      document.getElementById('accounts-section').classList.toggle('hidden', productsOn);
+      document.getElementById('tab-products').className = 'admin-tab px-4 py-2 rounded-full text-sm font-medium ' + (productsOn ? 'bg-sky-500/20 text-sky-300' : 'text-slate-400 hover:text-white');
+      document.getElementById('tab-accounts').className = 'admin-tab px-4 py-2 rounded-full text-sm font-medium ' + (productsOn ? 'text-slate-400 hover:text-white' : 'bg-sky-500/20 text-sky-300');
+    }
+
+    async function loadAccounts() {
+      const data = await api('/api/admin/accounts');
+      const rows = data.accounts || [];
+      const tb = document.getElementById('accounts-table');
+      tb.innerHTML = rows.map(function (a) {
+        const when = a.created_at ? new Date(a.created_at).toLocaleDateString() : '';
+        return '<tr class="border-b border-slate-800 hover:bg-slate-900/80 cursor-pointer" data-id="' + esc(a.id) + '">' +
+          '<td class="py-3 px-4">' + esc(a.name || '—') + '</td>' +
+          '<td class="py-3 px-4">' + esc(a.email || '') + '</td>' +
+          '<td class="py-3 px-4"><span class="text-xs px-2 py-0.5 rounded-full bg-sky-500/15 text-sky-300">' + esc(roleLabel(a.role)) + '</span></td>' +
+          '<td class="py-3 px-4 text-slate-400">' + esc(a.company || '—') + '</td>' +
+          '<td class="py-3 px-4 text-slate-500">' + esc(when) + '</td>' +
+          '</tr>';
+      }).join('') || '<tr><td class="py-6 px-4 text-slate-500" colspan="5">No accounts yet.</td></tr>';
+    }
+
+    function renderAccountLists(account) {
+      const orders = account.orders || [];
+      const projects = account.projects || [];
+      const panels = account.panels || [];
+      document.getElementById('acct-orders').innerHTML = orders.length
+        ? orders.map(function (o) {
+          const items = (o.items || []).map(function (i) { return (i.name || '') + ' × ' + (i.qty || 1); }).join(', ');
+          return '<div class="p-4 rounded-xl border border-slate-800 bg-slate-900/50">' +
+            '<div class="flex justify-between gap-2"><span class="font-medium">' + esc(o.public_id || o.id) + '</span><span class="text-xs text-amber-300">' + esc(o.status || '') + '</span></div>' +
+            '<div class="text-xs text-slate-400 mt-1">' + esc(o.date || '') + ' · $' + Number(o.total || 0).toLocaleString() + '</div>' +
+            '<div class="text-slate-300 mt-2">' + esc(items) + '</div></div>';
+        }).join('')
+        : emptyNote('No orders on this account.');
+      document.getElementById('acct-projects').innerHTML = projects.length
+        ? projects.map(function (p) {
+          const title = ((p.brand_name || '') + ' ' + (p.series_name || 'Design')).trim();
+          const size = (p.width || '?') + ' × ' + (p.height || '?') + ' m';
+          const when = p.updated_at ? new Date(p.updated_at).toLocaleString() : '';
+          const url = p.designer_url || '';
+          return '<div class="p-4 rounded-xl border border-slate-800 bg-slate-900/50">' +
+            '<div class="font-medium">' + esc(title) + '</div>' +
+            '<div class="text-xs text-slate-400 mt-1">' + esc(size) + (p.pitch ? ' · ' + p.pitch + ' mm' : '') + ' · ' + esc(when) + '</div>' +
+            (url ? '<a class="text-sky-400 text-xs mt-2 inline-block" href="' + esc(url) + '">Open in calculator →</a>' : '') +
+            '</div>';
+        }).join('')
+        : emptyNote('No saved calculator projects.');
+      document.getElementById('acct-panels').innerHTML = panels.length
+        ? panels.map(function (p) {
+          return '<div class="p-4 rounded-xl border border-slate-800 bg-slate-900/50">' +
+            '<div class="font-medium">' + esc(p.name || 'Custom panel') + '</div>' +
+            '<div class="text-xs text-slate-400 mt-1">' + esc((p.w || '?') + ' × ' + (p.h || '?') + ' mm') +
+            (p.pitch ? ' · P' + p.pitch : '') + '</div></div>';
+        }).join('')
+        : emptyNote('No custom panels saved.');
+    }
+
+    async function openAccount(id) {
+      const data = await api('/api/admin/accounts/' + encodeURIComponent(id));
+      const account = data.account;
+      const p = account.profile || {};
+      document.getElementById('accounts-list-wrap').classList.add('hidden');
+      document.getElementById('account-detail').classList.remove('hidden');
+      document.getElementById('acct-id').value = p.id;
+      document.getElementById('acct-name').value = p.name || '';
+      document.getElementById('acct-email').value = p.email || '';
+      document.getElementById('acct-role').value = (p.role === 'dealer' || p.role === 'sales') ? p.role : 'customer';
+      document.getElementById('acct-company').value = p.company || '';
+      document.getElementById('acct-phone').value = p.phone || '';
+      document.getElementById('acct-msg').classList.add('hidden');
+      renderAccountLists(account);
+    }
+
+    document.getElementById('tab-products').addEventListener('click', function () { showAdminTab('products'); });
+    document.getElementById('tab-accounts').addEventListener('click', async function () {
+      showAdminTab('accounts');
+      document.getElementById('accounts-list-wrap').classList.remove('hidden');
+      document.getElementById('account-detail').classList.add('hidden');
+      await loadAccounts();
+    });
+    document.getElementById('account-back').addEventListener('click', async function () {
+      document.getElementById('account-detail').classList.add('hidden');
+      document.getElementById('accounts-list-wrap').classList.remove('hidden');
+      await loadAccounts();
+    });
+    document.getElementById('accounts-table').addEventListener('click', function (e) {
+      const row = e.target.closest('tr[data-id]');
+      if (row) openAccount(row.getAttribute('data-id'));
+    });
+    document.getElementById('account-form').addEventListener('submit', async function (e) {
+      e.preventDefault();
+      const id = document.getElementById('acct-id').value;
+      const msg = document.getElementById('acct-msg');
+      try {
+        await api('/api/admin/accounts/' + encodeURIComponent(id), {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            name: document.getElementById('acct-name').value,
+            company: document.getElementById('acct-company').value,
+            phone: document.getElementById('acct-phone').value,
+            role: document.getElementById('acct-role').value
+          })
+        });
+        msg.textContent = 'Saved. The user will see the new type after they refresh or sign in again.';
+        msg.classList.remove('hidden');
+        msg.classList.remove('text-red-400');
+        msg.classList.add('text-sky-400');
+      } catch (err) {
+        msg.textContent = err.message || 'Could not save.';
+        msg.classList.remove('hidden');
+        msg.classList.remove('text-sky-400');
+        msg.classList.add('text-red-400');
+      }
+    });
 
     document.getElementById('login-form').addEventListener('submit', async function (e) {
       e.preventDefault();

@@ -87,6 +87,15 @@ function createSqliteStore() {
     async deleteSession(token) {
       db.prepare('DELETE FROM sessions WHERE token = ?').run(token);
     },
+    async listAccounts() {
+      return [];
+    },
+    async getAccount() {
+      return null;
+    },
+    async updateAccount() {
+      throw new Error('Account management requires Supabase.');
+    },
     async saveContactInquiry() {
       return true;
     },

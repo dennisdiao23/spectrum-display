@@ -238,6 +238,50 @@ function createSupabaseStore() {
       const { error } = await supabase.from('sessions').delete().eq('token', token);
       throwIf(error);
     },
+    async listAccounts() {
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('id, email, name, role, company, phone, created_at, updated_at')
+        .order('created_at', { ascending: false });
+      throwIf(error, 'Could not list accounts.');
+      return data || [];
+    },
+    async getAccount(id) {
+      const { data: profile, error } = await supabase.from('profiles').select('*').eq('id', id).maybeSingle();
+      throwIf(error, 'Could not load account.');
+      if (!profile) return null;
+      const [projects, panels, orders] = await Promise.all([
+        supabase.from('saved_projects').select('*').eq('user_id', id).order('updated_at', { ascending: false }),
+        supabase.from('custom_panels').select('*').eq('user_id', id).order('updated_at', { ascending: false }),
+        supabase.from('orders').select('*').eq('user_id', id).order('created_at', { ascending: false })
+      ]);
+      throwIf(projects.error, 'Could not load saved projects.');
+      throwIf(panels.error, 'Could not load custom panels.');
+      throwIf(orders.error, 'Could not load orders.');
+      return {
+        profile: profile,
+        projects: projects.data || [],
+        panels: panels.data || [],
+        orders: orders.data || []
+      };
+    },
+    async updateAccount(id, patch) {
+      const allowed = { updated_at: new Date().toISOString() };
+      if (patch.role === 'customer' || patch.role === 'dealer' || patch.role === 'sales') {
+        allowed.role = patch.role;
+      }
+      if (patch.name != null) allowed.name = String(patch.name).trim();
+      if (patch.company != null) allowed.company = String(patch.company).trim();
+      if (patch.phone != null) allowed.phone = String(patch.phone).trim();
+      const { data, error } = await supabase
+        .from('profiles')
+        .update(allowed)
+        .eq('id', id)
+        .select('*')
+        .maybeSingle();
+      throwIf(error, 'Could not update account.');
+      return data;
+    },
     async saveContactInquiry(inquiry) {
       const { error } = await supabase.from('contact_inquiries').insert({
         name: inquiry.name,

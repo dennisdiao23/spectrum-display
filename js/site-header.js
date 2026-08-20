@@ -45,7 +45,7 @@
     if (namePanel) namePanel.textContent = name;
     if (roleEl) {
       roleEl.textContent = session
-        ? (session.role === 'dealer' ? 'Dealer / Integrator' : 'Customer / End user')
+        ? ((window.SpectrumAuth && SpectrumAuth.roleLabel && SpectrumAuth.roleLabel(session.role)) || 'Customer')
         : '';
     }
   }

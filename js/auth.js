@@ -10,6 +10,7 @@
   let cached = null;
   let projectsCache = [];
   let panelsCache = [];
+  let ordersCache = [];
   let readyResolve;
   const ready = new Promise(function (resolve) { readyResolve = resolve; });
 
@@ -66,19 +67,33 @@
       pmax: row.pmax
     };
   }
+  function mapOrder(row) {
+    return {
+      id: row.public_id || row.id,
+      dbId: row.id,
+      date: row.date || (row.created_at || '').slice(0, 10),
+      status: row.status || 'Processing',
+      total: row.total || 0,
+      items: row.items || [],
+      note: row.note || ''
+    };
+  }
   async function refreshUserLists(userId) {
     const client = sb();
     if (!client || !userId) {
       projectsCache = [];
       panelsCache = [];
+      ordersCache = [];
       return;
     }
-    const [projRes, panelRes] = await Promise.all([
+    const [projRes, panelRes, orderRes] = await Promise.all([
       client.from('saved_projects').select('*').eq('user_id', userId).order('updated_at', { ascending: false }),
-      client.from('custom_panels').select('*').eq('user_id', userId).order('updated_at', { ascending: false })
+      client.from('custom_panels').select('*').eq('user_id', userId).order('updated_at', { ascending: false }),
+      client.from('orders').select('*').eq('user_id', userId).order('created_at', { ascending: false })
     ]);
     projectsCache = (projRes.data || []).map(mapProject);
     panelsCache = (panelRes.data || []).map(mapPanel);
+    ordersCache = (orderRes.data || []).map(mapOrder);
   }
   async function migrateLocalSaves(userId) {
     const flag = 'spectrumCloudMigrated:' + userId;
@@ -150,6 +165,16 @@
     return msg;
   }
 
+  function normalizeRole(role) {
+    if (role === 'dealer' || role === 'sales') return role;
+    return 'customer';
+  }
+  function roleLabel(role) {
+    const r = normalizeRole(role);
+    if (r === 'dealer') return 'Dealer / Integrator';
+    if (r === 'sales') return 'Sales';
+    return 'Customer';
+  }
   function sessionFrom(user, profile) {
     if (!user) return null;
     const meta = user.user_metadata || {};
@@ -157,7 +182,7 @@
       id: user.id,
       email: user.email,
       name: (profile && profile.name) || meta.name || (user.email || '').split('@')[0],
-      role: (profile && profile.role) || (meta.role === 'dealer' ? 'dealer' : 'customer'),
+      role: normalizeRole(profile && profile.role),
       provider: (user.app_metadata && user.app_metadata.provider) || 'email',
       company: (profile && profile.company) || '',
       phone: (profile && profile.phone) || '',
@@ -175,7 +200,7 @@
       id: user.id,
       email: user.email,
       name: meta.name || (user.email || '').split('@')[0],
-      role: meta.role === 'dealer' ? 'dealer' : 'customer',
+      role: 'customer',
       company: '',
       phone: ''
     };
@@ -188,6 +213,7 @@
       cached = null;
       projectsCache = [];
       panelsCache = [];
+      ordersCache = [];
       return;
     }
     const profile = await loadProfile(user);
@@ -230,9 +256,16 @@
       cached = null;
       projectsCache = [];
       panelsCache = [];
+      ordersCache = [];
       global.dispatchEvent(new CustomEvent('spectrum:auth'));
     },
-    register: async function ({ email, password, name, role }) {
+    normalizeRole: normalizeRole,
+    roleLabel: roleLabel,
+    canUsePreviewTools: function () {
+      const role = cached && cached.role;
+      return role === 'dealer' || role === 'sales';
+    },
+    register: async function ({ email, password, name }) {
       email = (email || '').trim().toLowerCase();
       if (!email || !password || password.length < 6) {
         return { ok: false, error: 'Email and password (min 6 characters) required.' };
@@ -245,8 +278,7 @@
         options: {
           emailRedirectTo: global.location.origin + '/account.html',
           data: {
-            name: (name || email.split('@')[0]).trim(),
-            role: role === 'dealer' ? 'dealer' : 'customer'
+            name: (name || email.split('@')[0]).trim()
           }
         }
       });
@@ -294,11 +326,10 @@
       if (updates.name != null) patch.name = String(updates.name).trim();
       if (updates.company != null) patch.company = String(updates.company).trim();
       if (updates.phone != null) patch.phone = String(updates.phone).trim();
-      if (updates.role === 'dealer' || updates.role === 'customer') patch.role = updates.role;
       const { error } = await client.from('profiles').update(patch).eq('id', cached.id);
       if (error) return { ok: false, error: friendlyError(error) };
       if (patch.name) {
-        await client.auth.updateUser({ data: { name: patch.name, role: patch.role || cached.role } });
+        await client.auth.updateUser({ data: { name: patch.name } });
       }
       cached = Object.assign({}, cached, patch);
       global.dispatchEvent(new CustomEvent('spectrum:auth'));
@@ -401,6 +432,7 @@
       return { ok: true };
     },
     listOrders: function () {
+      if (ordersCache.length) return ordersCache.slice();
       const session = this.getSession();
       if (!session) return [];
       const all = read(ORDERS_KEY, {});
@@ -408,12 +440,10 @@
         return (b.date || '').localeCompare(a.date || '');
       });
     },
-    createOrder: function ({ items, total, note }) {
+    createOrder: async function ({ items, total, note }) {
       const session = this.getSession();
       if (!session) return { ok: false, error: 'Please sign in to place an order.' };
       if (!items || !items.length) return { ok: false, error: 'Cart is empty.' };
-      const all = read(ORDERS_KEY, {});
-      const list = all[session.id] || [];
       const order = {
         id: 'ORD-' + Math.floor(10000 + Math.random() * 89999),
         date: new Date().toISOString().slice(0, 10),
@@ -424,9 +454,28 @@
         }),
         note: note || 'Placed from website cart'
       };
+      const all = read(ORDERS_KEY, {});
+      const list = all[session.id] || [];
       list.unshift(order);
       all[session.id] = list;
       write(ORDERS_KEY, all);
+      const client = sb();
+      if (client) {
+        const { data, error } = await client.from('orders').insert({
+          user_id: session.id,
+          public_id: order.id,
+          date: order.date,
+          status: order.status,
+          total: order.total,
+          items: order.items,
+          note: order.note
+        }).select('*').single();
+        if (!error && data) {
+          ordersCache.unshift(mapOrder(data));
+        } else if (error) {
+          console.warn('Could not store order online:', error.message || error);
+        }
+      }
       return { ok: true, order: order };
     }
   };

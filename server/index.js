@@ -390,6 +390,38 @@ async function main() {
     } catch (err) { next(err); }
   });
 
+  app.get('/api/admin/accounts', requireAdmin, async function (_req, res, next) {
+    try {
+      res.json({ ok: true, accounts: await store.listAccounts() });
+    } catch (err) { next(err); }
+  });
+
+  app.get('/api/admin/accounts/:id', requireAdmin, async function (req, res, next) {
+    try {
+      const account = await store.getAccount(req.params.id);
+      if (!account) return res.status(404).json({ ok: false, error: 'Account not found.' });
+      res.json({ ok: true, account: account });
+    } catch (err) { next(err); }
+  });
+
+  app.put('/api/admin/accounts/:id', requireAdmin, async function (req, res, next) {
+    try {
+      const body = req.body || {};
+      const role = String(body.role || '').trim();
+      if (role && role !== 'customer' && role !== 'dealer' && role !== 'sales') {
+        return res.status(400).json({ ok: false, error: 'Account type must be customer, dealer, or sales.' });
+      }
+      const updated = await store.updateAccount(req.params.id, {
+        role: role || undefined,
+        name: body.name,
+        company: body.company,
+        phone: body.phone
+      });
+      if (!updated) return res.status(404).json({ ok: false, error: 'Account not found.' });
+      res.json({ ok: true, profile: updated });
+    } catch (err) { next(err); }
+  });
+
   app.use(express.static(ROOT));
 
   app.use(function (err, _req, res, _next) {

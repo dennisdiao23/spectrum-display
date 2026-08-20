@@ -952,6 +952,7 @@
           </div>
 
           <div class="mt-4 space-y-4 shrink-0">
+            <div id="dealer-preview-tools" class="hidden space-y-4">
             <!-- Background -->
             <div class="p-4 rounded-xl border border-slate-800 bg-slate-900/50 space-y-3">
               <div class="flex flex-wrap items-center justify-between gap-2">
@@ -984,6 +985,7 @@
                 </select>
               </div>
               <p class="text-xs text-slate-500">Sample content shown on the LED wall for customer previews.</p>
+            </div>
             </div>
 
             <div class="flex flex-wrap gap-4 text-xs text-slate-500">
@@ -2278,6 +2280,11 @@
     }
 
     document.getElementById('content-select').addEventListener('change', function() {
+      if (!(window.SpectrumAuth && SpectrumAuth.canUsePreviewTools && SpectrumAuth.canUsePreviewTools())) {
+        this.value = 'gradient';
+        applySampleContent('gradient');
+        return;
+      }
       applySampleContent(this.value);
     });
     applySampleContent(document.getElementById('content-select').value);
@@ -2562,6 +2569,7 @@
     async function refreshAuthUi() {
       await tryPendingCustomPanelSave();
       if (isCustomPanel()) renderSavedCustomPanels();
+      syncPreviewTools();
       updateDesign();
     }
     refreshAuthUi();
@@ -2724,6 +2732,10 @@
     }
 
     document.getElementById('bg-upload').addEventListener('change', function(e) {
+      if (!(window.SpectrumAuth && SpectrumAuth.canUsePreviewTools && SpectrumAuth.canUsePreviewTools())) {
+        this.value = '';
+        return;
+      }
       const file = e.target.files[0];
       if (!file) return;
       if (customBgUrl) URL.revokeObjectURL(customBgUrl);
@@ -2740,6 +2752,19 @@
     });
 
     resetBackground();
+
+    function syncPreviewTools() {
+      const tools = document.getElementById('dealer-preview-tools');
+      const allowed = !!(window.SpectrumAuth && SpectrumAuth.canUsePreviewTools && SpectrumAuth.canUsePreviewTools());
+      if (tools) tools.classList.toggle('hidden', !allowed);
+      if (!allowed) {
+        const sel = document.getElementById('content-select');
+        if (sel) sel.value = 'gradient';
+        applySampleContent('gradient');
+        resetBackground();
+      }
+    }
+    syncPreviewTools();
     // Cart count
     function updateCartCount() {
       const cart = JSON.parse(localStorage.getItem('spectrumCart') || '[]');

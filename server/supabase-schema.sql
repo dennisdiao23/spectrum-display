@@ -89,3 +89,65 @@ with check (public.is_spectrum_admin());
 
 grant select, insert on public.contact_inquiries to anon, authenticated;
 grant all on public.contact_inquiries to service_role;
+
+-- Site accounts (Supabase Auth users). Role is always customer unless Admin changes it.
+create table if not exists public.profiles (
+  id uuid primary key references auth.users(id) on delete cascade,
+  email text,
+  name text not null default '',
+  role text not null default 'customer',
+  company text not null default '',
+  phone text not null default '',
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now()
+);
+
+create table if not exists public.saved_projects (
+  id uuid primary key default gen_random_uuid(),
+  user_id uuid not null references auth.users(id) on delete cascade,
+  brand text not null default '',
+  brand_name text not null default '',
+  series text not null default '',
+  series_name text not null default '',
+  pitch double precision,
+  width double precision,
+  height double precision,
+  cabinets integer,
+  designer_url text not null default '',
+  payload jsonb not null default '{}'::jsonb,
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now()
+);
+
+create table if not exists public.custom_panels (
+  id uuid primary key default gen_random_uuid(),
+  user_id uuid not null references auth.users(id) on delete cascade,
+  name text not null,
+  w double precision,
+  h double precision,
+  pitch double precision,
+  type text not null default 'Custom',
+  weight double precision,
+  price double precision,
+  pavg double precision,
+  pmax double precision,
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now()
+);
+
+create table if not exists public.orders (
+  id uuid primary key default gen_random_uuid(),
+  user_id uuid not null references auth.users(id) on delete cascade,
+  public_id text not null,
+  date date not null default current_date,
+  status text not null default 'Processing',
+  total double precision not null default 0,
+  items jsonb not null default '[]'::jsonb,
+  note text not null default '',
+  created_at timestamptz not null default now()
+);
+
+alter table public.profiles enable row level security;
+alter table public.saved_projects enable row level security;
+alter table public.custom_panels enable row level security;
+alter table public.orders enable row level security;
