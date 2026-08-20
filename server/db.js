@@ -154,7 +154,9 @@ function rowToProduct(row, brand) {
     pitchLabel: pitches.length
       ? pitches[0] + (pitches.length > 1 ? '–' + pitches[pitches.length - 1] : '') + ' mm'
       : '',
-    priceLabel: 'From $' + Number(row.price_per_m2 || 0).toLocaleString()
+    priceLabel: Number(row.price_per_m2 || 0)
+      ? 'From $' + Number(row.price_per_m2).toLocaleString()
+      : 'Request quote'
   };
 }
 

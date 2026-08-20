@@ -7,7 +7,13 @@
       {
         "id": "discovery",
         "name": "Discovery Series",
-        "pitches": [0.93, 1.25, 1.56, 1.87, 2.5],
+        "pitches": [
+          0.93,
+          1.25,
+          1.56,
+          1.87,
+          2.5
+        ],
         "pricePerM2": 7000,
         "weightPerM2": 28,
         "powerAvg": 160,
@@ -22,7 +28,10 @@
       {
         "id": "ledposter",
         "name": "LedPoster",
-        "pitches": [1.9, 2.5],
+        "pitches": [
+          1.9,
+          2.5
+        ],
         "pricePerM2": 1650,
         "weightPerM2": 32,
         "powerAvg": 180,
@@ -39,27 +48,64 @@
   {
     "id": "gloshine",
     "name": "Gloshine",
-    "tagline": "Rental, transparent & outdoor",
+    "tagline": "Rental, transparent, creative & outdoor",
     "series": [
       {
         "id": "mvultra",
-        "name": "MV Ultra (Rental)",
-        "pitches": [1.5, 1.9, 2.6],
+        "name": "MV Ultra",
+        "pitches": [
+          1.5,
+          1.9,
+          2.6,
+          2.9
+        ],
         "pricePerM2": 1450,
-        "weightPerM2": 22,
+        "weightPerM2": 34.0,
         "powerAvg": 200,
         "powerMax": 500,
         "cabinetW": 0.5,
         "cabinetH": 0.5,
         "type": "Rental",
-        "description": "Fast-deploy rental panels for events and touring.",
+        "description": "High-end indoor rental LED. 500×500 mm cabinets, 3840/7680 Hz refresh, GOB/HOB on fine pitches, ±10° curve, 10 m hang/stack.",
         "badge": "Rental",
-        "image": "assets/products/mvultra.jpg"
+        "image": "assets/products/gloshine/mvultra-hero.png",
+        "gallery": [
+          "assets/products/gloshine/mvultra-g1.jpg"
+        ]
+      },
+      {
+        "id": "dnin",
+        "name": "DN Indoor",
+        "pitches": [
+          1.25,
+          1.5,
+          1.9,
+          2.6,
+          2.9,
+          3.9
+        ],
+        "pricePerM2": 0,
+        "weightPerM2": 28.8,
+        "powerAvg": 200,
+        "powerMax": 500,
+        "cabinetW": 0.5,
+        "cabinetH": 0.5,
+        "type": "Rental",
+        "description": "Indoor DN rental cabinets with magnetic front service, dual locks, ±10° curve, and 45° bevel options. 500×500 / 500×1000 mm.",
+        "badge": "Rental",
+        "image": "assets/products/gloshine/dnin-hero.png",
+        "gallery": [
+          "assets/products/gloshine/dnin-g2.png"
+        ]
       },
       {
         "id": "dn",
         "name": "DN Outdoor",
-        "pitches": [2.6, 2.97, 3.91],
+        "pitches": [
+          2.6,
+          2.97,
+          3.91
+        ],
         "pricePerM2": 1280,
         "weightPerM2": 35,
         "powerAvg": 280,
@@ -67,9 +113,618 @@
         "cabinetW": 0.5,
         "cabinetH": 0.5,
         "type": "Outdoor",
-        "description": "High-brightness outdoor facades and DOOH.",
+        "description": "Outdoor rental/fixed DN cabinets with magnetic modules, dual top locks, IP65 front, curve and 90° splicing.",
         "badge": "",
-        "image": "assets/products/dn.jpg"
+        "image": "assets/products/gloshine/dnout-hero.png",
+        "gallery": [
+          "assets/products/gloshine/dnout-g1.png",
+          "assets/products/gloshine/dnout-g2.png",
+          "assets/products/gloshine/dnout-g3.png"
+        ]
+      },
+      {
+        "id": "vanish",
+        "name": "Vanish Transparent",
+        "pitches": [
+          3.91,
+          7.81,
+          8.93
+        ],
+        "pricePerM2": 0,
+        "weightPerM2": 20.4,
+        "powerAvg": 250,
+        "powerMax": 600,
+        "cabinetW": 0.5,
+        "cabinetH": 0.5,
+        "type": "Transparent",
+        "description": "Outdoor transparent LED with ≥35% transparency, IP65 cabinets, ultra-light panels, concave/convex and 90° setups.",
+        "badge": "Transparent",
+        "image": "assets/products/gloshine/vanish-hero.png",
+        "gallery": [
+          "assets/products/gloshine/vanish-g1.png",
+          "assets/products/gloshine/vanish-g2.png",
+          "assets/products/gloshine/vanish-g3.png"
+        ]
+      },
+      {
+        "id": "vamax",
+        "name": "VA MAX",
+        "pitches": [
+          3.91,
+          7.81,
+          5.95
+        ],
+        "pricePerM2": 0,
+        "weightPerM2": 26.0,
+        "powerAvg": 280,
+        "powerMax": 700,
+        "cabinetW": 1.0,
+        "cabinetH": 1.0,
+        "type": "Outdoor",
+        "description": "High-end outdoor large-scale rental. 1000×1000 mm cabinets with touring frame; solid and transparent-hybrid modules.",
+        "badge": "Rental",
+        "image": "assets/products/gloshine/vamax-hero.png",
+        "gallery": [
+          "assets/products/gloshine/vamax-g1.png"
+        ]
+      },
+      {
+        "id": "cbmax",
+        "name": "CB MAX",
+        "pitches": [
+          3.9,
+          4.8,
+          5.9,
+          6.9,
+          8.9
+        ],
+        "pricePerM2": 0,
+        "weightPerM2": 11.5,
+        "powerAvg": 280,
+        "powerMax": 700,
+        "cabinetW": 1.0,
+        "cabinetH": 1.0,
+        "type": "Outdoor",
+        "description": "Lightweight outdoor rental. 1000×1000 mm magnesium + carbon fiber cabinets, IP65 front, 3840/7680 Hz.",
+        "badge": "Rental",
+        "image": "assets/products/gloshine/cbmax-hero.png",
+        "gallery": [
+          "assets/products/gloshine/cbmax-g1.jpg"
+        ]
+      },
+      {
+        "id": "crmax",
+        "name": "CR MAX",
+        "pitches": [
+          3.9,
+          7.8
+        ],
+        "pricePerM2": 0,
+        "weightPerM2": 17.5,
+        "powerAvg": 280,
+        "powerMax": 700,
+        "cabinetW": 1.0,
+        "cabinetH": 1.0,
+        "type": "Outdoor",
+        "description": "Outdoor carbon-fiber rental cabinet with wind-bracing option, ±10° curve, IP65 front / IP54 rear.",
+        "badge": "Rental",
+        "image": "assets/products/gloshine/crmax-hero.png",
+        "gallery": [
+          "assets/products/gloshine/crmax-g1.jpg"
+        ]
+      },
+      {
+        "id": "af2",
+        "name": "AF II Fine Pitch",
+        "pitches": [
+          0.62,
+          0.78,
+          0.94,
+          1.25,
+          1.56,
+          1.87
+        ],
+        "pricePerM2": 0,
+        "weightPerM2": 27.2,
+        "powerAvg": 120,
+        "powerMax": 300,
+        "cabinetW": 0.6,
+        "cabinetH": 0.3375,
+        "type": "Fixed",
+        "description": "16:9 fine-pitch 600×337.5 mm cabinets, 5.5 kg, MIP / flip-chip COB / SMD options from 0.625–1.875 mm.",
+        "badge": "COB",
+        "image": "assets/products/gloshine/af2-hero.png",
+        "gallery": [
+          "assets/products/gloshine/af2-g1.jpg"
+        ]
+      },
+      {
+        "id": "aw",
+        "name": "AW Fine Pitch",
+        "pitches": [
+          0.93,
+          1.25,
+          1.56,
+          1.87,
+          2.5
+        ],
+        "pricePerM2": 0,
+        "weightPerM2": 28.6,
+        "powerAvg": 120,
+        "powerMax": 300,
+        "cabinetW": 0.6,
+        "cabinetH": 0.3375,
+        "type": "Fixed",
+        "description": "Indoor 16:9 fine-pitch 600×337.5 mm cabinets, Mini 4-in-1 through SMD, GOB optional, 5.8 kg.",
+        "badge": "COB",
+        "image": "assets/products/gloshine/aw-hero.png",
+        "gallery": [
+          "assets/products/gloshine/aw-g2.png",
+          "assets/products/gloshine/aw-g3.jpg"
+        ]
+      },
+      {
+        "id": "blade",
+        "name": "Blade",
+        "pitches": [
+          1.25,
+          1.53,
+          1.86,
+          2,
+          2.5
+        ],
+        "pricePerM2": 0,
+        "weightPerM2": 24.4,
+        "powerAvg": 160,
+        "powerMax": 400,
+        "cabinetW": 0.64,
+        "cabinetH": 0.48,
+        "type": "Fixed",
+        "description": "Ultra-thin indoor fixed LED, 640×480×38 mm, 7.5 kg, full front service, GOB optional.",
+        "badge": "",
+        "image": "assets/products/gloshine/blade-hero.png",
+        "gallery": [
+          "assets/products/gloshine/blade-g1.png"
+        ]
+      },
+      {
+        "id": "gposter",
+        "name": "G-Poster Std 2",
+        "pitches": [
+          1.53,
+          1.86
+        ],
+        "pricePerM2": 0,
+        "weightPerM2": 23.6,
+        "powerAvg": 180,
+        "powerMax": 450,
+        "cabinetW": 0.64,
+        "cabinetH": 1.92,
+        "type": "Poster",
+        "description": "Indoor LED poster, 640×1920 mm, pitches 1.53 / 1.86 mm. Foldable transport design.",
+        "badge": "Poster",
+        "image": "assets/products/gloshine/gposter-hero.png",
+        "gallery": [
+          "assets/products/gloshine/gposter-g1.png"
+        ]
+      },
+      {
+        "id": "gposterplus",
+        "name": "G-Poster Plus",
+        "pitches": [
+          1.8,
+          2.5
+        ],
+        "pricePerM2": 0,
+        "weightPerM2": 24.6,
+        "powerAvg": 180,
+        "powerMax": 450,
+        "cabinetW": 0.656,
+        "cabinetH": 2.076,
+        "type": "Poster",
+        "description": "Indoor LED poster, 656×2076 mm, pitches 1.8 / 2.5 mm.",
+        "badge": "Poster",
+        "image": "assets/products/gloshine/gposterplus-hero.png",
+        "gallery": [
+          "assets/products/gloshine/gposterplus-g1.png"
+        ]
+      },
+      {
+        "id": "arpro",
+        "name": "AR Pro",
+        "pitches": [
+          1.9,
+          2.6,
+          2.9,
+          3.9
+        ],
+        "pricePerM2": 0,
+        "weightPerM2": 51.2,
+        "powerAvg": 220,
+        "powerMax": 550,
+        "cabinetW": 0.5,
+        "cabinetH": 0.5,
+        "type": "Rental",
+        "description": "Indoor & outdoor rental with GOB indoor / SMD+PC outdoor, 500×500 mm, front service, 3840/7680 Hz.",
+        "badge": "Rental",
+        "image": "assets/products/gloshine/arpro-hero.png",
+        "gallery": [
+          "assets/products/gloshine/arpro-g1.jpg"
+        ]
+      },
+      {
+        "id": "cfpro",
+        "name": "CF Pro",
+        "pitches": [
+          1.56,
+          1.9,
+          2.38,
+          2.6,
+          2.9,
+          3.9
+        ],
+        "pricePerM2": 0,
+        "weightPerM2": 34.0,
+        "powerAvg": 210,
+        "powerMax": 525,
+        "cabinetW": 0.5,
+        "cabinetH": 0.5,
+        "type": "Creative",
+        "description": "Flexible indoor LED for cylinders and creative shapes. 500×500 mm cabinets with tight curve locks.",
+        "badge": "Creative",
+        "image": "assets/products/gloshine/cfpro-hero.png",
+        "gallery": [
+          "assets/products/gloshine/cfpro-g2.png"
+        ]
+      },
+      {
+        "id": "cfpro2",
+        "name": "CF Pro II",
+        "pitches": [
+          1.9,
+          2.6,
+          2.9,
+          3.9
+        ],
+        "pricePerM2": 0,
+        "weightPerM2": 34.0,
+        "powerAvg": 210,
+        "powerMax": 525,
+        "cabinetW": 0.5,
+        "cabinetH": 0.5,
+        "type": "Creative",
+        "description": "Indoor/outdoor flexible LED. 500×500 mm cabinets, curve to −22.5°, indoor and outdoor pitches.",
+        "badge": "Creative",
+        "image": "assets/products/gloshine/cfpro2-hero.png",
+        "gallery": [
+          "assets/products/gloshine/cfpro2-g1.jpg"
+        ]
+      },
+      {
+        "id": "rbb",
+        "name": "RB-B",
+        "pitches": [
+          1.9,
+          2.6,
+          2.9,
+          3.9
+        ],
+        "pricePerM2": 0,
+        "weightPerM2": 28.8,
+        "powerAvg": 200,
+        "powerMax": 500,
+        "cabinetW": 0.5,
+        "cabinetH": 0.5,
+        "type": "Rental",
+        "description": "Indoor rental 500×500 mm (RB Plus-B 500×1000), 3840/7680 Hz, front/rear service.",
+        "badge": "Rental",
+        "image": "assets/products/gloshine/rbb-hero.png",
+        "gallery": [
+          "assets/products/gloshine/rbb-g1.jpg"
+        ]
+      },
+      {
+        "id": "ur",
+        "name": "UR Carbon",
+        "pitches": [
+          2.6,
+          3.91
+        ],
+        "pricePerM2": 0,
+        "weightPerM2": 22,
+        "powerAvg": 200,
+        "powerMax": 500,
+        "cabinetW": 0.5,
+        "cabinetH": 1.0,
+        "type": "Rental",
+        "description": "Ultra-light carbon-fiber 500×1000 mm cabinets, indoor IP30 and outdoor IP65 versions, hang to 20 m.",
+        "badge": "Rental",
+        "image": "assets/products/gloshine/ur-hero.png",
+        "gallery": [
+          "assets/products/gloshine/ur-g2.jpg"
+        ]
+      },
+      {
+        "id": "carbon",
+        "name": "Carbon II",
+        "pitches": [
+          2.6,
+          2.9,
+          3.9,
+          4.8,
+          5.2
+        ],
+        "pricePerM2": 0,
+        "weightPerM2": 19.6,
+        "powerAvg": 200,
+        "powerMax": 500,
+        "cabinetW": 0.5,
+        "cabinetH": 0.5,
+        "type": "Rental",
+        "description": "Magnesium/carbon ultra-light cabinets in 500×500, 500×1000, and 1000×500 sizes. Indoor and outdoor, 90° columns.",
+        "badge": "Rental",
+        "image": "assets/products/gloshine/carbon-hero.png",
+        "gallery": [
+          "assets/products/gloshine/carbon-g1.jpg",
+          "assets/products/gloshine/carbon-g2.png",
+          "assets/products/gloshine/carbon-g3.png"
+        ]
+      },
+      {
+        "id": "mvpro",
+        "name": "MV Pro",
+        "pitches": [
+          1.2,
+          1.5,
+          1.9,
+          2.3,
+          2.6,
+          2.9
+        ],
+        "pricePerM2": 0,
+        "weightPerM2": 38.0,
+        "powerAvg": 200,
+        "powerMax": 500,
+        "cabinetW": 0.5,
+        "cabinetH": 0.5,
+        "type": "Rental",
+        "description": "XR / virtual-production indoor rental. 500×500×72 mm, 3840/7680 Hz, Brompton-ready, bevel curves.",
+        "badge": "XR",
+        "image": "assets/products/gloshine/mvpro-hero.webp",
+        "gallery": [
+          "assets/products/gloshine/mvpro-g2.jpg"
+        ]
+      },
+      {
+        "id": "mt55",
+        "name": "MT55/62",
+        "pitches": [
+          1.2,
+          1.5,
+          1.9,
+          2.3
+        ],
+        "pricePerM2": 0,
+        "weightPerM2": 35.2,
+        "powerAvg": 200,
+        "powerMax": 500,
+        "cabinetW": 0.5,
+        "cabinetH": 0.5,
+        "type": "Rental",
+        "description": "Indoor rental compatible with B-matrix style frames. Front/rear service, 3840/7680 Hz, hang to 8 m.",
+        "badge": "Rental",
+        "image": "assets/products/gloshine/mt55-hero.png",
+        "gallery": [
+          "assets/products/gloshine/mt55-g1.jpg"
+        ]
+      },
+      {
+        "id": "mt2",
+        "name": "MT II",
+        "pitches": [
+          2.3,
+          2.8
+        ],
+        "pricePerM2": 0,
+        "weightPerM2": 36.6,
+        "powerAvg": 210,
+        "powerMax": 525,
+        "cabinetW": 0.496,
+        "cabinetH": 0.496,
+        "type": "Creative",
+        "description": "Creative indoor 496×496 mm cabinets for curved and volume builds.",
+        "badge": "Creative",
+        "image": "assets/products/gloshine/mt2-hero.png",
+        "gallery": [
+          "assets/products/gloshine/mt2-g2.png",
+          "assets/products/gloshine/mt2-g3.png"
+        ]
+      },
+      {
+        "id": "mtedge",
+        "name": "MT Edge",
+        "pitches": [
+          1.55,
+          1.93,
+          2.38,
+          2.82
+        ],
+        "pricePerM2": 0,
+        "weightPerM2": 32.5,
+        "powerAvg": 210,
+        "powerMax": 525,
+        "cabinetW": 0.496,
+        "cabinetH": 0.496,
+        "type": "Creative",
+        "description": "Tight-curve indoor creative cabinets, 496×496 mm, curves up to ±80° on coarser pitches.",
+        "badge": "Creative",
+        "image": "assets/products/gloshine/mtedge-hero.png",
+        "gallery": [
+          "assets/products/gloshine/mtedge-g2.png"
+        ]
+      },
+      {
+        "id": "cs2",
+        "name": "CS II Creative",
+        "pitches": [
+          2.6,
+          2.97,
+          3.91,
+          4.81
+        ],
+        "pricePerM2": 0,
+        "weightPerM2": 24.0,
+        "powerAvg": 210,
+        "powerMax": 525,
+        "cabinetW": 0.5,
+        "cabinetH": 0.5,
+        "type": "Creative",
+        "description": "Triangle and sector creative cabinets for indoor/outdoor sculptures and special shapes.",
+        "badge": "Creative",
+        "image": "assets/products/gloshine/cs2-hero.png",
+        "gallery": [
+          "assets/products/gloshine/cs2-g1.jpg"
+        ]
+      },
+      {
+        "id": "mr",
+        "name": "MR",
+        "pitches": [
+          3.91,
+          2.97,
+          2.6,
+          1.95,
+          1.56,
+          4.81
+        ],
+        "pricePerM2": 0,
+        "weightPerM2": 44.0,
+        "powerAvg": 210,
+        "powerMax": 525,
+        "cabinetW": 0.5,
+        "cabinetH": 0.5,
+        "type": "Creative",
+        "description": "Creative / matrix LED series for hanging, rental, and fixed configurations.",
+        "badge": "Creative",
+        "image": "assets/products/gloshine/mr-hero.png",
+        "gallery": [
+          "assets/products/gloshine/mr-g1.png"
+        ]
+      },
+      {
+        "id": "ra2",
+        "name": "RA II",
+        "pitches": [
+          1.57,
+          1.56,
+          1.98,
+          2.6,
+          2.97
+        ],
+        "pricePerM2": 0,
+        "weightPerM2": 28,
+        "powerAvg": 170,
+        "powerMax": 425,
+        "cabinetW": 0.5,
+        "cabinetH": 0.5,
+        "type": "Fixed",
+        "description": "Ultra-thin indoor 500×500×40 mm cabinets (RA Plus 500×1000), HOB/GOB on fine pitches.",
+        "badge": "",
+        "image": "assets/products/gloshine/ra2-hero.png",
+        "gallery": [
+          "assets/products/gloshine/ra2-g1.png"
+        ]
+      },
+      {
+        "id": "zs3",
+        "name": "ZS III",
+        "pitches": [
+          3.91,
+          4.81,
+          6.94
+        ],
+        "pricePerM2": 0,
+        "weightPerM2": 22.0,
+        "powerAvg": 280,
+        "powerMax": 700,
+        "cabinetW": 0.5,
+        "cabinetH": 0.5,
+        "type": "Outdoor",
+        "description": "Outdoor die-cast magnesium cabinets, front IP65 / rear IP54, curve options, 10 m hang/stack.",
+        "badge": "",
+        "image": "assets/products/gloshine/zs3-hero.png",
+        "gallery": [
+          "assets/products/gloshine/zs3-g1.jpg"
+        ]
+      },
+      {
+        "id": "zspro",
+        "name": "ZS Pro II",
+        "pitches": [
+          3.9,
+          5.9
+        ],
+        "pricePerM2": 0,
+        "weightPerM2": 27.6,
+        "powerAvg": 280,
+        "powerMax": 700,
+        "cabinetW": 0.5,
+        "cabinetH": 1.0,
+        "type": "Outdoor",
+        "description": "Outdoor 500×500 / 500×1000 mm cabinets, front/rear module service, IP65 front / IP54 rear.",
+        "badge": "",
+        "image": "assets/products/gloshine/zspro-hero.png",
+        "gallery": [
+          "assets/products/gloshine/zspro-g1.jpg"
+        ]
+      },
+      {
+        "id": "gp",
+        "name": "GP Outdoor",
+        "pitches": [
+          2.97,
+          3.91,
+          4.81,
+          6.25,
+          7.81,
+          10.42
+        ],
+        "pricePerM2": 0,
+        "weightPerM2": 64.0,
+        "powerAvg": 300,
+        "powerMax": 750,
+        "cabinetW": 0.5,
+        "cabinetH": 0.5,
+        "type": "Outdoor",
+        "description": "Outdoor fixed/rental LED from Gloshine GP series, IP65-rated cabinets.",
+        "badge": "",
+        "image": "assets/products/gloshine/gp-hero.png",
+        "gallery": [
+          "assets/products/gloshine/gp-g1.jpg"
+        ]
+      },
+      {
+        "id": "legend",
+        "name": "Legend",
+        "pitches": [
+          2.97,
+          3.91,
+          4.81
+        ],
+        "pricePerM2": 0,
+        "weightPerM2": 38.0,
+        "powerAvg": 280,
+        "powerMax": 700,
+        "cabinetW": 0.5,
+        "cabinetH": 0.5,
+        "type": "Outdoor",
+        "description": "Outdoor Legend / Legend Mini cabinets, front IP65 / rear IP54, modular curve, hang/stack to 10 m.",
+        "badge": "",
+        "image": "assets/products/gloshine/legend-hero.webp",
+        "gallery": [
+          "assets/products/gloshine/legend-g1.png",
+          "assets/products/gloshine/legend-g3.png"
+        ]
       }
     ]
   },
@@ -81,7 +736,12 @@
       {
         "id": "finepitch",
         "name": "Fine Pitch COB 600x337.5",
-        "pitches": [0.93, 1.25, 1.56, 1.87],
+        "pitches": [
+          0.93,
+          1.25,
+          1.56,
+          1.87
+        ],
         "pricePerM2": 3200,
         "weightPerM2": 25,
         "powerAvg": 120,
@@ -103,7 +763,11 @@
       {
         "id": "pro",
         "name": "DIAO Pro Fixed",
-        "pitches": [1.5, 1.8, 2.5],
+        "pitches": [
+          1.5,
+          1.8,
+          2.5
+        ],
         "pricePerM2": 980,
         "weightPerM2": 30,
         "powerAvg": 170,
@@ -118,7 +782,11 @@
       {
         "id": "value",
         "name": "DIAO Value",
-        "pitches": [2.5, 3.0, 4.0],
+        "pitches": [
+          2.5,
+          3.0,
+          4.0
+        ],
         "pricePerM2": 720,
         "weightPerM2": 32,
         "powerAvg": 200,
@@ -140,7 +808,11 @@
       {
         "id": "rental",
         "name": "Element Rental",
-        "pitches": [2.6, 2.9, 3.9],
+        "pitches": [
+          2.6,
+          2.9,
+          3.9
+        ],
         "pricePerM2": 1050,
         "weightPerM2": 18,
         "powerAvg": 210,
@@ -155,7 +827,10 @@
       {
         "id": "creative",
         "name": "Element Creative / XR",
-        "pitches": [1.9, 2.6],
+        "pitches": [
+          1.9,
+          2.6
+        ],
         "pricePerM2": 1380,
         "weightPerM2": 19,
         "powerAvg": 190,

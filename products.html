@@ -435,7 +435,7 @@
               '<p class="text-xs text-slate-400 mt-1 line-clamp-2">' + p.pitchLabel + ' • ' + (p.description || '') + '</p>' +
               '<div class="mt-2 flex items-baseline gap-1 pricing-only">' +
                 '<span class="text-sm font-bold">' + p.priceLabel + '</span>' +
-                '<span class="text-xs text-slate-500">/m²</span>' +
+                (p.pricePerM2 ? '<span class="text-xs text-slate-500">/m²</span>' : '') +
               '</div>' +
               '<div class="mt-2 text-xs guest-pricing">' + ((window.t && t('price.signIn')) || 'Sign in for pricing') + '</div>' +
             '</div>' +

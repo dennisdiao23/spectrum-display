@@ -111,7 +111,8 @@
         { name: 'Discovery Series', href: 'product.html?brand=trt&series=discovery', tag: 'TRT' },
         { name: 'LedPoster', href: 'product.html?brand=trt&series=ledposter', tag: 'TRT' },
         { name: 'Fine Pitch COB', href: 'product.html?brand=bako&series=finepitch', tag: 'BAKO' },
-        { name: 'MV Ultra (Rental)', href: 'product.html?brand=gloshine&series=mvultra', tag: 'GLO' },
+        { name: 'MV Ultra', href: 'product.html?brand=gloshine&series=mvultra', tag: 'GLO' },
+        { name: 'AF II Fine Pitch', href: 'product.html?brand=gloshine&series=af2', tag: 'GLO' },
         { name: 'DIAO Pro Fixed', href: 'product.html?brand=diao&series=pro', tag: 'DIAO' }
       ]
     },
@@ -120,14 +121,20 @@
       lead: 'Chip-on-board cabinets for close viewing and high contrast.',
       items: [
         { name: 'Discovery Series', href: 'product.html?brand=trt&series=discovery', tag: 'TRT' },
-        { name: 'Fine Pitch COB', href: 'product.html?brand=bako&series=finepitch', tag: 'BAKO' }
+        { name: 'Fine Pitch COB', href: 'product.html?brand=bako&series=finepitch', tag: 'BAKO' },
+        { name: 'AF II Fine Pitch', href: 'product.html?brand=gloshine&series=af2', tag: 'GLO' },
+        { name: 'AW Fine Pitch', href: 'product.html?brand=gloshine&series=aw', tag: 'GLO' }
       ]
     },
     rental: {
       title: 'Rental',
       lead: 'Lightweight touring panels for events, stages, and XR.',
       items: [
-        { name: 'MV Ultra (Rental)', href: 'product.html?brand=gloshine&series=mvultra', tag: 'GLO' },
+        { name: 'MV Ultra', href: 'product.html?brand=gloshine&series=mvultra', tag: 'GLO' },
+        { name: 'DN Indoor', href: 'product.html?brand=gloshine&series=dnin', tag: 'GLO' },
+        { name: 'AR Pro', href: 'product.html?brand=gloshine&series=arpro', tag: 'GLO' },
+        { name: 'CB MAX', href: 'product.html?brand=gloshine&series=cbmax', tag: 'GLO' },
+        { name: 'UR Carbon', href: 'product.html?brand=gloshine&series=ur', tag: 'GLO' },
         { name: 'Element Rental', href: 'product.html?brand=element&series=rental', tag: 'ELT' }
       ]
     },
@@ -139,6 +146,7 @@
         { name: 'Fine Pitch COB', href: 'product.html?brand=bako&series=finepitch', tag: 'BAKO' },
         { name: 'LedPoster', href: 'product.html?brand=trt&series=ledposter', tag: 'TRT' },
         { name: 'DIAO Pro Fixed', href: 'product.html?brand=diao&series=pro', tag: 'DIAO' },
+        { name: 'G-Poster Std 2', href: 'product.html?brand=gloshine&series=gposter', tag: 'GLO' },
         { name: 'Element Creative / XR', href: 'product.html?brand=element&series=creative', tag: 'ELT' }
       ]
     },
@@ -147,6 +155,9 @@
       lead: 'High-brightness façades, DOOH, and outdoor spectaculars.',
       items: [
         { name: 'DN Outdoor', href: 'product.html?brand=gloshine&series=dn', tag: 'GLO' },
+        { name: 'Vanish Transparent', href: 'product.html?brand=gloshine&series=vanish', tag: 'GLO' },
+        { name: 'VA MAX', href: 'product.html?brand=gloshine&series=vamax', tag: 'GLO' },
+        { name: 'ZS III', href: 'product.html?brand=gloshine&series=zs3', tag: 'GLO' },
         { name: 'DIAO Value', href: 'product.html?brand=diao&series=value', tag: 'DIAO' }
       ]
     }
