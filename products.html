@@ -134,22 +134,27 @@
         <div class="sticky top-[calc(var(--site-header-h)+1rem)] space-y-6">
           <div>
             <h3 class="text-sm font-semibold uppercase tracking-wider text-slate-400 mb-3" data-i18n="products.category">Category</h3>
-            <div class="space-y-2 text-sm">
-              <label class="flex items-center gap-2 cursor-pointer"><input type="checkbox" class="rounded border-slate-600 bg-slate-800 text-sky-500" checked> <span data-i18n="products.indoor">Indoor Fine Pitch</span></label>
-              <label class="flex items-center gap-2 cursor-pointer"><input type="checkbox" class="rounded border-slate-600 bg-slate-800 text-sky-500" checked> <span data-i18n="products.outdoor">Outdoor</span></label>
-              <label class="flex items-center gap-2 cursor-pointer"><input type="checkbox" class="rounded border-slate-600 bg-slate-800 text-sky-500" checked> <span data-i18n="products.rental">Rental / Touring</span></label>
-              <label class="flex items-center gap-2 cursor-pointer"><input type="checkbox" class="rounded border-slate-600 bg-slate-800 text-sky-500"> <span data-i18n="products.transparent">Transparent / Creative</span></label>
-              <label class="flex items-center gap-2 cursor-pointer"><input type="checkbox" class="rounded border-slate-600 bg-slate-800 text-sky-500"> <span data-i18n="products.aio">All-in-One</span></label>
+            <div class="space-y-1 text-sm" id="product-cat-nav">
+              <a href="products.html" data-cat-link="" class="block rounded-lg px-3 py-2 text-slate-400 hover:text-white hover:bg-slate-800/60">All products</a>
+              <a href="products.html?cat=indoor-rental" data-cat-link="indoor-rental" class="block rounded-lg px-3 py-2 text-slate-400 hover:text-white hover:bg-slate-800/60">Indoor rental</a>
+              <a href="products.html?cat=outdoor-rental" data-cat-link="outdoor-rental" class="block rounded-lg px-3 py-2 text-slate-400 hover:text-white hover:bg-slate-800/60">Outdoor rental</a>
+              <a href="products.html?cat=cob" data-cat-link="cob" class="block rounded-lg px-3 py-2 text-slate-400 hover:text-white hover:bg-slate-800/60">Fine pitch / COB</a>
+              <a href="products.html?cat=fixed-indoor" data-cat-link="fixed-indoor" class="block rounded-lg px-3 py-2 text-slate-400 hover:text-white hover:bg-slate-800/60">Fixed indoor</a>
+              <a href="products.html?cat=posters" data-cat-link="posters" class="block rounded-lg px-3 py-2 text-slate-400 hover:text-white hover:bg-slate-800/60">Posters</a>
+              <a href="products.html?cat=transparent" data-cat-link="transparent" class="block rounded-lg px-3 py-2 text-slate-400 hover:text-white hover:bg-slate-800/60">Transparent</a>
+              <a href="products.html?cat=outdoor-fixed" data-cat-link="outdoor-fixed" class="block rounded-lg px-3 py-2 text-slate-400 hover:text-white hover:bg-slate-800/60">Outdoor fixed</a>
+              <a href="products.html?cat=creative" data-cat-link="creative" class="block rounded-lg px-3 py-2 text-slate-400 hover:text-white hover:bg-slate-800/60">Creative / XR</a>
             </div>
           </div>
           <div>
             <h3 class="text-sm font-semibold uppercase tracking-wider text-slate-400 mb-3" data-i18n="products.brand">Brand</h3>
-            <div class="space-y-2 text-sm">
-              <label class="flex items-center gap-2 cursor-pointer"><input type="checkbox" class="rounded border-slate-600 bg-slate-800 text-sky-500" checked> TRT</label>
-              <label class="flex items-center gap-2 cursor-pointer"><input type="checkbox" class="rounded border-slate-600 bg-slate-800 text-sky-500" checked> Gloshine</label>
-              <label class="flex items-center gap-2 cursor-pointer"><input type="checkbox" class="rounded border-slate-600 bg-slate-800 text-sky-500" checked> BAKO</label>
-              <label class="flex items-center gap-2 cursor-pointer"><input type="checkbox" class="rounded border-slate-600 bg-slate-800 text-sky-500" checked> Element</label>
-              <label class="flex items-center gap-2 cursor-pointer"><input type="checkbox" class="rounded border-slate-600 bg-slate-800 text-sky-500" checked> DIAO</label>
+            <div class="space-y-1 text-sm" id="product-brand-nav">
+              <a href="products.html" data-brand-link="" class="block rounded-lg px-3 py-2 text-slate-400 hover:text-white hover:bg-slate-800/60">All brands</a>
+              <a href="products.html?brand=trt" data-brand-link="trt" class="block rounded-lg px-3 py-2 text-slate-400 hover:text-white hover:bg-slate-800/60">TRT</a>
+              <a href="products.html?brand=gloshine" data-brand-link="gloshine" class="block rounded-lg px-3 py-2 text-slate-400 hover:text-white hover:bg-slate-800/60">Gloshine</a>
+              <a href="products.html?brand=bako" data-brand-link="bako" class="block rounded-lg px-3 py-2 text-slate-400 hover:text-white hover:bg-slate-800/60">BAKO</a>
+              <a href="products.html?brand=element" data-brand-link="element" class="block rounded-lg px-3 py-2 text-slate-400 hover:text-white hover:bg-slate-800/60">Element</a>
+              <a href="products.html?brand=diao" data-brand-link="diao" class="block rounded-lg px-3 py-2 text-slate-400 hover:text-white hover:bg-slate-800/60">DIAO</a>
             </div>
           </div>
           <div>
@@ -447,7 +452,67 @@
       if (countEl) countEl.textContent = String(list.length);
     }
 
+    const CAT_LABELS = {
+      'indoor-rental': 'Indoor rental',
+      'outdoor-rental': 'Outdoor rental',
+      cob: 'Fine pitch / COB',
+      'fixed-indoor': 'Fixed indoor',
+      posters: 'Posters',
+      transparent: 'Transparent',
+      'outdoor-fixed': 'Outdoor fixed',
+      creative: 'Creative / XR',
+      'micro-led': 'Micro LED TV'
+    };
+    const CAT_LEADS = {
+      'indoor-rental': 'Touring cabinets for indoor stages, events, and studios.',
+      'outdoor-rental': 'IP-rated touring panels for festivals, façades, and outdoor stages.',
+      cob: 'Close-view COB and fine-pitch cabinets for control rooms and retail.',
+      'fixed-indoor': 'Wall-mount indoor cabinets for lobbies, meeting rooms, and broadcast.',
+      posters: 'Standalone LED posters for windows, retail aisles, and lobbies.',
+      transparent: 'See-through LED for storefronts, stages, and outdoor spectaculars.',
+      'outdoor-fixed': 'High-brightness façades, DOOH, and permanent outdoor walls.',
+      creative: 'Curves, corners, flexible cabinets, and virtual-production walls.',
+      'micro-led': 'All-in-one Micro LED TVs and poster displays.'
+    };
+    const LINK_IDLE = 'block rounded-lg px-3 py-2 text-slate-400 hover:text-white hover:bg-slate-800/60';
+    const LINK_ON = 'block rounded-lg px-3 py-2 bg-sky-500/15 text-sky-300 font-medium';
+
+    function filterHref(nextCat, nextBrand) {
+      const p = new URLSearchParams();
+      if (nextCat) p.set('cat', nextCat);
+      if (nextBrand) p.set('brand', nextBrand);
+      const q = p.toString();
+      return 'products.html' + (q ? '?' + q : '');
+    }
+
+    function highlightFilters() {
+      const params = new URLSearchParams(window.location.search);
+      const cat = (params.get('cat') || '').toLowerCase();
+      const brand = (params.get('brand') || '').toLowerCase();
+      document.querySelectorAll('[data-cat-link]').forEach(function (a) {
+        const id = a.getAttribute('data-cat-link') || '';
+        a.href = filterHref(id, brand);
+        a.className = id === cat ? LINK_ON : LINK_IDLE;
+      });
+      document.querySelectorAll('[data-brand-link]').forEach(function (a) {
+        const id = a.getAttribute('data-brand-link') || '';
+        a.href = filterHref(cat, id);
+        a.className = id === brand ? LINK_ON : LINK_IDLE;
+      });
+      const h1 = document.querySelector('.products-hero h1');
+      const lead = document.querySelector('.products-hero p');
+      if (h1 && cat && CAT_LABELS[cat]) {
+        h1.removeAttribute('data-i18n');
+        h1.textContent = CAT_LABELS[cat];
+      }
+      if (lead && cat && CAT_LEADS[cat]) {
+        lead.removeAttribute('data-i18n');
+        lead.textContent = CAT_LEADS[cat];
+      }
+    }
+
     const params = new URLSearchParams(window.location.search);
+    highlightFilters();
     renderProducts(params.get('brand') || null);
     window.addEventListener('spectrum:catalog', function () {
       renderProducts(params.get('brand') || null);
