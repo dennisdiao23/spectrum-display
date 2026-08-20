@@ -146,7 +146,7 @@ Email/password Sign in does **not** need Google. Only the Google button does.
 
 | | |
 |---|---|
-| **What it is** | Sends the contact form to your Gmail. |
+| **What it is** | Sends the contact form to sales@spectrumdisplay.com. |
 | **Dashboard** | https://resend.com |
 | **From** | `hello@send.spectrumdisplay.com` |
 | **To** | `sales@spectrumdisplay.com` |
@@ -161,7 +161,7 @@ Inquiries are also stored in Supabase `contact_inquiries` even if mail fails (if
 
 | | |
 |---|---|
-| **Inbox** | `sales@spectrumdisplay.com` (forward to your Gmail if that mailbox is not open yet) |
+| **Inbox** | `sales@spectrumdisplay.com` |
 | **What it does** | Receives Resend messages. Reply-To is the visitor’s email. |
 | **If it breaks** | Check **Spam**. From address is `hello@send.spectrumdisplay.com`. |
 

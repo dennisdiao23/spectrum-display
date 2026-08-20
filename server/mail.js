@@ -105,7 +105,7 @@ async function sendContactEmail(inquiry) {
   if (!mailConfigured()) {
     throw new Error('Email is not configured on the server.');
   }
-  const to = env('CONTACT_TO_EMAIL', 'sales@spectrumdisplay.com');
+  const to = 'sales@spectrumdisplay.com';
   const from = env('CONTACT_FROM_EMAIL', process.env.SMTP_USER || 'Spectrum Display <beth.t@example.com>');
   const subject = 'Spectrum Display inquiry — ' + inquiry.name;
   const bodies = buildBodies(inquiry);
