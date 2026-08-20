@@ -257,6 +257,7 @@ Leave NS (`ns37` / `ns38`) and SOA alone.
 | Continue with Google fails | Google Cloud OAuth origins + Supabase redirect URLs |
 | Contact form error / no email | Railway logs → Resend logs → Gmail spam → `send` DNS |
 | Admin cannot add products | `admin.html` (not customer Sign in); `SPECTRUM_ADMIN_SECRET` |
+| Admin Accounts tab empty | Catalog admin can only see site Sign in accounts (`profiles`). Needs the admin secret so RLS allows the list. |
 | Merged on GitHub, site unchanged | Railway must show a new deploy for that commit on **main** |
 | Cart empty on another phone | Expected — cart is not in Supabase |
 | Domain not in Google search | Search Console property + sitemap (section 8). Not a Railway outage. |

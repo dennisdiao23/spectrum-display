@@ -47,13 +47,32 @@
         <button type="button" id="tab-accounts" class="admin-tab px-4 py-2 rounded-full text-sm font-medium text-slate-400 hover:text-white">Accounts</button>
       </div>
 
-      <div id="products-section" class="space-y-8">
-      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-        <p class="text-slate-400 text-sm">Products in the database appear on the Products page and LED Wall Calculator.</p>
+      <div id="products-section" class="space-y-6">
+      <div id="products-list-wrap">
+      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4">
+        <p class="text-slate-400 text-sm">Products in the database appear on the Products page and LED Wall Calculator. Click a row to edit.</p>
         <button id="new-btn" type="button" class="px-4 py-2 rounded-full bg-sky-500 hover:bg-sky-400 text-white text-sm font-semibold">Add product</button>
       </div>
+      <div class="overflow-x-auto rounded-2xl border border-slate-800">
+        <table class="w-full text-sm">
+          <thead class="text-left text-slate-400 border-b border-slate-800">
+            <tr>
+              <th class="py-3 px-4 font-medium w-16"></th>
+              <th class="py-3 px-4 font-medium">Product</th>
+              <th class="py-3 px-4 font-medium">Brand</th>
+              <th class="py-3 px-4 font-medium">Type</th>
+              <th class="py-3 px-4 font-medium">Pitch</th>
+              <th class="py-3 px-4 font-medium">Price / m²</th>
+            </tr>
+          </thead>
+          <tbody id="product-table" class="text-slate-200"></tbody>
+        </table>
+      </div>
+      </div>
 
-      <div id="form-wrap" class="hidden rounded-2xl border border-slate-800 bg-slate-900/50 p-5">
+      <div id="form-wrap" class="hidden space-y-4">
+        <button type="button" id="product-back" class="text-sm text-sky-400 hover:text-sky-300">← All products</button>
+        <div class="rounded-2xl border border-slate-800 bg-slate-900/50 p-5">
         <h2 id="form-title" class="font-semibold text-lg mb-4">New product</h2>
         <form id="product-form" class="grid sm:grid-cols-2 gap-4">
           <input type="hidden" id="product-id">
@@ -127,19 +146,20 @@
             <input id="gallery" type="file" accept="image/jpeg,image/png,image/webp,image/gif" multiple class="w-full text-sm text-slate-400">
           </div>
           <p id="form-error" class="sm:col-span-2 hidden text-sm text-red-400"></p>
-          <div class="sm:col-span-2 flex gap-2">
+          <div class="sm:col-span-2 flex flex-wrap gap-2">
             <button type="submit" class="px-5 py-2 rounded-full bg-sky-500 hover:bg-sky-400 text-white text-sm font-semibold">Save product</button>
             <button id="cancel-btn" type="button" class="px-5 py-2 rounded-full border border-slate-600 text-sm">Cancel</button>
+            <button id="delete-btn" type="button" class="hidden px-5 py-2 rounded-full border border-slate-700 text-red-400 hover:border-red-500 text-sm">Delete</button>
           </div>
         </form>
+        </div>
       </div>
-
-      <div id="product-table" class="grid sm:grid-cols-2 xl:grid-cols-3 gap-4"></div>
       </div>
 
       <div id="accounts-section" class="hidden space-y-6">
         <div id="accounts-list-wrap">
           <p class="text-slate-400 text-sm mb-4">All customer sign-ins. Open an account to see orders, saved calculator projects, custom panels, and to set Customer / Dealer / Sales.</p>
+          <p id="accounts-error" class="hidden text-sm text-red-400 mb-3"></p>
           <div class="overflow-x-auto rounded-2xl border border-slate-800">
             <table class="w-full text-sm">
               <thead class="text-left text-slate-400 border-b border-slate-800">
@@ -257,9 +277,18 @@
       fillBrands(brands[0] && brands[0].id);
     }
 
+    function closeProductForm() {
+      formWrap.classList.add('hidden');
+      document.getElementById('products-list-wrap').classList.remove('hidden');
+      resetForm();
+    }
+
     function openForm(product) {
       resetForm();
+      document.getElementById('products-list-wrap').classList.add('hidden');
       formWrap.classList.remove('hidden');
+      const delBtn = document.getElementById('delete-btn');
+      delBtn.classList.toggle('hidden', !product);
       if (!product) return;
       editingId = product.dbId;
       document.getElementById('form-title').textContent = 'Edit ' + product.name;
@@ -287,23 +316,19 @@
     function renderProducts(list) {
       table.innerHTML = list.map(function (p) {
         const img = p.image
-          ? '<img src="' + p.image + '" alt="" class="w-full h-36 object-cover">'
-          : '<div class="h-36 bg-slate-900 flex items-center justify-center text-slate-600 text-sm">No photo</div>';
+          ? '<img src="' + esc(p.image) + '" alt="" class="h-11 w-11 rounded-md object-cover bg-slate-900 border border-slate-800">'
+          : '<div class="h-11 w-11 rounded-md bg-slate-900 border border-slate-800 flex items-center justify-center text-[10px] text-slate-500">No photo</div>';
         return (
-          '<article class="rounded-xl border border-slate-800 overflow-hidden bg-slate-950">' +
-            img +
-            '<div class="p-3 space-y-1">' +
-              '<div class="text-[11px] text-sky-400">' + (p.brandName || '') + '</div>' +
-              '<h3 class="font-semibold text-sm">' + p.name + '</h3>' +
-              '<p class="text-xs text-slate-400">' + (p.pitchLabel || '') + ' · ' + (p.priceLabel || '') + '/m²</p>' +
-              '<div class="pt-2 flex gap-2">' +
-                '<button type="button" class="edit-btn text-xs px-3 py-1 rounded-full border border-slate-600 hover:border-sky-500" data-id="' + p.dbId + '">Edit</button>' +
-                '<button type="button" class="del-btn text-xs px-3 py-1 rounded-full border border-slate-700 text-red-400 hover:border-red-500" data-id="' + p.dbId + '">Delete</button>' +
-              '</div>' +
-            '</div>' +
-          '</article>'
+          '<tr class="border-b border-slate-800 hover:bg-slate-900/80 cursor-pointer" data-id="' + esc(p.dbId) + '">' +
+            '<td class="py-2.5 px-4">' + img + '</td>' +
+            '<td class="py-2.5 px-4 font-medium">' + esc(p.name || '') + '</td>' +
+            '<td class="py-2.5 px-4 text-sky-400">' + esc(p.brandName || '') + '</td>' +
+            '<td class="py-2.5 px-4 text-slate-400">' + esc(p.type || '') + '</td>' +
+            '<td class="py-2.5 px-4 text-slate-400">' + esc(p.pitchLabel || '') + '</td>' +
+            '<td class="py-2.5 px-4">' + esc(p.priceLabel || '') + '</td>' +
+          '</tr>'
         );
-      }).join('') || '<p class="text-slate-500 text-sm">No products yet.</p>';
+      }).join('') || '<tr><td class="py-6 px-4 text-slate-500" colspan="6">No products yet.</td></tr>';
     }
 
     async function loadDash() {
@@ -339,19 +364,28 @@
     }
 
     async function loadAccounts() {
-      const data = await api('/api/admin/accounts');
-      const rows = data.accounts || [];
       const tb = document.getElementById('accounts-table');
-      tb.innerHTML = rows.map(function (a) {
-        const when = a.created_at ? new Date(a.created_at).toLocaleDateString() : '';
-        return '<tr class="border-b border-slate-800 hover:bg-slate-900/80 cursor-pointer" data-id="' + esc(a.id) + '">' +
-          '<td class="py-3 px-4">' + esc(a.name || '—') + '</td>' +
-          '<td class="py-3 px-4">' + esc(a.email || '') + '</td>' +
-          '<td class="py-3 px-4"><span class="text-xs px-2 py-0.5 rounded-full bg-sky-500/15 text-sky-300">' + esc(roleLabel(a.role)) + '</span></td>' +
-          '<td class="py-3 px-4 text-slate-400">' + esc(a.company || '—') + '</td>' +
-          '<td class="py-3 px-4 text-slate-500">' + esc(when) + '</td>' +
-          '</tr>';
-      }).join('') || '<tr><td class="py-6 px-4 text-slate-500" colspan="5">No accounts yet.</td></tr>';
+      const errEl = document.getElementById('accounts-error');
+      errEl.classList.add('hidden');
+      errEl.textContent = '';
+      try {
+        const data = await api('/api/admin/accounts');
+        const rows = data.accounts || [];
+        tb.innerHTML = rows.map(function (a) {
+          const when = a.created_at ? new Date(a.created_at).toLocaleDateString() : '';
+          return '<tr class="border-b border-slate-800 hover:bg-slate-900/80 cursor-pointer" data-id="' + esc(a.id) + '">' +
+            '<td class="py-3 px-4">' + esc(a.name || '—') + '</td>' +
+            '<td class="py-3 px-4">' + esc(a.email || '') + '</td>' +
+            '<td class="py-3 px-4"><span class="text-xs px-2 py-0.5 rounded-full bg-sky-500/15 text-sky-300">' + esc(roleLabel(a.role)) + '</span></td>' +
+            '<td class="py-3 px-4 text-slate-400">' + esc(a.company || '—') + '</td>' +
+            '<td class="py-3 px-4 text-slate-500">' + esc(when) + '</td>' +
+            '</tr>';
+        }).join('') || '<tr><td class="py-6 px-4 text-slate-500" colspan="5">No accounts yet. Site Sign in accounts (not this admin login) appear here.</td></tr>';
+      } catch (err) {
+        errEl.textContent = err.message || 'Could not load accounts.';
+        errEl.classList.remove('hidden');
+        tb.innerHTML = '<tr><td class="py-6 px-4 text-slate-500" colspan="5">Could not load accounts.</td></tr>';
+      }
     }
 
     function renderAccountLists(account) {
@@ -406,7 +440,10 @@
       renderAccountLists(account);
     }
 
-    document.getElementById('tab-products').addEventListener('click', function () { showAdminTab('products'); });
+    document.getElementById('tab-products').addEventListener('click', function () {
+      showAdminTab('products');
+      closeProductForm();
+    });
     document.getElementById('tab-accounts').addEventListener('click', async function () {
       showAdminTab('accounts');
       document.getElementById('accounts-list-wrap').classList.remove('hidden');
@@ -475,25 +512,22 @@
 
     document.getElementById('new-btn').addEventListener('click', function () {
       openForm(null);
-      formWrap.scrollIntoView({ behavior: 'smooth', block: 'start' });
     });
-    document.getElementById('cancel-btn').addEventListener('click', function () {
-      formWrap.classList.add('hidden');
-      resetForm();
-    });
+    document.getElementById('cancel-btn').addEventListener('click', closeProductForm);
+    document.getElementById('product-back').addEventListener('click', closeProductForm);
 
     table.addEventListener('click', async function (e) {
-      const edit = e.target.closest('.edit-btn');
-      const del = e.target.closest('.del-btn');
-      if (edit) {
-        const data = await api('/api/admin/products/' + edit.dataset.id);
-        openForm(data.product);
-        formWrap.scrollIntoView({ behavior: 'smooth', block: 'start' });
-      }
-      if (del && confirm('Delete this product?')) {
-        await api('/api/admin/products/' + del.dataset.id, { method: 'DELETE' });
-        await loadDash();
-      }
+      const row = e.target.closest('tr[data-id]');
+      if (!row) return;
+      const data = await api('/api/admin/products/' + row.getAttribute('data-id'));
+      openForm(data.product);
+    });
+
+    document.getElementById('delete-btn').addEventListener('click', async function () {
+      if (!editingId || !confirm('Delete this product?')) return;
+      await api('/api/admin/products/' + editingId, { method: 'DELETE' });
+      closeProductForm();
+      await loadDash();
     });
 
     document.getElementById('product-form').addEventListener('submit', async function (e) {
@@ -522,6 +556,7 @@
         const url = editingId ? '/api/admin/products/' + editingId : '/api/admin/products';
         await api(url, { method: editingId ? 'PUT' : 'POST', body: fd });
         formWrap.classList.add('hidden');
+        document.getElementById('products-list-wrap').classList.remove('hidden');
         resetForm();
         await loadDash();
       } catch (err) {

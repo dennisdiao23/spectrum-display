@@ -151,3 +151,27 @@ alter table public.profiles enable row level security;
 alter table public.saved_projects enable row level security;
 alter table public.custom_panels enable row level security;
 alter table public.orders enable row level security;
+
+drop policy if exists profiles_admin_all on public.profiles;
+create policy profiles_admin_all on public.profiles
+for all
+using (public.is_spectrum_admin())
+with check (public.is_spectrum_admin());
+
+drop policy if exists saved_projects_admin_all on public.saved_projects;
+create policy saved_projects_admin_all on public.saved_projects
+for all
+using (public.is_spectrum_admin())
+with check (public.is_spectrum_admin());
+
+drop policy if exists custom_panels_admin_all on public.custom_panels;
+create policy custom_panels_admin_all on public.custom_panels
+for all
+using (public.is_spectrum_admin())
+with check (public.is_spectrum_admin());
+
+drop policy if exists orders_admin_all on public.orders;
+create policy orders_admin_all on public.orders
+for all
+using (public.is_spectrum_admin())
+with check (public.is_spectrum_admin());
