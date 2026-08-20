@@ -13,7 +13,7 @@
   <meta property="og:title" content="LED Video Wall | Spectrum Display" />
   <meta property="og:description" content="Configure LED video wall cabinets, pixel pitch, and pricing from Spectrum Display Inc." />
   <meta property="og:url" content="https://www.spectrumdisplay.com/product.html" />
-  <meta property="og:image" content="https://www.spectrumdisplay.com/assets/products/discovery.jpg" />
+  <meta property="og:image" content="https://www.spectrumdisplay.com/assets/spectrum-logo.png" />
   <meta name="twitter:card" content="summary_large_image" />
   <meta name="twitter:title" content="LED Video Wall | Spectrum Display" />
   <meta name="twitter:description" content="Configure LED video wall cabinets, pixel pitch, and pricing from Spectrum Display Inc." />
@@ -139,19 +139,15 @@
         <!-- Gallery -->
         <div class="space-y-4">
           <div class="aspect-[4/3] rounded-2xl bg-slate-900 border border-slate-700 overflow-hidden relative">
-            <img id="product-hero-img" src="assets/products/discovery.jpg" alt="Product" class="absolute inset-0 w-full h-full object-cover" />
-            <div id="product-hero-fallback" class="absolute inset-0 hidden items-center justify-center bg-gradient-to-br from-slate-800 to-slate-900">
+            <img id="product-hero-img" alt="" class="absolute inset-0 w-full h-full object-cover hidden" />
+            <div id="product-hero-fallback" class="absolute inset-0 flex items-center justify-center bg-gradient-to-br from-slate-800 to-slate-900">
               <div class="text-center p-8">
-                <div class="text-6xl font-bold text-slate-600 mb-2" id="product-hero-label">Product</div>
-                <div class="text-slate-500">Product image</div>
+                <div class="text-6xl font-bold text-slate-600 mb-2" id="product-hero-label">LED</div>
+                <div class="text-slate-500">Loading product…</div>
               </div>
             </div>
           </div>
-          <div id="gallery-thumbs" class="grid grid-cols-4 gap-3">
-            <button type="button" class="thumb-btn aspect-square rounded-xl bg-slate-800 border border-sky-500 overflow-hidden cursor-pointer hover:border-sky-400" data-img="assets/products/discovery.jpg">
-              <img src="assets/products/discovery.jpg" alt="Front" class="w-full h-full object-cover" />
-            </button>
-          </div>
+          <div id="gallery-thumbs" class="grid grid-cols-4 gap-3"></div>
         </div>
 
         <!-- Buy / Config -->
@@ -161,31 +157,18 @@
           <p id="product-lead" class="text-slate-400 mb-6">Configure LED video wall cabinets, pixel pitch, and project details from Spectrum Display.</p>
 
           <!-- Key specs pills -->
-          <div id="product-pills" class="flex flex-wrap gap-2 mb-8">
-            <span class="px-3 py-1 rounded-full bg-slate-800 text-sm">Pixel Pitch: 0.93 – 2.5 mm</span>
-            <span class="px-3 py-1 rounded-full bg-slate-800 text-sm">Brightness: 600–1000 nits</span>
-            <span class="px-3 py-1 rounded-full bg-slate-800 text-sm">Refresh: 3840+ Hz</span>
-            <span class="px-3 py-1 rounded-full bg-slate-800 text-sm">Front Service</span>
-          </div>
+          <div id="product-pills" class="flex flex-wrap gap-2 mb-8"></div>
 
           <!-- Configurator -->
           <div class="space-y-5 mb-8 p-6 rounded-2xl border border-slate-800 bg-slate-900/50">
             <div>
               <label class="block text-sm font-medium mb-2">Pixel Pitch</label>
-              <div id="pitch-grid" class="flex flex-wrap gap-2">
-                <button class="pitch-btn px-3 py-2 rounded-lg border border-sky-500 bg-sky-500/10 text-sky-300 text-sm font-medium" data-pitch="0.93">0.93 mm</button>
-                <button class="pitch-btn px-3 py-2 rounded-lg border border-slate-700 hover:border-slate-500 text-sm" data-pitch="1.25">1.25 mm</button>
-                <button class="pitch-btn px-3 py-2 rounded-lg border border-slate-700 hover:border-slate-500 text-sm" data-pitch="1.56">1.56 mm</button>
-                <button class="pitch-btn px-3 py-2 rounded-lg border border-slate-700 hover:border-slate-500 text-sm" data-pitch="1.87">1.87 mm</button>
-                <button class="pitch-btn px-3 py-2 rounded-lg border border-slate-700 hover:border-slate-500 text-sm" data-pitch="2.5">2.5 mm</button>
-              </div>
+              <div id="pitch-grid" class="flex flex-wrap gap-2"></div>
             </div>
             <div>
               <label class="block text-sm font-medium mb-2">Cabinet Size</label>
               <select id="cabinet" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-4 py-2.5 text-sm">
-                <option value="600x337.5">600 × 337.5 mm (16:9)</option>
-                <option value="610x343">610 × 343 mm</option>
-                <option value="custom">Custom size (request quote)</option>
+                <option value="custom">Loading cabinet size…</option>
               </select>
             </div>
             <div>
@@ -200,8 +183,8 @@
             <div class="pt-4 border-t border-slate-800 flex items-end justify-between gap-4">
               <div class="pricing-only">
                 <div class="text-sm text-slate-400">Estimated price</div>
-                <div class="text-3xl font-bold"><span id="price">$28,000</span></div>
-                <div class="text-xs text-slate-500" id="price-unit">$1,890 / m² × 4 m²</div>
+                <div class="text-3xl font-bold"><span id="price">—</span></div>
+                <div class="text-xs text-slate-500" id="price-unit"></div>
               </div>
               <button id="add-to-cart" class="pricing-only px-8 py-3 rounded-full bg-sky-500 hover:bg-sky-400 text-white font-semibold transition">
                 Add to Cart
@@ -264,7 +247,7 @@
         <div class="text-sm text-slate-400 guest-pricing" data-i18n="price.signIn">Sign in for pricing</div>
       </div>
       <div class="flex items-center gap-3 ml-auto">
-        <span class="text-lg font-bold pricing-only" id="sticky-price">$28,000</span>
+        <span class="text-lg font-bold pricing-only" id="sticky-price"></span>
         <button id="add-to-cart-sticky" class="pricing-only px-6 py-2.5 rounded-full bg-sky-500 hover:bg-sky-400 text-white text-sm font-semibold">Add to Cart</button>
         <a href="account.html" class="guest-pricing px-6 py-2.5 rounded-full bg-sky-500 hover:bg-sky-400 text-white text-sm font-semibold" data-i18n="price.signIn">Sign in for pricing</a>
       </div>
@@ -284,15 +267,14 @@
   <script>
     function bootProductPage() {
     const params = new URLSearchParams(window.location.search);
-    const brandId = params.get('brand') || 'trt';
-    const seriesId = params.get('series') || 'discovery';
-    const seriesData = (window.getSpectrumSeries && window.getSpectrumSeries(brandId, seriesId))
-      || (window.SPECTRUM_PRODUCTS && window.SPECTRUM_PRODUCTS.trt && window.SPECTRUM_PRODUCTS.trt.series[0]);
-    const brandName = (window.SPECTRUM_PRODUCTS && window.SPECTRUM_PRODUCTS[brandId] && window.SPECTRUM_PRODUCTS[brandId].name) || 'TRT';
+    const brandId = params.get('brand') || '';
+    const seriesId = params.get('series') || '';
+    const seriesData = (window.getSpectrumSeries && window.getSpectrumSeries(brandId, seriesId)) || null;
+    const brandName = (window.SPECTRUM_PRODUCTS && window.SPECTRUM_PRODUCTS[brandId] && window.SPECTRUM_PRODUCTS[brandId].name) || brandId || 'Spectrum';
 
     let basePrice = Number(seriesData && seriesData.pricePerM2) || 0;
     const productName = (seriesData && seriesData.name) || 'LED Series';
-    const productId = brandId + '-' + ((seriesData && seriesData.id) || 'discovery');
+    const productId = brandId + '-' + ((seriesData && seriesData.id) || seriesId || 'series');
     const hasPrice = basePrice > 0;
 
     function esc(s) {
@@ -340,17 +322,32 @@
       if (hero && brandId === 'gloshine') {
         hero.classList.remove('object-cover');
         hero.classList.add('object-contain', 'bg-black');
+      } else if (hero) {
+        hero.classList.add('object-cover');
+        hero.classList.remove('object-contain', 'bg-black');
       }
       if (hero && photos[0]) {
-        hero.src = photos[0];
+        function showHeroPhoto() {
+          hero.classList.remove('hidden');
+          hero.style.display = '';
+          if (fallback) { fallback.classList.add('hidden'); fallback.classList.remove('flex'); }
+        }
         hero.alt = productName;
-        hero.style.display = '';
+        hero.onload = showHeroPhoto;
         hero.onerror = function() {
           hero.style.display = 'none';
+          hero.classList.add('hidden');
           if (fallback) { fallback.classList.remove('hidden'); fallback.classList.add('flex'); }
         };
+        if (hero.getAttribute('src') === photos[0] && hero.complete && hero.naturalWidth) {
+          showHeroPhoto();
+        } else {
+          hero.src = photos[0];
+        }
       } else if (hero) {
+        hero.removeAttribute('src');
         hero.style.display = 'none';
+        hero.classList.add('hidden');
         if (fallback) { fallback.classList.remove('hidden'); fallback.classList.add('flex'); }
       }
       const thumbs = document.getElementById('gallery-thumbs');
@@ -400,8 +397,18 @@
           const on = i === 0
             ? 'pitch-btn px-3 py-2 rounded-lg border border-sky-500 bg-sky-500/10 text-sky-300 text-sm font-medium'
             : 'pitch-btn px-3 py-2 rounded-lg border border-slate-700 hover:border-slate-500 text-sm';
-          return '<button class="' + on + '" data-pitch="' + p + '">' + p + ' mm</button>';
+          return '<button type="button" class="' + on + '" data-pitch="' + p + '">' + p + ' mm</button>';
         }).join('');
+        pitchGrid.querySelectorAll('.pitch-btn').forEach(function (btn) {
+          btn.onclick = function () {
+            pitchGrid.querySelectorAll('.pitch-btn').forEach(function (b) {
+              b.classList.remove('border-sky-500', 'bg-sky-500/10', 'text-sky-300');
+              b.classList.add('border-slate-700');
+            });
+            btn.classList.add('border-sky-500', 'bg-sky-500/10', 'text-sky-300');
+            btn.classList.remove('border-slate-700');
+          };
+        });
       }
       const cab = document.getElementById('cabinet');
       if (cab && seriesData && seriesData.cabinetW) {
@@ -559,18 +566,6 @@
     qtyInput.oninput = updatePrice;
     updatePrice();
 
-    // Pitch buttons
-    document.querySelectorAll('.pitch-btn').forEach(btn => {
-      btn.onclick = () => {
-        document.querySelectorAll('.pitch-btn').forEach(b => {
-          b.classList.remove('border-sky-500', 'bg-sky-500/10', 'text-sky-300');
-          b.classList.add('border-slate-700');
-        });
-        btn.classList.add('border-sky-500', 'bg-sky-500/10', 'text-sky-300');
-        btn.classList.remove('border-slate-700');
-      };
-    });
-
     // Tabs
     document.querySelectorAll('.tab-btn').forEach(btn => {
       btn.onclick = () => {
@@ -617,6 +612,7 @@
       if (window.SpectrumI18n && SpectrumI18n.apply) SpectrumI18n.apply();
     });
 
+    bootProductPage();
     (window.spectrumCatalogReady || Promise.resolve()).then(bootProductPage);
   </script>
 </body>
