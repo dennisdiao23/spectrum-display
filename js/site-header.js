@@ -112,7 +112,6 @@
         { name: 'LedPoster', href: 'product.html?brand=trt&series=ledposter', tag: 'TRT' },
         { name: 'Fine Pitch COB', href: 'product.html?brand=bako&series=finepitch', tag: 'BAKO' },
         { name: 'MV Ultra (Rental)', href: 'product.html?brand=gloshine&series=mvultra', tag: 'GLO' },
-        { name: 'Diamond Rental', href: 'product.html?brand=bako&series=diamond', tag: 'BAKO' },
         { name: 'DIAO Pro Fixed', href: 'product.html?brand=diao&series=pro', tag: 'DIAO' }
       ]
     },
@@ -129,7 +128,6 @@
       lead: 'Lightweight touring panels for events, stages, and XR.',
       items: [
         { name: 'MV Ultra (Rental)', href: 'product.html?brand=gloshine&series=mvultra', tag: 'GLO' },
-        { name: 'Diamond Rental', href: 'product.html?brand=bako&series=diamond', tag: 'BAKO' },
         { name: 'Element Rental', href: 'product.html?brand=element&series=rental', tag: 'ELT' }
       ]
     },

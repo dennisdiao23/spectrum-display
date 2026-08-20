@@ -82,7 +82,7 @@ window.SPECTRUM_PRODUCTS = {
   },
   bako: {
     name: 'BAKO',
-    tagline: 'Ultra-fine pitch COB & rental',
+    tagline: 'Ultra-fine pitch COB',
     series: [
       {
         id: 'finepitch',
@@ -99,22 +99,6 @@ window.SPECTRUM_PRODUCTS = {
         badge: null,
         cats: ['cob', 'indoor', 'popular'],
         image: 'assets/products/finepitch.jpg'
-      },
-      {
-        id: 'diamond',
-        name: 'Diamond Rental',
-        pitches: [2.6, 2.97, 3.91],
-        pricePerM2: 1100,
-        weightPerM2: 20,
-        powerAvg: 220,
-        powerMax: 550,
-        cabinetW: 0.500,
-        cabinetH: 0.500,
-        type: 'Rental',
-        description: 'Lightweight rental for stages and events.',
-        badge: 'Rental',
-        cats: ['rental', 'popular'],
-        image: 'assets/products/diamond.jpg'
       }
     ]
   },
