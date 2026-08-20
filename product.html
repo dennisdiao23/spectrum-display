@@ -126,9 +126,9 @@
     <div class="site-wrap text-sm text-slate-500 py-4">
       <a href="products.html" class="hover:text-slate-300" data-i18n="nav.products">Products</a>
       <span class="mx-2">/</span>
-      <a href="products.html?brand=trt" class="hover:text-slate-300">TRT</a>
+      <a id="product-brand-crumb" href="products.html?brand=trt" class="hover:text-slate-300">TRT</a>
       <span class="mx-2">/</span>
-      <span class="text-slate-300">Discovery Series</span>
+      <span id="product-name-crumb" class="text-slate-300">Discovery Series</span>
     </div>
   </div>
 
@@ -147,30 +147,21 @@
               </div>
             </div>
           </div>
-          <div class="grid grid-cols-4 gap-3">
+          <div id="gallery-thumbs" class="grid grid-cols-4 gap-3">
             <button type="button" class="thumb-btn aspect-square rounded-xl bg-slate-800 border border-sky-500 overflow-hidden cursor-pointer hover:border-sky-400" data-img="assets/products/discovery.jpg">
               <img src="assets/products/discovery.jpg" alt="Front" class="w-full h-full object-cover" />
-            </button>
-            <button type="button" class="thumb-btn aspect-square rounded-xl bg-slate-800 border border-slate-700 overflow-hidden cursor-pointer hover:border-sky-500" data-img="assets/products/finepitch.jpg">
-              <img src="assets/products/finepitch.jpg" alt="Module" class="w-full h-full object-cover" />
-            </button>
-            <button type="button" class="thumb-btn aspect-square rounded-xl bg-slate-800 border border-slate-700 overflow-hidden cursor-pointer hover:border-sky-500" data-img="assets/products/diao-pro.jpg">
-              <img src="assets/products/diao-pro.jpg" alt="Install" class="w-full h-full object-cover" />
-            </button>
-            <button type="button" class="thumb-btn aspect-square rounded-xl bg-slate-800 border border-slate-700 overflow-hidden cursor-pointer hover:border-sky-500" data-img="assets/products/mvultra.jpg">
-              <img src="assets/products/mvultra.jpg" alt="Close-up" class="w-full h-full object-cover" />
             </button>
           </div>
         </div>
 
         <!-- Buy / Config -->
         <div>
-          <div class="text-sm font-medium text-sky-400 mb-2">TRT</div>
+          <div class="text-sm font-medium text-sky-400 mb-2 brand-label">TRT</div>
           <h1 class="text-3xl sm:text-4xl font-bold mb-2">Discovery / Acclaim Series</h1>
-          <p class="text-slate-400 mb-6">Premium indoor fine-pitch LED for retail, corporate, and control environments. Advanced fine-pitch technology delivers exceptional black levels and reliability.</p>
+          <p id="product-lead" class="text-slate-400 mb-6">Premium indoor fine-pitch LED for retail, corporate, and control environments. Advanced fine-pitch technology delivers exceptional black levels and reliability.</p>
 
           <!-- Key specs pills -->
-          <div class="flex flex-wrap gap-2 mb-8">
+          <div id="product-pills" class="flex flex-wrap gap-2 mb-8">
             <span class="px-3 py-1 rounded-full bg-slate-800 text-sm">Pixel Pitch: 0.93 – 2.5 mm</span>
             <span class="px-3 py-1 rounded-full bg-slate-800 text-sm">Brightness: 600–1000 nits</span>
             <span class="px-3 py-1 rounded-full bg-slate-800 text-sm">Refresh: 3840+ Hz</span>
@@ -181,7 +172,7 @@
           <div class="space-y-5 mb-8 p-6 rounded-2xl border border-slate-800 bg-slate-900/50">
             <div>
               <label class="block text-sm font-medium mb-2">Pixel Pitch</label>
-              <div class="grid grid-cols-5 gap-2">
+              <div id="pitch-grid" class="flex flex-wrap gap-2">
                 <button class="pitch-btn px-3 py-2 rounded-lg border border-sky-500 bg-sky-500/10 text-sky-300 text-sm font-medium" data-pitch="0.93">0.93 mm</button>
                 <button class="pitch-btn px-3 py-2 rounded-lg border border-slate-700 hover:border-slate-500 text-sm" data-pitch="1.25">1.25 mm</button>
                 <button class="pitch-btn px-3 py-2 rounded-lg border border-slate-700 hover:border-slate-500 text-sm" data-pitch="1.56">1.56 mm</button>
@@ -225,9 +216,7 @@
           <div class="flex flex-wrap gap-4 text-sm">
             <a href="contact.html" class="text-sky-400 hover:text-sky-300">Request detailed quote →</a>
             <span class="text-slate-600">|</span>
-            <a href="#" class="text-slate-400 hover:text-white">Download datasheet</a>
-            <span class="text-slate-600">|</span>
-            <a href="#" class="text-slate-400 hover:text-white">CAD drawings</a>
+            <a id="datasheet-link" href="https://gloshine.com/products" class="text-slate-400 hover:text-white">Manufacturer specs</a>
           </div>
         </div>
       </div>
@@ -246,14 +235,16 @@
 
       <div id="tab-overview" class="tab-content py-12">
         <div class="max-w-3xl">
-          <h2 class="text-2xl font-bold mb-4">Engineered for premium indoor environments</h2>
+          <h2 id="overview-title" class="text-2xl font-bold mb-4">Engineered for premium indoor environments</h2>
+          <div id="overview-body">
           <p class="text-slate-300 mb-6 leading-relaxed">The TRT Discovery (Acclaim) Series brings high-end COB / fine-pitch performance to retail flagships, corporate lobbies, control rooms, and broadcast studios. With pixel pitches starting at 0.93 mm, front-serviceable design, and excellent black levels, it delivers a seamless, high-contrast image that looks exceptional even at close viewing distances.</p>
           <p class="text-slate-300 leading-relaxed">As an authorized TRT distributor, Spectrum Display provides full manufacturer warranty, local technical support, and help configuring the right wall for your space.</p>
+          </div>
         </div>
       </div>
 
       <div id="tab-specs" class="tab-content py-12 hidden">
-        <div class="overflow-x-auto">
+        <div id="spec-table-wrap" class="overflow-x-auto">
           <table class="w-full text-sm">
             <thead>
               <tr class="border-b border-slate-700 text-left text-slate-400">
@@ -279,7 +270,7 @@
       </div>
 
       <div id="tab-features" class="tab-content py-12 hidden">
-        <div class="grid md:grid-cols-2 gap-8">
+        <div id="features-grid" class="grid md:grid-cols-2 gap-8">
           <div class="p-6 rounded-2xl border border-slate-800">
             <h3 class="font-semibold text-lg mb-2">Flip-Chip COB Technology</h3>
             <p class="text-sm text-slate-400">Superior surface protection, higher contrast, and better reliability compared with traditional SMD. Excellent performance under close viewing.</p>
@@ -354,23 +345,27 @@
       || (window.SPECTRUM_PRODUCTS && window.SPECTRUM_PRODUCTS.trt && window.SPECTRUM_PRODUCTS.trt.series[0]);
     const brandName = (window.SPECTRUM_PRODUCTS && window.SPECTRUM_PRODUCTS[brandId] && window.SPECTRUM_PRODUCTS[brandId].name) || 'TRT';
 
-    let basePrice = (seriesData && seriesData.pricePerM2) || 7000;
+    let basePrice = Number(seriesData && seriesData.pricePerM2) || 0;
     const productName = (seriesData && seriesData.name) || 'Discovery Series';
     const productId = brandId + '-' + ((seriesData && seriesData.id) || 'discovery');
+    const hasPrice = basePrice > 0;
 
-    // Update visible titles if present
+    function esc(s) {
+      return String(s || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/"/g,'&quot;');
+    }
+
     function applyProductView() {
       document.querySelectorAll('h1').forEach(h => {
-        if (h.textContent.includes('Discovery') || h.textContent.includes('Series')) {
-          h.textContent = productName;
-        }
+        h.textContent = productName;
       });
       const pageTitle = productName + ' | Spectrum Display';
       const titleEl = document.querySelector('title');
       if (titleEl) titleEl.textContent = pageTitle;
-      const desc = (seriesData && seriesData.description)
-        ? seriesData.description
+      const desc = (seriesData && (seriesData.lead || seriesData.description))
+        ? (seriesData.lead || seriesData.description)
         : ('Configure ' + productName + ' LED video wall cabinets and pricing from Spectrum Display Inc.');
+      const leadEl = document.getElementById('product-lead');
+      if (leadEl) leadEl.textContent = seriesData && seriesData.description ? seriesData.description : desc;
       if (window.spectrumSetSeo) {
         window.spectrumSetSeo({
           title: pageTitle,
@@ -380,26 +375,48 @@
           image: seriesData && seriesData.image
         });
       }
-      // Product image from catalog
+      const crumbBrand = document.getElementById('product-brand-crumb');
+      if (crumbBrand) {
+        crumbBrand.textContent = brandName;
+        crumbBrand.href = 'products.html?brand=' + encodeURIComponent(brandId);
+      }
+      const crumbName = document.getElementById('product-name-crumb');
+      if (crumbName) crumbName.textContent = productName;
+
+      const photos = [];
+      if (seriesData && seriesData.image) photos.push(seriesData.image);
+      ((seriesData && seriesData.gallery) || []).forEach(function (g) {
+        if (g && photos.indexOf(g) === -1) photos.push(g);
+      });
       const hero = document.getElementById('product-hero-img');
       const fallback = document.getElementById('product-hero-fallback');
       const label = document.getElementById('product-hero-label');
       if (label) label.textContent = productName;
-      if (hero && seriesData && seriesData.image) {
-        hero.src = seriesData.image;
+      if (hero && brandId === 'gloshine') {
+        hero.classList.remove('object-cover');
+        hero.classList.add('object-contain', 'bg-black');
+      }
+      if (hero && photos[0]) {
+        hero.src = photos[0];
         hero.alt = productName;
+        hero.style.display = '';
         hero.onerror = function() {
           hero.style.display = 'none';
           if (fallback) { fallback.classList.remove('hidden'); fallback.classList.add('flex'); }
         };
-        // First thumb uses main product image
-        const firstThumb = document.querySelector('.thumb-btn img');
-        if (firstThumb) firstThumb.src = seriesData.image;
-        const firstBtn = document.querySelector('.thumb-btn');
-        if (firstBtn) firstBtn.dataset.img = seriesData.image;
       } else if (hero) {
         hero.style.display = 'none';
         if (fallback) { fallback.classList.remove('hidden'); fallback.classList.add('flex'); }
+      }
+      const thumbs = document.getElementById('gallery-thumbs');
+      if (thumbs && photos.length) {
+        thumbs.innerHTML = photos.map(function (src, i) {
+          const on = i === 0 ? 'border-sky-500' : 'border-slate-700';
+          return '<button type="button" class="thumb-btn aspect-square rounded-xl bg-slate-800 border ' + on +
+            ' overflow-hidden cursor-pointer hover:border-sky-400" data-img="' + esc(src) + '">' +
+            '<img src="' + esc(src) + '" alt="" class="w-full h-full object-cover object-contain bg-slate-950" />' +
+            '</button>';
+        }).join('');
       }
       document.querySelectorAll('.thumb-btn').forEach(btn => {
         btn.addEventListener('click', () => {
@@ -416,13 +433,86 @@
           }
         });
       });
-      // Brand label
-      const brandLabels = document.querySelectorAll('.text-sky-400');
-      brandLabels.forEach(el => {
-        if (el.textContent.trim() === 'TRT' || el.classList.contains('brand-label')) {
-          el.textContent = brandName;
+
+      document.querySelectorAll('.brand-label').forEach(el => { el.textContent = brandName; });
+
+      const pitches = (seriesData && seriesData.pitches) || [];
+      const pills = document.getElementById('product-pills');
+      if (pills) {
+        const bits = [];
+        if (pitches.length) bits.push('Pixel Pitch: ' + pitches[0] + (pitches.length > 1 ? ' – ' + pitches[pitches.length - 1] : '') + ' mm');
+        if (seriesData && seriesData.type) bits.push(seriesData.type);
+        if (seriesData && seriesData.cabinetW && seriesData.cabinetH) {
+          bits.push(Math.round(seriesData.cabinetW * 1000) + ' × ' + Math.round(seriesData.cabinetH * 1000) + ' mm');
         }
-      });
+        pills.innerHTML = bits.map(function (b) {
+          return '<span class="px-3 py-1 rounded-full bg-slate-800 text-sm">' + esc(b) + '</span>';
+        }).join('');
+      }
+      const pitchGrid = document.getElementById('pitch-grid');
+      if (pitchGrid && pitches.length) {
+        pitchGrid.innerHTML = pitches.map(function (p, i) {
+          const on = i === 0
+            ? 'pitch-btn px-3 py-2 rounded-lg border border-sky-500 bg-sky-500/10 text-sky-300 text-sm font-medium'
+            : 'pitch-btn px-3 py-2 rounded-lg border border-slate-700 hover:border-slate-500 text-sm';
+          return '<button class="' + on + '" data-pitch="' + p + '">' + p + ' mm</button>';
+        }).join('');
+      }
+      const cab = document.getElementById('cabinet');
+      if (cab && seriesData && seriesData.cabinetW) {
+        const label = Math.round(seriesData.cabinetW * 1000) + ' × ' + (Math.round(seriesData.cabinetH * 10000) / 10) + ' mm';
+        cab.innerHTML = '<option value="std">' + esc(label) + '</option><option value="custom">Custom size (request quote)</option>';
+      }
+
+      const ovTitle = document.getElementById('overview-title');
+      if (ovTitle) ovTitle.textContent = brandName + ' ' + productName;
+      const ovBody = document.getElementById('overview-body');
+      if (ovBody && seriesData) {
+        ovBody.innerHTML =
+          '<p class="text-slate-300 mb-6 leading-relaxed">' + esc(seriesData.lead || seriesData.description) + '</p>' +
+          '<p class="text-slate-300 leading-relaxed">As an authorized ' + esc(brandName) +
+          ' partner, Spectrum Display provides manufacturer warranty, local first-line support, and help configuring the right wall for your space.</p>';
+      }
+
+      const specWrap = document.getElementById('spec-table-wrap');
+      if (specWrap && seriesData && seriesData.specTable && seriesData.specTable.length) {
+        const rows = seriesData.specTable;
+        const head = rows[0] || [];
+        const body = rows.slice(1);
+        specWrap.innerHTML = '<table class="w-full text-sm"><thead><tr class="border-b border-slate-700 text-left text-slate-400">' +
+          head.map(function (c) { return '<th class="py-3 pr-6 font-medium whitespace-nowrap">' + esc(c) + '</th>'; }).join('') +
+          '</tr></thead><tbody class="text-slate-300">' +
+          body.map(function (r) {
+            return '<tr class="border-b border-slate-800">' + r.map(function (c, i) {
+              return '<td class="py-3 pr-6 ' + (i === 0 ? 'text-slate-400' : '') + '">' + esc(c) + '</td>';
+            }).join('') + '</tr>';
+          }).join('') +
+          '</tbody></table>';
+      }
+
+      const ds = document.getElementById('datasheet-link');
+      if (ds && seriesData && seriesData.sourceUrl) {
+        ds.href = seriesData.sourceUrl;
+        ds.textContent = 'Official ' + brandName + ' specs';
+      }
+
+      const quoteBox = document.querySelector('.pricing-only');
+      if (!hasPrice) {
+        document.querySelectorAll('.pricing-only').forEach(function (el) { el.classList.add('hidden'); });
+        var guest = document.querySelector('.guest-pricing');
+        if (guest) {
+          guest.classList.remove('guest-pricing');
+          guest.innerHTML = '<a href="contact.html" class="inline-flex px-6 py-3 rounded-full bg-sky-500 hover:bg-sky-400 text-white font-semibold">Request a quote</a>';
+        }
+        var sticky = document.getElementById('sticky-price');
+        if (sticky) sticky.textContent = 'Quote';
+        var stickyGuest = document.querySelector('.sticky-buy .guest-pricing');
+        if (stickyGuest) {
+          stickyGuest.classList.remove('guest-pricing');
+          stickyGuest.textContent = 'Request quote';
+          stickyGuest.href = 'contact.html';
+        }
+      }
     }
     applyProductView();
 
@@ -432,6 +522,7 @@
     const stickyPrice = document.getElementById('sticky-price');
 
     function updatePrice() {
+      if (!hasPrice) return;
       const qty = parseFloat(qtyInput.value) || 1;
       const total = Math.round(basePrice * qty);
       priceEl.textContent = '$' + total.toLocaleString();
@@ -470,6 +561,10 @@
 
     // Cart
     function addToCart() {
+      if (!hasPrice) {
+        location.href = 'contact.html';
+        return;
+      }
       if (!(window.SpectrumAuth && SpectrumAuth.isLoggedIn && SpectrumAuth.isLoggedIn())) {
         location.href = 'account.html?next=' + encodeURIComponent((location.pathname.split('/').pop() || 'product.html') + location.search);
         return;
