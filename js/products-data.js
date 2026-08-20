@@ -2993,6 +2993,60 @@ window.SPECTRUM_PRODUCTS = {
   }
 };
 
+/** Extra mega-menu category tags so products.html?cat= indoor-rental etc. filter correctly. */
+window.spectrumCatsFor = function (p) {
+  var set = {};
+  function add(c) {
+    String(c || '').split(/\s+/).forEach(function (x) {
+      if (x) set[x] = true;
+    });
+  }
+  if (p && p.cats) {
+    if (Array.isArray(p.cats)) p.cats.forEach(add);
+    else add(p.cats);
+  }
+  var extra = {
+    discovery: 'cob fixed-indoor',
+    ledposter: 'posters',
+    mvultra: 'indoor-rental',
+    dnin: 'indoor-rental',
+    dn: 'outdoor-rental outdoor-fixed',
+    vanish: 'transparent outdoor-rental',
+    vamax: 'transparent outdoor-rental',
+    cbmax: 'transparent outdoor-rental',
+    crmax: 'outdoor-rental',
+    af2: 'cob fixed-indoor',
+    aw: 'cob fixed-indoor',
+    blade: 'fixed-indoor',
+    gposter: 'posters',
+    gposterplus: 'posters',
+    arpro: 'indoor-rental outdoor-rental',
+    cfpro: 'indoor-rental creative',
+    cfpro2: 'indoor-rental outdoor-rental creative',
+    rbb: 'indoor-rental creative',
+    ur: 'indoor-rental outdoor-rental',
+    carbon: 'indoor-rental outdoor-rental',
+    mvpro: 'indoor-rental creative',
+    mt55: 'indoor-rental creative',
+    mt2: 'creative',
+    mtedge: 'creative',
+    cs2: 'creative',
+    mr: 'creative',
+    ra2: 'fixed-indoor',
+    zs3: 'outdoor-fixed',
+    zspro: 'outdoor-fixed outdoor-rental',
+    gp: 'outdoor-fixed',
+    legend: 'outdoor-rental',
+    finepitch: 'cob fixed-indoor',
+    pro: 'fixed-indoor',
+    value: 'outdoor-fixed',
+    rental: 'indoor-rental',
+    creative: 'creative'
+  };
+  if (p && extra[p.id]) add(extra[p.id]);
+  return Object.keys(set);
+};
+
 /** Flat list helper for product cards */
 window.SPECTRUM_PRODUCT_LIST = (function () {
   const list = [];

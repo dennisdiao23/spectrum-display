@@ -375,6 +375,7 @@
     };
 
     function catsFor(p) {
+      if (window.spectrumCatsFor) return window.spectrumCatsFor(p).join(' ');
       if (p.cats && p.cats.length) return Array.isArray(p.cats) ? p.cats.join(' ') : String(p.cats);
       if (SERIES_CATS[p.id]) return SERIES_CATS[p.id];
       return String(p.type || '').toLowerCase();

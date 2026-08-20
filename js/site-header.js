@@ -103,22 +103,53 @@
     return '<svg class="site-nav-chevron" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M6 9l6 6 6-6"/></svg>';
   }
 
+  var MEGA_CAT_CHEVRON = '<svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/></svg>';
+
+  var MEGA_CATS = [
+    { id: 'indoor-rental', label: 'Indoor rental' },
+    { id: 'outdoor-rental', label: 'Outdoor rental' },
+    { id: 'cob', label: 'Fine pitch / COB' },
+    { id: 'fixed-indoor', label: 'Fixed indoor' },
+    { id: 'posters', label: 'Posters' },
+    { id: 'transparent', label: 'Transparent' },
+    { id: 'outdoor-fixed', label: 'Outdoor fixed' },
+    { id: 'creative', label: 'Creative / XR' }
+  ];
+
   var PRODUCT_MEGA = {
-    popular: {
-      title: 'Popular',
-      lead: 'Most requested LED cabinets for new walls and upgrades.',
+    'indoor-rental': {
+      title: 'Indoor rental',
+      lead: 'Touring cabinets for indoor stages, events, and studios.',
       items: [
-        { name: 'Discovery Series', href: 'product.html?brand=trt&series=discovery', tag: 'TRT' },
-        { name: 'LedPoster', href: 'product.html?brand=trt&series=ledposter', tag: 'TRT' },
-        { name: 'Fine Pitch COB', href: 'product.html?brand=bako&series=finepitch', tag: 'BAKO' },
         { name: 'MV Ultra', href: 'product.html?brand=gloshine&series=mvultra', tag: 'GLO' },
-        { name: 'AF II Fine Pitch', href: 'product.html?brand=gloshine&series=af2', tag: 'GLO' },
-        { name: 'DIAO Pro Fixed', href: 'product.html?brand=diao&series=pro', tag: 'DIAO' }
+        { name: 'DN Indoor', href: 'product.html?brand=gloshine&series=dnin', tag: 'GLO' },
+        { name: 'AR Pro', href: 'product.html?brand=gloshine&series=arpro', tag: 'GLO' },
+        { name: 'RB-B', href: 'product.html?brand=gloshine&series=rbb', tag: 'GLO' },
+        { name: 'Carbon II', href: 'product.html?brand=gloshine&series=carbon', tag: 'GLO' },
+        { name: 'MV Pro', href: 'product.html?brand=gloshine&series=mvpro', tag: 'GLO' },
+        { name: 'MT55/62', href: 'product.html?brand=gloshine&series=mt55', tag: 'GLO' },
+        { name: 'CF Pro', href: 'product.html?brand=gloshine&series=cfpro', tag: 'GLO' },
+        { name: 'Element Rental', href: 'product.html?brand=element&series=rental', tag: 'ELT' }
+      ]
+    },
+    'outdoor-rental': {
+      title: 'Outdoor rental',
+      lead: 'IP-rated touring panels for festivals, façades, and outdoor stages.',
+      items: [
+        { name: 'DN Outdoor', href: 'product.html?brand=gloshine&series=dn', tag: 'GLO' },
+        { name: 'Vanish Transparent', href: 'product.html?brand=gloshine&series=vanish', tag: 'GLO' },
+        { name: 'VA MAX', href: 'product.html?brand=gloshine&series=vamax', tag: 'GLO' },
+        { name: 'CB MAX', href: 'product.html?brand=gloshine&series=cbmax', tag: 'GLO' },
+        { name: 'CR MAX', href: 'product.html?brand=gloshine&series=crmax', tag: 'GLO' },
+        { name: 'UR Carbon', href: 'product.html?brand=gloshine&series=ur', tag: 'GLO' },
+        { name: 'AR Pro', href: 'product.html?brand=gloshine&series=arpro', tag: 'GLO' },
+        { name: 'Legend', href: 'product.html?brand=gloshine&series=legend', tag: 'GLO' },
+        { name: 'ZS Pro II', href: 'product.html?brand=gloshine&series=zspro', tag: 'GLO' }
       ]
     },
     cob: {
-      title: 'COB',
-      lead: 'Chip-on-board cabinets for close viewing and high contrast.',
+      title: 'Fine pitch / COB',
+      lead: 'Close-view COB and fine-pitch cabinets for control rooms and retail.',
       items: [
         { name: 'Discovery Series', href: 'product.html?brand=trt&series=discovery', tag: 'TRT' },
         { name: 'Fine Pitch COB', href: 'product.html?brand=bako&series=finepitch', tag: 'BAKO' },
@@ -126,39 +157,60 @@
         { name: 'AW Fine Pitch', href: 'product.html?brand=gloshine&series=aw', tag: 'GLO' }
       ]
     },
-    rental: {
-      title: 'Rental',
-      lead: 'Lightweight touring panels for events, stages, and XR.',
-      items: [
-        { name: 'MV Ultra', href: 'product.html?brand=gloshine&series=mvultra', tag: 'GLO' },
-        { name: 'DN Indoor', href: 'product.html?brand=gloshine&series=dnin', tag: 'GLO' },
-        { name: 'AR Pro', href: 'product.html?brand=gloshine&series=arpro', tag: 'GLO' },
-        { name: 'CB MAX', href: 'product.html?brand=gloshine&series=cbmax', tag: 'GLO' },
-        { name: 'UR Carbon', href: 'product.html?brand=gloshine&series=ur', tag: 'GLO' },
-        { name: 'Element Rental', href: 'product.html?brand=element&series=rental', tag: 'ELT' }
-      ]
-    },
-    indoor: {
-      title: 'Indoor Fine Pitch',
-      lead: 'Control rooms, retail, lobbies, and broadcast walls.',
+    'fixed-indoor': {
+      title: 'Fixed indoor',
+      lead: 'Wall-mount indoor cabinets for lobbies, meeting rooms, and broadcast.',
       items: [
         { name: 'Discovery Series', href: 'product.html?brand=trt&series=discovery', tag: 'TRT' },
         { name: 'Fine Pitch COB', href: 'product.html?brand=bako&series=finepitch', tag: 'BAKO' },
-        { name: 'LedPoster', href: 'product.html?brand=trt&series=ledposter', tag: 'TRT' },
-        { name: 'DIAO Pro Fixed', href: 'product.html?brand=diao&series=pro', tag: 'DIAO' },
-        { name: 'G-Poster Std 2', href: 'product.html?brand=gloshine&series=gposter', tag: 'GLO' },
-        { name: 'Element Creative / XR', href: 'product.html?brand=element&series=creative', tag: 'ELT' }
+        { name: 'AF II Fine Pitch', href: 'product.html?brand=gloshine&series=af2', tag: 'GLO' },
+        { name: 'AW Fine Pitch', href: 'product.html?brand=gloshine&series=aw', tag: 'GLO' },
+        { name: 'Blade', href: 'product.html?brand=gloshine&series=blade', tag: 'GLO' },
+        { name: 'RA II', href: 'product.html?brand=gloshine&series=ra2', tag: 'GLO' },
+        { name: 'DIAO Pro Fixed', href: 'product.html?brand=diao&series=pro', tag: 'DIAO' }
       ]
     },
-    outdoor: {
-      title: 'Outdoor',
-      lead: 'High-brightness façades, DOOH, and outdoor spectaculars.',
+    posters: {
+      title: 'Posters',
+      lead: 'Standalone LED posters for windows, retail aisles, and lobbies.',
       items: [
-        { name: 'DN Outdoor', href: 'product.html?brand=gloshine&series=dn', tag: 'GLO' },
+        { name: 'LedPoster', href: 'product.html?brand=trt&series=ledposter', tag: 'TRT' },
+        { name: 'G-Poster Std 2', href: 'product.html?brand=gloshine&series=gposter', tag: 'GLO' },
+        { name: 'G-Poster Plus', href: 'product.html?brand=gloshine&series=gposterplus', tag: 'GLO' }
+      ]
+    },
+    transparent: {
+      title: 'Transparent',
+      lead: 'See-through LED for storefronts, stages, and outdoor spectaculars.',
+      items: [
         { name: 'Vanish Transparent', href: 'product.html?brand=gloshine&series=vanish', tag: 'GLO' },
         { name: 'VA MAX', href: 'product.html?brand=gloshine&series=vamax', tag: 'GLO' },
+        { name: 'CB MAX', href: 'product.html?brand=gloshine&series=cbmax', tag: 'GLO' }
+      ]
+    },
+    'outdoor-fixed': {
+      title: 'Outdoor fixed',
+      lead: 'High-brightness façades, DOOH, and permanent outdoor walls.',
+      items: [
+        { name: 'GP Outdoor', href: 'product.html?brand=gloshine&series=gp', tag: 'GLO' },
         { name: 'ZS III', href: 'product.html?brand=gloshine&series=zs3', tag: 'GLO' },
+        { name: 'ZS Pro II', href: 'product.html?brand=gloshine&series=zspro', tag: 'GLO' },
+        { name: 'DN Outdoor', href: 'product.html?brand=gloshine&series=dn', tag: 'GLO' },
         { name: 'DIAO Value', href: 'product.html?brand=diao&series=value', tag: 'DIAO' }
+      ]
+    },
+    creative: {
+      title: 'Creative / XR',
+      lead: 'Curves, corners, flexible cabinets, and virtual-production walls.',
+      items: [
+        { name: 'MV Pro', href: 'product.html?brand=gloshine&series=mvpro', tag: 'GLO' },
+        { name: 'CF Pro', href: 'product.html?brand=gloshine&series=cfpro', tag: 'GLO' },
+        { name: 'CF Pro II', href: 'product.html?brand=gloshine&series=cfpro2', tag: 'GLO' },
+        { name: 'MT II', href: 'product.html?brand=gloshine&series=mt2', tag: 'GLO' },
+        { name: 'MT Edge', href: 'product.html?brand=gloshine&series=mtedge', tag: 'GLO' },
+        { name: 'CS II Creative', href: 'product.html?brand=gloshine&series=cs2', tag: 'GLO' },
+        { name: 'MR', href: 'product.html?brand=gloshine&series=mr', tag: 'GLO' },
+        { name: 'Element Creative / XR', href: 'product.html?brand=element&series=creative', tag: 'ELT' }
       ]
     }
   };
@@ -170,23 +222,22 @@
   }
 
   function megaProductsInnerHtml() {
+    var first = MEGA_CATS[0];
+    var buttons = MEGA_CATS.map(function (cat, i) {
+      return '<button type="button" class="site-mega-cat' + (i === 0 ? ' is-active' : '') +
+        '" data-cat="' + cat.id + '">' + cat.label + ' ' + MEGA_CAT_CHEVRON + '</button>';
+    }).join('');
     return (
       '<div class="site-mega-products">' +
-        '<div class="site-mega-cats" role="tablist">' +
-          '<button type="button" class="site-mega-cat is-active" data-cat="popular">Popular <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/></svg></button>' +
-          '<button type="button" class="site-mega-cat" data-cat="cob">COB <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/></svg></button>' +
-          '<button type="button" class="site-mega-cat" data-cat="rental">Rental <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/></svg></button>' +
-          '<button type="button" class="site-mega-cat" data-cat="indoor">Indoor Fine Pitch <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/></svg></button>' +
-          '<button type="button" class="site-mega-cat" data-cat="outdoor">Outdoor <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/></svg></button>' +
-        '</div>' +
+        '<div class="site-mega-cats" role="tablist">' + buttons + '</div>' +
         '<div class="site-mega-body">' +
-          '<h3 data-mega-title>Popular</h3>' +
-          '<p data-mega-lead>Most requested LED cabinets for new walls and upgrades.</p>' +
+          '<h3 data-mega-title>' + first.label + '</h3>' +
+          '<p data-mega-lead>Touring cabinets for indoor stages, events, and studios.</p>' +
           '<div class="site-mega-grid" data-mega-grid></div>' +
         '</div>' +
       '</div>' +
       '<div class="site-mega-foot">' +
-        '<a href="products.html">View all products →</a>' +
+        '<a href="products.html?cat=indoor-rental" data-mega-all>View all in this category →</a>' +
         '<a href="designer.html">LED Wall Calculator →</a>' +
       '</div>'
     );
@@ -194,17 +245,36 @@
 
   function megaCatFromUrl() {
     var cat = (new URLSearchParams(location.search).get('cat') || '').toLowerCase();
-    var map = { cob: 'cob', rental: 'rental', indoor: 'indoor', outdoor: 'outdoor', 'micro-led': 'indoor' };
-    return map[cat] || 'popular';
+    var map = {
+      cob: 'cob',
+      'fine-pitch': 'cob',
+      'micro-led': 'cob',
+      rental: 'indoor-rental',
+      'indoor-rental': 'indoor-rental',
+      'outdoor-rental': 'outdoor-rental',
+      indoor: 'fixed-indoor',
+      'fixed-indoor': 'fixed-indoor',
+      posters: 'posters',
+      poster: 'posters',
+      transparent: 'transparent',
+      outdoor: 'outdoor-fixed',
+      'outdoor-fixed': 'outdoor-fixed',
+      creative: 'creative',
+      xr: 'creative'
+    };
+    return map[cat] || 'indoor-rental';
   }
 
   function renderProductMega(key) {
-    var data = PRODUCT_MEGA[key] || PRODUCT_MEGA.popular;
+    var data = PRODUCT_MEGA[key] || PRODUCT_MEGA['indoor-rental'];
     $all('[data-mega-title]').forEach(function (el) { el.textContent = data.title; });
     $all('[data-mega-lead]').forEach(function (el) { el.textContent = data.lead; });
     $all('[data-mega-grid]').forEach(function (el) { el.innerHTML = productGridHtml(data.items); });
     $all('.site-mega-cat').forEach(function (btn) {
       btn.classList.toggle('is-active', btn.getAttribute('data-cat') === key);
+    });
+    $all('[data-mega-all]').forEach(function (el) {
+      el.href = 'products.html?cat=' + encodeURIComponent(key);
     });
   }
 
@@ -266,9 +336,10 @@
           '<a href="solutions.html#end-users">End users</a>' +
           '<a href="solutions.html#rental-houses">Rental houses</a>' +
           '<div class="mega-sub">Applications</div>' +
-          '<a href="products.html?cat=indoor">Indoor fine pitch</a>' +
-          '<a href="products.html?cat=outdoor">Outdoor</a>' +
-          '<a href="products.html?cat=rental">Rental & touring</a>' +
+          '<a href="products.html?cat=indoor-rental">Indoor rental</a>' +
+          '<a href="products.html?cat=outdoor-rental">Outdoor rental</a>' +
+          '<a href="products.html?cat=cob">Fine pitch / COB</a>' +
+          '<a href="products.html?cat=creative">Creative / XR</a>' +
         '</div>' +
         '<div class="site-mega-col">' +
           '<h4>Technologies</h4>' +

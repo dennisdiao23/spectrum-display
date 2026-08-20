@@ -434,10 +434,11 @@ html.is-logged-in .guest-pricing {
 .site-mega-cats {
   background: #020617;
   border-right: 1px solid #1e293b;
-  padding: 0.65rem;
+  padding: 0.35rem 0.5rem;
   display: flex;
   flex-direction: column;
-  gap: 0.2rem;
+  gap: 0;
+  overflow-y: auto;
 }
 .site-mega-cat {
   display: flex;
@@ -445,15 +446,19 @@ html.is-logged-in .guest-pricing {
   justify-content: space-between;
   width: 100%;
   text-align: left;
-  padding: 0.7rem 0.85rem;
+  padding: 0.72rem 0.85rem;
   border: 0;
-  border-radius: 0.55rem;
+  border-bottom: 1px solid #1e293b;
+  border-radius: 0;
   background: transparent;
-  color: #cbd5e1;
+  color: #f8fafc;
   font-size: 0.9rem;
   font-weight: 500;
   font-family: inherit;
   cursor: pointer;
+}
+.site-mega-cat:last-child {
+  border-bottom: 0;
 }
 .site-mega-cat:hover,
 .site-mega-cat.is-active {
