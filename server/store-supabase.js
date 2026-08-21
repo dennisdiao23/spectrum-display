@@ -244,7 +244,26 @@ function createSupabaseStore() {
         .select('id, email, name, role, company, phone, created_at, updated_at')
         .order('created_at', { ascending: false });
       throwIf(error, 'Could not list accounts.');
-      return data || [];
+      const [tiers, overrides] = await Promise.all([
+        this.listPriceTiers(),
+        supabase.from('account_price_overrides').select('user_id, markup_pct')
+      ]);
+      if (overrides.error) console.error('account_price_overrides', overrides.error.message);
+      const overrideMap = {};
+      (overrides.data || []).forEach(function (row) {
+        overrideMap[row.user_id] = Number(row.markup_pct);
+      });
+      return (data || []).map(function (row) {
+        const role = row.role === 'dealer' || row.role === 'sales' ? row.role : 'customer';
+        const typePct = Number(tiers[role]) || 0;
+        const hasOverride = Object.prototype.hasOwnProperty.call(overrideMap, row.id);
+        const overridePct = hasOverride ? overrideMap[row.id] : null;
+        return Object.assign({}, row, {
+          type_markup_pct: typePct,
+          markup_override_pct: overridePct,
+          effective_markup_pct: hasOverride ? overridePct : typePct
+        });
+      });
     },
     async getAccount(id) {
       const { data: profile, error } = await supabase.from('profiles').select('*').eq('id', id).maybeSingle();
@@ -258,6 +277,20 @@ function createSupabaseStore() {
       if (projects.error) console.error('saved_projects', projects.error.message);
       if (panels.error) console.error('custom_panels', panels.error.message);
       if (orders.error) console.error('orders', orders.error.message);
+      const tiers = await this.listPriceTiers();
+      const role = profile.role === 'dealer' || profile.role === 'sales' ? profile.role : 'customer';
+      const { data: overrideRow, error: overrideErr } = await supabase
+        .from('account_price_overrides')
+        .select('markup_pct')
+        .eq('user_id', id)
+        .maybeSingle();
+      if (overrideErr) console.error('account_price_overrides', overrideErr.message);
+      const typePct = Number(tiers[role]) || 0;
+      const hasOverride = !!(overrideRow && overrideRow.markup_pct != null);
+      const overridePct = hasOverride ? Number(overrideRow.markup_pct) : null;
+      profile.type_markup_pct = typePct;
+      profile.markup_override_pct = overridePct;
+      profile.effective_markup_pct = hasOverride ? overridePct : typePct;
       return {
         profile: profile,
         projects: projects.error ? [] : (projects.data || []),
@@ -280,7 +313,60 @@ function createSupabaseStore() {
         .select('*')
         .maybeSingle();
       throwIf(error, 'Could not update account.');
-      return data;
+      if (Object.prototype.hasOwnProperty.call(patch, 'markup_pct')) {
+        await this.setAccountMarkup(id, patch.markup_pct);
+      }
+      return this.getAccount(id).then(function (account) {
+        return account && account.profile;
+      });
+    },
+    clampMarkupPct: function (value) {
+      if (value == null || value === '') return null;
+      const n = Number(value);
+      if (!Number.isFinite(n)) return null;
+      return Math.max(-50, Math.min(500, Math.round(n * 100) / 100));
+    },
+    async listPriceTiers() {
+      const { data, error } = await supabase.from('price_tiers').select('role, markup_pct');
+      throwIf(error, 'Could not load price tiers.');
+      const map = { customer: 0, dealer: 0, sales: 0 };
+      (data || []).forEach(function (row) {
+        if (row.role === 'customer' || row.role === 'dealer' || row.role === 'sales') {
+          const n = Number(row.markup_pct);
+          map[row.role] = Number.isFinite(n) ? n : 0;
+        }
+      });
+      return map;
+    },
+    async savePriceTiers(tiers) {
+      const now = new Date().toISOString();
+      const rows = ['customer', 'dealer', 'sales'].map(function (role) {
+        const pct = this.clampMarkupPct(tiers && tiers[role]);
+        return {
+          role: role,
+          markup_pct: pct == null ? 0 : pct,
+          updated_at: now
+        };
+      }, this);
+      const { error } = await supabase.from('price_tiers').upsert(rows);
+      throwIf(error, 'Could not save price tiers.');
+      return this.listPriceTiers();
+    },
+    async setAccountMarkup(id, value) {
+      if (value == null || value === '') {
+        const { error } = await supabase.from('account_price_overrides').delete().eq('user_id', id);
+        throwIf(error, 'Could not clear account markup.');
+        return null;
+      }
+      const pct = this.clampMarkupPct(value);
+      if (pct == null) throw new Error('Markup % must be a number.');
+      const { error } = await supabase.from('account_price_overrides').upsert({
+        user_id: id,
+        markup_pct: pct,
+        updated_at: new Date().toISOString()
+      });
+      throwIf(error, 'Could not save account markup.');
+      return pct;
     },
     async saveContactInquiry(inquiry) {
       const { error } = await supabase.from('contact_inquiries').insert({

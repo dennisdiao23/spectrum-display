@@ -261,6 +261,7 @@
   <script src="js/catalog-api.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="js/supabase-client.js"></script>
+  <script src="js/pricing.js"></script>
   <script src="js/auth.js"></script>
   <script src="js/site-header.js"></script>
   <script src="js/i18n.js"></script>
@@ -276,6 +277,11 @@
     const productName = (seriesData && seriesData.name) || 'LED Series';
     const productId = brandId + '-' + ((seriesData && seriesData.id) || seriesId || 'series');
     const hasPrice = basePrice > 0;
+
+    function sellUnit() {
+      if (window.SpectrumPricing && SpectrumPricing.apply) return SpectrumPricing.apply(basePrice);
+      return Math.round(Number(basePrice) || 0);
+    }
 
     function esc(s) {
       return String(s || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/"/g,'&quot;');
@@ -521,7 +527,7 @@
       if (stickyName) stickyName.textContent = productName;
       const stickyFrom = document.getElementById('sticky-from');
       if (stickyFrom && hasPrice) {
-        stickyFrom.textContent = 'From $' + Number(basePrice).toLocaleString() + ' / m²';
+        stickyFrom.textContent = 'From $' + sellUnit().toLocaleString() + ' / m²';
       }
 
       const quoteBox = document.querySelector('.pricing-only');
@@ -552,14 +558,20 @@
     function updatePrice() {
       if (!hasPrice) return;
       const qty = parseFloat(qtyInput.value) || 1;
-      const total = Math.round(basePrice * qty);
+      const unit = sellUnit();
+      const total = Math.round(unit * qty);
       priceEl.textContent = '$' + total.toLocaleString();
       stickyPrice.textContent = '$' + total.toLocaleString();
       const priceUnit = document.getElementById('price-unit');
       if (priceUnit) {
-        priceUnit.textContent = '$' + Number(basePrice).toLocaleString() + ' / m² × ' + qty + ' m²';
+        priceUnit.textContent = '$' + unit.toLocaleString() + ' / m² × ' + qty + ' m²';
+      }
+      const stickyFrom = document.getElementById('sticky-from');
+      if (stickyFrom) {
+        stickyFrom.textContent = 'From $' + unit.toLocaleString() + ' / m²';
       }
     }
+    window.__spectrumUpdateProductPrice = updatePrice;
 
     document.getElementById('qty-minus').onclick = () => { qtyInput.value = Math.max(1, parseFloat(qtyInput.value) - 1); updatePrice(); };
     document.getElementById('qty-plus').onclick = () => { qtyInput.value = parseFloat(qtyInput.value) + 1; updatePrice(); };
@@ -610,6 +622,9 @@
     }
     window.addEventListener('spectrum:auth', function () {
       if (window.SpectrumI18n && SpectrumI18n.apply) SpectrumI18n.apply();
+    });
+    window.addEventListener('spectrum:pricing', function () {
+      if (typeof window.__spectrumUpdateProductPrice === 'function') window.__spectrumUpdateProductPrice();
     });
 
     bootProductPage();

@@ -411,14 +411,32 @@ async function main() {
       if (role && role !== 'customer' && role !== 'dealer' && role !== 'sales') {
         return res.status(400).json({ ok: false, error: 'Account type must be customer, dealer, or sales.' });
       }
-      const updated = await store.updateAccount(req.params.id, {
+      const patch = {
         role: role || undefined,
         name: body.name,
         company: body.company,
         phone: body.phone
-      });
+      };
+      if (Object.prototype.hasOwnProperty.call(body, 'markup_pct')) {
+        patch.markup_pct = body.markup_pct;
+      }
+      const updated = await store.updateAccount(req.params.id, patch);
       if (!updated) return res.status(404).json({ ok: false, error: 'Account not found.' });
       res.json({ ok: true, profile: updated });
+    } catch (err) { next(err); }
+  });
+
+  app.get('/api/admin/price-tiers', requireAdmin, async function (_req, res, next) {
+    try {
+      res.json({ ok: true, tiers: await store.listPriceTiers() });
+    } catch (err) { next(err); }
+  });
+
+  app.put('/api/admin/price-tiers', requireAdmin, async function (req, res, next) {
+    try {
+      const body = req.body || {};
+      const tiers = await store.savePriceTiers(body.tiers || body);
+      res.json({ ok: true, tiers: tiers });
     } catch (err) { next(err); }
   });
 

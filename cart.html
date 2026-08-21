@@ -139,10 +139,16 @@
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="js/supabase-client.js"></script>
+  <script src="js/pricing.js"></script>
   <script src="js/auth.js"></script>
   <script src="js/site-header.js"></script>
   <script src="js/i18n.js"></script>
   <script>
+    function sellUnit(n) {
+      if (window.SpectrumPricing && SpectrumPricing.apply) return SpectrumPricing.apply(n);
+      return Math.round(Number(n) || 0);
+    }
+
     function renderCart() {
       const cart = JSON.parse(localStorage.getItem('spectrumCart') || '[]');
       const container = document.getElementById('cart-items');
@@ -160,14 +166,15 @@
       
       let total = 0;
       container.innerHTML = cart.map((item, idx) => {
-        const line = item.price * item.qty;
+        const unit = sellUnit(item.price);
+        const line = unit * item.qty;
         total += line;
         return `
           <div class="flex items-center gap-4 p-4 rounded-xl border border-slate-800 bg-slate-900/50">
             <div class="w-16 h-16 rounded-lg bg-slate-800 flex items-center justify-center text-xs text-slate-500">LED</div>
             <div class="flex-1">
               <div class="font-medium">${item.name}</div>
-              <div class="text-sm text-slate-400">$${item.price.toLocaleString()} / ${item.unit} × ${item.qty}</div>
+              <div class="text-sm text-slate-400">$${unit.toLocaleString()} / ${item.unit} × ${item.qty}</div>
             </div>
             <div class="text-right">
               <div class="font-semibold">$${line.toLocaleString()}</div>
@@ -221,8 +228,11 @@
         }
         return;
       }
-      const total = cart.reduce((s, i) => s + (i.price || 0) * (i.qty || 1), 0);
-      const result = await SpectrumAuth.createOrder({ items: cart, total });
+      const priced = cart.map(function (i) {
+        return Object.assign({}, i, { price: sellUnit(i.price) });
+      });
+      const total = priced.reduce((s, i) => s + (i.price || 0) * (i.qty || 1), 0);
+      const result = await SpectrumAuth.createOrder({ items: priced, total });
       if (!result.ok) {
         alert(result.error || 'Could not place order');
         return;
@@ -239,6 +249,7 @@
       showCartForUser();
     }
     window.addEventListener('spectrum:auth', showCartForUser);
+    window.addEventListener('spectrum:pricing', showCartForUser);
   </script>
 </body>
 </html>

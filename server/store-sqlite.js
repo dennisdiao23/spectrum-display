@@ -96,6 +96,15 @@ function createSqliteStore() {
     async updateAccount() {
       throw new Error('Account management requires Supabase.');
     },
+    async listPriceTiers() {
+      return { customer: 0, dealer: 0, sales: 0 };
+    },
+    async savePriceTiers() {
+      throw new Error('Price tiers require Supabase.');
+    },
+    async setAccountMarkup() {
+      throw new Error('Account markup requires Supabase.');
+    },
     async saveContactInquiry() {
       return true;
     },

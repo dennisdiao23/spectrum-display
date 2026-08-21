@@ -232,3 +232,70 @@ drop trigger if exists profiles_guard_role on public.profiles;
 create trigger profiles_guard_role
 before insert or update on public.profiles
 for each row execute function public.guard_profile_role();
+
+-- Admin-only markup %. Customers never read these tables; they get a multiplier via RPC.
+create table if not exists public.price_tiers (
+  role text primary key check (role in ('customer', 'dealer', 'sales')),
+  markup_pct double precision not null default 0,
+  updated_at timestamptz not null default now()
+);
+
+insert into public.price_tiers (role, markup_pct)
+values ('customer', 0), ('dealer', 0), ('sales', 0)
+on conflict (role) do nothing;
+
+create table if not exists public.account_price_overrides (
+  user_id uuid primary key references auth.users(id) on delete cascade,
+  markup_pct double precision not null,
+  updated_at timestamptz not null default now()
+);
+
+alter table public.price_tiers enable row level security;
+alter table public.account_price_overrides enable row level security;
+
+drop policy if exists price_tiers_admin_all on public.price_tiers;
+create policy price_tiers_admin_all on public.price_tiers
+for all using (public.is_spectrum_admin()) with check (public.is_spectrum_admin());
+
+drop policy if exists account_price_overrides_admin_all on public.account_price_overrides;
+create policy account_price_overrides_admin_all on public.account_price_overrides
+for all using (public.is_spectrum_admin()) with check (public.is_spectrum_admin());
+
+grant select, insert, update, delete on public.price_tiers to anon, authenticated;
+grant select, insert, update, delete on public.account_price_overrides to anon, authenticated;
+grant all on public.price_tiers to service_role;
+grant all on public.account_price_overrides to service_role;
+
+create or replace function public.my_price_multiplier()
+returns double precision
+language plpgsql
+stable
+security definer
+set search_path to 'public'
+as $fn$
+declare
+  uid uuid := auth.uid();
+  r text;
+  pct double precision;
+begin
+  if uid is null then
+    return 1;
+  end if;
+  select markup_pct into pct
+  from public.account_price_overrides
+  where user_id = uid;
+  if found then
+    return 1 + coalesce(pct, 0) / 100.0;
+  end if;
+  select role into r from public.profiles where id = uid;
+  r := coalesce(r, 'customer');
+  if r not in ('customer', 'dealer', 'sales') then
+    r := 'customer';
+  end if;
+  select markup_pct into pct from public.price_tiers where role = r;
+  return 1 + coalesce(pct, 0) / 100.0;
+end;
+$fn$;
+
+revoke all on function public.my_price_multiplier() from public;
+grant execute on function public.my_price_multiplier() to anon, authenticated;

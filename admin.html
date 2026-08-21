@@ -159,6 +159,28 @@
       <div id="accounts-section" class="hidden space-y-6">
         <div id="accounts-list-wrap">
           <p class="text-slate-400 text-sm mb-4">All customer sign-ins. Open an account to see orders, saved calculator projects, custom panels, and to set Customer / Dealer / Sales.</p>
+          <form id="price-tiers-form" class="rounded-2xl border border-slate-800 bg-slate-900/50 p-5 mb-6">
+            <h3 class="font-semibold mb-1">Price tiers</h3>
+            <p class="text-xs text-slate-500 mb-4">Markup % by account type. Signed-in users see catalog price × (1 + markup%). Only admin can see these percents — they never appear on My Account.</p>
+            <div class="grid sm:grid-cols-3 gap-4">
+              <div>
+                <label class="block text-xs text-slate-400 mb-1">Customer markup %</label>
+                <input id="tier-customer" type="number" step="0.1" min="-50" max="500" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm" value="0">
+              </div>
+              <div>
+                <label class="block text-xs text-slate-400 mb-1">Dealer markup %</label>
+                <input id="tier-dealer" type="number" step="0.1" min="-50" max="500" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm" value="0">
+              </div>
+              <div>
+                <label class="block text-xs text-slate-400 mb-1">Sales markup %</label>
+                <input id="tier-sales" type="number" step="0.1" min="-50" max="500" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm" value="0">
+              </div>
+            </div>
+            <div class="mt-4 flex flex-wrap items-center gap-3">
+              <button type="submit" class="px-5 py-2 rounded-full bg-sky-500 hover:bg-sky-400 text-white text-sm font-semibold">Save price tiers</button>
+              <p id="tiers-msg" class="hidden text-sm text-sky-400"></p>
+            </div>
+          </form>
           <p id="accounts-error" class="hidden text-sm text-red-400 mb-3"></p>
           <div class="overflow-x-auto rounded-2xl border border-slate-800">
             <table class="w-full text-sm">
@@ -167,6 +189,7 @@
                   <th class="py-3 px-4 font-medium">Name</th>
                   <th class="py-3 px-4 font-medium">Email</th>
                   <th class="py-3 px-4 font-medium">Type</th>
+                  <th class="py-3 px-4 font-medium">Markup %</th>
                   <th class="py-3 px-4 font-medium">Company</th>
                   <th class="py-3 px-4 font-medium">Created</th>
                   <th class="py-3 px-4 font-medium"></th>
@@ -196,6 +219,11 @@
                 <option value="sales">Sales</option>
               </select>
               <p class="text-xs text-slate-500 mt-1">Only admin can change this. Dealer and Sales see Background and Preview Content on the calculator.</p>
+            </div>
+            <div>
+              <label class="block text-xs text-slate-400 mb-1">Markup % for this account</label>
+              <input id="acct-markup" type="number" step="0.1" min="-50" max="500" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm" placeholder="Use type default">
+              <p id="acct-markup-hint" class="text-xs text-slate-500 mt-1">Leave blank to use the account type %. Filling this overwrites the type % for this account only. The user never sees this percent.</p>
             </div>
             <div>
               <label class="block text-xs text-slate-400 mb-1">Company</label>
@@ -364,6 +392,14 @@
       document.getElementById('tab-accounts').className = 'admin-tab px-4 py-2 rounded-full text-sm font-medium ' + (productsOn ? 'text-slate-400 hover:text-white' : 'bg-sky-500/20 text-sky-300');
     }
 
+    async function loadPriceTiers() {
+      const data = await api('/api/admin/price-tiers');
+      const tiers = data.tiers || {};
+      document.getElementById('tier-customer').value = tiers.customer != null ? tiers.customer : 0;
+      document.getElementById('tier-dealer').value = tiers.dealer != null ? tiers.dealer : 0;
+      document.getElementById('tier-sales').value = tiers.sales != null ? tiers.sales : 0;
+    }
+
     async function loadAccounts() {
       const tb = document.getElementById('accounts-table');
       const errEl = document.getElementById('accounts-error');
@@ -374,19 +410,23 @@
         const rows = data.accounts || [];
         tb.innerHTML = rows.map(function (a) {
           const when = a.created_at ? new Date(a.created_at).toLocaleDateString() : '';
+          const pct = a.effective_markup_pct;
+          const pctText = (pct == null ? 0 : Number(pct)) + '%';
+          const override = a.markup_override_pct != null;
           return '<tr class="border-b border-slate-800 hover:bg-slate-900/80 cursor-pointer" data-id="' + esc(a.id) + '">' +
             '<td class="py-3 px-4">' + esc(a.name || '—') + '</td>' +
             '<td class="py-3 px-4">' + esc(a.email || '') + '</td>' +
             '<td class="py-3 px-4"><span class="text-xs px-2 py-0.5 rounded-full bg-sky-500/15 text-sky-300">' + esc(roleLabel(a.role)) + '</span></td>' +
+            '<td class="py-3 px-4 text-slate-300">' + esc(pctText) + (override ? ' <span class="text-xs text-slate-500">override</span>' : '') + '</td>' +
             '<td class="py-3 px-4 text-slate-400">' + esc(a.company || '—') + '</td>' +
             '<td class="py-3 px-4 text-slate-500">' + esc(when) + '</td>' +
             '<td class="py-3 px-4 text-right"><span class="text-sky-400 text-xs font-medium">Open →</span></td>' +
             '</tr>';
-        }).join('') || '<tr><td class="py-6 px-4 text-slate-500" colspan="6">No accounts yet. Site Sign in accounts (not this admin login) appear here.</td></tr>';
+        }).join('') || '<tr><td class="py-6 px-4 text-slate-500" colspan="7">No accounts yet. Site Sign in accounts (not this admin login) appear here.</td></tr>';
       } catch (err) {
         errEl.textContent = err.message || 'Could not load accounts.';
         errEl.classList.remove('hidden');
-        tb.innerHTML = '<tr><td class="py-6 px-4 text-slate-500" colspan="6">Could not load accounts.</td></tr>';
+        tb.innerHTML = '<tr><td class="py-6 px-4 text-slate-500" colspan="7">Could not load accounts.</td></tr>';
       }
     }
 
@@ -442,6 +482,16 @@
         document.getElementById('acct-role').value = (p.role === 'dealer' || p.role === 'sales') ? p.role : 'customer';
         document.getElementById('acct-company').value = p.company || '';
         document.getElementById('acct-phone').value = p.phone || '';
+        const markupEl = document.getElementById('acct-markup');
+        const hint = document.getElementById('acct-markup-hint');
+        const typePct = p.type_markup_pct != null ? Number(p.type_markup_pct) : 0;
+        if (p.markup_override_pct != null && p.markup_override_pct !== '') {
+          markupEl.value = String(p.markup_override_pct);
+        } else {
+          markupEl.value = '';
+        }
+        markupEl.placeholder = 'Type default (' + typePct + '%)';
+        hint.textContent = 'Leave blank to use the ' + roleLabel(p.role) + ' default (' + typePct + '%). Filling this overwrites the type % for this account only. The user never sees this percent.';
         document.getElementById('acct-msg').classList.add('hidden');
         renderAccountLists(account);
       } catch (err) {
@@ -458,6 +508,7 @@
       showAdminTab('accounts');
       document.getElementById('accounts-list-wrap').classList.remove('hidden');
       document.getElementById('account-detail').classList.add('hidden');
+      await loadPriceTiers();
       await loadAccounts();
     });
     document.getElementById('account-back').addEventListener('click', async function () {
@@ -481,7 +532,10 @@
             name: document.getElementById('acct-name').value,
             company: document.getElementById('acct-company').value,
             phone: document.getElementById('acct-phone').value,
-            role: document.getElementById('acct-role').value
+            role: document.getElementById('acct-role').value,
+            markup_pct: document.getElementById('acct-markup').value.trim() === ''
+              ? null
+              : document.getElementById('acct-markup').value
           })
         });
         msg.textContent = 'Saved. The user will see the new type after they refresh or sign in again.';
@@ -492,6 +546,32 @@
         msg.textContent = err.message || 'Could not save.';
         msg.classList.remove('hidden');
         msg.classList.remove('text-sky-400');
+        msg.classList.add('text-red-400');
+      }
+    });
+
+    document.getElementById('price-tiers-form').addEventListener('submit', async function (e) {
+      e.preventDefault();
+      const msg = document.getElementById('tiers-msg');
+      try {
+        await api('/api/admin/price-tiers', {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            tiers: {
+              customer: document.getElementById('tier-customer').value,
+              dealer: document.getElementById('tier-dealer').value,
+              sales: document.getElementById('tier-sales').value
+            }
+          })
+        });
+        msg.textContent = 'Price tiers saved. Existing sign-ins pick this up on their next page load.';
+        msg.classList.remove('hidden', 'text-red-400');
+        msg.classList.add('text-sky-400');
+        await loadAccounts();
+      } catch (err) {
+        msg.textContent = err.message || 'Could not save price tiers.';
+        msg.classList.remove('hidden', 'text-sky-400');
         msg.classList.add('text-red-400');
       }
     });

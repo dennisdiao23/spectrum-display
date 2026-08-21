@@ -194,7 +194,7 @@
   async function loadProfile(user) {
     const client = sb();
     if (!client) return null;
-    const { data } = await client.from('profiles').select('*').eq('id', user.id).maybeSingle();
+    const { data } = await client.from('profiles').select('id, email, name, role, company, phone, created_at').eq('id', user.id).maybeSingle();
     if (data) return data;
     const meta = user.user_metadata || {};
     const row = {
@@ -209,18 +209,36 @@
     return row;
   }
 
+  async function refreshPricing() {
+    const client = sb();
+    if (!global.SpectrumPricing) return;
+    if (!client || !cached) {
+      SpectrumPricing.setMultiplier(1);
+      return;
+    }
+    try {
+      const { data, error } = await client.rpc('my_price_multiplier');
+      if (error) throw error;
+      SpectrumPricing.setMultiplier(data);
+    } catch (e) {
+      SpectrumPricing.setMultiplier(1);
+    }
+  }
+
   async function setUser(user) {
     if (!user) {
       cached = null;
       projectsCache = [];
       panelsCache = [];
       ordersCache = [];
+      await refreshPricing();
       return;
     }
     const profile = await loadProfile(user);
     cached = sessionFrom(user, profile);
     await migrateLocalSaves(user.id);
     await refreshUserLists(user.id);
+    await refreshPricing();
   }
 
   async function boot() {
@@ -258,6 +276,7 @@
       projectsCache = [];
       panelsCache = [];
       ordersCache = [];
+      if (global.SpectrumPricing) SpectrumPricing.setMultiplier(1);
       global.dispatchEvent(new CustomEvent('spectrum:auth'));
     },
     normalizeRole: normalizeRole,

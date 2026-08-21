@@ -115,6 +115,8 @@ OneDrive does **not** update GitHub. After Cloud Agent changes, pull and review 
 | `admins`, `sessions` | Catalog admin at `/admin.html` (not customer Sign in) |
 | `app_config` | Admin secret check |
 | `profiles` | Site accounts. Role is `customer` (default), `dealer`, or `sales`. Only Admin can change type. |
+| `price_tiers` | Admin-only markup % by Customer / Dealer / Sales. Signed-in prices = catalog × (1 + %). Default 0%. Users never see this percent. |
+| `account_price_overrides` | Admin-only per-account markup that overwrites the type %. Leave blank on an account to inherit the type %. |
 | `saved_projects`, `custom_panels` | Designer saves (online, per user) |
 | `orders` | Cart checkouts stored online so Admin can see them |
 | `contact_inquiries` | Copy of each contact-form submit |

@@ -14,6 +14,9 @@
 
   function priceLabelFor(s) {
     var n = Number(s && s.pricePerM2);
+    if (global.SpectrumPricing && SpectrumPricing.fromLabel) {
+      return SpectrumPricing.fromLabel(n);
+    }
     if (!n) return 'Request quote';
     return 'From $' + n.toLocaleString();
   }
@@ -82,6 +85,15 @@
   }
 
   global.applySpectrumCatalog = applyCatalog;
+  global.refreshSpectrumPriceLabels = function () {
+    if (!global.SPECTRUM_PRODUCTS) return;
+    global.SPECTRUM_PRODUCT_LIST = rebuildList(global.SPECTRUM_PRODUCTS);
+    global.dispatchEvent(new CustomEvent('spectrum:catalog'));
+  };
+
+  if (global.SPECTRUM_PRODUCTS) {
+    global.SPECTRUM_PRODUCT_LIST = rebuildList(global.SPECTRUM_PRODUCTS);
+  }
 
   global.spectrumCatalogReady = fetch('/api/catalog', { headers: { Accept: 'application/json' } })
     .then(function (res) { return res.ok ? res.json() : null; })
