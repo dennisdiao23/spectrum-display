@@ -162,6 +162,7 @@
     if (/already registered/i.test(msg)) return 'An account with this email already exists. Please sign in.';
     if (/email not confirmed/i.test(msg)) return 'Check your email to confirm your account, then sign in.';
     if (/signups not allowed/i.test(msg)) return 'New accounts are temporarily closed.';
+    if (/database error saving new user/i.test(msg)) return 'Could not create the account. Please try again or use email.';
     return msg;
   }
 

@@ -178,3 +178,57 @@ with check (public.is_spectrum_admin());
 
 grant select, insert, update, delete on public.saved_projects to anon, authenticated;
 grant select, insert, update, delete on public.custom_panels to anon, authenticated;
+
+-- New Auth users get a Customer profile. tg_op is 'INSERT' (uppercase);
+-- comparing to 'insert' made the UPDATE branch run, copying OLD.role (null)
+-- onto the new row and breaking Google / email signup.
+create or replace function public.handle_new_user()
+returns trigger
+language plpgsql
+security definer
+set search_path to 'public'
+as $function$
+begin
+  insert into public.profiles (id, email, name)
+  values (
+    new.id,
+    new.email,
+    coalesce(new.raw_user_meta_data->>'name', split_part(coalesce(new.email, 'user'), '@', 1))
+  )
+  on conflict (id) do nothing;
+  return new;
+end;
+$function$;
+
+drop trigger if exists on_auth_user_created on auth.users;
+create trigger on_auth_user_created
+after insert on auth.users
+for each row execute function public.handle_new_user();
+
+create or replace function public.guard_profile_role()
+returns trigger
+language plpgsql
+security definer
+set search_path to 'public'
+as $function$
+begin
+  if new.role is null or new.role not in ('customer', 'dealer', 'sales') then
+    new.role := 'customer';
+  end if;
+  if tg_op = 'INSERT' then
+    if not public.is_spectrum_admin() then
+      new.role := 'customer';
+    end if;
+    return new;
+  end if;
+  if new.role is distinct from old.role and not public.is_spectrum_admin() then
+    new.role := old.role;
+  end if;
+  return new;
+end;
+$function$;
+
+drop trigger if exists profiles_guard_role on public.profiles;
+create trigger profiles_guard_role
+before insert or update on public.profiles
+for each row execute function public.guard_profile_role();

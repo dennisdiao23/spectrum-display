@@ -113,7 +113,7 @@
     <div class="site-wrap">
 
       <!-- LOGIN / REGISTER -->
-      <div id="auth-panel" class="hidden max-w-md mx-auto">
+      <div id="auth-panel" class="max-w-md mx-auto">
         <div class="text-center mb-8">
           <h1 class="text-3xl font-bold mb-2" data-i18n="account.h1">Customer &amp; Dealer Account</h1>
           <p class="text-slate-400 text-sm" data-i18n="account.lead">Sign in to save LED Wall Calculator layouts, custom panels, track orders, and manage your profile.</p>
@@ -292,27 +292,32 @@
       const password = document.getElementById('auth-password').value;
       const err = document.getElementById('auth-error');
       err.classList.add('hidden');
-      let result;
-      if (mode === 'register') {
-        result = await Auth.register({
-          email,
-          password,
-          name: document.getElementById('auth-name').value
-        });
-      } else {
-        result = await Auth.login({ email, password });
-      }
-      if (result.needsConfirm) {
-        err.textContent = result.error;
+      try {
+        let result;
+        if (mode === 'register') {
+          result = await Auth.register({
+            email,
+            password,
+            name: document.getElementById('auth-name').value
+          });
+        } else {
+          result = await Auth.login({ email, password });
+        }
+        if (result.needsConfirm) {
+          err.textContent = result.error;
+          err.classList.remove('hidden');
+          return;
+        }
+        if (!result.ok) {
+          err.textContent = result.error;
+          err.classList.remove('hidden');
+          return;
+        }
+        afterAuthSuccess();
+      } catch (ex) {
+        err.textContent = (ex && ex.message) || 'Could not sign in. Please try again.';
         err.classList.remove('hidden');
-        return;
       }
-      if (!result.ok) {
-        err.textContent = result.error;
-        err.classList.remove('hidden');
-        return;
-      }
-      afterAuthSuccess();
     };
 
     document.getElementById('google-btn').onclick = async () => {
