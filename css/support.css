@@ -1,0 +1,236 @@
+/* Support / Contact Us — Zoom Contact Us layout. Does not change the site header. */
+.support-page {
+  background: #f4f7fb;
+  color: #0f172a;
+}
+
+.sup-hero {
+  position: relative;
+  overflow: hidden;
+  padding: 4.25rem 0 4rem;
+  color: #fff;
+  background:
+    linear-gradient(180deg, #011067 -14%, #0b5cff 58%, rgba(11, 92, 255, 0.18) 100%),
+    #0b5cff;
+}
+.sup-hero h1 {
+  margin: 0 0 1rem;
+  font-size: clamp(2rem, 4.6vw, 3.15rem);
+  font-weight: 700;
+  letter-spacing: -0.035em;
+  line-height: 1.15;
+}
+.sup-hero p {
+  max-width: 40rem;
+  margin: 0 0 1.75rem;
+  font-size: 1.05rem;
+  line-height: 1.65;
+  color: rgba(255, 255, 255, 0.88);
+}
+.sup-hero p a {
+  color: #fff;
+  font-weight: 600;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+.sup-hero-btns {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  margin-bottom: 1.1rem;
+}
+.sup-note {
+  font-size: 0.92rem;
+  color: rgba(255, 255, 255, 0.78);
+}
+.sup-note a {
+  color: #fff;
+  font-weight: 600;
+  text-decoration: none;
+}
+.sup-note a:hover { text-decoration: underline; }
+
+.sup-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 2.85rem;
+  padding: 0.7rem 1.35rem;
+  border-radius: 0.5rem;
+  font-size: 0.95rem;
+  font-weight: 600;
+  text-decoration: none;
+  transition: background 0.15s, color 0.15s, border-color 0.15s;
+}
+.sup-btn-primary {
+  background: #0ea5e9;
+  color: #fff;
+}
+.sup-btn-primary:hover { background: #0284c7; color: #fff; }
+.sup-btn-light {
+  background: #fff;
+  color: #0b5cff;
+}
+.sup-btn-light:hover { background: #e8f1ff; color: #0b5cff; }
+.sup-btn-ghost {
+  background: transparent;
+  color: #fff;
+  border: 1px solid rgba(255, 255, 255, 0.45);
+}
+.sup-btn-ghost:hover { background: rgba(255, 255, 255, 0.1); color: #fff; }
+
+.sup-account {
+  margin-top: 1.75rem;
+  max-width: 28rem;
+  padding: 1.25rem 1.35rem;
+  border-radius: 0.75rem;
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+}
+.sup-account .card-header {
+  font-size: 0.8rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  margin-bottom: 0.7rem;
+  color: rgba(255, 255, 255, 0.7);
+}
+.sup-account ul {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  font-size: 0.92rem;
+  line-height: 1.7;
+}
+.sup-account strong { font-weight: 600; }
+
+.sup-callout {
+  padding: 3.5rem 0;
+  color: #fff;
+  background:
+    linear-gradient(90deg, #00053d 8%, rgba(0, 5, 61, 0.35) 100%),
+    url("../assets/content/concert.jpg") right center / cover no-repeat;
+}
+@media (max-width: 1023px) {
+  .sup-callout {
+    background: #00053d;
+  }
+}
+.sup-callout h2 {
+  margin: 0 0 0.65rem;
+  font-size: clamp(1.5rem, 3vw, 2rem);
+  font-weight: 700;
+  letter-spacing: -0.025em;
+}
+.sup-callout p {
+  max-width: 32rem;
+  margin: 0 0 1.35rem;
+  color: rgba(255, 255, 255, 0.85);
+  line-height: 1.6;
+}
+
+.sup-help {
+  padding: 4rem 0 2.5rem;
+}
+.sup-help h2 {
+  margin: 0 0 0.65rem;
+  font-size: clamp(1.5rem, 3vw, 2rem);
+  font-weight: 700;
+  letter-spacing: -0.025em;
+  color: #020617;
+}
+.sup-help > .site-wrap > p.lead {
+  max-width: 40rem;
+  margin: 0 0 1.75rem;
+  color: #475569;
+  line-height: 1.6;
+}
+.sup-help a.inline {
+  color: #0b5cff;
+  font-weight: 600;
+  text-decoration: none;
+}
+.sup-help a.inline:hover { text-decoration: underline; }
+
+.sup-topics {
+  display: grid;
+  gap: 0.85rem;
+}
+.sup-topic {
+  background: #fff;
+  border-radius: 0.85rem;
+  box-shadow: 0 8px 24px rgba(15, 23, 42, 0.05);
+  scroll-margin-top: calc(var(--site-header-h) + 1.25rem);
+}
+.sup-topic summary {
+  list-style: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 1.15rem 1.25rem;
+  font-size: 1.05rem;
+  font-weight: 600;
+  color: #020617;
+}
+.sup-topic summary::-webkit-details-marker { display: none; }
+.sup-topic summary::after {
+  content: "";
+  width: 0.55rem;
+  height: 0.55rem;
+  border-right: 2px solid #64748b;
+  border-bottom: 2px solid #64748b;
+  transform: rotate(45deg);
+  flex-shrink: 0;
+  margin-top: -0.25rem;
+}
+.sup-topic[open] summary::after { transform: rotate(225deg); margin-top: 0.2rem; }
+.sup-topic .body {
+  padding: 0 1.25rem 1.25rem;
+  color: #475569;
+  font-size: 0.95rem;
+  line-height: 1.65;
+}
+.sup-topic .body a { color: #0b5cff; font-weight: 600; }
+
+.sup-emails {
+  display: grid;
+  gap: 1rem;
+  margin-top: 2rem;
+}
+@media (min-width: 700px) {
+  .sup-emails { grid-template-columns: repeat(3, 1fr); }
+}
+.sup-email {
+  background: #fff;
+  border-radius: 0.85rem;
+  padding: 1.25rem 1.3rem;
+  box-shadow: 0 8px 24px rgba(15, 23, 42, 0.05);
+}
+.sup-email h3 {
+  margin: 0 0 0.35rem;
+  font-size: 0.95rem;
+  font-weight: 700;
+}
+.sup-email a {
+  color: #0b5cff;
+  font-weight: 600;
+  text-decoration: none;
+  word-break: break-all;
+}
+.sup-email a:hover { text-decoration: underline; }
+.sup-email p {
+  margin: 0.4rem 0 0;
+  font-size: 0.85rem;
+  color: #64748b;
+  line-height: 1.45;
+}
+
+.support-page .is-guest { display: block; }
+.support-page .is-user { display: none; }
+.support-page.is-authed .is-guest { display: none; }
+.support-page.is-authed .is-user { display: block; }
+.support-page.is-authed .sup-hero-btns.is-user {
+  display: flex;
+}

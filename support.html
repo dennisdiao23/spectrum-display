@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <script src="js/i18n-boot.js"></script>
   <link rel="stylesheet" href="css/site-header.css" />
+  <link rel="stylesheet" href="css/support.css" />
   <title>Support | Spectrum Display</title>
   <meta name="description" content="Warranty, technical resources, and first-line support for Spectrum Display LED video walls. Authorized US distributor for TRT, Gloshine, BAKO, DIAO, and Element." />
   <link rel="canonical" href="https://www.spectrumdisplay.com/support.html" />
@@ -22,10 +23,9 @@
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
   <style>
     body { font-family: 'Inter', system-ui, sans-serif; }
-    .sol-section { scroll-margin-top: calc(var(--site-header-h) + 1.25rem); }
   </style>
 </head>
-<body class="bg-slate-950 text-slate-100 antialiased">
+<body class="support-page antialiased">
 <header class="site-header" id="site-header">
     <div class="site-header-inner">
       <div class="site-header-top">
@@ -120,40 +120,140 @@
       </div>
     </div>
   </header>
-  <section class="pt-12 pb-20">
-    <div class="site-wrap max-w-3xl">
-      <h1 class="text-3xl sm:text-4xl font-bold mb-3">Support</h1>
-      <p class="text-slate-400 mb-10">Technical help, warranty, shipping, and a direct line to Spectrum Display.</p>
-      <div class="grid sm:grid-cols-2 gap-4 mb-12">
-        <a href="contact.html" class="p-5 rounded-2xl border border-slate-800 bg-slate-900/60 hover:border-sky-500/40 transition">
-          <div class="font-semibold mb-1">Contact Sales</div>
-          <p class="text-sm text-slate-400">Quotes, sizing, and project design. Email <span class="text-sky-300">sales@spectrumdisplay.com</span>. We typically reply within 48 hours.</p>
-        </a>
-        <a href="designer.html" class="p-5 rounded-2xl border border-slate-800 bg-slate-900/60 hover:border-sky-500/40 transition">
-          <div class="font-semibold mb-1">LED Wall Calculator</div>
-          <p class="text-sm text-slate-400">Build a wall, see cabinets, power, and an estimated price.</p>
-        </a>
+  <section class="sup-hero">
+    <div class="site-wrap">
+      <h1 data-i18n="support.heroTitle">Contact Spectrum Support</h1>
+      <div class="is-guest">
+        <p data-i18n="support.heroGuest">LED walls stay on with the right support. Sign in to your account for help with orders and saved projects. Options can vary by Customer, Dealer, or Sales type.</p>
+        <div class="sup-hero-btns">
+          <a class="sup-btn sup-btn-light" href="account.html" data-i18n="support.signInCta">Sign in for assistance</a>
+          <a class="sup-btn sup-btn-ghost" href="mailto:support@spectrumdisplay.com" data-i18n="support.emailCta">Email support</a>
+        </div>
+        <div class="sup-note">Unable to access your account? <a href="mailto:support@spectrumdisplay.com">Email support@spectrumdisplay.com</a></div>
       </div>
-      <div class="space-y-8 text-slate-300">
-        <div id="tech" class="sol-section">
-          <h2 class="text-xl font-semibold text-white mb-2">Technical resources</h2>
-          <p class="text-sm leading-relaxed">Need drawings, load data, or a processor recommendation? Email <a class="text-sky-400" href="mailto:support@spectrumdisplay.com">support@spectrumdisplay.com</a> with your product and wall size. We will send spec sheets and a suggested BOM.</p>
+      <div class="is-user">
+        <p>Welcome, <strong id="sup-user-name">there</strong>. From here you can email support, check orders, and use the LED Wall Calculator.</p>
+        <div class="sup-hero-btns is-user">
+          <a class="sup-btn sup-btn-light" href="mailto:support@spectrumdisplay.com">Email support</a>
+          <a class="sup-btn sup-btn-ghost" href="contact.html">Contact Sales</a>
+          <a class="sup-btn sup-btn-ghost" href="account.html">My Account</a>
         </div>
-        <div id="warranty" class="sol-section">
-          <h2 class="text-xl font-semibold text-white mb-2">Warranty</h2>
-          <p class="text-sm leading-relaxed">Catalog products are manufacturer-warranty backed. Spectrum adds support for sizing, install questions, and spare planning. Warranty terms follow the brand on your order.</p>
-        </div>
-        <div id="shipping" class="sol-section">
-          <h2 class="text-xl font-semibold text-white mb-2">Shipping &amp; returns</h2>
-          <p class="text-sm leading-relaxed">Most standard cabinets ship from US warehouses in 5–10 business days after confirmation. Returns and DOA swaps are handled case by case — email <a class="text-sky-400" href="mailto:support@spectrumdisplay.com">support@spectrumdisplay.com</a> before sending product back.</p>
-        </div>
-        <div id="dealer" class="sol-section">
-          <h2 class="text-xl font-semibold text-white mb-2">Dealer portal</h2>
-          <p class="text-sm leading-relaxed">Integrators can <a class="text-sky-400" href="account.html">create an account</a> as Dealer / Integrator to save calculator projects and custom panels.</p>
+        <div class="sup-account">
+          <p class="card-header">Account information</p>
+          <ul>
+            <li>Email: <strong id="sup-user-email">—</strong></li>
+            <li>Account type: <strong id="sup-user-role">—</strong></li>
+            <li>Company: <strong id="sup-user-company">—</strong></li>
+          </ul>
         </div>
       </div>
     </div>
   </section>
+
+  <section class="sup-callout">
+    <div class="site-wrap">
+      <h2 data-i18n="support.calloutTitle">Size the wall, then talk to us</h2>
+      <p data-i18n="support.calloutLead">Use the LED Wall Calculator for cabinets, power, and an estimate — then save the project to your account or send it to sales.</p>
+      <a class="sup-btn sup-btn-light" href="designer.html" data-i18n="support.calloutCta">Open the calculator</a>
+    </div>
+  </section>
+
+  <section class="sup-help">
+    <div class="site-wrap">
+      <h2 data-i18n="support.helpTitle">Prefer to help yourself?</h2>
+      <p class="lead" data-i18n="support.helpLead">Drawings, warranty, shipping, and dealer access. Open a topic, or email <a class="inline" href="mailto:support@spectrumdisplay.com">support@spectrumdisplay.com</a> if you need a person.</p>
+      <div class="sup-topics">
+        <details class="sup-topic" id="tech">
+          <summary>Technical resources</summary>
+          <div class="body">Need drawings, load data, or a processor recommendation? Email <a href="mailto:support@spectrumdisplay.com">support@spectrumdisplay.com</a> with your product and wall size. We will send spec sheets and a suggested BOM.</div>
+        </details>
+        <details class="sup-topic" id="warranty">
+          <summary>Warranty</summary>
+          <div class="body">Catalog products are manufacturer-warranty backed. Spectrum adds support for sizing, install questions, and spare planning. Warranty terms follow the brand on your order — we do not replace the factory warranty with a generic year count.</div>
+        </details>
+        <details class="sup-topic" id="shipping">
+          <summary>Shipping &amp; returns</summary>
+          <div class="body">Most standard cabinets ship from US warehouses in 5–10 business days after confirmation. Returns and DOA swaps are handled case by case — email <a href="mailto:support@spectrumdisplay.com">support@spectrumdisplay.com</a> before sending product back.</div>
+        </details>
+        <details class="sup-topic" id="dealer">
+          <summary>Dealer portal</summary>
+          <div class="body">Integrators can <a href="account.html">create an account</a>. Dealer and Sales types are set by Spectrum in Admin. Those logins can save calculator projects and custom panels.</div>
+        </details>
+      </div>
+
+      <div class="sup-emails">
+        <div class="sup-email">
+          <h3>Support</h3>
+          <a href="mailto:support@spectrumdisplay.com">support@spectrumdisplay.com</a>
+          <p>Spec sheets, warranty, RMA, and install questions.</p>
+        </div>
+        <div class="sup-email">
+          <h3>Sales</h3>
+          <a href="mailto:sales@spectrumdisplay.com">sales@spectrumdisplay.com</a>
+          <p>Quotes, sizing, and project design. Typical reply within 48 hours.</p>
+        </div>
+        <div class="sup-email">
+          <h3>Info</h3>
+          <a href="mailto:info@spectrumdisplay.com">info@spectrumdisplay.com</a>
+          <p>General questions. Headquarters: Los Angeles / San Gabriel Valley area, CA.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <footer class="bg-slate-950 text-slate-100 border-t border-slate-800 py-16">
+    <div class="site-wrap grid md:grid-cols-4 gap-10">
+      <div>
+        <a href="index.html" class="inline-block mb-4">
+          <img src="assets/spectrum-logo.png" alt="Spectrum" class="site-brand-logo" style="height:2.5rem" />
+        </a>
+        <p class="text-sm text-slate-400" data-i18n="footer.about">Premium LED display distributor serving North America. Authorized partner of five leading manufacturers.</p>
+        <ul class="mt-4 space-y-1 text-sm text-slate-400">
+          <li><a href="mailto:info@spectrumdisplay.com" class="hover:text-white">info@spectrumdisplay.com</a></li>
+          <li><a href="mailto:sales@spectrumdisplay.com" class="hover:text-white">sales@spectrumdisplay.com</a></li>
+          <li><a href="mailto:support@spectrumdisplay.com" class="hover:text-white">support@spectrumdisplay.com</a></li>
+        </ul>
+      </div>
+      <div>
+        <h4 class="font-semibold mb-4 text-sm uppercase tracking-wider text-slate-300" data-i18n="footer.products">Products</h4>
+        <ul class="space-y-2 text-sm text-slate-400">
+          <li><a href="products.html?cat=indoor-rental" class="hover:text-white">Indoor rental</a></li>
+          <li><a href="products.html?cat=outdoor-rental" class="hover:text-white">Outdoor rental</a></li>
+          <li><a href="products.html?cat=cob" class="hover:text-white">Fine pitch / COB</a></li>
+          <li><a href="products.html?cat=fixed-indoor" class="hover:text-white">Fixed indoor</a></li>
+          <li><a href="products.html?cat=posters" class="hover:text-white">Posters</a></li>
+          <li><a href="products.html?cat=transparent" class="hover:text-white">Transparent</a></li>
+          <li><a href="products.html?cat=outdoor-fixed" class="hover:text-white">Outdoor fixed</a></li>
+          <li><a href="products.html?cat=creative" class="hover:text-white">Creative / XR</a></li>
+        </ul>
+      </div>
+      <div>
+        <h4 class="font-semibold mb-4 text-sm uppercase tracking-wider text-slate-300" data-i18n="footer.company">Company</h4>
+        <ul class="space-y-2 text-sm text-slate-400">
+          <li><a href="products.html" class="hover:text-white" data-i18n="footer.ourBrands">Our Brands</a></li>
+          <li><a href="solutions.html" class="hover:text-white" data-i18n="nav.solutions">Solutions</a></li>
+          <li><a href="support.html" class="hover:text-white" data-i18n="nav.support">Support</a></li>
+          <li><a href="contact.html" class="hover:text-white" data-i18n="nav.contactSales">Contact Sales</a></li>
+        </ul>
+      </div>
+      <div>
+        <h4 class="font-semibold mb-4 text-sm uppercase tracking-wider text-slate-300" data-i18n="footer.support">Support</h4>
+        <ul class="space-y-2 text-sm text-slate-400">
+          <li><a href="support.html#tech" class="hover:text-white" data-i18n="footer.tech">Technical Resources</a></li>
+          <li><a href="support.html#warranty" class="hover:text-white" data-i18n="footer.warranty">Warranty</a></li>
+          <li><a href="support.html#shipping" class="hover:text-white" data-i18n="footer.shipping">Shipping & Returns</a></li>
+          <li><a href="account.html" class="hover:text-white" data-i18n="footer.dealer">Dealer Portal</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="site-wrap mt-12 pt-8 border-t border-slate-800 text-sm text-slate-500 flex flex-col sm:flex-row justify-between gap-4">
+      <p data-i18n="footer.copy">© 2026 Spectrum Display. All rights reserved.</p>
+      <div class="flex gap-6">
+        <a href="#" class="hover:text-slate-300" data-i18n="footer.privacy">Privacy</a>
+        <a href="#" class="hover:text-slate-300" data-i18n="footer.terms">Terms</a>
+      </div>
+    </div>
+  </footer>
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="js/supabase-client.js"></script>
@@ -161,5 +261,34 @@
   <script src="js/auth.js"></script>
   <script src="js/site-header.js"></script>
   <script src="js/i18n.js"></script>
+  <script>
+    function paintSupportUser() {
+      var page = document.body;
+      var Auth = window.SpectrumAuth;
+      var inUser = Auth && Auth.isLoggedIn && Auth.isLoggedIn();
+      page.classList.toggle('is-authed', !!inUser);
+      if (!inUser) return;
+      var p = Auth.getFullProfile && Auth.getFullProfile();
+      if (!p) return;
+      var nameEl = document.getElementById('sup-user-name');
+      var emailEl = document.getElementById('sup-user-email');
+      var roleEl = document.getElementById('sup-user-role');
+      var coEl = document.getElementById('sup-user-company');
+      if (nameEl) nameEl.textContent = p.name || (p.email || '').split('@')[0] || 'there';
+      if (emailEl) emailEl.textContent = p.email || '—';
+      if (roleEl) roleEl.textContent = (Auth.roleLabel && Auth.roleLabel(p.role)) || 'Customer';
+      if (coEl) coEl.textContent = p.company || '—';
+    }
+    function openHashTopic() {
+      var id = (location.hash || '').replace('#', '');
+      if (!id) return;
+      var el = document.getElementById(id);
+      if (el && el.tagName === 'DETAILS') el.open = true;
+    }
+    if (window.SpectrumAuth && SpectrumAuth.ready) SpectrumAuth.ready.then(paintSupportUser);
+    window.addEventListener('spectrum:auth', paintSupportUser);
+    openHashTopic();
+    window.addEventListener('hashchange', openHashTopic);
+  </script>
 </body>
 </html>
