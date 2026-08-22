@@ -216,9 +216,15 @@
   overflow: hidden;
   box-shadow: 0 16px 50px rgba(15, 23, 42, 0.08);
   display: grid;
+  transition: transform 0.22s ease, box-shadow 0.22s ease;
 }
 @media (min-width: 900px) {
   .home-spot { grid-template-columns: 1fr 1.15fr; min-height: 28rem; }
+}
+.home-spot:has(.home-spot-media:hover),
+.home-spot:has(.home-spot-media:focus-visible) {
+  transform: translateY(-12px);
+  box-shadow: 0 28px 64px rgba(15, 23, 42, 0.16);
 }
 .home-spot-copy {
   padding: 2.25rem 2rem;
@@ -244,6 +250,8 @@
   position: relative;
   min-height: 16rem;
   background: #16124a;
+  display: block;
+  cursor: pointer;
 }
 .home-spot-media img {
   position: absolute;
