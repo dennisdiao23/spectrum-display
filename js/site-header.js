@@ -295,8 +295,6 @@
           '<span data-i18n="nav.products">Products</span>' + chevron() +
         '</button>' +
       '</div>' +
-      '<a class="site-nav-link" href="products.html?cat=micro-led" data-i18n="nav.microLed">Micro LED TV</a>' +
-      '<a class="site-nav-link" href="products.html?cat=cob" data-i18n="nav.cob">COB</a>' +
       '<div class="site-nav-item" data-mega="solutions">' +
         '<button type="button" class="site-nav-link' + (file === 'solutions.html' ? ' is-active' : '') + '" aria-expanded="false" aria-haspopup="true">' +
           '<span data-i18n="nav.solutions">Solutions</span>' + chevron() +
