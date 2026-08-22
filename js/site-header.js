@@ -1,14 +1,10 @@
 /**
- * Spectrum Display — header (Sign in / Language hover menus)
+ * Spectrum Display — header (Sign in / Language / mega menus open on click)
  * Header markup is static in HTML so it never jumps on load.
  */
 (function () {
   function $(sel, root) { return (root || document).querySelector(sel); }
   function $all(sel, root) { return Array.prototype.slice.call((root || document).querySelectorAll(sel)); }
-
-  function canHover() {
-    return window.matchMedia && window.matchMedia('(hover: hover)').matches;
-  }
 
   function closeAll(except) {
     $all('.site-drop.is-open').forEach(function (el) {
@@ -21,12 +17,16 @@
     var btn = wrap.querySelector('.site-util');
     if (!btn) return;
     btn.addEventListener('click', function (e) {
-      if (canHover()) return;
       e.preventDefault();
       e.stopPropagation();
       var open = wrap.classList.contains('is-open');
       closeAll();
-      if (!open) wrap.classList.add('is-open');
+      closeMegas();
+      if (!open) {
+        wrap.classList.add('is-open');
+        var input = wrap.querySelector('input');
+        if (input) setTimeout(function () { input.focus(); }, 40);
+      }
     });
   }
 
@@ -419,18 +419,11 @@
   function bindMegas() {
     var header = $('.site-header');
     if (!header) return;
-    var closeTimer = null;
-    function cancelClose() { if (closeTimer) { clearTimeout(closeTimer); closeTimer = null; } }
-    function scheduleClose() {
-      cancelClose();
-      closeTimer = setTimeout(closeMegas, 180);
-    }
     $all('.site-nav-item[data-mega]').forEach(function (item) {
       var name = item.getAttribute('data-mega');
       var panel = name === 'products' ? $('#site-mega-products') : $('#site-mega-solutions');
       var btn = item.querySelector('.site-nav-link');
       function open() {
-        cancelClose();
         closeMegas();
         closeAll();
         item.classList.add('is-open');
@@ -440,8 +433,6 @@
           placeMega(panel, item);
         }
       }
-      item.addEventListener('mouseenter', open);
-      item.addEventListener('focusin', open);
       if (btn) {
         btn.addEventListener('click', function (e) {
           e.preventDefault();
@@ -451,27 +442,8 @@
         });
       }
     });
-    $all('.site-mega-panel').forEach(function (panel) {
-      panel.addEventListener('mouseenter', cancelClose);
-      panel.addEventListener('mouseleave', scheduleClose);
-    });
-    var nav = $('#site-nav');
-    if (nav) {
-      nav.addEventListener('mouseleave', function (e) {
-        var next = e.relatedTarget;
-        if (next && next.closest && next.closest('.site-mega-panel')) return;
-        scheduleClose();
-      });
-      $all('a.site-nav-link', nav).forEach(function (a) {
-        a.addEventListener('mouseenter', closeMegas);
-      });
-    }
     $all('.site-mega-cat').forEach(function (btn) {
-      btn.addEventListener('mouseenter', function () { renderProductMega(btn.getAttribute('data-cat')); });
       btn.addEventListener('click', function () { renderProductMega(btn.getAttribute('data-cat')); });
-    });
-    $all('.site-utils .site-drop, .site-support-link, .site-cta').forEach(function (el) {
-      el.addEventListener('mouseenter', closeMegas);
     });
     window.addEventListener('resize', function () {
       var openItem = $('.site-nav-item.is-open');
@@ -494,10 +466,6 @@
     }
     if (input) {
       input.addEventListener('input', function () { render(input.value); });
-      wrap.addEventListener('mouseenter', function () {
-        closeMegas();
-        setTimeout(function () { input.focus(); }, 40);
-      });
     }
     function render(q) {
       if (!results) return;
@@ -582,6 +550,13 @@
       closeAll();
       closeMegas();
       header.classList.remove('is-nav-open');
+    });
+    document.addEventListener('keydown', function (e) {
+      if (e.key === 'Escape') {
+        closeAll();
+        closeMegas();
+        header.classList.remove('is-nav-open');
+      }
     });
 
     applyAuth();

@@ -196,11 +196,8 @@ html.is-logged-in .guest-pricing {
   right: 0;
   height: 0.5rem;
 }
-.site-drop:hover .site-drop-panel,
-.site-drop:focus-within .site-drop-panel,
 .site-drop.is-open .site-drop-panel { display: block; }
-.site-drop:hover > .site-util,
-.site-drop:focus-within > .site-util {
+.site-drop.is-open > .site-util {
   color: #fff;
   background: rgba(148, 163, 184, 0.12);
 }
