@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <script src="js/i18n-boot.js"></script>
   <link rel="stylesheet" href="css/site-header.css" />
+  <link rel="stylesheet" href="css/home.css" />
   <title>Spectrum Display | Premium LED Display Distributor</title>
   <meta name="description" content="Spectrum Display Inc. is a US LED video wall distributor for indoor, outdoor, rental, COB, and Micro LED from TRT, Gloshine, BAKO, DIAO, and Element. Configure cabinets and request a quote." />
   <link rel="canonical" href="https://www.spectrumdisplay.com/" />
@@ -78,13 +79,9 @@
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
   <style>
     body { font-family: 'Inter', system-ui, sans-serif; }
-    .glow { box-shadow: 0 0 40px rgba(14, 165, 233, 0.3); }
-    .hero-gradient {
-      background: radial-gradient(ellipse at top, #0c4a6e 0%, #020617 60%);
-    }
   </style>
 </head>
-<body class="bg-slate-950 text-slate-100 antialiased">
+<body class="home-page antialiased">
   <header class="site-header" id="site-header">
     <div class="site-header-inner">
       <div class="site-header-top">
@@ -180,302 +177,322 @@
     </div>
   </header>
 
-  <!-- Hero -->
-  <section class="hero-gradient pt-12 pb-24 relative overflow-hidden">
-    <div class="absolute inset-0 opacity-20">
-      <div class="absolute top-20 left-10 w-72 h-72 bg-sky-500 rounded-full blur-3xl"></div>
-      <div class="absolute bottom-10 right-10 w-96 h-96 bg-blue-600 rounded-full blur-3xl"></div>
+  <section class="home-hero">
+    <div class="home-hero-blobs" aria-hidden="true"><span class="b1"></span><span class="b2"></span><span class="b3"></span></div>
+    <div class="site-wrap relative" style="text-align:center">
+      <div class="home-kicker"><i></i><span data-i18n="home.badge">Authorized Distributor • 5 Premium Brands</span></div>
+      <h1>
+        <span data-i18n="home.hero1">Find out what's possible</span><br />
+        <em data-i18n="home.hero2">when the wall goes LED</em>
+      </h1>
+      <p class="lead" data-i18n="home.lead">Indoor, outdoor, rental, and COB video walls — configured online, supported in the US.</p>
+      <div class="home-ctas">
+        <a class="home-btn home-btn-primary" href="products.html">
+          <span data-i18n="home.explore">Explore products</span>
+          <svg class="w-4 h-4" width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3"/></svg>
+        </a>
+        <a class="home-btn home-btn-ghost" href="designer.html" data-i18n="home.calcCta">LED Wall Calculator</a>
+      </div>
     </div>
-    <div class="site-wrap relative">
-      <div class="grid lg:grid-cols-2 gap-12 items-center">
+    <div class="site-wrap">
+      <div class="home-hero-visual">
+        <img src="assets/products/discovery.jpg" alt="Fine pitch LED video wall" />
+      </div>
+    </div>
+  </section>
+
+  <section class="home-section" style="padding-top:1.5rem">
+    <div class="site-wrap">
+      <article class="home-spot">
+        <div class="home-spot-copy">
+          <div class="home-kicker"><span data-i18n="home.spotlightKicker">New</span></div>
+          <h3 data-i18n="home.spotlightTitle">LED Wall Calculator</h3>
+          <p data-i18n="home.spotlightLead">Size the wall, pick a pitch, and get cabinets, power, and an estimate — then save the project to your account.</p>
+          <a class="home-btn home-btn-primary" href="designer.html" style="align-self:flex-start" data-i18n="home.spotlightCta">Open the calculator</a>
+        </div>
+        <div class="home-spot-media">
+          <img src="assets/content/concert.jpg" alt="LED wall at an event" />
+        </div>
+      </article>
+    </div>
+  </section>
+
+  <section class="home-section" style="padding-top:0">
+    <div class="site-wrap">
+      <div class="home-center">
+        <h2 data-i18n="home.waysTitle">One catalog. Endless ways to show up.</h2>
+        <p class="sub" data-i18n="home.waysLead">Pick a job type to see the cabinets we recommend — then jump into products or the calculator.</p>
+      </div>
+      <div class="home-tabs" role="tablist">
+        <button type="button" class="home-tab is-on" role="tab" aria-selected="true" data-home-tab="corporate" data-i18n="home.tabCorporate">Corporate</button>
+        <button type="button" class="home-tab" role="tab" aria-selected="false" data-home-tab="events" data-i18n="home.tabEvents">Events</button>
+        <button type="button" class="home-tab" role="tab" aria-selected="false" data-home-tab="retail" data-i18n="home.tabRetail">Retail</button>
+        <button type="button" class="home-tab" role="tab" aria-selected="false" data-home-tab="worship" data-i18n="home.tabWorship">Worship</button>
+        <button type="button" class="home-tab" role="tab" aria-selected="false" data-home-tab="creative" data-i18n="home.tabCreative">XR &amp; creative</button>
+      </div>
+      <div class="home-panel is-on" data-home-panel="corporate">
+        <img src="assets/products/finepitch.jpg" alt="Fine pitch LED for control rooms and meeting spaces" />
+        <div class="home-panel-copy">
+          <h3 data-i18n="home.panelCorporateTitle">Control rooms and meeting spaces</h3>
+          <p data-i18n="home.panelCorporateLead">Close-view COB and fine pitch cabinets for lobbies, boardrooms, and 24/7 operations.</p>
+          <a href="products.html?cat=cob" data-i18n="home.panelCta">Explore fine pitch / COB →</a>
+        </div>
+      </div>
+      <div class="home-panel" data-home-panel="events">
+        <img src="assets/content/sports.jpg" alt="Touring LED for stages and events" />
+        <div class="home-panel-copy">
+          <h3 data-i18n="home.panelEventsTitle">Stages, tours, and festivals</h3>
+          <p data-i18n="home.panelEventsLead">Lightweight indoor and outdoor rental cabinets built for fast rigging and high refresh.</p>
+          <a href="products.html?cat=indoor-rental" data-i18n="home.panelEventsCta">Explore indoor rental →</a>
+        </div>
+      </div>
+      <div class="home-panel" data-home-panel="retail">
+        <img src="assets/content/city.jpg" alt="LED for retail and outdoor spectaculars" />
+        <div class="home-panel-copy">
+          <h3 data-i18n="home.panelRetailTitle">Storefronts, posters, and DOOH</h3>
+          <p data-i18n="home.panelRetailLead">LED posters, transparent glass, and high-brightness façades for streets and windows.</p>
+          <a href="products.html?cat=posters" data-i18n="home.panelRetailCta">Explore posters →</a>
+        </div>
+      </div>
+      <div class="home-panel" data-home-panel="worship">
+        <img src="assets/content/news.jpg" alt="IMAG LED wall" />
+        <div class="home-panel-copy">
+          <h3 data-i18n="home.panelWorshipTitle">Houses of worship and hospitality</h3>
+          <p data-i18n="home.panelWorshipLead">IMAG walls sized for seating, plus lobby and ballroom screens that stay readable in mixed light.</p>
+          <a href="solutions.html" data-i18n="home.panelWorshipCta">See solutions →</a>
+        </div>
+      </div>
+      <div class="home-panel" data-home-panel="creative">
+        <img src="assets/products/element-creative.jpg" alt="Creative and XR LED cabinets" />
+        <div class="home-panel-copy">
+          <h3 data-i18n="home.panelCreativeTitle">Curves, XR, and custom shapes</h3>
+          <p data-i18n="home.panelCreativeLead">Flexible, corner, and virtual-production cabinets for volumes and architectural installs.</p>
+          <a href="products.html?cat=creative" data-i18n="home.panelCreativeCta">Explore creative / XR →</a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="home-section" style="padding-top:0">
+    <div class="site-wrap">
+      <div class="home-center" style="margin-bottom:2rem">
+        <h2 data-i18n="home.shopApp">Shop by application</h2>
+        <p class="sub" data-i18n="home.shopAppLead">Whether you're building a control room, staging a tour, or transforming a retail facade — we have the right LED solution.</p>
+      </div>
+      <div class="home-cats">
+        <a class="home-cat" href="products.html?cat=indoor-rental">
+          <img src="assets/products/mvultra.jpg" alt="Indoor rental LED" />
+          <div>
+            <h3>Indoor rental</h3>
+            <p>Touring cabinets for stages, events, and studios</p>
+          </div>
+        </a>
+        <a class="home-cat" href="products.html?cat=outdoor-rental">
+          <img src="assets/content/concert.jpg" alt="Outdoor rental LED" />
+          <div>
+            <h3>Outdoor rental</h3>
+            <p>IP-rated touring panels for festivals and façades</p>
+          </div>
+        </a>
+        <a class="home-cat" href="products.html?cat=cob">
+          <img src="assets/products/discovery.jpg" alt="Fine pitch COB LED" />
+          <div>
+            <h3>Fine pitch / COB</h3>
+            <p>Close-view COB for control rooms and retail</p>
+          </div>
+        </a>
+        <a class="home-cat" href="products.html?cat=fixed-indoor">
+          <img src="assets/products/finepitch.jpg" alt="Fixed indoor LED" />
+          <div>
+            <h3>Fixed indoor</h3>
+            <p>Wall-mount cabinets for lobbies and meeting rooms</p>
+          </div>
+        </a>
+        <a class="home-cat" href="products.html?cat=posters">
+          <img src="assets/products/ledposter.jpg" alt="LED posters" />
+          <div>
+            <h3>Posters</h3>
+            <p>Standalone LED posters for windows and retail</p>
+          </div>
+        </a>
+        <a class="home-cat" href="products.html?cat=transparent">
+          <img src="assets/content/abstract.jpg" alt="Transparent LED" />
+          <div>
+            <h3>Transparent</h3>
+            <p>See-through LED for storefronts and stages</p>
+          </div>
+        </a>
+        <a class="home-cat" href="products.html?cat=outdoor-fixed">
+          <img src="assets/products/dn.jpg" alt="Outdoor fixed LED" />
+          <div>
+            <h3>Outdoor fixed</h3>
+            <p>High-brightness façades, DOOH, and stadiums</p>
+          </div>
+        </a>
+        <a class="home-cat" href="products.html?cat=creative">
+          <img src="assets/products/element-creative.jpg" alt="Creative XR LED" />
+          <div>
+            <h3>Creative / XR</h3>
+            <p>Curves, flexible cabinets, and virtual production</p>
+          </div>
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <section class="home-section" style="padding-top:0">
+    <div class="site-wrap">
+      <div class="home-head-row">
         <div>
-          <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-sky-500/10 border border-sky-500/30 text-sky-300 text-xs font-medium mb-6">
-            <span class="w-2 h-2 rounded-full bg-sky-400 animate-pulse"></span>
-            <span data-i18n="home.badge">Authorized Distributor • 5 Premium Brands</span>
-          </div>
-          <h1 class="text-4xl sm:text-5xl lg:text-6xl font-bold tracking-tight leading-tight mb-6">
-            <span data-i18n="home.hero1">LED Displays</span><br/>
-            <span class="text-transparent bg-clip-text bg-gradient-to-r from-sky-300 to-blue-400" data-i18n="home.hero2">Engineered for Impact</span>
-          </h1>
-          <p class="text-lg text-slate-300 mb-8 max-w-lg" data-i18n="home.lead">
-            From fine-pitch indoor walls to high-brightness outdoor spectaculars. Spectrum Display delivers world-class LED video walls from the industry's top manufacturers — with online ordering, expert configuration, and nationwide support.
-          </p>
-          <div class="flex flex-wrap gap-4">
-            <a href="products.html" class="inline-flex items-center gap-2 px-6 py-3 rounded-full bg-sky-500 hover:bg-sky-400 text-white font-semibold transition glow">
-              <span data-i18n="home.explore">Explore Products</span>
-              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3"/></svg>
-            </a>
-          </div>
-          <div class="mt-12 flex items-center gap-8 text-sm text-slate-400">
-            <div><span class="text-2xl font-bold text-white block">2,400+</span> <span data-i18n="home.statInstalls">Installations</span></div>
-            <div><span class="text-2xl font-bold text-white block">5</span> <span data-i18n="home.statBrands">Elite Brands</span></div>
-            <div><span class="text-2xl font-bold text-white block">48hr</span> <span data-i18n="home.statQuote">Quote Turnaround</span></div>
-          </div>
+          <h2 data-i18n="home.featured">Featured products</h2>
+          <p class="sub" data-i18n="home.featuredLead">Ready-to-configure LED systems with online ordering</p>
         </div>
-        <div class="relative">
-          <div class="aspect-[4/3] rounded-2xl bg-gradient-to-br from-slate-800 to-slate-900 border border-slate-700 overflow-hidden glow relative">
-            <!-- Placeholder for hero LED image -->
-            <div class="absolute inset-0 flex items-center justify-center">
-              <div class="text-center p-8">
-                <div class="w-24 h-24 mx-auto mb-4 rounded-2xl bg-gradient-to-br from-sky-400/20 to-blue-600/20 border border-sky-500/30 flex items-center justify-center">
-                  <svg class="w-12 h-12 text-sky-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
-                </div>
-                <p class="text-slate-400 text-sm" data-i18n="home.heroWall">Premium LED Video Wall</p>
-                <p class="text-sky-300 font-medium mt-1" data-i18n="home.heroSpec">P1.2 Fine Pitch • 4K Ready</p>
+        <a href="products.html" class="hidden sm:inline" data-i18n="home.viewAll">View all →</a>
+      </div>
+      <div class="home-products" id="featured-products">
+        <a class="home-product" href="product.html?brand=trt&series=discovery">
+          <div class="home-product-photo">
+            <span class="badge" data-i18n="home.featuredBadge">Featured</span>
+            <img src="assets/products/discovery.jpg" alt="Discovery Series" />
+          </div>
+          <div class="home-product-body">
+            <div class="brand">TRT</div>
+            <h3>Discovery Series</h3>
+            <p class="meta">Indoor COB • 0.93–2.5 mm • Front service</p>
+            <div class="home-product-row">
+              <div class="pricing-only">
+                <span class="price" data-catalog-price="7000">From $7,000</span>
+                <span class="unit">/m²</span>
               </div>
+              <span class="go guest-pricing" data-i18n="price.signIn">Sign in for pricing</span>
+              <span class="go" data-i18n="home.configure">Configure →</span>
             </div>
-            <!-- Simulated LED grid pattern -->
-            <div class="absolute inset-0 opacity-10" style="background-image: linear-gradient(rgba(14,165,233,0.3) 1px, transparent 1px), linear-gradient(90deg, rgba(14,165,233,0.3) 1px, transparent 1px); background-size: 20px 20px;"></div>
           </div>
-        </div>
+        </a>
+        <a class="home-product" href="product.html?brand=gloshine&series=mvultra">
+          <div class="home-product-photo">
+            <span class="badge" data-i18n="home.rentalBadge">Rental</span>
+            <img src="assets/products/gloshine/mvultra-hero.png" alt="Gloshine MV Ultra" style="object-fit:contain;background:#000" />
+          </div>
+          <div class="home-product-body">
+            <div class="brand">Gloshine</div>
+            <h3>MV Ultra</h3>
+            <p class="meta">Indoor rental • 1.5–2.9 mm • 7680 Hz</p>
+            <div class="home-product-row">
+              <div class="pricing-only">
+                <span class="price" data-catalog-price="1450">From $1,450</span>
+                <span class="unit">/m²</span>
+              </div>
+              <span class="go guest-pricing" data-i18n="price.signIn">Sign in for pricing</span>
+              <span class="go" data-i18n="home.configure">Configure →</span>
+            </div>
+          </div>
+        </a>
+        <a class="home-product" href="product.html?brand=bako&series=finepitch">
+          <div class="home-product-photo">
+            <img src="assets/products/finepitch.jpg" alt="BAKO Fine Pitch" />
+          </div>
+          <div class="home-product-body">
+            <div class="brand">BAKO</div>
+            <h3>Fine Pitch COB 600×337.5</h3>
+            <p class="meta">Control room • 0.93–1.87 mm • COB</p>
+            <div class="home-product-row">
+              <div class="pricing-only">
+                <span class="price" data-catalog-price="3200">From $3,200</span>
+                <span class="unit">/m²</span>
+              </div>
+              <span class="go guest-pricing" data-i18n="price.signIn">Sign in for pricing</span>
+              <span class="go" data-i18n="home.configure">Configure →</span>
+            </div>
+          </div>
+        </a>
+        <a class="home-product" href="product.html?brand=diao&series=pro">
+          <div class="home-product-photo">
+            <span class="badge" data-i18n="home.exclusiveBadge">Exclusive</span>
+            <img src="assets/products/diao-pro.jpg" alt="DIAO Pro" />
+          </div>
+          <div class="home-product-body">
+            <div class="brand">DIAO</div>
+            <h3>DIAO Pro Fixed</h3>
+            <p class="meta">Fixed install • 1.5–2.5 mm • Value</p>
+            <div class="home-product-row">
+              <div class="pricing-only">
+                <span class="price" data-catalog-price="980">From $980</span>
+                <span class="unit">/m²</span>
+              </div>
+              <span class="go guest-pricing" data-i18n="price.signIn">Sign in for pricing</span>
+              <span class="go" data-i18n="home.configure">Configure →</span>
+            </div>
+          </div>
+        </a>
+        <a class="home-product" href="product.html?brand=element&series=creative">
+          <div class="home-product-photo">
+            <span class="badge" data-i18n="home.creativeBadge">Creative</span>
+            <img src="assets/products/element-creative.jpg" alt="Element Creative" />
+          </div>
+          <div class="home-product-body">
+            <div class="brand">Element</div>
+            <h3>Element Creative / XR</h3>
+            <p class="meta">XR &amp; creative • 1.9–2.6 mm • Flexible</p>
+            <div class="home-product-row">
+              <div class="pricing-only">
+                <span class="price" data-catalog-price="1380">From $1,380</span>
+                <span class="unit">/m²</span>
+              </div>
+              <span class="go guest-pricing" data-i18n="price.signIn">Sign in for pricing</span>
+              <span class="go" data-i18n="home.configure">Configure →</span>
+            </div>
+          </div>
+        </a>
       </div>
     </div>
   </section>
 
-  <!-- Featured Categories -->
-  <section class="py-24">
+  <section class="home-section" style="padding-top:0">
     <div class="site-wrap">
-      <div class="text-center mb-16">
-        <h2 class="text-3xl sm:text-4xl font-bold mb-4" data-i18n="home.shopApp">Shop by Application</h2>
-        <p class="text-slate-400 max-w-2xl mx-auto" data-i18n="home.shopAppLead">Whether you're building a control room, staging a tour, or transforming a retail facade — we have the right LED solution.</p>
+      <div class="home-center" style="margin-bottom:2rem">
+        <h2 data-i18n="home.why">Why buy from Spectrum Display</h2>
+        <p class="sub" data-i18n="home.whyLead">Authorized product, expert configuration, and nationwide support.</p>
       </div>
-      <div class="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
-        <a href="products.html?cat=indoor-rental" class="group relative rounded-2xl overflow-hidden border border-slate-800 bg-slate-900 hover:border-sky-500/50 transition">
-          <div class="aspect-[4/3] bg-gradient-to-br from-slate-800 to-slate-900 flex items-center justify-center">
-            <svg class="w-16 h-16 text-violet-500/50 group-hover:text-violet-400 transition" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"/></svg>
+      <div class="home-why">
+        <article>
+          <div class="icon" aria-hidden="true">
+            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg>
           </div>
-          <div class="p-5">
-            <h3 class="font-semibold text-lg group-hover:text-sky-300 transition">Indoor rental</h3>
-            <p class="text-sm text-slate-400 mt-1">Touring cabinets for stages, events, and studios</p>
+          <h3 data-i18n="home.why1">Authorized &amp; warranty backed</h3>
+          <p data-i18n="home.why1p">Genuine products from TRT, Gloshine, BAKO, Element and DIAO with full manufacturer warranties and our own 3-year support layer.</p>
+        </article>
+        <article>
+          <div class="icon" aria-hidden="true">
+            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
           </div>
-        </a>
-        <a href="products.html?cat=outdoor-rental" class="group relative rounded-2xl overflow-hidden border border-slate-800 bg-slate-900 hover:border-sky-500/50 transition">
-          <div class="aspect-[4/3] bg-gradient-to-br from-slate-800 to-slate-900 flex items-center justify-center">
-            <svg class="w-16 h-16 text-amber-500/50 group-hover:text-amber-400 transition" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"/></svg>
+          <h3 data-i18n="home.why2">Expert configuration</h3>
+          <p data-i18n="home.why2p">Online configurator for pixel pitch, cabinet size, processing, and mounting. Or talk to a specialist for complex multi-surface projects.</p>
+        </article>
+        <article>
+          <div class="icon" aria-hidden="true">
+            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
           </div>
-          <div class="p-5">
-            <h3 class="font-semibold text-lg group-hover:text-sky-300 transition">Outdoor rental</h3>
-            <p class="text-sm text-slate-400 mt-1">IP-rated touring panels for festivals and façades</p>
-          </div>
-        </a>
-        <a href="products.html?cat=cob" class="group relative rounded-2xl overflow-hidden border border-slate-800 bg-slate-900 hover:border-sky-500/50 transition">
-          <div class="aspect-[4/3] bg-gradient-to-br from-slate-800 to-slate-900 flex items-center justify-center">
-            <svg class="w-16 h-16 text-sky-500/50 group-hover:text-sky-400 transition" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"/></svg>
-          </div>
-          <div class="p-5">
-            <h3 class="font-semibold text-lg group-hover:text-sky-300 transition">Fine pitch / COB</h3>
-            <p class="text-sm text-slate-400 mt-1">Close-view COB for control rooms and retail</p>
-          </div>
-        </a>
-        <a href="products.html?cat=fixed-indoor" class="group relative rounded-2xl overflow-hidden border border-slate-800 bg-slate-900 hover:border-sky-500/50 transition">
-          <div class="aspect-[4/3] bg-gradient-to-br from-slate-800 to-slate-900 flex items-center justify-center">
-            <svg class="w-16 h-16 text-sky-500/50 group-hover:text-sky-400 transition" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
-          </div>
-          <div class="p-5">
-            <h3 class="font-semibold text-lg group-hover:text-sky-300 transition">Fixed indoor</h3>
-            <p class="text-sm text-slate-400 mt-1">Wall-mount cabinets for lobbies and meeting rooms</p>
-          </div>
-        </a>
-        <a href="products.html?cat=posters" class="group relative rounded-2xl overflow-hidden border border-slate-800 bg-slate-900 hover:border-sky-500/50 transition">
-          <div class="aspect-[4/3] bg-gradient-to-br from-slate-800 to-slate-900 flex items-center justify-center">
-            <svg class="w-16 h-16 text-pink-500/50 group-hover:text-pink-400 transition" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 6a2 2 0 012-2h4l2 2h8a2 2 0 012 2v10a2 2 0 01-2 2H6a2 2 0 01-2-2V6z"/></svg>
-          </div>
-          <div class="p-5">
-            <h3 class="font-semibold text-lg group-hover:text-sky-300 transition">Posters</h3>
-            <p class="text-sm text-slate-400 mt-1">Standalone LED posters for windows and retail</p>
-          </div>
-        </a>
-        <a href="products.html?cat=transparent" class="group relative rounded-2xl overflow-hidden border border-slate-800 bg-slate-900 hover:border-sky-500/50 transition">
-          <div class="aspect-[4/3] bg-gradient-to-br from-slate-800 to-slate-900 flex items-center justify-center">
-            <svg class="w-16 h-16 text-cyan-500/50 group-hover:text-cyan-400 transition" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2H5a2 2 0 00-2-2H3m4 4h.01M17 16l-3-3-2 2-3-3-4 4"/></svg>
-          </div>
-          <div class="p-5">
-            <h3 class="font-semibold text-lg group-hover:text-sky-300 transition">Transparent</h3>
-            <p class="text-sm text-slate-400 mt-1">See-through LED for storefronts and stages</p>
-          </div>
-        </a>
-        <a href="products.html?cat=outdoor-fixed" class="group relative rounded-2xl overflow-hidden border border-slate-800 bg-slate-900 hover:border-sky-500/50 transition">
-          <div class="aspect-[4/3] bg-gradient-to-br from-slate-800 to-slate-900 flex items-center justify-center">
-            <svg class="w-16 h-16 text-amber-500/50 group-hover:text-amber-400 transition" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/></svg>
-          </div>
-          <div class="p-5">
-            <h3 class="font-semibold text-lg group-hover:text-sky-300 transition">Outdoor fixed</h3>
-            <p class="text-sm text-slate-400 mt-1">High-brightness façades, DOOH, and stadiums</p>
-          </div>
-        </a>
-        <a href="products.html?cat=creative" class="group relative rounded-2xl overflow-hidden border border-slate-800 bg-slate-900 hover:border-sky-500/50 transition">
-          <div class="aspect-[4/3] bg-gradient-to-br from-slate-800 to-slate-900 flex items-center justify-center">
-            <svg class="w-16 h-16 text-emerald-500/50 group-hover:text-emerald-400 transition" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 5a1 1 0 011-1h14a1 1 0 011 1v2a1 1 0 01-1 1H5a1 1 0 01-1-1V5zM4 13a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H5a1 1 0 01-1-1v-6zM16 13a1 1 0 011-1h2a1 1 0 011 1v6a1 1 0 01-1 1h-2a1 1 0 01-1-1v-6z"/></svg>
-          </div>
-          <div class="p-5">
-            <h3 class="font-semibold text-lg group-hover:text-sky-300 transition">Creative / XR</h3>
-            <p class="text-sm text-slate-400 mt-1">Curves, flexible cabinets, and virtual production</p>
-          </div>
-        </a>
+          <h3 data-i18n="home.why3">Fast online ordering</h3>
+          <p data-i18n="home.why3p">Sign in for live pricing, then check out or send the project to sales. Most standard cabinets ship within 5–10 business days from US warehouses.</p>
+        </article>
       </div>
     </div>
   </section>
 
-  <!-- Featured Products (Dell-like grid) -->
-  <section class="py-24 bg-slate-900/40">
-    <div class="site-wrap">
-      <div class="flex items-end justify-between mb-12">
-        <div>
-          <h2 class="text-3xl sm:text-4xl font-bold mb-2" data-i18n="home.featured">Featured Products</h2>
-          <p class="text-slate-400" data-i18n="home.featuredLead">Ready-to-configure LED systems with online ordering</p>
-        </div>
-        <a href="products.html" class="hidden sm:inline-flex text-sky-400 hover:text-sky-300 text-sm font-medium" data-i18n="home.viewAll">View all →</a>
+  <div class="site-wrap">
+    <section class="home-band">
+      <h2 data-i18n="home.cta">See what Spectrum can do for your next wall</h2>
+      <p data-i18n="home.ctaLead">Get a custom quote in under 48 hours, or start configuring online right now.</p>
+      <div class="home-ctas">
+        <a class="home-btn home-btn-primary" href="products.html" data-i18n="home.start">Start configuring</a>
+        <a class="home-btn home-btn-light" href="contact.html" data-i18n="home.talk">Talk to an expert</a>
       </div>
-            <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-8" id="featured-products">
-        <a href="product.html?brand=trt&series=discovery" class="group rounded-2xl border border-slate-800 bg-slate-950 overflow-hidden hover:border-sky-500/40 transition block">
-          <div class="aspect-video bg-slate-900 relative overflow-hidden">
-            <div class="absolute top-3 left-3 px-2 py-1 rounded bg-sky-500/20 text-sky-300 text-xs font-medium z-10">Featured</div>
-            <img src="assets/products/discovery.jpg" alt="Discovery Series" class="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition duration-300" />
-          </div>
-          <div class="p-6">
-            <div class="text-xs text-sky-400 font-medium mb-1">TRT</div>
-            <h3 class="font-semibold text-lg mb-1 group-hover:text-sky-300 transition">Discovery Series</h3>
-            <p class="text-sm text-slate-400 mb-4">Indoor COB • 0.93–2.5 mm • Front service</p>
-            <div class="flex items-center justify-between">
-              <div class="pricing-only">
-                <span class="text-lg font-bold" data-catalog-price="7000">From $7,000</span>
-                <span class="text-xs text-slate-500">/m²</span>
-              </div>
-              <span class="text-sm font-medium text-sky-400 group-hover:text-sky-300 guest-pricing" data-i18n="price.signIn">Sign in for pricing</span>
-              <span class="text-sm font-medium text-sky-400 group-hover:text-sky-300">Configure →</span>
-            </div>
-          </div>
-        </a>
-
-        <a href="product.html?brand=gloshine&series=mvultra" class="group rounded-2xl border border-slate-800 bg-slate-950 overflow-hidden hover:border-sky-500/40 transition block">
-          <div class="aspect-video bg-slate-900 relative overflow-hidden">
-            <div class="absolute top-3 left-3 px-2 py-1 rounded bg-violet-500/20 text-violet-300 text-xs font-medium z-10">Rental</div>
-            <img src="assets/products/gloshine/mvultra-hero.png" alt="Gloshine MV Ultra" class="absolute inset-0 w-full h-full object-contain bg-black group-hover:scale-105 transition duration-300" />
-          </div>
-          <div class="p-6">
-            <div class="text-xs text-sky-400 font-medium mb-1">Gloshine</div>
-            <h3 class="font-semibold text-lg mb-1 group-hover:text-sky-300 transition">MV Ultra</h3>
-            <p class="text-sm text-slate-400 mb-4">Indoor rental • 1.5–2.9 mm • 7680 Hz • Events & touring</p>
-            <div class="flex items-center justify-between">
-              <div class="pricing-only">
-                <span class="text-lg font-bold" data-catalog-price="1450">From $1,450</span>
-                <span class="text-xs text-slate-500">/m²</span>
-              </div>
-              <span class="text-sm font-medium text-sky-400 group-hover:text-sky-300 guest-pricing" data-i18n="price.signIn">Sign in for pricing</span>
-              <span class="text-sm font-medium text-sky-400 group-hover:text-sky-300">Configure →</span>
-            </div>
-          </div>
-        </a>
-
-        <a href="product.html?brand=bako&series=finepitch" class="group rounded-2xl border border-slate-800 bg-slate-950 overflow-hidden hover:border-sky-500/40 transition block">
-          <div class="aspect-video bg-slate-900 relative overflow-hidden">
-            <img src="assets/products/finepitch.jpg" alt="BAKO Fine Pitch" class="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition duration-300" />
-          </div>
-          <div class="p-6">
-            <div class="text-xs text-sky-400 font-medium mb-1">BAKO</div>
-            <h3 class="font-semibold text-lg mb-1 group-hover:text-sky-300 transition">Fine Pitch COB 600×337.5</h3>
-            <p class="text-sm text-slate-400 mb-4">Control room • 0.93–1.87 mm • COB</p>
-            <div class="flex items-center justify-between">
-              <div class="pricing-only">
-                <span class="text-lg font-bold" data-catalog-price="3200">From $3,200</span>
-                <span class="text-xs text-slate-500">/m²</span>
-              </div>
-              <span class="text-sm font-medium text-sky-400 group-hover:text-sky-300 guest-pricing" data-i18n="price.signIn">Sign in for pricing</span>
-              <span class="text-sm font-medium text-sky-400 group-hover:text-sky-300">Configure →</span>
-            </div>
-          </div>
-        </a>
-
-        <a href="product.html?brand=diao&series=pro" class="group rounded-2xl border border-slate-800 bg-slate-950 overflow-hidden hover:border-sky-500/40 transition block">
-          <div class="aspect-video bg-slate-900 relative overflow-hidden">
-            <div class="absolute top-3 left-3 px-2 py-1 rounded bg-emerald-500/20 text-emerald-300 text-xs font-medium z-10">Exclusive</div>
-            <img src="assets/products/diao-pro.jpg" alt="DIAO Pro" class="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition duration-300" />
-          </div>
-          <div class="p-6">
-            <div class="text-xs text-sky-400 font-medium mb-1">DIAO</div>
-            <h3 class="font-semibold text-lg mb-1 group-hover:text-sky-300 transition">DIAO Pro Fixed</h3>
-            <p class="text-sm text-slate-400 mb-4">Fixed install • 1.5–2.5 mm • Value</p>
-            <div class="flex items-center justify-between">
-              <div class="pricing-only">
-                <span class="text-lg font-bold" data-catalog-price="980">From $980</span>
-                <span class="text-xs text-slate-500">/m²</span>
-              </div>
-              <span class="text-sm font-medium text-sky-400 group-hover:text-sky-300 guest-pricing" data-i18n="price.signIn">Sign in for pricing</span>
-              <span class="text-sm font-medium text-sky-400 group-hover:text-sky-300">Configure →</span>
-            </div>
-          </div>
-        </a>
-
-        <a href="product.html?brand=element&series=creative" class="group rounded-2xl border border-slate-800 bg-slate-950 overflow-hidden hover:border-sky-500/40 transition block">
-          <div class="aspect-video bg-slate-900 relative overflow-hidden">
-            <div class="absolute top-3 left-3 px-2 py-1 rounded bg-amber-500/20 text-amber-300 text-xs font-medium z-10">Creative</div>
-            <img src="assets/products/element-creative.jpg" alt="Element Creative" class="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition duration-300" />
-          </div>
-          <div class="p-6">
-            <div class="text-xs text-sky-400 font-medium mb-1">Element</div>
-            <h3 class="font-semibold text-lg mb-1 group-hover:text-sky-300 transition">Element Creative / XR</h3>
-            <p class="text-sm text-slate-400 mb-4">XR & creative • 1.9–2.6 mm • Flexible</p>
-            <div class="flex items-center justify-between">
-              <div class="pricing-only">
-                <span class="text-lg font-bold" data-catalog-price="1380">From $1,380</span>
-                <span class="text-xs text-slate-500">/m²</span>
-              </div>
-              <span class="text-sm font-medium text-sky-400 group-hover:text-sky-300 guest-pricing" data-i18n="price.signIn">Sign in for pricing</span>
-              <span class="text-sm font-medium text-sky-400 group-hover:text-sky-300">Configure →</span>
-            </div>
-          </div>
-        </a>
-      </div>
-    </div>
-  </section>
-
-  <!-- Why Spectrum (Dell-like trust) -->
-  <section class="py-24">
-    <div class="site-wrap">
-      <div class="text-center mb-16">
-        <h2 class="text-3xl sm:text-4xl font-bold mb-4" data-i18n="home.why">Why Buy From Spectrum Display</h2>
-        <p class="text-slate-400 max-w-2xl mx-auto" data-i18n="home.whyLead">The online experience of a Dell.com store combined with deep product expertise of a specialized LED distributor.</p>
-      </div>
-      <div class="grid md:grid-cols-3 gap-8">
-        <div class="p-8 rounded-2xl border border-slate-800 bg-slate-900/50">
-          <div class="w-12 h-12 rounded-xl bg-sky-500/10 flex items-center justify-center mb-5">
-            <svg class="w-6 h-6 text-sky-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg>
-          </div>
-          <h3 class="font-semibold text-lg mb-2" data-i18n="home.why1">Authorized & Warranty Backed</h3>
-          <p class="text-slate-400 text-sm" data-i18n="home.why1p">Genuine products from TRT, Gloshine, BAKO, Element and DIAO with full manufacturer warranties and our own 3-year support layer.</p>
-        </div>
-        <div class="p-8 rounded-2xl border border-slate-800 bg-slate-900/50">
-          <div class="w-12 h-12 rounded-xl bg-sky-500/10 flex items-center justify-center mb-5">
-            <svg class="w-6 h-6 text-sky-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
-          </div>
-          <h3 class="font-semibold text-lg mb-2" data-i18n="home.why2">Expert Configuration</h3>
-          <p class="text-slate-400 text-sm" data-i18n="home.why2p">Online configurator for pixel pitch, cabinet size, processing, and mounting. Or talk to a specialist for complex multi-surface projects.</p>
-        </div>
-        <div class="p-8 rounded-2xl border border-slate-800 bg-slate-900/50">
-          <div class="w-12 h-12 rounded-xl bg-sky-500/10 flex items-center justify-center mb-5">
-            <svg class="w-6 h-6 text-sky-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
-          </div>
-          <h3 class="font-semibold text-lg mb-2" data-i18n="home.why3">Fast Online Ordering</h3>
-          <p class="text-slate-400 text-sm" data-i18n="home.why3p">Real-time pricing, stock visibility, and checkout like Dell.com. Most standard cabinets ship within 5–10 business days from US warehouses.</p>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <!-- CTA -->
-  <section class="py-24">
-    <div class="site-wrap text-center rounded-3xl bg-gradient-to-br from-sky-900/40 to-blue-900/20 border border-sky-500/20 p-12">
-      <h2 class="text-3xl font-bold mb-4" data-i18n="home.cta">Ready to build your next LED wall?</h2>
-      <p class="text-slate-300 mb-8 max-w-xl mx-auto" data-i18n="home.ctaLead">Get a custom quote in under 48 hours or start configuring online right now.</p>
-      <div class="flex flex-wrap justify-center gap-4">
-        <a href="products.html" class="px-8 py-3 rounded-full bg-sky-500 hover:bg-sky-400 text-white font-semibold transition" data-i18n="home.start">Start Configuring</a>
-        <a href="contact.html" class="px-8 py-3 rounded-full border border-slate-500 hover:border-slate-300 text-slate-200 font-medium transition" data-i18n="home.talk">Talk to an Expert</a>
-      </div>
-    </div>
-  </section>
+    </section>
+  </div>
 
   <!-- Footer -->
-  <footer class="border-t border-slate-800 py-16">
+  <footer class="bg-slate-950 text-slate-100 border-t border-slate-800 py-16">
     <div class="site-wrap grid md:grid-cols-4 gap-10">
       <div>
         <a href="index.html" class="inline-block mb-4">
@@ -535,5 +552,25 @@
   <script src="js/auth.js"></script>
   <script src="js/site-header.js"></script>
   <script src="js/i18n.js"></script>
+  <script>
+    (function () {
+      var tabs = document.querySelectorAll('[data-home-tab]');
+      var panels = document.querySelectorAll('[data-home-panel]');
+      if (!tabs.length) return;
+      tabs.forEach(function (btn) {
+        btn.addEventListener('click', function () {
+          var id = btn.getAttribute('data-home-tab');
+          tabs.forEach(function (t) {
+            var on = t === btn;
+            t.classList.toggle('is-on', on);
+            t.setAttribute('aria-selected', on ? 'true' : 'false');
+          });
+          panels.forEach(function (p) {
+            p.classList.toggle('is-on', p.getAttribute('data-home-panel') === id);
+          });
+        });
+      });
+    })();
+  </script>
 </body>
 </html>
