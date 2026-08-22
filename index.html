@@ -15,7 +15,7 @@
   <meta property="og:title" content="Spectrum Display | Premium LED Display Distributor" />
   <meta property="og:description" content="US LED video wall distributor for indoor, outdoor, rental, COB, and Micro LED. Authorized partner of TRT, Gloshine, BAKO, DIAO, and Element." />
   <meta property="og:url" content="https://www.spectrumdisplay.com/" />
-  <meta property="og:image" content="https://www.spectrumdisplay.com/assets/products/discovery.jpg" />
+  <meta property="og:image" content="https://www.spectrumdisplay.com/assets/content/solutions-corporate.jpg" />
   <meta name="twitter:card" content="summary_large_image" />
   <meta name="twitter:title" content="Spectrum Display | Premium LED Display Distributor" />
   <meta name="twitter:description" content="US LED video wall distributor for indoor, outdoor, rental, COB, and Micro LED from TRT, Gloshine, BAKO, DIAO, and Element." />
@@ -192,9 +192,41 @@
         <a class="home-btn home-btn-ghost" href="designer.html" data-i18n="home.calcCta">LED Wall Calculator</a>
       </div>
     </div>
-    <div class="site-wrap">
-      <div class="home-hero-visual">
-        <img src="assets/products/discovery.jpg" alt="Fine pitch LED video wall" />
+    <div class="home-cards" id="home-cards">
+      <div class="home-cards-track" id="home-cards-track">
+        <a class="home-card" href="solutions.html#corporate">
+          <span class="home-card-label">Corporate</span>
+          <img src="assets/content/solutions-corporate.jpg" alt="Corporate lobby LED video wall" />
+        </a>
+        <a class="home-card" href="solutions.html#control-rooms">
+          <span class="home-card-label">Control rooms</span>
+          <img src="assets/content/solutions-control-rooms.jpg" alt="Control room LED video wall" />
+        </a>
+        <a class="home-card" href="solutions.html#retail">
+          <span class="home-card-label">Retail</span>
+          <img src="assets/content/solutions-retail.jpg" alt="Retail LED video wall" />
+        </a>
+        <a class="home-card" href="solutions.html#education">
+          <span class="home-card-label">Education</span>
+          <img src="assets/content/solutions-education.jpg" alt="Education LED video wall" />
+        </a>
+        <a class="home-card" href="solutions.html#broadcast">
+          <span class="home-card-label">Broadcast</span>
+          <img src="assets/content/solutions-broadcast.jpg" alt="Broadcast studio LED video wall" />
+        </a>
+        <a class="home-card" href="designer.html">
+          <span class="home-card-label">LED Wall Calculator</span>
+          <img src="assets/content/calculator-devices.png" alt="LED Wall Calculator on desktop and phone" />
+        </a>
+      </div>
+      <div class="home-cards-nav">
+        <button type="button" class="home-cards-arrow" data-home-cards="-1" aria-label="Previous cards">
+          <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/></svg>
+        </button>
+        <div class="home-cards-dots" id="home-cards-dots"></div>
+        <button type="button" class="home-cards-arrow" data-home-cards="1" aria-label="Next cards">
+          <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/></svg>
+        </button>
       </div>
     </div>
   </section>
@@ -554,20 +586,73 @@
     (function () {
       var tabs = document.querySelectorAll('[data-home-tab]');
       var panels = document.querySelectorAll('[data-home-panel]');
-      if (!tabs.length) return;
-      tabs.forEach(function (btn) {
-        btn.addEventListener('click', function () {
-          var id = btn.getAttribute('data-home-tab');
-          tabs.forEach(function (t) {
-            var on = t === btn;
-            t.classList.toggle('is-on', on);
-            t.setAttribute('aria-selected', on ? 'true' : 'false');
-          });
-          panels.forEach(function (p) {
-            p.classList.toggle('is-on', p.getAttribute('data-home-panel') === id);
+      if (tabs.length) {
+        tabs.forEach(function (btn) {
+          btn.addEventListener('click', function () {
+            var id = btn.getAttribute('data-home-tab');
+            tabs.forEach(function (t) {
+              var on = t === btn;
+              t.classList.toggle('is-on', on);
+              t.setAttribute('aria-selected', on ? 'true' : 'false');
+            });
+            panels.forEach(function (p) {
+              p.classList.toggle('is-on', p.getAttribute('data-home-panel') === id);
+            });
           });
         });
+      }
+
+      var root = document.getElementById('home-cards');
+      var track = document.getElementById('home-cards-track');
+      var dotsWrap = document.getElementById('home-cards-dots');
+      if (!root || !track) return;
+      var cards = track.querySelectorAll('.home-card');
+      if (!cards.length) return;
+      var i = 0;
+      var timer = null;
+      var reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+      cards.forEach(function (_, n) {
+        var b = document.createElement('button');
+        b.type = 'button';
+        b.className = 'home-cards-dot' + (n === 0 ? ' is-on' : '');
+        b.setAttribute('aria-label', 'Show card ' + (n + 1));
+        b.addEventListener('click', function () { go(n, true); });
+        dotsWrap.appendChild(b);
       });
+      var dots = dotsWrap.querySelectorAll('.home-cards-dot');
+
+      function step() {
+        return cards[0].getBoundingClientRect().width + 17.6;
+      }
+      function go(n, user) {
+        i = (n + cards.length) % cards.length;
+        track.scrollTo({ left: Math.round(i * step()), behavior: reduce ? 'auto' : 'smooth' });
+        dots.forEach(function (d, x) { d.classList.toggle('is-on', x === i); });
+        if (user) restart();
+      }
+      function next() { go(i + 1, false); }
+      function start() {
+        if (reduce || timer) return;
+        timer = setInterval(next, 4500);
+      }
+      function stop() {
+        if (timer) { clearInterval(timer); timer = null; }
+      }
+      function restart() { stop(); start(); }
+
+      root.querySelectorAll('[data-home-cards]').forEach(function (btn) {
+        btn.addEventListener('click', function () {
+          go(i + Number(btn.getAttribute('data-home-cards')), true);
+        });
+      });
+      root.addEventListener('mouseenter', stop);
+      root.addEventListener('mouseleave', start);
+      root.addEventListener('focusin', stop);
+      root.addEventListener('focusout', function (e) {
+        if (!root.contains(e.relatedTarget)) start();
+      });
+      start();
     })();
   </script>
 </body>
