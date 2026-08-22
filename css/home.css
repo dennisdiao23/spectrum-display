@@ -194,7 +194,7 @@
 .home-cards-track::-webkit-scrollbar { display: none; }
 .home-card {
   position: relative;
-  flex: 0 0 16.25rem;
+  flex: 0 0 32.5rem;
   height: 22.5rem;
   scroll-snap-align: start;
   border-radius: 1.5rem;
@@ -207,7 +207,7 @@
 }
 @media (min-width: 768px) {
   .home-card {
-    flex-basis: 18.75rem;
+    flex-basis: 37.5rem;
     height: 25.5rem;
   }
 }
