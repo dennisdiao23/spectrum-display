@@ -623,8 +623,7 @@
       var dots = dotsWrap.querySelectorAll('.home-cards-dot');
 
       function step() {
-        if (cards.length < 2) return cards[0].offsetWidth;
-        return cards[1].offsetLeft - cards[0].offsetLeft;
+        return cards[0].getBoundingClientRect().width + 17.6;
       }
       function go(n, user) {
         i = (n + cards.length) % cards.length;

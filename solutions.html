@@ -26,9 +26,14 @@
     .sol-photo {
       display: block;
       width: 100%;
-      height: auto;
+      height: 16rem;
+      object-fit: cover;
+      object-position: center;
       border-radius: 0.75rem;
       margin-bottom: 1rem;
+    }
+    @media (min-width: 768px) {
+      .sol-photo { height: 20rem; }
     }
   </style>
 </head>
