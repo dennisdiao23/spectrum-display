@@ -5,6 +5,7 @@
   --logo-h: 2.15rem;
   --logo-text-inset: calc(var(--logo-h) * 76 / 205 - 20px);
   --site-gutter: 1rem;
+  --site-max: 1480px;
 }
 @media (min-width: 640px) {
   :root { --site-gutter: 1.5rem; }
@@ -32,7 +33,7 @@ body:not(.designer-app) {
 .site-header *::after { box-sizing: border-box; }
 .site-header-inner {
   width: 100%;
-  max-width: 1480px;
+  max-width: var(--site-max);
   height: 100%;
   margin: 0 auto;
   padding: 0 var(--site-gutter);
@@ -48,6 +49,9 @@ body:not(.designer-app) {
   margin-right: auto;
   padding-left: var(--site-gutter);
   padding-right: var(--site-gutter);
+}
+body.designer-app .site-wrap {
+  max-width: var(--site-max);
 }
 html:not(.is-logged-in) .pricing-only,
 html:not(.is-logged-in) .site-cart {
@@ -401,7 +405,7 @@ html.is-logged-in .guest-pricing {
   position: fixed;
   top: var(--site-header-h);
   left: 0;
-  width: min(1480px, calc(100vw - 2 * var(--site-gutter)));
+  width: min(var(--site-max), calc(100vw - 2 * var(--site-gutter)));
   background: #0f172a;
   border: 1px solid #334155;
   border-radius: 0 0 1rem 1rem;
