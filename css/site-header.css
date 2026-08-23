@@ -32,7 +32,7 @@ body:not(.designer-app) {
 .site-header *::after { box-sizing: border-box; }
 .site-header-inner {
   width: 100%;
-  max-width: 80rem;
+  max-width: 1480px;
   height: 100%;
   margin: 0 auto;
   padding: 0 var(--site-gutter);
