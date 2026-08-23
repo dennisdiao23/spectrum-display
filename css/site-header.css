@@ -401,7 +401,7 @@ html.is-logged-in .guest-pricing {
   position: fixed;
   top: var(--site-header-h);
   left: 0;
-  width: min(72rem, calc(100vw - 2 * var(--site-gutter)));
+  width: min(1480px, calc(100vw - 2 * var(--site-gutter)));
   background: #0f172a;
   border: 1px solid #334155;
   border-radius: 0 0 1rem 1rem;
