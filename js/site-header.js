@@ -319,16 +319,16 @@
       '<div class="site-mega-solutions">' +
         '<div class="site-mega-col">' +
           '<h4>By industry</h4>' +
-          '<a href="solutions.html#corporate">Corporate</a>' +
-          '<a href="solutions.html#control-rooms">Control rooms</a>' +
           '<a href="solutions.html#retail">Retail</a>' +
-          '<a href="solutions.html#shop">Shop</a>' +
-          '<a href="solutions.html#education">Education</a>' +
-          '<a href="solutions.html#broadcast">Broadcast</a>' +
-          '<a href="solutions.html#residential">Residential</a>' +
           '<a href="solutions.html#restaurant">Restaurant</a>' +
+          '<a href="solutions.html#shop">Shop</a>' +
           '<a href="solutions.html#sports-bar">Sports bar</a>' +
           '<a href="solutions.html#nightclub">Night club</a>' +
+          '<a href="solutions.html#residential">Residential</a>' +
+          '<a href="solutions.html#corporate">Corporate</a>' +
+          '<a href="solutions.html#control-rooms">Control rooms</a>' +
+          '<a href="solutions.html#education">Education</a>' +
+          '<a href="solutions.html#broadcast">Broadcast</a>' +
           '<a href="solutions.html#sports">Sports & events</a>' +
           '<a href="solutions.html#worship">House of worship</a>' +
           '<a href="solutions.html#hospitality">Hospitality</a>' +
