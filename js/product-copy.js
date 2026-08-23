@@ -280,7 +280,7 @@
 
   function spectrumListHtml() {
     return (
-      '<ul class="text-sm text-slate-400 space-y-2 list-disc list-inside">' +
+      '<ul class="text-sm text-slate-500 space-y-2 list-disc list-inside">' +
         '<li>Authorized genuine product</li>' +
         '<li>Configuration assistance and system design</li>' +
         '<li>Shipping coordination from US inventory or factory</li>' +

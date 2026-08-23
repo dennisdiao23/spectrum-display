@@ -1,0 +1,46 @@
+/* Inner pages — homepage colors only. Does not change layout. */
+.page-light {
+  background: #fff;
+  color: #0f172a;
+}
+.page-light .guest-pricing { color: #0284c7; }
+
+@media (max-width: 767px) {
+  .page-light .mobile-product-mega {
+    background: #f8fafc;
+    border-bottom-color: #e2e8f0;
+  }
+  .page-light .mobile-product-mega .site-mega-cats {
+    background: #eef2ff;
+    border-right-color: #e2e8f0;
+  }
+  .page-light .mobile-product-mega .site-mega-cat {
+    color: #1e293b;
+    border-bottom-color: #e2e8f0;
+  }
+  .page-light .mobile-product-mega .site-mega-cat:hover,
+  .page-light .mobile-product-mega .site-mega-cat.is-active {
+    background: #e2e8f0;
+    color: #0f172a;
+  }
+  .page-light .mobile-product-mega .site-mega-body {
+    background: #fff;
+  }
+  .page-light .mobile-product-mega .site-mega-body h3 { color: #020617; }
+  .page-light .mobile-product-mega .site-mega-body p { color: #64748b; }
+  .page-light .mobile-product-mega .site-mega-grid a { color: #0f172a; }
+  .page-light .mobile-product-mega .site-mega-grid a:hover {
+    background: #f1f5f9;
+    color: #0f172a;
+  }
+  .page-light .mobile-product-mega .site-mega-dot {
+    background: #e0f2fe;
+    color: #0369a1;
+  }
+  .page-light .mobile-product-mega .site-mega-foot {
+    background: #f1f5f9;
+    border-top-color: #e2e8f0;
+  }
+  .page-light .mobile-product-mega .site-mega-foot a { color: #0369a1; }
+  .page-light .mobile-product-mega .site-mega-card-name { color: #0369a1; }
+}

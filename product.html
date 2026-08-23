@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <script src="js/i18n-boot.js"></script>
   <link rel="stylesheet" href="css/site-header.css" />
+  <link rel="stylesheet" href="css/pages.css" />
   <title>LED Video Wall | Spectrum Display</title>
   <meta name="description" content="Configure LED video wall cabinets, pixel pitch, and pricing from Spectrum Display Inc., a US distributor of professional indoor, outdoor, and rental LED displays." />
   <link rel="canonical" href="https://www.spectrumdisplay.com/product.html" />
@@ -22,10 +23,10 @@
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
   <style>
     body { font-family: 'Inter', system-ui, sans-serif; }
-    .sticky-buy { box-shadow: 0 -4px 20px rgba(0,0,0,0.4); }
+    .sticky-buy { box-shadow: 0 -4px 20px rgba(15, 23, 42, 0.08); }
   </style>
 </head>
-<body class="bg-slate-950 text-slate-100 antialiased">
+<body class="bg-white text-slate-900 antialiased page-light">
   <header class="site-header" id="site-header">
     <div class="site-header-inner">
       <div class="site-header-top">
@@ -122,11 +123,11 @@
   <!-- Breadcrumb -->
   <div class="pt-6">
     <div class="site-wrap text-sm text-slate-500 py-4">
-      <a href="products.html" class="hover:text-slate-300" data-i18n="nav.products">Products</a>
+      <a href="products.html" class="hover:text-slate-900" data-i18n="nav.products">Products</a>
       <span class="mx-2">/</span>
-      <a id="product-brand-crumb" href="products.html" class="hover:text-slate-300">Brand</a>
+      <a id="product-brand-crumb" href="products.html" class="hover:text-slate-900">Brand</a>
       <span class="mx-2">/</span>
-      <span id="product-name-crumb" class="text-slate-300">LED Series</span>
+      <span id="product-name-crumb" class="text-slate-900">LED Series</span>
     </div>
   </div>
 
@@ -136,7 +137,7 @@
       <div class="grid lg:grid-cols-2 gap-12 items-start">
         <!-- Gallery -->
         <div class="space-y-4">
-          <div class="aspect-[4/3] rounded-2xl bg-slate-900 border border-slate-700 overflow-hidden relative">
+          <div class="aspect-[4/3] rounded-2xl bg-slate-900 border border-slate-200 overflow-hidden relative">
             <img id="product-hero-img" alt="" class="absolute inset-0 w-full h-full object-cover hidden" />
             <div id="product-hero-fallback" class="absolute inset-0 flex items-center justify-center bg-gradient-to-br from-slate-800 to-slate-900">
               <div class="text-center p-8">
@@ -150,37 +151,37 @@
 
         <!-- Buy / Config -->
         <div>
-          <div class="text-sm font-medium text-sky-400 mb-2 brand-label">Spectrum</div>
+          <div class="text-sm font-medium text-sky-600 mb-2 brand-label">Spectrum</div>
           <h1 class="text-3xl sm:text-4xl font-bold mb-2">LED Series</h1>
-          <p id="product-lead" class="text-slate-400 mb-6">Configure LED video wall cabinets, pixel pitch, and project details from Spectrum Display.</p>
+          <p id="product-lead" class="text-slate-500 mb-6">Configure LED video wall cabinets, pixel pitch, and project details from Spectrum Display.</p>
 
           <!-- Key specs pills -->
           <div id="product-pills" class="flex flex-wrap gap-2 mb-8"></div>
 
           <!-- Configurator -->
-          <div class="space-y-5 mb-8 p-6 rounded-2xl border border-slate-800 bg-slate-900/50">
+          <div class="space-y-5 mb-8 p-6 rounded-2xl border border-slate-200 bg-slate-50">
             <div>
               <label class="block text-sm font-medium mb-2">Pixel Pitch</label>
               <div id="pitch-grid" class="flex flex-wrap gap-2"></div>
             </div>
             <div>
               <label class="block text-sm font-medium mb-2">Cabinet Size</label>
-              <select id="cabinet" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-4 py-2.5 text-sm">
+              <select id="cabinet" class="w-full bg-white border border-slate-200 rounded-lg px-4 py-2.5 text-sm">
                 <option value="custom">Loading cabinet size…</option>
               </select>
             </div>
             <div>
               <label class="block text-sm font-medium mb-2">Quantity (m²)</label>
               <div class="flex items-center gap-3">
-                <button id="qty-minus" class="w-10 h-10 rounded-lg border border-slate-700 hover:bg-slate-800">−</button>
-                <input id="qty" type="number" value="4" min="1" class="w-20 text-center bg-slate-800 border border-slate-700 rounded-lg py-2">
-                <button id="qty-plus" class="w-10 h-10 rounded-lg border border-slate-700 hover:bg-slate-800">+</button>
-                <span class="text-sm text-slate-400">≈ 4 m² recommended starter</span>
+                <button id="qty-minus" class="w-10 h-10 rounded-lg border border-slate-200 hover:bg-slate-100">−</button>
+                <input id="qty" type="number" value="4" min="1" class="w-20 text-center bg-white border border-slate-200 rounded-lg py-2">
+                <button id="qty-plus" class="w-10 h-10 rounded-lg border border-slate-200 hover:bg-slate-100">+</button>
+                <span class="text-sm text-slate-500">≈ 4 m² recommended starter</span>
               </div>
             </div>
-            <div class="pt-4 border-t border-slate-800 flex items-end justify-between gap-4">
+            <div class="pt-4 border-t border-slate-200 flex items-end justify-between gap-4">
               <div class="pricing-only">
-                <div class="text-sm text-slate-400">Estimated price</div>
+                <div class="text-sm text-slate-500">Estimated price</div>
                 <div class="text-3xl font-bold"><span id="price">—</span></div>
                 <div class="text-xs text-slate-500" id="price-unit"></div>
               </div>
@@ -189,15 +190,15 @@
               </button>
               <div class="guest-pricing space-y-2">
                 <a href="account.html" class="inline-flex px-6 py-3 rounded-full bg-sky-500 hover:bg-sky-400 text-white font-semibold" data-i18n="price.signInCta">Sign in to see pricing and use the cart</a>
-                <div><a href="contact.html" class="text-sm text-sky-400 hover:text-sky-300">Or contact sales →</a></div>
+                <div><a href="contact.html" class="text-sm text-sky-600 hover:text-sky-700">Or contact sales →</a></div>
               </div>
             </div>
           </div>
 
           <div class="flex flex-wrap gap-4 text-sm">
-            <a href="contact.html" class="text-sky-400 hover:text-sky-300">Request detailed quote →</a>
+            <a href="contact.html" class="text-sky-600 hover:text-sky-700">Request detailed quote →</a>
             <span class="text-slate-600">|</span>
-            <a id="datasheet-link" href="https://gloshine.com/products" class="text-slate-400 hover:text-white">Manufacturer specs</a>
+            <a id="datasheet-link" href="https://gloshine.com/products" class="text-slate-500 hover:text-slate-900">Manufacturer specs</a>
           </div>
         </div>
       </div>
@@ -205,20 +206,20 @@
   </section>
 
   <!-- Tabs: Overview / Specs / Features (DJI style) -->
-  <section class="border-t border-slate-800">
+  <section class="border-t border-slate-200">
     <div class="site-wrap">
-      <div class="flex gap-8 border-b border-slate-800 overflow-x-auto">
-        <button class="tab-btn py-4 text-sm font-medium border-b-2 border-sky-500 text-sky-400" data-tab="overview">Overview</button>
-        <button class="tab-btn py-4 text-sm font-medium border-b-2 border-transparent text-slate-400 hover:text-white" data-tab="specs">Specifications</button>
-        <button class="tab-btn py-4 text-sm font-medium border-b-2 border-transparent text-slate-400 hover:text-white" data-tab="features">Key Features</button>
-        <button class="tab-btn py-4 text-sm font-medium border-b-2 border-transparent text-slate-400 hover:text-white" data-tab="support">Support & Warranty</button>
+      <div class="flex gap-8 border-b border-slate-200 overflow-x-auto">
+        <button class="tab-btn py-4 text-sm font-medium border-b-2 border-sky-600 text-sky-600" data-tab="overview">Overview</button>
+        <button class="tab-btn py-4 text-sm font-medium border-b-2 border-transparent text-slate-500 hover:text-slate-900" data-tab="specs">Specifications</button>
+        <button class="tab-btn py-4 text-sm font-medium border-b-2 border-transparent text-slate-500 hover:text-slate-900" data-tab="features">Key Features</button>
+        <button class="tab-btn py-4 text-sm font-medium border-b-2 border-transparent text-slate-500 hover:text-slate-900" data-tab="support">Support & Warranty</button>
       </div>
 
       <div id="tab-overview" class="tab-content py-12">
         <div class="max-w-3xl">
           <h2 id="overview-title" class="text-2xl font-bold mb-4">Series overview</h2>
           <div id="overview-body">
-          <p class="text-slate-300 mb-6 leading-relaxed">Loading series details…</p>
+          <p class="text-slate-600 mb-6 leading-relaxed">Loading series details…</p>
           </div>
         </div>
       </div>
@@ -237,12 +238,12 @@
   </section>
 
   <!-- Sticky bottom buy bar (mobile friendly) -->
-  <div class="fixed bottom-0 left-0 right-0 bg-slate-900/95 backdrop-blur border-t border-slate-800 sticky-buy z-40 py-3">
+  <div class="fixed bottom-0 left-0 right-0 bg-white/95 backdrop-blur border-t border-slate-200 sticky-buy z-40 py-3">
     <div class="site-wrap flex items-center justify-between gap-4">
       <div class="hidden sm:block">
         <div id="sticky-name" class="font-medium">LED Series</div>
-        <div id="sticky-from" class="text-sm text-slate-400 pricing-only">Sign in for pricing</div>
-        <div class="text-sm text-slate-400 guest-pricing" data-i18n="price.signIn">Sign in for pricing</div>
+        <div id="sticky-from" class="text-sm text-slate-500 pricing-only">Sign in for pricing</div>
+        <div class="text-sm text-slate-500 guest-pricing" data-i18n="price.signIn">Sign in for pricing</div>
       </div>
       <div class="flex items-center gap-3 ml-auto">
         <span class="text-lg font-bold pricing-only" id="sticky-price"></span>
@@ -357,8 +358,8 @@
       const thumbs = document.getElementById('gallery-thumbs');
       if (thumbs && photos.length) {
         thumbs.innerHTML = photos.map(function (src, i) {
-          const on = i === 0 ? 'border-sky-500' : 'border-slate-700';
-          return '<button type="button" class="thumb-btn aspect-square rounded-xl bg-slate-800 border ' + on +
+          const on = i === 0 ? 'border-sky-500' : 'border-slate-200';
+          return '<button type="button" class="thumb-btn aspect-square rounded-xl bg-slate-100 border ' + on +
             ' overflow-hidden cursor-pointer hover:border-sky-400" data-img="' + esc(src) + '">' +
             '<img src="' + esc(src) + '" alt="" class="w-full h-full object-cover object-contain bg-slate-950" />' +
             '</button>';
@@ -368,10 +369,10 @@
         btn.addEventListener('click', () => {
           document.querySelectorAll('.thumb-btn').forEach(b => {
             b.classList.remove('border-sky-500');
-            b.classList.add('border-slate-700');
+            b.classList.add('border-slate-200');
           });
           btn.classList.add('border-sky-500');
-          btn.classList.remove('border-slate-700');
+          btn.classList.remove('border-slate-200');
           if (hero && btn.dataset.img) {
             hero.style.display = '';
             hero.src = btn.dataset.img;
@@ -392,25 +393,25 @@
           bits.push(Math.round(seriesData.cabinetW * 1000) + ' × ' + Math.round(seriesData.cabinetH * 1000) + ' mm');
         }
         pills.innerHTML = bits.map(function (b) {
-          return '<span class="px-3 py-1 rounded-full bg-slate-800 text-sm">' + esc(b) + '</span>';
+          return '<span class="px-3 py-1 rounded-full bg-slate-100 text-slate-700 text-sm">' + esc(b) + '</span>';
         }).join('');
       }
       const pitchGrid = document.getElementById('pitch-grid');
       if (pitchGrid && pitches.length) {
         pitchGrid.innerHTML = pitches.map(function (p, i) {
           const on = i === 0
-            ? 'pitch-btn px-3 py-2 rounded-lg border border-sky-500 bg-sky-500/10 text-sky-300 text-sm font-medium'
-            : 'pitch-btn px-3 py-2 rounded-lg border border-slate-700 hover:border-slate-500 text-sm';
+            ? 'pitch-btn px-3 py-2 rounded-lg border border-sky-600 bg-sky-50 text-sky-700 text-sm font-medium'
+            : 'pitch-btn px-3 py-2 rounded-lg border border-slate-200 hover:border-slate-400 text-sm';
           return '<button type="button" class="' + on + '" data-pitch="' + p + '">' + p + ' mm</button>';
         }).join('');
         pitchGrid.querySelectorAll('.pitch-btn').forEach(function (btn) {
           btn.onclick = function () {
             pitchGrid.querySelectorAll('.pitch-btn').forEach(function (b) {
-              b.classList.remove('border-sky-500', 'bg-sky-500/10', 'text-sky-300');
-              b.classList.add('border-slate-700');
+              b.classList.remove('border-sky-600', 'bg-sky-50', 'text-sky-700');
+              b.classList.add('border-slate-200');
             });
-            btn.classList.add('border-sky-500', 'bg-sky-500/10', 'text-sky-300');
-            btn.classList.remove('border-slate-700');
+            btn.classList.add('border-sky-600', 'bg-sky-50', 'text-sky-700');
+            btn.classList.remove('border-slate-200');
           };
         });
       }
@@ -425,8 +426,8 @@
       const ovBody = document.getElementById('overview-body');
       if (ovBody && seriesData) {
         ovBody.innerHTML =
-          '<p class="text-slate-300 mb-6 leading-relaxed">' + esc(seriesData.lead || seriesData.description) + '</p>' +
-          '<p class="text-slate-300 leading-relaxed">As an authorized ' + esc(brandName) +
+          '<p class="text-slate-600 mb-6 leading-relaxed">' + esc(seriesData.lead || seriesData.description) + '</p>' +
+          '<p class="text-slate-600 leading-relaxed">As an authorized ' + esc(brandName) +
           ' partner, Spectrum Display provides manufacturer warranty, local first-line support, and help configuring the right wall for your space.</p>';
       }
 
@@ -436,12 +437,12 @@
           const rows = seriesData.specTable;
           const head = rows[0] || [];
           const body = rows.slice(1);
-          specWrap.innerHTML = '<table class="w-full text-sm"><thead><tr class="border-b border-slate-700 text-left text-slate-400">' +
+          specWrap.innerHTML = '<table class="w-full text-sm"><thead><tr class="border-b border-slate-200 text-left text-slate-500">' +
             head.map(function (c) { return '<th class="py-3 pr-6 font-medium whitespace-nowrap">' + esc(c) + '</th>'; }).join('') +
-            '</tr></thead><tbody class="text-slate-300">' +
+            '</tr></thead><tbody class="text-slate-700">' +
             body.map(function (r) {
-              return '<tr class="border-b border-slate-800">' + r.map(function (c, i) {
-                return '<td class="py-3 pr-6 ' + (i === 0 ? 'text-slate-400' : '') + '">' + esc(c) + '</td>';
+              return '<tr class="border-b border-slate-200">' + r.map(function (c, i) {
+                return '<td class="py-3 pr-6 ' + (i === 0 ? 'text-slate-500' : '') + '">' + esc(c) + '</td>';
               }).join('') + '</tr>';
             }).join('') +
             '</tbody></table>';
@@ -462,11 +463,11 @@
             ['Power (avg / max)', powerLabel],
             ['Weight', seriesData.weightPerM2 ? (seriesData.weightPerM2 + ' kg/m²') : '—']
           ];
-          specWrap.innerHTML = '<table class="w-full text-sm"><thead><tr class="border-b border-slate-700 text-left text-slate-400">' +
+          specWrap.innerHTML = '<table class="w-full text-sm"><thead><tr class="border-b border-slate-200 text-left text-slate-500">' +
             '<th class="py-3 pr-6 font-medium">Parameter</th><th class="py-3 font-medium">' + esc(productName) + '</th></tr></thead>' +
-            '<tbody class="text-slate-300">' +
+            '<tbody class="text-slate-700">' +
             rows.map(function (r) {
-              return '<tr class="border-b border-slate-800"><td class="py-3 pr-6 text-slate-400">' + esc(r[0]) +
+              return '<tr class="border-b border-slate-200"><td class="py-3 pr-6 text-slate-500">' + esc(r[0]) +
                 '</td><td class="py-3">' + esc(r[1]) + '</td></tr>';
             }).join('') +
             '</tbody></table>';
@@ -488,9 +489,9 @@
       if (featGrid && window.getSpectrumProductFeatures) {
         const feats = window.getSpectrumProductFeatures(brandId, seriesId, seriesData) || [];
         featGrid.innerHTML = feats.map(function (item) {
-          return '<div class="p-6 rounded-2xl border border-slate-800">' +
+          return '<div class="p-6 rounded-2xl border border-slate-200 bg-white">' +
             '<h3 class="font-semibold text-lg mb-2">' + esc(item.title) + '</h3>' +
-            (item.text ? '<p class="text-sm text-slate-400">' + esc(item.text) + '</p>' : '') +
+            (item.text ? '<p class="text-sm text-slate-500">' + esc(item.text) + '</p>' : '') +
             '</div>';
         }).join('');
       }
@@ -499,19 +500,19 @@
       if (supportEl && window.getSpectrumProductSupport) {
         const sup = window.getSpectrumProductSupport(brandId);
         const specLink = (seriesData && seriesData.sourceUrl)
-          ? '<p class="text-sm text-slate-400 mt-3"><a class="text-sky-400 hover:text-sky-300" href="' +
+          ? '<p class="text-sm text-slate-500 mt-3"><a class="text-sky-600 hover:text-sky-700" href="' +
             esc(seriesData.sourceUrl) + '" target="_blank" rel="noopener">Official ' + esc(brandName) +
-            ' specifications</a> · <a class="text-sky-400 hover:text-sky-300" href="support.html">Spectrum support</a></p>'
-          : '<p class="text-sm text-slate-400 mt-3"><a class="text-sky-400 hover:text-sky-300" href="support.html">Spectrum support</a></p>';
+            ' specifications</a> · <a class="text-sky-600 hover:text-sky-700" href="support.html">Spectrum support</a></p>'
+          : '<p class="text-sm text-slate-500 mt-3"><a class="text-sky-600 hover:text-sky-700" href="support.html">Spectrum support</a></p>';
         supportEl.innerHTML =
           '<div class="max-w-3xl space-y-6">' +
             '<div>' +
               '<h3 class="font-semibold text-lg mb-2">' + esc(sup.warrantyTitle) + '</h3>' +
-              '<p class="text-slate-400 text-sm">' + esc(sup.warranty) + '</p>' +
+              '<p class="text-slate-500 text-sm">' + esc(sup.warranty) + '</p>' +
             '</div>' +
             (sup.extra
               ? '<div><h3 class="font-semibold text-lg mb-2">' + esc(sup.extraTitle) + '</h3>' +
-                '<p class="text-slate-400 text-sm">' + esc(sup.extra) + '</p>' + specLink + '</div>'
+                '<p class="text-slate-500 text-sm">' + esc(sup.extra) + '</p>' + specLink + '</div>'
               : '<div><h3 class="font-semibold text-lg mb-2">What you get with Spectrum</h3>' +
                 (window.getSpectrumSupportListHtml ? window.getSpectrumSupportListHtml() : '') + specLink + '</div>') +
             (sup.extra
@@ -580,11 +581,11 @@
     document.querySelectorAll('.tab-btn').forEach(btn => {
       btn.onclick = () => {
         document.querySelectorAll('.tab-btn').forEach(b => {
-          b.classList.remove('border-sky-500', 'text-sky-400');
-          b.classList.add('border-transparent', 'text-slate-400');
+          b.classList.remove('border-sky-600', 'text-sky-600');
+          b.classList.add('border-transparent', 'text-slate-500');
         });
-        btn.classList.add('border-sky-500', 'text-sky-400');
-        btn.classList.remove('border-transparent', 'text-slate-400');
+        btn.classList.add('border-sky-600', 'text-sky-600');
+        btn.classList.remove('border-transparent', 'text-slate-500');
         document.querySelectorAll('.tab-content').forEach(c => c.classList.add('hidden'));
         document.getElementById('tab-' + btn.dataset.tab).classList.remove('hidden');
       };
