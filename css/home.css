@@ -199,8 +199,9 @@
 .home-cards-track::-webkit-scrollbar { display: none; }
 .home-card {
   position: relative;
-  flex: 0 0 32.5rem;
-  height: 22.5rem;
+  flex: 0 0 calc(100vw - 3.5rem);
+  height: auto;
+  aspect-ratio: 3 / 2;
   scroll-snap-align: center;
   scroll-snap-stop: always;
   border-radius: 1.5rem;
@@ -215,6 +216,7 @@
   .home-card {
     flex-basis: 37.5rem;
     height: 25.5rem;
+    aspect-ratio: auto;
   }
 }
 .home-card:hover,
