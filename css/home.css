@@ -184,19 +184,13 @@
 .home-cards-track {
   display: flex;
   align-items: flex-start;
-  gap: 0.75rem;
+  gap: 1.1rem;
   overflow-x: auto;
   scroll-snap-type: x mandatory;
   scroll-behavior: smooth;
-  padding: 1.1rem 0 1.1rem;
+  padding: 1.35rem 0 1.25rem;
   scrollbar-width: none;
   -webkit-overflow-scrolling: touch;
-}
-@media (min-width: 768px) {
-  .home-cards-track {
-    gap: 1.1rem;
-    padding: 1.35rem 0 1.25rem;
-  }
 }
 .home-cards-track:not(.is-ready) { visibility: hidden; }
 .home-cards-track.is-jumping {
@@ -205,19 +199,18 @@
 }
 .home-cards-track::-webkit-scrollbar { display: none; }
 .home-card {
-  --card-w: min(calc(100vw - 1.25rem), calc(50svh * 3 / 2));
-  --card-h: min(calc((100vw - 1.25rem) * 2 / 3), 50svh);
+  --card-w: 32.5rem;
+  --card-h: 22.5rem;
   position: relative;
   flex: 0 0 var(--card-w);
   width: var(--card-w);
   min-width: var(--card-w);
   height: var(--card-h);
   min-height: var(--card-h);
-  aspect-ratio: 3 / 2;
   contain: size layout;
   scroll-snap-align: center;
   scroll-snap-stop: always;
-  border-radius: 1.25rem;
+  border-radius: 1.5rem;
   overflow: hidden;
   text-decoration: none;
   color: #fff;
@@ -234,8 +227,6 @@
     min-width: 37.5rem;
     height: 25.5rem;
     min-height: 25.5rem;
-    aspect-ratio: auto;
-    border-radius: 1.5rem;
   }
 }
 .home-card:hover,
