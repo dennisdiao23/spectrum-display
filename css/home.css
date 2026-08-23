@@ -187,16 +187,22 @@
   overflow-x: auto;
   scroll-snap-type: x mandatory;
   scroll-behavior: smooth;
-  padding: 1.35rem var(--site-gutter) 1.25rem;
+  padding: 1.35rem 0 1.25rem;
   scrollbar-width: none;
   -webkit-overflow-scrolling: touch;
+}
+.home-cards-track:not(.is-ready) { visibility: hidden; }
+.home-cards-track.is-jumping {
+  scroll-snap-type: none;
+  scroll-behavior: auto;
 }
 .home-cards-track::-webkit-scrollbar { display: none; }
 .home-card {
   position: relative;
   flex: 0 0 32.5rem;
   height: 22.5rem;
-  scroll-snap-align: start;
+  scroll-snap-align: center;
+  scroll-snap-stop: always;
   border-radius: 1.5rem;
   overflow: hidden;
   text-decoration: none;

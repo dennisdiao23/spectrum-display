@@ -630,32 +630,123 @@
       var track = document.getElementById('home-cards-track');
       var dotsWrap = document.getElementById('home-cards-dots');
       if (!root || !track) return;
+      var originals = Array.prototype.slice.call(track.querySelectorAll('.home-card'));
+      var n = originals.length;
+      if (!n) return;
+
+      originals.forEach(function (card, idx) {
+        card.setAttribute('data-home-index', String(idx));
+      });
+      var html = track.innerHTML;
+      track.insertAdjacentHTML('afterbegin', html);
+      track.insertAdjacentHTML('beforeend', html);
       var cards = track.querySelectorAll('.home-card');
-      if (!cards.length) return;
-      var i = 0;
+
+      var i = n;
       var timer = null;
+      var jumping = false;
+      var moving = false;
       var reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
-      cards.forEach(function (_, n) {
+      for (var d = 0; d < n; d++) {
         var b = document.createElement('button');
         b.type = 'button';
-        b.className = 'home-cards-dot' + (n === 0 ? ' is-on' : '');
-        b.setAttribute('aria-label', 'Show card ' + (n + 1));
-        b.addEventListener('click', function () { go(n, true); });
+        b.className = 'home-cards-dot' + (d === 0 ? ' is-on' : '');
+        b.setAttribute('aria-label', 'Show card ' + (d + 1));
+        (function (logical) {
+          b.addEventListener('click', function () { goToLogical(logical, true); });
+        })(d);
         dotsWrap.appendChild(b);
-      });
+      }
       var dots = dotsWrap.querySelectorAll('.home-cards-dot');
 
-      function step() {
-        return cards[0].getBoundingClientRect().width + 17.6;
+      function logicalOf(physical) {
+        return ((physical % n) + n) % n;
       }
-      function go(n, user) {
-        i = (n + cards.length) % cards.length;
-        track.scrollTo({ left: Math.round(i * step()), behavior: reduce ? 'auto' : 'smooth' });
-        dots.forEach(function (d, x) { d.classList.toggle('is-on', x === i); });
+      function updateDots() {
+        var L = logicalOf(i);
+        dots.forEach(function (dot, x) { dot.classList.toggle('is-on', x === L); });
+      }
+      function targetLeft(index) {
+        var card = cards[index];
+        if (!card) return 0;
+        var tr = track.getBoundingClientRect();
+        var cr = card.getBoundingClientRect();
+        return track.scrollLeft + (cr.left + cr.width / 2) - (tr.left + tr.width / 2);
+      }
+      function jumpTo(index) {
+        jumping = true;
+        track.classList.add('is-jumping');
+        i = index;
+        track.scrollLeft = targetLeft(index);
+        requestAnimationFrame(function () {
+          track.scrollLeft = targetLeft(index);
+          track.classList.remove('is-jumping');
+          jumping = false;
+        });
+      }
+      function normalize() {
+        if (i >= n * 2) jumpTo(i - n);
+        else if (i < n) jumpTo(i + n);
+      }
+      var settleTimer = null;
+      function afterMove(fn) {
+        clearTimeout(settleTimer);
+        settleTimer = setTimeout(fn, reduce ? 30 : 480);
+      }
+      function scrollToIndex(index, animate, user) {
+        i = index;
+        updateDots();
+        if (!animate || reduce) {
+          jumpTo(index);
+          normalize();
+          if (user) restart();
+          return;
+        }
+        moving = true;
+        track.scrollTo({ left: targetLeft(index), behavior: 'smooth' });
+        afterMove(function () {
+          moving = false;
+          i = nearestIndex();
+          updateDots();
+          normalize();
+        });
         if (user) restart();
       }
-      function next() { go(i + 1, false); }
+      function go(delta, user) {
+        scrollToIndex(i + delta, true, user);
+      }
+      function goToLogical(L, user) {
+        var candidates = [L, L + n, L + 2 * n];
+        var best = candidates[0];
+        var bestDist = Math.abs(best - i);
+        candidates.forEach(function (c) {
+          var dist = Math.abs(c - i);
+          if (dist < bestDist) {
+            best = c;
+            bestDist = dist;
+          }
+        });
+        if (best === i) return;
+        scrollToIndex(best, true, user);
+      }
+      function nearestIndex() {
+        var tr = track.getBoundingClientRect();
+        var mid = tr.left + tr.width / 2;
+        var best = i;
+        var bestDist = Infinity;
+        for (var k = 0; k < cards.length; k++) {
+          var cr = cards[k].getBoundingClientRect();
+          var dist = Math.abs(cr.left + cr.width / 2 - mid);
+          if (dist < bestDist) {
+            bestDist = dist;
+            best = k;
+          }
+        }
+        return best;
+      }
+
+      function next() { go(1, false); }
       function start() {
         if (reduce || timer) return;
         timer = setInterval(next, 4500);
@@ -667,7 +758,7 @@
 
       root.querySelectorAll('[data-home-cards]').forEach(function (btn) {
         btn.addEventListener('click', function () {
-          go(i + Number(btn.getAttribute('data-home-cards')), true);
+          go(Number(btn.getAttribute('data-home-cards')), true);
         });
       });
       root.addEventListener('mouseenter', stop);
@@ -676,7 +767,28 @@
       root.addEventListener('focusout', function (e) {
         if (!root.contains(e.relatedTarget)) start();
       });
-      start();
+
+      var scrollWait = null;
+      track.addEventListener('scroll', function () {
+        if (jumping || moving) return;
+        clearTimeout(scrollWait);
+        scrollWait = setTimeout(function () {
+          i = nearestIndex();
+          updateDots();
+          normalize();
+        }, 90);
+      }, { passive: true });
+
+      window.addEventListener('resize', function () {
+        jumpTo(i < n ? i + n : (i >= n * 2 ? i - n : i));
+      });
+
+      requestAnimationFrame(function () {
+        jumpTo(n);
+        updateDots();
+        track.classList.add('is-ready');
+        start();
+      });
     })();
   </script>
 </body>
