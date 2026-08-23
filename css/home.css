@@ -179,18 +179,27 @@
 .home-cards {
   position: relative;
   z-index: 1;
-  margin-top: 3.25rem;
+  margin-top: 1.75rem;
+}
+@media (min-width: 768px) {
+  .home-cards { margin-top: 3.25rem; }
 }
 .home-cards-track {
   display: flex;
   align-items: flex-start;
-  gap: 1.1rem;
+  gap: 1.25rem;
   overflow-x: auto;
   scroll-snap-type: x mandatory;
   scroll-behavior: smooth;
-  padding: 1.35rem 0 1.25rem;
+  padding: 0.7rem 0 0.85rem;
   scrollbar-width: none;
   -webkit-overflow-scrolling: touch;
+}
+@media (min-width: 768px) {
+  .home-cards-track {
+    gap: 1.1rem;
+    padding: 1.35rem 0 1.25rem;
+  }
 }
 .home-cards-track:not(.is-ready) { visibility: hidden; }
 .home-cards-track.is-jumping {
@@ -199,8 +208,9 @@
 }
 .home-cards-track::-webkit-scrollbar { display: none; }
 .home-card {
-  --card-w: 32.5rem;
-  --card-h: 22.5rem;
+  /* Phone: one tall Zoom-style card, inset from the screen edges. */
+  --card-w: calc(100vw - 2.5rem);
+  --card-h: min(36rem, calc((100vw - 2.5rem) * 4 / 3));
   position: relative;
   flex: 0 0 var(--card-w);
   width: var(--card-w);
@@ -210,7 +220,7 @@
   contain: size layout;
   scroll-snap-align: center;
   scroll-snap-stop: always;
-  border-radius: 1.5rem;
+  border-radius: 1.75rem;
   overflow: hidden;
   text-decoration: none;
   color: #fff;
@@ -227,12 +237,19 @@
     min-width: 37.5rem;
     height: 25.5rem;
     min-height: 25.5rem;
+    border-radius: 1.5rem;
   }
 }
 .home-card:hover,
 .home-card:focus-visible {
   transform: translateY(-12px);
   box-shadow: 0 28px 56px rgba(8, 6, 24, 0.48);
+}
+@media (max-width: 767px) {
+  .home-card:hover,
+  .home-card:focus-visible {
+    transform: none;
+  }
 }
 .home-card img {
   position: absolute;
@@ -257,6 +274,12 @@
   font-weight: 700;
   letter-spacing: -0.02em;
   text-shadow: 0 1px 10px rgba(0, 0, 0, 0.45);
+}
+@media (max-width: 767px) {
+  .home-card-label {
+    padding: 1.35rem 1.4rem 0;
+    font-size: 1.25rem;
+  }
 }
 .home-cards-nav {
   display: flex;
