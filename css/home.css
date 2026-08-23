@@ -201,6 +201,7 @@
 .home-cards-track.is-jumping {
   scroll-snap-type: none;
   scroll-behavior: auto;
+  -webkit-overflow-scrolling: auto;
 }
 .home-cards-track::-webkit-scrollbar { display: none; }
 .home-card {
