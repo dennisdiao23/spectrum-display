@@ -464,21 +464,21 @@
     prod.id = 'site-mega-products';
     prod.className = 'site-mega-panel';
     prod.innerHTML = megaProductsInnerHtml();
-    header.appendChild(prod);
+    document.body.appendChild(prod);
     renderProductMega(megaCatFromUrl());
 
     var sol = document.createElement('div');
     sol.id = 'site-mega-solutions';
     sol.className = 'site-mega-panel';
     sol.innerHTML = megaSolutionsInnerHtml();
-    header.appendChild(sol);
+    document.body.appendChild(sol);
     renderSolutionMega('industry');
 
     if (!$('#site-mega-scrim')) {
       var scrim = document.createElement('div');
       scrim.id = 'site-mega-scrim';
       scrim.className = 'site-mega-scrim';
-      document.body.appendChild(scrim);
+      document.body.insertBefore(scrim, prod);
       scrim.addEventListener('click', function () { closeMegas(); });
     }
   }
@@ -669,7 +669,7 @@
     }
 
     document.addEventListener('click', function (e) {
-      if (header.contains(e.target) && (e.target.closest && e.target.closest('.site-drop, #hdr-menu-btn, .site-nav-item, .site-mega-panel'))) return;
+      if (e.target.closest && e.target.closest('.site-mega-panel, .site-drop, #hdr-menu-btn, .site-nav-item')) return;
       closeAll();
       closeMegas();
       header.classList.remove('is-nav-open');

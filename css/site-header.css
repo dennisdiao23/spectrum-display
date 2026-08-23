@@ -17,7 +17,7 @@
   top: 0;
   left: 0;
   right: 0;
-  z-index: 50;
+  z-index: 80;
   height: var(--site-header-h);
   background: #020617;
   border-bottom: 1px solid #1e293b;
@@ -402,7 +402,8 @@ html.is-logged-in .guest-pricing {
   inset: 0;
   top: var(--site-header-h);
   background: rgba(8, 6, 24, 0.42);
-  z-index: 55;
+  z-index: 70;
+  pointer-events: auto;
 }
 .site-mega-scrim.is-on { display: block; }
 .site-mega-panel {
@@ -415,7 +416,7 @@ html.is-logged-in .guest-pricing {
   border: 1px solid #e2e8f0;
   border-radius: 1.25rem;
   box-shadow: 0 22px 60px rgba(15, 23, 42, 0.2);
-  z-index: 60;
+  z-index: 85;
   overflow: hidden;
   color: #0f172a;
 }
