@@ -568,6 +568,12 @@
     $all('#site-mega-solutions .site-mega-cat').forEach(function (btn) {
       btn.addEventListener('click', function () { renderSolutionMega(btn.getAttribute('data-sol-cat')); });
     });
+    $all('.site-mega-panel').forEach(function (panel) {
+      panel.addEventListener('click', function (e) {
+        var link = e.target.closest && e.target.closest('a');
+        if (link) closeMegas();
+      });
+    });
     window.addEventListener('resize', function () {
       var openItem = $('.site-nav-item.is-open');
       if (!openItem) return;
