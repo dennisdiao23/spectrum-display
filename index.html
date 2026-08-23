@@ -651,7 +651,7 @@
         return parseFloat(style.columnGap || style.gap) || 0;
       }
       function cardWidth() {
-        return originals[0].getBoundingClientRect().width;
+        return originals[0].offsetWidth;
       }
       function step() {
         return cardWidth() + gap();
@@ -662,16 +662,19 @@
       function logicalIndex(index) {
         return ((index % count) + count) % count;
       }
-      function apply(animate) {
-        track.style.transition = (animate && !reduce)
-          ? 'transform 0.7s cubic-bezier(0.22, 1, 0.36, 1)'
-          : 'none';
-        track.style.transform = 'translate3d(' + xFor(i) + 'px,0,0)';
+      function syncActive() {
         var logical = logicalIndex(i);
         // Dots wrap back to the first control; every copy of that card
         // stays “on” so the track can teleport without a visual jump.
         dots.forEach(function (d, x) { d.classList.toggle('is-on', x === logical); });
         cards.forEach(function (c, n) { c.classList.toggle('is-center', logicalIndex(n) === logical); });
+      }
+      function apply(animate) {
+        syncActive();
+        track.style.transition = (animate && !reduce)
+          ? 'transform 0.7s cubic-bezier(0.22, 1, 0.36, 1)'
+          : 'none';
+        track.style.transform = 'translate3d(' + xFor(i) + 'px,0,0)';
       }
       function wrapIfNeeded() {
         if (i < count || i >= count * 2) {
