@@ -668,8 +668,10 @@
           : 'none';
         track.style.transform = 'translate3d(' + xFor(i) + 'px,0,0)';
         var logical = logicalIndex(i);
+        // Dots wrap back to the first control; every copy of that card
+        // stays “on” so the track can teleport without a visual jump.
         dots.forEach(function (d, x) { d.classList.toggle('is-on', x === logical); });
-        cards.forEach(function (c, n) { c.classList.toggle('is-center', n === i); });
+        cards.forEach(function (c, n) { c.classList.toggle('is-center', logicalIndex(n) === logical); });
       }
       function wrapIfNeeded() {
         if (i < count || i >= count * 2) {
@@ -678,6 +680,7 @@
           apply(false);
           void track.offsetWidth;
         }
+        animating = false;
       }
       function go(n, user) {
         i = n;
@@ -685,9 +688,11 @@
         apply(true);
         if (user) restart();
         if (reduce) {
-          animating = false;
           wrapIfNeeded();
+          return;
         }
+        window.clearTimeout(go.wrapTimer);
+        go.wrapTimer = window.setTimeout(wrapIfNeeded, 780);
       }
       function goToLogical(n, user) {
         var current = logicalIndex(i);
@@ -715,7 +720,7 @@
       track.addEventListener('transitionend', function (e) {
         if (e.target !== track) return;
         if (e.propertyName && e.propertyName !== 'transform') return;
-        animating = false;
+        window.clearTimeout(go.wrapTimer);
         wrapIfNeeded();
       });
 
