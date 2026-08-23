@@ -611,17 +611,18 @@
       var count = originals.length;
       if (!count) return;
 
+      function decorateClone(node) {
+        node.setAttribute('aria-hidden', 'true');
+        node.tabIndex = -1;
+        node.setAttribute('draggable', 'false');
+        return node;
+      }
       originals.forEach(function (card) {
-        var after = card.cloneNode(true);
-        after.setAttribute('aria-hidden', 'true');
-        after.tabIndex = -1;
-        track.appendChild(after);
+        card.setAttribute('draggable', 'false');
+        track.appendChild(decorateClone(card.cloneNode(true)));
       });
       originals.slice().reverse().forEach(function (card) {
-        var before = card.cloneNode(true);
-        before.setAttribute('aria-hidden', 'true');
-        before.tabIndex = -1;
-        track.insertBefore(before, track.firstChild);
+        track.insertBefore(decorateClone(card.cloneNode(true)), track.firstChild);
       });
 
       var cards = Array.prototype.slice.call(track.querySelectorAll('.home-card'));
