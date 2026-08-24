@@ -479,7 +479,7 @@
           ds.href = seriesData.sourceUrl;
           ds.textContent = 'Official ' + brandName + ' specs';
         } else {
-          ds.href = 'support.html#warranty';
+          ds.href = 'warranty.html';
           ds.textContent = 'Limited Warranty Policy';
         }
       }
@@ -501,8 +501,8 @@
         const specLink = (seriesData && seriesData.sourceUrl)
           ? '<p class="text-sm text-slate-400 mt-3"><a class="text-sky-400 hover:text-sky-300" href="' +
             esc(seriesData.sourceUrl) + '" target="_blank" rel="noopener">Official ' + esc(brandName) +
-            ' specifications</a> · <a class="text-sky-400 hover:text-sky-300" href="support.html#warranty">Limited Warranty Policy</a></p>'
-          : '<p class="text-sm text-slate-400 mt-3"><a class="text-sky-400 hover:text-sky-300" href="support.html#warranty">Limited Warranty Policy</a></p>';
+            ' specifications</a> · <a class="text-sky-400 hover:text-sky-300" href="warranty.html">Limited Warranty Policy</a></p>'
+          : '<p class="text-sm text-slate-400 mt-3"><a class="text-sky-400 hover:text-sky-300" href="warranty.html">Limited Warranty Policy</a></p>';
         supportEl.innerHTML =
           '<div class="max-w-3xl space-y-6">' +
             '<div>' +

@@ -276,3 +276,57 @@
 .support-page.is-authed .sup-hero-btns.is-user {
   display: flex;
 }
+
+.war-doc {
+  padding: 2.5rem 0 4.5rem;
+}
+.war-doc > .site-wrap {
+  max-width: 48rem;
+  margin-left: auto;
+  margin-right: auto;
+}
+.war-card {
+  background: #fff;
+  border-radius: 1.15rem;
+  box-shadow: 0 8px 24px rgba(15, 23, 42, 0.05);
+  padding: 1.75rem 1.4rem 2rem;
+}
+@media (min-width: 640px) {
+  .war-card { padding: 2.35rem 2.6rem 2.6rem; }
+}
+.war-card section + section {
+  margin-top: 2rem;
+  padding-top: 1.75rem;
+  border-top: 1px solid #e2e8f0;
+}
+.war-card h2 {
+  margin: 0 0 0.7rem;
+  font-size: 1.2rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  color: #020617;
+}
+.war-card h3 {
+  margin: 0 0 0.4rem;
+  font-size: 0.98rem;
+  font-weight: 600;
+  color: #0f172a;
+}
+.war-card p {
+  margin: 0 0 0.75rem;
+  color: #475569;
+  font-size: 0.98rem;
+  line-height: 1.65;
+}
+.war-card ul,
+.war-card ol {
+  margin: 0 0 0.85rem;
+  padding-left: 1.2rem;
+  color: #475569;
+  font-size: 0.98rem;
+  line-height: 1.65;
+}
+.war-card li { margin: 0.22rem 0; }
+.war-card a { color: #0b5cff; font-weight: 600; text-decoration: none; }
+.war-card a:hover { text-decoration: underline; }
+.war-card .mb-0 { margin-bottom: 0; }
