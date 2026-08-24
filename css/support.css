@@ -193,6 +193,48 @@
   line-height: 1.65;
 }
 .sup-topic .body a { color: #0b5cff; font-weight: 600; }
+.sup-policy .eff {
+  margin: 0 0 1rem;
+  font-size: 0.82rem;
+  color: #64748b;
+}
+.sup-policy h3 {
+  margin: 1.15rem 0 0.4rem;
+  font-size: 1rem;
+  font-weight: 700;
+  color: #020617;
+}
+.sup-policy h4 {
+  margin: 0.7rem 0 0.25rem;
+  font-size: 0.92rem;
+  font-weight: 600;
+  color: #0f172a;
+}
+.sup-policy p { margin: 0 0 0.7rem; }
+.sup-policy ul,
+.sup-policy ol {
+  margin: 0 0 0.85rem;
+  padding-left: 1.2rem;
+}
+.sup-policy li { margin: 0.2rem 0; }
+.sup-policy table {
+  width: 100%;
+  margin: 0 0 0.85rem;
+  border-collapse: collapse;
+  font-size: 0.9rem;
+}
+.sup-policy th,
+.sup-policy td {
+  text-align: left;
+  padding: 0.55rem 0.7rem;
+  border-bottom: 1px solid #e2e8f0;
+  vertical-align: top;
+}
+.sup-policy th {
+  font-weight: 600;
+  color: #0f172a;
+  background: #f8fafc;
+}
 
 .sup-emails {
   display: grid;

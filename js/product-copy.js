@@ -290,40 +290,38 @@
     );
   }
 
+  var WARRANTY =
+    'All LED displays sold by Spectrum Display include the full manufacturer warranty plus Spectrum’s 3-year support layer from date of shipment. Manufacturer coverage follows the factory terms for the series on your order (typically 2–5 years). Coverage is limited to the original purchaser. Rental and touring use excludes physical damage from transport or handling. See the Limited Warranty Policy for what is covered and how to file a claim.';
+
   var SUPPORT = {
     gloshine: {
-      warrantyTitle: 'Gloshine Manufacturer Warranty',
-      warranty:
-        'Gloshine products sold by Spectrum Display are covered by the Gloshine manufacturer warranty and serviced through Spectrum as an authorized North American partner. Factory warranty and after-sales support are provided through authorized channels — not as a direct consumer factory claim. Coverage follows the series and configuration on your order.',
+      warrantyTitle: 'Limited Warranty',
+      warranty: WARRANTY,
       extraTitle: 'Certifications & factory specs',
       extra:
         'Gloshine publishes CE, ETL, FCC, UL, and RoHS marks for its LED products. Confirm the exact certifications and datasheet for the pitch and cabinet you order. Official series specifications are linked from this page.'
     },
     trt: {
-      warrantyTitle: 'TRT Manufacturer Warranty',
-      warranty:
-        'Standard TRT warranty applies (typically 2–3 years depending on series and registration). Spectrum Display adds local first-line support and expedited RMA handling for North American customers.',
+      warrantyTitle: 'Limited Warranty',
+      warranty: WARRANTY,
       extraTitle: 'What you get with Spectrum',
       extra: ''
     },
     bako: {
-      warrantyTitle: 'BAKO Manufacturer Warranty',
-      warranty:
-        'BAKO products sold by Spectrum Display are covered by the BAKO manufacturer warranty and handled through Spectrum as an authorized partner. Terms follow the series on your order.',
+      warrantyTitle: 'Limited Warranty',
+      warranty: WARRANTY,
       extraTitle: 'What you get with Spectrum',
       extra: ''
     },
     diao: {
-      warrantyTitle: 'Spectrum Warranty (DIAO Exclusive)',
-      warranty:
-        'DIAO series are Spectrum exclusives. Warranty and first-line support are provided by Spectrum Display. Terms follow the series on your order.',
+      warrantyTitle: 'Limited Warranty',
+      warranty: WARRANTY,
       extraTitle: 'What you get with Spectrum',
       extra: ''
     },
     element: {
-      warrantyTitle: 'Spectrum Warranty (Element Exclusive)',
-      warranty:
-        'Element series are Spectrum exclusives. Warranty and first-line support are provided by Spectrum Display. Terms follow the series on your order.',
+      warrantyTitle: 'Limited Warranty',
+      warranty: WARRANTY,
       extraTitle: 'What you get with Spectrum',
       extra: ''
     }
@@ -340,9 +338,8 @@
 
   function getSupport(brandId) {
     return SUPPORT[brandId] || {
-      warrantyTitle: 'Manufacturer Warranty',
-      warranty:
-        'Catalog products are manufacturer-warranty backed. Spectrum adds first-line support for sizing, install questions, and spare planning. Warranty terms follow the brand on your order.',
+      warrantyTitle: 'Limited Warranty',
+      warranty: WARRANTY,
       extraTitle: 'What you get with Spectrum',
       extra: ''
     };
