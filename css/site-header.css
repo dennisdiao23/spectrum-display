@@ -50,7 +50,8 @@ body:not(.designer-app) {
   padding-right: var(--site-gutter);
 }
 html:not(.is-logged-in) .pricing-only,
-html:not(.is-logged-in) .site-cart {
+html:not(.is-logged-in) .site-cart,
+html:not(.is-logged-in) .site-tabbar {
   display: none !important;
 }
 html.is-logged-in .guest-pricing {
@@ -639,8 +640,11 @@ html.is-logged-in .guest-pricing {
 @media (max-width: 767px) {
   :root {
     --site-header-h: 3.35rem;
-    --site-tabbar-h: calc(6.5rem - 35px + env(safe-area-inset-bottom, 0px));
+    --site-tabbar-h: 0px;
     --logo-h: 1.75rem;
+  }
+  html.is-logged-in {
+    --site-tabbar-h: calc(6.5rem - 35px + env(safe-area-inset-bottom, 0px));
   }
   body {
     padding-bottom: var(--site-tabbar-h);
@@ -810,7 +814,7 @@ html.is-logged-in .guest-pricing {
   display: none;
 }
 @media (max-width: 767px) {
-  .site-tabbar {
+  html.is-logged-in .site-tabbar {
     display: grid;
     grid-template-columns: repeat(4, 1fr);
     position: fixed;
