@@ -167,9 +167,17 @@
         </details>
         <details class="sup-topic" id="warranty">
           <summary>Warranty</summary>
-          <div class="body">
-            <p>All LED displays sold by Spectrum Display include the full manufacturer warranty plus Spectrum’s 3-year support layer from date of shipment.</p>
-            <p><a href="warranty.html">Read the Limited Warranty Policy →</a></p>
+          <div class="body sup-policy">
+            <p>Every product from Spectrum Display includes the full manufacturer warranty plus our own 3-year support layer.</p>
+            <p>Fixed installations receive the complete manufacturer warranty + Spectrum’s full 3-year support.</p>
+            <p>Rental / touring systems keep the full manufacturer warranty. Spectrum’s 3-year support covers manufacturing defects but excludes physical damage from transport, rigging, or stage use.</p>
+            <h3>Covered</h3>
+            <p>LED modules, power supplies, receiving cards, cabinets (structural), and Spectrum-supplied control components — for defects in materials or workmanship under normal use.</p>
+            <h3>Not Covered</h3>
+            <p>Improper installation, physical damage, water damage beyond IP rating, unauthorized modifications, labor/on-site service, and normal wear.</p>
+            <h3>Need help?</h3>
+            <p>Contact us through the Support section at <a href="https://www.spectrumdisplay.com/support.html">www.spectrumdisplay.com</a> with your order number, serial number, and photos of the issue. We typically respond within 2–5 business days.</p>
+            <p>Full policy details available upon request or on our <a href="warranty.html">website</a>.</p>
           </div>
         </details>
         <details class="sup-topic" id="shipping">
@@ -282,10 +290,6 @@
     }
     function openHashTopic() {
       var id = (location.hash || '').replace('#', '');
-      if (id === 'warranty') {
-        location.replace('warranty.html');
-        return;
-      }
       if (!id) return;
       var el = document.getElementById(id);
       if (el && el.tagName === 'DETAILS') el.open = true;
