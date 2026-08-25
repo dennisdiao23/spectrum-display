@@ -272,7 +272,8 @@ async function main() {
     res.json({
       ok: true,
       supabaseUrl: process.env.SUPABASE_URL || '',
-      supabaseAnonKey: process.env.SUPABASE_ANON_KEY || ''
+      supabaseAnonKey: process.env.SUPABASE_ANON_KEY || '',
+      googleClientId: process.env.GOOGLE_CLIENT_ID || ''
     });
   });
 

@@ -19,15 +19,20 @@
     });
   }
 
+  var fallbackGoogleClientId = '552923947936-qtdldf2sakt76k7ov5l1fi91bjm68c5v.apps.googleusercontent.com';
+  global.spectrumGoogleClientId = fallbackGoogleClientId;
+
   global.spectrumSupabaseReady = fetch('/api/config', { headers: { Accept: 'application/json' } })
     .then(function (res) { return res.ok ? res.json() : null; })
     .then(function (data) {
       var url = (data && data.supabaseUrl) || fallbackUrl;
       var key = (data && data.supabaseAnonKey) || fallbackAnon;
+      global.spectrumGoogleClientId = (data && data.googleClientId) || fallbackGoogleClientId;
       global.spectrumSupabase = makeClient(url, key);
       return global.spectrumSupabase;
     })
     .catch(function () {
+      global.spectrumGoogleClientId = fallbackGoogleClientId;
       global.spectrumSupabase = makeClient(fallbackUrl, fallbackAnon);
       return global.spectrumSupabase;
     });

@@ -136,9 +136,10 @@ OneDrive does **not** update GitHub. After Cloud Agent changes, pull and review 
 | **Google Cloud project** | `big-unison-420919` |
 | **Console** | https://console.cloud.google.com → that project → **APIs & Services** → **Credentials** / **OAuth consent screen** |
 | **Callback (do not change)** | `https://mzwgqbnfbfjczasvddan.supabase.co/auth/v1/callback` |
-| **JavaScript origin** | `https://www.spectrumdisplay.com` (and Railway URL if you still use it) |
+| **JavaScript origin** | `https://www.spectrumdisplay.com` (and `http://localhost:3000` only while testing locally) |
 | **Status** | **In production** (not Testing). Any Google account can sign in. |
-| **If it breaks** | Continue with Google errors, “redirect_uri_mismatch”, “origin not allowed”, or lands on the old Railway URL. Fix origins here **and** Site URL in Supabase. |
+| **What customers see** | Continue with Google uses Google Identity Services on this site, so the account picker says **spectrumdisplay.com**, not the Supabase URL. |
+| **If it breaks** | Continue with Google errors, “origin not allowed”, or the old “continue to …supabase.co” screen. Confirm **Authorized JavaScript origins** include `https://www.spectrumdisplay.com`. The old callback URL can stay as a backup. |
 
 Email/password Sign in does **not** need Google. Only the Google button does.
 

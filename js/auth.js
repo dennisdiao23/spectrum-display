@@ -264,6 +264,116 @@
   }
   boot();
 
+  function loadGoogleIdentity() {
+    if (global.google && google.accounts && google.accounts.id) {
+      return Promise.resolve();
+    }
+    return new Promise(function (resolve, reject) {
+      var existing = document.querySelector('script[src="https://accounts.google.com/gsi/client"]');
+      if (existing) {
+        existing.addEventListener('load', function () { resolve(); });
+        existing.addEventListener('error', function () { reject(new Error('Could not load Google sign-in.')); });
+        return;
+      }
+      var script = document.createElement('script');
+      script.src = 'https://accounts.google.com/gsi/client';
+      script.async = true;
+      script.onload = function () { resolve(); };
+      script.onerror = function () { reject(new Error('Could not load Google sign-in.')); };
+      document.head.appendChild(script);
+    });
+  }
+
+  async function googleNoncePair() {
+    const bytes = crypto.getRandomValues(new Uint8Array(32));
+    const nonce = btoa(String.fromCharCode.apply(null, bytes));
+    const hashBuffer = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(nonce));
+    const hashedNonce = Array.from(new Uint8Array(hashBuffer))
+      .map(function (b) { return b.toString(16).padStart(2, '0'); })
+      .join('');
+    return { nonce: nonce, hashedNonce: hashedNonce };
+  }
+
+  function clickHiddenGoogleButton() {
+    var host = document.getElementById('spectrum-gsi-btn');
+    if (!host) {
+      host = document.createElement('div');
+      host.id = 'spectrum-gsi-btn';
+      host.setAttribute('aria-hidden', 'true');
+      host.style.cssText = 'position:fixed;left:-9999px;top:0;width:1px;height:1px;overflow:hidden;';
+      document.body.appendChild(host);
+    }
+    host.innerHTML = '';
+    google.accounts.id.renderButton(host, {
+      type: 'standard',
+      theme: 'outline',
+      size: 'large',
+      text: 'continue_with',
+      width: 280,
+      ux_mode: 'popup'
+    });
+    var btn = host.querySelector('div[role="button"]');
+    if (btn) btn.click();
+  }
+
+  async function finishGoogleToken(client, credential, nonce) {
+    var first = await client.auth.signInWithIdToken({
+      provider: 'google',
+      token: credential,
+      nonce: nonce
+    });
+    var result = first;
+    if (first.error) {
+      result = await client.auth.signInWithIdToken({
+        provider: 'google',
+        token: credential
+      });
+    }
+    if (result.error) {
+      return { ok: false, error: friendlyError(result.error) };
+    }
+    await setUser(result.data.user);
+    global.dispatchEvent(new CustomEvent('spectrum:auth'));
+    return { ok: true, user: cached };
+  }
+
+  function googleIdentitySignIn(client, pair) {
+    var clientId = global.spectrumGoogleClientId;
+    if (!clientId) {
+      return Promise.resolve({ ok: false, error: 'Google sign-in is not connected yet. Use email for now.' });
+    }
+    return new Promise(function (resolve) {
+      var settled = false;
+      function done(result) {
+        if (settled) return;
+        settled = true;
+        resolve(result);
+      }
+      google.accounts.id.initialize({
+        client_id: clientId,
+        callback: function (response) {
+          if (!response || !response.credential) {
+            done({ ok: false, error: 'Google sign-in was cancelled.' });
+            return;
+          }
+          finishGoogleToken(client, response.credential, pair.nonce).then(done);
+        },
+        nonce: pair.hashedNonce,
+        ux_mode: 'popup',
+        auto_select: false,
+        cancel_on_tap_outside: true,
+        use_fedcm_for_prompt: true,
+        context: 'signin'
+      });
+      google.accounts.id.prompt(function (notification) {
+        if (!notification) return;
+        if (notification.isNotDisplayed() || notification.isSkippedMoment()) {
+          clickHiddenGoogleButton();
+        }
+      });
+    });
+  }
+
   const Auth = {
     ready: ready,
     getSession: function () { return cached; },
@@ -325,16 +435,16 @@
       return { ok: true, user: cached };
     },
     loginWithGoogle: async function () {
+      await (global.spectrumSupabaseReady || Promise.resolve());
       const client = sb();
       if (!client) return { ok: false, error: 'Sign-in is unavailable.' };
-      const { error } = await client.auth.signInWithOAuth({
-        provider: 'google',
-        options: { redirectTo: global.location.origin + '/account.html' }
-      });
-      if (error) {
-        return { ok: false, error: 'Google sign-in is not connected yet. Use email for now.' };
+      try {
+        await loadGoogleIdentity();
+        const pair = await googleNoncePair();
+        return await googleIdentitySignIn(client, pair);
+      } catch (err) {
+        return { ok: false, error: (err && err.message) || 'Could not sign in with Google.' };
       }
-      return { ok: true, redirect: true };
     },
     loginWithGoogleDemo: async function () {
       return this.loginWithGoogle();
