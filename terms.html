@@ -1,0 +1,327 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <script src="js/i18n-boot.js"></script>
+  <link rel="stylesheet" href="css/site-header.css" />
+  <link rel="stylesheet" href="css/support.css" />
+  <title>Terms of Service | Spectrum Display</title>
+  <meta name="description" content="Terms of Service for Spectrum Display: orders, payment, shipping, returns, warranty, liability, and use of www.spectrumdisplay.com." />
+  <link rel="canonical" href="https://www.spectrumdisplay.com/terms.html" />
+  <meta property="og:type" content="website" />
+  <meta property="og:site_name" content="Spectrum Display" />
+  <meta property="og:title" content="Terms of Service | Spectrum Display" />
+  <meta property="og:description" content="Orders, payment, shipping, returns, warranty, and site use for Spectrum Display." />
+  <meta property="og:url" content="https://www.spectrumdisplay.com/terms.html" />
+  <meta property="og:image" content="https://www.spectrumdisplay.com/assets/spectrum-logo.png" />
+  <meta name="twitter:card" content="summary" />
+  <meta name="twitter:title" content="Terms of Service | Spectrum Display" />
+  <meta name="twitter:description" content="Orders, payment, shipping, returns, warranty, and site use for Spectrum Display." />
+  <script src="js/seo.js"></script>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    body { font-family: 'Inter', system-ui, sans-serif; }
+  </style>
+</head>
+<body class="support-page antialiased">
+<header class="site-header" id="site-header">
+    <div class="site-header-inner">
+      <div class="site-header-top">
+        <a href="index.html" class="site-brand">
+          <img src="assets/spectrum-logo.png" alt="Spectrum" class="site-brand-logo" />
+        </a>
+        <nav class="site-nav" id="site-nav">
+          <div class="site-nav-item" data-mega="products">
+            <button type="button" class="site-nav-link" aria-expanded="false" aria-haspopup="true">
+              <span data-i18n="nav.products">Products</span>
+              <svg class="site-nav-chevron" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M6 9l6 6 6-6"/></svg>
+            </button>
+          </div>
+          <div class="site-nav-item" data-mega="solutions">
+            <button type="button" class="site-nav-link" aria-expanded="false" aria-haspopup="true">
+              <span data-i18n="nav.solutions">Solutions</span>
+              <svg class="site-nav-chevron" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M6 9l6 6 6-6"/></svg>
+            </button>
+          </div>
+          <a class="site-nav-link" href="designer.html" data-i18n="nav.designer">LED Wall Calculator</a>
+        </nav>
+        <div class="site-utils">
+          <div class="site-drop" id="hdr-search-drop">
+            <button type="button" class="site-util site-icon-btn" aria-label="Search" aria-haspopup="true">
+              <svg fill="none" stroke="currentColor" stroke-width="1.7" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z"/></svg>
+            </button>
+            <div class="site-drop-panel site-search-panel">
+              <form id="hdr-search-form" action="products.html" method="get">
+                <input id="hdr-search-input" name="q" type="search" autocomplete="off" placeholder="Search products" data-i18n-placeholder="nav.searchPlaceholder" />
+              </form>
+              <div class="site-search-results" id="hdr-search-results"></div>
+            </div>
+          </div>
+          <div class="site-drop" id="hdr-lang-drop">
+            <button type="button" class="site-util site-icon-btn" aria-label="Language" aria-haspopup="true">
+              <svg fill="none" stroke="currentColor" stroke-width="1.7" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 21a9 9 0 100-18 9 9 0 000 18zM3.6 9h16.8M3.6 15h16.8M12 3c2.5 3.2 2.5 14.8 0 18M12 3c-2.5 3.2-2.5 14.8 0 18"/></svg>
+            </button>
+            <div class="site-drop-panel site-lang-panel">
+              <button type="button" data-set-lang="en">English</button>
+              <button type="button" data-set-lang="es">Español</button>
+              <button type="button" data-set-lang="fr">Français</button>
+              <button type="button" data-set-lang="ko">한국어</button>
+              <button type="button" data-set-lang="ja">日本語</button>
+              <button type="button" data-set-lang="zh">中文</button>
+            </div>
+          </div>
+          <div class="site-drop" id="hdr-signin-drop">
+            <button type="button" class="site-util" aria-haspopup="true">
+              <svg fill="none" stroke="currentColor" stroke-width="1.7" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 7.5a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.5 19.5a7.5 7.5 0 0115 0"/></svg>
+              <span class="site-util-label site-util-guest" data-i18n="nav.signin">Sign in</span>
+              <span class="site-util-label site-util-user" id="hdr-user-name"></span>
+            </button>
+            <div class="site-drop-panel">
+              <div class="site-guest">
+                <h3 data-i18n="nav.myAccount">My Account</h3>
+                <ul class="site-account-roles">
+                  <li data-i18n="nav.benefitOrders">Place orders quickly and easily</li>
+                  <li data-i18n="nav.benefitTrack">View orders and track your shipping status</li>
+                  <li data-i18n="nav.benefitList">Create and access a list of your products</li>
+                  <li data-i18n="nav.benefitProjects">View Saved Projects</li>
+                </ul>
+                <div class="site-drop-actions">
+                  <a href="account.html" class="site-btn-primary" data-i18n="nav.signin">Sign in</a>
+                  <a href="account.html?mode=register" class="site-btn-ghost" data-i18n="nav.createAccount">Create account</a>
+                </div>
+              </div>
+              <div class="site-logged">
+                <h3 id="hdr-user-name-panel"></h3>
+                <p id="hdr-user-role"></p>
+                <div class="site-drop-list">
+                  <a href="account.html" data-i18n="nav.myAccount">My Account</a>
+                  <button type="button" id="hdr-logout" data-i18n="nav.signout">Sign out</button>
+                </div>
+              </div>
+            </div>
+          </div>
+          <a href="support.html" class="site-util site-support-link"><span data-i18n="nav.support">Support</span></a>
+          <a href="contact.html" class="site-cta" data-i18n="nav.contactSales">Contact Sales</a>
+          <a href="contact.html" class="site-util site-contact-icon" aria-label="Contact Sales">
+            <svg fill="none" stroke="currentColor" stroke-width="1.7" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M21.75 6.75v10.5a2.25 2.25 0 01-2.25 2.25h-15a2.25 2.25 0 01-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0019.5 4.5h-15a2.25 2.25 0 00-2.25 2.25m19.5 0v.243a2.25 2.25 0 01-1.07 1.916l-7.5 4.615a2.25 2.25 0 01-2.36 0L3.32 8.91a2.25 2.25 0 01-1.07-1.916V6.75"/></svg>
+          </a>
+          <a href="cart.html" class="site-util site-cart site-icon-btn" aria-label="Cart">
+            <svg fill="none" stroke="currentColor" stroke-width="1.7" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"/></svg>
+            <span class="site-cart-count" id="cart-count">0</span>
+          </a>
+          <button type="button" class="site-util site-menu-btn" id="hdr-menu-btn" aria-label="Menu">
+            <svg fill="none" stroke="currentColor" stroke-width="1.7" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h16"/></svg>
+          </button>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <section class="sup-hero">
+    <div class="site-wrap">
+      <p class="text-sm font-semibold tracking-wide text-white/70 mb-3">Support / Terms</p>
+      <h1>Terms of Service</h1>
+      <p><strong>Spectrum Display Inc.</strong><br />Effective August 24, 2026</p>
+    </div>
+  </section>
+
+  <section class="war-doc">
+    <div class="site-wrap">
+      <article class="war-card">
+
+        <section>
+          <h2>1. Acceptance of These Terms</h2>
+          <p>By accessing <a href="https://www.spectrumdisplay.com">www.spectrumdisplay.com</a>, placing an order, or otherwise doing business with Spectrum Display Inc. (“Spectrum,” “we,” “us,” or “our”), you agree to be bound by these Terms of Service. If you do not agree, do not use our website or place an order.</p>
+        </section>
+
+        <section>
+          <h2>2. About Spectrum Display</h2>
+          <p>Spectrum Display Inc. is a U.S.-based distributor of premium LED display and video wall products. We sell indoor, outdoor, rental, fine-pitch, fixed, poster, transparent, and creative/XR systems.</p>
+        </section>
+
+        <section>
+          <h2>3. Orders and Payment</h2>
+          <h3>3.1 Placing an Order</h3>
+          <p>All orders are placed through <a href="https://www.spectrumdisplay.com">www.spectrumdisplay.com</a> or by direct communication with Spectrum Display. An order constitutes an offer to purchase and is subject to acceptance by Spectrum Display.</p>
+          <h3>3.2 Pricing</h3>
+          <p>All prices are listed in U.S. Dollars (USD) and are exclusive of applicable taxes, shipping, and handling fees unless otherwise stated. Prices are subject to change without notice. Spectrum Display reserves the right to correct any pricing or typographical errors.</p>
+          <h3>3.3 Order Confirmation</h3>
+          <p>After you submit an order, you will receive an order confirmation email. This confirmation does not constitute acceptance of the order. Spectrum Display accepts the order by sending a separate shipping or processing confirmation, or by processing payment and preparing the order for shipment.</p>
+          <h3>3.4 Payment</h3>
+          <p>Payment is required at the time of order unless other written arrangements have been made in advance. We accept major credit cards and other payment methods displayed at checkout. Full payment must be received before the order is processed and shipped.</p>
+          <h3>3.5 Payment Issues</h3>
+          <p>If payment is declined, reversed, charged back, or otherwise fails, Spectrum Display reserves the right to cancel the order or place it on hold until full payment is received. You are responsible for any related bank or processing fees.</p>
+          <h3>3.6 Taxes</h3>
+          <p>You are responsible for all applicable sales, use, and other taxes. Where required by law, Spectrum Display will collect and remit sales tax.</p>
+        </section>
+
+        <section>
+          <h2>4. Shipping and Delivery</h2>
+          <h3>4.1 Shipping Methods and Costs</h3>
+          <p>Shipping methods, carriers, estimated transit times, and costs are shown at checkout or provided in your quote. Shipping charges are calculated based on the shipping address, product weight/dimensions, and selected method. Shipping costs are non-refundable unless the return or cancellation is due to an error by Spectrum Display.</p>
+          <h3>4.2 Delivery Times</h3>
+          <p>Any delivery dates or transit times provided are estimates only and are not guaranteed. Spectrum Display is not responsible for delays caused by the carrier, customs, weather, natural disasters, labor disputes, or any other events beyond our reasonable control. We will make reasonable efforts to notify you of significant delays when we become aware of them.</p>
+          <h3>4.3 Risk of Loss and Title</h3>
+          <p>Risk of loss and title to the products pass to you when the products are delivered to the carrier (FOB Origin / shipping point), unless otherwise agreed in writing. From that point forward, you are responsible for the products, including any loss or damage during transit.</p>
+          <h3>4.4 Inspection Upon Delivery</h3>
+          <p>You are responsible for carefully inspecting all shipments upon delivery. You must report any visible damage to the packaging or products, or any shortage of items, within three (3) business days of delivery. Please:</p>
+          <ul>
+            <li>Note any visible damage on the carrier’s delivery receipt before signing</li>
+            <li>Take clear photos of the damage and packaging</li>
+            <li>Contact Spectrum Display support promptly with the order number, photos, and description</li>
+          </ul>
+          <p>Failure to report visible damage or shortages within three (3) business days may result in the claim being denied.</p>
+          <h3>4.5 Incorrect Address or Refused Delivery</h3>
+          <p>You are responsible for providing a complete and accurate shipping address. If a shipment is returned to us because of an incorrect address, refused delivery, or failure to accept the delivery, you will be responsible for the original shipping charges plus any return shipping and restocking costs. Spectrum Display is not obligated to re-ship the order until these costs are paid.</p>
+          <h3>4.6 Drop-Ship and Manufacturer Shipments</h3>
+          <p>Some products may ship directly from the manufacturer or a third-party warehouse. In those cases, shipping timelines, tracking information, and carrier terms may differ. Spectrum Display will provide the available tracking information once it is received from the shipper.</p>
+          <h3>4.7 Split Shipments</h3>
+          <p>Large orders may be shipped in multiple packages or on different dates. You may receive partial deliveries. Each shipment is subject to the same inspection and risk-of-loss terms above.</p>
+        </section>
+
+        <section>
+          <h2>5. Returns, Cancellations, and Refunds</h2>
+          <h3>5.1 General Policy</h3>
+          <p>LED display and video wall systems are specialized products that are frequently configured, cut, or prepared specifically for each order. For this reason, all sales are generally final. Exceptions are limited and are described below.</p>
+          <h3>5.2 Order Cancellations</h3>
+          <p><strong>Before processing or shipping:</strong> If you wish to cancel an order before it has entered production or been shipped, contact us as soon as possible. We will review the request on a case-by-case basis. If cancellation is approved, any payment already received will be refunded (minus any non-recoverable costs already incurred).</p>
+          <p><strong>After production or shipping has begun:</strong> Once an order has entered production, been configured, or has shipped, cancellation is generally not available. Spectrum Display is not obligated to accept cancellation requests after this point.</p>
+          <h3>5.3 Non-Defective Returns</h3>
+          <p>Returns of non-defective products are not accepted as a standard policy. In limited cases, Spectrum Display may authorize a return at its sole discretion. Any authorized return will be subject to the following conditions:</p>
+          <ul>
+            <li>Prior written authorization (RMA) from Spectrum Display is required before any product is returned.</li>
+            <li>Products must be unused, in original packaging, and in resalable condition.</li>
+            <li>A restocking fee of up to 25% of the product purchase price may apply.</li>
+            <li>Customer is responsible for all return shipping costs and any shipping insurance.</li>
+            <li>Custom-configured, cut, or specially ordered items are not eligible for return under any circumstances.</li>
+          </ul>
+          <h3>5.4 Defective Products</h3>
+          <p>Products that arrive defective or develop defects covered under warranty are handled exclusively under Spectrum Display’s <a href="warranty.html">Limited Warranty Policy</a>. Please refer to the separate Warranty Policy for coverage details, claim procedures, and timelines. Do not return defective products without first obtaining an RMA under the Warranty Policy.</p>
+          <h3>5.5 Refund Process</h3>
+          <p>When a refund is approved:</p>
+          <ul>
+            <li>Refunds are issued to the original payment method used for the order.</li>
+            <li>Processing typically takes 5–10 business days after we receive and inspect the returned product (if applicable).</li>
+            <li>Shipping charges are non-refundable unless the return is due to an error by Spectrum Display.</li>
+          </ul>
+          <h3>5.6 How to Request a Cancellation or Return</h3>
+          <p>To request a cancellation or return authorization, contact us through the Support section at <a href="https://www.spectrumdisplay.com">www.spectrumdisplay.com</a> or using the contact details on your order confirmation. Include:</p>
+          <ul>
+            <li>Order number</li>
+            <li>Reason for the request</li>
+            <li>Photos (if the request relates to condition or damage)</li>
+          </ul>
+        </section>
+
+        <section>
+          <h2>6. Product Information and Availability</h2>
+          <p>We make reasonable efforts to ensure that product descriptions, specifications, and images on the website are accurate. However, minor variations may occur. Specifications are subject to change by the manufacturer.</p>
+          <p>Product availability is not guaranteed. Spectrum Display reserves the right to limit quantities, refuse orders, or discontinue products at any time.</p>
+        </section>
+
+        <section>
+          <h2>7. Warranty</h2>
+          <p>Products are covered by the manufacturer’s warranty and Spectrum Display’s support layer as described in our separate <a href="warranty.html">Limited Warranty Policy</a>. The Warranty Policy is incorporated into these Terms by reference. Except as expressly stated in the Warranty Policy, all products are provided “as is” and Spectrum Display disclaims all other warranties, express or implied, to the maximum extent permitted by law.</p>
+        </section>
+
+        <section>
+          <h2>8. Limitation of Liability</h2>
+          <p>To the maximum extent permitted by law, Spectrum Display’s total liability arising out of or related to any order or these Terms shall not exceed the amount you paid for the specific product giving rise to the claim.</p>
+          <p>In no event shall Spectrum Display be liable for any indirect, incidental, special, consequential, or punitive damages, including but not limited to lost profits, lost revenue, downtime, loss of data, or business interruption, even if advised of the possibility of such damages.</p>
+        </section>
+
+        <section>
+          <h2>9. Intellectual Property</h2>
+          <p>All content on <a href="https://www.spectrumdisplay.com">www.spectrumdisplay.com</a>, including text, graphics, logos, images, and software, is the property of Spectrum Display Inc. or its licensors and is protected by copyright and other intellectual property laws. You may not copy, reproduce, or use any content without our prior written permission.</p>
+        </section>
+
+        <section>
+          <h2>10. Privacy</h2>
+          <p>Your use of the website and submission of personal information are also governed by our <a href="privacy.html">Privacy Policy</a>, available at <a href="privacy.html">www.spectrumdisplay.com</a>. By using the site or placing an order, you consent to the collection and use of information as described in the Privacy Policy.</p>
+        </section>
+
+        <section>
+          <h2>11. Governing Law and Disputes</h2>
+          <p>These Terms shall be governed by and construed in accordance with the laws of the United States and the State in which Spectrum Display Inc. maintains its principal place of business, without regard to conflict of law principles. Any dispute arising under these Terms shall first be attempted to be resolved through good-faith negotiation.</p>
+        </section>
+
+        <section>
+          <h2>12. Changes to These Terms</h2>
+          <p>Spectrum Display reserves the right to update or modify these Terms of Service at any time. The current version will be posted on <a href="https://www.spectrumdisplay.com">www.spectrumdisplay.com</a> with the effective date. Continued use of the website or placement of orders after changes are posted constitutes acceptance of the revised Terms.</p>
+        </section>
+
+        <section class="war-end">
+          <h2>13. Contact Information</h2>
+          <p>For questions about these Terms of Service, please contact us through the Support section at:</p>
+          <p><a href="support.html"><strong>www.spectrumdisplay.com</strong></a></p>
+          <p class="text-sm text-slate-500 mb-0">Spectrum Display Inc. — Premium LED Display Distribution</p>
+        </section>
+
+      </article>
+    </div>
+  </section>
+
+  <footer class="bg-slate-950 text-slate-100 border-t border-slate-800 py-16">
+    <div class="site-wrap grid md:grid-cols-4 gap-10">
+      <div>
+        <a href="index.html" class="inline-block mb-4">
+          <img src="assets/spectrum-logo.png" alt="Spectrum" class="site-brand-logo" style="height:2.5rem" />
+        </a>
+        <p class="text-sm text-slate-400" data-i18n="footer.about">Premium LED display distributor serving North America. Authorized partner of five leading manufacturers.</p>
+        <ul class="mt-4 space-y-1 text-sm text-slate-400">
+          <li><a href="mailto:info@spectrumdisplay.com" class="hover:text-white">info@spectrumdisplay.com</a></li>
+          <li><a href="mailto:sales@spectrumdisplay.com" class="hover:text-white">sales@spectrumdisplay.com</a></li>
+          <li><a href="mailto:support@spectrumdisplay.com" class="hover:text-white">support@spectrumdisplay.com</a></li>
+        </ul>
+      </div>
+      <div>
+        <h4 class="font-semibold mb-4 text-sm uppercase tracking-wider text-slate-300" data-i18n="footer.products">Products</h4>
+        <ul class="space-y-2 text-sm text-slate-400">
+          <li><a href="products.html?cat=indoor-rental" class="hover:text-white">Indoor rental</a></li>
+          <li><a href="products.html?cat=outdoor-rental" class="hover:text-white">Outdoor rental</a></li>
+          <li><a href="products.html?cat=cob" class="hover:text-white">Fine pitch / COB</a></li>
+          <li><a href="products.html?cat=fixed-indoor" class="hover:text-white">Fixed indoor</a></li>
+          <li><a href="products.html?cat=posters" class="hover:text-white">Posters</a></li>
+          <li><a href="products.html?cat=transparent" class="hover:text-white">Transparent</a></li>
+          <li><a href="products.html?cat=outdoor-fixed" class="hover:text-white">Outdoor fixed</a></li>
+          <li><a href="products.html?cat=creative" class="hover:text-white">Creative / XR</a></li>
+        </ul>
+      </div>
+      <div>
+        <h4 class="font-semibold mb-4 text-sm uppercase tracking-wider text-slate-300" data-i18n="footer.company">Company</h4>
+        <ul class="space-y-2 text-sm text-slate-400">
+          <li><a href="products.html" class="hover:text-white" data-i18n="footer.ourBrands">Our Brands</a></li>
+          <li><a href="solutions.html" class="hover:text-white" data-i18n="nav.solutions">Solutions</a></li>
+          <li><a href="support.html" class="hover:text-white" data-i18n="nav.support">Support</a></li>
+          <li><a href="contact.html" class="hover:text-white" data-i18n="nav.contactSales">Contact Sales</a></li>
+        </ul>
+      </div>
+      <div>
+        <h4 class="font-semibold mb-4 text-sm uppercase tracking-wider text-slate-300" data-i18n="footer.support">Support</h4>
+        <ul class="space-y-2 text-sm text-slate-400">
+          <li><a href="support.html#tech" class="hover:text-white" data-i18n="footer.tech">Technical Resources</a></li>
+          <li><a href="warranty.html" class="hover:text-white" data-i18n="footer.warranty">Warranty</a></li>
+          <li><a href="shipping.html" class="hover:text-white" data-i18n="footer.shipping">Shipping & Returns</a></li>
+          <li><a href="account.html" class="hover:text-white" data-i18n="footer.dealer">Dealer Portal</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="site-wrap mt-12 pt-8 border-t border-slate-800 text-sm text-slate-500 flex flex-col sm:flex-row justify-between gap-4">
+      <p data-i18n="footer.copy">© 2026 Spectrum Display. All rights reserved.</p>
+      <div class="flex gap-6">
+        <a href="privacy.html" class="hover:text-slate-300" data-i18n="footer.privacy">Privacy</a>
+        <a href="terms.html" class="hover:text-slate-300" data-i18n="footer.terms">Terms</a>
+      </div>
+    </div>
+  </footer>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="js/supabase-client.js"></script>
+  <script src="js/pricing.js"></script>
+  <script src="js/auth.js"></script>
+  <script src="js/site-header.js"></script>
+  <script src="js/i18n.js"></script>
+</body>
+</html>
