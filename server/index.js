@@ -110,7 +110,8 @@ async function main() {
       ['/contact.html', 'monthly', '0.7'],
       ['/support.html', 'monthly', '0.6'],
       ['/warranty.html', 'monthly', '0.6'],
-      ['/shipping.html', 'monthly', '0.6']
+      ['/shipping.html', 'monthly', '0.6'],
+      ['/privacy.html', 'monthly', '0.5']
     ].forEach(function (page) {
       xml += sitemapUrl(SITE + page[0], page[1], page[2], today);
     });

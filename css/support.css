@@ -335,3 +335,6 @@
 .war-card a { color: #0b5cff; font-weight: 600; text-decoration: none; }
 .war-card a:hover { text-decoration: underline; }
 .war-card .mb-0 { margin-bottom: 0; }
+.war-card section[id] {
+  scroll-margin-top: calc(var(--site-header-h) + 1.25rem);
+}
