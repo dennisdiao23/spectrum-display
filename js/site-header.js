@@ -105,6 +105,51 @@
 
   var MEGA_CAT_CHEVRON = '<svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/></svg>';
 
+  var SERIES_IMG = {
+    discovery: 'assets/products/discovery.jpg',
+    ledposter: 'assets/products/ledposter.jpg',
+    mvultra: 'assets/products/gloshine/mvultra-hero.png',
+    dnin: 'assets/products/gloshine/dnin-hero.png',
+    dn: 'assets/products/gloshine/dnout-hero.png',
+    vanish: 'assets/products/gloshine/vanish-hero.png',
+    vamax: 'assets/products/gloshine/vamax-hero.png',
+    cbmax: 'assets/products/gloshine/cbmax-hero.png',
+    crmax: 'assets/products/gloshine/crmax-hero.png',
+    af2: 'assets/products/gloshine/af2-hero.png',
+    aw: 'assets/products/gloshine/aw-hero.png',
+    blade: 'assets/products/gloshine/blade-hero.png',
+    gposter: 'assets/products/gloshine/gposter-hero.png',
+    gposterplus: 'assets/products/gloshine/gposterplus-hero.png',
+    arpro: 'assets/products/gloshine/arpro-hero.png',
+    cfpro: 'assets/products/gloshine/cfpro-hero.png',
+    cfpro2: 'assets/products/gloshine/cfpro2-hero.png',
+    rbb: 'assets/products/gloshine/rbb-hero.png',
+    ur: 'assets/products/gloshine/ur-hero.png',
+    carbon: 'assets/products/gloshine/carbon-hero.png',
+    mvpro: 'assets/products/gloshine/mvpro-hero.webp',
+    mt55: 'assets/products/gloshine/mt55-hero.png',
+    mt2: 'assets/products/gloshine/mt2-hero.png',
+    mtedge: 'assets/products/gloshine/mtedge-hero.png',
+    cs2: 'assets/products/gloshine/cs2-hero.png',
+    mr: 'assets/products/gloshine/mr-hero.png',
+    ra2: 'assets/products/gloshine/ra2-hero.png',
+    zs3: 'assets/products/gloshine/zs3-hero.png',
+    zspro: 'assets/products/gloshine/zspro-hero.png',
+    gp: 'assets/products/gloshine/gp-hero.png',
+    legend: 'assets/products/gloshine/legend-hero.webp',
+    finepitch: 'assets/products/finepitch.jpg',
+    pro: 'assets/products/diao-pro.jpg',
+    value: 'assets/products/diao-value.jpg',
+    rental: 'assets/products/element-rental.jpg',
+    creative: 'assets/products/element-creative.jpg'
+  };
+
+  function imageForHref(href) {
+    var m = (href || '').match(/series=([^&]+)/);
+    if (!m) return '';
+    return SERIES_IMG[decodeURIComponent(m[1])] || '';
+  }
+
   var MEGA_CATS = [
     { id: 'indoor-rental', label: 'Indoor rental' },
     { id: 'outdoor-rental', label: 'Outdoor rental' },
@@ -215,10 +260,88 @@
     }
   };
 
-  function productGridHtml(items) {
-    return items.map(function (item) {
-      return '<a href="' + item.href + '"><span class="site-mega-dot">' + item.tag + '</span><span>' + item.name + '</span></a>';
+  var SOLUTION_CATS = [
+    { id: 'industry', label: 'By industry' },
+    { id: 'audience', label: 'By audience' },
+    { id: 'tech', label: 'Technologies' },
+    { id: 'tools', label: 'Tools' }
+  ];
+
+  var SOLUTION_MEGA = {
+    industry: {
+      title: 'By industry',
+      lead: 'LED walls for the rooms and venues you actually build.',
+      items: [
+        { name: 'Retail', href: 'solutions.html#retail', image: 'assets/content/solutions-retail.jpg' },
+        { name: 'Restaurant', href: 'solutions.html#restaurant', image: 'assets/content/solutions-restaurant.jpg' },
+        { name: 'Shop', href: 'solutions.html#shop', image: 'assets/content/solutions-shop.jpg' },
+        { name: 'Sports bar', href: 'solutions.html#sports-bar', image: 'assets/content/solutions-sports-bar.jpg' },
+        { name: 'Night club', href: 'solutions.html#nightclub', image: 'assets/content/solutions-nightclub.jpg' },
+        { name: 'Residential', href: 'solutions.html#residential', image: 'assets/content/solutions-residential.jpg' },
+        { name: 'Corporate', href: 'solutions.html#corporate', image: 'assets/content/solutions-corporate.jpg' },
+        { name: 'Control rooms', href: 'solutions.html#control-rooms', image: 'assets/content/solutions-control-rooms.jpg' },
+        { name: 'Education', href: 'solutions.html#education', image: 'assets/content/solutions-education.jpg' },
+        { name: 'Broadcast', href: 'solutions.html#broadcast', image: 'assets/content/solutions-broadcast.jpg' },
+        { name: 'Hospitality', href: 'solutions.html#hospitality', image: 'assets/content/solutions-hospitality.jpg' },
+        { name: 'Sports & events', href: 'solutions.html#sports' },
+        { name: 'House of worship', href: 'solutions.html#worship' }
+      ]
+    },
+    audience: {
+      title: 'By audience',
+      lead: 'Built for the way you buy, specify, and install.',
+      items: [
+        { name: 'Integrators & dealers', href: 'solutions.html#integrators' },
+        { name: 'End users', href: 'solutions.html#end-users' },
+        { name: 'Rental houses', href: 'solutions.html#rental-houses' }
+      ]
+    },
+    tech: {
+      title: 'Technologies',
+      lead: 'COB, Micro LED, fine pitch, and the brands behind them.',
+      items: [
+        { name: 'COB', href: 'products.html?cat=cob', image: 'assets/products/discovery.jpg' },
+        { name: 'Micro LED TV', href: 'products.html?cat=micro-led', image: 'assets/products/ledposter.jpg' },
+        { name: 'Fine pitch walls', href: 'solutions.html#fine-pitch' },
+        { name: 'Our brands', href: 'brands.html' }
+      ]
+    },
+    tools: {
+      title: 'Tools',
+      lead: 'Size the wall, get support, or talk to sales.',
+      items: [
+        { name: 'LED Wall Calculator', href: 'designer.html', image: 'assets/content/calculator-devices.png' },
+        { name: 'Support', href: 'support.html' },
+        { name: 'Contact Sales', href: 'contact.html' },
+        { name: 'Sign in', href: 'account.html' }
+      ]
+    }
+  };
+
+  function megaCardsHtml(items) {
+    var featured = (items || []).slice(0, 2);
+    var rest = (items || []).slice(2);
+    var cards = featured.map(function (item) {
+      var img = item.image || imageForHref(item.href);
+      return '<a class="site-mega-card" href="' + item.href + '">' +
+        (img ? '<span class="site-mega-card-media"><img src="' + img + '" alt=""></span>' : '') +
+        '<span class="site-mega-card-meta">' +
+          (item.tag ? '<span class="site-mega-dot">' + item.tag + '</span>' : '') +
+          '<span class="site-mega-card-name">' + item.name + '</span>' +
+        '</span>' +
+      '</a>';
     }).join('');
+    var links = rest.map(function (item) {
+      return '<a href="' + item.href + '">' +
+        (item.tag ? '<span class="site-mega-dot">' + item.tag + '</span>' : '') +
+        '<span>' + item.name + '</span></a>';
+    }).join('');
+    return '<div class="site-mega-feature">' + cards + '</div>' +
+      (links ? '<div class="site-mega-grid">' + links + '</div>' : '');
+  }
+
+  function productGridHtml(items) {
+    return megaCardsHtml(items);
   }
 
   function megaProductsInnerHtml() {
@@ -233,12 +356,34 @@
         '<div class="site-mega-body">' +
           '<h3 data-mega-title>' + first.label + '</h3>' +
           '<p data-mega-lead>Touring cabinets for indoor stages, events, and studios.</p>' +
-          '<div class="site-mega-grid" data-mega-grid></div>' +
+          '<div data-mega-grid></div>' +
         '</div>' +
       '</div>' +
       '<div class="site-mega-foot">' +
-        '<a href="products.html?cat=indoor-rental" data-mega-all>View all in this category →</a>' +
-        '<a href="designer.html">LED Wall Calculator →</a>' +
+        '<div class="site-mega-foot-item"><span>Explore</span><a href="products.html?cat=indoor-rental" data-mega-all>View all in this category</a></div>' +
+        '<div class="site-mega-foot-item"><span>Tools</span><a href="designer.html">LED Wall Calculator</a></div>' +
+      '</div>'
+    );
+  }
+
+  function megaSolutionsInnerHtml() {
+    var first = SOLUTION_CATS[0];
+    var buttons = SOLUTION_CATS.map(function (cat, i) {
+      return '<button type="button" class="site-mega-cat' + (i === 0 ? ' is-active' : '') +
+        '" data-sol-cat="' + cat.id + '">' + cat.label + ' ' + MEGA_CAT_CHEVRON + '</button>';
+    }).join('');
+    return (
+      '<div class="site-mega-products">' +
+        '<div class="site-mega-cats" role="tablist">' + buttons + '</div>' +
+        '<div class="site-mega-body">' +
+          '<h3 data-sol-title>' + first.label + '</h3>' +
+          '<p data-sol-lead>LED walls for the rooms and venues you actually build.</p>' +
+          '<div data-sol-grid></div>' +
+        '</div>' +
+      '</div>' +
+      '<div class="site-mega-foot">' +
+        '<div class="site-mega-foot-item"><span>Explore</span><a href="solutions.html">Explore all solutions</a></div>' +
+        '<div class="site-mega-foot-item"><span>Sales</span><a href="contact.html">Talk to sales</a></div>' +
       '</div>'
     );
   }
@@ -270,11 +415,21 @@
     $all('[data-mega-title]').forEach(function (el) { el.textContent = data.title; });
     $all('[data-mega-lead]').forEach(function (el) { el.textContent = data.lead; });
     $all('[data-mega-grid]').forEach(function (el) { el.innerHTML = productGridHtml(data.items); });
-    $all('.site-mega-cat').forEach(function (btn) {
+    $all('#site-mega-products .site-mega-cat, #mobile-product-mega .site-mega-cat').forEach(function (btn) {
       btn.classList.toggle('is-active', btn.getAttribute('data-cat') === key);
     });
     $all('[data-mega-all]').forEach(function (el) {
       el.href = 'products.html?cat=' + encodeURIComponent(key);
+    });
+  }
+
+  function renderSolutionMega(key) {
+    var data = SOLUTION_MEGA[key] || SOLUTION_MEGA.industry;
+    $all('[data-sol-title]').forEach(function (el) { el.textContent = data.title; });
+    $all('[data-sol-lead]').forEach(function (el) { el.textContent = data.lead; });
+    $all('[data-sol-grid]').forEach(function (el) { el.innerHTML = megaCardsHtml(data.items); });
+    $all('[data-sol-cat]').forEach(function (btn) {
+      btn.classList.toggle('is-active', btn.getAttribute('data-sol-cat') === key);
     });
   }
 
@@ -309,61 +464,23 @@
     prod.id = 'site-mega-products';
     prod.className = 'site-mega-panel';
     prod.innerHTML = megaProductsInnerHtml();
-    header.appendChild(prod);
+    document.body.appendChild(prod);
     renderProductMega(megaCatFromUrl());
 
     var sol = document.createElement('div');
     sol.id = 'site-mega-solutions';
     sol.className = 'site-mega-panel';
-    sol.innerHTML =
-      '<div class="site-mega-solutions">' +
-        '<div class="site-mega-col">' +
-          '<h4>By industry</h4>' +
-          '<a href="solutions.html#retail">Retail</a>' +
-          '<a href="solutions.html#restaurant">Restaurant</a>' +
-          '<a href="solutions.html#shop">Shop</a>' +
-          '<a href="solutions.html#sports-bar">Sports bar</a>' +
-          '<a href="solutions.html#nightclub">Night club</a>' +
-          '<a href="solutions.html#residential">Residential</a>' +
-          '<a href="solutions.html#corporate">Corporate</a>' +
-          '<a href="solutions.html#control-rooms">Control rooms</a>' +
-          '<a href="solutions.html#education">Education</a>' +
-          '<a href="solutions.html#broadcast">Broadcast</a>' +
-          '<a href="solutions.html#sports">Sports & events</a>' +
-          '<a href="solutions.html#worship">House of worship</a>' +
-          '<a href="solutions.html#hospitality">Hospitality</a>' +
-        '</div>' +
-        '<div class="site-mega-col">' +
-          '<h4>By audience</h4>' +
-          '<a href="solutions.html#integrators">Integrators & dealers</a>' +
-          '<a href="solutions.html#end-users">End users</a>' +
-          '<a href="solutions.html#rental-houses">Rental houses</a>' +
-          '<div class="mega-sub">Applications</div>' +
-          '<a href="products.html?cat=indoor-rental">Indoor rental</a>' +
-          '<a href="products.html?cat=outdoor-rental">Outdoor rental</a>' +
-          '<a href="products.html?cat=cob">Fine pitch / COB</a>' +
-          '<a href="products.html?cat=creative">Creative / XR</a>' +
-        '</div>' +
-        '<div class="site-mega-col">' +
-          '<h4>Technologies</h4>' +
-          '<a href="products.html?cat=cob">COB</a>' +
-          '<a href="products.html?cat=micro-led">Micro LED TV</a>' +
-          '<a href="solutions.html#fine-pitch">Fine pitch walls</a>' +
-          '<a href="brands.html">Our brands</a>' +
-        '</div>' +
-        '<div class="site-mega-col">' +
-          '<h4>Tools</h4>' +
-          '<a href="designer.html">LED Wall Calculator</a>' +
-          '<a href="support.html">Support</a>' +
-          '<a href="contact.html">Contact Sales</a>' +
-          '<a href="account.html">Sign in</a>' +
-        '</div>' +
-      '</div>' +
-      '<div class="site-mega-foot">' +
-        '<a href="solutions.html">Explore all solutions →</a>' +
-        '<a href="contact.html">Talk to sales →</a>' +
-      '</div>';
-    header.appendChild(sol);
+    sol.innerHTML = megaSolutionsInnerHtml();
+    document.body.appendChild(sol);
+    renderSolutionMega('industry');
+
+    if (!$('#site-mega-scrim')) {
+      var scrim = document.createElement('div');
+      scrim.id = 'site-mega-scrim';
+      scrim.className = 'site-mega-scrim';
+      document.body.insertBefore(scrim, prod);
+      scrim.addEventListener('click', function () { closeMegas(); });
+    }
   }
 
   function injectSalesCta() {
@@ -393,25 +510,23 @@
       var btn = el.querySelector('.site-nav-link');
       if (btn) btn.setAttribute('aria-expanded', 'false');
     });
+    var scrim = $('#site-mega-scrim');
+    if (scrim) scrim.classList.remove('is-on');
   }
 
-  function placeMega(panel, item) {
-    if (!panel || !item) return;
+  function placeMega(panel) {
+    if (!panel) return;
     var header = $('.site-header');
-    var top = header ? header.getBoundingClientRect().bottom : item.getBoundingClientRect().bottom;
-    var label = item.querySelector('.site-nav-link span') || item;
-    var triggerLeft = label.getBoundingClientRect().left;
-    var gutter = 16;
-    var preferred = Math.min(1480, window.innerWidth - gutter * 2);
-    var roomRight = window.innerWidth - triggerLeft - gutter;
-    var left = triggerLeft;
-    var width = preferred;
-    if (roomRight >= 480) {
-      width = Math.min(preferred, roomRight);
-    } else {
-      left = Math.max(gutter, window.innerWidth - preferred - gutter);
-      width = Math.min(preferred, window.innerWidth - left - gutter);
+    var inner = header && header.querySelector('.site-header-inner');
+    var top = (header ? header.getBoundingClientRect().bottom : 64) + 10;
+    var innerBox = inner ? inner.getBoundingClientRect() : { left: 16, right: window.innerWidth - 16 };
+    var pad = 16;
+    if (inner) {
+      pad = parseFloat(window.getComputedStyle(inner).paddingLeft) || 16;
     }
+    var left = innerBox.left + pad;
+    var right = innerBox.right - pad;
+    var width = Math.max(320, Math.min(1480, right - left));
     panel.style.top = Math.round(top) + 'px';
     panel.style.left = Math.round(left) + 'px';
     panel.style.width = Math.round(width) + 'px';
@@ -433,7 +548,9 @@
         if (btn) btn.setAttribute('aria-expanded', 'true');
         if (panel) {
           panel.classList.add('is-open');
-          placeMega(panel, item);
+          placeMega(panel);
+          var scrim = $('#site-mega-scrim');
+          if (scrim) scrim.classList.add('is-on');
         }
       }
       if (btn) {
@@ -445,15 +562,24 @@
         });
       }
     });
-    $all('.site-mega-cat').forEach(function (btn) {
+    $all('#site-mega-products .site-mega-cat, #mobile-product-mega .site-mega-cat').forEach(function (btn) {
       btn.addEventListener('click', function () { renderProductMega(btn.getAttribute('data-cat')); });
+    });
+    $all('#site-mega-solutions .site-mega-cat').forEach(function (btn) {
+      btn.addEventListener('click', function () { renderSolutionMega(btn.getAttribute('data-sol-cat')); });
+    });
+    $all('.site-mega-panel').forEach(function (panel) {
+      panel.addEventListener('click', function (e) {
+        var link = e.target.closest && e.target.closest('a');
+        if (link) closeMegas();
+      });
     });
     window.addEventListener('resize', function () {
       var openItem = $('.site-nav-item.is-open');
       if (!openItem) return;
       var name = openItem.getAttribute('data-mega');
       var panel = name === 'products' ? $('#site-mega-products') : $('#site-mega-solutions');
-      placeMega(panel, openItem);
+      placeMega(panel);
     });
   }
 
@@ -549,7 +675,7 @@
     }
 
     document.addEventListener('click', function (e) {
-      if (header.contains(e.target) && (e.target.closest && e.target.closest('.site-drop, #hdr-menu-btn, .site-nav-item, .site-mega-panel'))) return;
+      if (e.target.closest && e.target.closest('.site-mega-panel, .site-drop, #hdr-menu-btn, .site-nav-item')) return;
       closeAll();
       closeMegas();
       header.classList.remove('is-nav-open');

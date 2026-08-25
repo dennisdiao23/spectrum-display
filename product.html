@@ -427,7 +427,7 @@
         ovBody.innerHTML =
           '<p class="text-slate-300 mb-6 leading-relaxed">' + esc(seriesData.lead || seriesData.description) + '</p>' +
           '<p class="text-slate-300 leading-relaxed">As an authorized ' + esc(brandName) +
-          ' partner, Spectrum Display provides manufacturer warranty, local first-line support, and help configuring the right wall for your space.</p>';
+          ' partner, Spectrum Display provides the manufacturer warranty plus a 3-year Spectrum support layer, local first-line support, and help configuring the right wall for your space.</p>';
       }
 
       const specWrap = document.getElementById('spec-table-wrap');
@@ -479,8 +479,8 @@
           ds.href = seriesData.sourceUrl;
           ds.textContent = 'Official ' + brandName + ' specs';
         } else {
-          ds.href = 'support.html';
-          ds.textContent = 'Support & warranty';
+          ds.href = 'warranty.html';
+          ds.textContent = 'Limited Warranty Policy';
         }
       }
 
@@ -501,8 +501,8 @@
         const specLink = (seriesData && seriesData.sourceUrl)
           ? '<p class="text-sm text-slate-400 mt-3"><a class="text-sky-400 hover:text-sky-300" href="' +
             esc(seriesData.sourceUrl) + '" target="_blank" rel="noopener">Official ' + esc(brandName) +
-            ' specifications</a> · <a class="text-sky-400 hover:text-sky-300" href="support.html">Spectrum support</a></p>'
-          : '<p class="text-sm text-slate-400 mt-3"><a class="text-sky-400 hover:text-sky-300" href="support.html">Spectrum support</a></p>';
+            ' specifications</a> · <a class="text-sky-400 hover:text-sky-300" href="warranty.html">Limited Warranty Policy</a></p>'
+          : '<p class="text-sm text-slate-400 mt-3"><a class="text-sky-400 hover:text-sky-300" href="warranty.html">Limited Warranty Policy</a></p>';
         supportEl.innerHTML =
           '<div class="max-w-3xl space-y-6">' +
             '<div>' +

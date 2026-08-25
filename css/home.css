@@ -179,15 +179,19 @@
 .home-cards {
   position: relative;
   z-index: 1;
-  margin-top: 3.25rem;
+  margin-top: 1.75rem;
+}
+@media (min-width: 768px) {
+  .home-cards { margin-top: 3.25rem; }
 }
 .home-cards-track {
   display: flex;
+  align-items: flex-start;
   gap: 0.75rem;
   overflow-x: auto;
   scroll-snap-type: x mandatory;
   scroll-behavior: smooth;
-  padding: 1.1rem 0 1.1rem;
+  padding: 0.7rem 0 0.85rem;
   scrollbar-width: none;
   -webkit-overflow-scrolling: touch;
 }
@@ -204,14 +208,19 @@
 }
 .home-cards-track::-webkit-scrollbar { display: none; }
 .home-card {
+  /* Phone: 4:3 card, centered, with a sliver of the neighbors on each side. */
+  --card-w: calc(100vw - 3.5rem);
+  --card-h: calc((100vw - 3.5rem) * 3 / 4);
   position: relative;
-  flex: 0 0 min(calc(100vw - 1.25rem), calc(50svh * 3 / 2));
-  width: min(calc(100vw - 1.25rem), calc(50svh * 3 / 2));
-  height: auto;
-  aspect-ratio: 3 / 2;
+  flex: 0 0 var(--card-w);
+  width: var(--card-w);
+  min-width: var(--card-w);
+  height: var(--card-h);
+  min-height: var(--card-h);
+  contain: size layout;
   scroll-snap-align: center;
   scroll-snap-stop: always;
-  border-radius: 1.25rem;
+  border-radius: 1.75rem;
   overflow: hidden;
   text-decoration: none;
   color: #fff;
@@ -221,10 +230,13 @@
 }
 @media (min-width: 768px) {
   .home-card {
+    --card-w: 37.5rem;
+    --card-h: 25.5rem;
     flex: 0 0 37.5rem;
-    width: auto;
+    width: 37.5rem;
+    min-width: 37.5rem;
     height: 25.5rem;
-    aspect-ratio: auto;
+    min-height: 25.5rem;
     border-radius: 1.5rem;
   }
 }
@@ -232,6 +244,12 @@
 .home-card:focus-visible {
   transform: translateY(-12px);
   box-shadow: 0 28px 56px rgba(8, 6, 24, 0.48);
+}
+@media (max-width: 767px) {
+  .home-card:hover,
+  .home-card:focus-visible {
+    transform: none;
+  }
 }
 .home-card img {
   position: absolute;
@@ -257,15 +275,18 @@
   letter-spacing: -0.02em;
   text-shadow: 0 1px 10px rgba(0, 0, 0, 0.45);
 }
+@media (max-width: 767px) {
+  .home-card-label {
+    padding: 1.35rem 1.4rem 0;
+    font-size: 1.25rem;
+  }
+}
 .home-cards-nav {
   display: flex;
   align-items: center;
   justify-content: center;
   gap: 0.85rem;
   margin-top: 0.35rem;
-}
-@media (max-width: 767px) {
-  .home-cards-arrow { display: none; }
 }
 .home-cards-arrow {
   width: 2.5rem;
@@ -278,6 +299,9 @@
   align-items: center;
   justify-content: center;
   cursor: pointer;
+}
+@media (max-width: 767px) {
+  .home-cards-arrow { display: none; }
 }
 .home-cards-arrow:hover { background: #fff; }
 .home-cards-dots {

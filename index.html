@@ -585,7 +585,7 @@
         <h4 class="font-semibold mb-4 text-sm uppercase tracking-wider text-slate-300" data-i18n="footer.support">Support</h4>
         <ul class="space-y-2 text-sm text-slate-400">
           <li><a href="support.html#tech" class="hover:text-white" data-i18n="footer.tech">Technical Resources</a></li>
-          <li><a href="support.html#warranty" class="hover:text-white" data-i18n="footer.warranty">Warranty</a></li>
+          <li><a href="warranty.html" class="hover:text-white" data-i18n="footer.warranty">Warranty</a></li>
           <li><a href="support.html#shipping" class="hover:text-white" data-i18n="footer.shipping">Shipping & Returns</a></li>
           <li><a href="account.html" class="hover:text-white" data-i18n="footer.dealer">Dealer Portal</a></li>
         </ul>
@@ -644,8 +644,7 @@
 
       var i = n;
       var timer = null;
-      var jumping = false;
-      var moving = false;
+      var busy = false;
       var reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
       for (var d = 0; d < n; d++) {
@@ -667,49 +666,58 @@
         var L = logicalOf(i);
         dots.forEach(function (dot, x) { dot.classList.toggle('is-on', x === L); });
       }
-      function targetLeft(index) {
+      function centerLeft(index) {
         var card = cards[index];
         if (!card) return 0;
-        var tr = track.getBoundingClientRect();
-        var cr = card.getBoundingClientRect();
-        return track.scrollLeft + (cr.left + cr.width / 2) - (tr.left + tr.width / 2);
+        return Math.round(card.offsetLeft - (track.clientWidth - card.offsetWidth) / 2);
       }
       function jumpTo(index) {
-        jumping = true;
-        track.classList.add('is-jumping');
         i = index;
-        track.scrollLeft = targetLeft(index);
+        track.classList.add('is-jumping');
+        var x = centerLeft(index);
+        track.scrollLeft = x;
         requestAnimationFrame(function () {
-          track.scrollLeft = targetLeft(index);
-          track.classList.remove('is-jumping');
-          jumping = false;
+          track.scrollLeft = centerLeft(index);
+          requestAnimationFrame(function () {
+            track.scrollLeft = centerLeft(index);
+            track.classList.remove('is-jumping');
+          });
         });
       }
       function normalize() {
         if (i >= n * 2) jumpTo(i - n);
         else if (i < n) jumpTo(i + n);
       }
-      var settleTimer = null;
-      function afterMove(fn) {
-        clearTimeout(settleTimer);
-        settleTimer = setTimeout(fn, reduce ? 30 : 480);
+      function onSettled(fn) {
+        var done = false;
+        function finish() {
+          if (done) return;
+          done = true;
+          track.removeEventListener('scrollend', finish);
+          clearTimeout(fallback);
+          fn();
+        }
+        track.addEventListener('scrollend', finish);
+        var fallback = setTimeout(finish, reduce ? 40 : 850);
       }
       function scrollToIndex(index, animate, user) {
+        if (busy && !user) return;
+        busy = true;
         i = index;
         updateDots();
         if (!animate || reduce) {
           jumpTo(index);
           normalize();
+          busy = false;
           if (user) restart();
           return;
         }
-        moving = true;
-        track.scrollTo({ left: targetLeft(index), behavior: 'smooth' });
-        afterMove(function () {
-          moving = false;
-          i = nearestIndex();
-          updateDots();
+        track.scrollTo({ left: centerLeft(index), behavior: 'smooth' });
+        onSettled(function () {
+          i = index;
           normalize();
+          updateDots();
+          setTimeout(function () { busy = false; }, 80);
         });
         if (user) restart();
       }
@@ -730,26 +738,13 @@
         if (best === i) return;
         scrollToIndex(best, true, user);
       }
-      function nearestIndex() {
-        var tr = track.getBoundingClientRect();
-        var mid = tr.left + tr.width / 2;
-        var best = i;
-        var bestDist = Infinity;
-        for (var k = 0; k < cards.length; k++) {
-          var cr = cards[k].getBoundingClientRect();
-          var dist = Math.abs(cr.left + cr.width / 2 - mid);
-          if (dist < bestDist) {
-            bestDist = dist;
-            best = k;
-          }
-        }
-        return best;
-      }
 
       function next() { go(1, false); }
       function start() {
         if (reduce || timer) return;
-        timer = setInterval(next, 4500);
+        timer = setInterval(function () {
+          if (!busy) next();
+        }, 4500);
       }
       function stop() {
         if (timer) { clearInterval(timer); timer = null; }
@@ -770,13 +765,26 @@
 
       var scrollWait = null;
       track.addEventListener('scroll', function () {
-        if (jumping || moving) return;
+        if (busy) return;
         clearTimeout(scrollWait);
         scrollWait = setTimeout(function () {
-          i = nearestIndex();
+          if (busy) return;
+          var tr = track.getBoundingClientRect();
+          var mid = tr.left + tr.width / 2;
+          var best = i;
+          var bestDist = Infinity;
+          for (var k = 0; k < cards.length; k++) {
+            var cr = cards[k].getBoundingClientRect();
+            var dist = Math.abs(cr.left + cr.width / 2 - mid);
+            if (dist < bestDist) {
+              bestDist = dist;
+              best = k;
+            }
+          }
+          i = best;
           updateDots();
           normalize();
-        }, 90);
+        }, 140);
       }, { passive: true });
 
       window.addEventListener('resize', function () {
