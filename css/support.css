@@ -308,10 +308,14 @@
   color: #020617;
 }
 .war-card h3 {
-  margin: 0 0 0.4rem;
+  margin: 1.35rem 0 0.4rem;
   font-size: 0.98rem;
   font-weight: 600;
   color: #0f172a;
+}
+.war-card h2 + h3,
+.war-card div > h3:first-child {
+  margin-top: 0;
 }
 .war-card p {
   margin: 0 0 0.75rem;
