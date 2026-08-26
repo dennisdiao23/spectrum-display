@@ -45,6 +45,7 @@
       <div class="flex flex-wrap gap-2 border-b border-slate-800 pb-3">
         <button type="button" id="tab-products" class="admin-tab px-4 py-2 rounded-full text-sm font-medium bg-sky-500/20 text-sky-300">Products</button>
         <button type="button" id="tab-accounts" class="admin-tab px-4 py-2 rounded-full text-sm font-medium text-slate-400 hover:text-white">Accounts</button>
+        <button type="button" id="tab-dealers" class="admin-tab px-4 py-2 rounded-full text-sm font-medium text-slate-400 hover:text-white">Dealer applications</button>
       </div>
 
       <div id="products-section" class="space-y-6">
@@ -215,6 +216,7 @@
               <label class="block text-xs text-slate-400 mb-1">Account type</label>
               <select id="acct-role" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm">
                 <option value="customer">Customer</option>
+                <option value="pending_dealer">Pending dealer</option>
                 <option value="dealer">Dealer</option>
                 <option value="sales">Sales</option>
               </select>
@@ -250,6 +252,26 @@
             <h3 class="font-semibold mb-3">Custom panels</h3>
             <div id="acct-panels" class="space-y-2 text-sm"></div>
           </div>
+        </div>
+      </div>
+
+      <div id="dealers-section" class="hidden space-y-4">
+        <p class="text-slate-400 text-sm">Pending dealer companies. Approve as Authorized (30% deposit · balance before ship) or reject back to Customer.</p>
+        <p id="dealers-error" class="hidden text-sm text-red-400"></p>
+        <div class="overflow-x-auto rounded-2xl border border-slate-800">
+          <table class="w-full text-sm">
+            <thead class="text-left text-slate-400 border-b border-slate-800">
+              <tr>
+                <th class="py-3 px-4 font-medium">Company</th>
+                <th class="py-3 px-4 font-medium">Applicant</th>
+                <th class="py-3 px-4 font-medium">Tax ID</th>
+                <th class="py-3 px-4 font-medium">Submitted</th>
+                <th class="py-3 px-4 font-medium">Details</th>
+                <th class="py-3 px-4 font-medium"></th>
+              </tr>
+            </thead>
+            <tbody id="dealers-table" class="text-slate-200"></tbody>
+          </table>
         </div>
       </div>
     </section>
@@ -373,6 +395,7 @@
     function roleLabel(role) {
       if (role === 'dealer') return 'Dealer';
       if (role === 'sales') return 'Sales';
+      if (role === 'pending_dealer') return 'Pending dealer';
       return 'Customer';
     }
 
@@ -386,10 +409,14 @@
 
     function showAdminTab(name) {
       const productsOn = name === 'products';
+      const accountsOn = name === 'accounts';
+      const dealersOn = name === 'dealers';
       document.getElementById('products-section').classList.toggle('hidden', !productsOn);
-      document.getElementById('accounts-section').classList.toggle('hidden', productsOn);
+      document.getElementById('accounts-section').classList.toggle('hidden', !accountsOn);
+      document.getElementById('dealers-section').classList.toggle('hidden', !dealersOn);
       document.getElementById('tab-products').className = 'admin-tab px-4 py-2 rounded-full text-sm font-medium ' + (productsOn ? 'bg-sky-500/20 text-sky-300' : 'text-slate-400 hover:text-white');
-      document.getElementById('tab-accounts').className = 'admin-tab px-4 py-2 rounded-full text-sm font-medium ' + (productsOn ? 'text-slate-400 hover:text-white' : 'bg-sky-500/20 text-sky-300');
+      document.getElementById('tab-accounts').className = 'admin-tab px-4 py-2 rounded-full text-sm font-medium ' + (accountsOn ? 'bg-sky-500/20 text-sky-300' : 'text-slate-400 hover:text-white');
+      document.getElementById('tab-dealers').className = 'admin-tab px-4 py-2 rounded-full text-sm font-medium ' + (dealersOn ? 'bg-sky-500/20 text-sky-300' : 'text-slate-400 hover:text-white');
     }
 
     async function loadPriceTiers() {
@@ -398,6 +425,50 @@
       document.getElementById('tier-customer').value = tiers.customer != null ? tiers.customer : 0;
       document.getElementById('tier-dealer').value = tiers.dealer != null ? tiers.dealer : 0;
       document.getElementById('tier-sales').value = tiers.sales != null ? tiers.sales : 0;
+    }
+
+    async function loadDealerApplications() {
+      const tb = document.getElementById('dealers-table');
+      const errEl = document.getElementById('dealers-error');
+      errEl.classList.add('hidden');
+      errEl.textContent = '';
+      try {
+        const data = await api('/api/admin/dealer-applications');
+        const rows = data.applications || [];
+        tb.innerHTML = rows.map(function (c) {
+          const applicants = c.applicants || [];
+          const applicant = applicants[0] || {};
+          const when = (c.application && c.application.applied_at) || c.created_at;
+          const whenText = when ? new Date(when).toLocaleString() : '';
+          const app = c.application || {};
+          const details = [
+            c.billing_email || '',
+            c.phone || '',
+            (app.business_type || []).join(', '),
+            (app.primary_verticals || []).join(', ')
+          ].filter(Boolean).join(' · ');
+          const cert = c.resale_certificate_url
+            ? '<a class="text-sky-400 hover:text-sky-300 text-xs" href="' + esc(c.resale_certificate_url) + '" target="_blank" rel="noopener">Resale cert</a>'
+            : '<span class="text-xs text-slate-500">No cert</span>';
+          return '<tr class="border-b border-slate-800 align-top" data-id="' + esc(c.id) + '">' +
+            '<td class="py-3 px-4"><div class="font-medium">' + esc(c.name || '—') + '</div>' +
+            '<div class="text-xs text-slate-500">' + esc(c.legal_name || '') + '</div>' +
+            '<div class="mt-1">' + cert + '</div></td>' +
+            '<td class="py-3 px-4"><div>' + esc(applicant.name || '—') + '</div>' +
+            '<div class="text-xs text-slate-400">' + esc(applicant.email || '') + '</div></td>' +
+            '<td class="py-3 px-4 text-slate-300">' + esc(c.tax_id || '—') + '</td>' +
+            '<td class="py-3 px-4 text-slate-500 text-xs">' + esc(whenText) + '</td>' +
+            '<td class="py-3 px-4 text-xs text-slate-400 max-w-xs">' + esc(details || '—') + '</td>' +
+            '<td class="py-3 px-4 text-right whitespace-nowrap">' +
+            '<button type="button" class="dealer-approve px-3 py-1.5 rounded-full bg-emerald-500/20 text-emerald-300 text-xs font-medium hover:bg-emerald-500/30 mr-2" data-id="' + esc(c.id) + '">Approve as Authorized</button>' +
+            '<button type="button" class="dealer-reject px-3 py-1.5 rounded-full border border-slate-600 text-xs text-slate-300 hover:border-red-500 hover:text-red-300" data-id="' + esc(c.id) + '">Reject</button>' +
+            '</td></tr>';
+        }).join('') || '<tr><td class="py-6 px-4 text-slate-500" colspan="6">No pending dealer applications.</td></tr>';
+      } catch (err) {
+        errEl.textContent = err.message || 'Could not load dealer applications.';
+        errEl.classList.remove('hidden');
+        tb.innerHTML = '<tr><td class="py-6 px-4 text-slate-500" colspan="6">Could not load applications.</td></tr>';
+      }
     }
 
     async function loadAccounts() {
@@ -479,7 +550,8 @@
         document.getElementById('acct-id').value = p.id;
         document.getElementById('acct-name').value = p.name || '';
         document.getElementById('acct-email').value = p.email || '';
-        document.getElementById('acct-role').value = (p.role === 'dealer' || p.role === 'sales') ? p.role : 'customer';
+        document.getElementById('acct-role').value =
+          (p.role === 'dealer' || p.role === 'sales' || p.role === 'pending_dealer') ? p.role : 'customer';
         document.getElementById('acct-company').value = p.company || '';
         document.getElementById('acct-phone').value = p.phone || '';
         const markupEl = document.getElementById('acct-markup');
@@ -510,6 +582,45 @@
       document.getElementById('account-detail').classList.add('hidden');
       await loadPriceTiers();
       await loadAccounts();
+    });
+    document.getElementById('tab-dealers').addEventListener('click', async function () {
+      showAdminTab('dealers');
+      await loadDealerApplications();
+    });
+    document.getElementById('dealers-table').addEventListener('click', async function (e) {
+      const approveBtn = e.target.closest('.dealer-approve');
+      const rejectBtn = e.target.closest('.dealer-reject');
+      if (approveBtn) {
+        const id = approveBtn.getAttribute('data-id');
+        if (!id || !confirm('Approve this company as Authorized dealer?')) return;
+        try {
+          await api('/api/admin/dealer-applications/' + encodeURIComponent(id) + '/approve', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: '{}'
+          });
+          await loadDealerApplications();
+        } catch (err) {
+          alert(err.message || 'Could not approve.');
+        }
+        return;
+      }
+      if (rejectBtn) {
+        const id = rejectBtn.getAttribute('data-id');
+        if (!id) return;
+        const notes = window.prompt('Reject application? Optional note for internal records:', '');
+        if (notes === null) return;
+        try {
+          await api('/api/admin/dealer-applications/' + encodeURIComponent(id) + '/reject', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ notes: notes })
+          });
+          await loadDealerApplications();
+        } catch (err) {
+          alert(err.message || 'Could not reject.');
+        }
+      }
     });
     document.getElementById('account-back').addEventListener('click', async function () {
       document.getElementById('account-detail').classList.add('hidden');

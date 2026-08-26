@@ -172,6 +172,16 @@
           <button type="button" data-tab="panels" class="dash-tab px-4 py-2 rounded-full text-sm font-medium text-slate-400 hover:text-white" data-i18n="account.panels">Custom panels</button>
           <button type="button" data-tab="orders" class="dash-tab px-4 py-2 rounded-full text-sm font-medium text-slate-400 hover:text-white" data-i18n="account.orders">Orders</button>
           <button type="button" data-tab="profile" class="dash-tab px-4 py-2 rounded-full text-sm font-medium text-slate-400 hover:text-white" data-i18n="account.info">Account info</button>
+          <button type="button" data-tab="apply" id="tab-btn-apply" class="dash-tab hidden px-4 py-2 rounded-full text-sm font-medium text-slate-400 hover:text-white">Become a dealer</button>
+          <button type="button" data-tab="pending" id="tab-btn-pending" class="dash-tab hidden px-4 py-2 rounded-full text-sm font-medium text-slate-400 hover:text-white">Application pending</button>
+        </div>
+
+        <div id="pending-banner" class="hidden mb-6 rounded-2xl border border-amber-500/30 bg-amber-500/10 px-5 py-4">
+          <p class="text-sm text-amber-100 leading-relaxed">Your dealer application is in review. You can still save calculator projects. Dealer net pricing, stock, and checkout unlock after Spectrum approves your company.</p>
+          <div class="mt-3 flex flex-wrap gap-2">
+            <a href="designer.html" class="inline-flex px-4 py-2 rounded-full bg-sky-500 hover:bg-sky-400 text-white text-sm font-semibold">Open calculator</a>
+            <a href="contact.html" class="inline-flex px-4 py-2 rounded-full border border-slate-600 text-sm text-slate-200 hover:border-sky-500">Contact sales</a>
+          </div>
         </div>
 
         <!-- Projects -->
@@ -229,11 +239,187 @@
             <div>
               <label class="block text-xs text-slate-400 mb-1">Account type</label>
               <input id="prof-role" type="text" disabled class="w-full bg-slate-900 border border-slate-800 rounded-lg px-3 py-2.5 text-sm text-slate-500" />
-              <p class="text-xs text-slate-500 mt-1">New accounts are Customer. Dealer and Sales types are set by Spectrum in Admin.</p>
+              <p class="text-xs text-slate-500 mt-1">New accounts are Customer. Dealer access is approved by Spectrum after you apply.</p>
             </div>
             <p id="profile-msg" class="hidden text-sm text-sky-400"></p>
             <button type="submit" class="px-6 py-2.5 rounded-full bg-sky-500 hover:bg-sky-400 text-white text-sm font-semibold transition">Save changes</button>
           </form>
+        </div>
+
+        <!-- Become a dealer -->
+        <div id="tab-apply" class="dash-section hidden">
+          <form id="dealer-apply-form" class="max-w-3xl space-y-6 rounded-2xl border border-slate-800 bg-slate-900/50 p-6">
+            <div>
+              <h2 class="text-xl font-semibold">Become a dealer</h2>
+              <p class="text-sm text-slate-400 mt-1">Apply for Authorized dealer access. Net pricing unlocks after Spectrum approves your company.</p>
+            </div>
+            <div class="grid sm:grid-cols-2 gap-4">
+              <div class="sm:col-span-2">
+                <label class="block text-xs text-slate-400 mb-1">Company name *</label>
+                <input name="company_name" required type="text" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:border-sky-500" />
+              </div>
+              <div>
+                <label class="block text-xs text-slate-400 mb-1">Legal name</label>
+                <input name="legal_name" type="text" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:border-sky-500" />
+              </div>
+              <div>
+                <label class="block text-xs text-slate-400 mb-1">Website</label>
+                <input name="website" type="text" placeholder="https://" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:border-sky-500" />
+              </div>
+              <div>
+                <label class="block text-xs text-slate-400 mb-1">Phone *</label>
+                <input name="phone" required type="tel" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:border-sky-500" />
+              </div>
+              <div>
+                <label class="block text-xs text-slate-400 mb-1">Billing email *</label>
+                <input name="billing_email" required type="email" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:border-sky-500" />
+              </div>
+              <div>
+                <label class="block text-xs text-slate-400 mb-1">Tax ID *</label>
+                <input name="tax_id" required type="text" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:border-sky-500" />
+              </div>
+              <div>
+                <label class="block text-xs text-slate-400 mb-1">Resale certificate (PDF / JPG / PNG, max 10MB)</label>
+                <input name="resale_certificate" type="file" accept=".pdf,.jpg,.jpeg,.png,application/pdf,image/jpeg,image/png" class="w-full text-sm text-slate-300 file:mr-3 file:py-2 file:px-3 file:rounded-full file:border-0 file:bg-slate-700 file:text-slate-100" />
+              </div>
+              <div>
+                <label class="block text-xs text-slate-400 mb-1">Years in business</label>
+                <select name="years_in_business" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2.5 text-sm">
+                  <option value="">Select</option>
+                  <option value="&lt;1">&lt;1</option>
+                  <option value="1-3">1–3</option>
+                  <option value="3-10">3–10</option>
+                  <option value="10+">10+</option>
+                </select>
+              </div>
+              <div>
+                <label class="block text-xs text-slate-400 mb-1">Typical job size (m²)</label>
+                <select name="typical_job_size_m2" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2.5 text-sm">
+                  <option value="">Select</option>
+                  <option value="&lt;10">&lt;10</option>
+                  <option value="10-30">10–30</option>
+                  <option value="30-80">30–80</option>
+                  <option value="80+">80+</option>
+                </select>
+              </div>
+              <div>
+                <label class="block text-xs text-slate-400 mb-1">Estimated annual m²</label>
+                <input name="estimated_annual_m2" type="text" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:border-sky-500" />
+              </div>
+            </div>
+            <fieldset>
+              <legend class="text-xs text-slate-400 mb-2">Business type</legend>
+              <div class="flex flex-wrap gap-3 text-sm text-slate-300">
+                <label class="inline-flex items-center gap-2"><input type="checkbox" name="business_type" value="integrator" class="rounded border-slate-600 bg-slate-800 text-sky-500" /> Integrator</label>
+                <label class="inline-flex items-center gap-2"><input type="checkbox" name="business_type" value="rental" class="rounded border-slate-600 bg-slate-800 text-sky-500" /> Rental</label>
+                <label class="inline-flex items-center gap-2"><input type="checkbox" name="business_type" value="sign" class="rounded border-slate-600 bg-slate-800 text-sky-500" /> Sign</label>
+                <label class="inline-flex items-center gap-2"><input type="checkbox" name="business_type" value="broadcast" class="rounded border-slate-600 bg-slate-800 text-sky-500" /> Broadcast</label>
+                <label class="inline-flex items-center gap-2"><input type="checkbox" name="business_type" value="in-house" class="rounded border-slate-600 bg-slate-800 text-sky-500" /> In-house</label>
+                <label class="inline-flex items-center gap-2"><input type="checkbox" name="business_type" value="other" class="rounded border-slate-600 bg-slate-800 text-sky-500" /> Other</label>
+              </div>
+            </fieldset>
+            <fieldset>
+              <legend class="text-xs text-slate-400 mb-2">Primary verticals</legend>
+              <div class="flex flex-wrap gap-3 text-sm text-slate-300">
+                <label class="inline-flex items-center gap-2"><input type="checkbox" name="primary_verticals" value="retail" class="rounded border-slate-600 bg-slate-800 text-sky-500" /> Retail</label>
+                <label class="inline-flex items-center gap-2"><input type="checkbox" name="primary_verticals" value="restaurant" class="rounded border-slate-600 bg-slate-800 text-sky-500" /> Restaurant</label>
+                <label class="inline-flex items-center gap-2"><input type="checkbox" name="primary_verticals" value="sports_bar" class="rounded border-slate-600 bg-slate-800 text-sky-500" /> Sports bar</label>
+                <label class="inline-flex items-center gap-2"><input type="checkbox" name="primary_verticals" value="nightclub" class="rounded border-slate-600 bg-slate-800 text-sky-500" /> Nightclub</label>
+                <label class="inline-flex items-center gap-2"><input type="checkbox" name="primary_verticals" value="corporate" class="rounded border-slate-600 bg-slate-800 text-sky-500" /> Corporate</label>
+                <label class="inline-flex items-center gap-2"><input type="checkbox" name="primary_verticals" value="worship" class="rounded border-slate-600 bg-slate-800 text-sky-500" /> Worship</label>
+                <label class="inline-flex items-center gap-2"><input type="checkbox" name="primary_verticals" value="education" class="rounded border-slate-600 bg-slate-800 text-sky-500" /> Education</label>
+                <label class="inline-flex items-center gap-2"><input type="checkbox" name="primary_verticals" value="events" class="rounded border-slate-600 bg-slate-800 text-sky-500" /> Events</label>
+                <label class="inline-flex items-center gap-2"><input type="checkbox" name="primary_verticals" value="dooh" class="rounded border-slate-600 bg-slate-800 text-sky-500" /> DOOH</label>
+                <label class="inline-flex items-center gap-2"><input type="checkbox" name="primary_verticals" value="xr" class="rounded border-slate-600 bg-slate-800 text-sky-500" /> XR</label>
+                <label class="inline-flex items-center gap-2"><input type="checkbox" name="primary_verticals" value="other" class="rounded border-slate-600 bg-slate-800 text-sky-500" /> Other</label>
+              </div>
+            </fieldset>
+            <div>
+              <h3 class="text-sm font-medium text-slate-200 mb-3">Billing address *</h3>
+              <div class="grid sm:grid-cols-2 gap-4">
+                <div class="sm:col-span-2">
+                  <label class="block text-xs text-slate-400 mb-1">Street line 1</label>
+                  <input name="billing_address_line1" required type="text" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:border-sky-500" />
+                </div>
+                <div class="sm:col-span-2">
+                  <label class="block text-xs text-slate-400 mb-1">Street line 2</label>
+                  <input name="billing_address_line2" type="text" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:border-sky-500" />
+                </div>
+                <div>
+                  <label class="block text-xs text-slate-400 mb-1">City</label>
+                  <input name="billing_address_city" required type="text" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:border-sky-500" />
+                </div>
+                <div>
+                  <label class="block text-xs text-slate-400 mb-1">State</label>
+                  <input name="billing_address_state" required type="text" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:border-sky-500" />
+                </div>
+                <div>
+                  <label class="block text-xs text-slate-400 mb-1">Postal code</label>
+                  <input name="billing_address_postal_code" required type="text" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:border-sky-500" />
+                </div>
+                <div>
+                  <label class="block text-xs text-slate-400 mb-1">Country</label>
+                  <input name="billing_address_country" type="text" value="US" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:border-sky-500" />
+                </div>
+              </div>
+            </div>
+            <label class="inline-flex items-center gap-2 text-sm text-slate-300">
+              <input id="ship-same" type="checkbox" name="ship_same_as_billing" value="true" checked class="rounded border-slate-600 bg-slate-800 text-sky-500" />
+              Shipping address same as billing
+            </label>
+            <div id="ship-fields" class="hidden">
+              <h3 class="text-sm font-medium text-slate-200 mb-3">Ship address *</h3>
+              <div class="grid sm:grid-cols-2 gap-4">
+                <div class="sm:col-span-2">
+                  <label class="block text-xs text-slate-400 mb-1">Street line 1</label>
+                  <input name="ship_address_line1" type="text" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:border-sky-500" />
+                </div>
+                <div class="sm:col-span-2">
+                  <label class="block text-xs text-slate-400 mb-1">Street line 2</label>
+                  <input name="ship_address_line2" type="text" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:border-sky-500" />
+                </div>
+                <div>
+                  <label class="block text-xs text-slate-400 mb-1">City</label>
+                  <input name="ship_address_city" type="text" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:border-sky-500" />
+                </div>
+                <div>
+                  <label class="block text-xs text-slate-400 mb-1">State</label>
+                  <input name="ship_address_state" type="text" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:border-sky-500" />
+                </div>
+                <div>
+                  <label class="block text-xs text-slate-400 mb-1">Postal code</label>
+                  <input name="ship_address_postal_code" type="text" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:border-sky-500" />
+                </div>
+                <div>
+                  <label class="block text-xs text-slate-400 mb-1">Country</label>
+                  <input name="ship_address_country" type="text" value="US" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:border-sky-500" />
+                </div>
+              </div>
+            </div>
+            <div>
+              <label class="block text-xs text-slate-400 mb-1">References (optional)</label>
+              <textarea name="references_text" rows="3" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:border-sky-500" placeholder="Past LED projects, brands you already sell, etc."></textarea>
+            </div>
+            <label class="flex items-start gap-3 text-sm text-slate-300">
+              <input name="agree_not_to_publish_nets" value="true" required type="checkbox" class="mt-1 rounded border-slate-600 bg-slate-800 text-sky-500" />
+              <span>I will not publish Spectrum dealer net pricing to end customers or public websites.</span>
+            </label>
+            <p id="dealer-apply-msg" class="hidden text-sm"></p>
+            <button type="submit" id="dealer-apply-submit" class="px-6 py-2.5 rounded-full bg-sky-500 hover:bg-sky-400 text-white text-sm font-semibold transition">Submit application</button>
+          </form>
+        </div>
+
+        <!-- Application pending -->
+        <div id="tab-pending" class="dash-section hidden">
+          <div class="max-w-2xl rounded-2xl border border-amber-500/30 bg-amber-500/10 px-6 py-8 space-y-4">
+            <h2 class="text-xl font-semibold text-amber-50">Application pending</h2>
+            <p class="text-sm text-amber-100/90 leading-relaxed">Your dealer application is in review. You can still save calculator projects. Dealer net pricing, stock, and checkout unlock after Spectrum approves your company.</p>
+            <div id="pending-company-meta" class="text-sm text-slate-300"></div>
+            <div class="flex flex-wrap gap-2 pt-2">
+              <a href="designer.html" class="inline-flex px-4 py-2 rounded-full bg-sky-500 hover:bg-sky-400 text-white text-sm font-semibold">Open calculator</a>
+              <a href="contact.html" class="inline-flex px-4 py-2 rounded-full border border-slate-600 text-sm text-slate-200 hover:border-sky-500">Contact sales</a>
+            </div>
+          </div>
         </div>
       </div>
 
@@ -337,20 +523,51 @@
     // Dashboard tabs
     document.querySelectorAll('.dash-tab').forEach(btn => {
       btn.onclick = () => {
-        document.querySelectorAll('.dash-tab').forEach(b => {
-          b.className = 'dash-tab px-4 py-2 rounded-full text-sm font-medium text-slate-400 hover:text-white';
-        });
-        btn.className = 'dash-tab px-4 py-2 rounded-full text-sm font-medium bg-sky-500/20 text-sky-300';
-        document.querySelectorAll('.dash-section').forEach(s => s.classList.add('hidden'));
-        document.getElementById('tab-' + btn.dataset.tab).classList.remove('hidden');
+        openDashTab(btn.dataset.tab, true);
       };
     });
+
+    function syncDealerNav(profile) {
+      const role = (profile && profile.role) || 'customer';
+      const applyBtn = document.getElementById('tab-btn-apply');
+      const pendingBtn = document.getElementById('tab-btn-pending');
+      const banner = document.getElementById('pending-banner');
+      applyBtn.classList.toggle('hidden', role !== 'customer');
+      pendingBtn.classList.toggle('hidden', role !== 'pending_dealer');
+      banner.classList.toggle('hidden', role !== 'pending_dealer');
+    }
+
+    function checkedValues(form, name) {
+      return Array.from(form.querySelectorAll('input[name="' + name + '"]:checked')).map(function (el) {
+        return el.value;
+      });
+    }
+
+    async function refreshPendingCompany() {
+      const meta = document.getElementById('pending-company-meta');
+      if (!Auth.getCompany) {
+        meta.textContent = '';
+        return;
+      }
+      const result = await Auth.getCompany();
+      if (!result.ok || !result.company) {
+        meta.textContent = '';
+        return;
+      }
+      const c = result.company;
+      meta.textContent = (c.name || 'Company') + (c.billing_email ? ' · ' + c.billing_email : '') +
+        (c.application && c.application.applied_at
+          ? ' · submitted ' + new Date(c.application.applied_at).toLocaleDateString()
+          : '');
+    }
 
     function renderDash() {
       const profile = Auth.getFullProfile();
       if (!profile) { showAuth(); return; }
       document.getElementById('dash-name').textContent = profile.name || profile.email;
       document.getElementById('dash-role-badge').textContent = (Auth.roleLabel && Auth.roleLabel(profile.role)) || 'Customer';
+      syncDealerNav(profile);
+      if (profile.role === 'pending_dealer') refreshPendingCompany();
 
       // Projects
       const projects = Auth.listProjects();
@@ -493,9 +710,98 @@
       }
     };
 
-    function openDashTab(name) {
+    const shipSame = document.getElementById('ship-same');
+    const shipFields = document.getElementById('ship-fields');
+    function syncShipFields() {
+      const same = shipSame.checked;
+      shipFields.classList.toggle('hidden', same);
+      ['ship_address_line1', 'ship_address_city', 'ship_address_state', 'ship_address_postal_code'].forEach(function (name) {
+        const el = document.querySelector('[name="' + name + '"]');
+        if (el) el.required = !same;
+      });
+    }
+    shipSame.addEventListener('change', syncShipFields);
+    syncShipFields();
+
+    document.getElementById('dealer-apply-form').addEventListener('submit', async function (e) {
+      e.preventDefault();
+      const form = e.target;
+      const msg = document.getElementById('dealer-apply-msg');
+      const submitBtn = document.getElementById('dealer-apply-submit');
+      msg.classList.add('hidden');
+      const fd = new FormData();
+      ['company_name', 'legal_name', 'website', 'phone', 'billing_email', 'tax_id',
+        'years_in_business', 'typical_job_size_m2', 'estimated_annual_m2', 'references_text',
+        'billing_address_line1', 'billing_address_line2', 'billing_address_city',
+        'billing_address_state', 'billing_address_postal_code', 'billing_address_country',
+        'ship_address_line1', 'ship_address_line2', 'ship_address_city',
+        'ship_address_state', 'ship_address_postal_code', 'ship_address_country'
+      ].forEach(function (name) {
+        const el = form.elements.namedItem(name);
+        if (el && el.value != null) fd.append(name, el.value);
+      });
+      fd.append('business_type', JSON.stringify(checkedValues(form, 'business_type')));
+      fd.append('primary_verticals', JSON.stringify(checkedValues(form, 'primary_verticals')));
+      fd.append('ship_same_as_billing', shipSame.checked ? 'true' : 'false');
+      if (form.agree_not_to_publish_nets && form.agree_not_to_publish_nets.checked) {
+        fd.append('agree_not_to_publish_nets', 'true');
+      }
+      const fileInput = form.elements.namedItem('resale_certificate');
+      if (fileInput && fileInput.files && fileInput.files[0]) {
+        fd.append('resale_certificate', fileInput.files[0]);
+      }
+      submitBtn.disabled = true;
+      submitBtn.textContent = 'Submitting…';
+      try {
+        const result = await Auth.applyDealer(fd);
+        if (!result.ok) {
+          msg.textContent = result.error || 'Could not submit.';
+          msg.className = 'text-sm text-red-400';
+          msg.classList.remove('hidden');
+          return;
+        }
+        msg.textContent = 'Application submitted.';
+        msg.className = 'text-sm text-sky-400';
+        msg.classList.remove('hidden');
+        renderDash();
+        openDashTab('pending', true);
+      } finally {
+        submitBtn.disabled = false;
+        submitBtn.textContent = 'Submit application';
+      }
+    });
+
+    function openDashTab(name, updateHash) {
+      const profile = Auth.getFullProfile();
+      syncDealerNav(profile || {});
       const btn = document.querySelector('.dash-tab[data-tab="' + name + '"]');
-      if (btn) btn.click();
+      if (!btn || btn.classList.contains('hidden')) {
+        name = preferredAccountTab(profile);
+      }
+      document.querySelectorAll('.dash-tab').forEach(function (b) {
+        const isHidden = b.classList.contains('hidden');
+        b.className = 'dash-tab px-4 py-2 rounded-full text-sm font-medium ' +
+          (b.dataset.tab === name ? 'bg-sky-500/20 text-sky-300' : 'text-slate-400 hover:text-white') +
+          (isHidden ? ' hidden' : '');
+      });
+      document.querySelectorAll('.dash-section').forEach(function (s) { s.classList.add('hidden'); });
+      const section = document.getElementById('tab-' + name);
+      if (section) section.classList.remove('hidden');
+      if (updateHash) {
+        const hash = name === 'projects' ? '' : '#' + name;
+        if (location.hash !== hash) history.replaceState(null, '', location.pathname + location.search + hash);
+      }
+    }
+
+    function preferredAccountTab(profile) {
+      const params = new URLSearchParams(window.location.search);
+      const hash = (location.hash || '').replace(/^#/, '');
+      const urlTab = params.get('tab') || hash;
+      if (urlTab === 'apply' || urlTab === 'pending' || urlTab === 'orders' || urlTab === 'projects' || urlTab === 'profile' || urlTab === 'panels') {
+        return urlTab;
+      }
+      if (profile && profile.role === 'pending_dealer') return 'pending';
+      return 'projects';
     }
 
     function afterAuthSuccess() {
@@ -511,6 +817,7 @@
         return;
       }
       showDash();
+      openDashTab(preferredAccountTab(Auth.getFullProfile()), true);
       tryPendingCheckout();
     }
 
@@ -527,13 +834,12 @@
         localStorage.setItem('spectrumCart', '[]');
         alert('Order ' + result.order.id + ' placed from your cart!');
         showDash();
-        openDashTab('orders');
+        openDashTab('orders', true);
       }
     }
 
     function bootAccount() {
       const params = new URLSearchParams(window.location.search);
-      const urlTab = params.get('tab');
       const next = params.get('next');
       const urlMode = params.get('mode');
       if (next) sessionStorage.setItem('spectrumAuthNext', next);
@@ -544,13 +850,19 @@
           return;
         }
         showDash();
-        if (urlTab === 'orders' || urlTab === 'projects' || urlTab === 'profile' || urlTab === 'panels') openDashTab(urlTab);
+        openDashTab(preferredAccountTab(Auth.getFullProfile()), false);
         tryPendingCheckout();
       } else {
         showAuth();
         setMode(urlMode === 'register' ? 'register' : 'signin');
       }
     }
+
+    window.addEventListener('hashchange', function () {
+      if (!Auth.isLoggedIn()) return;
+      const tab = preferredAccountTab(Auth.getFullProfile());
+      openDashTab(tab, false);
+    });
 
     (Auth.ready || Promise.resolve()).then(bootAccount);
   </script>

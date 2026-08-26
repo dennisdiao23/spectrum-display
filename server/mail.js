@@ -116,4 +116,51 @@ async function sendContactEmail(inquiry) {
   await sendWithSmtp(to, from, inquiry.email, subject, bodies);
 }
 
-module.exports = { sendContactEmail, mailConfigured };
+async function sendDealerApplicationEmail(payload) {
+  if (!mailConfigured()) return false;
+  const to = 'sales@spectrumdisplay.com';
+  const from = env('CONTACT_FROM_EMAIL', process.env.SMTP_USER || 'Spectrum Display <beth.t@example.com>');
+  const company = payload.company || {};
+  const applicant = payload.applicant || {};
+  const subject = 'New dealer application — ' + (company.name || 'Company');
+  const lines = [
+    'New dealer application from spectrumdisplay.com',
+    '',
+    'Company: ' + (company.name || '—'),
+    'Legal name: ' + (company.legal_name || '—'),
+    'Phone: ' + (company.phone || '—'),
+    'Billing email: ' + (company.billing_email || '—'),
+    'Tax ID: ' + (company.tax_id || '—'),
+    'Website: ' + (company.website || '—'),
+    '',
+    'Applicant: ' + (applicant.name || '—'),
+    'Applicant email: ' + (applicant.email || '—'),
+    '',
+    'Review in Admin → Dealer applications.'
+  ];
+  const bodies = {
+    text: lines.join('\n'),
+    html:
+      '<p>New dealer application from <strong>spectrumdisplay.com</strong></p>' +
+      '<table style="border-collapse:collapse;font-family:sans-serif;font-size:14px">' +
+      row('Company', company.name || '—') +
+      row('Legal name', company.legal_name || '—') +
+      row('Phone', company.phone || '—') +
+      row('Billing email', company.billing_email || '—') +
+      row('Tax ID', company.tax_id || '—') +
+      row('Website', company.website || '—') +
+      row('Applicant', applicant.name || '—') +
+      row('Applicant email', applicant.email || '—') +
+      '</table>' +
+      '<p style="font-family:sans-serif;font-size:14px">Review in Admin → Dealer applications.</p>'
+  };
+  const replyTo = applicant.email || company.billing_email || undefined;
+  if (process.env.RESEND_API_KEY) {
+    await sendWithResend(to, from, replyTo, subject, bodies);
+    return true;
+  }
+  await sendWithSmtp(to, from, replyTo, subject, bodies);
+  return true;
+}
+
+module.exports = { sendContactEmail, sendDealerApplicationEmail, mailConfigured };

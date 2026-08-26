@@ -241,7 +241,7 @@ function createSupabaseStore() {
     async listAccounts() {
       const { data, error } = await supabase
         .from('profiles')
-        .select('id, email, name, role, company, phone, created_at, updated_at')
+        .select('id, email, name, role, company, phone, company_id, dealer_role, created_at, updated_at')
         .order('created_at', { ascending: false });
       throwIf(error, 'Could not list accounts.');
       const [tiers, overrides] = await Promise.all([
@@ -254,11 +254,15 @@ function createSupabaseStore() {
         overrideMap[row.user_id] = Number(row.markup_pct);
       });
       return (data || []).map(function (row) {
-        const role = row.role === 'dealer' || row.role === 'sales' ? row.role : 'customer';
-        const typePct = Number(tiers[role]) || 0;
+        const role = row.role === 'dealer' || row.role === 'sales' || row.role === 'pending_dealer'
+          ? row.role
+          : 'customer';
+        const tierRole = role === 'pending_dealer' ? 'customer' : role;
+        const typePct = Number(tiers[tierRole]) || 0;
         const hasOverride = Object.prototype.hasOwnProperty.call(overrideMap, row.id);
         const overridePct = hasOverride ? overrideMap[row.id] : null;
         return Object.assign({}, row, {
+          role: role,
           type_markup_pct: typePct,
           markup_override_pct: overridePct,
           effective_markup_pct: hasOverride ? overridePct : typePct
@@ -278,14 +282,17 @@ function createSupabaseStore() {
       if (panels.error) console.error('custom_panels', panels.error.message);
       if (orders.error) console.error('orders', orders.error.message);
       const tiers = await this.listPriceTiers();
-      const role = profile.role === 'dealer' || profile.role === 'sales' ? profile.role : 'customer';
+      const role = profile.role === 'dealer' || profile.role === 'sales' || profile.role === 'pending_dealer'
+        ? profile.role
+        : 'customer';
       const { data: overrideRow, error: overrideErr } = await supabase
         .from('account_price_overrides')
         .select('markup_pct')
         .eq('user_id', id)
         .maybeSingle();
       if (overrideErr) console.error('account_price_overrides', overrideErr.message);
-      const typePct = Number(tiers[role]) || 0;
+      const tierRole = role === 'pending_dealer' ? 'customer' : role;
+      const typePct = Number(tiers[tierRole]) || 0;
       const hasOverride = !!(overrideRow && overrideRow.markup_pct != null);
       const overridePct = hasOverride ? Number(overrideRow.markup_pct) : null;
       profile.type_markup_pct = typePct;
@@ -300,12 +307,18 @@ function createSupabaseStore() {
     },
     async updateAccount(id, patch) {
       const allowed = { updated_at: new Date().toISOString() };
-      if (patch.role === 'customer' || patch.role === 'dealer' || patch.role === 'sales') {
+      if (patch.role === 'customer' || patch.role === 'dealer' || patch.role === 'sales' || patch.role === 'pending_dealer') {
         allowed.role = patch.role;
       }
       if (patch.name != null) allowed.name = String(patch.name).trim();
       if (patch.company != null) allowed.company = String(patch.company).trim();
       if (patch.phone != null) allowed.phone = String(patch.phone).trim();
+      if (Object.prototype.hasOwnProperty.call(patch, 'company_id')) {
+        allowed.company_id = patch.company_id || null;
+      }
+      if (Object.prototype.hasOwnProperty.call(patch, 'dealer_role')) {
+        allowed.dealer_role = patch.dealer_role || null;
+      }
       const { data, error } = await supabase
         .from('profiles')
         .update(allowed)
@@ -380,6 +393,200 @@ function createSupabaseStore() {
       throwIf(error, 'Could not save the inquiry.');
       return true;
     },
+    async getUserFromAccessToken(token) {
+      if (!token) return null;
+      const { data, error } = await supabase.auth.getUser(token);
+      if (error || !data || !data.user) return null;
+      return data.user;
+    },
+    async getProfile(userId) {
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('id, email, name, role, company, phone, company_id, dealer_role, created_at, updated_at')
+        .eq('id', userId)
+        .maybeSingle();
+      throwIf(error, 'Could not load profile.');
+      return data || null;
+    },
+    async getCompany(companyId) {
+      if (!companyId) return null;
+      const { data, error } = await supabase.from('companies').select('*').eq('id', companyId).maybeSingle();
+      throwIf(error, 'Could not load company.');
+      return data || null;
+    },
+    async listPendingDealerCompanies() {
+      const { data, error } = await supabase
+        .from('companies')
+        .select('*')
+        .eq('account_type', 'pending_dealer')
+        .order('created_at', { ascending: false });
+      throwIf(error, 'Could not list dealer applications.');
+      const companies = data || [];
+      if (!companies.length) return [];
+      const ids = companies.map(function (c) { return c.id; });
+      const { data: profiles, error: pErr } = await supabase
+        .from('profiles')
+        .select('id, email, name, phone, company_id, role, dealer_role, created_at')
+        .in('company_id', ids);
+      throwIf(pErr, 'Could not load applicants.');
+      const byCompany = {};
+      (profiles || []).forEach(function (p) {
+        if (!byCompany[p.company_id]) byCompany[p.company_id] = [];
+        byCompany[p.company_id].push(p);
+      });
+      return companies.map(function (c) {
+        return Object.assign({}, c, { applicants: byCompany[c.id] || [] });
+      });
+    },
+    async applyDealer(userId, payload) {
+      const profile = await this.getProfile(userId);
+      if (!profile) throw new Error('Profile not found.');
+      if (profile.role === 'pending_dealer') throw new Error('Your dealer application is already pending.');
+      if (profile.role === 'dealer') throw new Error('This account is already a dealer.');
+      if (profile.role === 'sales') throw new Error('Sales accounts do not apply as dealers.');
+      if (profile.company_id) throw new Error('This account is already linked to a company.');
+
+      const name = String(payload.company_name || '').trim();
+      const phone = String(payload.phone || '').trim();
+      const billingEmail = String(payload.billing_email || '').trim().toLowerCase();
+      const taxId = String(payload.tax_id || '').trim();
+      const billing = payload.billing_address || {};
+      const ship = payload.ship_address || billing;
+      if (!name) throw new Error('Company name is required.');
+      if (!phone) throw new Error('Phone is required.');
+      if (!billingEmail) throw new Error('Billing email is required.');
+      if (!taxId) throw new Error('Tax ID is required.');
+      if (!billing.line1 || !billing.city || !billing.state || !billing.postal_code) {
+        throw new Error('Full billing address is required.');
+      }
+      if (!payload.agree_not_to_publish_nets) {
+        throw new Error('You must agree not to publish dealer net pricing.');
+      }
+
+      const now = new Date().toISOString();
+      const companyRow = {
+        name: name,
+        legal_name: String(payload.legal_name || '').trim(),
+        website: String(payload.website || '').trim(),
+        phone: phone,
+        billing_email: billingEmail,
+        tax_id: taxId,
+        resale_certificate_url: String(payload.resale_certificate_url || '').trim(),
+        billing_address: billing,
+        default_ship_address: ship,
+        account_type: 'pending_dealer',
+        dealer_tier: 'authorized',
+        payment_terms: 'prepaid_30_70',
+        deposit_required: true,
+        hold_hours: 48,
+        terms_eligible: false,
+        status: 'active',
+        application: {
+          years_in_business: payload.years_in_business || '',
+          business_type: payload.business_type || [],
+          primary_verticals: payload.primary_verticals || [],
+          typical_job_size_m2: payload.typical_job_size_m2 || '',
+          estimated_annual_m2: payload.estimated_annual_m2 || '',
+          references_text: payload.references_text || '',
+          agree_not_to_publish_nets: true,
+          applied_by_user_id: userId,
+          applied_at: now
+        },
+        created_at: now,
+        updated_at: now
+      };
+
+      const { data: company, error: cErr } = await supabase
+        .from('companies')
+        .insert(companyRow)
+        .select('*')
+        .single();
+      throwIf(cErr, 'Could not create company application.');
+
+      const { data: updatedProfile, error: pErr } = await supabase
+        .from('profiles')
+        .update({
+          role: 'pending_dealer',
+          company_id: company.id,
+          dealer_role: 'admin',
+          company: name,
+          phone: phone || profile.phone || '',
+          updated_at: now
+        })
+        .eq('id', userId)
+        .select('id, email, name, role, company, phone, company_id, dealer_role, created_at, updated_at')
+        .single();
+      if (pErr) {
+        await supabase.from('companies').delete().eq('id', company.id);
+        throwIf(pErr, 'Could not update profile for dealer application.');
+      }
+      return { company: company, profile: updatedProfile };
+    },
+    async approveDealerCompany(companyId, adminId) {
+      const company = await this.getCompany(companyId);
+      if (!company) throw new Error('Company not found.');
+      if (company.account_type !== 'pending_dealer') throw new Error('Company is not pending approval.');
+      const now = new Date().toISOString();
+      const { data: updated, error } = await supabase
+        .from('companies')
+        .update({
+          account_type: 'dealer',
+          dealer_tier: 'authorized',
+          payment_terms: 'prepaid_30_70',
+          deposit_required: true,
+          hold_hours: 48,
+          status: 'active',
+          approved_at: now,
+          approved_by_admin_id: adminId || null,
+          updated_at: now
+        })
+        .eq('id', companyId)
+        .select('*')
+        .single();
+      throwIf(error, 'Could not approve company.');
+      const { error: pErr } = await supabase
+        .from('profiles')
+        .update({ role: 'dealer', updated_at: now })
+        .eq('company_id', companyId)
+        .eq('role', 'pending_dealer');
+      throwIf(pErr, 'Could not update applicant accounts.');
+      return updated;
+    },
+    async rejectDealerCompany(companyId, adminId, notes) {
+      const company = await this.getCompany(companyId);
+      if (!company) throw new Error('Company not found.');
+      if (company.account_type !== 'pending_dealer') throw new Error('Company is not pending approval.');
+      const now = new Date().toISOString();
+      const note = String(notes || '').trim();
+      const { data: updated, error } = await supabase
+        .from('companies')
+        .update({
+          account_type: 'customer',
+          status: 'rejected',
+          notes_internal: note
+            ? ((company.notes_internal ? company.notes_internal + '\n' : '') + note)
+            : company.notes_internal,
+          approved_at: null,
+          approved_by_admin_id: adminId || null,
+          updated_at: now
+        })
+        .eq('id', companyId)
+        .select('*')
+        .single();
+      throwIf(error, 'Could not reject company.');
+      const { error: pErr } = await supabase
+        .from('profiles')
+        .update({
+          role: 'customer',
+          company_id: null,
+          dealer_role: null,
+          updated_at: now
+        })
+        .eq('company_id', companyId)
+        .eq('role', 'pending_dealer');
+      throwIf(pErr, 'Could not reset applicant accounts.');
+      return updated;
+    },
     async saveUpload(file) {
       const ext = path.extname(file.originalname || '').toLowerCase();
       const safeExt = ['.jpg', '.jpeg', '.png', '.webp', '.gif'].includes(ext) ? ext : '.jpg';
@@ -392,6 +599,16 @@ function createSupabaseStore() {
       throwIf(error, 'Could not upload image to Supabase Storage.');
       const { data } = supabase.storage.from(BUCKET).getPublicUrl(objectPath);
       return data.publicUrl;
+    },
+    async saveDealerDoc(file, userId) {
+      const ext = path.extname(file.originalname || '').toLowerCase();
+      const allowed = ['.pdf', '.jpg', '.jpeg', '.png'];
+      const safeExt = allowed.includes(ext) ? ext : '.pdf';
+      const dir = path.join(__dirname, '..', 'uploads', 'dealer');
+      fs.mkdirSync(dir, { recursive: true });
+      const name = String(userId || 'anon').slice(0, 36) + '-' + Date.now().toString(36) + safeExt;
+      fs.writeFileSync(path.join(dir, name), file.buffer);
+      return '/uploads/dealer/' + name;
     }
   };
 }

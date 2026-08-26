@@ -167,13 +167,15 @@
   }
 
   function normalizeRole(role) {
-    if (role === 'dealer' || role === 'sales') return role;
+    if (role === 'dealer' || role === 'sales' || role === 'pending_dealer' || role === 'admin') return role;
     return 'customer';
   }
   function roleLabel(role) {
     const r = normalizeRole(role);
     if (r === 'dealer') return 'Dealer / Integrator';
     if (r === 'sales') return 'Sales';
+    if (r === 'pending_dealer') return 'Application pending';
+    if (r === 'admin') return 'Admin';
     return 'Customer';
   }
   function sessionFrom(user, profile) {
@@ -187,6 +189,8 @@
       provider: (user.app_metadata && user.app_metadata.provider) || 'email',
       company: (profile && profile.company) || '',
       phone: (profile && profile.phone) || '',
+      company_id: (profile && profile.company_id) || null,
+      dealer_role: (profile && profile.dealer_role) || null,
       createdAt: user.created_at
     };
   }
@@ -194,7 +198,11 @@
   async function loadProfile(user) {
     const client = sb();
     if (!client) return null;
-    const { data } = await client.from('profiles').select('id, email, name, role, company, phone, created_at').eq('id', user.id).maybeSingle();
+    const { data } = await client
+      .from('profiles')
+      .select('id, email, name, role, company, phone, company_id, dealer_role, created_at')
+      .eq('id', user.id)
+      .maybeSingle();
     if (data) return data;
     const meta = user.user_metadata || {};
     const row = {
@@ -203,10 +211,19 @@
       name: meta.name || (user.email || '').split('@')[0],
       role: 'customer',
       company: '',
-      phone: ''
+      phone: '',
+      company_id: null,
+      dealer_role: null
     };
     await client.from('profiles').upsert(row);
     return row;
+  }
+
+  async function getAccessToken() {
+    const client = sb();
+    if (!client) return null;
+    const { data } = await client.auth.getSession();
+    return (data.session && data.session.access_token) || null;
   }
 
   async function refreshPricing() {
@@ -281,9 +298,48 @@
     },
     normalizeRole: normalizeRole,
     roleLabel: roleLabel,
+    getAccessToken: getAccessToken,
     canUsePreviewTools: function () {
       const role = cached && cached.role;
       return role === 'dealer' || role === 'sales';
+    },
+    isPendingDealer: function () {
+      return !!(cached && cached.role === 'pending_dealer');
+    },
+    isCustomer: function () {
+      return !!(cached && cached.role === 'customer');
+    },
+    getCompany: async function () {
+      const token = await getAccessToken();
+      if (!token) return { ok: false, error: 'Not signed in.' };
+      const res = await fetch('/api/dealer/company', {
+        headers: { Authorization: 'Bearer ' + token }
+      });
+      const data = await res.json().catch(function () { return {}; });
+      if (!res.ok) return { ok: false, error: data.error || 'Could not load company.' };
+      return { ok: true, company: data.company || null, profile: data.profile || null };
+    },
+    applyDealer: async function (formData) {
+      const token = await getAccessToken();
+      if (!token) return { ok: false, error: 'Not signed in.' };
+      const res = await fetch('/api/dealer/apply', {
+        method: 'POST',
+        headers: { Authorization: 'Bearer ' + token },
+        body: formData
+      });
+      const data = await res.json().catch(function () { return {}; });
+      if (!res.ok) return { ok: false, error: data.error || 'Could not submit application.' };
+      if (data.profile) {
+        cached = Object.assign({}, cached || {}, {
+          role: normalizeRole(data.profile.role),
+          company: data.profile.company || (cached && cached.company) || '',
+          phone: data.profile.phone || (cached && cached.phone) || '',
+          company_id: data.profile.company_id || null,
+          dealer_role: data.profile.dealer_role || null
+        });
+        global.dispatchEvent(new CustomEvent('spectrum:auth'));
+      }
+      return { ok: true, company: data.company, profile: data.profile, user: cached };
     },
     register: async function ({ email, password, name }) {
       email = (email || '').trim().toLowerCase();

@@ -108,6 +108,22 @@ function createSqliteStore() {
     async saveContactInquiry() {
       return true;
     },
+    async getUserFromAccessToken() { return null; },
+    async getProfile() { return null; },
+    async getCompany() { return null; },
+    async listPendingDealerCompanies() { return []; },
+    async applyDealer() { throw new Error('Dealer applications require Supabase.'); },
+    async approveDealerCompany() { throw new Error('Dealer approval requires Supabase.'); },
+    async rejectDealerCompany() { throw new Error('Dealer rejection requires Supabase.'); },
+    async saveDealerDoc(file, userId) {
+      const dir = path.join(ROOT, 'uploads', 'dealer');
+      fs.mkdirSync(dir, { recursive: true });
+      const ext = path.extname(file.originalname || '').toLowerCase();
+      const safeExt = ['.pdf', '.jpg', '.jpeg', '.png'].includes(ext) ? ext : '.pdf';
+      const name = String(userId || 'anon').slice(0, 36) + '-' + Date.now().toString(36) + safeExt;
+      fs.writeFileSync(path.join(dir, name), file.buffer);
+      return '/uploads/dealer/' + name;
+    },
     async saveUpload(file) {
       const ext = path.extname(file.originalname || '').toLowerCase();
       const safeExt = ['.jpg', '.jpeg', '.png', '.webp', '.gif'].includes(ext) ? ext : '.jpg';

@@ -1,6 +1,7 @@
 node_modules/
 data/
 uploads/products/
+uploads/dealer/
 .env
 *.log
 .DS_Store

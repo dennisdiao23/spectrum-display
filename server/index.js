@@ -7,7 +7,7 @@ const cookieParser = require('cookie-parser');
 const bcrypt = require('bcryptjs');
 const multer = require('multer');
 const { getStore } = require('./store');
-const { sendContactEmail, mailConfigured } = require('./mail');
+const { sendContactEmail, sendDealerApplicationEmail, mailConfigured } = require('./mail');
 
 const ROOT = path.join(__dirname, '..');
 const COOKIE = 'spectrum_admin';
@@ -20,6 +20,15 @@ const upload = multer({
   fileFilter: function (_req, file, cb) {
     const ok = /^image\/(jpeg|png|webp|gif)$/i.test(file.mimetype || '');
     cb(ok ? null : new Error('Only JPG, PNG, WebP, or GIF images are allowed.'), ok);
+  }
+});
+
+const dealerUpload = multer({
+  storage: multer.memoryStorage(),
+  limits: { fileSize: 10 * 1024 * 1024, files: 1 },
+  fileFilter: function (_req, file, cb) {
+    const ok = /^(application\/pdf|image\/(jpeg|png))$/i.test(file.mimetype || '');
+    cb(ok ? null : new Error('Resale certificate must be PDF, JPG, or PNG (max 10MB).'), ok);
   }
 });
 
@@ -158,6 +167,69 @@ async function main() {
     } catch (err) {
       next(err);
     }
+  }
+
+  function bearerToken(req) {
+    const header = String(req.headers.authorization || '');
+    const match = header.match(/^Bearer\s+(.+)$/i);
+    return match ? match[1].trim() : '';
+  }
+
+  async function requireSiteUser(req, res, next) {
+    try {
+      const token = bearerToken(req);
+      if (!token) return res.status(401).json({ ok: false, error: 'Sign-in required.' });
+      const user = await store.getUserFromAccessToken(token);
+      if (!user) return res.status(401).json({ ok: false, error: 'Sign-in required.' });
+      const profile = await store.getProfile(user.id);
+      if (!profile) return res.status(401).json({ ok: false, error: 'Profile not found.' });
+      req.siteUser = user;
+      req.siteProfile = profile;
+      req.accessToken = token;
+      next();
+    } catch (err) {
+      next(err);
+    }
+  }
+
+  function parseListField(value) {
+    if (Array.isArray(value)) return value.map(String).map(function (s) { return s.trim(); }).filter(Boolean);
+    if (value == null || value === '') return [];
+    const raw = String(value).trim();
+    if (!raw) return [];
+    try {
+      const parsed = JSON.parse(raw);
+      if (Array.isArray(parsed)) {
+        return parsed.map(String).map(function (s) { return s.trim(); }).filter(Boolean);
+      }
+    } catch (_) { /* comma-separated */ }
+    return raw.split(/[,|]/).map(function (s) { return s.trim(); }).filter(Boolean);
+  }
+
+  function parseAddress(prefix, body) {
+    const src = body[prefix] && typeof body[prefix] === 'object' ? body[prefix] : {};
+    function field(key) {
+      if (src[key] != null && src[key] !== '') return String(src[key]).trim();
+      const flat = body[prefix + '_' + key];
+      return flat != null ? String(flat).trim() : '';
+    }
+    return {
+      label: field('label') || (prefix === 'ship_address' ? 'Warehouse' : 'Office'),
+      company: field('company'),
+      contact_name: field('contact_name'),
+      phone: field('phone'),
+      line1: field('line1'),
+      line2: field('line2'),
+      city: field('city'),
+      state: field('state'),
+      postal_code: field('postal_code'),
+      country: field('country') || 'US',
+      is_jobsite: String(src.is_jobsite || body[prefix + '_is_jobsite'] || '') === 'true'
+    };
+  }
+
+  function truthy(value) {
+    return value === true || value === 'true' || value === '1' || value === 'on' || value === 'yes';
   }
 
   async function saveFiles(files) {
@@ -395,6 +467,91 @@ async function main() {
     } catch (err) { next(err); }
   });
 
+  app.get('/api/dealer/company', requireSiteUser, async function (req, res, next) {
+    try {
+      const profile = req.siteProfile;
+      if (!profile.company_id) {
+        return res.json({ ok: true, company: null, profile: profile });
+      }
+      const company = await store.getCompany(profile.company_id);
+      res.json({ ok: true, company: company, profile: profile });
+    } catch (err) { next(err); }
+  });
+
+  app.post('/api/dealer/apply', requireSiteUser, dealerUpload.single('resale_certificate'), async function (req, res, next) {
+    try {
+      const body = req.body || {};
+      let resaleUrl = '';
+      if (req.file) {
+        resaleUrl = await store.saveDealerDoc(req.file, req.siteUser.id);
+      }
+      const sameShip = truthy(body.ship_same_as_billing);
+      const billing = parseAddress('billing_address', body);
+      const ship = sameShip ? Object.assign({}, billing, { label: 'Warehouse' }) : parseAddress('ship_address', body);
+      const payload = {
+        company_name: body.company_name,
+        legal_name: body.legal_name,
+        website: body.website,
+        phone: body.phone,
+        billing_email: body.billing_email,
+        tax_id: body.tax_id,
+        resale_certificate_url: resaleUrl,
+        years_in_business: body.years_in_business,
+        business_type: parseListField(body.business_type),
+        primary_verticals: parseListField(body.primary_verticals),
+        typical_job_size_m2: body.typical_job_size_m2,
+        estimated_annual_m2: body.estimated_annual_m2,
+        billing_address: billing,
+        ship_address: ship,
+        references_text: body.references_text,
+        agree_not_to_publish_nets: truthy(body.agree_not_to_publish_nets)
+      };
+      const result = await store.applyDealer(req.siteUser.id, payload);
+      try {
+        await sendDealerApplicationEmail({
+          company: result.company,
+          applicant: {
+            name: result.profile && result.profile.name,
+            email: result.profile && result.profile.email
+          }
+        });
+      } catch (mailErr) {
+        console.warn('Dealer application email failed:', mailErr.message || mailErr);
+      }
+      res.json({ ok: true, company: result.company, profile: result.profile });
+    } catch (err) {
+      err.status = err.status || 400;
+      next(err);
+    }
+  });
+
+  app.get('/api/admin/dealer-applications', requireAdmin, async function (_req, res, next) {
+    try {
+      res.json({ ok: true, applications: await store.listPendingDealerCompanies() });
+    } catch (err) { next(err); }
+  });
+
+  app.post('/api/admin/dealer-applications/:id/approve', requireAdmin, async function (req, res, next) {
+    try {
+      const company = await store.approveDealerCompany(req.params.id, req.admin.id);
+      res.json({ ok: true, company: company });
+    } catch (err) {
+      err.status = err.status || 400;
+      next(err);
+    }
+  });
+
+  app.post('/api/admin/dealer-applications/:id/reject', requireAdmin, async function (req, res, next) {
+    try {
+      const notes = (req.body && req.body.notes) || '';
+      const company = await store.rejectDealerCompany(req.params.id, req.admin.id, notes);
+      res.json({ ok: true, company: company });
+    } catch (err) {
+      err.status = err.status || 400;
+      next(err);
+    }
+  });
+
   app.get('/api/admin/accounts', requireAdmin, async function (_req, res, next) {
     try {
       res.json({ ok: true, accounts: await store.listAccounts() });
@@ -413,8 +570,8 @@ async function main() {
     try {
       const body = req.body || {};
       const role = String(body.role || '').trim();
-      if (role && role !== 'customer' && role !== 'dealer' && role !== 'sales') {
-        return res.status(400).json({ ok: false, error: 'Account type must be customer, dealer, or sales.' });
+      if (role && role !== 'customer' && role !== 'pending_dealer' && role !== 'dealer' && role !== 'sales') {
+        return res.status(400).json({ ok: false, error: 'Account type must be customer, pending_dealer, dealer, or sales.' });
       }
       const patch = {
         role: role || undefined,
@@ -448,7 +605,8 @@ async function main() {
   app.use(express.static(ROOT));
 
   app.use(function (err, _req, res, _next) {
-    res.status(400).json({ ok: false, error: err.message || 'Upload failed.' });
+    const status = err.status || (err.name === 'MulterError' ? 400 : 400);
+    res.status(status).json({ ok: false, error: err.message || 'Upload failed.' });
   });
 
   app.listen(PORT, '0.0.0.0', function () {

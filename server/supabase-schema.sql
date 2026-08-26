@@ -299,3 +299,61 @@ $fn$;
 
 revoke all on function public.my_price_multiplier() from public;
 grant execute on function public.my_price_multiplier() to anon, authenticated;
+
+-- ---------------------------------------------------------------------------
+-- Dealer portal step 1: companies + pending_dealer (also applied via migration)
+-- ---------------------------------------------------------------------------
+create table if not exists public.companies (
+  id uuid primary key default gen_random_uuid(),
+  name text not null,
+  legal_name text not null default '',
+  website text not null default '',
+  phone text not null default '',
+  billing_email text not null default '',
+  tax_id text not null default '',
+  resale_certificate_url text not null default '',
+  billing_address jsonb not null default '{}'::jsonb,
+  default_ship_address jsonb not null default '{}'::jsonb,
+  extra_ship_addresses jsonb not null default '[]'::jsonb,
+  account_type text not null default 'pending_dealer'
+    check (account_type in ('customer', 'pending_dealer', 'dealer')),
+  dealer_tier text not null default 'authorized'
+    check (dealer_tier in ('authorized', 'preferred', 'elite')),
+  price_book_id uuid,
+  payment_terms text not null default 'prepaid_30_70'
+    check (payment_terms in ('prepaid_30_70', 'net15', 'net30')),
+  deposit_required boolean not null default true,
+  hold_hours integer not null default 48,
+  terms_eligible boolean not null default false,
+  paid_order_count integer not null default 0,
+  lifetime_paid_usd numeric not null default 0,
+  status text not null default 'active'
+    check (status in ('active', 'suspended', 'rejected')),
+  application jsonb not null default '{}'::jsonb,
+  notes_internal text not null default '',
+  approved_at timestamptz,
+  approved_by_admin_id uuid,
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now()
+);
+
+alter table public.profiles
+  add column if not exists company_id uuid references public.companies(id) on delete set null;
+
+alter table public.profiles
+  add column if not exists dealer_role text
+    check (dealer_role is null or dealer_role in ('admin', 'sales', 'purchasing', 'tech'));
+
+alter table public.companies enable row level security;
+
+drop policy if exists companies_select_own on public.companies;
+create policy companies_select_own on public.companies
+for select
+to authenticated
+using (
+  id in (select company_id from public.profiles where id = auth.uid())
+  or public.is_spectrum_admin()
+);
+
+grant select on public.companies to authenticated;
+grant all on public.companies to service_role;
