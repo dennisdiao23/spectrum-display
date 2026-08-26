@@ -1,5 +1,5 @@
 /**
- * Spectrum Display — header (Sign in / Language / mega menus open on click)
+ * Spectrum Display — header (Sign in goes to account; Language / mega menus open on click)
  * Header markup is static in HTML so it never jumps on load.
  */
 (function () {
@@ -27,6 +27,28 @@
         var input = wrap.querySelector('input');
         if (input) setTimeout(function () { input.focus(); }, 40);
       }
+    });
+  }
+
+  /** Guests go straight to account.html; signed-in users keep the account dropdown. */
+  function bindSigninDrop(wrap) {
+    if (!wrap) return;
+    var btn = wrap.querySelector('.site-util');
+    if (!btn) return;
+    btn.addEventListener('click', function (e) {
+      e.preventDefault();
+      e.stopPropagation();
+      var session = window.SpectrumAuth && SpectrumAuth.getSession && SpectrumAuth.getSession();
+      if (!session) {
+        closeAll();
+        closeMegas();
+        location.href = 'account.html';
+        return;
+      }
+      var open = wrap.classList.contains('is-open');
+      closeAll();
+      closeMegas();
+      if (!open) wrap.classList.add('is-open');
     });
   }
 
@@ -675,7 +697,7 @@
     var header = $('.site-header');
     if (!header) return;
 
-    bindDrop($('#hdr-signin-drop'));
+    bindSigninDrop($('#hdr-signin-drop'));
     bindDrop($('#hdr-lang-drop'));
     bindSearch();
     bindMegas();
