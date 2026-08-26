@@ -4,21 +4,10 @@
  * Specs: official model names and published loading / I/O only. Copy is Spectrum's.
  */
 (function (global) {
-  // Official NovaStar product photos (novastar.tech / oss specs). SVG placeholders where no photo found.
-  var PHOTO_EXT = {
-    'vx400-pro': '.png', 'vx600-pro': '.png', 'vx1000-pro': '.png', 'vx2000-pro': '.png',
-    ku20: '.png', mx20: '.png', mx30: '.png', 'mx40-pro': '.png',
-    msd300: '.jpg',
-    mctrl300: '.png', mctrl600: '.png', 'mctrl660-pro': '.png', mctrl4k: '.jpg',
-    'tu15-pro': '.png', 'tu20-pro': '.png', 'tu4k-pro': '.png', tb60: '.png',
-    'a5s-plus': '.jpg', 'a10s-pro': '.jpg', 'mrv412-n': '.jpg'
-  };
-
   function nv(cfg) {
     var subtype = cfg.subtype;
     var cats = ['control', subtype];
     if (subtype === 'receiving-card') cats.push('receiving-cards');
-    var ext = PHOTO_EXT[cfg.id] || '.svg';
     return {
       id: cfg.id,
       name: cfg.name,
@@ -39,7 +28,7 @@
       lead: cfg.lead || cfg.description,
       badge: cfg.badge || null,
       cats: cats,
-      image: 'assets/products/novastar/' + cfg.id + ext,
+      image: 'assets/products/novastar/' + cfg.id + '.svg',
       maxPixels: cfg.maxPixels || 0,
       outputs: cfg.outputs || '',
       inputs: cfg.inputs || '',
