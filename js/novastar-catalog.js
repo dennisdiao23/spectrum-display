@@ -39,8 +39,14 @@
       chips: cfg.chips || [],
       specTable: cfg.specTable || [],
       sourceUrl: cfg.sourceUrl || 'https://www.novastar.tech',
-      features: cfg.features || []
+      features: cfg.features || [],
+      downloadVersion: cfg.downloadVersion || '',
+      downloads: cfg.downloads || []
     };
+  }
+
+  function dl(label, url) {
+    return { label: label, url: url };
   }
 
   function spec(rows) {
@@ -662,6 +668,217 @@
       ])
     })
   ];
+
+  // Official NovaStar downloads only (novastar.tech / oss.novastar.tech / NovaStar CDN).
+  var NS = 'https://en-website001.oss-us-east-1.aliyuncs.com';
+  var NSACC = 'https://en-website001.oss-accelerate.aliyuncs.com';
+  var OSS = 'https://oss.novastar.tech';
+  var VX_MANUAL = NS + '/Specification/VX%20Pro%20Series%20All-in-One%20Controller%20User%20Manual-V1.3.1.pdf';
+  var VX_QSG = OSS + '/uploads/2025/03/VX-Pro-Series-All-in-One-Controller-Quick-Start-Guide-V1.0.1.pdf';
+  var COEX_NOTES = OSS + '/uploads/2025/09/COEX-MX40-ProMX30MX20KU20CX40-Pro-V1.5.0-Release-Notes-1.pdf';
+  var TU_MANUAL = NS + '/Specification/TU20%20Pro%20%26%20TU15%20Pro%20LED%20Playback%20Control%20Processor%20User%20Manual%20V1.6.1.pdf';
+  var VMP_WIN = NS + '/Coex%20VMP%20V1.5.0__Windows.zip';
+  var VMP_MAC = NS + '/Coex%20VMP%20V1.5.0__Mac.zip';
+
+  var DOWNLOADS = {
+    'vx400-pro': {
+      version: 'V1.3.1',
+      files: [
+        dl('Specifications', NS + '/Specification/VX400%20Pro%20All-in-One%20Controller%20Specifications-V1.3.0.pdf'),
+        dl('User Manual', VX_MANUAL),
+        dl('Quick Start Guide', VX_QSG),
+        dl('Firmware', NS + '/Firmware/VX400_Pro%20V1.3.1.zip')
+      ]
+    },
+    'vx600-pro': {
+      version: 'V1.3.1',
+      files: [
+        dl('Specifications', NS + '/Specification/VX600%20Pro%20All-in-One%20Controller%20Specifications-V1.3.0.pdf'),
+        dl('User Manual', VX_MANUAL),
+        dl('Quick Start Guide', VX_QSG),
+        dl('Firmware', NS + '/Firmware/VX600_Pro%20V1.3.1.zip'),
+        dl('Release Notes', NS + '/Specification/VX600%20Pro%20V1.3.1%20Release%20Notes.txt')
+      ]
+    },
+    'vx1000-pro': {
+      version: 'V1.3.1',
+      files: [
+        dl('Specifications', NS + '/Specification/VX1000%20Pro%20All-in-One%20Controller%20Specifications-V1.3.0.pdf'),
+        dl('User Manual', VX_MANUAL),
+        dl('Quick Start Guide', VX_QSG),
+        dl('Firmware', NS + '/Firmware/VX1000_Pro%20V1.3.1.zip'),
+        dl('Release Notes', NS + '/Specification/VX1000%20Pro%20V1.3.1%20Release%20Notes.txt')
+      ]
+    },
+    'vx2000-pro': {
+      version: 'V1.3.1',
+      files: [
+        dl('Specifications', NS + '/Specification/VX2000%20Pro%20All-in-One%20Controller%20Specifications-V1.3.0.pdf'),
+        dl('User Manual', VX_MANUAL),
+        dl('Quick Start Guide', VX_QSG),
+        dl('Firmware', NS + '/Firmware/VX2000_Pro%20V1.3.1.zip'),
+        dl('Release Notes', NS + '/Specification/VX2000%20Pro%20V1.3.1%20Release%20Notes.txt')
+      ]
+    },
+    ku20: {
+      version: 'V1.5.0',
+      files: [
+        dl('Specifications', OSS + '/uploads/2025/10/KU20-LED-DIsplay-Controller-Specifications-V1.5.0.pdf'),
+        dl('User Manual', OSS + '/uploads/2025/10/KU20-LED-Display-Controller-User-Manual-V1.5.0.pdf'),
+        dl('Firmware', NS + '/Firmware/KU20%20V1.5.1.zip'),
+        dl('Release Notes', COEX_NOTES),
+        dl('VMP Software (Windows)', VMP_WIN),
+        dl('VMP Software (Mac)', VMP_MAC)
+      ]
+    },
+    mx20: {
+      version: 'V1.5.0',
+      files: [
+        dl('Specifications', OSS + '/uploads/2025/10/MX20-LED-Display-Controller-Specifications-V1.5.0.pdf'),
+        dl('User Manual', OSS + '/uploads/2025/10/MX20-LED-Display-Controller-User-Manual-V1.5.0.pdf'),
+        dl('Firmware', NS + '/Firmware/MX20%20V1.5.1.zip'),
+        dl('Release Notes', COEX_NOTES),
+        dl('VMP Software (Windows)', VMP_WIN),
+        dl('VMP Software (Mac)', VMP_MAC)
+      ]
+    },
+    mx30: {
+      version: 'V1.5.0',
+      files: [
+        dl('Specifications', OSS + '/uploads/2025/10/MX30-LED-Display-Controller-Specifications-V1.5.0.pdf'),
+        dl('User Manual', OSS + '/uploads/2025/10/MX30-LED-Display-Controller-User-Manual-V1.5.0.pdf'),
+        dl('Firmware', NS + '/MX30%20V1.5.0.zip'),
+        dl('Release Notes', COEX_NOTES),
+        dl('VMP Software (Windows)', VMP_WIN),
+        dl('VMP Software (Mac)', VMP_MAC)
+      ]
+    },
+    'mx40-pro': {
+      version: 'V1.5.0',
+      files: [
+        dl('Specifications', OSS + '/uploads/2025/10/MX40-Pro-LED-Display-Controller-Specifications-V1.5.0.pdf'),
+        dl('User Manual', OSS + '/uploads/2025/10/MX40-Pro-LED-Display-Controller-User-Manual-V1.5.0.pdf'),
+        dl('Firmware', NS + '/MX40%20Pro%20V1.5.0.zip'),
+        dl('Release Notes', COEX_NOTES),
+        dl('VMP Software (Windows)', VMP_WIN),
+        dl('VMP Software (Mac)', VMP_MAC)
+      ]
+    },
+    msd300: {
+      version: 'V2.4.2',
+      files: [
+        dl('Specifications', OSS + '/uploads/2024/12/MSD300-Sending-Card-Specifications-V2.4.2.pdf')
+      ]
+    },
+    mctrl300: {
+      version: 'V2.4.3',
+      files: [
+        dl('Specifications', NS + '/uploads/2025/12/MCTRL300%20LED%20Display%20Controller%20Specifications-V2.4.3.pdf'),
+        dl('Firmware', NS + '/DATA_MCTRL300_V4.7.12.0.STD.zip'),
+        dl('Release Notes', OSS + '/uploads/2025/08/DATA_MCTRL300_V4.7.12.0.STD-Release-Notes.pdf')
+      ]
+    },
+    mctrl600: {
+      version: 'V2.3.5',
+      files: [
+        dl('Specifications', NS + '/Specification/MCTRL600%20LED%20Display%20Controller%20Specifications-V2.3.5.pdf'),
+        dl('Firmware', NS + '/DATA_MCTRL600_V4.9.3.0.STD.zip'),
+        dl('Release Notes', OSS + '/uploads/2025/08/DATA_MCTRL600_V4.9.3.0.STD-Release-Notes.pdf')
+      ]
+    },
+    'mctrl660-pro': {
+      version: 'V1.4.2',
+      files: [
+        dl('Specifications', OSS + '/uploads/2025/12/MCTRL660-PRO-Independent-Controller-Specifications-V1.4.2.pdf'),
+        dl('User Manual', OSS + '/uploads/2024/11/MCTRL660-PRO-Independent-Controller-User-Manual-V1.4.1.pdf'),
+        dl('Quick Start Guide', OSS + '/uploads/2019/06/MCTRL660-PRO-Independent-Controller-Quick-Start-Guide-V1.3.0.pdf'),
+        dl('Firmware', NS + '/DATA_MCTRL660PRO_V1.0.6.0.STD.zip'),
+        dl('Release Notes', OSS + '/uploads/2025/03/DATA_MCTRL660-Pro_V1.0.6.0.STD-Release-Notes.pdf')
+      ]
+    },
+    mctrl4k: {
+      version: 'V1.2.2',
+      files: [
+        dl('Specifications', OSS + '/uploads/2025/12/MCTRL4K-LED-Display-Controller-Specifications-V1.2.2.pdf'),
+        dl('User Manual', OSS + '/uploads/2022/04/MCTRL4K-LED-Display-Controller-User-Manual-V1.2.0.pdf'),
+        dl('Release Notes', NS + '/Specification/DATA_MCTRL4K_V1.3.0.0.STD%20Release%20Notes.txt')
+      ]
+    },
+    'tu15-pro': {
+      version: 'V1.6.1',
+      files: [
+        dl('Specifications', NSACC + '/Specification/TU15%20Pro%20LED%20Playback%20Control%20Processor%20Specifications-V1.6.3.pdf'),
+        dl('User Manual', TU_MANUAL),
+        dl('Firmware', NSACC + '/Firmware/TU15%20Pro%20V1.6.1.1001.zip'),
+        dl('Release Notes', NSACC + '/Specification/TU15%20Pro%20V1.6.1%20%20Release%20Notes.txt')
+      ]
+    },
+    'tu20-pro': {
+      version: 'V1.6.1',
+      files: [
+        dl('Specifications', NSACC + '/Specification/TU20%20Pro%20LED%20Playback%20Control%20Processor%20Specifications-V1.6.3.pdf'),
+        dl('User Manual', TU_MANUAL),
+        dl('Firmware', NSACC + '/Firmware/TU20%20Pro%20V1.6.1.1001.zip')
+      ]
+    },
+    'tu4k-pro': {
+      version: 'V1.2.3',
+      files: [
+        dl('Specifications', NS + '/Specification/TU4K%20Pro%20LED%20Playback%20Control%20Processor%20Specifications-V1.2.3.pdf'),
+        dl('User Manual', OSS + '/uploads/2025/11/TU4K-Pro-LED-Playback-Control-Processor-User-Manual-V1.2.0.pdf'),
+        dl('Firmware', NSACC + '/Firmware/TU4K%20Pro%20V1.6.1.1001.zip'),
+        dl('Release Notes', NSACC + '/Specification/TU4K%20Pro%20V1.6.1%20Release%20Notes.txt')
+      ]
+    },
+    tb60: {
+      version: 'V1.2.4',
+      files: [
+        dl('Specifications', NS + '/Specification/TB60%20Multimedia%20Player%20Specifications-V1.2.4.pdf'),
+        dl('Quick Start Guide', OSS + '/uploads/2023/11/Taurus-Series-Multimedia-Players-Quick-Start-Guide-3rd-Generation-V1.0.2.pdf'),
+        dl('Release Notes', NS + '/Specification/T30T50TB30TB40TB50TB60.txt')
+      ]
+    },
+    'a5s-plus': {
+      version: 'V1.4.1',
+      files: [
+        dl('Specifications', OSS + '/uploads/2025/05/A5s-Plus-Receiving-Card-Specifications-V1.4.1.pdf'),
+        dl('Firmware', NS + '/DATA_A5sPlus_V4.9.7.0.zip'),
+        dl('Release Notes', OSS + '/uploads/2025/04/A5sPlus_V4.9.7.0-Program-Release-Notes.pdf')
+      ]
+    },
+    'a8s-n': {
+      version: 'V4.9.1',
+      files: [
+        dl('Firmware', NS + '/Data_A8s-N_V4.9.1.0.zip'),
+        dl('Release Notes', OSS + '/uploads/2024/09/A8s-N_V4.9.0.0-Program-Release-Notes.pdf')
+      ]
+    },
+    'a10s-pro': {
+      version: 'V1.5.1',
+      files: [
+        dl('Specifications', NS + '/Specification/A10s%20Pro%20Receiving%20Card%20Specifications-V1.5.1.pdf')
+      ]
+    },
+    'mrv412-n': {
+      version: 'V1.0.3',
+      files: [
+        dl('Specifications', OSS + '/uploads/2025/05/MRV412-N-Receiving-Card-Specifications-V1.0.3.pdf')
+      ]
+    },
+    'mrv416-n': {
+      version: 'V1.0.3',
+      files: [
+        dl('Specifications', OSS + '/uploads/2025/05/MRV416-N-Receiving-Card-Specifications-V1.0.3.pdf')
+      ]
+    }
+  };
+
+  series.forEach(function (s) {
+    var pack = DOWNLOADS[s.id];
+    if (!pack) return;
+    s.downloadVersion = pack.version || '';
+    s.downloads = pack.files || [];
+  });
 
   global.SPECTRUM_PRODUCTS = global.SPECTRUM_PRODUCTS || {};
   global.SPECTRUM_PRODUCTS.novastar = {

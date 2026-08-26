@@ -213,6 +213,7 @@
         <button class="tab-btn py-4 text-sm font-medium border-b-2 border-sky-500 text-sky-400" data-tab="overview">Overview</button>
         <button class="tab-btn py-4 text-sm font-medium border-b-2 border-transparent text-slate-400 hover:text-white" data-tab="specs">Specifications</button>
         <button class="tab-btn py-4 text-sm font-medium border-b-2 border-transparent text-slate-400 hover:text-white" data-tab="features">Key Features</button>
+        <button class="tab-btn py-4 text-sm font-medium border-b-2 border-transparent text-slate-400 hover:text-white" data-tab="downloads">Downloads</button>
         <button class="tab-btn py-4 text-sm font-medium border-b-2 border-transparent text-slate-400 hover:text-white" data-tab="support">Support & Warranty</button>
       </div>
 
@@ -232,6 +233,10 @@
 
       <div id="tab-features" class="tab-content py-12 hidden">
         <div id="features-grid" class="grid md:grid-cols-2 gap-8"></div>
+      </div>
+
+      <div id="tab-downloads" class="tab-content py-12 hidden">
+        <div id="downloads-wrap"></div>
       </div>
 
       <div id="tab-support" class="tab-content py-12 hidden"></div>
@@ -550,6 +555,46 @@
             (item.text ? '<p class="text-sm text-slate-400">' + esc(item.text) + '</p>' : '') +
             '</div>';
         }).join('');
+      }
+
+      const downloadsWrap = document.getElementById('downloads-wrap');
+      const downloadsTabBtn = document.querySelector('.tab-btn[data-tab="downloads"]');
+      if (downloadsWrap) {
+        var files = (seriesData && seriesData.downloads) || [];
+        var dlVersion = (seriesData && seriesData.downloadVersion) || '';
+        var dlTitle = (seriesData && (seriesData.model || seriesData.name)) || productName;
+        if (files.length) {
+          if (downloadsTabBtn) downloadsTabBtn.classList.remove('hidden');
+          downloadsWrap.innerHTML =
+            '<div class="max-w-xl">' +
+              '<div class="rounded-2xl border border-slate-800 bg-slate-900/40 p-6">' +
+                '<div class="text-lg font-semibold text-white">' + esc(dlTitle) + '</div>' +
+                (dlVersion ? '<div class="text-sm text-slate-500 mt-1">' + esc(dlVersion) + '</div>' : '') +
+                '<ul class="mt-5 space-y-3">' +
+                  files.map(function (f) {
+                    return '<li><a class="inline-flex items-center gap-3 text-sm text-sky-400 hover:text-sky-300" href="' +
+                      esc(f.url) + '" target="_blank" rel="noopener">' +
+                      '<span class="grid grid-cols-2 gap-0.5 w-3.5 h-3.5 shrink-0" aria-hidden="true">' +
+                        '<span class="bg-sky-400/80 rounded-[1px]"></span><span class="bg-sky-400/80 rounded-[1px]"></span>' +
+                        '<span class="bg-sky-400/80 rounded-[1px]"></span><span class="bg-sky-400/80 rounded-[1px]"></span>' +
+                      '</span>' +
+                      '<span>' + esc(f.label) + '</span></a></li>';
+                  }).join('') +
+                '</ul>' +
+              '</div>' +
+              '<p class="text-xs text-slate-500 mt-4">Files hosted by NovaStar. Spectrum provides these links for convenience; always verify you have the latest version for your installation.</p>' +
+            '</div>';
+        } else {
+          if (downloadsTabBtn) downloadsTabBtn.classList.add('hidden');
+          var fallbackHref = (seriesData && seriesData.sourceUrl) || 'contact.html';
+          downloadsWrap.innerHTML =
+            '<div class="max-w-xl text-slate-400 text-sm space-y-3">' +
+              '<p>No direct download package is listed for this model yet.</p>' +
+              '<p><a class="text-sky-400 hover:text-sky-300" href="' + esc(fallbackHref) +
+                '" target="_blank" rel="noopener">Manufacturer resources</a> · ' +
+                '<a class="text-sky-400 hover:text-sky-300" href="contact.html">Ask sales</a></p>' +
+            '</div>';
+        }
       }
 
       const supportEl = document.getElementById('tab-support');

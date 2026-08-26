@@ -66,7 +66,7 @@
         ['cats', 'specTable', 'sourceUrl', 'features', 'lead', 'gallery',
           'type', 'subtype', 'replacementOnly', 'family', 'model', 'maxPixels',
           'outputs', 'inputs', 'bestFor', 'bestWith', 'priceEach', 'latency', 'hdr',
-          'chips', 'badge'].forEach(function (k) {
+          'chips', 'badge', 'downloads', 'downloadVersion'].forEach(function (k) {
           if (extra[k] == null) return;
           if (s[k] == null || (Array.isArray(s[k]) && !s[k].length)) s[k] = extra[k];
         });
