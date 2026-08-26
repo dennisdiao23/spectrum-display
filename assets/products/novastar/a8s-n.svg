@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="800" height="600" viewBox="0 0 800 600" role="img" aria-label="NovaStar A8s-N">
+  <rect width="800" height="600" fill="#0b1220"/>
+  <rect x="40" y="40" width="720" height="520" rx="28" fill="#111827" stroke="#1e293b" stroke-width="2"/>
+  <rect x="200" y="170" width="400" height="210" rx="18" fill="#0f172a" stroke="#38bdf8" stroke-width="2"/>
+  <circle cx="248" cy="214" r="7" fill="#22c55e"/>
+  <circle cx="272" cy="214" r="7" fill="#eab308"/>
+  <circle cx="296" cy="214" r="7" fill="#38bdf8"/>
+  <text x="400" y="268" text-anchor="middle" fill="#7dd3fc" font-family="Inter, Arial, sans-serif" font-size="16" letter-spacing="2">NOVASTAR</text>
+  <text x="400" y="312" text-anchor="middle" fill="#f8fafc" font-family="Inter, Arial, sans-serif" font-size="32" font-weight="700">A8s-N</text>
+  <text x="400" y="430" text-anchor="middle" fill="#64748b" font-family="Inter, Arial, sans-serif" font-size="14">Spectrum Display · control system</text>
+  <text x="400" y="454" text-anchor="middle" fill="#475569" font-family="Inter, Arial, sans-serif" font-size="12">Placeholder image · a8s-n</text>
+</svg>

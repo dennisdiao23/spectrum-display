@@ -142,6 +142,15 @@
               <a href="products.html?cat=transparent" data-cat-link="transparent" class="block rounded-lg px-3 py-2 text-slate-400 hover:text-white hover:bg-slate-800/60">Transparent</a>
               <a href="products.html?cat=outdoor-fixed" data-cat-link="outdoor-fixed" class="block rounded-lg px-3 py-2 text-slate-400 hover:text-white hover:bg-slate-800/60">Outdoor fixed</a>
               <a href="products.html?cat=creative" data-cat-link="creative" class="block rounded-lg px-3 py-2 text-slate-400 hover:text-white hover:bg-slate-800/60">Creative / XR</a>
+              <a href="products.html?cat=control" data-cat-link="control" class="block rounded-lg px-3 py-2 text-slate-400 hover:text-white hover:bg-slate-800/60">Control systems</a>
+            </div>
+            <div id="control-subnav" class="hidden mt-3 space-y-1 text-sm pl-2 border-l border-slate-800">
+              <a href="products.html?cat=control" data-sub-link="" class="block rounded-lg px-3 py-1.5 text-slate-400 hover:text-white hover:bg-slate-800/60">All processors</a>
+              <a href="products.html?cat=control&amp;sub=all-in-one" data-sub-link="all-in-one" class="block rounded-lg px-3 py-1.5 text-slate-400 hover:text-white hover:bg-slate-800/60">All-in-one processors</a>
+              <a href="products.html?cat=control&amp;sub=sending" data-sub-link="sending" class="block rounded-lg px-3 py-1.5 text-slate-400 hover:text-white hover:bg-slate-800/60">Sending boxes</a>
+              <a href="products.html?cat=control&amp;sub=playback" data-sub-link="playback" class="block rounded-lg px-3 py-1.5 text-slate-400 hover:text-white hover:bg-slate-800/60">Playback / NovaLCT players</a>
+              <a href="products.html?cat=control&amp;sub=receiving-cards" data-sub-link="receiving-card" class="block rounded-lg px-3 py-1.5 text-slate-400 hover:text-white hover:bg-slate-800/60">Receiving cards — replacements</a>
+              <a href="products.html?cat=control&amp;sub=accessories" data-sub-link="accessories" class="block rounded-lg px-3 py-1.5 text-slate-400 hover:text-white hover:bg-slate-800/60">Accessories</a>
             </div>
           </div>
           <div>
@@ -155,7 +164,7 @@
               <a href="products.html?brand=diao" data-brand-link="diao" class="block rounded-lg px-3 py-2 text-slate-400 hover:text-white hover:bg-slate-800/60">DIAO</a>
             </div>
           </div>
-          <div>
+          <div id="pitch-filter-block">
             <h3 class="text-sm font-semibold uppercase tracking-wider text-slate-400 mb-3">Pixel Pitch</h3>
             <div class="space-y-2 text-sm">
               <label class="flex items-center gap-2 cursor-pointer"><input type="checkbox" class="rounded border-slate-600 bg-slate-800 text-sky-500"> ≤ 1.5 mm</label>
@@ -169,6 +178,15 @@
 
       <!-- Product grid -->
       <div class="flex-1">
+        <div id="control-explainer" class="hidden mb-6 rounded-2xl border border-slate-800 bg-slate-900/50 p-5 space-y-4">
+          <p class="text-sm text-slate-300 leading-relaxed" id="control-explainer-copy">Every Spectrum wall needs a control system. NovaStar takes HDMI/SDI/DP in, scales and color-corrects, then sends pixel-accurate signal to the cards already installed in each cabinet.</p>
+          <dl class="grid sm:grid-cols-2 gap-3 text-sm" id="control-chooser"></dl>
+          <p class="text-xs text-slate-500">Processor = brain of the wall. Sending box = transmitter only. Receiving card = already inside each new cabinet; sold here only as a spare.</p>
+        </div>
+        <div id="receiving-note" class="hidden mb-6 rounded-2xl border border-amber-500/30 bg-amber-500/5 p-4 text-sm text-amber-100/90">
+          <div class="font-semibold mb-1">Receiving cards — replacements &amp; spares</div>
+          <p>New Spectrum walls ship with receiving cards installed. Order these only if you need a spare or a field replacement.</p>
+        </div>
         <div class="flex items-center justify-between mb-6">
           <p class="text-sm text-slate-400"><span id="product-count">12</span> products</p>
           <select class="bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-sm">
@@ -351,6 +369,8 @@
     <p>© 2026 Spectrum Display</p>
   </footer>
   <script src="js/products-data.js"></script>
+  <script src="js/novastar-catalog.js"></script>
+  <script src="js/control-systems.js"></script>
   <script src="js/catalog-api.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="js/supabase-client.js"></script>
@@ -403,44 +423,79 @@
       if (countEl) countEl.textContent = String(n);
     }
 
+    function isControl(p) {
+      return window.SpectrumControl ? SpectrumControl.isControlProduct(p) : p.type === 'control';
+    }
+    function isReceiver(p) {
+      return window.SpectrumControl ? SpectrumControl.isReceivingCard(p) : !!(p.replacementOnly || p.subtype === 'receiving-card');
+    }
+    function escAttr(s) {
+      return String(s || '').replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;');
+    }
+
     function renderProducts(filterBrand) {
       const grid = document.getElementById('product-grid');
       if (!grid || !window.SPECTRUM_PRODUCT_LIST) {
         applyCatFilterToDom();
         return;
       }
-      let list = window.SPECTRUM_PRODUCT_LIST.slice();
       const params = new URLSearchParams(window.location.search);
-      const cat = (params.get('cat') || '').toLowerCase();
-      const q = (params.get('q') || '').trim().toLowerCase();
-      if (filterBrand) list = list.filter(p => p.brandId === filterBrand);
-      if (cat) list = list.filter(p => catsFor(p).split(/\s+/).indexOf(cat) !== -1);
-      if (q) {
-        list = list.filter(p => [p.name, p.brandName, p.description, p.type, p.id].join(' ').toLowerCase().indexOf(q) !== -1);
+      if (filterBrand && !params.get('brand')) params.set('brand', filterBrand);
+      let list = window.SPECTRUM_PRODUCT_LIST.slice();
+      if (window.SpectrumControl && SpectrumControl.filterCatalogList) {
+        list = SpectrumControl.filterCatalogList(list, params);
+      } else {
+        const cat = (params.get('cat') || '').toLowerCase();
+        const q = (params.get('q') || '').trim().toLowerCase();
+        if (filterBrand) list = list.filter(p => p.brandId === filterBrand);
+        if (cat) list = list.filter(p => catsFor(p).split(/\s+/).indexOf(cat) !== -1);
+        if (q) {
+          list = list.filter(p => [p.name, p.brandName, p.description, p.type, p.id].join(' ').toLowerCase().indexOf(q) !== -1);
+        }
+        list = list.filter(p => !isReceiver(p) || q);
+      }
+      if (!list.length && (params.get('sub') || '') === 'accessories') {
+        grid.innerHTML = '<div class="col-span-full rounded-xl border border-slate-800 p-6 text-sm text-slate-400">Accessories such as fiber converters, cables, and sensors are quoted by sales. <a class="text-sky-400 hover:text-sky-300" href="contact.html">Contact sales →</a></div>';
+        const countEl = document.getElementById('product-count');
+        if (countEl) countEl.textContent = '0';
+        return;
       }
       grid.innerHTML = list.map(p => {
-        const pitchMain = 'P' + (p.pitches && p.pitches[0] ? p.pitches[0] : '');
+        const control = isControl(p);
+        const hero = control
+          ? (p.model || p.family || 'CTRL')
+          : ('P' + (p.pitches && p.pitches[0] ? p.pitches[0] : ''));
+        const typeLabel = control ? (p.family || 'Control') : (p.type || 'LED');
         const badge = p.badge
-          ? '<span class="absolute top-2 left-2 px-1.5 py-0.5 rounded bg-sky-500/20 text-sky-300 text-[10px] font-medium z-10">' + p.badge + '</span>'
+          ? '<span class="absolute top-2 left-2 px-1.5 py-0.5 rounded bg-sky-500/20 text-sky-300 text-[10px] font-medium z-10 max-w-[90%] leading-tight">' + escAttr(p.badge) + '</span>'
           : '';
+        const imgClass = control
+          ? 'absolute inset-0 w-full h-full object-contain bg-slate-950 p-4 group-hover:scale-105 transition duration-300'
+          : 'absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition duration-300';
         const photo = p.image
-          ? '<img src="' + p.image + '" alt="' + String(p.name || '').replace(/"/g, '') + '" class="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition duration-300" onerror="this.style.display=\'none\'">'
+          ? '<img src="' + escAttr(p.image) + '" alt="' + escAttr(p.name) + '" class="' + imgClass + '" onerror="this.style.display=\'none\'">'
           : '';
         const href = 'product.html?brand=' + encodeURIComponent(p.brandId) + '&series=' + encodeURIComponent(p.id);
+        const meta = control
+          ? ((p.chips && p.chips.length ? p.chips.join(' · ') : (p.maxPixels ? ((window.SpectrumControl && SpectrumControl.formatPixels(p.maxPixels)) || '') : '')) + ' · ' + (p.description || ''))
+          : (p.pitchLabel + ' • ' + (p.description || ''));
+        const unit = control
+          ? ((p.priceEach || p.priceLabel === 'Request quote') ? (p.priceEach ? '<span class="text-xs text-slate-500">each</span>' : '') : '')
+          : (p.pricePerM2 ? '<span class="text-xs text-slate-500">/m²</span>' : '');
         return (
           '<a href="' + href + '" class="group rounded-xl border border-slate-800 bg-slate-950 overflow-hidden hover:border-sky-500/40 transition block" data-brand="' + p.brandId + '" data-cat="' + catsFor(p) + '">' +
             '<div class="aspect-[4/3] bg-gradient-to-br from-slate-800 to-slate-900 relative flex items-center justify-center overflow-hidden">' +
               badge + photo +
-              '<div class="text-center"><div class="text-2xl font-bold text-slate-600">' + pitchMain + '</div>' +
-              '<div class="text-[10px] text-slate-500">' + (p.type || 'LED') + '</div></div>' +
+              '<div class="text-center"><div class="text-2xl font-bold text-slate-600">' + escAttr(hero) + '</div>' +
+              '<div class="text-[10px] text-slate-500">' + escAttr(typeLabel) + '</div></div>' +
             '</div>' +
             '<div class="p-3">' +
-              '<div class="text-[11px] text-sky-400 font-medium">' + p.brandName + '</div>' +
-              '<h3 class="font-semibold text-sm mt-0.5 group-hover:text-sky-300">' + p.name + '</h3>' +
-              '<p class="text-xs text-slate-400 mt-1 line-clamp-2">' + p.pitchLabel + ' • ' + (p.description || '') + '</p>' +
+              '<div class="text-[11px] text-sky-400 font-medium">' + escAttr(p.brandName) + '</div>' +
+              '<h3 class="font-semibold text-sm mt-0.5 group-hover:text-sky-300">' + escAttr(p.name) + '</h3>' +
+              '<p class="text-xs text-slate-400 mt-1 line-clamp-2">' + escAttr(meta) + '</p>' +
               '<div class="mt-2 flex items-baseline gap-1 pricing-only">' +
-                '<span class="text-sm font-bold">' + p.priceLabel + '</span>' +
-                (p.pricePerM2 ? '<span class="text-xs text-slate-500">/m²</span>' : '') +
+                '<span class="text-sm font-bold">' + escAttr(p.priceLabel) + '</span>' +
+                unit +
               '</div>' +
               '<div class="mt-2 text-xs guest-pricing">' + ((window.t && t('price.signIn')) || 'Sign in for pricing') + '</div>' +
             '</div>' +
@@ -460,7 +515,8 @@
       transparent: 'Transparent',
       'outdoor-fixed': 'Outdoor fixed',
       creative: 'Creative / XR',
-      'micro-led': 'Micro LED TV'
+      'micro-led': 'Micro LED TV',
+      control: 'Control systems'
     };
     const CAT_LEADS = {
       'indoor-rental': 'Touring cabinets for indoor stages, events, and studios.',
@@ -471,15 +527,17 @@
       transparent: 'See-through LED for storefronts, stages, and outdoor spectaculars.',
       'outdoor-fixed': 'High-brightness façades, DOOH, and permanent outdoor walls.',
       creative: 'Curves, corners, flexible cabinets, and virtual-production walls.',
-      'micro-led': 'All-in-one Micro LED TVs and poster displays.'
+      'micro-led': 'All-in-one Micro LED TVs and poster displays.',
+      control: 'Processors and senders matched to your wall. Cabinet $/m² already includes the receiving card.'
     };
     const LINK_IDLE = 'block rounded-lg px-3 py-2 text-slate-400 hover:text-white hover:bg-slate-800/60';
     const LINK_ON = 'block rounded-lg px-3 py-2 bg-sky-500/15 text-sky-300 font-medium';
 
-    function filterHref(nextCat, nextBrand) {
+    function filterHref(nextCat, nextBrand, nextSub) {
       const p = new URLSearchParams();
       if (nextCat) p.set('cat', nextCat);
       if (nextBrand) p.set('brand', nextBrand);
+      if (nextSub) p.set('sub', nextSub === 'receiving-card' ? 'receiving-cards' : nextSub);
       const q = p.toString();
       return 'products.html' + (q ? '?' + q : '');
     }
@@ -488,23 +546,58 @@
       const params = new URLSearchParams(window.location.search);
       const cat = (params.get('cat') || '').toLowerCase();
       const brand = (params.get('brand') || '').toLowerCase();
+      let sub = (params.get('sub') || '').toLowerCase();
+      if (sub === 'receiving-cards') sub = 'receiving-card';
+      const isControlCat = cat === 'control' || brand === 'novastar';
       document.querySelectorAll('[data-cat-link]').forEach(function (a) {
         const id = a.getAttribute('data-cat-link') || '';
-        a.href = filterHref(id, brand);
+        a.href = filterHref(id, brand === 'novastar' ? '' : brand);
         a.className = id === cat ? LINK_ON : LINK_IDLE;
       });
       document.querySelectorAll('[data-brand-link]').forEach(function (a) {
         const id = a.getAttribute('data-brand-link') || '';
-        a.href = filterHref(cat, id);
+        a.href = filterHref(cat === 'control' ? cat : cat, id);
         a.className = id === brand ? LINK_ON : LINK_IDLE;
       });
+      const subnav = document.getElementById('control-subnav');
+      if (subnav) subnav.classList.toggle('hidden', !isControlCat);
+      document.querySelectorAll('[data-sub-link]').forEach(function (a) {
+        const id = a.getAttribute('data-sub-link') || '';
+        a.href = filterHref('control', brand === 'novastar' ? 'novastar' : '', id);
+        a.className = id === sub ? LINK_ON : LINK_IDLE;
+      });
+      const pitchBlock = document.getElementById('pitch-filter-block');
+      if (pitchBlock) pitchBlock.classList.toggle('hidden', isControlCat);
+      const explainer = document.getElementById('control-explainer');
+      if (explainer) {
+        explainer.classList.toggle('hidden', !isControlCat);
+        const copy = document.getElementById('control-explainer-copy');
+        if (copy && window.SpectrumControl) copy.textContent = SpectrumControl.EXPLAINER;
+        const chooser = document.getElementById('control-chooser');
+        if (chooser && window.SpectrumControl) {
+          chooser.innerHTML = SpectrumControl.CHOOSER.map(function (row) {
+            const href = filterHref('control', '', row.sub === 'receiving-card' ? 'receiving-cards' : row.sub);
+            return '<div class="rounded-xl border border-slate-800 p-3">' +
+              '<a class="text-sky-400 hover:text-sky-300 font-medium" href="' + href + '">' + row.text + '</a>' +
+              '<div class="text-slate-400 mt-1">' + row.title + '</div></div>';
+          }).join('');
+        }
+      }
+      const recvNote = document.getElementById('receiving-note');
+      if (recvNote) recvNote.classList.toggle('hidden', sub !== 'receiving-card');
       const h1 = document.querySelector('.products-hero h1');
       const lead = document.querySelector('.products-hero p');
-      if (h1 && cat && CAT_LABELS[cat]) {
+      if (h1 && brand === 'novastar') {
+        h1.removeAttribute('data-i18n');
+        h1.textContent = 'NovaStar control systems';
+      } else if (h1 && cat && CAT_LABELS[cat]) {
         h1.removeAttribute('data-i18n');
         h1.textContent = CAT_LABELS[cat];
       }
-      if (lead && cat && CAT_LEADS[cat]) {
+      if (lead && brand === 'novastar') {
+        lead.removeAttribute('data-i18n');
+        lead.textContent = CAT_LEADS.control;
+      } else if (lead && cat && CAT_LEADS[cat]) {
         lead.removeAttribute('data-i18n');
         lead.textContent = CAT_LEADS[cat];
       }

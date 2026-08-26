@@ -319,11 +319,11 @@
       extraTitle: 'What you get with Spectrum',
       extra: ''
     },
-    element: {
-      warrantyTitle: 'Limited Warranty',
-      warranty: WARRANTY,
-      extraTitle: 'What you get with Spectrum',
-      extra: ''
+    novastar: {
+      warrantyTitle: 'Control gear warranty',
+      warranty: 'Warranty coverage for NovaStar processors, senders, playback boxes, and spare receiving cards is quoted by Spectrum sales for the model on your order. We do not publish a generic control-gear term here. Email sales@spectrumdisplay.com with the model and serial if you need a warranty statement.',
+      extraTitle: 'Receiving cards on new walls',
+      extra: 'New Spectrum LED walls ship with receiving cards installed in each cabinet. The cabinet $/m² price already includes that card. Order receiving cards from this catalog only as replacements or spares.'
     }
   };
 

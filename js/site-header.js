@@ -141,7 +141,25 @@
     pro: 'assets/products/diao-pro.jpg',
     value: 'assets/products/diao-value.jpg',
     rental: 'assets/products/element-rental.jpg',
-    creative: 'assets/products/element-creative.jpg'
+    creative: 'assets/products/element-creative.jpg',
+    'vx400-pro': 'assets/products/novastar/vx400-pro.svg',
+    'vx600-pro': 'assets/products/novastar/vx600-pro.svg',
+    'vx1000-pro': 'assets/products/novastar/vx1000-pro.svg',
+    'vx2000-pro': 'assets/products/novastar/vx2000-pro.svg',
+    ku20: 'assets/products/novastar/ku20.svg',
+    mx20: 'assets/products/novastar/mx20.svg',
+    mx30: 'assets/products/novastar/mx30.svg',
+    'mx40-pro': 'assets/products/novastar/mx40-pro.svg',
+    msd300: 'assets/products/novastar/msd300.svg',
+    msd600: 'assets/products/novastar/msd600.svg',
+    mctrl300: 'assets/products/novastar/mctrl300.svg',
+    mctrl600: 'assets/products/novastar/mctrl600.svg',
+    'mctrl660-pro': 'assets/products/novastar/mctrl660-pro.svg',
+    mctrl4k: 'assets/products/novastar/mctrl4k.svg',
+    'tu15-pro': 'assets/products/novastar/tu15-pro.svg',
+    'tu20-pro': 'assets/products/novastar/tu20-pro.svg',
+    'tu4k-pro': 'assets/products/novastar/tu4k-pro.svg',
+    tb60: 'assets/products/novastar/tb60.svg'
   };
 
   function imageForHref(href) {
@@ -158,7 +176,8 @@
     { id: 'posters', label: 'Posters' },
     { id: 'transparent', label: 'Transparent' },
     { id: 'outdoor-fixed', label: 'Outdoor fixed' },
-    { id: 'creative', label: 'Creative / XR' }
+    { id: 'creative', label: 'Creative / XR' },
+    { id: 'control', label: 'Control systems' }
   ];
 
   var PRODUCT_MEGA = {
@@ -256,6 +275,20 @@
         { name: 'CS II Creative', href: 'product.html?brand=gloshine&series=cs2', tag: 'GLO' },
         { name: 'MR', href: 'product.html?brand=gloshine&series=mr', tag: 'GLO' },
         { name: 'Element Creative / XR', href: 'product.html?brand=element&series=creative', tag: 'ELT' }
+      ]
+    },
+    control: {
+      title: 'Control systems',
+      lead: 'NovaStar processors and senders matched to your wall. Receiving cards ship inside new cabinets.',
+      items: [
+        { name: 'VX600 Pro', href: 'product.html?brand=novastar&series=vx600-pro', tag: 'NVS' },
+        { name: 'VX1000 Pro', href: 'product.html?brand=novastar&series=vx1000-pro', tag: 'NVS' },
+        { name: 'MX30', href: 'product.html?brand=novastar&series=mx30', tag: 'NVS' },
+        { name: 'MX40 Pro', href: 'product.html?brand=novastar&series=mx40-pro', tag: 'NVS' },
+        { name: 'KU20', href: 'product.html?brand=novastar&series=ku20', tag: 'NVS' },
+        { name: 'MCTRL4K', href: 'product.html?brand=novastar&series=mctrl4k', tag: 'NVS' },
+        { name: 'TU20 Pro', href: 'product.html?brand=novastar&series=tu20-pro', tag: 'NVS' },
+        { name: 'All control systems', href: 'products.html?cat=control', tag: 'NVS' }
       ]
     }
   };
@@ -405,7 +438,10 @@
       outdoor: 'outdoor-fixed',
       'outdoor-fixed': 'outdoor-fixed',
       creative: 'creative',
-      xr: 'creative'
+      xr: 'creative',
+      control: 'control',
+      processors: 'control',
+      novastar: 'control'
     };
     return map[cat] || 'indoor-rental';
   }
@@ -590,7 +626,8 @@
     var input = $('#hdr-search-input');
     var results = $('#hdr-search-results');
     function matches(p, q) {
-      var hay = [p.name, p.brandName, p.description, p.type, p.id].join(' ').toLowerCase();
+      var hay = [p.name, p.brandName, p.description, p.type, p.id, p.model, p.family, p.subtype]
+        .join(' ').toLowerCase();
       return hay.indexOf(q) !== -1;
     }
     if (input) {

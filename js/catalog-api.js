@@ -12,8 +12,13 @@
     return staticCatalog;
   }
 
+  function catalogUnitPrice(s) {
+    if (s && (s.type === 'control' || s.subtype)) return Number(s.priceEach) || 0;
+    return Number(s && s.pricePerM2) || 0;
+  }
+
   function priceLabelFor(s) {
-    var n = Number(s && s.pricePerM2);
+    var n = catalogUnitPrice(s);
     if (global.SpectrumPricing && SpectrumPricing.fromLabel) {
       return SpectrumPricing.fromLabel(n);
     }
@@ -58,7 +63,10 @@
           aSeries.push(JSON.parse(JSON.stringify(extra)));
           return;
         }
-        ['cats', 'specTable', 'sourceUrl', 'features', 'lead', 'gallery'].forEach(function (k) {
+        ['cats', 'specTable', 'sourceUrl', 'features', 'lead', 'gallery',
+          'type', 'subtype', 'replacementOnly', 'family', 'model', 'maxPixels',
+          'outputs', 'inputs', 'bestFor', 'bestWith', 'priceEach', 'latency', 'hdr',
+          'chips', 'badge'].forEach(function (k) {
           if (extra[k] == null) return;
           if (s[k] == null || (Array.isArray(s[k]) && !s[k].length)) s[k] = extra[k];
         });

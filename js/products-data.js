@@ -3044,6 +3044,11 @@ window.spectrumCatsFor = function (p) {
     creative: 'creative'
   };
   if (p && extra[p.id]) add(extra[p.id]);
+  if (p && p.type === 'control') {
+    add('control');
+    if (p.subtype) add(p.subtype);
+    if (p.subtype === 'receiving-card') add('receiving-cards');
+  }
   return Object.keys(set);
 };
 
@@ -3060,7 +3065,10 @@ window.SPECTRUM_PRODUCT_LIST = (function () {
         pitchLabel: (s.pitches && s.pitches.length)
           ? s.pitches[0] + (s.pitches.length > 1 ? '–' + s.pitches[s.pitches.length - 1] : '') + ' mm'
           : '',
-        priceLabel: s.pricePerM2 ? ('From $' + s.pricePerM2.toLocaleString()) : 'Request quote'
+        priceLabel: (function () {
+          var n = (s.type === 'control') ? (Number(s.priceEach) || 0) : (Number(s.pricePerM2) || 0);
+          return n ? ('From $' + n.toLocaleString()) : 'Request quote';
+        })()
       }));
     });
   });

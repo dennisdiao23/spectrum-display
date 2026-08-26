@@ -153,6 +153,7 @@
           <div class="text-sm font-medium text-sky-400 mb-2 brand-label">Spectrum</div>
           <h1 class="text-3xl sm:text-4xl font-bold mb-2">LED Series</h1>
           <p id="product-lead" class="text-slate-400 mb-6">Configure LED video wall cabinets, pixel pitch, and project details from Spectrum Display.</p>
+          <div id="replacement-banner" class="hidden mb-6 rounded-2xl border border-amber-500/30 bg-amber-500/5 p-4 text-sm text-amber-100/90"></div>
 
           <!-- Key specs pills -->
           <div id="product-pills" class="flex flex-wrap gap-2 mb-8"></div>
@@ -170,12 +171,12 @@
               </select>
             </div>
             <div>
-              <label class="block text-sm font-medium mb-2">Quantity (m²)</label>
+              <label class="block text-sm font-medium mb-2" id="qty-label">Quantity (m²)</label>
               <div class="flex items-center gap-3">
                 <button id="qty-minus" class="w-10 h-10 rounded-lg border border-slate-700 hover:bg-slate-800">−</button>
                 <input id="qty" type="number" value="4" min="1" class="w-20 text-center bg-slate-800 border border-slate-700 rounded-lg py-2">
                 <button id="qty-plus" class="w-10 h-10 rounded-lg border border-slate-700 hover:bg-slate-800">+</button>
-                <span class="text-sm text-slate-400">≈ 4 m² recommended starter</span>
+                <span class="text-sm text-slate-400" id="qty-hint">≈ 4 m² recommended starter</span>
               </div>
             </div>
             <div class="pt-4 border-t border-slate-800 flex items-end justify-between gap-4">
@@ -199,6 +200,7 @@
             <span class="text-slate-600">|</span>
             <a id="datasheet-link" href="https://gloshine.com/products" class="text-slate-400 hover:text-white">Manufacturer specs</a>
           </div>
+          <div id="recommended-control" class="hidden mt-8 p-5 rounded-2xl border border-slate-800 bg-slate-900/40"></div>
         </div>
       </div>
     </div>
@@ -255,6 +257,8 @@
   <div class="h-20"></div><!-- spacer for sticky bar -->
 
   <script src="js/products-data.js"></script>
+  <script src="js/novastar-catalog.js"></script>
+  <script src="js/control-systems.js"></script>
   <script src="js/product-copy.js"></script>
   <script src="js/catalog-api.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -270,8 +274,12 @@
     const seriesId = params.get('series') || '';
     const seriesData = (window.getSpectrumSeries && window.getSpectrumSeries(brandId, seriesId)) || null;
     const brandName = (window.SPECTRUM_PRODUCTS && window.SPECTRUM_PRODUCTS[brandId] && window.SPECTRUM_PRODUCTS[brandId].name) || brandId || 'Spectrum';
+    const isControl = !!(seriesData && (seriesData.type === 'control' || brandId === 'novastar'));
+    const isReceiver = !!(isControl && (seriesData.replacementOnly || seriesData.subtype === 'receiving-card'));
 
-    let basePrice = Number(seriesData && seriesData.pricePerM2) || 0;
+    let basePrice = isControl
+      ? (Number(seriesData && seriesData.priceEach) || 0)
+      : (Number(seriesData && seriesData.pricePerM2) || 0);
     const productName = (seriesData && seriesData.name) || 'LED Series';
     const productId = brandId + '-' + ((seriesData && seriesData.id) || seriesId || 'series');
     const hasPrice = basePrice > 0;
@@ -294,7 +302,9 @@
       if (titleEl) titleEl.textContent = pageTitle;
       const desc = (seriesData && (seriesData.lead || seriesData.description))
         ? (seriesData.lead || seriesData.description)
-        : ('Configure ' + productName + ' LED video wall cabinets and pricing from Spectrum Display Inc.');
+        : (isControl
+          ? (productName + ' control gear from Spectrum Display Inc.')
+          : ('Configure ' + productName + ' LED video wall cabinets and pricing from Spectrum Display Inc.'));
       const leadEl = document.getElementById('product-lead');
       if (leadEl) leadEl.textContent = seriesData && seriesData.description ? seriesData.description : desc;
       if (window.spectrumSetSeo) {
@@ -308,8 +318,10 @@
       }
       const crumbBrand = document.getElementById('product-brand-crumb');
       if (crumbBrand) {
-        crumbBrand.textContent = brandName;
-        crumbBrand.href = 'products.html?brand=' + encodeURIComponent(brandId);
+        crumbBrand.textContent = isControl ? 'Control systems' : brandName;
+        crumbBrand.href = isControl
+          ? (isReceiver ? 'products.html?cat=control&sub=receiving-cards' : 'products.html?cat=control')
+          : ('products.html?brand=' + encodeURIComponent(brandId));
       }
       const crumbName = document.getElementById('product-name-crumb');
       if (crumbName) crumbName.textContent = productName;
@@ -386,17 +398,33 @@
       const pills = document.getElementById('product-pills');
       if (pills) {
         const bits = [];
-        if (pitches.length) bits.push('Pixel Pitch: ' + pitches[0] + (pitches.length > 1 ? ' – ' + pitches[pitches.length - 1] : '') + ' mm');
-        if (seriesData && seriesData.type) bits.push(seriesData.type);
-        if (seriesData && seriesData.cabinetW && seriesData.cabinetH) {
-          bits.push(Math.round(seriesData.cabinetW * 1000) + ' × ' + Math.round(seriesData.cabinetH * 1000) + ' mm');
+        if (isControl) {
+          if (seriesData.family) bits.push(seriesData.family);
+          if (seriesData.maxPixels) bits.push((window.SpectrumControl && SpectrumControl.formatPixels(seriesData.maxPixels)) || (seriesData.maxPixels.toLocaleString() + ' px'));
+          if (seriesData.outputs) bits.push(seriesData.outputs);
+          if (seriesData.inputs) bits.push(seriesData.inputs);
+          if (seriesData.bestFor) bits.push(seriesData.bestFor);
+          if (seriesData.latency) bits.push(seriesData.latency);
+          if (seriesData.hdr) bits.push(seriesData.hdr);
+          if (isReceiver) bits.push('Replacement only — included with new cabinets');
+        } else {
+          if (pitches.length) bits.push('Pixel Pitch: ' + pitches[0] + (pitches.length > 1 ? ' – ' + pitches[pitches.length - 1] : '') + ' mm');
+          if (seriesData && seriesData.type) bits.push(seriesData.type);
+          if (seriesData && seriesData.cabinetW && seriesData.cabinetH) {
+            bits.push(Math.round(seriesData.cabinetW * 1000) + ' × ' + Math.round(seriesData.cabinetH * 1000) + ' mm');
+          }
         }
         pills.innerHTML = bits.map(function (b) {
           return '<span class="px-3 py-1 rounded-full bg-slate-800 text-sm">' + esc(b) + '</span>';
         }).join('');
       }
       const pitchGrid = document.getElementById('pitch-grid');
-      if (pitchGrid && pitches.length) {
+      const pitchWrap = pitchGrid && pitchGrid.closest('div');
+      if (isControl && pitchWrap) pitchWrap.classList.add('hidden');
+      const cab = document.getElementById('cabinet');
+      const cabWrap = cab && cab.closest('div');
+      if (isControl && cabWrap) cabWrap.classList.add('hidden');
+      if (pitchGrid && pitches.length && !isControl) {
         pitchGrid.innerHTML = pitches.map(function (p, i) {
           const on = i === 0
             ? 'pitch-btn px-3 py-2 rounded-lg border border-sky-500 bg-sky-500/10 text-sky-300 text-sm font-medium'
@@ -414,20 +442,49 @@
           };
         });
       }
-      const cab = document.getElementById('cabinet');
-      if (cab && seriesData && seriesData.cabinetW) {
+      if (cab && seriesData && seriesData.cabinetW && !isControl) {
         const label = Math.round(seriesData.cabinetW * 1000) + ' × ' + (Math.round(seriesData.cabinetH * 10000) / 10) + ' mm';
         cab.innerHTML = '<option value="std">' + esc(label) + '</option><option value="custom">Custom size (request quote)</option>';
+      }
+
+      const qtyLabel = document.getElementById('qty-label');
+      const qtyHint = document.getElementById('qty-hint');
+      const qtyInputEl = document.getElementById('qty');
+      if (isControl) {
+        if (qtyLabel) qtyLabel.textContent = 'Quantity';
+        if (qtyHint) qtyHint.textContent = 'each';
+        if (qtyInputEl && Number(qtyInputEl.value) === 4) qtyInputEl.value = '1';
+      }
+      const recvBanner = document.getElementById('replacement-banner');
+      if (recvBanner) {
+        if (isReceiver) {
+          recvBanner.classList.remove('hidden');
+          recvBanner.innerHTML = '<div class="font-semibold mb-1">Replacement only — included with new cabinets</div><p>' +
+            esc((window.SpectrumControl && SpectrumControl.RECEIVING_NOTE) ||
+              'New Spectrum walls ship with receiving cards installed. Order these only if you need a spare or a field replacement.') +
+            '</p>';
+        } else {
+          recvBanner.classList.add('hidden');
+        }
       }
 
       const ovTitle = document.getElementById('overview-title');
       if (ovTitle) ovTitle.textContent = brandName + ' ' + productName;
       const ovBody = document.getElementById('overview-body');
       if (ovBody && seriesData) {
+        var extraP = '';
+        if (isReceiver) {
+          extraP = '<p class="text-slate-300 leading-relaxed">' +
+            esc((window.SpectrumControl && SpectrumControl.RECEIVING_NOTE) || '') + '</p>';
+        } else if (isControl) {
+          extraP = '<p class="text-slate-300 leading-relaxed">The processor is the brain of the wall: it takes HDMI/SDI/DP in, then sends pixel-accurate signal to the receiving cards already installed in each new cabinet. Sending boxes transmit only. Ask sales about control-gear warranty terms.</p>';
+        } else {
+          extraP = '<p class="text-slate-300 leading-relaxed">As an authorized ' + esc(brandName) +
+            ' partner, Spectrum Display provides the manufacturer warranty plus a 3-year Spectrum support layer, local first-line support, and help configuring the right wall for your space.</p>' +
+            '<p class="text-slate-400 text-sm mt-4">' + esc((window.SpectrumControl && SpectrumControl.CABINET_CARD_NOTE) || 'Receiving card included in this cabinet.') + '</p>';
+        }
         ovBody.innerHTML =
-          '<p class="text-slate-300 mb-6 leading-relaxed">' + esc(seriesData.lead || seriesData.description) + '</p>' +
-          '<p class="text-slate-300 leading-relaxed">As an authorized ' + esc(brandName) +
-          ' partner, Spectrum Display provides the manufacturer warranty plus a 3-year Spectrum support layer, local first-line support, and help configuring the right wall for your space.</p>';
+          '<p class="text-slate-300 mb-6 leading-relaxed">' + esc(seriesData.lead || seriesData.description) + '</p>' + extraP;
       }
 
       const specWrap = document.getElementById('spec-table-wrap');
@@ -524,8 +581,35 @@
       const stickyName = document.getElementById('sticky-name');
       if (stickyName) stickyName.textContent = productName;
       const stickyFrom = document.getElementById('sticky-from');
+      const unitSuffix = isControl ? ' each' : ' / m²';
       if (stickyFrom && hasPrice) {
-        stickyFrom.textContent = 'From $' + sellUnit().toLocaleString() + ' / m²';
+        stickyFrom.textContent = 'From $' + sellUnit().toLocaleString() + unitSuffix;
+      }
+
+      const recBox = document.getElementById('recommended-control');
+      if (recBox) {
+        if (isControl && !isReceiver && seriesData.bestWith && seriesData.bestWith.length) {
+          recBox.classList.remove('hidden');
+          recBox.innerHTML = '<div class="text-sm font-semibold mb-2">Best with</div><div class="flex flex-wrap gap-2">' +
+            seriesData.bestWith.map(function (cat) {
+              const labels = { 'indoor-rental': 'Indoor rental', 'outdoor-rental': 'Outdoor rental', cob: 'Fine pitch / COB', 'fixed-indoor': 'Fixed indoor', posters: 'Posters', transparent: 'Transparent', 'outdoor-fixed': 'Outdoor fixed', creative: 'Creative / XR' };
+              return '<a class="px-3 py-1.5 rounded-full bg-slate-800 text-sm text-sky-300 hover:bg-slate-700" href="products.html?cat=' +
+                encodeURIComponent(cat) + '">' + esc(labels[cat] || cat) + '</a>';
+            }).join('') + '</div>';
+        } else if (!isControl && window.SpectrumControl) {
+          const recs = SpectrumControl.recommendedControlForCabinet(seriesData) || [];
+          recBox.classList.remove('hidden');
+          recBox.innerHTML =
+            '<div class="text-sm font-semibold mb-1">Recommended control</div>' +
+            '<p class="text-xs text-slate-500 mb-3">' + esc(SpectrumControl.CABINET_CARD_NOTE) + '</p>' +
+            '<div class="space-y-2">' + recs.map(function (r) {
+              return '<a class="flex items-center justify-between gap-3 rounded-xl border border-slate-800 px-3 py-2 text-sm hover:border-sky-500/40" href="product.html?brand=novastar&amp;series=' +
+                encodeURIComponent(r.id) + '"><span>' + esc(r.name) + '</span><span class="text-xs text-slate-500">' +
+                esc(r.chips && r.chips[0] ? r.chips[0] : SpectrumControl.formatPixels(r.maxPixels)) + '</span></a>';
+            }).join('') + '</div>';
+        } else {
+          recBox.classList.add('hidden');
+        }
       }
 
       const quoteBox = document.querySelector('.pricing-only');
@@ -562,11 +646,11 @@
       stickyPrice.textContent = '$' + total.toLocaleString();
       const priceUnit = document.getElementById('price-unit');
       if (priceUnit) {
-        priceUnit.textContent = '$' + unit.toLocaleString() + ' / m² × ' + qty + ' m²';
+        priceUnit.textContent = '$' + unit.toLocaleString() + (isControl ? ' each × ' + qty : ' / m² × ' + qty + ' m²');
       }
       const stickyFrom = document.getElementById('sticky-from');
       if (stickyFrom) {
-        stickyFrom.textContent = 'From $' + unit.toLocaleString() + ' / m²';
+        stickyFrom.textContent = 'From $' + unit.toLocaleString() + (isControl ? ' each' : ' / m²');
       }
     }
     window.__spectrumUpdateProductPrice = updatePrice;
@@ -604,7 +688,7 @@
       const qty = parseFloat(qtyInput.value) || 1;
       const existing = cart.find(i => i.id === productId);
       if (existing) existing.qty += qty;
-      else cart.push({ id: productId, name: brandName + ' ' + productName, price: basePrice, qty, unit: 'm²' });
+      else cart.push({ id: productId, name: brandName + ' ' + productName, price: basePrice, qty, unit: isControl ? 'each' : 'm²' });
       localStorage.setItem('spectrumCart', JSON.stringify(cart));
       updateCartCount();
       alert('Added to cart!');

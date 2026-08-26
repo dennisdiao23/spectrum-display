@@ -830,9 +830,29 @@
           </div>
         </div>
 
-        <!-- 3. Install -->
+        <!-- 3. Control system -->
+        <div class="p-5 rounded-2xl border border-slate-800 bg-slate-900/60 space-y-4" id="control-step">
+          <h2 class="font-semibold text-base" data-i18n="designer.control">3. Control system</h2>
+          <p class="text-xs text-slate-500" data-i18n="designer.controlLead">Pick a processor or sender sized for this wall. Receiving cards are already in each cabinet.</p>
+          <div class="text-xs text-slate-400" id="control-pixel-load">Wall load: —</div>
+          <div>
+            <label class="block text-xs text-slate-400 mb-1">Processor / sender</label>
+            <select id="control-processor" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-sky-500">
+              <option value="">Recommended</option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-xs text-slate-400 mb-1" data-i18n="designer.controlPlayback">Add playback box (optional)</label>
+            <select id="control-playback" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-sky-500">
+              <option value="">None</option>
+            </select>
+          </div>
+          <p class="text-xs text-slate-500" data-i18n="designer.controlNote">Receiving cards are included in each cabinet.</p>
+        </div>
+
+        <!-- 4. Install -->
         <div class="p-5 rounded-2xl border border-slate-800 bg-slate-900/60 space-y-4">
-          <h2 class="font-semibold text-base" data-i18n="designer.install">3. Install</h2>
+          <h2 class="font-semibold text-base" data-i18n="designer.install">4. Install</h2>
           <div class="space-y-2">
             <label class="block text-xs text-slate-400">Mount</label>
             <div class="flex flex-wrap gap-1.5 text-xs font-medium">
@@ -852,9 +872,9 @@
           </div>
         </div>
 
-        <!-- 4. Results -->
+        <!-- 5. Results -->
         <div class="p-5 rounded-2xl border border-slate-800 bg-slate-900/60">
-          <h2 class="font-semibold text-base mb-3" data-i18n="designer.summary">4. Project Summary</h2>
+          <h2 class="font-semibold text-base mb-3" data-i18n="designer.summary">5. Project Summary</h2>
           <div class="space-y-2.5 text-sm">
             <div class="flex justify-between"><span class="text-slate-400" data-i18n="designer.size">Wall Size</span><span id="res-size" class="font-medium text-right text-xs sm:text-sm">—</span></div>
             <div class="flex justify-between"><span class="text-slate-400" data-i18n="designer.area">Total Area</span><span id="res-area" class="font-medium">—</span></div>
@@ -867,8 +887,10 @@
             <div class="flex justify-between"><span class="text-slate-400" data-i18n="designer.powerPeak">Power (peak)</span><span id="res-power-peak" class="font-medium">—</span></div>
             <div class="flex justify-between"><span class="text-slate-400" data-i18n="designer.circuits">Circuits</span><span id="res-circuits" class="font-medium">—</span></div>
             <div class="flex justify-between"><span class="text-slate-400" data-i18n="designer.ports">Data ports</span><span id="res-ports" class="font-medium">—</span></div>
-            <div class="flex justify-between"><span class="text-slate-400" data-i18n="designer.processor">Processor</span><span id="res-processor" class="font-medium">—</span></div>
+            <div class="flex justify-between"><span class="text-slate-400" data-i18n="designer.processor">Processor</span><span id="res-processor" class="font-medium text-right text-xs sm:text-sm">—</span></div>
+            <div class="flex justify-between"><span class="text-slate-400">Playback</span><span id="res-playback" class="font-medium text-right text-xs sm:text-sm">—</span></div>
             <div class="flex justify-between border-t border-slate-800 pt-2.5 mt-1 pricing-only"><span class="text-slate-400" data-i18n="designer.estPrice">Est. Price</span><span id="res-price" class="font-semibold text-sky-400">—</span></div>
+            <div class="text-xs text-slate-500 pt-1" id="control-quote-note">Receiving cards are included in each cabinet.</div>
             <div class="flex justify-between border-t border-slate-800 pt-2.5 mt-1 guest-pricing"><span class="text-slate-400">Est. Price</span><a href="account.html" class="font-semibold text-sky-400" data-i18n="price.signIn">Sign in for pricing</a></div>
           </div>
           <a id="quote-btn" href="contact.html" class="mt-5 w-full inline-flex justify-center items-center px-5 py-2.5 rounded-full bg-sky-500 hover:bg-sky-400 text-white font-semibold text-sm transition">
@@ -1017,6 +1039,8 @@
   </footer>
 
   <script src="js/products-data.js"></script>
+  <script src="js/novastar-catalog.js"></script>
+  <script src="js/control-systems.js"></script>
   <script src="js/catalog-api.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="js/supabase-client.js"></script>
@@ -1079,6 +1103,11 @@
     const UHD_PIXELS = 3840 * 2160;
     const MOUNT_LABELS = { wall: 'Wall', stack: 'Ground stack', truss: 'Truss hang', legs: 'Legs' };
     const PERSON_HEIGHT_M = 1.75;
+    const controlProcessorEl = document.getElementById('control-processor');
+    const controlPlaybackEl = document.getElementById('control-playback');
+    let controlManual = false;
+    let lastControlPick = null;
+    let lastPlaybackPick = null;
     let figureMode = 'person';
     let labelMode = 'off';
     let viewMode = 'front';
@@ -1729,6 +1758,76 @@
       return products[brand].series.find(s => s.id === seriesId) || products[brand].series[0] || null;
     }
 
+    function populateControlOptions() {
+      if (!controlProcessorEl || !window.SpectrumControl) return;
+      const procs = SpectrumControl.processorsForCalculator().slice().sort(function (a, b) {
+        return (a.maxPixels || 0) - (b.maxPixels || 0);
+      });
+      const prev = controlProcessorEl.value;
+      controlProcessorEl.innerHTML =
+        '<option value="auto">Recommended (auto)</option>' +
+        '<option value="none">No control gear</option>' +
+        procs.map(function (p) {
+          const load = SpectrumControl.formatPixels(p.maxPixels);
+          return '<option value="' + p.id + '">' + p.name + ' · ' + load + '</option>';
+        }).join('');
+      if (prev && Array.from(controlProcessorEl.options).some(function (o) { return o.value === prev; })) {
+        controlProcessorEl.value = prev;
+      } else {
+        controlProcessorEl.value = 'auto';
+      }
+      if (controlPlaybackEl) {
+        const plays = SpectrumControl.playbackBoxes().slice().sort(function (a, b) {
+          return (a.maxPixels || 0) - (b.maxPixels || 0);
+        });
+        const prevPlay = controlPlaybackEl.value;
+        controlPlaybackEl.innerHTML =
+          '<option value="">None</option>' +
+          plays.map(function (p) {
+            return '<option value="' + p.id + '">' + p.name + '</option>';
+          }).join('');
+        if (prevPlay && Array.from(controlPlaybackEl.options).some(function (o) { return o.value === prevPlay; })) {
+          controlPlaybackEl.value = prevPlay;
+        }
+      }
+    }
+
+    function resolveControlSelection(totalPixels) {
+      lastControlPick = null;
+      lastPlaybackPick = null;
+      if (!window.SpectrumControl) return { processor: null, qty: 0, playback: null };
+      const mode = (controlProcessorEl && controlProcessorEl.value) || 'auto';
+      let processor = null;
+      let qty = 0;
+      if (mode === 'none') {
+        processor = null;
+      } else if (mode && mode !== 'auto') {
+        processor = SpectrumControl.byId(mode);
+        if (processor && SpectrumControl.isReceivingCard(processor)) processor = null;
+        if (processor) {
+          const need = Math.ceil(totalPixels * 1.2);
+          qty = processor.maxPixels ? Math.max(1, Math.ceil(need / processor.maxPixels)) : 1;
+        }
+      } else {
+        const rec = SpectrumControl.recommendProcessor(totalPixels, { subtype: 'all-in-one' });
+        processor = rec.product;
+        qty = rec.qty || (processor ? 1 : 0);
+      }
+      const playId = controlPlaybackEl && controlPlaybackEl.value;
+      let playback = playId ? SpectrumControl.byId(playId) : null;
+      if (playback && SpectrumControl.isReceivingCard(playback)) playback = null;
+      lastControlPick = processor;
+      lastPlaybackPick = playback;
+      return { processor: processor, qty: qty, playback: playback };
+    }
+
+    function controlUnitPrice(p) {
+      if (!p) return 0;
+      const n = Number(p.priceEach) || 0;
+      if (!n) return 0;
+      return (window.SpectrumPricing && SpectrumPricing.apply) ? SpectrumPricing.apply(n) : n;
+    }
+
     function populateSeries() {
       if (isCustomPanel()) {
         setCustomMode(true);
@@ -1738,7 +1837,12 @@
       if (!products || !products[brandEl.value]) return;
       setCustomMode(false);
       const brand = brandEl.value;
-      const list = products[brand].series;
+      if (brand === 'novastar') {
+        brandEl.value = 'trt';
+      }
+      const list = (products[brandEl.value].series || []).filter(function (s) {
+        return s.type !== 'control';
+      });
       seriesEl.innerHTML = list.map(s => `<option value="${s.id}">${s.name}</option>`).join('');
       populatePitch();
     }
@@ -1850,15 +1954,24 @@
       const circuits = Math.max(1, Math.ceil(powerPeak / wattsPerCircuit));
       const totalPx = pxW * pxH;
       const dataPorts = Math.max(1, Math.ceil(totalPx / PIXELS_PER_PORT));
-      const processorCount = Math.max(1, Math.ceil(totalPx / UHD_PIXELS));
-      const processorLabel = (pxW <= 1920 && pxH <= 1080) ? 'HD' : '4K';
-      const processorText = (processorLabel === 'HD')
-        ? '1 × HD'
-        : processorCount + ' × 4K';
+      const controlSel = resolveControlSelection(totalPx);
+      const processorText = controlSel.processor
+        ? ((controlSel.qty > 1 ? controlSel.qty + ' × ' : '') + controlSel.processor.name)
+        : 'None';
+      const playbackText = controlSel.playback ? controlSel.playback.name : 'None';
+      const loadEl = document.getElementById('control-pixel-load');
+      if (loadEl) {
+        const need = Math.ceil(totalPx * 1.2);
+        loadEl.textContent = 'Wall load: ' + totalPx.toLocaleString() + ' px  ·  size with ~20% headroom: ' + need.toLocaleString() + ' px' +
+          (controlSel.processor ? '  ·  ' + (window.SpectrumControl ? SpectrumControl.formatPixels(controlSel.processor.maxPixels) : '') + ' capacity' : '');
+      }
       const basePrice = Math.round(actualArea * series.pricePerM2);
-      const sellPrice = (window.SpectrumPricing && SpectrumPricing.apply)
+      const controlPrice = controlUnitPrice(controlSel.processor) * (controlSel.qty || 0)
+        + controlUnitPrice(controlSel.playback);
+      const sellCabinets = (window.SpectrumPricing && SpectrumPricing.apply)
         ? SpectrumPricing.apply(basePrice)
         : basePrice;
+      const sellPrice = sellCabinets + controlPrice;
 
       // Results
       // area label set below with dual units
@@ -1888,6 +2001,8 @@
       if (portsEl) portsEl.textContent = String(dataPorts);
       const procEl = document.getElementById('res-processor');
       if (procEl) procEl.textContent = processorText;
+      const playEl = document.getElementById('res-playback');
+      if (playEl) playEl.textContent = playbackText;
       document.getElementById('res-price').textContent = (window.SpectrumAuth && SpectrumAuth.isLoggedIn && SpectrumAuth.isLoggedIn())
         ? ('$' + sellPrice.toLocaleString())
         : '—';
@@ -2033,6 +2148,10 @@
         circuits: circuits + ' × ' + CIRCUIT_AMPS + 'A @ ' + voltage + 'V',
         ports: String(dataPorts),
         processor: processorText,
+        playback: playbackText,
+        controlId: controlSel.processor ? controlSel.processor.id : '',
+        controlQty: controlSel.qty || 0,
+        playbackId: controlSel.playback ? controlSel.playback.id : '',
         price: (window.SpectrumAuth && SpectrumAuth.isLoggedIn && SpectrumAuth.isLoggedIn())
           ? ('$' + sellPrice.toLocaleString())
           : '',
@@ -2044,7 +2163,9 @@
 
       // Quote / save CTA
       const brandName = getBrandName();
-      const q = `?product=${encodeURIComponent(brandName + ' ' + series.name)}&pitch=${pitch}mm&size=${w}x${h}m&area=${actualArea.toFixed(2)}&cabinets=${cabinets}&mount=${mountType}&volt=${voltage}&peak=${powerPeak}W&circuits=${circuits}&ports=${dataPorts}`;
+      let q = `?product=${encodeURIComponent(brandName + ' ' + series.name)}&pitch=${pitch}mm&size=${w}x${h}m&area=${actualArea.toFixed(2)}&cabinets=${cabinets}&mount=${mountType}&volt=${voltage}&peak=${powerPeak}W&circuits=${circuits}&ports=${dataPorts}`;
+      if (controlSel.processor) q += `&control=${encodeURIComponent(controlSel.processor.name)}&controlQty=${controlSel.qty || 1}`;
+      if (controlSel.playback) q += `&playback=${encodeURIComponent(controlSel.playback.name)}`;
       syncSummaryCta('contact.html' + q);
 
       // Update shareable URL without reloading
@@ -2108,7 +2229,9 @@
         volt: String(voltage),
         fig: figureMode || 'person',
         labels: labelMode || 'off',
-        view: viewMode || 'front'
+        view: viewMode || 'front',
+        control: (controlProcessorEl && controlProcessorEl.value) || 'auto',
+        playback: (controlPlaybackEl && controlPlaybackEl.value) || ''
       });
       if (isCustomPanel()) {
         const extra = customShareFields();
@@ -2160,7 +2283,9 @@
         volt: String(voltage),
         fig: figureMode || 'person',
         labels: labelMode || 'off',
-        view: viewMode || 'front'
+        view: viewMode || 'front',
+        control: (controlProcessorEl && controlProcessorEl.value) || 'auto',
+        playback: (controlPlaybackEl && controlPlaybackEl.value) || ''
       });
       if (isCustomPanel()) {
         const extra = customShareFields();
@@ -2216,6 +2341,15 @@
       if (state.view) setViewMode(state.view, { skipApply: true });
       if (state.unit === 'm') setSizeUnit('m');
       else setSizeUnit('ft');
+      if (controlProcessorEl && state.control) {
+        const exists = Array.from(controlProcessorEl.options).some(o => o.value === state.control);
+        if (exists) controlProcessorEl.value = state.control;
+        controlManual = controlProcessorEl.value !== 'auto';
+      }
+      if (controlPlaybackEl && state.playback != null) {
+        const exists = Array.from(controlPlaybackEl.options).some(o => o.value === state.playback);
+        if (exists) controlPlaybackEl.value = state.playback;
+      }
       updateDesign();
       return true;
     }
@@ -2236,6 +2370,8 @@
         fig: params.get('fig'),
         labels: params.get('labels'),
         view: params.get('view'),
+        control: params.get('control'),
+        playback: params.get('playback'),
         cname: params.get('cname'),
         cw: params.get('cw'),
         ch: params.get('ch'),
@@ -2392,7 +2528,9 @@
         + specRow('Circuits', spec.circuits)
         + specRow('Data ports', spec.ports)
         + specRow('Processor', spec.processor)
+        + specRow('Playback', spec.playback || 'None')
         + '</table>'
+        + '<p class="note" style="text-align:left;margin-top:10px">Receiving cards are included in each cabinet. Do not add spare receiving cards to a new-wall quote.</p>'
         + (spec.price
           ? '<div class="price"><span>Estimated price</span><strong>' + escHtml(spec.price) + '</strong></div>'
           : '')
@@ -2438,6 +2576,15 @@
     brandEl.addEventListener('change', populateSeries);
     seriesEl.addEventListener('change', populatePitch);
     pitchEl.addEventListener('change', updateDesign);
+    if (controlProcessorEl) {
+      controlProcessorEl.addEventListener('change', function () {
+        controlManual = controlProcessorEl.value !== 'auto';
+        updateDesign();
+      });
+    }
+    if (controlPlaybackEl) {
+      controlPlaybackEl.addEventListener('change', updateDesign);
+    }
     ['custom-name', 'custom-w', 'custom-h', 'custom-pitch', 'custom-weight', 'custom-price', 'custom-pmax'].forEach(id => {
       const el = document.getElementById(id);
       if (!el) return;
@@ -2551,7 +2698,9 @@
       const current = brandEl.value;
       const customOpt = brandEl.querySelector('option[value="custom"]');
       const customHtml = customOpt ? customOpt.outerHTML : '<option value="custom">Custom Panel</option>';
-      const brandHtml = Object.keys(products).map(function (id) {
+      const brandHtml = Object.keys(products).filter(function (id) {
+        return id !== 'novastar' && products[id] && products[id].kind !== 'control';
+      }).map(function (id) {
         return '<option value="' + id + '">' + (products[id].name || id) + '</option>';
       }).join('');
       brandEl.innerHTML = brandHtml + customHtml;
@@ -2561,10 +2710,12 @@
     }
     window.addEventListener('spectrum:catalog', function () {
       syncBrandOptions();
+      populateControlOptions();
       populateSeries();
     });
 
     // Init — restore saved project (session) or URL query
+    populateControlOptions();
     populateSeries();
     if (!loadSavedProject()) loadFromUrl();
     loadOpenedCustomPanel();

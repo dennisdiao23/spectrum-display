@@ -92,6 +92,15 @@
   background: #a78bfa;
 }
 
+.home-control-line {
+  margin: -0.35rem auto 1.35rem;
+  max-width: 28rem;
+  color: rgba(226, 232, 240, 0.72);
+  font-size: 0.875rem;
+  font-weight: 500;
+  letter-spacing: 0.02em;
+}
+
 .home-hero h1 {
   max-width: 12em;
   margin: 0 auto 1.25rem;

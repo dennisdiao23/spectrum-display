@@ -105,6 +105,7 @@ async function main() {
     [
       ['/', 'weekly', '1.0'],
       ['/products.html', 'weekly', '0.9'],
+      ['/control.html', 'weekly', '0.8'],
       ['/solutions.html', 'monthly', '0.8'],
       ['/designer.html', 'monthly', '0.8'],
       ['/contact.html', 'monthly', '0.7'],
