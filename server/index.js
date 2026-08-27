@@ -333,6 +333,7 @@ async function main() {
         website: String(body.website_url || body.company_website || '').trim().slice(0, 200),
         tax_id: String(body.tax_id || '').trim().slice(0, 80),
         years_in_business: String(body.years_in_business || '').trim().slice(0, 40),
+        company_size: String(body.company_size || '').trim().slice(0, 40),
         business_type: parseListField(body.business_type),
         primary_verticals: parseListField(body.primary_verticals),
         typical_job_size_m2: String(body.typical_job_size_m2 || '').trim().slice(0, 40),
