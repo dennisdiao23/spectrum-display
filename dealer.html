@@ -128,7 +128,7 @@
           <p>Authorized net pricing, stock visibility, and project support for integrators, rental houses, and LED resellers across North America.</p>
           <div class="dealer-cta-row">
             <a class="dealer-btn dealer-btn-primary" href="#apply">Start application</a>
-            <a class="dealer-btn dealer-btn-ghost" href="products.html">Browse cabinets</a>
+            <a class="dealer-btn dealer-btn-ghost" href="products.html">Products</a>
           </div>
         </div>
       </div>
@@ -225,16 +225,8 @@
               <input id="company_name" name="company_name" required type="text" autocomplete="organization" />
             </div>
             <div>
-              <label for="legal_name">Legal name</label>
-              <input id="legal_name" name="legal_name" type="text" />
-            </div>
-            <div>
               <label for="company_website">Website</label>
               <input id="company_website" name="company_website" type="text" placeholder="https://" />
-            </div>
-            <div>
-              <label for="billing_email">Billing email *</label>
-              <input id="billing_email" name="billing_email" required type="email" />
             </div>
             <div>
               <label for="tax_id">Tax ID / EIN *</label>
@@ -259,10 +251,6 @@
                 <option value="30-80">30–80</option>
                 <option value="80+">80+</option>
               </select>
-            </div>
-            <div>
-              <label for="estimated_annual_m2">Estimated annual m²</label>
-              <input id="estimated_annual_m2" name="estimated_annual_m2" type="text" />
             </div>
             <div>
               <label for="resale_certificate">Resale certificate (PDF / JPG / PNG)</label>
@@ -301,60 +289,28 @@
 
           <div class="dealer-form-grid">
             <div class="span-2">
-              <label for="billing_address_line1">Billing street *</label>
-              <input id="billing_address_line1" name="billing_address_line1" required type="text" autocomplete="address-line1" />
+              <label for="company_address_line1">Company street *</label>
+              <input id="company_address_line1" name="company_address_line1" required type="text" autocomplete="address-line1" />
             </div>
             <div class="span-2">
-              <label for="billing_address_line2">Billing street line 2</label>
-              <input id="billing_address_line2" name="billing_address_line2" type="text" autocomplete="address-line2" />
+              <label for="company_address_line2">Company street line 2</label>
+              <input id="company_address_line2" name="company_address_line2" type="text" autocomplete="address-line2" />
             </div>
             <div>
-              <label for="billing_address_city">City *</label>
-              <input id="billing_address_city" name="billing_address_city" required type="text" autocomplete="address-level2" />
+              <label for="company_address_city">City *</label>
+              <input id="company_address_city" name="company_address_city" required type="text" autocomplete="address-level2" />
             </div>
             <div>
-              <label for="billing_address_state">State *</label>
-              <input id="billing_address_state" name="billing_address_state" required type="text" autocomplete="address-level1" />
+              <label for="company_address_state">State *</label>
+              <input id="company_address_state" name="company_address_state" required type="text" autocomplete="address-level1" />
             </div>
             <div>
-              <label for="billing_address_postal_code">Postal code *</label>
-              <input id="billing_address_postal_code" name="billing_address_postal_code" required type="text" autocomplete="postal-code" />
+              <label for="company_address_postal_code">Postal code *</label>
+              <input id="company_address_postal_code" name="company_address_postal_code" required type="text" autocomplete="postal-code" />
             </div>
             <div>
-              <label for="billing_address_country">Country</label>
-              <input id="billing_address_country" name="billing_address_country" type="text" value="US" autocomplete="country-name" />
-            </div>
-          </div>
-
-          <label class="dealer-check">
-            <input id="ship_same" type="checkbox" name="ship_same_as_billing" value="true" checked />
-            Shipping address same as billing
-          </label>
-
-          <div id="ship-fields" class="dealer-form-grid" hidden>
-            <div class="span-2">
-              <label for="ship_address_line1">Ship street *</label>
-              <input id="ship_address_line1" name="ship_address_line1" type="text" />
-            </div>
-            <div class="span-2">
-              <label for="ship_address_line2">Ship street line 2</label>
-              <input id="ship_address_line2" name="ship_address_line2" type="text" />
-            </div>
-            <div>
-              <label for="ship_address_city">City *</label>
-              <input id="ship_address_city" name="ship_address_city" type="text" />
-            </div>
-            <div>
-              <label for="ship_address_state">State *</label>
-              <input id="ship_address_state" name="ship_address_state" type="text" />
-            </div>
-            <div>
-              <label for="ship_address_postal_code">Postal code *</label>
-              <input id="ship_address_postal_code" name="ship_address_postal_code" type="text" />
-            </div>
-            <div>
-              <label for="ship_address_country">Country</label>
-              <input id="ship_address_country" name="ship_address_country" type="text" value="US" />
+              <label for="company_address_country">Country</label>
+              <input id="company_address_country" name="company_address_country" type="text" value="US" autocomplete="country-name" />
             </div>
           </div>
 
@@ -362,11 +318,6 @@
             <label for="references_text">References / notes</label>
             <textarea id="references_text" name="references_text" rows="4" placeholder="Brands you already sell, recent LED projects, annual volume…"></textarea>
           </div>
-
-          <label class="dealer-agree">
-            <input name="agree_not_to_publish_nets" value="true" required type="checkbox" />
-            <span>I will not publish Spectrum dealer net pricing to end customers or public websites.</span>
-          </label>
 
           <p id="dealer-form-msg" class="dealer-form-msg" role="status"></p>
           <button type="submit" id="dealer-submit" class="dealer-btn dealer-btn-solid">Submit application</button>
@@ -428,21 +379,6 @@
 
   <script>
     (function () {
-      var shipSame = document.getElementById('ship_same');
-      var shipFields = document.getElementById('ship-fields');
-      var requiredShip = ['ship_address_line1', 'ship_address_city', 'ship_address_state', 'ship_address_postal_code'];
-
-      function syncShip() {
-        var same = shipSame.checked;
-        shipFields.hidden = same;
-        requiredShip.forEach(function (id) {
-          var el = document.getElementById(id);
-          if (el) el.required = !same;
-        });
-      }
-      shipSame.addEventListener('change', syncShip);
-      syncShip();
-
       function checkedValues(name) {
         return Array.prototype.map.call(
           document.querySelectorAll('input[name="' + name + '"]:checked'),
@@ -461,10 +397,6 @@
         var fd = new FormData(form);
         fd.set('business_type', JSON.stringify(checkedValues('business_type')));
         fd.set('primary_verticals', JSON.stringify(checkedValues('primary_verticals')));
-        fd.set('ship_same_as_billing', shipSame.checked ? 'true' : 'false');
-        if (form.agree_not_to_publish_nets && form.agree_not_to_publish_nets.checked) {
-          fd.set('agree_not_to_publish_nets', 'true');
-        }
         submitBtn.disabled = true;
         submitBtn.textContent = 'Sending…';
         try {
@@ -474,8 +406,6 @@
             throw new Error(json.error || 'Could not send the application. Please try again.');
           }
           form.reset();
-          shipSame.checked = true;
-          syncShip();
           msg.textContent = 'Thanks — Spectrum received your dealer application and will follow up by email.';
           msg.className = 'dealer-form-msg is-ok';
         } catch (err) {

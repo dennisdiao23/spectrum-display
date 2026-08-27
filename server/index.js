@@ -324,27 +324,20 @@ async function main() {
         return res.status(429).json({ ok: false, error: 'Too many messages. Please try again later.' });
       }
       const body = req.body || {};
-      const sameShip = truthy(body.ship_same_as_billing);
-      const billing = parseAddressFields('billing_address', body);
-      const ship = sameShip ? Object.assign({}, billing) : parseAddressFields('ship_address', body);
+      const companyAddress = parseAddressFields('company_address', body);
       const app = {
         contact_name: String(body.contact_name || '').trim().slice(0, 120),
         email: String(body.email || '').trim().slice(0, 160).toLowerCase(),
         phone: String(body.phone || '').trim().slice(0, 60),
         company_name: String(body.company_name || '').trim().slice(0, 160),
-        legal_name: String(body.legal_name || '').trim().slice(0, 160),
         website: String(body.website_url || body.company_website || '').trim().slice(0, 200),
-        billing_email: String(body.billing_email || '').trim().slice(0, 160).toLowerCase(),
         tax_id: String(body.tax_id || '').trim().slice(0, 80),
         years_in_business: String(body.years_in_business || '').trim().slice(0, 40),
         business_type: parseListField(body.business_type),
         primary_verticals: parseListField(body.primary_verticals),
         typical_job_size_m2: String(body.typical_job_size_m2 || '').trim().slice(0, 40),
-        estimated_annual_m2: String(body.estimated_annual_m2 || '').trim().slice(0, 80),
-        billing_address: billing,
-        ship_address: ship,
+        company_address: companyAddress,
         references_text: String(body.references_text || '').trim().slice(0, 4000),
-        agree_not_to_publish_nets: truthy(body.agree_not_to_publish_nets),
         resale_certificate_name: ''
       };
       if (!app.contact_name) return res.status(400).json({ ok: false, error: 'Contact name is required.' });
@@ -353,19 +346,9 @@ async function main() {
       }
       if (!app.company_name) return res.status(400).json({ ok: false, error: 'Company name is required.' });
       if (!app.phone) return res.status(400).json({ ok: false, error: 'Phone is required.' });
-      if (!app.billing_email) return res.status(400).json({ ok: false, error: 'Billing email is required.' });
       if (!app.tax_id) return res.status(400).json({ ok: false, error: 'Tax ID is required.' });
-      if (!billing.line1 || !billing.city || !billing.state || !billing.postal_code) {
-        return res.status(400).json({ ok: false, error: 'Full billing address is required.' });
-      }
-      if (!sameShip && (!ship.line1 || !ship.city || !ship.state || !ship.postal_code)) {
-        return res.status(400).json({ ok: false, error: 'Full ship address is required.' });
-      }
-      if (!app.agree_not_to_publish_nets) {
-        return res.status(400).json({
-          ok: false,
-          error: 'You must agree not to publish Spectrum dealer net pricing.'
-        });
+      if (!companyAddress.line1 || !companyAddress.city || !companyAddress.state || !companyAddress.postal_code) {
+        return res.status(400).json({ ok: false, error: 'Full company address is required.' });
       }
       const attachments = [];
       if (req.file && req.file.buffer) {

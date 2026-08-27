@@ -75,26 +75,19 @@ function buildDealerBodies(app) {
     'Phone: ' + (app.phone || '—'),
     '',
     'Company: ' + (app.company_name || '—'),
-    'Legal name: ' + (app.legal_name || '—'),
     'Website: ' + (app.website || '—'),
-    'Billing email: ' + (app.billing_email || '—'),
     'Tax ID: ' + (app.tax_id || '—'),
     'Years in business: ' + (app.years_in_business || '—'),
     'Business type: ' + listText(app.business_type),
     'Primary verticals: ' + listText(app.primary_verticals),
     'Typical job size (m²): ' + (app.typical_job_size_m2 || '—'),
-    'Estimated annual m²: ' + (app.estimated_annual_m2 || '—'),
     '',
-    'Billing address:',
-    formatAddress(app.billing_address),
-    '',
-    'Ship address:',
-    formatAddress(app.ship_address),
+    'Company address:',
+    formatAddress(app.company_address),
     '',
     'References:',
     app.references_text || '—',
     '',
-    'Agreed not to publish nets: ' + (app.agree_not_to_publish_nets ? 'yes' : 'no'),
     app.resale_certificate_name ? 'Resale certificate attached: ' + app.resale_certificate_name : 'Resale certificate: not attached'
   ];
   const text = lines.join('\n');
@@ -105,25 +98,17 @@ function buildDealerBodies(app) {
     row('Email', app.email || '—'),
     row('Phone', app.phone || '—'),
     row('Company', app.company_name || '—'),
-    row('Legal name', app.legal_name || '—'),
     row('Website', app.website || '—'),
-    row('Billing email', app.billing_email || '—'),
     row('Tax ID', app.tax_id || '—'),
     row('Years in business', app.years_in_business || '—'),
     row('Business type', listText(app.business_type)),
     row('Primary verticals', listText(app.primary_verticals)),
     row('Typical job size', app.typical_job_size_m2 || '—'),
-    row('Estimated annual m²', app.estimated_annual_m2 || '—'),
-    row('Agreed not to publish nets', app.agree_not_to_publish_nets ? 'yes' : 'no'),
     row('Resale certificate', app.resale_certificate_name || 'not attached'),
     '</table>',
-    '<p style="font-family:sans-serif;font-size:14px;margin:16px 0 4px"><strong>Billing address</strong></p>',
+    '<p style="font-family:sans-serif;font-size:14px;margin:16px 0 4px"><strong>Company address</strong></p>',
     '<p style="white-space:pre-wrap;font-family:sans-serif;font-size:14px">' +
-      escapeHtml(formatAddress(app.billing_address)) +
-      '</p>',
-    '<p style="font-family:sans-serif;font-size:14px;margin:16px 0 4px"><strong>Ship address</strong></p>',
-    '<p style="white-space:pre-wrap;font-family:sans-serif;font-size:14px">' +
-      escapeHtml(formatAddress(app.ship_address)) +
+      escapeHtml(formatAddress(app.company_address)) +
       '</p>',
     '<p style="font-family:sans-serif;font-size:14px;margin:16px 0 4px"><strong>References</strong></p>',
     '<p style="white-space:pre-wrap;font-family:sans-serif;font-size:14px">' +
@@ -228,7 +213,7 @@ async function sendDealerInquiryEmail(app, attachments) {
   const from = env('CONTACT_FROM_EMAIL', process.env.SMTP_USER || 'Spectrum Display <beth.t@example.com>');
   const subject = 'Dealer registration — ' + (app.company_name || app.contact_name || 'Applicant');
   const bodies = buildDealerBodies(app);
-  const replyTo = app.email || app.billing_email || undefined;
+  const replyTo = app.email || undefined;
   if (process.env.RESEND_API_KEY) {
     await sendWithResend(to, from, replyTo, subject, bodies, attachments);
     return;
