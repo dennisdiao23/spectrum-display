@@ -185,16 +185,59 @@
       </div>
     </section>
 
-    <section class="dealer-section dealer-section-tight" style="background:#fff">
+    <section class="dealer-section dealer-benefits-section">
       <div class="site-wrap dealer-reveal">
-        <p class="dealer-kicker">Benefits</p>
-        <h2>What you unlock after approval</h2>
-        <ul class="dealer-benefits">
-          <li><strong>Dealer net pricing</strong> Your company tier book — not public “from” pricing.</li>
-          <li><strong>Stock counts</strong> On-hand and incoming visibility for quoting with confidence.</li>
-          <li><strong>Quotes &amp; deposits</strong> Convert calculator projects into quotes and confirm with 30%.</li>
-          <li><strong>Spares &amp; support</strong> Receiving cards as replacements only, plus RMA and docs when the portal expands.</li>
-        </ul>
+        <h2 class="dealer-benefits-title">The Benefits of Partnering with Spectrum</h2>
+        <div class="dealer-benefit-tabs" role="tablist" aria-label="Partner benefits">
+          <button type="button" class="dealer-benefit-tab is-on" role="tab" aria-selected="true" data-benefit="opportunities">Expand Opportunities</button>
+          <button type="button" class="dealer-benefit-tab" role="tab" aria-selected="false" data-benefit="profitability">Boost Profitability</button>
+          <button type="button" class="dealer-benefit-tab" role="tab" aria-selected="false" data-benefit="excellence">Empowering Partner Excellence</button>
+          <button type="button" class="dealer-benefit-tab" role="tab" aria-selected="false" data-benefit="recognition">Stronger Brand Recognition</button>
+        </div>
+
+        <div class="dealer-benefit-panel is-on" data-benefit-panel="opportunities" role="tabpanel">
+          <div class="dealer-benefit-copy">
+            <h3>Expand Opportunities</h3>
+            <ul>
+              <li>Reach indoor, outdoor, rental, COB, and fine-pitch projects from one US partner.</li>
+              <li>Grow beyond one-off installs into repeat integrator, rental, and reseller work.</li>
+            </ul>
+          </div>
+          <img src="assets/content/solutions-retail.jpg" alt="Retail LED display opportunity" />
+        </div>
+
+        <div class="dealer-benefit-panel" data-benefit-panel="profitability" role="tabpanel" hidden>
+          <div class="dealer-benefit-copy">
+            <h3>Boost Profitability</h3>
+            <ul>
+              <li>Move upmarket with stronger quoting tools and clearer project support.</li>
+              <li>Win more jobs with stock visibility and faster path from bid to delivery.</li>
+            </ul>
+          </div>
+          <img src="assets/content/solutions-control-rooms.jpg" alt="Professional LED control room install" />
+        </div>
+
+        <div class="dealer-benefit-panel" data-benefit-panel="excellence" role="tabpanel" hidden>
+          <div class="dealer-benefit-copy">
+            <h3>Empowering Partner Excellence</h3>
+            <ul>
+              <li>End-to-end support: calculator tools, sales help, and technical resources for confident installs.</li>
+              <li>Fewer callbacks and stronger reliability protect your profits and reputation.</li>
+            </ul>
+          </div>
+          <img src="assets/content/solutions-corporate.jpg" alt="Team reviewing LED project plans" />
+        </div>
+
+        <div class="dealer-benefit-panel" data-benefit-panel="recognition" role="tabpanel" hidden>
+          <div class="dealer-benefit-copy">
+            <h3>Stronger Brand Recognition</h3>
+            <ul>
+              <li>Partner with a focused US LED distributor known for professional video walls.</li>
+              <li>Empower your business with reputable product lines and clear channel support.</li>
+            </ul>
+          </div>
+          <img src="assets/content/concert.jpg" alt="Large-format LED wall at a live event" />
+        </div>
       </div>
     </section>
 
@@ -431,6 +474,24 @@
       } else {
         reveals.forEach(function (el) { el.classList.add('is-in'); });
       }
+
+      var benefitTabs = document.querySelectorAll('.dealer-benefit-tab');
+      var benefitPanels = document.querySelectorAll('.dealer-benefit-panel');
+      benefitTabs.forEach(function (tab) {
+        tab.addEventListener('click', function () {
+          var id = tab.getAttribute('data-benefit');
+          benefitTabs.forEach(function (btn) {
+            var on = btn === tab;
+            btn.classList.toggle('is-on', on);
+            btn.setAttribute('aria-selected', on ? 'true' : 'false');
+          });
+          benefitPanels.forEach(function (panel) {
+            var on = panel.getAttribute('data-benefit-panel') === id;
+            panel.classList.toggle('is-on', on);
+            panel.hidden = !on;
+          });
+        });
+      });
     })();
   </script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>

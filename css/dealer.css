@@ -308,6 +308,118 @@
   font-size: 1.05rem;
 }
 
+.dealer-benefits-section {
+  background: #fff;
+}
+
+.dealer-benefits-title {
+  max-width: none;
+  margin: 0 auto 1.75rem;
+  text-align: center;
+  font-size: clamp(1.85rem, 3.4vw, 2.75rem);
+}
+
+.dealer-benefit-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.35rem;
+  margin: 0 auto 1.75rem;
+  padding: 0.35rem;
+  max-width: 56rem;
+  background: #eef2f6;
+  border-radius: 9999px;
+}
+
+.dealer-benefit-tab {
+  border: 0;
+  background: transparent;
+  color: var(--dealer-ink);
+  border-radius: 9999px;
+  padding: 0.7rem 1.1rem;
+  font: inherit;
+  font-size: 0.92rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s ease, color 0.2s ease;
+}
+
+.dealer-benefit-tab.is-on {
+  background: #0b3a66;
+  color: #fff;
+}
+
+.dealer-benefit-panel {
+  display: none;
+  overflow: hidden;
+  border-radius: 1.25rem;
+  background: #f3f6f9;
+  min-height: 18rem;
+}
+
+.dealer-benefit-panel.is-on {
+  display: grid;
+}
+
+@media (min-width: 900px) {
+  .dealer-benefit-panel.is-on {
+    grid-template-columns: 1fr 1fr;
+    min-height: 22rem;
+  }
+}
+
+.dealer-benefit-copy {
+  padding: 2rem 1.75rem;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+@media (min-width: 900px) {
+  .dealer-benefit-copy {
+    padding: 2.75rem;
+  }
+}
+
+.dealer-benefit-copy h3 {
+  margin: 0 0 1.1rem;
+  font-size: clamp(1.35rem, 2.4vw, 1.85rem);
+  font-weight: 700;
+}
+
+.dealer-benefit-copy ul {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: grid;
+  gap: 0.85rem;
+}
+
+.dealer-benefit-copy li {
+  position: relative;
+  padding-left: 1.1rem;
+  color: var(--dealer-muted);
+  line-height: 1.55;
+  font-size: 1.02rem;
+}
+
+.dealer-benefit-copy li::before {
+  content: "·";
+  position: absolute;
+  left: 0;
+  top: 0;
+  color: var(--dealer-ink);
+  font-weight: 700;
+}
+
+.dealer-benefit-panel img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  min-height: 14rem;
+  object-fit: cover;
+}
+
 .dealer-apply {
   background: #0b1220;
   color: #fff;
