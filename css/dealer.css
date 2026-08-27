@@ -535,6 +535,22 @@
   line-height: 1.45;
 }
 
+.dealer-consent {
+  display: grid;
+  gap: 0.9rem;
+  margin-top: 0.35rem;
+}
+
+.dealer-agree a {
+  color: #7dd3fc;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.dealer-agree a:hover {
+  color: #bae6fd;
+}
+
 .dealer-agree input {
   width: auto;
   margin-top: 0.2rem;

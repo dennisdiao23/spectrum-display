@@ -338,6 +338,9 @@ async function main() {
         typical_job_size_m2: String(body.typical_job_size_m2 || '').trim().slice(0, 40),
         company_address: companyAddress,
         references_text: String(body.references_text || '').trim().slice(0, 4000),
+        certify_authorized: truthy(body.certify_authorized),
+        agree_terms_privacy: truthy(body.agree_terms_privacy),
+        marketing_opt_in: truthy(body.marketing_opt_in),
         resale_certificate_name: ''
       };
       if (!app.contact_name) return res.status(400).json({ ok: false, error: 'Contact name is required.' });
@@ -349,6 +352,12 @@ async function main() {
       if (!app.tax_id) return res.status(400).json({ ok: false, error: 'Tax ID is required.' });
       if (!companyAddress.line1 || !companyAddress.city || !companyAddress.state || !companyAddress.postal_code) {
         return res.status(400).json({ ok: false, error: 'Full company address is required.' });
+      }
+      if (!app.certify_authorized) {
+        return res.status(400).json({ ok: false, error: 'Please certify that you are an authorized representative.' });
+      }
+      if (!app.agree_terms_privacy) {
+        return res.status(400).json({ ok: false, error: 'Please acknowledge the Terms of Use and Privacy Policy.' });
       }
       const attachments = [];
       if (req.file && req.file.buffer) {

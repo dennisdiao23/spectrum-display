@@ -88,6 +88,9 @@ function buildDealerBodies(app) {
     'References:',
     app.references_text || '—',
     '',
+    'Certified authorized representative: ' + (app.certify_authorized ? 'yes' : 'no'),
+    'Agreed to Terms & Privacy: ' + (app.agree_terms_privacy ? 'yes' : 'no'),
+    'Marketing opt-in: ' + (app.marketing_opt_in ? 'yes' : 'no'),
     app.resale_certificate_name ? 'Resale certificate attached: ' + app.resale_certificate_name : 'Resale certificate: not attached'
   ];
   const text = lines.join('\n');
@@ -104,6 +107,9 @@ function buildDealerBodies(app) {
     row('Business type', listText(app.business_type)),
     row('Primary verticals', listText(app.primary_verticals)),
     row('Typical job size', app.typical_job_size_m2 || '—'),
+    row('Certified authorized', app.certify_authorized ? 'yes' : 'no'),
+    row('Agreed Terms & Privacy', app.agree_terms_privacy ? 'yes' : 'no'),
+    row('Marketing opt-in', app.marketing_opt_in ? 'yes' : 'no'),
     row('Resale certificate', app.resale_certificate_name || 'not attached'),
     '</table>',
     '<p style="font-family:sans-serif;font-size:14px;margin:16px 0 4px"><strong>Company address</strong></p>',
