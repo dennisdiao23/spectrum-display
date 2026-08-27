@@ -1,0 +1,513 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <script src="js/i18n-boot.js"></script>
+  <link rel="stylesheet" href="css/site-header.css" />
+  <link rel="stylesheet" href="css/dealer.css" />
+  <title>Register as Spectrum Dealer | Spectrum Display</title>
+  <meta name="description" content="Register as a Spectrum Display dealer. Get Authorized net pricing, project support, and LED wall inventory access for integrators, rental houses, and resellers." />
+  <link rel="canonical" href="https://www.spectrumdisplay.com/dealer.html" />
+  <meta property="og:type" content="website" />
+  <meta property="og:site_name" content="Spectrum Display" />
+  <meta property="og:title" content="Register as Spectrum Dealer | Spectrum Display" />
+  <meta property="og:description" content="Apply to become a Spectrum Display dealer for LED video walls. Authorized nets, project support, and inventory access." />
+  <meta property="og:url" content="https://www.spectrumdisplay.com/dealer.html" />
+  <meta property="og:image" content="https://www.spectrumdisplay.com/assets/content/concert.jpg" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="Register as Spectrum Dealer | Spectrum Display" />
+  <meta name="twitter:description" content="Apply to become a Spectrum Display dealer for LED video walls." />
+  <script src="js/seo.js"></script>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600;700&family=Syne:wght@600;700;800&display=swap" rel="stylesheet" />
+</head>
+<body class="dealer-page antialiased">
+  <header class="site-header" id="site-header">
+    <div class="site-header-inner">
+      <div class="site-header-top">
+        <a href="index.html" class="site-brand">
+          <img src="assets/spectrum-logo.png" alt="Spectrum" class="site-brand-logo" />
+        </a>
+        <nav class="site-nav" id="site-nav">
+          <div class="site-nav-item" data-mega="products">
+            <button type="button" class="site-nav-link" aria-expanded="false" aria-haspopup="true">
+              <span data-i18n="nav.products">Products</span>
+              <svg class="site-nav-chevron" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M6 9l6 6 6-6"/></svg>
+            </button>
+          </div>
+          <div class="site-nav-item" data-mega="solutions">
+            <button type="button" class="site-nav-link" aria-expanded="false" aria-haspopup="true">
+              <span data-i18n="nav.solutions">Solutions</span>
+              <svg class="site-nav-chevron" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M6 9l6 6 6-6"/></svg>
+            </button>
+          </div>
+          <a class="site-nav-link" href="designer.html" data-i18n="nav.designer">LED Wall Calculator</a>
+        </nav>
+        <div class="site-utils">
+          <div class="site-drop" id="hdr-search-drop">
+            <button type="button" class="site-util site-icon-btn" aria-label="Search" aria-haspopup="true">
+              <svg fill="none" stroke="currentColor" stroke-width="1.7" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z"/></svg>
+            </button>
+            <div class="site-drop-panel site-search-panel">
+              <form id="hdr-search-form" action="products.html" method="get">
+                <input id="hdr-search-input" name="q" type="search" autocomplete="off" placeholder="Search products" data-i18n-placeholder="nav.searchPlaceholder" />
+              </form>
+              <div class="site-search-results" id="hdr-search-results"></div>
+            </div>
+          </div>
+          <div class="site-drop" id="hdr-lang-drop">
+            <button type="button" class="site-util site-icon-btn" aria-label="Language" aria-haspopup="true">
+              <svg fill="none" stroke="currentColor" stroke-width="1.7" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 21a9 9 0 100-18 9 9 0 000 18zM3.6 9h16.8M3.6 15h16.8M12 3c2.5 3.2 2.5 14.8 0 18M12 3c-2.5 3.2-2.5 14.8 0 18"/></svg>
+            </button>
+            <div class="site-drop-panel site-lang-panel">
+              <button type="button" data-set-lang="en">English</button>
+              <button type="button" data-set-lang="es">Español</button>
+              <button type="button" data-set-lang="fr">Français</button>
+              <button type="button" data-set-lang="ko">한국어</button>
+              <button type="button" data-set-lang="ja">日本語</button>
+              <button type="button" data-set-lang="zh">中文</button>
+            </div>
+          </div>
+          <div class="site-drop" id="hdr-signin-drop">
+            <button type="button" class="site-util" aria-haspopup="true">
+              <svg fill="none" stroke="currentColor" stroke-width="1.7" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 7.5a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.5 19.5a7.5 7.5 0 0115 0"/></svg>
+              <span class="site-util-label site-util-guest" data-i18n="nav.signin">Sign in</span>
+              <span class="site-util-label site-util-user" id="hdr-user-name"></span>
+            </button>
+            <div class="site-drop-panel">
+              <div class="site-guest">
+                <h3 data-i18n="nav.myAccount">My Account</h3>
+                <ul class="site-account-roles">
+                  <li data-i18n="nav.benefitOrders">Place orders quickly and easily</li>
+                  <li data-i18n="nav.benefitTrack">View orders and track your shipping status</li>
+                  <li data-i18n="nav.benefitList">Create and access a list of your products</li>
+                  <li data-i18n="nav.benefitProjects">View Saved Projects</li>
+                </ul>
+                <div class="site-drop-actions">
+                  <a href="account.html" class="site-btn-primary" data-i18n="nav.signin">Sign in</a>
+                  <a href="account.html?mode=register" class="site-btn-ghost" data-i18n="nav.createAccount">Create account</a>
+                </div>
+              </div>
+              <div class="site-logged">
+                <h3 id="hdr-user-name-panel"></h3>
+                <p id="hdr-user-role"></p>
+                <div class="site-drop-list">
+                  <a href="account.html" data-i18n="nav.myAccount">My Account</a>
+                  <button type="button" id="hdr-logout" data-i18n="nav.signout">Sign out</button>
+                </div>
+              </div>
+            </div>
+          </div>
+          <a href="support.html" class="site-util site-support-link"><span data-i18n="nav.support">Support</span></a>
+          <a href="contact.html" class="site-cta" data-i18n="nav.contactSales">Contact Sales</a>
+          <a href="contact.html" class="site-util site-contact-icon" aria-label="Contact Sales">
+            <svg fill="none" stroke="currentColor" stroke-width="1.7" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M21.75 6.75v10.5a2.25 2.25 0 01-2.25 2.25h-15a2.25 2.25 0 01-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0019.5 4.5h-15a2.25 2.25 0 00-2.25 2.25m19.5 0v.243a2.25 2.25 0 01-1.07 1.916l-7.5 4.615a2.25 2.25 0 01-2.36 0L3.32 8.91a2.25 2.25 0 01-1.07-1.916V6.75"/></svg>
+          </a>
+          <a href="cart.html" class="site-util site-cart site-icon-btn" aria-label="Cart">
+            <svg fill="none" stroke="currentColor" stroke-width="1.7" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"/></svg>
+            <span class="site-cart-count" id="cart-count">0</span>
+          </a>
+          <button type="button" class="site-util site-menu-btn" id="hdr-menu-btn" aria-label="Menu">
+            <svg fill="none" stroke="currentColor" stroke-width="1.7" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h16"/></svg>
+          </button>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <main>
+    <section class="dealer-hero">
+      <div class="dealer-hero-media" aria-hidden="true">
+        <img src="assets/content/concert.jpg" alt="" />
+      </div>
+      <div class="dealer-hero-inner">
+        <div class="site-wrap">
+          <p class="dealer-brand">Spectrum Display</p>
+          <h1>Register as Spectrum Dealer</h1>
+          <p>Authorized net pricing, stock visibility, and project support for integrators, rental houses, and LED resellers across North America.</p>
+          <div class="dealer-cta-row">
+            <a class="dealer-btn dealer-btn-primary" href="#apply">Start application</a>
+            <a class="dealer-btn dealer-btn-ghost" href="products.html">Browse cabinets</a>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="dealer-section">
+      <div class="site-wrap dealer-split dealer-reveal">
+        <div>
+          <p class="dealer-kicker">Partner program</p>
+          <h2>Sell LED with Spectrum behind every wall</h2>
+          <p class="dealer-lead">TRT, Gloshine, BAKO, DIAO, and Element cabinets plus NovaStar control — one US distributor for indoor, outdoor, rental, COB, and fine pitch. Dealers get nets after approval. Payment starts at 30% deposit to confirm, 70% balance before ship.</p>
+        </div>
+        <img class="dealer-photo" src="assets/content/solutions-corporate.jpg" alt="Corporate LED video wall installation" />
+      </div>
+    </section>
+
+    <section class="dealer-section dealer-section-tight" style="background:#fff">
+      <div class="site-wrap dealer-reveal">
+        <p class="dealer-kicker">Tiers</p>
+        <h2>Grow with Authorized, then Preferred</h2>
+        <p class="dealer-lead">New dealers start as Authorized. Preferred is earned after clean prepaid jobs — Spectrum upgrades manually. No public volume breaks.</p>
+        <div class="dealer-tier-list">
+          <div class="dealer-tier">
+            <h3>Authorized</h3>
+            <p>Dealer net price book, calculator projects, quotes, and inventory visibility. 30% deposit · balance before ship. 48-hour stock holds.</p>
+          </div>
+          <div class="dealer-tier">
+            <h3>Preferred</h3>
+            <p>Longer holds (up to 7 days), stronger allocation priority, and eligibility for net terms after Spectrum confirms paid history. Terms are never automatic.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="dealer-section">
+      <div class="site-wrap dealer-reveal">
+        <p class="dealer-kicker">Verticals</p>
+        <h2>Where Spectrum dealers win</h2>
+        <p class="dealer-lead">Use the same cabinet lines across retail, hospitality, worship, events, and corporate — configured in the LED Wall Calculator.</p>
+        <div class="dealer-solutions">
+          <a class="dealer-solution" href="solutions.html#retail">
+            <img src="assets/content/solutions-retail.jpg" alt="" />
+            <span>Retail</span>
+          </a>
+          <a class="dealer-solution" href="solutions.html#hospitality">
+            <img src="assets/content/solutions-sports-bar.jpg" alt="" />
+            <span>Hospitality</span>
+          </a>
+          <a class="dealer-solution" href="solutions.html#corporate">
+            <img src="assets/content/solutions-corporate.jpg" alt="" />
+            <span>Corporate</span>
+          </a>
+        </div>
+      </div>
+    </section>
+
+    <section class="dealer-section dealer-section-tight" style="background:#fff">
+      <div class="site-wrap dealer-reveal">
+        <p class="dealer-kicker">Benefits</p>
+        <h2>What you unlock after approval</h2>
+        <ul class="dealer-benefits">
+          <li><strong>Dealer net pricing</strong> Your company tier book — not public “from” pricing.</li>
+          <li><strong>Stock counts</strong> On-hand and incoming visibility for quoting with confidence.</li>
+          <li><strong>Quotes &amp; deposits</strong> Convert calculator projects into quotes and confirm with 30%.</li>
+          <li><strong>Spares &amp; support</strong> Receiving cards as replacements only, plus RMA and docs when the portal expands.</li>
+        </ul>
+      </div>
+    </section>
+
+    <section class="dealer-section dealer-apply" id="apply">
+      <div class="site-wrap dealer-reveal">
+        <p class="dealer-kicker">Application</p>
+        <h2>Register as Spectrum Dealer</h2>
+        <p class="dealer-lead">No account required. Send your company details to Spectrum sales — we review and follow up by email. Attach a resale certificate if you have one.</p>
+
+        <form id="dealer-inquiry-form" class="dealer-form" enctype="multipart/form-data" novalidate>
+          <input class="dealer-hp" type="text" name="website" tabindex="-1" autocomplete="off" aria-hidden="true" />
+
+          <div class="dealer-form-grid">
+            <div>
+              <label for="contact_name">Contact name *</label>
+              <input id="contact_name" name="contact_name" required type="text" autocomplete="name" />
+            </div>
+            <div>
+              <label for="email">Contact email *</label>
+              <input id="email" name="email" required type="email" autocomplete="email" />
+            </div>
+            <div>
+              <label for="phone">Phone *</label>
+              <input id="phone" name="phone" required type="tel" autocomplete="tel" />
+            </div>
+            <div>
+              <label for="company_name">Company name *</label>
+              <input id="company_name" name="company_name" required type="text" autocomplete="organization" />
+            </div>
+            <div>
+              <label for="legal_name">Legal name</label>
+              <input id="legal_name" name="legal_name" type="text" />
+            </div>
+            <div>
+              <label for="company_website">Website</label>
+              <input id="company_website" name="company_website" type="text" placeholder="https://" />
+            </div>
+            <div>
+              <label for="billing_email">Billing email *</label>
+              <input id="billing_email" name="billing_email" required type="email" />
+            </div>
+            <div>
+              <label for="tax_id">Tax ID / EIN *</label>
+              <input id="tax_id" name="tax_id" required type="text" />
+            </div>
+            <div>
+              <label for="years_in_business">Years in business</label>
+              <select id="years_in_business" name="years_in_business">
+                <option value="">Select</option>
+                <option value="&lt;1">&lt;1</option>
+                <option value="1-3">1–3</option>
+                <option value="3-10">3–10</option>
+                <option value="10+">10+</option>
+              </select>
+            </div>
+            <div>
+              <label for="typical_job_size_m2">Typical job size (m²)</label>
+              <select id="typical_job_size_m2" name="typical_job_size_m2">
+                <option value="">Select</option>
+                <option value="&lt;10">&lt;10</option>
+                <option value="10-30">10–30</option>
+                <option value="30-80">30–80</option>
+                <option value="80+">80+</option>
+              </select>
+            </div>
+            <div>
+              <label for="estimated_annual_m2">Estimated annual m²</label>
+              <input id="estimated_annual_m2" name="estimated_annual_m2" type="text" />
+            </div>
+            <div>
+              <label for="resale_certificate">Resale certificate (PDF / JPG / PNG)</label>
+              <input id="resale_certificate" name="resale_certificate" type="file" accept=".pdf,.jpg,.jpeg,.png,application/pdf,image/jpeg,image/png" />
+            </div>
+          </div>
+
+          <div>
+            <label>Business type</label>
+            <div class="dealer-check-grid">
+              <label class="dealer-check"><input type="checkbox" name="business_type" value="integrator" /> Integrator</label>
+              <label class="dealer-check"><input type="checkbox" name="business_type" value="rental" /> Rental</label>
+              <label class="dealer-check"><input type="checkbox" name="business_type" value="sign" /> Sign</label>
+              <label class="dealer-check"><input type="checkbox" name="business_type" value="broadcast" /> Broadcast</label>
+              <label class="dealer-check"><input type="checkbox" name="business_type" value="in-house" /> In-house</label>
+              <label class="dealer-check"><input type="checkbox" name="business_type" value="other" /> Other</label>
+            </div>
+          </div>
+
+          <div>
+            <label>Primary verticals</label>
+            <div class="dealer-check-grid">
+              <label class="dealer-check"><input type="checkbox" name="primary_verticals" value="retail" /> Retail</label>
+              <label class="dealer-check"><input type="checkbox" name="primary_verticals" value="restaurant" /> Restaurant</label>
+              <label class="dealer-check"><input type="checkbox" name="primary_verticals" value="sports_bar" /> Sports bar</label>
+              <label class="dealer-check"><input type="checkbox" name="primary_verticals" value="nightclub" /> Nightclub</label>
+              <label class="dealer-check"><input type="checkbox" name="primary_verticals" value="corporate" /> Corporate</label>
+              <label class="dealer-check"><input type="checkbox" name="primary_verticals" value="worship" /> Worship</label>
+              <label class="dealer-check"><input type="checkbox" name="primary_verticals" value="education" /> Education</label>
+              <label class="dealer-check"><input type="checkbox" name="primary_verticals" value="events" /> Events</label>
+              <label class="dealer-check"><input type="checkbox" name="primary_verticals" value="dooh" /> DOOH</label>
+              <label class="dealer-check"><input type="checkbox" name="primary_verticals" value="xr" /> XR</label>
+              <label class="dealer-check"><input type="checkbox" name="primary_verticals" value="other" /> Other</label>
+            </div>
+          </div>
+
+          <div class="dealer-form-grid">
+            <div class="span-2">
+              <label for="billing_address_line1">Billing street *</label>
+              <input id="billing_address_line1" name="billing_address_line1" required type="text" autocomplete="address-line1" />
+            </div>
+            <div class="span-2">
+              <label for="billing_address_line2">Billing street line 2</label>
+              <input id="billing_address_line2" name="billing_address_line2" type="text" autocomplete="address-line2" />
+            </div>
+            <div>
+              <label for="billing_address_city">City *</label>
+              <input id="billing_address_city" name="billing_address_city" required type="text" autocomplete="address-level2" />
+            </div>
+            <div>
+              <label for="billing_address_state">State *</label>
+              <input id="billing_address_state" name="billing_address_state" required type="text" autocomplete="address-level1" />
+            </div>
+            <div>
+              <label for="billing_address_postal_code">Postal code *</label>
+              <input id="billing_address_postal_code" name="billing_address_postal_code" required type="text" autocomplete="postal-code" />
+            </div>
+            <div>
+              <label for="billing_address_country">Country</label>
+              <input id="billing_address_country" name="billing_address_country" type="text" value="US" autocomplete="country-name" />
+            </div>
+          </div>
+
+          <label class="dealer-check">
+            <input id="ship_same" type="checkbox" name="ship_same_as_billing" value="true" checked />
+            Shipping address same as billing
+          </label>
+
+          <div id="ship-fields" class="dealer-form-grid" hidden>
+            <div class="span-2">
+              <label for="ship_address_line1">Ship street *</label>
+              <input id="ship_address_line1" name="ship_address_line1" type="text" />
+            </div>
+            <div class="span-2">
+              <label for="ship_address_line2">Ship street line 2</label>
+              <input id="ship_address_line2" name="ship_address_line2" type="text" />
+            </div>
+            <div>
+              <label for="ship_address_city">City *</label>
+              <input id="ship_address_city" name="ship_address_city" type="text" />
+            </div>
+            <div>
+              <label for="ship_address_state">State *</label>
+              <input id="ship_address_state" name="ship_address_state" type="text" />
+            </div>
+            <div>
+              <label for="ship_address_postal_code">Postal code *</label>
+              <input id="ship_address_postal_code" name="ship_address_postal_code" type="text" />
+            </div>
+            <div>
+              <label for="ship_address_country">Country</label>
+              <input id="ship_address_country" name="ship_address_country" type="text" value="US" />
+            </div>
+          </div>
+
+          <div>
+            <label for="references_text">References / notes</label>
+            <textarea id="references_text" name="references_text" rows="4" placeholder="Brands you already sell, recent LED projects, annual volume…"></textarea>
+          </div>
+
+          <label class="dealer-agree">
+            <input name="agree_not_to_publish_nets" value="true" required type="checkbox" />
+            <span>I will not publish Spectrum dealer net pricing to end customers or public websites.</span>
+          </label>
+
+          <p id="dealer-form-msg" class="dealer-form-msg" role="status"></p>
+          <button type="submit" id="dealer-submit" class="dealer-btn dealer-btn-solid">Submit application</button>
+        </form>
+      </div>
+    </section>
+  </main>
+
+  <footer class="bg-slate-950 text-slate-100 border-t border-slate-800 py-16">
+    <div class="site-wrap grid md:grid-cols-4 gap-10">
+      <div>
+        <a href="index.html" class="inline-block mb-4">
+          <img src="assets/spectrum-logo.png" alt="Spectrum" class="site-brand-logo" style="height:2.5rem" />
+        </a>
+        <p class="text-sm text-slate-400" data-i18n="footer.about">Premium LED display distributor serving North America. Authorized partner of five leading manufacturers.</p>
+        <ul class="mt-4 space-y-1 text-sm text-slate-400">
+          <li><a href="mailto:info@spectrumdisplay.com" class="hover:text-white">info@spectrumdisplay.com</a></li>
+          <li><a href="mailto:sales@spectrumdisplay.com" class="hover:text-white">sales@spectrumdisplay.com</a></li>
+          <li><a href="mailto:support@spectrumdisplay.com" class="hover:text-white">support@spectrumdisplay.com</a></li>
+        </ul>
+      </div>
+      <div>
+        <h4 class="font-semibold mb-4 text-sm uppercase tracking-wider text-slate-300" data-i18n="footer.products">Products</h4>
+        <ul class="space-y-2 text-sm text-slate-400">
+          <li><a href="products.html?cat=indoor-rental" class="hover:text-white">Indoor rental</a></li>
+          <li><a href="products.html?cat=outdoor-rental" class="hover:text-white">Outdoor rental</a></li>
+          <li><a href="products.html?cat=cob" class="hover:text-white">Fine pitch / COB</a></li>
+          <li><a href="products.html?cat=fixed-indoor" class="hover:text-white">Fixed indoor</a></li>
+          <li><a href="control.html" class="hover:text-white">Control systems</a></li>
+        </ul>
+      </div>
+      <div>
+        <h4 class="font-semibold mb-4 text-sm uppercase tracking-wider text-slate-300" data-i18n="footer.company">Company</h4>
+        <ul class="space-y-2 text-sm text-slate-400">
+          <li><a href="products.html" class="hover:text-white" data-i18n="footer.ourBrands">Our Brands</a></li>
+          <li><a href="solutions.html" class="hover:text-white" data-i18n="nav.solutions">Solutions</a></li>
+          <li><a href="dealer.html" class="hover:text-white" data-i18n="footer.dealer">Become a dealer</a></li>
+          <li><a href="contact.html" class="hover:text-white" data-i18n="nav.contactSales">Contact Sales</a></li>
+        </ul>
+      </div>
+      <div>
+        <h4 class="font-semibold mb-4 text-sm uppercase tracking-wider text-slate-300" data-i18n="footer.support">Support</h4>
+        <ul class="space-y-2 text-sm text-slate-400">
+          <li><a href="support.html#tech" class="hover:text-white" data-i18n="footer.tech">Technical Resources</a></li>
+          <li><a href="warranty.html" class="hover:text-white" data-i18n="footer.warranty">Warranty</a></li>
+          <li><a href="shipping.html" class="hover:text-white" data-i18n="footer.shipping">Shipping & Returns</a></li>
+          <li><a href="account.html" class="hover:text-white">My Account</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="site-wrap mt-12 pt-8 border-t border-slate-800 text-sm text-slate-500 flex flex-col sm:flex-row justify-between gap-4">
+      <p data-i18n="footer.copy">© 2026 Spectrum Display. All rights reserved.</p>
+      <div class="flex gap-6">
+        <a href="privacy.html" class="hover:text-slate-300" data-i18n="footer.privacy">Privacy</a>
+        <a href="terms.html" class="hover:text-slate-300" data-i18n="footer.terms">Terms</a>
+      </div>
+    </div>
+  </footer>
+
+  <script>
+    (function () {
+      var shipSame = document.getElementById('ship_same');
+      var shipFields = document.getElementById('ship-fields');
+      var requiredShip = ['ship_address_line1', 'ship_address_city', 'ship_address_state', 'ship_address_postal_code'];
+
+      function syncShip() {
+        var same = shipSame.checked;
+        shipFields.hidden = same;
+        requiredShip.forEach(function (id) {
+          var el = document.getElementById(id);
+          if (el) el.required = !same;
+        });
+      }
+      shipSame.addEventListener('change', syncShip);
+      syncShip();
+
+      function checkedValues(name) {
+        return Array.prototype.map.call(
+          document.querySelectorAll('input[name="' + name + '"]:checked'),
+          function (el) { return el.value; }
+        );
+      }
+
+      var form = document.getElementById('dealer-inquiry-form');
+      var msg = document.getElementById('dealer-form-msg');
+      var submitBtn = document.getElementById('dealer-submit');
+
+      form.addEventListener('submit', async function (e) {
+        e.preventDefault();
+        msg.textContent = '';
+        msg.className = 'dealer-form-msg';
+        var fd = new FormData(form);
+        fd.set('business_type', JSON.stringify(checkedValues('business_type')));
+        fd.set('primary_verticals', JSON.stringify(checkedValues('primary_verticals')));
+        fd.set('ship_same_as_billing', shipSame.checked ? 'true' : 'false');
+        if (form.agree_not_to_publish_nets && form.agree_not_to_publish_nets.checked) {
+          fd.set('agree_not_to_publish_nets', 'true');
+        }
+        submitBtn.disabled = true;
+        submitBtn.textContent = 'Sending…';
+        try {
+          var res = await fetch('/api/dealer-inquiry', { method: 'POST', body: fd });
+          var json = await res.json().catch(function () { return {}; });
+          if (!res.ok || !json.ok) {
+            throw new Error(json.error || 'Could not send the application. Please try again.');
+          }
+          form.reset();
+          shipSame.checked = true;
+          syncShip();
+          msg.textContent = 'Thanks — Spectrum received your dealer application and will follow up by email.';
+          msg.className = 'dealer-form-msg is-ok';
+        } catch (err) {
+          msg.textContent = (err && err.message) || 'Could not send the application. Please try again.';
+          msg.className = 'dealer-form-msg is-error';
+        } finally {
+          submitBtn.disabled = false;
+          submitBtn.textContent = 'Submit application';
+        }
+      });
+
+      var reveals = document.querySelectorAll('.dealer-reveal');
+      if ('IntersectionObserver' in window) {
+        var io = new IntersectionObserver(function (entries) {
+          entries.forEach(function (entry) {
+            if (entry.isIntersecting) {
+              entry.target.classList.add('is-in');
+              io.unobserve(entry.target);
+            }
+          });
+        }, { threshold: 0.16 });
+        reveals.forEach(function (el) { io.observe(el); });
+      } else {
+        reveals.forEach(function (el) { el.classList.add('is-in'); });
+      }
+    })();
+  </script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="js/supabase-client.js"></script>
+  <script src="js/pricing.js"></script>
+  <script src="js/auth.js"></script>
+  <script src="js/site-header.js"></script>
+  <script src="js/i18n.js"></script>
+</body>
+</html>

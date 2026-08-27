@@ -7,7 +7,7 @@ const cookieParser = require('cookie-parser');
 const bcrypt = require('bcryptjs');
 const multer = require('multer');
 const { getStore } = require('./store');
-const { sendContactEmail, mailConfigured } = require('./mail');
+const { sendContactEmail, sendDealerInquiryEmail, mailConfigured } = require('./mail');
 
 const ROOT = path.join(__dirname, '..');
 const COOKIE = 'spectrum_admin';
@@ -20,6 +20,15 @@ const upload = multer({
   fileFilter: function (_req, file, cb) {
     const ok = /^image\/(jpeg|png|webp|gif)$/i.test(file.mimetype || '');
     cb(ok ? null : new Error('Only JPG, PNG, WebP, or GIF images are allowed.'), ok);
+  }
+});
+
+const dealerInquiryUpload = multer({
+  storage: multer.memoryStorage(),
+  limits: { fileSize: 10 * 1024 * 1024, files: 1 },
+  fileFilter: function (_req, file, cb) {
+    const ok = /^(application\/pdf|image\/(jpeg|png))$/i.test(file.mimetype || '');
+    cb(ok ? null : new Error('Resale certificate must be PDF, JPG, or PNG (max 10MB).'), ok);
   }
 });
 
@@ -108,6 +117,7 @@ async function main() {
       ['/control.html', 'weekly', '0.8'],
       ['/solutions.html', 'monthly', '0.8'],
       ['/designer.html', 'monthly', '0.8'],
+      ['/dealer.html', 'monthly', '0.7'],
       ['/contact.html', 'monthly', '0.7'],
       ['/support.html', 'monthly', '0.6'],
       ['/warranty.html', 'monthly', '0.6'],
@@ -266,6 +276,119 @@ async function main() {
     } catch (err) {
       console.error('Contact form error:', err.message || err);
       res.status(502).json({ ok: false, error: 'Could not send the message. Please try again.' });
+    }
+  });
+
+  function parseListField(value) {
+    if (Array.isArray(value)) {
+      return value.map(String).map(function (s) { return s.trim(); }).filter(Boolean).slice(0, 20);
+    }
+    if (value == null || value === '') return [];
+    const raw = String(value).trim();
+    if (!raw) return [];
+    try {
+      const parsed = JSON.parse(raw);
+      if (Array.isArray(parsed)) {
+        return parsed.map(String).map(function (s) { return s.trim(); }).filter(Boolean).slice(0, 20);
+      }
+    } catch (_) { /* comma-separated */ }
+    return raw.split(/[,|]/).map(function (s) { return s.trim(); }).filter(Boolean).slice(0, 20);
+  }
+
+  function parseAddressFields(prefix, body) {
+    function field(key) {
+      const flat = body[prefix + '_' + key];
+      return flat != null ? String(flat).trim().slice(0, 200) : '';
+    }
+    return {
+      line1: field('line1'),
+      line2: field('line2'),
+      city: field('city'),
+      state: field('state'),
+      postal_code: field('postal_code'),
+      country: field('country') || 'US'
+    };
+  }
+
+  function truthy(value) {
+    return value === true || value === 'true' || value === '1' || value === 'on' || value === 'yes';
+  }
+
+  app.post('/api/dealer-inquiry', dealerInquiryUpload.single('resale_certificate'), async function (req, res) {
+    try {
+      if (String(req.body.website || '').trim()) {
+        return res.json({ ok: true });
+      }
+      const ip = String(req.ip || req.headers['x-forwarded-for'] || 'unknown').split(',')[0].trim();
+      if (contactRateLimited(ip)) {
+        return res.status(429).json({ ok: false, error: 'Too many messages. Please try again later.' });
+      }
+      const body = req.body || {};
+      const sameShip = truthy(body.ship_same_as_billing);
+      const billing = parseAddressFields('billing_address', body);
+      const ship = sameShip ? Object.assign({}, billing) : parseAddressFields('ship_address', body);
+      const app = {
+        contact_name: String(body.contact_name || '').trim().slice(0, 120),
+        email: String(body.email || '').trim().slice(0, 160).toLowerCase(),
+        phone: String(body.phone || '').trim().slice(0, 60),
+        company_name: String(body.company_name || '').trim().slice(0, 160),
+        legal_name: String(body.legal_name || '').trim().slice(0, 160),
+        website: String(body.website_url || body.company_website || '').trim().slice(0, 200),
+        billing_email: String(body.billing_email || '').trim().slice(0, 160).toLowerCase(),
+        tax_id: String(body.tax_id || '').trim().slice(0, 80),
+        years_in_business: String(body.years_in_business || '').trim().slice(0, 40),
+        business_type: parseListField(body.business_type),
+        primary_verticals: parseListField(body.primary_verticals),
+        typical_job_size_m2: String(body.typical_job_size_m2 || '').trim().slice(0, 40),
+        estimated_annual_m2: String(body.estimated_annual_m2 || '').trim().slice(0, 80),
+        billing_address: billing,
+        ship_address: ship,
+        references_text: String(body.references_text || '').trim().slice(0, 4000),
+        agree_not_to_publish_nets: truthy(body.agree_not_to_publish_nets),
+        resale_certificate_name: ''
+      };
+      if (!app.contact_name) return res.status(400).json({ ok: false, error: 'Contact name is required.' });
+      if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(app.email)) {
+        return res.status(400).json({ ok: false, error: 'A valid email is required.' });
+      }
+      if (!app.company_name) return res.status(400).json({ ok: false, error: 'Company name is required.' });
+      if (!app.phone) return res.status(400).json({ ok: false, error: 'Phone is required.' });
+      if (!app.billing_email) return res.status(400).json({ ok: false, error: 'Billing email is required.' });
+      if (!app.tax_id) return res.status(400).json({ ok: false, error: 'Tax ID is required.' });
+      if (!billing.line1 || !billing.city || !billing.state || !billing.postal_code) {
+        return res.status(400).json({ ok: false, error: 'Full billing address is required.' });
+      }
+      if (!sameShip && (!ship.line1 || !ship.city || !ship.state || !ship.postal_code)) {
+        return res.status(400).json({ ok: false, error: 'Full ship address is required.' });
+      }
+      if (!app.agree_not_to_publish_nets) {
+        return res.status(400).json({
+          ok: false,
+          error: 'You must agree not to publish Spectrum dealer net pricing.'
+        });
+      }
+      const attachments = [];
+      if (req.file && req.file.buffer) {
+        const ext = path.extname(req.file.originalname || '').toLowerCase() || '.pdf';
+        const safeName = 'resale-certificate' + (['.pdf', '.jpg', '.jpeg', '.png'].includes(ext) ? ext : '.pdf');
+        app.resale_certificate_name = safeName;
+        attachments.push({
+          filename: safeName,
+          content: req.file.buffer,
+          contentType: req.file.mimetype || 'application/octet-stream'
+        });
+      }
+      if (!mailConfigured()) {
+        return res.status(503).json({
+          ok: false,
+          error: 'The dealer form is not connected to email yet. Please try again later or email sales@spectrumdisplay.com.'
+        });
+      }
+      await sendDealerInquiryEmail(app, attachments);
+      res.json({ ok: true });
+    } catch (err) {
+      console.error('Dealer inquiry error:', err.message || err);
+      res.status(502).json({ ok: false, error: 'Could not send the application. Please try again.' });
     }
   });
 

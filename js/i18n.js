@@ -152,7 +152,7 @@
       'footer.tech': 'Technical Resources',
       'footer.warranty': 'Warranty',
       'footer.shipping': 'Shipping & Returns',
-      'footer.dealer': 'Dealer Portal',
+      'footer.dealer': 'Become a dealer',
       'footer.copy': '© 2026 Spectrum Display. All rights reserved.',
       'footer.privacy': 'Privacy',
       'footer.terms': 'Terms',

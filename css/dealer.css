@@ -1,0 +1,464 @@
+/* Register as Spectrum Dealer — marketing page */
+.dealer-page {
+  --dealer-ink: #0b1220;
+  --dealer-muted: #5b6b7c;
+  --dealer-line: rgba(15, 23, 42, 0.12);
+  --dealer-accent: #0284c7;
+  --dealer-accent-deep: #0369a1;
+  --dealer-paper: #f4f7fb;
+  --dealer-surface: #ffffff;
+  background: var(--dealer-paper);
+  color: var(--dealer-ink);
+  font-family: "Figtree", system-ui, sans-serif;
+}
+
+.dealer-page h1,
+.dealer-page h2,
+.dealer-page h3,
+.dealer-brand {
+  font-family: "Syne", system-ui, sans-serif;
+  letter-spacing: -0.02em;
+}
+
+.dealer-hero {
+  position: relative;
+  min-height: min(92vh, 56rem);
+  display: flex;
+  align-items: flex-end;
+  color: #fff;
+  overflow: hidden;
+  background: #0b1220;
+}
+
+.dealer-hero-media {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+}
+
+.dealer-hero-media img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center 35%;
+  transform: scale(1.04);
+  animation: dealer-hero-drift 18s ease-in-out infinite alternate;
+}
+
+.dealer-hero-media::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background:
+    linear-gradient(180deg, rgba(8, 14, 24, 0.35) 0%, rgba(8, 14, 24, 0.2) 35%, rgba(8, 14, 24, 0.78) 72%, rgba(8, 14, 24, 0.92) 100%),
+    radial-gradient(ellipse 70% 50% at 20% 80%, rgba(2, 132, 199, 0.28), transparent 60%);
+}
+
+.dealer-hero-inner {
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  padding: 7rem 0 4.5rem;
+}
+
+.dealer-brand {
+  display: block;
+  margin-bottom: 1.25rem;
+  font-size: clamp(2.4rem, 6vw, 4.5rem);
+  font-weight: 800;
+  line-height: 0.95;
+  color: #fff;
+}
+
+.dealer-hero h1 {
+  max-width: 14ch;
+  margin: 0 0 1rem;
+  font-size: clamp(1.85rem, 4.2vw, 3.15rem);
+  font-weight: 700;
+  line-height: 1.05;
+}
+
+.dealer-hero p {
+  max-width: 34rem;
+  margin: 0 0 1.75rem;
+  color: rgba(255, 255, 255, 0.82);
+  font-size: 1.05rem;
+  line-height: 1.55;
+}
+
+.dealer-cta-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+}
+
+.dealer-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 2.85rem;
+  padding: 0.7rem 1.35rem;
+  border-radius: 9999px;
+  font-size: 0.95rem;
+  font-weight: 600;
+  text-decoration: none;
+  transition: transform 0.2s ease, background 0.2s ease, color 0.2s ease, border-color 0.2s ease;
+}
+
+.dealer-btn:hover {
+  transform: translateY(-1px);
+}
+
+.dealer-btn-primary {
+  background: #fff;
+  color: var(--dealer-ink);
+}
+
+.dealer-btn-primary:hover {
+  background: #e8f4fc;
+}
+
+.dealer-btn-ghost {
+  border: 1px solid rgba(255, 255, 255, 0.45);
+  color: #fff;
+}
+
+.dealer-btn-ghost:hover {
+  border-color: #fff;
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.dealer-btn-solid {
+  background: var(--dealer-accent);
+  color: #fff;
+}
+
+.dealer-btn-solid:hover {
+  background: var(--dealer-accent-deep);
+}
+
+.dealer-section {
+  padding: 5rem 0;
+}
+
+.dealer-section-tight {
+  padding: 4rem 0;
+}
+
+.dealer-kicker {
+  margin: 0 0 0.75rem;
+  color: var(--dealer-accent-deep);
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+.dealer-section h2 {
+  margin: 0 0 0.85rem;
+  max-width: 16ch;
+  font-size: clamp(1.85rem, 3.4vw, 2.75rem);
+  font-weight: 700;
+  line-height: 1.08;
+}
+
+.dealer-lead {
+  max-width: 38rem;
+  margin: 0;
+  color: var(--dealer-muted);
+  font-size: 1.05rem;
+  line-height: 1.6;
+}
+
+.dealer-split {
+  display: grid;
+  gap: 2.5rem;
+  align-items: center;
+}
+
+@media (min-width: 900px) {
+  .dealer-split {
+    grid-template-columns: 1.05fr 0.95fr;
+    gap: 4rem;
+  }
+}
+
+.dealer-photo {
+  display: block;
+  width: 100%;
+  min-height: 18rem;
+  height: clamp(18rem, 38vw, 28rem);
+  object-fit: cover;
+  object-position: center;
+}
+
+.dealer-tier-list {
+  display: grid;
+  gap: 0;
+  margin-top: 2.5rem;
+  border-top: 1px solid var(--dealer-line);
+}
+
+.dealer-tier {
+  display: grid;
+  gap: 0.75rem;
+  padding: 1.75rem 0;
+  border-bottom: 1px solid var(--dealer-line);
+}
+
+@media (min-width: 768px) {
+  .dealer-tier {
+    grid-template-columns: 11rem 1fr;
+    gap: 2rem;
+    align-items: start;
+  }
+}
+
+.dealer-tier h3 {
+  margin: 0;
+  font-size: 1.2rem;
+  font-weight: 700;
+}
+
+.dealer-tier p {
+  margin: 0;
+  color: var(--dealer-muted);
+  line-height: 1.55;
+}
+
+.dealer-solutions {
+  display: grid;
+  gap: 1.25rem;
+  margin-top: 2.25rem;
+}
+
+@media (min-width: 700px) {
+  .dealer-solutions {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+.dealer-solution {
+  position: relative;
+  display: block;
+  min-height: 14rem;
+  overflow: hidden;
+  color: #fff;
+  text-decoration: none;
+}
+
+.dealer-solution img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.7s ease;
+}
+
+.dealer-solution:hover img {
+  transform: scale(1.05);
+}
+
+.dealer-solution span {
+  position: absolute;
+  left: 1rem;
+  right: 1rem;
+  bottom: 1rem;
+  z-index: 1;
+  font-family: "Syne", system-ui, sans-serif;
+  font-size: 1.15rem;
+  font-weight: 700;
+}
+
+.dealer-solution::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, transparent 35%, rgba(8, 14, 24, 0.82) 100%);
+}
+
+.dealer-benefits {
+  margin: 2rem 0 0;
+  padding: 0;
+  list-style: none;
+  display: grid;
+  gap: 1rem;
+}
+
+@media (min-width: 800px) {
+  .dealer-benefits {
+    grid-template-columns: 1fr 1fr;
+    gap: 1.25rem 2rem;
+  }
+}
+
+.dealer-benefits li {
+  padding-top: 1rem;
+  border-top: 1px solid var(--dealer-line);
+  color: var(--dealer-muted);
+  line-height: 1.5;
+}
+
+.dealer-benefits strong {
+  display: block;
+  margin-bottom: 0.25rem;
+  color: var(--dealer-ink);
+  font-family: "Syne", system-ui, sans-serif;
+  font-size: 1.05rem;
+}
+
+.dealer-apply {
+  background: #0b1220;
+  color: #fff;
+}
+
+.dealer-apply .dealer-kicker {
+  color: #7dd3fc;
+}
+
+.dealer-apply .dealer-lead {
+  color: rgba(255, 255, 255, 0.72);
+}
+
+.dealer-form {
+  margin-top: 2.5rem;
+  display: grid;
+  gap: 1.1rem;
+}
+
+.dealer-form-grid {
+  display: grid;
+  gap: 1.1rem;
+}
+
+@media (min-width: 700px) {
+  .dealer-form-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+.dealer-form label {
+  display: block;
+  margin-bottom: 0.4rem;
+  font-size: 0.78rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.62);
+}
+
+.dealer-form input,
+.dealer-form select,
+.dealer-form textarea {
+  width: 100%;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  border-radius: 0.65rem;
+  background: rgba(255, 255, 255, 0.06);
+  color: #fff;
+  padding: 0.75rem 0.9rem;
+  font: inherit;
+  font-size: 0.95rem;
+}
+
+.dealer-form input:focus,
+.dealer-form select:focus,
+.dealer-form textarea:focus {
+  outline: none;
+  border-color: #7dd3fc;
+  box-shadow: 0 0 0 3px rgba(125, 211, 252, 0.18);
+}
+
+.dealer-form select option {
+  color: #0b1220;
+}
+
+.dealer-form .span-2 {
+  grid-column: 1 / -1;
+}
+
+.dealer-check-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.65rem 1.1rem;
+}
+
+.dealer-check {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  font-size: 0.92rem;
+  color: rgba(255, 255, 255, 0.88);
+  text-transform: none;
+  letter-spacing: 0;
+  font-weight: 500;
+}
+
+.dealer-check input {
+  width: auto;
+  accent-color: #38bdf8;
+}
+
+.dealer-agree {
+  display: flex;
+  gap: 0.75rem;
+  align-items: flex-start;
+  color: rgba(255, 255, 255, 0.88);
+  font-size: 0.95rem;
+  line-height: 1.45;
+}
+
+.dealer-agree input {
+  width: auto;
+  margin-top: 0.2rem;
+  accent-color: #38bdf8;
+}
+
+.dealer-hp {
+  position: absolute;
+  left: -9999px;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.dealer-form-msg {
+  min-height: 1.25rem;
+  font-size: 0.92rem;
+}
+
+.dealer-form-msg.is-error {
+  color: #fca5a5;
+}
+
+.dealer-form-msg.is-ok {
+  color: #86efac;
+}
+
+.dealer-reveal {
+  opacity: 0;
+  transform: translateY(1.1rem);
+  transition: opacity 0.7s ease, transform 0.7s ease;
+}
+
+.dealer-reveal.is-in {
+  opacity: 1;
+  transform: none;
+}
+
+@keyframes dealer-hero-drift {
+  from { transform: scale(1.04) translate3d(0, 0, 0); }
+  to { transform: scale(1.1) translate3d(0, -1.5%, 0); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .dealer-hero-media img,
+  .dealer-reveal,
+  .dealer-solution img {
+    animation: none !important;
+    transition: none !important;
+    transform: none !important;
+  }
+  .dealer-reveal {
+    opacity: 1;
+  }
+}
