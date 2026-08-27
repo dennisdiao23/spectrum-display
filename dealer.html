@@ -333,7 +333,8 @@
           <div class="dealer-form-grid">
             <div class="span-2">
               <label for="company_address_line1">Company street *</label>
-              <input id="company_address_line1" name="company_address_line1" required type="text" autocomplete="address-line1" />
+              <input id="company_address_line1" name="company_address_line1" required type="text" autocomplete="street-address" placeholder="Start typing a US address" />
+              <p class="dealer-field-hint">US addresses — pick a suggestion to autofill city, state, and ZIP.</p>
             </div>
             <div class="span-2">
               <label for="company_address_line2">Company street line 2</label>
@@ -525,6 +526,85 @@
           });
         });
       });
+
+      function componentValue(components, type, useShort) {
+        for (var i = 0; i < components.length; i++) {
+          if (components[i].types.indexOf(type) !== -1) {
+            return useShort ? components[i].short_name : components[i].long_name;
+          }
+        }
+        return '';
+      }
+
+      function fillUsAddress(place) {
+        var components = (place && place.address_components) || [];
+        if (!components.length) return;
+        var streetNumber = componentValue(components, 'street_number', false);
+        var route = componentValue(components, 'route', false);
+        var line1 = [streetNumber, route].filter(Boolean).join(' ').trim();
+        var city =
+          componentValue(components, 'locality', false) ||
+          componentValue(components, 'sublocality_level_1', false) ||
+          componentValue(components, 'neighborhood', false) ||
+          componentValue(components, 'postal_town', false);
+        var state = componentValue(components, 'administrative_area_level_1', true);
+        var postal = componentValue(components, 'postal_code', false);
+        var country = componentValue(components, 'country', true) || 'US';
+        if (line1) document.getElementById('company_address_line1').value = line1;
+        document.getElementById('company_address_city').value = city;
+        document.getElementById('company_address_state').value = state;
+        document.getElementById('company_address_postal_code').value = postal;
+        document.getElementById('company_address_country').value = country || 'US';
+      }
+
+      function initAddressAutofill() {
+        var input = document.getElementById('company_address_line1');
+        if (!input || !window.google || !google.maps || !google.maps.places) return;
+        var autocomplete = new google.maps.places.Autocomplete(input, {
+          componentRestrictions: { country: ['us'] },
+          fields: ['address_components', 'formatted_address'],
+          types: ['address']
+        });
+        input.setAttribute('autocomplete', 'off');
+        autocomplete.addListener('place_changed', function () {
+          fillUsAddress(autocomplete.getPlace());
+        });
+      }
+
+      function loadGooglePlaces(apiKey) {
+        if (!apiKey) return;
+        if (window.google && google.maps && google.maps.places) {
+          initAddressAutofill();
+          return;
+        }
+        var existing = document.querySelector('script[data-spectrum-maps]');
+        if (existing) {
+          existing.addEventListener('load', initAddressAutofill);
+          return;
+        }
+        window.__spectrumInitDealerMaps = initAddressAutofill;
+        var script = document.createElement('script');
+        script.src =
+          'https://maps.googleapis.com/maps/api/js?key=' +
+          encodeURIComponent(apiKey) +
+          '&libraries=places&callback=__spectrumInitDealerMaps';
+        script.async = true;
+        script.defer = true;
+        script.setAttribute('data-spectrum-maps', '1');
+        script.onerror = function () {
+          console.warn('Google Maps Places failed to load.');
+        };
+        document.head.appendChild(script);
+      }
+
+      fetch('/api/config')
+        .then(function (res) { return res.json(); })
+        .then(function (cfg) {
+          if (cfg && cfg.ok && cfg.googleMapsApiKey) {
+            loadGooglePlaces(cfg.googleMapsApiKey);
+          }
+        })
+        .catch(function () {});
     })();
   </script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>

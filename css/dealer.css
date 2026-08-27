@@ -498,6 +498,34 @@
   color: rgba(255, 255, 255, 0.62);
 }
 
+.dealer-field-hint {
+  margin: 0.4rem 0 0;
+  font-size: 0.8rem;
+  color: rgba(255, 255, 255, 0.45);
+  text-transform: none;
+  letter-spacing: 0;
+  font-weight: 500;
+}
+
+.pac-container {
+  z-index: 10000;
+  border-radius: 0.65rem;
+  border: 1px solid #dbe3ec;
+  box-shadow: 0 12px 30px rgba(15, 23, 42, 0.18);
+  font-family: "Figtree", system-ui, sans-serif;
+  margin-top: 0.25rem;
+}
+
+.pac-item {
+  padding: 0.55rem 0.75rem;
+  cursor: pointer;
+}
+
+.pac-item:hover,
+.pac-item-selected {
+  background: #eef6fb;
+}
+
 .dealer-form input,
 .dealer-form select,
 .dealer-form textarea {
