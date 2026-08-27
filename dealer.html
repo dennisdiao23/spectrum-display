@@ -364,21 +364,21 @@
 
           <div class="dealer-consent">
             <label class="dealer-agree">
-              <input name="certify_authorized" value="true" required type="checkbox" />
+              <input id="certify_authorized" name="certify_authorized" value="true" required type="checkbox" />
               <span>I certify that I am an authorized representative of the company and that all information and tax documents provided are accurate and valid.</span>
             </label>
             <label class="dealer-agree">
-              <input name="agree_terms_privacy" value="true" required type="checkbox" />
+              <input id="agree_terms_privacy" name="agree_terms_privacy" value="true" required type="checkbox" />
               <span>I acknowledge that the provided business and financial data will be processed in accordance with Spectrum Display’s <a href="terms.html" target="_blank" rel="noopener">Terms of Use</a> and <a href="privacy.html" target="_blank" rel="noopener">Privacy Policy</a> for account verification and compliance purposes.</span>
             </label>
             <label class="dealer-agree">
-              <input name="marketing_opt_in" value="true" type="checkbox" />
+              <input id="marketing_opt_in" name="marketing_opt_in" value="true" type="checkbox" />
               <span>I would like to receive business updates, partnership opportunities, and marketing communications from Spectrum Display.</span>
             </label>
           </div>
 
           <p id="dealer-form-msg" class="dealer-form-msg" role="status"></p>
-          <button type="submit" id="dealer-submit" class="dealer-btn dealer-btn-solid">Submit application</button>
+          <button type="submit" id="dealer-submit" class="dealer-btn dealer-btn-solid" disabled>Submit application</button>
         </form>
       </div>
     </section>
@@ -447,25 +447,31 @@
       var form = document.getElementById('dealer-inquiry-form');
       var msg = document.getElementById('dealer-form-msg');
       var submitBtn = document.getElementById('dealer-submit');
+      var certifyBox = document.getElementById('certify_authorized');
+      var termsBox = document.getElementById('agree_terms_privacy');
+
+      function syncSubmitEnabled() {
+        var ready = certifyBox.checked && termsBox.checked;
+        submitBtn.disabled = !ready;
+      }
+      certifyBox.addEventListener('change', syncSubmitEnabled);
+      termsBox.addEventListener('change', syncSubmitEnabled);
+      syncSubmitEnabled();
 
       form.addEventListener('submit', async function (e) {
         e.preventDefault();
+        if (!certifyBox.checked || !termsBox.checked) {
+          syncSubmitEnabled();
+          return;
+        }
         msg.textContent = '';
         msg.className = 'dealer-form-msg';
         var fd = new FormData(form);
         fd.set('business_type', JSON.stringify(checkedValues('business_type')));
         fd.set('primary_verticals', JSON.stringify(checkedValues('primary_verticals')));
-        if (form.certify_authorized && form.certify_authorized.checked) {
-          fd.set('certify_authorized', 'true');
-        }
-        if (form.agree_terms_privacy && form.agree_terms_privacy.checked) {
-          fd.set('agree_terms_privacy', 'true');
-        }
-        if (form.marketing_opt_in && form.marketing_opt_in.checked) {
-          fd.set('marketing_opt_in', 'true');
-        } else {
-          fd.set('marketing_opt_in', 'false');
-        }
+        fd.set('certify_authorized', certifyBox.checked ? 'true' : 'false');
+        fd.set('agree_terms_privacy', termsBox.checked ? 'true' : 'false');
+        fd.set('marketing_opt_in', document.getElementById('marketing_opt_in').checked ? 'true' : 'false');
         submitBtn.disabled = true;
         submitBtn.textContent = 'Sending…';
         try {
@@ -475,13 +481,14 @@
             throw new Error(json.error || 'Could not send the application. Please try again.');
           }
           form.reset();
+          syncSubmitEnabled();
           msg.textContent = 'Thanks — Spectrum received your dealer application and will follow up by email.';
           msg.className = 'dealer-form-msg is-ok';
         } catch (err) {
           msg.textContent = (err && err.message) || 'Could not send the application. Please try again.';
           msg.className = 'dealer-form-msg is-error';
+          syncSubmitEnabled();
         } finally {
-          submitBtn.disabled = false;
           submitBtn.textContent = 'Submit application';
         }
       });

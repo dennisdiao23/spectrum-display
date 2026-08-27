@@ -137,6 +137,14 @@
   background: var(--dealer-accent-deep);
 }
 
+.dealer-btn-solid:disabled,
+.dealer-btn-solid:disabled:hover {
+  background: rgba(255, 255, 255, 0.18);
+  color: rgba(255, 255, 255, 0.45);
+  cursor: not-allowed;
+  transform: none;
+}
+
 .dealer-section {
   padding: 5rem 0;
 }
