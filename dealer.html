@@ -482,6 +482,7 @@
             throw new Error(json.error || 'Could not send the application. Please try again.');
           }
           form.reset();
+          document.getElementById('company_address_country').value = 'US';
           syncSubmitEnabled();
           msg.textContent = 'Thanks — Spectrum received your dealer application and will follow up by email.';
           msg.className = 'dealer-form-msg is-ok';

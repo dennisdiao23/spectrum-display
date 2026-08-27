@@ -71,6 +71,7 @@ flowchart TB
 | `CONTACT_TO_EMAIL` | Inbox: `sales@spectrumdisplay.com` |
 | `CONTACT_FROM_EMAIL` | `Spectrum Display <hello@send.spectrumdisplay.com>` |
 | `RESEND_API_KEY` | Password for sending mail |
+| `GOOGLE_MAPS_API_KEY` | Optional. Enables US address autofill on `dealer.html` (Places API). Restrict to your domain in Google Cloud. |
 | `PORT` | Set by Railway (do not hardcode) |
 
 `ADMIN_PASSWORD` is **not** required on Railway (admin user already exists in Supabase).
