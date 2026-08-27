@@ -457,10 +457,11 @@
 }
 
 .dealer-form {
-  margin-top: 2.5rem;
+  margin: 2.5rem auto 0;
   display: grid;
   gap: 1.1rem;
-  max-width: 40rem;
+  max-width: 52rem;
+  width: 100%;
 }
 
 .dealer-form-grid {
