@@ -716,7 +716,7 @@
     var logout = $('#hdr-logout');
     if (logout) {
       logout.addEventListener('click', function () {
-        var done = function () { location.href = 'index.html'; };
+        var done = function () { location.href = '/'; };
         if (window.SpectrumAuth && SpectrumAuth.logout) {
           Promise.resolve(SpectrumAuth.logout()).then(done).catch(done);
         } else {
