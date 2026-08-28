@@ -513,7 +513,8 @@
           '<span data-i18n="nav.solutions">Solutions</span>' + chevron() +
         '</button>' +
       '</div>' +
-      '<a class="site-nav-link' + (file === 'designer.html' ? ' is-active' : '') + '" href="designer.html" data-i18n="nav.designer">LED Wall Calculator</a>';
+      '<a class="site-nav-link' + (file === 'designer.html' ? ' is-active' : '') + '" href="designer.html" data-i18n="nav.designer">LED Wall Calculator</a>' +
+      '<a class="site-nav-link' + (file === 'dealer.html' ? ' is-active' : '') + '" href="dealer.html" data-i18n="nav.dealer">Dealer</a>';
 
     var header = $('.site-header');
     if (!header || $('#site-mega-products')) return;
