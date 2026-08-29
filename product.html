@@ -23,6 +23,95 @@
   <style>
     body { font-family: 'Inter', system-ui, sans-serif; }
     .sticky-buy { box-shadow: 0 -4px 20px rgba(0,0,0,0.4); }
+
+    .product-gallery {
+      display: flex;
+      align-items: stretch;
+      gap: 0.85rem;
+    }
+    .product-gallery-rail {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0.4rem;
+      width: 4.6rem;
+      flex: 0 0 4.6rem;
+    }
+    .product-gallery-thumbs {
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+      flex: 1 1 auto;
+      min-height: 0;
+      overflow-y: auto;
+      overflow-x: hidden;
+      scrollbar-width: none;
+      -ms-overflow-style: none;
+    }
+    .product-gallery-thumbs::-webkit-scrollbar { display: none; }
+    .product-gallery-thumbs .thumb-btn {
+      flex: 0 0 auto;
+      width: 4.25rem;
+      height: 4.25rem;
+      padding: 0;
+      border-radius: 0.55rem;
+      border: 2px solid #334155;
+      background: #0f172a;
+      overflow: hidden;
+      cursor: pointer;
+    }
+    .product-gallery-thumbs .thumb-btn:hover { border-color: #38bdf8; }
+    .product-gallery-thumbs .thumb-btn.is-on { border-color: #0ea5e9; }
+    .product-gallery-thumbs .thumb-btn img {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+      background: #020617;
+      display: block;
+    }
+    .product-gallery-nav {
+      flex: 0 0 auto;
+      width: 2rem;
+      height: 1.65rem;
+      border: 0;
+      background: transparent;
+      color: #94a3b8;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      padding: 0;
+    }
+    .product-gallery-nav:hover { color: #fff; }
+    .product-gallery-nav[hidden] { display: none; }
+    .product-gallery-nav svg { width: 1.15rem; height: 1.15rem; }
+    .product-gallery-stage {
+      position: relative;
+      flex: 1 1 auto;
+      min-width: 0;
+      min-height: 18rem;
+      aspect-ratio: 4 / 3;
+      border-radius: 1rem;
+      background: #0f172a;
+      border: 1px solid #334155;
+      overflow: hidden;
+    }
+    @media (max-width: 639px) {
+      .product-gallery { flex-direction: column; }
+      .product-gallery-rail {
+        order: 2;
+        flex-direction: row;
+        width: 100%;
+        flex: none;
+      }
+      .product-gallery-thumbs {
+        flex-direction: row;
+        overflow-x: auto;
+        overflow-y: hidden;
+      }
+      .product-gallery-stage { order: 1; min-height: 14rem; }
+      .product-gallery-nav { transform: rotate(-90deg); }
+    }
   </style>
 </head>
 <body class="bg-slate-950 text-slate-100 antialiased">
@@ -135,9 +224,18 @@
   <section class="pb-12">
     <div class="site-wrap">
       <div class="grid lg:grid-cols-2 gap-12 items-start">
-        <!-- Gallery -->
-        <div class="space-y-4">
-          <div class="aspect-[4/3] rounded-2xl bg-slate-900 border border-slate-700 overflow-hidden relative">
+        <!-- Gallery: left thumbnail rail + main photo -->
+        <div class="product-gallery">
+          <div class="product-gallery-rail">
+            <button type="button" class="product-gallery-nav" id="gallery-prev" aria-label="Previous photos" hidden>
+              <svg fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M18 15l-6-6-6 6"/></svg>
+            </button>
+            <div id="gallery-thumbs" class="product-gallery-thumbs"></div>
+            <button type="button" class="product-gallery-nav" id="gallery-next" aria-label="Next photos" hidden>
+              <svg fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M6 9l6 6 6-6"/></svg>
+            </button>
+          </div>
+          <div class="product-gallery-stage">
             <img id="product-hero-img" alt="" class="absolute inset-0 w-full h-full object-cover hidden" />
             <div id="product-hero-fallback" class="absolute inset-0 flex items-center justify-center bg-gradient-to-br from-slate-800 to-slate-900">
               <div class="text-center p-8">
@@ -146,7 +244,6 @@
               </div>
             </div>
           </div>
-          <div id="gallery-thumbs" class="grid grid-cols-4 gap-3"></div>
         </div>
 
         <!-- Buy / Config -->
@@ -373,30 +470,69 @@
         if (fallback) { fallback.classList.remove('hidden'); fallback.classList.add('flex'); }
       }
       const thumbs = document.getElementById('gallery-thumbs');
+      const galleryPrev = document.getElementById('gallery-prev');
+      const galleryNext = document.getElementById('gallery-next');
+      function galleryIsHorizontal() {
+        return window.matchMedia('(max-width: 639px)').matches;
+      }
+      function syncGalleryNav() {
+        if (!thumbs || !galleryPrev || !galleryNext) return;
+        const overflow = galleryIsHorizontal()
+          ? thumbs.scrollWidth > thumbs.clientWidth + 6
+          : thumbs.scrollHeight > thumbs.clientHeight + 6;
+        galleryPrev.hidden = galleryNext.hidden = !overflow || photos.length < 2;
+      }
+      function scrollGallery(dir) {
+        if (!thumbs) return;
+        const thumb = thumbs.querySelector('.thumb-btn');
+        const gap = 8;
+        if (galleryIsHorizontal()) {
+          const step = (thumb ? thumb.offsetWidth : 68) + gap;
+          thumbs.scrollBy({ left: dir * step, behavior: 'smooth' });
+        } else {
+          const step = (thumb ? thumb.offsetHeight : 68) + gap;
+          thumbs.scrollBy({ top: dir * step, behavior: 'smooth' });
+        }
+      }
       if (thumbs && photos.length) {
         thumbs.innerHTML = photos.map(function (src, i) {
-          const on = i === 0 ? 'border-sky-500' : 'border-slate-700';
-          return '<button type="button" class="thumb-btn aspect-square rounded-xl bg-slate-800 border ' + on +
-            ' overflow-hidden cursor-pointer hover:border-sky-400" data-img="' + esc(src) + '">' +
-            '<img src="' + esc(src) + '" alt="" class="w-full h-full object-cover object-contain bg-slate-950" />' +
+          return '<button type="button" class="thumb-btn' + (i === 0 ? ' is-on' : '') +
+            '" data-img="' + esc(src) + '" aria-label="Photo ' + (i + 1) + '">' +
+            '<img src="' + esc(src) + '" alt="" />' +
             '</button>';
         }).join('');
+      } else if (thumbs) {
+        thumbs.innerHTML = '';
       }
-      document.querySelectorAll('.thumb-btn').forEach(btn => {
-        btn.addEventListener('click', () => {
-          document.querySelectorAll('.thumb-btn').forEach(b => {
-            b.classList.remove('border-sky-500');
-            b.classList.add('border-slate-700');
-          });
-          btn.classList.add('border-sky-500');
-          btn.classList.remove('border-slate-700');
+      document.querySelectorAll('.thumb-btn').forEach(function (btn) {
+        btn.addEventListener('click', function () {
+          document.querySelectorAll('.thumb-btn').forEach(function (b) { b.classList.remove('is-on'); });
+          btn.classList.add('is-on');
+          btn.scrollIntoView({ block: 'nearest', inline: 'nearest' });
           if (hero && btn.dataset.img) {
             hero.style.display = '';
+            hero.classList.remove('hidden');
             hero.src = btn.dataset.img;
             if (fallback) { fallback.classList.add('hidden'); fallback.classList.remove('flex'); }
           }
         });
       });
+      if (galleryPrev && !galleryPrev.dataset.bound) {
+        galleryPrev.dataset.bound = '1';
+        galleryPrev.addEventListener('click', function () { scrollGallery(-1); });
+      }
+      if (galleryNext && !galleryNext.dataset.bound) {
+        galleryNext.dataset.bound = '1';
+        galleryNext.addEventListener('click', function () { scrollGallery(1); });
+      }
+      window._syncGalleryNav = syncGalleryNav;
+      if (!window._galleryNavResizeBound) {
+        window._galleryNavResizeBound = true;
+        window.addEventListener('resize', function () {
+          if (window._syncGalleryNav) window._syncGalleryNav();
+        });
+      }
+      requestAnimationFrame(syncGalleryNav);
 
       document.querySelectorAll('.brand-label').forEach(el => { el.textContent = brandName; });
 
