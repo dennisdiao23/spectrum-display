@@ -125,6 +125,7 @@ async function main() {
       ['/solutions/corporate.html', 'monthly', '0.7'],
       ['/solutions/events-xr.html', 'monthly', '0.7'],
       ['/solutions/outdoor.html', 'monthly', '0.7'],
+      ['/solutions/home.html', 'monthly', '0.7'],
       ['/designer.html', 'monthly', '0.8'],
       ['/dealer.html', 'monthly', '0.7'],
       ['/contact.html', 'monthly', '0.7'],

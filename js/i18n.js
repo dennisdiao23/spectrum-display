@@ -27,6 +27,7 @@
       'title.corporate': 'Corporate & Control Rooms | Spectrum Display',
       'title.events-xr': 'Live Events & XR | Spectrum Display',
       'title.outdoor': 'Outdoor & DOOH LED Walls | Spectrum Display',
+      'title.home': 'Home Theater & Residential | Spectrum Display',
       'title.contact': 'Contact Sales | Spectrum Display',
       'title.cart': 'Cart | Spectrum Display',
       'title.account': 'Account | Spectrum Display',

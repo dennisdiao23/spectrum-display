@@ -345,14 +345,14 @@
         { name: 'Houses of Worship', href: 'solutions/worship.html', image: 'assets/content/news.jpg' },
         { name: 'Corporate & Control Rooms', href: 'solutions/corporate.html', image: 'assets/content/solutions-corporate.jpg' },
         { name: 'Live Events & XR', href: 'solutions/events-xr.html', image: 'assets/content/concert.jpg' },
-        { name: 'Outdoor & DOOH', href: 'solutions/outdoor.html', image: 'assets/content/city.jpg' }
+        { name: 'Outdoor & DOOH', href: 'solutions/outdoor.html', image: 'assets/content/city.jpg' },
+        { name: 'Home Theater & Residential', href: 'solutions/home.html', image: 'assets/content/solutions-residential.jpg' }
       ]
     },
     more: {
       title: 'More',
       lead: 'Smaller jobs and studio work — not equal pillars.',
       items: [
-        { name: 'Residential', href: 'solutions.html#residential', image: 'assets/content/solutions-residential.jpg' },
         { name: 'Education', href: 'solutions/corporate.html', image: 'assets/content/solutions-education.jpg' },
         { name: 'Broadcast studios', href: 'solutions/events-xr.html', image: 'assets/content/solutions-broadcast.jpg' }
       ]
