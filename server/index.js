@@ -87,6 +87,10 @@ async function main() {
     const qs = req.url.includes('?') ? req.url.slice(req.url.indexOf('?')) : '';
     res.redirect(301, '/' + qs);
   });
+  app.get(['/solutions', '/solutions/'], function (req, res) {
+    const qs = req.url.includes('?') ? req.url.slice(req.url.indexOf('?')) : '';
+    res.redirect(301, '/solutions.html' + qs);
+  });
   app.use('/uploads', express.static(path.join(ROOT, 'uploads')));
 
   const SITE = 'https://www.spectrumdisplay.com';
