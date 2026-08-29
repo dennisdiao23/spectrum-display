@@ -266,7 +266,7 @@
               <label class="block text-sm font-medium mb-2">Pixel Pitch</label>
               <div id="pitch-grid" class="flex flex-wrap gap-2"></div>
             </div>
-            <div id="cabinet-wrap" class="hidden">
+            <div id="cabinet-wrap" hidden>
               <label class="block text-sm font-medium mb-2">Cabinet Size</label>
               <select id="cabinet" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-4 py-2.5 text-sm"></select>
             </div>
@@ -567,7 +567,7 @@
       if (isControl && pitchWrap) pitchWrap.classList.add('hidden');
       const cab = document.getElementById('cabinet');
       const cabWrap = document.getElementById('cabinet-wrap') || (cab && cab.closest('div'));
-      if (isControl && cabWrap) cabWrap.classList.add('hidden');
+      if (isControl && cabWrap) cabWrap.hidden = true;
       if (pitchGrid && pitches.length && !isControl) {
         pitchGrid.innerHTML = pitches.map(function (p, i) {
           const on = i === 0
@@ -616,12 +616,12 @@
           });
         });
         if (sizes.length > 1) {
-          cabWrap.classList.remove('hidden');
+          cabWrap.hidden = false;
           cab.innerHTML = sizes.map(function (s) {
             return '<option value="' + esc(s.value) + '">' + esc(s.label) + '</option>';
           }).join('');
         } else {
-          cabWrap.classList.add('hidden');
+          cabWrap.hidden = true;
           cab.innerHTML = '';
         }
       }
