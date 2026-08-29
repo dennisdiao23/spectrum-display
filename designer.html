@@ -765,7 +765,6 @@
                 <button type="button" class="res-preset-btn px-2.5 py-1 rounded-full border border-slate-700 text-slate-400 hover:text-white hover:border-sky-500" data-res="4k">4K</button>
                 <button type="button" class="res-preset-btn px-2.5 py-1 rounded-full border border-slate-700 text-slate-400 hover:text-white hover:border-sky-500" data-res="8k">8K</button>
               </div>
-              <p class="text-xs text-slate-500" id="res-preset-hint">2K 1920×1080 · 4K 3840×2160 · 8K 7680×4320</p>
             </div>
           </div>
 
@@ -1937,14 +1936,6 @@
         btn.classList.toggle('border-slate-700', !on);
         btn.classList.toggle('text-slate-400', !on);
       });
-      const resHint = document.getElementById('res-preset-hint');
-      if (resHint) {
-        const parts = [];
-        if (resolutionPresetAllowed('2k', pitch)) parts.push('2K 1920×1080');
-        if (resolutionPresetAllowed('4k', pitch)) parts.push('4K 3840×2160');
-        if (resolutionPresetAllowed('8k', pitch)) parts.push('8K 7680×4320');
-        resHint.textContent = parts.join(' · ');
-      }
 
       const actualArea = actualW * actualH;
       const weightKg = actualArea * series.weightPerM2;
