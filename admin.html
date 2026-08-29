@@ -50,7 +50,7 @@
       <div id="products-section" class="space-y-6">
       <div id="products-list-wrap">
       <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4">
-        <p class="text-slate-400 text-sm">Products in the database appear on the Products page and LED Wall Calculator. Click a row to edit.</p>
+        <p class="text-slate-400 text-sm"><span id="product-total">0</span> products in the database. They appear on the Products page and LED Wall Calculator. Click a row to edit.</p>
         <button id="new-btn" type="button" class="px-4 py-2 rounded-full bg-sky-500 hover:bg-sky-400 text-white text-sm font-semibold">Add product</button>
       </div>
       <div class="overflow-x-auto rounded-2xl border border-slate-800">
@@ -62,7 +62,7 @@
               <th class="py-3 px-4 font-medium">Brand</th>
               <th class="py-3 px-4 font-medium">Type</th>
               <th class="py-3 px-4 font-medium">Pitch</th>
-              <th class="py-3 px-4 font-medium">Price / m²</th>
+              <th class="py-3 px-4 font-medium">Price</th>
             </tr>
           </thead>
           <tbody id="product-table" class="text-slate-200"></tbody>
@@ -102,6 +102,16 @@
               <option>Creative</option>
               <option>All-in-one</option>
               <option>Transparent</option>
+              <option value="control">Control</option>
+            </select>
+          </div>
+          <div id="subtype-wrap" class="hidden">
+            <label class="block text-xs text-slate-400 mb-1">Control subtype</label>
+            <select id="subtype" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm">
+              <option value="all-in-one">All-in-one processor</option>
+              <option value="sending">Sending box</option>
+              <option value="playback">Playback / NovaLCT</option>
+              <option value="receiving-card">Receiving card (spare)</option>
             </select>
           </div>
           <div>
@@ -119,10 +129,11 @@
           </div>
           <div>
             <label class="block text-xs text-slate-400 mb-1">Pixel pitches (mm, comma separated)</label>
-            <input id="pitches" required type="text" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm" placeholder="1.25, 1.56, 1.87">
+            <input id="pitches" type="text" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm" placeholder="1.25, 1.56, 1.87">
+            <p id="pitches-hint" class="text-[11px] text-slate-500 mt-1">Required for LED cabinets. Leave blank for control gear.</p>
           </div>
           <div>
-            <label class="block text-xs text-slate-400 mb-1">Price per m² ($)</label>
+            <label class="block text-xs text-slate-400 mb-1" id="price-label">Price per m² ($)</label>
             <input id="price" required type="number" min="0" step="1" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm">
           </div>
           <div>
@@ -303,6 +314,19 @@
       return Math.round(n * 1000 * 10) / 10;
     }
 
+    function isControlType(type, brandId) {
+      return String(type || '').toLowerCase() === 'control' || brandId === 'novastar';
+    }
+
+    function syncControlFields() {
+      const type = document.getElementById('type').value;
+      const brandId = document.getElementById('brand-id').value;
+      const on = isControlType(type, brandId);
+      document.getElementById('subtype-wrap').classList.toggle('hidden', !on);
+      document.getElementById('price-label').textContent = on ? 'Price each ($)' : 'Price per m² ($)';
+      document.getElementById('pitches').required = !on;
+    }
+
     function resetForm() {
       editingId = null;
       document.getElementById('product-form').reset();
@@ -311,6 +335,7 @@
       document.getElementById('image-preview').classList.add('hidden');
       showError('form-error', '');
       fillBrands(brands[0] && brands[0].id);
+      syncControlFields();
     }
 
     function closeProductForm() {
@@ -332,17 +357,21 @@
       fillBrands(product.brandId);
       document.getElementById('name').value = product.name;
       document.getElementById('series-id').value = product.id;
-      document.getElementById('type').value = product.type || 'Fixed';
+      document.getElementById('type').value = isControlType(product.type, product.brandId) ? 'control' : (product.type || 'Fixed');
+      document.getElementById('subtype').value = product.subtype || 'all-in-one';
       document.getElementById('badge').value = product.badge || '';
       document.getElementById('cats').value = (product.cats || []).join(' ');
       document.getElementById('description').value = product.description || '';
       document.getElementById('pitches').value = (product.pitches || []).join(', ');
-      document.getElementById('price').value = product.pricePerM2;
+      document.getElementById('price').value = isControlType(product.type, product.brandId)
+        ? (product.priceEach || product.pricePerM2 || 0)
+        : product.pricePerM2;
       document.getElementById('weight').value = product.weightPerM2;
       document.getElementById('power-avg').value = product.powerAvg;
       document.getElementById('power-max').value = product.powerMax;
       document.getElementById('cab-w').value = metersToMm(product.cabinetW);
       document.getElementById('cab-h').value = metersToMm(product.cabinetH);
+      syncControlFields();
       if (product.image) {
         const img = document.getElementById('image-preview');
         img.src = product.image;
@@ -366,6 +395,8 @@
           '</tr>'
         );
       }).join('') || '<tr><td class="py-6 px-4 text-slate-500" colspan="6">No products yet.</td></tr>';
+      const total = document.getElementById('product-total');
+      if (total) total.textContent = String((list && list.length) || 0);
     }
 
     async function loadDash() {
@@ -608,6 +639,8 @@
       location.reload();
     });
 
+    document.getElementById('type').addEventListener('change', syncControlFields);
+    document.getElementById('brand-id').addEventListener('change', syncControlFields);
     document.getElementById('new-btn').addEventListener('click', function () {
       openForm(null);
     });
@@ -638,6 +671,7 @@
       fd.append('name', document.getElementById('name').value);
       fd.append('seriesId', document.getElementById('series-id').value);
       fd.append('type', document.getElementById('type').value);
+      fd.append('subtype', document.getElementById('subtype').value);
       fd.append('badge', document.getElementById('badge').value);
       fd.append('cats', document.getElementById('cats').value);
       fd.append('description', document.getElementById('description').value);

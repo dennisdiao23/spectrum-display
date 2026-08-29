@@ -630,7 +630,6 @@
   function ensureCatalog() {
     if (window.spectrumCatalogReady) return;
     var files = [
-      ['novastar-catalog.js', '/js/novastar-catalog.js'],
       ['control-systems.js', '/js/control-systems.js'],
       ['catalog-api.js', '/js/catalog-api.js']
     ];

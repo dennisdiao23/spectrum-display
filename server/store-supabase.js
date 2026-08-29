@@ -5,7 +5,6 @@ const bcrypt = require('bcryptjs');
 const { createClient } = require('@supabase/supabase-js');
 const dbUtil = require('./db');
 
-const SEED_PATH = path.join(__dirname, 'seed-catalog.json');
 const BUCKET = 'product-images';
 
 function throwIf(error, fallback) {
@@ -23,42 +22,12 @@ function createSupabaseStore() {
   });
 
   async function seedIfEmpty() {
-    const { count, error } = await supabase.from('products').select('id', { count: 'exact', head: true });
+    const { error } = await supabase.from('products').select('id', { count: 'exact', head: true });
     throwIf(error, 'Could not read products. Run server/supabase-schema.sql in the Supabase SQL editor.');
-    if (!count) {
-      const brands = JSON.parse(fs.readFileSync(SEED_PATH, 'utf8'));
-      for (let bi = 0; bi < brands.length; bi++) {
-        const brand = brands[bi];
-        const { error: bErr } = await supabase.from('brands').upsert({
-          id: brand.id,
-          name: brand.name,
-          tagline: brand.tagline || ''
-        });
-        throwIf(bErr, 'Could not seed brand ' + brand.id);
-        const rows = (brand.series || []).map((s, si) => ({
-          brand_id: brand.id,
-          series_id: s.id,
-          name: s.name,
-          pitches: s.pitches || [],
-          price_per_m2: s.pricePerM2 || 0,
-          weight_per_m2: s.weightPerM2 || 0,
-          power_avg: s.powerAvg || 0,
-          power_max: s.powerMax || 0,
-          cabinet_w: s.cabinetW || 0.5,
-          cabinet_h: s.cabinetH || 0.5,
-          type: s.type || 'Fixed',
-          description: s.description || '',
-          badge: s.badge || '',
-          image: s.image || '',
-          gallery: [],
-          sort_order: bi * 20 + si
-        }));
-        if (rows.length) {
-          const { error: pErr } = await supabase.from('products').insert(rows);
-          throwIf(pErr, 'Could not seed products for ' + brand.id);
-        }
-      }
-      console.log('Seeded Supabase catalog from server/seed-catalog.json');
+    try {
+      await upsertMissingCatalog();
+    } catch (e) {
+      console.error('Could not backfill missing catalog series:', e.message || e);
     }
 
     const { count: adminCount, error: aErr } = await supabase.from('admins').select('id', { count: 'exact', head: true });
@@ -85,6 +54,56 @@ function createSupabaseStore() {
     } catch (e) {
       console.error('Could not fill product details:', e.message || e);
     }
+  }
+
+  async function upsertMissingCatalog() {
+    const brands = dbUtil.loadSeedBrands();
+    const { data: existingRows, error: eErr } = await supabase.from('products').select('brand_id, series_id');
+    throwIf(eErr, 'Could not read products for catalog backfill.');
+    const have = {};
+    (existingRows || []).forEach(function (r) {
+      have[r.brand_id + '/' + r.series_id] = true;
+    });
+    let added = 0;
+    for (let bi = 0; bi < brands.length; bi++) {
+      const brand = brands[bi];
+      const { error: bErr } = await supabase.from('brands').upsert({
+        id: brand.id,
+        name: brand.name,
+        tagline: brand.tagline || ''
+      });
+      throwIf(bErr, 'Could not seed brand ' + brand.id);
+      const rows = [];
+      (brand.series || []).forEach(function (s, si) {
+        if (have[brand.id + '/' + s.id]) return;
+        const isControl = s.type === 'control' || brand.id === 'novastar' || !!s.subtype;
+        rows.push({
+          brand_id: brand.id,
+          series_id: s.id,
+          name: s.name,
+          pitches: s.pitches || [],
+          price_per_m2: Number(isControl ? (s.priceEach || s.pricePerM2) : s.pricePerM2) || 0,
+          weight_per_m2: s.weightPerM2 || 0,
+          power_avg: s.powerAvg || 0,
+          power_max: s.powerMax || 0,
+          cabinet_w: isControl ? 0 : (s.cabinetW || 0.5),
+          cabinet_h: isControl ? 0 : (s.cabinetH || 0.5),
+          type: isControl ? 'control' : (s.type || 'Fixed'),
+          description: s.description || '',
+          badge: s.badge || '',
+          image: s.image || '',
+          gallery: [],
+          details: dbUtil.detailsFromSeries(s),
+          sort_order: bi * 40 + si
+        });
+      });
+      if (rows.length) {
+        const { error: pErr } = await supabase.from('products').insert(rows);
+        throwIf(pErr, 'Could not backfill products for ' + brand.id);
+        added += rows.length;
+      }
+    }
+    if (added) console.log('Added ' + added + ' missing catalog series from seed files');
   }
 
   async function fillMissingProductDetails() {
@@ -126,6 +145,12 @@ function createSupabaseStore() {
           byBrand[row.brand_id] = { name: row.brand_id, tagline: '', series: [] };
         }
         byBrand[row.brand_id].series.push(dbUtil.rowToProduct(row, { name: byBrand[row.brand_id].name }));
+      });
+      Object.keys(byBrand).forEach(function (id) {
+        const brand = byBrand[id];
+        if (id === 'novastar' || (brand.series || []).some(function (s) { return s.type === 'control'; })) {
+          brand.kind = 'control';
+        }
       });
       return byBrand;
     },

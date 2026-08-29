@@ -7,6 +7,37 @@ const ROOT = path.join(__dirname, '..');
 const DATA_DIR = path.join(ROOT, 'data');
 const DB_PATH = path.join(DATA_DIR, 'spectrum.db');
 const SEED_PATH = path.join(__dirname, 'seed-catalog.json');
+const NOVASTAR_SEED_PATH = path.join(__dirname, 'novastar-seed.json');
+const CONTROL_DETAIL_KEYS = [
+  'subtype', 'replacementOnly', 'family', 'model', 'maxPixels', 'outputs', 'inputs',
+  'bestFor', 'bestWith', 'priceEach', 'latency', 'hdr', 'chips', 'downloads', 'downloadVersion'
+];
+
+function loadSeedBrands() {
+  const brands = JSON.parse(fs.readFileSync(SEED_PATH, 'utf8'));
+  if (fs.existsSync(NOVASTAR_SEED_PATH)) {
+    try {
+      brands.push(JSON.parse(fs.readFileSync(NOVASTAR_SEED_PATH, 'utf8')));
+    } catch (e) { /* skip bad seed */ }
+  }
+  return brands;
+}
+
+function detailsFromSeries(s) {
+  const details = {};
+  if (!s || typeof s !== 'object') return details;
+  ['cats', 'specTable', 'lead', 'sourceUrl', 'features'].concat(CONTROL_DETAIL_KEYS).forEach(function (k) {
+    if (s[k] != null) details[k] = s[k];
+  });
+  if (s.type === 'control' || s.subtype) {
+    details.priceEach = Number(s.priceEach || s.pricePerM2) || 0;
+    if (!details.cats || !details.cats.length) {
+      details.cats = ['control'].concat(s.subtype ? [s.subtype] : []);
+      if (s.subtype === 'receiving-card') details.cats.push('receiving-cards');
+    }
+  }
+  return details;
+}
 
 function nowIso() {
   return new Date().toISOString();
@@ -77,42 +108,50 @@ function seedAdmin(db) {
 }
 
 function seedCatalog(db) {
-  const count = db.prepare('SELECT COUNT(*) AS n FROM products').get().n;
-  if (count > 0) return;
-  const brands = JSON.parse(fs.readFileSync(SEED_PATH, 'utf8'));
+  upsertMissingCatalog(db);
+}
+
+function upsertMissingCatalog(db) {
+  const brands = loadSeedBrands();
   const insertBrand = db.prepare('INSERT OR IGNORE INTO brands (id, name, tagline) VALUES (?, ?, ?)');
+  const hasProduct = db.prepare('SELECT id FROM products WHERE brand_id = ? AND series_id = ?');
   const insertProduct = db.prepare(`
     INSERT INTO products (
       brand_id, series_id, name, pitches, price_per_m2, weight_per_m2,
       power_avg, power_max, cabinet_w, cabinet_h, type, description, badge,
-      image, gallery, sort_order, created_at, updated_at
-    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, '[]', ?, ?, ?)
+      image, gallery, details, sort_order, created_at, updated_at
+    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, '[]', ?, ?, ?, ?)
   `);
   const stamp = nowIso();
+  let added = 0;
   db.exec('BEGIN');
   try {
     brands.forEach((brand, bi) => {
       insertBrand.run(brand.id, brand.name, brand.tagline || '');
       (brand.series || []).forEach((s, si) => {
+        if (hasProduct.get(brand.id, s.id)) return;
+        const isControl = s.type === 'control' || brand.id === 'novastar' || !!s.subtype;
         insertProduct.run(
           brand.id,
           s.id,
           s.name,
           JSON.stringify(s.pitches || []),
-          s.pricePerM2 || 0,
+          Number(isControl ? (s.priceEach || s.pricePerM2) : s.pricePerM2) || 0,
           s.weightPerM2 || 0,
           s.powerAvg || 0,
           s.powerMax || 0,
-          s.cabinetW || 0.5,
-          s.cabinetH || 0.5,
-          s.type || 'Fixed',
+          isControl ? 0 : (s.cabinetW || 0.5),
+          isControl ? 0 : (s.cabinetH || 0.5),
+          isControl ? 'control' : (s.type || 'Fixed'),
           s.description || '',
           s.badge || '',
           s.image || '',
-          bi * 20 + si,
+          JSON.stringify(detailsFromSeries(s)),
+          bi * 40 + si,
           stamp,
           stamp
         );
+        added += 1;
       });
     });
     db.exec('COMMIT');
@@ -120,7 +159,7 @@ function seedCatalog(db) {
     try { db.exec('ROLLBACK'); } catch (e) { /* ignore */ }
     throw err;
   }
-  console.log('Seeded product catalog from server/seed-catalog.json');
+  if (added) console.log('Added ' + added + ' missing catalog series from seed files');
 }
 
 function fillMissingProductDetails(db) {
@@ -172,10 +211,19 @@ function mergeProductDetails(current, incoming) {
   return next;
 }
 
+function isControlRow(row, details) {
+  const type = String((row && row.type) || '').toLowerCase();
+  return type === 'control' || (row && row.brand_id === 'novastar') || !!(details && details.subtype);
+}
+
 function rowToProduct(row, brand) {
   const pitches = parseJson(row.pitches, []);
   const gallery = parseJson(row.gallery, []);
   const details = parseDetails(row);
+  const control = isControlRow(row, details);
+  const unitPrice = control
+    ? (Number(details.priceEach != null ? details.priceEach : row.price_per_m2) || 0)
+    : (Number(row.price_per_m2) || 0);
   const product = {
     dbId: row.id,
     id: row.series_id,
@@ -189,7 +237,7 @@ function rowToProduct(row, brand) {
     powerMax: row.power_max,
     cabinetW: row.cabinet_w,
     cabinetH: row.cabinet_h,
-    type: row.type || 'Fixed',
+    type: control ? 'control' : (row.type || 'Fixed'),
     description: row.description || '',
     badge: row.badge || null,
     image: row.image || '',
@@ -198,12 +246,11 @@ function rowToProduct(row, brand) {
     cats: Array.isArray(details.cats) ? details.cats : [],
     pitchLabel: pitches.length
       ? pitches[0] + (pitches.length > 1 ? '–' + pitches[pitches.length - 1] : '') + ' mm'
-      : '',
-    priceLabel: Number(row.price_per_m2 || 0)
-      ? 'From $' + Number(row.price_per_m2).toLocaleString()
-      : 'Request quote'
+      : (control ? (details.family || 'Control') : ''),
+    priceLabel: unitPrice ? 'From $' + Number(unitPrice).toLocaleString() : 'Request quote'
   };
-  ['specTable', 'lead', 'sourceUrl', 'features'].forEach(function (k) {
+  if (control) product.priceEach = unitPrice;
+  ['specTable', 'lead', 'sourceUrl', 'features'].concat(CONTROL_DETAIL_KEYS).forEach(function (k) {
     if (details[k] != null) product[k] = details[k];
   });
   return product;
@@ -222,6 +269,12 @@ function getCatalog(db) {
     }
     const item = rowToProduct(row, { name: byBrand[row.brand_id].name });
     byBrand[row.brand_id].series.push(item);
+  });
+  Object.keys(byBrand).forEach(function (id) {
+    const brand = byBrand[id];
+    if (id === 'novastar' || (brand.series || []).some(function (s) { return s.type === 'control'; })) {
+      brand.kind = 'control';
+    }
   });
   return byBrand;
 }
@@ -244,6 +297,9 @@ module.exports = {
   openDb,
   seedAdmin,
   seedCatalog,
+  upsertMissingCatalog,
+  loadSeedBrands,
+  detailsFromSeries,
   fillMissingProductDetails,
   getCatalog,
   listProducts,

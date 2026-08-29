@@ -1,7 +1,6 @@
 /**
- * NovaStar control-systems catalog.
- * Controllers and cards — not LED cabinets. Do not treat as a 6th cabinet brand.
- * Specs: official model names and published loading / I/O only. Copy is Spectrum's.
+ * UNUSED on public pages. NovaStar lives in the admin database (server/novastar-seed.json).
+ * Do not include this file in HTML.
  */
 (function (global) {
   function nv(cfg) {

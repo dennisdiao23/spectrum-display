@@ -24,7 +24,7 @@ catalog API and a cookie-session admin login used by `admin.html`.
   `server/seed-catalog.json`, then fills missing `products.details` from `server/product-details.json`.
 - Public panel catalog is **database only**. Pages load `/api/catalog` via `js/catalog-api.js`. Do not
   include `js/products-data.js` on HTML pages. Edit series in **Admin → Products**. NovaStar control
-  gear still comes from `js/novastar-catalog.js` (not admin products).
+  gear is also stored as products (`type: control`, brand `novastar`) and edited in Admin.
 - The SQLite store uses Node's built-in `node:sqlite` (`server/db.js`), which requires Node 22+ (an
   `ExperimentalWarning` is printed and is harmless). No native/compiled sqlite package is installed.
 - `data/` and `uploads/products/` are gitignored and created at runtime; deleting `data/spectrum.db`

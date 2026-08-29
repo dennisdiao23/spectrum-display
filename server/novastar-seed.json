@@ -1,0 +1,2227 @@
+{
+  "id": "novastar",
+  "name": "NovaStar",
+  "tagline": "Control systems — processors, senders, and spare cards",
+  "kind": "control",
+  "series": [
+    {
+      "id": "vx400-pro",
+      "name": "NovaStar VX400 Pro",
+      "model": "VX400 Pro",
+      "family": "VX Pro",
+      "type": "control",
+      "subtype": "all-in-one",
+      "replacementOnly": false,
+      "pitches": [],
+      "pricePerM2": 0,
+      "priceEach": 0,
+      "cabinetW": 0,
+      "cabinetH": 0,
+      "weightPerM2": 0,
+      "powerAvg": 0,
+      "powerMax": 0,
+      "description": "All-in-one processor for compact walls. Scales HDMI or SDI and sends pixel-accurate output to the cards already in each cabinet.",
+      "lead": "All-in-one processor for compact walls. Scales HDMI or SDI and sends pixel-accurate output to the cards already in each cabinet.",
+      "badge": null,
+      "cats": [
+        "control",
+        "all-in-one"
+      ],
+      "image": "assets/products/novastar/vx400-pro.svg",
+      "maxPixels": 2600000,
+      "outputs": "4× RJ45 · 2× 10G OPT",
+      "inputs": "HDMI 2.0 · HDMI 1.3 · 3G-SDI",
+      "bestFor": "Retail · small fixed walls",
+      "bestWith": [
+        "posters",
+        "fixed-indoor"
+      ],
+      "latency": "Low latency / ByPass",
+      "hdr": "",
+      "chips": [
+        "2.6M px",
+        "4× RJ45",
+        "HDMI + SDI"
+      ],
+      "specTable": [
+        [
+          "Parameter",
+          "Value"
+        ],
+        [
+          "Family",
+          "VX Pro all-in-one"
+        ],
+        [
+          "Loading capacity",
+          "2.6 million pixels"
+        ],
+        [
+          "Ethernet outputs",
+          "4× Gigabit RJ45"
+        ],
+        [
+          "Optical",
+          "2× 10G OPT"
+        ],
+        [
+          "Key inputs",
+          "1× HDMI 2.0 (IN & LOOP), 2× HDMI 1.3, 1× 3G-SDI (IN & LOOP)"
+        ],
+        [
+          "Max width / height",
+          "10,240 × 8,192 px"
+        ]
+      ],
+      "sourceUrl": "https://www.novastar.tech",
+      "features": [
+        {
+          "title": "Processor + sender in one",
+          "text": "HDMI and SDI in, scaled output over four Gigabit ports. No separate scaler required for a small fixed wall."
+        },
+        {
+          "title": "2.6 million pixel load",
+          "text": "Published capacity 2.6 million pixels, 4× RJ45 plus two 10G optical ports."
+        }
+      ],
+      "downloadVersion": "V1.3.1",
+      "downloads": [
+        {
+          "label": "Specifications",
+          "url": "https://en-website001.oss-us-east-1.aliyuncs.com/Specification/VX400%20Pro%20All-in-One%20Controller%20Specifications-V1.3.0.pdf"
+        },
+        {
+          "label": "User Manual",
+          "url": "https://en-website001.oss-us-east-1.aliyuncs.com/Specification/VX%20Pro%20Series%20All-in-One%20Controller%20User%20Manual-V1.3.1.pdf"
+        },
+        {
+          "label": "Quick Start Guide",
+          "url": "https://oss.novastar.tech/uploads/2025/03/VX-Pro-Series-All-in-One-Controller-Quick-Start-Guide-V1.0.1.pdf"
+        },
+        {
+          "label": "Firmware",
+          "url": "https://en-website001.oss-us-east-1.aliyuncs.com/Firmware/VX400_Pro%20V1.3.1.zip"
+        }
+      ]
+    },
+    {
+      "id": "vx600-pro",
+      "name": "NovaStar VX600 Pro",
+      "model": "VX600 Pro",
+      "family": "VX Pro",
+      "type": "control",
+      "subtype": "all-in-one",
+      "replacementOnly": false,
+      "pitches": [],
+      "pricePerM2": 0,
+      "priceEach": 0,
+      "cabinetW": 0,
+      "cabinetH": 0,
+      "weightPerM2": 0,
+      "powerAvg": 0,
+      "powerMax": 0,
+      "description": "Mid-size all-in-one for lobbies, sports bars, and meeting rooms. Six Ethernet ports cover most walls that are not yet 4K-native.",
+      "lead": "Mid-size all-in-one for lobbies, sports bars, and meeting rooms. Six Ethernet ports cover most walls that are not yet 4K-native.",
+      "badge": null,
+      "cats": [
+        "control",
+        "all-in-one"
+      ],
+      "image": "assets/products/novastar/vx600-pro.svg",
+      "maxPixels": 3900000,
+      "outputs": "6× RJ45 · 2× 10G OPT",
+      "inputs": "HDMI 2.0 · HDMI 1.3 · 3G-SDI",
+      "bestFor": "Sports bar · mid commercial",
+      "bestWith": [
+        "fixed-indoor",
+        "posters"
+      ],
+      "latency": "Low latency / ByPass",
+      "hdr": "",
+      "chips": [
+        "3.9M px",
+        "6× RJ45",
+        "HDMI + SDI"
+      ],
+      "specTable": [
+        [
+          "Parameter",
+          "Value"
+        ],
+        [
+          "Family",
+          "VX Pro all-in-one"
+        ],
+        [
+          "Loading capacity",
+          "3.9 million pixels"
+        ],
+        [
+          "Ethernet outputs",
+          "6× Gigabit RJ45"
+        ],
+        [
+          "Optical",
+          "2× 10G OPT"
+        ],
+        [
+          "Key inputs",
+          "1× HDMI 2.0 (IN & LOOP), 2× HDMI 1.3, 1× 3G-SDI (IN & LOOP)"
+        ],
+        [
+          "Max width / height",
+          "10,240 × 8,192 px"
+        ]
+      ],
+      "sourceUrl": "https://www.novastar.tech",
+      "features": [
+        {
+          "title": "3.9 million pixel load",
+          "text": "Published capacity 3.9 million pixels on 6× RJ45, with the same HDMI / SDI input set as VX400 Pro."
+        },
+        {
+          "title": "One box at the rack",
+          "text": "Processor and sender in a single chassis so the wall does not need a separate scaler."
+        }
+      ],
+      "downloadVersion": "V1.3.1",
+      "downloads": [
+        {
+          "label": "Specifications",
+          "url": "https://en-website001.oss-us-east-1.aliyuncs.com/Specification/VX600%20Pro%20All-in-One%20Controller%20Specifications-V1.3.0.pdf"
+        },
+        {
+          "label": "User Manual",
+          "url": "https://en-website001.oss-us-east-1.aliyuncs.com/Specification/VX%20Pro%20Series%20All-in-One%20Controller%20User%20Manual-V1.3.1.pdf"
+        },
+        {
+          "label": "Quick Start Guide",
+          "url": "https://oss.novastar.tech/uploads/2025/03/VX-Pro-Series-All-in-One-Controller-Quick-Start-Guide-V1.0.1.pdf"
+        },
+        {
+          "label": "Firmware",
+          "url": "https://en-website001.oss-us-east-1.aliyuncs.com/Firmware/VX600_Pro%20V1.3.1.zip"
+        },
+        {
+          "label": "Release Notes",
+          "url": "https://en-website001.oss-us-east-1.aliyuncs.com/Specification/VX600%20Pro%20V1.3.1%20Release%20Notes.txt"
+        }
+      ]
+    },
+    {
+      "id": "vx1000-pro",
+      "name": "NovaStar VX1000 Pro",
+      "model": "VX1000 Pro",
+      "family": "VX Pro",
+      "type": "control",
+      "subtype": "all-in-one",
+      "replacementOnly": false,
+      "pitches": [],
+      "pricePerM2": 0,
+      "priceEach": 0,
+      "cabinetW": 0,
+      "cabinetH": 0,
+      "weightPerM2": 0,
+      "powerAvg": 0,
+      "powerMax": 0,
+      "description": "The usual pick for a 4K corporate or control-room wall. Ten Ethernet ports and 6.5 million pixel capacity with HDMI 2.0 in.",
+      "lead": "The usual pick for a 4K corporate or control-room wall. Ten Ethernet ports and 6.5 million pixel capacity with HDMI 2.0 in.",
+      "badge": null,
+      "cats": [
+        "control",
+        "all-in-one"
+      ],
+      "image": "assets/products/novastar/vx1000-pro.svg",
+      "maxPixels": 6500000,
+      "outputs": "10× RJ45 · 2× 10G OPT",
+      "inputs": "HDMI 2.0 · HDMI 1.3 · 3G-SDI",
+      "bestFor": "4K fixed · corporate · control room",
+      "bestWith": [
+        "cob",
+        "fixed-indoor",
+        "indoor-rental"
+      ],
+      "latency": "Low latency / ByPass",
+      "hdr": "4K×2K@60Hz input",
+      "chips": [
+        "6.5M px",
+        "10× RJ45",
+        "4K input"
+      ],
+      "specTable": [
+        [
+          "Parameter",
+          "Value"
+        ],
+        [
+          "Family",
+          "VX Pro all-in-one"
+        ],
+        [
+          "Loading capacity",
+          "6.5 million pixels"
+        ],
+        [
+          "Ethernet outputs",
+          "10× Gigabit RJ45"
+        ],
+        [
+          "Optical",
+          "2× 10G OPT"
+        ],
+        [
+          "Key inputs",
+          "1× HDMI 2.0 (IN & LOOP), 2× HDMI 1.3, 1× 3G-SDI (IN & LOOP)"
+        ],
+        [
+          "Max input",
+          "4K×2K@60Hz"
+        ],
+        [
+          "Max width / height",
+          "10,240 × 8,192 px"
+        ]
+      ],
+      "sourceUrl": "https://www.novastar.tech",
+      "features": [
+        {
+          "title": "6.5 million pixel load",
+          "text": "Published capacity 6.5 million pixels on 10× RJ45 — enough for most native 4K cabinets with headroom."
+        },
+        {
+          "title": "4K input",
+          "text": "HDMI 2.0 path accepts 4K×2K@60Hz, then scales and color-corrects for the wall."
+        }
+      ],
+      "downloadVersion": "V1.3.1",
+      "downloads": [
+        {
+          "label": "Specifications",
+          "url": "https://en-website001.oss-us-east-1.aliyuncs.com/Specification/VX1000%20Pro%20All-in-One%20Controller%20Specifications-V1.3.0.pdf"
+        },
+        {
+          "label": "User Manual",
+          "url": "https://en-website001.oss-us-east-1.aliyuncs.com/Specification/VX%20Pro%20Series%20All-in-One%20Controller%20User%20Manual-V1.3.1.pdf"
+        },
+        {
+          "label": "Quick Start Guide",
+          "url": "https://oss.novastar.tech/uploads/2025/03/VX-Pro-Series-All-in-One-Controller-Quick-Start-Guide-V1.0.1.pdf"
+        },
+        {
+          "label": "Firmware",
+          "url": "https://en-website001.oss-us-east-1.aliyuncs.com/Firmware/VX1000_Pro%20V1.3.1.zip"
+        },
+        {
+          "label": "Release Notes",
+          "url": "https://en-website001.oss-us-east-1.aliyuncs.com/Specification/VX1000%20Pro%20V1.3.1%20Release%20Notes.txt"
+        }
+      ]
+    },
+    {
+      "id": "vx2000-pro",
+      "name": "NovaStar VX2000 Pro",
+      "model": "VX2000 Pro",
+      "family": "VX Pro",
+      "type": "control",
+      "subtype": "all-in-one",
+      "replacementOnly": false,
+      "pitches": [],
+      "pricePerM2": 0,
+      "priceEach": 0,
+      "cabinetW": 0,
+      "cabinetH": 0,
+      "weightPerM2": 0,
+      "powerAvg": 0,
+      "powerMax": 0,
+      "description": "High-capacity all-in-one for wide events and large façades. Twenty Ethernet ports load up to 13 million pixels.",
+      "lead": "High-capacity all-in-one for wide events and large façades. Twenty Ethernet ports load up to 13 million pixels.",
+      "badge": null,
+      "cats": [
+        "control",
+        "all-in-one"
+      ],
+      "image": "assets/products/novastar/vx2000-pro.svg",
+      "maxPixels": 13000000,
+      "outputs": "20× RJ45 · 4× OPT",
+      "inputs": "12G-SDI · DP 1.2 · HDMI 2.0",
+      "bestFor": "Large rental · events · wide façades",
+      "bestWith": [
+        "indoor-rental",
+        "outdoor-rental",
+        "creative"
+      ],
+      "latency": "Low latency / ByPass",
+      "hdr": "4K×2K@60Hz input",
+      "chips": [
+        "13M px",
+        "20× RJ45",
+        "12G-SDI + DP"
+      ],
+      "specTable": [
+        [
+          "Parameter",
+          "Value"
+        ],
+        [
+          "Family",
+          "VX Pro all-in-one"
+        ],
+        [
+          "Loading capacity",
+          "13 million pixels"
+        ],
+        [
+          "Ethernet outputs",
+          "20× Gigabit RJ45"
+        ],
+        [
+          "Optical",
+          "4× OPT"
+        ],
+        [
+          "Key inputs",
+          "1× 12G-SDI (IN & LOOP), 1× DP 1.2, 2× HDMI 2.0, 4× HDMI 1.3"
+        ],
+        [
+          "Max width / height",
+          "16,384 × 8,192 px"
+        ]
+      ],
+      "sourceUrl": "https://www.novastar.tech",
+      "features": [
+        {
+          "title": "13 million pixel load",
+          "text": "Published capacity 13 million pixels, max width 16,384 px, on 20× RJ45."
+        },
+        {
+          "title": "Broadcast inputs",
+          "text": "12G-SDI, DisplayPort 1.2, and dual HDMI 2.0 for rental racks and control rooms."
+        }
+      ],
+      "downloadVersion": "V1.3.1",
+      "downloads": [
+        {
+          "label": "Specifications",
+          "url": "https://en-website001.oss-us-east-1.aliyuncs.com/Specification/VX2000%20Pro%20All-in-One%20Controller%20Specifications-V1.3.0.pdf"
+        },
+        {
+          "label": "User Manual",
+          "url": "https://en-website001.oss-us-east-1.aliyuncs.com/Specification/VX%20Pro%20Series%20All-in-One%20Controller%20User%20Manual-V1.3.1.pdf"
+        },
+        {
+          "label": "Quick Start Guide",
+          "url": "https://oss.novastar.tech/uploads/2025/03/VX-Pro-Series-All-in-One-Controller-Quick-Start-Guide-V1.0.1.pdf"
+        },
+        {
+          "label": "Firmware",
+          "url": "https://en-website001.oss-us-east-1.aliyuncs.com/Firmware/VX2000_Pro%20V1.3.1.zip"
+        },
+        {
+          "label": "Release Notes",
+          "url": "https://en-website001.oss-us-east-1.aliyuncs.com/Specification/VX2000%20Pro%20V1.3.1%20Release%20Notes.txt"
+        }
+      ]
+    },
+    {
+      "id": "ku20",
+      "name": "NovaStar KU20",
+      "model": "KU20",
+      "family": "COEX",
+      "type": "control",
+      "subtype": "all-in-one",
+      "replacementOnly": false,
+      "pitches": [],
+      "pricePerM2": 0,
+      "priceEach": 0,
+      "cabinetW": 0,
+      "cabinetH": 0,
+      "weightPerM2": 0,
+      "powerAvg": 0,
+      "powerMax": 0,
+      "description": "Compact COEX controller for posters and small 2K walls. One HDMI in, six Ethernet out — pair with a player if you need scaling layers.",
+      "lead": "Compact COEX controller for posters and small 2K walls. One HDMI in, six Ethernet out — pair with a player if you need scaling layers.",
+      "badge": null,
+      "cats": [
+        "control",
+        "all-in-one"
+      ],
+      "image": "assets/products/novastar/ku20.svg",
+      "maxPixels": 3900000,
+      "outputs": "6× RJ45 · 1× 10G OPT",
+      "inputs": "HDMI 1.3",
+      "bestFor": "Small walls · posters",
+      "bestWith": [
+        "posters",
+        "fixed-indoor"
+      ],
+      "latency": "",
+      "hdr": "",
+      "chips": [
+        "3.9M px",
+        "6× RJ45",
+        "HDMI 1.3"
+      ],
+      "specTable": [
+        [
+          "Parameter",
+          "Value"
+        ],
+        [
+          "Family",
+          "COEX"
+        ],
+        [
+          "Loading capacity",
+          "3.9 million pixels"
+        ],
+        [
+          "Ethernet outputs",
+          "6× Gigabit RJ45"
+        ],
+        [
+          "Optical",
+          "1× 10G OPT"
+        ],
+        [
+          "Key inputs",
+          "1× HDMI 1.3 with loop"
+        ]
+      ],
+      "sourceUrl": "https://www.novastar.tech",
+      "features": [
+        {
+          "title": "3.9 million pixel load",
+          "text": "Published capacity 3.9 million pixels on 6× RJ45 plus one 10G optical output."
+        },
+        {
+          "title": "Simple HDMI path",
+          "text": "Single HDMI 1.3 input with loop. Use it when the source is already the right size, or add a scaler upstream."
+        }
+      ],
+      "downloadVersion": "V1.5.0",
+      "downloads": [
+        {
+          "label": "Specifications",
+          "url": "https://oss.novastar.tech/uploads/2025/10/KU20-LED-DIsplay-Controller-Specifications-V1.5.0.pdf"
+        },
+        {
+          "label": "User Manual",
+          "url": "https://oss.novastar.tech/uploads/2025/10/KU20-LED-Display-Controller-User-Manual-V1.5.0.pdf"
+        },
+        {
+          "label": "Firmware",
+          "url": "https://en-website001.oss-us-east-1.aliyuncs.com/Firmware/KU20%20V1.5.1.zip"
+        },
+        {
+          "label": "Release Notes",
+          "url": "https://oss.novastar.tech/uploads/2025/09/COEX-MX40-ProMX30MX20KU20CX40-Pro-V1.5.0-Release-Notes-1.pdf"
+        },
+        {
+          "label": "VMP Software (Windows)",
+          "url": "https://en-website001.oss-us-east-1.aliyuncs.com/Coex%20VMP%20V1.5.0__Windows.zip"
+        },
+        {
+          "label": "VMP Software (Mac)",
+          "url": "https://en-website001.oss-us-east-1.aliyuncs.com/Coex%20VMP%20V1.5.0__Mac.zip"
+        }
+      ]
+    },
+    {
+      "id": "mx20",
+      "name": "NovaStar MX20",
+      "model": "MX20",
+      "family": "COEX",
+      "type": "control",
+      "subtype": "all-in-one",
+      "replacementOnly": false,
+      "pitches": [],
+      "pricePerM2": 0,
+      "priceEach": 0,
+      "cabinetW": 0,
+      "cabinetH": 0,
+      "weightPerM2": 0,
+      "powerAvg": 0,
+      "powerMax": 0,
+      "description": "COEX all-in-one with HDMI and SDI in. Same 3.9 million pixel load as KU20, with extra inputs for mixed AV racks.",
+      "lead": "COEX all-in-one with HDMI and SDI in. Same 3.9 million pixel load as KU20, with extra inputs for mixed AV racks.",
+      "badge": null,
+      "cats": [
+        "control",
+        "all-in-one"
+      ],
+      "image": "assets/products/novastar/mx20.svg",
+      "maxPixels": 3900000,
+      "outputs": "6× RJ45 · 2× 10G OPT",
+      "inputs": "HDMI 1.3 · 3G-SDI",
+      "bestFor": "Retail · small commercial",
+      "bestWith": [
+        "fixed-indoor",
+        "posters"
+      ],
+      "latency": "",
+      "hdr": "",
+      "chips": [
+        "3.9M px",
+        "6× RJ45",
+        "HDMI + SDI"
+      ],
+      "specTable": [
+        [
+          "Parameter",
+          "Value"
+        ],
+        [
+          "Family",
+          "COEX"
+        ],
+        [
+          "Loading capacity",
+          "3.9 million pixels"
+        ],
+        [
+          "Ethernet outputs",
+          "6× Gigabit RJ45"
+        ],
+        [
+          "Optical",
+          "2× 10G OPT"
+        ],
+        [
+          "Key inputs",
+          "2× HDMI 1.3 (loop), 1× 3G-SDI (loop)"
+        ]
+      ],
+      "sourceUrl": "https://www.novastar.tech",
+      "features": [
+        {
+          "title": "3.9 million pixel load",
+          "text": "Published capacity 3.9 million pixels on 6× RJ45 and two 10G optical ports."
+        },
+        {
+          "title": "HDMI + SDI",
+          "text": "Two HDMI 1.3 inputs and 3G-SDI with loop for retail and small commercial walls."
+        }
+      ],
+      "downloadVersion": "V1.5.0",
+      "downloads": [
+        {
+          "label": "Specifications",
+          "url": "https://oss.novastar.tech/uploads/2025/10/MX20-LED-Display-Controller-Specifications-V1.5.0.pdf"
+        },
+        {
+          "label": "User Manual",
+          "url": "https://oss.novastar.tech/uploads/2025/10/MX20-LED-Display-Controller-User-Manual-V1.5.0.pdf"
+        },
+        {
+          "label": "Firmware",
+          "url": "https://en-website001.oss-us-east-1.aliyuncs.com/Firmware/MX20%20V1.5.1.zip"
+        },
+        {
+          "label": "Release Notes",
+          "url": "https://oss.novastar.tech/uploads/2025/09/COEX-MX40-ProMX30MX20KU20CX40-Pro-V1.5.0-Release-Notes-1.pdf"
+        },
+        {
+          "label": "VMP Software (Windows)",
+          "url": "https://en-website001.oss-us-east-1.aliyuncs.com/Coex%20VMP%20V1.5.0__Windows.zip"
+        },
+        {
+          "label": "VMP Software (Mac)",
+          "url": "https://en-website001.oss-us-east-1.aliyuncs.com/Coex%20VMP%20V1.5.0__Mac.zip"
+        }
+      ]
+    },
+    {
+      "id": "mx30",
+      "name": "NovaStar MX30",
+      "model": "MX30",
+      "family": "COEX",
+      "type": "control",
+      "subtype": "all-in-one",
+      "replacementOnly": false,
+      "pitches": [],
+      "pricePerM2": 0,
+      "priceEach": 0,
+      "cabinetW": 0,
+      "cabinetH": 0,
+      "weightPerM2": 0,
+      "powerAvg": 0,
+      "powerMax": 0,
+      "description": "COEX mid-range for sports bars and meeting rooms. HDMI 2.0 and SDI in, 6.5 million pixels out.",
+      "lead": "COEX mid-range for sports bars and meeting rooms. HDMI 2.0 and SDI in, 6.5 million pixels out.",
+      "badge": null,
+      "cats": [
+        "control",
+        "all-in-one"
+      ],
+      "image": "assets/products/novastar/mx30.svg",
+      "maxPixels": 6500000,
+      "outputs": "10× RJ45 · 2× 10G OPT",
+      "inputs": "HDMI 2.0 · HDMI 1.4 · DP 1.1 · 3G-SDI",
+      "bestFor": "Sports bar · mid commercial",
+      "bestWith": [
+        "fixed-indoor",
+        "cob"
+      ],
+      "latency": "",
+      "hdr": "HDR10 / HLG",
+      "chips": [
+        "6.5M px",
+        "10× RJ45",
+        "HDMI 2.0 + SDI"
+      ],
+      "specTable": [
+        [
+          "Parameter",
+          "Value"
+        ],
+        [
+          "Family",
+          "COEX"
+        ],
+        [
+          "Loading capacity",
+          "6.5 million pixels"
+        ],
+        [
+          "Ethernet outputs",
+          "10× Gigabit RJ45"
+        ],
+        [
+          "Optical",
+          "2× 10G OPT"
+        ],
+        [
+          "Key inputs",
+          "1× HDMI 2.0, 1× HDMI 1.4, 1× DP 1.1, 2× 3G-SDI with loop"
+        ],
+        [
+          "HDR",
+          "HDR10 / HLG"
+        ]
+      ],
+      "sourceUrl": "https://www.novastar.tech",
+      "features": [
+        {
+          "title": "6.5 million pixel load",
+          "text": "Published capacity 6.5 million pixels on 10× RJ45."
+        },
+        {
+          "title": "4K-class inputs",
+          "text": "HDMI 2.0, HDMI 1.4, DP 1.1, and dual 3G-SDI with loop."
+        }
+      ],
+      "downloadVersion": "V1.5.0",
+      "downloads": [
+        {
+          "label": "Specifications",
+          "url": "https://oss.novastar.tech/uploads/2025/10/MX30-LED-Display-Controller-Specifications-V1.5.0.pdf"
+        },
+        {
+          "label": "User Manual",
+          "url": "https://oss.novastar.tech/uploads/2025/10/MX30-LED-Display-Controller-User-Manual-V1.5.0.pdf"
+        },
+        {
+          "label": "Firmware",
+          "url": "https://en-website001.oss-us-east-1.aliyuncs.com/MX30%20V1.5.0.zip"
+        },
+        {
+          "label": "Release Notes",
+          "url": "https://oss.novastar.tech/uploads/2025/09/COEX-MX40-ProMX30MX20KU20CX40-Pro-V1.5.0-Release-Notes-1.pdf"
+        },
+        {
+          "label": "VMP Software (Windows)",
+          "url": "https://en-website001.oss-us-east-1.aliyuncs.com/Coex%20VMP%20V1.5.0__Windows.zip"
+        },
+        {
+          "label": "VMP Software (Mac)",
+          "url": "https://en-website001.oss-us-east-1.aliyuncs.com/Coex%20VMP%20V1.5.0__Mac.zip"
+        }
+      ]
+    },
+    {
+      "id": "mx40-pro",
+      "name": "NovaStar MX40 Pro",
+      "model": "MX40 Pro",
+      "family": "COEX",
+      "type": "control",
+      "subtype": "all-in-one",
+      "replacementOnly": false,
+      "pitches": [],
+      "pricePerM2": 0,
+      "priceEach": 0,
+      "cabinetW": 0,
+      "cabinetH": 0,
+      "weightPerM2": 0,
+      "powerAvg": 0,
+      "powerMax": 0,
+      "description": "COEX 4K controller for control rooms and large corporate walls. Twenty Ethernet ports, 9 million pixel load, 12G-SDI and DP in.",
+      "lead": "COEX 4K controller for control rooms and large corporate walls. Twenty Ethernet ports, 9 million pixel load, 12G-SDI and DP in.",
+      "badge": null,
+      "cats": [
+        "control",
+        "all-in-one"
+      ],
+      "image": "assets/products/novastar/mx40-pro.svg",
+      "maxPixels": 9000000,
+      "outputs": "20× RJ45 · 4× 10G OPT",
+      "inputs": "HDMI 2.0 · DP 1.2 · 12G-SDI",
+      "bestFor": "4K fixed · control room",
+      "bestWith": [
+        "cob",
+        "fixed-indoor"
+      ],
+      "latency": "",
+      "hdr": "HDR10 / HLG",
+      "chips": [
+        "9M px",
+        "20× RJ45",
+        "12G-SDI + DP"
+      ],
+      "specTable": [
+        [
+          "Parameter",
+          "Value"
+        ],
+        [
+          "Family",
+          "COEX"
+        ],
+        [
+          "Loading capacity",
+          "9 million pixels"
+        ],
+        [
+          "Ethernet outputs",
+          "20× Gigabit RJ45"
+        ],
+        [
+          "Optical",
+          "4× 10G OPT"
+        ],
+        [
+          "Key inputs",
+          "HDMI 2.0, DP 1.2, 12G-SDI"
+        ],
+        [
+          "HDR",
+          "HDR10 / HLG"
+        ]
+      ],
+      "sourceUrl": "https://www.novastar.tech",
+      "features": [
+        {
+          "title": "9 million pixel load",
+          "text": "Published COEX capacity 9 million pixels on 20× RJ45 plus four 10G optical ports."
+        },
+        {
+          "title": "4K and SDI",
+          "text": "HDMI 2.0, DisplayPort 1.2, and 12G-SDI for broadcast-style control rooms."
+        }
+      ],
+      "downloadVersion": "V1.5.0",
+      "downloads": [
+        {
+          "label": "Specifications",
+          "url": "https://oss.novastar.tech/uploads/2025/10/MX40-Pro-LED-Display-Controller-Specifications-V1.5.0.pdf"
+        },
+        {
+          "label": "User Manual",
+          "url": "https://oss.novastar.tech/uploads/2025/10/MX40-Pro-LED-Display-Controller-User-Manual-V1.5.0.pdf"
+        },
+        {
+          "label": "Firmware",
+          "url": "https://en-website001.oss-us-east-1.aliyuncs.com/MX40%20Pro%20V1.5.0.zip"
+        },
+        {
+          "label": "Release Notes",
+          "url": "https://oss.novastar.tech/uploads/2025/09/COEX-MX40-ProMX30MX20KU20CX40-Pro-V1.5.0-Release-Notes-1.pdf"
+        },
+        {
+          "label": "VMP Software (Windows)",
+          "url": "https://en-website001.oss-us-east-1.aliyuncs.com/Coex%20VMP%20V1.5.0__Windows.zip"
+        },
+        {
+          "label": "VMP Software (Mac)",
+          "url": "https://en-website001.oss-us-east-1.aliyuncs.com/Coex%20VMP%20V1.5.0__Mac.zip"
+        }
+      ]
+    },
+    {
+      "id": "msd300",
+      "name": "NovaStar MSD300",
+      "model": "MSD300",
+      "family": "MSD",
+      "type": "control",
+      "subtype": "sending",
+      "replacementOnly": false,
+      "pitches": [],
+      "pricePerM2": 0,
+      "priceEach": 0,
+      "cabinetW": 0,
+      "cabinetH": 0,
+      "weightPerM2": 0,
+      "powerAvg": 0,
+      "powerMax": 0,
+      "description": "Sending card only — no scaler. Use it when a processor already exists and you need two extra Ethernet outputs.",
+      "lead": "Sending card only — no scaler. Use it when a processor already exists and you need two extra Ethernet outputs.",
+      "badge": null,
+      "cats": [
+        "control",
+        "sending"
+      ],
+      "image": "assets/products/novastar/msd300.svg",
+      "maxPixels": 1300000,
+      "outputs": "2× RJ45",
+      "inputs": "DVI",
+      "bestFor": "Spare sender · small output-only",
+      "bestWith": [
+        "posters",
+        "fixed-indoor"
+      ],
+      "latency": "",
+      "hdr": "",
+      "chips": [
+        "1.3M px",
+        "2× RJ45",
+        "DVI"
+      ],
+      "specTable": [
+        [
+          "Parameter",
+          "Value"
+        ],
+        [
+          "Family",
+          "MSD sending"
+        ],
+        [
+          "Loading capacity",
+          "1.3 million pixels"
+        ],
+        [
+          "Ethernet outputs",
+          "2× Gigabit RJ45"
+        ],
+        [
+          "Key inputs",
+          "DVI"
+        ]
+      ],
+      "sourceUrl": "https://www.novastar.tech",
+      "features": [
+        {
+          "title": "Sending card, not a processor",
+          "text": "DVI in, two Gigabit ports out. Pair with an upstream scaler if the source is not already pixel-to-pixel."
+        },
+        {
+          "title": "1.3 million pixel load",
+          "text": "Published capacity 1.3 million pixels (2× 650,000 per port)."
+        }
+      ],
+      "downloadVersion": "V2.4.2",
+      "downloads": [
+        {
+          "label": "Specifications",
+          "url": "https://oss.novastar.tech/uploads/2024/12/MSD300-Sending-Card-Specifications-V2.4.2.pdf"
+        }
+      ]
+    },
+    {
+      "id": "msd600",
+      "name": "NovaStar MSD600",
+      "model": "MSD600",
+      "family": "MSD",
+      "type": "control",
+      "subtype": "sending",
+      "replacementOnly": false,
+      "pitches": [],
+      "pricePerM2": 0,
+      "priceEach": 0,
+      "cabinetW": 0,
+      "cabinetH": 0,
+      "weightPerM2": 0,
+      "powerAvg": 0,
+      "powerMax": 0,
+      "description": "Four-port sending card for an existing processor. Adds Ethernet outputs without another all-in-one box.",
+      "lead": "Four-port sending card for an existing processor. Adds Ethernet outputs without another all-in-one box.",
+      "badge": null,
+      "cats": [
+        "control",
+        "sending"
+      ],
+      "image": "assets/products/novastar/msd600.svg",
+      "maxPixels": 2300000,
+      "outputs": "4× RJ45",
+      "inputs": "DVI",
+      "bestFor": "Output-only expansion",
+      "bestWith": [
+        "fixed-indoor",
+        "indoor-rental"
+      ],
+      "latency": "",
+      "hdr": "",
+      "chips": [
+        "2.3M px",
+        "4× RJ45",
+        "DVI"
+      ],
+      "specTable": [
+        [
+          "Parameter",
+          "Value"
+        ],
+        [
+          "Family",
+          "MSD sending"
+        ],
+        [
+          "Loading capacity",
+          "2.3 million pixels"
+        ],
+        [
+          "Ethernet outputs",
+          "4× Gigabit RJ45"
+        ],
+        [
+          "Key inputs",
+          "DVI"
+        ]
+      ],
+      "sourceUrl": "https://www.novastar.tech",
+      "features": [
+        {
+          "title": "Sending card, not a processor",
+          "text": "Use when video processing is already handled and you only need more cabinet outputs."
+        },
+        {
+          "title": "2.3 million pixel load",
+          "text": "Published capacity 2.3 million pixels on 4× RJ45."
+        }
+      ],
+      "downloadVersion": "",
+      "downloads": []
+    },
+    {
+      "id": "mctrl300",
+      "name": "NovaStar MCTRL300",
+      "model": "MCTRL300",
+      "family": "MCTRL",
+      "type": "control",
+      "subtype": "sending",
+      "replacementOnly": false,
+      "pitches": [],
+      "pricePerM2": 0,
+      "priceEach": 0,
+      "cabinetW": 0,
+      "cabinetH": 0,
+      "weightPerM2": 0,
+      "powerAvg": 0,
+      "powerMax": 0,
+      "description": "Compact sending box with DVI in and two Ethernet ports. Keeps a small wall or a spare output path running when you already have a processor.",
+      "lead": "Compact sending box with DVI in and two Ethernet ports. Keeps a small wall or a spare output path running when you already have a processor.",
+      "badge": null,
+      "cats": [
+        "control",
+        "sending"
+      ],
+      "image": "assets/products/novastar/mctrl300.svg",
+      "maxPixels": 1300000,
+      "outputs": "2× RJ45",
+      "inputs": "DVI · audio",
+      "bestFor": "Small sender · rental spare",
+      "bestWith": [
+        "posters",
+        "indoor-rental"
+      ],
+      "latency": "",
+      "hdr": "",
+      "chips": [
+        "1.3M px",
+        "2× RJ45",
+        "DVI"
+      ],
+      "specTable": [
+        [
+          "Parameter",
+          "Value"
+        ],
+        [
+          "Family",
+          "MCTRL sending"
+        ],
+        [
+          "Loading capacity",
+          "1.3 million pixels"
+        ],
+        [
+          "Ethernet outputs",
+          "2× Gigabit RJ45"
+        ],
+        [
+          "Key inputs",
+          "1× SL-DVI, 1× audio"
+        ],
+        [
+          "Max input",
+          "1920×1200@60Hz"
+        ]
+      ],
+      "sourceUrl": "https://www.novastar.tech",
+      "features": [
+        {
+          "title": "Independent sender",
+          "text": "1× DVI, 2× RJ45, USB control. Cascade additional units when one box is not enough."
+        },
+        {
+          "title": "1.3 million pixel load",
+          "text": "Published capacity 1.3 million pixels; max input 1920×1200@60Hz."
+        }
+      ],
+      "downloadVersion": "V2.4.3",
+      "downloads": [
+        {
+          "label": "Specifications",
+          "url": "https://en-website001.oss-us-east-1.aliyuncs.com/uploads/2025/12/MCTRL300%20LED%20Display%20Controller%20Specifications-V2.4.3.pdf"
+        },
+        {
+          "label": "Firmware",
+          "url": "https://en-website001.oss-us-east-1.aliyuncs.com/DATA_MCTRL300_V4.7.12.0.STD.zip"
+        },
+        {
+          "label": "Release Notes",
+          "url": "https://oss.novastar.tech/uploads/2025/08/DATA_MCTRL300_V4.7.12.0.STD-Release-Notes.pdf"
+        }
+      ]
+    },
+    {
+      "id": "mctrl600",
+      "name": "NovaStar MCTRL600",
+      "model": "MCTRL600",
+      "family": "MCTRL",
+      "type": "control",
+      "subtype": "sending",
+      "replacementOnly": false,
+      "pitches": [],
+      "pricePerM2": 0,
+      "priceEach": 0,
+      "cabinetW": 0,
+      "cabinetH": 0,
+      "weightPerM2": 0,
+      "powerAvg": 0,
+      "powerMax": 0,
+      "description": "Four-port sending box with HDMI and DVI. Choose this when a scaler already sits upstream and you only need to drive cabinets.",
+      "lead": "Four-port sending box with HDMI and DVI. Choose this when a scaler already sits upstream and you only need to drive cabinets.",
+      "badge": null,
+      "cats": [
+        "control",
+        "sending"
+      ],
+      "image": "assets/products/novastar/mctrl600.svg",
+      "maxPixels": 2600000,
+      "outputs": "4× RJ45",
+      "inputs": "DVI · HDMI 1.3",
+      "bestFor": "Output-only mid walls",
+      "bestWith": [
+        "fixed-indoor",
+        "indoor-rental"
+      ],
+      "latency": "",
+      "hdr": "",
+      "chips": [
+        "2.6M px",
+        "4× RJ45",
+        "HDMI + DVI"
+      ],
+      "specTable": [
+        [
+          "Parameter",
+          "Value"
+        ],
+        [
+          "Family",
+          "MCTRL sending"
+        ],
+        [
+          "Loading capacity",
+          "2.6 million pixels"
+        ],
+        [
+          "Ethernet outputs",
+          "4× Gigabit RJ45"
+        ],
+        [
+          "Key inputs",
+          "1× SL-DVI, 1× HDMI 1.3, audio"
+        ],
+        [
+          "Max input",
+          "1920×1200@60Hz"
+        ]
+      ],
+      "sourceUrl": "https://www.novastar.tech",
+      "features": [
+        {
+          "title": "2.6 million pixel load",
+          "text": "Published 4× RJ45 at up to 650,000 pixels per port (8-bit)."
+        },
+        {
+          "title": "HDMI + DVI",
+          "text": "1× HDMI 1.3 and 1× SL-DVI, max 1920×1200@60Hz."
+        }
+      ],
+      "downloadVersion": "V2.3.5",
+      "downloads": [
+        {
+          "label": "Specifications",
+          "url": "https://en-website001.oss-us-east-1.aliyuncs.com/Specification/MCTRL600%20LED%20Display%20Controller%20Specifications-V2.3.5.pdf"
+        },
+        {
+          "label": "Firmware",
+          "url": "https://en-website001.oss-us-east-1.aliyuncs.com/DATA_MCTRL600_V4.9.3.0.STD.zip"
+        },
+        {
+          "label": "Release Notes",
+          "url": "https://oss.novastar.tech/uploads/2025/08/DATA_MCTRL600_V4.9.3.0.STD-Release-Notes.pdf"
+        }
+      ]
+    },
+    {
+      "id": "mctrl660-pro",
+      "name": "NovaStar MCTRL660 Pro",
+      "model": "MCTRL660 Pro",
+      "family": "MCTRL",
+      "type": "control",
+      "subtype": "sending",
+      "replacementOnly": false,
+      "pitches": [],
+      "pricePerM2": 0,
+      "priceEach": 0,
+      "cabinetW": 0,
+      "cabinetH": 0,
+      "weightPerM2": 0,
+      "powerAvg": 0,
+      "powerMax": 0,
+      "description": "Rental-friendly sender with SDI, HDMI, DVI, and dual 10G fiber. Use it to extend an existing processor, not as the only scaler on a 4K wall.",
+      "lead": "Rental-friendly sender with SDI, HDMI, DVI, and dual 10G fiber. Use it to extend an existing processor, not as the only scaler on a 4K wall.",
+      "badge": null,
+      "cats": [
+        "control",
+        "sending"
+      ],
+      "image": "assets/products/novastar/mctrl660-pro.svg",
+      "maxPixels": 2300000,
+      "outputs": "6× RJ45 · 2× 10G OPT",
+      "inputs": "HDMI · DVI · 3G-SDI",
+      "bestFor": "Rental sender with fiber",
+      "bestWith": [
+        "indoor-rental",
+        "outdoor-rental"
+      ],
+      "latency": "",
+      "hdr": "",
+      "chips": [
+        "2.3M px",
+        "6× RJ45",
+        "SDI + fiber"
+      ],
+      "specTable": [
+        [
+          "Parameter",
+          "Value"
+        ],
+        [
+          "Family",
+          "MCTRL sending"
+        ],
+        [
+          "Loading capacity",
+          "2.3 million pixels"
+        ],
+        [
+          "Ethernet outputs",
+          "6× Gigabit RJ45"
+        ],
+        [
+          "Optical",
+          "2× 10G SFP+"
+        ],
+        [
+          "Key inputs",
+          "HDMI 1.4a, SL-DVI, 3G-SDI"
+        ],
+        [
+          "Max input",
+          "1920×1200@60Hz"
+        ]
+      ],
+      "sourceUrl": "https://www.novastar.tech",
+      "features": [
+        {
+          "title": "Fiber + copper",
+          "text": "6× RJ45 and 2× 10G SFP+ for long runs to the wall."
+        },
+        {
+          "title": "2.3 million pixel load",
+          "text": "Published device capacity 2.3 million pixels; 8-bit ports up to 650,000 px each."
+        }
+      ],
+      "downloadVersion": "V1.4.2",
+      "downloads": [
+        {
+          "label": "Specifications",
+          "url": "https://oss.novastar.tech/uploads/2025/12/MCTRL660-PRO-Independent-Controller-Specifications-V1.4.2.pdf"
+        },
+        {
+          "label": "User Manual",
+          "url": "https://oss.novastar.tech/uploads/2024/11/MCTRL660-PRO-Independent-Controller-User-Manual-V1.4.1.pdf"
+        },
+        {
+          "label": "Quick Start Guide",
+          "url": "https://oss.novastar.tech/uploads/2019/06/MCTRL660-PRO-Independent-Controller-Quick-Start-Guide-V1.3.0.pdf"
+        },
+        {
+          "label": "Firmware",
+          "url": "https://en-website001.oss-us-east-1.aliyuncs.com/DATA_MCTRL660PRO_V1.0.6.0.STD.zip"
+        },
+        {
+          "label": "Release Notes",
+          "url": "https://oss.novastar.tech/uploads/2025/03/DATA_MCTRL660-Pro_V1.0.6.0.STD-Release-Notes.pdf"
+        }
+      ]
+    },
+    {
+      "id": "mctrl4k",
+      "name": "NovaStar MCTRL4K",
+      "model": "MCTRL4K",
+      "family": "MCTRL",
+      "type": "control",
+      "subtype": "sending",
+      "replacementOnly": false,
+      "pitches": [],
+      "pricePerM2": 0,
+      "priceEach": 0,
+      "cabinetW": 0,
+      "cabinetH": 0,
+      "weightPerM2": 0,
+      "powerAvg": 0,
+      "powerMax": 0,
+      "description": "4K sending box for large rental walls. Sixteen EtherCON ports and 8.8 million pixel capacity when the processor (or source) is already sorted.",
+      "lead": "4K sending box for large rental walls. Sixteen EtherCON ports and 8.8 million pixel capacity when the processor (or source) is already sorted.",
+      "badge": null,
+      "cats": [
+        "control",
+        "sending"
+      ],
+      "image": "assets/products/novastar/mctrl4k.svg",
+      "maxPixels": 8800000,
+      "outputs": "16× EtherCON · 4× 10G",
+      "inputs": "DP · HDMI · DVI",
+      "bestFor": "Large rental · events",
+      "bestWith": [
+        "indoor-rental",
+        "outdoor-rental",
+        "creative"
+      ],
+      "latency": "",
+      "hdr": "",
+      "chips": [
+        "8.8M px",
+        "16× EtherCON",
+        "4K sender"
+      ],
+      "specTable": [
+        [
+          "Parameter",
+          "Value"
+        ],
+        [
+          "Family",
+          "MCTRL sending"
+        ],
+        [
+          "Loading capacity",
+          "8.8 million pixels"
+        ],
+        [
+          "Ethernet outputs",
+          "16× EtherCON"
+        ],
+        [
+          "Optical",
+          "4× 10G"
+        ],
+        [
+          "Key inputs",
+          "DisplayPort, HDMI, 2× DVI"
+        ]
+      ],
+      "sourceUrl": "https://www.novastar.tech",
+      "features": [
+        {
+          "title": "8.8 million pixel load",
+          "text": "Published capacity 8.8 million pixels on 16× EtherCON plus four 10G optical ports."
+        },
+        {
+          "title": "4K-class sender",
+          "text": "DP, HDMI, and dual DVI inputs for event racks that already have a scaler."
+        }
+      ],
+      "downloadVersion": "V1.2.2",
+      "downloads": [
+        {
+          "label": "Specifications",
+          "url": "https://oss.novastar.tech/uploads/2025/12/MCTRL4K-LED-Display-Controller-Specifications-V1.2.2.pdf"
+        },
+        {
+          "label": "User Manual",
+          "url": "https://oss.novastar.tech/uploads/2022/04/MCTRL4K-LED-Display-Controller-User-Manual-V1.2.0.pdf"
+        },
+        {
+          "label": "Release Notes",
+          "url": "https://en-website001.oss-us-east-1.aliyuncs.com/Specification/DATA_MCTRL4K_V1.3.0.0.STD%20Release%20Notes.txt"
+        }
+      ]
+    },
+    {
+      "id": "tu15-pro",
+      "name": "NovaStar TU15 Pro",
+      "model": "TU15 Pro",
+      "family": "TU",
+      "type": "control",
+      "subtype": "playback",
+      "replacementOnly": false,
+      "pitches": [],
+      "pricePerM2": 0,
+      "priceEach": 0,
+      "cabinetW": 0,
+      "cabinetH": 0,
+      "weightPerM2": 0,
+      "powerAvg": 0,
+      "powerMax": 0,
+      "description": "Playback box with a sender built in. Run playlists from the device or USB when there is no separate media player.",
+      "lead": "Playback box with a sender built in. Run playlists from the device or USB when there is no separate media player.",
+      "badge": null,
+      "cats": [
+        "control",
+        "playback"
+      ],
+      "image": "assets/products/novastar/tu15-pro.svg",
+      "maxPixels": 2600000,
+      "outputs": "4× RJ45",
+      "inputs": "HDMI · USB · Android playback",
+      "bestFor": "4K playback · no media player",
+      "bestWith": [
+        "posters",
+        "fixed-indoor"
+      ],
+      "latency": "",
+      "hdr": "",
+      "chips": [
+        "2.6M px",
+        "4× RJ45",
+        "Android + HDMI"
+      ],
+      "specTable": [
+        [
+          "Parameter",
+          "Value"
+        ],
+        [
+          "Family",
+          "TU playback"
+        ],
+        [
+          "Loading capacity",
+          "2.6 million pixels"
+        ],
+        [
+          "Ethernet outputs",
+          "4× Gigabit RJ45"
+        ],
+        [
+          "Key inputs",
+          "2× HDMI 1.3, 3× USB 2.0"
+        ],
+        [
+          "Playback",
+          "Android 11, H.264 / H.265"
+        ]
+      ],
+      "sourceUrl": "https://www.novastar.tech",
+      "features": [
+        {
+          "title": "Player + sender",
+          "text": "Android playback, HDMI in, and 4× RJ45 out so a poster or small wall does not need a second box."
+        },
+        {
+          "title": "2.6 million pixel load",
+          "text": "Published capacity 2.6 million pixels on four Ethernet ports."
+        }
+      ],
+      "downloadVersion": "V1.6.1",
+      "downloads": [
+        {
+          "label": "Specifications",
+          "url": "https://en-website001.oss-accelerate.aliyuncs.com/Specification/TU15%20Pro%20LED%20Playback%20Control%20Processor%20Specifications-V1.6.3.pdf"
+        },
+        {
+          "label": "User Manual",
+          "url": "https://en-website001.oss-us-east-1.aliyuncs.com/Specification/TU20%20Pro%20%26%20TU15%20Pro%20LED%20Playback%20Control%20Processor%20User%20Manual%20V1.6.1.pdf"
+        },
+        {
+          "label": "Firmware",
+          "url": "https://en-website001.oss-accelerate.aliyuncs.com/Firmware/TU15%20Pro%20V1.6.1.1001.zip"
+        },
+        {
+          "label": "Release Notes",
+          "url": "https://en-website001.oss-accelerate.aliyuncs.com/Specification/TU15%20Pro%20V1.6.1%20%20Release%20Notes.txt"
+        }
+      ]
+    },
+    {
+      "id": "tu20-pro",
+      "name": "NovaStar TU20 Pro",
+      "model": "TU20 Pro",
+      "family": "TU",
+      "type": "control",
+      "subtype": "playback",
+      "replacementOnly": false,
+      "pitches": [],
+      "pricePerM2": 0,
+      "priceEach": 0,
+      "cabinetW": 0,
+      "cabinetH": 0,
+      "weightPerM2": 0,
+      "powerAvg": 0,
+      "powerMax": 0,
+      "description": "Larger TU playback processor for signage that should run without a separate player. Six Ethernet ports, 3.9 million pixels.",
+      "lead": "Larger TU playback processor for signage that should run without a separate player. Six Ethernet ports, 3.9 million pixels.",
+      "badge": null,
+      "cats": [
+        "control",
+        "playback"
+      ],
+      "image": "assets/products/novastar/tu20-pro.svg",
+      "maxPixels": 3900000,
+      "outputs": "6× RJ45",
+      "inputs": "HDMI · USB · Android playback",
+      "bestFor": "4K playback · mid signage",
+      "bestWith": [
+        "fixed-indoor",
+        "posters"
+      ],
+      "latency": "",
+      "hdr": "",
+      "chips": [
+        "3.9M px",
+        "6× RJ45",
+        "Android + HDMI"
+      ],
+      "specTable": [
+        [
+          "Parameter",
+          "Value"
+        ],
+        [
+          "Family",
+          "TU playback"
+        ],
+        [
+          "Loading capacity",
+          "3.9 million pixels (scaling)"
+        ],
+        [
+          "Ethernet outputs",
+          "6× Gigabit RJ45"
+        ],
+        [
+          "Key inputs",
+          "2× HDMI 1.3, USB"
+        ],
+        [
+          "Playback",
+          "Android 11"
+        ]
+      ],
+      "sourceUrl": "https://www.novastar.tech",
+      "features": [
+        {
+          "title": "3.9 million pixel load",
+          "text": "Published capacity 3.9 million pixels on 6× RJ45 when scaling is enabled."
+        },
+        {
+          "title": "Standalone playlists",
+          "text": "Android playback plus HDMI in for lobbies and meeting rooms that do not have a dedicated media player."
+        }
+      ],
+      "downloadVersion": "V1.6.1",
+      "downloads": [
+        {
+          "label": "Specifications",
+          "url": "https://en-website001.oss-accelerate.aliyuncs.com/Specification/TU20%20Pro%20LED%20Playback%20Control%20Processor%20Specifications-V1.6.3.pdf"
+        },
+        {
+          "label": "User Manual",
+          "url": "https://en-website001.oss-us-east-1.aliyuncs.com/Specification/TU20%20Pro%20%26%20TU15%20Pro%20LED%20Playback%20Control%20Processor%20User%20Manual%20V1.6.1.pdf"
+        },
+        {
+          "label": "Firmware",
+          "url": "https://en-website001.oss-accelerate.aliyuncs.com/Firmware/TU20%20Pro%20V1.6.1.1001.zip"
+        }
+      ]
+    },
+    {
+      "id": "tu4k-pro",
+      "name": "NovaStar TU4K Pro",
+      "model": "TU4K Pro",
+      "family": "TU",
+      "type": "control",
+      "subtype": "playback",
+      "replacementOnly": false,
+      "pitches": [],
+      "pricePerM2": 0,
+      "priceEach": 0,
+      "cabinetW": 0,
+      "cabinetH": 0,
+      "weightPerM2": 0,
+      "powerAvg": 0,
+      "powerMax": 0,
+      "description": "High-capacity TU playback processor for large signage walls that need onboard content as well as HDMI.",
+      "lead": "High-capacity TU playback processor for large signage walls that need onboard content as well as HDMI.",
+      "badge": null,
+      "cats": [
+        "control",
+        "playback"
+      ],
+      "image": "assets/products/novastar/tu4k-pro.svg",
+      "maxPixels": 13000000,
+      "outputs": "20× RJ45 · 2× OPT",
+      "inputs": "HDMI · USB · 4K playback",
+      "bestFor": "4K playback · large signage",
+      "bestWith": [
+        "fixed-indoor",
+        "outdoor-fixed"
+      ],
+      "latency": "",
+      "hdr": "",
+      "chips": [
+        "13M px",
+        "20× RJ45",
+        "4K playback"
+      ],
+      "specTable": [
+        [
+          "Parameter",
+          "Value"
+        ],
+        [
+          "Family",
+          "TU playback"
+        ],
+        [
+          "Loading capacity",
+          "13 million pixels"
+        ],
+        [
+          "Ethernet outputs",
+          "20× Gigabit RJ45"
+        ],
+        [
+          "Optical",
+          "2× OPT"
+        ],
+        [
+          "Playback",
+          "4K onboard + HDMI"
+        ]
+      ],
+      "sourceUrl": "https://www.novastar.tech",
+      "features": [
+        {
+          "title": "13 million pixel load",
+          "text": "Published high-capacity TU output: 20× RJ45 plus optical, up to 13 million pixels."
+        },
+        {
+          "title": "4K playback path",
+          "text": "Use when the wall should play files on the box instead of a separate media player."
+        }
+      ],
+      "downloadVersion": "V1.2.3",
+      "downloads": [
+        {
+          "label": "Specifications",
+          "url": "https://en-website001.oss-us-east-1.aliyuncs.com/Specification/TU4K%20Pro%20LED%20Playback%20Control%20Processor%20Specifications-V1.2.3.pdf"
+        },
+        {
+          "label": "User Manual",
+          "url": "https://oss.novastar.tech/uploads/2025/11/TU4K-Pro-LED-Playback-Control-Processor-User-Manual-V1.2.0.pdf"
+        },
+        {
+          "label": "Firmware",
+          "url": "https://en-website001.oss-accelerate.aliyuncs.com/Firmware/TU4K%20Pro%20V1.6.1.1001.zip"
+        },
+        {
+          "label": "Release Notes",
+          "url": "https://en-website001.oss-accelerate.aliyuncs.com/Specification/TU4K%20Pro%20V1.6.1%20Release%20Notes.txt"
+        }
+      ]
+    },
+    {
+      "id": "tb60",
+      "name": "NovaStar TB60",
+      "model": "TB60",
+      "family": "TB",
+      "type": "control",
+      "subtype": "playback",
+      "replacementOnly": false,
+      "pitches": [],
+      "pricePerM2": 0,
+      "priceEach": 0,
+      "cabinetW": 0,
+      "cabinetH": 0,
+      "weightPerM2": 0,
+      "powerAvg": 0,
+      "powerMax": 0,
+      "description": "Taurus playback box for posters and outdoor signage that should run on a schedule without a separate player.",
+      "lead": "Taurus playback box for posters and outdoor signage that should run on a schedule without a separate player.",
+      "badge": null,
+      "cats": [
+        "control",
+        "playback"
+      ],
+      "image": "assets/products/novastar/tb60.svg",
+      "maxPixels": 2300000,
+      "outputs": "2× RJ45",
+      "inputs": "HDMI · USB · Taurus playback",
+      "bestFor": "Outdoor signage · posters",
+      "bestWith": [
+        "posters",
+        "outdoor-fixed"
+      ],
+      "latency": "",
+      "hdr": "",
+      "chips": [
+        "2.3M px",
+        "2× RJ45",
+        "Taurus player"
+      ],
+      "specTable": [
+        [
+          "Parameter",
+          "Value"
+        ],
+        [
+          "Family",
+          "TB / Taurus playback"
+        ],
+        [
+          "Loading capacity",
+          "2.3 million pixels"
+        ],
+        [
+          "Ethernet outputs",
+          "2× Gigabit RJ45"
+        ],
+        [
+          "Playback",
+          "Taurus / ViPlex"
+        ]
+      ],
+      "sourceUrl": "https://www.novastar.tech",
+      "features": [
+        {
+          "title": "Player for small walls",
+          "text": "Onboard Taurus playback plus two Ethernet ports — typical for a poster or a modest outdoor board."
+        },
+        {
+          "title": "2.3 million pixel load",
+          "text": "Published capacity 2.3 million pixels on 2× RJ45."
+        }
+      ],
+      "downloadVersion": "V1.2.4",
+      "downloads": [
+        {
+          "label": "Specifications",
+          "url": "https://en-website001.oss-us-east-1.aliyuncs.com/Specification/TB60%20Multimedia%20Player%20Specifications-V1.2.4.pdf"
+        },
+        {
+          "label": "Quick Start Guide",
+          "url": "https://oss.novastar.tech/uploads/2023/11/Taurus-Series-Multimedia-Players-Quick-Start-Guide-3rd-Generation-V1.0.2.pdf"
+        },
+        {
+          "label": "Release Notes",
+          "url": "https://en-website001.oss-us-east-1.aliyuncs.com/Specification/T30T50TB30TB40TB50TB60.txt"
+        }
+      ]
+    },
+    {
+      "id": "a5s-plus",
+      "name": "NovaStar A5s Plus",
+      "model": "A5s Plus",
+      "family": "Armor",
+      "type": "control",
+      "subtype": "receiving-card",
+      "replacementOnly": true,
+      "pitches": [],
+      "pricePerM2": 0,
+      "priceEach": 0,
+      "cabinetW": 0,
+      "cabinetH": 0,
+      "weightPerM2": 0,
+      "powerAvg": 0,
+      "powerMax": 0,
+      "description": "Receiving card sold only as a spare. New Spectrum walls already include a card in each cabinet — do not add this to a new-wall quote.",
+      "lead": "Receiving card sold only as a spare. New Spectrum walls already include a card in each cabinet — do not add this to a new-wall quote.",
+      "badge": "Replacement only — included with new cabinets",
+      "cats": [
+        "control",
+        "receiving-card",
+        "receiving-cards"
+      ],
+      "image": "assets/products/novastar/a5s-plus.svg",
+      "maxPixels": 196608,
+      "outputs": "Cabinet hub (spare)",
+      "inputs": "Gigabit from sender",
+      "bestFor": "Spare / field replacement",
+      "bestWith": [],
+      "latency": "",
+      "hdr": "",
+      "chips": [
+        "512×384",
+        "Replacement only"
+      ],
+      "specTable": [
+        [
+          "Parameter",
+          "Value"
+        ],
+        [
+          "Family",
+          "Armor receiving card"
+        ],
+        [
+          "Use",
+          "Replacement / spare only"
+        ],
+        [
+          "Typical load",
+          "512×384 px"
+        ],
+        [
+          "Included with new cabinets",
+          "Yes — do not add to new-wall quotes"
+        ]
+      ],
+      "sourceUrl": "https://www.novastar.tech",
+      "features": [
+        {
+          "title": "Replacement only",
+          "text": "New Spectrum cabinets ship with receiving cards installed. Order A5s Plus only if you need a spare or a field replacement."
+        },
+        {
+          "title": "Published load",
+          "text": "Typical Armor load 512×384 pixels per card."
+        }
+      ],
+      "downloadVersion": "V1.4.1",
+      "downloads": [
+        {
+          "label": "Specifications",
+          "url": "https://oss.novastar.tech/uploads/2025/05/A5s-Plus-Receiving-Card-Specifications-V1.4.1.pdf"
+        },
+        {
+          "label": "Firmware",
+          "url": "https://en-website001.oss-us-east-1.aliyuncs.com/DATA_A5sPlus_V4.9.7.0.zip"
+        },
+        {
+          "label": "Release Notes",
+          "url": "https://oss.novastar.tech/uploads/2025/04/A5sPlus_V4.9.7.0-Program-Release-Notes.pdf"
+        }
+      ]
+    },
+    {
+      "id": "a8s-n",
+      "name": "NovaStar A8s-N",
+      "model": "A8s-N",
+      "family": "Armor",
+      "type": "control",
+      "subtype": "receiving-card",
+      "replacementOnly": true,
+      "pitches": [],
+      "pricePerM2": 0,
+      "priceEach": 0,
+      "cabinetW": 0,
+      "cabinetH": 0,
+      "weightPerM2": 0,
+      "powerAvg": 0,
+      "powerMax": 0,
+      "description": "Armor receiving card for spares and field swaps. Not used in new-wall bundles or the calculator.",
+      "lead": "Armor receiving card for spares and field swaps. Not used in new-wall bundles or the calculator.",
+      "badge": "Replacement only — included with new cabinets",
+      "cats": [
+        "control",
+        "receiving-card",
+        "receiving-cards"
+      ],
+      "image": "assets/products/novastar/a8s-n.svg",
+      "maxPixels": 196608,
+      "outputs": "Cabinet hub (spare)",
+      "inputs": "Gigabit from sender",
+      "bestFor": "Spare / field replacement",
+      "bestWith": [],
+      "latency": "",
+      "hdr": "",
+      "chips": [
+        "512×384",
+        "Replacement only"
+      ],
+      "specTable": [
+        [
+          "Parameter",
+          "Value"
+        ],
+        [
+          "Family",
+          "Armor receiving card"
+        ],
+        [
+          "Use",
+          "Replacement / spare only"
+        ],
+        [
+          "Typical load",
+          "512×384 px"
+        ],
+        [
+          "Included with new cabinets",
+          "Yes — do not add to new-wall quotes"
+        ]
+      ],
+      "sourceUrl": "https://www.novastar.tech",
+      "features": [
+        {
+          "title": "Replacement only",
+          "text": "New Spectrum walls ship with receiving cards installed. Order these only if you need a spare or a field replacement."
+        },
+        {
+          "title": "Published load",
+          "text": "Typical Armor load 512×384 pixels per card."
+        }
+      ],
+      "downloadVersion": "V4.9.1",
+      "downloads": [
+        {
+          "label": "Firmware",
+          "url": "https://en-website001.oss-us-east-1.aliyuncs.com/Data_A8s-N_V4.9.1.0.zip"
+        },
+        {
+          "label": "Release Notes",
+          "url": "https://oss.novastar.tech/uploads/2024/09/A8s-N_V4.9.0.0-Program-Release-Notes.pdf"
+        }
+      ]
+    },
+    {
+      "id": "a10s-pro",
+      "name": "NovaStar A10s Pro",
+      "model": "A10s Pro",
+      "family": "Armor",
+      "type": "control",
+      "subtype": "receiving-card",
+      "replacementOnly": true,
+      "pitches": [],
+      "pricePerM2": 0,
+      "priceEach": 0,
+      "cabinetW": 0,
+      "cabinetH": 0,
+      "weightPerM2": 0,
+      "powerAvg": 0,
+      "powerMax": 0,
+      "description": "Higher-load Armor receiving card, sold as a spare. New cabinets already include a receiver in the $/m² price.",
+      "lead": "Higher-load Armor receiving card, sold as a spare. New cabinets already include a receiver in the $/m² price.",
+      "badge": "Replacement only — included with new cabinets",
+      "cats": [
+        "control",
+        "receiving-card",
+        "receiving-cards"
+      ],
+      "image": "assets/products/novastar/a10s-pro.svg",
+      "maxPixels": 262144,
+      "outputs": "Cabinet hub (spare)",
+      "inputs": "Gigabit from sender",
+      "bestFor": "Spare / field replacement",
+      "bestWith": [],
+      "latency": "",
+      "hdr": "",
+      "chips": [
+        "512×512",
+        "Replacement only"
+      ],
+      "specTable": [
+        [
+          "Parameter",
+          "Value"
+        ],
+        [
+          "Family",
+          "Armor receiving card"
+        ],
+        [
+          "Use",
+          "Replacement / spare only"
+        ],
+        [
+          "Typical load",
+          "512×512 px"
+        ],
+        [
+          "Included with new cabinets",
+          "Yes — do not add to new-wall quotes"
+        ]
+      ],
+      "sourceUrl": "https://www.novastar.tech",
+      "features": [
+        {
+          "title": "Replacement only",
+          "text": "Do not estimate card quantity from cabinet count. This SKU is a spare, not a line item on a new wall."
+        },
+        {
+          "title": "Published load",
+          "text": "Typical Armor load 512×512 pixels per card."
+        }
+      ],
+      "downloadVersion": "V1.5.1",
+      "downloads": [
+        {
+          "label": "Specifications",
+          "url": "https://en-website001.oss-us-east-1.aliyuncs.com/Specification/A10s%20Pro%20Receiving%20Card%20Specifications-V1.5.1.pdf"
+        }
+      ]
+    },
+    {
+      "id": "mrv208-n",
+      "name": "NovaStar MRV208-N",
+      "model": "MRV208-N",
+      "family": "MRV",
+      "type": "control",
+      "subtype": "receiving-card",
+      "replacementOnly": true,
+      "pitches": [],
+      "pricePerM2": 0,
+      "priceEach": 0,
+      "cabinetW": 0,
+      "cabinetH": 0,
+      "weightPerM2": 0,
+      "powerAvg": 0,
+      "powerMax": 0,
+      "description": "MRV receiving card for older or smaller cabinets. Replacement and spare stock only.",
+      "lead": "MRV receiving card for older or smaller cabinets. Replacement and spare stock only.",
+      "badge": "Replacement only — included with new cabinets",
+      "cats": [
+        "control",
+        "receiving-card",
+        "receiving-cards"
+      ],
+      "image": "assets/products/novastar/mrv208-n.svg",
+      "maxPixels": 65536,
+      "outputs": "Cabinet hub (spare)",
+      "inputs": "Gigabit from sender",
+      "bestFor": "Spare / field replacement",
+      "bestWith": [],
+      "latency": "",
+      "hdr": "",
+      "chips": [
+        "256×256",
+        "Replacement only"
+      ],
+      "specTable": [
+        [
+          "Parameter",
+          "Value"
+        ],
+        [
+          "Family",
+          "MRV receiving card"
+        ],
+        [
+          "Use",
+          "Replacement / spare only"
+        ],
+        [
+          "Typical load",
+          "256×256 px"
+        ],
+        [
+          "Included with new cabinets",
+          "Yes — do not add to new-wall quotes"
+        ]
+      ],
+      "sourceUrl": "https://www.novastar.tech",
+      "features": [
+        {
+          "title": "Replacement only",
+          "text": "New Spectrum walls ship with receiving cards installed. Order MRV208-N only as a spare."
+        },
+        {
+          "title": "Published load",
+          "text": "Typical MRV208 load 256×256 pixels per card."
+        }
+      ],
+      "downloadVersion": "",
+      "downloads": []
+    },
+    {
+      "id": "mrv412-n",
+      "name": "NovaStar MRV412-N",
+      "model": "MRV412-N",
+      "family": "MRV",
+      "type": "control",
+      "subtype": "receiving-card",
+      "replacementOnly": true,
+      "pitches": [],
+      "pricePerM2": 0,
+      "priceEach": 0,
+      "cabinetW": 0,
+      "cabinetH": 0,
+      "weightPerM2": 0,
+      "powerAvg": 0,
+      "powerMax": 0,
+      "description": "MRV412 receiving card sold as a field spare. Not listed in the calculator or new-wall quotes.",
+      "lead": "MRV412 receiving card sold as a field spare. Not listed in the calculator or new-wall quotes.",
+      "badge": "Replacement only — included with new cabinets",
+      "cats": [
+        "control",
+        "receiving-card",
+        "receiving-cards"
+      ],
+      "image": "assets/products/novastar/mrv412-n.svg",
+      "maxPixels": 262144,
+      "outputs": "Cabinet hub (spare)",
+      "inputs": "Gigabit from sender",
+      "bestFor": "Spare / field replacement",
+      "bestWith": [],
+      "latency": "",
+      "hdr": "",
+      "chips": [
+        "512×512",
+        "Replacement only"
+      ],
+      "specTable": [
+        [
+          "Parameter",
+          "Value"
+        ],
+        [
+          "Family",
+          "MRV receiving card"
+        ],
+        [
+          "Use",
+          "Replacement / spare only"
+        ],
+        [
+          "Typical load",
+          "512×512 px"
+        ],
+        [
+          "Included with new cabinets",
+          "Yes — do not add to new-wall quotes"
+        ]
+      ],
+      "sourceUrl": "https://www.novastar.tech",
+      "features": [
+        {
+          "title": "Replacement only",
+          "text": "Cabinet $/m² already includes the receiving card. This SKU is for a spare or a swap."
+        },
+        {
+          "title": "Published load",
+          "text": "Typical MRV412 load 512×512 pixels per card."
+        }
+      ],
+      "downloadVersion": "V1.0.3",
+      "downloads": [
+        {
+          "label": "Specifications",
+          "url": "https://oss.novastar.tech/uploads/2025/05/MRV412-N-Receiving-Card-Specifications-V1.0.3.pdf"
+        }
+      ]
+    },
+    {
+      "id": "mrv416-n",
+      "name": "NovaStar MRV416-N",
+      "model": "MRV416-N",
+      "family": "MRV",
+      "type": "control",
+      "subtype": "receiving-card",
+      "replacementOnly": true,
+      "pitches": [],
+      "pricePerM2": 0,
+      "priceEach": 0,
+      "cabinetW": 0,
+      "cabinetH": 0,
+      "weightPerM2": 0,
+      "powerAvg": 0,
+      "powerMax": 0,
+      "description": "MRV416 receiving card for spare stock. Hidden from homepage and calculator line items.",
+      "lead": "MRV416 receiving card for spare stock. Hidden from homepage and calculator line items.",
+      "badge": "Replacement only — included with new cabinets",
+      "cats": [
+        "control",
+        "receiving-card",
+        "receiving-cards"
+      ],
+      "image": "assets/products/novastar/mrv416-n.svg",
+      "maxPixels": 196608,
+      "outputs": "Cabinet hub (spare)",
+      "inputs": "Gigabit from sender",
+      "bestFor": "Spare / field replacement",
+      "bestWith": [],
+      "latency": "",
+      "hdr": "",
+      "chips": [
+        "512×384",
+        "Replacement only"
+      ],
+      "specTable": [
+        [
+          "Parameter",
+          "Value"
+        ],
+        [
+          "Family",
+          "MRV receiving card"
+        ],
+        [
+          "Use",
+          "Replacement / spare only"
+        ],
+        [
+          "Typical load",
+          "512×384 px"
+        ],
+        [
+          "Included with new cabinets",
+          "Yes — do not add to new-wall quotes"
+        ]
+      ],
+      "sourceUrl": "https://www.novastar.tech",
+      "features": [
+        {
+          "title": "Replacement only",
+          "text": "New Spectrum walls ship with receiving cards installed. Order these only if you need a spare or a field replacement."
+        },
+        {
+          "title": "Published load",
+          "text": "Typical MRV416 load 512×384 pixels per card."
+        }
+      ],
+      "downloadVersion": "V1.0.3",
+      "downloads": [
+        {
+          "label": "Specifications",
+          "url": "https://oss.novastar.tech/uploads/2025/05/MRV416-N-Receiving-Card-Specifications-V1.0.3.pdf"
+        }
+      ]
+    }
+  ]
+}

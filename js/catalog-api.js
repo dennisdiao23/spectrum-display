@@ -1,6 +1,5 @@
 /**
- * Panel catalog from /api/catalog (database / admin).
- * NovaStar control gear in novastar-catalog.js is preserved and is not a panel product.
+ * Panel and control catalog from /api/catalog (admin database).
  */
 (function (global) {
   function catalogUnitPrice(s) {
@@ -53,10 +52,11 @@
     const keep = controlBrands(target);
     Object.keys(target).forEach(function (k) { delete target[k]; });
     Object.keys(apiCatalog || {}).forEach(function (k) {
-      if (keep[k]) return;
       target[k] = apiCatalog[k];
     });
-    Object.keys(keep).forEach(function (k) { target[k] = keep[k]; });
+    Object.keys(keep).forEach(function (k) {
+      if (!target[k] || !(target[k].series && target[k].series.length)) target[k] = keep[k];
+    });
     global.SPECTRUM_PRODUCT_LIST = rebuildList(target);
     global.getSpectrumSeries = function (brandId, seriesId) {
       const brand = target[brandId];
