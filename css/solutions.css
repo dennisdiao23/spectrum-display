@@ -1,0 +1,282 @@
+/* Solutions hub + child pages — same Spectrum dark system, cards not a heading dump */
+.sol-page {
+  color: #e2e8f0;
+  background: #020617;
+}
+.sol-hero {
+  padding: 3.25rem 0 2.25rem;
+}
+.sol-kicker {
+  display: inline-block;
+  margin-bottom: 0.85rem;
+  color: #7dd3fc;
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+.sol-hero h1 {
+  margin: 0 0 0.85rem;
+  max-width: 16ch;
+  font-size: clamp(2rem, 5vw, 3.35rem);
+  font-weight: 800;
+  letter-spacing: -0.04em;
+  line-height: 1.05;
+  color: #fff;
+}
+.sol-sub {
+  margin: 0 0 1rem;
+  max-width: 38rem;
+  color: #94a3b8;
+  font-size: 1.05rem;
+  line-height: 1.55;
+}
+.sol-intro {
+  margin: 0 0 1.5rem;
+  max-width: 40rem;
+  color: #cbd5e1;
+  font-size: 0.98rem;
+  line-height: 1.6;
+}
+.sol-ctas {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.65rem;
+}
+.sol-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 2.75rem;
+  padding: 0.65rem 1.2rem;
+  border-radius: 9999px;
+  font-size: 0.92rem;
+  font-weight: 600;
+  text-decoration: none;
+  transition: background 0.15s, color 0.15s, border-color 0.15s;
+}
+.sol-btn-primary {
+  background: #0ea5e9;
+  color: #fff;
+}
+.sol-btn-primary:hover { background: #0284c7; color: #fff; }
+.sol-btn-ghost {
+  background: transparent;
+  color: #e2e8f0;
+  border: 1px solid #334155;
+}
+.sol-btn-ghost:hover {
+  border-color: #7dd3fc;
+  color: #fff;
+}
+.sol-section {
+  padding: 0 0 3.5rem;
+}
+.sol-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1rem;
+}
+@media (min-width: 640px) {
+  .sol-grid { grid-template-columns: 1fr 1fr; }
+}
+@media (min-width: 1024px) {
+  .sol-grid { grid-template-columns: repeat(3, 1fr); }
+}
+.sol-card {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  border: 1px solid #1e293b;
+  border-radius: 1rem;
+  background: #0f172a;
+  text-decoration: none;
+  color: inherit;
+  min-height: 100%;
+  transition: border-color 0.15s, transform 0.15s;
+}
+a.sol-card:hover {
+  border-color: #38bdf8;
+  transform: translateY(-2px);
+}
+.sol-card-media {
+  display: block;
+  width: 100%;
+  height: 11.5rem;
+  object-fit: cover;
+  background: #0b1220;
+}
+.sol-card-body {
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+  padding: 1.15rem 1.2rem 1.25rem;
+  flex: 1;
+}
+.sol-card h2,
+.sol-card h3 {
+  margin: 0;
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: #fff;
+}
+.sol-card p {
+  margin: 0;
+  color: #94a3b8;
+  font-size: 0.9rem;
+  line-height: 1.5;
+  flex: 1;
+}
+.sol-card-go {
+  margin-top: 0.35rem;
+  color: #38bdf8;
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+.sol-more {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem 1.25rem;
+  margin: 0 0 2.75rem;
+  padding-top: 0.25rem;
+  color: #64748b;
+  font-size: 0.9rem;
+}
+.sol-more a {
+  color: #94a3b8;
+  text-decoration: none;
+}
+.sol-more a:hover { color: #7dd3fc; }
+.sol-audience {
+  display: grid;
+  gap: 1rem;
+}
+@media (min-width: 768px) {
+  .sol-audience { grid-template-columns: 1fr 1fr; }
+}
+.sol-strip {
+  border: 1px solid #1e293b;
+  border-radius: 1rem;
+  background: #0f172a;
+  padding: 1.35rem 1.4rem;
+}
+.sol-strip h2 {
+  margin: 0 0 0.45rem;
+  font-size: 1rem;
+  font-weight: 700;
+  color: #fff;
+}
+.sol-strip p {
+  margin: 0 0 0.85rem;
+  color: #94a3b8;
+  font-size: 0.9rem;
+  line-height: 1.5;
+}
+.sol-strip a {
+  color: #38bdf8;
+  font-size: 0.875rem;
+  font-weight: 600;
+  text-decoration: none;
+}
+.sol-strip a:hover { color: #7dd3fc; }
+.sol-crumbs {
+  margin: 0 0 0.85rem;
+  color: #64748b;
+  font-size: 0.8rem;
+}
+.sol-crumbs a {
+  color: #94a3b8;
+  text-decoration: none;
+}
+.sol-crumbs a:hover { color: #7dd3fc; }
+.sol-hero-split {
+  display: grid;
+  gap: 1.75rem;
+  align-items: center;
+}
+@media (min-width: 900px) {
+  .sol-hero-split { grid-template-columns: minmax(0, 1.1fr) minmax(0, 0.9fr); }
+}
+.sol-hero-photo {
+  display: block;
+  width: 100%;
+  height: 16rem;
+  object-fit: cover;
+  border-radius: 1rem;
+  border: 1px solid #1e293b;
+}
+@media (min-width: 900px) {
+  .sol-hero-photo { height: 22rem; }
+}
+.sol-benefits {
+  display: grid;
+  gap: 0.85rem;
+}
+@media (min-width: 768px) {
+  .sol-benefits { grid-template-columns: 1fr 1fr; }
+}
+.sol-benefit {
+  border: 1px solid #1e293b;
+  border-radius: 1rem;
+  background: #0f172a;
+  padding: 1.2rem 1.25rem;
+}
+.sol-benefit h2 {
+  margin: 0 0 0.4rem;
+  font-size: 1rem;
+  font-weight: 700;
+  color: #fff;
+}
+.sol-benefit p {
+  margin: 0;
+  color: #94a3b8;
+  font-size: 0.9rem;
+  line-height: 1.5;
+}
+.sol-fit {
+  margin-top: 1rem;
+  border-left: 3px solid #0ea5e9;
+  padding: 0.35rem 0 0.35rem 1rem;
+  color: #cbd5e1;
+  font-size: 0.95rem;
+  line-height: 1.55;
+}
+.sol-note {
+  margin: 1.25rem 0 0;
+  color: #94a3b8;
+  font-size: 0.92rem;
+  line-height: 1.55;
+}
+.sol-siblings {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem 1rem;
+  margin-top: 2rem;
+  padding-top: 1.25rem;
+  border-top: 1px solid #1e293b;
+  font-size: 0.85rem;
+}
+.sol-siblings a {
+  color: #94a3b8;
+  text-decoration: none;
+}
+.sol-siblings a:hover,
+.sol-siblings a.is-on { color: #7dd3fc; }
+.sol-block {
+  margin-top: 2rem;
+  border: 1px solid #1e293b;
+  border-radius: 1rem;
+  background: #0b1220;
+  padding: 1.25rem 1.35rem;
+}
+.sol-block h2 {
+  margin: 0 0 0.4rem;
+  font-size: 1.05rem;
+  color: #fff;
+}
+.sol-block p {
+  margin: 0;
+  color: #94a3b8;
+  font-size: 0.9rem;
+  line-height: 1.5;
+}
