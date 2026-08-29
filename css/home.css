@@ -643,6 +643,92 @@ a.home-control-line:hover { color: #fff; }
   margin-bottom: 1rem;
 }
 .home-why .icon svg { width: 1.35rem; height: 1.35rem; }
+@media (min-width: 768px) {
+  .home-why.home-why-2 { grid-template-columns: 1fr 1fr; }
+}
+
+.home-upsides {
+  display: grid;
+  gap: 0.85rem;
+  grid-template-columns: 1fr 1fr;
+}
+@media (min-width: 700px) {
+  .home-upsides { grid-template-columns: repeat(3, 1fr); gap: 1rem; }
+}
+@media (min-width: 1100px) {
+  .home-upsides { grid-template-columns: repeat(4, 1fr); }
+}
+.home-upside {
+  background: #fff;
+  border-radius: 1rem;
+  padding: 1.1rem 1.05rem 1.15rem;
+  box-shadow: 0 8px 24px rgba(15, 23, 42, 0.05);
+}
+.home-upside .icon {
+  width: 2.25rem;
+  height: 2.25rem;
+  border-radius: 0.7rem;
+  background: #e0f2fe;
+  color: #0284c7;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 0.7rem;
+}
+.home-upside .icon svg { width: 1.15rem; height: 1.15rem; }
+.home-upside h3 {
+  font-size: 0.95rem;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  line-height: 1.3;
+  color: #020617;
+}
+.home-upside p {
+  margin-top: 0.3rem;
+  font-size: 0.8rem;
+  color: #64748b;
+  line-height: 1.4;
+}
+
+.home-jobs {
+  display: grid;
+  gap: 1rem;
+  grid-template-columns: 1fr;
+}
+@media (min-width: 700px) {
+  .home-jobs { grid-template-columns: 1fr 1fr; gap: 1.25rem; }
+}
+.home-job {
+  background: #fff;
+  border-radius: 1.25rem;
+  overflow: hidden;
+  box-shadow: 0 8px 24px rgba(15, 23, 42, 0.05);
+}
+.home-job img {
+  width: 100%;
+  aspect-ratio: 16 / 10;
+  object-fit: cover;
+  display: block;
+  background: #0f172a;
+}
+.home-job div { padding: 1.25rem 1.3rem 1.4rem; }
+.home-job h3 {
+  font-size: 1.15rem;
+  font-weight: 600;
+  color: #020617;
+}
+.home-job p {
+  margin-top: 0.4rem;
+  font-size: 0.92rem;
+  color: #475569;
+  line-height: 1.55;
+}
+.home-spot-copy a.home-inline {
+  color: #0284c7;
+  font-weight: 600;
+  text-decoration: none;
+}
+.home-spot-copy a.home-inline:hover { color: #0369a1; }
 
 .home-band {
   margin: 0 0 4rem;
