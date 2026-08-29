@@ -266,11 +266,9 @@
               <label class="block text-sm font-medium mb-2">Pixel Pitch</label>
               <div id="pitch-grid" class="flex flex-wrap gap-2"></div>
             </div>
-            <div>
+            <div id="cabinet-wrap" class="hidden">
               <label class="block text-sm font-medium mb-2">Cabinet Size</label>
-              <select id="cabinet" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-4 py-2.5 text-sm">
-                <option value="custom">Loading cabinet size…</option>
-              </select>
+              <select id="cabinet" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-4 py-2.5 text-sm"></select>
             </div>
             <div>
               <label class="block text-sm font-medium mb-2" id="qty-label">Quantity (m²)</label>
@@ -568,7 +566,7 @@
       const pitchWrap = pitchGrid && pitchGrid.closest('div');
       if (isControl && pitchWrap) pitchWrap.classList.add('hidden');
       const cab = document.getElementById('cabinet');
-      const cabWrap = cab && cab.closest('div');
+      const cabWrap = document.getElementById('cabinet-wrap') || (cab && cab.closest('div'));
       if (isControl && cabWrap) cabWrap.classList.add('hidden');
       if (pitchGrid && pitches.length && !isControl) {
         pitchGrid.innerHTML = pitches.map(function (p, i) {
@@ -588,9 +586,44 @@
           };
         });
       }
-      if (cab && seriesData && seriesData.cabinetW && !isControl) {
-        const label = Math.round(seriesData.cabinetW * 1000) + ' × ' + (Math.round(seriesData.cabinetH * 10000) / 10) + ' mm';
-        cab.innerHTML = '<option value="std">' + esc(label) + '</option><option value="custom">Custom size (request quote)</option>';
+      if (cab && cabWrap && seriesData && !isControl) {
+        const sizes = [];
+        const seen = {};
+        function addSize(wmm, hmm) {
+          const w = Number(wmm);
+          const h = Number(hmm);
+          if (!w || !h) return;
+          const key = w + 'x' + h;
+          if (seen[key]) return;
+          seen[key] = true;
+          const fmt = function (n) {
+            return String(Math.round(n * 10) / 10).replace(/\.0$/, '');
+          };
+          sizes.push({ value: key, label: fmt(w) + ' × ' + fmt(h) + ' mm' });
+        }
+        if (seriesData.cabinetW && seriesData.cabinetH) {
+          addSize(seriesData.cabinetW * 1000, seriesData.cabinetH * 1000);
+        }
+        ((seriesData.cabinets) || []).forEach(function (c) {
+          if (c && c.w && c.h) addSize(c.w, c.h);
+        });
+        ((seriesData.specTable) || []).forEach(function (row) {
+          if (!row || !row[0] || String(row[0]).indexOf('Panel Dimension') === -1) return;
+          row.slice(1).forEach(function (cell) {
+            const re = /(\d+(?:\.\d+)?)\s*(?:mm)?\s*[x×*]\s*(\d+(?:\.\d+)?)/gi;
+            let m;
+            while ((m = re.exec(String(cell)))) addSize(parseFloat(m[1]), parseFloat(m[2]));
+          });
+        });
+        if (sizes.length > 1) {
+          cabWrap.classList.remove('hidden');
+          cab.innerHTML = sizes.map(function (s) {
+            return '<option value="' + esc(s.value) + '">' + esc(s.label) + '</option>';
+          }).join('');
+        } else {
+          cabWrap.classList.add('hidden');
+          cab.innerHTML = '';
+        }
       }
 
       const qtyLabel = document.getElementById('qty-label');
