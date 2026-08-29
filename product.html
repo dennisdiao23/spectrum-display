@@ -85,6 +85,28 @@
     .product-gallery-nav:hover { color: #fff; }
     .product-gallery-nav[hidden] { display: none; }
     .product-gallery-nav svg { width: 1.15rem; height: 1.15rem; }
+    .spec-summary {
+      margin: 0.75rem 0 1.25rem;
+      border-top: 1px solid #1e293b;
+      border-bottom: 1px solid #1e293b;
+    }
+    .spec-summary[hidden] { display: none; }
+    .spec-summary-row {
+      display: grid;
+      grid-template-columns: 9.5rem 1fr;
+      gap: 0.75rem;
+      align-items: baseline;
+      padding: 0.45rem 0;
+      border-bottom: 1px solid #1e293b;
+      font-size: 0.875rem;
+      line-height: 1.35;
+    }
+    .spec-summary-row:last-child { border-bottom: 0; }
+    .spec-summary-row dt { color: #94a3b8; font-weight: 500; }
+    .spec-summary-row dd { margin: 0; color: #f1f5f9; font-weight: 600; }
+    @media (max-width: 640px) {
+      .spec-summary-row { grid-template-columns: 7.25rem 1fr; font-size: 0.8125rem; }
+    }
     .product-gallery-stage {
       position: relative;
       flex: 1 1 auto;
@@ -254,6 +276,7 @@
         <div>
           <div class="text-sm font-medium text-sky-400 mb-2 brand-label">Spectrum</div>
           <h1 class="text-3xl sm:text-4xl font-bold mb-2">LED Series</h1>
+          <dl id="spec-summary" hidden></dl>
           <p id="product-lead" class="text-slate-400 mb-6">Configure LED video wall cabinets, pixel pitch, and project details from Spectrum Display.</p>
           <div id="replacement-banner" class="hidden mb-6 rounded-2xl border border-amber-500/30 bg-amber-500/5 p-4 text-sm text-amber-100/90"></div>
 
@@ -577,6 +600,7 @@
             btn.classList.add('border-sky-500', 'bg-sky-500/10', 'text-sky-300');
             btn.classList.remove('border-slate-700');
             syncCalculatorLink();
+            syncSpecSummary();
           };
         });
       }
@@ -834,6 +858,7 @@
         }
       }
       syncCalculatorLink();
+      syncSpecSummary();
       if (!hasPrice && !isControl) {
         document.querySelectorAll('.pricing-only').forEach(function (el) { el.classList.add('hidden'); });
         var guestCtaQuote = document.getElementById('guest-price-cta');
@@ -859,6 +884,173 @@
       if (on && on.getAttribute('data-pitch')) return on.getAttribute('data-pitch');
       const pitches = (seriesData && seriesData.pitches) || [];
       return pitches.length ? String(pitches[0]) : '';
+    }
+
+    function specTableRows() {
+      return (seriesData && seriesData.specTable) || [];
+    }
+
+    function specRowByLabel(needles, skip) {
+      const rows = specTableRows();
+      for (let i = 0; i < rows.length; i++) {
+        const label = String(rows[i] && rows[i][0] || '').toLowerCase().replace(/\s+/g, ' ');
+        if (skip && skip.some(function (s) { return label.indexOf(s) !== -1; })) continue;
+        for (let n = 0; n < needles.length; n++) {
+          if (label.indexOf(needles[n]) !== -1) return rows[i];
+        }
+      }
+      return null;
+    }
+
+    function parsePitchNum(text) {
+      const m = String(text || '').match(/(\d+(?:\.\d+)?)/);
+      return m ? parseFloat(m[1]) : NaN;
+    }
+
+    function specPitchColumn() {
+      const pitch = parsePitchNum(selectedPitch());
+      const rows = specTableRows();
+      if (!rows.length) return -1;
+      for (let r = 0; r < rows.length; r++) {
+        const label = String(rows[r][0] || '').toLowerCase();
+        if (label.indexOf('pitch') === -1 && label.indexOf('model') === -1) continue;
+        for (let i = 1; i < rows[r].length; i++) {
+          const n = parsePitchNum(rows[r][i]);
+          if (!isNaN(n) && !isNaN(pitch) && Math.abs(n - pitch) < 0.03) return i;
+        }
+      }
+      const pitches = (seriesData && seriesData.pitches) || [];
+      for (let i = 0; i < pitches.length; i++) {
+        if (!isNaN(pitch) && Math.abs(Number(pitches[i]) - pitch) < 0.03) return i + 1;
+      }
+      return -1;
+    }
+
+    function specCell(row, col) {
+      if (!row || row.length < 2) return '';
+      function clean(v) {
+        const s = String(v == null ? '' : v).trim();
+        return s === '/' ? '' : s;
+      }
+      const dataCount = row.length - 1;
+      if (col > 0 && col < row.length) {
+        const picked = clean(row[col]);
+        if (picked) return picked;
+        if (dataCount > 1) return '';
+      }
+      const cells = [];
+      for (let i = 1; i < row.length; i++) {
+        const v = clean(row[i]);
+        if (v) cells.push(v);
+      }
+      if (!cells.length) return '';
+      if (dataCount === 1 || col < 1) {
+        const uniq = [];
+        cells.forEach(function (c) {
+          if (uniq.indexOf(c) === -1) uniq.push(c);
+        });
+        return uniq.length === 1 ? uniq[0] : uniq.join(' / ');
+      }
+      return '';
+    }
+
+    function packageKind(raw) {
+      const t = String(raw || '').trim();
+      if (!t || t === '/') return '';
+      const u = t.toUpperCase();
+      const parts = [];
+      if (/COB/.test(u)) parts.push(/FLIP/.test(u) ? 'Flip-chip COB' : 'COB');
+      if (/GOB/.test(u)) parts.push('GOB');
+      if (/\bHOB\b/.test(u)) parts.push('HOB');
+      if (/\bMIP\b/.test(u)) parts.push('MIP');
+      if (/\bIMD\b/.test(u)) parts.push('IMD');
+      if (/SMD/.test(u)) parts.push('SMD');
+      return parts.length ? parts.join(' / ') : t;
+    }
+
+    function inferPackage() {
+      const col = specPitchColumn();
+      const packRow = specRowByLabel(['packaging', 'package type', 'package']);
+      let raw = specCell(packRow, col);
+      if (!raw || raw === '/') {
+        raw = specCell(specRowByLabel(['led type', 'led beads', 'led lamp', 'led package', 'lamp']), col);
+      }
+      let kind = packageKind(raw);
+      if (kind) return kind;
+      const blob = [
+        seriesData && seriesData.badge,
+        seriesData && seriesData.type,
+        seriesData && seriesData.description,
+        seriesData && seriesData.lead,
+        ((seriesData && seriesData.cats) || []).join(' ')
+      ].join(' ');
+      kind = packageKind(blob);
+      if (kind) return kind;
+      if (seriesData && seriesData.cats && seriesData.cats.indexOf('cob') !== -1) return 'COB';
+      return '';
+    }
+
+    function inferPanelResolution() {
+      const col = specPitchColumn();
+      let val = specCell(specRowByLabel(['panel resolution', 'cabinet resolution']), col);
+      if (!val) val = specCell(specRowByLabel(['resolution']), col);
+      if (!val) val = specCell(specRowByLabel(['resolution'], ['module', 'pixel']), col);
+      if (val) return val.replace(/\s*pixel[s]?\s*$/i, '').trim();
+      const pitch = parsePitchNum(selectedPitch());
+      const w = seriesData && seriesData.cabinetW;
+      const h = seriesData && seriesData.cabinetH;
+      if (pitch && w && h) {
+        return Math.round((w * 1000) / pitch) + ' × ' + Math.round((h * 1000) / pitch);
+      }
+      return '';
+    }
+
+    function inferModuleSize() {
+      const col = specPitchColumn();
+      return specCell(specRowByLabel(['module size', 'module dimension']), col);
+    }
+
+    function inferBrightness() {
+      const col = specPitchColumn();
+      let val = specCell(specRowByLabel(['brightness']), col);
+      if (!val) return '';
+      if (/\d/.test(val) && !/nit|cd/i.test(val)) val += ' nits';
+      return val;
+    }
+
+    function inferRefresh() {
+      const col = specPitchColumn();
+      let val = specCell(specRowByLabel(['refresh']), col);
+      if (!val) return '';
+      if (/\d/.test(val) && !/hz/i.test(val)) val += ' Hz';
+      return val;
+    }
+
+    function syncSpecSummary() {
+      const box = document.getElementById('spec-summary');
+      if (!box) return;
+      if (isControl || !seriesData) {
+        box.hidden = true;
+        box.innerHTML = '';
+        return;
+      }
+      const rows = [
+        ['Brightness', inferBrightness()],
+        ['Refresh Rate', inferRefresh()],
+        ['Packaging', inferPackage()],
+        ['Panel Resolution', inferPanelResolution()],
+        ['Module Size', inferModuleSize()]
+      ].filter(function (r) { return r[1]; });
+      if (!rows.length) {
+        box.hidden = true;
+        box.innerHTML = '';
+        return;
+      }
+      box.hidden = false;
+      box.className = 'spec-summary';
+      box.innerHTML = rows.map(function (r) {
+        return '<div class="spec-summary-row"><dt>' + esc(r[0]) + '</dt><dd>' + esc(r[1]) + '</dd></div>';
+      }).join('');
     }
 
     function syncCalculatorLink() {

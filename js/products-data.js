@@ -296,6 +296,13 @@ window.SPECTRUM_PRODUCTS = {
             "3.9mm"
           ],
           [
+            "Packaging Technology",
+            "SMD",
+            "SMD",
+            "SMD",
+            "SMD"
+          ],
+          [
             "Panel Dimension",
             "DN Plus :500mm*1000mm*76mm DN:500mm*500mm*76mm",
             "DN Plus :500mm*1000mm*76mm DN:500mm*500mm*76mm",
