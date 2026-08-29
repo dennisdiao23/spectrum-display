@@ -190,7 +190,19 @@
     zspro: 'assets/products/gloshine/zspro-hero.png',
     gp: 'assets/products/gloshine/gp-hero.png',
     legend: 'assets/products/gloshine/legend-hero.webp',
-    finepitch: 'assets/products/finepitch.jpg',
+    finepitch: 'assets/products/bako/finepitch.jpg',
+    allinone: 'assets/products/bako/allinone.jpg',
+    rentalcob: 'assets/products/bako/rentalcob.jpg',
+    diamond4: 'assets/products/bako/diamond4.jpg',
+    flyingdrone: 'assets/products/bako/flyingdrone.jpg',
+    bakoposter: 'assets/products/bako/poster.jpg',
+    spaceship: 'assets/products/bako/spaceship.jpg',
+    sphere: 'assets/products/bako/sphere.jpg',
+    bks: 'assets/products/bako/bks.jpg',
+    uhdpro: 'assets/products/bako/uhdpro.jpg',
+    bakocarbon: 'assets/products/bako/carbon.jpg',
+    tpro: 'assets/products/bako/tpro.jpg',
+    indoor480: 'assets/products/bako/indoorfixed.jpg',
     pro: 'assets/products/diao-pro.jpg',
     value: 'assets/products/diao-value.jpg',
     rental: 'assets/products/element-rental.jpg',
@@ -246,7 +258,10 @@
         { name: 'MV Pro', href: 'product.html?brand=gloshine&series=mvpro', tag: 'GLO' },
         { name: 'MT55/62', href: 'product.html?brand=gloshine&series=mt55', tag: 'GLO' },
         { name: 'CF Pro', href: 'product.html?brand=gloshine&series=cfpro', tag: 'GLO' },
-        { name: 'Element Rental', href: 'product.html?brand=element&series=rental', tag: 'ELT' }
+        { name: 'Element Rental', href: 'product.html?brand=element&series=rental', tag: 'ELT' },
+        { name: 'Diamond V4.0', href: 'product.html?brand=bako&series=diamond4', tag: 'BAKO' },
+        { name: 'Rental COB', href: 'product.html?brand=bako&series=rentalcob', tag: 'BAKO' },
+        { name: 'BAKO Carbon', href: 'product.html?brand=bako&series=bakocarbon', tag: 'BAKO' }
       ]
     },
     'outdoor-rental': {
@@ -261,7 +276,8 @@
         { name: 'UR Carbon', href: 'product.html?brand=gloshine&series=ur', tag: 'GLO' },
         { name: 'AR Pro', href: 'product.html?brand=gloshine&series=arpro', tag: 'GLO' },
         { name: 'Legend', href: 'product.html?brand=gloshine&series=legend', tag: 'GLO' },
-        { name: 'ZS Pro II', href: 'product.html?brand=gloshine&series=zspro', tag: 'GLO' }
+        { name: 'ZS Pro II', href: 'product.html?brand=gloshine&series=zspro', tag: 'GLO' },
+        { name: 'Diamond V4.0', href: 'product.html?brand=bako&series=diamond4', tag: 'BAKO' }
       ]
     },
     cob: {
@@ -269,7 +285,10 @@
       lead: 'Close-view COB and fine-pitch cabinets for control rooms and retail.',
       items: [
         { name: 'Discovery Series', href: 'product.html?brand=trt&series=discovery', tag: 'TRT' },
-        { name: 'Fine Pitch COB', href: 'product.html?brand=bako&series=finepitch', tag: 'BAKO' },
+        { name: 'Fine Pitch 600×337.5', href: 'product.html?brand=bako&series=finepitch', tag: 'BAKO' },
+        { name: 'All-in-One COB', href: 'product.html?brand=bako&series=allinone', tag: 'BAKO' },
+        { name: 'Flying Drone 2.0', href: 'product.html?brand=bako&series=flyingdrone', tag: 'BAKO' },
+        { name: 'Rental COB 500×500', href: 'product.html?brand=bako&series=rentalcob', tag: 'BAKO' },
         { name: 'AF II Fine Pitch', href: 'product.html?brand=gloshine&series=af2', tag: 'GLO' },
         { name: 'AW Fine Pitch', href: 'product.html?brand=gloshine&series=aw', tag: 'GLO' }
       ]
@@ -279,7 +298,9 @@
       lead: 'Wall-mount indoor cabinets for lobbies, meeting rooms, and broadcast.',
       items: [
         { name: 'Discovery Series', href: 'product.html?brand=trt&series=discovery', tag: 'TRT' },
-        { name: 'Fine Pitch COB', href: 'product.html?brand=bako&series=finepitch', tag: 'BAKO' },
+        { name: 'Fine Pitch 600×337.5', href: 'product.html?brand=bako&series=finepitch', tag: 'BAKO' },
+        { name: 'Flying Drone 2.0', href: 'product.html?brand=bako&series=flyingdrone', tag: 'BAKO' },
+        { name: 'UHD Pro', href: 'product.html?brand=bako&series=uhdpro', tag: 'BAKO' },
         { name: 'AF II Fine Pitch', href: 'product.html?brand=gloshine&series=af2', tag: 'GLO' },
         { name: 'AW Fine Pitch', href: 'product.html?brand=gloshine&series=aw', tag: 'GLO' },
         { name: 'Blade', href: 'product.html?brand=gloshine&series=blade', tag: 'GLO' },
@@ -292,6 +313,7 @@
       lead: 'Standalone LED posters for windows, retail aisles, and lobbies.',
       items: [
         { name: 'LedPoster', href: 'product.html?brand=trt&series=ledposter', tag: 'TRT' },
+        { name: 'BAKO LED Poster', href: 'product.html?brand=bako&series=bakoposter', tag: 'BAKO' },
         { name: 'G-Poster Std 2', href: 'product.html?brand=gloshine&series=gposter', tag: 'GLO' },
         { name: 'G-Poster Plus', href: 'product.html?brand=gloshine&series=gposterplus', tag: 'GLO' }
       ]
@@ -302,7 +324,8 @@
       items: [
         { name: 'Vanish Transparent', href: 'product.html?brand=gloshine&series=vanish', tag: 'GLO' },
         { name: 'VA MAX', href: 'product.html?brand=gloshine&series=vamax', tag: 'GLO' },
-        { name: 'CB MAX', href: 'product.html?brand=gloshine&series=cbmax', tag: 'GLO' }
+        { name: 'CB MAX', href: 'product.html?brand=gloshine&series=cbmax', tag: 'GLO' },
+        { name: 'T-Pro Transparent', href: 'product.html?brand=bako&series=tpro', tag: 'BAKO' }
       ]
     },
     'outdoor-fixed': {
@@ -313,7 +336,9 @@
         { name: 'ZS III', href: 'product.html?brand=gloshine&series=zs3', tag: 'GLO' },
         { name: 'ZS Pro II', href: 'product.html?brand=gloshine&series=zspro', tag: 'GLO' },
         { name: 'DN Outdoor', href: 'product.html?brand=gloshine&series=dn', tag: 'GLO' },
-        { name: 'DIAO Value', href: 'product.html?brand=diao&series=value', tag: 'DIAO' }
+        { name: 'DIAO Value', href: 'product.html?brand=diao&series=value', tag: 'DIAO' },
+        { name: 'Spaceship 2.0', href: 'product.html?brand=bako&series=spaceship', tag: 'BAKO' },
+        { name: 'BK-S Stadium', href: 'product.html?brand=bako&series=bks', tag: 'BAKO' }
       ]
     },
     creative: {
@@ -327,7 +352,8 @@
         { name: 'MT Edge', href: 'product.html?brand=gloshine&series=mtedge', tag: 'GLO' },
         { name: 'CS II Creative', href: 'product.html?brand=gloshine&series=cs2', tag: 'GLO' },
         { name: 'MR', href: 'product.html?brand=gloshine&series=mr', tag: 'GLO' },
-        { name: 'Element Creative / XR', href: 'product.html?brand=element&series=creative', tag: 'ELT' }
+        { name: 'Element Creative / XR', href: 'product.html?brand=element&series=creative', tag: 'ELT' },
+        { name: 'Spherical LED', href: 'product.html?brand=bako&series=sphere', tag: 'BAKO' }
       ]
     },
     control: {

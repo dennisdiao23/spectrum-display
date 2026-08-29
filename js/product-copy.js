@@ -36,10 +36,76 @@
       f('Fine Pitch Options', '1.9 mm and 2.5 mm pitches for close viewing in retail and corporate environments.')
     ],
     finepitch: [
-      f('Ultra-Fine Pitch COB', 'Control-room grade COB modules for close viewing with high contrast and protected LED surfaces.'),
-      f('16:9 Cabinet', '600 × 337.5 mm cabinets tile cleanly into native HD / 4K walls.'),
-      f('Front Service', 'Designed for wall-mount rooms where rear access is limited.'),
-      f('Indoor Fixed Install', 'Built for 24/7 control rooms, corporate lobbies, and command centers.')
+      f('Flip-Chip COB', 'Flip-chip COB package for longer life, better heat, and higher brightness than conventional SMD at close viewing.'),
+      f('Common-Cathode Energy Saving', 'Common-cathode drive cuts power. Average 100 W/m², max 350 W/m².'),
+      f('Protected LED Face', 'Shockproof, anti-collision, moisture-proof, dust-proof, and front IP65 on the LED surface.'),
+      f('16:9 Cabinets', '600 × 337.5 mm cabinets (or 600 × 675 mm) at 35.5 mm thick and 4 kg — about 40% thinner than a conventional cabinet.'),
+      f('Premium Picture', '800 nits, 14-bit color, 3840 Hz refresh, 15,000:1 contrast, 170° viewing.'),
+      f('Eye Comfort', 'Soft light, low blue light, low radiation, quiet, and lower heat for long viewing sessions.')
+    ],
+    allinone: [
+      f('108″ / 135″ / 162″', 'Complete COB conference walls in three sizes, floor-stand or wall-mount.'),
+      f('4K Options', 'Real or dynamic 4K depending on pitch. 3840 Hz, 600 nits, 15,000:1 contrast, 175° viewing.'),
+      f('Wireless Share', 'Mirror a computer, phone, or tablet — up to four devices at once.'),
+      f('Flip-Chip COB', 'Integrated flip-chip COB package with common-cathode energy saving and IP54/IP50 protection.')
+    ],
+    rentalcob: [
+      f('Indoor and Outdoor COB', 'Same 500 × 500 mm rental footprint. Indoor 600 nits / 3840 Hz; outdoor 3500 nits / 7680 Hz.'),
+      f('Flip-Chip COB', 'Front IP65 on the LED face, common-cathode energy saving, 73 mm thick.'),
+      f('Touring Pitch Set', 'P1.56 / P1.95 / P2.6 for close-view rental stages and outdoor events.')
+    ],
+    diamond4: [
+      f('Indoor and Outdoor Rental', 'Die-cast 500 × 500 and 500 × 1000 mm cabinets. Mix sizes on one wall.'),
+      f('Curve and 90° Corners', 'Outward 0–5°, inward 0–20°, and 90° seamless corners.'),
+      f('Light Touring Weight', '6.8 kg (500 × 500 indoor) and about 12–13 kg (500 × 1000). Locating pins let you pull one cabinet without stripping the wall.'),
+      f('High Refresh', '≥ 3840 Hz. Indoor 800–1200 nits; outdoor 4500–5500 nits.')
+    ],
+    flyingdrone: [
+      f('UHD 16:9 Cabinets', '600 × 337.5 mm die-cast cabinets at 6 kg for native HD / 4K walls.'),
+      f('100% Front Service', 'Modules, HUB, cards, and power from the front — no rear access required.'),
+      f('No-Module-Frame Design', 'Hidden cables and a clean face for control rooms, studios, and conference walls.'),
+      f('Fine Pitch Set', 'P0.937 IMD through P2.5 SMD, 500–800 nits, ≥ 3840 Hz.')
+    ],
+    bakoposter: [
+      f('45 kg Poster', 'Self-contained aluminum LED poster, indoor or outdoor, easy to move.'),
+      f('Four Installs', 'Hang, wall-mount, base-standing, or landscape.'),
+      f('Indoor and Outdoor Pitches', 'Indoor P1.75 / P2.0 / P2.5; outdoor P2.5. 160° / 140° viewing.')
+    ],
+    spaceship: [
+      f('IP68 Modules', 'Modules can be immersed. Fully sealed power and data for harsh outdoor weather.'),
+      f('High-Temp Frame', 'Die-cast module frames for high UV and temperature. Front or rear service.'),
+      f('DOOH Cabinet Sizes', '960 × 960, 1280 × 960, 900 × 900, and 1200 × 900 mm.'),
+      f('Brightness', '4000–7000 nits depending on pitch, from P1.86 through P10.7.')
+    ],
+    sphere: [
+      f('1500 mm Sphere', 'CNC spherical surface with magnetic modules and ≤ 0.3 mm gaps.'),
+      f('P3 SMD1515', 'About 111,111 dots/m², ≥ 800 nits, 2880–3840 Hz, 160° viewing.'),
+      f('Install Options', 'Floor, hoist, inlaid, or embedded. Front maintenance, IP20.')
+    ],
+    bks: [
+      f('Player Protection', 'Soft rubber sleeve and silicone mask so perimeter hits do not injure players or the wall.'),
+      f('Adjustable Tilt', 'Aim the perimeter so every seat can read the screen.'),
+      f('P10 Outdoor', '7000 nits, IP65/IP54, 320 × 160 mm modules.')
+    ],
+    uhdpro: [
+      f('640 × 480 Cabinets', 'Die-cast indoor fixed cabinets at 8 kg with standard 320 × 160 mm modules.'),
+      f('100% Front Service', 'Front install and front maintenance for wall-mount rooms.'),
+      f('P1.25–P3.07', '600–800 nits, ≥ 3840 Hz, high contrast for conference and control rooms.')
+    ],
+    bakocarbon: [
+      f('Ultra-Light Carbon', '30–40% lighter than conventional rental. 500 × 500 mm at 5.3 kg; 1000 × 500 mm at 8.3 kg.'),
+      f('Fast Touring Hardware', 'Quick lock, automatic ejection, lightweight handle, hang or stack.'),
+      f('Service Pins', 'Flexible locating pins let you pull one cabinet without removing its neighbors.')
+    ],
+    tpro: [
+      f('66% Transmittance', 'See-through rental for glass façades, floors, and windows.'),
+      f('1000 × 500 × 65 mm', 'Die-cast cabinets about 10.5 kg. Indoor 1000 nits; outdoor 4500 nits.'),
+      f('IP65 / IP54', 'Outdoor-capable transparent wall with 1920/3840 Hz refresh.')
+    ],
+    indoor480: [
+      f('480 × 480 Cabinets', 'Die-cast indoor cabinets with 240 × 240 mm modules and CNC seams.'),
+      f('Fanless', 'No fan. Board-to-board hub — no cable transfer inside the cabinet.'),
+      f('Front or Rear Service', '100% front installation, four-corner anti-bump, 3840 Hz.')
     ],
     pro: [
       f('Spectrum Exclusive', 'DIAO Pro is a Spectrum exclusive fixed-install line with strong value for commercial walls.'),
@@ -310,8 +376,8 @@
     bako: {
       warrantyTitle: 'Limited Warranty',
       warranty: WARRANTY,
-      extraTitle: 'What you get with Spectrum',
-      extra: ''
+      extraTitle: 'Factory specs',
+      extra: 'BAKO publishes CCC, TUV (CE), and FCC marks on COB fine-pitch series. Confirm the exact datasheet for the pitch and cabinet you order. Official series pages are linked from this product.'
     },
     diao: {
       warrantyTitle: 'Limited Warranty',

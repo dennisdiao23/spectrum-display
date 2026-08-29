@@ -23,6 +23,121 @@
   <style>
     body { font-family: 'Inter', system-ui, sans-serif; }
     .sticky-buy { box-shadow: 0 -4px 20px rgba(0,0,0,0.4); }
+
+    .product-gallery {
+      display: flex;
+      align-items: stretch;
+      gap: 0.85rem;
+    }
+    .product-gallery-rail {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0.45rem;
+      width: 7.5rem;
+      flex: 0 0 7.5rem;
+    }
+    .product-gallery-thumbs {
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+      flex: 1 1 auto;
+      min-height: 0;
+      overflow-y: auto;
+      overflow-x: hidden;
+      scrollbar-width: none;
+      -ms-overflow-style: none;
+    }
+    .product-gallery-thumbs::-webkit-scrollbar { display: none; }
+    .product-gallery-thumbs .thumb-btn {
+      flex: 0 0 auto;
+      width: 7rem;
+      height: 7rem;
+      padding: 0;
+      border-radius: 0.65rem;
+      border: 2px solid #334155;
+      background: #0f172a;
+      overflow: hidden;
+      cursor: pointer;
+    }
+    .product-gallery-thumbs .thumb-btn:hover { border-color: #38bdf8; }
+    .product-gallery-thumbs .thumb-btn.is-on { border-color: #0ea5e9; }
+    .product-gallery-thumbs .thumb-btn img {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+      background: #020617;
+      display: block;
+    }
+    .product-gallery-nav {
+      flex: 0 0 auto;
+      width: 2rem;
+      height: 1.65rem;
+      border: 0;
+      background: transparent;
+      color: #94a3b8;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      padding: 0;
+    }
+    .product-gallery-nav:hover { color: #fff; }
+    .product-gallery-nav[hidden] { display: none; }
+    .product-gallery-nav svg { width: 1.15rem; height: 1.15rem; }
+    .spec-summary {
+      margin: 0.75rem 0 1.25rem;
+      border-top: 1px solid #1e293b;
+      border-bottom: 1px solid #1e293b;
+    }
+    .spec-summary[hidden] { display: none; }
+    .spec-summary-row {
+      display: grid;
+      grid-template-columns: 9.5rem 1fr;
+      gap: 0.75rem;
+      align-items: baseline;
+      padding: 0.45rem 0;
+      border-bottom: 1px solid #1e293b;
+      font-size: 0.875rem;
+      line-height: 1.35;
+    }
+    .spec-summary-row:last-child { border-bottom: 0; }
+    .spec-summary-row dt { color: #94a3b8; font-weight: 500; }
+    .spec-summary-row dd { margin: 0; color: #f1f5f9; font-weight: 600; }
+    @media (max-width: 640px) {
+      .spec-summary-row { grid-template-columns: 7.25rem 1fr; font-size: 0.8125rem; }
+    }
+    .product-gallery-stage {
+      position: relative;
+      flex: 1 1 auto;
+      min-width: 0;
+      min-height: 18rem;
+      aspect-ratio: 4 / 3;
+      border-radius: 1rem;
+      background: #0f172a;
+      border: 1px solid #334155;
+      overflow: hidden;
+    }
+    @media (max-width: 639px) {
+      .product-gallery { flex-direction: column; }
+      .product-gallery-rail {
+        order: 2;
+        flex-direction: row;
+        width: 100%;
+        flex: none;
+      }
+      .product-gallery-thumbs {
+        flex-direction: row;
+        overflow-x: auto;
+        overflow-y: hidden;
+      }
+      .product-gallery-thumbs .thumb-btn {
+        width: 5.5rem;
+        height: 5.5rem;
+      }
+      .product-gallery-stage { order: 1; min-height: 14rem; }
+      .product-gallery-nav { transform: rotate(-90deg); }
+    }
   </style>
 </head>
 <body class="bg-slate-950 text-slate-100 antialiased">
@@ -135,9 +250,18 @@
   <section class="pb-12">
     <div class="site-wrap">
       <div class="grid lg:grid-cols-2 gap-12 items-start">
-        <!-- Gallery -->
-        <div class="space-y-4">
-          <div class="aspect-[4/3] rounded-2xl bg-slate-900 border border-slate-700 overflow-hidden relative">
+        <!-- Gallery: left thumbnail rail + main photo -->
+        <div class="product-gallery">
+          <div class="product-gallery-rail">
+            <button type="button" class="product-gallery-nav" id="gallery-prev" aria-label="Previous photos" hidden>
+              <svg fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M18 15l-6-6-6 6"/></svg>
+            </button>
+            <div id="gallery-thumbs" class="product-gallery-thumbs"></div>
+            <button type="button" class="product-gallery-nav" id="gallery-next" aria-label="Next photos" hidden>
+              <svg fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M6 9l6 6 6-6"/></svg>
+            </button>
+          </div>
+          <div class="product-gallery-stage">
             <img id="product-hero-img" alt="" class="absolute inset-0 w-full h-full object-cover hidden" />
             <div id="product-hero-fallback" class="absolute inset-0 flex items-center justify-center bg-gradient-to-br from-slate-800 to-slate-900">
               <div class="text-center p-8">
@@ -146,13 +270,13 @@
               </div>
             </div>
           </div>
-          <div id="gallery-thumbs" class="grid grid-cols-4 gap-3"></div>
         </div>
 
         <!-- Buy / Config -->
         <div>
           <div class="text-sm font-medium text-sky-400 mb-2 brand-label">Spectrum</div>
           <h1 class="text-3xl sm:text-4xl font-bold mb-2">LED Series</h1>
+          <dl id="spec-summary" hidden></dl>
           <p id="product-lead" class="text-slate-400 mb-6">Configure LED video wall cabinets, pixel pitch, and project details from Spectrum Display.</p>
           <div id="replacement-banner" class="hidden mb-6 rounded-2xl border border-amber-500/30 bg-amber-500/5 p-4 text-sm text-amber-100/90"></div>
 
@@ -168,17 +292,8 @@
             <div>
               <label class="block text-sm font-medium mb-2">Cabinet Size</label>
               <select id="cabinet" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-4 py-2.5 text-sm">
-                <option value="custom">Loading cabinet size…</option>
+                <option value="std">Loading cabinet size…</option>
               </select>
-            </div>
-            <div>
-              <label class="block text-sm font-medium mb-2" id="qty-label">Quantity (m²)</label>
-              <div class="flex items-center gap-3">
-                <button id="qty-minus" class="w-10 h-10 rounded-lg border border-slate-700 hover:bg-slate-800">−</button>
-                <input id="qty" type="number" value="4" min="1" class="w-20 text-center bg-slate-800 border border-slate-700 rounded-lg py-2">
-                <button id="qty-plus" class="w-10 h-10 rounded-lg border border-slate-700 hover:bg-slate-800">+</button>
-                <span class="text-sm text-slate-400" id="qty-hint">≈ 4 m² recommended starter</span>
-              </div>
             </div>
             <div class="pt-4 border-t border-slate-800 flex items-end justify-between gap-4">
               <div class="pricing-only">
@@ -189,9 +304,9 @@
               <button id="add-to-cart" class="pricing-only px-8 py-3 rounded-full bg-sky-500 hover:bg-sky-400 text-white font-semibold transition">
                 Add to Cart
               </button>
-              <div class="guest-pricing space-y-2">
-                <a href="account.html" class="inline-flex px-6 py-3 rounded-full bg-sky-500 hover:bg-sky-400 text-white font-semibold" data-i18n="price.signInCta">Sign in to see pricing and use the cart</a>
-                <div><a href="contact.html" class="text-sm text-sky-400 hover:text-sky-300">Or contact sales →</a></div>
+              <div class="space-y-2">
+                <a id="guest-price-cta" href="account.html" class="guest-pricing inline-flex px-6 py-3 rounded-full bg-sky-500 hover:bg-sky-400 text-white font-semibold" data-i18n="price.signInCta">Sign in to see pricing and use the cart</a>
+                <div><a id="use-in-calculator" href="designer.html" class="text-sm text-sky-400 hover:text-sky-300">Use in Calculator →</a></div>
               </div>
             </div>
           </div>
@@ -250,12 +365,12 @@
       <div class="hidden sm:block">
         <div id="sticky-name" class="font-medium">LED Series</div>
         <div id="sticky-from" class="text-sm text-slate-400 pricing-only">Sign in for pricing</div>
-        <div class="text-sm text-slate-400 guest-pricing" data-i18n="price.signIn">Sign in for pricing</div>
+        <div id="sticky-guest-label" class="text-sm text-slate-400 guest-pricing" data-i18n="price.signIn">Sign in for pricing</div>
       </div>
       <div class="flex items-center gap-3 ml-auto">
         <span class="text-lg font-bold pricing-only" id="sticky-price"></span>
         <button id="add-to-cart-sticky" class="pricing-only px-6 py-2.5 rounded-full bg-sky-500 hover:bg-sky-400 text-white text-sm font-semibold">Add to Cart</button>
-        <a href="account.html" class="guest-pricing px-6 py-2.5 rounded-full bg-sky-500 hover:bg-sky-400 text-white text-sm font-semibold" data-i18n="price.signIn">Sign in for pricing</a>
+        <a id="sticky-guest-cta" href="account.html" class="guest-pricing px-6 py-2.5 rounded-full bg-sky-500 hover:bg-sky-400 text-white text-sm font-semibold" data-i18n="price.signIn">Sign in for pricing</a>
       </div>
     </div>
   </div>
@@ -373,30 +488,69 @@
         if (fallback) { fallback.classList.remove('hidden'); fallback.classList.add('flex'); }
       }
       const thumbs = document.getElementById('gallery-thumbs');
+      const galleryPrev = document.getElementById('gallery-prev');
+      const galleryNext = document.getElementById('gallery-next');
+      function galleryIsHorizontal() {
+        return window.matchMedia('(max-width: 639px)').matches;
+      }
+      function syncGalleryNav() {
+        if (!thumbs || !galleryPrev || !galleryNext) return;
+        const overflow = galleryIsHorizontal()
+          ? thumbs.scrollWidth > thumbs.clientWidth + 6
+          : thumbs.scrollHeight > thumbs.clientHeight + 6;
+        galleryPrev.hidden = galleryNext.hidden = !overflow || photos.length < 2;
+      }
+      function scrollGallery(dir) {
+        if (!thumbs) return;
+        const thumb = thumbs.querySelector('.thumb-btn');
+        const gap = 8;
+        if (galleryIsHorizontal()) {
+          const step = (thumb ? thumb.offsetWidth : 68) + gap;
+          thumbs.scrollBy({ left: dir * step, behavior: 'smooth' });
+        } else {
+          const step = (thumb ? thumb.offsetHeight : 68) + gap;
+          thumbs.scrollBy({ top: dir * step, behavior: 'smooth' });
+        }
+      }
       if (thumbs && photos.length) {
         thumbs.innerHTML = photos.map(function (src, i) {
-          const on = i === 0 ? 'border-sky-500' : 'border-slate-700';
-          return '<button type="button" class="thumb-btn aspect-square rounded-xl bg-slate-800 border ' + on +
-            ' overflow-hidden cursor-pointer hover:border-sky-400" data-img="' + esc(src) + '">' +
-            '<img src="' + esc(src) + '" alt="" class="w-full h-full object-cover object-contain bg-slate-950" />' +
+          return '<button type="button" class="thumb-btn' + (i === 0 ? ' is-on' : '') +
+            '" data-img="' + esc(src) + '" aria-label="Photo ' + (i + 1) + '">' +
+            '<img src="' + esc(src) + '" alt="" />' +
             '</button>';
         }).join('');
+      } else if (thumbs) {
+        thumbs.innerHTML = '';
       }
-      document.querySelectorAll('.thumb-btn').forEach(btn => {
-        btn.addEventListener('click', () => {
-          document.querySelectorAll('.thumb-btn').forEach(b => {
-            b.classList.remove('border-sky-500');
-            b.classList.add('border-slate-700');
-          });
-          btn.classList.add('border-sky-500');
-          btn.classList.remove('border-slate-700');
+      document.querySelectorAll('.thumb-btn').forEach(function (btn) {
+        btn.addEventListener('click', function () {
+          document.querySelectorAll('.thumb-btn').forEach(function (b) { b.classList.remove('is-on'); });
+          btn.classList.add('is-on');
+          btn.scrollIntoView({ block: 'nearest', inline: 'nearest' });
           if (hero && btn.dataset.img) {
             hero.style.display = '';
+            hero.classList.remove('hidden');
             hero.src = btn.dataset.img;
             if (fallback) { fallback.classList.add('hidden'); fallback.classList.remove('flex'); }
           }
         });
       });
+      if (galleryPrev && !galleryPrev.dataset.bound) {
+        galleryPrev.dataset.bound = '1';
+        galleryPrev.addEventListener('click', function () { scrollGallery(-1); });
+      }
+      if (galleryNext && !galleryNext.dataset.bound) {
+        galleryNext.dataset.bound = '1';
+        galleryNext.addEventListener('click', function () { scrollGallery(1); });
+      }
+      window._syncGalleryNav = syncGalleryNav;
+      if (!window._galleryNavResizeBound) {
+        window._galleryNavResizeBound = true;
+        window.addEventListener('resize', function () {
+          if (window._syncGalleryNav) window._syncGalleryNav();
+        });
+      }
+      requestAnimationFrame(syncGalleryNav);
 
       document.querySelectorAll('.brand-label').forEach(el => { el.textContent = brandName; });
 
@@ -445,22 +599,47 @@
             });
             btn.classList.add('border-sky-500', 'bg-sky-500/10', 'text-sky-300');
             btn.classList.remove('border-slate-700');
+            syncCalculatorLink();
+            syncSpecSummary();
           };
         });
       }
-      if (cab && seriesData && seriesData.cabinetW && !isControl) {
-        const label = Math.round(seriesData.cabinetW * 1000) + ' × ' + (Math.round(seriesData.cabinetH * 10000) / 10) + ' mm';
-        cab.innerHTML = '<option value="std">' + esc(label) + '</option><option value="custom">Custom size (request quote)</option>';
+      if (cab && cabWrap && seriesData && !isControl) {
+        const sizes = [];
+        const seen = {};
+        function addSize(wmm, hmm) {
+          const w = Number(wmm);
+          const h = Number(hmm);
+          if (!w || !h) return;
+          const key = w + 'x' + h;
+          if (seen[key]) return;
+          seen[key] = true;
+          const fmt = function (n) {
+            return String(Math.round(n * 10) / 10).replace(/\.0$/, '');
+          };
+          sizes.push({ value: key, label: fmt(w) + ' × ' + fmt(h) + ' mm' });
+        }
+        if (seriesData.cabinetW && seriesData.cabinetH) {
+          addSize(seriesData.cabinetW * 1000, seriesData.cabinetH * 1000);
+        }
+        ((seriesData.cabinets) || []).forEach(function (c) {
+          if (c && c.w && c.h) addSize(c.w, c.h);
+        });
+        ((seriesData.specTable) || []).forEach(function (row) {
+          if (!row || !row[0] || String(row[0]).indexOf('Panel Dimension') === -1) return;
+          row.slice(1).forEach(function (cell) {
+            const re = /(\d+(?:\.\d+)?)\s*(?:mm)?\s*[x×*]\s*(\d+(?:\.\d+)?)/gi;
+            let m;
+            while ((m = re.exec(String(cell)))) addSize(parseFloat(m[1]), parseFloat(m[2]));
+          });
+        });
+        if (sizes.length) {
+          cab.innerHTML = sizes.map(function (s) {
+            return '<option value="' + esc(s.value) + '">' + esc(s.label) + '</option>';
+          }).join('');
+        }
       }
 
-      const qtyLabel = document.getElementById('qty-label');
-      const qtyHint = document.getElementById('qty-hint');
-      const qtyInputEl = document.getElementById('qty');
-      if (isControl) {
-        if (qtyLabel) qtyLabel.textContent = 'Quantity';
-        if (qtyHint) qtyHint.textContent = 'each';
-        if (qtyInputEl && Number(qtyInputEl.value) === 4) qtyInputEl.value = '1';
-      }
       const recvBanner = document.getElementById('replacement-banner');
       if (recvBanner) {
         if (isReceiver) {
@@ -659,12 +838,35 @@
       }
 
       const quoteBox = document.querySelector('.pricing-only');
-      if (!hasPrice) {
+      if (!isControl) {
+        const guestCta = document.getElementById('guest-price-cta');
+        if (guestCta) {
+          guestCta.href = 'contact.html';
+          guestCta.removeAttribute('data-i18n');
+          guestCta.textContent = 'Request pricing';
+        }
+        const stickyGuestCta = document.getElementById('sticky-guest-cta');
+        if (stickyGuestCta) {
+          stickyGuestCta.href = 'contact.html';
+          stickyGuestCta.removeAttribute('data-i18n');
+          stickyGuestCta.textContent = 'Request pricing';
+        }
+        const stickyGuestLabel = document.getElementById('sticky-guest-label');
+        if (stickyGuestLabel) {
+          stickyGuestLabel.removeAttribute('data-i18n');
+          stickyGuestLabel.textContent = 'Request pricing';
+        }
+      }
+      syncCalculatorLink();
+      syncSpecSummary();
+      if (!hasPrice && !isControl) {
         document.querySelectorAll('.pricing-only').forEach(function (el) { el.classList.add('hidden'); });
-        var guest = document.querySelector('.guest-pricing');
-        if (guest) {
-          guest.classList.remove('guest-pricing');
-          guest.innerHTML = '<a href="contact.html" class="inline-flex px-6 py-3 rounded-full bg-sky-500 hover:bg-sky-400 text-white font-semibold">Request a quote</a>';
+        var guestCtaQuote = document.getElementById('guest-price-cta');
+        if (guestCtaQuote) {
+          guestCtaQuote.classList.remove('guest-pricing');
+          guestCtaQuote.href = 'contact.html';
+          guestCtaQuote.removeAttribute('data-i18n');
+          guestCtaQuote.textContent = 'Request a quote';
         }
         var sticky = document.getElementById('sticky-price');
         if (sticky) sticky.textContent = 'Quote';
@@ -676,23 +878,211 @@
         }
       }
     }
+
+    function selectedPitch() {
+      const on = document.querySelector('#pitch-grid .pitch-btn.border-sky-500');
+      if (on && on.getAttribute('data-pitch')) return on.getAttribute('data-pitch');
+      const pitches = (seriesData && seriesData.pitches) || [];
+      return pitches.length ? String(pitches[0]) : '';
+    }
+
+    function specTableRows() {
+      return (seriesData && seriesData.specTable) || [];
+    }
+
+    function specRowByLabel(needles, skip) {
+      const rows = specTableRows();
+      for (let i = 0; i < rows.length; i++) {
+        const label = String(rows[i] && rows[i][0] || '').toLowerCase().replace(/\s+/g, ' ');
+        if (skip && skip.some(function (s) { return label.indexOf(s) !== -1; })) continue;
+        for (let n = 0; n < needles.length; n++) {
+          if (label.indexOf(needles[n]) !== -1) return rows[i];
+        }
+      }
+      return null;
+    }
+
+    function parsePitchNum(text) {
+      const m = String(text || '').match(/(\d+(?:\.\d+)?)/);
+      return m ? parseFloat(m[1]) : NaN;
+    }
+
+    function specPitchColumn() {
+      const pitch = parsePitchNum(selectedPitch());
+      const rows = specTableRows();
+      if (!rows.length) return -1;
+      for (let r = 0; r < rows.length; r++) {
+        const label = String(rows[r][0] || '').toLowerCase();
+        if (label.indexOf('pitch') === -1 && label.indexOf('model') === -1) continue;
+        for (let i = 1; i < rows[r].length; i++) {
+          const n = parsePitchNum(rows[r][i]);
+          if (!isNaN(n) && !isNaN(pitch) && Math.abs(n - pitch) < 0.03) return i;
+        }
+      }
+      const pitches = (seriesData && seriesData.pitches) || [];
+      for (let i = 0; i < pitches.length; i++) {
+        if (!isNaN(pitch) && Math.abs(Number(pitches[i]) - pitch) < 0.03) return i + 1;
+      }
+      return -1;
+    }
+
+    function specCell(row, col) {
+      if (!row || row.length < 2) return '';
+      function clean(v) {
+        const s = String(v == null ? '' : v).trim();
+        return s === '/' ? '' : s;
+      }
+      const dataCount = row.length - 1;
+      if (col > 0 && col < row.length) {
+        const picked = clean(row[col]);
+        if (picked) return picked;
+        if (dataCount > 1) return '';
+      }
+      const cells = [];
+      for (let i = 1; i < row.length; i++) {
+        const v = clean(row[i]);
+        if (v) cells.push(v);
+      }
+      if (!cells.length) return '';
+      if (dataCount === 1 || col < 1) {
+        const uniq = [];
+        cells.forEach(function (c) {
+          if (uniq.indexOf(c) === -1) uniq.push(c);
+        });
+        return uniq.length === 1 ? uniq[0] : uniq.join(' / ');
+      }
+      return '';
+    }
+
+    function packageKind(raw) {
+      const t = String(raw || '').trim();
+      if (!t || t === '/') return '';
+      const u = t.toUpperCase();
+      const parts = [];
+      if (/COB/.test(u)) parts.push(/FLIP/.test(u) ? 'Flip-chip COB' : 'COB');
+      if (/GOB/.test(u)) parts.push('GOB');
+      if (/\bHOB\b/.test(u)) parts.push('HOB');
+      if (/\bMIP\b/.test(u)) parts.push('MIP');
+      if (/\bIMD\b/.test(u)) parts.push('IMD');
+      if (/SMD/.test(u)) parts.push('SMD');
+      return parts.length ? parts.join(' / ') : t;
+    }
+
+    function inferPackage() {
+      const col = specPitchColumn();
+      const packRow = specRowByLabel(['packaging', 'package type', 'package']);
+      let raw = specCell(packRow, col);
+      if (!raw || raw === '/') {
+        raw = specCell(specRowByLabel(['led type', 'led beads', 'led lamp', 'led package', 'lamp']), col);
+      }
+      let kind = packageKind(raw);
+      if (kind) return kind;
+      const blob = [
+        seriesData && seriesData.badge,
+        seriesData && seriesData.type,
+        seriesData && seriesData.description,
+        seriesData && seriesData.lead,
+        ((seriesData && seriesData.cats) || []).join(' ')
+      ].join(' ');
+      kind = packageKind(blob);
+      if (kind) return kind;
+      if (seriesData && seriesData.cats && seriesData.cats.indexOf('cob') !== -1) return 'COB';
+      return '';
+    }
+
+    function inferPanelResolution() {
+      const col = specPitchColumn();
+      let val = specCell(specRowByLabel(['panel resolution', 'cabinet resolution']), col);
+      if (!val) val = specCell(specRowByLabel(['resolution']), col);
+      if (!val) val = specCell(specRowByLabel(['resolution'], ['module', 'pixel']), col);
+      if (val) return val.replace(/\s*pixel[s]?\s*$/i, '').trim();
+      const pitch = parsePitchNum(selectedPitch());
+      const w = seriesData && seriesData.cabinetW;
+      const h = seriesData && seriesData.cabinetH;
+      if (pitch && w && h) {
+        return Math.round((w * 1000) / pitch) + ' × ' + Math.round((h * 1000) / pitch);
+      }
+      return '';
+    }
+
+    function inferModuleSize() {
+      const col = specPitchColumn();
+      return specCell(specRowByLabel(['module size', 'module dimension']), col);
+    }
+
+    function inferBrightness() {
+      const col = specPitchColumn();
+      let val = specCell(specRowByLabel(['brightness']), col);
+      if (!val) return '';
+      if (/\d/.test(val) && !/nit|cd/i.test(val)) val += ' nits';
+      return val;
+    }
+
+    function inferRefresh() {
+      const col = specPitchColumn();
+      let val = specCell(specRowByLabel(['refresh']), col);
+      if (!val) return '';
+      if (/\d/.test(val) && !/hz/i.test(val)) val += ' Hz';
+      return val;
+    }
+
+    function syncSpecSummary() {
+      const box = document.getElementById('spec-summary');
+      if (!box) return;
+      if (isControl || !seriesData) {
+        box.hidden = true;
+        box.innerHTML = '';
+        return;
+      }
+      const rows = [
+        ['Brightness', inferBrightness()],
+        ['Refresh Rate', inferRefresh()],
+        ['Packaging', inferPackage()],
+        ['Panel Resolution', inferPanelResolution()],
+        ['Module Size', inferModuleSize()]
+      ].filter(function (r) { return r[1]; });
+      if (!rows.length) {
+        box.hidden = true;
+        box.innerHTML = '';
+        return;
+      }
+      box.hidden = false;
+      box.className = 'spec-summary';
+      box.innerHTML = rows.map(function (r) {
+        return '<div class="spec-summary-row"><dt>' + esc(r[0]) + '</dt><dd>' + esc(r[1]) + '</dd></div>';
+      }).join('');
+    }
+
+    function syncCalculatorLink() {
+      const a = document.getElementById('use-in-calculator');
+      if (!a) return;
+      if (isControl) {
+        a.href = 'contact.html';
+        a.textContent = 'Or contact sales →';
+        return;
+      }
+      const qs = new URLSearchParams();
+      if (brandId) qs.set('brand', brandId);
+      if (seriesId) qs.set('series', seriesId);
+      const pitch = selectedPitch();
+      if (pitch) qs.set('pitch', pitch);
+      a.href = 'designer.html?' + qs.toString();
+      a.textContent = 'Use in Calculator →';
+    }
     applyProductView();
 
     // Price calc
-    const qtyInput = document.getElementById('qty');
     const priceEl = document.getElementById('price');
     const stickyPrice = document.getElementById('sticky-price');
 
     function updatePrice() {
       if (!hasPrice) return;
-      const qty = parseFloat(qtyInput.value) || 1;
       const unit = sellUnit();
-      const total = Math.round(unit * qty);
-      priceEl.textContent = '$' + total.toLocaleString();
-      stickyPrice.textContent = '$' + total.toLocaleString();
+      priceEl.textContent = '$' + unit.toLocaleString();
+      stickyPrice.textContent = '$' + unit.toLocaleString();
       const priceUnit = document.getElementById('price-unit');
       if (priceUnit) {
-        priceUnit.textContent = '$' + unit.toLocaleString() + (isControl ? ' each × ' + qty : ' / m² × ' + qty + ' m²');
+        priceUnit.textContent = isControl ? 'each' : '/ m²';
       }
       const stickyFrom = document.getElementById('sticky-from');
       if (stickyFrom) {
@@ -700,10 +1090,6 @@
       }
     }
     window.__spectrumUpdateProductPrice = updatePrice;
-
-    document.getElementById('qty-minus').onclick = () => { qtyInput.value = Math.max(1, parseFloat(qtyInput.value) - 1); updatePrice(); };
-    document.getElementById('qty-plus').onclick = () => { qtyInput.value = parseFloat(qtyInput.value) + 1; updatePrice(); };
-    qtyInput.oninput = updatePrice;
     updatePrice();
 
     // Tabs
@@ -731,10 +1117,9 @@
         return;
       }
       const cart = JSON.parse(localStorage.getItem('spectrumCart') || '[]');
-      const qty = parseFloat(qtyInput.value) || 1;
       const existing = cart.find(i => i.id === productId);
-      if (existing) existing.qty += qty;
-      else cart.push({ id: productId, name: brandName + ' ' + productName, price: basePrice, qty, unit: isControl ? 'each' : 'm²' });
+      if (existing) existing.qty += 1;
+      else cart.push({ id: productId, name: brandName + ' ' + productName, price: basePrice, qty: 1, unit: isControl ? 'each' : 'm²' });
       localStorage.setItem('spectrumCart', JSON.stringify(cart));
       updateCartCount();
       alert('Added to cart!');
