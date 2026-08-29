@@ -1,4 +1,4 @@
-/* Homepage only — Zoom-style marketing layout. Does not change the site header. */
+/* Homepage + Solutions — Zoom-style marketing layout. Does not change the site header. */
 .home-page {
   background: #fff;
   color: #0f172a;
@@ -100,6 +100,12 @@
   font-weight: 500;
   letter-spacing: 0.02em;
 }
+a.home-control-line {
+  display: block;
+  text-decoration: none;
+  color: inherit;
+}
+a.home-control-line:hover { color: #fff; }
 
 .home-hero h1 {
   max-width: 12em;
