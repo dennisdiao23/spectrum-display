@@ -110,6 +110,82 @@ function createSqliteStore() {
     async saveContactInquiry() {
       return true;
     },
+    async listInventory() {
+      const inv = require('./inventory');
+      const products = dbUtil.listProducts(db);
+      const stocks = db.prepare('SELECT * FROM inventory_stock').all();
+      const byProduct = {};
+      stocks.forEach(function (row) {
+        const key = String(row.product_id);
+        (byProduct[key] = byProduct[key] || []).push(row);
+      });
+      return products.map(function (p) {
+        return inv.inventoryItem(p, byProduct[String(p.dbId)] || []);
+      });
+    },
+    async getInventoryProduct(id) {
+      const inv = require('./inventory');
+      const product = dbUtil.getProduct(db, id);
+      if (!product) return null;
+      const stocks = db.prepare('SELECT * FROM inventory_stock WHERE product_id = ?').all(id);
+      const moves = db.prepare(
+        'SELECT * FROM inventory_moves WHERE product_id = ? ORDER BY datetime(created_at) DESC, id DESC LIMIT 40'
+      ).all(id);
+      return { item: inv.inventoryItem(product, stocks), moves: moves };
+    },
+    async adjustInventory(id, payload, adminEmail) {
+      const inv = require('./inventory');
+      const product = dbUtil.getProduct(db, id);
+      if (!product) return null;
+      const pitch = inv.pitchKey(payload && payload.pitch);
+      const control = inv.isControlProduct(product);
+      if (!control) {
+        const allowed = (product.pitches || []).map(inv.pitchKey);
+        if (pitch && allowed.indexOf(pitch) === -1) {
+          throw new Error('That pitch is not on this series.');
+        }
+      } else if (pitch) {
+        throw new Error('Control gear is stocked as each, not by pitch.');
+      }
+      const current = db.prepare(
+        'SELECT qty, low_at FROM inventory_stock WHERE product_id = ? AND pitch = ?'
+      ).get(id, pitch);
+      const curQty = current ? Number(current.qty) || 0 : 0;
+      const nextLow = payload && payload.lowAt != null && payload.lowAt !== ''
+        ? Math.max(0, Math.round(Number(payload.lowAt)))
+        : (current && current.low_at != null ? Number(current.low_at) : inv.defaultLowAt(control));
+      if (!isFinite(nextLow)) throw new Error('Low-at must be a number.');
+      const change = inv.applyKind(payload && payload.kind, payload && payload.qty, curQty);
+      const stamp = dbUtil.nowIso();
+      db.exec('BEGIN');
+      try {
+        db.prepare(`
+          INSERT INTO inventory_stock (product_id, pitch, qty, low_at, updated_at)
+          VALUES (?, ?, ?, ?, ?)
+          ON CONFLICT(product_id, pitch) DO UPDATE SET
+            qty = excluded.qty, low_at = excluded.low_at, updated_at = excluded.updated_at
+        `).run(id, pitch, change.next, nextLow, stamp);
+        db.prepare(`
+          INSERT INTO inventory_moves (
+            product_id, pitch, kind, qty_delta, qty_after, note, admin_email, created_at
+          ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+        `).run(
+          id,
+          pitch,
+          String(payload.kind || '').toLowerCase(),
+          change.delta,
+          change.next,
+          String((payload && payload.note) || '').trim().slice(0, 240),
+          String(adminEmail || '').trim().slice(0, 120),
+          stamp
+        );
+        db.exec('COMMIT');
+      } catch (err) {
+        try { db.exec('ROLLBACK'); } catch (e) { /* ignore */ }
+        throw err;
+      }
+      return this.getInventoryProduct(id);
+    },
     async saveUpload(file) {
       const ext = path.extname(file.originalname || '').toLowerCase();
       const safeExt = ['.jpg', '.jpeg', '.png', '.webp', '.gif'].includes(ext) ? ext : '.jpg';

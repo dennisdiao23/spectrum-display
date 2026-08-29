@@ -469,6 +469,86 @@ function createSupabaseStore() {
       throwIf(error, 'Could not save the inquiry.');
       return true;
     },
+    async listInventory() {
+      const inv = require('./inventory');
+      const products = await this.listProducts();
+      const { data: stocks, error } = await supabase.from('inventory_stock').select('*');
+      throwIf(error, 'Could not read inventory.');
+      const byProduct = {};
+      (stocks || []).forEach(function (row) {
+        const key = String(row.product_id);
+        (byProduct[key] = byProduct[key] || []).push(row);
+      });
+      return products.map(function (p) {
+        return inv.inventoryItem(p, byProduct[String(p.dbId)] || []);
+      });
+    },
+    async getInventoryProduct(id) {
+      const inv = require('./inventory');
+      const product = await this.getProduct(id);
+      if (!product) return null;
+      const { data: stocks, error: sErr } = await supabase
+        .from('inventory_stock')
+        .select('*')
+        .eq('product_id', id);
+      throwIf(sErr, 'Could not read inventory.');
+      const { data: moves, error: mErr } = await supabase
+        .from('inventory_moves')
+        .select('*')
+        .eq('product_id', id)
+        .order('created_at', { ascending: false })
+        .limit(40);
+      throwIf(mErr, 'Could not read inventory history.');
+      return { item: inv.inventoryItem(product, stocks || []), moves: moves || [] };
+    },
+    async adjustInventory(id, payload, adminEmail) {
+      const inv = require('./inventory');
+      const product = await this.getProduct(id);
+      if (!product) return null;
+      const pitch = inv.pitchKey(payload && payload.pitch);
+      const control = inv.isControlProduct(product);
+      if (!control) {
+        const allowed = (product.pitches || []).map(inv.pitchKey);
+        if (pitch && allowed.indexOf(pitch) === -1) {
+          throw new Error('That pitch is not on this series.');
+        }
+      } else if (pitch) {
+        throw new Error('Control gear is stocked as each, not by pitch.');
+      }
+      const { data: current, error: cErr } = await supabase
+        .from('inventory_stock')
+        .select('qty, low_at')
+        .eq('product_id', id)
+        .eq('pitch', pitch)
+        .maybeSingle();
+      throwIf(cErr, 'Could not read inventory.');
+      const curQty = current ? Number(current.qty) || 0 : 0;
+      const nextLow = payload && payload.lowAt != null && payload.lowAt !== ''
+        ? Math.max(0, Math.round(Number(payload.lowAt)))
+        : (current && current.low_at != null ? Number(current.low_at) : inv.defaultLowAt(control));
+      if (!isFinite(nextLow)) throw new Error('Low-at must be a number.');
+      const change = inv.applyKind(payload && payload.kind, payload && payload.qty, curQty);
+      const stamp = new Date().toISOString();
+      const { error: uErr } = await supabase.from('inventory_stock').upsert({
+        product_id: Number(id),
+        pitch: pitch,
+        qty: change.next,
+        low_at: nextLow,
+        updated_at: stamp
+      }, { onConflict: 'product_id,pitch' });
+      throwIf(uErr, 'Could not save inventory.');
+      const { error: mErr } = await supabase.from('inventory_moves').insert({
+        product_id: Number(id),
+        pitch: pitch,
+        kind: String(payload.kind || '').toLowerCase(),
+        qty_delta: change.delta,
+        qty_after: change.next,
+        note: String((payload && payload.note) || '').trim().slice(0, 240),
+        admin_email: String(adminEmail || '').trim().slice(0, 120)
+      });
+      throwIf(mErr, 'Could not save inventory history.');
+      return this.getInventoryProduct(id);
+    },
     async saveUpload(file) {
       const ext = path.extname(file.originalname || '').toLowerCase();
       const safeExt = ['.jpg', '.jpeg', '.png', '.webp', '.gif'].includes(ext) ? ext : '.jpg';
