@@ -6,17 +6,17 @@
   <script src="js/i18n-boot.js"></script>
   <link rel="stylesheet" href="css/site-header.css" />
   <title>LED Wall Calculator | Spectrum Display</title>
-  <meta name="description" content="LED wall calculator from Spectrum Display Inc. Size cabinets, pixel pitch, power, weight, and estimated price for indoor, outdoor, and rental LED video walls." />
+  <meta name="description" content="LED wall calculator from Spectrum Display Inc. Size panels, pixel pitch, power, weight, and estimated price for indoor, outdoor, and rental LED video walls." />
   <link rel="canonical" href="https://www.spectrumdisplay.com/designer.html" />
   <meta property="og:type" content="website" />
   <meta property="og:site_name" content="Spectrum Display" />
   <meta property="og:title" content="LED Wall Calculator | Spectrum Display" />
-  <meta property="og:description" content="Size cabinets, pixel pitch, power, weight, and estimated price for professional LED video walls." />
+  <meta property="og:description" content="Size panels, pixel pitch, power, weight, and estimated price for professional LED video walls." />
   <meta property="og:url" content="https://www.spectrumdisplay.com/designer.html" />
   <meta property="og:image" content="https://www.spectrumdisplay.com/assets/products/discovery.jpg" />
   <meta name="twitter:card" content="summary_large_image" />
   <meta name="twitter:title" content="LED Wall Calculator | Spectrum Display" />
-  <meta name="twitter:description" content="Size cabinets, pixel pitch, power, weight, and estimated price for professional LED video walls." />
+  <meta name="twitter:description" content="Size panels, pixel pitch, power, weight, and estimated price for professional LED video walls." />
   <script src="js/seo.js"></script>
   <script src="https://cdn.tailwindcss.com"></script>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
@@ -618,7 +618,7 @@
           <span class="hidden md:inline" data-i18n="nav.designer">LED Wall Calculator</span>
           <span class="md:hidden" data-i18n="nav.tabDesigner">Calculator</span>
         </h1>
-        <p class="hidden md:block text-xs leading-tight text-slate-400 truncate" data-i18n="designer.subtitle">Configure your LED wall, preview cabinets, and share your design.</p>
+        <p class="hidden md:block text-xs leading-tight text-slate-400 truncate" data-i18n="designer.subtitle">Configure your LED wall, preview panels, and share your design.</p>
       </div>
       <div class="flex items-center gap-2 shrink-0">
         <button id="share-btn" class="inline-flex items-center gap-2 px-3 sm:px-4 py-1.5 rounded-full border border-slate-600 hover:border-sky-500 text-sm font-medium transition whitespace-nowrap">
@@ -673,7 +673,7 @@
               <select id="pitch" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-sky-500"></select>
             </div>
             
-            <div class="text-xs text-slate-500" id="cabinet-info">Cabinet: 600 × 337.5 mm</div>
+            <div class="text-xs text-slate-500" id="cabinet-info">Panel: 600 × 337.5 mm</div>
           </div>
 
           <div id="custom-product" class="hidden space-y-4">
@@ -683,11 +683,11 @@
             </div>
             <div class="grid grid-cols-2 gap-3">
               <div>
-                <label class="block text-xs text-slate-400 mb-1">Cabinet W (mm)</label>
+                <label class="block text-xs text-slate-400 mb-1" data-i18n="designer.cabW">Panel W (mm)</label>
                 <input id="custom-w" type="number" step="0.5" min="50" max="2000" value="500" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-sky-500">
               </div>
               <div>
-                <label class="block text-xs text-slate-400 mb-1">Cabinet H (mm)</label>
+                <label class="block text-xs text-slate-400 mb-1" data-i18n="designer.cabH">Panel H (mm)</label>
                 <input id="custom-h" type="number" step="0.5" min="50" max="2000" value="500" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-sky-500">
               </div>
             </div>
@@ -741,42 +741,32 @@
               <button type="button" id="unit-m" class="unit-btn px-3.5 py-1.5 text-slate-400 hover:text-white hover:bg-slate-800" data-unit="m">Meters (m)</button>
             </div>
           </div>
-          
-          <!-- Meters inputs -->
-          <div id="size-m" class="hidden grid grid-cols-2 gap-3">
-            <div>
-              <label class="block text-xs text-slate-400 mb-1">Width (m)</label>
-              <input id="width" type="number" step="0.1" min="0.5" max="80" value="3.6" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-sky-500">
-            </div>
-            <div>
-              <label class="block text-xs text-slate-400 mb-1">Height (m)</label>
-              <input id="height" type="number" step="0.1" min="0.5" max="60" value="2.025" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-sky-500">
-            </div>
-          </div>
 
-          <!-- Feet / inches inputs -->
-          <div id="size-ft" class="space-y-3">
+          <div class="space-y-3">
+            <label class="block text-xs text-slate-400">Screen Count</label>
             <div class="grid grid-cols-2 gap-3">
               <div>
-                <label class="block text-xs text-slate-400 mb-1">Width</label>
-                <div class="flex gap-1.5">
-                  <input id="width-ft" type="number" step="1" min="0" max="260" value="11" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-2 py-2 text-sm focus:outline-none focus:border-sky-500" placeholder="ft">
-                  <span class="text-xs text-slate-500 self-center">ft</span>
-                  <input id="width-in" type="number" step="1" min="0" max="11" value="10" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-2 py-2 text-sm focus:outline-none focus:border-sky-500" placeholder="in">
-                  <span class="text-xs text-slate-500 self-center">in</span>
-                </div>
+                <label class="block text-xs text-slate-500 mb-1">Wide</label>
+                <input id="screens-w" type="number" step="1" min="1" max="100" value="6" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-sky-500">
               </div>
               <div>
-                <label class="block text-xs text-slate-400 mb-1">Height</label>
-                <div class="flex gap-1.5">
-                  <input id="height-ft" type="number" step="1" min="0" max="200" value="6" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-2 py-2 text-sm focus:outline-none focus:border-sky-500" placeholder="ft">
-                  <span class="text-xs text-slate-500 self-center">ft</span>
-                  <input id="height-in" type="number" step="1" min="0" max="11" value="8" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-2 py-2 text-sm focus:outline-none focus:border-sky-500" placeholder="in">
-                  <span class="text-xs text-slate-500 self-center">in</span>
-                </div>
+                <label class="block text-xs text-slate-500 mb-1">High</label>
+                <input id="screens-h" type="number" step="1" min="1" max="100" value="6" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-sky-500">
               </div>
             </div>
-            <p class="text-xs text-slate-500" id="ft-metric-hint">≈ 3.60 m × 2.03 m</p>
+            <p class="text-xs text-slate-500" id="screen-count-total">36 screens (6 × 6)</p>
+            <div class="space-y-2">
+              <div class="flex items-center justify-between gap-2">
+                <label class="block text-xs text-slate-400">Resolution</label>
+                <span id="size-resolution" class="text-xs font-medium text-slate-200">—</span>
+              </div>
+              <div class="flex flex-wrap gap-1.5 text-xs font-medium">
+                <button type="button" class="res-preset-btn px-2.5 py-1 rounded-full border border-slate-700 text-slate-400 hover:text-white hover:border-sky-500" data-res="2k">2K</button>
+                <button type="button" class="res-preset-btn px-2.5 py-1 rounded-full border border-slate-700 text-slate-400 hover:text-white hover:border-sky-500" data-res="4k">4K</button>
+                <button type="button" class="res-preset-btn px-2.5 py-1 rounded-full border border-slate-700 text-slate-400 hover:text-white hover:border-sky-500" data-res="8k">8K</button>
+              </div>
+              <p class="text-xs text-slate-500" id="res-preset-hint">2K 1920×1080 · 4K 3840×2160 · 8K 7680×4320</p>
+            </div>
           </div>
 
           <div id="size-presets" class="flex flex-wrap gap-1.5 text-xs">
@@ -807,35 +797,46 @@
           </div>
 
           <div class="pt-3 border-t border-slate-800 space-y-3">
-            <label class="block text-xs text-slate-400">Screen Count</label>
-            <div class="grid grid-cols-2 gap-3">
+            <div id="size-m" class="hidden grid grid-cols-2 gap-3">
               <div>
-                <label class="block text-xs text-slate-500 mb-1">Wide</label>
-                <input id="screens-w" type="number" step="1" min="1" max="100" value="6" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-sky-500">
+                <label class="block text-xs text-slate-400 mb-1">Width (m)</label>
+                <input id="width" type="number" step="0.1" min="0.5" max="80" value="3.6" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-sky-500">
               </div>
               <div>
-                <label class="block text-xs text-slate-500 mb-1">High</label>
-                <input id="screens-h" type="number" step="1" min="1" max="100" value="6" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-sky-500">
+                <label class="block text-xs text-slate-400 mb-1">Height (m)</label>
+                <input id="height" type="number" step="0.1" min="0.5" max="60" value="2.025" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-sky-500">
               </div>
             </div>
-            <p class="text-xs text-slate-500" id="screen-count-total">36 screens (6 × 6)</p>
-            <div class="space-y-2">
-              <label class="block text-xs text-slate-400">Resolution</label>
-              <div class="flex flex-wrap gap-1.5 text-xs font-medium">
-                <button type="button" class="res-preset-btn px-2.5 py-1 rounded-full border border-slate-700 text-slate-400 hover:text-white hover:border-sky-500" data-res="2k">2K</button>
-                <button type="button" class="res-preset-btn px-2.5 py-1 rounded-full border border-slate-700 text-slate-400 hover:text-white hover:border-sky-500" data-res="4k">4K</button>
-                <button type="button" class="res-preset-btn px-2.5 py-1 rounded-full border border-slate-700 text-slate-400 hover:text-white hover:border-sky-500" data-res="8k">8K</button>
+            <div id="size-ft" class="space-y-3">
+              <div class="grid grid-cols-2 gap-3">
+                <div>
+                  <label class="block text-xs text-slate-400 mb-1">Width</label>
+                  <div class="flex gap-1.5">
+                    <input id="width-ft" type="number" step="1" min="0" max="260" value="11" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-2 py-2 text-sm focus:outline-none focus:border-sky-500" placeholder="ft">
+                    <span class="text-xs text-slate-500 self-center">ft</span>
+                    <input id="width-in" type="number" step="1" min="0" max="11" value="10" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-2 py-2 text-sm focus:outline-none focus:border-sky-500" placeholder="in">
+                    <span class="text-xs text-slate-500 self-center">in</span>
+                  </div>
+                </div>
+                <div>
+                  <label class="block text-xs text-slate-400 mb-1">Height</label>
+                  <div class="flex gap-1.5">
+                    <input id="height-ft" type="number" step="1" min="0" max="200" value="6" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-2 py-2 text-sm focus:outline-none focus:border-sky-500" placeholder="ft">
+                    <span class="text-xs text-slate-500 self-center">ft</span>
+                    <input id="height-in" type="number" step="1" min="0" max="11" value="8" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-2 py-2 text-sm focus:outline-none focus:border-sky-500" placeholder="in">
+                    <span class="text-xs text-slate-500 self-center">in</span>
+                  </div>
+                </div>
               </div>
-              <p class="text-xs text-slate-500" id="res-preset-hint">2K 1920×1080 · 4K 3840×2160 · 8K 7680×4320</p>
+              <p class="text-xs text-slate-500" id="ft-metric-hint">≈ 3.60 m × 2.03 m</p>
             </div>
-            <p class="text-xs text-slate-500">Wall size snaps to whole cabinets. The preview shows that real wall, fitted to the frame.</p>
           </div>
         </div>
 
         <!-- 3. Control system -->
         <div class="p-5 rounded-2xl border border-slate-800 bg-slate-900/60 space-y-4" id="control-step">
           <h2 class="font-semibold text-base" data-i18n="designer.control">3. Control system</h2>
-          <p class="text-xs text-slate-500" data-i18n="designer.controlLead">Pick a processor or sender sized for this wall. Receiving cards are already in each cabinet.</p>
+          <p class="text-xs text-slate-500" data-i18n="designer.controlLead">Pick a processor or sender sized for this wall. Receiving cards are already in each panel.</p>
           <div class="text-xs text-slate-400" id="control-pixel-load">Wall load: —</div>
           <div>
             <label class="block text-xs text-slate-400 mb-1">Processor / sender</label>
@@ -849,7 +850,7 @@
               <option value="">None</option>
             </select>
           </div>
-          <p class="text-xs text-slate-500" data-i18n="designer.controlNote">Receiving cards are included in each cabinet.</p>
+          <p class="text-xs text-slate-500" data-i18n="designer.controlNote">Receiving cards are included in each panel.</p>
         </div>
 
         <!-- 4. Install -->
@@ -883,7 +884,7 @@
             <div class="flex justify-between"><span class="text-slate-400" data-i18n="designer.res">Resolution</span><span id="res-resolution" class="font-medium text-right">—</span></div>
             <div class="flex justify-between"><span class="text-slate-400" data-i18n="designer.minView">Min viewing</span><span id="res-viewing-min" class="font-medium">—</span></div>
             <div class="flex justify-between"><span class="text-slate-400" data-i18n="designer.recView">Recommended</span><span id="res-viewing-rec" class="font-medium">—</span></div>
-            <div class="flex justify-between"><span class="text-slate-400" data-i18n="designer.cabs">Cabinets</span><span id="res-cabinets" class="font-medium">—</span></div>
+            <div class="flex justify-between"><span class="text-slate-400" data-i18n="designer.cabs">Panels</span><span id="res-cabinets" class="font-medium">—</span></div>
             <div class="flex justify-between"><span class="text-slate-400" data-i18n="designer.weight">Est. Weight</span><span id="res-weight" class="font-medium">—</span></div>
             <div class="flex justify-between"><span class="text-slate-400" data-i18n="designer.powerAvg">Power (avg)</span><span id="res-power" class="font-medium">—</span></div>
             <div class="flex justify-between"><span class="text-slate-400" data-i18n="designer.powerPeak">Power (peak)</span><span id="res-power-peak" class="font-medium">—</span></div>
@@ -892,8 +893,6 @@
             <div class="flex justify-between"><span class="text-slate-400" data-i18n="designer.processor">Processor</span><span id="res-processor" class="font-medium text-right text-xs sm:text-sm">—</span></div>
             <div class="flex justify-between"><span class="text-slate-400">Playback</span><span id="res-playback" class="font-medium text-right text-xs sm:text-sm">—</span></div>
             <div class="flex justify-between border-t border-slate-800 pt-2.5 mt-1 pricing-only"><span class="text-slate-400" data-i18n="designer.estPrice">Est. Price</span><span id="res-price" class="font-semibold text-sky-400">—</span></div>
-            <div class="text-xs text-slate-500 pt-1" id="control-quote-note">Receiving cards are included in each cabinet.</div>
-            <div class="flex justify-between border-t border-slate-800 pt-2.5 mt-1 guest-pricing"><span class="text-slate-400">Est. Price</span><a href="account.html" class="font-semibold text-sky-400" data-i18n="price.signIn">Sign in for pricing</a></div>
           </div>
           <a id="quote-btn" href="contact.html" class="mt-5 w-full inline-flex justify-center items-center px-5 py-2.5 rounded-full bg-sky-500 hover:bg-sky-400 text-white font-semibold text-sm transition">
             Request Quote for This Design
@@ -906,13 +905,15 @@
           <div class="preview-sticky">
           <div class="preview-meta flex items-center justify-between gap-3 mb-3 shrink-0">
             <h2 class="font-semibold text-base hidden lg:block" data-i18n="designer.preview">Live Wall Preview</h2>
-            <div class="preview-meta-left text-sm text-slate-400 min-w-0 truncate">
+            <div class="preview-meta-left text-sm text-slate-400 min-w-0">
               <span id="preview-size">11'10" × 6'8"</span>
               <span class="preview-desktop">
                 · <span id="preview-resolution">3,840 × 2,160</span>
                 (<span id="preview-grid">6×6</span>)
               </span>
               <span class="preview-mobile"> · <span id="preview-screens">36 screens</span></span>
+              · <span id="preview-weight">—</span>
+              · <span id="preview-power">—</span>
             </div>
             <div class="zoom-controls shrink-0">
               <button id="zoom-out" type="button" class="w-7 h-7 rounded-full border border-slate-600 hover:border-sky-500 text-slate-300 text-sm flex items-center justify-center" title="Zoom out">−</button>
@@ -1011,7 +1012,7 @@
             </div>
 
             <div class="flex flex-wrap gap-4 text-xs text-slate-500">
-              <div class="flex items-center gap-2"><span class="w-3 h-3 rounded-sm bg-sky-600 border border-sky-400/40"></span> Individual LED cabinets</div>
+              <div class="flex items-center gap-2"><span class="w-3 h-3 rounded-sm bg-sky-600 border border-sky-400/40"></span> Individual LED panels</div>
               <div id="wiring-legend" class="hidden items-center gap-4">
                 <span class="inline-flex items-center gap-1.5"><span class="w-4 h-0.5 bg-sky-400"></span> Data</span>
                 <span class="inline-flex items-center gap-1.5"><span class="w-4 h-0.5 bg-amber-400"></span> Power</span>
@@ -1021,7 +1022,7 @@
           </div>
 
           <div class="mt-5 p-4 rounded-xl bg-slate-900/50 border border-slate-800 text-sm text-slate-400">
-            <strong class="text-slate-200">Note:</strong> This is a planning visualization. Final cabinet count, exact resolution, mounting method, and pricing are confirmed by our team after reviewing site conditions and content requirements.
+            <strong class="text-slate-200">Note:</strong> This is a planning visualization. Final panel count, exact resolution, mounting method, and pricing are confirmed by our team after reviewing site conditions and content requirements.
           </div>
           </div>
       </div>
@@ -1854,7 +1855,7 @@
       if (!series) return;
       pitchEl.innerHTML = series.pitches.map(p => `<option value="${p}">${p} mm</option>`).join('');
       document.getElementById('cabinet-info').textContent = 
-        `Cabinet: ${(series.cabinetW * 1000).toFixed(0)} × ${(series.cabinetH * 1000).toFixed(1)} mm`;
+        `Panel: ${(series.cabinetW * 1000).toFixed(0)} × ${(series.cabinetH * 1000).toFixed(1)} mm`;
       updateDesign();
     }
 
@@ -1908,9 +1909,9 @@
           paintAspectButtons(aspectLock);
           const cabIsLock = Math.abs((series.cabinetW / series.cabinetH) - getAspectRatio()) < 0.03;
           if (cabIsLock && cols === rows) {
-            aspectActualEl.textContent = aspectLock + ' locked · ' + cols + ' × ' + rows + ' cabinets (each panel is ' + cabWmm + ' × ' + cabHmm + ' mm, already ' + aspectLock + ')';
+            aspectActualEl.textContent = aspectLock + ' locked · ' + cols + ' × ' + rows + ' panels (each panel is ' + cabWmm + ' × ' + cabHmm + ' mm, already ' + aspectLock + ')';
           } else {
-            aspectActualEl.textContent = aspectLock + ' locked · ' + cols + ' × ' + rows + ' cabinets · wall ' + actualRatio.toFixed(2) + ':1';
+            aspectActualEl.textContent = aspectLock + ' locked · ' + cols + ' × ' + rows + ' panels · wall ' + actualRatio.toFixed(2) + ':1';
           }
         }
       }
@@ -1978,6 +1979,8 @@
       // Results
       // area label set below with dual units
       document.getElementById('res-resolution').textContent = pxW.toLocaleString() + ' × ' + pxH.toLocaleString() + ' px';
+      const sizeResEl = document.getElementById('size-resolution');
+      if (sizeResEl) sizeResEl.textContent = pxW.toLocaleString() + ' × ' + pxH.toLocaleString() + ' px';
       const minViewM = pitch;
       const recLoM = pitch * 2;
       const recHiM = pitch * 3;
@@ -2019,6 +2022,10 @@
       if (previewResEl) previewResEl.textContent = pxW.toLocaleString() + ' × ' + pxH.toLocaleString();
       if (previewGridEl) previewGridEl.textContent = cols + '×' + rows;
       if (previewScreensEl) previewScreensEl.textContent = cabinets + ' screens';
+      const previewWeightEl = document.getElementById('preview-weight');
+      const previewPowerEl = document.getElementById('preview-power');
+      if (previewWeightEl) previewWeightEl.textContent = '~' + weightLbs.toLocaleString() + ' lbs';
+      if (previewPowerEl) previewPowerEl.textContent = '~' + powerPeak.toLocaleString() + ' W max';
       const dimW = document.getElementById('dim-width');
       const dimH = document.getElementById('dim-height');
       const dimD = document.getElementById('dim-diag');
@@ -2460,7 +2467,7 @@
       const ratio = (spec.actualW / Math.max(spec.actualH, 0.01)).toFixed(4);
       if (spec.cabinets > 800) {
         return '<div class="schematic-box" style="aspect-ratio:' + ratio + '"></div>'
-          + '<p class="note">' + spec.cols + ' × ' + spec.rows + ' cabinets</p>';
+          + '<p class="note">' + spec.cols + ' × ' + spec.rows + ' panels</p>';
       }
       const cells = new Array(spec.cabinets + 1).join('<i></i>');
       return '<div class="schematic" style="grid-template-columns:repeat(' + spec.cols + ',minmax(0,1fr));aspect-ratio:' + ratio + '">'
@@ -2513,8 +2520,8 @@
         + '<h2>Configuration</h2><table>'
         + specRow('Product', productLine)
         + specRow('Pixel pitch', 'P' + spec.pitch + ' mm')
-        + specRow('Cabinet', spec.cabinet)
-        + specRow('Grid', spec.cols + ' × ' + spec.rows + '  (' + spec.cabinets + ' cabinets)')
+        + specRow('Panel', spec.cabinet)
+        + specRow('Grid', spec.cols + ' × ' + spec.rows + '  (' + spec.cabinets + ' panels)')
         + specRow('Wall size', spec.sizeM + '  /  ' + spec.sizeFt)
         + specRow('Area', spec.area)
         + specRow('Aspect', spec.aspect)
@@ -2533,12 +2540,12 @@
         + specRow('Processor', spec.processor)
         + specRow('Playback', spec.playback || 'None')
         + '</table>'
-        + '<p class="note" style="text-align:left;margin-top:10px">Receiving cards are included in each cabinet. Do not add spare receiving cards to a new-wall quote.</p>'
+        + '<p class="note" style="text-align:left;margin-top:10px">Receiving cards are included in each panel. Do not add spare receiving cards to a new-wall quote.</p>'
         + (spec.price
           ? '<div class="price"><span>Estimated price</span><strong>' + escHtml(spec.price) + '</strong></div>'
           : '')
         + '</div><div>'
-        + '<h2>Cabinet layout</h2>'
+        + '<h2>Panel layout</h2>'
         + schematicHtml(spec)
         + '</div></div>'
         + '<footer>Estimates only — not a formal quote. Power, weight, circuits, and processor counts are typical for this series and grid; confirm on site. Prices exclude installation, structure, processing extras, and freight. '
