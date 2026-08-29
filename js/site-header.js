@@ -17,8 +17,18 @@
   }
 
   function onSolutionsPath() {
-    var p = (location.pathname || '').toLowerCase();
-    return p === '/solutions.html' || p.indexOf('/solutions/') === 0;
+    var p = (location.pathname || '').toLowerCase().replace(/\/$/, '') || '/';
+    if (
+      p === '/retail-hospitality' ||
+      p === '/worship' ||
+      p === '/corporate' ||
+      p === '/events-xr' ||
+      p === '/outdoor' ||
+      p === '/home-theater' ||
+      p === '/solutions' ||
+      p === '/solutions.html'
+    ) return true;
+    return p.indexOf('/solutions/') === 0;
   }
 
   function closeAll(except) {
@@ -111,7 +121,7 @@
       '<a href="/products.html" data-tab="products">' +
         icon('<path stroke-linecap="round" stroke-linejoin="round" d="M4.5 4.5h6v6h-6v-6zm9 0h6v6h-6v-6zm-9 9h6v6h-6v-6zm9 0h6v6h-6v-6z"/>') +
         '<span data-i18n="nav.products">Products</span></a>' +
-      '<a href="/solutions.html" data-tab="solutions">' +
+      '<a href="/retail-hospitality" data-tab="solutions">' +
         icon('<path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6A2.25 2.25 0 016 3.75h12A2.25 2.25 0 0120.25 6v8.25A2.25 2.25 0 0118 16.5H6a2.25 2.25 0 01-2.25-2.25V6zM8.25 19.5h7.5"/>') +
         '<span data-i18n="nav.solutions">Solutions</span></a>' +
       '<a href="/designer.html" data-tab="designer">' +
@@ -331,12 +341,12 @@
   };
 
   var SOLUTION_JOBS = [
-    { name: 'Retail & Hospitality', href: 'solutions/retail-hospitality.html', image: 'assets/content/solutions-retail.jpg', lead: 'Stores, restaurants, bars, clubs, hotels.' },
-    { name: 'Houses of Worship', href: 'solutions/worship.html', image: 'assets/content/news.jpg', lead: 'IMAG and sanctuary walls.' },
-    { name: 'Corporate & Control Rooms', href: 'solutions/corporate.html', image: 'assets/content/solutions-corporate.jpg', lead: 'Lobbies, boardrooms, 24/7 fine pitch.' },
-    { name: 'Live Events & XR', href: 'solutions/events-xr.html', image: 'assets/content/concert.jpg', lead: 'Rental, stage, virtual production.' },
-    { name: 'Outdoor & DOOH', href: 'solutions/outdoor.html', image: 'assets/content/city.jpg', lead: 'Fixed outdoor and street-facing.' },
-    { name: 'Home Theater & Residential', href: 'solutions/home.html', image: 'assets/content/solutions-residential.jpg', lead: 'Living rooms and media rooms.' }
+    { name: 'Retail & Hospitality', href: '/retail-hospitality', image: 'assets/content/solutions-retail.jpg', lead: 'Stores, restaurants, bars, clubs, hotels.' },
+    { name: 'Houses of Worship', href: '/worship', image: 'assets/content/news.jpg', lead: 'IMAG and sanctuary walls.' },
+    { name: 'Corporate & Control Rooms', href: '/corporate', image: 'assets/content/solutions-corporate.jpg', lead: 'Lobbies, boardrooms, 24/7 fine pitch.' },
+    { name: 'Live Events & XR', href: '/events-xr', image: 'assets/content/concert.jpg', lead: 'Rental, stage, virtual production.' },
+    { name: 'Outdoor & DOOH', href: '/outdoor', image: 'assets/content/city.jpg', lead: 'Fixed outdoor and street-facing.' },
+    { name: 'Home Theater & Residential', href: '/home-theater', image: 'assets/content/solutions-residential.jpg', lead: 'Living rooms and media rooms.' }
   ];
 
   function megaCardsHtml(items) {
@@ -404,8 +414,8 @@
     return (
       '<div class="site-mega-jobs">' + solutionCardsHtml() + '</div>' +
       '<div class="site-mega-foot">' +
-        '<div class="site-mega-foot-item"><span>Explore</span><a href="/solutions.html">Explore all solutions</a></div>' +
         '<div class="site-mega-foot-item"><span>Sales</span><a href="/contact.html">Talk to sales</a></div>' +
+        '<div class="site-mega-foot-item"><span>Dealer</span><a href="/dealer.html">Dealer signup</a></div>' +
       '</div>'
     );
   }

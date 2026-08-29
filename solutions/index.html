@@ -2,12 +2,36 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta http-equiv="refresh" content="0; url=/solutions.html" />
-  <link rel="canonical" href="https://www.spectrumdisplay.com/solutions.html" />
-  <title>LED walls by job | Spectrum Display</title>
-  <script>location.replace('/solutions.html' + location.search + location.hash);</script>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Solutions | Spectrum Display</title>
+  <meta name="robots" content="noindex, follow" />
+  <link rel="canonical" href="https://www.spectrumdisplay.com/retail-hospitality" />
+  <meta http-equiv="refresh" content="0; url=/retail-hospitality" />
+  <script>
+    (function () {
+      var map = {
+        retail: '/retail-hospitality',
+        shop: '/retail-hospitality',
+        restaurant: '/retail-hospitality',
+        'sports-bar': '/retail-hospitality',
+        nightclub: '/retail-hospitality',
+        hospitality: '/retail-hospitality',
+        worship: '/worship',
+        corporate: '/corporate',
+        'control-rooms': '/corporate',
+        'fine-pitch': '/corporate',
+        education: '/corporate',
+        sports: '/events-xr',
+        'rental-houses': '/events-xr',
+        broadcast: '/events-xr',
+        residential: '/home-theater'
+      };
+      var hash = (location.hash || '').replace('#', '');
+      location.replace((map[hash] || '/retail-hospitality') + location.search);
+    })();
+  </script>
 </head>
 <body>
-  <p><a href="/solutions.html">Continue to Solutions</a></p>
+  <p><a href="/retail-hospitality">Continue to Retail &amp; Hospitality</a></p>
 </body>
 </html>

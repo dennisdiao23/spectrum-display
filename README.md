@@ -38,7 +38,12 @@ Hosting is **Railway only** (not Netlify or Vercel).
 | `index.html` | Homepage |
 | `products.html` | Catalog with filters |
 | `product.html` | Product + configurator |
-| `solutions.html` | Solutions |
+| `retail-hospitality.html` | Retail & Hospitality (`/retail-hospitality`) |
+| `worship.html` | Houses of Worship (`/worship`) |
+| `corporate.html` | Corporate & Control Rooms (`/corporate`) |
+| `events-xr.html` | Live Events & XR (`/events-xr`) |
+| `outdoor.html` | Outdoor & DOOH (`/outdoor`) |
+| `home-theater.html` | Home Theater & Residential (`/home-theater`) |
 | `support.html` | Support |
 | `designer.html` | Designer / saved projects (needs Sign in) |
 | `account.html` | Customer Sign in / account |

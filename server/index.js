@@ -87,9 +87,50 @@ async function main() {
     const qs = req.url.includes('?') ? req.url.slice(req.url.indexOf('?')) : '';
     res.redirect(301, '/' + qs);
   });
-  app.get(['/solutions', '/solutions/'], function (req, res) {
-    const qs = req.url.includes('?') ? req.url.slice(req.url.indexOf('?')) : '';
-    res.redirect(301, '/solutions.html' + qs);
+
+  const JOB_PAGES = [
+    ['/retail-hospitality', 'retail-hospitality.html'],
+    ['/worship', 'worship.html'],
+    ['/corporate', 'corporate.html'],
+    ['/events-xr', 'events-xr.html'],
+    ['/outdoor', 'outdoor.html'],
+    ['/home-theater', 'home-theater.html']
+  ];
+  JOB_PAGES.forEach(function (pair) {
+    const route = pair[0];
+    const file = pair[1];
+    app.get([route, route + '/'], function (_req, res) {
+      res.sendFile(path.join(ROOT, file));
+    });
+    app.get('/' + file, function (req, res) {
+      const qs = req.url.includes('?') ? req.url.slice(req.url.indexOf('?')) : '';
+      res.redirect(301, route + qs);
+    });
+  });
+
+  const OLD_SOLUTION_REDIRECTS = [
+    ['/solutions/retail-hospitality.html', '/retail-hospitality'],
+    ['/solutions/retail-hospitality', '/retail-hospitality'],
+    ['/solutions/worship.html', '/worship'],
+    ['/solutions/worship', '/worship'],
+    ['/solutions/corporate.html', '/corporate'],
+    ['/solutions/corporate', '/corporate'],
+    ['/solutions/events-xr.html', '/events-xr'],
+    ['/solutions/events-xr', '/events-xr'],
+    ['/solutions/outdoor.html', '/outdoor'],
+    ['/solutions/outdoor', '/outdoor'],
+    ['/solutions/home.html', '/home-theater'],
+    ['/solutions/home', '/home-theater']
+  ];
+  OLD_SOLUTION_REDIRECTS.forEach(function (pair) {
+    app.get([pair[0], pair[0] + '/'], function (req, res) {
+      const qs = req.url.includes('?') ? req.url.slice(req.url.indexOf('?')) : '';
+      res.redirect(301, pair[1] + qs);
+    });
+  });
+
+  app.get(['/solutions', '/solutions/'], function (_req, res) {
+    res.sendFile(path.join(ROOT, 'solutions.html'));
   });
   app.use('/uploads', express.static(path.join(ROOT, 'uploads')));
 
@@ -123,13 +164,12 @@ async function main() {
       ['/', 'weekly', '1.0'],
       ['/products.html', 'weekly', '0.9'],
       ['/control.html', 'weekly', '0.8'],
-      ['/solutions.html', 'monthly', '0.8'],
-      ['/solutions/retail-hospitality.html', 'monthly', '0.7'],
-      ['/solutions/worship.html', 'monthly', '0.7'],
-      ['/solutions/corporate.html', 'monthly', '0.7'],
-      ['/solutions/events-xr.html', 'monthly', '0.7'],
-      ['/solutions/outdoor.html', 'monthly', '0.7'],
-      ['/solutions/home.html', 'monthly', '0.7'],
+      ['/retail-hospitality', 'monthly', '0.7'],
+      ['/worship', 'monthly', '0.7'],
+      ['/corporate', 'monthly', '0.7'],
+      ['/events-xr', 'monthly', '0.7'],
+      ['/outdoor', 'monthly', '0.7'],
+      ['/home-theater', 'monthly', '0.7'],
       ['/designer.html', 'monthly', '0.8'],
       ['/dealer.html', 'monthly', '0.7'],
       ['/contact.html', 'monthly', '0.7'],
