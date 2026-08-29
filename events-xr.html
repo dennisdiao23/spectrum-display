@@ -1,0 +1,359 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <script src="/js/i18n-boot.js"></script>
+  <link rel="stylesheet" href="/css/site-header.css" />
+  <link rel="stylesheet" href="/css/home.css" />
+  <title>Live Events & XR | Spectrum Display</title>
+  <meta name="description" content="Rental cabinets, stage walls, and camera-ready virtual production. U.S. stock." />
+  <link rel="canonical" href="https://www.spectrumdisplay.com/events-xr" />
+  <meta property="og:type" content="website" />
+  <meta property="og:site_name" content="Spectrum Display" />
+  <meta property="og:title" content="Live Events & XR | Spectrum Display" />
+  <meta property="og:description" content="Rental cabinets, stage walls, and camera-ready virtual production. U.S. stock." />
+  <meta property="og:url" content="https://www.spectrumdisplay.com/events-xr" />
+  <meta property="og:image" content="https://www.spectrumdisplay.com/assets/content/concert.jpg" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="Live Events & XR | Spectrum Display" />
+  <meta name="twitter:description" content="Rental cabinets, stage walls, and camera-ready virtual production. U.S. stock." />
+  <script src="/js/seo.js"></script>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            spectrum: {
+              50: '#f0f9ff',
+              100: '#e0f2fe',
+              200: '#bae6fd',
+              300: '#7dd3fc',
+              400: '#38bdf8',
+              500: '#0ea5e9',
+              600: '#0284c7',
+              700: '#0369a1',
+              800: '#075985',
+              900: '#0c4a6e',
+              950: '#082f49',
+            }
+          },
+          fontFamily: {
+            sans: ['Inter', 'system-ui', 'sans-serif'],
+          }
+        }
+      }
+    }
+  </script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    body { font-family: 'Inter', system-ui, sans-serif; }
+  </style>
+</head>
+<body class="home-page antialiased">
+  <header class="site-header" id="site-header">
+    <div class="site-header-inner">
+      <div class="site-header-top">
+        <a href="/" class="site-brand">
+          <img src="/assets/spectrum-logo.png" alt="Spectrum" class="site-brand-logo" />
+        </a>
+        <nav class="site-nav" id="site-nav">
+          <div class="site-nav-item" data-mega="products">
+            <button type="button" class="site-nav-link" aria-expanded="false" aria-haspopup="true">
+              <span data-i18n="nav.products">Products</span>
+              <svg class="site-nav-chevron" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M6 9l6 6 6-6"/></svg>
+            </button>
+          </div>
+          <div class="site-nav-item" data-mega="solutions">
+            <button type="button" class="site-nav-link is-active" aria-expanded="false" aria-haspopup="true">
+              <span data-i18n="nav.solutions">Solutions</span>
+              <svg class="site-nav-chevron" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M6 9l6 6 6-6"/></svg>
+            </button>
+          </div>
+          <a class="site-nav-link" href="/designer.html" data-i18n="nav.designer">LED Wall Calculator</a>
+          <a class="site-nav-link" href="/dealer.html" data-i18n="nav.dealer">Dealer</a>
+        </nav>
+        <div class="site-utils">
+          <div class="site-drop" id="hdr-search-drop">
+            <button type="button" class="site-util site-icon-btn" aria-label="Search" aria-haspopup="true">
+              <svg fill="none" stroke="currentColor" stroke-width="1.7" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z"/></svg>
+            </button>
+            <div class="site-drop-panel site-search-panel">
+              <form id="hdr-search-form" action="/products.html" method="get">
+                <input id="hdr-search-input" name="q" type="search" autocomplete="off" placeholder="Search products" data-i18n-placeholder="nav.searchPlaceholder" />
+              </form>
+              <div class="site-search-results" id="hdr-search-results"></div>
+            </div>
+          </div>
+          <div class="site-drop" id="hdr-lang-drop">
+            <button type="button" class="site-util site-icon-btn" aria-label="Language" aria-haspopup="true">
+              <svg fill="none" stroke="currentColor" stroke-width="1.7" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 21a9 9 0 100-18 9 9 0 000 18zM3.6 9h16.8M3.6 15h16.8M12 3c2.5 3.2 2.5 14.8 0 18M12 3c-2.5 3.2-2.5 14.8 0 18"/></svg>
+            </button>
+            <div class="site-drop-panel site-lang-panel">
+              <button type="button" data-set-lang="en">English</button>
+              <button type="button" data-set-lang="es">Español</button>
+              <button type="button" data-set-lang="fr">Français</button>
+              <button type="button" data-set-lang="ko">한국어</button>
+              <button type="button" data-set-lang="ja">日本語</button>
+              <button type="button" data-set-lang="zh">中文</button>
+            </div>
+          </div>
+          <div class="site-drop" id="hdr-signin-drop">
+            <button type="button" class="site-util" aria-haspopup="true">
+              <svg fill="none" stroke="currentColor" stroke-width="1.7" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 7.5a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.5 19.5a7.5 7.5 0 0115 0"/></svg>
+              <span class="site-util-label site-util-guest" data-i18n="nav.signin">Sign in</span>
+              <span class="site-util-label site-util-user" id="hdr-user-name"></span>
+            </button>
+            <div class="site-drop-panel">
+              <div class="site-guest">
+                <h3 data-i18n="nav.myAccount">My Account</h3>
+                <ul class="site-account-roles">
+                  <li data-i18n="nav.benefitOrders">Place orders quickly and easily</li>
+                  <li data-i18n="nav.benefitTrack">View orders and track your shipping status</li>
+                  <li data-i18n="nav.benefitList">Create and access a list of your products</li>
+                  <li data-i18n="nav.benefitProjects">View Saved Projects</li>
+                </ul>
+                <div class="site-drop-actions">
+                  <a href="/account.html" class="site-btn-primary" data-i18n="nav.signin">Sign in</a>
+                  <a href="/account.html?mode=register" class="site-btn-ghost" data-i18n="nav.createAccount">Create account</a>
+                </div>
+              </div>
+              <div class="site-logged">
+                <h3 id="hdr-user-name-panel"></h3>
+                <p id="hdr-user-role"></p>
+                <div class="site-drop-list">
+                  <a href="/account.html" data-i18n="nav.myAccount">My Account</a>
+                  <button type="button" id="hdr-logout" data-i18n="nav.signout">Sign out</button>
+                </div>
+              </div>
+            </div>
+          </div>
+          <a href="/support.html" class="site-util site-support-link"><span data-i18n="nav.support">Support</span></a>
+          <a href="/contact.html" class="site-cta" data-i18n="nav.contactSales">Contact Sales</a>
+          <a href="/contact.html" class="site-util site-contact-icon" aria-label="Contact Sales">
+            <svg fill="none" stroke="currentColor" stroke-width="1.7" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M21.75 6.75v10.5a2.25 2.25 0 01-2.25 2.25h-15a2.25 2.25 0 01-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0019.5 4.5h-15a2.25 2.25 0 00-2.25 2.25m19.5 0v.243a2.25 2.25 0 01-1.07 1.916l-7.5 4.615a2.25 2.25 0 01-2.36 0L3.32 8.91a2.25 2.25 0 01-1.07-1.916V6.75"/></svg>
+          </a>
+          <a href="/cart.html" class="site-util site-cart site-icon-btn" aria-label="Cart">
+            <svg fill="none" stroke="currentColor" stroke-width="1.7" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"/></svg>
+            <span class="site-cart-count" id="cart-count">0</span>
+          </a>
+          <button type="button" class="site-util site-menu-btn" id="hdr-menu-btn" aria-label="Menu">
+            <svg fill="none" stroke="currentColor" stroke-width="1.7" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h16"/></svg>
+          </button>
+        </div>
+      </div>
+    </div>
+  </header>
+  <section class="home-hero">
+    <div class="home-hero-blobs" aria-hidden="true"><span class="b1"></span><span class="b2"></span><span class="b3"></span></div>
+    <div class="site-wrap relative" style="text-align:center">
+      <p class="home-control-line">Solutions</p>
+      <h1>
+        Live Events<br />
+        <em>&amp; XR</em>
+      </h1>
+      <p class="lead">Rental cabinets, stage walls, and camera-ready virtual production.</p>
+      <div class="home-ctas">
+        <a class="home-btn home-btn-primary" href="/designer.html">
+          <span>Open calculator</span>
+          <svg class="w-4 h-4" width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3"/></svg>
+        </a>
+        <a class="home-btn home-btn-ghost" href="/contact.html">Contact sales</a>
+        <a class="home-btn home-btn-ghost" href="/dealer.html">Dealer signup</a>
+      </div>
+    </div>
+  </section>
+  <section class="home-section" style="padding-top:1.5rem">
+    <div class="site-wrap">
+      <article class="home-spot">
+        <div class="home-spot-copy">
+          <div class="home-kicker">Events</div>
+          <h3>Touring / rental</h3>
+          <p>Lightweight cabinets, cases, and a fast rig. Built for houses that load in and out — not a wall that sits in a crate for eight weeks on a boat.</p>
+          <a class="home-btn home-btn-primary" href="/designer.html" style="align-self:flex-start">Open the calculator</a>
+        </div>
+        <a class="home-spot-media" href="/designer.html" aria-label="Open the calculator">
+          <img src="/assets/content/concert.jpg" alt="Live event LED wall" />
+        </a>
+      </article>
+    </div>
+  </section>
+  <section class="home-section" style="padding-top:0">
+    <div class="site-wrap">
+      <div class="home-center" style="margin-bottom:2rem">
+        <h2>Stage, festival, and camera-ready</h2>
+        <p class="sub">Indoor and outdoor rental cabinets, plus creative curves when the set needs them. Cards stay inside the wall price on a new purchase.</p>
+      </div>
+      <div class="home-why">
+        <article>
+          <div class="icon" aria-hidden="true">
+            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg>
+          </div>
+          <h3>Stage and house events</h3>
+          <p>Festivals, ballrooms, and one-nighters. High refresh so cameras do not strobe. Spec from the calculator, then confirm stock with sales.</p>
+        </article>
+        <article>
+          <div class="icon" aria-hidden="true">
+            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+          </div>
+          <h3>XR / virtual production</h3>
+          <p>Fine pitch that holds on camera, high refresh, and a processor that can take the volume. Broadcast studios sit in this same stack.</p>
+        </article>
+        <article>
+          <div class="icon" aria-hidden="true">
+            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
+          </div>
+          <h3>U.S. stock, tour-ready pitches</h3>
+          <p>The hook is inventory you can actually pull — not an 8-week boat. Rental and integrator shops apply once for dealer nets after approval.</p>
+        </article>
+      </div>
+    </div>
+  </section>
+  <section class="home-section" style="padding-top:0" id="audience">
+    <div class="site-wrap">
+      <article class="home-spot" id="integrators" style="margin-bottom:1.5rem">
+        <div class="home-spot-copy">
+          <div class="home-kicker">Dealers</div>
+          <h3>For integrators &amp; dealers</h3>
+          <p>Small AV shops hang the wall. Apply once, then see nets after approval — not on these public pages.</p>
+          <a class="home-btn home-btn-primary" href="/dealer.html" style="align-self:flex-start">Dealer signup</a>
+        </div>
+        <a class="home-spot-media" href="/dealer.html" aria-label="Dealer signup">
+          <img src="/assets/content/solutions-corporate.jpg" alt="Integrator LED wall install" />
+        </a>
+      </article>
+      <article class="home-spot" id="end-users">
+        <div class="home-spot-copy">
+          <div class="home-kicker">Projects</div>
+          <h3>Project with no installer</h3>
+          <p>Size the wall in the calculator, then talk to sales. We will help you find a hang path or quote the cabinets.</p>
+          <div class="home-ctas" style="justify-content:flex-start"><a class="home-btn home-btn-primary" href="/contact.html">Contact sales</a><a class="home-btn home-btn-ghost" href="/designer.html">Open calculator</a></div>
+        </div>
+        <a class="home-spot-media" href="/contact.html" aria-label="Contact sales">
+          <img src="/assets/content/calculator-devices.png" alt="Quote the wall with sales" />
+        </a>
+      </article>
+    </div>
+  </section>
+  <section class="home-section" style="padding-top:0">
+    <div class="site-wrap">
+      <div class="home-center" style="margin-bottom:2rem">
+        <h2>More solutions</h2>
+        <p class="sub">Other jobs we quote.</p>
+      </div>
+      <div class="home-cats">
+        <a class="home-cat" href="/retail-hospitality">
+          <img src="/assets/content/solutions-retail.jpg" alt="Retail LED video wall" />
+          <div>
+            <h3>Retail &amp; Hospitality</h3>
+            <p>Stores, restaurants, bars, clubs, hotels.</p>
+          </div>
+        </a>
+        <a class="home-cat" href="/worship">
+          <img src="/assets/content/news.jpg" alt="House of worship LED wall" />
+          <div>
+            <h3>Houses of Worship</h3>
+            <p>IMAG and sanctuary walls.</p>
+          </div>
+        </a>
+        <a class="home-cat" href="/corporate">
+          <img src="/assets/content/solutions-corporate.jpg" alt="Corporate lobby LED wall" />
+          <div>
+            <h3>Corporate &amp; Control Rooms</h3>
+            <p>Lobbies, boardrooms, 24/7 fine pitch.</p>
+          </div>
+        </a>
+        <a class="home-cat" href="/outdoor">
+          <img src="/assets/content/city.jpg" alt="Outdoor LED facade" />
+          <div>
+            <h3>Outdoor &amp; DOOH</h3>
+            <p>Fixed outdoor and street-facing.</p>
+          </div>
+        </a>
+        <a class="home-cat" href="/home-theater">
+          <img src="/assets/content/solutions-residential.jpg" alt="Home theater LED wall" />
+          <div>
+            <h3>Home Theater &amp; Residential</h3>
+            <p>Living rooms and media rooms.</p>
+          </div>
+        </a>
+      </div>
+      <div class="home-head-row" style="justify-content:center;margin-top:1.5rem"><a href="/events-xr">Broadcast studios</a></div>
+    </div>
+  </section>
+  <div class="site-wrap">
+    <section class="home-band">
+      <h2>Spec the rig, then confirm stock</h2>
+      <p>Use the calculator, then talk to sales. Dealers apply once and see nets after approval.</p>
+      <div class="home-ctas">
+        <a class="home-btn home-btn-primary" href="/designer.html">Open calculator</a>
+        <a class="home-btn home-btn-light" href="/contact.html">Contact sales</a>
+      </div>
+    </section>
+  </div>
+  <footer class="bg-slate-950 text-slate-100 border-t border-slate-800 py-16">
+    <div class="site-wrap grid md:grid-cols-4 gap-10">
+      <div>
+        <a href="/" class="inline-block mb-4">
+          <img src="/assets/spectrum-logo.png" alt="Spectrum" class="site-brand-logo" style="height:2.5rem" />
+        </a>
+        <p class="text-sm text-slate-400" data-i18n="footer.about">Premium LED display distributor serving North America. Authorized partner of five leading manufacturers.</p>
+        <ul class="mt-4 space-y-1 text-sm text-slate-400">
+          <li><a href="mailto:info@spectrumdisplay.com" class="hover:text-white">info@spectrumdisplay.com</a></li>
+          <li><a href="mailto:sales@spectrumdisplay.com" class="hover:text-white">sales@spectrumdisplay.com</a></li>
+          <li><a href="mailto:support@spectrumdisplay.com" class="hover:text-white">support@spectrumdisplay.com</a></li>
+        </ul>
+      </div>
+      <div>
+        <h4 class="font-semibold mb-4 text-sm uppercase tracking-wider text-slate-300" data-i18n="footer.products">Products</h4>
+        <ul class="space-y-2 text-sm text-slate-400">
+          <li><a href="/products.html?cat=indoor-rental" class="hover:text-white">Indoor rental</a></li>
+          <li><a href="/products.html?cat=outdoor-rental" class="hover:text-white">Outdoor rental</a></li>
+          <li><a href="/products.html?cat=cob" class="hover:text-white">Fine pitch / COB</a></li>
+          <li><a href="/products.html?cat=fixed-indoor" class="hover:text-white">Fixed indoor</a></li>
+          <li><a href="/control.html" class="hover:text-white">Control systems</a></li>
+        </ul>
+      </div>
+      <div>
+        <h4 class="font-semibold mb-4 text-sm uppercase tracking-wider text-slate-300" data-i18n="footer.company">Company</h4>
+        <ul class="space-y-2 text-sm text-slate-400">
+          <li><a href="/retail-hospitality" class="hover:text-white">Retail &amp; Hospitality</a></li>
+          <li><a href="/worship" class="hover:text-white">Houses of Worship</a></li>
+          <li><a href="/corporate" class="hover:text-white">Corporate &amp; Control Rooms</a></li>
+          <li><a href="/events-xr" class="hover:text-white">Live Events &amp; XR</a></li>
+          <li><a href="/outdoor" class="hover:text-white">Outdoor &amp; DOOH</a></li>
+          <li><a href="/home-theater" class="hover:text-white">Home Theater &amp; Residential</a></li>
+          <li><a href="/dealer.html" class="hover:text-white" data-i18n="footer.dealer">Become a dealer</a></li>
+        </ul>
+      </div>
+      <div>
+        <h4 class="font-semibold mb-4 text-sm uppercase tracking-wider text-slate-300" data-i18n="footer.support">Support</h4>
+        <ul class="space-y-2 text-sm text-slate-400">
+          <li><a href="/support.html#tech" class="hover:text-white" data-i18n="footer.tech">Technical Resources</a></li>
+          <li><a href="/warranty.html" class="hover:text-white" data-i18n="footer.warranty">Warranty</a></li>
+          <li><a href="/shipping.html" class="hover:text-white" data-i18n="footer.shipping">Shipping & Returns</a></li>
+          <li><a href="/contact.html" class="hover:text-white" data-i18n="nav.contactSales">Contact Sales</a></li>
+          <li><a href="/account.html" class="hover:text-white">My Account</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="site-wrap mt-12 pt-8 border-t border-slate-800 text-sm text-slate-500 flex flex-col sm:flex-row justify-between gap-4">
+      <p data-i18n="footer.copy">© 2026 Spectrum Display. All rights reserved.</p>
+      <div class="flex gap-6">
+        <a href="/privacy.html" class="hover:text-slate-300" data-i18n="footer.privacy">Privacy</a>
+        <a href="/terms.html" class="hover:text-slate-300" data-i18n="footer.terms">Terms</a>
+      </div>
+    </div>
+  </footer>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="/js/supabase-client.js"></script>
+  <script src="/js/pricing.js"></script>
+  <script src="/js/auth.js"></script>
+  <script src="/js/site-header.js"></script>
+  <script src="/js/i18n.js"></script>
+</body>
+</html>
