@@ -54,6 +54,12 @@ function createSupabaseStore() {
     } catch (e) {
       console.error('Could not fill product details:', e.message || e);
     }
+
+    try {
+      await rewriteExistingCabinetCopy();
+    } catch (e) {
+      console.error('Could not rename cabinet copy to panel:', e.message || e);
+    }
   }
 
   async function upsertMissingCatalog() {
@@ -126,6 +132,34 @@ function createSupabaseStore() {
       const { error: upErr } = await supabase.from('products').update({ details: next }).eq('id', row.id);
       throwIf(upErr, 'Could not fill product details for ' + row.series_id);
     }
+  }
+
+  async function rewriteExistingCabinetCopy() {
+    const { data: products, error } = await supabase
+      .from('products')
+      .select('id, description, badge, details');
+    throwIf(error, 'Could not read products for cabinet-to-panel copy.');
+    let n = 0;
+    for (let i = 0; i < (products || []).length; i++) {
+      const row = products[i];
+      const desc = dbUtil.rewriteCabinetCopy(row.description || '');
+      const badge = dbUtil.rewriteCabinetCopy(row.badge || '');
+      const details = dbUtil.rewriteCabinetCopy(dbUtil.parseDetails(row));
+      if (
+        desc === (row.description || '') &&
+        badge === (row.badge || '') &&
+        JSON.stringify(details) === JSON.stringify(dbUtil.parseDetails(row))
+      ) {
+        continue;
+      }
+      const { error: upErr } = await supabase
+        .from('products')
+        .update({ description: desc, badge: badge, details: details })
+        .eq('id', row.id);
+      throwIf(upErr, 'Could not rename cabinet copy for product ' + row.id);
+      n += 1;
+    }
+    if (n) console.log('Renamed cabinet copy to panel on ' + n + ' products');
   }
 
   return {

@@ -62,7 +62,7 @@ window.SPECTRUM_PRODUCTS = {
         cabinetW: 0.5,
         cabinetH: 0.5,
         type: "Rental",
-        description: "High-end indoor rental LED. 500×500 mm cabinets, 3840/7680 Hz refresh, GOB/HOB on fine pitches, ±10° curve, 10 m hang/stack.",
+        description: "High-end indoor rental LED. 500×500 mm panels, 3840/7680 Hz refresh, GOB/HOB on fine pitches, ±10° curve, 10 m hang/stack.",
         badge: "Rental",
         cats: [
           "rental",
@@ -73,7 +73,7 @@ window.SPECTRUM_PRODUCTS = {
           "assets/products/gloshine/mvultra-g1.jpg"
         ],
         sourceUrl: "https://gloshine.com/products/mv-ultra-series.html",
-        lead: "MV Ultra Series High-End Indoor Rental LED Display,Support Novastar 5G & Brompton Control Solutions,Optional curved cabinets with adjustable angles: -10°/-7.5°/-5°/-2.5°/0°/2.5°/5°/7.5°/10°.Featuring a wide color gamut, HDR technology, 16-bit grayscale, a high frame rate of 250FPS, a refresh rate of 7680Hz, and an ultra-wide viewing angle of H:160°/V:140°, it delivers a comprehensive and distortion-free visual display solution.",
+        lead: "MV Ultra Series High-End Indoor Rental LED Display,Support Novastar 5G & Brompton Control Solutions,Optional curved panels with adjustable angles: -10°/-7.5°/-5°/-2.5°/0°/2.5°/5°/7.5°/10°.Featuring a wide color gamut, HDR technology, 16-bit grayscale, a high frame rate of 250FPS, a refresh rate of 7680Hz, and an ultra-wide viewing angle of H:160°/V:140°, it delivers a comprehensive and distortion-free visual display solution.",
         specTable: [
           [
             "Model No.",
@@ -129,7 +129,7 @@ window.SPECTRUM_PRODUCTS = {
           ],
           [
             "Panel Material",
-            "Die-Casting Cabinet"
+            "Die-Casting Panel"
           ],
           [
             "Viewing Angle",
@@ -171,7 +171,7 @@ window.SPECTRUM_PRODUCTS = {
         cabinetW: 0.5,
         cabinetH: 0.5,
         type: "Rental",
-        description: "Indoor DN rental cabinets with magnetic front service, dual locks, ±10° curve, and 45° bevel options. 500×500 / 500×1000 mm.",
+        description: "Indoor DN rental panels with magnetic front service, dual locks, ±10° curve, and 45° bevel options. 500×500 / 500×1000 mm.",
         badge: "Rental",
         cats: [
           "rental",
@@ -182,7 +182,7 @@ window.SPECTRUM_PRODUCTS = {
           "assets/products/gloshine/dnin-g2.png"
         ],
         sourceUrl: "https://gloshine.com/products/dn-series.html",
-        lead: "Perfect for concerts, exhibitions, and broadcasts, our rental LED displays feature magnetic modules and dual-lock cabinets for fast setup and flexible cube or arc configurations.",
+        lead: "Perfect for concerts, exhibitions, and broadcasts, our rental LED displays feature magnetic modules and dual-lock panels for fast setup and flexible cube or arc configurations.",
         specTable: [
           [
             "Application Scenario",
@@ -248,7 +248,7 @@ window.SPECTRUM_PRODUCTS = {
           ],
           [
             "Curve",
-            "Curved cabinet/45° beveled cabinet（±10° curved lock）：-10°/-7.5°/-5°/-2.5°/0°/2.5°/5°/7.5°/10° 90° lock or 90° connector plate can do vertical splicing."
+            "Curved panel/45° beveled panel（±10° curved lock）：-10°/-7.5°/-5°/-2.5°/0°/2.5°/5°/7.5°/10° 90° lock or 90° connector plate can do vertical splicing."
           ]
         ]
       },
@@ -267,7 +267,7 @@ window.SPECTRUM_PRODUCTS = {
         cabinetW: 0.5,
         cabinetH: 0.5,
         type: "Outdoor",
-        description: "Outdoor rental/fixed DN cabinets with magnetic modules, dual top locks, IP65 front, curve and 90° splicing.",
+        description: "Outdoor rental/fixed DN panels with magnetic modules, dual top locks, IP65 front, curve and 90° splicing.",
         badge: null,
         cats: [
           "outdoor"
@@ -279,7 +279,7 @@ window.SPECTRUM_PRODUCTS = {
           "assets/products/gloshine/dnout-g3.png"
         ],
         sourceUrl: "https://gloshine.com/products/dn-series-outdoor.html",
-        lead: "DN Series-Ultra-Thin Creative Display,Ultra Thin & Lightweight Cabinet ;Classical Industrial-style Design Quick Installation & Maintenance;Multiple Shapes, available splicing for Vertical Angle/Cube/Curve etc.",
+        lead: "DN Series-Ultra-Thin Creative Display,Ultra Thin & Lightweight Panel ;Classical Industrial-style Design Quick Installation & Maintenance;Multiple Shapes, available splicing for Vertical Angle/Cube/Curve etc.",
         specTable: [
           [
             "Model No.",
@@ -342,7 +342,7 @@ window.SPECTRUM_PRODUCTS = {
           ],
           [
             "Curve",
-            "Curved cabinet/45° beveled cabinet（±10° curved lock）：-10°/-7.5°/-5°/-2.5°/0°/2.5°/5°/7.5°/10° 90° lock or 90° connector plate can do vertical splicing."
+            "Curved panel/45° beveled panel（±10° curved lock）：-10°/-7.5°/-5°/-2.5°/0°/2.5°/5°/7.5°/10° 90° lock or 90° connector plate can do vertical splicing."
           ]
         ]
       },
@@ -361,7 +361,7 @@ window.SPECTRUM_PRODUCTS = {
         cabinetW: 0.5,
         cabinetH: 0.5,
         type: "Transparent",
-        description: "Outdoor transparent LED with ≥35% transparency, IP65 cabinets, ultra-light panels, concave/convex and 90° setups.",
+        description: "Outdoor transparent LED with ≥35% transparency, IP65 panels, ultra-light panels, concave/convex and 90° setups.",
         badge: "Transparent",
         cats: [
           "outdoor",
@@ -419,7 +419,7 @@ window.SPECTRUM_PRODUCTS = {
             "VA mini:5.1kg±10% VA:8.0kg±10%"
           ],
           [
-            "Cabinet Material",
+            "Panel Material",
             "Die casting Aluminium"
           ]
         ]
@@ -439,7 +439,7 @@ window.SPECTRUM_PRODUCTS = {
         cabinetW: 1.0,
         cabinetH: 1.0,
         type: "Outdoor",
-        description: "High-end outdoor large-scale rental. 1000×1000 mm cabinets with touring frame; solid and transparent-hybrid modules.",
+        description: "High-end outdoor large-scale rental. 1000×1000 mm panels with touring frame; solid and transparent-hybrid modules.",
         badge: "Rental",
         cats: [
           "outdoor",
@@ -450,7 +450,7 @@ window.SPECTRUM_PRODUCTS = {
           "assets/products/gloshine/vamax-g1.png"
         ],
         sourceUrl: "https://gloshine.com/products/va-max.html",
-        lead: "The VA MAX Series, which has won the Red Dot Award, is a high-performance display product specifically designed for outdoor touring scenes in Europe and the United States. It is renowned for its extreme load-bearing capacity and superior stability. The VA MAX Series features an integrated die-cast aluminum cabinet frame, with a total unit weight of 22 kilograms. The structure is robust and durable. Equipped with a foldable wind-resistant frame, it can withstand winds of Force 8 or above and endure tension and pressure of up to 3.5 tons.",
+        lead: "The VA MAX Series, which has won the Red Dot Award, is a high-performance display product specifically designed for outdoor touring scenes in Europe and the United States. It is renowned for its extreme load-bearing capacity and superior stability. The VA MAX Series features an integrated die-cast aluminum panel frame, with a total unit weight of 22 kilograms. The structure is robust and durable. Equipped with a foldable wind-resistant frame, it can withstand winds of Force 8 or above and endure tension and pressure of up to 3.5 tons.",
         specTable: [
           [
             "Model No.",
@@ -511,7 +511,7 @@ window.SPECTRUM_PRODUCTS = {
         cabinetW: 1.0,
         cabinetH: 1.0,
         type: "Outdoor",
-        description: "Lightweight outdoor rental. 1000×1000 mm magnesium + carbon fiber cabinets, IP65 front, 3840/7680 Hz.",
+        description: "Lightweight outdoor rental. 1000×1000 mm magnesium + carbon fiber panels, IP65 front, 3840/7680 Hz.",
         badge: "Rental",
         cats: [
           "outdoor",
@@ -590,7 +590,7 @@ window.SPECTRUM_PRODUCTS = {
         cabinetW: 1.0,
         cabinetH: 1.0,
         type: "Outdoor",
-        description: "Outdoor carbon-fiber rental cabinet with wind-bracing option, ±10° curve, IP65 front / IP54 rear.",
+        description: "Outdoor carbon-fiber rental panel with wind-bracing option, ±10° curve, IP65 front / IP54 rear.",
         badge: "Rental",
         cats: [
           "outdoor",
@@ -636,7 +636,7 @@ window.SPECTRUM_PRODUCTS = {
             "With Wind-Bracing System 17.5kg±10% / Without Wind-Bracing System 20kg±10％"
           ],
           [
-            "Cabinet Material",
+            "Panel Material",
             "Die-Casting Aluminum+Carbon Fiber"
           ],
           [
@@ -675,7 +675,7 @@ window.SPECTRUM_PRODUCTS = {
         cabinetW: 0.6,
         cabinetH: 0.3375,
         type: "Fixed",
-        description: "16:9 fine-pitch 600×337.5 mm cabinets, 5.5 kg, MIP / flip-chip COB / SMD options from 0.625–1.875 mm.",
+        description: "16:9 fine-pitch 600×337.5 mm panels, 5.5 kg, MIP / flip-chip COB / SMD options from 0.625–1.875 mm.",
         badge: "COB",
         cats: [
           "cob",
@@ -687,7 +687,7 @@ window.SPECTRUM_PRODUCTS = {
           "assets/products/gloshine/af2-g1.jpg"
         ],
         sourceUrl: "https://gloshine.com/products/af-ii-series.html",
-        lead: "AF II series features a 16:9 cabinet dimension, with a thickness of only 33cm and a weight of merely 5.5kg. Optional MIP (Micro-chip in Package) Technology and Flip-Chip COB Process,support 5G Signal Transmission.",
+        lead: "AF II series features a 16:9 panel dimension, with a thickness of only 33cm and a weight of merely 5.5kg. Optional MIP (Micro-chip in Package) Technology and Flip-Chip COB Process,support 5G Signal Transmission.",
         specTable: [
           [
             "Application Scenario",
@@ -780,7 +780,7 @@ window.SPECTRUM_PRODUCTS = {
             "5.5kg±10%"
           ],
           [
-            "Cabinet Material",
+            "Panel Material",
             "Die-casting Aluminum"
           ],
           [
@@ -818,7 +818,7 @@ window.SPECTRUM_PRODUCTS = {
         cabinetW: 0.6,
         cabinetH: 0.3375,
         type: "Fixed",
-        description: "Indoor 16:9 fine-pitch 600×337.5 mm cabinets, Mini 4-in-1 through SMD, GOB optional, 5.8 kg.",
+        description: "Indoor 16:9 fine-pitch 600×337.5 mm panels, Mini 4-in-1 through SMD, GOB optional, 5.8 kg.",
         badge: "COB",
         cats: [
           "cob",
@@ -830,7 +830,7 @@ window.SPECTRUM_PRODUCTS = {
           "assets/products/gloshine/aw-g3.jpg"
         ],
         sourceUrl: "https://gloshine.com/products/aw.html",
-        lead: "Indoor 16:9 fine-pitch 600×337.5 mm cabinets, Mini 4-in-1 through SMD, GOB optional, 5.8 kg.",
+        lead: "Indoor 16:9 fine-pitch 600×337.5 mm panels, Mini 4-in-1 through SMD, GOB optional, 5.8 kg.",
         specTable: [
           [
             "Model No.",
@@ -905,8 +905,8 @@ window.SPECTRUM_PRODUCTS = {
             "5.8kg（12.8lb）±10%"
           ],
           [
-            "Cabinet Material",
-            "Die-casting Cabinet"
+            "Panel Material",
+            "Die-casting Panel"
           ],
           [
             "Max Power Consumption",
@@ -1004,8 +1004,8 @@ window.SPECTRUM_PRODUCTS = {
             "7.5KG±10%"
           ],
           [
-            "Cabinet Material",
-            "Die-casting Cabinet"
+            "Panel Material",
+            "Die-casting Panel"
           ],
           [
             "Viewing Angle",
@@ -1318,7 +1318,7 @@ window.SPECTRUM_PRODUCTS = {
             "13kg±10%"
           ],
           [
-            "Cabinet Material",
+            "Panel Material",
             "Die-Casting Aluminum"
           ],
           [
@@ -1358,7 +1358,7 @@ window.SPECTRUM_PRODUCTS = {
         cabinetW: 0.5,
         cabinetH: 0.5,
         type: "Creative",
-        description: "Flexible indoor LED for cylinders and creative shapes. 500×500 mm cabinets with tight curve locks.",
+        description: "Flexible indoor LED for cylinders and creative shapes. 500×500 mm panels with tight curve locks.",
         badge: "Creative",
         cats: [
           "indoor",
@@ -1441,7 +1441,7 @@ window.SPECTRUM_PRODUCTS = {
           ],
           [
             "Panel Material",
-            "Die-Casting Cabinet"
+            "Die-Casting Panel"
           ]
         ]
       },
@@ -1461,7 +1461,7 @@ window.SPECTRUM_PRODUCTS = {
         cabinetW: 0.5,
         cabinetH: 0.5,
         type: "Creative",
-        description: "Indoor/outdoor flexible LED. 500×500 mm cabinets, curve to −22.5°, indoor and outdoor pitches.",
+        description: "Indoor/outdoor flexible LED. 500×500 mm panels, curve to −22.5°, indoor and outdoor pitches.",
         badge: "Creative",
         cats: [
           "indoor",
@@ -1544,7 +1544,7 @@ window.SPECTRUM_PRODUCTS = {
             "8.8kg±10%"
           ],
           [
-            "Cabinet Material",
+            "Panel Material",
             "Die-Casting Aluminum"
           ],
           [
@@ -1631,7 +1631,7 @@ window.SPECTRUM_PRODUCTS = {
           ],
           [
             "Panel Material",
-            "Die-Casting Cabinet"
+            "Die-Casting Panel"
           ],
           [
             "Viewing Angle",
@@ -1661,7 +1661,7 @@ window.SPECTRUM_PRODUCTS = {
         cabinetW: 0.5,
         cabinetH: 1.0,
         type: "Rental",
-        description: "Ultra-light carbon-fiber 500×1000 mm cabinets, indoor IP30 and outdoor IP65 versions, hang to 20 m.",
+        description: "Ultra-light carbon-fiber 500×1000 mm panels, indoor IP30 and outdoor IP65 versions, hang to 20 m.",
         badge: "Rental",
         cats: [
           "rental",
@@ -1672,7 +1672,7 @@ window.SPECTRUM_PRODUCTS = {
           "assets/products/gloshine/ur-g2.jpg"
         ],
         sourceUrl: "https://gloshine.com/products/ur.html",
-        lead: "Ultra-light carbon-fiber 500×1000 mm cabinets, indoor IP30 and outdoor IP65 versions, hang to 20 m.",
+        lead: "Ultra-light carbon-fiber 500×1000 mm panels, indoor IP30 and outdoor IP65 versions, hang to 20 m.",
         specTable: [
           [
             "Model No.",
@@ -1723,10 +1723,10 @@ window.SPECTRUM_PRODUCTS = {
             "UR:10.5±10% UR mini:5.5±10%"
           ],
           [
-            "Cabinet Material",
-            "Die-casting Cabinet",
-            "Die-casting Cabinet",
-            "Die-casting Cabinet"
+            "Panel Material",
+            "Die-casting Panel",
+            "Die-casting Panel",
+            "Die-casting Panel"
           ]
         ]
       },
@@ -1747,7 +1747,7 @@ window.SPECTRUM_PRODUCTS = {
         cabinetW: 0.5,
         cabinetH: 0.5,
         type: "Rental",
-        description: "Magnesium/carbon ultra-light cabinets in 500×500, 500×1000, and 1000×500 sizes. Indoor and outdoor, 90° columns.",
+        description: "Magnesium/carbon ultra-light panels in 500×500, 500×1000, and 1000×500 sizes. Indoor and outdoor, 90° columns.",
         badge: "Rental",
         cats: [
           "rental",
@@ -1761,7 +1761,7 @@ window.SPECTRUM_PRODUCTS = {
           "assets/products/gloshine/carbon-g3.png"
         ],
         sourceUrl: "https://gloshine.com/products/carbon-.html",
-        lead: "Carbon Ⅱ Series Carbon fiber ultra-thin HD screen,The perfect combination of carbon fiber and die -casting aluminum,High Gray Scale,Ultra Wide Viewing Angle,The 45°cutting-edged cabinet supports vertical splicing 、cube and cubic column shape.",
+        lead: "Carbon Ⅱ Series Carbon fiber ultra-thin HD screen,The perfect combination of carbon fiber and die -casting aluminum,High Gray Scale,Ultra Wide Viewing Angle,The 45°cutting-edged panel supports vertical splicing 、cube and cubic column shape.",
         specTable: [
           [
             "Application Scenario",
@@ -1926,7 +1926,7 @@ window.SPECTRUM_PRODUCTS = {
           ],
           [
             "Frame material",
-            "Die-Casting Cabinet"
+            "Die-Casting Panel"
           ],
           [
             "Refresh rate",
@@ -1942,7 +1942,7 @@ window.SPECTRUM_PRODUCTS = {
           ],
           [
             "Curve",
-            "only Bevel Cabinet:-7.5°/-5°/-2.5°/0°/2.5°/5°/7.5°"
+            "only Bevel Panel:-7.5°/-5°/-2.5°/0°/2.5°/5°/7.5°"
           ],
           [
             "Max. stacking/hanging",
@@ -2038,8 +2038,8 @@ window.SPECTRUM_PRODUCTS = {
             "8.8kg±10%/19.84lb±10%"
           ],
           [
-            "Cabinet Material",
-            "Die-Casting Cabinet"
+            "Panel Material",
+            "Die-Casting Panel"
           ],
           [
             "Refresh Rate",
@@ -2089,7 +2089,7 @@ window.SPECTRUM_PRODUCTS = {
         cabinetW: 0.496,
         cabinetH: 0.496,
         type: "Creative",
-        description: "Creative indoor 496×496 mm cabinets for curved and volume builds.",
+        description: "Creative indoor 496×496 mm panels for curved and volume builds.",
         badge: "Creative",
         cats: [
           "indoor"
@@ -2100,7 +2100,7 @@ window.SPECTRUM_PRODUCTS = {
           "assets/products/gloshine/mt2-g3.png"
         ],
         sourceUrl: "https://gloshine.com/products/mt-series.html",
-        lead: "MT Edge Series Indoor HD LED Panel,Thin Cabinet,Flexible Module,Fast Installation,Variety of Shapes.",
+        lead: "MT Edge Series Indoor HD LED Panel,Thin Panel,Flexible Module,Fast Installation,Variety of Shapes.",
         specTable: [
           [
             "Model No.",
@@ -2126,8 +2126,8 @@ window.SPECTRUM_PRODUCTS = {
             "9.0kg(±10%)/19.84lb(±10%)"
           ],
           [
-            "Cabinet Material",
-            "Die-Casting Cabinet"
+            "Panel Material",
+            "Die-Casting Panel"
           ],
           [
             "Max Power Consumption",
@@ -2159,7 +2159,7 @@ window.SPECTRUM_PRODUCTS = {
         cabinetW: 0.496,
         cabinetH: 0.496,
         type: "Creative",
-        description: "Tight-curve indoor creative cabinets, 496×496 mm, curves up to ±80° on coarser pitches.",
+        description: "Tight-curve indoor creative panels, 496×496 mm, curves up to ±80° on coarser pitches.",
         badge: "Creative",
         cats: [
           "indoor"
@@ -2169,7 +2169,7 @@ window.SPECTRUM_PRODUCTS = {
           "assets/products/gloshine/mtedge-g2.png"
         ],
         sourceUrl: "https://gloshine.com/products/mt-edge-series.html",
-        lead: "MT Edge Series Indoor HD LED Panel,One cabinet\r\nFlexible module S shape Concave and convex shape,Max curved angle ±80° per panel,HD Image,Support Rear Maintenance.",
+        lead: "MT Edge Series Indoor HD LED Panel,One panel\r\nFlexible module S shape Concave and convex shape,Max curved angle ±80° per panel,HD Image,Support Rear Maintenance.",
         specTable: [
           [
             "Model No.",
@@ -2207,7 +2207,7 @@ window.SPECTRUM_PRODUCTS = {
             "8KG(17.64lb)±10%"
           ],
           [
-            "Cabinet Material",
+            "Panel Material",
             "Die-casting Aluminum"
           ],
           [
@@ -2245,7 +2245,7 @@ window.SPECTRUM_PRODUCTS = {
         cabinetW: 0.5,
         cabinetH: 0.5,
         type: "Creative",
-        description: "Triangle and sector creative cabinets for indoor/outdoor sculptures and special shapes.",
+        description: "Triangle and sector creative panels for indoor/outdoor sculptures and special shapes.",
         badge: "Creative",
         cats: [
           "indoor",
@@ -2315,7 +2315,7 @@ window.SPECTRUM_PRODUCTS = {
           ],
           [
             "Panel Material",
-            "Die-casting Cabinet"
+            "Die-casting Panel"
           ],
           [
             "Viewing Angle",
@@ -2418,8 +2418,8 @@ window.SPECTRUM_PRODUCTS = {
             "5.5KG±10％"
           ],
           [
-            "Cabinet Material",
-            "Die-casting Cabinet"
+            "Panel Material",
+            "Die-casting Panel"
           ],
           [
             "Viewing Angle",
@@ -2464,7 +2464,7 @@ window.SPECTRUM_PRODUCTS = {
         cabinetW: 0.5,
         cabinetH: 0.5,
         type: "Fixed",
-        description: "Ultra-thin indoor 500×500×40 mm cabinets (RA Plus 500×1000), HOB/GOB on fine pitches.",
+        description: "Ultra-thin indoor 500×500×40 mm panels (RA Plus 500×1000), HOB/GOB on fine pitches.",
         badge: null,
         cats: [
           "indoor"
@@ -2556,7 +2556,7 @@ window.SPECTRUM_PRODUCTS = {
         cabinetW: 0.5,
         cabinetH: 0.5,
         type: "Outdoor",
-        description: "Outdoor die-cast magnesium cabinets, front IP65 / rear IP54, curve options, 10 m hang/stack.",
+        description: "Outdoor die-cast magnesium panels, front IP65 / rear IP54, curve options, 10 m hang/stack.",
         badge: null,
         cats: [
           "outdoor"
@@ -2566,7 +2566,7 @@ window.SPECTRUM_PRODUCTS = {
           "assets/products/gloshine/zs3-g1.jpg"
         ],
         sourceUrl: "https://gloshine.com/products/zs-iii-series.html",
-        lead: "Outdoor die-cast magnesium cabinets, front IP65 / rear IP54, curve options, 10 m hang/stack.",
+        lead: "Outdoor die-cast magnesium panels, front IP65 / rear IP54, curve options, 10 m hang/stack.",
         specTable: [
           [
             "Model No.",
@@ -2613,7 +2613,7 @@ window.SPECTRUM_PRODUCTS = {
             "5.3kg±10%/8.8kg±10%"
           ],
           [
-            "Cabinet Material",
+            "Panel Material",
             "Die-Casting Magnesium"
           ],
           [
@@ -2626,7 +2626,7 @@ window.SPECTRUM_PRODUCTS = {
           ],
           [
             "Curve",
-            "Curved cabinet：-10°/-7.5°/-5°/-2.5°/0°/2.5°/5°/7.5°/10°"
+            "Curved panel：-10°/-7.5°/-5°/-2.5°/0°/2.5°/5°/7.5°/10°"
           ],
           [
             "Max Stacking/Hanging",
@@ -2648,7 +2648,7 @@ window.SPECTRUM_PRODUCTS = {
         cabinetW: 0.5,
         cabinetH: 1.0,
         type: "Outdoor",
-        description: "Outdoor 500×500 / 500×1000 mm cabinets, front/rear module service, IP65 front / IP54 rear.",
+        description: "Outdoor 500×500 / 500×1000 mm panels, front/rear module service, IP65 front / IP54 rear.",
         badge: null,
         cats: [
           "outdoor"
@@ -2690,7 +2690,7 @@ window.SPECTRUM_PRODUCTS = {
             "ZS ProⅡ:13.8kg±10%，ZM ProⅡ:9.5kg±10%"
           ],
           [
-            "Cabinet Material",
+            "Panel Material",
             "Die-Casting Aluminum"
           ],
           [
@@ -2721,7 +2721,7 @@ window.SPECTRUM_PRODUCTS = {
         cabinetW: 0.5,
         cabinetH: 0.5,
         type: "Outdoor",
-        description: "Outdoor fixed/rental LED from Gloshine GP series, IP65-rated cabinets.",
+        description: "Outdoor fixed/rental LED from Gloshine GP series, IP65-rated panels.",
         badge: null,
         cats: [
           "outdoor"
@@ -2731,7 +2731,7 @@ window.SPECTRUM_PRODUCTS = {
           "assets/products/gloshine/gp-g1.jpg"
         ],
         sourceUrl: "https://gloshine.com/products/gp-series.html",
-        lead: "GP Series Outdoor Advertising LED DisplayDie-Cast Aluminum Module+Aluminum Profile Cabinet Frame",
+        lead: "GP Series Outdoor Advertising LED DisplayDie-Cast Aluminum Module+Aluminum Profile Panel Frame",
         specTable: [
           [
             "Model No.",
@@ -2761,12 +2761,12 @@ window.SPECTRUM_PRODUCTS = {
             "96×96pixel"
           ],
           [
-            "Cabinet Size(mm)",
+            "Panel Size(mm)",
             "1000×1000×85mm",
             "1000×1000×84.5mm"
           ],
           [
-            "Cabinet Weight(kg/cabinet)",
+            "Panel Weight(kg/panel)",
             "16kg",
             "25kg"
           ],
@@ -2818,7 +2818,7 @@ window.SPECTRUM_PRODUCTS = {
         cabinetW: 0.5,
         cabinetH: 0.5,
         type: "Outdoor",
-        description: "Outdoor Legend / Legend Mini cabinets, front IP65 / rear IP54, modular curve, hang/stack to 10 m.",
+        description: "Outdoor Legend / Legend Mini panels, front IP65 / rear IP54, modular curve, hang/stack to 10 m.",
         badge: null,
         cats: [
           "outdoor"
@@ -2868,8 +2868,8 @@ window.SPECTRUM_PRODUCTS = {
             "LE mini:9.5kg±10% LE:14.7kg±10%"
           ],
           [
-            "Cabinet Material",
-            "Die-Casting Cabinet"
+            "Panel Material",
+            "Die-Casting Panel"
           ],
           [
             "Viewing Angle",
@@ -2916,12 +2916,12 @@ window.SPECTRUM_PRODUCTS = {
         cabinetH: 0.3375,
         cabinets: [{ w: 600, h: 337.5 }, { w: 600, h: 675 }],
         type: 'Fixed',
-        description: 'Flip-chip COB indoor cabinets in 600 × 337.5 mm (or 600 × 675 mm). Common-cathode energy saving, 800 nits, 3840 Hz, 15,000:1 contrast.',
+        description: 'Flip-chip COB indoor panels in 600 × 337.5 mm (or 600 × 675 mm). Common-cathode energy saving, 800 nits, 3840 Hz, 15,000:1 contrast.',
         badge: 'COB',
         cats: ['cob', 'indoor', 'popular'],
         image: 'assets/products/bako/finepitch.jpg',
         sourceUrl: 'https://www.szbako.com/product/fine-pitch-600337-5-series.html',
-        lead: 'Fine Pitch 600 × 337.5 Series flip-chip COB for close-view indoor walls. Seamless 16:9 cabinets, super-high contrast, front IP65 on the LED face, common-cathode energy saving, and 4 kg cabinets only 35.5 mm thick.',
+        lead: 'Fine Pitch 600 × 337.5 Series flip-chip COB for close-view indoor walls. Seamless 16:9 panels, super-high contrast, front IP65 on the LED face, common-cathode energy saving, and 4 kg panels only 35.5 mm thick.',
         specTable: [
           ['Pixel Pitch (mm)', 'P0.78', 'P0.93', 'P1.25', 'P1.56', 'P1.87'],
           ['Pixel', 'Real pixel', 'Real pixel', 'Real pixel', 'Real pixel', 'Real pixel'],
@@ -2939,7 +2939,7 @@ window.SPECTRUM_PRODUCTS = {
           ['Viewing Angle', '170° / 170°'],
           ['Max Power', '350 W/m²'],
           ['Average Power', '100 W/m²'],
-          ['Cabinet Weight', '4 kg (600 × 337.5 mm)'],
+          ['Panel Weight', '4 kg (600 × 337.5 mm)'],
           ['Certification', 'CCC, TUV (CE), FCC']
         ]
       },
@@ -2970,7 +2970,7 @@ window.SPECTRUM_PRODUCTS = {
           ['Viewing Angle', '175° / 175°'],
           ['IP Grade (front/rear)', 'IP54 / IP50'],
           ['Contrast Ratio', '15,000:1'],
-          ['Cabinet Size', '600 × 337.5 × 35 mm / 600 × 675 × 35 mm'],
+          ['Panel Size', '600 × 337.5 × 35 mm / 600 × 675 × 35 mm'],
           ['Showing Size', '2.4 × 1.35 m', '2.4 × 1.35 m', '2.4 × 1.35 m', '3.0 × 1.6875 m', '3.0 × 1.6875 m', '3.0 × 1.6875 m', '3.6 × 2.025 m', '3.6 × 2.025 m', '3.6 × 2.025 m'],
           ['Resolution', '1920 × 1080 real 2K', '3840 × 2160 dynamic 4K', '1920 × 1080 dynamic 2K', '3840 × 2160 real 4K', '1920 × 1080 real 2K', '3840 × 2160 dynamic 4K', '3840 × 2160 real 4K', '1920 × 1080 real 2K', '3840 × 2160 dynamic 4K'],
           ['Certification', 'TUV CE']
@@ -2992,7 +2992,7 @@ window.SPECTRUM_PRODUCTS = {
         cats: ['cob', 'rental', 'indoor', 'outdoor'],
         image: 'assets/products/bako/rentalcob.jpg',
         sourceUrl: 'https://www.szbako.com/product/rental-cob-500500.html',
-        lead: 'Rental COB 500 × 500 mm cabinets with flip-chip COB, common-cathode energy saving, and front IP65 on the LED face. Indoor P1.56 / P1.95 / P2.6 at 600 nits and 3840 Hz; outdoor versions at 3500 nits and 7680 Hz.',
+        lead: 'Rental COB 500 × 500 mm panels with flip-chip COB, common-cathode energy saving, and front IP65 on the LED face. Indoor P1.56 / P1.95 / P2.6 at 600 nits and 3840 Hz; outdoor versions at 3500 nits and 7680 Hz.',
         specTable: [
           ['Application', 'Indoor', 'Indoor', 'Indoor', 'Outdoor', 'Outdoor', 'Outdoor'],
           ['Pixel Pitch', 'P1.56', 'P1.95', 'P2.6', 'P1.56', 'P1.95', 'P2.6'],
@@ -3001,7 +3001,7 @@ window.SPECTRUM_PRODUCTS = {
           ['Grayscale', '14 bit', '14 bit', '14 bit', '16 bit', '16 bit', '16 bit'],
           ['Brightness', '600 nits', '600 nits', '600 nits', '3500 nits', '3500 nits', '3500 nits'],
           ['Module Size', '250 × 250 mm'],
-          ['Cabinet Size', '500 × 500 mm'],
+          ['Panel Size', '500 × 500 mm'],
           ['Thickness', '73 mm'],
           ['Front Protection', 'IP65']
         ]
@@ -3018,21 +3018,21 @@ window.SPECTRUM_PRODUCTS = {
         cabinetH: 0.5,
         cabinets: [{ w: 500, h: 500 }, { w: 500, h: 1000 }],
         type: 'Rental',
-        description: 'Indoor/outdoor rental, 500 × 500 and 500 × 1000 mm die-cast cabinets. Curve 0–5° out / 0–20° in, 90° corners, mix cabinet sizes.',
+        description: 'Indoor/outdoor rental, 500 × 500 and 500 × 1000 mm die-cast panels. Curve 0–5° out / 0–20° in, 90° corners, mix panel sizes.',
         badge: 'Rental',
         cats: ['rental', 'indoor', 'outdoor'],
         image: 'assets/products/bako/diamond4.jpg',
         sourceUrl: 'https://www.szbako.com/product/diamond-series-v4-0.html',
-        lead: 'Diamond Series V4.0 curved rental LED for indoor and outdoor events. 500 × 500 mm cabinets at 6.8 kg and 500 × 1000 mm at 12–13 kg, 90° corners, outward curve 0–5° and inward curve 0–20°, and mix-and-match cabinet sizes.',
+        lead: 'Diamond Series V4.0 curved rental LED for indoor and outdoor events. 500 × 500 mm panels at 6.8 kg and 500 × 1000 mm at 12–13 kg, 90° corners, outward curve 0–5° and inward curve 0–20°, and mix-and-match panel sizes.',
         specTable: [
           ['Application', 'Indoor', 'Indoor', 'Indoor', 'Indoor', 'Outdoor', 'Outdoor', 'Outdoor'],
           ['Pixel Pitch', 'P1.95', 'P2.6', 'P2.97', 'P3.91', 'P2.97', 'P3.91', 'P4.81'],
           ['Pixel Density (dots/m²)', '262,144', '147,456', '112,896', '65,536', '112,896', '65,536', '43,264'],
-          ['Cabinet Material', 'Die-casting aluminum'],
+          ['Panel Material', 'Die-casting aluminum'],
           ['Maintenance', 'Rear (module front service available)'],
           ['Module Size', '250 × 250 mm'],
-          ['Cabinet Size', '500 × 500 / 500 × 1000 mm'],
-          ['Cabinet Weight', '6.8 kg / 13 kg', '6.8 kg / 13 kg', '6.8 kg / 13 kg', '6.8 kg / 13 kg', '7.1 kg / 13.5 kg', '7.1 kg / 13.5 kg', '7.1 kg / 13.5 kg'],
+          ['Panel Size', '500 × 500 / 500 × 1000 mm'],
+          ['Panel Weight', '6.8 kg / 13 kg', '6.8 kg / 13 kg', '6.8 kg / 13 kg', '6.8 kg / 13 kg', '7.1 kg / 13.5 kg', '7.1 kg / 13.5 kg', '7.1 kg / 13.5 kg'],
           ['Brightness', '800–1200 nits', '800–1200 nits', '800–1200 nits', '800–1200 nits', '4500–5500 nits', '4500–5500 nits', '4500–5500 nits'],
           ['Refresh Rate', '≥ 3840 Hz'],
           ['Viewing Angle', 'H 160° / V 140°'],
@@ -3051,12 +3051,12 @@ window.SPECTRUM_PRODUCTS = {
         cabinetW: 0.600,
         cabinetH: 0.3375,
         type: 'Fixed',
-        description: 'UHD 16:9 fine-pitch indoor wall. 600 × 337.5 mm die-cast cabinets at 6 kg, 100% front service, ≥ 3840 Hz.',
+        description: 'UHD 16:9 fine-pitch indoor wall. 600 × 337.5 mm die-cast panels at 6 kg, 100% front service, ≥ 3840 Hz.',
         badge: null,
         cats: ['indoor', 'popular'],
         image: 'assets/products/bako/flyingdrone.jpg',
         sourceUrl: 'https://www.szbako.com/product/flying-drone-2-0-series.html',
-        lead: 'Flying Drone 2.0 is BAKO’s UHD small-pitch indoor series. 600 × 337.5 mm cabinets at 6 kg, no-module-frame design, hidden cables, 100% front service, and wide viewing angles for control rooms, studios, and conference walls.',
+        lead: 'Flying Drone 2.0 is BAKO’s UHD small-pitch indoor series. 600 × 337.5 mm panels at 6 kg, no-module-frame design, hidden cables, 100% front service, and wide viewing angles for control rooms, studios, and conference walls.',
         specTable: [
           ['Pixel Pitch', 'P0.937', 'P1.25', 'P1.56', 'P1.87', 'P2.5'],
           ['Lamp', 'IMD 4-in-1', 'SMD1010', 'SMD1212', 'SMD1415', 'SMD2020'],
@@ -3064,9 +3064,9 @@ window.SPECTRUM_PRODUCTS = {
           ['Service', 'Front'],
           ['Brightness', '500–800 nits'],
           ['Module Size', '300 × 168.75 mm', '300 × 168.75 mm', '300 × 168.75 mm', '150 × 337.5 mm', '150 × 337.5 mm'],
-          ['Cabinet Material', 'Die-casting aluminum'],
-          ['Cabinet Size', '600 × 337.5 mm'],
-          ['Cabinet Weight', '6 kg'],
+          ['Panel Material', 'Die-casting aluminum'],
+          ['Panel Size', '600 × 337.5 mm'],
+          ['Panel Weight', '6 kg'],
           ['Refresh Rate', '≥ 3840 Hz'],
           ['Average Power', '150 W/m²'],
           ['Max Power', '450 W/m²'],
@@ -3082,17 +3082,17 @@ window.SPECTRUM_PRODUCTS = {
         powerAvg: 200,
         powerMax: 500,
         type: 'Poster',
-        description: 'Indoor or outdoor movable LED poster, 45 kg aluminum cabinet. Hang, wall, base, or landscape. Indoor P1.75 / P2 / P2.5; outdoor P2.5.',
+        description: 'Indoor or outdoor movable LED poster, 45 kg aluminum panel. Hang, wall, base, or landscape. Indoor P1.75 / P2 / P2.5; outdoor P2.5.',
         badge: null,
         cats: ['indoor', 'outdoor'],
         image: 'assets/products/bako/poster.jpg',
         sourceUrl: 'https://www.szbako.com/product/led-poster-screens.html',
-        lead: 'BAKO LED posters are self-contained indoor or outdoor advertising displays. Aluminum cabinets at 45 kg with 280 × 210 mm modules, 160° / 140° viewing, and hang, wall, base-standing, or landscape install.',
+        lead: 'BAKO LED posters are self-contained indoor or outdoor advertising displays. Aluminum panels at 45 kg with 280 × 210 mm modules, 160° / 140° viewing, and hang, wall, base-standing, or landscape install.',
         specTable: [
           ['Application', 'Outdoor', 'Indoor', 'Indoor', 'Indoor'],
           ['Pixel Pitch (mm)', '2.5', '2.5', '2.0', '1.75'],
           ['Module Size', '280 × 210 mm'],
-          ['Cabinet Material', 'Aluminum'],
+          ['Panel Material', 'Aluminum'],
           ['Viewing Angle', 'H 160° / V 140°'],
           ['Weight', '45 kg']
         ]
@@ -3109,12 +3109,12 @@ window.SPECTRUM_PRODUCTS = {
         cabinetH: 0.96,
         cabinets: [{ w: 960, h: 960 }, { w: 1280, h: 960 }, { w: 900, h: 900 }, { w: 1200, h: 900 }],
         type: 'Fixed',
-        description: 'Outdoor DOOH and stadium perimeter. IP68 modules, front or rear service, 960 × 960 / 900 × 900 mm cabinets, high-temp die-cast frames.',
+        description: 'Outdoor DOOH and stadium perimeter. IP68 modules, front or rear service, 960 × 960 / 900 × 900 mm panels, high-temp die-cast frames.',
         badge: 'Outdoor',
         cats: ['outdoor'],
         image: 'assets/products/bako/spaceship.jpg',
         sourceUrl: 'https://www.szbako.com/product/spaceship-series-2-0.html',
-        lead: 'Spaceship Series 2.0 is BAKO’s outdoor advertising and perimeter series. Die-cast module frames for high temperature, IP68 modules that can be immersed, front and rear service, and cabinet sizes 960 × 960, 1280 × 960, 900 × 900, and 1200 × 900 mm.',
+        lead: 'Spaceship Series 2.0 is BAKO’s outdoor advertising and perimeter series. Die-cast module frames for high temperature, IP68 modules that can be immersed, front and rear service, and panel sizes 960 × 960, 1280 × 960, 900 × 900, and 1200 × 900 mm.',
         specTable: [
           ['Pixel Pitch', 'P1.86', 'P4', 'P5', 'P6.67', 'P8', 'P10', 'P6.8', 'P8.33', 'P10.7'],
           ['LED', 'SMD1111', 'SMD1515', 'SMD1921', 'SMD2727', 'SMD3535', 'SMD3535', 'SMD2727', 'SMD2727', 'SMD3535'],
@@ -3122,8 +3122,8 @@ window.SPECTRUM_PRODUCTS = {
           ['Service', 'Rear', 'Front/rear', 'Front/rear', 'Front/rear', 'Front/rear', 'Front/rear', 'Front/rear', 'Front/rear', 'Front/rear'],
           ['Brightness (nits)', '4000', '4500–5000', '6000–6500', '6000–6500', '6000–6500', '6500–7000', '6000–6500', '6500–7000', '6000–6500'],
           ['Module Size', '320 × 320 mm', '320 × 320 mm', '320 × 320 mm', '320 × 320 mm', '320 × 320 mm', '320 × 320 mm', '300 × 300 mm', '300 × 300 mm', '300 × 300 mm'],
-          ['Cabinet Size', '960 × 960 mm', '960 × 960 mm', '960 × 960 mm', '960 × 960 mm', '960 × 960 mm', '960 × 960 mm', '900 × 900 mm', '900 × 900 mm', '900 × 900 mm'],
-          ['Cabinet Weight', '37 kg', '37 kg', '37 kg', '37 kg', '37 kg', '37 kg', '35 kg', '35 kg', '35 kg'],
+          ['Panel Size', '960 × 960 mm', '960 × 960 mm', '960 × 960 mm', '960 × 960 mm', '960 × 960 mm', '960 × 960 mm', '900 × 900 mm', '900 × 900 mm', '900 × 900 mm'],
+          ['Panel Weight', '37 kg', '37 kg', '37 kg', '37 kg', '37 kg', '37 kg', '35 kg', '35 kg', '35 kg'],
           ['Protection', 'IP68 module'],
           ['Average Power', '270 W/m²'],
           ['Max Power', '800 W/m²']
@@ -3202,20 +3202,20 @@ window.SPECTRUM_PRODUCTS = {
         cabinetW: 0.640,
         cabinetH: 0.480,
         type: 'Fixed',
-        description: 'Indoor fixed 640 × 480 mm die-cast cabinets, 320 × 160 mm modules, 100% front service, 8 kg, 600–800 nits, ≥ 3840 Hz.',
+        description: 'Indoor fixed 640 × 480 mm die-cast panels, 320 × 160 mm modules, 100% front service, 8 kg, 600–800 nits, ≥ 3840 Hz.',
         badge: null,
         cats: ['indoor'],
         image: 'assets/products/bako/uhdpro.jpg',
         sourceUrl: 'https://www.szbako.com/product/uhd-pro-series.html',
-        lead: 'UHD Pro is BAKO’s indoor fixed 640 × 480 mm series. Standard 320 × 160 mm modules, 100% front service and front install, 8 kg die-cast cabinets, and pitches from P1.25 to P3.07.',
+        lead: 'UHD Pro is BAKO’s indoor fixed 640 × 480 mm series. Standard 320 × 160 mm modules, 100% front service and front install, 8 kg die-cast panels, and pitches from P1.25 to P3.07.',
         specTable: [
           ['Pixel Pitch', 'P1.25', 'P1.53', 'P1.86', 'P2', 'P2.5', 'P3.07'],
           ['Density (dots/m²)', '640,000', '422,500', '288,906', '250,000', '160,000', '105,625'],
-          ['Cabinet Resolution', '512 × 384', '416 × 312', '344 × 258', '320 × 240', '256 × 192', '208 × 156'],
+          ['Panel Resolution', '512 × 384', '416 × 312', '344 × 258', '320 × 240', '256 × 192', '208 × 156'],
           ['Module Size', '320 × 160 mm'],
-          ['Cabinet Material', 'Die-casting aluminum'],
-          ['Cabinet Size', '640 × 480 mm'],
-          ['Cabinet Weight', '8 kg'],
+          ['Panel Material', 'Die-casting aluminum'],
+          ['Panel Size', '640 × 480 mm'],
+          ['Panel Weight', '8 kg'],
           ['Brightness', '600–800 nits'],
           ['Refresh Rate', '≥ 3840 Hz']
         ]
@@ -3237,16 +3237,16 @@ window.SPECTRUM_PRODUCTS = {
         cats: ['rental', 'indoor'],
         image: 'assets/products/bako/carbon.jpg',
         sourceUrl: 'https://www.szbako.com/product/carbon-fiber-rental-display.html',
-        lead: 'BAKO carbon-fiber rental cabinets, 30–40% lighter than conventional rental. 500 × 500 mm at 5.3 kg and 1000 × 500 mm at 8.3 kg, with quick lock, automatic ejection, lightweight handle, hang or stack, and locating pins so a cabinet can come out without stripping the wall.',
+        lead: 'BAKO carbon-fiber rental panels, 30–40% lighter than conventional rental. 500 × 500 mm at 5.3 kg and 1000 × 500 mm at 8.3 kg, with quick lock, automatic ejection, lightweight handle, hang or stack, and locating pins so a panel can come out without stripping the wall.',
         specTable: [
           ['Pixel Pitch', 'P2.6', 'P3.91'],
           ['LED', 'SMD1515', 'SMD2020'],
-          ['Cabinet Size', '500 × 500 / 1000 × 500 mm'],
-          ['Cabinet Weight', '5.3 kg / 8.3 kg'],
+          ['Panel Size', '500 × 500 / 1000 × 500 mm'],
+          ['Panel Weight', '5.3 kg / 8.3 kg'],
           ['Pixel Density (dots/m²)', '147,456', '65,536'],
           ['Brightness', '600–800 nits', '600–900 nits'],
           ['Scan', '1/24', '1/16'],
-          ['Cabinet Resolution', '192 × 192 / 384 × 192', '128 × 128 / 256 × 128'],
+          ['Panel Resolution', '192 × 192 / 384 × 192', '128 × 128 / 256 × 128'],
           ['Max Power', '680 W/m²'],
           ['Average Power', '260 W/m²']
         ]
@@ -3262,20 +3262,20 @@ window.SPECTRUM_PRODUCTS = {
         cabinetW: 1.0,
         cabinetH: 0.5,
         type: 'Transparent',
-        description: 'Transparent rental, 66% transmittance, 1000 × 500 × 65 mm die-cast cabinets. Indoor 1000 nits / outdoor 4500 nits, IP65/IP54.',
+        description: 'Transparent rental, 66% transmittance, 1000 × 500 × 65 mm die-cast panels. Indoor 1000 nits / outdoor 4500 nits, IP65/IP54.',
         badge: 'Transparent',
         cats: ['rental', 'indoor', 'outdoor'],
         image: 'assets/products/bako/tpro.jpg',
         sourceUrl: 'https://www.szbako.com/product/t-pro-series.html',
-        lead: 'T-Pro transparent rental with 66% transmittance for façades and glass. 500 × 125 mm modules in 1000 × 500 × 65 mm cabinets, about 10.5 kg, IP65/IP54 outdoor, and 38% lower energy than a conventional LED wall.',
+        lead: 'T-Pro transparent rental with 66% transmittance for façades and glass. 500 × 125 mm modules in 1000 × 500 × 65 mm panels, about 10.5 kg, IP65/IP54 outdoor, and 38% lower energy than a conventional LED wall.',
         specTable: [
           ['Model', 'T-Pro 0205O', 'T-Pro 0307O', 'T-Pro 0510O', 'T-Pro 0205I', 'T-Pro 0307I'],
           ['Application', 'Outdoor', 'Outdoor', 'Outdoor', 'Indoor', 'Indoor'],
           ['Pixel Pitch (mm)', '2.8 × 5.6', '3.9 × 7.8', '5.2 × 10.4', '2.8 × 5.6', '3.9 × 7.8'],
           ['Module Size', '500 × 125 × 12 mm'],
-          ['Cabinet Size', '1000 × 500 × 65 mm'],
-          ['Cabinet Resolution', '352 × 88', '256 × 128', '192 × 96', '352 × 88', '256 × 128'],
-          ['Cabinet Weight', '10.5 kg'],
+          ['Panel Size', '1000 × 500 × 65 mm'],
+          ['Panel Resolution', '352 × 88', '256 × 128', '192 × 96', '352 × 88', '256 × 128'],
+          ['Panel Weight', '10.5 kg'],
           ['Brightness', '4500 nits', '4500 nits', '4500 nits', '1000 nits', '1000 nits'],
           ['Grayscale', '14–16 bit'],
           ['Max Power', '800 W/m²'],
@@ -3297,17 +3297,17 @@ window.SPECTRUM_PRODUCTS = {
         cabinetW: 0.480,
         cabinetH: 0.480,
         type: 'Fixed',
-        description: 'High-end indoor 480 × 480 mm die-cast cabinets, 240 × 240 mm modules, 3840 Hz, fanless, front and rear service.',
+        description: 'High-end indoor 480 × 480 mm die-cast panels, 240 × 240 mm modules, 3840 Hz, fanless, front and rear service.',
         badge: null,
         cats: ['indoor'],
         image: 'assets/products/bako/indoorfixed.jpg',
         sourceUrl: 'https://www.szbako.com/product/high-end-indoor-fixed-series.html',
-        lead: 'BAKO high-end indoor fixed 480 × 480 mm cabinets with 240 × 240 mm modules. Die-cast aluminum, CNC seamless joins, fanless, board-to-board hub (no cable transfer), four-corner anti-bump, and 100% front install with front or rear maintenance.',
+        lead: 'BAKO high-end indoor fixed 480 × 480 mm panels with 240 × 240 mm modules. Die-cast aluminum, CNC seamless joins, fanless, board-to-board hub (no cable transfer), four-corner anti-bump, and 100% front install with front or rear maintenance.',
         specTable: [
-          ['Cabinet Size', '480 × 480 mm'],
+          ['Panel Size', '480 × 480 mm'],
           ['Module Size', '240 × 240 mm'],
           ['Refresh Rate', '3840 Hz'],
-          ['Cabinet Material', 'Die-casting aluminum'],
+          ['Panel Material', 'Die-casting aluminum'],
           ['Maintenance', 'Front and rear'],
           ['Install', '100% front installation'],
           ['Cooling', 'Fanless']

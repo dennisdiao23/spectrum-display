@@ -246,15 +246,15 @@
   ];
 
   var MEGA_COPY = {
-    'indoor-rental': { title: 'Indoor rental', lead: 'Touring cabinets for indoor stages, events, and studios.' },
+    'indoor-rental': { title: 'Indoor rental', lead: 'Touring panels for indoor stages, events, and studios.' },
     'outdoor-rental': { title: 'Outdoor rental', lead: 'IP-rated touring panels for festivals, façades, and outdoor stages.' },
-    cob: { title: 'Fine pitch / COB', lead: 'Close-view COB and fine-pitch cabinets for control rooms and retail.' },
-    'fixed-indoor': { title: 'Fixed indoor', lead: 'Wall-mount indoor cabinets for lobbies, meeting rooms, and broadcast.' },
+    cob: { title: 'Fine pitch / COB', lead: 'Close-view COB and fine-pitch panels for control rooms and retail.' },
+    'fixed-indoor': { title: 'Fixed indoor', lead: 'Wall-mount indoor panels for lobbies, meeting rooms, and broadcast.' },
     posters: { title: 'Posters', lead: 'Standalone LED posters for windows, retail aisles, and lobbies.' },
     transparent: { title: 'Transparent', lead: 'See-through LED for storefronts, stages, and outdoor spectaculars.' },
     'outdoor-fixed': { title: 'Outdoor fixed', lead: 'High-brightness façades, DOOH, and permanent outdoor walls.' },
-    creative: { title: 'Creative / XR', lead: 'Curves, corners, flexible cabinets, and virtual-production walls.' },
-    control: { title: 'Control systems', lead: 'NovaStar processors and senders matched to your wall. Receiving cards ship inside new cabinets.' }
+    creative: { title: 'Creative / XR', lead: 'Curves, corners, flexible panels, and virtual-production walls.' },
+    control: { title: 'Control systems', lead: 'NovaStar processors and senders matched to your wall. Receiving cards ship inside new panels.' }
   };
 
   var currentMegaKey = 'indoor-rental';
@@ -340,7 +340,7 @@
         '<div class="site-mega-cats" role="tablist">' + buttons + '</div>' +
         '<div class="site-mega-body">' +
           '<h3 data-mega-title>' + first.label + '</h3>' +
-          '<p data-mega-lead>Touring cabinets for indoor stages, events, and studios.</p>' +
+          '<p data-mega-lead>Touring panels for indoor stages, events, and studios.</p>' +
           '<div data-mega-grid></div>' +
         '</div>' +
       '</div>' +

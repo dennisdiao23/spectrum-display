@@ -25,7 +25,7 @@
       f('Flip-Chip COB Technology', 'Superior surface protection, higher contrast, and better reliability compared with traditional SMD. Excellent performance under close viewing.'),
       f('Front Service Design', 'Modules and power/data can be accessed from the front, simplifying installation and maintenance in wall-mounted applications.'),
       f('High Refresh & HDR Ready', '3840 Hz+ refresh rates for camera-friendly, flicker-free imagery. Supports high dynamic range content for impactful visuals.'),
-      f('Seamless 16:9 Cabinets', 'Optimized 600 × 337.5 mm cabinets for standard 16:9 and ultra-wide video walls without awkward cropping.')
+      f('Seamless 16:9 Panels', 'Optimized 600 × 337.5 mm panels for standard 16:9 and ultra-wide video walls without awkward cropping.')
     ],
     ledposter: [
       f('Digital Poster Format', 'Standalone LED poster for windows, lobbies, and retail aisles — high impact without a full video wall.'),
@@ -37,7 +37,7 @@
       f('Flip-Chip COB', 'Flip-chip COB package for longer life, better heat, and higher brightness than conventional SMD at close viewing.'),
       f('Common-Cathode Energy Saving', 'Common-cathode drive cuts power. Average 100 W/m², max 350 W/m².'),
       f('Protected LED Face', 'Shockproof, anti-collision, moisture-proof, dust-proof, and front IP65 on the LED surface.'),
-      f('16:9 Cabinets', '600 × 337.5 mm cabinets (or 600 × 675 mm) at 35.5 mm thick and 4 kg — about 40% thinner than a conventional cabinet.'),
+      f('16:9 Panels', '600 × 337.5 mm panels (or 600 × 675 mm) at 35.5 mm thick and 4 kg — about 40% thinner than a conventional panel.'),
       f('Premium Picture', '800 nits, 14-bit color, 3840 Hz refresh, 15,000:1 contrast, 170° viewing.'),
       f('Eye Comfort', 'Soft light, low blue light, low radiation, quiet, and lower heat for long viewing sessions.')
     ],
@@ -53,13 +53,13 @@
       f('Touring Pitch Set', 'P1.56 / P1.95 / P2.6 for close-view rental stages and outdoor events.')
     ],
     diamond4: [
-      f('Indoor and Outdoor Rental', 'Die-cast 500 × 500 and 500 × 1000 mm cabinets. Mix sizes on one wall.'),
+      f('Indoor and Outdoor Rental', 'Die-cast 500 × 500 and 500 × 1000 mm panels. Mix sizes on one wall.'),
       f('Curve and 90° Corners', 'Outward 0–5°, inward 0–20°, and 90° seamless corners.'),
-      f('Light Touring Weight', '6.8 kg (500 × 500 indoor) and about 12–13 kg (500 × 1000). Locating pins let you pull one cabinet without stripping the wall.'),
+      f('Light Touring Weight', '6.8 kg (500 × 500 indoor) and about 12–13 kg (500 × 1000). Locating pins let you pull one panel without stripping the wall.'),
       f('High Refresh', '≥ 3840 Hz. Indoor 800–1200 nits; outdoor 4500–5500 nits.')
     ],
     flyingdrone: [
-      f('UHD 16:9 Cabinets', '600 × 337.5 mm die-cast cabinets at 6 kg for native HD / 4K walls.'),
+      f('UHD 16:9 Panels', '600 × 337.5 mm die-cast panels at 6 kg for native HD / 4K walls.'),
       f('100% Front Service', 'Modules, HUB, cards, and power from the front — no rear access required.'),
       f('No-Module-Frame Design', 'Hidden cables and a clean face for control rooms, studios, and conference walls.'),
       f('Fine Pitch Set', 'P0.937 IMD through P2.5 SMD, 500–800 nits, ≥ 3840 Hz.')
@@ -72,7 +72,7 @@
     spaceship: [
       f('IP68 Modules', 'Modules can be immersed. Fully sealed power and data for harsh outdoor weather.'),
       f('High-Temp Frame', 'Die-cast module frames for high UV and temperature. Front or rear service.'),
-      f('DOOH Cabinet Sizes', '960 × 960, 1280 × 960, 900 × 900, and 1200 × 900 mm.'),
+      f('DOOH Panel Sizes', '960 × 960, 1280 × 960, 900 × 900, and 1200 × 900 mm.'),
       f('Brightness', '4000–7000 nits depending on pitch, from P1.86 through P10.7.')
     ],
     sphere: [
@@ -86,47 +86,47 @@
       f('P10 Outdoor', '7000 nits, IP65/IP54, 320 × 160 mm modules.')
     ],
     uhdpro: [
-      f('640 × 480 Cabinets', 'Die-cast indoor fixed cabinets at 8 kg with standard 320 × 160 mm modules.'),
+      f('640 × 480 Panels', 'Die-cast indoor fixed panels at 8 kg with standard 320 × 160 mm modules.'),
       f('100% Front Service', 'Front install and front maintenance for wall-mount rooms.'),
       f('P1.25–P3.07', '600–800 nits, ≥ 3840 Hz, high contrast for conference and control rooms.')
     ],
     bakocarbon: [
       f('Ultra-Light Carbon', '30–40% lighter than conventional rental. 500 × 500 mm at 5.3 kg; 1000 × 500 mm at 8.3 kg.'),
       f('Fast Touring Hardware', 'Quick lock, automatic ejection, lightweight handle, hang or stack.'),
-      f('Service Pins', 'Flexible locating pins let you pull one cabinet without removing its neighbors.')
+      f('Service Pins', 'Flexible locating pins let you pull one panel without removing its neighbors.')
     ],
     tpro: [
       f('66% Transmittance', 'See-through rental for glass façades, floors, and windows.'),
-      f('1000 × 500 × 65 mm', 'Die-cast cabinets about 10.5 kg. Indoor 1000 nits; outdoor 4500 nits.'),
+      f('1000 × 500 × 65 mm', 'Die-cast panels about 10.5 kg. Indoor 1000 nits; outdoor 4500 nits.'),
       f('IP65 / IP54', 'Outdoor-capable transparent wall with 1920/3840 Hz refresh.')
     ],
     indoor480: [
-      f('480 × 480 Cabinets', 'Die-cast indoor cabinets with 240 × 240 mm modules and CNC seams.'),
-      f('Fanless', 'No fan. Board-to-board hub — no cable transfer inside the cabinet.'),
+      f('480 × 480 Panels', 'Die-cast indoor panels with 240 × 240 mm modules and CNC seams.'),
+      f('Fanless', 'No fan. Board-to-board hub — no cable transfer inside the panel.'),
       f('Front or Rear Service', '100% front installation, four-corner anti-bump, 3840 Hz.')
     ],
     pro: [
       f('Spectrum Exclusive', 'DIAO Pro is a Spectrum exclusive fixed-install line with strong value for commercial walls.'),
       f('Indoor Fine Pitch', '1.5 / 1.8 / 2.5 mm pitches for meeting rooms, retail, and lobby displays.'),
-      f('500 × 500 Cabinets', 'Standard 500 mm cabinets keep layout and spare planning simple.'),
+      f('500 × 500 Panels', 'Standard 500 mm panels keep layout and spare planning simple.'),
       f('Partner Support', 'Sized, quoted, and warranted through Spectrum Display.')
     ],
     value: [
       f('Budget Fixed Install', 'DIAO Value is the Spectrum exclusive option for cost-sensitive commercial walls.'),
       f('Larger Pitches', '2.5 / 3.0 / 4.0 mm for viewing distances typical of outdoor and large commercial spaces.'),
-      f('500 × 500 Cabinets', 'Simple cabinet grid for fast layout and replacement.'),
+      f('500 × 500 Panels', 'Simple panel grid for fast layout and replacement.'),
       f('Partner Support', 'Quoted and supported through Spectrum Display.')
     ],
     rental: [
-      f('Lightweight Rental', 'Element Rental is a Spectrum exclusive touring cabinet for events and stage work.'),
-      f('Fast Build', '2.6 / 2.9 / 3.9 mm pitches with 500 × 500 cabinets for quick hang and stack.'),
-      f('Touring Weight', 'Lower weight per m² than typical fixed cabinets to speed crew installs.'),
+      f('Lightweight Rental', 'Element Rental is a Spectrum exclusive touring panel for events and stage work.'),
+      f('Fast Build', '2.6 / 2.9 / 3.9 mm pitches with 500 × 500 panels for quick hang and stack.'),
+      f('Touring Weight', 'Lower weight per m² than typical fixed panels to speed crew installs.'),
       f('Partner Support', 'Quoted, spares-planned, and warranted through Spectrum Display.')
     ],
     creative: [
       f('Creative / XR Form Factors', 'Element Creative is a Spectrum exclusive line for flexible shapes and XR volumes.'),
       f('Fine Rental Pitches', '1.9 mm and 2.6 mm for close viewing and camera work.'),
-      f('500 × 500 Cabinets', 'Standard rental footprint for mixing with conventional walls.'),
+      f('500 × 500 Panels', 'Standard rental footprint for mixing with conventional walls.'),
       f('Partner Support', 'Configuration and warranty through Spectrum Display.')
     ],
 
@@ -135,7 +135,7 @@
       f('Dual Redundancy for Power & Signal', 'Supports dual redundancy for both power and signal for command centers, monitoring rooms, and studios.'),
       f('Edge-Encapsulation Design', 'By removing the top locating pins, panels on all four sides can be encapsulated — combining aesthetic appeal with protection.'),
       f('MIP & Flip-Chip COB (Optional)', 'Refined light-emitting units for ultra-high contrast, detailed imagery, and pure color. Reduces moiré and provides a non-reflective viewing experience.'),
-      f('16:9 Cabinets', '600 × 337.5 mm 16:9 cabinets with HD image quality, quick installation, and energy-saving design.')
+      f('16:9 Panels', '600 × 337.5 mm 16:9 panels with HD image quality, quick installation, and energy-saving design.')
     ],
     arpro: [
       f('GOB Process', 'Indoor pitches down to 1.9 mm with GOB protection against impact, moisture, dust, and pressure to extend service life.'),
@@ -149,7 +149,7 @@
       f('High Grey Scale', 'High grey scale and ultra-wide viewing angle for indoor fine-pitch viewing.'),
       f('Energy Saving', 'Energy-saving playback with an environment-friendly design.'),
       f('Full Front Access', 'Wall-mounted design with full front access for fast panel installation.'),
-      f('Ultra-Light HDR', 'HDR, high refresh, and ultra-light 16:9 cabinets for fixed indoor installs.')
+      f('Ultra-Light HDR', 'HDR, high refresh, and ultra-light 16:9 panels for fixed indoor installs.')
     ],
     blade: [
       f('The Ultimate Visual Experience', 'Better contrast, wider color gamut, larger viewing angle, higher refresh and grayscale, and consistent ink color for indoor HD applications.'),
@@ -160,21 +160,21 @@
     ],
     carbon: [
       f('High Gray Scale', 'Rich color layers and smooth brightness transitions for a more realistic image.'),
-      f('Super Lightweight', 'Carbon-fiber rental cabinets built for fast installation and touring weight.'),
+      f('Super Lightweight', 'Carbon-fiber rental panels built for fast installation and touring weight.'),
       f('90° Splicing', 'Right-angle splicing for cubes, columns, and creative stage shapes.'),
       f('Curving Capability', 'Curved configurations for concave and convex stage looks.'),
       f('Fast Rear Maintenance', 'Rear service access for touring crews.')
     ],
     cbmax: [
       f('Hanging & Stacking', 'Max hanging height up to 15 meters; with wind-bracing frame up to 20 meters.'),
-      f('Mix Splicing', 'Mix-splice with CB II Series cabinets for flexible combinations and seamless integration.'),
+      f('Mix Splicing', 'Mix-splice with CB II Series panels for flexible combinations and seamless integration.'),
       f('Integrated Wind-Bracing', 'Integrated wind-bracing system for outdoor structural stability.'),
-      f('High Transparency', 'Transparent outdoor LED with an ultra-light cabinet for events and festivals.')
+      f('High Transparency', 'Transparent outdoor LED with an ultra-light panel for events and festivals.')
     ],
     cfpro: [
       f('Dual Flexible Module', '500 × 250 mm modules with fewer seams, a flatter surface, and smoother connections.'),
       f('Smooth Curvature Adjustment', 'Optimized angle-lock switch and comfort-grip rotation for quick, precise curve adjustments.'),
-      f('Cylindrical Shape', 'Single cabinet max curve ±45°. A cylinder can be built with 8 cabinets; minimum outside diameter is 1.273 m.'),
+      f('Cylindrical Shape', 'Single panel max curve ±45°. A cylinder can be built with 8 panels; minimum outside diameter is 1.273 m.'),
       f('Superior Performance', 'Stable image quality during long operating hours for rental and creative stages.'),
       f('Easy Maintenance', 'Rear-screw module service with a 500 × 500 × 108 mm panel.')
     ],
@@ -183,7 +183,7 @@
       f('Wide Viewing Angle', 'H: 160°, V: 140° with no shadows. Ultra HD, vivid colors, and detailed reproduction.'),
       f('Patent Moving Mechanism', 'Module positioning pins adjust on demand for a clean shooting surface. Dual flexible modules minimize gaps and keep color/brightness uniform. Single-person operation.'),
       f('Integrated Power Box', 'Power supply, receiving card, and HUB in one box for fast maintenance.'),
-      f('Indoor & Outdoor Flexible LED', 'Indoor and outdoor flexible LED. Single panel max curve ±45° / 90° optional; cylinder with 8 cabinets, 1.273 m minimum outside diameter.')
+      f('Indoor & Outdoor Flexible LED', 'Indoor and outdoor flexible LED. Single panel max curve ±45° / 90° optional; cylinder with 8 panels, 1.273 m minimum outside diameter.')
     ],
     crmax: [
       f('Convenient Maintenance', 'Modules are fixed by magnets and screws for both front and rear service.'),
@@ -198,10 +198,10 @@
       f('Triangle Panel Splicing', 'Triangle panels assemble into boats, Christmas trees, pinwheels, and other creative shapes.'),
       f('Sector Panel Splicing', 'Sector panels assemble into hearts, semi-circles, and full circles.'),
       f('Panel Compatibility', 'Seamless splicing with multiple Gloshine series so creative shapes reuse standard inventory.'),
-      f('Waterproof Modular Design', 'Triangle creative screen with waterproof, 4K-capable modular cabinets.')
+      f('Waterproof Modular Design', 'Triangle creative screen with waterproof, 4K-capable modular panels.')
     ],
     dn: [
-      f('Multiple Cabinets', 'Straight, curved, and 45° beveled cabinets in one series.'),
+      f('Multiple Panels', 'Straight, curved, and 45° beveled panels in one series.'),
       f('Dual Top Locks', 'Dual top locks for quicker, more secure installation.'),
       f('Anti-Collision (Optional)', 'Corner guards protect lamp beads from collision damage.'),
       f('Curved Shape', 'DN and DN Plus splice for curves with easy radian adjustment.'),
@@ -209,14 +209,14 @@
       f('10 m Hang / Stack', 'Maximum stacking and hanging height of 10 meters.')
     ],
     dnin: [
-      f('Multiple Cabinets', 'Straight, curved, and 45° beveled cabinets in one series.'),
+      f('Multiple Panels', 'Straight, curved, and 45° beveled panels in one series.'),
       f('Curved Shape', 'DN and DN Plus splice for curves with easy radian adjustment.'),
       f('Vertical + Flexible Splicing', 'Vertical plus curved splicing with flexible screens for creative indoor/outdoor shapes.'),
       f('Quick Installation', 'Maximum stacking / hanging height of 10 meters.'),
       f('Magnetic Modules', 'Ultra-wide viewing angle, magnetic modules, 90° splicing, and IP65 protection.')
     ],
     gposterplus: [
-      f('Extremely Light & Slim', 'Ultra-slim 83-inch and 70-inch sizes with 43 mm cabinet thickness for commercial spaces.'),
+      f('Extremely Light & Slim', 'Ultra-slim 83-inch and 70-inch sizes with 43 mm panel thickness for commercial spaces.'),
       f('Multiple Playback Modes', 'Synchronous, LAN, USB, asynchronous, and cluster cloud playback.'),
       f('Intelligent Cluster Control', 'Remote wireless interaction, monitoring, timed power on/off, and centralized management.'),
       f('Multiple Splicing Options', 'Standard, multi-unit, and creative splicing.'),
@@ -227,9 +227,9 @@
     gposter: [
       f('Damped Flip Frame', 'Built-in shock absorption for smooth, slow frame rotation that protects the structure and keeps layout changes quiet.'),
       f('Multi-Screen Splicing (Optional)', 'Seamless splicing of up to 6 units with HDR for exhibitions — video, charts, and HD images.'),
-      f('Shared Backup Power', 'Optional power balancing between cabinets. If one supply fails, the other supports both units.'),
+      f('Shared Backup Power', 'Optional power balancing between panels. If one supply fails, the other supports both units.'),
       f('Intelligent Cluster Control', 'Remote wireless interaction, monitoring, timed power on/off, and centralized management.'),
-      f('Dual-Sided Foldable Design', 'Dual-sided display with a foldable cabinet for easier transport and maintenance.')
+      f('Dual-Sided Foldable Design', 'Dual-sided display with a foldable panel for easier transport and maintenance.')
     ],
     gp: [
       f('Delicate Picture Quality', 'High grayscale, high contrast, and a large viewing angle for vivid outdoor images.'),
@@ -247,14 +247,14 @@
       f('Splice with LE Series', 'Interconnect and splice with the Legend (LE) series.'),
       f('Splice with DN Series', 'Interconnect and splice with the DN series.'),
       f('360° Immersive Shooting', 'Interconnect with CF Pro and MV Pro to create a 360° immersive shooting environment.'),
-      f('90° Curved Corner', '90° curved-corner cabinets with HD image and IP65 protection.')
+      f('90° Curved Corner', '90° curved-corner panels with HD image and IP65 protection.')
     ],
     mtedge: [
       f('Works with MT Series', 'Pair with MT series to create creative booths, inner arcs, and outer arcs.'),
       f('BeMatrix Frame', 'Works with a BeMatrix frame on the back for exhibition builds.'),
       f('Vertical Installation', 'Maximum vertical height 5 meters.'),
       f('Hanging', 'Maximum lifting height 5 meters.'),
-      f('Flexible Curve', 'Flexible module with curved lock. P1.9 / 2.3 / 2.8 max curve ±80° per panel; a cylinder from as few as 5 cabinets.')
+      f('Flexible Curve', 'Flexible module with curved lock. P1.9 / 2.3 / 2.8 max curve ±80° per panel; a cylinder from as few as 5 panels.')
     ],
     mt2: [
       f('Quick Installation', 'Two fast latches on the top and two on the panel side for easy, fast installation.'),
@@ -263,10 +263,10 @@
       f('Work with MT Edge', 'MT II + MT Edge for “L” and “U” shapes and other creative booth designs.')
     ],
     mt55: [
-      f('Customizable Back Panel', 'Custom back-cover hides cabinet cables. Choose material, color, and pattern to match the booth design.'),
+      f('Customizable Back Panel', 'Custom back-cover hides panel cables. Choose material, color, and pattern to match the booth design.'),
       f('Convenient Maintenance', 'Front and rear service for module, power supply, and HUB. Integrated back-cover knob for easy removal.'),
       f('Brompton Compatible', 'Compatible with Nova and Colorlight, and supports Brompton for wider brightness/color range and more efficient tuning.'),
-      f('90° Splicing', 'High-precision 496 mm cabinets with 90° splicing and 4K-capable layouts.'),
+      f('90° Splicing', 'High-precision 496 mm panels with 90° splicing and 4K-capable layouts.'),
       f('Magnetic Modules', 'Magnetic modules for fast installation; corner panels supported.')
     ],
     mvpro: [
@@ -281,8 +281,8 @@
     mvultra: [
       f('Novastar 5G & Brompton (Optional)', 'High-speed, low-latency transmission with millisecond-level control and 8K-class display for high-end rental.'),
       f('Splice with Multiple Series', 'Combine with CF Pro, CF Pro II flexible LED, and DN-B HD LED for rapid installs and versatile shapes.'),
-      f('Vertical Splicing', 'Detachable 45° beveled frames support flat, curved, right-angle, cubic column, and cube splicing from one cabinet type.'),
-      f('Curved Splicing', 'Optional curved cabinets: -10° / -7.5° / -5° / -2.5° / 0° / 2.5° / 5° / 7.5° / 10°.'),
+      f('Vertical Splicing', 'Detachable 45° beveled frames support flat, curved, right-angle, cubic column, and cube splicing from one panel type.'),
+      f('Curved Splicing', 'Optional curved panels: -10° / -7.5° / -5° / -2.5° / 0° / 2.5° / 5° / 7.5° / 10°.'),
       f('Integrated Rear Cover', 'Integrated rear cover with rotary-knob fixation for tool-free maintenance.'),
       f('Anti-Collision Corners (Optional)', 'Optional protection corners protect corner LEDs from collision damage during transport.'),
       f('7680 Hz Refresh', '5G solutions, 7680 Hz high refresh, curving, and vertical splicing for premium indoor rental.')
@@ -290,11 +290,11 @@
     ra2: [
       f('40 mm Profile Compatible', 'Fits 40 × 40 mm aluminum profiles for rapid assembly and disassembly at exhibitions and temporary sites.'),
       f('Stacking with Angle Steel', 'Profile stacking using interior angle steel.'),
-      f('Customizable Backplate', 'Custom backplates conceal cabinet cables and keep a unified visual style.'),
-      f('Lightweight Fixed / Ceiling', 'Lightweight 4K-capable cabinets with optional GOB; hang as a ceiling screen or use as fixed install.')
+      f('Customizable Backplate', 'Custom backplates conceal panel cables and keep a unified visual style.'),
+      f('Lightweight Fixed / Ceiling', 'Lightweight 4K-capable panels with optional GOB; hang as a ceiling screen or use as fixed install.')
     ],
     rbb: [
-      f('Multiple Cabinets', 'Multiple cabinet options for complex creative shapes.'),
+      f('Multiple Panels', 'Multiple panel options for complex creative shapes.'),
       f('Cubic / Vertical Splicing', 'RB-B supports four-sided cutting edge. RB PLUS-B supports two-side (left and right) cutting edge.'),
       f('Curved Screen', 'Curve splicing with easy radian adjustment and efficient installation.'),
       f('90° Corner with MR', 'Splice with MR Series 90° corner fillets for a seamless round-corner look.'),
@@ -305,7 +305,7 @@
       f('Concave & Convex Splicing', 'Support concave and convex splicing from 0° to ±10°.'),
       f('Wide Viewing Angle', 'Horizontal 160°, vertical 140°, shadowless full-frame.'),
       f('Hanging Height', 'Maximum hanging height 20 m with touring frame, 10 m standard.'),
-      f('Full Waterproof', 'Ultra-light, high-stability, fully waterproof cabinets with easy maintenance.')
+      f('Full Waterproof', 'Ultra-light, high-stability, fully waterproof panels with easy maintenance.')
     ],
     vamax: [
       f('Magnetic Module Maintenance', 'Magnetic modules allow front and rear service. Modular design cuts repair time.'),
@@ -317,7 +317,7 @@
     vanish: [
       f('High Transparency Design', 'Contrast up to 6000:1 and over 35% transparency for creative see-through displays with clear, vivid visuals.'),
       f('Integrated Power Box', 'Power box replacement and maintenance stay quick so the transparent wall stays in service.'),
-      f('Ultra Light Weight', '500 × 1000 mm cabinet at 8.0 kg. Special module design for durability, transport, and fast install.'),
+      f('Ultra Light Weight', '500 × 1000 mm panel at 8.0 kg. Special module design for durability, transport, and fast install.'),
       f('Curving Capabilities', 'Concave or convex configuration for creative projects. Also supports 90° splicing.')
     ],
     zs3: [
@@ -363,7 +363,7 @@
       warranty: WARRANTY,
       extraTitle: 'Certifications & factory specs',
       extra:
-        'Gloshine publishes CE, ETL, FCC, UL, and RoHS marks for its LED products. Confirm the exact certifications and datasheet for the pitch and cabinet you order. Official series specifications are linked from this page.'
+        'Gloshine publishes CE, ETL, FCC, UL, and RoHS marks for its LED products. Confirm the exact certifications and datasheet for the pitch and panel you order. Official series specifications are linked from this page.'
     },
     trt: {
       warrantyTitle: 'Limited Warranty',
@@ -375,7 +375,7 @@
       warrantyTitle: 'Limited Warranty',
       warranty: WARRANTY,
       extraTitle: 'Factory specs',
-      extra: 'BAKO publishes CCC, TUV (CE), and FCC marks on COB fine-pitch series. Confirm the exact datasheet for the pitch and cabinet you order. Official series pages are linked from this product.'
+      extra: 'BAKO publishes CCC, TUV (CE), and FCC marks on COB fine-pitch series. Confirm the exact datasheet for the pitch and panel you order. Official series pages are linked from this product.'
     },
     diao: {
       warrantyTitle: 'Limited Warranty',
@@ -387,7 +387,7 @@
       warrantyTitle: 'Control gear warranty',
       warranty: 'Warranty coverage for NovaStar processors, senders, playback boxes, and spare receiving cards is quoted by Spectrum sales for the model on your order. We do not publish a generic control-gear term here. Email sales@spectrumdisplay.com with the model and serial if you need a warranty statement.',
       extraTitle: 'Receiving cards on new walls',
-      extra: 'New Spectrum LED walls ship with receiving cards installed in each cabinet. The cabinet $/m² price already includes that card. Order receiving cards from this catalog only as replacements or spares.'
+      extra: 'New Spectrum LED walls ship with receiving cards installed in each panel. The panel $/m² price already includes that card. Order receiving cards from this catalog only as replacements or spares.'
     }
   };
 

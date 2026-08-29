@@ -66,7 +66,7 @@
         "cabinetW": 0.5,
         "cabinetH": 0.5,
         "type": "Rental",
-        "description": "High-end indoor rental LED. 500\u00d7500 mm cabinets, 3840/7680 Hz refresh, GOB/HOB on fine pitches, \u00b110\u00b0 curve, 10 m hang/stack.",
+        "description": "High-end indoor rental LED. 500\u00d7500 mm panels, 3840/7680 Hz refresh, GOB/HOB on fine pitches, \u00b110\u00b0 curve, 10 m hang/stack.",
         "badge": "Rental",
         "image": "assets/products/gloshine/mvultra-hero.png",
         "gallery": [
@@ -91,7 +91,7 @@
         "cabinetW": 0.5,
         "cabinetH": 0.5,
         "type": "Rental",
-        "description": "Indoor DN rental cabinets with magnetic front service, dual locks, \u00b110\u00b0 curve, and 45\u00b0 bevel options. 500\u00d7500 / 500\u00d71000 mm.",
+        "description": "Indoor DN rental panels with magnetic front service, dual locks, \u00b110\u00b0 curve, and 45\u00b0 bevel options. 500\u00d7500 / 500\u00d71000 mm.",
         "badge": "Rental",
         "image": "assets/products/gloshine/dnin-hero.png",
         "gallery": [
@@ -113,7 +113,7 @@
         "cabinetW": 0.5,
         "cabinetH": 0.5,
         "type": "Outdoor",
-        "description": "Outdoor rental/fixed DN cabinets with magnetic modules, dual top locks, IP65 front, curve and 90\u00b0 splicing.",
+        "description": "Outdoor rental/fixed DN panels with magnetic modules, dual top locks, IP65 front, curve and 90\u00b0 splicing.",
         "badge": "",
         "image": "assets/products/gloshine/dnout-hero.png",
         "gallery": [
@@ -137,7 +137,7 @@
         "cabinetW": 0.5,
         "cabinetH": 0.5,
         "type": "Transparent",
-        "description": "Outdoor transparent LED with \u226535% transparency, IP65 cabinets, ultra-light panels, concave/convex and 90\u00b0 setups.",
+        "description": "Outdoor transparent LED with \u226535% transparency, IP65 panels, ultra-light panels, concave/convex and 90\u00b0 setups.",
         "badge": "Transparent",
         "image": "assets/products/gloshine/vanish-hero.png",
         "gallery": [
@@ -161,7 +161,7 @@
         "cabinetW": 1.0,
         "cabinetH": 1.0,
         "type": "Outdoor",
-        "description": "High-end outdoor large-scale rental. 1000\u00d71000 mm cabinets with touring frame; solid and transparent-hybrid modules.",
+        "description": "High-end outdoor large-scale rental. 1000\u00d71000 mm panels with touring frame; solid and transparent-hybrid modules.",
         "badge": "Rental",
         "image": "assets/products/gloshine/vamax-hero.png",
         "gallery": [
@@ -185,7 +185,7 @@
         "cabinetW": 1.0,
         "cabinetH": 1.0,
         "type": "Outdoor",
-        "description": "Lightweight outdoor rental. 1000\u00d71000 mm magnesium + carbon fiber cabinets, IP65 front, 3840/7680 Hz.",
+        "description": "Lightweight outdoor rental. 1000\u00d71000 mm magnesium + carbon fiber panels, IP65 front, 3840/7680 Hz.",
         "badge": "Rental",
         "image": "assets/products/gloshine/cbmax-hero.png",
         "gallery": [
@@ -206,7 +206,7 @@
         "cabinetW": 1.0,
         "cabinetH": 1.0,
         "type": "Outdoor",
-        "description": "Outdoor carbon-fiber rental cabinet with wind-bracing option, \u00b110\u00b0 curve, IP65 front / IP54 rear.",
+        "description": "Outdoor carbon-fiber rental panel with wind-bracing option, \u00b110\u00b0 curve, IP65 front / IP54 rear.",
         "badge": "Rental",
         "image": "assets/products/gloshine/crmax-hero.png",
         "gallery": [
@@ -231,7 +231,7 @@
         "cabinetW": 0.6,
         "cabinetH": 0.3375,
         "type": "Fixed",
-        "description": "16:9 fine-pitch 600\u00d7337.5 mm cabinets, 5.5 kg, MIP / flip-chip COB / SMD options from 0.625\u20131.875 mm.",
+        "description": "16:9 fine-pitch 600\u00d7337.5 mm panels, 5.5 kg, MIP / flip-chip COB / SMD options from 0.625\u20131.875 mm.",
         "badge": "COB",
         "image": "assets/products/gloshine/af2-hero.png",
         "gallery": [
@@ -255,7 +255,7 @@
         "cabinetW": 0.6,
         "cabinetH": 0.3375,
         "type": "Fixed",
-        "description": "Indoor 16:9 fine-pitch 600\u00d7337.5 mm cabinets, Mini 4-in-1 through SMD, GOB optional, 5.8 kg.",
+        "description": "Indoor 16:9 fine-pitch 600\u00d7337.5 mm panels, Mini 4-in-1 through SMD, GOB optional, 5.8 kg.",
         "badge": "COB",
         "image": "assets/products/gloshine/aw-hero.png",
         "gallery": [
@@ -370,7 +370,7 @@
         "cabinetW": 0.5,
         "cabinetH": 0.5,
         "type": "Creative",
-        "description": "Flexible indoor LED for cylinders and creative shapes. 500\u00d7500 mm cabinets with tight curve locks.",
+        "description": "Flexible indoor LED for cylinders and creative shapes. 500\u00d7500 mm panels with tight curve locks.",
         "badge": "Creative",
         "image": "assets/products/gloshine/cfpro-hero.png",
         "gallery": [
@@ -393,7 +393,7 @@
         "cabinetW": 0.5,
         "cabinetH": 0.5,
         "type": "Creative",
-        "description": "Indoor/outdoor flexible LED. 500\u00d7500 mm cabinets, curve to \u221222.5\u00b0, indoor and outdoor pitches.",
+        "description": "Indoor/outdoor flexible LED. 500\u00d7500 mm panels, curve to \u221222.5\u00b0, indoor and outdoor pitches.",
         "badge": "Creative",
         "image": "assets/products/gloshine/cfpro2-hero.png",
         "gallery": [
@@ -437,7 +437,7 @@
         "cabinetW": 0.5,
         "cabinetH": 1.0,
         "type": "Rental",
-        "description": "Ultra-light carbon-fiber 500\u00d71000 mm cabinets, indoor IP30 and outdoor IP65 versions, hang to 20 m.",
+        "description": "Ultra-light carbon-fiber 500\u00d71000 mm panels, indoor IP30 and outdoor IP65 versions, hang to 20 m.",
         "badge": "Rental",
         "image": "assets/products/gloshine/ur-hero.png",
         "gallery": [
@@ -461,7 +461,7 @@
         "cabinetW": 0.5,
         "cabinetH": 0.5,
         "type": "Rental",
-        "description": "Magnesium/carbon ultra-light cabinets in 500\u00d7500, 500\u00d71000, and 1000\u00d7500 sizes. Indoor and outdoor, 90\u00b0 columns.",
+        "description": "Magnesium/carbon ultra-light panels in 500\u00d7500, 500\u00d71000, and 1000\u00d7500 sizes. Indoor and outdoor, 90\u00b0 columns.",
         "badge": "Rental",
         "image": "assets/products/gloshine/carbon-hero.png",
         "gallery": [
@@ -532,7 +532,7 @@
         "cabinetW": 0.496,
         "cabinetH": 0.496,
         "type": "Creative",
-        "description": "Creative indoor 496\u00d7496 mm cabinets for curved and volume builds.",
+        "description": "Creative indoor 496\u00d7496 mm panels for curved and volume builds.",
         "badge": "Creative",
         "image": "assets/products/gloshine/mt2-hero.png",
         "gallery": [
@@ -556,7 +556,7 @@
         "cabinetW": 0.496,
         "cabinetH": 0.496,
         "type": "Creative",
-        "description": "Tight-curve indoor creative cabinets, 496\u00d7496 mm, curves up to \u00b180\u00b0 on coarser pitches.",
+        "description": "Tight-curve indoor creative panels, 496\u00d7496 mm, curves up to \u00b180\u00b0 on coarser pitches.",
         "badge": "Creative",
         "image": "assets/products/gloshine/mtedge-hero.png",
         "gallery": [
@@ -579,7 +579,7 @@
         "cabinetW": 0.5,
         "cabinetH": 0.5,
         "type": "Creative",
-        "description": "Triangle and sector creative cabinets for indoor/outdoor sculptures and special shapes.",
+        "description": "Triangle and sector creative panels for indoor/outdoor sculptures and special shapes.",
         "badge": "Creative",
         "image": "assets/products/gloshine/cs2-hero.png",
         "gallery": [
@@ -628,7 +628,7 @@
         "cabinetW": 0.5,
         "cabinetH": 0.5,
         "type": "Fixed",
-        "description": "Ultra-thin indoor 500\u00d7500\u00d740 mm cabinets (RA Plus 500\u00d71000), HOB/GOB on fine pitches.",
+        "description": "Ultra-thin indoor 500\u00d7500\u00d740 mm panels (RA Plus 500\u00d71000), HOB/GOB on fine pitches.",
         "badge": "",
         "image": "assets/products/gloshine/ra2-hero.png",
         "gallery": [
@@ -650,7 +650,7 @@
         "cabinetW": 0.5,
         "cabinetH": 0.5,
         "type": "Outdoor",
-        "description": "Outdoor die-cast magnesium cabinets, front IP65 / rear IP54, curve options, 10 m hang/stack.",
+        "description": "Outdoor die-cast magnesium panels, front IP65 / rear IP54, curve options, 10 m hang/stack.",
         "badge": "",
         "image": "assets/products/gloshine/zs3-hero.png",
         "gallery": [
@@ -671,7 +671,7 @@
         "cabinetW": 0.5,
         "cabinetH": 1.0,
         "type": "Outdoor",
-        "description": "Outdoor 500\u00d7500 / 500\u00d71000 mm cabinets, front/rear module service, IP65 front / IP54 rear.",
+        "description": "Outdoor 500\u00d7500 / 500\u00d71000 mm panels, front/rear module service, IP65 front / IP54 rear.",
         "badge": "",
         "image": "assets/products/gloshine/zspro-hero.png",
         "gallery": [
@@ -696,7 +696,7 @@
         "cabinetW": 0.5,
         "cabinetH": 0.5,
         "type": "Outdoor",
-        "description": "Outdoor fixed/rental LED from Gloshine GP series, IP65-rated cabinets.",
+        "description": "Outdoor fixed/rental LED from Gloshine GP series, IP65-rated panels.",
         "badge": "",
         "image": "assets/products/gloshine/gp-hero.png",
         "gallery": [
@@ -718,7 +718,7 @@
         "cabinetW": 0.5,
         "cabinetH": 0.5,
         "type": "Outdoor",
-        "description": "Outdoor Legend / Legend Mini cabinets, front IP65 / rear IP54, modular curve, hang/stack to 10 m.",
+        "description": "Outdoor Legend / Legend Mini panels, front IP65 / rear IP54, modular curve, hang/stack to 10 m.",
         "badge": "",
         "image": "assets/products/gloshine/legend-hero.webp",
         "gallery": [
@@ -750,7 +750,7 @@
         "cabinetW": 0.6,
         "cabinetH": 0.3375,
         "type": "Fixed",
-        "description": "Flip-chip COB indoor cabinets in 600 \u00d7 337.5 mm (or 600 \u00d7 675 mm). Common-cathode energy saving, 800 nits, 3840 Hz, 15,000:1 contrast.",
+        "description": "Flip-chip COB indoor panels in 600 \u00d7 337.5 mm (or 600 \u00d7 675 mm). Common-cathode energy saving, 800 nits, 3840 Hz, 15,000:1 contrast.",
         "badge": "COB",
         "image": "assets/products/bako/finepitch.jpg"
       },
@@ -812,7 +812,7 @@
         "cabinetW": 0.5,
         "cabinetH": 0.5,
         "type": "Rental",
-        "description": "Indoor/outdoor rental, 500 \u00d7 500 and 500 \u00d7 1000 mm die-cast cabinets. Curve 0\u20135\u00b0 out / 0\u201320\u00b0 in, 90\u00b0 corners, mix cabinet sizes.",
+        "description": "Indoor/outdoor rental, 500 \u00d7 500 and 500 \u00d7 1000 mm die-cast panels. Curve 0\u20135\u00b0 out / 0\u201320\u00b0 in, 90\u00b0 corners, mix panel sizes.",
         "badge": "Rental",
         "image": "assets/products/bako/diamond4.jpg"
       },
@@ -833,7 +833,7 @@
         "cabinetW": 0.6,
         "cabinetH": 0.3375,
         "type": "Fixed",
-        "description": "UHD 16:9 fine-pitch indoor wall. 600 \u00d7 337.5 mm die-cast cabinets at 6 kg, 100% front service, \u2265 3840 Hz.",
+        "description": "UHD 16:9 fine-pitch indoor wall. 600 \u00d7 337.5 mm die-cast panels at 6 kg, 100% front service, \u2265 3840 Hz.",
         "badge": "",
         "image": "assets/products/bako/flyingdrone.jpg"
       },
@@ -852,7 +852,7 @@
         "cabinetW": 0,
         "cabinetH": 0,
         "type": "Poster",
-        "description": "Indoor or outdoor movable LED poster, 45 kg aluminum cabinet. Hang, wall, base, or landscape. Indoor P1.75 / P2 / P2.5; outdoor P2.5.",
+        "description": "Indoor or outdoor movable LED poster, 45 kg aluminum panel. Hang, wall, base, or landscape. Indoor P1.75 / P2 / P2.5; outdoor P2.5.",
         "badge": "",
         "image": "assets/products/bako/poster.jpg"
       },
@@ -877,7 +877,7 @@
         "cabinetW": 0.96,
         "cabinetH": 0.96,
         "type": "Fixed",
-        "description": "Outdoor DOOH and stadium perimeter. IP68 modules, front or rear service, 960 \u00d7 960 / 900 \u00d7 900 mm cabinets, high-temp die-cast frames.",
+        "description": "Outdoor DOOH and stadium perimeter. IP68 modules, front or rear service, 960 \u00d7 960 / 900 \u00d7 900 mm panels, high-temp die-cast frames.",
         "badge": "Outdoor",
         "image": "assets/products/bako/spaceship.jpg"
       },
@@ -933,7 +933,7 @@
         "cabinetW": 0.64,
         "cabinetH": 0.48,
         "type": "Fixed",
-        "description": "Indoor fixed 640 \u00d7 480 mm die-cast cabinets, 320 \u00d7 160 mm modules, 100% front service, 8 kg, 600\u2013800 nits, \u2265 3840 Hz.",
+        "description": "Indoor fixed 640 \u00d7 480 mm die-cast panels, 320 \u00d7 160 mm modules, 100% front service, 8 kg, 600\u2013800 nits, \u2265 3840 Hz.",
         "badge": "",
         "image": "assets/products/bako/uhdpro.jpg"
       },
@@ -970,7 +970,7 @@
         "cabinetW": 1,
         "cabinetH": 0.5,
         "type": "Transparent",
-        "description": "Transparent rental, 66% transmittance, 1000 \u00d7 500 \u00d7 65 mm die-cast cabinets. Indoor 1000 nits / outdoor 4500 nits, IP65/IP54.",
+        "description": "Transparent rental, 66% transmittance, 1000 \u00d7 500 \u00d7 65 mm die-cast panels. Indoor 1000 nits / outdoor 4500 nits, IP65/IP54.",
         "badge": "Transparent",
         "image": "assets/products/bako/tpro.jpg"
       },
@@ -985,7 +985,7 @@
         "cabinetW": 0.48,
         "cabinetH": 0.48,
         "type": "Fixed",
-        "description": "High-end indoor 480 \u00d7 480 mm die-cast cabinets, 240 \u00d7 240 mm modules, 3840 Hz, fanless, front and rear service.",
+        "description": "High-end indoor 480 \u00d7 480 mm die-cast panels, 240 \u00d7 240 mm modules, 3840 Hz, fanless, front and rear service.",
         "badge": "",
         "image": "assets/products/bako/indoorfixed.jpg"
       }

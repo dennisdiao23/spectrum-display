@@ -127,28 +127,27 @@
             <label class="block text-xs text-slate-400 mb-1">Description</label>
             <textarea id="description" rows="2" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm"></textarea>
           </div>
-          <div>
+          <div class="panel-only-fields">
             <label class="block text-xs text-slate-400 mb-1">Pixel pitches (mm, comma separated)</label>
             <input id="pitches" type="text" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm" placeholder="1.25, 1.56, 1.87">
-            <p id="pitches-hint" class="text-[11px] text-slate-500 mt-1">Required for LED cabinets. Leave blank for control gear.</p>
           </div>
           <div>
             <label class="block text-xs text-slate-400 mb-1" id="price-label">Price per m² ($)</label>
             <input id="price" required type="number" min="0" step="1" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm">
           </div>
-          <div>
+          <div class="panel-only-fields">
             <label class="block text-xs text-slate-400 mb-1">Weight kg / m²</label>
             <input id="weight" type="number" min="0" step="0.1" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm">
           </div>
-          <div>
+          <div class="panel-only-fields">
             <label class="block text-xs text-slate-400 mb-1">Power avg / peak (W / m²)</label>
             <div class="grid grid-cols-2 gap-2">
               <input id="power-avg" type="number" min="0" step="1" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm" placeholder="Avg">
               <input id="power-max" type="number" min="0" step="1" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm" placeholder="Peak">
             </div>
           </div>
-          <div>
-            <label class="block text-xs text-slate-400 mb-1">Cabinet W × H (mm)</label>
+          <div class="panel-only-fields">
+            <label class="block text-xs text-slate-400 mb-1">Panel W × H (mm)</label>
             <div class="grid grid-cols-2 gap-2">
               <input id="cab-w" type="number" min="1" step="0.5" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm" placeholder="500">
               <input id="cab-h" type="number" min="1" step="0.5" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm" placeholder="500">
@@ -325,6 +324,9 @@
       document.getElementById('subtype-wrap').classList.toggle('hidden', !on);
       document.getElementById('price-label').textContent = on ? 'Price each ($)' : 'Price per m² ($)';
       document.getElementById('pitches').required = !on;
+      document.querySelectorAll('.panel-only-fields').forEach(function (el) {
+        el.classList.toggle('hidden', on);
+      });
     }
 
     function resetForm() {
