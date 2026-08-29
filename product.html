@@ -281,9 +281,9 @@
               <button id="add-to-cart" class="pricing-only px-8 py-3 rounded-full bg-sky-500 hover:bg-sky-400 text-white font-semibold transition">
                 Add to Cart
               </button>
-              <div class="guest-pricing space-y-2">
-                <a id="guest-price-cta" href="account.html" class="inline-flex px-6 py-3 rounded-full bg-sky-500 hover:bg-sky-400 text-white font-semibold" data-i18n="price.signInCta">Sign in to see pricing and use the cart</a>
-                <div><a href="contact.html" class="text-sm text-sky-400 hover:text-sky-300">Or contact sales →</a></div>
+              <div class="space-y-2">
+                <a id="guest-price-cta" href="account.html" class="guest-pricing inline-flex px-6 py-3 rounded-full bg-sky-500 hover:bg-sky-400 text-white font-semibold" data-i18n="price.signInCta">Sign in to see pricing and use the cart</a>
+                <div><a id="use-in-calculator" href="designer.html" class="text-sm text-sky-400 hover:text-sky-300">Use in Calculator →</a></div>
               </div>
             </div>
           </div>
@@ -576,6 +576,7 @@
             });
             btn.classList.add('border-sky-500', 'bg-sky-500/10', 'text-sky-300');
             btn.classList.remove('border-slate-700');
+            syncCalculatorLink();
           };
         });
       }
@@ -832,12 +833,15 @@
           stickyGuestLabel.textContent = 'Request pricing';
         }
       }
+      syncCalculatorLink();
       if (!hasPrice) {
         document.querySelectorAll('.pricing-only').forEach(function (el) { el.classList.add('hidden'); });
-        var guest = document.querySelector('.guest-pricing');
-        if (guest) {
-          guest.classList.remove('guest-pricing');
-          guest.innerHTML = '<a href="contact.html" class="inline-flex px-6 py-3 rounded-full bg-sky-500 hover:bg-sky-400 text-white font-semibold">Request a quote</a>';
+        var guestCtaQuote = document.getElementById('guest-price-cta');
+        if (guestCtaQuote) {
+          guestCtaQuote.classList.remove('guest-pricing');
+          guestCtaQuote.href = 'contact.html';
+          guestCtaQuote.removeAttribute('data-i18n');
+          guestCtaQuote.textContent = 'Request a quote';
         }
         var sticky = document.getElementById('sticky-price');
         if (sticky) sticky.textContent = 'Quote';
@@ -848,6 +852,30 @@
           stickyGuest.href = 'contact.html';
         }
       }
+    }
+
+    function selectedPitch() {
+      const on = document.querySelector('#pitch-grid .pitch-btn.border-sky-500');
+      if (on && on.getAttribute('data-pitch')) return on.getAttribute('data-pitch');
+      const pitches = (seriesData && seriesData.pitches) || [];
+      return pitches.length ? String(pitches[0]) : '';
+    }
+
+    function syncCalculatorLink() {
+      const a = document.getElementById('use-in-calculator');
+      if (!a) return;
+      if (isControl) {
+        a.href = 'contact.html';
+        a.textContent = 'Or contact sales →';
+        return;
+      }
+      const qs = new URLSearchParams();
+      if (brandId) qs.set('brand', brandId);
+      if (seriesId) qs.set('series', seriesId);
+      const pitch = selectedPitch();
+      if (pitch) qs.set('pitch', pitch);
+      a.href = 'designer.html?' + qs.toString();
+      a.textContent = 'Use in Calculator →';
     }
     applyProductView();
 
