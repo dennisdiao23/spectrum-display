@@ -27,7 +27,7 @@ Hosting is **Railway only** (not Netlify or Vercel).
 |---|---|---|
 | **TRT** | Partner (Transtech) | Fine pitch, Discovery series, LedPoster, US support |
 | **Gloshine** | Partner | Full factory lineup: MV Ultra, DN, Vanish, AF II COB, outdoor rental, posters |
-| **BAKO** | Partner | Fine pitch COB |
+| **BAKO** | Partner | Fine Pitch 600×337.5 COB, All-in-One, rental, outdoor Spaceship, T-Pro transparent |
 | **DIAO** | Exclusive | Value-driven professional fixed install |
 | **Element** | Exclusive | Performance rental & creative / XR |
 
