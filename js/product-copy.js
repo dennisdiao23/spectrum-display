@@ -1,8 +1,6 @@
 /**
- * Product-page Key Features and Support copy.
- * Gloshine feature cards are from official series pages (gloshine.com).
- * Support copy is brand-specific so leftover TRT warranty text never appears
- * on Gloshine, BAKO, DIAO, or Element products.
+ * Product-page Support copy (warranty / what you get).
+ * Key Features come from the database (`products.details.features` via /api/catalog).
  */
 (function (global) {
   function decode(s) {
@@ -395,11 +393,8 @@
 
   function getFeatures(brandId, seriesId, series) {
     var fromSeries = series && series.features;
-    if (Array.isArray(fromSeries) && fromSeries.length && fromSeries[0] && fromSeries[0].title) {
-      return fromSeries;
-    }
-    if (FEATURES[seriesId] && FEATURES[seriesId].length) return FEATURES[seriesId];
-    return BRAND_FEATURES[brandId] || FEATURES.discovery;
+    if (Array.isArray(fromSeries) && fromSeries.length) return fromSeries;
+    return [];
   }
 
   function getSupport(brandId) {

@@ -1,7 +1,7 @@
 /**
- * Spectrum Display - Single source of truth for product catalog
- * Edit this file to update Project Designer, Products page, and product details.
- * Add image: 'assets/products/yourfile.jpg' for product photos.
+ * UNUSED on public pages. Panel catalog is the admin database via /api/catalog.
+ * Do not include this file in HTML. Server seed is server/seed-catalog.json.
+ * Extra copy (cats, specs, features) is server/product-details.json → products.details.
  */
 window.SPECTRUM_PRODUCTS = {
   trt: {

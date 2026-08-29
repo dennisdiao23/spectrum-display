@@ -377,7 +377,6 @@
 
   <div class="h-20"></div><!-- spacer for sticky bar -->
 
-  <script src="js/products-data.js"></script>
   <script src="js/novastar-catalog.js"></script>
   <script src="js/control-systems.js"></script>
   <script src="js/product-copy.js"></script>
@@ -727,14 +726,18 @@
       }
 
       const featGrid = document.getElementById('features-grid');
-      if (featGrid && window.getSpectrumProductFeatures) {
-        const feats = window.getSpectrumProductFeatures(brandId, seriesId, seriesData) || [];
-        featGrid.innerHTML = feats.map(function (item) {
-          return '<div class="p-6 rounded-2xl border border-slate-800">' +
-            '<h3 class="font-semibold text-lg mb-2">' + esc(item.title) + '</h3>' +
-            (item.text ? '<p class="text-sm text-slate-400">' + esc(item.text) + '</p>' : '') +
-            '</div>';
-        }).join('');
+      if (featGrid) {
+        const feats = (window.getSpectrumProductFeatures
+          ? window.getSpectrumProductFeatures(brandId, seriesId, seriesData)
+          : ((seriesData && seriesData.features) || [])) || [];
+        featGrid.innerHTML = feats.length
+          ? feats.map(function (item) {
+              return '<div class="p-6 rounded-2xl border border-slate-800">' +
+                '<h3 class="font-semibold text-lg mb-2">' + esc(item.title) + '</h3>' +
+                (item.text ? '<p class="text-sm text-slate-400">' + esc(item.text) + '</p>' : '') +
+                '</div>';
+            }).join('')
+          : '<p class="text-slate-400 text-sm col-span-full">Ask sales for the full feature list and datasheet.</p>';
       }
 
       const downloadsWrap = document.getElementById('downloads-wrap');

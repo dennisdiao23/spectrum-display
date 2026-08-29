@@ -100,11 +100,18 @@
               <option>Outdoor</option>
               <option>Poster</option>
               <option>Creative</option>
+              <option>All-in-one</option>
+              <option>Transparent</option>
             </select>
           </div>
           <div>
             <label class="block text-xs text-slate-400 mb-1">Badge</label>
             <input id="badge" type="text" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm" placeholder="Exclusive, Rental…">
+          </div>
+          <div class="sm:col-span-2">
+            <label class="block text-xs text-slate-400 mb-1">Categories (filters / mega menu)</label>
+            <input id="cats" type="text" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm" placeholder="cob indoor-rental posters outdoor-fixed">
+            <p class="text-[11px] text-slate-500 mt-1">Space-separated: cob, indoor-rental, outdoor-rental, fixed-indoor, posters, transparent, outdoor-fixed, creative</p>
           </div>
           <div class="sm:col-span-2">
             <label class="block text-xs text-slate-400 mb-1">Description</label>
@@ -327,6 +334,7 @@
       document.getElementById('series-id').value = product.id;
       document.getElementById('type').value = product.type || 'Fixed';
       document.getElementById('badge').value = product.badge || '';
+      document.getElementById('cats').value = (product.cats || []).join(' ');
       document.getElementById('description').value = product.description || '';
       document.getElementById('pitches').value = (product.pitches || []).join(', ');
       document.getElementById('price').value = product.pricePerM2;
@@ -631,6 +639,7 @@
       fd.append('seriesId', document.getElementById('series-id').value);
       fd.append('type', document.getElementById('type').value);
       fd.append('badge', document.getElementById('badge').value);
+      fd.append('cats', document.getElementById('cats').value);
       fd.append('description', document.getElementById('description').value);
       fd.append('pitches', document.getElementById('pitches').value);
       fd.append('pricePerM2', document.getElementById('price').value);

@@ -52,6 +52,7 @@ function openDb() {
       badge TEXT DEFAULT '',
       image TEXT DEFAULT '',
       gallery TEXT NOT NULL DEFAULT '[]',
+      details TEXT NOT NULL DEFAULT '{}',
       sort_order INTEGER DEFAULT 0,
       created_at TEXT NOT NULL,
       updated_at TEXT NOT NULL,
@@ -59,6 +60,7 @@ function openDb() {
       FOREIGN KEY (brand_id) REFERENCES brands(id)
     );
   `);
+  try { db.exec("ALTER TABLE products ADD COLUMN details TEXT NOT NULL DEFAULT '{}'"); } catch (e) { /* already present */ }
   return db;
 }
 
@@ -121,6 +123,28 @@ function seedCatalog(db) {
   console.log('Seeded product catalog from server/seed-catalog.json');
 }
 
+function fillMissingProductDetails(db) {
+  const packPath = path.join(__dirname, 'product-details.json');
+  if (!fs.existsSync(packPath)) return;
+  let pack = [];
+  try { pack = JSON.parse(fs.readFileSync(packPath, 'utf8')); } catch (e) { return; }
+  const byKey = {};
+  pack.forEach(function (r) {
+    byKey[r.brand_id + '/' + r.series_id] = r.details || {};
+  });
+  const rows = db.prepare('SELECT id, brand_id, series_id, details FROM products').all();
+  const upd = db.prepare('UPDATE products SET details = ? WHERE id = ?');
+  rows.forEach(function (row) {
+    const extra = byKey[row.brand_id + '/' + row.series_id];
+    if (!extra) return;
+    const current = parseDetails(row);
+    const next = mergeProductDetails(current, extra);
+    if (JSON.stringify(next) !== JSON.stringify(current)) {
+      upd.run(JSON.stringify(next), row.id);
+    }
+  });
+}
+
 function parseJson(value, fallback) {
   if (Array.isArray(value)) return value;
   try {
@@ -130,10 +154,29 @@ function parseJson(value, fallback) {
   }
 }
 
+function parseDetails(row) {
+  const raw = row && row.details;
+  if (raw && typeof raw === 'object' && !Array.isArray(raw)) return raw;
+  const d = parseJson(raw, {});
+  return d && typeof d === 'object' && !Array.isArray(d) ? d : {};
+}
+
+function mergeProductDetails(current, incoming) {
+  const cur = current && typeof current === 'object' && !Array.isArray(current) ? current : {};
+  const extra = incoming && typeof incoming === 'object' && !Array.isArray(incoming) ? incoming : {};
+  const next = Object.assign({}, extra, cur);
+  if (!(cur.cats && cur.cats.length) && extra.cats) next.cats = extra.cats;
+  ['specTable', 'lead', 'sourceUrl', 'features'].forEach(function (k) {
+    if ((cur[k] == null || (Array.isArray(cur[k]) && !cur[k].length)) && extra[k] != null) next[k] = extra[k];
+  });
+  return next;
+}
+
 function rowToProduct(row, brand) {
   const pitches = parseJson(row.pitches, []);
   const gallery = parseJson(row.gallery, []);
-  return {
+  const details = parseDetails(row);
+  const product = {
     dbId: row.id,
     id: row.series_id,
     brandId: row.brand_id,
@@ -151,6 +194,8 @@ function rowToProduct(row, brand) {
     badge: row.badge || null,
     image: row.image || '',
     gallery: gallery,
+    details: details,
+    cats: Array.isArray(details.cats) ? details.cats : [],
     pitchLabel: pitches.length
       ? pitches[0] + (pitches.length > 1 ? '–' + pitches[pitches.length - 1] : '') + ' mm'
       : '',
@@ -158,6 +203,10 @@ function rowToProduct(row, brand) {
       ? 'From $' + Number(row.price_per_m2).toLocaleString()
       : 'Request quote'
   };
+  ['specTable', 'lead', 'sourceUrl', 'features'].forEach(function (k) {
+    if (details[k] != null) product[k] = details[k];
+  });
+  return product;
 }
 
 function getCatalog(db) {
@@ -195,10 +244,13 @@ module.exports = {
   openDb,
   seedAdmin,
   seedCatalog,
+  fillMissingProductDetails,
   getCatalog,
   listProducts,
   getProduct,
   rowToProduct,
+  parseDetails,
+  mergeProductDetails,
   nowIso,
   parseJson
 };

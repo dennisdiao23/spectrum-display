@@ -73,7 +73,9 @@ Copy `.env.example` to `.env` for local keys. With Supabase vars, you use the li
 
 1. Open http://localhost:3000/admin.html (or `/admin.html` on the live site).
 2. Sign in as `admin@spectrumdisplay.com` with the password in local `.env` (`ADMIN_PASSWORD`) when using SQLite. Live admin already exists in Supabase.
-3. Add or edit products, photos, pitches, cabinet size, and $/m².
+3. Add or edit products, photos, pitches, cabinet size, $/m², and categories (filters / mega menu).
+   Public product pages and the calculator read **only** this database (`/api/catalog`). They do not
+   load `js/products-data.js`.
 
 Customer **Sign in** on the public site is not the admin login.
 

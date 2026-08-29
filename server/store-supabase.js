@@ -79,6 +79,34 @@ function createSupabaseStore() {
     try {
       await supabase.storage.createBucket(BUCKET, { public: true });
     } catch (e) { /* bucket may already exist */ }
+
+    try {
+      await fillMissingProductDetails();
+    } catch (e) {
+      console.error('Could not fill product details:', e.message || e);
+    }
+  }
+
+  async function fillMissingProductDetails() {
+    const packPath = path.join(__dirname, 'product-details.json');
+    if (!fs.existsSync(packPath)) return;
+    const pack = JSON.parse(fs.readFileSync(packPath, 'utf8'));
+    const byKey = {};
+    pack.forEach(function (r) {
+      byKey[r.brand_id + '/' + r.series_id] = r.details || {};
+    });
+    const { data: products, error } = await supabase.from('products').select('id, brand_id, series_id, details');
+    throwIf(error, 'Could not read products for details fill.');
+    for (let i = 0; i < (products || []).length; i++) {
+      const row = products[i];
+      const extra = byKey[row.brand_id + '/' + row.series_id];
+      if (!extra) continue;
+      const current = dbUtil.parseDetails(row);
+      const next = dbUtil.mergeProductDetails(current, extra);
+      if (JSON.stringify(next) === JSON.stringify(current)) continue;
+      const { error: upErr } = await supabase.from('products').update({ details: next }).eq('id', row.id);
+      throwIf(upErr, 'Could not fill product details for ' + row.series_id);
+    }
   }
 
   return {
@@ -169,6 +197,7 @@ function createSupabaseStore() {
         badge: p.badge,
         image: p.image,
         gallery: p.gallery,
+        details: p.details || {},
         sort_order: 0
       }).select('id').single();
       throwIf(error);
@@ -191,6 +220,7 @@ function createSupabaseStore() {
         badge: p.badge,
         image: p.image,
         gallery: p.gallery,
+        details: p.details || {},
         updated_at: new Date().toISOString()
       }).eq('id', id);
       throwIf(error);

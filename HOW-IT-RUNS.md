@@ -112,7 +112,7 @@ OneDrive does **not** update GitHub. After Cloud Agent changes, pull and review 
 
 | Table | Who uses it |
 |---|---|
-| `brands`, `products` | Public catalog |
+| `brands`, `products` | Public catalog. Panel series, prices, photos, and extra copy (`details` jsonb: cats, spec tables, features, lead) are edited in Admin. Public pages do not load `js/products-data.js`. |
 | `admins`, `sessions` | Catalog admin at `/admin.html` (not customer Sign in) |
 | `app_config` | Admin secret check |
 | `profiles` | Site accounts. Role is `customer` (default), `dealer`, or `sales`. Only Admin can change type. |

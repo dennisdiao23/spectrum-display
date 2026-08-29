@@ -265,6 +265,13 @@ async function main() {
     if (saved.imageUrl) image = saved.imageUrl;
     else if (body.imageUrl) image = String(body.imageUrl).trim();
     const gallery = existingGallery.concat(saved.gallery);
+    const existingDetails = existing ? dbUtil.parseDetails(existing) : {};
+    const cats = String(body.cats || '')
+      .split(/[\s,]+/)
+      .map(function (s) { return s.trim().toLowerCase(); })
+      .filter(Boolean);
+    const details = Object.assign({}, existingDetails);
+    if (Object.prototype.hasOwnProperty.call(body, 'cats')) details.cats = cats;
     return {
       brandId: resolvedBrand,
       seriesId,
@@ -280,7 +287,8 @@ async function main() {
       description: String(body.description || '').trim(),
       badge: String(body.badge || '').trim(),
       image,
-      gallery
+      gallery,
+      details
     };
   }
 

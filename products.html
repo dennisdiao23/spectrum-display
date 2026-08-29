@@ -369,7 +369,6 @@
   <footer class="border-t border-slate-800 py-12 px-4 text-center text-sm text-slate-500 mt-12">
     <p>© 2026 Spectrum Display</p>
   </footer>
-  <script src="js/products-data.js"></script>
   <script src="js/novastar-catalog.js"></script>
   <script src="js/control-systems.js"></script>
   <script src="js/catalog-api.js"></script>
@@ -387,17 +386,7 @@
     }
     updateCartCount();
 
-    const SERIES_CATS = {
-      discovery: 'cob indoor popular micro-led',
-      ledposter: 'indoor popular micro-led',
-      mvultra: 'rental popular',
-      dn: 'outdoor',
-      finepitch: 'cob indoor popular',
-      pro: 'indoor popular',
-      value: 'outdoor',
-      rental: 'rental',
-      creative: 'indoor'
-    };
+    const SERIES_CATS = {};
 
     function catsFor(p) {
       if (window.spectrumCatsFor) return window.spectrumCatsFor(p).join(' ');
