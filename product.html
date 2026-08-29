@@ -834,7 +834,7 @@
         }
       }
       syncCalculatorLink();
-      if (!hasPrice) {
+      if (!hasPrice && !isControl) {
         document.querySelectorAll('.pricing-only').forEach(function (el) { el.classList.add('hidden'); });
         var guestCtaQuote = document.getElementById('guest-price-cta');
         if (guestCtaQuote) {

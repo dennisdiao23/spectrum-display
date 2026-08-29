@@ -1073,6 +1073,8 @@
     const brandEl = document.getElementById('brand');
     const seriesEl = document.getElementById('series');
     const pitchEl = document.getElementById('pitch');
+    const incomingQuery = window.location.search;
+    let shareUrlReady = false;
     const customNameEl = document.getElementById('custom-name');
     const customWEl = document.getElementById('custom-w');
     const customHEl = document.getElementById('custom-h');
@@ -1841,17 +1843,25 @@
       if (brand === 'novastar') {
         brandEl.value = 'trt';
       }
+      const keepSeries = seriesEl.value;
       const list = (products[brandEl.value].series || []).filter(function (s) {
         return s.type !== 'control';
       });
       seriesEl.innerHTML = list.map(s => `<option value="${s.id}">${s.name}</option>`).join('');
+      if (keepSeries && [].some.call(seriesEl.options, function (o) { return o.value === keepSeries; })) {
+        seriesEl.value = keepSeries;
+      }
       populatePitch();
     }
 
     function populatePitch() {
       const series = getCurrentSeries();
       if (!series) return;
-      pitchEl.innerHTML = series.pitches.map(p => `<option value="${p}">${p} mm</option>`).join('');
+      const keepPitch = pitchEl.value;
+      pitchEl.innerHTML = (series.pitches || []).map(p => `<option value="${p}">${p} mm</option>`).join('');
+      if (keepPitch && [].some.call(pitchEl.options, function (o) { return o.value === keepPitch; })) {
+        pitchEl.value = keepPitch;
+      }
       document.getElementById('cabinet-info').textContent = 
         `Cabinet: ${(series.cabinetW * 1000).toFixed(0)} × ${(series.cabinetH * 1000).toFixed(1)} mm`;
       updateDesign();
@@ -2272,6 +2282,7 @@
     }
 
     function updateShareUrl() {
+      if (!shareUrlReady) return;
       const params = new URLSearchParams({
         brand: brandEl.value,
         series: isCustomPanel() ? 'custom' : seriesEl.value,
@@ -2355,8 +2366,8 @@
       return true;
     }
 
-    function loadFromUrl() {
-      const params = new URLSearchParams(window.location.search);
+    function loadFromUrl(search) {
+      const params = new URLSearchParams(search == null ? incomingQuery : search);
       if (!params.has('brand')) return false;
       return applyProjectState({
         brand: params.get('brand'),
@@ -2713,12 +2724,15 @@
       syncBrandOptions();
       populateControlOptions();
       populateSeries();
+      if (new URLSearchParams(incomingQuery).has('brand')) loadFromUrl(incomingQuery);
     });
 
     // Init — restore saved project (session) or URL query
     populateControlOptions();
     populateSeries();
-    if (!loadSavedProject()) loadFromUrl();
+    if (!loadSavedProject()) loadFromUrl(incomingQuery);
+    shareUrlReady = true;
+    updateShareUrl();
     loadOpenedCustomPanel();
     async function refreshAuthUi() {
       await tryPendingCustomPanelSave();
