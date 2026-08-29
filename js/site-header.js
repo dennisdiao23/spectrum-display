@@ -330,44 +330,14 @@
     }
   };
 
-  var SOLUTION_CATS = [
-    { id: 'jobs', label: 'By job' },
-    { id: 'more', label: 'More' },
-    { id: 'tools', label: 'Tools' }
+  var SOLUTION_JOBS = [
+    { name: 'Retail & Hospitality', href: 'solutions/retail-hospitality.html', image: 'assets/content/solutions-retail.jpg', lead: 'Stores, restaurants, bars, clubs, hotels.' },
+    { name: 'Houses of Worship', href: 'solutions/worship.html', image: 'assets/content/news.jpg', lead: 'IMAG and sanctuary walls.' },
+    { name: 'Corporate & Control Rooms', href: 'solutions/corporate.html', image: 'assets/content/solutions-corporate.jpg', lead: 'Lobbies, boardrooms, 24/7 fine pitch.' },
+    { name: 'Live Events & XR', href: 'solutions/events-xr.html', image: 'assets/content/concert.jpg', lead: 'Rental, stage, virtual production.' },
+    { name: 'Outdoor & DOOH', href: 'solutions/outdoor.html', image: 'assets/content/city.jpg', lead: 'Fixed outdoor and street-facing.' },
+    { name: 'Home Theater & Residential', href: 'solutions/home.html', image: 'assets/content/solutions-residential.jpg', lead: 'Living rooms and media rooms.' }
   ];
-
-  var SOLUTION_MEGA = {
-    jobs: {
-      title: 'By job',
-      lead: 'LED walls for the rooms you actually build.',
-      items: [
-        { name: 'Retail & Hospitality', href: 'solutions/retail-hospitality.html', image: 'assets/content/solutions-retail.jpg' },
-        { name: 'Houses of Worship', href: 'solutions/worship.html', image: 'assets/content/news.jpg' },
-        { name: 'Corporate & Control Rooms', href: 'solutions/corporate.html', image: 'assets/content/solutions-corporate.jpg' },
-        { name: 'Live Events & XR', href: 'solutions/events-xr.html', image: 'assets/content/concert.jpg' },
-        { name: 'Outdoor & DOOH', href: 'solutions/outdoor.html', image: 'assets/content/city.jpg' },
-        { name: 'Home Theater & Residential', href: 'solutions/home.html', image: 'assets/content/solutions-residential.jpg' }
-      ]
-    },
-    more: {
-      title: 'More',
-      lead: 'Smaller jobs and studio work — not equal pillars.',
-      items: [
-        { name: 'Education', href: 'solutions/corporate.html', image: 'assets/content/solutions-education.jpg' },
-        { name: 'Broadcast studios', href: 'solutions/events-xr.html', image: 'assets/content/solutions-broadcast.jpg' }
-      ]
-    },
-    tools: {
-      title: 'Tools',
-      lead: 'Size the wall, talk to sales, or apply as a dealer.',
-      items: [
-        { name: 'LED Wall Calculator', href: 'designer.html', image: 'assets/content/calculator-devices.png' },
-        { name: 'Contact Sales', href: 'contact.html' },
-        { name: 'Dealer signup', href: 'dealer.html' },
-        { name: 'Sign in', href: 'account.html' }
-      ]
-    }
-  };
 
   function megaCardsHtml(items) {
     var featured = (items || []).slice(0, 2);
@@ -417,21 +387,22 @@
     );
   }
 
-  function megaSolutionsInnerHtml() {
-    var first = SOLUTION_CATS[0];
-    var buttons = SOLUTION_CATS.map(function (cat, i) {
-      return '<button type="button" class="site-mega-cat' + (i === 0 ? ' is-active' : '') +
-        '" data-sol-cat="' + cat.id + '">' + cat.label + ' ' + MEGA_CAT_CHEVRON + '</button>';
+  function solutionCardsHtml() {
+    return SOLUTION_JOBS.map(function (item) {
+      var img = absUrl(item.image);
+      return '<a class="site-mega-card" href="' + absUrl(item.href) + '">' +
+        '<span class="site-mega-card-media"><img src="' + img + '" alt=""></span>' +
+        '<span class="site-mega-card-meta">' +
+          '<span class="site-mega-card-name">' + item.name + '</span>' +
+          (item.lead ? '<span class="site-mega-card-lead">' + item.lead + '</span>' : '') +
+        '</span>' +
+      '</a>';
     }).join('');
+  }
+
+  function megaSolutionsInnerHtml() {
     return (
-      '<div class="site-mega-products">' +
-        '<div class="site-mega-cats" role="tablist">' + buttons + '</div>' +
-        '<div class="site-mega-body">' +
-          '<h3 data-sol-title>' + first.label + '</h3>' +
-          '<p data-sol-lead>LED walls for the rooms you actually build.</p>' +
-          '<div data-sol-grid></div>' +
-        '</div>' +
-      '</div>' +
+      '<div class="site-mega-jobs">' + solutionCardsHtml() + '</div>' +
       '<div class="site-mega-foot">' +
         '<div class="site-mega-foot-item"><span>Explore</span><a href="/solutions.html">Explore all solutions</a></div>' +
         '<div class="site-mega-foot-item"><span>Sales</span><a href="/contact.html">Talk to sales</a></div>' +
@@ -477,16 +448,6 @@
     });
   }
 
-  function renderSolutionMega(key) {
-    var data = SOLUTION_MEGA[key] || SOLUTION_MEGA.jobs;
-    $all('[data-sol-title]').forEach(function (el) { el.textContent = data.title; });
-    $all('[data-sol-lead]').forEach(function (el) { el.textContent = data.lead; });
-    $all('[data-sol-grid]').forEach(function (el) { el.innerHTML = megaCardsHtml(data.items); });
-    $all('[data-sol-cat]').forEach(function (btn) {
-      btn.classList.toggle('is-active', btn.getAttribute('data-sol-cat') === key);
-    });
-  }
-
   function injectMobileProductBrowse() {
     var host = $('#mobile-product-mega');
     if (!host || host.getAttribute('data-ready')) return;
@@ -527,7 +488,6 @@
     sol.className = 'site-mega-panel';
     sol.innerHTML = megaSolutionsInnerHtml();
     document.body.appendChild(sol);
-    renderSolutionMega('jobs');
 
     if (!$('#site-mega-scrim')) {
       var scrim = document.createElement('div');
@@ -619,9 +579,6 @@
     });
     $all('#site-mega-products .site-mega-cat, #mobile-product-mega .site-mega-cat').forEach(function (btn) {
       btn.addEventListener('click', function () { renderProductMega(btn.getAttribute('data-cat')); });
-    });
-    $all('#site-mega-solutions .site-mega-cat').forEach(function (btn) {
-      btn.addEventListener('click', function () { renderSolutionMega(btn.getAttribute('data-sol-cat')); });
     });
     $all('.site-mega-panel').forEach(function (panel) {
       panel.addEventListener('click', function (e) {
