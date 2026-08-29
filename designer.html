@@ -916,7 +916,7 @@
             </div>
             <div class="zoom-controls shrink-0">
               <button id="zoom-out" type="button" class="w-7 h-7 rounded-full border border-slate-600 hover:border-sky-500 text-slate-300 text-sm flex items-center justify-center" title="Zoom out">−</button>
-              <input id="zoom-slider" type="range" min="15" max="350" value="100" step="5" class="w-28 sm:w-36">
+              <input id="zoom-slider" type="range" min="50" max="200" value="100" step="5" class="w-28 sm:w-36">
               <button id="zoom-in" type="button" class="w-7 h-7 rounded-full border border-slate-600 hover:border-sky-500 text-slate-300 text-sm flex items-center justify-center" title="Zoom in">+</button>
               <span id="zoom-value" class="text-xs text-slate-400 w-10 text-right">100%</span>
               <button id="zoom-reset" type="button" class="text-xs px-2 py-1 rounded border border-slate-700 hover:border-sky-500 text-slate-400" title="Reset view">Reset</button>
@@ -2773,7 +2773,7 @@
 
     function setZoom(newZoom, centerX, centerY) {
       const prev = zoom;
-      zoom = Math.min(3.5, Math.max(0.15, newZoom));
+      zoom = Math.min(2, Math.max(0.5, newZoom));
       if (centerX != null && centerY != null && prev > 0) {
         const rect = viewport.getBoundingClientRect();
         const cx = centerX - rect.left - rect.width / 2;
