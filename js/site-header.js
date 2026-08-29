@@ -245,132 +245,54 @@
     { id: 'control', label: 'Control systems' }
   ];
 
-  var PRODUCT_MEGA = {
-    'indoor-rental': {
-      title: 'Indoor rental',
-      lead: 'Touring cabinets for indoor stages, events, and studios.',
-      items: [
-        { name: 'MV Ultra', href: 'product.html?brand=gloshine&series=mvultra', tag: 'GLO' },
-        { name: 'DN Indoor', href: 'product.html?brand=gloshine&series=dnin', tag: 'GLO' },
-        { name: 'AR Pro', href: 'product.html?brand=gloshine&series=arpro', tag: 'GLO' },
-        { name: 'RB-B', href: 'product.html?brand=gloshine&series=rbb', tag: 'GLO' },
-        { name: 'Carbon II', href: 'product.html?brand=gloshine&series=carbon', tag: 'GLO' },
-        { name: 'MV Pro', href: 'product.html?brand=gloshine&series=mvpro', tag: 'GLO' },
-        { name: 'MT55/62', href: 'product.html?brand=gloshine&series=mt55', tag: 'GLO' },
-        { name: 'CF Pro', href: 'product.html?brand=gloshine&series=cfpro', tag: 'GLO' },
-        { name: 'Element Rental', href: 'product.html?brand=element&series=rental', tag: 'ELT' },
-        { name: 'Diamond V4.0', href: 'product.html?brand=bako&series=diamond4', tag: 'BAKO' },
-        { name: 'Rental COB', href: 'product.html?brand=bako&series=rentalcob', tag: 'BAKO' },
-        { name: 'BAKO Carbon', href: 'product.html?brand=bako&series=bakocarbon', tag: 'BAKO' }
-      ]
-    },
-    'outdoor-rental': {
-      title: 'Outdoor rental',
-      lead: 'IP-rated touring panels for festivals, façades, and outdoor stages.',
-      items: [
-        { name: 'DN Outdoor', href: 'product.html?brand=gloshine&series=dn', tag: 'GLO' },
-        { name: 'Vanish Transparent', href: 'product.html?brand=gloshine&series=vanish', tag: 'GLO' },
-        { name: 'VA MAX', href: 'product.html?brand=gloshine&series=vamax', tag: 'GLO' },
-        { name: 'CB MAX', href: 'product.html?brand=gloshine&series=cbmax', tag: 'GLO' },
-        { name: 'CR MAX', href: 'product.html?brand=gloshine&series=crmax', tag: 'GLO' },
-        { name: 'UR Carbon', href: 'product.html?brand=gloshine&series=ur', tag: 'GLO' },
-        { name: 'AR Pro', href: 'product.html?brand=gloshine&series=arpro', tag: 'GLO' },
-        { name: 'Legend', href: 'product.html?brand=gloshine&series=legend', tag: 'GLO' },
-        { name: 'ZS Pro II', href: 'product.html?brand=gloshine&series=zspro', tag: 'GLO' },
-        { name: 'Diamond V4.0', href: 'product.html?brand=bako&series=diamond4', tag: 'BAKO' }
-      ]
-    },
-    cob: {
-      title: 'Fine pitch / COB',
-      lead: 'Close-view COB and fine-pitch cabinets for control rooms and retail.',
-      items: [
-        { name: 'Discovery Series', href: 'product.html?brand=trt&series=discovery', tag: 'TRT' },
-        { name: 'Fine Pitch 600×337.5', href: 'product.html?brand=bako&series=finepitch', tag: 'BAKO' },
-        { name: 'All-in-One COB', href: 'product.html?brand=bako&series=allinone', tag: 'BAKO' },
-        { name: 'Flying Drone 2.0', href: 'product.html?brand=bako&series=flyingdrone', tag: 'BAKO' },
-        { name: 'Rental COB 500×500', href: 'product.html?brand=bako&series=rentalcob', tag: 'BAKO' },
-        { name: 'AF II Fine Pitch', href: 'product.html?brand=gloshine&series=af2', tag: 'GLO' },
-        { name: 'AW Fine Pitch', href: 'product.html?brand=gloshine&series=aw', tag: 'GLO' }
-      ]
-    },
-    'fixed-indoor': {
-      title: 'Fixed indoor',
-      lead: 'Wall-mount indoor cabinets for lobbies, meeting rooms, and broadcast.',
-      items: [
-        { name: 'Discovery Series', href: 'product.html?brand=trt&series=discovery', tag: 'TRT' },
-        { name: 'Fine Pitch 600×337.5', href: 'product.html?brand=bako&series=finepitch', tag: 'BAKO' },
-        { name: 'Flying Drone 2.0', href: 'product.html?brand=bako&series=flyingdrone', tag: 'BAKO' },
-        { name: 'UHD Pro', href: 'product.html?brand=bako&series=uhdpro', tag: 'BAKO' },
-        { name: 'AF II Fine Pitch', href: 'product.html?brand=gloshine&series=af2', tag: 'GLO' },
-        { name: 'AW Fine Pitch', href: 'product.html?brand=gloshine&series=aw', tag: 'GLO' },
-        { name: 'Blade', href: 'product.html?brand=gloshine&series=blade', tag: 'GLO' },
-        { name: 'RA II', href: 'product.html?brand=gloshine&series=ra2', tag: 'GLO' },
-        { name: 'DIAO Pro Fixed', href: 'product.html?brand=diao&series=pro', tag: 'DIAO' }
-      ]
-    },
-    posters: {
-      title: 'Posters',
-      lead: 'Standalone LED posters for windows, retail aisles, and lobbies.',
-      items: [
-        { name: 'LedPoster', href: 'product.html?brand=trt&series=ledposter', tag: 'TRT' },
-        { name: 'BAKO LED Poster', href: 'product.html?brand=bako&series=bakoposter', tag: 'BAKO' },
-        { name: 'G-Poster Std 2', href: 'product.html?brand=gloshine&series=gposter', tag: 'GLO' },
-        { name: 'G-Poster Plus', href: 'product.html?brand=gloshine&series=gposterplus', tag: 'GLO' }
-      ]
-    },
-    transparent: {
-      title: 'Transparent',
-      lead: 'See-through LED for storefronts, stages, and outdoor spectaculars.',
-      items: [
-        { name: 'Vanish Transparent', href: 'product.html?brand=gloshine&series=vanish', tag: 'GLO' },
-        { name: 'VA MAX', href: 'product.html?brand=gloshine&series=vamax', tag: 'GLO' },
-        { name: 'CB MAX', href: 'product.html?brand=gloshine&series=cbmax', tag: 'GLO' },
-        { name: 'T-Pro Transparent', href: 'product.html?brand=bako&series=tpro', tag: 'BAKO' }
-      ]
-    },
-    'outdoor-fixed': {
-      title: 'Outdoor fixed',
-      lead: 'High-brightness façades, DOOH, and permanent outdoor walls.',
-      items: [
-        { name: 'GP Outdoor', href: 'product.html?brand=gloshine&series=gp', tag: 'GLO' },
-        { name: 'ZS III', href: 'product.html?brand=gloshine&series=zs3', tag: 'GLO' },
-        { name: 'ZS Pro II', href: 'product.html?brand=gloshine&series=zspro', tag: 'GLO' },
-        { name: 'DN Outdoor', href: 'product.html?brand=gloshine&series=dn', tag: 'GLO' },
-        { name: 'DIAO Value', href: 'product.html?brand=diao&series=value', tag: 'DIAO' },
-        { name: 'Spaceship 2.0', href: 'product.html?brand=bako&series=spaceship', tag: 'BAKO' },
-        { name: 'BK-S Stadium', href: 'product.html?brand=bako&series=bks', tag: 'BAKO' }
-      ]
-    },
-    creative: {
-      title: 'Creative / XR',
-      lead: 'Curves, corners, flexible cabinets, and virtual-production walls.',
-      items: [
-        { name: 'MV Pro', href: 'product.html?brand=gloshine&series=mvpro', tag: 'GLO' },
-        { name: 'CF Pro', href: 'product.html?brand=gloshine&series=cfpro', tag: 'GLO' },
-        { name: 'CF Pro II', href: 'product.html?brand=gloshine&series=cfpro2', tag: 'GLO' },
-        { name: 'MT II', href: 'product.html?brand=gloshine&series=mt2', tag: 'GLO' },
-        { name: 'MT Edge', href: 'product.html?brand=gloshine&series=mtedge', tag: 'GLO' },
-        { name: 'CS II Creative', href: 'product.html?brand=gloshine&series=cs2', tag: 'GLO' },
-        { name: 'MR', href: 'product.html?brand=gloshine&series=mr', tag: 'GLO' },
-        { name: 'Element Creative / XR', href: 'product.html?brand=element&series=creative', tag: 'ELT' },
-        { name: 'Spherical LED', href: 'product.html?brand=bako&series=sphere', tag: 'BAKO' }
-      ]
-    },
-    control: {
-      title: 'Control systems',
-      lead: 'NovaStar processors and senders matched to your wall. Receiving cards ship inside new cabinets.',
-      items: [
-        { name: 'VX600 Pro', href: 'product.html?brand=novastar&series=vx600-pro', tag: 'NVS' },
-        { name: 'VX1000 Pro', href: 'product.html?brand=novastar&series=vx1000-pro', tag: 'NVS' },
-        { name: 'MX30', href: 'product.html?brand=novastar&series=mx30', tag: 'NVS' },
-        { name: 'MX40 Pro', href: 'product.html?brand=novastar&series=mx40-pro', tag: 'NVS' },
-        { name: 'KU20', href: 'product.html?brand=novastar&series=ku20', tag: 'NVS' },
-        { name: 'MCTRL4K', href: 'product.html?brand=novastar&series=mctrl4k', tag: 'NVS' },
-        { name: 'TU20 Pro', href: 'product.html?brand=novastar&series=tu20-pro', tag: 'NVS' },
-        { name: 'All control systems', href: 'products.html?cat=control', tag: 'NVS' }
-      ]
-    }
+  var MEGA_COPY = {
+    'indoor-rental': { title: 'Indoor rental', lead: 'Touring cabinets for indoor stages, events, and studios.' },
+    'outdoor-rental': { title: 'Outdoor rental', lead: 'IP-rated touring panels for festivals, façades, and outdoor stages.' },
+    cob: { title: 'Fine pitch / COB', lead: 'Close-view COB and fine-pitch cabinets for control rooms and retail.' },
+    'fixed-indoor': { title: 'Fixed indoor', lead: 'Wall-mount indoor cabinets for lobbies, meeting rooms, and broadcast.' },
+    posters: { title: 'Posters', lead: 'Standalone LED posters for windows, retail aisles, and lobbies.' },
+    transparent: { title: 'Transparent', lead: 'See-through LED for storefronts, stages, and outdoor spectaculars.' },
+    'outdoor-fixed': { title: 'Outdoor fixed', lead: 'High-brightness façades, DOOH, and permanent outdoor walls.' },
+    creative: { title: 'Creative / XR', lead: 'Curves, corners, flexible cabinets, and virtual-production walls.' },
+    control: { title: 'Control systems', lead: 'NovaStar processors and senders matched to your wall. Receiving cards ship inside new cabinets.' }
   };
+
+  var currentMegaKey = 'indoor-rental';
+
+  function brandTag(brandId) {
+    return ({ gloshine: 'GLO', bako: 'BAKO', trt: 'TRT', diao: 'DIAO', element: 'ELT', novastar: 'NVS' })[brandId]
+      || String(brandId || '').slice(0, 4).toUpperCase();
+  }
+
+  function megaItemsFor(catId) {
+    var list = window.SPECTRUM_PRODUCT_LIST || [];
+    if (catId === 'control') {
+      var items = list.filter(function (p) {
+        return p.type === 'control' && p.subtype !== 'receiving-card' && !p.replacementOnly;
+      }).slice(0, 7).map(function (p) {
+        return {
+          name: p.name,
+          href: 'product.html?brand=' + encodeURIComponent(p.brandId) + '&series=' + encodeURIComponent(p.id),
+          tag: 'NVS',
+          image: p.image
+        };
+      });
+      items.push({ name: 'All control systems', href: 'products.html?cat=control', tag: 'NVS' });
+      return items;
+    }
+    return list.filter(function (p) {
+      if (p.type === 'control') return false;
+      var cats = window.spectrumCatsFor ? window.spectrumCatsFor(p) : (p.cats || []);
+      return cats.indexOf(catId) !== -1;
+    }).map(function (p) {
+      return {
+        name: p.name,
+        href: 'product.html?brand=' + encodeURIComponent(p.brandId) + '&series=' + encodeURIComponent(p.id),
+        tag: brandTag(p.brandId),
+        image: p.image
+      };
+    });
+  }
 
   var SOLUTION_JOBS = [
     { name: 'Retail & Hospitality', href: '/retail-hospitality', image: 'assets/content/solutions-retail.jpg', lead: 'Stores, restaurants, bars, clubs, hotels.' },
@@ -478,15 +400,17 @@
   }
 
   function renderProductMega(key) {
-    var data = PRODUCT_MEGA[key] || PRODUCT_MEGA['indoor-rental'];
-    $all('[data-mega-title]').forEach(function (el) { el.textContent = data.title; });
-    $all('[data-mega-lead]').forEach(function (el) { el.textContent = data.lead; });
-    $all('[data-mega-grid]').forEach(function (el) { el.innerHTML = productGridHtml(data.items); });
+    currentMegaKey = key || currentMegaKey || 'indoor-rental';
+    var copy = MEGA_COPY[currentMegaKey] || MEGA_COPY['indoor-rental'];
+    var items = megaItemsFor(currentMegaKey);
+    $all('[data-mega-title]').forEach(function (el) { el.textContent = copy.title; });
+    $all('[data-mega-lead]').forEach(function (el) { el.textContent = copy.lead; });
+    $all('[data-mega-grid]').forEach(function (el) { el.innerHTML = productGridHtml(items); });
     $all('#site-mega-products .site-mega-cat, #mobile-product-mega .site-mega-cat').forEach(function (btn) {
-      btn.classList.toggle('is-active', btn.getAttribute('data-cat') === key);
+      btn.classList.toggle('is-active', btn.getAttribute('data-cat') === currentMegaKey);
     });
     $all('[data-mega-all]').forEach(function (el) {
-      el.href = '/products.html?cat=' + encodeURIComponent(key);
+      el.href = '/products.html?cat=' + encodeURIComponent(currentMegaKey);
     });
   }
 
@@ -684,11 +608,49 @@
     }
   }
 
+  function hasScript(file) {
+    var nodes = document.querySelectorAll('script[src]');
+    for (var i = 0; i < nodes.length; i++) {
+      var src = nodes[i].getAttribute('src') || '';
+      if (src.indexOf(file) !== -1) return true;
+    }
+    return false;
+  }
+
+  function loadScript(src) {
+    return new Promise(function (resolve) {
+      var s = document.createElement('script');
+      s.src = src;
+      s.onload = resolve;
+      s.onerror = resolve;
+      document.head.appendChild(s);
+    });
+  }
+
+  function ensureCatalog() {
+    if (window.spectrumCatalogReady) return;
+    var files = [
+      ['control-systems.js', '/js/control-systems.js'],
+      ['catalog-api.js', '/js/catalog-api.js']
+    ];
+    var chain = Promise.resolve();
+    files.forEach(function (pair) {
+      chain = chain.then(function () {
+        if (hasScript(pair[0])) return;
+        return loadScript(pair[1]);
+      });
+    });
+  }
+
   function boot() {
     injectTabbar();
     injectNav();
     injectMobileProductBrowse();
     renderProductMega(megaCatFromUrl());
+    window.addEventListener('spectrum:catalog', function () {
+      renderProductMega(currentMegaKey || megaCatFromUrl());
+    });
+    ensureCatalog();
     injectSalesCta();
     var header = $('.site-header');
     if (!header) return;

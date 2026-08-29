@@ -27,7 +27,8 @@
   ];
 
   function isControlProduct(p) {
-    return !!(p && (p.type === 'control' || p.brandId === 'novastar'));
+    var t = String((p && p.type) || '').toLowerCase();
+    return !!(p && (t === 'control' || p.brandId === 'novastar' || p.subtype));
   }
 
   function isReceivingCard(p) {

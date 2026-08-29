@@ -11,6 +11,7 @@ function createSqliteStore() {
   const db = dbUtil.openDb();
   dbUtil.seedAdmin(db);
   dbUtil.seedCatalog(db);
+  dbUtil.fillMissingProductDetails(db);
 
   return {
     name: 'sqlite',
@@ -41,12 +42,12 @@ function createSqliteStore() {
         INSERT INTO products (
           brand_id, series_id, name, pitches, price_per_m2, weight_per_m2,
           power_avg, power_max, cabinet_w, cabinet_h, type, description, badge,
-          image, gallery, sort_order, created_at, updated_at
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 0, ?, ?)
+          image, gallery, details, sort_order, created_at, updated_at
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 0, ?, ?)
       `).run(
         p.brandId, p.seriesId, p.name, JSON.stringify(p.pitches), p.price, p.weight,
         p.powerAvg, p.powerMax, p.cabinetW, p.cabinetH, p.type, p.description, p.badge,
-        p.image, JSON.stringify(p.gallery), stamp, stamp
+        p.image, JSON.stringify(p.gallery), JSON.stringify(p.details || {}), stamp, stamp
       );
       return dbUtil.getProduct(db, info.lastInsertRowid);
     },
@@ -55,12 +56,12 @@ function createSqliteStore() {
         UPDATE products SET
           brand_id = ?, series_id = ?, name = ?, pitches = ?, price_per_m2 = ?,
           weight_per_m2 = ?, power_avg = ?, power_max = ?, cabinet_w = ?, cabinet_h = ?,
-          type = ?, description = ?, badge = ?, image = ?, gallery = ?, updated_at = ?
+          type = ?, description = ?, badge = ?, image = ?, gallery = ?, details = ?, updated_at = ?
         WHERE id = ?
       `).run(
         p.brandId, p.seriesId, p.name, JSON.stringify(p.pitches), p.price, p.weight,
         p.powerAvg, p.powerMax, p.cabinetW, p.cabinetH, p.type, p.description, p.badge,
-        p.image, JSON.stringify(p.gallery), dbUtil.nowIso(), id
+        p.image, JSON.stringify(p.gallery), JSON.stringify(p.details || {}), dbUtil.nowIso(), id
       );
       return dbUtil.getProduct(db, id);
     },

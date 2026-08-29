@@ -1042,8 +1042,6 @@
     <p>© 2026 Spectrum Display Inc. • spectrumdisplay.com</p>
   </footer>
 
-  <script src="js/products-data.js"></script>
-  <script src="js/novastar-catalog.js"></script>
   <script src="js/control-systems.js"></script>
   <script src="js/catalog-api.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -1053,12 +1051,8 @@
   <script src="js/site-header.js"></script>
   <script src="js/i18n.js"></script>
   <script>
-    // Shared product catalog (edit js/products-data.js to update site-wide)
+    window.SPECTRUM_PRODUCTS = window.SPECTRUM_PRODUCTS || {};
     const products = window.SPECTRUM_PRODUCTS;
-    if (!products) {
-      console.error('SPECTRUM_PRODUCTS missing — check js/products-data.js');
-      alert('Product data failed to load. Make sure the js/folder is next to designer.html (unzip the full site).');
-    }
 
     // Sample content (CSS gradients / patterns as fallbacks)
         const samples = {

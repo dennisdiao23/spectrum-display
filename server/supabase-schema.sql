@@ -24,6 +24,7 @@ create table if not exists public.products (
   badge text not null default '',
   image text not null default '',
   gallery jsonb not null default '[]'::jsonb,
+  details jsonb not null default '{}'::jsonb,
   sort_order integer not null default 0,
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now(),

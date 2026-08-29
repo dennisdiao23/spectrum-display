@@ -258,29 +258,49 @@ async function main() {
     const seriesId = slugify(body.seriesId || body.series_id || name);
     if (!seriesId) throw new Error('Series / model id is required.');
     const pitches = parsePitches(body.pitches);
-    if (!pitches.length) throw new Error('Add at least one pixel pitch.');
+    const typeRaw = String(body.type || 'Fixed').trim() || 'Fixed';
+    const isControl = typeRaw.toLowerCase() === 'control' || resolvedBrand === 'novastar';
+    const type = isControl ? 'control' : typeRaw;
+    if (!isControl && !pitches.length) throw new Error('Add at least one pixel pitch.');
     const existingGallery = existing ? parseJson(existing.gallery, []) : [];
     let image = existing ? (existing.image || '') : '';
     const saved = await saveFiles(files);
     if (saved.imageUrl) image = saved.imageUrl;
     else if (body.imageUrl) image = String(body.imageUrl).trim();
     const gallery = existingGallery.concat(saved.gallery);
+    const existingDetails = existing ? dbUtil.parseDetails(existing) : {};
+    const cats = String(body.cats || '')
+      .split(/[\s,]+/)
+      .map(function (s) { return s.trim().toLowerCase(); })
+      .filter(Boolean);
+    const details = Object.assign({}, existingDetails);
+    if (Object.prototype.hasOwnProperty.call(body, 'cats')) details.cats = cats;
+    if (isControl) {
+      const subtype = String(body.subtype || details.subtype || '').trim();
+      details.subtype = subtype;
+      details.priceEach = Number(body.priceEach || body.pricePerM2 || body.price_per_m2) || 0;
+      if (!details.cats || !details.cats.length) {
+        details.cats = ['control'].concat(subtype ? [subtype] : []);
+        if (subtype === 'receiving-card') details.cats.push('receiving-cards');
+      }
+    }
     return {
       brandId: resolvedBrand,
       seriesId,
       name,
       pitches,
-      price: Number(body.pricePerM2 || body.price_per_m2) || 0,
+      price: Number(body.priceEach || body.pricePerM2 || body.price_per_m2) || 0,
       weight: Number(body.weightPerM2 || body.weight_per_m2) || 0,
       powerAvg: Number(body.powerAvg || body.power_avg) || 0,
       powerMax: Number(body.powerMax || body.power_max) || 0,
-      cabinetW: mmToMeters(body.cabinetWmm || body.cabinet_w || body.cabinetW),
-      cabinetH: mmToMeters(body.cabinetHmm || body.cabinet_h || body.cabinetH),
-      type: String(body.type || 'Fixed').trim() || 'Fixed',
+      cabinetW: isControl ? 0 : mmToMeters(body.cabinetWmm || body.cabinet_w || body.cabinetW),
+      cabinetH: isControl ? 0 : mmToMeters(body.cabinetHmm || body.cabinet_h || body.cabinetH),
+      type,
       description: String(body.description || '').trim(),
       badge: String(body.badge || '').trim(),
       image,
-      gallery
+      gallery,
+      details
     };
   }
 
