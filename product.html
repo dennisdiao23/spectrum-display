@@ -289,7 +289,7 @@
                 Add to Cart
               </button>
               <div class="guest-pricing space-y-2">
-                <a href="account.html" class="inline-flex px-6 py-3 rounded-full bg-sky-500 hover:bg-sky-400 text-white font-semibold" data-i18n="price.signInCta">Sign in to see pricing and use the cart</a>
+                <a id="guest-price-cta" href="account.html" class="inline-flex px-6 py-3 rounded-full bg-sky-500 hover:bg-sky-400 text-white font-semibold" data-i18n="price.signInCta">Sign in to see pricing and use the cart</a>
                 <div><a href="contact.html" class="text-sm text-sky-400 hover:text-sky-300">Or contact sales →</a></div>
               </div>
             </div>
@@ -349,12 +349,12 @@
       <div class="hidden sm:block">
         <div id="sticky-name" class="font-medium">LED Series</div>
         <div id="sticky-from" class="text-sm text-slate-400 pricing-only">Sign in for pricing</div>
-        <div class="text-sm text-slate-400 guest-pricing" data-i18n="price.signIn">Sign in for pricing</div>
+        <div id="sticky-guest-label" class="text-sm text-slate-400 guest-pricing" data-i18n="price.signIn">Sign in for pricing</div>
       </div>
       <div class="flex items-center gap-3 ml-auto">
         <span class="text-lg font-bold pricing-only" id="sticky-price"></span>
         <button id="add-to-cart-sticky" class="pricing-only px-6 py-2.5 rounded-full bg-sky-500 hover:bg-sky-400 text-white text-sm font-semibold">Add to Cart</button>
-        <a href="account.html" class="guest-pricing px-6 py-2.5 rounded-full bg-sky-500 hover:bg-sky-400 text-white text-sm font-semibold" data-i18n="price.signIn">Sign in for pricing</a>
+        <a id="sticky-guest-cta" href="account.html" class="guest-pricing px-6 py-2.5 rounded-full bg-sky-500 hover:bg-sky-400 text-white text-sm font-semibold" data-i18n="price.signIn">Sign in for pricing</a>
       </div>
     </div>
   </div>
@@ -832,6 +832,25 @@
       }
 
       const quoteBox = document.querySelector('.pricing-only');
+      if (!isControl) {
+        const guestCta = document.getElementById('guest-price-cta');
+        if (guestCta) {
+          guestCta.href = 'contact.html';
+          guestCta.removeAttribute('data-i18n');
+          guestCta.textContent = 'Request pricing';
+        }
+        const stickyGuestCta = document.getElementById('sticky-guest-cta');
+        if (stickyGuestCta) {
+          stickyGuestCta.href = 'contact.html';
+          stickyGuestCta.removeAttribute('data-i18n');
+          stickyGuestCta.textContent = 'Request pricing';
+        }
+        const stickyGuestLabel = document.getElementById('sticky-guest-label');
+        if (stickyGuestLabel) {
+          stickyGuestLabel.removeAttribute('data-i18n');
+          stickyGuestLabel.textContent = 'Request pricing';
+        }
+      }
       if (!hasPrice) {
         document.querySelectorAll('.pricing-only').forEach(function (el) { el.classList.add('hidden'); });
         var guest = document.querySelector('.guest-pricing');
