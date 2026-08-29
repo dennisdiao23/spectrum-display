@@ -6,17 +6,17 @@
   <script src="js/i18n-boot.js"></script>
   <link rel="stylesheet" href="css/site-header.css" />
   <title>LED Video Wall | Spectrum Display</title>
-  <meta name="description" content="Configure LED video wall cabinets, pixel pitch, and pricing from Spectrum Display Inc., a US distributor of professional indoor, outdoor, and rental LED displays." />
+  <meta name="description" content="Configure LED video wall panels, pixel pitch, and pricing from Spectrum Display Inc., a US distributor of professional indoor, outdoor, and rental LED displays." />
   <link rel="canonical" href="https://www.spectrumdisplay.com/product.html" />
   <meta property="og:type" content="website" />
   <meta property="og:site_name" content="Spectrum Display" />
   <meta property="og:title" content="LED Video Wall | Spectrum Display" />
-  <meta property="og:description" content="Configure LED video wall cabinets, pixel pitch, and pricing from Spectrum Display Inc." />
+  <meta property="og:description" content="Configure LED video wall panels, pixel pitch, and pricing from Spectrum Display Inc." />
   <meta property="og:url" content="https://www.spectrumdisplay.com/product.html" />
   <meta property="og:image" content="https://www.spectrumdisplay.com/assets/spectrum-logo.png" />
   <meta name="twitter:card" content="summary_large_image" />
   <meta name="twitter:title" content="LED Video Wall | Spectrum Display" />
-  <meta name="twitter:description" content="Configure LED video wall cabinets, pixel pitch, and pricing from Spectrum Display Inc." />
+  <meta name="twitter:description" content="Configure LED video wall panels, pixel pitch, and pricing from Spectrum Display Inc." />
   <script src="js/seo.js"></script>
   <script src="https://cdn.tailwindcss.com"></script>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
@@ -277,7 +277,7 @@
           <div class="text-sm font-medium text-sky-400 mb-2 brand-label">Spectrum</div>
           <h1 class="text-3xl sm:text-4xl font-bold mb-2">LED Series</h1>
           <dl id="spec-summary" hidden></dl>
-          <p id="product-lead" class="text-slate-400 mb-6">Configure LED video wall cabinets, pixel pitch, and project details from Spectrum Display.</p>
+          <p id="product-lead" class="text-slate-400 mb-6">Configure LED video wall panels, pixel pitch, and project details from Spectrum Display.</p>
           <div id="replacement-banner" class="hidden mb-6 rounded-2xl border border-amber-500/30 bg-amber-500/5 p-4 text-sm text-amber-100/90"></div>
 
           <!-- Key specs pills -->
@@ -290,9 +290,9 @@
               <div id="pitch-grid" class="flex flex-wrap gap-2"></div>
             </div>
             <div>
-              <label class="block text-sm font-medium mb-2">Cabinet Size</label>
+              <label class="block text-sm font-medium mb-2">Panel Size</label>
               <select id="cabinet" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-4 py-2.5 text-sm">
-                <option value="std">Loading cabinet size…</option>
+                <option value="std">Loading panel size…</option>
               </select>
             </div>
             <div class="pt-4 border-t border-slate-800 flex items-end justify-between gap-4">
@@ -423,7 +423,7 @@
         ? (seriesData.lead || seriesData.description)
         : (isControl
           ? (productName + ' control gear from Spectrum Display Inc.')
-          : ('Configure ' + productName + ' LED video wall cabinets and pricing from Spectrum Display Inc.'));
+          : ('Configure ' + productName + ' LED video wall panels and pricing from Spectrum Display Inc.'));
       const leadEl = document.getElementById('product-lead');
       if (leadEl) leadEl.textContent = seriesData && seriesData.description ? seriesData.description : desc;
       if (window.spectrumSetSeo) {
@@ -564,7 +564,7 @@
           if (seriesData.bestFor) bits.push(seriesData.bestFor);
           if (seriesData.latency) bits.push(seriesData.latency);
           if (seriesData.hdr) bits.push(seriesData.hdr);
-          if (isReceiver) bits.push('Replacement only — included with new cabinets');
+          if (isReceiver) bits.push('Replacement only — included with new panels');
         } else {
           if (pitches.length) bits.push('Pixel Pitch: ' + pitches[0] + (pitches.length > 1 ? ' – ' + pitches[pitches.length - 1] : '') + ' mm');
           if (seriesData && seriesData.type) bits.push(seriesData.type);
@@ -624,7 +624,8 @@
           if (c && c.w && c.h) addSize(c.w, c.h);
         });
         ((seriesData.specTable) || []).forEach(function (row) {
-          if (!row || !row[0] || String(row[0]).indexOf('Panel Dimension') === -1) return;
+          const dimLabel = String(row[0]).toLowerCase();
+          if (!row || !row[0] || (dimLabel.indexOf('panel dimension') === -1 && dimLabel.indexOf('cabinet dimension') === -1)) return;
           row.slice(1).forEach(function (cell) {
             const re = /(\d+(?:\.\d+)?)\s*(?:mm)?\s*[x×*]\s*(\d+(?:\.\d+)?)/gi;
             let m;
@@ -642,7 +643,7 @@
       if (recvBanner) {
         if (isReceiver) {
           recvBanner.classList.remove('hidden');
-          recvBanner.innerHTML = '<div class="font-semibold mb-1">Replacement only — included with new cabinets</div><p>' +
+          recvBanner.innerHTML = '<div class="font-semibold mb-1">Replacement only — included with new panels</div><p>' +
             esc((window.SpectrumControl && SpectrumControl.RECEIVING_NOTE) ||
               'New Spectrum walls ship with receiving cards installed. Order these only if you need a spare or a field replacement.') +
             '</p>';
@@ -660,11 +661,11 @@
           extraP = '<p class="text-slate-300 leading-relaxed">' +
             esc((window.SpectrumControl && SpectrumControl.RECEIVING_NOTE) || '') + '</p>';
         } else if (isControl) {
-          extraP = '<p class="text-slate-300 leading-relaxed">The processor is the brain of the wall: it takes HDMI/SDI/DP in, then sends pixel-accurate signal to the receiving cards already installed in each new cabinet. Sending boxes transmit only. Ask sales about control-gear warranty terms.</p>';
+          extraP = '<p class="text-slate-300 leading-relaxed">The processor is the brain of the wall: it takes HDMI/SDI/DP in, then sends pixel-accurate signal to the receiving cards already installed in each new panel. Sending boxes transmit only. Ask sales about control-gear warranty terms.</p>';
         } else {
           extraP = '<p class="text-slate-300 leading-relaxed">As an authorized ' + esc(brandName) +
             ' partner, Spectrum Display provides the manufacturer warranty plus a 3-year Spectrum support layer, local first-line support, and help configuring the right wall for your space.</p>' +
-            '<p class="text-slate-400 text-sm mt-4">' + esc((window.SpectrumControl && SpectrumControl.CABINET_CARD_NOTE) || 'Receiving card included in this cabinet.') + '</p>';
+            '<p class="text-slate-400 text-sm mt-4">' + esc((window.SpectrumControl && SpectrumControl.CABINET_CARD_NOTE) || 'Receiving card included in this panel.') + '</p>';
         }
         ovBody.innerHTML =
           '<p class="text-slate-300 mb-6 leading-relaxed">' + esc(seriesData.lead || seriesData.description) + '</p>' + extraP;
@@ -698,7 +699,7 @@
           const rows = [
             ['Pixel Pitch', pitchLabel],
             ['Type', seriesData.type || '—'],
-            ['Cabinet Size', cabLabel],
+            ['Panel Size', cabLabel],
             ['Power (avg / max)', powerLabel],
             ['Weight', seriesData.weightPerM2 ? (seriesData.weightPerM2 + ' kg/m²') : '—']
           ];

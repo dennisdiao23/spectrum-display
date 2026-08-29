@@ -12,6 +12,7 @@ function createSqliteStore() {
   dbUtil.seedAdmin(db);
   dbUtil.seedCatalog(db);
   dbUtil.fillMissingProductDetails(db);
+  dbUtil.rewriteExistingCabinetCopy(db);
 
   return {
     name: 'sqlite',

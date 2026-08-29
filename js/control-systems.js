@@ -1,14 +1,14 @@
 /**
- * Control-systems helpers. NovaStar is processors/cards, not a cabinet brand.
+ * Control-systems helpers. NovaStar is processors/cards, not a panel brand.
  * Receiving cards are never added to new-wall quotes or the calculator.
  */
 (function (global) {
   var RECEIVING_NOTE =
     'New Spectrum walls ship with receiving cards installed. Order these only if you need a spare or a field replacement.';
-  var CABINET_CARD_NOTE = 'Receiving card included in this cabinet.';
-  var QUOTE_CARD_NOTE = 'Receiving cards are included in each cabinet.';
+  var CABINET_CARD_NOTE = 'Receiving card included in this panel.';
+  var QUOTE_CARD_NOTE = 'Receiving cards are included in each panel.';
   var EXPLAINER =
-    'Every Spectrum wall needs a control system. NovaStar takes HDMI/SDI/DP in, scales and color-corrects, then sends pixel-accurate signal to the cards already installed in each cabinet.';
+    'Every Spectrum wall needs a control system. NovaStar takes HDMI/SDI/DP in, scales and color-corrects, then sends pixel-accurate signal to the cards already installed in each panel.';
 
   var SUBS = [
     { id: '', label: 'All control systems' },
@@ -108,7 +108,7 @@
   }
 
   /**
-   * Recommended control SKUs for a cabinet product page. Never includes receivers.
+   * Recommended control SKUs for a panel product page. Never includes receivers.
    */
   function recommendedControlForCabinet(product) {
     var cats = (global.spectrumCatsFor ? global.spectrumCatsFor(product) : (product && product.cats) || []) || [];

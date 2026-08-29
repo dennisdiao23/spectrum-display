@@ -912,7 +912,7 @@
                 · <span id="preview-resolution">3,840 × 2,160</span>
                 (<span id="preview-grid">6×6</span>)
               </span>
-              <span class="preview-mobile"> · <span id="preview-screens">36 screens</span></span>
+              <span class="preview-mobile"> · <span id="preview-screens">36 panels</span></span>
               · <span id="preview-weight">—</span>
               · <span id="preview-power">—</span>
             </div>
@@ -1264,7 +1264,7 @@
       if (max == null) return true;
       return pitch <= max;
     }
-    /** Integer pixels in one cabinet. 16:9 cabinets use 16×9 LED groups (P0.93 → 640×360). */
+    /** Integer pixels in one panel. 16:9 panels use 16×9 LED groups (P0.93 → 640×360). */
     function cabinetPixels(series, pitch) {
       const cabWmm = (series.cabinetW || 0) * 1000;
       const cabHmm = (series.cabinetH || 0) * 1000;
@@ -1879,20 +1879,20 @@
       const w = Math.max(0.5, parseFloat(widthEl.value) || 1);
       const h = Math.max(0.5, parseFloat(heightEl.value) || 1);
 
-      // Exact cabinet count based on real dimensions
+      // Exact panel count based on real dimensions
       const cols = Math.max(1, Math.round(w / series.cabinetW));
       const rows = Math.max(1, Math.round(h / series.cabinetH));
-      const cabinets = cols * rows;
+      const panels = cols * rows;
 
       if (!syncingScreens) {
         if (screensWEl && String(screensWEl.value) !== String(cols)) screensWEl.value = cols;
         if (screensHEl && String(screensHEl.value) !== String(rows)) screensHEl.value = rows;
       }
       if (screenCountTotalEl) {
-        screenCountTotalEl.textContent = cabinets.toLocaleString();
+        screenCountTotalEl.textContent = panels.toLocaleString();
       }
       
-      // Actual rendered size (snapped to cabinets)
+      // Actual rendered size (snapped to panels)
       const actualW = cols * series.cabinetW;
       const actualH = rows * series.cabinetH;
       if (!syncingScreens && !isSizeFieldFocused()) {
@@ -1921,7 +1921,7 @@
         }
       }
 
-      // Native wall resolution = integer pixels per cabinet × grid
+      // Native wall resolution = integer pixels per panel × grid
       const pxMap = wallPixels(series, pitch, cols, rows);
       const pxW = pxMap.w;
       const pxH = pxMap.h;
@@ -1946,7 +1946,7 @@
       const actualArea = actualW * actualH;
       const weightKg = actualArea * series.weightPerM2;
       const weightLbs = isCustomPanel()
-        ? Math.round(cabinets * (series.panelWeightLbs || 16))
+        ? Math.round(panels * (series.panelWeightLbs || 16))
         : Math.round(weightKg * 2.20462262);
       const power = Math.round(actualArea * series.powerAvg);
       const powerPeak = Math.round(actualArea * (series.powerMax || series.powerAvg * 2.5));
@@ -1992,7 +1992,7 @@
           recEl.textContent = recLoM.toFixed(1) + ' – ' + recHiM.toFixed(1) + ' m';
         }
       }
-      document.getElementById('res-cabinets').textContent = cabinets + ' (' + cols + ' × ' + rows + ')';
+      document.getElementById('res-cabinets').textContent = panels + ' (' + cols + ' × ' + rows + ')';
       document.getElementById('res-weight').textContent = '~' + weightLbs.toLocaleString() + ' lbs';
       document.getElementById('res-power').textContent = '~' + power.toLocaleString() + ' W';
       const peakEl = document.getElementById('res-power-peak');
@@ -2025,7 +2025,7 @@
       if (previewSizeEl) previewSizeEl.textContent = sizeLabel;
       if (previewResEl) previewResEl.textContent = pxW.toLocaleString() + ' × ' + pxH.toLocaleString();
       if (previewGridEl) previewGridEl.textContent = cols + '×' + rows;
-      if (previewScreensEl) previewScreensEl.textContent = cabinets + ' screens';
+      if (previewScreensEl) previewScreensEl.textContent = panels + ' panels';
       const previewWeightEl = document.getElementById('preview-weight');
       const previewPowerEl = document.getElementById('preview-power');
       if (previewWeightEl) previewWeightEl.textContent = '~' + weightLbs.toLocaleString() + ' lbs';
@@ -2063,7 +2063,7 @@
       document.getElementById('res-area').textContent =
         actualArea.toFixed(2) + ' m²  (' + areaFt.toFixed(1) + ' ft²)';
 
-      // Build cabinet grid fitted to the preview frame, keeping real cabinet aspect
+      // Build panel grid fitted to the preview frame, keeping real panel aspect
       const maxDisplayCols = Math.min(cols, 100);
       const maxDisplayRows = Math.min(rows, 100);
       const fitted = fitWallToPreview(maxDisplayCols, maxDisplayRows, series.cabinetW, series.cabinetH);
@@ -2143,11 +2143,11 @@
         brand: getBrandName(),
         series: series.name,
         pitch: pitch,
-        cabinet: Math.round(series.cabinetW * 1000) + ' × ' + Math.round(series.cabinetH * 1000) + ' mm',
+        panel: Math.round(series.cabinetW * 1000) + ' × ' + Math.round(series.cabinetH * 1000) + ' mm',
         type: series.type || '',
         cols: cols,
         rows: rows,
-        cabinets: cabinets,
+        panels: panels,
         actualW: actualW,
         actualH: actualH,
         sizeM: actualW.toFixed(2) + ' × ' + actualH.toFixed(2) + ' m',
@@ -2177,7 +2177,7 @@
 
       // Quote / save CTA
       const brandName = getBrandName();
-      let q = `?product=${encodeURIComponent(brandName + ' ' + series.name)}&pitch=${pitch}mm&size=${w}x${h}m&area=${actualArea.toFixed(2)}&cabinets=${cabinets}&mount=${mountType}&volt=${voltage}&peak=${powerPeak}W&circuits=${circuits}&ports=${dataPorts}`;
+      let q = `?product=${encodeURIComponent(brandName + ' ' + series.name)}&pitch=${pitch}mm&size=${w}x${h}m&area=${actualArea.toFixed(2)}&cabinets=${panels}&mount=${mountType}&volt=${voltage}&peak=${powerPeak}W&circuits=${circuits}&ports=${dataPorts}`;
       if (controlSel.processor) q += `&control=${encodeURIComponent(controlSel.processor.name)}&controlQty=${controlSel.qty || 1}`;
       if (controlSel.playback) q += `&playback=${encodeURIComponent(controlSel.playback.name)}`;
       syncSummaryCta('contact.html' + q);
@@ -2470,11 +2470,11 @@
 
     function schematicHtml(spec) {
       const ratio = (spec.actualW / Math.max(spec.actualH, 0.01)).toFixed(4);
-      if (spec.cabinets > 800) {
+      if (spec.panels > 800) {
         return '<div class="schematic-box" style="aspect-ratio:' + ratio + '"></div>'
           + '<p class="note">' + spec.cols + ' × ' + spec.rows + ' panels</p>';
       }
-      const cells = new Array(spec.cabinets + 1).join('<i></i>');
+      const cells = new Array(spec.panels + 1).join('<i></i>');
       return '<div class="schematic" style="grid-template-columns:repeat(' + spec.cols + ',minmax(0,1fr));aspect-ratio:' + ratio + '">'
         + cells + '</div>';
     }
@@ -2525,8 +2525,8 @@
         + '<h2>Configuration</h2><table>'
         + specRow('Product', productLine)
         + specRow('Pixel pitch', 'P' + spec.pitch + ' mm')
-        + specRow('Panel', spec.cabinet)
-        + specRow('Grid', spec.cols + ' × ' + spec.rows + '  (' + spec.cabinets + ' panels)')
+        + specRow('Panel', spec.panel)
+        + specRow('Grid', spec.cols + ' × ' + spec.rows + '  (' + spec.panels + ' panels)')
         + specRow('Wall size', spec.sizeM + '  /  ' + spec.sizeFt)
         + specRow('Area', spec.area)
         + specRow('Aspect', spec.aspect)

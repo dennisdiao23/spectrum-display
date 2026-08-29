@@ -20,8 +20,8 @@
       "weightPerM2": 0,
       "powerAvg": 0,
       "powerMax": 0,
-      "description": "All-in-one processor for compact walls. Scales HDMI or SDI and sends pixel-accurate output to the cards already in each cabinet.",
-      "lead": "All-in-one processor for compact walls. Scales HDMI or SDI and sends pixel-accurate output to the cards already in each cabinet.",
+      "description": "All-in-one processor for compact walls. Scales HDMI or SDI and sends pixel-accurate output to the cards already in each panel.",
+      "lead": "All-in-one processor for compact walls. Scales HDMI or SDI and sends pixel-accurate output to the cards already in each panel.",
       "badge": null,
       "cats": [
         "control",
@@ -286,7 +286,7 @@
       "features": [
         {
           "title": "6.5 million pixel load",
-          "text": "Published capacity 6.5 million pixels on 10× RJ45 — enough for most native 4K cabinets with headroom."
+          "text": "Published capacity 6.5 million pixels on 10× RJ45 — enough for most native 4K panels with headroom."
         },
         {
           "title": "4K input",
@@ -991,7 +991,7 @@
       "features": [
         {
           "title": "Sending card, not a processor",
-          "text": "Use when video processing is already handled and you only need more cabinet outputs."
+          "text": "Use when video processing is already handled and you only need more panel outputs."
         },
         {
           "title": "2.3 million pixel load",
@@ -1109,8 +1109,8 @@
       "weightPerM2": 0,
       "powerAvg": 0,
       "powerMax": 0,
-      "description": "Four-port sending box with HDMI and DVI. Choose this when a scaler already sits upstream and you only need to drive cabinets.",
-      "lead": "Four-port sending box with HDMI and DVI. Choose this when a scaler already sits upstream and you only need to drive cabinets.",
+      "description": "Four-port sending box with HDMI and DVI. Choose this when a scaler already sits upstream and you only need to drive panels.",
+      "lead": "Four-port sending box with HDMI and DVI. Choose this when a scaler already sits upstream and you only need to drive panels.",
       "badge": null,
       "cats": [
         "control",
@@ -1770,9 +1770,9 @@
       "weightPerM2": 0,
       "powerAvg": 0,
       "powerMax": 0,
-      "description": "Receiving card sold only as a spare. New Spectrum walls already include a card in each cabinet — do not add this to a new-wall quote.",
-      "lead": "Receiving card sold only as a spare. New Spectrum walls already include a card in each cabinet — do not add this to a new-wall quote.",
-      "badge": "Replacement only — included with new cabinets",
+      "description": "Receiving card sold only as a spare. New Spectrum walls already include a card in each panel — do not add this to a new-wall quote.",
+      "lead": "Receiving card sold only as a spare. New Spectrum walls already include a card in each panel — do not add this to a new-wall quote.",
+      "badge": "Replacement only — included with new panels",
       "cats": [
         "control",
         "receiving-card",
@@ -1780,7 +1780,7 @@
       ],
       "image": "assets/products/novastar/a5s-plus.svg",
       "maxPixels": 196608,
-      "outputs": "Cabinet hub (spare)",
+      "outputs": "Panel hub (spare)",
       "inputs": "Gigabit from sender",
       "bestFor": "Spare / field replacement",
       "bestWith": [],
@@ -1808,7 +1808,7 @@
           "512×384 px"
         ],
         [
-          "Included with new cabinets",
+          "Included with new panels",
           "Yes — do not add to new-wall quotes"
         ]
       ],
@@ -1816,7 +1816,7 @@
       "features": [
         {
           "title": "Replacement only",
-          "text": "New Spectrum cabinets ship with receiving cards installed. Order A5s Plus only if you need a spare or a field replacement."
+          "text": "New Spectrum panels ship with receiving cards installed. Order A5s Plus only if you need a spare or a field replacement."
         },
         {
           "title": "Published load",
@@ -1857,7 +1857,7 @@
       "powerMax": 0,
       "description": "Armor receiving card for spares and field swaps. Not used in new-wall bundles or the calculator.",
       "lead": "Armor receiving card for spares and field swaps. Not used in new-wall bundles or the calculator.",
-      "badge": "Replacement only — included with new cabinets",
+      "badge": "Replacement only — included with new panels",
       "cats": [
         "control",
         "receiving-card",
@@ -1865,7 +1865,7 @@
       ],
       "image": "assets/products/novastar/a8s-n.svg",
       "maxPixels": 196608,
-      "outputs": "Cabinet hub (spare)",
+      "outputs": "Panel hub (spare)",
       "inputs": "Gigabit from sender",
       "bestFor": "Spare / field replacement",
       "bestWith": [],
@@ -1893,7 +1893,7 @@
           "512×384 px"
         ],
         [
-          "Included with new cabinets",
+          "Included with new panels",
           "Yes — do not add to new-wall quotes"
         ]
       ],
@@ -1936,9 +1936,9 @@
       "weightPerM2": 0,
       "powerAvg": 0,
       "powerMax": 0,
-      "description": "Higher-load Armor receiving card, sold as a spare. New cabinets already include a receiver in the $/m² price.",
-      "lead": "Higher-load Armor receiving card, sold as a spare. New cabinets already include a receiver in the $/m² price.",
-      "badge": "Replacement only — included with new cabinets",
+      "description": "Higher-load Armor receiving card, sold as a spare. New panels already include a receiver in the $/m² price.",
+      "lead": "Higher-load Armor receiving card, sold as a spare. New panels already include a receiver in the $/m² price.",
+      "badge": "Replacement only — included with new panels",
       "cats": [
         "control",
         "receiving-card",
@@ -1946,7 +1946,7 @@
       ],
       "image": "assets/products/novastar/a10s-pro.svg",
       "maxPixels": 262144,
-      "outputs": "Cabinet hub (spare)",
+      "outputs": "Panel hub (spare)",
       "inputs": "Gigabit from sender",
       "bestFor": "Spare / field replacement",
       "bestWith": [],
@@ -1974,7 +1974,7 @@
           "512×512 px"
         ],
         [
-          "Included with new cabinets",
+          "Included with new panels",
           "Yes — do not add to new-wall quotes"
         ]
       ],
@@ -1982,7 +1982,7 @@
       "features": [
         {
           "title": "Replacement only",
-          "text": "Do not estimate card quantity from cabinet count. This SKU is a spare, not a line item on a new wall."
+          "text": "Do not estimate card quantity from panel count. This SKU is a spare, not a line item on a new wall."
         },
         {
           "title": "Published load",
@@ -2013,9 +2013,9 @@
       "weightPerM2": 0,
       "powerAvg": 0,
       "powerMax": 0,
-      "description": "MRV receiving card for older or smaller cabinets. Replacement and spare stock only.",
-      "lead": "MRV receiving card for older or smaller cabinets. Replacement and spare stock only.",
-      "badge": "Replacement only — included with new cabinets",
+      "description": "MRV receiving card for older or smaller panels. Replacement and spare stock only.",
+      "lead": "MRV receiving card for older or smaller panels. Replacement and spare stock only.",
+      "badge": "Replacement only — included with new panels",
       "cats": [
         "control",
         "receiving-card",
@@ -2023,7 +2023,7 @@
       ],
       "image": "assets/products/novastar/mrv208-n.svg",
       "maxPixels": 65536,
-      "outputs": "Cabinet hub (spare)",
+      "outputs": "Panel hub (spare)",
       "inputs": "Gigabit from sender",
       "bestFor": "Spare / field replacement",
       "bestWith": [],
@@ -2051,7 +2051,7 @@
           "256×256 px"
         ],
         [
-          "Included with new cabinets",
+          "Included with new panels",
           "Yes — do not add to new-wall quotes"
         ]
       ],
@@ -2087,7 +2087,7 @@
       "powerMax": 0,
       "description": "MRV412 receiving card sold as a field spare. Not listed in the calculator or new-wall quotes.",
       "lead": "MRV412 receiving card sold as a field spare. Not listed in the calculator or new-wall quotes.",
-      "badge": "Replacement only — included with new cabinets",
+      "badge": "Replacement only — included with new panels",
       "cats": [
         "control",
         "receiving-card",
@@ -2095,7 +2095,7 @@
       ],
       "image": "assets/products/novastar/mrv412-n.svg",
       "maxPixels": 262144,
-      "outputs": "Cabinet hub (spare)",
+      "outputs": "Panel hub (spare)",
       "inputs": "Gigabit from sender",
       "bestFor": "Spare / field replacement",
       "bestWith": [],
@@ -2123,7 +2123,7 @@
           "512×512 px"
         ],
         [
-          "Included with new cabinets",
+          "Included with new panels",
           "Yes — do not add to new-wall quotes"
         ]
       ],
@@ -2131,7 +2131,7 @@
       "features": [
         {
           "title": "Replacement only",
-          "text": "Cabinet $/m² already includes the receiving card. This SKU is for a spare or a swap."
+          "text": "Panel $/m² already includes the receiving card. This SKU is for a spare or a swap."
         },
         {
           "title": "Published load",
@@ -2164,7 +2164,7 @@
       "powerMax": 0,
       "description": "MRV416 receiving card for spare stock. Hidden from homepage and calculator line items.",
       "lead": "MRV416 receiving card for spare stock. Hidden from homepage and calculator line items.",
-      "badge": "Replacement only — included with new cabinets",
+      "badge": "Replacement only — included with new panels",
       "cats": [
         "control",
         "receiving-card",
@@ -2172,7 +2172,7 @@
       ],
       "image": "assets/products/novastar/mrv416-n.svg",
       "maxPixels": 196608,
-      "outputs": "Cabinet hub (spare)",
+      "outputs": "Panel hub (spare)",
       "inputs": "Gigabit from sender",
       "bestFor": "Spare / field replacement",
       "bestWith": [],
@@ -2200,7 +2200,7 @@
           "512×384 px"
         ],
         [
-          "Included with new cabinets",
+          "Included with new panels",
           "Yes — do not add to new-wall quotes"
         ]
       ],

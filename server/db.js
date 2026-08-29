@@ -23,6 +23,25 @@ function loadSeedBrands() {
   return brands;
 }
 
+function rewriteCabinetCopy(value) {
+  if (typeof value === 'string') {
+    return value
+      .replace(/\bCabinets\b/g, 'Panels')
+      .replace(/\bCabinet\b/g, 'Panel')
+      .replace(/\bcabinets\b/g, 'panels')
+      .replace(/\bcabinet\b/g, 'panel');
+  }
+  if (Array.isArray(value)) return value.map(rewriteCabinetCopy);
+  if (value && typeof value === 'object') {
+    const out = {};
+    Object.keys(value).forEach(function (k) {
+      out[k] = rewriteCabinetCopy(value[k]);
+    });
+    return out;
+  }
+  return value;
+}
+
 function detailsFromSeries(s) {
   const details = {};
   if (!s || typeof s !== 'object') return details;
@@ -184,6 +203,29 @@ function fillMissingProductDetails(db) {
   });
 }
 
+function rewriteExistingCabinetCopy(db) {
+  const rows = db.prepare('SELECT id, description, badge, details FROM products').all();
+  const upd = db.prepare(
+    'UPDATE products SET description = ?, badge = ?, details = ?, updated_at = ? WHERE id = ?'
+  );
+  let n = 0;
+  rows.forEach(function (row) {
+    const desc = rewriteCabinetCopy(row.description || '');
+    const badge = rewriteCabinetCopy(row.badge || '');
+    const details = rewriteCabinetCopy(parseDetails(row));
+    if (
+      desc === (row.description || '') &&
+      badge === (row.badge || '') &&
+      JSON.stringify(details) === JSON.stringify(parseDetails(row))
+    ) {
+      return;
+    }
+    upd.run(desc, badge, JSON.stringify(details), nowIso(), row.id);
+    n += 1;
+  });
+  if (n) console.log('Renamed cabinet copy to panel on ' + n + ' products');
+}
+
 function parseJson(value, fallback) {
   if (Array.isArray(value)) return value;
   try {
@@ -219,7 +261,7 @@ function isControlRow(row, details) {
 function rowToProduct(row, brand) {
   const pitches = parseJson(row.pitches, []);
   const gallery = parseJson(row.gallery, []);
-  const details = parseDetails(row);
+  const details = rewriteCabinetCopy(parseDetails(row));
   const control = isControlRow(row, details);
   const unitPrice = control
     ? (Number(details.priceEach != null ? details.priceEach : row.price_per_m2) || 0)
@@ -238,8 +280,8 @@ function rowToProduct(row, brand) {
     cabinetW: row.cabinet_w,
     cabinetH: row.cabinet_h,
     type: control ? 'control' : (row.type || 'Fixed'),
-    description: row.description || '',
-    badge: row.badge || null,
+    description: rewriteCabinetCopy(row.description || ''),
+    badge: row.badge ? rewriteCabinetCopy(row.badge) : null,
     image: row.image || '',
     gallery: gallery,
     details: details,
@@ -301,6 +343,8 @@ module.exports = {
   loadSeedBrands,
   detailsFromSeries,
   fillMissingProductDetails,
+  rewriteCabinetCopy,
+  rewriteExistingCabinetCopy,
   getCatalog,
   listProducts,
   getProduct,

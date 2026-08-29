@@ -66,7 +66,7 @@
       bestWith: ['posters', 'fixed-indoor'],
       latency: 'Low latency / ByPass',
       chips: ['2.6M px', '4× RJ45', 'HDMI + SDI'],
-      description: 'All-in-one processor for compact walls. Scales HDMI or SDI and sends pixel-accurate output to the cards already in each cabinet.',
+      description: 'All-in-one processor for compact walls. Scales HDMI or SDI and sends pixel-accurate output to the cards already in each panel.',
       features: [
         { title: 'Processor + sender in one', text: 'HDMI and SDI in, scaled output over four Gigabit ports. No separate scaler required for a small fixed wall.' },
         { title: '2.6 million pixel load', text: 'Published capacity 2.6 million pixels, 4× RJ45 plus two 10G optical ports.' }
@@ -123,7 +123,7 @@
       chips: ['6.5M px', '10× RJ45', '4K input'],
       description: 'The usual pick for a 4K corporate or control-room wall. Ten Ethernet ports and 6.5 million pixel capacity with HDMI 2.0 in.',
       features: [
-        { title: '6.5 million pixel load', text: 'Published capacity 6.5 million pixels on 10× RJ45 — enough for most native 4K cabinets with headroom.' },
+        { title: '6.5 million pixel load', text: 'Published capacity 6.5 million pixels on 10× RJ45 — enough for most native 4K panels with headroom.' },
         { title: '4K input', text: 'HDMI 2.0 path accepts 4K×2K@60Hz, then scales and color-corrects for the wall.' }
       ],
       specTable: spec([
@@ -306,7 +306,7 @@
       chips: ['2.3M px', '4× RJ45', 'DVI'],
       description: 'Four-port sending card for an existing processor. Adds Ethernet outputs without another all-in-one box.',
       features: [
-        { title: 'Sending card, not a processor', text: 'Use when video processing is already handled and you only need more cabinet outputs.' },
+        { title: 'Sending card, not a processor', text: 'Use when video processing is already handled and you only need more panel outputs.' },
         { title: '2.3 million pixel load', text: 'Published capacity 2.3 million pixels on 4× RJ45.' }
       ],
       specTable: spec([
@@ -353,7 +353,7 @@
       bestFor: 'Output-only mid walls',
       bestWith: ['fixed-indoor', 'indoor-rental'],
       chips: ['2.6M px', '4× RJ45', 'HDMI + DVI'],
-      description: 'Four-port sending box with HDMI and DVI. Choose this when a scaler already sits upstream and you only need to drive cabinets.',
+      description: 'Four-port sending box with HDMI and DVI. Choose this when a scaler already sits upstream and you only need to drive panels.',
       features: [
         { title: '2.6 million pixel load', text: 'Published 4× RJ45 at up to 650,000 pixels per port (8-bit).' },
         { title: 'HDMI + DVI', text: '1× HDMI 1.3 and 1× SL-DVI, max 1920×1200@60Hz.' }
@@ -523,22 +523,22 @@
       family: 'Armor',
       subtype: 'receiving-card',
       replacementOnly: true,
-      badge: 'Replacement only — included with new cabinets',
+      badge: 'Replacement only — included with new panels',
       maxPixels: 196608,
-      outputs: 'Cabinet hub (spare)',
+      outputs: 'Panel hub (spare)',
       inputs: 'Gigabit from sender',
       bestFor: 'Spare / field replacement',
       chips: ['512×384', 'Replacement only'],
-      description: 'Receiving card sold only as a spare. New Spectrum walls already include a card in each cabinet — do not add this to a new-wall quote.',
+      description: 'Receiving card sold only as a spare. New Spectrum walls already include a card in each panel — do not add this to a new-wall quote.',
       features: [
-        { title: 'Replacement only', text: 'New Spectrum cabinets ship with receiving cards installed. Order A5s Plus only if you need a spare or a field replacement.' },
+        { title: 'Replacement only', text: 'New Spectrum panels ship with receiving cards installed. Order A5s Plus only if you need a spare or a field replacement.' },
         { title: 'Published load', text: 'Typical Armor load 512×384 pixels per card.' }
       ],
       specTable: spec([
         ['Family', 'Armor receiving card'],
         ['Use', 'Replacement / spare only'],
         ['Typical load', '512×384 px'],
-        ['Included with new cabinets', 'Yes — do not add to new-wall quotes']
+        ['Included with new panels', 'Yes — do not add to new-wall quotes']
       ])
     }),
     nv({
@@ -548,9 +548,9 @@
       family: 'Armor',
       subtype: 'receiving-card',
       replacementOnly: true,
-      badge: 'Replacement only — included with new cabinets',
+      badge: 'Replacement only — included with new panels',
       maxPixels: 196608,
-      outputs: 'Cabinet hub (spare)',
+      outputs: 'Panel hub (spare)',
       inputs: 'Gigabit from sender',
       bestFor: 'Spare / field replacement',
       chips: ['512×384', 'Replacement only'],
@@ -563,7 +563,7 @@
         ['Family', 'Armor receiving card'],
         ['Use', 'Replacement / spare only'],
         ['Typical load', '512×384 px'],
-        ['Included with new cabinets', 'Yes — do not add to new-wall quotes']
+        ['Included with new panels', 'Yes — do not add to new-wall quotes']
       ])
     }),
     nv({
@@ -573,22 +573,22 @@
       family: 'Armor',
       subtype: 'receiving-card',
       replacementOnly: true,
-      badge: 'Replacement only — included with new cabinets',
+      badge: 'Replacement only — included with new panels',
       maxPixels: 262144,
-      outputs: 'Cabinet hub (spare)',
+      outputs: 'Panel hub (spare)',
       inputs: 'Gigabit from sender',
       bestFor: 'Spare / field replacement',
       chips: ['512×512', 'Replacement only'],
-      description: 'Higher-load Armor receiving card, sold as a spare. New cabinets already include a receiver in the $/m² price.',
+      description: 'Higher-load Armor receiving card, sold as a spare. New panels already include a receiver in the $/m² price.',
       features: [
-        { title: 'Replacement only', text: 'Do not estimate card quantity from cabinet count. This SKU is a spare, not a line item on a new wall.' },
+        { title: 'Replacement only', text: 'Do not estimate card quantity from panel count. This SKU is a spare, not a line item on a new wall.' },
         { title: 'Published load', text: 'Typical Armor load 512×512 pixels per card.' }
       ],
       specTable: spec([
         ['Family', 'Armor receiving card'],
         ['Use', 'Replacement / spare only'],
         ['Typical load', '512×512 px'],
-        ['Included with new cabinets', 'Yes — do not add to new-wall quotes']
+        ['Included with new panels', 'Yes — do not add to new-wall quotes']
       ])
     }),
     nv({
@@ -598,13 +598,13 @@
       family: 'MRV',
       subtype: 'receiving-card',
       replacementOnly: true,
-      badge: 'Replacement only — included with new cabinets',
+      badge: 'Replacement only — included with new panels',
       maxPixels: 65536,
-      outputs: 'Cabinet hub (spare)',
+      outputs: 'Panel hub (spare)',
       inputs: 'Gigabit from sender',
       bestFor: 'Spare / field replacement',
       chips: ['256×256', 'Replacement only'],
-      description: 'MRV receiving card for older or smaller cabinets. Replacement and spare stock only.',
+      description: 'MRV receiving card for older or smaller panels. Replacement and spare stock only.',
       features: [
         { title: 'Replacement only', text: 'New Spectrum walls ship with receiving cards installed. Order MRV208-N only as a spare.' },
         { title: 'Published load', text: 'Typical MRV208 load 256×256 pixels per card.' }
@@ -613,7 +613,7 @@
         ['Family', 'MRV receiving card'],
         ['Use', 'Replacement / spare only'],
         ['Typical load', '256×256 px'],
-        ['Included with new cabinets', 'Yes — do not add to new-wall quotes']
+        ['Included with new panels', 'Yes — do not add to new-wall quotes']
       ])
     }),
     nv({
@@ -623,22 +623,22 @@
       family: 'MRV',
       subtype: 'receiving-card',
       replacementOnly: true,
-      badge: 'Replacement only — included with new cabinets',
+      badge: 'Replacement only — included with new panels',
       maxPixels: 262144,
-      outputs: 'Cabinet hub (spare)',
+      outputs: 'Panel hub (spare)',
       inputs: 'Gigabit from sender',
       bestFor: 'Spare / field replacement',
       chips: ['512×512', 'Replacement only'],
       description: 'MRV412 receiving card sold as a field spare. Not listed in the calculator or new-wall quotes.',
       features: [
-        { title: 'Replacement only', text: 'Cabinet $/m² already includes the receiving card. This SKU is for a spare or a swap.' },
+        { title: 'Replacement only', text: 'Panel $/m² already includes the receiving card. This SKU is for a spare or a swap.' },
         { title: 'Published load', text: 'Typical MRV412 load 512×512 pixels per card.' }
       ],
       specTable: spec([
         ['Family', 'MRV receiving card'],
         ['Use', 'Replacement / spare only'],
         ['Typical load', '512×512 px'],
-        ['Included with new cabinets', 'Yes — do not add to new-wall quotes']
+        ['Included with new panels', 'Yes — do not add to new-wall quotes']
       ])
     }),
     nv({
@@ -648,9 +648,9 @@
       family: 'MRV',
       subtype: 'receiving-card',
       replacementOnly: true,
-      badge: 'Replacement only — included with new cabinets',
+      badge: 'Replacement only — included with new panels',
       maxPixels: 196608,
-      outputs: 'Cabinet hub (spare)',
+      outputs: 'Panel hub (spare)',
       inputs: 'Gigabit from sender',
       bestFor: 'Spare / field replacement',
       chips: ['512×384', 'Replacement only'],
@@ -663,7 +663,7 @@
         ['Family', 'MRV receiving card'],
         ['Use', 'Replacement / spare only'],
         ['Typical load', '512×384 px'],
-        ['Included with new cabinets', 'Yes — do not add to new-wall quotes']
+        ['Included with new panels', 'Yes — do not add to new-wall quotes']
       ])
     })
   ];
