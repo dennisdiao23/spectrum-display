@@ -55,7 +55,7 @@ npm start
 6. Open in browser
 
 - Site: http://localhost:3000
-- Designer: http://localhost:3000/designer.html
+- Designer: http://localhost:3000/led-wall-calculator
 
 Leave the PowerShell window open while you look. Closing it, or Ctrl+C, stops the server.
 

@@ -94,7 +94,8 @@ async function main() {
     ['/corporate', 'corporate.html'],
     ['/events-xr', 'events-xr.html'],
     ['/outdoor', 'outdoor.html'],
-    ['/home-theater', 'home-theater.html']
+    ['/home-theater', 'home-theater.html'],
+    ['/led-wall-calculator', 'designer.html']
   ];
   JOB_PAGES.forEach(function (pair) {
     const route = pair[0];
@@ -106,6 +107,10 @@ async function main() {
       const qs = req.url.includes('?') ? req.url.slice(req.url.indexOf('?')) : '';
       res.redirect(301, route + qs);
     });
+  });
+  app.get(['/designer', '/designer/'], function (req, res) {
+    const qs = req.url.includes('?') ? req.url.slice(req.url.indexOf('?')) : '';
+    res.redirect(301, '/led-wall-calculator' + qs);
   });
 
   const OLD_SOLUTION_REDIRECTS = [
@@ -170,7 +175,7 @@ async function main() {
       ['/events-xr', 'monthly', '0.7'],
       ['/outdoor', 'monthly', '0.7'],
       ['/home-theater', 'monthly', '0.7'],
-      ['/designer.html', 'monthly', '0.8'],
+      ['/led-wall-calculator', 'monthly', '0.8'],
       ['/dealer.html', 'monthly', '0.7'],
       ['/contact.html', 'monthly', '0.7'],
       ['/support.html', 'monthly', '0.6'],

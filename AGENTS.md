@@ -3,8 +3,8 @@
 ## Cursor Cloud specific instructions
 
 Spectrum Display is a static HTML/CSS/JS marketing + catalog website (`index.html`, `products.html`,
-`product.html`, `brands.html`, `cart.html`, `contact.html`, `account.html`, `designer.html`,
-`admin.html`) served by a small Express backend in `server/`. The backend exposes a product/brand
+`product.html`, `brands.html`, `cart.html`, `contact.html`, `account.html`, `designer.html`
+at `/led-wall-calculator`, `admin.html`) served by a small Express backend in `server/`. The backend exposes a product/brand
 catalog API and a cookie-session admin login used by `admin.html`.
 
 ### Running the app (single service)

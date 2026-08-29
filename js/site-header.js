@@ -16,6 +16,12 @@
     return (location.pathname.split('/').pop() || 'index.html').toLowerCase();
   }
 
+  function onCalculatorPath() {
+    var p = (location.pathname || '').toLowerCase().replace(/\/$/, '') || '/';
+    var file = pathFile();
+    return file === 'designer.html' || file === 'led-wall-calculator' || p === '/led-wall-calculator';
+  }
+
   function onSolutionsPath() {
     var p = (location.pathname || '').toLowerCase().replace(/\/$/, '') || '/';
     if (
@@ -124,7 +130,7 @@
       '<a href="/retail-hospitality" data-tab="solutions">' +
         icon('<path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6A2.25 2.25 0 016 3.75h12A2.25 2.25 0 0120.25 6v8.25A2.25 2.25 0 0118 16.5H6a2.25 2.25 0 01-2.25-2.25V6zM8.25 19.5h7.5"/>') +
         '<span data-i18n="nav.solutions">Solutions</span></a>' +
-      '<a href="/designer.html" data-tab="designer">' +
+      '<a href="/led-wall-calculator" data-tab="designer">' +
         icon('<path stroke-linecap="round" stroke-linejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931zM16.862 4.487L19.5 7.125M18 14v4.75A2.25 2.25 0 0115.75 21H5.25A2.25 2.25 0 013 18.75V8.25A2.25 2.25 0 015.25 6H10"/>') +
         '<span data-i18n="nav.tabDesigner">Calculator</span></a>' +
       '<a href="/account.html" data-tab="account">' +
@@ -136,7 +142,7 @@
     var tab = '';
     if (file === 'products.html' || file === 'product.html') tab = 'products';
     else if (onSolutionsPath()) tab = 'solutions';
-    else if (file === 'designer.html') tab = 'designer';
+    else if (onCalculatorPath()) tab = 'designer';
     else if (file === 'account.html') tab = 'account';
     $all('[data-tab]', nav).forEach(function (a) {
       var on = tab && a.getAttribute('data-tab') === tab;
@@ -392,7 +398,7 @@
       '</div>' +
       '<div class="site-mega-foot">' +
         '<div class="site-mega-foot-item"><span>Explore</span><a href="/products.html?cat=indoor-rental" data-mega-all>View all in this category</a></div>' +
-        '<div class="site-mega-foot-item"><span>Tools</span><a href="/designer.html">LED Wall Calculator</a></div>' +
+        '<div class="site-mega-foot-item"><span>Tools</span><a href="/led-wall-calculator">LED Wall Calculator</a></div>' +
       '</div>'
     );
   }
@@ -480,7 +486,7 @@
           '<span data-i18n="nav.solutions">Solutions</span>' + chevron() +
         '</button>' +
       '</div>' +
-      '<a class="site-nav-link' + (file === 'designer.html' ? ' is-active' : '') + '" href="/designer.html" data-i18n="nav.designer">LED Wall Calculator</a>' +
+      '<a class="site-nav-link' + (onCalculatorPath() ? ' is-active' : '') + '" href="/led-wall-calculator" data-i18n="nav.designer">LED Wall Calculator</a>' +
       '<a class="site-nav-link' + (file === 'dealer.html' ? ' is-active' : '') + '" href="/dealer.html" data-i18n="nav.dealer">Dealer</a>';
 
     var header = $('.site-header');

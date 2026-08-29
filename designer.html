@@ -7,12 +7,12 @@
   <link rel="stylesheet" href="css/site-header.css" />
   <title>LED Wall Calculator | Spectrum Display</title>
   <meta name="description" content="LED wall calculator from Spectrum Display Inc. Size panels, pixel pitch, power, weight, and estimated price for indoor, outdoor, and rental LED video walls." />
-  <link rel="canonical" href="https://www.spectrumdisplay.com/designer.html" />
+  <link rel="canonical" href="https://www.spectrumdisplay.com/led-wall-calculator" />
   <meta property="og:type" content="website" />
   <meta property="og:site_name" content="Spectrum Display" />
   <meta property="og:title" content="LED Wall Calculator | Spectrum Display" />
   <meta property="og:description" content="Size panels, pixel pitch, power, weight, and estimated price for professional LED video walls." />
-  <meta property="og:url" content="https://www.spectrumdisplay.com/designer.html" />
+  <meta property="og:url" content="https://www.spectrumdisplay.com/led-wall-calculator" />
   <meta property="og:image" content="https://www.spectrumdisplay.com/assets/products/discovery.jpg" />
   <meta name="twitter:card" content="summary_large_image" />
   <meta name="twitter:title" content="LED Wall Calculator | Spectrum Display" />
@@ -536,7 +536,7 @@
               <svg class="site-nav-chevron" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M6 9l6 6 6-6"/></svg>
             </button>
           </div>
-          <a class="site-nav-link" href="designer.html" data-i18n="nav.designer">LED Wall Calculator</a>
+          <a class="site-nav-link" href="/led-wall-calculator" data-i18n="nav.designer">LED Wall Calculator</a>
           <a class="site-nav-link" href="dealer.html" data-i18n="nav.dealer">Dealer</a>
         </nav>
         <div class="site-utils">
@@ -892,7 +892,7 @@
             <div class="flex justify-between"><span class="text-slate-400" data-i18n="designer.circuits">Circuits</span><span id="res-circuits" class="font-medium">—</span></div>
             <div class="flex justify-between"><span class="text-slate-400" data-i18n="designer.ports">Data ports</span><span id="res-ports" class="font-medium">—</span></div>
             <div class="flex justify-between"><span class="text-slate-400" data-i18n="designer.processor">Processor</span><span id="res-processor" class="font-medium text-right text-xs sm:text-sm">—</span></div>
-            <div class="flex justify-between"><span class="text-slate-400">Playback</span><span id="res-playback" class="font-medium text-right text-xs sm:text-sm">—</span></div>
+            <div class="flex justify-between" id="res-playback-row"><span class="text-slate-400">Playback</span><span id="res-playback" class="font-medium text-right text-xs sm:text-sm">—</span></div>
             <div class="flex justify-between border-t border-slate-800 pt-2.5 mt-1 pricing-only"><span class="text-slate-400" data-i18n="designer.estPrice">Est. Price</span><span id="res-price" class="font-semibold text-sky-400">—</span></div>
           </div>
           <a id="quote-btn" href="contact.html" class="mt-5 w-full inline-flex justify-center items-center px-5 py-2.5 rounded-full bg-sky-500 hover:bg-sky-400 text-white font-semibold text-sm transition">
@@ -2000,7 +2000,9 @@
       const procEl = document.getElementById('res-processor');
       if (procEl) procEl.textContent = processorText;
       const playEl = document.getElementById('res-playback');
+      const playRow = document.getElementById('res-playback-row');
       if (playEl) playEl.textContent = playbackText;
+      if (playRow) playRow.hidden = !controlSel.playback;
       document.getElementById('res-price').textContent = (window.SpectrumAuth && SpectrumAuth.isLoggedIn && SpectrumAuth.isLoggedIn())
         ? ('$' + sellPrice.toLocaleString())
         : '—';
@@ -2240,7 +2242,7 @@
         const extra = customShareFields();
         Object.keys(extra).forEach(k => qs.set(k, extra[k]));
       }
-      const designerUrl = 'designer.html?' + qs.toString();
+      const designerUrl = '/led-wall-calculator?' + qs.toString();
       const result = await SpectrumAuth.saveProject({
         brand: brand,
         brandName: brandName,
@@ -2531,7 +2533,7 @@
         + specRow('Circuits', spec.circuits)
         + specRow('Data ports', spec.ports)
         + specRow('Processor', spec.processor)
-        + specRow('Playback', spec.playback || 'None')
+        + (spec.playback && spec.playback !== 'None' ? specRow('Playback', spec.playback) : '')
         + '</table>'
         + '<p class="note" style="text-align:left;margin-top:10px">Receiving cards are included in each panel. Do not add spare receiving cards to a new-wall quote.</p>'
         + (spec.price

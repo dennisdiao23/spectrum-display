@@ -45,7 +45,7 @@ Hosting is **Railway only** (not Netlify or Vercel).
 | `outdoor.html` | Outdoor & DOOH (`/outdoor`) |
 | `home-theater.html` | Home Theater & Residential (`/home-theater`) |
 | `support.html` | Support |
-| `designer.html` | Designer / saved projects (needs Sign in) |
+| `designer.html` | LED Wall Calculator (`/led-wall-calculator`) |
 | `account.html` | Customer Sign in / account |
 | `cart.html` | Cart (only after Sign in — **this browser only**) |
 | `contact.html` | Quote / contact form (emails you) |
@@ -63,7 +63,7 @@ npm install
 npm start
 ```
 
-Open http://localhost:3000 — Designer: http://localhost:3000/designer.html
+Open http://localhost:3000 — Designer: http://localhost:3000/led-wall-calculator
 
 Copy `.env.example` to `.env` for local keys. With Supabase vars, you use the live catalog. Without them, data is a local SQLite file at `data/spectrum.db`.
 
