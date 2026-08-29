@@ -306,7 +306,7 @@
               </button>
               <div class="space-y-2">
                 <a id="guest-price-cta" href="account.html" class="guest-pricing inline-flex px-6 py-3 rounded-full bg-sky-500 hover:bg-sky-400 text-white font-semibold" data-i18n="price.signInCta">Sign in to see pricing and use the cart</a>
-                <div><a id="use-in-calculator" href="designer.html" class="text-sm text-sky-400 hover:text-sky-300">Use in Calculator →</a></div>
+                <div><a id="use-in-calculator" href="/led-wall-calculator" class="text-sm text-sky-400 hover:text-sky-300">Use in Calculator →</a></div>
               </div>
             </div>
           </div>
@@ -1066,7 +1066,7 @@
       if (seriesId) qs.set('series', seriesId);
       const pitch = selectedPitch();
       if (pitch) qs.set('pitch', pitch);
-      a.href = 'designer.html?' + qs.toString();
+      a.href = '/led-wall-calculator?' + qs.toString();
       a.textContent = 'Use in Calculator →';
     }
     applyProductView();
