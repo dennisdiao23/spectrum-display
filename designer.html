@@ -892,7 +892,7 @@
             <div class="flex justify-between"><span class="text-slate-400" data-i18n="designer.circuits">Circuits</span><span id="res-circuits" class="font-medium">—</span></div>
             <div class="flex justify-between"><span class="text-slate-400" data-i18n="designer.ports">Data ports</span><span id="res-ports" class="font-medium">—</span></div>
             <div class="flex justify-between"><span class="text-slate-400" data-i18n="designer.processor">Processor</span><span id="res-processor" class="font-medium text-right text-xs sm:text-sm">—</span></div>
-            <div class="flex justify-between" id="res-playback-row"><span class="text-slate-400">Playback</span><span id="res-playback" class="font-medium text-right text-xs sm:text-sm">—</span></div>
+            <div class="flex justify-between hidden" id="res-playback-row" style="display:none"><span class="text-slate-400">Playback</span><span id="res-playback" class="font-medium text-right text-xs sm:text-sm">—</span></div>
             <div class="flex justify-between border-t border-slate-800 pt-2.5 mt-1 pricing-only"><span class="text-slate-400" data-i18n="designer.estPrice">Est. Price</span><span id="res-price" class="font-semibold text-sky-400">—</span></div>
           </div>
           <a id="quote-btn" href="contact.html" class="mt-5 w-full inline-flex justify-center items-center px-5 py-2.5 rounded-full bg-sky-500 hover:bg-sky-400 text-white font-semibold text-sm transition">
@@ -2002,7 +2002,12 @@
       const playEl = document.getElementById('res-playback');
       const playRow = document.getElementById('res-playback-row');
       if (playEl) playEl.textContent = playbackText;
-      if (playRow) playRow.hidden = !controlSel.playback;
+      if (playRow) {
+        const showPlayback = !!(controlSel.playback && playbackText && playbackText !== 'None');
+        playRow.classList.toggle('hidden', !showPlayback);
+        // Tailwind `flex` wins over the HTML hidden attribute; set display directly.
+        playRow.style.display = showPlayback ? 'flex' : 'none';
+      }
       document.getElementById('res-price').textContent = (window.SpectrumAuth && SpectrumAuth.isLoggedIn && SpectrumAuth.isLoggedIn())
         ? ('$' + sellPrice.toLocaleString())
         : '—';
