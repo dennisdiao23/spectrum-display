@@ -1849,7 +1849,7 @@
               '<span class="dash-activity-avatar dash-activity-avatar-company">' + esc(dashInitials(p.name, p.email)) + '</span>' +
               '<div class="dash-activity-copy"><p><strong>' + esc(who) + '</strong> ' + esc(action) + '</p>' +
               (p.email ? '<span>' + esc(p.email) + '</span>' : '') + '</div>' +
-              '<span class="dash-activity-when">' + esc(dashWhen(p.created_at) || (mine ? 'Now' : '')) + '</span></li>';
+              '<span class="dash-activity-when">' + esc(mine ? 'Now' : dashWhen(p.created_at)) + '</span></li>';
           }).join('')
           : '<p class="dash-activity-empty">No company users yet.</p>';
       }
