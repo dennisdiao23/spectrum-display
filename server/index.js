@@ -6,7 +6,7 @@ const express = require('express');
 const cookieParser = require('cookie-parser');
 const bcrypt = require('bcryptjs');
 const multer = require('multer');
-const { getStore } = require('./store');
+const { getStore, hasSupabase } = require('./store');
 const { sendContactEmail, sendDealerInquiryEmail, mailConfigured } = require('./mail');
 
 const ROOT = path.join(__dirname, '..');
@@ -593,7 +593,11 @@ async function main() {
 
   app.get('/api/admin/accounts', requireAdmin, async function (_req, res, next) {
     try {
-      res.json({ ok: true, accounts: await store.listAccounts() });
+      res.json({
+        ok: true,
+        accounts: await store.listAccounts(),
+        source: hasSupabase() ? 'supabase' : 'sqlite'
+      });
     } catch (err) { next(err); }
   });
 

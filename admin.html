@@ -306,7 +306,7 @@
 
       <div id="accounts-section" class="hidden space-y-6">
         <div id="accounts-list-wrap">
-          <p class="text-slate-400 text-sm mb-4">All customer sign-ins. Open an account to see orders, saved calculator projects, custom panels, and to set Customer / Dealer / Sales.</p>
+          <p class="text-slate-400 text-sm mb-4">People who signed in on the website (My Account). The Admin email on this page is a CMS login — it is not a row here. Open an account to set Customer / Dealer / Sales, markup, orders, and saved projects.</p>
           <form id="price-tiers-form" class="rounded-2xl border border-slate-800 bg-slate-900/50 p-5 mb-6">
             <h3 class="font-semibold mb-1">Price tiers</h3>
             <p class="text-xs text-slate-500 mb-4">Markup % by account type. Signed-in users see catalog price × (1 + markup%). Only admin can see these percents — they never appear on My Account.</p>
@@ -843,10 +843,18 @@
       const tb = document.getElementById('accounts-table');
       const errEl = document.getElementById('accounts-error');
       errEl.classList.add('hidden');
+      errEl.classList.remove('text-amber-300');
+      errEl.classList.add('text-red-400');
       errEl.textContent = '';
       try {
         const data = await api('/api/admin/accounts');
         const rows = data.accounts || [];
+        if (data.source === 'sqlite') {
+          errEl.textContent = 'This local Admin is using a catalog file, not the live site database. Website Sign in accounts (Customer / Dealer / Sales) are at https://www.spectrumdisplay.com/admin.html. Add SUPABASE_URL to .env to list them here.';
+          errEl.classList.remove('text-red-400');
+          errEl.classList.add('text-amber-300');
+          errEl.classList.remove('hidden');
+        }
         tb.innerHTML = rows.map(function (a) {
           const when = a.created_at ? new Date(a.created_at).toLocaleDateString() : '';
           const pct = a.effective_markup_pct;
@@ -861,7 +869,7 @@
             '<td class="py-3 px-4 text-slate-500">' + esc(when) + '</td>' +
             '<td class="py-3 px-4 text-right"><span class="text-sky-400 text-xs font-medium">Open →</span></td>' +
             '</tr>';
-        }).join('') || '<tr><td class="py-6 px-4 text-slate-500" colspan="7">No accounts yet. Site Sign in accounts (not this admin login) appear here.</td></tr>';
+        }).join('') || '<tr><td class="py-6 px-4 text-slate-500" colspan="7">No website Sign in accounts yet. The Admin CMS login never appears in this list.</td></tr>';
       } catch (err) {
         errEl.textContent = err.message || 'Could not load accounts.';
         errEl.classList.remove('hidden');
