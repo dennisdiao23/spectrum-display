@@ -24,7 +24,13 @@
           <a href="/company/website/accounts" id="tab-accounts" class="dash-sub-link">Accounts</a>
         </div>
       </div>
-      <a href="/company/inventory" id="tab-inventory" class="dash-nav-link">Inventory</a>
+      <div class="dash-nav-group">
+        <a href="/company/inventory" id="tab-inventory" class="dash-nav-link">Inventory</a>
+        <div id="inventory-subnav" class="dash-sub hidden">
+          <a href="/company/inventory" id="tab-inv-stock" class="dash-sub-link">Stock</a>
+          <a href="/company/inventory/customers" id="tab-customers" class="dash-sub-link">Customer</a>
+        </div>
+      </div>
     </nav>
     <div class="dash-sidebar-foot hidden" id="admin-utils">
       <div class="dash-nav-group">
@@ -306,7 +312,8 @@
 
       </div>
 
-      <div id="inventory-section" class="hidden space-y-6">
+      <div id="inventory-pane" class="hidden space-y-6">
+      <div id="inventory-section" class="space-y-6">
         <div id="inventory-list-wrap">
           <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4">
             <p class="text-slate-400 text-sm">Each warehouse line has its own SKU. Link a SKU to a website product pitch to show that qty and price on the site. Extra SKUs can stay off the website.</p>
@@ -456,6 +463,80 @@
         </div>
       </div>
 
+      <div id="customers-section" class="hidden space-y-6">
+        <div id="customers-list-wrap">
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4">
+            <p class="text-slate-400 text-sm"><span id="customer-total">0</span> customers and website accounts. Name, company, phone, and orders — for warehouse and sales follow-up. Price tiers stay under Website → Accounts.</p>
+            <input id="customer-search" type="search" placeholder="Search name, email, company, phone" class="w-full sm:w-64 bg-slate-800 border border-slate-700 rounded-full px-3 py-1.5 text-sm">
+          </div>
+          <div class="flex flex-wrap items-center gap-2 mb-4">
+            <button type="button" data-cust-filter="all" class="cust-filter px-3 py-1.5 rounded-full text-xs font-medium bg-sky-500/20 text-sky-300">All</button>
+            <button type="button" data-cust-filter="customer" class="cust-filter px-3 py-1.5 rounded-full text-xs font-medium text-slate-400">Customer</button>
+            <button type="button" data-cust-filter="dealer" class="cust-filter px-3 py-1.5 rounded-full text-xs font-medium text-slate-400">Dealer</button>
+            <button type="button" data-cust-filter="sales" class="cust-filter px-3 py-1.5 rounded-full text-xs font-medium text-slate-400">Sales</button>
+          </div>
+          <p id="customers-error" class="hidden text-sm text-red-400 mb-3"></p>
+          <div class="overflow-x-auto rounded-2xl border border-slate-800">
+            <table class="w-full text-sm">
+              <thead class="text-left text-slate-400 border-b border-slate-800">
+                <tr>
+                  <th class="py-3 px-4 font-medium">Name</th>
+                  <th class="py-3 px-4 font-medium">Email</th>
+                  <th class="py-3 px-4 font-medium">Type</th>
+                  <th class="py-3 px-4 font-medium">Company</th>
+                  <th class="py-3 px-4 font-medium">Phone</th>
+                  <th class="py-3 px-4 font-medium">Created</th>
+                  <th class="py-3 px-4 font-medium"></th>
+                </tr>
+              </thead>
+              <tbody id="customers-table" class="text-slate-200"></tbody>
+            </table>
+          </div>
+        </div>
+        <div id="customer-detail" class="hidden space-y-6">
+          <button type="button" id="customer-back" class="text-sm text-sky-400 hover:text-sky-300">← All customers</button>
+          <form id="customer-form" class="rounded-2xl border border-slate-800 bg-slate-900/50 p-5 grid sm:grid-cols-2 gap-4">
+            <input type="hidden" id="cust-id">
+            <div class="sm:col-span-2">
+              <h2 id="cust-title" class="font-semibold text-lg">Customer</h2>
+            </div>
+            <div>
+              <label class="block text-xs text-slate-400 mb-1">Name</label>
+              <input id="cust-name" type="text" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm">
+            </div>
+            <div>
+              <label class="block text-xs text-slate-400 mb-1">Email</label>
+              <input id="cust-email" type="email" disabled class="w-full bg-slate-900 border border-slate-800 rounded-lg px-3 py-2 text-sm text-slate-500">
+            </div>
+            <div>
+              <label class="block text-xs text-slate-400 mb-1">Type</label>
+              <input id="cust-role" type="text" disabled class="w-full bg-slate-900 border border-slate-800 rounded-lg px-3 py-2 text-sm text-slate-500">
+            </div>
+            <div>
+              <label class="block text-xs text-slate-400 mb-1">Phone</label>
+              <input id="cust-phone" type="text" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm">
+            </div>
+            <div class="sm:col-span-2">
+              <label class="block text-xs text-slate-400 mb-1">Company</label>
+              <input id="cust-company" type="text" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm">
+            </div>
+            <p id="cust-msg" class="sm:col-span-2 hidden text-sm text-sky-400"></p>
+            <div class="sm:col-span-2">
+              <button type="submit" id="cust-save" class="px-5 py-2 rounded-full bg-sky-500 hover:bg-sky-400 text-white text-sm font-semibold">Save information</button>
+            </div>
+          </form>
+          <div>
+            <h3 class="font-semibold mb-3">Orders</h3>
+            <div id="cust-orders" class="space-y-2 text-sm"></div>
+          </div>
+          <div>
+            <h3 class="font-semibold mb-3">Saved calculator projects</h3>
+            <div id="cust-projects" class="space-y-2 text-sm"></div>
+          </div>
+        </div>
+      </div>
+      </div>
+
       <div id="settings-pane" class="hidden space-y-6">
       <div id="staff-section" class="space-y-6">
         <p class="text-slate-400 text-sm">Admin logins for this page — not website Customer / Dealer / Sales accounts. Owner sees everything. Website can edit product pages and website accounts. Inventory can receive and adjust stock.</p>
@@ -578,6 +659,7 @@
       if (hash === 'website/accounts' || hash === 'accounts') return 'accounts';
       if (hash === 'website' || hash === 'website/products' || hash === 'products') return 'products';
       const p = companyPath();
+      if (p === '/company/inventory/customers') return 'customers';
       if (p === '/company/inventory') return 'inventory';
       if (p === '/company/settings/roles') return 'roles';
       if (p === '/company/settings') return 'staff';
@@ -587,6 +669,7 @@
     }
     function pathForTab(name) {
       if (name === 'inventory') return '/company/inventory';
+      if (name === 'customers') return '/company/inventory/customers';
       if (name === 'accounts') return '/company/website/accounts';
       if (name === 'staff') return '/company/settings';
       if (name === 'roles') return '/company/settings/roles';
@@ -629,7 +712,7 @@
     }
     function canUse(section) {
       if (section === 'products' || section === 'website' || section === 'accounts') return canView('website');
-      if (section === 'inventory') return canView('inventory');
+      if (section === 'inventory' || section === 'customers') return canView('inventory');
       if (section === 'staff' || section === 'settings' || section === 'roles') return canView('settings');
       return false;
     }
@@ -842,20 +925,26 @@
 
     function showAdminTab(name) {
       const onWebsite = name === 'products' || name === 'accounts';
+      const onInventory = name === 'inventory' || name === 'customers';
       const onSettings = name === 'staff' || name === 'roles';
       if (onWebsite) websiteSubTab = name;
       if (onSettings) settingsSubTab = name;
       document.getElementById('website-pane').classList.toggle('hidden', !onWebsite);
+      document.getElementById('inventory-pane').classList.toggle('hidden', !onInventory);
       document.getElementById('settings-pane').classList.toggle('hidden', !onSettings);
       document.getElementById('products-section').classList.toggle('hidden', name !== 'products');
       document.getElementById('inventory-section').classList.toggle('hidden', name !== 'inventory');
+      document.getElementById('customers-section').classList.toggle('hidden', name !== 'customers');
       document.getElementById('accounts-section').classList.toggle('hidden', name !== 'accounts');
       document.getElementById('staff-section').classList.toggle('hidden', name !== 'staff');
       document.getElementById('roles-section').classList.toggle('hidden', name !== 'roles');
       document.getElementById('website-subnav').classList.toggle('hidden', !onWebsite);
+      document.getElementById('inventory-subnav').classList.toggle('hidden', !onInventory);
       document.getElementById('settings-subnav').classList.toggle('hidden', !onSettings);
       document.getElementById('tab-website').className = navLinkClass(onWebsite, !canUse('website'));
-      document.getElementById('tab-inventory').className = navLinkClass(name === 'inventory', !canUse('inventory'));
+      document.getElementById('tab-inventory').className = navLinkClass(onInventory, !canUse('inventory'));
+      document.getElementById('tab-inv-stock').className = navLinkClass(name === 'inventory', !canUse('inventory'), 'sub');
+      document.getElementById('tab-customers').className = navLinkClass(name === 'customers', !canUse('customers'), 'sub');
       document.getElementById('tab-products').className = navLinkClass(name === 'products', false, 'sub');
       document.getElementById('tab-accounts').className = navLinkClass(name === 'accounts', !canUse('accounts'), 'sub');
       document.getElementById('tab-staff').className = navLinkClass(name === 'staff', !canUse('staff'), 'sub');
@@ -866,6 +955,7 @@
         products: ['Website', 'Product pages'],
         accounts: ['Website', 'Website accounts'],
         inventory: ['Inventory', 'Warehouse SKUs'],
+        customers: ['Inventory', 'Customer list'],
         staff: ['Settings', 'Admin logins'],
         roles: ['Settings', 'Role Setting']
       };
@@ -1172,6 +1262,108 @@
       document.getElementById('tier-sales').value = tiers.sales != null ? tiers.sales : 0;
     }
 
+    let customerRows = [];
+    let customerFilter = 'all';
+
+    function renderCustomersTable() {
+      const tb = document.getElementById('customers-table');
+      const q = (document.getElementById('customer-search').value || '').trim().toLowerCase();
+      const rows = customerRows.filter(function (a) {
+        const role = a.role === 'dealer' || a.role === 'sales' ? a.role : 'customer';
+        if (customerFilter !== 'all' && role !== customerFilter) return false;
+        if (!q) return true;
+        const blob = ((a.name || '') + ' ' + (a.email || '') + ' ' + (a.company || '') + ' ' + (a.phone || '')).toLowerCase();
+        return blob.indexOf(q) !== -1;
+      });
+      document.getElementById('customer-total').textContent = String(rows.length);
+      tb.innerHTML = rows.map(function (a) {
+        const when = a.created_at ? new Date(a.created_at).toLocaleDateString() : '';
+        return '<tr class="border-b border-slate-800 hover:bg-slate-900/80 cursor-pointer" data-id="' + esc(a.id) + '">' +
+          '<td class="py-3 px-4 font-medium">' + esc(a.name || '—') + '</td>' +
+          '<td class="py-3 px-4">' + esc(a.email || '') + '</td>' +
+          '<td class="py-3 px-4"><span class="text-xs px-2 py-0.5 rounded-full bg-sky-500/15 text-sky-300">' + esc(roleLabel(a.role)) + '</span></td>' +
+          '<td class="py-3 px-4 text-slate-400">' + esc(a.company || '—') + '</td>' +
+          '<td class="py-3 px-4 text-slate-400">' + esc(a.phone || '—') + '</td>' +
+          '<td class="py-3 px-4 text-slate-500">' + esc(when) + '</td>' +
+          '<td class="py-3 px-4 text-right"><span class="text-sky-400 text-xs font-medium">Open →</span></td>' +
+          '</tr>';
+      }).join('') || '<tr><td class="py-6 px-4 text-slate-500" colspan="7">No customers yet.</td></tr>';
+    }
+
+    async function loadCustomers() {
+      const errEl = document.getElementById('customers-error');
+      errEl.classList.add('hidden');
+      errEl.classList.remove('text-amber-300');
+      errEl.classList.add('text-red-400');
+      errEl.textContent = '';
+      try {
+        const data = await api('/api/admin/customers');
+        customerRows = data.customers || [];
+        if (data.source === 'sqlite') {
+          errEl.textContent = 'This local Company page is using a catalog file, not the live site database. Customer Sign in accounts are at https://www.spectrumdisplay.com/company/inventory/customers.';
+          errEl.classList.remove('text-red-400');
+          errEl.classList.add('text-amber-300');
+          errEl.classList.remove('hidden');
+        }
+        renderCustomersTable();
+      } catch (err) {
+        errEl.textContent = err.message || 'Could not load customers.';
+        errEl.classList.remove('hidden');
+        document.getElementById('customers-table').innerHTML = '<tr><td class="py-6 px-4 text-slate-500" colspan="7">Could not load customers.</td></tr>';
+      }
+    }
+
+    async function openCustomer(id) {
+      const errEl = document.getElementById('customers-error');
+      errEl.classList.add('hidden');
+      try {
+        const data = await api('/api/admin/customers/' + encodeURIComponent(id));
+        const account = data.account || {};
+        const p = account.profile || {};
+        document.getElementById('customers-list-wrap').classList.add('hidden');
+        document.getElementById('customer-detail').classList.remove('hidden');
+        document.getElementById('cust-id').value = p.id || id;
+        document.getElementById('cust-title').textContent = p.name || p.email || 'Customer';
+        document.getElementById('cust-name').value = p.name || '';
+        document.getElementById('cust-email').value = p.email || '';
+        document.getElementById('cust-role').value = roleLabel(p.role);
+        document.getElementById('cust-phone').value = p.phone || '';
+        document.getElementById('cust-company').value = p.company || '';
+        document.getElementById('cust-msg').classList.add('hidden');
+        document.getElementById('cust-save').classList.toggle('hidden', !canEdit('inventory'));
+        document.getElementById('cust-name').disabled = !canEdit('inventory');
+        document.getElementById('cust-phone').disabled = !canEdit('inventory');
+        document.getElementById('cust-company').disabled = !canEdit('inventory');
+        const orders = account.orders || [];
+        const projects = account.projects || [];
+        document.getElementById('cust-orders').innerHTML = orders.length
+          ? orders.map(function (o) {
+            const items = (o.items || []).map(function (i) { return (i.name || '') + ' × ' + (i.qty || 1); }).join(', ');
+            return '<div class="p-4 rounded-xl border border-slate-800 bg-slate-900/50">' +
+              '<div class="flex justify-between gap-2"><span class="font-medium">' + esc(o.public_id || o.id) + '</span><span class="text-xs text-amber-300">' + esc(o.status || '') + '</span></div>' +
+              '<div class="text-xs text-slate-400 mt-1">' + esc(o.date || '') + ' · $' + Number(o.total || 0).toLocaleString() + '</div>' +
+              '<div class="text-slate-300 mt-2">' + esc(items) + '</div></div>';
+          }).join('')
+          : emptyNote('No orders on this customer.');
+        document.getElementById('cust-projects').innerHTML = projects.length
+          ? projects.map(function (pr) {
+            const title = ((pr.brand_name || '') + ' ' + (pr.series_name || 'Design')).trim();
+            const size = (pr.width || '?') + ' × ' + (pr.height || '?') + ' m';
+            const when = pr.updated_at ? new Date(pr.updated_at).toLocaleString() : '';
+            const url = pr.designer_url || '';
+            return '<div class="p-4 rounded-xl border border-slate-800 bg-slate-900/50">' +
+              '<div class="font-medium">' + esc(title) + '</div>' +
+              '<div class="text-xs text-slate-400 mt-1">' + esc(size) + (pr.pitch ? ' · ' + pr.pitch + ' mm' : '') + ' · ' + esc(when) + '</div>' +
+              (url ? '<a class="text-sky-400 text-xs mt-2 inline-block" href="' + esc(url) + '">Open in calculator →</a>' : '') +
+              '</div>';
+          }).join('')
+          : emptyNote('No saved calculator projects.');
+      } catch (err) {
+        errEl.textContent = err.message || 'Could not open this customer.';
+        errEl.classList.remove('hidden');
+      }
+    }
+
     async function loadAccounts() {
       const tb = document.getElementById('accounts-table');
       const errEl = document.getElementById('accounts-error');
@@ -1305,6 +1497,11 @@
         document.getElementById('inventory-list-wrap').classList.remove('hidden');
         document.getElementById('inventory-detail').classList.add('hidden');
         await loadInventory();
+      }
+      if (name === 'customers') {
+        document.getElementById('customers-list-wrap').classList.remove('hidden');
+        document.getElementById('customer-detail').classList.add('hidden');
+        await loadCustomers();
       }
       if (name === 'staff') await loadStaff();
       if (name === 'roles') await loadRoles();
@@ -1651,6 +1848,51 @@
         msg.textContent = err.message || 'Could not create SKU.';
         msg.className = 'text-sm mb-3 text-red-400';
       });
+    });
+    document.getElementById('customer-search').addEventListener('input', renderCustomersTable);
+    document.querySelectorAll('.cust-filter').forEach(function (btn) {
+      btn.addEventListener('click', function () {
+        customerFilter = btn.getAttribute('data-cust-filter') || 'all';
+        document.querySelectorAll('.cust-filter').forEach(function (el) {
+          const on = el.getAttribute('data-cust-filter') === customerFilter;
+          el.className = 'cust-filter px-3 py-1.5 rounded-full text-xs font-medium ' +
+            (on ? 'bg-sky-500/20 text-sky-300' : 'text-slate-400');
+        });
+        renderCustomersTable();
+      });
+    });
+    document.getElementById('customer-back').addEventListener('click', async function () {
+      document.getElementById('customer-detail').classList.add('hidden');
+      document.getElementById('customers-list-wrap').classList.remove('hidden');
+      await loadCustomers();
+    });
+    document.getElementById('customers-table').addEventListener('click', function (e) {
+      const row = e.target.closest('tr[data-id]');
+      if (row) openCustomer(row.getAttribute('data-id'));
+    });
+    document.getElementById('customer-form').addEventListener('submit', async function (e) {
+      e.preventDefault();
+      if (!canEdit('inventory')) return;
+      const id = document.getElementById('cust-id').value;
+      const msg = document.getElementById('cust-msg');
+      try {
+        await api('/api/admin/customers/' + encodeURIComponent(id), {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            name: document.getElementById('cust-name').value,
+            company: document.getElementById('cust-company').value,
+            phone: document.getElementById('cust-phone').value
+          })
+        });
+        msg.textContent = 'Customer information saved.';
+        msg.classList.remove('hidden', 'text-red-400');
+        msg.classList.add('text-sky-400');
+      } catch (err) {
+        msg.textContent = err.message || 'Could not save.';
+        msg.classList.remove('hidden', 'text-sky-400');
+        msg.classList.add('text-red-400');
+      }
     });
     document.getElementById('account-back').addEventListener('click', async function () {
       document.getElementById('account-detail').classList.add('hidden');
