@@ -78,6 +78,7 @@ body.company-app {
 .dash-sub-link {
   display: flex;
   align-items: center;
+  gap: 0.7rem;
   min-height: 2.45rem;
   padding: 0 0.85rem;
   border-radius: 0.75rem;
@@ -89,6 +90,12 @@ body.company-app {
   background: transparent;
   font-family: inherit;
   cursor: pointer;
+}
+.dash-nav-icon {
+  width: 1.15rem;
+  height: 1.15rem;
+  flex-shrink: 0;
+  display: block;
 }
 .dash-nav-link:hover,
 .dash-sub-link:hover {
@@ -103,7 +110,7 @@ body.company-app {
   display: flex;
   flex-direction: column;
   gap: 0.1rem;
-  padding: 0.1rem 0 0.35rem 0.65rem;
+  padding: 0.1rem 0 0.35rem 1.15rem;
 }
 .dash-sub.hidden { display: none; }
 .dash-sub-link {
@@ -111,21 +118,15 @@ body.company-app {
   font-size: 0.86rem;
   font-weight: 500;
   color: #9aa8c8;
-  position: relative;
 }
-.dash-sub-link::before {
-  content: "";
-  width: 0.35rem;
-  height: 0.35rem;
-  border-radius: 99px;
-  background: #5b6b90;
-  margin-right: 0.55rem;
+.dash-sub-link .dash-nav-icon {
+  width: 1.05rem;
+  height: 1.05rem;
 }
 .dash-sub-link.is-active {
   color: #fff;
   background: rgba(255, 255, 255, 0.08);
 }
-.dash-sub-link.is-active::before { background: #4da3ff; }
 
 .dash-sidebar-foot {
   margin-top: auto;
@@ -276,10 +277,13 @@ body.company-app {
 .company-main .hover\:bg-sky-400:hover {
   background: #2158e8 !important;
 }
+.company-main .cust-filter,
 .company-main .inv-filter {
   background: #eef2ff;
   color: #3b4a72;
 }
+.company-main .cust-filter.bg-sky-500\/20,
+.company-main .cust-filter.text-sky-300,
 .company-main .inv-filter.bg-sky-500\/20,
 .company-main .inv-filter.text-sky-300 {
   background: #2f6bff !important;

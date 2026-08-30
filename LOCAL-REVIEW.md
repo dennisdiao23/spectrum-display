@@ -59,6 +59,7 @@ npm start
 - Company sign in: http://localhost:3000/company
 - Company website: http://localhost:3000/company/website
 - Company inventory: http://localhost:3000/company/inventory
+- Company customers: http://localhost:3000/company/inventory/customers
 
 Leave the PowerShell window open while you look. Closing it, or Ctrl+C, stops the server.
 
