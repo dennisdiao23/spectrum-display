@@ -392,10 +392,12 @@ body.cc-drawer-open .cc-drawer { transform: none; }
 .cc-drawer-body {
   flex: 1 1 auto;
   overflow: auto;
-  padding: 0.35rem 0 1.25rem;
+  padding: 0.35rem 0 8rem;
+  scroll-padding-top: 0.75rem;
 }
 .cc-sec {
   border-bottom: 1px solid var(--dash-line);
+  scroll-margin-top: 0.75rem;
 }
 .cc-sec-btn {
   width: 100%;
@@ -414,6 +416,13 @@ body.cc-drawer-open .cc-drawer { transform: none; }
   text-align: left;
 }
 .cc-sec-btn:hover { background: #f7f9fc; }
+.cc-sec.is-flash .cc-sec-btn {
+  animation: cc-sec-flash 1.15s ease-in-out 2;
+}
+@keyframes cc-sec-flash {
+  0%, 100% { background-color: transparent; }
+  45%, 55% { background-color: #d7e4ff; }
+}
 .cc-sec-btn .cc-sec-chevron {
   color: var(--dash-muted);
   font-size: 0.8rem;

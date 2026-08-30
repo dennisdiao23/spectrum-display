@@ -1881,6 +1881,44 @@
       document.getElementById('customers-list-wrap').classList.remove('hidden');
     }
 
+    function flashCustomerSection(sec) {
+      if (!sec) return;
+      sec.classList.remove('is-flash');
+      void sec.offsetWidth;
+      sec.classList.add('is-flash');
+      clearTimeout(sec._flashTimer);
+      sec._flashTimer = setTimeout(function () {
+        sec.classList.remove('is-flash');
+      }, 2400);
+    }
+
+    function jumpCustomerSection(id) {
+      const sec = document.getElementById(id);
+      const form = document.getElementById('cc-form');
+      if (!sec || !form) return;
+      sec.classList.add('is-open');
+      const head = sec.querySelector('.cc-sec-btn') || sec;
+      const pad = 16;
+      const nextTop = Math.max(0, Math.min(
+        form.scrollTop + head.getBoundingClientRect().top - form.getBoundingClientRect().top - pad,
+        Math.max(0, form.scrollHeight - form.clientHeight)
+      ));
+      let flashed = false;
+      const flash = function () {
+        if (flashed) return;
+        flashed = true;
+        form.removeEventListener('scrollend', flash);
+        flashCustomerSection(sec);
+      };
+      if (Math.abs(form.scrollTop - nextTop) < 4) {
+        flashCustomerSection(sec);
+        return;
+      }
+      form.addEventListener('scrollend', flash);
+      form.scrollTo({ top: nextTop, behavior: 'smooth' });
+      setTimeout(flash, 800);
+    }
+
     function closeCustomerDrawer() {
       document.body.classList.remove('cc-drawer-open');
       document.getElementById('cc-drawer').setAttribute('aria-hidden', 'true');
@@ -2248,11 +2286,7 @@
     document.querySelector('.cc-drawer-tools').addEventListener('click', function (e) {
       const jump = e.target.closest('[data-jump]');
       if (!jump) return;
-      const sec = document.getElementById(jump.getAttribute('data-jump'));
-      const form = document.getElementById('cc-form');
-      if (!sec || !form) return;
-      sec.classList.add('is-open');
-      form.scrollTo({ top: Math.max(0, sec.offsetTop - 8), behavior: 'smooth' });
+      jumpCustomerSection(jump.getAttribute('data-jump'));
     });
     document.getElementById('cc-drawer-close').addEventListener('click', closeCustomerDrawer);
     document.getElementById('cc-drawer-scrim').addEventListener('click', closeCustomerDrawer);
