@@ -441,6 +441,7 @@
       <div id="settings-pane" class="hidden space-y-6">
       <div id="settings-subnav" class="flex flex-wrap gap-1 border-b border-slate-800/80 pb-3">
         <button type="button" id="tab-staff" class="settings-subtab px-3 py-1.5 rounded-full text-sm font-medium bg-sky-500/20 text-sky-300">Manage users</button>
+        <button type="button" id="tab-roles" class="settings-subtab px-3 py-1.5 rounded-full text-sm font-medium text-slate-400 hover:text-white">Role Setting</button>
       </div>
       <div id="staff-section" class="space-y-6">
         <p class="text-slate-400 text-sm">Admin logins for this page — not website Customer / Dealer / Sales accounts. Owner sees everything. Website can edit product pages and website accounts. Inventory can receive and adjust stock.</p>
@@ -456,11 +457,7 @@
           </div>
           <div>
             <label class="block text-xs text-slate-400 mb-1">Role</label>
-            <select id="staff-role" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm">
-              <option value="owner">Owner</option>
-              <option value="website">Website</option>
-              <option value="inventory">Inventory</option>
-            </select>
+            <select id="staff-role" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm"></select>
           </div>
           <div>
             <label class="block text-xs text-slate-400 mb-1" id="staff-password-label">Password</label>
@@ -488,6 +485,53 @@
           </table>
         </div>
       </div>
+
+      <div id="roles-section" class="hidden space-y-6">
+        <p class="text-slate-400 text-sm">Current Admin roles. Name a role and choose whether it can view or edit Website and Inventory. More areas can be added later. Delete a role only when no user is assigned to it.</p>
+        <form id="role-form" class="rounded-2xl border border-slate-800 bg-slate-900/50 p-5 grid sm:grid-cols-2 gap-4">
+          <input type="hidden" id="role-id">
+          <div class="sm:col-span-2">
+            <label class="block text-xs text-slate-400 mb-1">Role name</label>
+            <input id="role-name" required type="text" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm" placeholder="Warehouse">
+          </div>
+          <div>
+            <label class="block text-xs text-slate-400 mb-1">Website</label>
+            <select id="role-website" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm">
+              <option value="none">No access</option>
+              <option value="view">View</option>
+              <option value="edit">View and edit</option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-xs text-slate-400 mb-1">Inventory</label>
+            <select id="role-inventory" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm">
+              <option value="none">No access</option>
+              <option value="view">View</option>
+              <option value="edit">View and edit</option>
+            </select>
+          </div>
+          <p id="role-msg" class="sm:col-span-2 hidden text-sm"></p>
+          <div class="sm:col-span-2 flex flex-wrap gap-2">
+            <button type="submit" id="role-save" class="px-5 py-2 rounded-full bg-sky-500 hover:bg-sky-400 text-white text-sm font-semibold">Add role</button>
+            <button type="button" id="role-cancel" class="hidden px-5 py-2 rounded-full border border-slate-600 text-sm">Cancel</button>
+          </div>
+        </form>
+        <p id="role-error" class="hidden text-sm text-red-400"></p>
+        <div class="overflow-x-auto rounded-2xl border border-slate-800">
+          <table class="w-full text-sm">
+            <thead class="text-left text-slate-400 border-b border-slate-800">
+              <tr>
+                <th class="py-3 px-4 font-medium">Role</th>
+                <th class="py-3 px-4 font-medium">Website</th>
+                <th class="py-3 px-4 font-medium">Inventory</th>
+                <th class="py-3 px-4 font-medium">Users</th>
+                <th class="py-3 px-4 font-medium"></th>
+              </tr>
+            </thead>
+            <tbody id="role-table" class="text-slate-200"></tbody>
+          </table>
+        </div>
+      </div>
       </div>
     </section>
   </main>
@@ -502,26 +546,45 @@
     let editingHidden = false;
     let currentAdminUser = null;
     let editingStaffId = null;
+    let editingRoleId = null;
     let websiteSubTab = 'products';
+    let settingsSubTab = 'staff';
+    let adminRoles = [];
 
-    function adminRole() {
-      const r = String((currentAdminUser && currentAdminUser.role) || '').toLowerCase().trim();
-      if (r === 'website' || r === 'inventory') return r;
-      return 'owner';
+    function adminPerms() {
+      const p = currentAdminUser && currentAdminUser.perms;
+      if (p && typeof p === 'object') return p;
+      return { website: 'edit', inventory: 'edit', settings: true };
+    }
+    function canView(mod) {
+      if (mod === 'settings') return !!adminPerms().settings;
+      const v = adminPerms()[mod];
+      return v === 'view' || v === 'edit';
+    }
+    function canEdit(mod) {
+      if (mod === 'settings') return !!adminPerms().settings;
+      return adminPerms()[mod] === 'edit';
     }
     function canUse(section) {
-      const role = adminRole();
-      if (section === 'products' || section === 'website' || section === 'accounts') {
-        return role === 'owner' || role === 'website';
-      }
-      if (section === 'inventory') return role === 'owner' || role === 'inventory';
-      if (section === 'staff' || section === 'settings') return role === 'owner';
+      if (section === 'products' || section === 'website' || section === 'accounts') return canView('website');
+      if (section === 'inventory') return canView('inventory');
+      if (section === 'staff' || section === 'settings' || section === 'roles') return canView('settings');
       return false;
     }
     function staffRoleLabel(role) {
+      const found = adminRoles.find(function (r) { return r.slug === role; });
+      if (found) return found.name;
+      if (currentAdminUser && currentAdminUser.role === role && currentAdminUser.roleName) {
+        return currentAdminUser.roleName;
+      }
       if (role === 'website') return 'Website';
       if (role === 'inventory') return 'Inventory';
       return 'Owner';
+    }
+    function accessLabel(level) {
+      if (level === 'edit') return 'View and edit';
+      if (level === 'view') return 'View';
+      return 'No access';
     }
 
     function showError(id, msg) {
@@ -542,7 +605,7 @@
       loginPanel.classList.add('hidden');
       dashPanel.classList.remove('hidden');
       document.getElementById('logout-btn').classList.remove('hidden');
-      const roleBit = admin.role && admin.role !== 'owner' ? ' · ' + staffRoleLabel(admin.role) : '';
+      const roleBit = admin.roleName && admin.role !== 'owner' ? ' · ' + admin.roleName : '';
       document.getElementById('admin-name').textContent = (admin.name || admin.email || '') + roleBit;
       document.getElementById('tab-website').classList.toggle('hidden', !canUse('website'));
       document.getElementById('tab-inventory').classList.toggle('hidden', !canUse('inventory'));
@@ -682,6 +745,7 @@
       }
       if (canUse('staff')) {
         await loadStaff();
+        await loadRoles();
       }
     }
 
@@ -707,22 +771,29 @@
 
     function showAdminTab(name) {
       const onWebsite = name === 'products' || name === 'accounts';
-      const onSettings = name === 'staff';
+      const onSettings = name === 'staff' || name === 'roles';
       if (onWebsite) websiteSubTab = name;
+      if (onSettings) settingsSubTab = name;
       document.getElementById('website-pane').classList.toggle('hidden', !onWebsite);
       document.getElementById('settings-pane').classList.toggle('hidden', !onSettings);
       document.getElementById('products-section').classList.toggle('hidden', name !== 'products');
       document.getElementById('inventory-section').classList.toggle('hidden', name !== 'inventory');
       document.getElementById('accounts-section').classList.toggle('hidden', name !== 'accounts');
       document.getElementById('staff-section').classList.toggle('hidden', name !== 'staff');
+      document.getElementById('roles-section').classList.toggle('hidden', name !== 'roles');
       document.getElementById('tab-website').className = tabClass(onWebsite, 'admin-tab px-4 py-2', !canUse('website'));
       document.getElementById('tab-inventory').className = tabClass(name === 'inventory', 'admin-tab px-4 py-2', !canUse('inventory'));
       document.getElementById('tab-products').className = tabClass(name === 'products', 'website-subtab px-3 py-1.5', false);
       document.getElementById('tab-accounts').className = tabClass(name === 'accounts', 'website-subtab px-3 py-1.5', !canUse('accounts'));
       document.getElementById('tab-staff').className = tabClass(name === 'staff', 'settings-subtab px-3 py-1.5', !canUse('staff'));
+      document.getElementById('tab-roles').className = tabClass(name === 'roles', 'settings-subtab px-3 py-1.5', !canUse('roles'));
       document.getElementById('header-settings').className = 'px-3 py-1.5 rounded-full text-sm ' +
         (onSettings ? 'bg-sky-500/20 text-sky-300' : 'text-slate-400 hover:text-white') +
         (canUse('settings') ? '' : ' hidden');
+      const newBtn = document.getElementById('new-btn');
+      if (newBtn) newBtn.classList.toggle('hidden', !canEdit('website'));
+      const invNew = document.getElementById('inv-new-btn');
+      if (invNew) invNew.classList.toggle('hidden', !canEdit('inventory'));
     }
 
     let inventoryItems = [];
@@ -1003,7 +1074,7 @@
           '<select data-map-pitch="' + esc(pitch) + '" class="flex-1 bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm">' +
             options.join('') +
           '</select>' +
-          (canUse('inventory')
+          (canEdit('inventory')
             ? '<button type="button" data-create-pitch="' + esc(pitch) + '" class="px-3 py-2 rounded-full border border-slate-600 text-xs hover:border-sky-500">Create SKU</button>'
             : '') +
           '</div>';
@@ -1155,12 +1226,18 @@
       await loadAccounts();
     });
     document.getElementById('header-settings').addEventListener('click', async function () {
-      showAdminTab('staff');
-      await loadStaff();
+      const next = settingsSubTab === 'roles' ? 'roles' : 'staff';
+      showAdminTab(next);
+      if (next === 'roles') await loadRoles();
+      else await loadStaff();
     });
     document.getElementById('tab-staff').addEventListener('click', async function () {
       showAdminTab('staff');
       await loadStaff();
+    });
+    document.getElementById('tab-roles').addEventListener('click', async function () {
+      showAdminTab('roles');
+      await loadRoles();
     });
     function resetStaffForm() {
       editingStaffId = null;
@@ -1193,14 +1270,66 @@
       }).join('') || '<tr><td class="py-6 px-4 text-slate-500" colspan="4">No staff logins yet.</td></tr>';
     }
 
+    function fillStaffRoleSelect(selected) {
+      const sel = document.getElementById('staff-role');
+      const value = selected || sel.value || 'owner';
+      sel.innerHTML = adminRoles.map(function (r) {
+        return '<option value="' + esc(r.slug) + '"' + (r.slug === value ? ' selected' : '') + '>' + esc(r.name) + '</option>';
+      }).join('');
+    }
+
     async function loadStaff() {
       if (!canUse('staff')) return;
       showError('staff-error', '');
       try {
+        if (!adminRoles.length) await loadRoles();
+        fillStaffRoleSelect();
         const data = await api('/api/admin/staff');
         renderStaff(data.staff || []);
       } catch (err) {
         showError('staff-error', err.message);
+      }
+    }
+
+    function resetRoleForm() {
+      editingRoleId = null;
+      document.getElementById('role-form').reset();
+      document.getElementById('role-id').value = '';
+      document.getElementById('role-website').disabled = false;
+      document.getElementById('role-inventory').disabled = false;
+      document.getElementById('role-save').textContent = 'Add role';
+      document.getElementById('role-cancel').classList.add('hidden');
+      showError('role-error', '');
+      const msg = document.getElementById('role-msg');
+      msg.classList.add('hidden');
+      msg.textContent = '';
+    }
+
+    function renderRoles(list) {
+      adminRoles = list || [];
+      fillStaffRoleSelect();
+      document.getElementById('role-table').innerHTML = adminRoles.map(function (r) {
+        const canDelete = !r.locked && !r.userCount;
+        return '<tr class="border-b border-slate-800">' +
+          '<td class="py-2.5 px-4 font-medium">' + esc(r.name) + (r.locked ? ' <span class="text-xs text-slate-500">(locked)</span>' : '') + '</td>' +
+          '<td class="py-2.5 px-4 text-slate-400">' + esc(accessLabel(r.website)) + '</td>' +
+          '<td class="py-2.5 px-4 text-slate-400">' + esc(accessLabel(r.inventory)) + '</td>' +
+          '<td class="py-2.5 px-4 text-slate-400">' + esc(r.userCount) + '</td>' +
+          '<td class="py-2.5 px-4 text-right whitespace-nowrap">' +
+            '<button type="button" class="text-sky-400 text-xs mr-3" data-role-edit="' + esc(r.id) + '">Edit</button>' +
+            (canDelete ? '<button type="button" class="text-red-400 text-xs" data-role-del="' + esc(r.id) + '">Delete</button>' : '') +
+          '</td></tr>';
+      }).join('') || '<tr><td class="py-6 px-4 text-slate-500" colspan="5">No roles yet.</td></tr>';
+    }
+
+    async function loadRoles() {
+      if (!canUse('roles')) return;
+      showError('role-error', '');
+      try {
+        const data = await api('/api/admin/roles');
+        renderRoles(data.roles || []);
+      } catch (err) {
+        showError('role-error', err.message);
       }
     }
 
@@ -1218,7 +1347,7 @@
         document.getElementById('staff-name').value = person.name || '';
         document.getElementById('staff-email').value = person.email || '';
         document.getElementById('staff-email').disabled = true;
-        document.getElementById('staff-role').value = person.role || 'owner';
+        fillStaffRoleSelect(person.role || 'owner');
         document.getElementById('staff-password').value = '';
         document.getElementById('staff-password').required = false;
         document.getElementById('staff-password-label').textContent = 'New password';
@@ -1268,6 +1397,71 @@
         await loadStaff();
       } catch (err) {
         showError('staff-error', err.message);
+      }
+    });
+
+    document.getElementById('role-cancel').addEventListener('click', resetRoleForm);
+
+    document.getElementById('role-table').addEventListener('click', async function (e) {
+      const editId = e.target.getAttribute && e.target.getAttribute('data-role-edit');
+      const delId = e.target.getAttribute && e.target.getAttribute('data-role-del');
+      if (editId) {
+        const role = adminRoles.find(function (r) { return String(r.id) === String(editId); });
+        if (!role) return;
+        editingRoleId = role.id;
+        document.getElementById('role-id').value = role.id;
+        document.getElementById('role-name').value = role.name || '';
+        document.getElementById('role-website').value = role.website || 'none';
+        document.getElementById('role-inventory').value = role.inventory || 'none';
+        document.getElementById('role-website').disabled = !!role.locked;
+        document.getElementById('role-inventory').disabled = !!role.locked;
+        document.getElementById('role-save').textContent = 'Save role';
+        document.getElementById('role-cancel').classList.remove('hidden');
+        return;
+      }
+      if (delId) {
+        if (!confirm('Delete this role? Users must already be moved off it.')) return;
+        try {
+          await api('/api/admin/roles/' + delId, { method: 'DELETE' });
+          resetRoleForm();
+          await loadRoles();
+        } catch (err) {
+          showError('role-error', err.message);
+        }
+      }
+    });
+
+    document.getElementById('role-form').addEventListener('submit', async function (e) {
+      e.preventDefault();
+      showError('role-error', '');
+      const msg = document.getElementById('role-msg');
+      msg.classList.add('hidden');
+      const body = {
+        name: document.getElementById('role-name').value.trim(),
+        website: document.getElementById('role-website').value,
+        inventory: document.getElementById('role-inventory').value
+      };
+      try {
+        if (editingRoleId) {
+          await api('/api/admin/roles/' + editingRoleId, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(body)
+          });
+        } else {
+          await api('/api/admin/roles', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(body)
+          });
+        }
+        resetRoleForm();
+        msg.textContent = 'Saved.';
+        msg.classList.remove('hidden', 'text-red-400');
+        msg.classList.add('text-sky-400');
+        await loadRoles();
+      } catch (err) {
+        showError('role-error', err.message);
       }
     });
 

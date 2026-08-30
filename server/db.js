@@ -116,6 +116,7 @@ function openDb() {
   try { db.exec("ALTER TABLE products ADD COLUMN details TEXT NOT NULL DEFAULT '{}'"); } catch (e) { /* already present */ }
   try { db.exec('ALTER TABLE products ADD COLUMN hidden INTEGER NOT NULL DEFAULT 0'); } catch (e) { /* already present */ }
   try { db.exec("ALTER TABLE admins ADD COLUMN role TEXT NOT NULL DEFAULT 'owner'"); } catch (e) { /* already present */ }
+  seedAdminRoles(db);
   db.exec(`
     CREATE TABLE IF NOT EXISTS inventory_stock (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -338,6 +339,29 @@ function ensureCatalogSkus(db) {
   try { db.exec('CREATE UNIQUE INDEX IF NOT EXISTS inventory_items_sku_uidx ON inventory_items (sku)'); } catch (e) { /* ignore */ }
   console.log('Created ' + plan.length + ' inventory SKUs from website products');
   return plan.length;
+}
+
+function seedAdminRoles(db) {
+  db.exec(`
+    CREATE TABLE IF NOT EXISTS admin_roles (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      slug TEXT NOT NULL UNIQUE,
+      name TEXT NOT NULL,
+      website_access TEXT NOT NULL DEFAULT 'none',
+      inventory_access TEXT NOT NULL DEFAULT 'none',
+      locked INTEGER NOT NULL DEFAULT 0,
+      created_at TEXT NOT NULL
+    );
+  `);
+  const count = db.prepare('SELECT COUNT(*) AS n FROM admin_roles').get();
+  if (count && count.n) return;
+  const stamp = nowIso();
+  const insert = db.prepare(
+    'INSERT INTO admin_roles (slug, name, website_access, inventory_access, locked, created_at) VALUES (?, ?, ?, ?, ?, ?)'
+  );
+  insert.run('owner', 'Owner', 'edit', 'edit', 1, stamp);
+  insert.run('website', 'Website', 'edit', 'view', 0, stamp);
+  insert.run('inventory', 'Inventory', 'none', 'edit', 0, stamp);
 }
 
 function seedAdmin(db) {
@@ -574,6 +598,7 @@ function getProduct(db, id) {
 module.exports = {
   openDb,
   seedAdmin,
+  seedAdminRoles,
   seedCatalog,
   upsertMissingCatalog,
   loadSeedBrands,

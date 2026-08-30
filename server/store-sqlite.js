@@ -170,44 +170,61 @@ function createSqliteStore() {
       return db.prepare('SELECT * FROM products WHERE id = ?').get(id) || null;
     },
     async getAdminByEmail(email) {
-      return db.prepare('SELECT * FROM admins WHERE email = ?').get(email) || null;
+      return db.prepare(`
+        SELECT a.*, r.name AS role_name, r.website_access, r.inventory_access, r.locked AS role_locked
+        FROM admins a LEFT JOIN admin_roles r ON r.slug = a.role
+        WHERE a.email = ?
+      `).get(email) || null;
     },
     async createSession(token, adminId, expiresAt) {
       db.prepare('INSERT INTO sessions (token, admin_id, expires_at) VALUES (?, ?, ?)').run(token, adminId, expiresAt);
     },
     async getSession(token) {
       return db.prepare(`
-        SELECT a.id, a.email, a.name, a.role, s.expires_at
-        FROM sessions s JOIN admins a ON a.id = s.admin_id
+        SELECT a.id, a.email, a.name, a.role, s.expires_at,
+          r.name AS role_name, r.website_access, r.inventory_access, r.locked AS role_locked
+        FROM sessions s
+        JOIN admins a ON a.id = s.admin_id
+        LEFT JOIN admin_roles r ON r.slug = a.role
         WHERE s.token = ?
       `).get(token) || null;
     },
     async deleteSession(token) {
       db.prepare('DELETE FROM sessions WHERE token = ?').run(token);
     },
+    adminWithRole(id) {
+      return db.prepare(`
+        SELECT a.id, a.email, a.name, a.role, a.created_at,
+          r.name AS role_name, r.website_access, r.inventory_access, r.locked AS role_locked
+        FROM admins a LEFT JOIN admin_roles r ON r.slug = a.role
+        WHERE a.id = ?
+      `).get(id) || null;
+    },
     async listAdmins() {
       const { publicAdmin } = require('./admin-roles');
-      return db.prepare('SELECT id, email, name, role, created_at FROM admins ORDER BY name COLLATE NOCASE, email').all()
-        .map(publicAdmin);
+      return db.prepare(`
+        SELECT a.id, a.email, a.name, a.role, a.created_at,
+          r.name AS role_name, r.website_access, r.inventory_access, r.locked AS role_locked
+        FROM admins a LEFT JOIN admin_roles r ON r.slug = a.role
+        ORDER BY a.name COLLATE NOCASE, a.email
+      `).all().map(publicAdmin);
     },
     async createAdmin(input) {
-      const { normalizeRole, publicAdmin } = require('./admin-roles');
+      const { publicAdmin } = require('./admin-roles');
       const info = db.prepare(
         'INSERT INTO admins (email, name, password_hash, role, created_at) VALUES (?, ?, ?, ?, ?)'
-      ).run(input.email, input.name, input.passwordHash, normalizeRole(input.role), dbUtil.nowIso());
-      const row = db.prepare('SELECT id, email, name, role, created_at FROM admins WHERE id = ?').get(info.lastInsertRowid);
-      return publicAdmin(row);
+      ).run(input.email, input.name, input.passwordHash, input.role, dbUtil.nowIso());
+      return publicAdmin(this.adminWithRole(info.lastInsertRowid));
     },
     async updateAdmin(id, input) {
-      const { normalizeRole, publicAdmin } = require('./admin-roles');
+      const { publicAdmin } = require('./admin-roles');
       const current = db.prepare('SELECT * FROM admins WHERE id = ?').get(id);
       if (!current) return null;
       const name = input.name != null ? input.name : current.name;
-      const role = input.role != null ? normalizeRole(input.role) : current.role;
+      const role = input.role != null ? input.role : current.role;
       const hash = input.passwordHash || current.password_hash;
       db.prepare('UPDATE admins SET name = ?, role = ?, password_hash = ? WHERE id = ?').run(name, role, hash, id);
-      const row = db.prepare('SELECT id, email, name, role, created_at FROM admins WHERE id = ?').get(id);
-      return publicAdmin(row);
+      return publicAdmin(this.adminWithRole(id));
     },
     async deleteAdmin(id) {
       db.prepare('DELETE FROM sessions WHERE admin_id = ?').run(id);
@@ -215,9 +232,67 @@ function createSqliteStore() {
       return info.changes > 0;
     },
     async countAdminsByRole(role) {
-      const { normalizeRole } = require('./admin-roles');
-      const row = db.prepare('SELECT COUNT(*) AS n FROM admins WHERE role = ?').get(normalizeRole(role));
+      const row = db.prepare('SELECT COUNT(*) AS n FROM admins WHERE role = ?').get(role);
       return Number(row && row.n) || 0;
+    },
+    async listRoles() {
+      const { publicRole } = require('./admin-roles');
+      const counts = {};
+      db.prepare('SELECT role, COUNT(*) AS n FROM admins GROUP BY role').all().forEach(function (row) {
+        counts[row.role] = Number(row.n) || 0;
+      });
+      return db.prepare(
+        'SELECT * FROM admin_roles ORDER BY locked DESC, name COLLATE NOCASE'
+      ).all().map(function (row) {
+        return publicRole(row, counts[row.slug] || 0);
+      });
+    },
+    async getRole(id) {
+      const { publicRole } = require('./admin-roles');
+      const row = db.prepare('SELECT * FROM admin_roles WHERE id = ?').get(id);
+      if (!row) return null;
+      const n = db.prepare('SELECT COUNT(*) AS n FROM admins WHERE role = ?').get(row.slug);
+      return publicRole(row, n && n.n);
+    },
+    async getRoleBySlug(slug) {
+      const { publicRole } = require('./admin-roles');
+      const row = db.prepare('SELECT * FROM admin_roles WHERE slug = ?').get(slug);
+      if (!row) return null;
+      return publicRole(row, 0);
+    },
+    async createRole(input) {
+      const { accessLevel, slugifyRole, publicRole } = require('./admin-roles');
+      let slug = slugifyRole(input.name);
+      let n = 2;
+      while (db.prepare('SELECT id FROM admin_roles WHERE slug = ?').get(slug)) {
+        slug = slugifyRole(input.name) + '-' + n;
+        n += 1;
+      }
+      const info = db.prepare(
+        'INSERT INTO admin_roles (slug, name, website_access, inventory_access, locked, created_at) VALUES (?, ?, ?, ?, 0, ?)'
+      ).run(slug, input.name, accessLevel(input.website), accessLevel(input.inventory), dbUtil.nowIso());
+      return publicRole(db.prepare('SELECT * FROM admin_roles WHERE id = ?').get(info.lastInsertRowid), 0);
+    },
+    async updateRole(id, input) {
+      const { accessLevel, publicRole } = require('./admin-roles');
+      const current = db.prepare('SELECT * FROM admin_roles WHERE id = ?').get(id);
+      if (!current) return null;
+      const name = input.name != null ? input.name : current.name;
+      const website = current.locked ? 'edit' : accessLevel(input.website != null ? input.website : current.website_access);
+      const inventory = current.locked ? 'edit' : accessLevel(input.inventory != null ? input.inventory : current.inventory_access);
+      db.prepare('UPDATE admin_roles SET name = ?, website_access = ?, inventory_access = ? WHERE id = ?')
+        .run(name, website, inventory, id);
+      const n = db.prepare('SELECT COUNT(*) AS n FROM admins WHERE role = ?').get(current.slug);
+      return publicRole(db.prepare('SELECT * FROM admin_roles WHERE id = ?').get(id), n && n.n);
+    },
+    async deleteRole(id) {
+      const current = db.prepare('SELECT * FROM admin_roles WHERE id = ?').get(id);
+      if (!current) return { ok: false, reason: 'missing' };
+      if (current.locked) return { ok: false, reason: 'locked' };
+      const n = db.prepare('SELECT COUNT(*) AS n FROM admins WHERE role = ?').get(current.slug);
+      if (n && n.n) return { ok: false, reason: 'in-use', userCount: n.n };
+      db.prepare('DELETE FROM admin_roles WHERE id = ?').run(id);
+      return { ok: true };
     },
     async listAccounts() {
       return [];

@@ -10,7 +10,7 @@ const { getStore, hasSupabase } = require('./store');
 const siteAuth = require('./site-auth');
 const { sendContactEmail, sendDealerInquiryEmail, mailConfigured } = require('./mail');
 const img = require('./image');
-const { normalizeRole, publicAdmin } = require('./admin-roles');
+const { publicAdmin, hasPerm, isOwnerAdmin, accessLevel } = require('./admin-roles');
 
 const ROOT = path.join(__dirname, '..');
 const COOKIE = 'spectrum_admin';
@@ -222,22 +222,23 @@ async function main() {
     return row;
   }
 
-  function requireRoles() {
-    const allowed = Array.prototype.slice.call(arguments);
+  function requirePerm(module, need) {
     return function (req, res, next) {
-      const role = normalizeRole(req.admin && req.admin.role);
-      if (allowed.indexOf(role) === -1) {
-        return res.status(403).json({ ok: false, error: 'You do not have access to this.' });
-      }
-      next();
+      if (hasPerm(req.admin, module, need || 'edit')) return next();
+      return res.status(403).json({ ok: false, error: 'You do not have access to this.' });
     };
+  }
+
+  function requireCatalogRead(req, res, next) {
+    if (hasPerm(req.admin, 'website', 'view') || hasPerm(req.admin, 'inventory', 'view')) return next();
+    return res.status(403).json({ ok: false, error: 'You do not have access to this.' });
   }
 
   async function requireAdmin(req, res, next) {
     try {
       const admin = await currentAdmin(req);
       if (!admin) return res.status(401).json({ ok: false, error: 'Admin sign-in required.' });
-      req.admin = Object.assign({}, admin, { role: normalizeRole(admin.role) });
+      req.admin = Object.assign({}, admin, publicAdmin(admin));
       next();
     } catch (err) {
       next(err);
@@ -571,19 +572,19 @@ async function main() {
     } catch (err) { next(err); }
   });
 
-  app.get('/api/admin/brands', requireAdmin, async function (_req, res, next) {
+  app.get('/api/admin/brands', requireAdmin, requireCatalogRead, async function (_req, res, next) {
     try {
       res.json({ ok: true, brands: await store.listBrands() });
     } catch (err) { next(err); }
   });
 
-  app.get('/api/admin/products', requireAdmin, async function (_req, res, next) {
+  app.get('/api/admin/products', requireAdmin, requireCatalogRead, async function (_req, res, next) {
     try {
       res.json({ ok: true, products: await store.listProducts() });
     } catch (err) { next(err); }
   });
 
-  app.get('/api/admin/products/:id', requireAdmin, async function (req, res, next) {
+  app.get('/api/admin/products/:id', requireAdmin, requireCatalogRead, async function (req, res, next) {
     try {
       const product = await store.getProduct(req.params.id);
       if (!product) return res.status(404).json({ ok: false, error: 'Product not found.' });
@@ -596,7 +597,7 @@ async function main() {
     { name: 'gallery', maxCount: 6 }
   ]);
 
-  app.post('/api/admin/products', requireAdmin, requireRoles('owner', 'website'), productUpload, async function (req, res, next) {
+  app.post('/api/admin/products', requireAdmin, requirePerm('website', 'edit'), productUpload, async function (req, res, next) {
     try {
       const p = await productPayload(req.body, req.files, null);
       const product = await store.insertProduct(p);
@@ -611,7 +612,7 @@ async function main() {
     }
   });
 
-  app.put('/api/admin/products/:id', requireAdmin, requireRoles('owner', 'website'), productUpload, async function (req, res, next) {
+  app.put('/api/admin/products/:id', requireAdmin, requirePerm('website', 'edit'), productUpload, async function (req, res, next) {
     try {
       const existing = await store.getRawProduct(req.params.id);
       if (!existing) return res.status(404).json({ ok: false, error: 'Product not found.' });
@@ -623,7 +624,7 @@ async function main() {
     }
   });
 
-  app.delete('/api/admin/products/:id', requireAdmin, requireRoles('owner', 'website'), async function (req, res, next) {
+  app.delete('/api/admin/products/:id', requireAdmin, requirePerm('website', 'edit'), async function (req, res, next) {
     try {
       const ok = await store.deleteProduct(req.params.id);
       if (!ok) return res.status(404).json({ ok: false, error: 'Product not found.' });
@@ -631,7 +632,7 @@ async function main() {
     } catch (err) { next(err); }
   });
 
-  app.put('/api/admin/products/:id/visibility', requireAdmin, requireRoles('owner', 'website'), async function (req, res, next) {
+  app.put('/api/admin/products/:id/visibility', requireAdmin, requirePerm('website', 'edit'), async function (req, res, next) {
     try {
       const raw = req.body && req.body.hidden;
       const hidden = raw === true || raw === 'true' || raw === 1 || raw === '1';
@@ -641,7 +642,7 @@ async function main() {
     } catch (err) { next(err); }
   });
 
-  app.get('/api/admin/accounts', requireAdmin, requireRoles('owner', 'website'), async function (_req, res, next) {
+  app.get('/api/admin/accounts', requireAdmin, requirePerm('website', 'view'), async function (_req, res, next) {
     try {
       res.json({
         ok: true,
@@ -651,7 +652,7 @@ async function main() {
     } catch (err) { next(err); }
   });
 
-  app.get('/api/admin/accounts/:id', requireAdmin, requireRoles('owner', 'website'), async function (req, res, next) {
+  app.get('/api/admin/accounts/:id', requireAdmin, requirePerm('website', 'view'), async function (req, res, next) {
     try {
       const account = await store.getAccount(req.params.id);
       if (!account) return res.status(404).json({ ok: false, error: 'Account not found.' });
@@ -659,7 +660,7 @@ async function main() {
     } catch (err) { next(err); }
   });
 
-  app.put('/api/admin/accounts/:id', requireAdmin, requireRoles('owner', 'website'), async function (req, res, next) {
+  app.put('/api/admin/accounts/:id', requireAdmin, requirePerm('website', 'edit'), async function (req, res, next) {
     try {
       const body = req.body || {};
       const role = String(body.role || '').trim();
@@ -681,13 +682,13 @@ async function main() {
     } catch (err) { next(err); }
   });
 
-  app.get('/api/admin/price-tiers', requireAdmin, requireRoles('owner', 'website'), async function (_req, res, next) {
+  app.get('/api/admin/price-tiers', requireAdmin, requirePerm('website', 'view'), async function (_req, res, next) {
     try {
       res.json({ ok: true, tiers: await store.listPriceTiers() });
     } catch (err) { next(err); }
   });
 
-  app.put('/api/admin/price-tiers', requireAdmin, requireRoles('owner', 'website'), async function (req, res, next) {
+  app.put('/api/admin/price-tiers', requireAdmin, requirePerm('website', 'edit'), async function (req, res, next) {
     try {
       const body = req.body || {};
       const tiers = await store.savePriceTiers(body.tiers || body);
@@ -704,20 +705,20 @@ async function main() {
     return body;
   }
 
-  app.get('/api/admin/inventory', requireAdmin, async function (_req, res, next) {
+  app.get('/api/admin/inventory', requireAdmin, requireCatalogRead, async function (_req, res, next) {
     try {
       res.json({ ok: true, items: await store.listInventory() });
     } catch (err) { next(err); }
   });
 
-  app.post('/api/admin/inventory', requireAdmin, requireRoles('owner', 'inventory'), inventoryUpload, async function (req, res, next) {
+  app.post('/api/admin/inventory', requireAdmin, requirePerm('inventory', 'edit'), inventoryUpload, async function (req, res, next) {
     try {
       const data = await store.createInventoryItem(await inventoryPayload(req));
       res.json({ ok: true, item: data.item, moves: data.moves || [] });
     } catch (err) { next(err); }
   });
 
-  app.get('/api/admin/inventory/:id', requireAdmin, async function (req, res, next) {
+  app.get('/api/admin/inventory/:id', requireAdmin, requireCatalogRead, async function (req, res, next) {
     try {
       const data = await store.getInventoryItem(req.params.id);
       if (!data) return res.status(404).json({ ok: false, error: 'Inventory item not found.' });
@@ -725,7 +726,7 @@ async function main() {
     } catch (err) { next(err); }
   });
 
-  app.put('/api/admin/inventory/:id', requireAdmin, requireRoles('owner', 'inventory'), inventoryUpload, async function (req, res, next) {
+  app.put('/api/admin/inventory/:id', requireAdmin, requirePerm('inventory', 'edit'), inventoryUpload, async function (req, res, next) {
     try {
       const data = await store.updateInventoryItem(req.params.id, await inventoryPayload(req));
       if (!data) return res.status(404).json({ ok: false, error: 'Inventory item not found.' });
@@ -733,7 +734,7 @@ async function main() {
     } catch (err) { next(err); }
   });
 
-  app.delete('/api/admin/inventory/:id', requireAdmin, requireRoles('owner', 'inventory'), async function (req, res, next) {
+  app.delete('/api/admin/inventory/:id', requireAdmin, requirePerm('inventory', 'edit'), async function (req, res, next) {
     try {
       const ok = await store.deleteInventoryItem(req.params.id);
       if (!ok) return res.status(404).json({ ok: false, error: 'Inventory item not found.' });
@@ -741,7 +742,7 @@ async function main() {
     } catch (err) { next(err); }
   });
 
-  app.post('/api/admin/inventory/:id/adjust', requireAdmin, requireRoles('owner', 'inventory'), async function (req, res, next) {
+  app.post('/api/admin/inventory/:id/adjust', requireAdmin, requirePerm('inventory', 'edit'), async function (req, res, next) {
     try {
       const data = await store.adjustInventory(req.params.id, req.body || {}, req.admin && req.admin.email);
       if (!data) return res.status(404).json({ ok: false, error: 'Inventory item not found.' });
@@ -749,7 +750,7 @@ async function main() {
     } catch (err) { next(err); }
   });
 
-  app.put('/api/admin/products/:id/maps', requireAdmin, requireRoles('owner', 'website'), async function (req, res, next) {
+  app.put('/api/admin/products/:id/maps', requireAdmin, requirePerm('website', 'edit'), async function (req, res, next) {
     try {
       const product = await store.setProductInventoryMaps(req.params.id, (req.body && req.body.maps) || []);
       if (!product) return res.status(404).json({ ok: false, error: 'Product not found.' });
@@ -761,13 +762,14 @@ async function main() {
     const requirePassword = !!(opts && opts.requirePassword);
     const email = String((body && body.email) || '').trim().toLowerCase();
     const name = String((body && body.name) || '').trim();
-    const role = normalizeRole(body && body.role);
+    const role = String((body && body.role) || '').trim().toLowerCase();
     const password = String((body && body.password) || '');
     if (requirePassword || password) {
       if (password.length < 8) throw new Error('Password must be at least 8 characters.');
     }
     if (requirePassword && !email) throw new Error('Email is required.');
     if (requirePassword && !name) throw new Error('Name is required.');
+    if (!role) throw new Error('Choose a role.');
     return {
       email: email,
       name: name,
@@ -776,15 +778,28 @@ async function main() {
     };
   }
 
-  app.get('/api/admin/staff', requireAdmin, requireRoles('owner'), async function (_req, res, next) {
+  function rolePayload(body) {
+    const name = String((body && body.name) || '').trim();
+    if (!name) throw new Error('Name the role.');
+    return {
+      name: name,
+      website: accessLevel(body && body.website),
+      inventory: accessLevel(body && body.inventory)
+    };
+  }
+
+  app.get('/api/admin/staff', requireAdmin, requirePerm('settings', 'edit'), async function (_req, res, next) {
     try {
       res.json({ ok: true, staff: await store.listAdmins() });
     } catch (err) { next(err); }
   });
 
-  app.post('/api/admin/staff', requireAdmin, requireRoles('owner'), async function (req, res, next) {
+  app.post('/api/admin/staff', requireAdmin, requirePerm('settings', 'edit'), async function (req, res, next) {
     try {
       const input = staffPayload(req.body || {}, { requirePassword: true });
+      if (!(await store.getRoleBySlug(input.role))) {
+        return res.status(400).json({ ok: false, error: 'Choose a role.' });
+      }
       const staff = await store.createAdmin(input);
       res.json({ ok: true, staff: staff });
     } catch (err) {
@@ -796,14 +811,17 @@ async function main() {
     }
   });
 
-  app.put('/api/admin/staff/:id', requireAdmin, requireRoles('owner'), async function (req, res, next) {
+  app.put('/api/admin/staff/:id', requireAdmin, requirePerm('settings', 'edit'), async function (req, res, next) {
     try {
       const id = req.params.id;
       const input = staffPayload(req.body || {}, { requirePassword: false });
+      if (!(await store.getRoleBySlug(input.role))) {
+        return res.status(400).json({ ok: false, error: 'Choose a role.' });
+      }
       const all = await store.listAdmins();
       const current = all.find(function (row) { return String(row.id) === String(id); });
-      if (input.role !== 'owner' && current && current.role === 'owner') {
-        const owners = all.filter(function (row) { return row.role === 'owner'; }).length;
+      if (!isOwnerAdmin({ role: input.role, perms: { settings: input.role === 'owner' } }) && current && isOwnerAdmin(current)) {
+        const owners = all.filter(isOwnerAdmin).length;
         if (owners <= 1) return res.status(400).json({ ok: false, error: 'Keep at least one Owner login.' });
       }
       const patch = { name: input.name || undefined, role: input.role };
@@ -814,7 +832,7 @@ async function main() {
     } catch (err) { next(err); }
   });
 
-  app.delete('/api/admin/staff/:id', requireAdmin, requireRoles('owner'), async function (req, res, next) {
+  app.delete('/api/admin/staff/:id', requireAdmin, requirePerm('settings', 'edit'), async function (req, res, next) {
     try {
       const id = req.params.id;
       if (String(req.admin.id) === String(id)) {
@@ -822,12 +840,54 @@ async function main() {
       }
       const all = await store.listAdmins();
       const current = all.find(function (row) { return String(row.id) === String(id); });
-      if (current && current.role === 'owner') {
-        const owners = all.filter(function (row) { return row.role === 'owner'; }).length;
+      if (current && isOwnerAdmin(current)) {
+        const owners = all.filter(isOwnerAdmin).length;
         if (owners <= 1) return res.status(400).json({ ok: false, error: 'Keep at least one Owner login.' });
       }
       const ok = await store.deleteAdmin(id);
       if (!ok) return res.status(404).json({ ok: false, error: 'Staff login not found.' });
+      res.json({ ok: true });
+    } catch (err) { next(err); }
+  });
+
+  app.get('/api/admin/roles', requireAdmin, requirePerm('settings', 'edit'), async function (_req, res, next) {
+    try {
+      res.json({ ok: true, roles: await store.listRoles() });
+    } catch (err) { next(err); }
+  });
+
+  app.post('/api/admin/roles', requireAdmin, requirePerm('settings', 'edit'), async function (req, res, next) {
+    try {
+      const role = await store.createRole(rolePayload(req.body || {}));
+      res.json({ ok: true, role: role });
+    } catch (err) {
+      res.status(400).json({ ok: false, error: err.message || 'Could not add role.' });
+    }
+  });
+
+  app.put('/api/admin/roles/:id', requireAdmin, requirePerm('settings', 'edit'), async function (req, res, next) {
+    try {
+      const role = await store.updateRole(req.params.id, rolePayload(req.body || {}));
+      if (!role) return res.status(404).json({ ok: false, error: 'Role not found.' });
+      res.json({ ok: true, role: role });
+    } catch (err) {
+      res.status(400).json({ ok: false, error: err.message || 'Could not save role.' });
+    }
+  });
+
+  app.delete('/api/admin/roles/:id', requireAdmin, requirePerm('settings', 'edit'), async function (req, res, next) {
+    try {
+      const result = await store.deleteRole(req.params.id);
+      if (!result.ok && result.reason === 'missing') {
+        return res.status(404).json({ ok: false, error: 'Role not found.' });
+      }
+      if (!result.ok && result.reason === 'locked') {
+        return res.status(400).json({ ok: false, error: 'Owner cannot be deleted.' });
+      }
+      if (!result.ok && result.reason === 'in-use') {
+        return res.status(400).json({ ok: false, error: 'Move users off this role before deleting it.' });
+      }
+      if (!result.ok) return res.status(400).json({ ok: false, error: 'Could not delete role.' });
       res.json({ ok: true });
     } catch (err) { next(err); }
   });
