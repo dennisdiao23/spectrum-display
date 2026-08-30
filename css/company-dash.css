@@ -277,10 +277,13 @@ body.company-app {
 .company-main .hover\:bg-sky-400:hover {
   background: #2158e8 !important;
 }
+.company-main .cust-filter,
 .company-main .inv-filter {
   background: #eef2ff;
   color: #3b4a72;
 }
+.company-main .cust-filter.bg-sky-500\/20,
+.company-main .cust-filter.text-sky-300,
 .company-main .inv-filter.bg-sky-500\/20,
 .company-main .inv-filter.text-sky-300 {
   background: #2f6bff !important;

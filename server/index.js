@@ -100,6 +100,7 @@ async function main() {
     '/company/website',
     '/company/website/accounts',
     '/company/inventory',
+    '/company/inventory/customers',
     '/company/settings',
     '/company/settings/roles'
   ];
@@ -662,6 +663,37 @@ async function main() {
     } catch (err) { next(err); }
   });
 
+  app.get('/api/admin/customers', requireAdmin, requirePerm('inventory', 'view'), async function (_req, res, next) {
+    try {
+      res.json({
+        ok: true,
+        customers: await store.listAccounts(),
+        source: hasSupabase() ? 'supabase' : 'sqlite'
+      });
+    } catch (err) { next(err); }
+  });
+
+  app.get('/api/admin/customers/:id', requireAdmin, requirePerm('inventory', 'view'), async function (req, res, next) {
+    try {
+      const account = await store.getAccount(req.params.id);
+      if (!account) return res.status(404).json({ ok: false, error: 'Customer not found.' });
+      res.json({ ok: true, account: account });
+    } catch (err) { next(err); }
+  });
+
+  app.put('/api/admin/customers/:id', requireAdmin, requirePerm('inventory', 'edit'), async function (req, res, next) {
+    try {
+      const body = req.body || {};
+      const updated = await store.updateAccount(req.params.id, {
+        name: body.name,
+        company: body.company,
+        phone: body.phone
+      });
+      if (!updated) return res.status(404).json({ ok: false, error: 'Customer not found.' });
+      res.json({ ok: true, profile: updated });
+    } catch (err) { next(err); }
+  });
+
   app.get('/api/admin/accounts', requireAdmin, requirePerm('website', 'view'), async function (_req, res, next) {
     try {
       res.json({
@@ -918,9 +950,10 @@ async function main() {
     res.status(400).json({ ok: false, error: err.message || 'Upload failed.' });
   });
 
-  app.listen(PORT, '0.0.0.0', function () {
+  app.listen(PORT, function () {
     console.log('Spectrum Display running on port ' + PORT);
-    console.log('Company: /company  /company/website  /company/inventory');
+    console.log('Open http://127.0.0.1:' + PORT + '/company');
+    console.log('Company: /company  /company/website  /company/inventory  /company/inventory/customers');
   });
 }
 
