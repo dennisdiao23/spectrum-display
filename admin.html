@@ -560,7 +560,7 @@
           '&series=' + encodeURIComponent(p.id || '');
         const vis = p.hidden
           ? '<span class="text-amber-400">Hidden</span>'
-          : '<a href="' + esc(pageHref) + '" target="_blank" rel="noopener" class="text-emerald-400 hover:underline" data-open-site>Shown</a>';
+          : '<a href="' + esc(pageHref) + '" target="_blank" rel="noopener" class="text-emerald-400 hover:underline py-1" data-open-site>Shown</a>';
         return (
           '<tr class="border-b border-slate-800 hover:bg-slate-900/80 cursor-pointer" data-id="' + esc(p.dbId) + '">' +
             '<td class="py-2.5 px-4">' + img + '</td>' +
@@ -569,7 +569,7 @@
             '<td class="py-2.5 px-4 text-slate-400">' + esc(p.type || '') + '</td>' +
             '<td class="py-2.5 px-4 text-slate-400">' + esc(p.pitchLabel || '') + '</td>' +
             '<td class="py-2.5 px-4">' + esc(p.priceLabel || '') + '</td>' +
-            '<td class="py-2.5 px-4">' + vis + '</td>' +
+            '<td class="py-2.5 px-4" data-website-cell>' + vis + '</td>' +
           '</tr>'
         );
       }).join('') || '<tr><td class="py-6 px-4 text-slate-500" colspan="7">No products yet.</td></tr>';
@@ -1244,7 +1244,13 @@
     document.getElementById('product-back').addEventListener('click', closeProductForm);
 
     table.addEventListener('click', async function (e) {
-      if (e.target.closest('a[data-open-site]')) return;
+      const siteLink = e.target.closest('[data-website-cell]') && e.target.closest('tr').querySelector('a[data-open-site]');
+      if (siteLink) {
+        e.preventDefault();
+        e.stopPropagation();
+        window.open(siteLink.href, '_blank', 'noopener,noreferrer');
+        return;
+      }
       const row = e.target.closest('tr[data-id]');
       if (!row) return;
       await loadInventory();
