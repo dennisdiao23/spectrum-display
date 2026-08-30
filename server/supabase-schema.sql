@@ -433,3 +433,87 @@ for all using (public.is_spectrum_admin()) with check (public.is_spectrum_admin(
 grant all on public.inventory_items to service_role;
 grant all on public.inventory_item_moves to service_role;
 grant all on public.product_inventory_map to service_role;
+
+create table if not exists public.company_customers (
+  id bigint generated always as identity primary key,
+  company_name text not null default '',
+  contact_first text not null default '',
+  contact_last text not null default '',
+  email text not null default '',
+  phone text not null default '',
+  mobile text not null default '',
+  website text not null default '',
+  tax_id text not null default '',
+  payment_terms text not null default 'Net 30',
+  bill_street text not null default '',
+  bill_city text not null default '',
+  bill_state text not null default '',
+  bill_zip text not null default '',
+  bill_country text not null default 'United States',
+  ship_same boolean not null default true,
+  ship_street text not null default '',
+  ship_city text not null default '',
+  ship_state text not null default '',
+  ship_zip text not null default '',
+  ship_country text not null default '',
+  notes text not null default '',
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now()
+);
+create index if not exists company_customers_name_idx on public.company_customers (company_name, contact_last);
+alter table public.company_customers enable row level security;
+drop policy if exists company_customers_admin_all on public.company_customers;
+create policy company_customers_admin_all on public.company_customers
+for all using (public.is_spectrum_admin()) with check (public.is_spectrum_admin());
+grant all on public.company_customers to service_role;
+
+create table if not exists public.company_sales_docs (
+  id bigint generated always as identity primary key,
+  type text not null,
+  number text not null unique,
+  customer_id bigint references public.company_customers(id) on delete set null,
+  customer_name text not null default '',
+  customer_email text not null default '',
+  po_number text not null default '',
+  issue_date text not null default '',
+  due_date text not null default '',
+  payment_terms text not null default 'Net 30',
+  status text not null default 'draft',
+  tax_rate numeric not null default 0,
+  discount numeric not null default 0,
+  notes text not null default '',
+  bill_street text not null default '',
+  bill_city text not null default '',
+  bill_state text not null default '',
+  bill_zip text not null default '',
+  bill_country text not null default 'United States',
+  ship_street text not null default '',
+  ship_city text not null default '',
+  ship_state text not null default '',
+  ship_zip text not null default '',
+  ship_country text not null default 'United States',
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now()
+);
+create index if not exists company_sales_docs_type_idx on public.company_sales_docs (type, issue_date);
+alter table public.company_sales_docs enable row level security;
+drop policy if exists company_sales_docs_admin_all on public.company_sales_docs;
+create policy company_sales_docs_admin_all on public.company_sales_docs
+for all using (public.is_spectrum_admin()) with check (public.is_spectrum_admin());
+grant all on public.company_sales_docs to service_role;
+
+create table if not exists public.company_sales_lines (
+  id bigint generated always as identity primary key,
+  doc_id bigint not null references public.company_sales_docs(id) on delete cascade,
+  sku text not null default '',
+  description text not null default '',
+  qty numeric not null default 0,
+  unit_price numeric not null default 0,
+  sort_order integer not null default 0
+);
+create index if not exists company_sales_lines_doc_idx on public.company_sales_lines (doc_id, sort_order);
+alter table public.company_sales_lines enable row level security;
+drop policy if exists company_sales_lines_admin_all on public.company_sales_lines;
+create policy company_sales_lines_admin_all on public.company_sales_lines
+for all using (public.is_spectrum_admin()) with check (public.is_spectrum_admin());
+grant all on public.company_sales_lines to service_role;

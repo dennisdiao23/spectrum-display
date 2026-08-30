@@ -117,6 +117,8 @@ function openDb() {
   try { db.exec('ALTER TABLE products ADD COLUMN hidden INTEGER NOT NULL DEFAULT 0'); } catch (e) { /* already present */ }
   try { db.exec("ALTER TABLE admins ADD COLUMN role TEXT NOT NULL DEFAULT 'owner'"); } catch (e) { /* already present */ }
   seedAdminRoles(db);
+  ensureCompanyCustomers(db);
+  ensureCompanySales(db);
   db.exec(`
     CREATE TABLE IF NOT EXISTS inventory_stock (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -362,6 +364,83 @@ function seedAdminRoles(db) {
   insert.run('owner', 'Owner', 'edit', 'edit', 1, stamp);
   insert.run('website', 'Website', 'edit', 'view', 0, stamp);
   insert.run('inventory', 'Inventory', 'none', 'edit', 0, stamp);
+}
+
+function ensureCompanyCustomers(db) {
+  db.exec(`
+    CREATE TABLE IF NOT EXISTS company_customers (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      company_name TEXT NOT NULL DEFAULT '',
+      contact_first TEXT NOT NULL DEFAULT '',
+      contact_last TEXT NOT NULL DEFAULT '',
+      email TEXT NOT NULL DEFAULT '',
+      phone TEXT NOT NULL DEFAULT '',
+      mobile TEXT NOT NULL DEFAULT '',
+      website TEXT NOT NULL DEFAULT '',
+      tax_id TEXT NOT NULL DEFAULT '',
+      payment_terms TEXT NOT NULL DEFAULT 'Net 30',
+      bill_street TEXT NOT NULL DEFAULT '',
+      bill_city TEXT NOT NULL DEFAULT '',
+      bill_state TEXT NOT NULL DEFAULT '',
+      bill_zip TEXT NOT NULL DEFAULT '',
+      bill_country TEXT NOT NULL DEFAULT 'United States',
+      ship_same INTEGER NOT NULL DEFAULT 1,
+      ship_street TEXT NOT NULL DEFAULT '',
+      ship_city TEXT NOT NULL DEFAULT '',
+      ship_state TEXT NOT NULL DEFAULT '',
+      ship_zip TEXT NOT NULL DEFAULT '',
+      ship_country TEXT NOT NULL DEFAULT '',
+      notes TEXT NOT NULL DEFAULT '',
+      created_at TEXT NOT NULL,
+      updated_at TEXT NOT NULL
+    );
+    CREATE INDEX IF NOT EXISTS company_customers_name_idx ON company_customers (company_name, contact_last);
+  `);
+}
+
+function ensureCompanySales(db) {
+  db.exec(`
+    CREATE TABLE IF NOT EXISTS company_sales_docs (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      type TEXT NOT NULL,
+      number TEXT NOT NULL UNIQUE,
+      customer_id INTEGER,
+      customer_name TEXT NOT NULL DEFAULT '',
+      customer_email TEXT NOT NULL DEFAULT '',
+      po_number TEXT NOT NULL DEFAULT '',
+      issue_date TEXT NOT NULL DEFAULT '',
+      due_date TEXT NOT NULL DEFAULT '',
+      payment_terms TEXT NOT NULL DEFAULT 'Net 30',
+      status TEXT NOT NULL DEFAULT 'draft',
+      tax_rate REAL NOT NULL DEFAULT 0,
+      discount REAL NOT NULL DEFAULT 0,
+      notes TEXT NOT NULL DEFAULT '',
+      bill_street TEXT NOT NULL DEFAULT '',
+      bill_city TEXT NOT NULL DEFAULT '',
+      bill_state TEXT NOT NULL DEFAULT '',
+      bill_zip TEXT NOT NULL DEFAULT '',
+      bill_country TEXT NOT NULL DEFAULT 'United States',
+      ship_street TEXT NOT NULL DEFAULT '',
+      ship_city TEXT NOT NULL DEFAULT '',
+      ship_state TEXT NOT NULL DEFAULT '',
+      ship_zip TEXT NOT NULL DEFAULT '',
+      ship_country TEXT NOT NULL DEFAULT 'United States',
+      created_at TEXT NOT NULL,
+      updated_at TEXT NOT NULL
+    );
+    CREATE INDEX IF NOT EXISTS company_sales_docs_type_idx ON company_sales_docs (type, issue_date);
+    CREATE TABLE IF NOT EXISTS company_sales_lines (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      doc_id INTEGER NOT NULL,
+      sku TEXT NOT NULL DEFAULT '',
+      description TEXT NOT NULL DEFAULT '',
+      qty REAL NOT NULL DEFAULT 0,
+      unit_price REAL NOT NULL DEFAULT 0,
+      sort_order INTEGER NOT NULL DEFAULT 0,
+      FOREIGN KEY (doc_id) REFERENCES company_sales_docs(id) ON DELETE CASCADE
+    );
+    CREATE INDEX IF NOT EXISTS company_sales_lines_doc_idx ON company_sales_lines (doc_id, sort_order);
+  `);
 }
 
 function seedAdmin(db) {
@@ -615,5 +694,7 @@ module.exports = {
   mergeProductDetails,
   nowIso,
   parseJson,
-  ensureCatalogSkus
+  ensureCatalogSkus,
+  ensureCompanyCustomers,
+  ensureCompanySales
 };

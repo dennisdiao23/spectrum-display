@@ -1017,6 +1017,175 @@ function createSupabaseStore() {
       }
       return this.getProduct(productId);
     },
+    async listCompanyCustomers() {
+      const cc = require('./company-customers');
+      const { data, error } = await supabase
+        .from('company_customers')
+        .select('*')
+        .order('company_name', { ascending: true })
+        .order('contact_last', { ascending: true });
+      throwIf(error, 'Could not list customers.');
+      return (data || []).map(cc.formatCustomer);
+    },
+    async getCompanyCustomer(id) {
+      const cc = require('./company-customers');
+      const { data, error } = await supabase.from('company_customers').select('*').eq('id', id).maybeSingle();
+      throwIf(error, 'Could not load customer.');
+      return cc.formatCustomer(data);
+    },
+    async createCompanyCustomer(payload) {
+      const cc = require('./company-customers');
+      const input = cc.normalizeCustomer(payload);
+      const fields = cc.dbFields(input);
+      fields.ship_same = !!input.shipSame;
+      const stamp = new Date().toISOString();
+      fields.created_at = stamp;
+      fields.updated_at = stamp;
+      const { data, error } = await supabase.from('company_customers').insert(fields).select('*').single();
+      throwIf(error, 'Could not add customer.');
+      return cc.formatCustomer(data);
+    },
+    async updateCompanyCustomer(id, payload) {
+      const cc = require('./company-customers');
+      const input = cc.normalizeCustomer(payload);
+      const fields = cc.dbFields(input);
+      fields.ship_same = !!input.shipSame;
+      fields.updated_at = new Date().toISOString();
+      const { data, error } = await supabase.from('company_customers').update(fields).eq('id', id).select('*').maybeSingle();
+      throwIf(error, 'Could not save customer.');
+      return cc.formatCustomer(data);
+    },
+    async deleteCompanyCustomer(id) {
+      const { data, error } = await supabase.from('company_customers').delete().eq('id', id).select('id');
+      throwIf(error, 'Could not delete customer.');
+      return !!(data && data.length);
+    },
+    async listSalesDocs(type) {
+      const sales = require('./company-sales');
+      let q = supabase.from('company_sales_docs').select('*').order('id', { ascending: false });
+      if (type) q = q.eq('type', type);
+      const { data, error } = await q;
+      throwIf(error, 'Could not list sales documents.');
+      const ids = (data || []).map(function (row) { return row.id; });
+      let linesByDoc = {};
+      if (ids.length) {
+        const { data: lines, error: lErr } = await supabase
+          .from('company_sales_lines')
+          .select('*')
+          .in('doc_id', ids)
+          .order('sort_order', { ascending: true });
+        throwIf(lErr, 'Could not list sales lines.');
+        (lines || []).forEach(function (line) {
+          const key = String(line.doc_id);
+          if (!linesByDoc[key]) linesByDoc[key] = [];
+          linesByDoc[key].push(line);
+        });
+      }
+      return (data || []).map(function (row) {
+        return sales.formatDoc(row, linesByDoc[String(row.id)] || []);
+      });
+    },
+    async getSalesDoc(id) {
+      const sales = require('./company-sales');
+      const { data, error } = await supabase.from('company_sales_docs').select('*').eq('id', id).maybeSingle();
+      throwIf(error, 'Could not load sales document.');
+      if (!data) return null;
+      const { data: lines, error: lErr } = await supabase
+        .from('company_sales_lines')
+        .select('*')
+        .eq('doc_id', id)
+        .order('sort_order', { ascending: true });
+      throwIf(lErr, 'Could not load sales lines.');
+      return sales.formatDoc(data, lines || []);
+    },
+    async createSalesDoc(payload) {
+      const sales = require('./company-sales');
+      const input = sales.normalizeDoc(payload);
+      if (input.customerId) {
+        const customer = await this.getCompanyCustomer(input.customerId);
+        if (customer) {
+          const snap = sales.snapshotFromCustomer(customer);
+          if (!input.customerName) input.customerName = snap.customerName;
+          if (!input.customerEmail) input.customerEmail = snap.customerEmail;
+          if (!input.paymentTerms) input.paymentTerms = snap.paymentTerms;
+          ['billStreet', 'billCity', 'billState', 'billZip', 'billCountry',
+            'shipStreet', 'shipCity', 'shipState', 'shipZip', 'shipCountry'].forEach(function (key) {
+            if (!input[key] && snap[key]) input[key] = snap[key];
+          });
+        }
+      }
+      const existingRows = await supabase.from('company_sales_docs').select('number').eq('type', input.type);
+      throwIf(existingRows.error, 'Could not assign document number.');
+      if (!input.number) {
+        input.number = sales.nextDocNumber((existingRows.data || []).map(function (r) { return r.number; }), input.type);
+      }
+      const fields = sales.dbDocFields(input);
+      const stamp = new Date().toISOString();
+      fields.created_at = stamp;
+      fields.updated_at = stamp;
+      const { data, error } = await supabase.from('company_sales_docs').insert(fields).select('*').single();
+      throwIf(error, 'Could not create sales document.');
+      if (input.lines.length) {
+        const { error: lErr } = await supabase.from('company_sales_lines').insert(input.lines.map(function (line, i) {
+          return {
+            doc_id: data.id,
+            sku: line.sku,
+            description: line.description,
+            qty: line.qty,
+            unit_price: line.unitPrice,
+            sort_order: i
+          };
+        }));
+        throwIf(lErr, 'Could not save line items.');
+      }
+      return this.getSalesDoc(data.id);
+    },
+    async updateSalesDoc(id, payload) {
+      const sales = require('./company-sales');
+      const current = await this.getSalesDoc(id);
+      if (!current) return null;
+      const input = sales.normalizeDoc(Object.assign({}, payload, {
+        type: payload.type || current.type,
+        number: payload.number || current.number
+      }));
+      const fields = sales.dbDocFields(input);
+      fields.updated_at = new Date().toISOString();
+      const { error } = await supabase.from('company_sales_docs').update(fields).eq('id', id);
+      throwIf(error, 'Could not save sales document.');
+      const { error: dErr } = await supabase.from('company_sales_lines').delete().eq('doc_id', id);
+      throwIf(dErr, 'Could not replace line items.');
+      if (input.lines.length) {
+        const { error: lErr } = await supabase.from('company_sales_lines').insert(input.lines.map(function (line, i) {
+          return {
+            doc_id: Number(id),
+            sku: line.sku,
+            description: line.description,
+            qty: line.qty,
+            unit_price: line.unitPrice,
+            sort_order: i
+          };
+        }));
+        throwIf(lErr, 'Could not save line items.');
+      }
+      return this.getSalesDoc(id);
+    },
+    async deleteSalesDoc(id) {
+      await supabase.from('company_sales_lines').delete().eq('doc_id', id);
+      const { data, error } = await supabase.from('company_sales_docs').delete().eq('id', id).select('id');
+      throwIf(error, 'Could not delete sales document.');
+      return !!(data && data.length);
+    },
+    async convertSalesDoc(id, type) {
+      const current = await this.getSalesDoc(id);
+      if (!current) return null;
+      const next = Object.assign({}, current, {
+        type: type,
+        number: '',
+        status: 'draft',
+        id: undefined
+      });
+      return this.createSalesDoc(next);
+    },
     async saveUpload(file) {
       const prepared = await img.prepareUpload(file);
       const name = Date.now().toString(36) + '-' + crypto.randomBytes(4).toString('hex') + prepared.ext;

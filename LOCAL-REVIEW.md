@@ -68,6 +68,10 @@ The PowerShell window should say `Listening on 0.0.0.0:3000` and `Company: http:
 - Designer: http://localhost:3000/led-wall-calculator
 - Company website: http://localhost:3000/company/website
 - Company inventory: http://localhost:3000/company/inventory
+- Company customers: http://localhost:3000/company/customers
+- Sales quotes: http://localhost:3000/company/sales/quotes
+- Sales orders: http://localhost:3000/company/sales/orders
+- Invoices: http://localhost:3000/company/sales/invoices
 
 7. If it looks old
 
