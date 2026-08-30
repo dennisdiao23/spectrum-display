@@ -1175,7 +1175,7 @@
     </div>
   </aside>
 
-  <nav class="dash-tabbar hidden" id="dash-tabbar" aria-label="Main">
+  <nav class="dash-tabbar" id="dash-tabbar" aria-label="Main" hidden>
     <a href="/company/website" id="tabbar-website" class="hidden">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M3 8h18"/><path d="M8 12h5M8 16h8"/></svg>
       <span>Website</span>
@@ -1391,7 +1391,8 @@
       document.getElementById('tabbar-customers').classList.toggle('hidden', !canUse('customers'));
       document.getElementById('tabbar-sales').classList.toggle('hidden', !canUse('sales'));
       document.getElementById('tabbar-settings').classList.toggle('hidden', !canUse('settings'));
-      document.getElementById('dash-tabbar').classList.remove('hidden');
+      const tabbar = document.getElementById('dash-tabbar');
+      tabbar.hidden = false;
       document.body.classList.add('dash-tabbar-on');
       document.body.classList.remove('dash-tabbar-hidden');
       const fromPath = tabFromPath();

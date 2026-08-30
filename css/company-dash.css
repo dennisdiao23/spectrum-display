@@ -820,6 +820,9 @@ html.dash-scroll-lock body.company-app {
 .dash-tabbar {
   display: none;
 }
+.dash-tabbar[hidden] {
+  display: none !important;
+}
 
 @media (max-width: 900px) {
   body.company-app.dash-tabbar-on {
@@ -827,15 +830,15 @@ html.dash-scroll-lock body.company-app {
     padding-bottom: var(--dash-tabbar-h);
   }
 
-  body.company-app.dash-tabbar-on .dash-tabbar {
-    display: flex;
+  body.company-app.dash-tabbar-on .dash-tabbar:not([hidden]) {
+    display: flex !important;
     align-items: stretch;
     justify-content: space-around;
     position: fixed;
     left: 0;
     right: 0;
     bottom: 0;
-    z-index: 55;
+    z-index: 70;
     box-sizing: border-box;
     height: var(--dash-tabbar-h);
     padding: 0.35rem 0.15rem calc(0.35rem + env(safe-area-inset-bottom, 0px));
