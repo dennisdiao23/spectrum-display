@@ -382,6 +382,14 @@ body.dash-col-resizing * {
   color: var(--dash-muted);
 }
 .dash-cols th[hidden] { display: none !important; }
+.dash-col-photo {
+  width: 2rem;
+  height: 2rem;
+  border-radius: 0.35rem;
+  object-fit: cover;
+  display: block;
+  background: #f1f5f9;
+}
 .company-main tr.border-b,
 .company-main thead.border-b,
 .company-main .border-slate-800,

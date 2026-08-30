@@ -371,12 +371,16 @@
                 <tr>
                   <th class="py-3 px-4 font-medium" data-col="sku">SKU <span class="dash-col-caret">▾</span><span class="dash-col-grip" aria-hidden="true"></span></th>
                   <th class="py-3 px-4 font-medium" data-col="name">Item <span class="dash-col-caret">▾</span><span class="dash-col-grip" aria-hidden="true"></span></th>
-                  <th class="py-3 px-4 font-medium" data-col="brand">Brand <span class="dash-col-caret">▾</span><span class="dash-col-grip" aria-hidden="true"></span></th>
+                  <th class="py-3 px-4 font-medium" data-col="description">Description <span class="dash-col-caret">▾</span><span class="dash-col-grip" aria-hidden="true"></span></th>
                   <th class="py-3 px-4 font-medium" data-col="pitch">Pitch <span class="dash-col-caret">▾</span><span class="dash-col-grip" aria-hidden="true"></span></th>
+                  <th class="py-3 px-4 font-medium" data-col="brand">Brand <span class="dash-col-caret">▾</span><span class="dash-col-grip" aria-hidden="true"></span></th>
                   <th class="py-3 px-4 font-medium" data-col="qty">On hand <span class="dash-col-caret">▾</span><span class="dash-col-grip" aria-hidden="true"></span></th>
-                  <th class="py-3 px-4 font-medium" data-col="price">Price <span class="dash-col-caret">▾</span><span class="dash-col-grip" aria-hidden="true"></span></th>
-                  <th class="py-3 px-4 font-medium" data-col="website">Website <span class="dash-col-caret">▾</span><span class="dash-col-grip" aria-hidden="true"></span></th>
-                  <th class="py-3 px-4 font-medium" data-col="status">Status <span class="dash-col-caret">▾</span></th>
+                  <th class="py-3 px-4 font-medium" data-col="cost">Cost <span class="dash-col-caret">▾</span><span class="dash-col-grip" aria-hidden="true"></span></th>
+                  <th class="py-3 px-4 font-medium" data-col="price">Sell price <span class="dash-col-caret">▾</span><span class="dash-col-grip" aria-hidden="true"></span></th>
+                  <th class="py-3 px-4 font-medium" data-col="dealer">Dealer net <span class="dash-col-caret">▾</span><span class="dash-col-grip" aria-hidden="true"></span></th>
+                  <th class="py-3 px-4 font-medium" data-col="status">Status <span class="dash-col-caret">▾</span><span class="dash-col-grip" aria-hidden="true"></span></th>
+                  <th class="py-3 px-4 font-medium" data-col="photo">Photo <span class="dash-col-caret">▾</span><span class="dash-col-grip" aria-hidden="true"></span></th>
+                  <th class="py-3 px-4 font-medium" data-col="website">Website <span class="dash-col-caret">▾</span></th>
                 </tr>
               </thead>
               <tbody id="inventory-table" class="text-slate-200"></tbody>
@@ -1340,18 +1344,59 @@
       return table.getAttribute('data-cols') || 'table';
     }
 
-    function defaultColOrder(table) {
+    function dashColCatalog(table) {
+      if (dashColKey(table) === 'inventory') {
+        return [
+          { id: 'sku', label: 'SKU' },
+          { id: 'name', label: 'Item' },
+          { id: 'description', label: 'Description' },
+          { id: 'pitch', label: 'Pitch' },
+          { id: 'brand', label: 'Brand' },
+          { id: 'qty', label: 'On hand' },
+          { id: 'cost', label: 'Cost' },
+          { id: 'price', label: 'Sell price' },
+          { id: 'dealer', label: 'Dealer net' },
+          { id: 'status', label: 'Status' },
+          { id: 'photo', label: 'Photo' },
+          { id: 'website', label: 'Website' }
+        ];
+      }
       return Array.prototype.map.call(table.querySelectorAll('thead th[data-col]'), function (th) {
-        return th.getAttribute('data-col');
+        return { id: th.getAttribute('data-col'), label: colHeaderLabel(table, th.getAttribute('data-col')) };
       });
+    }
+
+    function defaultColOrder(table) {
+      return dashColCatalog(table).map(function (col) { return col.id; });
+    }
+
+    function defaultVisibleOrder(table) {
+      if (dashColKey(table) === 'inventory') {
+        return ['sku', 'name', 'brand', 'pitch', 'qty', 'price', 'website', 'status'];
+      }
+      return defaultColOrder(table);
+    }
+
+    function addableCols(table) {
+      const shown = loadColState(table).order;
+      return dashColCatalog(table).filter(function (col) { return shown.indexOf(col.id) === -1; });
     }
 
     function loadColState(table) {
       const name = dashColKey(table);
       const known = defaultColOrder(table);
-      const fallback = { order: known.slice(), hidden: [], sortCol: '', sortDir: '', widths: {} };
+      const startOrder = defaultVisibleOrder(table).filter(function (id) { return known.indexOf(id) !== -1; });
+      const fallback = {
+        order: startOrder.slice(),
+        hidden: known.filter(function (id) { return startOrder.indexOf(id) === -1; }),
+        sortCol: '',
+        sortDir: '',
+        widths: {}
+      };
       try {
         const saved = JSON.parse(localStorage.getItem('dash-col-state-' + name) || '{}');
+        const hasSaved = (saved.order && saved.order.length) || (saved.hidden && saved.hidden.length);
+        if (!hasSaved) return fallback;
         const savedHidden = (saved.hidden || []).filter(function (id) { return known.indexOf(id) !== -1; });
         const order = (saved.order || []).filter(function (id) {
           return known.indexOf(id) !== -1 && savedHidden.indexOf(id) === -1;
@@ -1359,8 +1404,7 @@
         const hidden = savedHidden.slice();
         known.forEach(function (id) {
           if (order.indexOf(id) !== -1 || hidden.indexOf(id) !== -1) return;
-          if (saved.order && saved.order.length) hidden.push(id);
-          else order.push(id);
+          hidden.push(id);
         });
         if (!order.length && known.length) {
           order.push(known[0]);
@@ -1475,12 +1519,12 @@
         closeColAdd();
         return;
       }
-      const hidden = loadColState(table).hidden;
-      if (!hidden.length) {
-        list.innerHTML = '<p class="dash-col-add-empty">No hidden columns</p>';
+      const addable = addableCols(table);
+      if (!addable.length) {
+        list.innerHTML = '<p class="dash-col-add-empty">All columns are shown</p>';
       } else {
-        list.innerHTML = hidden.map(function (id) {
-          return '<button type="button" data-add-col="' + esc(id) + '">' + esc(colHeaderLabel(table, id)) + '</button>';
+        list.innerHTML = addable.map(function (col) {
+          return '<button type="button" data-add-col="' + esc(col.id) + '">' + esc(col.label) + '</button>';
         }).join('');
       }
       panel.hidden = false;
@@ -1497,7 +1541,7 @@
       menu.querySelector('[data-col-act="left"]').disabled = i <= 0;
       menu.querySelector('[data-col-act="right"]').disabled = i === -1 || i >= state.order.length - 1;
       menu.querySelector('[data-col-act="hide"]').disabled = state.order.length <= 1;
-      menu.querySelector('[data-col-act="add"]').disabled = !state.hidden.length;
+      menu.querySelector('[data-col-act="add"]').disabled = !addableCols(table).length;
       menu._table = table;
       menu._col = col;
       menu.hidden = false;
@@ -1646,7 +1690,7 @@
         if (inventoryFilter === 'out' && item.status !== 'out') return false;
         if (inventoryFilter === 'unmapped' && item.maps && item.maps.length) return false;
         if (q) {
-          const blob = ((item.sku || '') + ' ' + (item.name || '') + ' ' + (item.brandName || '') + ' ' + (item.pitchLabel || '')).toLowerCase();
+          const blob = ((item.sku || '') + ' ' + (item.name || '') + ' ' + (item.brandName || '') + ' ' + (item.pitchLabel || '') + ' ' + (item.description || '')).toLowerCase();
           if (blob.indexOf(q) === -1) return false;
         }
         return true;
@@ -1656,10 +1700,14 @@
       const sorted = sortColRows(rows, table, function (item, col) {
         if (col === 'sku') return item.sku || '';
         if (col === 'name') return item.name || '';
+        if (col === 'description') return item.description || '';
         if (col === 'brand') return item.brandName || '';
         if (col === 'pitch') return item.pitchLabel || '';
         if (col === 'qty') return Number(item.qty) || 0;
+        if (col === 'cost') return Number(item.cost) || 0;
         if (col === 'price') return Number(item.price) || 0;
+        if (col === 'dealer') return Number(item.dealerNet) || 0;
+        if (col === 'photo') return item.image || '';
         if (col === 'website') {
           return (item.maps && item.maps.length)
             ? item.maps.map(function (m) {
@@ -1672,20 +1720,27 @@
       });
       tb.innerHTML = sorted.map(function (item) {
         const qtyText = item.qty.toLocaleString() + ' ' + item.unit;
-        const priceText = item.price ? ('$' + Number(item.price).toLocaleString()) : '—';
+        const money = function (n) { return n ? ('$' + Number(n).toLocaleString()) : '—'; };
         const site = (item.maps && item.maps.length)
           ? item.maps.map(function (m) {
             return esc(m.productName || 'Product') + (m.pitch ? (' · P' + m.pitch) : '');
           }).join(', ')
           : 'Not on website';
+        const photo = item.image
+          ? '<img src="' + esc(item.image) + '" alt="" class="dash-col-photo">'
+          : '<span class="text-slate-400">—</span>';
         const cells = {
           sku: '<td class="py-3 px-4 font-mono text-xs text-sky-300">' + esc(item.sku || '—') + '</td>',
           name: '<td class="py-3 px-4 font-medium">' + esc(item.name || '') + '</td>',
+          description: '<td class="py-3 px-4 text-slate-400">' + esc(item.description || '—') + '</td>',
           brand: '<td class="py-3 px-4 text-sky-400">' + esc(item.brandName || '—') + '</td>',
           pitch: '<td class="py-3 px-4 text-slate-400">' + esc(item.pitchLabel || '—') + '</td>',
           qty: '<td class="py-3 px-4">' + esc(qtyText) + '</td>',
-          price: '<td class="py-3 px-4">' + esc(priceText) + '</td>',
+          cost: '<td class="py-3 px-4">' + money(item.cost) + '</td>',
+          price: '<td class="py-3 px-4">' + money(item.price) + '</td>',
+          dealer: '<td class="py-3 px-4">' + money(item.dealerNet) + '</td>',
           website: '<td class="py-3 px-4 text-slate-400">' + site + '</td>',
+          photo: '<td class="py-3 px-4">' + photo + '</td>',
           status: '<td class="py-3 px-4"><span class="text-xs px-2 py-0.5 rounded-full ' + stockStatusClass(item.status) + '">' +
             esc(stockStatusLabel(item.status)) + '</span></td>'
         };
