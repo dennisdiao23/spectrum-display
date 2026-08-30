@@ -17,6 +17,7 @@
         <h1 class="text-lg font-bold">Spectrum Admin</h1>
       </div>
       <div class="flex items-center gap-3">
+        <button id="header-settings" type="button" class="hidden px-3 py-1.5 rounded-full text-sm text-slate-400 hover:text-white">Settings</button>
         <span id="admin-name" class="text-sm text-slate-400"></span>
         <button id="logout-btn" type="button" class="hidden px-3 py-1.5 rounded-full border border-slate-600 text-sm hover:border-sky-500">Sign out</button>
       </div>
@@ -45,7 +46,6 @@
       <div class="flex flex-wrap gap-2 border-b border-slate-800 pb-3">
         <button type="button" id="tab-website" class="admin-tab px-4 py-2 rounded-full text-sm font-medium bg-sky-500/20 text-sky-300">Website</button>
         <button type="button" id="tab-inventory" class="admin-tab px-4 py-2 rounded-full text-sm font-medium text-slate-400 hover:text-white">Inventory</button>
-        <button type="button" id="tab-staff" class="admin-tab hidden px-4 py-2 rounded-full text-sm font-medium text-slate-400 hover:text-white">Staff</button>
       </div>
 
       <div id="website-pane" class="space-y-6">
@@ -191,7 +191,7 @@
 
       <div id="accounts-section" class="hidden space-y-6">
         <div id="accounts-list-wrap">
-          <p class="text-slate-400 text-sm mb-4">People who signed in on the public website (Customer, Dealer, Sales). Admin Staff logins are on the Staff tab, not here. Open an account to set type, markup, orders, and saved projects.</p>
+          <p class="text-slate-400 text-sm mb-4">People who signed in on the public website (Customer, Dealer, Sales). Admin logins are under Settings → Manage users, not here. Open an account to set type, markup, orders, and saved projects.</p>
           <form id="price-tiers-form" class="rounded-2xl border border-slate-800 bg-slate-900/50 p-5 mb-6">
             <h3 class="font-semibold mb-1">Price tiers</h3>
             <p class="text-xs text-slate-500 mb-4">Markup % by account type. Signed-in users see catalog price × (1 + markup%). Only admin can see these percents — they never appear on My Account.</p>
@@ -438,8 +438,12 @@
         </div>
       </div>
 
-      <div id="staff-section" class="hidden space-y-6">
-        <p class="text-slate-400 text-sm">Backend logins for this Admin page — not website Customer / Dealer / Sales accounts. Owner sees everything. Website can edit product pages and website accounts. Inventory can receive and adjust stock.</p>
+      <div id="settings-pane" class="hidden space-y-6">
+      <div id="settings-subnav" class="flex flex-wrap gap-1 border-b border-slate-800/80 pb-3">
+        <button type="button" id="tab-staff" class="settings-subtab px-3 py-1.5 rounded-full text-sm font-medium bg-sky-500/20 text-sky-300">Manage users</button>
+      </div>
+      <div id="staff-section" class="space-y-6">
+        <p class="text-slate-400 text-sm">Admin logins for this page — not website Customer / Dealer / Sales accounts. Owner sees everything. Website can edit product pages and website accounts. Inventory can receive and adjust stock.</p>
         <form id="staff-form" class="rounded-2xl border border-slate-800 bg-slate-900/50 p-5 grid sm:grid-cols-2 gap-4">
           <input type="hidden" id="staff-id">
           <div>
@@ -465,7 +469,7 @@
           </div>
           <p id="staff-msg" class="sm:col-span-2 hidden text-sm"></p>
           <div class="sm:col-span-2 flex flex-wrap gap-2">
-            <button type="submit" id="staff-save" class="px-5 py-2 rounded-full bg-sky-500 hover:bg-sky-400 text-white text-sm font-semibold">Add staff</button>
+            <button type="submit" id="staff-save" class="px-5 py-2 rounded-full bg-sky-500 hover:bg-sky-400 text-white text-sm font-semibold">Add user</button>
             <button type="button" id="staff-cancel" class="hidden px-5 py-2 rounded-full border border-slate-600 text-sm">Cancel</button>
           </div>
         </form>
@@ -483,6 +487,7 @@
             <tbody id="staff-table" class="text-slate-200"></tbody>
           </table>
         </div>
+      </div>
       </div>
     </section>
   </main>
@@ -510,7 +515,7 @@
         return role === 'owner' || role === 'website';
       }
       if (section === 'inventory') return role === 'owner' || role === 'inventory';
-      if (section === 'staff') return role === 'owner';
+      if (section === 'staff' || section === 'settings') return role === 'owner';
       return false;
     }
     function staffRoleLabel(role) {
@@ -541,7 +546,7 @@
       document.getElementById('admin-name').textContent = (admin.name || admin.email || '') + roleBit;
       document.getElementById('tab-website').classList.toggle('hidden', !canUse('website'));
       document.getElementById('tab-inventory').classList.toggle('hidden', !canUse('inventory'));
-      document.getElementById('tab-staff').classList.toggle('hidden', !canUse('staff'));
+      document.getElementById('header-settings').classList.toggle('hidden', !canUse('settings'));
       websiteSubTab = 'products';
       showAdminTab(canUse('website') ? 'products' : (canUse('inventory') ? 'inventory' : 'staff'));
     }
@@ -702,17 +707,22 @@
 
     function showAdminTab(name) {
       const onWebsite = name === 'products' || name === 'accounts';
+      const onSettings = name === 'staff';
       if (onWebsite) websiteSubTab = name;
       document.getElementById('website-pane').classList.toggle('hidden', !onWebsite);
+      document.getElementById('settings-pane').classList.toggle('hidden', !onSettings);
       document.getElementById('products-section').classList.toggle('hidden', name !== 'products');
       document.getElementById('inventory-section').classList.toggle('hidden', name !== 'inventory');
       document.getElementById('accounts-section').classList.toggle('hidden', name !== 'accounts');
       document.getElementById('staff-section').classList.toggle('hidden', name !== 'staff');
       document.getElementById('tab-website').className = tabClass(onWebsite, 'admin-tab px-4 py-2', !canUse('website'));
       document.getElementById('tab-inventory').className = tabClass(name === 'inventory', 'admin-tab px-4 py-2', !canUse('inventory'));
-      document.getElementById('tab-staff').className = tabClass(name === 'staff', 'admin-tab px-4 py-2', !canUse('staff'));
       document.getElementById('tab-products').className = tabClass(name === 'products', 'website-subtab px-3 py-1.5', false);
       document.getElementById('tab-accounts').className = tabClass(name === 'accounts', 'website-subtab px-3 py-1.5', !canUse('accounts'));
+      document.getElementById('tab-staff').className = tabClass(name === 'staff', 'settings-subtab px-3 py-1.5', !canUse('staff'));
+      document.getElementById('header-settings').className = 'px-3 py-1.5 rounded-full text-sm ' +
+        (onSettings ? 'bg-sky-500/20 text-sky-300' : 'text-slate-400 hover:text-white') +
+        (canUse('settings') ? '' : ' hidden');
     }
 
     let inventoryItems = [];
@@ -1144,6 +1154,10 @@
       await loadPriceTiers();
       await loadAccounts();
     });
+    document.getElementById('header-settings').addEventListener('click', async function () {
+      showAdminTab('staff');
+      await loadStaff();
+    });
     document.getElementById('tab-staff').addEventListener('click', async function () {
       showAdminTab('staff');
       await loadStaff();
@@ -1153,7 +1167,7 @@
       document.getElementById('staff-form').reset();
       document.getElementById('staff-id').value = '';
       document.getElementById('staff-email').disabled = false;
-      document.getElementById('staff-save').textContent = 'Add staff';
+      document.getElementById('staff-save').textContent = 'Add user';
       document.getElementById('staff-cancel').classList.add('hidden');
       document.getElementById('staff-password').required = true;
       document.getElementById('staff-password-label').textContent = 'Password';
@@ -1209,7 +1223,7 @@
         document.getElementById('staff-password').required = false;
         document.getElementById('staff-password-label').textContent = 'New password';
         document.getElementById('staff-password-hint').textContent = 'Leave blank to keep the current password.';
-        document.getElementById('staff-save').textContent = 'Save staff';
+        document.getElementById('staff-save').textContent = 'Save user';
         document.getElementById('staff-cancel').classList.remove('hidden');
         return;
       }
