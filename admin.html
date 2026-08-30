@@ -51,7 +51,7 @@
       <div id="products-section" class="space-y-6">
       <div id="products-list-wrap">
       <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4">
-        <p class="text-slate-400 text-sm"><span id="product-total">0</span> website product pages. These are catalog content only — photos, copy, and which pitches the page shows. Stock and live sell price live in Inventory. Click a row to edit and link SKUs.</p>
+        <p class="text-slate-400 text-sm"><span id="product-total">0</span> website product pages. These are catalog content only — photos, copy, and which pitches the page shows. Stock and live sell price live in Inventory. Click a product name to edit. Click Shown to open the live page.</p>
         <button id="new-btn" type="button" class="px-4 py-2 rounded-full bg-sky-500 hover:bg-sky-400 text-white text-sm font-semibold">Add product</button>
       </div>
       <div class="overflow-x-auto rounded-2xl border border-slate-800">
@@ -562,9 +562,9 @@
           ? '<span class="text-amber-400">Hidden</span>'
           : '<a href="' + esc(pageHref) + '" target="_blank" rel="noopener" class="text-emerald-400 hover:underline py-1" data-open-site>Shown</a>';
         return (
-          '<tr class="border-b border-slate-800 hover:bg-slate-900/80 cursor-pointer" data-id="' + esc(p.dbId) + '">' +
+          '<tr class="border-b border-slate-800 hover:bg-slate-900/80" data-id="' + esc(p.dbId) + '">' +
             '<td class="py-2.5 px-4">' + img + '</td>' +
-            '<td class="py-2.5 px-4 font-medium">' + esc(p.name || '') + '</td>' +
+            '<td class="py-2.5 px-4 font-medium" data-edit-name><span class="cursor-pointer hover:text-sky-300">' + esc(p.name || '') + '</span></td>' +
             '<td class="py-2.5 px-4 text-sky-400">' + esc(p.brandName || '') + '</td>' +
             '<td class="py-2.5 px-4 text-slate-400">' + esc(p.type || '') + '</td>' +
             '<td class="py-2.5 px-4 text-slate-400">' + esc(p.pitchLabel || '') + '</td>' +
@@ -1244,15 +1244,16 @@
     document.getElementById('product-back').addEventListener('click', closeProductForm);
 
     table.addEventListener('click', async function (e) {
-      const siteLink = e.target.closest('[data-website-cell]') && e.target.closest('tr').querySelector('a[data-open-site]');
+      const row = e.target.closest('tr[data-id]');
+      if (!row) return;
+      const siteLink = e.target.closest('[data-website-cell]') && row.querySelector('a[data-open-site]');
       if (siteLink) {
         e.preventDefault();
         e.stopPropagation();
         window.open(siteLink.href, '_blank', 'noopener,noreferrer');
         return;
       }
-      const row = e.target.closest('tr[data-id]');
-      if (!row) return;
+      if (!e.target.closest('[data-edit-name]')) return;
       await loadInventory();
       const data = await api('/api/admin/products/' + row.getAttribute('data-id'));
       openForm(data.product);
