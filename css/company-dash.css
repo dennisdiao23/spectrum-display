@@ -850,7 +850,7 @@ html.dash-scroll-lock body.company-app {
     will-change: transform;
   }
 
-  body.company-app.dash-tabbar-hidden .dash-tabbar {
+  body.company-app.dash-tabbar-on.dash-tabbar-hidden .dash-tabbar:not([hidden]) {
     transform: translateY(100%);
     pointer-events: none;
   }
