@@ -251,6 +251,88 @@ body.company-app {
 .company-main table {
   background: #fff;
 }
+.dash-cols {
+  table-layout: fixed;
+  min-width: 100%;
+}
+.dash-cols th,
+.dash-cols td {
+  position: relative;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.dash-col-grip {
+  position: absolute;
+  top: 0;
+  right: -3px;
+  width: 9px;
+  height: 100%;
+  cursor: col-resize;
+  z-index: 3;
+}
+.dash-col-grip::after {
+  content: "";
+  position: absolute;
+  top: 18%;
+  bottom: 18%;
+  left: 3px;
+  width: 2px;
+  background: #d5dcea;
+  border-radius: 2px;
+}
+.dash-col-grip:hover::after,
+.dash-col-grip.is-drag::after {
+  background: #2f6bff;
+  top: 0;
+  bottom: 0;
+}
+body.dash-col-resizing,
+body.dash-col-resizing * {
+  cursor: col-resize !important;
+  user-select: none !important;
+}
+.dash-cols th[data-col] {
+  cursor: pointer;
+}
+.dash-col-caret {
+  margin-left: 0.3rem;
+  font-size: 0.68rem;
+  color: var(--dash-muted);
+}
+.dash-col-caret.is-on {
+  color: #2f6bff;
+}
+.dash-col-menu {
+  position: fixed;
+  z-index: 95;
+  min-width: 11.5rem;
+  background: #fff;
+  border: 1px solid var(--dash-line);
+  border-radius: 0.55rem;
+  box-shadow: 0 12px 32px rgba(7, 21, 58, 0.16);
+  padding: 0.3rem;
+}
+.dash-col-menu[hidden] { display: none; }
+.dash-col-menu button {
+  display: block;
+  width: 100%;
+  text-align: left;
+  border: 0;
+  background: transparent;
+  color: var(--dash-text);
+  font: inherit;
+  font-size: 0.84rem;
+  padding: 0.5rem 0.7rem;
+  border-radius: 0.4rem;
+  cursor: pointer;
+}
+.dash-col-menu button:hover { background: #eef2ff; color: #2f6bff; }
+.dash-col-menu button:disabled {
+  color: #b5bdcc;
+  cursor: default;
+}
+.dash-col-menu button:disabled:hover { background: transparent; color: #b5bdcc; }
 .company-main tr.border-b,
 .company-main thead.border-b,
 .company-main .border-slate-800,

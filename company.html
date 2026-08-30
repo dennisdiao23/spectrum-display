@@ -366,17 +366,17 @@
           </div>
           <p id="inventory-error" class="hidden text-sm text-red-400 mb-3"></p>
           <div class="overflow-x-auto rounded-2xl border border-slate-800">
-            <table class="w-full text-sm">
+            <table class="w-full text-sm dash-cols" data-cols="inventory">
               <thead class="text-left text-slate-400 border-b border-slate-800">
                 <tr>
-                  <th class="py-3 px-4 font-medium">SKU</th>
-                  <th class="py-3 px-4 font-medium">Item</th>
-                  <th class="py-3 px-4 font-medium">Brand</th>
-                  <th class="py-3 px-4 font-medium">Pitch</th>
-                  <th class="py-3 px-4 font-medium">On hand</th>
-                  <th class="py-3 px-4 font-medium">Price</th>
-                  <th class="py-3 px-4 font-medium">Website</th>
-                  <th class="py-3 px-4 font-medium">Status</th>
+                  <th class="py-3 px-4 font-medium" data-col="sku">SKU <span class="dash-col-caret">▾</span><span class="dash-col-grip" aria-hidden="true"></span></th>
+                  <th class="py-3 px-4 font-medium" data-col="name">Item <span class="dash-col-caret">▾</span><span class="dash-col-grip" aria-hidden="true"></span></th>
+                  <th class="py-3 px-4 font-medium" data-col="brand">Brand <span class="dash-col-caret">▾</span><span class="dash-col-grip" aria-hidden="true"></span></th>
+                  <th class="py-3 px-4 font-medium" data-col="pitch">Pitch <span class="dash-col-caret">▾</span><span class="dash-col-grip" aria-hidden="true"></span></th>
+                  <th class="py-3 px-4 font-medium" data-col="qty">On hand <span class="dash-col-caret">▾</span><span class="dash-col-grip" aria-hidden="true"></span></th>
+                  <th class="py-3 px-4 font-medium" data-col="price">Price <span class="dash-col-caret">▾</span><span class="dash-col-grip" aria-hidden="true"></span></th>
+                  <th class="py-3 px-4 font-medium" data-col="website">Website <span class="dash-col-caret">▾</span><span class="dash-col-grip" aria-hidden="true"></span></th>
+                  <th class="py-3 px-4 font-medium" data-col="status">Status <span class="dash-col-caret">▾</span></th>
                 </tr>
               </thead>
               <tbody id="inventory-table" class="text-slate-200"></tbody>
@@ -397,15 +397,15 @@
           </div>
           <p id="cc-error" class="hidden text-sm text-red-400 mb-3"></p>
           <div class="overflow-x-auto rounded-2xl border border-slate-800">
-            <table class="w-full text-sm">
+            <table class="w-full text-sm dash-cols" data-cols="customers">
               <thead class="text-left text-slate-400 border-b border-slate-800">
                 <tr>
-                  <th class="py-3 px-4 font-medium">Company</th>
-                  <th class="py-3 px-4 font-medium">Contact</th>
-                  <th class="py-3 px-4 font-medium">Email</th>
-                  <th class="py-3 px-4 font-medium">Phone</th>
-                  <th class="py-3 px-4 font-medium">City</th>
-                  <th class="py-3 px-4 font-medium">Terms</th>
+                  <th class="py-3 px-4 font-medium" data-col="company">Company <span class="dash-col-caret">▾</span><span class="dash-col-grip" aria-hidden="true"></span></th>
+                  <th class="py-3 px-4 font-medium" data-col="contact">Contact <span class="dash-col-caret">▾</span><span class="dash-col-grip" aria-hidden="true"></span></th>
+                  <th class="py-3 px-4 font-medium" data-col="email">Email <span class="dash-col-caret">▾</span><span class="dash-col-grip" aria-hidden="true"></span></th>
+                  <th class="py-3 px-4 font-medium" data-col="phone">Phone <span class="dash-col-caret">▾</span><span class="dash-col-grip" aria-hidden="true"></span></th>
+                  <th class="py-3 px-4 font-medium" data-col="city">City <span class="dash-col-caret">▾</span><span class="dash-col-grip" aria-hidden="true"></span></th>
+                  <th class="py-3 px-4 font-medium" data-col="terms">Terms <span class="dash-col-caret">▾</span><span class="dash-col-grip" aria-hidden="true"></span></th>
                   <th class="py-3 px-4 font-medium"></th>
                 </tr>
               </thead>
@@ -426,14 +426,14 @@
           </div>
           <p id="so-error" class="hidden text-sm text-red-400 mb-3"></p>
           <div class="overflow-x-auto rounded-2xl border border-slate-800">
-            <table class="w-full text-sm">
+            <table class="w-full text-sm dash-cols" data-cols="sales">
               <thead class="text-left text-slate-400 border-b border-slate-800">
                 <tr>
-                  <th class="py-3 px-4 font-medium">Number</th>
-                  <th class="py-3 px-4 font-medium">Customer</th>
-                  <th class="py-3 px-4 font-medium">Date</th>
-                  <th class="py-3 px-4 font-medium">Status</th>
-                  <th class="py-3 px-4 font-medium">Total</th>
+                  <th class="py-3 px-4 font-medium" data-col="number">Number <span class="dash-col-caret">▾</span><span class="dash-col-grip" aria-hidden="true"></span></th>
+                  <th class="py-3 px-4 font-medium" data-col="customer">Customer <span class="dash-col-caret">▾</span><span class="dash-col-grip" aria-hidden="true"></span></th>
+                  <th class="py-3 px-4 font-medium" data-col="date">Date <span class="dash-col-caret">▾</span><span class="dash-col-grip" aria-hidden="true"></span></th>
+                  <th class="py-3 px-4 font-medium" data-col="status">Status <span class="dash-col-caret">▾</span><span class="dash-col-grip" aria-hidden="true"></span></th>
+                  <th class="py-3 px-4 font-medium" data-col="total">Total <span class="dash-col-caret">▾</span><span class="dash-col-grip" aria-hidden="true"></span></th>
                   <th class="py-3 px-4 font-medium"></th>
                 </tr>
               </thead>
@@ -773,6 +773,12 @@
       <button type="submit" form="cc-form" id="cc-save" class="px-5 py-2 rounded-full bg-sky-500 hover:bg-sky-400 text-white text-sm font-semibold">Save customer</button>
     </div>
   </aside>
+  <div id="dash-col-menu" class="dash-col-menu" hidden>
+    <button type="button" data-col-act="asc">Sort ascending</button>
+    <button type="button" data-col-act="desc">Sort descending</button>
+    <button type="button" data-col-act="left">Move left</button>
+    <button type="button" data-col-act="right">Move right</button>
+  </div>
   <div id="cc-leave" class="cc-leave" hidden>
     <div class="cc-leave-card" role="dialog" aria-modal="true" aria-labelledby="cc-leave-title">
       <p id="cc-leave-title" class="cc-leave-title">Do you want to leave without saving?</p>
@@ -1323,6 +1329,195 @@
       return 'bg-emerald-500/15 text-emerald-300';
     }
 
+    function dashColKey(table) {
+      return table.getAttribute('data-cols') || 'table';
+    }
+
+    function defaultColOrder(table) {
+      return Array.prototype.map.call(table.querySelectorAll('thead th[data-col]'), function (th) {
+        return th.getAttribute('data-col');
+      });
+    }
+
+    function loadColState(table) {
+      const name = dashColKey(table);
+      const fallback = { order: defaultColOrder(table), sortCol: '', sortDir: '', widths: {} };
+      try {
+        const saved = JSON.parse(localStorage.getItem('dash-col-state-' + name) || '{}');
+        const known = fallback.order.slice();
+        const order = (saved.order || []).filter(function (id) { return known.indexOf(id) !== -1; });
+        known.forEach(function (id) { if (order.indexOf(id) === -1) order.push(id); });
+        return {
+          order: order,
+          sortCol: saved.sortCol || '',
+          sortDir: saved.sortDir || '',
+          widths: saved.widths && typeof saved.widths === 'object' ? saved.widths : {}
+        };
+      } catch (err) {
+        return fallback;
+      }
+    }
+
+    function saveColState(table, state) {
+      try { localStorage.setItem('dash-col-state-' + dashColKey(table), JSON.stringify(state)); } catch (err) {}
+    }
+
+    function applyColOrder(table) {
+      const state = loadColState(table);
+      const row = table.querySelector('thead tr');
+      const locked = Array.prototype.filter.call(row.children, function (th) { return !th.getAttribute('data-col'); });
+      state.order.forEach(function (id) {
+        const th = row.querySelector('th[data-col="' + id + '"]');
+        if (th) row.appendChild(th);
+      });
+      locked.forEach(function (th) { row.appendChild(th); });
+      Array.prototype.forEach.call(row.querySelectorAll('th[data-col]'), function (th) {
+        const col = th.getAttribute('data-col');
+        const w = state.widths[col];
+        if (w) th.style.width = w;
+        const caret = th.querySelector('.dash-col-caret');
+        if (caret) {
+          caret.textContent = state.sortCol === col && state.sortDir === 'asc' ? '▴' : '▾';
+          caret.classList.toggle('is-on', state.sortCol === col);
+        }
+      });
+    }
+
+    function dashOrderedCells(table, cells, lockedHtml) {
+      return loadColState(table).order.map(function (id) { return cells[id] || ''; }).join('') + (lockedHtml || '');
+    }
+
+    function sortColRows(rows, table, getValue) {
+      const state = loadColState(table);
+      if (!state.sortCol || !state.sortDir) return rows;
+      const dir = state.sortDir === 'desc' ? -1 : 1;
+      return rows.slice().sort(function (a, b) {
+        const av = getValue(a, state.sortCol);
+        const bv = getValue(b, state.sortCol);
+        if (typeof av === 'number' && typeof bv === 'number') return (av - bv) * dir;
+        return String(av).localeCompare(String(bv), undefined, { numeric: true, sensitivity: 'base' }) * dir;
+      });
+    }
+
+    function closeColMenu() {
+      const menu = document.getElementById('dash-col-menu');
+      menu.hidden = true;
+      menu._table = null;
+      menu._col = '';
+    }
+
+    function openColMenu(table, th) {
+      const menu = document.getElementById('dash-col-menu');
+      const col = th.getAttribute('data-col');
+      const state = loadColState(table);
+      const i = state.order.indexOf(col);
+      menu.querySelector('[data-col-act="left"]').disabled = i <= 0;
+      menu.querySelector('[data-col-act="right"]').disabled = i === -1 || i >= state.order.length - 1;
+      menu._table = table;
+      menu._col = col;
+      menu.hidden = false;
+      const box = th.getBoundingClientRect();
+      const mw = menu.offsetWidth;
+      const left = Math.min(box.left, window.innerWidth - mw - 8);
+      menu.style.left = Math.max(8, left) + 'px';
+      menu.style.top = (box.bottom + 4) + 'px';
+    }
+
+    function refreshDashTable(table) {
+      const name = dashColKey(table);
+      applyColOrder(table);
+      if (name === 'inventory') renderInventoryTable();
+      else if (name === 'customers') renderCcTable(companyCustomers);
+      else if (name === 'sales') renderSoTable(salesDocs, salesTypeFromTab(salesSubTab));
+    }
+
+    function enableColumnResize(table) {
+      if (!table || table.dataset.colsReady === '1') return;
+      table.dataset.colsReady = '1';
+      applyColOrder(table);
+      table.querySelectorAll('thead th').forEach(function (th) {
+        const grip = th.querySelector('.dash-col-grip');
+        if (grip) {
+          grip.addEventListener('mousedown', function (e) {
+            e.preventDefault();
+            e.stopPropagation();
+            closeColMenu();
+            const startX = e.clientX;
+            const startW = th.getBoundingClientRect().width;
+            grip.classList.add('is-drag');
+            document.body.classList.add('dash-col-resizing');
+            function move(ev) {
+              th.style.width = Math.max(64, Math.round(startW + ev.clientX - startX)) + 'px';
+            }
+            function up() {
+              grip.classList.remove('is-drag');
+              document.body.classList.remove('dash-col-resizing');
+              document.removeEventListener('mousemove', move);
+              document.removeEventListener('mouseup', up);
+              const state = loadColState(table);
+              const col = th.getAttribute('data-col');
+              if (col) state.widths[col] = th.style.width || Math.round(th.getBoundingClientRect().width) + 'px';
+              saveColState(table, state);
+            }
+            document.addEventListener('mousemove', move);
+            document.addEventListener('mouseup', up);
+          });
+        }
+        if (th.getAttribute('data-col')) {
+          th.addEventListener('click', function (e) {
+            if (e.target.closest('.dash-col-grip')) return;
+            if (!document.getElementById('dash-col-menu').hidden &&
+              document.getElementById('dash-col-menu')._table === table &&
+              document.getElementById('dash-col-menu')._col === th.getAttribute('data-col')) {
+              closeColMenu();
+              return;
+            }
+            openColMenu(table, th);
+          });
+        }
+      });
+    }
+
+    const dashColMenu = document.getElementById('dash-col-menu');
+    if (dashColMenu) {
+      dashColMenu.addEventListener('click', function (e) {
+        const btn = e.target.closest('[data-col-act]');
+        if (!btn || btn.disabled) return;
+        const table = dashColMenu._table;
+        const col = dashColMenu._col;
+        if (!table || !col) return;
+        const act = btn.getAttribute('data-col-act');
+        const state = loadColState(table);
+        if (act === 'asc' || act === 'desc') {
+          state.sortCol = col;
+          state.sortDir = act;
+        } else if (act === 'left' || act === 'right') {
+          const i = state.order.indexOf(col);
+          const j = act === 'left' ? i - 1 : i + 1;
+          if (i < 0 || j < 0 || j >= state.order.length) return;
+          const next = state.order.slice();
+          const swap = next[i];
+          next[i] = next[j];
+          next[j] = swap;
+          state.order = next;
+        }
+        saveColState(table, state);
+        closeColMenu();
+        refreshDashTable(table);
+      });
+    }
+
+    document.addEventListener('click', function (e) {
+      if (!dashColMenu || dashColMenu.hidden) return;
+      if (dashColMenu.contains(e.target)) return;
+      if (e.target.closest && e.target.closest('table.dash-cols th[data-col]')) return;
+      closeColMenu();
+    });
+
+    window.addEventListener('scroll', function () {
+      if (dashColMenu && !dashColMenu.hidden) closeColMenu();
+    }, true);
+
     function fillInvBrands(selected) {
       const sel = document.getElementById('inv-brand');
       sel.innerHTML = '<option value="">—</option>' + brands.map(function (b) {
@@ -1342,8 +1537,26 @@
         }
         return true;
       });
+      const table = document.querySelector('table.dash-cols[data-cols="inventory"]');
       const tb = document.getElementById('inventory-table');
-      tb.innerHTML = rows.map(function (item) {
+      const sorted = sortColRows(rows, table, function (item, col) {
+        if (col === 'sku') return item.sku || '';
+        if (col === 'name') return item.name || '';
+        if (col === 'brand') return item.brandName || '';
+        if (col === 'pitch') return item.pitchLabel || '';
+        if (col === 'qty') return Number(item.qty) || 0;
+        if (col === 'price') return Number(item.price) || 0;
+        if (col === 'website') {
+          return (item.maps && item.maps.length)
+            ? item.maps.map(function (m) {
+              return (m.productName || 'Product') + (m.pitch ? (' · P' + m.pitch) : '');
+            }).join(', ')
+            : 'Not on website';
+        }
+        if (col === 'status') return item.status || '';
+        return '';
+      });
+      tb.innerHTML = sorted.map(function (item) {
         const qtyText = item.qty.toLocaleString() + ' ' + item.unit;
         const priceText = item.price ? ('$' + Number(item.price).toLocaleString()) : '—';
         const site = (item.maps && item.maps.length)
@@ -1351,18 +1564,22 @@
             return esc(m.productName || 'Product') + (m.pitch ? (' · P' + m.pitch) : '');
           }).join(', ')
           : 'Not on website';
+        const cells = {
+          sku: '<td class="py-3 px-4 font-mono text-xs text-sky-300">' + esc(item.sku || '—') + '</td>',
+          name: '<td class="py-3 px-4 font-medium">' + esc(item.name || '') + '</td>',
+          brand: '<td class="py-3 px-4 text-sky-400">' + esc(item.brandName || '—') + '</td>',
+          pitch: '<td class="py-3 px-4 text-slate-400">' + esc(item.pitchLabel || '—') + '</td>',
+          qty: '<td class="py-3 px-4">' + esc(qtyText) + '</td>',
+          price: '<td class="py-3 px-4">' + esc(priceText) + '</td>',
+          website: '<td class="py-3 px-4 text-slate-400">' + site + '</td>',
+          status: '<td class="py-3 px-4"><span class="text-xs px-2 py-0.5 rounded-full ' + stockStatusClass(item.status) + '">' +
+            esc(stockStatusLabel(item.status)) + '</span></td>'
+        };
         return '<tr class="border-b border-slate-800 hover:bg-slate-900/80 cursor-pointer" data-id="' + esc(item.id) + '">' +
-          '<td class="py-3 px-4 font-mono text-xs text-sky-300">' + esc(item.sku || '—') + '</td>' +
-          '<td class="py-3 px-4 font-medium">' + esc(item.name || '') + '</td>' +
-          '<td class="py-3 px-4 text-sky-400">' + esc(item.brandName || '—') + '</td>' +
-          '<td class="py-3 px-4 text-slate-400">' + esc(item.pitchLabel || '—') + '</td>' +
-          '<td class="py-3 px-4">' + esc(qtyText) + '</td>' +
-          '<td class="py-3 px-4">' + esc(priceText) + '</td>' +
-          '<td class="py-3 px-4 text-slate-400">' + site + '</td>' +
-          '<td class="py-3 px-4"><span class="text-xs px-2 py-0.5 rounded-full ' + stockStatusClass(item.status) + '">' +
-            esc(stockStatusLabel(item.status)) + '</span></td>' +
+          dashOrderedCells(table, cells) +
           '</tr>';
       }).join('') || '<tr><td class="py-6 px-4 text-slate-500" colspan="8">No matching items.</td></tr>';
+      applyColOrder(table);
     }
 
     async function loadInventory() {
@@ -1988,6 +2205,7 @@
     }
 
     function renderCcTable(rows) {
+      const table = document.querySelector('table.dash-cols[data-cols="customers"]');
       const tbody = document.getElementById('cc-table');
       const q = (document.getElementById('cc-search').value || '').toLowerCase();
       const filtered = (rows || []).filter(function (c) {
@@ -2000,21 +2218,34 @@
         tbody.innerHTML = '<tr><td class="py-6 px-4 text-slate-500" colspan="7">' +
           (q ? 'No customers match this search.' : 'No customers yet. Add a customer to use on quotes and invoices.') +
           '</td></tr>';
+        applyColOrder(table);
         return;
       }
-      tbody.innerHTML = filtered.map(function (c) {
+      const sorted = sortColRows(filtered, table, function (c, col) {
+        if (col === 'company') return c.displayName || c.companyName || [c.contactFirst, c.contactLast].filter(Boolean).join(' ') || '';
+        if (col === 'contact') return [c.contactFirst, c.contactLast].filter(Boolean).join(' ');
+        if (col === 'email') return c.email || '';
+        if (col === 'phone') return c.phone || c.mobile || '';
+        if (col === 'city') return c.billCity || '';
+        if (col === 'terms') return c.paymentTerms || '';
+        return '';
+      });
+      tbody.innerHTML = sorted.map(function (c) {
         const name = c.displayName || c.companyName || [c.contactFirst, c.contactLast].filter(Boolean).join(' ') || '—';
         const contact = [c.contactFirst, c.contactLast].filter(Boolean).join(' ') || '—';
+        const cells = {
+          company: '<td class="py-3 px-4 font-medium">' + esc(name) + '</td>',
+          contact: '<td class="py-3 px-4">' + esc(contact) + '</td>',
+          email: '<td class="py-3 px-4">' + esc(c.email || '—') + '</td>',
+          phone: '<td class="py-3 px-4">' + esc(c.phone || c.mobile || '—') + '</td>',
+          city: '<td class="py-3 px-4">' + esc(c.billCity || '—') + '</td>',
+          terms: '<td class="py-3 px-4">' + esc(c.paymentTerms || '—') + '</td>'
+        };
         return '<tr class="border-b border-slate-800 hover:bg-slate-900/80 cursor-pointer" data-id="' + esc(c.id) + '">' +
-          '<td class="py-3 px-4 font-medium">' + esc(name) + '</td>' +
-          '<td class="py-3 px-4">' + esc(contact) + '</td>' +
-          '<td class="py-3 px-4">' + esc(c.email || '—') + '</td>' +
-          '<td class="py-3 px-4">' + esc(c.phone || c.mobile || '—') + '</td>' +
-          '<td class="py-3 px-4">' + esc(c.billCity || '—') + '</td>' +
-          '<td class="py-3 px-4">' + esc(c.paymentTerms || '—') + '</td>' +
-          '<td class="py-3 px-4 text-right"><span class="text-sky-400 text-xs font-medium">Open →</span></td>' +
+          dashOrderedCells(table, cells, '<td class="py-3 px-4 text-right"><span class="text-sky-400 text-xs font-medium">Open →</span></td>') +
           '</tr>';
       }).join('');
+      applyColOrder(table);
     }
 
     let ccDrawerSource = 'list';
@@ -2318,23 +2549,36 @@
         type === 'quote' ? (count === 1 ? 'sales quote' : 'sales quotes')
           : type === 'order' ? (count === 1 ? 'sales order' : 'sales orders')
             : (count === 1 ? 'invoice' : 'invoices');
+      const table = document.querySelector('table.dash-cols[data-cols="sales"]');
       if (!filtered.length) {
         tbody.innerHTML = '<tr><td class="py-6 px-4 text-slate-500" colspan="6">' +
           (q ? 'No documents match this search.' : 'No ' + salesTypeLabel(type).toLowerCase() + 's yet.') +
           '</td></tr>';
+        applyColOrder(table);
         return;
       }
-      tbody.innerHTML = filtered.map(function (d) {
+      const sorted = sortColRows(filtered, table, function (d, col) {
+        if (col === 'number') return d.number || '';
+        if (col === 'customer') return d.customerName || '';
+        if (col === 'date') return d.issueDate || '';
+        if (col === 'status') return d.status || '';
+        if (col === 'total') return Number(d.total) || 0;
+        return '';
+      });
+      tbody.innerHTML = sorted.map(function (d) {
         const when = d.issueDate ? new Date(d.issueDate + 'T00:00:00').toLocaleDateString() : '—';
+        const cells = {
+          number: '<td class="py-3 px-4 font-medium">' + esc(d.number || '—') + '</td>',
+          customer: '<td class="py-3 px-4">' + esc(d.customerName || '—') + '</td>',
+          date: '<td class="py-3 px-4">' + esc(when) + '</td>',
+          status: '<td class="py-3 px-4"><span class="text-xs px-2 py-0.5 rounded-full bg-sky-500/15 text-sky-300">' + esc(d.status || 'draft') + '</span></td>',
+          total: '<td class="py-3 px-4">' + moneyText(d.total) + '</td>'
+        };
         return '<tr class="border-b border-slate-800 hover:bg-slate-900/80 cursor-pointer" data-id="' + esc(d.id) + '">' +
-          '<td class="py-3 px-4 font-medium">' + esc(d.number || '—') + '</td>' +
-          '<td class="py-3 px-4">' + esc(d.customerName || '—') + '</td>' +
-          '<td class="py-3 px-4">' + esc(when) + '</td>' +
-          '<td class="py-3 px-4"><span class="text-xs px-2 py-0.5 rounded-full bg-sky-500/15 text-sky-300">' + esc(d.status || 'draft') + '</span></td>' +
-          '<td class="py-3 px-4">' + moneyText(d.total) + '</td>' +
-          '<td class="py-3 px-4 text-right"><span class="text-sky-400 text-xs font-medium">Open →</span></td>' +
+          dashOrderedCells(table, cells, '<td class="py-3 px-4 text-right"><span class="text-sky-400 text-xs font-medium">Open →</span></td>') +
           '</tr>';
       }).join('');
+      applyColOrder(table);
     }
 
     async function loadSalesDocs(type) {
@@ -2573,6 +2817,11 @@
     });
     document.addEventListener('keydown', function (e) {
       if (e.key !== 'Escape') return;
+      const colMenu = document.getElementById('dash-col-menu');
+      if (colMenu && !colMenu.hidden) {
+        closeColMenu();
+        return;
+      }
       if (document.getElementById('cc-leave').classList.contains('is-open')) {
         ccLeaveThen = null;
         hideCcLeave();
@@ -3234,6 +3483,8 @@
         showError('form-error', err.message);
       }
     });
+
+    document.querySelectorAll('table.dash-cols').forEach(enableColumnResize);
 
     api('/api/admin/me').then(function (data) {
       if (data.ok && data.admin) {
