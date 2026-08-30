@@ -480,19 +480,11 @@ function createSqliteStore() {
       const input = cc.normalizeCustomer(payload);
       const fields = cc.dbFields(input);
       const stamp = dbUtil.nowIso();
-      const info = db.prepare(`
-        INSERT INTO company_customers (
-          company_name, contact_first, contact_last, email, phone, mobile, website, tax_id, payment_terms,
-          bill_street, bill_city, bill_state, bill_zip, bill_country,
-          ship_same, ship_street, ship_city, ship_state, ship_zip, ship_country, notes, created_at, updated_at
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-      `).run(
-        fields.company_name, fields.contact_first, fields.contact_last, fields.email, fields.phone,
-        fields.mobile, fields.website, fields.tax_id, fields.payment_terms,
-        fields.bill_street, fields.bill_city, fields.bill_state, fields.bill_zip, fields.bill_country,
-        fields.ship_same, fields.ship_street, fields.ship_city, fields.ship_state, fields.ship_zip,
-        fields.ship_country, fields.notes, stamp, stamp
-      );
+      const keys = Object.keys(fields);
+      const info = db.prepare(
+        'INSERT INTO company_customers (' + keys.join(', ') + ', created_at, updated_at) VALUES (' +
+        keys.map(function () { return '?'; }).join(', ') + ', ?, ?)'
+      ).run(keys.map(function (k) { return fields[k]; }).concat([stamp, stamp]));
       return this.getCompanyCustomer(info.lastInsertRowid);
     },
     async updateCompanyCustomer(id, payload) {
@@ -501,21 +493,10 @@ function createSqliteStore() {
       if (!current) return null;
       const input = cc.normalizeCustomer(payload);
       const fields = cc.dbFields(input);
-      db.prepare(`
-        UPDATE company_customers SET
-          company_name = ?, contact_first = ?, contact_last = ?, email = ?, phone = ?, mobile = ?,
-          website = ?, tax_id = ?, payment_terms = ?,
-          bill_street = ?, bill_city = ?, bill_state = ?, bill_zip = ?, bill_country = ?,
-          ship_same = ?, ship_street = ?, ship_city = ?, ship_state = ?, ship_zip = ?, ship_country = ?,
-          notes = ?, updated_at = ?
-        WHERE id = ?
-      `).run(
-        fields.company_name, fields.contact_first, fields.contact_last, fields.email, fields.phone,
-        fields.mobile, fields.website, fields.tax_id, fields.payment_terms,
-        fields.bill_street, fields.bill_city, fields.bill_state, fields.bill_zip, fields.bill_country,
-        fields.ship_same, fields.ship_street, fields.ship_city, fields.ship_state, fields.ship_zip,
-        fields.ship_country, fields.notes, dbUtil.nowIso(), id
-      );
+      const keys = Object.keys(fields);
+      db.prepare(
+        'UPDATE company_customers SET ' + keys.map(function (k) { return k + ' = ?'; }).join(', ') + ', updated_at = ? WHERE id = ?'
+      ).run(keys.map(function (k) { return fields[k]; }).concat([dbUtil.nowIso(), id]));
       return this.getCompanyCustomer(id);
     },
     async deleteCompanyCustomer(id) {

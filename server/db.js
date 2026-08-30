@@ -396,6 +396,38 @@ function ensureCompanyCustomers(db) {
     );
     CREATE INDEX IF NOT EXISTS company_customers_name_idx ON company_customers (company_name, contact_last);
   `);
+  const extra = [
+    ['title', "TEXT NOT NULL DEFAULT ''"],
+    ['display_name', "TEXT NOT NULL DEFAULT ''"],
+    ['contact_middle', "TEXT NOT NULL DEFAULT ''"],
+    ['suffix', "TEXT NOT NULL DEFAULT ''"],
+    ['email_cc', "TEXT NOT NULL DEFAULT ''"],
+    ['email_bcc', "TEXT NOT NULL DEFAULT ''"],
+    ['fax', "TEXT NOT NULL DEFAULT ''"],
+    ['other_phone', "TEXT NOT NULL DEFAULT ''"],
+    ['check_name', "TEXT NOT NULL DEFAULT ''"],
+    ['is_sub', 'INTEGER NOT NULL DEFAULT 0'],
+    ['email_consent', 'INTEGER NOT NULL DEFAULT 0'],
+    ['tax_exempt', 'INTEGER NOT NULL DEFAULT 0'],
+    ['tax_rate', 'REAL NOT NULL DEFAULT 0'],
+    ['payment_method', "TEXT NOT NULL DEFAULT ''"],
+    ['form_delivery', "TEXT NOT NULL DEFAULT 'Email'"],
+    ['invoice_language', "TEXT NOT NULL DEFAULT 'English'"],
+    ['opening_balance', 'REAL NOT NULL DEFAULT 0'],
+    ['opening_as_of', "TEXT NOT NULL DEFAULT ''"],
+    ['bill_street2', "TEXT NOT NULL DEFAULT ''"],
+    ['ship_street2', "TEXT NOT NULL DEFAULT ''"],
+    ['source', "TEXT NOT NULL DEFAULT ''"],
+    ['referred_by', "TEXT NOT NULL DEFAULT ''"],
+    ['job_title', "TEXT NOT NULL DEFAULT ''"],
+    ['contact_role', "TEXT NOT NULL DEFAULT ''"],
+    ['preferred_contact', "TEXT NOT NULL DEFAULT ''"],
+    ['industry', "TEXT NOT NULL DEFAULT ''"],
+    ['social', "TEXT NOT NULL DEFAULT ''"]
+  ];
+  extra.forEach(function (col) {
+    try { db.exec('ALTER TABLE company_customers ADD COLUMN ' + col[0] + ' ' + col[1]); } catch (e) { /* already present */ }
+  });
 }
 
 function ensureCompanySales(db) {

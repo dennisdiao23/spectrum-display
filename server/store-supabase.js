@@ -1036,8 +1036,7 @@ function createSupabaseStore() {
     async createCompanyCustomer(payload) {
       const cc = require('./company-customers');
       const input = cc.normalizeCustomer(payload);
-      const fields = cc.dbFields(input);
-      fields.ship_same = !!input.shipSame;
+      const fields = cc.forSupabase(cc.dbFields(input));
       const stamp = new Date().toISOString();
       fields.created_at = stamp;
       fields.updated_at = stamp;
@@ -1048,8 +1047,7 @@ function createSupabaseStore() {
     async updateCompanyCustomer(id, payload) {
       const cc = require('./company-customers');
       const input = cc.normalizeCustomer(payload);
-      const fields = cc.dbFields(input);
-      fields.ship_same = !!input.shipSame;
+      const fields = cc.forSupabase(cc.dbFields(input));
       fields.updated_at = new Date().toISOString();
       const { data, error } = await supabase.from('company_customers').update(fields).eq('id', id).select('*').maybeSingle();
       throwIf(error, 'Could not save customer.');

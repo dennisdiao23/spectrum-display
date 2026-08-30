@@ -755,113 +755,110 @@
   <div id="cc-drawer-scrim" class="cc-drawer-scrim"></div>
   <aside id="cc-drawer" class="cc-drawer" aria-hidden="true">
     <div class="cc-drawer-head">
-      <div>
-        <h2 id="cc-title">New customer</h2>
-        <p class="text-xs text-slate-400 mt-0.5">Company record for quotes and invoices. Not a website login.</p>
-      </div>
+      <h2 id="cc-title">Customer</h2>
       <button type="button" id="cc-drawer-close" class="cc-drawer-close" aria-label="Close">×</button>
     </div>
-    <form id="cc-form" class="cc-drawer-body grid sm:grid-cols-2 gap-4">
+    <form id="cc-form" class="cc-drawer-body">
       <input type="hidden" id="cc-id">
-      <div>
-        <label class="block text-xs text-slate-400 mb-1">Company name</label>
-        <input id="cc-company" type="text" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm" placeholder="Spectrum AV Inc.">
-      </div>
-      <div>
-        <label class="block text-xs text-slate-400 mb-1">Tax / resale #</label>
-        <input id="cc-tax" type="text" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm">
-      </div>
-      <div>
-        <label class="block text-xs text-slate-400 mb-1">First name</label>
-        <input id="cc-first" type="text" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm">
-      </div>
-      <div>
-        <label class="block text-xs text-slate-400 mb-1">Last name</label>
-        <input id="cc-last" type="text" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm">
-      </div>
-      <div>
-        <label class="block text-xs text-slate-400 mb-1">Email</label>
-        <input id="cc-email" type="email" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm">
-      </div>
-      <div>
-        <label class="block text-xs text-slate-400 mb-1">Phone</label>
-        <input id="cc-phone" type="text" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm">
-      </div>
-      <div>
-        <label class="block text-xs text-slate-400 mb-1">Mobile</label>
-        <input id="cc-mobile" type="text" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm">
-      </div>
-      <div>
-        <label class="block text-xs text-slate-400 mb-1">Website</label>
-        <input id="cc-website" type="text" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm" placeholder="https://">
-      </div>
-      <div class="sm:col-span-2">
-        <label class="block text-xs text-slate-400 mb-1">Payment terms</label>
-        <select id="cc-terms" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm">
-          <option value="Due on receipt">Due on receipt</option>
-          <option value="Net 15">Net 15</option>
-          <option value="Net 30" selected>Net 30</option>
-          <option value="Net 45">Net 45</option>
-          <option value="Net 60">Net 60</option>
-        </select>
-      </div>
-      <div class="sm:col-span-2 pt-1">
-        <h3 class="font-semibold text-sm">Billing address</h3>
-      </div>
-      <div class="sm:col-span-2">
-        <label class="block text-xs text-slate-400 mb-1">Street</label>
-        <input id="cc-bill-street" type="text" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm">
-      </div>
-      <div>
-        <label class="block text-xs text-slate-400 mb-1">City</label>
-        <input id="cc-bill-city" type="text" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm">
-      </div>
-      <div>
-        <label class="block text-xs text-slate-400 mb-1">State</label>
-        <input id="cc-bill-state" type="text" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm">
-      </div>
-      <div>
-        <label class="block text-xs text-slate-400 mb-1">ZIP</label>
-        <input id="cc-bill-zip" type="text" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm">
-      </div>
-      <div>
-        <label class="block text-xs text-slate-400 mb-1">Country</label>
-        <input id="cc-bill-country" type="text" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm" value="United States">
-      </div>
-      <div class="sm:col-span-2 pt-1 flex items-center justify-between gap-3">
-        <h3 class="font-semibold text-sm">Shipping address</h3>
-        <label class="text-sm text-slate-400 flex items-center gap-2">
-          <input id="cc-ship-same" type="checkbox" checked class="rounded border-slate-600">
-          Same as billing
-        </label>
-      </div>
-      <div id="cc-ship-fields" class="sm:col-span-2 hidden grid sm:grid-cols-2 gap-4">
-        <div class="sm:col-span-2">
-          <label class="block text-xs text-slate-400 mb-1">Street</label>
-          <input id="cc-ship-street" type="text" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm">
+      <section class="cc-sec is-open">
+        <button type="button" class="cc-sec-btn">Name and contact <span>▾</span></button>
+        <div class="cc-sec-body">
+          <div class="cc-field"><label>Title</label><input id="cc-honorific" type="text" placeholder="Mr / Ms"></div>
+          <div class="cc-field"><label>First name</label><input id="cc-first" type="text"></div>
+          <div class="cc-field"><label>Middle name</label><input id="cc-middle" type="text"></div>
+          <div class="cc-field"><label>Last name</label><input id="cc-last" type="text"></div>
+          <div class="cc-field"><label>Suffix</label><input id="cc-suffix" type="text"></div>
+          <div class="cc-field"><label>Company name</label><input id="cc-company" type="text" placeholder="Type to search"></div>
+          <div class="cc-field wide"><label>Customer display name *</label><input id="cc-display" type="text"></div>
+          <div class="cc-field"><label>Email</label><input id="cc-email" type="email"></div>
+          <div class="cc-field"><label>Phone number</label><input id="cc-phone" type="text"></div>
+          <div class="cc-field"><label>Cc</label><input id="cc-cc" type="email"></div>
+          <div class="cc-field"><label>Bcc</label><input id="cc-bcc" type="email"></div>
+          <div class="cc-field"><label>Mobile number</label><input id="cc-mobile" type="text"></div>
+          <div class="cc-field"><label>Fax</label><input id="cc-fax" type="text"></div>
+          <div class="cc-field"><label>Other</label><input id="cc-other" type="text"></div>
+          <div class="cc-field"><label>Website</label><input id="cc-website" type="text" placeholder="https://"></div>
+          <div class="cc-field wide"><label>Name to print on checks</label><input id="cc-check" type="text"></div>
+          <label class="cc-check wide"><input id="cc-sub" type="checkbox"> Is a sub-customer</label>
         </div>
-        <div>
-          <label class="block text-xs text-slate-400 mb-1">City</label>
-          <input id="cc-ship-city" type="text" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm">
+      </section>
+      <section class="cc-sec">
+        <button type="button" class="cc-sec-btn">Communication permissions <span>▾</span></button>
+        <div class="cc-sec-body">
+          <p class="cc-note">If the customer has opted in to email, record it here once you have added an email.</p>
+          <label class="cc-check wide"><input id="cc-consent" type="checkbox"> Customer consented to email</label>
         </div>
-        <div>
-          <label class="block text-xs text-slate-400 mb-1">State</label>
-          <input id="cc-ship-state" type="text" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm">
+      </section>
+      <section class="cc-sec is-open">
+        <button type="button" class="cc-sec-btn">Addresses <span>▾</span></button>
+        <div class="cc-sec-body">
+          <p class="cc-note">Billing address</p>
+          <div class="cc-field wide"><label>Street address 1</label><input id="cc-bill-street" type="text"></div>
+          <div class="cc-field wide"><label>Street address 2</label><input id="cc-bill-street2" type="text"></div>
+          <div class="cc-field"><label>City</label><input id="cc-bill-city" type="text"></div>
+          <div class="cc-field"><label>State</label><input id="cc-bill-state" type="text"></div>
+          <div class="cc-field"><label>ZIP code</label><input id="cc-bill-zip" type="text"></div>
+          <div class="cc-field"><label>Country</label><input id="cc-bill-country" type="text" value="United States"></div>
+          <label class="cc-check wide"><input id="cc-ship-same" type="checkbox" checked> Add billing address as the shipping address</label>
+          <div id="cc-ship-fields" class="wide hidden grid" style="grid-template-columns:1fr 1fr;gap:0.75rem 0.85rem">
+            <p class="cc-note" style="grid-column:1/-1">Shipping address</p>
+            <div class="cc-field" style="grid-column:1/-1"><label>Street address 1</label><input id="cc-ship-street" type="text"></div>
+            <div class="cc-field" style="grid-column:1/-1"><label>Street address 2</label><input id="cc-ship-street2" type="text"></div>
+            <div class="cc-field"><label>City</label><input id="cc-ship-city" type="text"></div>
+            <div class="cc-field"><label>State</label><input id="cc-ship-state" type="text"></div>
+            <div class="cc-field"><label>ZIP code</label><input id="cc-ship-zip" type="text"></div>
+            <div class="cc-field"><label>Country</label><input id="cc-ship-country" type="text"></div>
+          </div>
         </div>
-        <div>
-          <label class="block text-xs text-slate-400 mb-1">ZIP</label>
-          <input id="cc-ship-zip" type="text" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm">
+      </section>
+      <section class="cc-sec">
+        <button type="button" class="cc-sec-btn">Notes and attachments <span>▾</span></button>
+        <div class="cc-sec-body">
+          <div class="cc-field wide"><label>Notes</label><textarea id="cc-notes" rows="4"></textarea></div>
         </div>
-        <div>
-          <label class="block text-xs text-slate-400 mb-1">Country</label>
-          <input id="cc-ship-country" type="text" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm">
+      </section>
+      <section class="cc-sec">
+        <button type="button" class="cc-sec-btn">Payments <span>▾</span></button>
+        <div class="cc-sec-body">
+          <div class="cc-field"><label>Primary payment method</label>
+            <select id="cc-pay-method"><option value="">Select a primary payment method</option><option>Check</option><option>ACH</option><option>Credit card</option><option>Wire</option></select>
+          </div>
+          <div class="cc-field"><label>Terms</label>
+            <select id="cc-terms"><option>Due on receipt</option><option>Net 15</option><option selected>Net 30</option><option>Net 45</option><option>Net 60</option></select>
+          </div>
+          <div class="cc-field"><label>Sales form delivery</label>
+            <select id="cc-delivery"><option>Email</option><option>Print</option><option>Email and print</option></select>
+          </div>
+          <div class="cc-field"><label>Language for invoices</label>
+            <select id="cc-lang"><option>English</option><option>Spanish</option></select>
+          </div>
         </div>
-      </div>
-      <div class="sm:col-span-2">
-        <label class="block text-xs text-slate-400 mb-1">Notes</label>
-        <textarea id="cc-notes" rows="3" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm" placeholder="Job site, preferred contact, quote history…"></textarea>
-      </div>
-      <p id="cc-msg" class="sm:col-span-2 hidden text-sm"></p>
+      </section>
+      <section class="cc-sec">
+        <button type="button" class="cc-sec-btn">Additional info <span>▾</span></button>
+        <div class="cc-sec-body">
+          <label class="cc-check wide"><input id="cc-exempt" type="checkbox"> This customer is tax exempt</label>
+          <div class="cc-field"><label>Tax / resale #</label><input id="cc-tax" type="text"></div>
+          <div class="cc-field"><label>Select tax rate</label><input id="cc-tax-rate" type="number" step="0.01" min="0" value="0"></div>
+          <div class="cc-field"><label>Opening balance</label><input id="cc-open-bal" type="number" step="0.01" value="0"></div>
+          <div class="cc-field"><label>As of</label><input id="cc-open-asof" type="date"></div>
+        </div>
+      </section>
+      <section class="cc-sec">
+        <button type="button" class="cc-sec-btn">Relationships &amp; Sales <span>▾</span></button>
+        <div class="cc-sec-body">
+          <div class="cc-field"><label>Sources</label><input id="cc-source" type="text"></div>
+          <div class="cc-field"><label>Referred by</label><input id="cc-referred" type="text"></div>
+          <div class="cc-field"><label>Job title</label><input id="cc-job" type="text"></div>
+          <div class="cc-field"><label>Role</label><input id="cc-role" type="text"></div>
+          <div class="cc-field"><label>Preferred contact method</label>
+            <select id="cc-pref"><option value="">—</option><option>Email</option><option>Phone</option><option>Mobile</option></select>
+          </div>
+          <div class="cc-field"><label>Industry</label><input id="cc-industry" type="text"></div>
+          <div class="cc-field wide"><label>Social media</label><input id="cc-social" type="text"></div>
+        </div>
+      </section>
+      <p id="cc-msg" class="hidden text-sm px-5 pt-3"></p>
     </form>
     <div class="cc-drawer-foot">
       <button id="cc-delete-btn" type="button" class="hidden px-5 py-2 rounded-full border border-slate-700 text-red-400 hover:border-red-500 text-sm">Delete</button>
@@ -1704,54 +1701,124 @@
     }
 
     function fillCcForm(c) {
-      document.getElementById('cc-id').value = c.id || '';
-      document.getElementById('cc-company').value = c.companyName || '';
-      document.getElementById('cc-tax').value = c.taxId || '';
-      document.getElementById('cc-first').value = c.contactFirst || '';
-      document.getElementById('cc-last').value = c.contactLast || '';
-      document.getElementById('cc-email').value = c.email || '';
-      document.getElementById('cc-phone').value = c.phone || '';
-      document.getElementById('cc-mobile').value = c.mobile || '';
-      document.getElementById('cc-website').value = c.website || '';
-      document.getElementById('cc-terms').value = c.paymentTerms || 'Net 30';
-      document.getElementById('cc-bill-street').value = c.billStreet || '';
-      document.getElementById('cc-bill-city').value = c.billCity || '';
-      document.getElementById('cc-bill-state').value = c.billState || '';
-      document.getElementById('cc-bill-zip').value = c.billZip || '';
-      document.getElementById('cc-bill-country').value = c.billCountry || 'United States';
-      document.getElementById('cc-ship-same').checked = c.shipSame !== false;
-      document.getElementById('cc-ship-street').value = c.shipStreet || '';
-      document.getElementById('cc-ship-city').value = c.shipCity || '';
-      document.getElementById('cc-ship-state').value = c.shipState || '';
-      document.getElementById('cc-ship-zip').value = c.shipZip || '';
-      document.getElementById('cc-ship-country').value = c.shipCountry || 'United States';
-      document.getElementById('cc-notes').value = c.notes || '';
+      const set = function (id, value) {
+        const el = document.getElementById(id);
+        if (el) el.value = value == null ? '' : value;
+      };
+      const check = function (id, on) {
+        const el = document.getElementById(id);
+        if (el) el.checked = !!on;
+      };
+      set('cc-id', c.id || '');
+      set('cc-honorific', c.title || '');
+      set('cc-first', c.contactFirst || '');
+      set('cc-middle', c.contactMiddle || '');
+      set('cc-last', c.contactLast || '');
+      set('cc-suffix', c.suffix || '');
+      set('cc-company', c.companyName || '');
+      set('cc-display', c.displayName || '');
+      set('cc-email', c.email || '');
+      set('cc-cc', c.emailCc || '');
+      set('cc-bcc', c.emailBcc || '');
+      set('cc-phone', c.phone || '');
+      set('cc-mobile', c.mobile || '');
+      set('cc-fax', c.fax || '');
+      set('cc-other', c.otherPhone || '');
+      set('cc-website', c.website || '');
+      set('cc-check', c.checkName || '');
+      check('cc-sub', c.isSub);
+      check('cc-consent', c.emailConsent);
+      set('cc-tax', c.taxId || '');
+      check('cc-exempt', c.taxExempt);
+      set('cc-tax-rate', c.taxRate || 0);
+      set('cc-terms', c.paymentTerms || 'Net 30');
+      set('cc-pay-method', c.paymentMethod || '');
+      set('cc-delivery', c.formDelivery || 'Email');
+      set('cc-lang', c.invoiceLanguage || 'English');
+      set('cc-open-bal', c.openingBalance || 0);
+      set('cc-open-asof', c.openingAsOf || '');
+      set('cc-bill-street', c.billStreet || '');
+      set('cc-bill-street2', c.billStreet2 || '');
+      set('cc-bill-city', c.billCity || '');
+      set('cc-bill-state', c.billState || '');
+      set('cc-bill-zip', c.billZip || '');
+      set('cc-bill-country', c.billCountry || 'United States');
+      check('cc-ship-same', c.shipSame !== false);
+      set('cc-ship-street', c.shipStreet || '');
+      set('cc-ship-street2', c.shipStreet2 || '');
+      set('cc-ship-city', c.shipCity || '');
+      set('cc-ship-state', c.shipState || '');
+      set('cc-ship-zip', c.shipZip || '');
+      set('cc-ship-country', c.shipCountry || '');
+      set('cc-source', c.source || '');
+      set('cc-referred', c.referredBy || '');
+      set('cc-job', c.jobTitle || '');
+      set('cc-role', c.contactRole || '');
+      set('cc-pref', c.preferredContact || '');
+      set('cc-industry', c.industry || '');
+      set('cc-social', c.social || '');
+      set('cc-notes', c.notes || '');
       syncCcShipFields();
     }
 
     function readCcForm() {
+      const val = function (id) {
+        const el = document.getElementById(id);
+        return el ? String(el.value || '').trim() : '';
+      };
+      const on = function (id) {
+        const el = document.getElementById(id);
+        return !!(el && el.checked);
+      };
       return {
-        companyName: document.getElementById('cc-company').value.trim(),
-        taxId: document.getElementById('cc-tax').value.trim(),
-        contactFirst: document.getElementById('cc-first').value.trim(),
-        contactLast: document.getElementById('cc-last').value.trim(),
-        email: document.getElementById('cc-email').value.trim(),
-        phone: document.getElementById('cc-phone').value.trim(),
-        mobile: document.getElementById('cc-mobile').value.trim(),
-        website: document.getElementById('cc-website').value.trim(),
-        paymentTerms: document.getElementById('cc-terms').value,
-        billStreet: document.getElementById('cc-bill-street').value.trim(),
-        billCity: document.getElementById('cc-bill-city').value.trim(),
-        billState: document.getElementById('cc-bill-state').value.trim(),
-        billZip: document.getElementById('cc-bill-zip').value.trim(),
-        billCountry: document.getElementById('cc-bill-country').value.trim(),
-        shipSame: document.getElementById('cc-ship-same').checked,
-        shipStreet: document.getElementById('cc-ship-street').value.trim(),
-        shipCity: document.getElementById('cc-ship-city').value.trim(),
-        shipState: document.getElementById('cc-ship-state').value.trim(),
-        shipZip: document.getElementById('cc-ship-zip').value.trim(),
-        shipCountry: document.getElementById('cc-ship-country').value.trim(),
-        notes: document.getElementById('cc-notes').value.trim()
+        title: val('cc-honorific'),
+        contactFirst: val('cc-first'),
+        contactMiddle: val('cc-middle'),
+        contactLast: val('cc-last'),
+        suffix: val('cc-suffix'),
+        companyName: val('cc-company'),
+        displayName: val('cc-display'),
+        email: val('cc-email'),
+        emailCc: val('cc-cc'),
+        emailBcc: val('cc-bcc'),
+        phone: val('cc-phone'),
+        mobile: val('cc-mobile'),
+        fax: val('cc-fax'),
+        otherPhone: val('cc-other'),
+        website: val('cc-website'),
+        checkName: val('cc-check'),
+        isSub: on('cc-sub'),
+        emailConsent: on('cc-consent'),
+        taxId: val('cc-tax'),
+        taxExempt: on('cc-exempt'),
+        taxRate: val('cc-tax-rate'),
+        paymentTerms: val('cc-terms') || 'Net 30',
+        paymentMethod: val('cc-pay-method'),
+        formDelivery: val('cc-delivery'),
+        invoiceLanguage: val('cc-lang'),
+        openingBalance: val('cc-open-bal'),
+        openingAsOf: val('cc-open-asof'),
+        billStreet: val('cc-bill-street'),
+        billStreet2: val('cc-bill-street2'),
+        billCity: val('cc-bill-city'),
+        billState: val('cc-bill-state'),
+        billZip: val('cc-bill-zip'),
+        billCountry: val('cc-bill-country'),
+        shipSame: on('cc-ship-same'),
+        shipStreet: val('cc-ship-street'),
+        shipStreet2: val('cc-ship-street2'),
+        shipCity: val('cc-ship-city'),
+        shipState: val('cc-ship-state'),
+        shipZip: val('cc-ship-zip'),
+        shipCountry: val('cc-ship-country'),
+        source: val('cc-source'),
+        referredBy: val('cc-referred'),
+        jobTitle: val('cc-job'),
+        contactRole: val('cc-role'),
+        preferredContact: val('cc-pref'),
+        industry: val('cc-industry'),
+        social: val('cc-social'),
+        notes: val('cc-notes')
       };
     }
 
@@ -1771,7 +1838,7 @@
         return;
       }
       tbody.innerHTML = filtered.map(function (c) {
-        const name = c.companyName || [c.contactFirst, c.contactLast].filter(Boolean).join(' ') || '—';
+        const name = c.displayName || c.companyName || [c.contactFirst, c.contactLast].filter(Boolean).join(' ') || '—';
         const contact = [c.contactFirst, c.contactLast].filter(Boolean).join(' ') || '—';
         return '<tr class="border-b border-slate-800 hover:bg-slate-900/80 cursor-pointer" data-id="' + esc(c.id) + '">' +
           '<td class="py-3 px-4 font-medium">' + esc(name) + '</td>' +
@@ -1808,7 +1875,7 @@
         document.getElementById('cc-delete-btn').classList.remove('hidden');
         fillCcForm(customer);
       } else {
-        document.getElementById('cc-title').textContent = 'New customer';
+        document.getElementById('cc-title').textContent = 'Customer';
         document.getElementById('cc-delete-btn').classList.add('hidden');
         fillCcForm({
           paymentTerms: 'Net 30',
@@ -1817,9 +1884,10 @@
           shipSame: true
         });
       }
+      document.getElementById('cc-display').dataset.touched = customer && customer.displayName ? '1' : '';
       document.getElementById('cc-drawer').setAttribute('aria-hidden', 'false');
       document.body.classList.add('cc-drawer-open');
-      document.getElementById('cc-company').focus();
+      document.getElementById('cc-first').focus();
     }
 
     async function loadCompanyCustomers() {
@@ -2132,6 +2200,22 @@
       if (name === 'roles') await loadRoles();
     }
 
+    document.getElementById('cc-form').addEventListener('click', function (e) {
+      const btn = e.target.closest('.cc-sec-btn');
+      if (btn) btn.parentElement.classList.toggle('is-open');
+    });
+    ['cc-company', 'cc-first', 'cc-last'].forEach(function (id) {
+      document.getElementById(id).addEventListener('input', function () {
+        const display = document.getElementById('cc-display');
+        if (display.dataset.touched === '1') return;
+        const company = document.getElementById('cc-company').value.trim();
+        const name = [document.getElementById('cc-first').value, document.getElementById('cc-last').value].filter(Boolean).join(' ').trim();
+        display.value = company || name;
+      });
+    });
+    document.getElementById('cc-display').addEventListener('input', function () {
+      this.dataset.touched = this.value.trim() ? '1' : '';
+    });
     document.getElementById('cc-new-btn').addEventListener('click', openNewCustomer);
     document.getElementById('cc-drawer-close').addEventListener('click', closeCustomerDrawer);
     document.getElementById('cc-drawer-scrim').addEventListener('click', closeCustomerDrawer);
