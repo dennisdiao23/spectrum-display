@@ -17,6 +17,7 @@
         <h1 class="text-lg font-bold">Spectrum Admin</h1>
       </div>
       <div class="flex items-center gap-3">
+        <button id="header-settings" type="button" class="hidden px-3 py-1.5 rounded-full text-sm text-slate-400 hover:text-white">Settings</button>
         <span id="admin-name" class="text-sm text-slate-400"></span>
         <button id="logout-btn" type="button" class="hidden px-3 py-1.5 rounded-full border border-slate-600 text-sm hover:border-sky-500">Sign out</button>
       </div>
@@ -25,8 +26,8 @@
 
   <main class="max-w-6xl mx-auto px-4 py-8">
     <section id="login-panel" class="max-w-md mx-auto">
-      <h2 class="text-2xl font-bold mb-2">Admin sign in</h2>
-      <p class="text-sm text-slate-400 mb-6">Website pages, inventory, photos, pricing, and customer accounts.</p>
+      <h2 class="text-2xl font-bold mb-2">Company sign in</h2>
+      <p class="text-sm text-slate-400 mb-6">Spectrum staff only. Website pages, inventory, and customer accounts. This is not a dealer or customer login.</p>
       <form id="login-form" class="rounded-2xl border border-slate-800 bg-slate-900/60 p-6 space-y-4">
         <div>
           <label class="block text-xs text-slate-400 mb-1">Email</label>
@@ -43,9 +44,14 @@
 
     <section id="dash-panel" class="hidden space-y-8">
       <div class="flex flex-wrap gap-2 border-b border-slate-800 pb-3">
-        <button type="button" id="tab-products" class="admin-tab px-4 py-2 rounded-full text-sm font-medium bg-sky-500/20 text-sky-300">Website</button>
+        <button type="button" id="tab-website" class="admin-tab px-4 py-2 rounded-full text-sm font-medium bg-sky-500/20 text-sky-300">Website</button>
         <button type="button" id="tab-inventory" class="admin-tab px-4 py-2 rounded-full text-sm font-medium text-slate-400 hover:text-white">Inventory</button>
-        <button type="button" id="tab-accounts" class="admin-tab px-4 py-2 rounded-full text-sm font-medium text-slate-400 hover:text-white">Accounts</button>
+      </div>
+
+      <div id="website-pane" class="space-y-6">
+      <div id="website-subnav" class="flex flex-wrap gap-1 border-b border-slate-800/80 pb-3">
+        <button type="button" id="tab-products" class="website-subtab px-3 py-1.5 rounded-full text-sm font-medium bg-sky-500/20 text-sky-300">Products</button>
+        <button type="button" id="tab-accounts" class="website-subtab px-3 py-1.5 rounded-full text-sm font-medium text-slate-400 hover:text-white">Accounts</button>
       </div>
 
       <div id="products-section" class="space-y-6">
@@ -73,7 +79,7 @@
       </div>
 
       <div id="form-wrap" class="hidden space-y-4">
-        <button type="button" id="product-back" class="text-sm text-sky-400 hover:text-sky-300">← Website</button>
+        <button type="button" id="product-back" class="text-sm text-sky-400 hover:text-sky-300">← Products</button>
         <div class="rounded-2xl border border-slate-800 bg-slate-900/50 p-5">
         <h2 id="form-title" class="font-semibold text-lg mb-4">New product</h2>
         <form id="product-form" class="grid sm:grid-cols-2 gap-4">
@@ -181,6 +187,105 @@
           <div id="inventory-map-rows" class="space-y-3"></div>
         </div>
       </div>
+      </div>
+
+      <div id="accounts-section" class="hidden space-y-6">
+        <div id="accounts-list-wrap">
+          <p class="text-slate-400 text-sm mb-4">People who signed in on the public website (Customer, Dealer, Sales). Admin logins are under Settings → Manage users, not here. Open an account to set type, markup, orders, and saved projects.</p>
+          <form id="price-tiers-form" class="rounded-2xl border border-slate-800 bg-slate-900/50 p-5 mb-6">
+            <h3 class="font-semibold mb-1">Price tiers</h3>
+            <p class="text-xs text-slate-500 mb-4">Markup % by account type. Signed-in users see catalog price × (1 + markup%). Only admin can see these percents — they never appear on My Account.</p>
+            <div class="grid sm:grid-cols-3 gap-4">
+              <div>
+                <label class="block text-xs text-slate-400 mb-1">Customer markup %</label>
+                <input id="tier-customer" type="number" step="0.1" min="-50" max="500" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm" value="0">
+              </div>
+              <div>
+                <label class="block text-xs text-slate-400 mb-1">Dealer markup %</label>
+                <input id="tier-dealer" type="number" step="0.1" min="-50" max="500" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm" value="0">
+              </div>
+              <div>
+                <label class="block text-xs text-slate-400 mb-1">Sales markup %</label>
+                <input id="tier-sales" type="number" step="0.1" min="-50" max="500" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm" value="0">
+              </div>
+            </div>
+            <div class="mt-4 flex flex-wrap items-center gap-3">
+              <button type="submit" class="px-5 py-2 rounded-full bg-sky-500 hover:bg-sky-400 text-white text-sm font-semibold">Save price tiers</button>
+              <p id="tiers-msg" class="hidden text-sm text-sky-400"></p>
+            </div>
+          </form>
+          <p id="accounts-error" class="hidden text-sm text-red-400 mb-3"></p>
+          <div class="overflow-x-auto rounded-2xl border border-slate-800">
+            <table class="w-full text-sm">
+              <thead class="text-left text-slate-400 border-b border-slate-800">
+                <tr>
+                  <th class="py-3 px-4 font-medium">Name</th>
+                  <th class="py-3 px-4 font-medium">Email</th>
+                  <th class="py-3 px-4 font-medium">Type</th>
+                  <th class="py-3 px-4 font-medium">Markup %</th>
+                  <th class="py-3 px-4 font-medium">Company</th>
+                  <th class="py-3 px-4 font-medium">Created</th>
+                  <th class="py-3 px-4 font-medium"></th>
+                </tr>
+              </thead>
+              <tbody id="accounts-table" class="text-slate-200"></tbody>
+            </table>
+          </div>
+        </div>
+        <div id="account-detail" class="hidden space-y-6">
+          <button type="button" id="account-back" class="text-sm text-sky-400 hover:text-sky-300">← All accounts</button>
+          <form id="account-form" class="rounded-2xl border border-slate-800 bg-slate-900/50 p-5 grid sm:grid-cols-2 gap-4">
+            <input type="hidden" id="acct-id">
+            <div>
+              <label class="block text-xs text-slate-400 mb-1">Name</label>
+              <input id="acct-name" type="text" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm">
+            </div>
+            <div>
+              <label class="block text-xs text-slate-400 mb-1">Email</label>
+              <input id="acct-email" type="email" disabled class="w-full bg-slate-900 border border-slate-800 rounded-lg px-3 py-2 text-sm text-slate-500">
+            </div>
+            <div>
+              <label class="block text-xs text-slate-400 mb-1">Account type</label>
+              <select id="acct-role" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm">
+                <option value="customer">Customer</option>
+                <option value="dealer">Dealer</option>
+                <option value="sales">Sales</option>
+              </select>
+              <p class="text-xs text-slate-500 mt-1">Only admin can change this. Dealer and Sales see Background and Preview Content on the calculator.</p>
+            </div>
+            <div>
+              <label class="block text-xs text-slate-400 mb-1">Markup % for this account</label>
+              <input id="acct-markup" type="number" step="0.1" min="-50" max="500" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm" placeholder="Use type default">
+              <p id="acct-markup-hint" class="text-xs text-slate-500 mt-1">Leave blank to use the account type %. Filling this overwrites the type % for this account only. The user never sees this percent.</p>
+            </div>
+            <div>
+              <label class="block text-xs text-slate-400 mb-1">Company</label>
+              <input id="acct-company" type="text" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm">
+            </div>
+            <div>
+              <label class="block text-xs text-slate-400 mb-1">Phone</label>
+              <input id="acct-phone" type="text" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm">
+            </div>
+            <p id="acct-msg" class="sm:col-span-2 hidden text-sm text-sky-400"></p>
+            <div class="sm:col-span-2">
+              <button type="submit" class="px-5 py-2 rounded-full bg-sky-500 hover:bg-sky-400 text-white text-sm font-semibold">Save account</button>
+            </div>
+          </form>
+          <div>
+            <h3 class="font-semibold mb-3">Orders</h3>
+            <div id="acct-orders" class="space-y-2 text-sm"></div>
+          </div>
+          <div>
+            <h3 class="font-semibold mb-3">Saved calculator projects</h3>
+            <div id="acct-projects" class="space-y-2 text-sm"></div>
+          </div>
+          <div>
+            <h3 class="font-semibold mb-3">Custom panels</h3>
+            <div id="acct-panels" class="space-y-2 text-sm"></div>
+          </div>
+        </div>
+      </div>
+
       </div>
 
       <div id="inventory-section" class="hidden space-y-6">
@@ -333,101 +438,56 @@
         </div>
       </div>
 
-      <div id="accounts-section" class="hidden space-y-6">
-        <div id="accounts-list-wrap">
-          <p class="text-slate-400 text-sm mb-4">People who signed in on the website (My Account). The Admin email on this page is a CMS login — it is not a row here. Open an account to set Customer / Dealer / Sales, markup, orders, and saved projects.</p>
-          <form id="price-tiers-form" class="rounded-2xl border border-slate-800 bg-slate-900/50 p-5 mb-6">
-            <h3 class="font-semibold mb-1">Price tiers</h3>
-            <p class="text-xs text-slate-500 mb-4">Markup % by account type. Signed-in users see catalog price × (1 + markup%). Only admin can see these percents — they never appear on My Account.</p>
-            <div class="grid sm:grid-cols-3 gap-4">
-              <div>
-                <label class="block text-xs text-slate-400 mb-1">Customer markup %</label>
-                <input id="tier-customer" type="number" step="0.1" min="-50" max="500" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm" value="0">
-              </div>
-              <div>
-                <label class="block text-xs text-slate-400 mb-1">Dealer markup %</label>
-                <input id="tier-dealer" type="number" step="0.1" min="-50" max="500" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm" value="0">
-              </div>
-              <div>
-                <label class="block text-xs text-slate-400 mb-1">Sales markup %</label>
-                <input id="tier-sales" type="number" step="0.1" min="-50" max="500" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm" value="0">
-              </div>
-            </div>
-            <div class="mt-4 flex flex-wrap items-center gap-3">
-              <button type="submit" class="px-5 py-2 rounded-full bg-sky-500 hover:bg-sky-400 text-white text-sm font-semibold">Save price tiers</button>
-              <p id="tiers-msg" class="hidden text-sm text-sky-400"></p>
-            </div>
-          </form>
-          <p id="accounts-error" class="hidden text-sm text-red-400 mb-3"></p>
-          <div class="overflow-x-auto rounded-2xl border border-slate-800">
-            <table class="w-full text-sm">
-              <thead class="text-left text-slate-400 border-b border-slate-800">
-                <tr>
-                  <th class="py-3 px-4 font-medium">Name</th>
-                  <th class="py-3 px-4 font-medium">Email</th>
-                  <th class="py-3 px-4 font-medium">Type</th>
-                  <th class="py-3 px-4 font-medium">Markup %</th>
-                  <th class="py-3 px-4 font-medium">Company</th>
-                  <th class="py-3 px-4 font-medium">Created</th>
-                  <th class="py-3 px-4 font-medium"></th>
-                </tr>
-              </thead>
-              <tbody id="accounts-table" class="text-slate-200"></tbody>
-            </table>
+      <div id="settings-pane" class="hidden space-y-6">
+      <div id="settings-subnav" class="flex flex-wrap gap-1 border-b border-slate-800/80 pb-3">
+        <button type="button" id="tab-staff" class="settings-subtab px-3 py-1.5 rounded-full text-sm font-medium bg-sky-500/20 text-sky-300">Manage users</button>
+      </div>
+      <div id="staff-section" class="space-y-6">
+        <p class="text-slate-400 text-sm">Admin logins for this page — not website Customer / Dealer / Sales accounts. Owner sees everything. Website can edit product pages and website accounts. Inventory can receive and adjust stock.</p>
+        <form id="staff-form" class="rounded-2xl border border-slate-800 bg-slate-900/50 p-5 grid sm:grid-cols-2 gap-4">
+          <input type="hidden" id="staff-id">
+          <div>
+            <label class="block text-xs text-slate-400 mb-1">Name</label>
+            <input id="staff-name" required type="text" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm">
           </div>
+          <div>
+            <label class="block text-xs text-slate-400 mb-1">Email</label>
+            <input id="staff-email" required type="email" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm">
+          </div>
+          <div>
+            <label class="block text-xs text-slate-400 mb-1">Role</label>
+            <select id="staff-role" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm">
+              <option value="owner">Owner</option>
+              <option value="website">Website</option>
+              <option value="inventory">Inventory</option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-xs text-slate-400 mb-1" id="staff-password-label">Password</label>
+            <input id="staff-password" type="password" minlength="8" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm" autocomplete="new-password">
+            <p class="text-[11px] text-slate-500 mt-1" id="staff-password-hint">At least 8 characters.</p>
+          </div>
+          <p id="staff-msg" class="sm:col-span-2 hidden text-sm"></p>
+          <div class="sm:col-span-2 flex flex-wrap gap-2">
+            <button type="submit" id="staff-save" class="px-5 py-2 rounded-full bg-sky-500 hover:bg-sky-400 text-white text-sm font-semibold">Add user</button>
+            <button type="button" id="staff-cancel" class="hidden px-5 py-2 rounded-full border border-slate-600 text-sm">Cancel</button>
+          </div>
+        </form>
+        <p id="staff-error" class="hidden text-sm text-red-400"></p>
+        <div class="overflow-x-auto rounded-2xl border border-slate-800">
+          <table class="w-full text-sm">
+            <thead class="text-left text-slate-400 border-b border-slate-800">
+              <tr>
+                <th class="py-3 px-4 font-medium">Name</th>
+                <th class="py-3 px-4 font-medium">Email</th>
+                <th class="py-3 px-4 font-medium">Role</th>
+                <th class="py-3 px-4 font-medium"></th>
+              </tr>
+            </thead>
+            <tbody id="staff-table" class="text-slate-200"></tbody>
+          </table>
         </div>
-        <div id="account-detail" class="hidden space-y-6">
-          <button type="button" id="account-back" class="text-sm text-sky-400 hover:text-sky-300">← All accounts</button>
-          <form id="account-form" class="rounded-2xl border border-slate-800 bg-slate-900/50 p-5 grid sm:grid-cols-2 gap-4">
-            <input type="hidden" id="acct-id">
-            <div>
-              <label class="block text-xs text-slate-400 mb-1">Name</label>
-              <input id="acct-name" type="text" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm">
-            </div>
-            <div>
-              <label class="block text-xs text-slate-400 mb-1">Email</label>
-              <input id="acct-email" type="email" disabled class="w-full bg-slate-900 border border-slate-800 rounded-lg px-3 py-2 text-sm text-slate-500">
-            </div>
-            <div>
-              <label class="block text-xs text-slate-400 mb-1">Account type</label>
-              <select id="acct-role" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm">
-                <option value="customer">Customer</option>
-                <option value="dealer">Dealer</option>
-                <option value="sales">Sales</option>
-              </select>
-              <p class="text-xs text-slate-500 mt-1">Only admin can change this. Dealer and Sales see Background and Preview Content on the calculator.</p>
-            </div>
-            <div>
-              <label class="block text-xs text-slate-400 mb-1">Markup % for this account</label>
-              <input id="acct-markup" type="number" step="0.1" min="-50" max="500" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm" placeholder="Use type default">
-              <p id="acct-markup-hint" class="text-xs text-slate-500 mt-1">Leave blank to use the account type %. Filling this overwrites the type % for this account only. The user never sees this percent.</p>
-            </div>
-            <div>
-              <label class="block text-xs text-slate-400 mb-1">Company</label>
-              <input id="acct-company" type="text" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm">
-            </div>
-            <div>
-              <label class="block text-xs text-slate-400 mb-1">Phone</label>
-              <input id="acct-phone" type="text" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm">
-            </div>
-            <p id="acct-msg" class="sm:col-span-2 hidden text-sm text-sky-400"></p>
-            <div class="sm:col-span-2">
-              <button type="submit" class="px-5 py-2 rounded-full bg-sky-500 hover:bg-sky-400 text-white text-sm font-semibold">Save account</button>
-            </div>
-          </form>
-          <div>
-            <h3 class="font-semibold mb-3">Orders</h3>
-            <div id="acct-orders" class="space-y-2 text-sm"></div>
-          </div>
-          <div>
-            <h3 class="font-semibold mb-3">Saved calculator projects</h3>
-            <div id="acct-projects" class="space-y-2 text-sm"></div>
-          </div>
-          <div>
-            <h3 class="font-semibold mb-3">Custom panels</h3>
-            <div id="acct-panels" class="space-y-2 text-sm"></div>
-          </div>
-        </div>
+      </div>
       </div>
     </section>
   </main>
@@ -440,6 +500,29 @@
     let brands = [];
     let editingId = null;
     let editingHidden = false;
+    let currentAdminUser = null;
+    let editingStaffId = null;
+    let websiteSubTab = 'products';
+
+    function adminRole() {
+      const r = String((currentAdminUser && currentAdminUser.role) || '').toLowerCase().trim();
+      if (r === 'website' || r === 'inventory') return r;
+      return 'owner';
+    }
+    function canUse(section) {
+      const role = adminRole();
+      if (section === 'products' || section === 'website' || section === 'accounts') {
+        return role === 'owner' || role === 'website';
+      }
+      if (section === 'inventory') return role === 'owner' || role === 'inventory';
+      if (section === 'staff' || section === 'settings') return role === 'owner';
+      return false;
+    }
+    function staffRoleLabel(role) {
+      if (role === 'website') return 'Website';
+      if (role === 'inventory') return 'Inventory';
+      return 'Owner';
+    }
 
     function showError(id, msg) {
       const el = document.getElementById(id);
@@ -455,10 +538,17 @@
     }
 
     function showDash(admin) {
+      currentAdminUser = admin;
       loginPanel.classList.add('hidden');
       dashPanel.classList.remove('hidden');
       document.getElementById('logout-btn').classList.remove('hidden');
-      document.getElementById('admin-name').textContent = admin.name || admin.email;
+      const roleBit = admin.role && admin.role !== 'owner' ? ' · ' + staffRoleLabel(admin.role) : '';
+      document.getElementById('admin-name').textContent = (admin.name || admin.email || '') + roleBit;
+      document.getElementById('tab-website').classList.toggle('hidden', !canUse('website'));
+      document.getElementById('tab-inventory').classList.toggle('hidden', !canUse('inventory'));
+      document.getElementById('header-settings').classList.toggle('hidden', !canUse('settings'));
+      websiteSubTab = 'products';
+      showAdminTab(canUse('website') ? 'products' : (canUse('inventory') ? 'inventory' : 'staff'));
     }
 
     function fillBrands(selected) {
@@ -578,14 +668,21 @@
     }
 
     async function loadDash() {
-      const [brandData, productData] = await Promise.all([
-        api('/api/admin/brands'),
-        api('/api/admin/products')
-      ]);
-      brands = brandData.brands || [];
-      fillBrands(brands[0] && brands[0].id);
-      renderProducts(productData.products || []);
-      await loadInventory();
+      if (canUse('products')) {
+        const [brandData, productData] = await Promise.all([
+          api('/api/admin/brands'),
+          api('/api/admin/products')
+        ]);
+        brands = brandData.brands || [];
+        fillBrands(brands[0] && brands[0].id);
+        renderProducts(productData.products || []);
+      }
+      if (canUse('inventory') || canUse('products')) {
+        await loadInventory();
+      }
+      if (canUse('staff')) {
+        await loadStaff();
+      }
     }
 
     function roleLabel(role) {
@@ -602,15 +699,30 @@
       return '<p class="text-slate-500 text-sm rounded-xl border border-dashed border-slate-800 p-4">' + esc(text) + '</p>';
     }
 
+    function tabClass(on, extra, hide) {
+      return extra + ' rounded-full text-sm font-medium ' +
+        (on ? 'bg-sky-500/20 text-sky-300' : 'text-slate-400 hover:text-white') +
+        (hide ? ' hidden' : '');
+    }
+
     function showAdminTab(name) {
+      const onWebsite = name === 'products' || name === 'accounts';
+      const onSettings = name === 'staff';
+      if (onWebsite) websiteSubTab = name;
+      document.getElementById('website-pane').classList.toggle('hidden', !onWebsite);
+      document.getElementById('settings-pane').classList.toggle('hidden', !onSettings);
       document.getElementById('products-section').classList.toggle('hidden', name !== 'products');
       document.getElementById('inventory-section').classList.toggle('hidden', name !== 'inventory');
       document.getElementById('accounts-section').classList.toggle('hidden', name !== 'accounts');
-      ['products', 'inventory', 'accounts'].forEach(function (key) {
-        const on = name === key;
-        document.getElementById('tab-' + key).className = 'admin-tab px-4 py-2 rounded-full text-sm font-medium ' +
-          (on ? 'bg-sky-500/20 text-sky-300' : 'text-slate-400 hover:text-white');
-      });
+      document.getElementById('staff-section').classList.toggle('hidden', name !== 'staff');
+      document.getElementById('tab-website').className = tabClass(onWebsite, 'admin-tab px-4 py-2', !canUse('website'));
+      document.getElementById('tab-inventory').className = tabClass(name === 'inventory', 'admin-tab px-4 py-2', !canUse('inventory'));
+      document.getElementById('tab-products').className = tabClass(name === 'products', 'website-subtab px-3 py-1.5', false);
+      document.getElementById('tab-accounts').className = tabClass(name === 'accounts', 'website-subtab px-3 py-1.5', !canUse('accounts'));
+      document.getElementById('tab-staff').className = tabClass(name === 'staff', 'settings-subtab px-3 py-1.5', !canUse('staff'));
+      document.getElementById('header-settings').className = 'px-3 py-1.5 rounded-full text-sm ' +
+        (onSettings ? 'bg-sky-500/20 text-sky-300' : 'text-slate-400 hover:text-white') +
+        (canUse('settings') ? '' : ' hidden');
     }
 
     let inventoryItems = [];
@@ -891,7 +1003,9 @@
           '<select data-map-pitch="' + esc(pitch) + '" class="flex-1 bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm">' +
             options.join('') +
           '</select>' +
-          '<button type="button" data-create-pitch="' + esc(pitch) + '" class="px-3 py-2 rounded-full border border-slate-600 text-xs hover:border-sky-500">Create SKU</button>' +
+          (canUse('inventory')
+            ? '<button type="button" data-create-pitch="' + esc(pitch) + '" class="px-3 py-2 rounded-full border border-slate-600 text-xs hover:border-sky-500">Create SKU</button>'
+            : '') +
           '</div>';
       }).join('');
     }
@@ -1012,6 +1126,17 @@
       }
     }
 
+    document.getElementById('tab-website').addEventListener('click', async function () {
+      const next = websiteSubTab === 'accounts' ? 'accounts' : 'products';
+      showAdminTab(next);
+      if (next === 'products') closeProductForm();
+      else {
+        document.getElementById('accounts-list-wrap').classList.remove('hidden');
+        document.getElementById('account-detail').classList.add('hidden');
+        await loadPriceTiers();
+        await loadAccounts();
+      }
+    });
     document.getElementById('tab-products').addEventListener('click', function () {
       showAdminTab('products');
       closeProductForm();
@@ -1029,6 +1154,123 @@
       await loadPriceTiers();
       await loadAccounts();
     });
+    document.getElementById('header-settings').addEventListener('click', async function () {
+      showAdminTab('staff');
+      await loadStaff();
+    });
+    document.getElementById('tab-staff').addEventListener('click', async function () {
+      showAdminTab('staff');
+      await loadStaff();
+    });
+    function resetStaffForm() {
+      editingStaffId = null;
+      document.getElementById('staff-form').reset();
+      document.getElementById('staff-id').value = '';
+      document.getElementById('staff-email').disabled = false;
+      document.getElementById('staff-save').textContent = 'Add user';
+      document.getElementById('staff-cancel').classList.add('hidden');
+      document.getElementById('staff-password').required = true;
+      document.getElementById('staff-password-label').textContent = 'Password';
+      document.getElementById('staff-password-hint').textContent = 'At least 8 characters.';
+      showError('staff-error', '');
+      const msg = document.getElementById('staff-msg');
+      msg.classList.add('hidden');
+      msg.textContent = '';
+    }
+
+    function renderStaff(list) {
+      const me = currentAdminUser && String(currentAdminUser.id);
+      document.getElementById('staff-table').innerHTML = (list || []).map(function (p) {
+        const mine = String(p.id) === me;
+        return '<tr class="border-b border-slate-800">' +
+          '<td class="py-2.5 px-4 font-medium">' + esc(p.name || '') + (mine ? ' <span class="text-xs text-slate-500">(you)</span>' : '') + '</td>' +
+          '<td class="py-2.5 px-4 text-slate-400">' + esc(p.email || '') + '</td>' +
+          '<td class="py-2.5 px-4"><span class="text-xs px-2 py-0.5 rounded-full bg-sky-500/15 text-sky-300">' + esc(staffRoleLabel(p.role)) + '</span></td>' +
+          '<td class="py-2.5 px-4 text-right whitespace-nowrap">' +
+            '<button type="button" class="text-sky-400 text-xs mr-3" data-staff-edit="' + esc(p.id) + '">Edit</button>' +
+            (mine ? '' : '<button type="button" class="text-red-400 text-xs" data-staff-del="' + esc(p.id) + '">Remove</button>') +
+          '</td></tr>';
+      }).join('') || '<tr><td class="py-6 px-4 text-slate-500" colspan="4">No staff logins yet.</td></tr>';
+    }
+
+    async function loadStaff() {
+      if (!canUse('staff')) return;
+      showError('staff-error', '');
+      try {
+        const data = await api('/api/admin/staff');
+        renderStaff(data.staff || []);
+      } catch (err) {
+        showError('staff-error', err.message);
+      }
+    }
+
+    document.getElementById('staff-cancel').addEventListener('click', resetStaffForm);
+
+    document.getElementById('staff-table').addEventListener('click', async function (e) {
+      const editId = e.target.getAttribute && e.target.getAttribute('data-staff-edit');
+      const delId = e.target.getAttribute && e.target.getAttribute('data-staff-del');
+      if (editId) {
+        const data = await api('/api/admin/staff');
+        const person = (data.staff || []).find(function (p) { return String(p.id) === String(editId); });
+        if (!person) return;
+        editingStaffId = person.id;
+        document.getElementById('staff-id').value = person.id;
+        document.getElementById('staff-name').value = person.name || '';
+        document.getElementById('staff-email').value = person.email || '';
+        document.getElementById('staff-email').disabled = true;
+        document.getElementById('staff-role').value = person.role || 'owner';
+        document.getElementById('staff-password').value = '';
+        document.getElementById('staff-password').required = false;
+        document.getElementById('staff-password-label').textContent = 'New password';
+        document.getElementById('staff-password-hint').textContent = 'Leave blank to keep the current password.';
+        document.getElementById('staff-save').textContent = 'Save user';
+        document.getElementById('staff-cancel').classList.remove('hidden');
+        return;
+      }
+      if (delId) {
+        if (!confirm('Remove this Admin login? They will not be able to sign in here.')) return;
+        await api('/api/admin/staff/' + delId, { method: 'DELETE' });
+        resetStaffForm();
+        await loadStaff();
+      }
+    });
+
+    document.getElementById('staff-form').addEventListener('submit', async function (e) {
+      e.preventDefault();
+      showError('staff-error', '');
+      const msg = document.getElementById('staff-msg');
+      msg.classList.add('hidden');
+      const body = {
+        name: document.getElementById('staff-name').value.trim(),
+        email: document.getElementById('staff-email').value.trim(),
+        role: document.getElementById('staff-role').value,
+        password: document.getElementById('staff-password').value
+      };
+      if (editingStaffId && !body.password) delete body.password;
+      try {
+        if (editingStaffId) {
+          await api('/api/admin/staff/' + editingStaffId, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(body)
+          });
+        } else {
+          await api('/api/admin/staff', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(body)
+          });
+        }
+        resetStaffForm();
+        msg.textContent = 'Saved.';
+        msg.classList.remove('hidden', 'text-red-400');
+        msg.classList.add('text-sky-400');
+        await loadStaff();
+      } catch (err) {
+        showError('staff-error', err.message);
+      }
+    });
+
     document.getElementById('inventory-back').addEventListener('click', async function () {
       document.getElementById('inventory-detail').classList.add('hidden');
       document.getElementById('inventory-list-wrap').classList.remove('hidden');

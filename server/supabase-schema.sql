@@ -38,8 +38,11 @@ create table if not exists public.admins (
   email text not null unique,
   name text not null,
   password_hash text not null,
+  role text not null default 'owner',
   created_at timestamptz not null default now()
 );
+
+alter table public.admins add column if not exists role text not null default 'owner';
 
 create table if not exists public.sessions (
   token text primary key,

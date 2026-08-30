@@ -73,6 +73,7 @@ function openDb() {
       email TEXT NOT NULL UNIQUE,
       name TEXT NOT NULL,
       password_hash TEXT NOT NULL,
+      role TEXT NOT NULL DEFAULT 'owner',
       created_at TEXT NOT NULL
     );
     CREATE TABLE IF NOT EXISTS sessions (
@@ -114,6 +115,7 @@ function openDb() {
   `);
   try { db.exec("ALTER TABLE products ADD COLUMN details TEXT NOT NULL DEFAULT '{}'"); } catch (e) { /* already present */ }
   try { db.exec('ALTER TABLE products ADD COLUMN hidden INTEGER NOT NULL DEFAULT 0'); } catch (e) { /* already present */ }
+  try { db.exec("ALTER TABLE admins ADD COLUMN role TEXT NOT NULL DEFAULT 'owner'"); } catch (e) { /* already present */ }
   db.exec(`
     CREATE TABLE IF NOT EXISTS inventory_stock (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -345,8 +347,8 @@ function seedAdmin(db) {
   const password = process.env.ADMIN_PASSWORD || 'ChangeMe!Admin';
   const name = process.env.ADMIN_NAME || 'Spectrum Admin';
   db.prepare(
-    'INSERT INTO admins (email, name, password_hash, created_at) VALUES (?, ?, ?, ?)'
-  ).run(email, name, bcrypt.hashSync(password, 10), nowIso());
+    'INSERT INTO admins (email, name, password_hash, role, created_at) VALUES (?, ?, ?, ?, ?)'
+  ).run(email, name, bcrypt.hashSync(password, 10), 'owner', nowIso());
   console.log('Seeded admin account: ' + email);
 }
 

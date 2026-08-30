@@ -40,7 +40,8 @@ function createSupabaseStore() {
       const { error: insErr } = await supabase.from('admins').insert({
         email,
         name,
-        password_hash: bcrypt.hashSync(password, 10)
+        password_hash: bcrypt.hashSync(password, 10),
+        role: 'owner'
       });
       throwIf(insErr, 'Could not seed admin account.');
       console.log('Seeded admin account: ' + email);
@@ -542,7 +543,7 @@ function createSupabaseStore() {
     async getSession(token) {
       const { data, error } = await supabase
         .from('sessions')
-        .select('expires_at, admins ( id, email, name )')
+        .select('expires_at, admins ( id, email, name, role )')
         .eq('token', token)
         .maybeSingle();
       throwIf(error);
@@ -551,12 +552,57 @@ function createSupabaseStore() {
         id: data.admins.id,
         email: data.admins.email,
         name: data.admins.name,
+        role: data.admins.role,
         expires_at: data.expires_at
       };
     },
     async deleteSession(token) {
       const { error } = await supabase.from('sessions').delete().eq('token', token);
       throwIf(error);
+    },
+    async listAdmins() {
+      const { publicAdmin } = require('./admin-roles');
+      const { data, error } = await supabase.from('admins').select('id, email, name, role, created_at').order('name');
+      throwIf(error);
+      return (data || []).map(publicAdmin);
+    },
+    async createAdmin(input) {
+      const { normalizeRole, publicAdmin } = require('./admin-roles');
+      const { data, error } = await supabase.from('admins').insert({
+        email: input.email,
+        name: input.name,
+        password_hash: input.passwordHash,
+        role: normalizeRole(input.role)
+      }).select('id, email, name, role, created_at').single();
+      throwIf(error);
+      return publicAdmin(data);
+    },
+    async updateAdmin(id, input) {
+      const { normalizeRole, publicAdmin } = require('./admin-roles');
+      const { data: current, error: cErr } = await supabase.from('admins').select('*').eq('id', id).maybeSingle();
+      throwIf(cErr);
+      if (!current) return null;
+      const patch = {};
+      if (input.name != null) patch.name = input.name;
+      if (input.role != null) patch.role = normalizeRole(input.role);
+      if (input.passwordHash) patch.password_hash = input.passwordHash;
+      const { data, error } = await supabase.from('admins').update(patch).eq('id', id)
+        .select('id, email, name, role, created_at').single();
+      throwIf(error);
+      return publicAdmin(data);
+    },
+    async deleteAdmin(id) {
+      const { error: sErr } = await supabase.from('sessions').delete().eq('admin_id', id);
+      throwIf(sErr);
+      const { data, error } = await supabase.from('admins').delete().eq('id', id).select('id');
+      throwIf(error);
+      return !!(data && data.length);
+    },
+    async countAdminsByRole(role) {
+      const { normalizeRole } = require('./admin-roles');
+      const { count, error } = await supabase.from('admins').select('id', { count: 'exact', head: true }).eq('role', normalizeRole(role));
+      throwIf(error);
+      return Number(count) || 0;
     },
     async listAccounts() {
       const { data, error } = await supabase
