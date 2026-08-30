@@ -1119,6 +1119,8 @@ function createSupabaseStore() {
       if (!input.number) {
         input.number = sales.nextDocNumber((existingRows.data || []).map(function (r) { return r.number; }), input.type);
       }
+      const { data: taken } = await supabase.from('company_sales_docs').select('id').eq('number', input.number).maybeSingle();
+      if (taken) throw new Error('That document number is already used.');
       const fields = sales.dbDocFields(input);
       const stamp = new Date().toISOString();
       fields.created_at = stamp;
@@ -1148,6 +1150,8 @@ function createSupabaseStore() {
         type: payload.type || current.type,
         number: payload.number || current.number
       }));
+      const { data: taken } = await supabase.from('company_sales_docs').select('id').eq('number', input.number).neq('id', id).maybeSingle();
+      if (taken) throw new Error('That document number is already used.');
       const fields = sales.dbDocFields(input);
       fields.updated_at = new Date().toISOString();
       const { error } = await supabase.from('company_sales_docs').update(fields).eq('id', id);

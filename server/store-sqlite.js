@@ -557,6 +557,9 @@ function createSqliteStore() {
       }
       const existing = db.prepare('SELECT number FROM company_sales_docs WHERE type = ?').all(input.type).map(function (r) { return r.number; });
       if (!input.number) input.number = sales.nextDocNumber(existing, input.type);
+      if (db.prepare('SELECT id FROM company_sales_docs WHERE number = ?').get(input.number)) {
+        throw new Error('That document number is already used.');
+      }
       const fields = sales.dbDocFields(input);
       const stamp = dbUtil.nowIso();
       const info = db.prepare(`
@@ -587,6 +590,8 @@ function createSqliteStore() {
       const current = db.prepare('SELECT * FROM company_sales_docs WHERE id = ?').get(id);
       if (!current) return null;
       const input = sales.normalizeDoc(Object.assign({}, payload, { type: payload.type || current.type, number: payload.number || current.number }));
+      const taken = db.prepare('SELECT id FROM company_sales_docs WHERE number = ? AND id != ?').get(input.number, id);
+      if (taken) throw new Error('That document number is already used.');
       const fields = sales.dbDocFields(input);
       db.prepare(`
         UPDATE company_sales_docs SET

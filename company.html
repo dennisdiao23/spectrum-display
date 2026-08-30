@@ -685,6 +685,41 @@
               </select>
             </div>
             <div>
+              <label class="block text-xs text-slate-400 mb-1" id="so-number-label">Quote no.</label>
+              <input id="so-number" type="text" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm" placeholder="SQ-1001">
+            </div>
+            <div id="so-new-customer" class="hidden sm:col-span-2 rounded-xl border border-sky-500/30 bg-slate-950/60 p-4 grid sm:grid-cols-2 gap-3">
+              <div class="sm:col-span-2">
+                <h3 class="font-semibold text-sm">Add customer</h3>
+                <p class="text-xs text-slate-400 mt-0.5">Saved to Company → Customer. Not a website Sign in account.</p>
+              </div>
+              <div>
+                <label class="block text-xs text-slate-400 mb-1">Company name</label>
+                <input id="so-nc-company" type="text" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm">
+              </div>
+              <div>
+                <label class="block text-xs text-slate-400 mb-1">Email</label>
+                <input id="so-nc-email" type="email" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm">
+              </div>
+              <div>
+                <label class="block text-xs text-slate-400 mb-1">First name</label>
+                <input id="so-nc-first" type="text" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm">
+              </div>
+              <div>
+                <label class="block text-xs text-slate-400 mb-1">Last name</label>
+                <input id="so-nc-last" type="text" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm">
+              </div>
+              <div>
+                <label class="block text-xs text-slate-400 mb-1">Phone</label>
+                <input id="so-nc-phone" type="text" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm">
+              </div>
+              <div class="flex flex-wrap items-end gap-2">
+                <button type="button" id="so-nc-save" class="px-4 py-2 rounded-full bg-sky-500 hover:bg-sky-400 text-white text-sm font-semibold">Save customer</button>
+                <button type="button" id="so-nc-cancel" class="px-4 py-2 rounded-full border border-slate-700 text-sm">Cancel</button>
+              </div>
+              <p id="so-nc-msg" class="hidden sm:col-span-2 text-sm text-red-400"></p>
+            </div>
+            <div>
               <label class="block text-xs text-slate-400 mb-1">Customer name</label>
               <input id="so-customer-name" type="text" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm" placeholder="Filled from Customer, or type a name">
             </div>
@@ -1860,11 +1895,39 @@
 
     function fillSoCustomers(selected) {
       const sel = document.getElementById('so-customer');
-      sel.innerHTML = '<option value="">Select a customer</option>' + (salesCustomers || []).map(function (c) {
-        return '<option value="' + esc(c.id) + '"' + (String(c.id) === String(selected) ? ' selected' : '') + '>' +
-          esc(c.displayName || c.companyName || [c.contactFirst, c.contactLast].filter(Boolean).join(' ') || c.email) +
-          '</option>';
-      }).join('');
+      sel.innerHTML = '<option value="">Select a customer</option>' +
+        '<option value="__new__">+ Add new</option>' +
+        (salesCustomers || []).map(function (c) {
+          return '<option value="' + esc(c.id) + '"' + (String(c.id) === String(selected) ? ' selected' : '') + '>' +
+            esc(c.displayName || c.companyName || [c.contactFirst, c.contactLast].filter(Boolean).join(' ') || c.email) +
+            '</option>';
+        }).join('');
+    }
+
+    function nextSoNumber(type) {
+      const prefix = type === 'quote' ? 'SQ' : type === 'invoice' ? 'INV' : 'SO';
+      let max = 1000;
+      (salesDocs || []).forEach(function (d) {
+        const m = String(d.number || '').toUpperCase().match(new RegExp('^' + prefix + '-(\\d+)$'));
+        if (m) max = Math.max(max, parseInt(m[1], 10));
+      });
+      return prefix + '-' + (max + 1);
+    }
+
+    function numberLabel(type) {
+      if (type === 'order') return 'Sales order no.';
+      if (type === 'invoice') return 'Invoice no.';
+      return 'Quote no.';
+    }
+
+    function showSoNewCustomer(on) {
+      document.getElementById('so-new-customer').classList.toggle('hidden', !on);
+      if (!on) {
+        ['so-nc-company', 'so-nc-email', 'so-nc-first', 'so-nc-last', 'so-nc-phone'].forEach(function (id) {
+          document.getElementById(id).value = '';
+        });
+        document.getElementById('so-nc-msg').classList.add('hidden');
+      }
     }
 
     function applySoCustomer(c) {
@@ -1916,6 +1979,8 @@
     function setSoTypeUi(type) {
       document.getElementById('so-type').value = type;
       document.getElementById('so-due-label').textContent = type === 'quote' ? 'Valid until' : 'Due date';
+      document.getElementById('so-number-label').textContent = numberLabel(type);
+      document.getElementById('so-number').placeholder = nextSoNumber(type);
       document.getElementById('so-new-btn').textContent = 'New ' + salesTypeLabel(type).toLowerCase();
       document.getElementById('so-list-label').textContent =
         type === 'quote' ? 'sales quotes' : type === 'order' ? 'sales orders' : 'invoices';
@@ -1972,7 +2037,10 @@
         ]);
         salesDocs = docsData.docs || [];
         salesCustomers = custData.customers || [];
-        fillSoCustomers('');
+        const keep = document.getElementById('so-detail').classList.contains('hidden')
+          ? ''
+          : document.getElementById('so-customer').value;
+        fillSoCustomers(keep === '__new__' ? '' : keep);
         renderSoTable(salesDocs, t);
       } catch (err) {
         showError('so-error', err.message || 'Could not load sales documents.');
@@ -1984,8 +2052,10 @@
       const type = doc.type || 'quote';
       setSoTypeUi(type);
       document.getElementById('so-id').value = doc.id || '';
+      showSoNewCustomer(false);
       fillSoCustomers(doc.customerId || '');
       fillSoStatuses(type, doc.status || 'draft');
+      document.getElementById('so-number').value = doc.number || nextSoNumber(type);
       document.getElementById('so-customer-name').value = doc.customerName || '';
       document.getElementById('so-customer-email').value = doc.customerEmail || '';
       document.getElementById('so-po').value = doc.poNumber || '';
@@ -2006,7 +2076,8 @@
     function readSoForm() {
       return {
         type: document.getElementById('so-type').value,
-        customerId: document.getElementById('so-customer').value,
+        number: document.getElementById('so-number').value.trim(),
+        customerId: document.getElementById('so-customer').value === '__new__' ? '' : document.getElementById('so-customer').value,
         customerName: document.getElementById('so-customer-name').value.trim(),
         customerEmail: document.getElementById('so-customer-email').value.trim(),
         poNumber: document.getElementById('so-po').value.trim(),
@@ -2168,8 +2239,45 @@
     document.getElementById('so-tax-rate').addEventListener('input', refreshSoTotals);
     document.getElementById('so-customer').addEventListener('change', function () {
       const id = this.value;
+      if (id === '__new__') {
+        showSoNewCustomer(true);
+        document.getElementById('so-nc-company').focus();
+        return;
+      }
+      showSoNewCustomer(false);
       const c = (salesCustomers || []).find(function (row) { return String(row.id) === String(id); });
       applySoCustomer(c);
+    });
+    document.getElementById('so-nc-cancel').addEventListener('click', function () {
+      showSoNewCustomer(false);
+      document.getElementById('so-customer').value = '';
+    });
+    document.getElementById('so-nc-save').addEventListener('click', async function () {
+      const msg = document.getElementById('so-nc-msg');
+      msg.classList.add('hidden');
+      try {
+        const data = await api('/api/admin/company-customers', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            companyName: document.getElementById('so-nc-company').value.trim(),
+            contactFirst: document.getElementById('so-nc-first').value.trim(),
+            contactLast: document.getElementById('so-nc-last').value.trim(),
+            email: document.getElementById('so-nc-email').value.trim(),
+            phone: document.getElementById('so-nc-phone').value.trim(),
+            shipSame: true
+          })
+        });
+        const c = data.customer;
+        salesCustomers = (salesCustomers || []).concat([c]);
+        fillSoCustomers(c.id);
+        applySoCustomer(c);
+        showSoNewCustomer(false);
+        showSoMsg((c.displayName || 'Customer') + ' added.', true);
+      } catch (err) {
+        msg.textContent = err.message || 'Could not add customer.';
+        msg.classList.remove('hidden');
+      }
     });
     document.getElementById('so-form').addEventListener('submit', async function (e) {
       e.preventDefault();
