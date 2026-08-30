@@ -619,10 +619,11 @@ function createSqliteStore() {
       const fields = vn.dbFields(input);
       const stamp = dbUtil.nowIso();
       const keys = Object.keys(fields);
+      const values = keys.map(function (k) { return fields[k]; }).concat([stamp, stamp]);
       const info = db.prepare(
         'INSERT INTO inventory_vendors (' + keys.join(', ') + ', created_at, updated_at) VALUES (' +
         keys.map(function () { return '?'; }).join(', ') + ', ?, ?)'
-      ).run(keys.map(function (k) { return fields[k]; }).concat([stamp, stamp]));
+      ).run(...values);
       return this.getVendor(info.lastInsertRowid);
     },
     async updateVendor(id, payload) {
@@ -632,9 +633,10 @@ function createSqliteStore() {
       const input = vn.normalizeVendor(payload);
       const fields = vn.dbFields(input);
       const keys = Object.keys(fields);
+      const values = keys.map(function (k) { return fields[k]; }).concat([dbUtil.nowIso(), id]);
       db.prepare(
         'UPDATE inventory_vendors SET ' + keys.map(function (k) { return k + ' = ?'; }).join(', ') + ', updated_at = ? WHERE id = ?'
-      ).run(keys.map(function (k) { return fields[k]; }).concat([dbUtil.nowIso(), id]));
+      ).run(...values);
       return this.getVendor(id);
     },
     async deleteVendor(id) {
