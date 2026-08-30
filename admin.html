@@ -26,7 +26,7 @@
   <main class="max-w-6xl mx-auto px-4 py-8">
     <section id="login-panel" class="max-w-md mx-auto">
       <h2 class="text-2xl font-bold mb-2">Admin sign in</h2>
-      <p class="text-sm text-slate-400 mb-6">Products, photos, pricing, and customer accounts. Default local login is in the README.</p>
+      <p class="text-sm text-slate-400 mb-6">Products, inventory, photos, pricing, and customer accounts.</p>
       <form id="login-form" class="rounded-2xl border border-slate-800 bg-slate-900/60 p-6 space-y-4">
         <div>
           <label class="block text-xs text-slate-400 mb-1">Email</label>
@@ -44,6 +44,7 @@
     <section id="dash-panel" class="hidden space-y-8">
       <div class="flex flex-wrap gap-2 border-b border-slate-800 pb-3">
         <button type="button" id="tab-products" class="admin-tab px-4 py-2 rounded-full text-sm font-medium bg-sky-500/20 text-sky-300">Products</button>
+        <button type="button" id="tab-inventory" class="admin-tab px-4 py-2 rounded-full text-sm font-medium text-slate-400 hover:text-white">Inventory</button>
         <button type="button" id="tab-accounts" class="admin-tab px-4 py-2 rounded-full text-sm font-medium text-slate-400 hover:text-white">Accounts</button>
       </div>
 
@@ -171,6 +172,90 @@
         </form>
         </div>
       </div>
+      </div>
+
+      <div id="inventory-section" class="hidden space-y-6">
+        <div id="inventory-list-wrap">
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4">
+            <p class="text-slate-400 text-sm">On-hand stock for the catalog. LED series are counted in <span class="text-slate-200">panels</span> per pitch. Control gear is counted <span class="text-slate-200">each</span>. The public site does not show these numbers yet.</p>
+          </div>
+          <div class="flex flex-wrap items-center gap-2 mb-4">
+            <button type="button" data-inv-filter="all" class="inv-filter px-3 py-1.5 rounded-full text-xs font-medium bg-sky-500/20 text-sky-300">All</button>
+            <button type="button" data-inv-filter="low" class="inv-filter px-3 py-1.5 rounded-full text-xs font-medium text-slate-400 hover:text-white">Low</button>
+            <button type="button" data-inv-filter="out" class="inv-filter px-3 py-1.5 rounded-full text-xs font-medium text-slate-400 hover:text-white">Out</button>
+            <input id="inv-search" type="search" placeholder="Search product or brand" class="ml-auto w-full sm:w-56 bg-slate-800 border border-slate-700 rounded-full px-3 py-1.5 text-sm">
+          </div>
+          <p id="inventory-error" class="hidden text-sm text-red-400 mb-3"></p>
+          <div class="overflow-x-auto rounded-2xl border border-slate-800">
+            <table class="w-full text-sm">
+              <thead class="text-left text-slate-400 border-b border-slate-800">
+                <tr>
+                  <th class="py-3 px-4 font-medium">Product</th>
+                  <th class="py-3 px-4 font-medium">Brand</th>
+                  <th class="py-3 px-4 font-medium">On hand</th>
+                  <th class="py-3 px-4 font-medium">Status</th>
+                </tr>
+              </thead>
+              <tbody id="inventory-table" class="text-slate-200"></tbody>
+            </table>
+          </div>
+        </div>
+        <div id="inventory-detail" class="hidden space-y-6">
+          <button type="button" id="inventory-back" class="text-sm text-sky-400 hover:text-sky-300">← All inventory</button>
+          <div class="rounded-2xl border border-slate-800 bg-slate-900/50 p-5">
+            <h2 id="inv-title" class="font-semibold text-lg">Product</h2>
+            <p id="inv-meta" class="text-sm text-slate-400 mt-1"></p>
+            <div class="overflow-x-auto mt-4">
+              <table class="w-full text-sm">
+                <thead class="text-left text-slate-400 border-b border-slate-800">
+                  <tr>
+                    <th class="py-2 pr-4 font-medium">Bin</th>
+                    <th class="py-2 pr-4 font-medium">Qty</th>
+                    <th class="py-2 pr-4 font-medium">Low at</th>
+                    <th class="py-2 font-medium">Status</th>
+                  </tr>
+                </thead>
+                <tbody id="inv-bins"></tbody>
+              </table>
+            </div>
+          </div>
+          <form id="inv-adjust-form" class="rounded-2xl border border-slate-800 bg-slate-900/50 p-5 grid sm:grid-cols-2 gap-4">
+            <input type="hidden" id="inv-product-id">
+            <div>
+              <label class="block text-xs text-slate-400 mb-1">Bin</label>
+              <select id="inv-pitch" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm"></select>
+            </div>
+            <div>
+              <label class="block text-xs text-slate-400 mb-1">Action</label>
+              <select id="inv-kind" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm">
+                <option value="receive">Receive (add)</option>
+                <option value="sell">Sell (subtract)</option>
+                <option value="damage">Damage / write-off</option>
+                <option value="count">Count (set qty)</option>
+              </select>
+            </div>
+            <div>
+              <label class="block text-xs text-slate-400 mb-1" id="inv-qty-label">Quantity</label>
+              <input id="inv-qty" required type="number" min="0" step="1" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm">
+            </div>
+            <div>
+              <label class="block text-xs text-slate-400 mb-1">Low-stock at</label>
+              <input id="inv-low" type="number" min="0" step="1" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm">
+            </div>
+            <div class="sm:col-span-2">
+              <label class="block text-xs text-slate-400 mb-1">Note</label>
+              <input id="inv-note" type="text" maxlength="240" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm" placeholder="PO, job name, count date…">
+            </div>
+            <p id="inv-msg" class="sm:col-span-2 hidden text-sm"></p>
+            <div class="sm:col-span-2">
+              <button type="submit" class="px-5 py-2 rounded-full bg-sky-500 hover:bg-sky-400 text-white text-sm font-semibold">Save adjustment</button>
+            </div>
+          </form>
+          <div>
+            <h3 class="font-semibold mb-3">Recent movement</h3>
+            <div id="inv-moves" class="space-y-2 text-sm"></div>
+          </div>
+        </div>
       </div>
 
       <div id="accounts-section" class="hidden space-y-6">
@@ -426,11 +511,140 @@
     }
 
     function showAdminTab(name) {
-      const productsOn = name === 'products';
-      document.getElementById('products-section').classList.toggle('hidden', !productsOn);
-      document.getElementById('accounts-section').classList.toggle('hidden', productsOn);
-      document.getElementById('tab-products').className = 'admin-tab px-4 py-2 rounded-full text-sm font-medium ' + (productsOn ? 'bg-sky-500/20 text-sky-300' : 'text-slate-400 hover:text-white');
-      document.getElementById('tab-accounts').className = 'admin-tab px-4 py-2 rounded-full text-sm font-medium ' + (productsOn ? 'text-slate-400 hover:text-white' : 'bg-sky-500/20 text-sky-300');
+      document.getElementById('products-section').classList.toggle('hidden', name !== 'products');
+      document.getElementById('inventory-section').classList.toggle('hidden', name !== 'inventory');
+      document.getElementById('accounts-section').classList.toggle('hidden', name !== 'accounts');
+      ['products', 'inventory', 'accounts'].forEach(function (key) {
+        const on = name === key;
+        document.getElementById('tab-' + key).className = 'admin-tab px-4 py-2 rounded-full text-sm font-medium ' +
+          (on ? 'bg-sky-500/20 text-sky-300' : 'text-slate-400 hover:text-white');
+      });
+    }
+
+    let inventoryItems = [];
+    let inventoryFilter = 'all';
+    let inventoryDetail = null;
+
+    function stockStatusLabel(status) {
+      if (status === 'out') return 'Out';
+      if (status === 'low') return 'Low';
+      return 'In stock';
+    }
+
+    function stockStatusClass(status) {
+      if (status === 'out') return 'bg-red-500/15 text-red-300';
+      if (status === 'low') return 'bg-amber-500/15 text-amber-300';
+      return 'bg-emerald-500/15 text-emerald-300';
+    }
+
+    function renderInventoryTable() {
+      const q = (document.getElementById('inv-search').value || '').trim().toLowerCase();
+      const rows = inventoryItems.filter(function (item) {
+        if (inventoryFilter === 'low' && item.status !== 'low') return false;
+        if (inventoryFilter === 'out' && item.status !== 'out') return false;
+        if (q) {
+          const blob = ((item.name || '') + ' ' + (item.brandName || '')).toLowerCase();
+          if (blob.indexOf(q) === -1) return false;
+        }
+        return true;
+      });
+      const tb = document.getElementById('inventory-table');
+      tb.innerHTML = rows.map(function (item) {
+        const qtyText = item.total.toLocaleString() + ' ' + item.unit;
+        const extra = !item.control && item.bins && item.bins.length > 1
+          ? '<div class="text-xs text-slate-500 mt-0.5">' + item.bins.map(function (b) {
+            return esc(b.label) + ' ' + b.qty;
+          }).join(' · ') + '</div>'
+          : '';
+        return '<tr class="border-b border-slate-800 hover:bg-slate-900/80 cursor-pointer" data-id="' + esc(item.dbId) + '">' +
+          '<td class="py-3 px-4 font-medium">' + esc(item.name || '') + extra + '</td>' +
+          '<td class="py-3 px-4 text-sky-400">' + esc(item.brandName || '') + '</td>' +
+          '<td class="py-3 px-4">' + esc(qtyText) + '</td>' +
+          '<td class="py-3 px-4"><span class="text-xs px-2 py-0.5 rounded-full ' + stockStatusClass(item.status) + '">' +
+            esc(stockStatusLabel(item.status)) + '</span></td>' +
+          '</tr>';
+      }).join('') || '<tr><td class="py-6 px-4 text-slate-500" colspan="4">No matching products.</td></tr>';
+    }
+
+    async function loadInventory() {
+      const errEl = document.getElementById('inventory-error');
+      errEl.classList.add('hidden');
+      try {
+        const data = await api('/api/admin/inventory');
+        inventoryItems = data.items || [];
+        renderInventoryTable();
+      } catch (err) {
+        errEl.textContent = err.message || 'Could not load inventory.';
+        errEl.classList.remove('hidden');
+      }
+    }
+
+    function fillInvPitch(item) {
+      const sel = document.getElementById('inv-pitch');
+      sel.innerHTML = (item.bins || []).map(function (b) {
+        return '<option value="' + esc(b.pitch) + '">' + esc(b.label) + ' — ' + b.qty + ' ' + b.unit + '</option>';
+      }).join('');
+      syncInvLowFromBin();
+    }
+
+    function syncInvLowFromBin() {
+      if (!inventoryDetail || !inventoryDetail.item) return;
+      const pitch = document.getElementById('inv-pitch').value;
+      const bin = (inventoryDetail.item.bins || []).filter(function (b) { return String(b.pitch) === String(pitch); })[0];
+      document.getElementById('inv-low').value = bin ? bin.lowAt : '';
+    }
+
+    function renderInvMoves(moves) {
+      const wrap = document.getElementById('inv-moves');
+      const rows = moves || [];
+      if (!rows.length) {
+        wrap.innerHTML = emptyNote('No adjustments yet. Receive stock or enter a count to start.');
+        return;
+      }
+      wrap.innerHTML = rows.map(function (m) {
+        const when = m.created_at ? new Date(m.created_at).toLocaleString() : '';
+        const delta = Number(m.qty_delta) || 0;
+        const sign = delta > 0 ? '+' + delta : String(delta);
+        const pitch = m.pitch ? ('P' + m.pitch) : 'Each';
+        return '<div class="rounded-xl border border-slate-800 px-4 py-3 flex flex-wrap gap-x-4 gap-y-1">' +
+          '<span class="text-slate-300">' + esc(m.kind) + ' ' + esc(pitch) + '</span>' +
+          '<span class="' + (delta < 0 ? 'text-red-300' : 'text-emerald-300') + '">' + esc(sign) + ' → ' + esc(m.qty_after) + '</span>' +
+          '<span class="text-slate-500">' + esc(when) + '</span>' +
+          (m.note ? '<span class="text-slate-400">' + esc(m.note) + '</span>' : '') +
+          (m.admin_email ? '<span class="text-slate-600 text-xs">' + esc(m.admin_email) + '</span>' : '') +
+          '</div>';
+      }).join('');
+    }
+
+    function renderInventoryDetail(data) {
+      inventoryDetail = data;
+      const item = data.item;
+      document.getElementById('inv-product-id').value = item.dbId;
+      document.getElementById('inv-title').textContent = item.name;
+      document.getElementById('inv-meta').textContent =
+        (item.brandName || '') + ' · ' + (item.control ? 'Control · each' : 'LED · panels') +
+        ' · ' + item.total.toLocaleString() + ' ' + item.unit + ' on hand';
+      document.getElementById('inv-bins').innerHTML = (item.bins || []).map(function (b) {
+        return '<tr class="border-b border-slate-800">' +
+          '<td class="py-2 pr-4">' + esc(b.label) + '</td>' +
+          '<td class="py-2 pr-4">' + b.qty.toLocaleString() + ' ' + esc(b.unit) + '</td>' +
+          '<td class="py-2 pr-4">' + b.lowAt + '</td>' +
+          '<td class="py-2"><span class="text-xs px-2 py-0.5 rounded-full ' + stockStatusClass(b.status) + '">' +
+            esc(stockStatusLabel(b.status)) + '</span></td>' +
+          '</tr>';
+      }).join('');
+      fillInvPitch(item);
+      document.getElementById('inv-qty').value = '';
+      document.getElementById('inv-note').value = '';
+      document.getElementById('inv-msg').classList.add('hidden');
+      renderInvMoves(data.moves || []);
+    }
+
+    async function openInventory(id) {
+      const data = await api('/api/admin/inventory/' + encodeURIComponent(id));
+      document.getElementById('inventory-list-wrap').classList.add('hidden');
+      document.getElementById('inventory-detail').classList.remove('hidden');
+      renderInventoryDetail(data);
     }
 
     async function loadPriceTiers() {
@@ -545,12 +759,71 @@
       showAdminTab('products');
       closeProductForm();
     });
+    document.getElementById('tab-inventory').addEventListener('click', async function () {
+      showAdminTab('inventory');
+      document.getElementById('inventory-list-wrap').classList.remove('hidden');
+      document.getElementById('inventory-detail').classList.add('hidden');
+      await loadInventory();
+    });
     document.getElementById('tab-accounts').addEventListener('click', async function () {
       showAdminTab('accounts');
       document.getElementById('accounts-list-wrap').classList.remove('hidden');
       document.getElementById('account-detail').classList.add('hidden');
       await loadPriceTiers();
       await loadAccounts();
+    });
+    document.getElementById('inventory-back').addEventListener('click', async function () {
+      document.getElementById('inventory-detail').classList.add('hidden');
+      document.getElementById('inventory-list-wrap').classList.remove('hidden');
+      await loadInventory();
+    });
+    document.getElementById('inventory-table').addEventListener('click', function (e) {
+      const row = e.target.closest('tr[data-id]');
+      if (row) openInventory(row.getAttribute('data-id')).catch(function (err) {
+        document.getElementById('inventory-error').textContent = err.message || 'Could not open.';
+        document.getElementById('inventory-error').classList.remove('hidden');
+      });
+    });
+    document.getElementById('inv-search').addEventListener('input', renderInventoryTable);
+    document.querySelectorAll('.inv-filter').forEach(function (btn) {
+      btn.addEventListener('click', function () {
+        inventoryFilter = btn.getAttribute('data-inv-filter') || 'all';
+        document.querySelectorAll('.inv-filter').forEach(function (b) {
+          const on = b === btn;
+          b.className = 'inv-filter px-3 py-1.5 rounded-full text-xs font-medium ' +
+            (on ? 'bg-sky-500/20 text-sky-300' : 'text-slate-400 hover:text-white');
+        });
+        renderInventoryTable();
+      });
+    });
+    document.getElementById('inv-pitch').addEventListener('change', syncInvLowFromBin);
+    document.getElementById('inv-kind').addEventListener('change', function () {
+      document.getElementById('inv-qty-label').textContent =
+        document.getElementById('inv-kind').value === 'count' ? 'Set quantity to' : 'Quantity';
+    });
+    document.getElementById('inv-adjust-form').addEventListener('submit', async function (e) {
+      e.preventDefault();
+      const id = document.getElementById('inv-product-id').value;
+      const msg = document.getElementById('inv-msg');
+      try {
+        const data = await api('/api/admin/inventory/' + encodeURIComponent(id) + '/adjust', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            pitch: document.getElementById('inv-pitch').value,
+            kind: document.getElementById('inv-kind').value,
+            qty: document.getElementById('inv-qty').value,
+            lowAt: document.getElementById('inv-low').value,
+            note: document.getElementById('inv-note').value
+          })
+        });
+        renderInventoryDetail(data);
+        msg.textContent = 'Saved.';
+        msg.className = 'sm:col-span-2 text-sm text-sky-400';
+      } catch (err) {
+        msg.textContent = err.message || 'Could not save.';
+        msg.className = 'sm:col-span-2 text-sm text-red-400';
+      }
     });
     document.getElementById('account-back').addEventListener('click', async function () {
       document.getElementById('account-detail').classList.add('hidden');

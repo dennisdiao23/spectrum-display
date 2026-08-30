@@ -76,6 +76,7 @@ Copy `.env.example` to `.env` for local keys. With Supabase vars, you use the li
 3. Add or edit products, photos, pitches, panel size, $/m², and categories (filters / mega menu).
    Control gear (NovaStar) is the same list — type Control, price each. Public product pages and the
    calculator read **only** this database (`/api/catalog`). They do not load `js/products-data.js`.
+4. **Inventory** tab: on-hand qty in **panels** per pitch, or **each** for control. Receive / sell / damage / count with a note. These numbers are admin-only for now.
 
 Customer **Sign in** on the public site is not the admin login.
 

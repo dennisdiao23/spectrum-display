@@ -66,6 +66,7 @@ function openDb() {
   fs.mkdirSync(DATA_DIR, { recursive: true });
   const db = new DatabaseSync(DB_PATH);
   try { db.exec('PRAGMA journal_mode = WAL'); } catch (e) { /* ignore */ }
+  try { db.exec('PRAGMA foreign_keys = ON'); } catch (e) { /* ignore */ }
   db.exec(`
     CREATE TABLE IF NOT EXISTS admins (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -111,6 +112,32 @@ function openDb() {
     );
   `);
   try { db.exec("ALTER TABLE products ADD COLUMN details TEXT NOT NULL DEFAULT '{}'"); } catch (e) { /* already present */ }
+  db.exec(`
+    CREATE TABLE IF NOT EXISTS inventory_stock (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      product_id INTEGER NOT NULL,
+      pitch TEXT NOT NULL DEFAULT '',
+      qty INTEGER NOT NULL DEFAULT 0,
+      low_at INTEGER NOT NULL DEFAULT 8,
+      updated_at TEXT NOT NULL,
+      UNIQUE (product_id, pitch),
+      FOREIGN KEY (product_id) REFERENCES products(id) ON DELETE CASCADE
+    );
+    CREATE TABLE IF NOT EXISTS inventory_moves (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      product_id INTEGER NOT NULL,
+      pitch TEXT NOT NULL DEFAULT '',
+      kind TEXT NOT NULL,
+      qty_delta INTEGER NOT NULL,
+      qty_after INTEGER NOT NULL,
+      note TEXT NOT NULL DEFAULT '',
+      admin_email TEXT NOT NULL DEFAULT '',
+      created_at TEXT NOT NULL,
+      FOREIGN KEY (product_id) REFERENCES products(id) ON DELETE CASCADE
+    );
+    CREATE INDEX IF NOT EXISTS inventory_stock_product_idx ON inventory_stock (product_id);
+    CREATE INDEX IF NOT EXISTS inventory_moves_product_idx ON inventory_moves (product_id, created_at);
+  `);
   return db;
 }
 

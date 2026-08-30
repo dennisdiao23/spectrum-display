@@ -300,3 +300,43 @@ $fn$;
 
 revoke all on function public.my_price_multiplier() from public;
 grant execute on function public.my_price_multiplier() to anon, authenticated;
+
+-- Admin-only on-hand stock. Public catalog does not read these tables.
+create table if not exists public.inventory_stock (
+  id bigint generated always as identity primary key,
+  product_id bigint not null references public.products(id) on delete cascade,
+  pitch text not null default '',
+  qty integer not null default 0,
+  low_at integer not null default 8,
+  updated_at timestamptz not null default now(),
+  unique (product_id, pitch)
+);
+
+create table if not exists public.inventory_moves (
+  id bigint generated always as identity primary key,
+  product_id bigint not null references public.products(id) on delete cascade,
+  pitch text not null default '',
+  kind text not null,
+  qty_delta integer not null,
+  qty_after integer not null,
+  note text not null default '',
+  admin_email text not null default '',
+  created_at timestamptz not null default now()
+);
+
+create index if not exists inventory_stock_product_idx on public.inventory_stock (product_id);
+create index if not exists inventory_moves_product_idx on public.inventory_moves (product_id, created_at desc);
+
+alter table public.inventory_stock enable row level security;
+alter table public.inventory_moves enable row level security;
+
+drop policy if exists inventory_stock_admin_all on public.inventory_stock;
+create policy inventory_stock_admin_all on public.inventory_stock
+for all using (public.is_spectrum_admin()) with check (public.is_spectrum_admin());
+
+drop policy if exists inventory_moves_admin_all on public.inventory_moves;
+create policy inventory_moves_admin_all on public.inventory_moves
+for all using (public.is_spectrum_admin()) with check (public.is_spectrum_admin());
+
+grant all on public.inventory_stock to service_role;
+grant all on public.inventory_moves to service_role;
