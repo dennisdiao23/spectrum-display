@@ -888,6 +888,15 @@
       <button type="submit" form="cc-form" id="cc-save" class="px-5 py-2 rounded-full bg-sky-500 hover:bg-sky-400 text-white text-sm font-semibold">Save customer</button>
     </div>
   </aside>
+  <div id="cc-leave" class="cc-leave" hidden>
+    <div class="cc-leave-card" role="dialog" aria-modal="true" aria-labelledby="cc-leave-title">
+      <p id="cc-leave-title" class="cc-leave-title">Do you want to leave without saving?</p>
+      <div class="cc-leave-actions">
+        <button type="button" id="cc-leave-no" class="cc-leave-no">No</button>
+        <button type="button" id="cc-leave-yes" class="cc-leave-yes">Yes</button>
+      </div>
+    </div>
+  </div>
   <link rel="stylesheet" href="/css/company-dash.css" />
 
   <script>
@@ -975,12 +984,19 @@
     }
     function openCompanyTab(name, push) {
       if (!name || !currentAdminUser || !canUse(name)) return;
-      const dest = pathForTab(name);
-      if (push && (companyPath() !== dest || location.hash)) {
-        history.pushState({ tab: name }, '', dest);
+      const go = function () {
+        const dest = pathForTab(name);
+        if (push && (companyPath() !== dest || location.hash)) {
+          history.pushState({ tab: name }, '', dest);
+        }
+        showAdminTab(name);
+        openRoutedSection(name);
+      };
+      if (typeof ccDrawerNeedsLeave === 'function' && ccDrawerNeedsLeave()) {
+        ccAskLeave(go);
+        return;
       }
-      showAdminTab(name);
-      openRoutedSection(name);
+      go();
     }
     (function sendOldCompanyUrlToCleanPath() {
       const p = companyPath();
@@ -1224,7 +1240,11 @@
     }
 
     function showAdminTab(name) {
-      if (typeof closeCustomerDrawer === 'function') closeCustomerDrawer();
+      if (typeof ccDrawerNeedsLeave === 'function' && ccDrawerNeedsLeave()) {
+        ccAskLeave(function () { showAdminTab(name); });
+        return;
+      }
+      if (typeof closeCustomerDrawer === 'function') closeCustomerDrawer(true);
       const onWebsite = name === 'products' || name === 'accounts';
       const onSettings = name === 'staff' || name === 'roles';
       const onSales = name === 'quotes' || name === 'orders' || name === 'invoices' || name === 'sales';
@@ -1876,9 +1896,51 @@
     }
 
     let ccDrawerSource = 'list';
+    let ccSavedSnapshot = '';
+    let ccLeaveThen = null;
 
     function showCcList() {
       document.getElementById('customers-list-wrap').classList.remove('hidden');
+    }
+
+    function ccFormSnapshot() {
+      try { return JSON.stringify(readCcForm()); }
+      catch (err) { return ''; }
+    }
+
+    function markCcClean() {
+      ccSavedSnapshot = ccFormSnapshot();
+    }
+
+    function ccDrawerNeedsLeave() {
+      return document.body.classList.contains('cc-drawer-open') && ccFormSnapshot() !== ccSavedSnapshot;
+    }
+
+    function showCcLeave() {
+      const box = document.getElementById('cc-leave');
+      box.hidden = false;
+      box.classList.add('is-open');
+      document.getElementById('cc-leave-no').focus();
+    }
+
+    function hideCcLeave() {
+      const box = document.getElementById('cc-leave');
+      box.classList.remove('is-open');
+      box.hidden = true;
+    }
+
+    function ccAskLeave(then) {
+      if (!document.body.classList.contains('cc-drawer-open')) {
+        if (then) then();
+        return;
+      }
+      if (!ccDrawerNeedsLeave()) {
+        closeCustomerDrawer(true);
+        if (then) then();
+        return;
+      }
+      ccLeaveThen = then || null;
+      showCcLeave();
     }
 
     function flashCustomerSection(sec) {
@@ -1919,7 +1981,13 @@
       setTimeout(flash, 800);
     }
 
-    function closeCustomerDrawer() {
+    function closeCustomerDrawer(force) {
+      if (!force && ccDrawerNeedsLeave()) {
+        ccAskLeave(null);
+        return;
+      }
+      hideCcLeave();
+      ccLeaveThen = null;
       document.body.classList.remove('cc-drawer-open');
       document.getElementById('cc-drawer').setAttribute('aria-hidden', 'true');
       if (ccDrawerSource === 'sales') {
@@ -1953,6 +2021,9 @@
       document.body.classList.add('cc-drawer-open');
       const body = document.getElementById('cc-form');
       if (body) body.scrollTop = 0;
+      hideCcLeave();
+      ccLeaveThen = null;
+      markCcClean();
       document.getElementById('cc-first').focus();
     }
 
@@ -1969,6 +2040,10 @@
     }
 
     function openNewCustomer() {
+      if (ccDrawerNeedsLeave()) {
+        ccAskLeave(function () { openCustomerDrawer(null, 'list'); });
+        return;
+      }
       openCustomerDrawer(null, 'list');
     }
 
@@ -2288,15 +2363,41 @@
       if (!jump) return;
       jumpCustomerSection(jump.getAttribute('data-jump'));
     });
-    document.getElementById('cc-drawer-close').addEventListener('click', closeCustomerDrawer);
-    document.getElementById('cc-drawer-scrim').addEventListener('click', closeCustomerDrawer);
+    document.getElementById('cc-drawer-close').addEventListener('click', function () {
+      closeCustomerDrawer();
+    });
+    document.getElementById('cc-drawer-scrim').addEventListener('click', function () {
+      closeCustomerDrawer();
+    });
+    document.getElementById('cc-leave-no').addEventListener('click', function () {
+      ccLeaveThen = null;
+      hideCcLeave();
+    });
+    document.getElementById('cc-leave-yes').addEventListener('click', function () {
+      const then = ccLeaveThen;
+      ccLeaveThen = null;
+      closeCustomerDrawer(true);
+      if (then) then();
+    });
+    document.getElementById('cc-leave').addEventListener('click', function (e) {
+      if (e.target === this) {
+        ccLeaveThen = null;
+        hideCcLeave();
+      }
+    });
     document.getElementById('cc-search').addEventListener('input', function () {
       renderCcTable(companyCustomers);
     });
     document.getElementById('cc-ship-same').addEventListener('change', syncCcShipFields);
     document.getElementById('cc-table').addEventListener('click', function (e) {
       const row = e.target.closest('tr[data-id]');
-      if (row) openCompanyCustomer(row.getAttribute('data-id'));
+      if (!row) return;
+      const id = row.getAttribute('data-id');
+      if (ccDrawerNeedsLeave()) {
+        ccAskLeave(function () { openCompanyCustomer(id); });
+        return;
+      }
+      openCompanyCustomer(id);
     });
     document.getElementById('cc-form').addEventListener('submit', async function (e) {
       e.preventDefault();
@@ -2318,15 +2419,16 @@
         document.getElementById('cc-id').value = c.id;
         document.getElementById('cc-title').textContent = c.displayName || 'Customer';
         document.getElementById('cc-delete-btn').classList.remove('hidden');
+        markCcClean();
         await loadCompanyCustomers();
         salesCustomers = companyCustomers.slice();
         if (ccDrawerSource === 'sales') {
           fillSoCustomers(c.id);
           applySoCustomer(c);
-          closeCustomerDrawer();
+          closeCustomerDrawer(true);
           showSoMsg((c.displayName || 'Customer') + ' added.', true);
         } else {
-          closeCustomerDrawer();
+          closeCustomerDrawer(true);
         }
       } catch (err) {
         showCcMsg(err.message || 'Could not save customer.');
@@ -2337,7 +2439,7 @@
       if (!id || !confirm('Delete this customer?')) return;
       try {
         await api('/api/admin/company-customers/' + id, { method: 'DELETE' });
-        closeCustomerDrawer();
+        closeCustomerDrawer(true);
         await loadCompanyCustomers();
         salesCustomers = companyCustomers.slice();
         fillSoCustomers('');
@@ -2346,7 +2448,13 @@
       }
     });
     document.addEventListener('keydown', function (e) {
-      if (e.key === 'Escape' && document.body.classList.contains('cc-drawer-open')) {
+      if (e.key !== 'Escape') return;
+      if (document.getElementById('cc-leave').classList.contains('is-open')) {
+        ccLeaveThen = null;
+        hideCcLeave();
+        return;
+      }
+      if (document.body.classList.contains('cc-drawer-open')) {
         closeCustomerDrawer();
       }
     });
