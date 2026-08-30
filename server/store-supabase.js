@@ -693,14 +693,19 @@ function createSupabaseStore() {
         .order('name')
         .order('pitch');
       throwIf(error, 'Could not read inventory.');
-      const maps = await loadInventoryMaps();
+      const [maps, brandRows] = await Promise.all([
+        loadInventoryMaps(),
+        supabase.from('brands').select('id, name')
+      ]);
+      if (brandRows.error) throwIf(brandRows.error, 'Could not read brands.');
+      const brandNames = {};
+      (brandRows.data || []).forEach(function (b) {
+        brandNames[b.id] = b.name;
+      });
       const byItem = inv.mapsByItem(maps);
-      const out = [];
-      for (let i = 0; i < (items || []).length; i++) {
-        const row = items[i];
-        out.push(await formatInventoryRow(row, byItem[String(row.id)] || []));
-      }
-      return out;
+      return (items || []).map(function (row) {
+        return inv.formatItem(row, brandNames[row.brand_id] || row.brand_id || '', byItem[String(row.id)] || []);
+      });
     },
     async getInventoryItem(id) {
       return getInventoryItemDetail(id);

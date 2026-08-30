@@ -535,15 +535,14 @@
     }
 
     async function loadDash() {
-      const [brandData, productData, invData] = await Promise.all([
+      const [brandData, productData] = await Promise.all([
         api('/api/admin/brands'),
-        api('/api/admin/products'),
-        api('/api/admin/inventory').catch(function () { return { items: [] }; })
+        api('/api/admin/products')
       ]);
       brands = brandData.brands || [];
-      inventoryItems = invData.items || [];
       fillBrands(brands[0] && brands[0].id);
       renderProducts(productData.products || []);
+      await loadInventory();
     }
 
     function roleLabel(role) {
