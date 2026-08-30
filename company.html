@@ -33,10 +33,26 @@
           </a>
         </div>
       </div>
-      <a href="/company/inventory" id="tab-inventory" class="dash-nav-link">
-        <svg class="dash-nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 10 12 4.5 21 10v9.5a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V10z"/><path d="M9 20.5V12h6v8.5"/></svg>
-        <span>Inventory</span>
-      </a>
+      <div class="dash-nav-group">
+        <a href="/company/inventory" id="tab-inventory" class="dash-nav-link">
+          <svg class="dash-nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 10 12 4.5 21 10v9.5a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V10z"/><path d="M9 20.5V12h6v8.5"/></svg>
+          <span>Inventory</span>
+        </a>
+        <div id="inventory-subnav" class="dash-sub hidden">
+          <a href="/company/inventory" id="tab-inv-items" class="dash-sub-link">
+            <svg class="dash-nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 10 12 4.5 21 10v9.5a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V10z"/><path d="M9 20.5V12h6v8.5"/></svg>
+            <span>Inventory</span>
+          </a>
+          <a href="/company/inventory/vendors" id="tab-vendors" class="dash-sub-link">
+            <svg class="dash-nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="8" r="3.25"/><path d="M5 19.2c.9-3.1 3.5-4.7 7-4.7s6.1 1.6 7 4.7"/></svg>
+            <span>Vendor</span>
+          </a>
+          <a href="/company/inventory/purchase-orders" id="tab-purchase-orders" class="dash-sub-link">
+            <svg class="dash-nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 3h8l4 4v14a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1z"/><path d="M15 3v5h5"/><path d="M9 13h6M9 17h4"/></svg>
+            <span>Purchase Order</span>
+          </a>
+        </div>
+      </div>
       <a href="/company/customers" id="tab-customers" class="dash-nav-link">
         <svg class="dash-nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="8" r="3.25"/><path d="M5 19.2c.9-3.1 3.5-4.7 7-4.7s6.1 1.6 7 4.7"/></svg>
         <span>Customer</span>
@@ -370,12 +386,16 @@
                 <tr>
                   <th class="py-3 px-4 font-medium" data-col="sku">SKU <span class="dash-col-caret">▾</span><span class="dash-col-grip" aria-hidden="true"></span></th>
                   <th class="py-3 px-4 font-medium" data-col="name">Item <span class="dash-col-caret">▾</span><span class="dash-col-grip" aria-hidden="true"></span></th>
-                  <th class="py-3 px-4 font-medium" data-col="brand">Brand <span class="dash-col-caret">▾</span><span class="dash-col-grip" aria-hidden="true"></span></th>
+                  <th class="py-3 px-4 font-medium" data-col="description">Description <span class="dash-col-caret">▾</span><span class="dash-col-grip" aria-hidden="true"></span></th>
                   <th class="py-3 px-4 font-medium" data-col="pitch">Pitch <span class="dash-col-caret">▾</span><span class="dash-col-grip" aria-hidden="true"></span></th>
+                  <th class="py-3 px-4 font-medium" data-col="brand">Brand <span class="dash-col-caret">▾</span><span class="dash-col-grip" aria-hidden="true"></span></th>
                   <th class="py-3 px-4 font-medium" data-col="qty">On hand <span class="dash-col-caret">▾</span><span class="dash-col-grip" aria-hidden="true"></span></th>
-                  <th class="py-3 px-4 font-medium" data-col="price">Price <span class="dash-col-caret">▾</span><span class="dash-col-grip" aria-hidden="true"></span></th>
-                  <th class="py-3 px-4 font-medium" data-col="website">Website <span class="dash-col-caret">▾</span><span class="dash-col-grip" aria-hidden="true"></span></th>
-                  <th class="py-3 px-4 font-medium" data-col="status">Status <span class="dash-col-caret">▾</span></th>
+                  <th class="py-3 px-4 font-medium" data-col="cost">Cost <span class="dash-col-caret">▾</span><span class="dash-col-grip" aria-hidden="true"></span></th>
+                  <th class="py-3 px-4 font-medium" data-col="price">Sell price <span class="dash-col-caret">▾</span><span class="dash-col-grip" aria-hidden="true"></span></th>
+                  <th class="py-3 px-4 font-medium" data-col="dealer">Dealer net <span class="dash-col-caret">▾</span><span class="dash-col-grip" aria-hidden="true"></span></th>
+                  <th class="py-3 px-4 font-medium" data-col="status">Status <span class="dash-col-caret">▾</span><span class="dash-col-grip" aria-hidden="true"></span></th>
+                  <th class="py-3 px-4 font-medium" data-col="photo">Photo <span class="dash-col-caret">▾</span><span class="dash-col-grip" aria-hidden="true"></span></th>
+                  <th class="py-3 px-4 font-medium" data-col="website">Website <span class="dash-col-caret">▾</span></th>
                 </tr>
               </thead>
               <tbody id="inventory-table" class="text-slate-200"></tbody>
@@ -383,6 +403,159 @@
           </div>
         </div>
         <div id="inventory-detail" class="hidden"></div>
+      </div>
+
+      <div id="vendors-section" class="hidden space-y-6">
+        <div id="vendors-list-wrap">
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4">
+            <p class="text-slate-400 text-sm"><span id="vn-total">0</span> vendors for purchase orders.</p>
+            <div class="flex flex-wrap items-center gap-2">
+              <input id="vn-search" type="search" placeholder="Search vendor, company, email, phone" class="w-full sm:w-64 bg-slate-800 border border-slate-700 rounded-full px-3 py-1.5 text-sm">
+              <button id="vn-new-btn" type="button" class="px-4 py-2 rounded-full bg-sky-500 hover:bg-sky-400 text-white text-sm font-semibold">Add vendor</button>
+            </div>
+          </div>
+          <p id="vn-error" class="hidden text-sm text-red-400 mb-3"></p>
+          <div class="overflow-x-auto rounded-2xl border border-slate-800">
+            <table class="w-full text-sm">
+              <thead class="text-left text-slate-400 border-b border-slate-800">
+                <tr>
+                  <th class="py-3 px-4 font-medium">Vendor</th>
+                  <th class="py-3 px-4 font-medium">Company name</th>
+                  <th class="py-3 px-4 font-medium">Phone</th>
+                  <th class="py-3 px-4 font-medium">Email</th>
+                  <th class="py-3 px-4 font-medium">1099</th>
+                </tr>
+              </thead>
+              <tbody id="vn-table" class="text-slate-200"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <div id="po-section" class="hidden space-y-6">
+        <div id="po-list-wrap">
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4">
+            <p class="text-slate-400 text-sm"><span id="po-total">0</span> purchase orders.</p>
+            <div class="flex flex-wrap items-center gap-2">
+              <input id="po-search" type="search" placeholder="Search number, vendor" class="w-full sm:w-64 bg-slate-800 border border-slate-700 rounded-full px-3 py-1.5 text-sm">
+              <button id="po-new-btn" type="button" class="px-4 py-2 rounded-full bg-sky-500 hover:bg-sky-400 text-white text-sm font-semibold">Create purchase order</button>
+            </div>
+          </div>
+          <p id="po-error" class="hidden text-sm text-red-400 mb-3"></p>
+          <div class="overflow-x-auto rounded-2xl border border-slate-800">
+            <table class="w-full text-sm">
+              <thead class="text-left text-slate-400 border-b border-slate-800">
+                <tr>
+                  <th class="py-3 px-4 font-medium">Number</th>
+                  <th class="py-3 px-4 font-medium">Vendor</th>
+                  <th class="py-3 px-4 font-medium">Date</th>
+                  <th class="py-3 px-4 font-medium">Status</th>
+                  <th class="py-3 px-4 font-medium">Total</th>
+                  <th class="py-3 px-4 font-medium"></th>
+                </tr>
+              </thead>
+              <tbody id="po-table" class="text-slate-200"></tbody>
+            </table>
+          </div>
+        </div>
+        <div id="po-detail" class="hidden">
+          <button type="button" id="po-back" class="text-sm text-sky-400 hover:text-sky-300 mb-3">← All purchase orders</button>
+          <form id="po-form" class="po-sheet">
+            <input type="hidden" id="po-id">
+            <div class="po-sheet-head">
+              <div>
+                <h2>Purchase Order</h2>
+                <label class="po-no">No. <input id="po-number" type="text" placeholder="PO-1001"></label>
+              </div>
+              <div class="po-amount">AMOUNT <strong id="po-amount">$0.00</strong></div>
+            </div>
+            <div class="po-grid">
+              <div class="po-field">
+                <label>Vendor</label>
+                <select id="po-vendor"><option value="">Choose a vendor</option></select>
+              </div>
+              <div class="po-field">
+                <label>Email <button type="button" id="po-cc-toggle" class="po-link">Cc/Bcc</button></label>
+                <input id="po-email" type="text" placeholder="Email (Separate emails with a comma)">
+              </div>
+              <div class="po-field hidden" id="po-cc-field">
+                <label>Cc</label>
+                <input id="po-cc" type="text">
+              </div>
+              <div class="po-field hidden" id="po-bcc-field">
+                <label>Bcc</label>
+                <input id="po-bcc" type="text">
+              </div>
+              <div class="po-field">
+                <label>Purchase Order status</label>
+                <select id="po-status"><option value="open">OPEN</option><option value="closed">CLOSED</option><option value="cancelled">CANCELLED</option></select>
+              </div>
+              <div class="po-field po-span2">
+                <label>Mailing address</label>
+                <textarea id="po-mail" rows="4"></textarea>
+              </div>
+              <div class="po-field">
+                <label>Ship to</label>
+                <select id="po-ship-to"><option value="">Select customer for address</option></select>
+              </div>
+              <div class="po-field po-span2">
+                <label>Shipping address</label>
+                <textarea id="po-ship" rows="4"></textarea>
+              </div>
+              <div class="po-field">
+                <label>Purchase Order date</label>
+                <input id="po-issue" type="date">
+              </div>
+              <div class="po-field">
+                <label>Due date</label>
+                <input id="po-due" type="date">
+              </div>
+              <div class="po-field">
+                <label>Ship Via</label>
+                <input id="po-via" type="text">
+              </div>
+              <div class="po-field">
+                <label>Permit no.</label>
+                <input id="po-permit" type="text">
+              </div>
+            </div>
+            <div class="po-items">
+              <h3>Item details</h3>
+              <div class="overflow-x-auto">
+                <table class="w-full text-sm dash-cols" data-cols="po-lines">
+                  <thead>
+                    <tr>
+                      <th class="py-2 px-3 font-medium w-10" data-lock="start">#</th>
+                      <th class="py-2 px-3 font-medium" data-col="product">Product/Service <span class="dash-col-caret">▾</span><span class="dash-col-grip" aria-hidden="true"></span></th>
+                      <th class="py-2 px-3 font-medium" data-col="sku">SKU <span class="dash-col-caret">▾</span><span class="dash-col-grip" aria-hidden="true"></span></th>
+                      <th class="py-2 px-3 font-medium" data-col="description">Description <span class="dash-col-caret">▾</span><span class="dash-col-grip" aria-hidden="true"></span></th>
+                      <th class="py-2 px-3 font-medium" data-col="qty">Quantity <span class="dash-col-caret">▾</span><span class="dash-col-grip" aria-hidden="true"></span></th>
+                      <th class="py-2 px-3 font-medium" data-col="rate">Rate <span class="dash-col-caret">▾</span><span class="dash-col-grip" aria-hidden="true"></span></th>
+                      <th class="py-2 px-3 font-medium" data-col="amount">Amount <span class="dash-col-caret">▾</span><span class="dash-col-grip" aria-hidden="true"></span></th>
+                      <th class="py-2 px-3 font-medium w-10"></th>
+                    </tr>
+                  </thead>
+                  <tbody id="po-lines"></tbody>
+                </table>
+              </div>
+              <div class="po-item-actions">
+                <button type="button" id="po-add-line" class="po-link">Add lines</button>
+                <button type="button" id="po-clear-lines" class="po-link">Clear all lines</button>
+                <span class="po-subtotal">Total <strong id="po-subtotal">$0.00</strong></span>
+              </div>
+            </div>
+            <div class="po-field po-memo">
+              <label>Memo</label>
+              <textarea id="po-notes" rows="3"></textarea>
+            </div>
+            <p id="po-msg" class="hidden text-sm"></p>
+            <div class="po-foot">
+              <button type="button" id="po-cancel" class="px-4 py-2 rounded-full border border-slate-700 text-sm">Cancel</button>
+              <button type="button" id="po-delete-btn" class="hidden px-4 py-2 rounded-full border border-slate-700 text-red-400 text-sm">Delete</button>
+              <button type="submit" class="px-5 py-2 rounded-full bg-sky-500 hover:bg-sky-400 text-white text-sm font-semibold">Save</button>
+            </div>
+          </form>
+        </div>
       </div>
 
       <div id="customers-section" class="hidden space-y-6">
@@ -777,6 +950,13 @@
     <button type="button" data-col-act="desc">Sort descending</button>
     <button type="button" data-col-act="left">Move left</button>
     <button type="button" data-col-act="right">Move right</button>
+    <div class="dash-col-menu-rule"></div>
+    <button type="button" data-col-act="hide">Hide column</button>
+    <button type="button" data-col-act="add">Add column</button>
+  </div>
+  <div id="dash-col-add" class="dash-col-add" hidden>
+    <p class="dash-col-add-title">Add column</p>
+    <div id="dash-col-add-list"></div>
   </div>
   <div id="cc-leave" class="cc-leave" hidden>
     <div class="cc-leave-card" role="dialog" aria-modal="true" aria-labelledby="cc-leave-title">
@@ -902,6 +1082,98 @@
       <button type="submit" form="inv-item-form" id="inv-save" class="px-5 py-2 rounded-full bg-sky-500 hover:bg-sky-400 text-white text-sm font-semibold">Save item</button>
     </div>
   </aside>
+  <div id="vn-drawer-scrim" class="cc-drawer-scrim"></div>
+  <aside id="vn-drawer" class="cc-drawer" aria-hidden="true">
+    <div class="cc-drawer-head">
+      <h2 id="vn-title">Vendor</h2>
+      <div class="cc-drawer-tools">
+        <button type="button" class="cc-ico-btn" data-vn-jump="vn-sec-contact" title="Name and contact" aria-label="Name and contact">
+          <svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="3.25"/><path d="M5 19.2c.9-3.1 3.5-4.7 7-4.7s6.1 1.6 7 4.7"/></svg>
+        </button>
+        <button type="button" class="cc-ico-btn" data-vn-jump="vn-sec-address" title="Address" aria-label="Address">
+          <svg viewBox="0 0 24 24"><path d="M12 21s7-6.2 7-11a7 7 0 1 0-14 0c0 4.8 7 11 7 11z"/><circle cx="12" cy="10" r="2.2"/></svg>
+        </button>
+        <button type="button" class="cc-ico-btn" data-vn-jump="vn-sec-notes" title="Notes" aria-label="Notes">
+          <svg viewBox="0 0 24 24"><path d="M7 3h8l4 4v14H7z"/><path d="M15 3v5h5"/><path d="M9 13h6M9 17h4"/></svg>
+        </button>
+        <button type="button" class="cc-ico-btn" data-vn-jump="vn-sec-pay" title="Bill Pay" aria-label="Bill Pay">
+          <svg viewBox="0 0 24 24"><rect x="3" y="6" width="18" height="12" rx="2"/><path d="M3 10h18"/><path d="M7 15h4"/></svg>
+        </button>
+        <button type="button" class="cc-ico-btn" data-vn-jump="vn-sec-extra" title="Additional info" aria-label="Additional info">
+          <svg viewBox="0 0 24 24"><path d="M7 3h8l4 4v14H7z"/><path d="M15 3v5h5"/><path d="M9 12h6M9 16h6"/></svg>
+        </button>
+        <button type="button" id="vn-drawer-close" class="cc-drawer-close" aria-label="Close">×</button>
+      </div>
+    </div>
+    <form id="vn-form" class="cc-drawer-body">
+      <input type="hidden" id="vn-id">
+      <section class="cc-sec is-open" id="vn-sec-contact">
+        <button type="button" class="cc-sec-btn"><span class="cc-sec-label"><svg class="cc-sec-ico" viewBox="0 0 24 24"><circle cx="12" cy="8" r="3.25"/><path d="M5 19.2c.9-3.1 3.5-4.7 7-4.7s6.1 1.6 7 4.7"/></svg> Name and contact</span> <span class="cc-sec-chevron">▾</span></button>
+        <div class="cc-sec-body">
+          <div class="cc-field"><label>Company name</label><input id="vn-company" type="text"></div>
+          <div class="cc-field wide"><label>Vendor display name *</label><input id="vn-display" type="text"></div>
+          <div class="cc-field"><label>Title</label><input id="vn-title-field" type="text" placeholder="Mr / Ms"></div>
+          <div class="cc-field"><label>First name</label><input id="vn-first" type="text"></div>
+          <div class="cc-field"><label>Middle name</label><input id="vn-middle" type="text"></div>
+          <div class="cc-field"><label>Last name</label><input id="vn-last" type="text"></div>
+          <div class="cc-field"><label>Suffix</label><input id="vn-suffix" type="text"></div>
+          <div class="cc-field"><label>Email</label><input id="vn-email" type="email"></div>
+          <div class="cc-field"><label>Phone number</label><input id="vn-phone" type="text"></div>
+          <div class="cc-field"><label>Cc</label><input id="vn-cc" type="email"></div>
+          <div class="cc-field"><label>Bcc</label><input id="vn-bcc" type="email"></div>
+          <div class="cc-field"><label>Mobile number</label><input id="vn-mobile" type="text"></div>
+          <div class="cc-field"><label>Fax</label><input id="vn-fax" type="text"></div>
+          <div class="cc-field"><label>Other</label><input id="vn-other" type="text"></div>
+          <div class="cc-field"><label>Website</label><input id="vn-website" type="text" placeholder="https://"></div>
+          <div class="cc-field wide"><label>Name to print on checks</label><input id="vn-check" type="text"></div>
+        </div>
+      </section>
+      <section class="cc-sec is-open" id="vn-sec-address">
+        <button type="button" class="cc-sec-btn"><span class="cc-sec-label"><svg class="cc-sec-ico" viewBox="0 0 24 24"><path d="M12 21s7-6.2 7-11a7 7 0 1 0-14 0c0 4.8 7 11 7 11z"/><circle cx="12" cy="10" r="2.2"/></svg> Address</span> <span class="cc-sec-chevron">▾</span></button>
+        <div class="cc-sec-body">
+          <div class="cc-field wide"><label>Street address 1</label><input id="vn-street" type="text"></div>
+          <div class="cc-field wide"><label>Street address 2</label><input id="vn-street2" type="text"></div>
+          <div class="cc-field"><label>City</label><input id="vn-city" type="text"></div>
+          <div class="cc-field"><label>State</label><input id="vn-state" type="text"></div>
+          <div class="cc-field"><label>ZIP code</label><input id="vn-zip" type="text"></div>
+          <div class="cc-field"><label>Country</label><input id="vn-country" type="text" value="United States"></div>
+        </div>
+      </section>
+      <section class="cc-sec is-open" id="vn-sec-notes">
+        <button type="button" class="cc-sec-btn"><span class="cc-sec-label"><svg class="cc-sec-ico" viewBox="0 0 24 24"><path d="M7 3h8l4 4v14H7z"/><path d="M15 3v5h5"/><path d="M9 13h6M9 17h4"/></svg> Notes</span> <span class="cc-sec-chevron">▾</span></button>
+        <div class="cc-sec-body">
+          <div class="cc-field wide"><label>Notes</label><textarea id="vn-notes" rows="4"></textarea></div>
+        </div>
+      </section>
+      <section class="cc-sec is-open" id="vn-sec-pay">
+        <button type="button" class="cc-sec-btn"><span class="cc-sec-label"><svg class="cc-sec-ico" viewBox="0 0 24 24"><rect x="3" y="6" width="18" height="12" rx="2"/><path d="M3 10h18"/><path d="M7 15h4"/></svg> Payments · Bill Pay</span> <span class="cc-sec-chevron">▾</span></button>
+        <div class="cc-sec-body">
+          <p class="cc-note">ACH details for paying this vendor.</p>
+          <div class="cc-field"><label>Bank account no.</label><input id="vn-bank" type="text"></div>
+          <div class="cc-field"><label>Routing number</label><input id="vn-routing" type="text"></div>
+        </div>
+      </section>
+      <section class="cc-sec is-open" id="vn-sec-extra">
+        <button type="button" class="cc-sec-btn"><span class="cc-sec-label"><svg class="cc-sec-ico" viewBox="0 0 24 24"><path d="M7 3h8l4 4v14H7z"/><path d="M15 3v5h5"/><path d="M9 12h6M9 16h6"/></svg> Additional info</span> <span class="cc-sec-chevron">▾</span></button>
+        <div class="cc-sec-body">
+          <div class="cc-field"><label>Business ID no. / Social Security no.</label><input id="vn-tax" type="text"></div>
+          <label class="cc-check wide"><input id="vn-1099" type="checkbox"> Track payments for 1099</label>
+          <div class="cc-field"><label>Terms</label>
+            <select id="vn-terms"><option>Due on receipt</option><option>Net 15</option><option selected>Net 30</option><option>Net 45</option><option>Net 60</option></select>
+          </div>
+          <div class="cc-field"><label>Account no.</label><input id="vn-account" type="text"></div>
+          <div class="cc-field"><label>Default expense category</label><input id="vn-expense" type="text"></div>
+          <div class="cc-field"><label>Opening balance</label><input id="vn-open-bal" type="number" step="0.01" value="0"></div>
+          <div class="cc-field"><label>as of</label><input id="vn-open-asof" type="date"></div>
+        </div>
+      </section>
+      <p id="vn-msg" class="hidden text-sm px-5 pt-3"></p>
+    </form>
+    <div class="cc-drawer-foot">
+      <button id="vn-delete-btn" type="button" class="hidden px-5 py-2 rounded-full border border-slate-200 text-red-500 hover:border-red-400 text-sm">Delete</button>
+      <button type="submit" form="vn-form" id="vn-save" class="px-5 py-2 rounded-full bg-sky-500 hover:bg-sky-400 text-white text-sm font-semibold">Save vendor</button>
+    </div>
+  </aside>
   <link rel="stylesheet" href="/css/company-dash.css" />
 
   <script>
@@ -925,6 +1197,8 @@
     }
     function tabFromPath() {
       const hash = String(location.hash || '').replace(/^#\/?/, '');
+      if (hash === 'inventory/vendors' || hash === 'vendors') return 'vendors';
+      if (hash === 'inventory/purchase-orders' || hash === 'purchase-orders') return 'purchase-orders';
       if (hash === 'inventory') return 'inventory';
       if (hash === 'settings/roles' || hash === 'roles') return 'roles';
       if (hash === 'settings' || hash === 'settings/staff') return 'staff';
@@ -939,6 +1213,8 @@
       if (p === '/company/sales/orders') return 'orders';
       if (p === '/company/sales/invoices') return 'invoices';
       if (p === '/company/sales' || p === '/company/sales/quotes') return 'quotes';
+      if (p === '/company/inventory/vendors') return 'vendors';
+      if (p === '/company/inventory/purchase-orders') return 'purchase-orders';
       if (p === '/company/inventory') return 'inventory';
       if (p === '/company/settings/roles') return 'roles';
       if (p === '/company/settings') return 'staff';
@@ -947,6 +1223,8 @@
       return '';
     }
     function pathForTab(name) {
+      if (name === 'vendors') return '/company/inventory/vendors';
+      if (name === 'purchase-orders') return '/company/inventory/purchase-orders';
       if (name === 'inventory') return '/company/inventory';
       if (name === 'customers') return '/company/customers';
       if (name === 'orders') return '/company/sales/orders';
@@ -979,6 +1257,8 @@
         if (p === '/company/sales/orders') return 'orders';
         if (p === '/company/sales/invoices') return 'invoices';
         if (p === '/company/sales' || p === '/company/sales/quotes') return 'quotes';
+        if (p === '/company/inventory/vendors') return 'vendors';
+        if (p === '/company/inventory/purchase-orders') return 'purchase-orders';
         if (p === '/company/inventory') return 'inventory';
         if (p === '/company/settings/roles') return 'roles';
         if (p === '/company/settings') return 'staff';
@@ -1032,7 +1312,7 @@
     }
     function canUse(section) {
       if (section === 'products' || section === 'website' || section === 'accounts') return canView('website');
-      if (section === 'inventory') return canView('inventory');
+      if (section === 'inventory' || section === 'vendors' || section === 'purchase-orders') return canView('inventory');
       if (section === 'customers') return !!currentAdminUser;
       if (section === 'sales' || section === 'quotes' || section === 'orders' || section === 'invoices') return !!currentAdminUser;
       if (section === 'staff' || section === 'settings' || section === 'roles') return canView('settings');
@@ -1257,11 +1537,17 @@
         invAskLeave(function () { showAdminTab(name); });
         return;
       }
+      if (typeof vnDrawerNeedsLeave === 'function' && vnDrawerNeedsLeave()) {
+        vnAskLeave(function () { showAdminTab(name); });
+        return;
+      }
       if (typeof closeCustomerDrawer === 'function') closeCustomerDrawer(true);
       if (typeof closeInventoryDrawer === 'function') closeInventoryDrawer(true);
+      if (typeof closeVendorDrawer === 'function') closeVendorDrawer(true);
       const onWebsite = name === 'products' || name === 'accounts';
       const onSettings = name === 'staff' || name === 'roles';
       const onSales = name === 'quotes' || name === 'orders' || name === 'invoices' || name === 'sales';
+      const onInventory = name === 'inventory' || name === 'vendors' || name === 'purchase-orders';
       if (onWebsite) websiteSubTab = name;
       if (onSettings) settingsSubTab = name;
       if (onSales && name !== 'sales') salesSubTab = name;
@@ -1269,6 +1555,8 @@
       document.getElementById('settings-pane').classList.toggle('hidden', !onSettings);
       document.getElementById('products-section').classList.toggle('hidden', name !== 'products');
       document.getElementById('inventory-section').classList.toggle('hidden', name !== 'inventory');
+      document.getElementById('vendors-section').classList.toggle('hidden', name !== 'vendors');
+      document.getElementById('po-section').classList.toggle('hidden', name !== 'purchase-orders');
       document.getElementById('customers-section').classList.toggle('hidden', name !== 'customers');
       document.getElementById('sales-section').classList.toggle('hidden', !onSales);
       document.getElementById('accounts-section').classList.toggle('hidden', name !== 'accounts');
@@ -1277,10 +1565,14 @@
       document.getElementById('website-subnav').classList.toggle('hidden', !onWebsite);
       document.getElementById('settings-subnav').classList.toggle('hidden', !onSettings);
       document.getElementById('sales-subnav').classList.toggle('hidden', !onSales);
+      document.getElementById('inventory-subnav').classList.toggle('hidden', !onInventory);
       document.getElementById('tab-website').className = navLinkClass(onWebsite, !canUse('website'));
-      document.getElementById('tab-inventory').className = navLinkClass(name === 'inventory', !canUse('inventory'));
+      document.getElementById('tab-inventory').className = navLinkClass(onInventory, !canUse('inventory'));
       document.getElementById('tab-customers').className = navLinkClass(name === 'customers', !canUse('customers'));
       document.getElementById('tab-sales').className = navLinkClass(onSales, !canUse('sales'));
+      document.getElementById('tab-inv-items').className = navLinkClass(name === 'inventory', false, 'sub');
+      document.getElementById('tab-vendors').className = navLinkClass(name === 'vendors', false, 'sub');
+      document.getElementById('tab-purchase-orders').className = navLinkClass(name === 'purchase-orders', false, 'sub');
       document.getElementById('tab-products').className = navLinkClass(name === 'products', false, 'sub');
       document.getElementById('tab-accounts').className = navLinkClass(name === 'accounts', !canUse('accounts'), 'sub');
       document.getElementById('tab-quotes').className = navLinkClass(name === 'quotes', !canUse('quotes'), 'sub');
@@ -1294,6 +1586,8 @@
         products: ['Website', 'Product pages'],
         accounts: ['Website', 'Website accounts'],
         inventory: ['Inventory', ''],
+        vendors: ['Vendor', 'Purchase order vendors'],
+        'purchase-orders': ['Purchase Order', ''],
         customers: ['Customer', 'Quote and invoice records'],
         quotes: ['Sales', 'Sales Quote'],
         orders: ['Sales', 'Sales Order'],
@@ -1311,12 +1605,24 @@
       if (newBtn) newBtn.classList.toggle('hidden', !canEdit('website'));
       const invNew = document.getElementById('inv-new-btn');
       if (invNew) invNew.classList.toggle('hidden', !canEdit('inventory'));
+      const vnNew = document.getElementById('vn-new-btn');
+      if (vnNew) vnNew.classList.toggle('hidden', !canEdit('inventory'));
+      const poNew = document.getElementById('po-new-btn');
+      if (poNew) poNew.classList.toggle('hidden', !canEdit('inventory'));
     }
 
     let inventoryItems = [];
     let inventoryFilter = 'all';
     let inventoryDetail = null;
     let invSavedSnapshot = '';
+    let invDrawerSource = '';
+    let invPoLineRow = null;
+    let inventoryVendors = [];
+    let purchaseOrders = [];
+    let poCustomers = [];
+    let vnSavedSnapshot = '';
+    let vnDrawerSource = '';
+    let poLineState = [];
 
     function stockStatusLabel(status) {
       if (status === 'out') return 'Out';
@@ -1334,22 +1640,86 @@
       return table.getAttribute('data-cols') || 'table';
     }
 
-    function defaultColOrder(table) {
+    function dashColCatalog(table) {
+      if (dashColKey(table) === 'inventory') {
+        return [
+          { id: 'sku', label: 'SKU' },
+          { id: 'name', label: 'Item' },
+          { id: 'description', label: 'Description' },
+          { id: 'pitch', label: 'Pitch' },
+          { id: 'brand', label: 'Brand' },
+          { id: 'qty', label: 'On hand' },
+          { id: 'cost', label: 'Cost' },
+          { id: 'price', label: 'Sell price' },
+          { id: 'dealer', label: 'Dealer net' },
+          { id: 'status', label: 'Status' },
+          { id: 'photo', label: 'Photo' },
+          { id: 'website', label: 'Website' }
+        ];
+      }
+      if (dashColKey(table) === 'po-lines') {
+        return [
+          { id: 'product', label: 'Product/Service' },
+          { id: 'sku', label: 'SKU' },
+          { id: 'description', label: 'Description' },
+          { id: 'qty', label: 'Quantity' },
+          { id: 'rate', label: 'Rate' },
+          { id: 'amount', label: 'Amount' }
+        ];
+      }
       return Array.prototype.map.call(table.querySelectorAll('thead th[data-col]'), function (th) {
-        return th.getAttribute('data-col');
+        return { id: th.getAttribute('data-col'), label: colHeaderLabel(table, th.getAttribute('data-col')) };
       });
+    }
+
+    function defaultColOrder(table) {
+      return dashColCatalog(table).map(function (col) { return col.id; });
+    }
+
+    function defaultVisibleOrder(table) {
+      if (dashColKey(table) === 'inventory') {
+        return ['sku', 'name', 'brand', 'pitch', 'qty', 'price', 'website', 'status'];
+      }
+      return defaultColOrder(table);
+    }
+
+    function addableCols(table) {
+      const shown = loadColState(table).order;
+      return dashColCatalog(table).filter(function (col) { return shown.indexOf(col.id) === -1; });
     }
 
     function loadColState(table) {
       const name = dashColKey(table);
-      const fallback = { order: defaultColOrder(table), sortCol: '', sortDir: '', widths: {} };
+      const known = defaultColOrder(table);
+      const startOrder = defaultVisibleOrder(table).filter(function (id) { return known.indexOf(id) !== -1; });
+      const fallback = {
+        order: startOrder.slice(),
+        hidden: known.filter(function (id) { return startOrder.indexOf(id) === -1; }),
+        sortCol: '',
+        sortDir: '',
+        widths: {}
+      };
       try {
         const saved = JSON.parse(localStorage.getItem('dash-col-state-' + name) || '{}');
-        const known = fallback.order.slice();
-        const order = (saved.order || []).filter(function (id) { return known.indexOf(id) !== -1; });
-        known.forEach(function (id) { if (order.indexOf(id) === -1) order.push(id); });
+        const hasSaved = (saved.order && saved.order.length) || (saved.hidden && saved.hidden.length);
+        if (!hasSaved) return fallback;
+        const savedHidden = (saved.hidden || []).filter(function (id) { return known.indexOf(id) !== -1; });
+        const order = (saved.order || []).filter(function (id) {
+          return known.indexOf(id) !== -1 && savedHidden.indexOf(id) === -1;
+        });
+        const hidden = savedHidden.slice();
+        known.forEach(function (id) {
+          if (order.indexOf(id) !== -1 || hidden.indexOf(id) !== -1) return;
+          hidden.push(id);
+        });
+        if (!order.length && known.length) {
+          order.push(known[0]);
+          const drop = hidden.indexOf(known[0]);
+          if (drop !== -1) hidden.splice(drop, 1);
+        }
         return {
           order: order,
+          hidden: hidden,
           sortCol: saved.sortCol || '',
           sortDir: saved.sortDir || '',
           widths: saved.widths && typeof saved.widths === 'object' ? saved.widths : {}
@@ -1366,14 +1736,25 @@
     function applyColOrder(table) {
       const state = loadColState(table);
       const row = table.querySelector('thead tr');
-      const locked = Array.prototype.filter.call(row.children, function (th) { return !th.getAttribute('data-col'); });
+      const startLocked = Array.prototype.filter.call(row.children, function (th) {
+        return th.getAttribute('data-lock') === 'start';
+      });
+      const endLocked = Array.prototype.filter.call(row.children, function (th) {
+        return !th.getAttribute('data-col') && th.getAttribute('data-lock') !== 'start';
+      });
+      startLocked.forEach(function (th) { row.appendChild(th); });
       state.order.forEach(function (id) {
         const th = row.querySelector('th[data-col="' + id + '"]');
         if (th) row.appendChild(th);
       });
-      locked.forEach(function (th) { row.appendChild(th); });
+      state.hidden.forEach(function (id) {
+        const th = row.querySelector('th[data-col="' + id + '"]');
+        if (th) row.appendChild(th);
+      });
+      endLocked.forEach(function (th) { row.appendChild(th); });
       Array.prototype.forEach.call(row.querySelectorAll('th[data-col]'), function (th) {
         const col = th.getAttribute('data-col');
+        th.hidden = state.hidden.indexOf(col) !== -1;
         const w = state.widths[col];
         if (w) th.style.width = w;
         const caret = th.querySelector('.dash-col-caret');
@@ -1384,8 +1765,23 @@
       });
     }
 
-    function dashOrderedCells(table, cells, lockedHtml) {
-      return loadColState(table).order.map(function (id) { return cells[id] || ''; }).join('') + (lockedHtml || '');
+    function dashOrderedCells(table, cells, lockedHtml, leadHtml) {
+      return (leadHtml || '') + loadColState(table).order.map(function (id) { return cells[id] || ''; }).join('') + (lockedHtml || '');
+    }
+
+    function dashColSpan(table) {
+      const locked = table.querySelectorAll('thead th:not([data-col])').length;
+      return loadColState(table).order.length + locked;
+    }
+
+    function colHeaderLabel(table, id) {
+      const th = table.querySelector('th[data-col="' + id + '"]');
+      if (!th) return id;
+      const copy = th.cloneNode(true);
+      Array.prototype.forEach.call(copy.querySelectorAll('.dash-col-caret, .dash-col-grip'), function (el) {
+        el.remove();
+      });
+      return (copy.textContent || id).trim();
     }
 
     function sortColRows(rows, table, getValue) {
@@ -1400,20 +1796,64 @@
       });
     }
 
+    function closeColAdd() {
+      const panel = document.getElementById('dash-col-add');
+      if (panel) panel.hidden = true;
+      const addBtn = document.querySelector('#dash-col-menu [data-col-act="add"]');
+      if (addBtn) addBtn.classList.remove('is-on');
+    }
+
     function closeColMenu() {
+      closeColAdd();
       const menu = document.getElementById('dash-col-menu');
       menu.hidden = true;
       menu._table = null;
       menu._col = '';
     }
 
+    function placeColAdd(menu) {
+      const panel = document.getElementById('dash-col-add');
+      if (!panel || panel.hidden) return;
+      const box = menu.getBoundingClientRect();
+      const pw = panel.offsetWidth || 184;
+      let left = box.right + 6;
+      if (left + pw > window.innerWidth - 8) left = box.left - pw - 6;
+      panel.style.left = Math.max(8, left) + 'px';
+      panel.style.top = Math.max(8, box.top) + 'px';
+    }
+
+    function openColAdd(table) {
+      const menu = document.getElementById('dash-col-menu');
+      const panel = document.getElementById('dash-col-add');
+      const list = document.getElementById('dash-col-add-list');
+      const addBtn = menu.querySelector('[data-col-act="add"]');
+      if (!panel.hidden) {
+        closeColAdd();
+        return;
+      }
+      const addable = addableCols(table);
+      if (!addable.length) {
+        list.innerHTML = '<p class="dash-col-add-empty">All columns are shown</p>';
+      } else {
+        list.innerHTML = addable.map(function (col) {
+          return '<button type="button" data-add-col="' + esc(col.id) + '">' + esc(col.label) + '</button>';
+        }).join('');
+      }
+      panel.hidden = false;
+      addBtn.classList.add('is-on');
+      placeColAdd(menu);
+    }
+
     function openColMenu(table, th) {
+      closeColAdd();
       const menu = document.getElementById('dash-col-menu');
       const col = th.getAttribute('data-col');
       const state = loadColState(table);
       const i = state.order.indexOf(col);
       menu.querySelector('[data-col-act="left"]').disabled = i <= 0;
       menu.querySelector('[data-col-act="right"]').disabled = i === -1 || i >= state.order.length - 1;
+      menu.querySelector('[data-col-act="hide"]').disabled = state.order.length <= 1;
+      menu.querySelector('[data-col-act="add"]').disabled = !addableCols(table).length;
       menu._table = table;
       menu._col = col;
       menu.hidden = false;
@@ -1430,6 +1870,7 @@
       if (name === 'inventory') renderInventoryTable();
       else if (name === 'customers') renderCcTable(companyCustomers);
       else if (name === 'sales') renderSoTable(salesDocs, salesTypeFromTab(salesSubTab));
+      else if (name === 'po-lines') renderPoLines();
     }
 
     function enableColumnResize(table) {
@@ -1480,6 +1921,7 @@
     }
 
     const dashColMenu = document.getElementById('dash-col-menu');
+    const dashColAdd = document.getElementById('dash-col-add');
     if (dashColMenu) {
       dashColMenu.addEventListener('click', function (e) {
         const btn = e.target.closest('[data-col-act]');
@@ -1488,6 +1930,10 @@
         const col = dashColMenu._col;
         if (!table || !col) return;
         const act = btn.getAttribute('data-col-act');
+        if (act === 'add') {
+          openColAdd(table);
+          return;
+        }
         const state = loadColState(table);
         if (act === 'asc' || act === 'desc') {
           state.sortCol = col;
@@ -1501,6 +1947,29 @@
           next[i] = next[j];
           next[j] = swap;
           state.order = next;
+        } else if (act === 'hide') {
+          if (state.order.length <= 1) return;
+          state.order = state.order.filter(function (id) { return id !== col; });
+          if (state.hidden.indexOf(col) === -1) state.hidden.push(col);
+        }
+        saveColState(table, state);
+        closeColMenu();
+        refreshDashTable(table);
+      });
+    }
+    if (dashColAdd) {
+      dashColAdd.addEventListener('click', function (e) {
+        const btn = e.target.closest('[data-add-col]');
+        if (!btn || !dashColMenu) return;
+        const table = dashColMenu._table;
+        const at = dashColMenu._col;
+        const addId = btn.getAttribute('data-add-col');
+        if (!table || !addId) return;
+        const state = loadColState(table);
+        const i = state.order.indexOf(at);
+        state.hidden = state.hidden.filter(function (id) { return id !== addId; });
+        if (state.order.indexOf(addId) === -1) {
+          state.order.splice(i < 0 ? state.order.length : i, 0, addId);
         }
         saveColState(table, state);
         closeColMenu();
@@ -1511,6 +1980,7 @@
     document.addEventListener('click', function (e) {
       if (!dashColMenu || dashColMenu.hidden) return;
       if (dashColMenu.contains(e.target)) return;
+      if (dashColAdd && dashColAdd.contains(e.target)) return;
       if (e.target.closest && e.target.closest('table.dash-cols th[data-col]')) return;
       closeColMenu();
     });
@@ -1533,7 +2003,7 @@
         if (inventoryFilter === 'out' && item.status !== 'out') return false;
         if (inventoryFilter === 'unmapped' && item.maps && item.maps.length) return false;
         if (q) {
-          const blob = ((item.sku || '') + ' ' + (item.name || '') + ' ' + (item.brandName || '') + ' ' + (item.pitchLabel || '')).toLowerCase();
+          const blob = ((item.sku || '') + ' ' + (item.name || '') + ' ' + (item.brandName || '') + ' ' + (item.pitchLabel || '') + ' ' + (item.description || '')).toLowerCase();
           if (blob.indexOf(q) === -1) return false;
         }
         return true;
@@ -1543,10 +2013,14 @@
       const sorted = sortColRows(rows, table, function (item, col) {
         if (col === 'sku') return item.sku || '';
         if (col === 'name') return item.name || '';
+        if (col === 'description') return item.description || '';
         if (col === 'brand') return item.brandName || '';
         if (col === 'pitch') return item.pitchLabel || '';
         if (col === 'qty') return Number(item.qty) || 0;
+        if (col === 'cost') return Number(item.cost) || 0;
         if (col === 'price') return Number(item.price) || 0;
+        if (col === 'dealer') return Number(item.dealerNet) || 0;
+        if (col === 'photo') return item.image || '';
         if (col === 'website') {
           return (item.maps && item.maps.length)
             ? item.maps.map(function (m) {
@@ -1559,27 +2033,34 @@
       });
       tb.innerHTML = sorted.map(function (item) {
         const qtyText = item.qty.toLocaleString() + ' ' + item.unit;
-        const priceText = item.price ? ('$' + Number(item.price).toLocaleString()) : '—';
+        const money = function (n) { return n ? ('$' + Number(n).toLocaleString()) : '—'; };
         const site = (item.maps && item.maps.length)
           ? item.maps.map(function (m) {
             return esc(m.productName || 'Product') + (m.pitch ? (' · P' + m.pitch) : '');
           }).join(', ')
           : 'Not on website';
+        const photo = item.image
+          ? '<img src="' + esc(item.image) + '" alt="" class="dash-col-photo">'
+          : '<span class="text-slate-400">—</span>';
         const cells = {
           sku: '<td class="py-3 px-4 font-mono text-xs text-sky-300">' + esc(item.sku || '—') + '</td>',
           name: '<td class="py-3 px-4 font-medium">' + esc(item.name || '') + '</td>',
+          description: '<td class="py-3 px-4 text-slate-400">' + esc(item.description || '—') + '</td>',
           brand: '<td class="py-3 px-4 text-sky-400">' + esc(item.brandName || '—') + '</td>',
           pitch: '<td class="py-3 px-4 text-slate-400">' + esc(item.pitchLabel || '—') + '</td>',
           qty: '<td class="py-3 px-4">' + esc(qtyText) + '</td>',
-          price: '<td class="py-3 px-4">' + esc(priceText) + '</td>',
+          cost: '<td class="py-3 px-4">' + money(item.cost) + '</td>',
+          price: '<td class="py-3 px-4">' + money(item.price) + '</td>',
+          dealer: '<td class="py-3 px-4">' + money(item.dealerNet) + '</td>',
           website: '<td class="py-3 px-4 text-slate-400">' + site + '</td>',
+          photo: '<td class="py-3 px-4">' + photo + '</td>',
           status: '<td class="py-3 px-4"><span class="text-xs px-2 py-0.5 rounded-full ' + stockStatusClass(item.status) + '">' +
             esc(stockStatusLabel(item.status)) + '</span></td>'
         };
         return '<tr class="border-b border-slate-800 hover:bg-slate-900/80 cursor-pointer" data-id="' + esc(item.id) + '">' +
           dashOrderedCells(table, cells) +
           '</tr>';
-      }).join('') || '<tr><td class="py-6 px-4 text-slate-500" colspan="8">No matching items.</td></tr>';
+      }).join('') || '<tr><td class="py-6 px-4 text-slate-500" colspan="' + dashColSpan(table) + '">No matching items.</td></tr>';
       applyColOrder(table);
     }
 
@@ -1652,7 +2133,9 @@
     }
 
     function dashDrawerIsOpen() {
-      return document.body.classList.contains('cc-drawer-open') || document.body.classList.contains('inv-drawer-open');
+      return document.body.classList.contains('cc-drawer-open') ||
+        document.body.classList.contains('inv-drawer-open') ||
+        document.body.classList.contains('vn-drawer-open');
     }
 
     function lockDashPageScroll() {
@@ -1725,11 +2208,18 @@
       hideCcLeave();
       document.body.classList.remove('inv-drawer-open');
       document.getElementById('inv-drawer').setAttribute('aria-hidden', 'true');
+      if (invDrawerSource === 'po' && invPoLineRow) {
+        const sel = invPoLineRow.querySelector('[data-line="itemId"]');
+        if (sel && sel.value === '__new__') sel.value = '';
+      }
+      invDrawerSource = '';
+      invPoLineRow = null;
       unlockDashPageScroll();
     }
 
     function openInventoryDrawer() {
       if (typeof closeCustomerDrawer === 'function') closeCustomerDrawer(true);
+      if (typeof closeVendorDrawer === 'function') closeVendorDrawer(true);
       document.querySelectorAll('#inv-drawer .cc-sec').forEach(function (sec) {
         sec.classList.add('is-open');
       });
@@ -1803,11 +2293,13 @@
       renderInvMoves(data.moves || []);
     }
 
-    function openNewInventory() {
+    function openNewInventory(source, lineRow) {
       if (invDrawerNeedsLeave()) {
-        invAskLeave(function () { openNewInventory(); });
+        invAskLeave(function () { openNewInventory(source, lineRow); });
         return;
       }
+      invDrawerSource = source || 'list';
+      invPoLineRow = lineRow || null;
       inventoryDetail = { item: null, moves: [] };
       fillInventoryForm(null);
       document.getElementById('inv-adjust-wrap').classList.add('hidden');
@@ -2216,7 +2708,7 @@
       });
       document.getElementById('cc-total').textContent = String((rows || []).length);
       if (!filtered.length) {
-        tbody.innerHTML = '<tr><td class="py-6 px-4 text-slate-500" colspan="7">' +
+        tbody.innerHTML = '<tr><td class="py-6 px-4 text-slate-500" colspan="' + dashColSpan(table) + '">' +
           (q ? 'No customers match this search.' : 'No customers yet. Add a customer to use on quotes and invoices.') +
           '</td></tr>';
         applyColOrder(table);
@@ -2353,6 +2845,7 @@
 
     function openCustomerDrawer(customer, source) {
       ccDrawerSource = source || 'list';
+      if (typeof closeVendorDrawer === 'function') closeVendorDrawer(true);
       showCcMsg('');
       if (customer && customer.id) {
         document.getElementById('cc-title').textContent = customer.displayName || customer.companyName || 'Customer';
@@ -2419,6 +2912,522 @@
 
     function moneyText(n) {
       return '$' + money(n).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    }
+
+    function showVnMsg(text, ok) {
+      const el = document.getElementById('vn-msg');
+      if (!el) return;
+      el.textContent = text || '';
+      el.className = 'text-sm px-5 pt-3 ' + (ok ? 'text-sky-600' : 'text-red-500');
+      el.classList.toggle('hidden', !text);
+    }
+
+    function vnFormSnapshot() {
+      return Array.prototype.map.call(document.querySelectorAll('#vn-form input, #vn-form select, #vn-form textarea'), function (el) {
+        return el.type === 'checkbox' ? (el.checked ? '1' : '0') : String(el.value || '');
+      }).join('|');
+    }
+
+    function markVnClean() {
+      vnSavedSnapshot = vnFormSnapshot();
+    }
+
+    function vnDrawerNeedsLeave() {
+      return document.body.classList.contains('vn-drawer-open') && vnFormSnapshot() !== vnSavedSnapshot;
+    }
+
+    function vnAskLeave(then) {
+      if (!document.body.classList.contains('vn-drawer-open')) {
+        if (then) then();
+        return;
+      }
+      if (!vnDrawerNeedsLeave()) {
+        closeVendorDrawer(true);
+        if (then) then();
+        return;
+      }
+      ccLeaveThen = function () {
+        closeVendorDrawer(true);
+        if (then) then();
+      };
+      showCcLeave();
+    }
+
+    function fillVnForm(v) {
+      const set = function (id, value) {
+        const el = document.getElementById(id);
+        if (el) el.value = value == null ? '' : value;
+      };
+      const src = v || {};
+      set('vn-id', src.id || '');
+      set('vn-company', src.companyName || '');
+      set('vn-display', src.displayName || '');
+      set('vn-title-field', src.title || '');
+      set('vn-first', src.contactFirst || '');
+      set('vn-middle', src.contactMiddle || '');
+      set('vn-last', src.contactLast || '');
+      set('vn-suffix', src.suffix || '');
+      set('vn-email', src.email || '');
+      set('vn-cc', src.emailCc || '');
+      set('vn-bcc', src.emailBcc || '');
+      set('vn-phone', src.phone || '');
+      set('vn-mobile', src.mobile || '');
+      set('vn-fax', src.fax || '');
+      set('vn-other', src.otherPhone || '');
+      set('vn-website', src.website || '');
+      set('vn-check', src.checkName || '');
+      set('vn-street', src.street || '');
+      set('vn-street2', src.street2 || '');
+      set('vn-city', src.city || '');
+      set('vn-state', src.state || '');
+      set('vn-zip', src.zip || '');
+      set('vn-country', src.country || 'United States');
+      set('vn-notes', src.notes || '');
+      set('vn-bank', src.bankAccount || '');
+      set('vn-routing', src.routingNumber || '');
+      set('vn-tax', src.taxId || '');
+      document.getElementById('vn-1099').checked = !!src.track1099;
+      set('vn-terms', src.paymentTerms || 'Net 30');
+      set('vn-account', src.accountNo || '');
+      set('vn-expense', src.expenseCategory || '');
+      set('vn-open-bal', src.openingBalance != null ? src.openingBalance : 0);
+      set('vn-open-asof', src.openingAsOf || '');
+      showVnMsg('');
+    }
+
+    function readVnForm() {
+      const val = function (id) {
+        const el = document.getElementById(id);
+        return el ? String(el.value || '').trim() : '';
+      };
+      return {
+        companyName: val('vn-company'),
+        displayName: val('vn-display'),
+        title: val('vn-title-field'),
+        contactFirst: val('vn-first'),
+        contactMiddle: val('vn-middle'),
+        contactLast: val('vn-last'),
+        suffix: val('vn-suffix'),
+        email: val('vn-email'),
+        emailCc: val('vn-cc'),
+        emailBcc: val('vn-bcc'),
+        phone: val('vn-phone'),
+        mobile: val('vn-mobile'),
+        fax: val('vn-fax'),
+        otherPhone: val('vn-other'),
+        website: val('vn-website'),
+        checkName: val('vn-check'),
+        street: val('vn-street'),
+        street2: val('vn-street2'),
+        city: val('vn-city'),
+        state: val('vn-state'),
+        zip: val('vn-zip'),
+        country: val('vn-country'),
+        notes: val('vn-notes'),
+        bankAccount: val('vn-bank'),
+        routingNumber: val('vn-routing'),
+        taxId: val('vn-tax'),
+        track1099: document.getElementById('vn-1099').checked,
+        paymentTerms: val('vn-terms') || 'Net 30',
+        accountNo: val('vn-account'),
+        expenseCategory: val('vn-expense'),
+        openingBalance: val('vn-open-bal'),
+        openingAsOf: val('vn-open-asof')
+      };
+    }
+
+    function renderVnTable(rows) {
+      const tbody = document.getElementById('vn-table');
+      const q = (document.getElementById('vn-search').value || '').toLowerCase();
+      const filtered = (rows || []).filter(function (v) {
+        if (!q) return true;
+        return [v.displayName, v.companyName, v.email, v.phone, v.mobile, v.contactName]
+          .join(' ').toLowerCase().indexOf(q) !== -1;
+      });
+      document.getElementById('vn-total').textContent = String((rows || []).length);
+      if (!filtered.length) {
+        tbody.innerHTML = '<tr><td class="py-6 px-4 text-slate-500" colspan="5">' +
+          (q ? 'No vendors match this search.' : 'No vendors yet. Add a vendor to use on purchase orders.') +
+          '</td></tr>';
+        return;
+      }
+      tbody.innerHTML = filtered.map(function (v) {
+        return '<tr class="border-b border-slate-800 hover:bg-slate-900/80 cursor-pointer" data-id="' + esc(v.id) + '">' +
+          '<td class="py-3 px-4 font-medium">' + esc(v.displayName || '—') + '</td>' +
+          '<td class="py-3 px-4">' + esc(v.companyName || '—') + '</td>' +
+          '<td class="py-3 px-4">' + esc(v.phone || v.mobile || '—') + '</td>' +
+          '<td class="py-3 px-4">' + esc(v.email || '—') + '</td>' +
+          '<td class="py-3 px-4">' + (v.track1099 ? 'Yes' : '—') + '</td>' +
+          '</tr>';
+      }).join('');
+    }
+
+    async function loadVendors() {
+      showError('vn-error', '');
+      try {
+        const data = await api('/api/admin/inventory-vendors');
+        inventoryVendors = data.vendors || [];
+        renderVnTable(inventoryVendors);
+        const keep = document.getElementById('po-vendor').value;
+        fillPoVendors(keep === '__new__' ? '' : keep);
+      } catch (err) {
+        showError('vn-error', err.message || 'Could not load vendors.');
+        document.getElementById('vn-table').innerHTML = '<tr><td class="py-6 px-4 text-slate-500" colspan="5">Could not load vendors.</td></tr>';
+      }
+    }
+
+    function closeVendorDrawer(force) {
+      if (!force && vnDrawerNeedsLeave()) {
+        vnAskLeave(null);
+        return;
+      }
+      hideCcLeave();
+      document.body.classList.remove('vn-drawer-open');
+      document.getElementById('vn-drawer').setAttribute('aria-hidden', 'true');
+      if (vnDrawerSource === 'po') {
+        const sel = document.getElementById('po-vendor');
+        if (sel && sel.value === '__new__') sel.value = '';
+      }
+      vnDrawerSource = '';
+      unlockDashPageScroll();
+    }
+
+    function openVendorDrawer(vendor, source) {
+      vnDrawerSource = source || 'list';
+      showVnMsg('');
+      if (typeof closeCustomerDrawer === 'function') closeCustomerDrawer(true);
+      if (typeof closeInventoryDrawer === 'function') closeInventoryDrawer(true);
+      if (vendor && vendor.id) {
+        document.getElementById('vn-title').textContent = vendor.displayName || vendor.companyName || 'Vendor';
+        document.getElementById('vn-delete-btn').classList.remove('hidden');
+        fillVnForm(vendor);
+      } else {
+        document.getElementById('vn-title').textContent = 'Vendor';
+        document.getElementById('vn-delete-btn').classList.add('hidden');
+        fillVnForm({ paymentTerms: 'Net 30', country: 'United States' });
+      }
+      document.getElementById('vn-display').dataset.touched = vendor && vendor.displayName ? '1' : '';
+      document.querySelectorAll('#vn-form .cc-sec').forEach(function (sec) {
+        sec.classList.add('is-open');
+      });
+      document.getElementById('vn-drawer').setAttribute('aria-hidden', 'false');
+      document.body.classList.add('vn-drawer-open');
+      lockDashPageScroll();
+      const body = document.getElementById('vn-form');
+      if (body) body.scrollTop = 0;
+      hideCcLeave();
+      markVnClean();
+      document.getElementById('vn-company').focus();
+    }
+
+    function openNewVendor(source) {
+      if (vnDrawerNeedsLeave()) {
+        vnAskLeave(function () { openNewVendor(source); });
+        return;
+      }
+      openVendorDrawer(null, source || 'list');
+    }
+
+    async function openVendor(id) {
+      try {
+        const data = await api('/api/admin/inventory-vendors/' + encodeURIComponent(id));
+        if (data.vendor) openVendorDrawer(data.vendor, 'list');
+      } catch (err) {
+        showError('vn-error', err.message || 'Could not open this vendor.');
+      }
+    }
+
+    function fillPoVendors(selected) {
+      const sel = document.getElementById('po-vendor');
+      sel.innerHTML = '<option value="">Choose a vendor</option>' +
+        '<option value="__new__">+ Add new</option>' +
+        (inventoryVendors || []).map(function (v) {
+          return '<option value="' + esc(v.id) + '"' + (String(v.id) === String(selected) ? ' selected' : '') + '>' +
+            esc(v.displayName || v.companyName || v.email || 'Vendor') +
+            '</option>';
+        }).join('');
+    }
+
+    function fillPoShipTo(selected) {
+      const sel = document.getElementById('po-ship-to');
+      sel.innerHTML = '<option value="">Select customer for address</option>' +
+        (poCustomers || []).map(function (c) {
+          return '<option value="' + esc(c.id) + '"' + (String(c.id) === String(selected) ? ' selected' : '') + '>' +
+            esc(c.displayName || c.companyName || [c.contactFirst, c.contactLast].filter(Boolean).join(' ') || c.email) +
+            '</option>';
+        }).join('');
+    }
+
+    function applyPoVendor(v) {
+      if (!v) return;
+      document.getElementById('po-email').value = v.email || '';
+      document.getElementById('po-mail').value = v.mailingAddress || '';
+    }
+
+    function formatCustomerShip(c) {
+      if (!c) return '';
+      const name = c.displayName || c.companyName || '';
+      const same = c.shipSame !== false;
+      const lines = same
+        ? [c.billStreet, c.billStreet2, [c.billCity, c.billState, c.billZip].filter(Boolean).join(', '), c.billCountry]
+        : [c.shipStreet, c.shipStreet2, [c.shipCity, c.shipState, c.shipZip].filter(Boolean).join(', '), c.shipCountry];
+      return [name].concat(lines.filter(Boolean)).join('\n');
+    }
+
+    function poProductOptions(selected) {
+      return '<option value="">Select</option>' +
+        '<option value="__new__">+ Add new</option>' +
+        (inventoryItems || []).map(function (item) {
+          return '<option value="' + esc(item.id) + '"' + (String(item.id) === String(selected) ? ' selected' : '') + '>' +
+            esc(item.name || item.sku || 'Item') +
+            '</option>';
+        }).join('');
+    }
+
+    function poLineRow(line, index) {
+      const item = line || {};
+      const table = document.querySelector('table.dash-cols[data-cols="po-lines"]');
+      const qty = item.qty == null ? 1 : item.qty;
+      const rate = item.rate == null ? 0 : item.rate;
+      const cells = {
+        product: '<td class="py-2 px-2"><select data-line="itemId">' + poProductOptions(item.itemId) + '</select></td>',
+        sku: '<td class="py-2 px-2"><input data-line="sku" value="' + esc(item.sku || '') + '"></td>',
+        description: '<td class="py-2 px-2"><input data-line="description" value="' + esc(item.description || '') + '"></td>',
+        qty: '<td class="py-2 px-2"><input data-line="qty" type="number" step="0.01" value="' + esc(qty) + '"></td>',
+        rate: '<td class="py-2 px-2"><input data-line="rate" type="number" step="0.01" value="' + esc(rate) + '"></td>',
+        amount: '<td class="py-2 px-2 text-right tabular-nums" data-line-amt>' + moneyText(qty * rate) + '</td>'
+      };
+      return '<tr class="border-b border-slate-200 po-line">' +
+        dashOrderedCells(
+          table,
+          cells,
+          '<td class="py-2 px-2"><button type="button" data-remove-line class="text-slate-400 hover:text-red-500 text-xs">✕</button></td>',
+          '<td class="py-2 px-3 po-line-num text-slate-400">' + (index + 1) + '</td>'
+        ) +
+        '</tr>';
+    }
+
+    function readPoLines() {
+      return Array.prototype.map.call(document.querySelectorAll('#po-lines .po-line'), function (row, i) {
+        const prev = poLineState[i] || {};
+        const sel = row.querySelector('[data-line="itemId"]');
+        const itemId = sel
+          ? (sel.value && sel.value !== '__new__' ? sel.value : '')
+          : (prev.itemId || '');
+        let product = prev.product || '';
+        if (sel && itemId) {
+          const opt = sel.options[sel.selectedIndex];
+          product = opt ? String(opt.textContent || '').trim() : product;
+        }
+        const val = function (key, fallback) {
+          const el = row.querySelector('[data-line="' + key + '"]');
+          if (!el) return fallback;
+          return String(el.value || '').trim();
+        };
+        return {
+          itemId: itemId,
+          product: product,
+          sku: val('sku', prev.sku || ''),
+          description: val('description', prev.description || ''),
+          qty: money(val('qty', prev.qty == null ? 1 : prev.qty)),
+          rate: money(val('rate', prev.rate == null ? 0 : prev.rate))
+        };
+      });
+    }
+
+    function renderPoLines(lines) {
+      const table = document.querySelector('table.dash-cols[data-cols="po-lines"]');
+      const tb = document.getElementById('po-lines');
+      const rows = lines || readPoLines();
+      const sorted = sortColRows(rows.length ? rows : [{ qty: 1, rate: 0 }], table, function (line, col) {
+        if (col === 'product') return line.product || '';
+        if (col === 'sku') return line.sku || '';
+        if (col === 'description') return line.description || '';
+        if (col === 'qty') return Number(line.qty) || 0;
+        if (col === 'rate') return Number(line.rate) || 0;
+        if (col === 'amount') return (Number(line.qty) || 0) * (Number(line.rate) || 0);
+        return '';
+      });
+      poLineState = sorted.slice();
+      tb.innerHTML = sorted.map(function (line, i) { return poLineRow(line, i); }).join('');
+      applyColOrder(table);
+      refreshPoTotals();
+    }
+
+    function refreshPoTotals() {
+      document.querySelectorAll('#po-lines .po-line').forEach(function (row, i) {
+        const num = row.querySelector('.po-line-num');
+        if (num) num.textContent = String(i + 1);
+        const qty = money((row.querySelector('[data-line="qty"]') || {}).value);
+        const rate = money((row.querySelector('[data-line="rate"]') || {}).value);
+        const amt = row.querySelector('[data-line-amt]');
+        if (amt) amt.textContent = moneyText(qty * rate);
+      });
+      const total = money(readPoLines().reduce(function (sum, line) { return sum + line.qty * line.rate; }, 0));
+      document.getElementById('po-subtotal').textContent = moneyText(total);
+      document.getElementById('po-amount').textContent = moneyText(total);
+    }
+
+    function applyPoItemToLine(row, item) {
+      if (!row || !item) return;
+      const sel = row.querySelector('[data-line="itemId"]');
+      if (sel) sel.innerHTML = poProductOptions(item.id);
+      const sku = row.querySelector('[data-line="sku"]');
+      const desc = row.querySelector('[data-line="description"]');
+      const rate = row.querySelector('[data-line="rate"]');
+      if (sku) sku.value = item.sku || '';
+      if (desc) desc.value = item.description || item.name || '';
+      if (rate) rate.value = item.cost != null ? item.cost : 0;
+      const idx = Array.prototype.indexOf.call(document.querySelectorAll('#po-lines .po-line'), row);
+      if (idx !== -1) {
+        poLineState[idx] = Object.assign({}, poLineState[idx], {
+          itemId: item.id,
+          product: item.name || item.sku || '',
+          sku: item.sku || '',
+          description: item.description || item.name || '',
+          rate: item.cost != null ? item.cost : 0
+        });
+      }
+      refreshPoTotals();
+    }
+
+    function showPoMsg(text, ok) {
+      const el = document.getElementById('po-msg');
+      el.textContent = text || '';
+      el.className = 'text-sm ' + (ok ? 'text-sky-600' : 'text-red-500');
+      el.classList.toggle('hidden', !text);
+    }
+
+    function showPoList() {
+      document.getElementById('po-list-wrap').classList.remove('hidden');
+      document.getElementById('po-detail').classList.add('hidden');
+    }
+
+    function renderPoTable(rows) {
+      const tbody = document.getElementById('po-table');
+      const q = (document.getElementById('po-search').value || '').toLowerCase();
+      const filtered = (rows || []).filter(function (d) {
+        if (!q) return true;
+        return [d.number, d.vendorName, d.status].join(' ').toLowerCase().indexOf(q) !== -1;
+      });
+      document.getElementById('po-total').textContent = String((rows || []).length);
+      if (!filtered.length) {
+        tbody.innerHTML = '<tr><td class="py-6 px-4 text-slate-500" colspan="6">' +
+          (q ? 'No purchase orders match this search.' : 'No purchase orders yet.') +
+          '</td></tr>';
+        return;
+      }
+      tbody.innerHTML = filtered.map(function (d) {
+        const when = d.issueDate ? new Date(d.issueDate + 'T00:00:00').toLocaleDateString() : '—';
+        return '<tr class="border-b border-slate-800 hover:bg-slate-900/80 cursor-pointer" data-id="' + esc(d.id) + '">' +
+          '<td class="py-3 px-4 font-medium">' + esc(d.number || '—') + '</td>' +
+          '<td class="py-3 px-4">' + esc(d.vendorName || '—') + '</td>' +
+          '<td class="py-3 px-4">' + esc(when) + '</td>' +
+          '<td class="py-3 px-4"><span class="text-xs px-2 py-0.5 rounded-full bg-sky-500/15 text-sky-300">' + esc(d.status || 'open') + '</span></td>' +
+          '<td class="py-3 px-4">' + moneyText(d.total) + '</td>' +
+          '<td class="py-3 px-4 text-right"><span class="text-sky-400 text-xs font-medium">Open →</span></td>' +
+          '</tr>';
+      }).join('');
+    }
+
+    function fillPoForm(doc) {
+      const src = doc || {};
+      document.getElementById('po-id').value = src.id || '';
+      document.getElementById('po-number').value = src.number || '';
+      fillPoVendors(src.vendorId || '');
+      fillPoShipTo(src.shipToCustomerId || '');
+      document.getElementById('po-email').value = src.vendorEmail || '';
+      document.getElementById('po-cc').value = '';
+      document.getElementById('po-bcc').value = '';
+      document.getElementById('po-status').value = src.status || 'open';
+      document.getElementById('po-mail').value = src.mailingAddress || '';
+      document.getElementById('po-ship').value = src.shippingAddress || '';
+      document.getElementById('po-issue').value = src.issueDate || new Date().toISOString().slice(0, 10);
+      document.getElementById('po-due').value = src.dueDate || '';
+      document.getElementById('po-via').value = src.shipVia || '';
+      document.getElementById('po-permit').value = src.permitNo || '';
+      document.getElementById('po-notes').value = src.notes || '';
+      document.getElementById('po-delete-btn').classList.toggle('hidden', !src.id);
+      renderPoLines(src.lines && src.lines.length ? src.lines : [{ qty: 1, rate: 0 }]);
+      showPoMsg('');
+    }
+
+    function readPoForm() {
+      const vendorId = document.getElementById('po-vendor').value;
+      const vendor = (inventoryVendors || []).find(function (v) { return String(v.id) === String(vendorId); });
+      const shipId = document.getElementById('po-ship-to').value;
+      const ship = (poCustomers || []).find(function (c) { return String(c.id) === String(shipId); });
+      const emails = [
+        document.getElementById('po-email').value.trim(),
+        document.getElementById('po-cc').value.trim(),
+        document.getElementById('po-bcc').value.trim()
+      ].filter(Boolean);
+      return {
+        number: document.getElementById('po-number').value.trim(),
+        vendorId: vendorId === '__new__' ? '' : vendorId,
+        vendorName: vendor ? (vendor.displayName || vendor.companyName || '') : '',
+        vendorEmail: emails.join(', '),
+        status: document.getElementById('po-status').value,
+        mailingAddress: document.getElementById('po-mail').value.trim(),
+        shipToCustomerId: shipId,
+        shipToName: ship ? (ship.displayName || ship.companyName || '') : '',
+        shippingAddress: document.getElementById('po-ship').value.trim(),
+        issueDate: document.getElementById('po-issue').value,
+        dueDate: document.getElementById('po-due').value,
+        shipVia: document.getElementById('po-via').value.trim(),
+        permitNo: document.getElementById('po-permit').value.trim(),
+        notes: document.getElementById('po-notes').value.trim(),
+        lines: readPoLines()
+      };
+    }
+
+    function openNewPo() {
+      fillPoForm({
+        status: 'open',
+        issueDate: new Date().toISOString().slice(0, 10),
+        lines: [{ qty: 1, rate: 0 }]
+      });
+      document.getElementById('po-list-wrap').classList.add('hidden');
+      document.getElementById('po-detail').classList.remove('hidden');
+    }
+
+    async function openPurchaseOrder(id) {
+      showPoMsg('');
+      showError('po-error', '');
+      try {
+        const data = await api('/api/admin/purchase-orders/' + encodeURIComponent(id));
+        if (!data.order) return;
+        fillPoForm(data.order);
+        document.getElementById('po-list-wrap').classList.add('hidden');
+        document.getElementById('po-detail').classList.remove('hidden');
+      } catch (err) {
+        showError('po-error', err.message || 'Could not open this purchase order.');
+      }
+    }
+
+    async function loadPurchaseOrders() {
+      showError('po-error', '');
+      try {
+        const [poData, vnData, ccData, invData] = await Promise.all([
+          api('/api/admin/purchase-orders'),
+          api('/api/admin/inventory-vendors'),
+          api('/api/admin/company-customers'),
+          inventoryItems.length ? Promise.resolve({ items: inventoryItems }) : api('/api/admin/inventory')
+        ]);
+        purchaseOrders = poData.orders || [];
+        inventoryVendors = vnData.vendors || [];
+        poCustomers = ccData.customers || [];
+        if (!inventoryItems.length) inventoryItems = invData.items || [];
+        const keepVendor = document.getElementById('po-vendor').value;
+        const keepShip = document.getElementById('po-ship-to').value;
+        const onForm = !document.getElementById('po-detail').classList.contains('hidden');
+        fillPoVendors(onForm && keepVendor !== '__new__' ? keepVendor : '');
+        fillPoShipTo(onForm ? keepShip : '');
+        renderPoTable(purchaseOrders);
+      } catch (err) {
+        showError('po-error', err.message || 'Could not load purchase orders.');
+        document.getElementById('po-table').innerHTML = '<tr><td class="py-6 px-4 text-slate-500" colspan="6">Could not load purchase orders.</td></tr>';
+      }
     }
 
     function salesTypeFromTab(name) {
@@ -2552,7 +3561,7 @@
             : (count === 1 ? 'invoice' : 'invoices');
       const table = document.querySelector('table.dash-cols[data-cols="sales"]');
       if (!filtered.length) {
-        tbody.innerHTML = '<tr><td class="py-6 px-4 text-slate-500" colspan="6">' +
+        tbody.innerHTML = '<tr><td class="py-6 px-4 text-slate-500" colspan="' + dashColSpan(table) + '">' +
           (q ? 'No documents match this search.' : 'No ' + salesTypeLabel(type).toLowerCase() + 's yet.') +
           '</td></tr>';
         applyColOrder(table);
@@ -2698,6 +3707,13 @@
         document.getElementById('inventory-detail').classList.add('hidden');
         await loadInventory();
       }
+      if (name === 'vendors') {
+        await loadVendors();
+      }
+      if (name === 'purchase-orders') {
+        showPoList();
+        await loadPurchaseOrders();
+      }
       if (name === 'customers') {
         showCcList();
         await loadCompanyCustomers();
@@ -2834,6 +3850,10 @@
       }
       if (document.body.classList.contains('inv-drawer-open')) {
         closeInventoryDrawer();
+        return;
+      }
+      if (document.body.classList.contains('vn-drawer-open')) {
+        closeVendorDrawer();
       }
     });
 
@@ -3159,7 +4179,7 @@
     });
 
     document.getElementById('inv-new-btn').addEventListener('click', function () {
-      openNewInventory();
+      openNewInventory('list');
     });
     document.getElementById('inventory-table').addEventListener('click', function (e) {
       const row = e.target.closest('tr[data-id]');
@@ -3246,7 +4266,15 @@
         renderInventoryDetail(data);
         markInvClean();
         await loadInventory();
-        closeInventoryDrawer(true);
+        if (invDrawerSource === 'po' && invPoLineRow) {
+          const row = invPoLineRow;
+          invDrawerSource = '';
+          invPoLineRow = null;
+          applyPoItemToLine(row, data.item);
+          closeInventoryDrawer(true);
+        } else {
+          closeInventoryDrawer(true);
+        }
       } catch (err) {
         msg.textContent = err.message || 'Could not save.';
         msg.className = 'text-sm px-5 pt-3 text-red-500';
@@ -3482,6 +4510,208 @@
         await loadDash();
       } catch (err) {
         showError('form-error', err.message);
+      }
+    });
+
+    document.getElementById('vn-new-btn').addEventListener('click', function () {
+      openNewVendor('list');
+    });
+    document.getElementById('vn-search').addEventListener('input', function () {
+      renderVnTable(inventoryVendors);
+    });
+    document.getElementById('vn-table').addEventListener('click', function (e) {
+      const row = e.target.closest('tr[data-id]');
+      if (!row) return;
+      const id = row.getAttribute('data-id');
+      if (vnDrawerNeedsLeave()) {
+        vnAskLeave(function () { openVendor(id); });
+        return;
+      }
+      openVendor(id);
+    });
+    document.getElementById('vn-drawer-close').addEventListener('click', function () {
+      closeVendorDrawer();
+    });
+    document.getElementById('vn-drawer-scrim').addEventListener('click', function () {
+      closeVendorDrawer();
+    });
+    document.getElementById('vn-form').addEventListener('click', function (e) {
+      const btn = e.target.closest('.cc-sec-btn');
+      if (btn) btn.parentElement.classList.toggle('is-open');
+    });
+    document.querySelector('#vn-drawer .cc-drawer-tools').addEventListener('click', function (e) {
+      const jump = e.target.closest('[data-vn-jump]');
+      if (!jump) return;
+      const sec = document.getElementById(jump.getAttribute('data-vn-jump'));
+      const form = document.getElementById('vn-form');
+      if (!sec || !form) return;
+      sec.classList.add('is-open');
+      const head = sec.querySelector('.cc-sec-btn') || sec;
+      const nextTop = Math.max(0, Math.min(
+        form.scrollTop + head.getBoundingClientRect().top - form.getBoundingClientRect().top - 16,
+        Math.max(0, form.scrollHeight - form.clientHeight)
+      ));
+      form.scrollTo({ top: nextTop, behavior: 'smooth' });
+      flashCustomerSection(sec);
+    });
+    ['vn-company', 'vn-first', 'vn-last'].forEach(function (id) {
+      document.getElementById(id).addEventListener('input', function () {
+        const display = document.getElementById('vn-display');
+        if (display.dataset.touched === '1') return;
+        const company = document.getElementById('vn-company').value.trim();
+        const name = [document.getElementById('vn-first').value, document.getElementById('vn-last').value].filter(Boolean).join(' ').trim();
+        display.value = company || name;
+      });
+    });
+    document.getElementById('vn-display').addEventListener('input', function () {
+      this.dataset.touched = this.value.trim() ? '1' : '';
+    });
+    document.getElementById('vn-form').addEventListener('submit', async function (e) {
+      e.preventDefault();
+      showVnMsg('');
+      const id = document.getElementById('vn-id').value;
+      try {
+        const data = id
+          ? await api('/api/admin/inventory-vendors/' + encodeURIComponent(id), {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(readVnForm())
+          })
+          : await api('/api/admin/inventory-vendors', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(readVnForm())
+          });
+        const v = data.vendor;
+        document.getElementById('vn-id').value = v.id;
+        document.getElementById('vn-title').textContent = v.displayName || 'Vendor';
+        document.getElementById('vn-delete-btn').classList.remove('hidden');
+        markVnClean();
+        await loadVendors();
+        if (vnDrawerSource === 'po') {
+          fillPoVendors(v.id);
+          applyPoVendor(v);
+          closeVendorDrawer(true);
+        } else {
+          closeVendorDrawer(true);
+        }
+      } catch (err) {
+        showVnMsg(err.message || 'Could not save vendor.');
+      }
+    });
+    document.getElementById('vn-delete-btn').addEventListener('click', async function () {
+      const id = document.getElementById('vn-id').value;
+      if (!id || !confirm('Delete this vendor?')) return;
+      try {
+        await api('/api/admin/inventory-vendors/' + encodeURIComponent(id), { method: 'DELETE' });
+        closeVendorDrawer(true);
+        await loadVendors();
+        fillPoVendors('');
+      } catch (err) {
+        showVnMsg(err.message || 'Could not delete vendor.');
+      }
+    });
+
+    document.getElementById('po-new-btn').addEventListener('click', openNewPo);
+    document.getElementById('po-back').addEventListener('click', function () {
+      showPoList();
+      loadPurchaseOrders();
+    });
+    document.getElementById('po-cancel').addEventListener('click', function () {
+      showPoList();
+      loadPurchaseOrders();
+    });
+    document.getElementById('po-search').addEventListener('input', function () {
+      renderPoTable(purchaseOrders);
+    });
+    document.getElementById('po-table').addEventListener('click', function (e) {
+      const row = e.target.closest('tr[data-id]');
+      if (row) openPurchaseOrder(row.getAttribute('data-id'));
+    });
+    document.getElementById('po-cc-toggle').addEventListener('click', function () {
+      document.getElementById('po-cc-field').classList.toggle('hidden');
+      document.getElementById('po-bcc-field').classList.toggle('hidden');
+    });
+    document.getElementById('po-vendor').addEventListener('change', function () {
+      const id = this.value;
+      if (id === '__new__') {
+        openNewVendor('po');
+        return;
+      }
+      const v = (inventoryVendors || []).find(function (row) { return String(row.id) === String(id); });
+      applyPoVendor(v);
+    });
+    document.getElementById('po-ship-to').addEventListener('change', function () {
+      const id = this.value;
+      const c = (poCustomers || []).find(function (row) { return String(row.id) === String(id); });
+      document.getElementById('po-ship').value = formatCustomerShip(c);
+    });
+    document.getElementById('po-add-line').addEventListener('click', function () {
+      const lines = readPoLines();
+      lines.push({ qty: 1, rate: 0 });
+      renderPoLines(lines);
+    });
+    document.getElementById('po-clear-lines').addEventListener('click', function () {
+      renderPoLines([{ qty: 1, rate: 0 }]);
+    });
+    document.getElementById('po-lines').addEventListener('change', function (e) {
+      const sel = e.target.closest('[data-line="itemId"]');
+      if (!sel) return;
+      const row = sel.closest('tr');
+      if (sel.value === '__new__') {
+        openNewInventory('po', row);
+        return;
+      }
+      const item = (inventoryItems || []).find(function (rowItem) { return String(rowItem.id) === String(sel.value); });
+      if (item) applyPoItemToLine(row, item);
+    });
+    document.getElementById('po-lines').addEventListener('input', function (e) {
+      if (e.target.closest('[data-line="qty"]') || e.target.closest('[data-line="rate"]')) refreshPoTotals();
+    });
+    document.getElementById('po-lines').addEventListener('click', function (e) {
+      const btn = e.target.closest('[data-remove-line]');
+      if (!btn) return;
+      const row = btn.closest('tr');
+      const rows = Array.prototype.slice.call(document.querySelectorAll('#po-lines .po-line'));
+      const idx = rows.indexOf(row);
+      if (row) row.remove();
+      if (idx !== -1) poLineState.splice(idx, 1);
+      if (!document.querySelector('#po-lines .po-line')) renderPoLines([{ qty: 1, rate: 0 }]);
+      else refreshPoTotals();
+    });
+    document.getElementById('po-form').addEventListener('submit', async function (e) {
+      e.preventDefault();
+      showPoMsg('');
+      const id = document.getElementById('po-id').value;
+      try {
+        const payload = readPoForm();
+        const data = id
+          ? await api('/api/admin/purchase-orders/' + encodeURIComponent(id), {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+          })
+          : await api('/api/admin/purchase-orders', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+          });
+        fillPoForm(data.order);
+        showPoMsg('Saved.', true);
+        await loadPurchaseOrders();
+      } catch (err) {
+        showPoMsg(err.message || 'Could not save purchase order.');
+      }
+    });
+    document.getElementById('po-delete-btn').addEventListener('click', async function () {
+      const id = document.getElementById('po-id').value;
+      if (!id || !confirm('Delete this purchase order?')) return;
+      try {
+        await api('/api/admin/purchase-orders/' + encodeURIComponent(id), { method: 'DELETE' });
+        showPoList();
+        await loadPurchaseOrders();
+      } catch (err) {
+        showPoMsg(err.message || 'Could not delete purchase order.');
       }
     });
 

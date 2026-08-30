@@ -101,6 +101,8 @@ async function main() {
     '/company/website',
     '/company/website/accounts',
     '/company/inventory',
+    '/company/inventory/vendors',
+    '/company/inventory/purchase-orders',
     '/company/customers',
     '/company/sales',
     '/company/sales/quotes',
@@ -734,6 +736,78 @@ async function main() {
       const doc = await store.updateSalesDoc(req.params.id, req.body || {});
       if (!doc) return res.status(404).json({ ok: false, error: 'Document not found.' });
       res.json({ ok: true, doc: doc });
+    } catch (err) { next(err); }
+  });
+
+  app.get('/api/admin/inventory-vendors', requireAdmin, requirePerm('inventory', 'view'), async function (_req, res, next) {
+    try {
+      res.json({ ok: true, vendors: await store.listVendors() });
+    } catch (err) { next(err); }
+  });
+
+  app.get('/api/admin/inventory-vendors/:id', requireAdmin, requirePerm('inventory', 'view'), async function (req, res, next) {
+    try {
+      const vendor = await store.getVendor(req.params.id);
+      if (!vendor) return res.status(404).json({ ok: false, error: 'Vendor not found.' });
+      res.json({ ok: true, vendor: vendor });
+    } catch (err) { next(err); }
+  });
+
+  app.post('/api/admin/inventory-vendors', requireAdmin, requirePerm('inventory', 'edit'), async function (req, res, next) {
+    try {
+      res.json({ ok: true, vendor: await store.createVendor(req.body || {}) });
+    } catch (err) { next(err); }
+  });
+
+  app.put('/api/admin/inventory-vendors/:id', requireAdmin, requirePerm('inventory', 'edit'), async function (req, res, next) {
+    try {
+      const vendor = await store.updateVendor(req.params.id, req.body || {});
+      if (!vendor) return res.status(404).json({ ok: false, error: 'Vendor not found.' });
+      res.json({ ok: true, vendor: vendor });
+    } catch (err) { next(err); }
+  });
+
+  app.delete('/api/admin/inventory-vendors/:id', requireAdmin, requirePerm('inventory', 'edit'), async function (req, res, next) {
+    try {
+      const ok = await store.deleteVendor(req.params.id);
+      if (!ok) return res.status(404).json({ ok: false, error: 'Vendor not found.' });
+      res.json({ ok: true });
+    } catch (err) { next(err); }
+  });
+
+  app.get('/api/admin/purchase-orders', requireAdmin, requirePerm('inventory', 'view'), async function (_req, res, next) {
+    try {
+      res.json({ ok: true, orders: await store.listPurchaseOrders() });
+    } catch (err) { next(err); }
+  });
+
+  app.get('/api/admin/purchase-orders/:id', requireAdmin, requirePerm('inventory', 'view'), async function (req, res, next) {
+    try {
+      const order = await store.getPurchaseOrder(req.params.id);
+      if (!order) return res.status(404).json({ ok: false, error: 'Purchase order not found.' });
+      res.json({ ok: true, order: order });
+    } catch (err) { next(err); }
+  });
+
+  app.post('/api/admin/purchase-orders', requireAdmin, requirePerm('inventory', 'edit'), async function (req, res, next) {
+    try {
+      res.json({ ok: true, order: await store.createPurchaseOrder(req.body || {}) });
+    } catch (err) { next(err); }
+  });
+
+  app.put('/api/admin/purchase-orders/:id', requireAdmin, requirePerm('inventory', 'edit'), async function (req, res, next) {
+    try {
+      const order = await store.updatePurchaseOrder(req.params.id, req.body || {});
+      if (!order) return res.status(404).json({ ok: false, error: 'Purchase order not found.' });
+      res.json({ ok: true, order: order });
+    } catch (err) { next(err); }
+  });
+
+  app.delete('/api/admin/purchase-orders/:id', requireAdmin, requirePerm('inventory', 'edit'), async function (req, res, next) {
+    try {
+      const ok = await store.deletePurchaseOrder(req.params.id);
+      if (!ok) return res.status(404).json({ ok: false, error: 'Purchase order not found.' });
+      res.json({ ok: true });
     } catch (err) { next(err); }
   });
 

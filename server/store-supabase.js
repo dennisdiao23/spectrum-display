@@ -1177,6 +1177,161 @@ function createSupabaseStore() {
       throwIf(error, 'Could not delete sales document.');
       return !!(data && data.length);
     },
+    async listVendors() {
+      const vn = require('./inventory-vendors');
+      const { data, error } = await supabase
+        .from('inventory_vendors')
+        .select('*')
+        .order('company_name', { ascending: true })
+        .order('display_name', { ascending: true });
+      throwIf(error, 'Could not list vendors.');
+      return (data || []).map(vn.formatVendor);
+    },
+    async getVendor(id) {
+      const vn = require('./inventory-vendors');
+      const { data, error } = await supabase.from('inventory_vendors').select('*').eq('id', id).maybeSingle();
+      throwIf(error, 'Could not load vendor.');
+      return vn.formatVendor(data);
+    },
+    async createVendor(payload) {
+      const vn = require('./inventory-vendors');
+      const input = vn.normalizeVendor(payload);
+      const fields = vn.forSupabase(vn.dbFields(input));
+      const stamp = new Date().toISOString();
+      fields.created_at = stamp;
+      fields.updated_at = stamp;
+      const { data, error } = await supabase.from('inventory_vendors').insert(fields).select('*').single();
+      throwIf(error, 'Could not add vendor.');
+      return vn.formatVendor(data);
+    },
+    async updateVendor(id, payload) {
+      const vn = require('./inventory-vendors');
+      const input = vn.normalizeVendor(payload);
+      const fields = vn.forSupabase(vn.dbFields(input));
+      fields.updated_at = new Date().toISOString();
+      const { data, error } = await supabase.from('inventory_vendors').update(fields).eq('id', id).select('*').maybeSingle();
+      throwIf(error, 'Could not save vendor.');
+      return vn.formatVendor(data);
+    },
+    async deleteVendor(id) {
+      const { data, error } = await supabase.from('inventory_vendors').delete().eq('id', id).select('id');
+      throwIf(error, 'Could not delete vendor.');
+      return !!(data && data.length);
+    },
+    async listPurchaseOrders() {
+      const po = require('./purchase-orders');
+      const { data, error } = await supabase.from('purchase_orders').select('*').order('id', { ascending: false });
+      throwIf(error, 'Could not list purchase orders.');
+      const ids = (data || []).map(function (row) { return row.id; });
+      let linesByPo = {};
+      if (ids.length) {
+        const { data: lines, error: lErr } = await supabase
+          .from('purchase_order_lines')
+          .select('*')
+          .in('po_id', ids)
+          .order('sort_order', { ascending: true });
+        throwIf(lErr, 'Could not list purchase order lines.');
+        (lines || []).forEach(function (line) {
+          const key = String(line.po_id);
+          if (!linesByPo[key]) linesByPo[key] = [];
+          linesByPo[key].push(line);
+        });
+      }
+      return (data || []).map(function (row) {
+        return po.formatPo(row, linesByPo[String(row.id)] || []);
+      });
+    },
+    async getPurchaseOrder(id) {
+      const po = require('./purchase-orders');
+      const { data, error } = await supabase.from('purchase_orders').select('*').eq('id', id).maybeSingle();
+      throwIf(error, 'Could not load purchase order.');
+      if (!data) return null;
+      const { data: lines, error: lErr } = await supabase
+        .from('purchase_order_lines')
+        .select('*')
+        .eq('po_id', id)
+        .order('sort_order', { ascending: true });
+      throwIf(lErr, 'Could not load purchase order lines.');
+      return po.formatPo(data, lines || []);
+    },
+    async createPurchaseOrder(payload) {
+      const po = require('./purchase-orders');
+      const input = po.normalizePo(payload);
+      if (input.vendorId) {
+        const vendor = await this.getVendor(input.vendorId);
+        if (vendor) {
+          const snap = po.snapshotFromVendor(vendor);
+          if (!input.vendorName) input.vendorName = snap.vendorName;
+          if (!input.vendorEmail) input.vendorEmail = snap.vendorEmail;
+          if (!input.mailingAddress) input.mailingAddress = snap.mailingAddress;
+        }
+      }
+      const existingRows = await supabase.from('purchase_orders').select('number');
+      throwIf(existingRows.error, 'Could not assign purchase order number.');
+      if (!input.number) {
+        input.number = po.nextPoNumber((existingRows.data || []).map(function (r) { return r.number; }));
+      }
+      const { data: taken } = await supabase.from('purchase_orders').select('id').eq('number', input.number).maybeSingle();
+      if (taken) throw new Error('That purchase order number is already used.');
+      const fields = po.dbPoFields(input);
+      const stamp = new Date().toISOString();
+      fields.created_at = stamp;
+      fields.updated_at = stamp;
+      const { data, error } = await supabase.from('purchase_orders').insert(fields).select('*').single();
+      throwIf(error, 'Could not create purchase order.');
+      if (input.lines.length) {
+        const { error: lErr } = await supabase.from('purchase_order_lines').insert(input.lines.map(function (line, i) {
+          return {
+            po_id: data.id,
+            item_id: line.itemId || null,
+            product: line.product,
+            sku: line.sku,
+            description: line.description,
+            qty: line.qty,
+            unit_cost: line.rate,
+            sort_order: i
+          };
+        }));
+        throwIf(lErr, 'Could not save line items.');
+      }
+      return this.getPurchaseOrder(data.id);
+    },
+    async updatePurchaseOrder(id, payload) {
+      const po = require('./purchase-orders');
+      const current = await this.getPurchaseOrder(id);
+      if (!current) return null;
+      const input = po.normalizePo(Object.assign({}, payload, { number: payload.number || current.number }));
+      const { data: taken } = await supabase.from('purchase_orders').select('id').eq('number', input.number).neq('id', id).maybeSingle();
+      if (taken) throw new Error('That purchase order number is already used.');
+      const fields = po.dbPoFields(input);
+      fields.updated_at = new Date().toISOString();
+      const { error } = await supabase.from('purchase_orders').update(fields).eq('id', id);
+      throwIf(error, 'Could not save purchase order.');
+      const { error: dErr } = await supabase.from('purchase_order_lines').delete().eq('po_id', id);
+      throwIf(dErr, 'Could not replace line items.');
+      if (input.lines.length) {
+        const { error: lErr } = await supabase.from('purchase_order_lines').insert(input.lines.map(function (line, i) {
+          return {
+            po_id: Number(id),
+            item_id: line.itemId || null,
+            product: line.product,
+            sku: line.sku,
+            description: line.description,
+            qty: line.qty,
+            unit_cost: line.rate,
+            sort_order: i
+          };
+        }));
+        throwIf(lErr, 'Could not save line items.');
+      }
+      return this.getPurchaseOrder(id);
+    },
+    async deletePurchaseOrder(id) {
+      await supabase.from('purchase_order_lines').delete().eq('po_id', id);
+      const { data, error } = await supabase.from('purchase_orders').delete().eq('id', id).select('id');
+      throwIf(error, 'Could not delete purchase order.');
+      return !!(data && data.length);
+    },
     async convertSalesDoc(id, type) {
       const current = await this.getSalesDoc(id);
       if (!current) return null;
