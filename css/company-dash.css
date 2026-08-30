@@ -1052,10 +1052,17 @@ html.dash-scroll-lock body.company-app {
     max-width: none;
   }
 
-  .company-main table.dash-cols[data-cols="inventory"] th[data-col="sku"] { width: 30%; }
+  .company-main table.dash-cols[data-cols="inventory"] th[data-col="sku"] { width: 28%; }
   .company-main table.dash-cols[data-cols="inventory"] th[data-col="brand"] { width: 22%; }
-  .company-main table.dash-cols[data-cols="inventory"] th[data-col="price"] { width: 24%; }
+  .company-main table.dash-cols[data-cols="inventory"] th[data-col="price"] { width: 26%; }
   .company-main table.dash-cols[data-cols="inventory"] th[data-col="qty"] { width: 24%; }
+
+  .company-main table.dash-cols[data-cols="inventory"] th {
+    white-space: normal;
+    line-height: 1.15;
+    font-size: 0.68rem;
+    vertical-align: bottom;
+  }
 
   .company-main table.dash-cols[data-cols="inventory"] .dash-col-caret {
     display: none;
