@@ -833,10 +833,20 @@ html.dash-scroll-lock body.company-app {
   font-size: 0.86rem;
   color: var(--dash-muted);
 }
-.dash-home-kpis {
+.dash-home-kpis,
+.page-kpis {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: 1rem;
+}
+.page-kpis { margin: 0 0 1.15rem; }
+.page-kpis-3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+.page-kpis .dash-kpi-label,
+.page-kpis .dash-kpi-value,
+.page-kpis .dash-kpi-hint { grid-column: 2; }
+.dash-kpi.is-on {
+  border-color: #c5d2ea;
+  background: #f7f9ff;
 }
 .dash-kpi.hidden { display: none; }
 .dash-kpi {
@@ -1141,7 +1151,9 @@ html.dash-scroll-lock body.company-app {
 }
 
 @media (max-width: 1100px) {
-  .dash-home-kpis { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .dash-home-kpis,
+  .page-kpis,
+  .page-kpis-3 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .dash-home-grid { grid-template-columns: 1fr; }
 }
 

@@ -459,6 +459,32 @@
 
       <div id="inventory-section" class="hidden space-y-6">
         <div id="inventory-list-wrap">
+          <div class="page-kpis" id="inv-overview">
+            <button type="button" class="dash-kpi is-on" data-filter="all" aria-pressed="true">
+              <span class="dash-kpi-icon dash-kpi-icon-inventory" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M3 10 12 4.5 21 10v9.5a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V10z"/><path d="M9 20.5V12h6v8.5"/></svg></span>
+              <span class="dash-kpi-label">SKUs</span>
+              <strong class="dash-kpi-value" id="inv-stat-skus">—</strong>
+              <span class="dash-kpi-hint">All items</span>
+            </button>
+            <button type="button" class="dash-kpi" data-filter="low" aria-pressed="false">
+              <span class="dash-kpi-icon dash-kpi-icon-customers" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 8v5"/><path d="M12 16h.01"/><path d="M10.3 4.3 2.8 17.5A1.8 1.8 0 0 0 4.4 20h15.2a1.8 1.8 0 0 0 1.6-2.5L13.7 4.3a1.8 1.8 0 0 0-3.4 0z"/></svg></span>
+              <span class="dash-kpi-label">Low</span>
+              <strong class="dash-kpi-value" id="inv-stat-low">—</strong>
+              <span class="dash-kpi-hint">Running low</span>
+            </button>
+            <button type="button" class="dash-kpi" data-filter="out" aria-pressed="false">
+              <span class="dash-kpi-icon dash-kpi-icon-sales" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="8"/><path d="m9 9 6 6M15 9l-6 6"/></svg></span>
+              <span class="dash-kpi-label">Out</span>
+              <strong class="dash-kpi-value" id="inv-stat-out">—</strong>
+              <span class="dash-kpi-hint">Zero on hand</span>
+            </button>
+            <button type="button" class="dash-kpi" data-nav="purchase-orders" data-filter="open" aria-pressed="false">
+              <span class="dash-kpi-icon dash-kpi-icon-website" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M7 3h8l4 4v14a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1z"/><path d="M15 3v5h5"/><path d="M9 13h6M9 17h4"/></svg></span>
+              <span class="dash-kpi-label">PO open</span>
+              <strong class="dash-kpi-value" id="inv-stat-po">—</strong>
+              <span class="dash-kpi-hint">Open purchase orders</span>
+            </button>
+          </div>
           <div class="flex items-center justify-end mb-4">
             <button id="inv-new-btn" type="button" class="px-4 py-2 rounded-full bg-sky-500 hover:bg-sky-400 text-white text-sm font-semibold">Add inventory item</button>
           </div>
@@ -497,6 +523,26 @@
 
       <div id="vendors-section" class="hidden space-y-6">
         <div id="vendors-list-wrap">
+          <div class="page-kpis page-kpis-3" id="vn-overview">
+            <button type="button" class="dash-kpi is-on" data-filter="all" aria-pressed="true">
+              <span class="dash-kpi-icon dash-kpi-icon-customers" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="3.25"/><path d="M5 19.2c.9-3.1 3.5-4.7 7-4.7s6.1 1.6 7 4.7"/></svg></span>
+              <span class="dash-kpi-label">Vendors</span>
+              <strong class="dash-kpi-value" id="vn-stat-all">—</strong>
+              <span class="dash-kpi-hint">All vendors</span>
+            </button>
+            <button type="button" class="dash-kpi" data-filter="email" aria-pressed="false">
+              <span class="dash-kpi-icon dash-kpi-icon-website" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="m3 7 9 6 9-6"/></svg></span>
+              <span class="dash-kpi-label">With email</span>
+              <strong class="dash-kpi-value" id="vn-stat-email">—</strong>
+              <span class="dash-kpi-hint">Has an email</span>
+            </button>
+            <button type="button" class="dash-kpi" data-filter="1099" aria-pressed="false">
+              <span class="dash-kpi-icon dash-kpi-icon-inventory" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M7 3h8l4 4v14a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1z"/><path d="M15 3v5h5"/><path d="M9 13h6M9 17h4"/></svg></span>
+              <span class="dash-kpi-label">1099</span>
+              <strong class="dash-kpi-value" id="vn-stat-1099">—</strong>
+              <span class="dash-kpi-hint">Track 1099</span>
+            </button>
+          </div>
           <div class="flex items-center justify-end mb-4">
             <button id="vn-new-btn" type="button" class="px-4 py-2 rounded-full bg-sky-500 hover:bg-sky-400 text-white text-sm font-semibold">Add vendor</button>
           </div>
@@ -524,6 +570,32 @@
 
       <div id="po-section" class="hidden space-y-6">
         <div id="po-list-wrap">
+          <div class="page-kpis" id="po-overview">
+            <button type="button" class="dash-kpi is-on" data-filter="all" aria-pressed="true">
+              <span class="dash-kpi-icon dash-kpi-icon-website" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M7 3h8l4 4v14a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1z"/><path d="M15 3v5h5"/></svg></span>
+              <span class="dash-kpi-label">Total</span>
+              <strong class="dash-kpi-value" id="po-stat-all">—</strong>
+              <span class="dash-kpi-hint">All purchase orders</span>
+            </button>
+            <button type="button" class="dash-kpi" data-filter="open" aria-pressed="false">
+              <span class="dash-kpi-icon dash-kpi-icon-inventory" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="8"/><path d="M12 8v4l2.5 1.5"/></svg></span>
+              <span class="dash-kpi-label">Open</span>
+              <strong class="dash-kpi-value" id="po-stat-open">—</strong>
+              <span class="dash-kpi-hint">Still open</span>
+            </button>
+            <button type="button" class="dash-kpi" data-filter="closed" aria-pressed="false">
+              <span class="dash-kpi-icon dash-kpi-icon-sales" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="8"/><path d="m8.5 12.5 2.5 2.5 4.5-5"/></svg></span>
+              <span class="dash-kpi-label">Closed</span>
+              <strong class="dash-kpi-value" id="po-stat-closed">—</strong>
+              <span class="dash-kpi-hint">Closed</span>
+            </button>
+            <button type="button" class="dash-kpi" data-filter="cancelled" aria-pressed="false">
+              <span class="dash-kpi-icon dash-kpi-icon-customers" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="8"/><path d="m9 9 6 6M15 9l-6 6"/></svg></span>
+              <span class="dash-kpi-label">Cancelled</span>
+              <strong class="dash-kpi-value" id="po-stat-cancelled">—</strong>
+              <span class="dash-kpi-hint">Cancelled</span>
+            </button>
+          </div>
           <div class="flex items-center justify-end mb-4">
             <button id="po-new-btn" type="button" class="px-4 py-2 rounded-full bg-sky-500 hover:bg-sky-400 text-white text-sm font-semibold">Create purchase order</button>
           </div>
@@ -650,6 +722,32 @@
 
       <div id="customers-section" class="hidden space-y-6">
         <div id="customers-list-wrap">
+          <div class="page-kpis" id="cc-overview">
+            <button type="button" class="dash-kpi is-on" data-filter="all" aria-pressed="true">
+              <span class="dash-kpi-icon dash-kpi-icon-customers" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="3.25"/><path d="M5 19.2c.9-3.1 3.5-4.7 7-4.7s6.1 1.6 7 4.7"/></svg></span>
+              <span class="dash-kpi-label">Customers</span>
+              <strong class="dash-kpi-value" id="cc-stat-all">—</strong>
+              <span class="dash-kpi-hint">All records</span>
+            </button>
+            <button type="button" class="dash-kpi" data-filter="quote" aria-pressed="false">
+              <span class="dash-kpi-icon dash-kpi-icon-website" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M8 4h8v4H8z"/><path d="M6 8h12v12H6z"/><path d="M9 12h6M9 16h4"/></svg></span>
+              <span class="dash-kpi-label">Open quote</span>
+              <strong class="dash-kpi-value" id="cc-stat-quote">—</strong>
+              <span class="dash-kpi-hint">Has an open quote</span>
+            </button>
+            <button type="button" class="dash-kpi" data-filter="order" aria-pressed="false">
+              <span class="dash-kpi-icon dash-kpi-icon-inventory" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h16l-1.5 12H5.5L4 7z"/><path d="M9 7V5a3 3 0 0 1 6 0v2"/></svg></span>
+              <span class="dash-kpi-label">Open sales order</span>
+              <strong class="dash-kpi-value" id="cc-stat-order">—</strong>
+              <span class="dash-kpi-hint">Has an open order</span>
+            </button>
+            <button type="button" class="dash-kpi" data-filter="invoice" aria-pressed="false">
+              <span class="dash-kpi-icon dash-kpi-icon-sales" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="3" width="14" height="18" rx="1.5"/><path d="M8 8h8M8 12h8M8 16h5"/></svg></span>
+              <span class="dash-kpi-label">Pending invoice</span>
+              <strong class="dash-kpi-value" id="cc-stat-invoice">—</strong>
+              <span class="dash-kpi-hint">Unpaid or sent</span>
+            </button>
+          </div>
           <div class="flex items-center justify-end mb-4">
             <button id="cc-new-btn" type="button" class="px-4 py-2 rounded-full bg-sky-500 hover:bg-sky-400 text-white text-sm font-semibold">Add customer</button>
           </div>
@@ -679,6 +777,26 @@
 
       <div id="sales-section" class="hidden space-y-6">
         <div id="sales-list-wrap">
+          <div class="page-kpis page-kpis-3" id="so-overview">
+            <button type="button" class="dash-kpi" data-nav="quotes" aria-pressed="false">
+              <span class="dash-kpi-icon dash-kpi-icon-website" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M8 4h8v4H8z"/><path d="M6 8h12v12H6z"/><path d="M9 12h6M9 16h4"/></svg></span>
+              <span class="dash-kpi-label">Quotes</span>
+              <strong class="dash-kpi-value" id="so-stat-quote">—</strong>
+              <span class="dash-kpi-hint">Sales quotes</span>
+            </button>
+            <button type="button" class="dash-kpi" data-nav="orders" aria-pressed="false">
+              <span class="dash-kpi-icon dash-kpi-icon-inventory" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h16l-1.5 12H5.5L4 7z"/><path d="M9 7V5a3 3 0 0 1 6 0v2"/></svg></span>
+              <span class="dash-kpi-label">Orders</span>
+              <strong class="dash-kpi-value" id="so-stat-order">—</strong>
+              <span class="dash-kpi-hint">Sales orders</span>
+            </button>
+            <button type="button" class="dash-kpi" data-nav="invoices" aria-pressed="false">
+              <span class="dash-kpi-icon dash-kpi-icon-sales" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="3" width="14" height="18" rx="1.5"/><path d="M8 8h8M8 12h8M8 16h5"/></svg></span>
+              <span class="dash-kpi-label">Invoices</span>
+              <strong class="dash-kpi-value" id="so-stat-invoice">—</strong>
+              <span class="dash-kpi-hint">Invoices</span>
+            </button>
+          </div>
           <div class="flex items-center justify-end mb-4">
             <button id="so-new-btn" type="button" class="px-4 py-2 rounded-full bg-sky-500 hover:bg-sky-400 text-white text-sm font-semibold">New sales quote</button>
           </div>
@@ -2033,6 +2151,10 @@
 
     let inventoryItems = [];
     let inventoryFilter = 'all';
+    let ccFilter = 'all';
+    let vnFilter = 'all';
+    let poFilter = 'all';
+    let salesAllDocs = [];
     let inventoryDetail = null;
     let invSavedSnapshot = '';
     let invDrawerSource = '';
@@ -2502,14 +2624,54 @@
           '</tr>';
       }).join('') || '<tr><td class="py-6 px-4 text-slate-500" colspan="' + dashColSpan(table) + '">No matching items.</td></tr>';
       applyColOrder(table);
+      fillInvOverview();
+    }
+
+    function markPageKpis(rootId, key, attr) {
+      const name = attr || 'data-filter';
+      document.querySelectorAll('#' + rootId + ' .dash-kpi').forEach(function (btn) {
+        const on = btn.getAttribute(name) === key;
+        btn.classList.toggle('is-on', on);
+        btn.setAttribute('aria-pressed', on ? 'true' : 'false');
+      });
+    }
+
+    function setText(id, value) {
+      const el = document.getElementById(id);
+      if (el) el.textContent = value == null ? '—' : Number(value).toLocaleString();
+    }
+
+    function fillInvOverview() {
+      const low = inventoryItems.filter(function (i) { return i.status === 'low'; }).length;
+      const out = inventoryItems.filter(function (i) { return i.status === 'out'; }).length;
+      const poOpen = (purchaseOrders || []).filter(function (d) { return (d.status || 'open') === 'open'; }).length;
+      setText('inv-stat-skus', inventoryItems.length);
+      setText('inv-stat-low', low);
+      setText('inv-stat-out', out);
+      setText('inv-stat-po', poOpen);
+      markPageKpis('inv-overview', inventoryFilter);
+    }
+
+    function setInvFilter(name) {
+      inventoryFilter = name || 'all';
+      document.querySelectorAll('.inv-filter').forEach(function (b) {
+        const on = b.getAttribute('data-inv-filter') === inventoryFilter;
+        b.className = 'inv-filter px-3 py-1.5 rounded-full text-xs font-medium ' +
+          (on ? 'bg-sky-500/20 text-sky-300' : 'text-slate-400 hover:text-white');
+      });
+      renderInventoryTable();
     }
 
     async function loadInventory() {
       const errEl = document.getElementById('inventory-error');
       errEl.classList.add('hidden');
       try {
-        const data = await api('/api/admin/inventory');
+        const [data, poData] = await Promise.all([
+          api('/api/admin/inventory'),
+          api('/api/admin/purchase-orders').catch(function () { return { orders: purchaseOrders }; })
+        ]);
         inventoryItems = data.items || [];
+        purchaseOrders = poData.orders || purchaseOrders || [];
         renderInventoryTable();
       } catch (err) {
         errEl.textContent = err.message || 'Could not load inventory.';
@@ -3302,15 +3464,18 @@
       const table = document.querySelector('table.dash-cols[data-cols="customers"]');
       const tbody = document.getElementById('cc-table');
       const q = (document.getElementById('cc-search').value || '').toLowerCase();
+      const matchIds = customerIdsForFilter(ccFilter);
       const filtered = (rows || []).filter(function (c) {
+        if (ccFilter !== 'all' && !matchIds[String(c.id)]) return false;
         if (!q) return true;
         return [c.companyName, c.contactFirst, c.contactLast, c.email, c.phone, c.mobile, c.billCity, c.paymentTerms]
           .join(' ').toLowerCase().indexOf(q) !== -1;
       });
       document.getElementById('cc-total').textContent = String((rows || []).length);
+      fillCcOverview();
       if (!filtered.length) {
         tbody.innerHTML = '<tr><td class="py-6 px-4 text-slate-500" colspan="' + dashColSpan(table) + '">' +
-          (q ? 'No customers match this search.' : 'No customers yet. Add a customer to use on quotes and invoices.') +
+          (q || ccFilter !== 'all' ? 'No customers match this view.' : 'No customers yet. Add a customer to use on quotes and invoices.') +
           '</td></tr>';
         applyColOrder(table);
         return;
@@ -3477,11 +3642,48 @@
       document.getElementById('cc-first').focus();
     }
 
+    function isOpenQuote(d) {
+      return d && d.type === 'quote' && ['draft', 'sent', 'accepted'].indexOf(d.status) !== -1;
+    }
+    function isOpenSalesOrder(d) {
+      return d && d.type === 'order' && ['draft', 'confirmed'].indexOf(d.status) !== -1;
+    }
+    function isPendingInvoice(d) {
+      return d && d.type === 'invoice' && ['draft', 'sent', 'overdue'].indexOf(d.status) !== -1;
+    }
+    function customerIdsForFilter(kind) {
+      const pred = kind === 'quote' ? isOpenQuote : kind === 'order' ? isOpenSalesOrder : kind === 'invoice' ? isPendingInvoice : null;
+      const ids = {};
+      if (!pred) return ids;
+      (salesAllDocs || []).forEach(function (d) {
+        if (pred(d) && d.customerId) ids[String(d.customerId)] = true;
+      });
+      return ids;
+    }
+    function fillCcOverview() {
+      const quoteIds = customerIdsForFilter('quote');
+      const orderIds = customerIdsForFilter('order');
+      const invoiceIds = customerIdsForFilter('invoice');
+      setText('cc-stat-all', (companyCustomers || []).length);
+      setText('cc-stat-quote', Object.keys(quoteIds).length);
+      setText('cc-stat-order', Object.keys(orderIds).length);
+      setText('cc-stat-invoice', Object.keys(invoiceIds).length);
+      markPageKpis('cc-overview', ccFilter);
+    }
+    function setCcFilter(name) {
+      ccFilter = name || 'all';
+      renderCcTable(companyCustomers);
+    }
+
     async function loadCompanyCustomers() {
       showError('cc-error', '');
       try {
-        const data = await api('/api/admin/company-customers');
+        const [data, salesData] = await Promise.all([
+          api('/api/admin/company-customers'),
+          api('/api/admin/sales-docs').catch(function () { return { docs: salesAllDocs }; })
+        ]);
         companyCustomers = data.customers || [];
+        salesAllDocs = salesData.docs || [];
         renderCcTable(companyCustomers);
       } catch (err) {
         showError('cc-error', err.message || 'Could not load customers.');
@@ -3641,14 +3843,17 @@
       const tbody = document.getElementById('vn-table');
       const q = (document.getElementById('vn-search').value || '').toLowerCase();
       const filtered = (rows || []).filter(function (v) {
+        if (vnFilter === 'email' && !(v.email || '').trim()) return false;
+        if (vnFilter === '1099' && !v.track1099) return false;
         if (!q) return true;
         return [v.displayName, v.companyName, v.email, v.phone, v.mobile, v.contactName]
           .join(' ').toLowerCase().indexOf(q) !== -1;
       });
       document.getElementById('vn-total').textContent = String((rows || []).length);
+      fillVnOverview();
       if (!filtered.length) {
         tbody.innerHTML = '<tr><td class="py-6 px-4 text-slate-500" colspan="5">' +
-          (q ? 'No vendors match this search.' : 'No vendors yet. Add a vendor to use on purchase orders.') +
+          (q || vnFilter !== 'all' ? 'No vendors match this view.' : 'No vendors yet. Add a vendor to use on purchase orders.') +
           '</td></tr>';
         return;
       }
@@ -3661,6 +3866,18 @@
           '<td class="py-3 px-4">' + (v.track1099 ? 'Yes' : '—') + '</td>' +
           '</tr>';
       }).join('');
+    }
+
+    function fillVnOverview() {
+      const rows = inventoryVendors || [];
+      setText('vn-stat-all', rows.length);
+      setText('vn-stat-email', rows.filter(function (v) { return !!(v.email || '').trim(); }).length);
+      setText('vn-stat-1099', rows.filter(function (v) { return !!v.track1099; }).length);
+      markPageKpis('vn-overview', vnFilter);
+    }
+    function setVnFilter(name) {
+      vnFilter = name || 'all';
+      renderVnTable(inventoryVendors);
     }
 
     async function loadVendors() {
@@ -3908,13 +4125,15 @@
       const tbody = document.getElementById('po-table');
       const q = (document.getElementById('po-search').value || '').toLowerCase();
       const filtered = (rows || []).filter(function (d) {
+        if (poFilter !== 'all' && (d.status || 'open') !== poFilter) return false;
         if (!q) return true;
         return [d.number, d.vendorName, d.status].join(' ').toLowerCase().indexOf(q) !== -1;
       });
       document.getElementById('po-total').textContent = String((rows || []).length);
+      fillPoOverview();
       if (!filtered.length) {
         tbody.innerHTML = '<tr><td class="py-6 px-4 text-slate-500" colspan="6">' +
-          (q ? 'No purchase orders match this search.' : 'No purchase orders yet.') +
+          (q || poFilter !== 'all' ? 'No purchase orders match this view.' : 'No purchase orders yet.') +
           '</td></tr>';
         return;
       }
@@ -3929,6 +4148,19 @@
           '<td class="py-3 px-4 text-right"><span class="text-sky-400 text-xs font-medium">Open →</span></td>' +
           '</tr>';
       }).join('');
+    }
+
+    function fillPoOverview() {
+      const rows = purchaseOrders || [];
+      setText('po-stat-all', rows.length);
+      setText('po-stat-open', rows.filter(function (d) { return (d.status || 'open') === 'open'; }).length);
+      setText('po-stat-closed', rows.filter(function (d) { return d.status === 'closed'; }).length);
+      setText('po-stat-cancelled', rows.filter(function (d) { return d.status === 'cancelled'; }).length);
+      markPageKpis('po-overview', poFilter);
+    }
+    function setPoFilter(name) {
+      poFilter = name || 'all';
+      renderPoTable(purchaseOrders);
     }
 
     function fillPoForm(doc) {
@@ -4166,6 +4398,7 @@
           (q ? 'No documents match this search.' : 'No ' + salesTypeLabel(type).toLowerCase() + 's yet.') +
           '</td></tr>';
         applyColOrder(table);
+        fillSoOverview();
         return;
       }
       const sorted = sortColRows(filtered, table, function (d, col) {
@@ -4190,6 +4423,15 @@
           '</tr>';
       }).join('');
       applyColOrder(table);
+      fillSoOverview();
+    }
+
+    function fillSoOverview() {
+      const rows = salesAllDocs || [];
+      setText('so-stat-quote', rows.filter(function (d) { return d.type === 'quote'; }).length);
+      setText('so-stat-order', rows.filter(function (d) { return d.type === 'order'; }).length);
+      setText('so-stat-invoice', rows.filter(function (d) { return d.type === 'invoice'; }).length);
+      markPageKpis('so-overview', salesSubTab === 'sales' ? 'quotes' : salesSubTab, 'data-nav');
     }
 
     async function loadSalesDocs(type) {
@@ -4198,10 +4440,11 @@
       showError('so-error', '');
       try {
         const [docsData, custData] = await Promise.all([
-          api('/api/admin/sales-docs?type=' + encodeURIComponent(t)),
+          api('/api/admin/sales-docs'),
           api('/api/admin/company-customers')
         ]);
-        salesDocs = docsData.docs || [];
+        salesAllDocs = docsData.docs || [];
+        salesDocs = salesAllDocs.filter(function (d) { return d.type === t; });
         salesCustomers = custData.customers || [];
         const keep = document.getElementById('so-detail').classList.contains('hidden')
           ? ''
@@ -4829,14 +5072,40 @@
     document.getElementById('inv-search').addEventListener('input', renderInventoryTable);
     document.querySelectorAll('.inv-filter').forEach(function (btn) {
       btn.addEventListener('click', function () {
-        inventoryFilter = btn.getAttribute('data-inv-filter') || 'all';
-        document.querySelectorAll('.inv-filter').forEach(function (b) {
-          const on = b === btn;
-          b.className = 'inv-filter px-3 py-1.5 rounded-full text-xs font-medium ' +
-            (on ? 'bg-sky-500/20 text-sky-300' : 'text-slate-400 hover:text-white');
-        });
-        renderInventoryTable();
+        setInvFilter(btn.getAttribute('data-inv-filter') || 'all');
       });
+    });
+    function bindPageKpis(rootId, onPick) {
+      const root = document.getElementById(rootId);
+      if (!root) return;
+      root.addEventListener('click', function (e) {
+        const btn = e.target.closest('.dash-kpi');
+        if (!btn) return;
+        onPick(btn);
+      });
+    }
+    bindPageKpis('inv-overview', function (btn) {
+      const nav = btn.getAttribute('data-nav');
+      const filter = btn.getAttribute('data-filter') || 'all';
+      if (nav) {
+        poFilter = filter;
+        openCompanyTab(nav, true);
+        return;
+      }
+      setInvFilter(filter);
+    });
+    bindPageKpis('cc-overview', function (btn) {
+      setCcFilter(btn.getAttribute('data-filter') || 'all');
+    });
+    bindPageKpis('vn-overview', function (btn) {
+      setVnFilter(btn.getAttribute('data-filter') || 'all');
+    });
+    bindPageKpis('po-overview', function (btn) {
+      setPoFilter(btn.getAttribute('data-filter') || 'all');
+    });
+    bindPageKpis('so-overview', function (btn) {
+      const nav = btn.getAttribute('data-nav');
+      if (nav) openCompanyTab(nav, true);
     });
     document.getElementById('inv-kind').addEventListener('change', function () {
       document.getElementById('inv-qty-label').textContent =
