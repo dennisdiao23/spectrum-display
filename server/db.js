@@ -174,6 +174,7 @@ function openDb() {
     CREATE INDEX IF NOT EXISTS inventory_item_moves_item_idx ON inventory_item_moves (item_id, created_at);
     CREATE INDEX IF NOT EXISTS product_inventory_map_item_idx ON product_inventory_map (item_id);
   `);
+  try { db.exec("ALTER TABLE inventory_items ADD COLUMN sku TEXT NOT NULL DEFAULT ''"); } catch (e) { /* already present */ }
   migrateLegacyInventory(db);
   return db;
 }
@@ -208,9 +209,15 @@ function migrateLegacyInventory(db) {
       const name = product ? inv.skuNameFromProduct(product, pitch) : ('Item ' + row.product_id);
       const info = db.prepare(`
         INSERT INTO inventory_items (
-          name, brand_id, pitch, unit, qty, low_at, price, notes, created_at, updated_at
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, '', ?, ?)
+          sku, name, brand_id, pitch, unit, qty, low_at, price, notes, created_at, updated_at
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, '', ?, ?)
       `).run(
+        inv.suggestedSku({
+          brandId: product && product.brandId,
+          seriesId: product && product.id,
+          name: name,
+          pitch: pitch
+        }),
         name,
         product ? (product.brandId || '') : '',
         pitch,
@@ -256,6 +263,66 @@ function migrateLegacyInventory(db) {
     try { db.exec('ROLLBACK'); } catch (e) { /* ignore */ }
     console.error('Could not migrate inventory bins:', err.message || err);
   }
+}
+
+function fillEmptySkus(db) {
+  const inv = require('./inventory');
+  const items = db.prepare('SELECT id, sku, name, brand_id, pitch FROM inventory_items').all();
+  const taken = {};
+  items.forEach(function (row) {
+    const sku = inv.normalizeSku(row.sku);
+    if (sku) taken[sku] = true;
+  });
+  const update = db.prepare('UPDATE inventory_items SET sku = ?, updated_at = ? WHERE id = ?');
+  const stamp = nowIso();
+  items.forEach(function (row) {
+    if (inv.normalizeSku(row.sku)) return;
+    const sku = inv.uniqueSku(inv.suggestedSku({
+      brandId: row.brand_id,
+      name: row.name,
+      pitch: row.pitch
+    }), taken);
+    taken[sku] = true;
+    update.run(sku, stamp, row.id);
+  });
+}
+
+function ensureCatalogSkus(db) {
+  const inv = require('./inventory');
+  fillEmptySkus(db);
+  const maps = db.prepare('SELECT product_id, pitch FROM product_inventory_map').all();
+  const skus = db.prepare('SELECT sku FROM inventory_items').all().map(function (r) { return r.sku; });
+  const plan = inv.catalogSkuPlan(listProducts(db), maps, skus);
+  if (!plan.length) {
+    try { db.exec('CREATE UNIQUE INDEX IF NOT EXISTS inventory_items_sku_uidx ON inventory_items (sku)'); } catch (e) { /* ignore */ }
+    return plan.length;
+  }
+  const stamp = nowIso();
+  const insertItem = db.prepare(`
+    INSERT INTO inventory_items (
+      sku, name, brand_id, pitch, unit, qty, low_at, price, notes, created_at, updated_at
+    ) VALUES (?, ?, ?, ?, ?, 0, ?, ?, '', ?, ?)
+  `);
+  const insertMap = db.prepare(
+    'INSERT OR IGNORE INTO product_inventory_map (product_id, pitch, item_id) VALUES (?, ?, ?)'
+  );
+  db.exec('BEGIN');
+  try {
+    plan.forEach(function (row) {
+      const info = insertItem.run(
+        row.sku, row.name, row.brandId, row.pitch, row.unit, row.lowAt, row.price, stamp, stamp
+      );
+      insertMap.run(row.productId, row.pitch, info.lastInsertRowid);
+    });
+    db.exec('COMMIT');
+  } catch (err) {
+    try { db.exec('ROLLBACK'); } catch (e) { /* ignore */ }
+    console.error('Could not seed inventory SKUs:', err.message || err);
+    return 0;
+  }
+  try { db.exec('CREATE UNIQUE INDEX IF NOT EXISTS inventory_items_sku_uidx ON inventory_items (sku)'); } catch (e) { /* ignore */ }
+  console.log('Created ' + plan.length + ' inventory SKUs from website products');
+  return plan.length;
 }
 
 function seedAdmin(db) {
@@ -496,5 +563,6 @@ module.exports = {
   parseDetails,
   mergeProductDetails,
   nowIso,
-  parseJson
+  parseJson,
+  ensureCatalogSkus
 };

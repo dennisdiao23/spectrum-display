@@ -76,6 +76,7 @@ function createSqliteStore() {
   dbUtil.seedCatalog(db);
   dbUtil.fillMissingProductDetails(db);
   dbUtil.rewriteExistingCabinetCopy(db);
+  dbUtil.ensureCatalogSkus(db);
 
   return {
     name: 'sqlite',
@@ -195,13 +196,22 @@ function createSqliteStore() {
     async createInventoryItem(payload) {
       const inv = require('./inventory');
       const input = inv.normalizeItemInput(payload);
+      const taken = {};
+      db.prepare('SELECT sku FROM inventory_items').all().forEach(function (r) {
+        if (r.sku) taken[inv.normalizeSku(r.sku)] = true;
+      });
+      input.sku = inv.uniqueSku(input.sku || inv.suggestedSku({
+        brandId: input.brandId,
+        name: input.name,
+        pitch: input.pitch
+      }), taken);
       const stamp = dbUtil.nowIso();
       const info = db.prepare(`
         INSERT INTO inventory_items (
-          name, brand_id, pitch, unit, qty, low_at, price, notes, created_at, updated_at
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+          sku, name, brand_id, pitch, unit, qty, low_at, price, notes, created_at, updated_at
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
       `).run(
-        input.name, input.brandId, input.pitch, input.unit, input.qty,
+        input.sku, input.name, input.brandId, input.pitch, input.unit, input.qty,
         input.lowAt, input.price, input.notes, stamp, stamp
       );
       if (input.qty) {
@@ -219,6 +229,7 @@ function createSqliteStore() {
       if (!current) return null;
       const input = inv.normalizeItemInput(payload, { patch: true });
       const next = {
+        sku: input.sku != null && input.sku !== '' ? input.sku : (current.sku || ''),
         name: input.name != null ? input.name : current.name,
         brandId: input.brandId != null ? input.brandId : (current.brand_id || ''),
         pitch: input.pitch != null ? input.pitch : inv.pitchKey(current.pitch),
@@ -227,11 +238,16 @@ function createSqliteStore() {
         price: input.price != null ? input.price : Number(current.price) || 0,
         notes: input.notes != null ? input.notes : (current.notes || '')
       };
+      if (!next.sku) {
+        next.sku = inv.suggestedSku({ brandId: next.brandId, name: next.name, pitch: next.pitch });
+      }
+      const clash = db.prepare('SELECT id FROM inventory_items WHERE sku = ? AND id != ?').get(next.sku, id);
+      if (clash) throw new Error('That SKU is already in use.');
       db.prepare(`
         UPDATE inventory_items SET
-          name = ?, brand_id = ?, pitch = ?, unit = ?, low_at = ?, price = ?, notes = ?, updated_at = ?
+          sku = ?, name = ?, brand_id = ?, pitch = ?, unit = ?, low_at = ?, price = ?, notes = ?, updated_at = ?
         WHERE id = ?
-      `).run(next.name, next.brandId, next.pitch, next.unit, next.lowAt, next.price, next.notes, dbUtil.nowIso(), id);
+      `).run(next.sku, next.name, next.brandId, next.pitch, next.unit, next.lowAt, next.price, next.notes, dbUtil.nowIso(), id);
       return getInventoryItemDetail(db, id);
     },
     async deleteInventoryItem(id) {

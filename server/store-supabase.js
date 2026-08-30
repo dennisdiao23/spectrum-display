@@ -66,6 +66,12 @@ function createSupabaseStore() {
     } catch (e) {
       console.error('Could not migrate inventory bins to SKUs:', e.message || e);
     }
+
+    try {
+      await ensureCatalogSkus();
+    } catch (e) {
+      console.error('Could not seed inventory SKUs from website products:', e.message || e);
+    }
   }
 
   async function upsertMissingCatalog() {
@@ -188,6 +194,12 @@ function createSupabaseStore() {
       const control = product ? inv.isControlProduct(product) : !pitch;
       const unit = control ? 'each' : 'panels';
       const { data: created, error: iErr } = await supabase.from('inventory_items').insert({
+        sku: inv.suggestedSku({
+          brandId: product && product.brandId,
+          seriesId: product && product.id,
+          name: product ? inv.skuNameFromProduct(product, pitch) : ('Item ' + row.product_id),
+          pitch: pitch
+        }),
         name: product ? inv.skuNameFromProduct(product, pitch) : ('Item ' + row.product_id),
         brand_id: product ? (product.brandId || '') : '',
         pitch: pitch,
@@ -241,6 +253,58 @@ function createSupabaseStore() {
       .order('name');
     throwIf(pErr);
     return (products || []).map(function (row) { return dbUtil.rowToProduct(row, brandMap[row.brand_id]); });
+  }
+
+  async function ensureCatalogSkus() {
+    const inv = require('./inventory');
+    const { data: items, error: iErr } = await supabase.from('inventory_items').select('id, sku, name, brand_id, pitch');
+    if (iErr) return;
+    const taken = {};
+    (items || []).forEach(function (row) {
+      const sku = inv.normalizeSku(row.sku);
+      if (sku) taken[sku] = true;
+    });
+    const stamp = new Date().toISOString();
+    for (let i = 0; i < (items || []).length; i++) {
+      const row = items[i];
+      if (inv.normalizeSku(row.sku)) continue;
+      const sku = inv.uniqueSku(inv.suggestedSku({
+        brandId: row.brand_id,
+        name: row.name,
+        pitch: row.pitch
+      }), taken);
+      taken[sku] = true;
+      const { error: uErr } = await supabase.from('inventory_items').update({ sku: sku, updated_at: stamp }).eq('id', row.id);
+      throwIf(uErr, 'Could not save inventory SKU.');
+    }
+    const products = await listProductsUnmapped();
+    const { data: maps, error: mErr } = await supabase.from('product_inventory_map').select('product_id, pitch');
+    if (mErr) return;
+    const { data: skuRows } = await supabase.from('inventory_items').select('sku');
+    const plan = inv.catalogSkuPlan(products, maps || [], (skuRows || []).map(function (r) { return r.sku; }));
+    for (let i = 0; i < plan.length; i++) {
+      const row = plan[i];
+      const { data: created, error: cErr } = await supabase.from('inventory_items').insert({
+        sku: row.sku,
+        name: row.name,
+        brand_id: row.brandId,
+        pitch: row.pitch,
+        unit: row.unit,
+        qty: 0,
+        low_at: row.lowAt,
+        price: row.price,
+        notes: '',
+        updated_at: stamp
+      }).select('id').single();
+      throwIf(cErr, 'Could not create inventory SKU ' + row.sku);
+      const { error: mapErr } = await supabase.from('product_inventory_map').upsert({
+        product_id: Number(row.productId),
+        pitch: row.pitch,
+        item_id: created.id
+      }, { onConflict: 'product_id,pitch' });
+      throwIf(mapErr, 'Could not map inventory SKU ' + row.sku);
+    }
+    if (plan.length) console.log('Created ' + plan.length + ' inventory SKUs from website products');
   }
 
   async function loadInventoryMaps() {
@@ -636,8 +700,19 @@ function createSupabaseStore() {
     async createInventoryItem(payload) {
       const inv = require('./inventory');
       const input = inv.normalizeItemInput(payload);
+      const { data: skuRows } = await supabase.from('inventory_items').select('sku');
+      const taken = {};
+      (skuRows || []).forEach(function (r) {
+        if (r.sku) taken[inv.normalizeSku(r.sku)] = true;
+      });
+      input.sku = inv.uniqueSku(input.sku || inv.suggestedSku({
+        brandId: input.brandId,
+        name: input.name,
+        pitch: input.pitch
+      }), taken);
       const stamp = new Date().toISOString();
       const { data, error } = await supabase.from('inventory_items').insert({
+        sku: input.sku,
         name: input.name,
         brand_id: input.brandId,
         pitch: input.pitch,
@@ -670,6 +745,18 @@ function createSupabaseStore() {
       if (!current) return null;
       const input = inv.normalizeItemInput(payload, { patch: true });
       const patch = { updated_at: new Date().toISOString() };
+      if (input.sku != null) {
+        if (!input.sku) throw new Error('SKU is required.');
+        const { data: clash, error: clashErr } = await supabase
+          .from('inventory_items')
+          .select('id')
+          .eq('sku', input.sku)
+          .neq('id', id)
+          .maybeSingle();
+        throwIf(clashErr, 'Could not check SKU.');
+        if (clash) throw new Error('That SKU is already in use.');
+        patch.sku = input.sku;
+      }
       if (input.name != null) patch.name = input.name;
       if (input.brandId != null) patch.brand_id = input.brandId;
       if (input.pitch != null) patch.pitch = input.pitch;

@@ -184,7 +184,7 @@
       <div id="inventory-section" class="hidden space-y-6">
         <div id="inventory-list-wrap">
           <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4">
-            <p class="text-slate-400 text-sm">Warehouse SKUs — independent of website product pages. LED lines are counted in <span class="text-slate-200">panels</span>. Control gear is <span class="text-slate-200">each</span>. Link a SKU to a product pitch to show that qty and price on the site.</p>
+            <p class="text-slate-400 text-sm">Each warehouse line has its own SKU. Link a SKU to a website product pitch to show that qty and price on the site. Extra SKUs can stay off the website.</p>
             <button id="inv-new-btn" type="button" class="px-4 py-2 rounded-full bg-sky-500 hover:bg-sky-400 text-white text-sm font-semibold">Add inventory item</button>
           </div>
           <div class="flex flex-wrap items-center gap-2 mb-4">
@@ -192,13 +192,14 @@
             <button type="button" data-inv-filter="low" class="inv-filter px-3 py-1.5 rounded-full text-xs font-medium text-slate-400 hover:text-white">Low</button>
             <button type="button" data-inv-filter="out" class="inv-filter px-3 py-1.5 rounded-full text-xs font-medium text-slate-400 hover:text-white">Out</button>
             <button type="button" data-inv-filter="unmapped" class="inv-filter px-3 py-1.5 rounded-full text-xs font-medium text-slate-400 hover:text-white">Not on website</button>
-            <input id="inv-search" type="search" placeholder="Search name, brand, pitch" class="ml-auto w-full sm:w-56 bg-slate-800 border border-slate-700 rounded-full px-3 py-1.5 text-sm">
+            <input id="inv-search" type="search" placeholder="Search SKU, name, brand" class="ml-auto w-full sm:w-56 bg-slate-800 border border-slate-700 rounded-full px-3 py-1.5 text-sm">
           </div>
           <p id="inventory-error" class="hidden text-sm text-red-400 mb-3"></p>
           <div class="overflow-x-auto rounded-2xl border border-slate-800">
             <table class="w-full text-sm">
               <thead class="text-left text-slate-400 border-b border-slate-800">
                 <tr>
+                  <th class="py-3 px-4 font-medium">SKU</th>
                   <th class="py-3 px-4 font-medium">Item</th>
                   <th class="py-3 px-4 font-medium">Brand</th>
                   <th class="py-3 px-4 font-medium">Pitch</th>
@@ -223,6 +224,11 @@
             <div>
               <label class="block text-xs text-slate-400 mb-1">Name</label>
               <input id="inv-name" required type="text" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm" placeholder="Discovery P0.93">
+            </div>
+            <div>
+              <label class="block text-xs text-slate-400 mb-1">SKU</label>
+              <input id="inv-sku" type="text" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm" placeholder="TRT-DISCOVERY-P0.93">
+              <p class="text-[11px] text-slate-500 mt-1">Unique warehouse code. Auto-filled if you leave this blank; you can change it later.</p>
             </div>
             <div>
               <label class="block text-xs text-slate-400 mb-1">Brand</label>
@@ -595,7 +601,7 @@
         if (inventoryFilter === 'out' && item.status !== 'out') return false;
         if (inventoryFilter === 'unmapped' && item.maps && item.maps.length) return false;
         if (q) {
-          const blob = ((item.name || '') + ' ' + (item.brandName || '') + ' ' + (item.pitchLabel || '')).toLowerCase();
+          const blob = ((item.sku || '') + ' ' + (item.name || '') + ' ' + (item.brandName || '') + ' ' + (item.pitchLabel || '')).toLowerCase();
           if (blob.indexOf(q) === -1) return false;
         }
         return true;
@@ -610,6 +616,7 @@
           }).join(', ')
           : 'Not on website';
         return '<tr class="border-b border-slate-800 hover:bg-slate-900/80 cursor-pointer" data-id="' + esc(item.id) + '">' +
+          '<td class="py-3 px-4 font-mono text-xs text-sky-300">' + esc(item.sku || '—') + '</td>' +
           '<td class="py-3 px-4 font-medium">' + esc(item.name || '') + '</td>' +
           '<td class="py-3 px-4 text-sky-400">' + esc(item.brandName || '—') + '</td>' +
           '<td class="py-3 px-4 text-slate-400">' + esc(item.pitchLabel || '—') + '</td>' +
@@ -619,7 +626,7 @@
           '<td class="py-3 px-4"><span class="text-xs px-2 py-0.5 rounded-full ' + stockStatusClass(item.status) + '">' +
             esc(stockStatusLabel(item.status)) + '</span></td>' +
           '</tr>';
-      }).join('') || '<tr><td class="py-6 px-4 text-slate-500" colspan="7">No matching items.</td></tr>';
+      }).join('') || '<tr><td class="py-6 px-4 text-slate-500" colspan="8">No matching items.</td></tr>';
     }
 
     async function loadInventory() {
@@ -679,6 +686,7 @@
       document.getElementById('inv-item-id').value = item && item.id ? item.id : '';
       document.getElementById('inv-title').textContent = item && item.name ? item.name : 'New inventory item';
       document.getElementById('inv-name').value = (item && item.name) || '';
+      document.getElementById('inv-sku').value = (item && item.sku) || '';
       fillInvBrands(item && item.brandId);
       document.getElementById('inv-item-pitch').value = (item && item.pitch) || '';
       document.getElementById('inv-unit').value = (item && item.unit) || 'panels';
@@ -730,7 +738,8 @@
     }
 
     function skuOptionLabel(item) {
-      return (item.name || 'Item') +
+      return (item.sku ? (item.sku + ' · ') : '') +
+        (item.name || 'Item') +
         (item.pitchLabel && item.pitchLabel !== '—' ? (' · ' + item.pitchLabel) : '') +
         ' · ' + (item.qty || 0) + ' ' + (item.unit || '');
     }
@@ -984,6 +993,7 @@
       const msg = document.getElementById('inv-item-msg');
       const body = {
         name: document.getElementById('inv-name').value,
+        sku: document.getElementById('inv-sku').value,
         brandId: document.getElementById('inv-brand').value,
         pitch: document.getElementById('inv-item-pitch').value,
         unit: document.getElementById('inv-unit').value,

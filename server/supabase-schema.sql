@@ -344,6 +344,7 @@ grant all on public.inventory_moves to service_role;
 -- Independent inventory SKUs. Website products link to these via product_inventory_map.
 create table if not exists public.inventory_items (
   id bigint generated always as identity primary key,
+  sku text not null default '',
   name text not null,
   brand_id text not null default '',
   pitch text not null default '',
@@ -355,6 +356,9 @@ create table if not exists public.inventory_items (
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now()
 );
+
+alter table public.inventory_items add column if not exists sku text not null default '';
+create unique index if not exists inventory_items_sku_uidx on public.inventory_items (sku);
 
 create table if not exists public.inventory_item_moves (
   id bigint generated always as identity primary key,
