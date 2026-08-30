@@ -718,6 +718,7 @@
     function tabFromHref(href) {
       try {
         const p = new URL(href, location.origin).pathname.replace(/\/+$/, '') || '/company';
+        if (p === '/company/inventory/customers') return 'customers';
         if (p === '/company/inventory') return 'inventory';
         if (p === '/company/settings/roles') return 'roles';
         if (p === '/company/settings') return 'staff';
