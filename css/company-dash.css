@@ -857,9 +857,21 @@ html.dash-scroll-lock body.company-app {
   min-height: 7.25rem;
   font-family: inherit;
   cursor: pointer;
+  outline: none;
+  -webkit-tap-highlight-color: transparent;
   transition: border-color 0.16s ease, box-shadow 0.16s ease, transform 0.16s ease;
 }
-.dash-kpi:hover {
+.dash-kpi:focus,
+.dash-kpi:focus-visible,
+.dash-kpi.is-active {
+  outline: none;
+  border-color: var(--dash-line);
+  box-shadow: 0 10px 30px rgba(16, 32, 71, 0.04);
+  transform: none;
+}
+.dash-kpi:hover,
+.dash-kpi:focus:hover,
+.dash-kpi.is-active:hover {
   border-color: #b7c8e8;
   box-shadow: 0 14px 32px rgba(16, 32, 71, 0.1);
   transform: translateY(-2px);

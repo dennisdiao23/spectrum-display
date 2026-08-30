@@ -143,7 +143,7 @@
             <p>A snapshot of each company tab.</p>
           </div>
           <div class="dash-home-kpis">
-            <button type="button" class="dash-kpi is-active" data-home="website" aria-pressed="true">
+            <button type="button" class="dash-kpi" data-home="website" aria-pressed="true">
               <span class="dash-kpi-icon dash-kpi-icon-website" aria-hidden="true">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M3 8h18"/><path d="M8 12h5M8 16h8"/></svg>
               </span>
@@ -1686,7 +1686,6 @@
       dashOverview = name;
       document.querySelectorAll('#dash-home .dash-kpi').forEach(function (btn) {
         const on = btn.getAttribute('data-home') === name;
-        btn.classList.toggle('is-active', on);
         btn.setAttribute('aria-pressed', on ? 'true' : 'false');
       });
       renderDashOverview();
