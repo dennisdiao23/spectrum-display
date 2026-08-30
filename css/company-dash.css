@@ -47,9 +47,11 @@ body.company-app {
   margin-bottom: 1.15rem;
 }
 .dash-brand img {
-  height: 2.15rem;
+  height: 2.55rem;
   width: auto;
+  max-width: 12.5rem;
   display: block;
+  object-fit: contain;
 }
 
 .dash-nav-label {
