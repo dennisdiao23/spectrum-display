@@ -166,6 +166,7 @@ body.company-app {
   font-size: 0.78rem;
   color: var(--dash-muted);
 }
+.dash-topbar p[hidden] { display: none; }
 .dash-top-user {
   display: flex;
   align-items: center;
