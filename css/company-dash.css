@@ -349,18 +349,46 @@ body.cc-drawer-open .cc-drawer { transform: none; }
   font-size: 1.15rem;
   font-weight: 700;
 }
+.cc-drawer-tools {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 0.2rem;
+}
+.cc-ico-btn,
 .cc-drawer-close {
   width: 2rem;
   height: 2rem;
   border: 0;
   background: transparent;
   color: var(--dash-muted);
-  font-size: 1.35rem;
-  line-height: 1;
   cursor: pointer;
-  border-radius: 0.5rem;
+  border-radius: 0.45rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
 }
-.cc-drawer-close:hover { background: #f4f6fb; color: var(--dash-text); }
+.cc-ico-btn:hover,
+.cc-drawer-close:hover { background: #eef2ff; color: #2f6bff; }
+.cc-drawer-close { font-size: 1.35rem; line-height: 1; }
+.cc-ico-btn svg,
+.cc-sec-ico {
+  width: 1.05rem;
+  height: 1.05rem;
+  stroke: currentColor;
+  fill: none;
+  stroke-width: 1.7;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.cc-sec-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.55rem;
+}
+.cc-sec-ico { color: #2f6bff; }
 .cc-drawer-body {
   flex: 1 1 auto;
   overflow: auto;
@@ -386,8 +414,13 @@ body.cc-drawer-open .cc-drawer { transform: none; }
   text-align: left;
 }
 .cc-sec-btn:hover { background: #f7f9fc; }
-.cc-sec-btn span { color: var(--dash-muted); font-size: 0.8rem; }
-.cc-sec.is-open .cc-sec-btn span { transform: rotate(180deg); }
+.cc-sec-btn .cc-sec-chevron {
+  color: var(--dash-muted);
+  font-size: 0.8rem;
+  flex: 0 0 auto;
+  transition: transform 0.15s ease;
+}
+.cc-sec.is-open .cc-sec-btn .cc-sec-chevron { transform: rotate(180deg); }
 .cc-sec-body {
   display: none;
   padding: 0 1.25rem 1.15rem;

@@ -756,12 +756,35 @@
   <aside id="cc-drawer" class="cc-drawer" aria-hidden="true">
     <div class="cc-drawer-head">
       <h2 id="cc-title">Customer</h2>
-      <button type="button" id="cc-drawer-close" class="cc-drawer-close" aria-label="Close">×</button>
+      <div class="cc-drawer-tools">
+        <button type="button" class="cc-ico-btn" data-jump="cc-sec-contact" title="Name and contact" aria-label="Name and contact">
+          <svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="3.25"/><path d="M5 19.2c.9-3.1 3.5-4.7 7-4.7s6.1 1.6 7 4.7"/></svg>
+        </button>
+        <button type="button" class="cc-ico-btn" data-jump="cc-sec-comm" title="Communication permissions" aria-label="Communication permissions">
+          <svg viewBox="0 0 24 24"><path d="M5 6h10a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2H9l-4 3v-3H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2z"/><path d="M17 9h2a2 2 0 0 1 2 2v4a2 2 0 0 1-2 2h-1v2.5L14.5 17"/></svg>
+        </button>
+        <button type="button" class="cc-ico-btn" data-jump="cc-sec-address" title="Addresses" aria-label="Addresses">
+          <svg viewBox="0 0 24 24"><path d="M12 21s7-6.2 7-11a7 7 0 1 0-14 0c0 4.8 7 11 7 11z"/><circle cx="12" cy="10" r="2.2"/></svg>
+        </button>
+        <button type="button" class="cc-ico-btn" data-jump="cc-sec-notes" title="Notes" aria-label="Notes">
+          <svg viewBox="0 0 24 24"><path d="M7 3h8l4 4v14H7z"/><path d="M15 3v5h5"/><path d="M9 13h6M9 17h4"/></svg>
+        </button>
+        <button type="button" class="cc-ico-btn" data-jump="cc-sec-pay" title="Payments" aria-label="Payments">
+          <svg viewBox="0 0 24 24"><rect x="3" y="6" width="18" height="12" rx="2"/><path d="M3 10h18"/><path d="M7 15h4"/></svg>
+        </button>
+        <button type="button" class="cc-ico-btn" data-jump="cc-sec-extra" title="Additional info" aria-label="Additional info">
+          <svg viewBox="0 0 24 24"><path d="M7 3h8l4 4v14H7z"/><path d="M15 3v5h5"/><path d="M9 12h6M9 16h6"/></svg>
+        </button>
+        <button type="button" class="cc-ico-btn" data-jump="cc-sec-rel" title="Relationships & Sales" aria-label="Relationships and Sales">
+          <svg viewBox="0 0 24 24"><circle cx="9" cy="8" r="2.6"/><path d="M3.8 19c.6-2.8 2.6-4.2 5.2-4.2s4.6 1.4 5.2 4.2"/><circle cx="17" cy="8.3" r="2.1"/><path d="M16.2 14.7c2 .4 3.5 1.6 4 3.8"/></svg>
+        </button>
+        <button type="button" id="cc-drawer-close" class="cc-drawer-close" aria-label="Close">×</button>
+      </div>
     </div>
     <form id="cc-form" class="cc-drawer-body">
       <input type="hidden" id="cc-id">
-      <section class="cc-sec is-open">
-        <button type="button" class="cc-sec-btn">Name and contact <span>▾</span></button>
+      <section class="cc-sec is-open" id="cc-sec-contact">
+        <button type="button" class="cc-sec-btn"><span class="cc-sec-label"><svg class="cc-sec-ico" viewBox="0 0 24 24"><circle cx="12" cy="8" r="3.25"/><path d="M5 19.2c.9-3.1 3.5-4.7 7-4.7s6.1 1.6 7 4.7"/></svg> Name and contact</span> <span class="cc-sec-chevron">▾</span></button>
         <div class="cc-sec-body">
           <div class="cc-field"><label>Title</label><input id="cc-honorific" type="text" placeholder="Mr / Ms"></div>
           <div class="cc-field"><label>First name</label><input id="cc-first" type="text"></div>
@@ -782,15 +805,15 @@
           <label class="cc-check wide"><input id="cc-sub" type="checkbox"> Is a sub-customer</label>
         </div>
       </section>
-      <section class="cc-sec">
-        <button type="button" class="cc-sec-btn">Communication permissions <span>▾</span></button>
+      <section class="cc-sec is-open" id="cc-sec-comm">
+        <button type="button" class="cc-sec-btn"><span class="cc-sec-label"><svg class="cc-sec-ico" viewBox="0 0 24 24"><path d="M5 6h10a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2H9l-4 3v-3H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2z"/></svg> Communication permissions</span> <span class="cc-sec-chevron">▾</span></button>
         <div class="cc-sec-body">
           <p class="cc-note">If the customer has opted in to email, record it here once you have added an email.</p>
           <label class="cc-check wide"><input id="cc-consent" type="checkbox"> Customer consented to email</label>
         </div>
       </section>
-      <section class="cc-sec is-open">
-        <button type="button" class="cc-sec-btn">Addresses <span>▾</span></button>
+      <section class="cc-sec is-open" id="cc-sec-address">
+        <button type="button" class="cc-sec-btn"><span class="cc-sec-label"><svg class="cc-sec-ico" viewBox="0 0 24 24"><path d="M12 21s7-6.2 7-11a7 7 0 1 0-14 0c0 4.8 7 11 7 11z"/><circle cx="12" cy="10" r="2.2"/></svg> Addresses</span> <span class="cc-sec-chevron">▾</span></button>
         <div class="cc-sec-body">
           <p class="cc-note">Billing address</p>
           <div class="cc-field wide"><label>Street address 1</label><input id="cc-bill-street" type="text"></div>
@@ -811,14 +834,14 @@
           </div>
         </div>
       </section>
-      <section class="cc-sec">
-        <button type="button" class="cc-sec-btn">Notes and attachments <span>▾</span></button>
+      <section class="cc-sec is-open" id="cc-sec-notes">
+        <button type="button" class="cc-sec-btn"><span class="cc-sec-label"><svg class="cc-sec-ico" viewBox="0 0 24 24"><path d="M7 3h8l4 4v14H7z"/><path d="M15 3v5h5"/><path d="M9 13h6M9 17h4"/></svg> Notes and attachments</span> <span class="cc-sec-chevron">▾</span></button>
         <div class="cc-sec-body">
           <div class="cc-field wide"><label>Notes</label><textarea id="cc-notes" rows="4"></textarea></div>
         </div>
       </section>
-      <section class="cc-sec">
-        <button type="button" class="cc-sec-btn">Payments <span>▾</span></button>
+      <section class="cc-sec is-open" id="cc-sec-pay">
+        <button type="button" class="cc-sec-btn"><span class="cc-sec-label"><svg class="cc-sec-ico" viewBox="0 0 24 24"><rect x="3" y="6" width="18" height="12" rx="2"/><path d="M3 10h18"/><path d="M7 15h4"/></svg> Payments</span> <span class="cc-sec-chevron">▾</span></button>
         <div class="cc-sec-body">
           <div class="cc-field"><label>Primary payment method</label>
             <select id="cc-pay-method"><option value="">Select a primary payment method</option><option>Check</option><option>ACH</option><option>Credit card</option><option>Wire</option></select>
@@ -834,8 +857,8 @@
           </div>
         </div>
       </section>
-      <section class="cc-sec">
-        <button type="button" class="cc-sec-btn">Additional info <span>▾</span></button>
+      <section class="cc-sec is-open" id="cc-sec-extra">
+        <button type="button" class="cc-sec-btn"><span class="cc-sec-label"><svg class="cc-sec-ico" viewBox="0 0 24 24"><path d="M7 3h8l4 4v14H7z"/><path d="M15 3v5h5"/><path d="M9 12h6M9 16h6"/></svg> Additional info</span> <span class="cc-sec-chevron">▾</span></button>
         <div class="cc-sec-body">
           <label class="cc-check wide"><input id="cc-exempt" type="checkbox"> This customer is tax exempt</label>
           <div class="cc-field"><label>Tax / resale #</label><input id="cc-tax" type="text"></div>
@@ -844,8 +867,8 @@
           <div class="cc-field"><label>As of</label><input id="cc-open-asof" type="date"></div>
         </div>
       </section>
-      <section class="cc-sec">
-        <button type="button" class="cc-sec-btn">Relationships &amp; Sales <span>▾</span></button>
+      <section class="cc-sec is-open" id="cc-sec-rel">
+        <button type="button" class="cc-sec-btn"><span class="cc-sec-label"><svg class="cc-sec-ico" viewBox="0 0 24 24"><circle cx="9" cy="8" r="2.6"/><path d="M3.8 19c.6-2.8 2.6-4.2 5.2-4.2s4.6 1.4 5.2 4.2"/><circle cx="17" cy="8.3" r="2.1"/><path d="M16.2 14.7c2 .4 3.5 1.6 4 3.8"/></svg> Relationships &amp; Sales</span> <span class="cc-sec-chevron">▾</span></button>
         <div class="cc-sec-body">
           <div class="cc-field"><label>Sources</label><input id="cc-source" type="text"></div>
           <div class="cc-field"><label>Referred by</label><input id="cc-referred" type="text"></div>
@@ -1885,8 +1908,13 @@
         });
       }
       document.getElementById('cc-display').dataset.touched = customer && customer.displayName ? '1' : '';
+      document.querySelectorAll('#cc-form .cc-sec').forEach(function (sec) {
+        sec.classList.add('is-open');
+      });
       document.getElementById('cc-drawer').setAttribute('aria-hidden', 'false');
       document.body.classList.add('cc-drawer-open');
+      const body = document.getElementById('cc-form');
+      if (body) body.scrollTop = 0;
       document.getElementById('cc-first').focus();
     }
 
@@ -2217,6 +2245,15 @@
       this.dataset.touched = this.value.trim() ? '1' : '';
     });
     document.getElementById('cc-new-btn').addEventListener('click', openNewCustomer);
+    document.querySelector('.cc-drawer-tools').addEventListener('click', function (e) {
+      const jump = e.target.closest('[data-jump]');
+      if (!jump) return;
+      const sec = document.getElementById(jump.getAttribute('data-jump'));
+      const form = document.getElementById('cc-form');
+      if (!sec || !form) return;
+      sec.classList.add('is-open');
+      form.scrollTo({ top: Math.max(0, sec.offsetTop - 8), behavior: 'smooth' });
+    });
     document.getElementById('cc-drawer-close').addEventListener('click', closeCustomerDrawer);
     document.getElementById('cc-drawer-scrim').addEventListener('click', closeCustomerDrawer);
     document.getElementById('cc-search').addEventListener('input', function () {
