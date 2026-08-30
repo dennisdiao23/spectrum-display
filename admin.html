@@ -500,7 +500,9 @@
     let websiteSubTab = 'products';
 
     function adminRole() {
-      return (currentAdminUser && currentAdminUser.role) || '';
+      const r = String((currentAdminUser && currentAdminUser.role) || '').toLowerCase().trim();
+      if (r === 'website' || r === 'inventory') return r;
+      return 'owner';
     }
     function canUse(section) {
       const role = adminRole();
@@ -672,6 +674,9 @@
       }
       if (canUse('inventory') || canUse('products')) {
         await loadInventory();
+      }
+      if (canUse('staff')) {
+        await loadStaff();
       }
     }
 
