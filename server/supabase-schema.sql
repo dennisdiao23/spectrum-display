@@ -358,6 +358,13 @@ create table if not exists public.inventory_items (
 );
 
 alter table public.inventory_items add column if not exists sku text not null default '';
+alter table public.inventory_items add column if not exists description text not null default '';
+alter table public.inventory_items add column if not exists cost double precision not null default 0;
+alter table public.inventory_items add column if not exists dealer_net double precision not null default 0;
+alter table public.inventory_items add column if not exists weight double precision not null default 0;
+alter table public.inventory_items add column if not exists panel_w double precision not null default 0;
+alter table public.inventory_items add column if not exists panel_h double precision not null default 0;
+alter table public.inventory_items add column if not exists image text not null default '';
 create unique index if not exists inventory_items_sku_uidx on public.inventory_items (sku);
 
 create table if not exists public.inventory_item_moves (

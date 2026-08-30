@@ -216,13 +216,17 @@ function createSqliteStore() {
         pitch: input.pitch
       }), taken);
       const stamp = dbUtil.nowIso();
+      const fields = inv.dbFieldsFromInput(input);
       const info = db.prepare(`
         INSERT INTO inventory_items (
-          sku, name, brand_id, pitch, unit, qty, low_at, price, notes, created_at, updated_at
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+          sku, name, brand_id, pitch, unit, qty, low_at, price, cost, dealer_net,
+          weight, panel_w, panel_h, description, image, notes, created_at, updated_at
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
       `).run(
-        input.sku, input.name, input.brandId, input.pitch, input.unit, input.qty,
-        input.lowAt, input.price, input.notes, stamp, stamp
+        fields.sku, fields.name, fields.brand_id, fields.pitch, fields.unit, fields.qty,
+        fields.low_at, fields.price, fields.cost, fields.dealer_net, fields.weight,
+        fields.panel_w, fields.panel_h, fields.description, fields.image, fields.notes,
+        stamp, stamp
       );
       if (input.qty) {
         db.prepare(`
@@ -246,6 +250,13 @@ function createSqliteStore() {
         unit: input.unit != null ? input.unit : inv.unitOf(current.unit),
         lowAt: input.lowAt != null ? input.lowAt : Number(current.low_at),
         price: input.price != null ? input.price : Number(current.price) || 0,
+        cost: input.cost != null ? input.cost : Number(current.cost) || 0,
+        dealerNet: input.dealerNet != null ? input.dealerNet : Number(current.dealer_net) || 0,
+        weight: input.weight != null ? input.weight : Number(current.weight) || 0,
+        panelW: input.panelW != null ? input.panelW : Number(current.panel_w) || 0,
+        panelH: input.panelH != null ? input.panelH : Number(current.panel_h) || 0,
+        description: input.description != null ? input.description : (current.description || ''),
+        image: input.image != null ? input.image : (current.image || ''),
         notes: input.notes != null ? input.notes : (current.notes || '')
       };
       if (!next.sku) {
@@ -255,12 +266,23 @@ function createSqliteStore() {
       if (clash) throw new Error('That SKU is already in use.');
       db.prepare(`
         UPDATE inventory_items SET
-          sku = ?, name = ?, brand_id = ?, pitch = ?, unit = ?, low_at = ?, price = ?, notes = ?, updated_at = ?
+          sku = ?, name = ?, brand_id = ?, pitch = ?, unit = ?, low_at = ?, price = ?,
+          cost = ?, dealer_net = ?, weight = ?, panel_w = ?, panel_h = ?,
+          description = ?, image = ?, notes = ?, updated_at = ?
         WHERE id = ?
-      `).run(next.sku, next.name, next.brandId, next.pitch, next.unit, next.lowAt, next.price, next.notes, dbUtil.nowIso(), id);
+      `).run(
+        next.sku, next.name, next.brandId, next.pitch, next.unit, next.lowAt, next.price,
+        next.cost, next.dealerNet, next.weight, next.panelW, next.panelH,
+        next.description, next.image, next.notes, dbUtil.nowIso(), id
+      );
       return getInventoryItemDetail(db, id);
     },
     async deleteInventoryItem(id) {
+      const inv = require('./inventory');
+      const current = db.prepare('SELECT qty FROM inventory_items WHERE id = ?').get(id);
+      if (!current) return false;
+      const history = db.prepare('SELECT COUNT(*) AS n FROM inventory_item_moves WHERE item_id = ?').get(id).n;
+      inv.assertCanDelete(current, history);
       const info = db.prepare('DELETE FROM inventory_items WHERE id = ?').run(id);
       return info.changes > 0;
     },

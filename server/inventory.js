@@ -136,6 +136,13 @@ function priceFromProduct(product) {
   return Number(product.pricePerM2) || 0;
 }
 
+function nonNegNumber(value, label) {
+  if (value == null || value === '') return 0;
+  const n = Number(value);
+  if (!isFinite(n) || n < 0) throw new Error(label + ' must be 0 or more.');
+  return n;
+}
+
 function normalizeItemInput(body, opts) {
   const patch = !!(opts && opts.patch);
   const src = body || {};
@@ -184,10 +191,38 @@ function normalizeItemInput(body, opts) {
   if (!patch || src.notes != null) {
     out.notes = String(src.notes || '').trim().slice(0, 500);
   }
+  if (!patch || src.description != null) {
+    out.description = String(src.description || '').trim().slice(0, 4000);
+  }
+  if (!patch || src.cost != null) {
+    out.cost = nonNegNumber(src.cost, 'Cost');
+  }
+  if (!patch || src.dealerNet != null || src.dealer_net != null) {
+    out.dealerNet = nonNegNumber(src.dealerNet != null ? src.dealerNet : src.dealer_net, 'Dealer net');
+  }
+  if (!patch || src.weight != null) {
+    out.weight = nonNegNumber(src.weight, 'Panel weight');
+  }
+  if (!patch || src.panelW != null || src.panel_w != null) {
+    out.panelW = nonNegNumber(src.panelW != null ? src.panelW : src.panel_w, 'Panel width');
+  }
+  if (!patch || src.panelH != null || src.panel_h != null) {
+    out.panelH = nonNegNumber(src.panelH != null ? src.panelH : src.panel_h, 'Panel height');
+  }
+  if (!patch || src.image != null) {
+    out.image = String(src.image || '').trim().slice(0, 500);
+  }
   if (!patch && out.lowAt == null) out.lowAt = defaultLowAt(out.unit);
   if (!patch && out.qty == null) out.qty = 0;
   if (!patch && out.price == null) out.price = 0;
   if (!patch && out.notes == null) out.notes = '';
+  if (!patch && out.description == null) out.description = '';
+  if (!patch && out.cost == null) out.cost = 0;
+  if (!patch && out.dealerNet == null) out.dealerNet = 0;
+  if (!patch && out.weight == null) out.weight = 0;
+  if (!patch && out.panelW == null) out.panelW = 0;
+  if (!patch && out.panelH == null) out.panelH = 0;
+  if (!patch && out.image == null) out.image = '';
   if (!patch && out.brandId == null) out.brandId = '';
   if (!patch && out.pitch == null) out.pitch = '';
   if (!patch && out.unit == null) out.unit = 'panels';
@@ -200,6 +235,28 @@ function normalizeItemInput(body, opts) {
     });
   }
   return out;
+}
+
+function dbFieldsFromInput(input) {
+  const row = {};
+  if (!input) return row;
+  if (input.sku != null) row.sku = input.sku;
+  if (input.name != null) row.name = input.name;
+  if (input.brandId != null) row.brand_id = input.brandId;
+  if (input.pitch != null) row.pitch = input.pitch;
+  if (input.unit != null) row.unit = input.unit;
+  if (input.qty != null) row.qty = input.qty;
+  if (input.lowAt != null) row.low_at = input.lowAt;
+  if (input.price != null) row.price = input.price;
+  if (input.cost != null) row.cost = input.cost;
+  if (input.dealerNet != null) row.dealer_net = input.dealerNet;
+  if (input.weight != null) row.weight = input.weight;
+  if (input.panelW != null) row.panel_w = input.panelW;
+  if (input.panelH != null) row.panel_h = input.panelH;
+  if (input.description != null) row.description = input.description;
+  if (input.image != null) row.image = input.image;
+  if (input.notes != null) row.notes = input.notes;
+  return row;
 }
 
 function formatItem(row, brandName, maps) {
@@ -219,6 +276,13 @@ function formatItem(row, brandName, maps) {
     qty: qty,
     lowAt: lowAt,
     price: Number(row && row.price) || 0,
+    cost: Number(row && row.cost) || 0,
+    dealerNet: Number(row && row.dealer_net) || 0,
+    weight: Number(row && row.weight) || 0,
+    panelW: Number(row && row.panel_w) || 0,
+    panelH: Number(row && row.panel_h) || 0,
+    description: (row && row.description) || '',
+    image: (row && row.image) || '',
     notes: (row && row.notes) || '',
     status: binStatus(qty, lowAt),
     updatedAt: row && row.updated_at,
@@ -334,6 +398,14 @@ function attachMapsToProducts(products, maps) {
   return products;
 }
 
+function assertCanDelete(item, moves) {
+  const qty = Math.max(0, Number(item && (item.qty != null ? item.qty : item)) || 0);
+  const history = Array.isArray(moves) ? moves.length : (Number(moves) || 0);
+  if (qty > 0 || history > 0) {
+    throw new Error('Cannot delete this SKU after stock has been received. Deleting would erase stock history.');
+  }
+}
+
 function normalizeMaps(list) {
   const seen = {};
   const out = [];
@@ -366,6 +438,7 @@ module.exports = {
   catalogSkuPlan,
   priceFromProduct,
   normalizeItemInput,
+  dbFieldsFromInput,
   formatItem,
   publicLink,
   stockLink,
@@ -375,5 +448,6 @@ module.exports = {
   mapsByProduct,
   mapsByItem,
   attachMapsToProducts,
-  normalizeMaps
+  normalizeMaps,
+  assertCanDelete
 };
