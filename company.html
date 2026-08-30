@@ -37,11 +37,11 @@
           <img src="/assets/spectrum-logo.png" alt="Spectrum" class="site-brand-logo" />
         </a>
         <nav class="site-nav hidden" id="admin-nav">
-          <a href="/company/website" id="tab-website" class="site-nav-link">Website</a>
-          <a href="/company/inventory" id="tab-inventory" class="site-nav-link">Inventory</a>
+          <a href="/company.html#website" id="tab-website" class="site-nav-link">Website</a>
+          <a href="/company.html#inventory" id="tab-inventory" class="site-nav-link">Inventory</a>
         </nav>
         <div class="site-utils hidden" id="admin-utils">
-          <a href="/company/settings" id="header-settings" class="site-util">Settings</a>
+          <a href="/company.html#settings" id="header-settings" class="site-util">Settings</a>
           <span id="admin-name" class="site-util" style="cursor:default"></span>
           <button type="button" id="logout-btn" class="site-util">Sign out</button>
         </div>
@@ -57,12 +57,12 @@
       </div>
       <div class="flex items-center gap-1 shrink-0">
         <div id="website-subnav" class="flex flex-wrap gap-1">
-          <a href="/company/website" id="tab-products" class="site-nav-link">Products</a>
-          <a href="/company/website/accounts" id="tab-accounts" class="site-nav-link">Accounts</a>
+          <a href="/company.html#website" id="tab-products" class="site-nav-link">Products</a>
+          <a href="/company.html#website/accounts" id="tab-accounts" class="site-nav-link">Accounts</a>
         </div>
         <div id="settings-subnav" class="hidden flex flex-wrap gap-1">
-          <a href="/company/settings" id="tab-staff" class="site-nav-link">Manage users</a>
-          <a href="/company/settings/roles" id="tab-roles" class="site-nav-link">Role Setting</a>
+          <a href="/company.html#settings" id="tab-staff" class="site-nav-link">Manage users</a>
+          <a href="/company.html#settings/roles" id="tab-roles" class="site-nav-link">Role Setting</a>
         </div>
       </div>
     </div>
@@ -582,9 +582,22 @@
     let adminRoles = [];
 
     function companyPath() {
-      return String(location.pathname || '/company').replace(/\/+$/, '') || '/company';
+      return String(location.pathname || '/company.html').replace(/\/+$/, '') || '/company.html';
+    }
+    function hashForTab(name) {
+      if (name === 'inventory') return '#inventory';
+      if (name === 'accounts') return '#website/accounts';
+      if (name === 'staff') return '#settings';
+      if (name === 'roles') return '#settings/roles';
+      return '#website';
     }
     function tabFromPath() {
+      const hash = String(location.hash || '').replace(/^#\/?/, '');
+      if (hash === 'inventory') return 'inventory';
+      if (hash === 'settings/roles' || hash === 'roles') return 'roles';
+      if (hash === 'settings' || hash === 'settings/staff') return 'staff';
+      if (hash === 'website/accounts' || hash === 'accounts') return 'accounts';
+      if (hash === 'website' || hash === 'website/products' || hash === 'products') return 'products';
       const p = companyPath();
       if (p === '/company/inventory') return 'inventory';
       if (p === '/company/settings/roles') return 'roles';
@@ -594,11 +607,7 @@
       return '';
     }
     function pathForTab(name) {
-      if (name === 'inventory') return '/company/inventory';
-      if (name === 'accounts') return '/company/website/accounts';
-      if (name === 'staff') return '/company/settings';
-      if (name === 'roles') return '/company/settings/roles';
-      return '/company/website';
+      return '/company.html' + hashForTab(name);
     }
     function firstAllowedTab() {
       if (canUse('website')) return 'products';
@@ -606,9 +615,14 @@
       if (canUse('settings')) return 'staff';
       return '';
     }
-    function goCompany(path) {
-      const next = String(path || '/company').replace(/\/+$/, '') || '/company';
-      if (next === companyPath()) return false;
+    function goCompany(href) {
+      const next = String(href || '/company.html');
+      const here = (location.pathname || '') + (location.hash || '');
+      if (next === here) return false;
+      if ((location.pathname === '/company.html' || location.pathname === '/company') && next.indexOf('/company.html') === 0) {
+        history.replaceState(null, '', next);
+        return false;
+      }
       location.replace(next);
       return true;
     }
@@ -1277,6 +1291,13 @@
       }
     }
 
+    window.addEventListener('hashchange', function () {
+      if (!currentAdminUser) return;
+      const name = tabFromPath();
+      if (!name || !canUse(name)) return;
+      showAdminTab(name);
+      openRoutedSection(name);
+    });
     async function openRoutedSection(name) {
       if (name === 'products') closeProductForm();
       if (name === 'accounts') {
@@ -1723,7 +1744,7 @@
 
     document.getElementById('logout-btn').addEventListener('click', async function () {
       await api('/api/admin/logout', { method: 'POST' });
-      location.href = '/company';
+      location.href = '/company.html';
     });
 
     document.getElementById('type').addEventListener('change', syncControlFields);

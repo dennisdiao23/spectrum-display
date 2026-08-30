@@ -56,6 +56,9 @@ npm start
 
 - Site: http://localhost:3000
 - Designer: http://localhost:3000/led-wall-calculator
+- Company sign in: http://localhost:3000/company.html
+- Company website: http://localhost:3000/company.html#website
+- Company inventory: http://localhost:3000/company.html#inventory
 
 Leave the PowerShell window open while you look. Closing it, or Ctrl+C, stops the server.
 
