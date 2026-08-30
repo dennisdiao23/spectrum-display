@@ -177,13 +177,47 @@ function createSqliteStore() {
     },
     async getSession(token) {
       return db.prepare(`
-        SELECT a.id, a.email, a.name, s.expires_at
+        SELECT a.id, a.email, a.name, a.role, s.expires_at
         FROM sessions s JOIN admins a ON a.id = s.admin_id
         WHERE s.token = ?
       `).get(token) || null;
     },
     async deleteSession(token) {
       db.prepare('DELETE FROM sessions WHERE token = ?').run(token);
+    },
+    async listAdmins() {
+      const { publicAdmin } = require('./admin-roles');
+      return db.prepare('SELECT id, email, name, role, created_at FROM admins ORDER BY name COLLATE NOCASE, email').all()
+        .map(publicAdmin);
+    },
+    async createAdmin(input) {
+      const { normalizeRole, publicAdmin } = require('./admin-roles');
+      const info = db.prepare(
+        'INSERT INTO admins (email, name, password_hash, role, created_at) VALUES (?, ?, ?, ?, ?)'
+      ).run(input.email, input.name, input.passwordHash, normalizeRole(input.role), dbUtil.nowIso());
+      const row = db.prepare('SELECT id, email, name, role, created_at FROM admins WHERE id = ?').get(info.lastInsertRowid);
+      return publicAdmin(row);
+    },
+    async updateAdmin(id, input) {
+      const { normalizeRole, publicAdmin } = require('./admin-roles');
+      const current = db.prepare('SELECT * FROM admins WHERE id = ?').get(id);
+      if (!current) return null;
+      const name = input.name != null ? input.name : current.name;
+      const role = input.role != null ? normalizeRole(input.role) : current.role;
+      const hash = input.passwordHash || current.password_hash;
+      db.prepare('UPDATE admins SET name = ?, role = ?, password_hash = ? WHERE id = ?').run(name, role, hash, id);
+      const row = db.prepare('SELECT id, email, name, role, created_at FROM admins WHERE id = ?').get(id);
+      return publicAdmin(row);
+    },
+    async deleteAdmin(id) {
+      db.prepare('DELETE FROM sessions WHERE admin_id = ?').run(id);
+      const info = db.prepare('DELETE FROM admins WHERE id = ?').run(id);
+      return info.changes > 0;
+    },
+    async countAdminsByRole(role) {
+      const { normalizeRole } = require('./admin-roles');
+      const row = db.prepare('SELECT COUNT(*) AS n FROM admins WHERE role = ?').get(normalizeRole(role));
+      return Number(row && row.n) || 0;
     },
     async listAccounts() {
       return [];
