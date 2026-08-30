@@ -98,6 +98,7 @@ async function main() {
   }
   const COMPANY_PAGES = [
     '/company',
+    '/company/dashboard',
     '/company/website',
     '/company/website/accounts',
     '/company/inventory',
