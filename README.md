@@ -49,7 +49,7 @@ Hosting is **Railway only** (not Netlify or Vercel).
 | `account.html` | Customer Sign in / account |
 | `cart.html` | Cart (only after Sign in — **this browser only**) |
 | `contact.html` | Quote / contact form (emails you) |
-| `admin.html` | Catalog admin (separate from customer Sign in) |
+| `company.html` | Company pages (`/company`, `/company/website`, `/company/inventory`) |
 
 ## Preview on this PC
 
@@ -71,7 +71,7 @@ Copy `.env.example` to `.env` for local keys. With Supabase vars, you use the li
 
 ### Admin catalog
 
-1. Open http://localhost:3000/admin.html (or `/admin.html` on the live site).
+1. Open http://localhost:3000/company (or `/company` on the live site). Website is `/company/website`, inventory is `/company/inventory`.
 2. Sign in as `admin@spectrumdisplay.com` with the password in local `.env` (`ADMIN_PASSWORD`) when using SQLite. Live admin already exists in Supabase.
 3. Add or edit products, photos, pitches, panel size, $/m², and categories (filters / mega menu).
    Control gear (NovaStar) is the same list — type Control, price each. Public product pages and the

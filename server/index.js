@@ -80,7 +80,7 @@ async function main() {
   app.use(function (req, res, next) {
     const host = String(req.hostname || '').toLowerCase();
     const file = String(req.path || '').toLowerCase();
-    const privatePage = file === '/admin.html' || file === '/cart.html' || file === '/account.html';
+    const privatePage = file === '/admin.html' || file === '/company.html' || file === '/cart.html' || file === '/account.html' || file === '/company' || file.indexOf('/company/') === 0;
     if (host.endsWith('.up.railway.app') || privatePage) {
       res.set('X-Robots-Tag', 'noindex, nofollow');
     }
@@ -89,6 +89,26 @@ async function main() {
   app.get('/index.html', function (req, res) {
     const qs = req.url.includes('?') ? req.url.slice(req.url.indexOf('?')) : '';
     res.redirect(301, '/' + qs);
+  });
+
+  function sendCompany(_req, res) {
+    res.set('X-Robots-Tag', 'noindex, nofollow');
+    res.sendFile(path.join(ROOT, 'company.html'));
+  }
+  const COMPANY_PAGES = [
+    '/company',
+    '/company/website',
+    '/company/website/accounts',
+    '/company/inventory',
+    '/company/settings',
+    '/company/settings/roles'
+  ];
+  COMPANY_PAGES.forEach(function (route) {
+    app.get([route, route + '/'], sendCompany);
+  });
+  app.get(['/company.html', '/admin.html', '/admin', '/admin/'], function (req, res) {
+    const qs = req.url.includes('?') ? req.url.slice(req.url.indexOf('?')) : '';
+    res.redirect(301, '/company' + qs);
   });
 
   const JOB_PAGES = [
@@ -900,7 +920,7 @@ async function main() {
 
   app.listen(PORT, '0.0.0.0', function () {
     console.log('Spectrum Display running on port ' + PORT);
-    console.log('Admin: /admin.html');
+    console.log('Company: /company  /company/website  /company/inventory');
   });
 }
 

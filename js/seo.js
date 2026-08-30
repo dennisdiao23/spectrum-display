@@ -57,7 +57,9 @@
   };
 
   var file = (location.pathname.split('/').pop() || 'index.html');
-  if (file === 'admin.html' || file === 'cart.html' || file === 'account.html') return;
+  var pathName = location.pathname || '/';
+  if (pathName === '/company' || pathName.indexOf('/company/') === 0) return;
+  if (file === 'admin.html' || file === 'company.html' || file === 'cart.html' || file === 'account.html') return;
   if (file === 'brands.html') return;
 
   var path = publicPath();

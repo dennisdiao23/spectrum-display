@@ -3,9 +3,9 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Admin | Spectrum Display</title>
+  <title>Company | Spectrum Display</title>
   <meta name="robots" content="noindex, nofollow" />
-  <link rel="stylesheet" href="css/site-header.css" />
+  <link rel="stylesheet" href="/css/site-header.css" />
   <script src="https://cdn.tailwindcss.com"></script>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
   <style>
@@ -34,14 +34,14 @@
     <div class="site-header-inner">
       <div class="site-header-top">
         <a href="/" class="site-brand">
-          <img src="assets/spectrum-logo.png" alt="Spectrum" class="site-brand-logo" />
+          <img src="/assets/spectrum-logo.png" alt="Spectrum" class="site-brand-logo" />
         </a>
         <nav class="site-nav hidden" id="admin-nav">
-          <button type="button" id="tab-website" class="site-nav-link is-active">Website</button>
-          <button type="button" id="tab-inventory" class="site-nav-link">Inventory</button>
+          <a href="/company/website" id="tab-website" class="site-nav-link">Website</a>
+          <a href="/company/inventory" id="tab-inventory" class="site-nav-link">Inventory</a>
         </nav>
         <div class="site-utils hidden" id="admin-utils">
-          <button type="button" id="header-settings" class="site-util">Settings</button>
+          <a href="/company/settings" id="header-settings" class="site-util">Settings</a>
           <span id="admin-name" class="site-util" style="cursor:default"></span>
           <button type="button" id="logout-btn" class="site-util">Sign out</button>
         </div>
@@ -57,12 +57,12 @@
       </div>
       <div class="flex items-center gap-1 shrink-0">
         <div id="website-subnav" class="flex flex-wrap gap-1">
-          <button type="button" id="tab-products" class="site-nav-link is-active">Products</button>
-          <button type="button" id="tab-accounts" class="site-nav-link">Accounts</button>
+          <a href="/company/website" id="tab-products" class="site-nav-link">Products</a>
+          <a href="/company/website/accounts" id="tab-accounts" class="site-nav-link">Accounts</a>
         </div>
         <div id="settings-subnav" class="hidden flex flex-wrap gap-1">
-          <button type="button" id="tab-staff" class="site-nav-link is-active">Manage users</button>
-          <button type="button" id="tab-roles" class="site-nav-link">Role Setting</button>
+          <a href="/company/settings" id="tab-staff" class="site-nav-link">Manage users</a>
+          <a href="/company/settings/roles" id="tab-roles" class="site-nav-link">Role Setting</a>
         </div>
       </div>
     </div>
@@ -581,6 +581,38 @@
     let settingsSubTab = 'staff';
     let adminRoles = [];
 
+    function companyPath() {
+      return String(location.pathname || '/company').replace(/\/+$/, '') || '/company';
+    }
+    function tabFromPath() {
+      const p = companyPath();
+      if (p === '/company/inventory') return 'inventory';
+      if (p === '/company/settings/roles') return 'roles';
+      if (p === '/company/settings') return 'staff';
+      if (p === '/company/website/accounts') return 'accounts';
+      if (p === '/company/website') return 'products';
+      return '';
+    }
+    function pathForTab(name) {
+      if (name === 'inventory') return '/company/inventory';
+      if (name === 'accounts') return '/company/website/accounts';
+      if (name === 'staff') return '/company/settings';
+      if (name === 'roles') return '/company/settings/roles';
+      return '/company/website';
+    }
+    function firstAllowedTab() {
+      if (canUse('website')) return 'products';
+      if (canUse('inventory')) return 'inventory';
+      if (canUse('settings')) return 'staff';
+      return '';
+    }
+    function goCompany(path) {
+      const next = String(path || '/company').replace(/\/+$/, '') || '/company';
+      if (next === companyPath()) return false;
+      location.replace(next);
+      return true;
+    }
+
     function adminPerms() {
       const p = currentAdminUser && currentAdminUser.perms;
       if (p && typeof p === 'object') return p;
@@ -642,8 +674,15 @@
       document.getElementById('tab-website').classList.toggle('hidden', !canUse('website'));
       document.getElementById('tab-inventory').classList.toggle('hidden', !canUse('inventory'));
       document.getElementById('header-settings').classList.toggle('hidden', !canUse('settings'));
-      websiteSubTab = 'products';
-      showAdminTab(canUse('website') ? 'products' : (canUse('inventory') ? 'inventory' : 'staff'));
+      const fromPath = tabFromPath();
+      const next = fromPath && canUse(fromPath) ? fromPath : firstAllowedTab();
+      if (!fromPath || !canUse(fromPath)) {
+        if (goCompany(next ? pathForTab(next) : '/company')) return false;
+      }
+      websiteSubTab = next === 'accounts' ? 'accounts' : 'products';
+      settingsSubTab = next === 'roles' ? 'roles' : 'staff';
+      showAdminTab(next || 'products');
+      return true;
     }
 
     function fillBrands(selected) {
@@ -827,9 +866,10 @@
         staff: ['Settings', 'Admin logins'],
         roles: ['Settings', 'Role Setting']
       };
-      const bits = titles[name] || ['Admin', ''];
+      const bits = titles[name] || ['Company', ''];
       document.getElementById('admin-page-title').textContent = bits[0];
       document.getElementById('admin-page-sub').textContent = bits[1];
+      document.title = (bits[0] ? bits[0] + ' | ' : '') + 'Company | Spectrum Display';
       const newBtn = document.getElementById('new-btn');
       if (newBtn) newBtn.classList.toggle('hidden', !canEdit('website'));
       const invNew = document.getElementById('inv-new-btn');
@@ -1140,7 +1180,7 @@
         const data = await api('/api/admin/accounts');
         const rows = data.accounts || [];
         if (data.source === 'sqlite') {
-          errEl.textContent = 'This local Admin is using a catalog file, not the live site database. Website Sign in accounts (Customer / Dealer / Sales) are at https://www.spectrumdisplay.com/admin.html. Add SUPABASE_URL to .env to list them here.';
+          errEl.textContent = 'This local Company page is using a catalog file, not the live site database. Website Sign in accounts (Customer / Dealer / Sales) are at https://www.spectrumdisplay.com/company. Add SUPABASE_URL to .env to list them here.';
           errEl.classList.remove('text-red-400');
           errEl.classList.add('text-amber-300');
           errEl.classList.remove('hidden');
@@ -1237,48 +1277,22 @@
       }
     }
 
-    document.getElementById('tab-website').addEventListener('click', async function () {
-      const next = websiteSubTab === 'accounts' ? 'accounts' : 'products';
-      showAdminTab(next);
-      if (next === 'products') closeProductForm();
-      else {
+    async function openRoutedSection(name) {
+      if (name === 'products') closeProductForm();
+      if (name === 'accounts') {
         document.getElementById('accounts-list-wrap').classList.remove('hidden');
         document.getElementById('account-detail').classList.add('hidden');
         await loadPriceTiers();
         await loadAccounts();
       }
-    });
-    document.getElementById('tab-products').addEventListener('click', function () {
-      showAdminTab('products');
-      closeProductForm();
-    });
-    document.getElementById('tab-inventory').addEventListener('click', async function () {
-      showAdminTab('inventory');
-      document.getElementById('inventory-list-wrap').classList.remove('hidden');
-      document.getElementById('inventory-detail').classList.add('hidden');
-      await loadInventory();
-    });
-    document.getElementById('tab-accounts').addEventListener('click', async function () {
-      showAdminTab('accounts');
-      document.getElementById('accounts-list-wrap').classList.remove('hidden');
-      document.getElementById('account-detail').classList.add('hidden');
-      await loadPriceTiers();
-      await loadAccounts();
-    });
-    document.getElementById('header-settings').addEventListener('click', async function () {
-      const next = settingsSubTab === 'roles' ? 'roles' : 'staff';
-      showAdminTab(next);
-      if (next === 'roles') await loadRoles();
-      else await loadStaff();
-    });
-    document.getElementById('tab-staff').addEventListener('click', async function () {
-      showAdminTab('staff');
-      await loadStaff();
-    });
-    document.getElementById('tab-roles').addEventListener('click', async function () {
-      showAdminTab('roles');
-      await loadRoles();
-    });
+      if (name === 'inventory') {
+        document.getElementById('inventory-list-wrap').classList.remove('hidden');
+        document.getElementById('inventory-detail').classList.add('hidden');
+        await loadInventory();
+      }
+      if (name === 'staff') await loadStaff();
+      if (name === 'roles') await loadRoles();
+    }
     function resetStaffForm() {
       editingStaffId = null;
       document.getElementById('staff-form').reset();
@@ -1699,8 +1713,9 @@
             password: document.getElementById('login-password').value
           })
         });
-        showDash(data.admin);
+        if (!showDash(data.admin)) return;
         await loadDash();
+        await openRoutedSection(tabFromPath());
       } catch (err) {
         showError('login-error', err.message);
       }
@@ -1708,7 +1723,7 @@
 
     document.getElementById('logout-btn').addEventListener('click', async function () {
       await api('/api/admin/logout', { method: 'POST' });
-      location.reload();
+      location.href = '/company';
     });
 
     document.getElementById('type').addEventListener('change', syncControlFields);
@@ -1799,8 +1814,10 @@
 
     api('/api/admin/me').then(function (data) {
       if (data.ok && data.admin) {
-        showDash(data.admin);
-        return loadDash();
+        if (!showDash(data.admin)) return;
+        return loadDash().then(function () {
+          return openRoutedSection(tabFromPath());
+        });
       }
     }).catch(function () {});
   </script>

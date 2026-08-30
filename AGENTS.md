@@ -4,15 +4,15 @@
 
 Spectrum Display is a static HTML/CSS/JS marketing + catalog website (`index.html`, `products.html`,
 `product.html`, `brands.html`, `cart.html`, `contact.html`, `account.html`, `designer.html`
-at `/led-wall-calculator`, `admin.html`) served by a small Express backend in `server/`. The backend exposes a product/brand
-catalog API and a cookie-session admin login used by `admin.html`.
+at `/led-wall-calculator`, `company.html` at `/company`) served by a small Express backend in `server/`. The backend exposes a product/brand
+catalog API and a cookie-session company login used by `/company`, `/company/website`, and `/company/inventory`.
 
 ### Running the app (single service)
 
 - Start the dev server with `npm start` (`node server/index.js`). It listens on `PORT` (default `3000`)
   and serves both the static site and the `/api/*` endpoints. There is no separate frontend build/dev
   server — the HTML files are served as-is.
-- Visit `http://localhost:3000`. Admin UI is at `/admin.html`.
+- Visit `http://localhost:3000`. Company UI is at `/company` (`/company/website`, `/company/inventory`).
 
 ### Database: Supabase vs local SQLite fallback
 

@@ -113,7 +113,7 @@ OneDrive does **not** update GitHub. After Cloud Agent changes, pull and review 
 | Table | Who uses it |
 |---|---|
 | `brands`, `products` | Public catalog. Panel series, prices, photos, and extra copy (`details` jsonb: cats, spec tables, features, lead) are edited in Admin. Public pages do not load `js/products-data.js`. |
-| `admins`, `sessions` | Catalog admin at `/admin.html` (not customer Sign in) |
+| `admins`, `sessions` | Company pages at `/company` (not customer Sign in) |
 | `app_config` | Admin secret check |
 | `profiles` | Site accounts. Role is `customer` (default), `dealer`, or `sales`. Only Admin can change type. |
 | `price_tiers` | Admin-only markup % by Customer / Dealer / Sales. Signed-in prices = catalog × (1 + %). Default 0%. Users never see this percent. |
@@ -125,7 +125,7 @@ OneDrive does **not** update GitHub. After Cloud Agent changes, pull and review 
 **Storage:** bucket `product-images` (public product photos).
 
 **Customer Sign in** = Supabase Auth (email/password + Google).  
-**Catalog admin** = `admin.html` + `admin@spectrumdisplay.com` (separate).
+**Catalog admin** = `/company` + `admin@spectrumdisplay.com` (separate).
 
 ---
 
@@ -259,7 +259,7 @@ Leave NS (`ns37` / `ns38`) and SOA alone.
 | Cannot Sign in (email) | Supabase Auth; Site URL must be `https://www.spectrumdisplay.com` |
 | Continue with Google fails | Google Cloud OAuth origins + Supabase redirect URLs |
 | Contact form error / no email | Railway logs → Resend logs → Gmail spam → `send` DNS |
-| Admin cannot add products | `admin.html` (not customer Sign in); `SPECTRUM_ADMIN_SECRET` |
+| Admin cannot add products | `/company` (not customer Sign in); `SPECTRUM_ADMIN_SECRET` |
 | Admin Accounts tab empty | Catalog admin can only see site Sign in accounts (`profiles`). Needs the admin secret so RLS allows the list. |
 | Merged on GitHub, site unchanged | Railway must show a new deploy for that commit on **main** |
 | Cart empty on another phone | Expected — cart is not in Supabase |

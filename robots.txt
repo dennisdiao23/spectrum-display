@@ -2,6 +2,8 @@ User-agent: *
 Allow: /
 
 Disallow: /admin.html
+Disallow: /company
+Disallow: /company/
 Disallow: /cart.html
 Disallow: /account.html
 Disallow: /api/
