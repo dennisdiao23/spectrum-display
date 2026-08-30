@@ -978,25 +978,6 @@
       <div id="staff-section" class="space-y-8">
         <div class="space-y-6">
           <div class="flex items-start justify-between gap-4">
-            <p class="text-slate-400 text-sm">Admin logins for this page — not website Customer / Dealer / Sales accounts. Owner sees everything. Website can edit product pages and website accounts. Inventory can receive and adjust stock.</p>
-            <button id="staff-new-btn" type="button" class="shrink-0 px-4 py-2 rounded-full bg-sky-500 hover:bg-sky-400 text-white text-sm font-semibold">Add user</button>
-          </div>
-          <p id="staff-error" class="hidden text-sm text-red-400"></p>
-          <div class="overflow-x-auto rounded-2xl border border-slate-800">
-            <table class="w-full text-sm">
-              <thead class="text-left text-slate-400 border-b border-slate-800">
-                <tr>
-                  <th class="py-3 px-4 font-medium">Name</th>
-                  <th class="py-3 px-4 font-medium">Email</th>
-                  <th class="py-3 px-4 font-medium">Role</th>
-                </tr>
-              </thead>
-              <tbody id="staff-table" class="text-slate-200"></tbody>
-            </table>
-          </div>
-        </div>
-        <div class="space-y-6">
-          <div class="flex items-start justify-between gap-4">
             <div>
               <h2 class="text-base font-semibold text-slate-800">Role Setting</h2>
               <p class="text-slate-400 text-sm mt-1">Name a role and choose whether it can view or edit Website and Inventory. Delete a role only when no user is assigned to it.</p>
@@ -1015,6 +996,28 @@
                 </tr>
               </thead>
               <tbody id="role-table" class="text-slate-200"></tbody>
+            </table>
+          </div>
+        </div>
+        <div class="space-y-6">
+          <div class="flex items-start justify-between gap-4">
+            <div>
+              <h2 class="text-base font-semibold text-slate-800">Users</h2>
+              <p class="text-slate-400 text-sm mt-1">Admin logins for this page — not website Customer / Dealer / Sales accounts. Owner sees everything. Website can edit product pages and website accounts. Inventory can receive and adjust stock.</p>
+            </div>
+            <button id="staff-new-btn" type="button" class="shrink-0 px-4 py-2 rounded-full bg-sky-500 hover:bg-sky-400 text-white text-sm font-semibold">Add user</button>
+          </div>
+          <p id="staff-error" class="hidden text-sm text-red-400"></p>
+          <div class="overflow-x-auto rounded-2xl border border-slate-800">
+            <table class="w-full text-sm">
+              <thead class="text-left text-slate-400 border-b border-slate-800">
+                <tr>
+                  <th class="py-3 px-4 font-medium">Name</th>
+                  <th class="py-3 px-4 font-medium">Email</th>
+                  <th class="py-3 px-4 font-medium">Role</th>
+                </tr>
+              </thead>
+              <tbody id="staff-table" class="text-slate-200"></tbody>
             </table>
           </div>
         </div>
