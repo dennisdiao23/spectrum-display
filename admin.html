@@ -26,7 +26,7 @@
   <main class="max-w-6xl mx-auto px-4 py-8">
     <section id="login-panel" class="max-w-md mx-auto">
       <h2 class="text-2xl font-bold mb-2">Admin sign in</h2>
-      <p class="text-sm text-slate-400 mb-6">Products, inventory, photos, pricing, and customer accounts.</p>
+      <p class="text-sm text-slate-400 mb-6">Website pages, inventory, photos, pricing, and customer accounts.</p>
       <form id="login-form" class="rounded-2xl border border-slate-800 bg-slate-900/60 p-6 space-y-4">
         <div>
           <label class="block text-xs text-slate-400 mb-1">Email</label>
@@ -43,7 +43,7 @@
 
     <section id="dash-panel" class="hidden space-y-8">
       <div class="flex flex-wrap gap-2 border-b border-slate-800 pb-3">
-        <button type="button" id="tab-products" class="admin-tab px-4 py-2 rounded-full text-sm font-medium bg-sky-500/20 text-sky-300">Products</button>
+        <button type="button" id="tab-products" class="admin-tab px-4 py-2 rounded-full text-sm font-medium bg-sky-500/20 text-sky-300">Website</button>
         <button type="button" id="tab-inventory" class="admin-tab px-4 py-2 rounded-full text-sm font-medium text-slate-400 hover:text-white">Inventory</button>
         <button type="button" id="tab-accounts" class="admin-tab px-4 py-2 rounded-full text-sm font-medium text-slate-400 hover:text-white">Accounts</button>
       </div>
@@ -51,7 +51,7 @@
       <div id="products-section" class="space-y-6">
       <div id="products-list-wrap">
       <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4">
-        <p class="text-slate-400 text-sm"><span id="product-total">0</span> website product pages. These are catalog content only — photos, copy, and which pitches the page shows. Stock and live sell price live in Inventory. Click a row to edit and link SKUs.</p>
+        <p class="text-slate-400 text-sm"><span id="product-total">0</span> website product pages. These are catalog content only — photos, copy, and which pitches the page shows. Stock and live sell price live in Inventory. Click a product name to edit. Click Shown to open the live page.</p>
         <button id="new-btn" type="button" class="px-4 py-2 rounded-full bg-sky-500 hover:bg-sky-400 text-white text-sm font-semibold">Add product</button>
       </div>
       <div class="overflow-x-auto rounded-2xl border border-slate-800">
@@ -64,6 +64,7 @@
               <th class="py-3 px-4 font-medium">Type</th>
               <th class="py-3 px-4 font-medium">Pitch</th>
               <th class="py-3 px-4 font-medium">Price</th>
+              <th class="py-3 px-4 font-medium">Website</th>
             </tr>
           </thead>
           <tbody id="product-table" class="text-slate-200"></tbody>
@@ -72,7 +73,7 @@
       </div>
 
       <div id="form-wrap" class="hidden space-y-4">
-        <button type="button" id="product-back" class="text-sm text-sky-400 hover:text-sky-300">← All products</button>
+        <button type="button" id="product-back" class="text-sm text-sky-400 hover:text-sky-300">← Website</button>
         <div class="rounded-2xl border border-slate-800 bg-slate-900/50 p-5">
         <h2 id="form-title" class="font-semibold text-lg mb-4">New product</h2>
         <form id="product-form" class="grid sm:grid-cols-2 gap-4">
@@ -168,6 +169,7 @@
           <div class="sm:col-span-2 flex flex-wrap gap-2">
             <button type="submit" class="px-5 py-2 rounded-full bg-sky-500 hover:bg-sky-400 text-white text-sm font-semibold">Save product</button>
             <button id="cancel-btn" type="button" class="px-5 py-2 rounded-full border border-slate-600 text-sm">Cancel</button>
+            <button id="hide-btn" type="button" class="hidden px-5 py-2 rounded-full border border-slate-700 text-slate-200 hover:border-sky-500 text-sm">Hide</button>
             <button id="delete-btn" type="button" class="hidden px-5 py-2 rounded-full border border-slate-700 text-red-400 hover:border-red-500 text-sm">Delete</button>
           </div>
         </form>
@@ -437,6 +439,7 @@
     const table = document.getElementById('product-table');
     let brands = [];
     let editingId = null;
+    let editingHidden = false;
 
     function showError(id, msg) {
       const el = document.getElementById(id);
@@ -494,6 +497,9 @@
       document.getElementById('form-title').textContent = 'New product';
       document.getElementById('image-preview').classList.add('hidden');
       document.getElementById('inventory-map-card').classList.add('hidden');
+      document.getElementById('hide-btn').classList.add('hidden');
+      document.getElementById('hide-btn').textContent = 'Hide';
+      editingHidden = false;
       showError('form-error', '');
       fillBrands(brands[0] && brands[0].id);
       syncControlFields();
@@ -510,8 +516,12 @@
       document.getElementById('products-list-wrap').classList.add('hidden');
       formWrap.classList.remove('hidden');
       const delBtn = document.getElementById('delete-btn');
+      const hideBtn = document.getElementById('hide-btn');
       delBtn.classList.toggle('hidden', !product);
+      hideBtn.classList.toggle('hidden', !product);
       if (!product) return;
+      editingHidden = !!product.hidden;
+      hideBtn.textContent = editingHidden ? 'Show on website' : 'Hide';
       editingId = product.dbId;
       document.getElementById('form-title').textContent = 'Edit ' + product.name;
       document.getElementById('product-id').value = product.dbId;
@@ -546,17 +556,23 @@
         const img = p.image
           ? '<img src="' + esc(p.image) + '" alt="" class="h-11 w-11 rounded-md object-cover bg-slate-900 border border-slate-800">'
           : '<div class="h-11 w-11 rounded-md bg-slate-900 border border-slate-800 flex items-center justify-center text-[10px] text-slate-500">No photo</div>';
+        const pageHref = '/product.html?brand=' + encodeURIComponent(p.brandId || '') +
+          '&series=' + encodeURIComponent(p.id || '');
+        const vis = p.hidden
+          ? '<span class="text-amber-400">Hidden</span>'
+          : '<a href="' + esc(pageHref) + '" target="_blank" rel="noopener" class="text-emerald-400 hover:underline py-1" data-open-site>Shown</a>';
         return (
-          '<tr class="border-b border-slate-800 hover:bg-slate-900/80 cursor-pointer" data-id="' + esc(p.dbId) + '">' +
+          '<tr class="border-b border-slate-800 hover:bg-slate-900/80" data-id="' + esc(p.dbId) + '">' +
             '<td class="py-2.5 px-4">' + img + '</td>' +
-            '<td class="py-2.5 px-4 font-medium">' + esc(p.name || '') + '</td>' +
+            '<td class="py-2.5 px-4 font-medium" data-edit-name><span class="cursor-pointer hover:text-sky-300">' + esc(p.name || '') + '</span></td>' +
             '<td class="py-2.5 px-4 text-sky-400">' + esc(p.brandName || '') + '</td>' +
             '<td class="py-2.5 px-4 text-slate-400">' + esc(p.type || '') + '</td>' +
             '<td class="py-2.5 px-4 text-slate-400">' + esc(p.pitchLabel || '') + '</td>' +
             '<td class="py-2.5 px-4">' + esc(p.priceLabel || '') + '</td>' +
+            '<td class="py-2.5 px-4" data-website-cell>' + vis + '</td>' +
           '</tr>'
         );
-      }).join('') || '<tr><td class="py-6 px-4 text-slate-500" colspan="6">No products yet.</td></tr>';
+      }).join('') || '<tr><td class="py-6 px-4 text-slate-500" colspan="7">No products yet.</td></tr>';
       const total = document.getElementById('product-total');
       if (total) total.textContent = String((list && list.length) || 0);
     }
@@ -693,7 +709,7 @@
       const wrap = document.getElementById('inv-maps');
       const rows = maps || [];
       if (!rows.length) {
-        wrap.innerHTML = emptyNote('Not linked to a website product page. It will not show on Products until you map it.');
+        wrap.innerHTML = emptyNote('Not linked to a website product page. It will not show on Website until you map it.');
         return;
       }
       wrap.innerHTML = rows.map(function (m) {
@@ -1230,9 +1246,36 @@
     table.addEventListener('click', async function (e) {
       const row = e.target.closest('tr[data-id]');
       if (!row) return;
+      const siteLink = e.target.closest('[data-website-cell]') && row.querySelector('a[data-open-site]');
+      if (siteLink) {
+        e.preventDefault();
+        e.stopPropagation();
+        window.open(siteLink.href, '_blank', 'noopener,noreferrer');
+        return;
+      }
+      if (!e.target.closest('[data-edit-name]')) return;
       await loadInventory();
       const data = await api('/api/admin/products/' + row.getAttribute('data-id'));
       openForm(data.product);
+    });
+
+    document.getElementById('hide-btn').addEventListener('click', async function () {
+      if (!editingId) return;
+      showError('form-error', '');
+      const nextHidden = !editingHidden;
+      try {
+        const data = await api('/api/admin/products/' + editingId + '/visibility', {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ hidden: nextHidden })
+        });
+        editingHidden = !!(data.product && data.product.hidden);
+        document.getElementById('hide-btn').textContent = editingHidden ? 'Show on website' : 'Hide';
+        const productData = await api('/api/admin/products');
+        renderProducts(productData.products || []);
+      } catch (err) {
+        showError('form-error', err.message);
+      }
     });
 
     document.getElementById('delete-btn').addEventListener('click', async function () {

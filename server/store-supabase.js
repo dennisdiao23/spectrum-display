@@ -399,10 +399,14 @@ function createSupabaseStore() {
         byBrand[b.id] = { name: b.name, tagline: b.tagline || '', series: [] };
       });
       (products || []).forEach((row) => {
+        if (dbUtil.isProductHidden(row)) return;
         if (!byBrand[row.brand_id]) {
           byBrand[row.brand_id] = { name: row.brand_id, tagline: '', series: [] };
         }
         byBrand[row.brand_id].series.push(dbUtil.rowToProduct(row, { name: byBrand[row.brand_id].name }));
+      });
+      Object.keys(byBrand).forEach(function (id) {
+        if (!(byBrand[id].series && byBrand[id].series.length)) delete byBrand[id];
       });
       Object.keys(byBrand).forEach(function (id) {
         const brand = byBrand[id];
@@ -505,6 +509,16 @@ function createSupabaseStore() {
       const { data, error } = await supabase.from('products').delete().eq('id', id).select('id');
       throwIf(error);
       return !!(data && data.length);
+    },
+    async setProductHidden(id, hidden) {
+      const { data, error } = await supabase
+        .from('products')
+        .update({ hidden: !!hidden, updated_at: new Date().toISOString() })
+        .eq('id', id)
+        .select('id');
+      throwIf(error);
+      if (!data || !data.length) return null;
+      return this.getProduct(id);
     },
     async getRawProduct(id) {
       const { data, error } = await supabase.from('products').select('*').eq('id', id).maybeSingle();

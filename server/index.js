@@ -190,6 +190,7 @@ async function main() {
     try {
       const products = await store.listProducts();
       products.forEach(function (product) {
+        if (product.hidden) return;
         const loc =
           SITE +
           '/product.html?brand=' +
@@ -492,14 +493,15 @@ async function main() {
 
   app.get('/api/products', async function (_req, res, next) {
     try {
-      res.json({ ok: true, products: await store.listProducts() });
+      const products = (await store.listProducts()).filter(function (p) { return !p.hidden; });
+      res.json({ ok: true, products: products });
     } catch (err) { next(err); }
   });
 
   app.get('/api/products/:brand/:series', async function (req, res, next) {
     try {
       const product = await store.getProductByBrandSeries(req.params.brand, req.params.series);
-      if (!product) return res.status(404).json({ ok: false, error: 'Product not found.' });
+      if (!product || product.hidden) return res.status(404).json({ ok: false, error: 'Product not found.' });
       res.json({ ok: true, product: product, brandName: product.brandName });
     } catch (err) { next(err); }
   });
@@ -599,6 +601,16 @@ async function main() {
       const ok = await store.deleteProduct(req.params.id);
       if (!ok) return res.status(404).json({ ok: false, error: 'Product not found.' });
       res.json({ ok: true });
+    } catch (err) { next(err); }
+  });
+
+  app.put('/api/admin/products/:id/visibility', requireAdmin, async function (req, res, next) {
+    try {
+      const raw = req.body && req.body.hidden;
+      const hidden = raw === true || raw === 'true' || raw === 1 || raw === '1';
+      const product = await store.setProductHidden(req.params.id, hidden);
+      if (!product) return res.status(404).json({ ok: false, error: 'Product not found.' });
+      res.json({ ok: true, product: product });
     } catch (err) { next(err); }
   });
 

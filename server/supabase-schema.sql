@@ -31,6 +31,8 @@ create table if not exists public.products (
   unique (brand_id, series_id)
 );
 
+alter table public.products add column if not exists hidden boolean not null default false;
+
 create table if not exists public.admins (
   id bigint generated always as identity primary key,
   email text not null unique,
