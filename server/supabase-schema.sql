@@ -44,6 +44,25 @@ create table if not exists public.admins (
 
 alter table public.admins add column if not exists role text not null default 'owner';
 
+create table if not exists public.admin_roles (
+  id bigint generated always as identity primary key,
+  slug text not null unique,
+  name text not null,
+  website_access text not null default 'none',
+  inventory_access text not null default 'none',
+  locked boolean not null default false,
+  created_at timestamptz not null default now()
+);
+
+insert into public.admin_roles (slug, name, website_access, inventory_access, locked)
+values
+  ('owner', 'Owner', 'edit', 'edit', true),
+  ('website', 'Website', 'edit', 'view', false),
+  ('inventory', 'Inventory', 'none', 'edit', false)
+on conflict (slug) do nothing;
+
+grant all on public.admin_roles to service_role;
+
 create table if not exists public.sessions (
   token text primary key,
   admin_id bigint not null references public.admins(id) on delete cascade,
