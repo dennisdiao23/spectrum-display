@@ -729,6 +729,80 @@ function createSqliteStore() {
       const info = db.prepare('DELETE FROM purchase_orders WHERE id = ?').run(id);
       return info.changes > 0;
     },
+    async getCompanyProfile() {
+      const ca = require('./company-accounts');
+      return ca.formatProfile(db.prepare('SELECT * FROM company_profile WHERE id = 1').get());
+    },
+    async saveCompanyProfile(payload) {
+      const ca = require('./company-accounts');
+      const input = ca.normalizeProfile(payload);
+      const fields = ca.profileDbFields(input);
+      const stamp = dbUtil.nowIso();
+      const current = db.prepare('SELECT id FROM company_profile WHERE id = 1').get();
+      if (!current) {
+        db.prepare(`
+          INSERT INTO company_profile (
+            id, legal_name, dba, phone, email, website, street, street2, city, state, zip, country, tax_id, notes, created_at, updated_at
+          ) VALUES (1, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        `).run(
+          fields.legal_name, fields.dba, fields.phone, fields.email, fields.website,
+          fields.street, fields.street2, fields.city, fields.state, fields.zip, fields.country,
+          fields.tax_id, fields.notes, stamp, stamp
+        );
+      } else {
+        db.prepare(`
+          UPDATE company_profile SET
+            legal_name = ?, dba = ?, phone = ?, email = ?, website = ?,
+            street = ?, street2 = ?, city = ?, state = ?, zip = ?, country = ?,
+            tax_id = ?, notes = ?, updated_at = ?
+          WHERE id = 1
+        `).run(
+          fields.legal_name, fields.dba, fields.phone, fields.email, fields.website,
+          fields.street, fields.street2, fields.city, fields.state, fields.zip, fields.country,
+          fields.tax_id, fields.notes, stamp
+        );
+      }
+      return this.getCompanyProfile();
+    },
+    async listCompanyAccounts() {
+      const ca = require('./company-accounts');
+      return db.prepare('SELECT * FROM company_accounts ORDER BY name COLLATE NOCASE, id DESC').all()
+        .map(function (row) { return ca.formatAccount(row, { includePassword: false }); });
+    },
+    async getCompanyAccount(id) {
+      const ca = require('./company-accounts');
+      return ca.formatAccount(db.prepare('SELECT * FROM company_accounts WHERE id = ?').get(id));
+    },
+    async createCompanyAccount(payload) {
+      const ca = require('./company-accounts');
+      const input = ca.normalizeAccount(payload);
+      const fields = ca.accountDbFields(input);
+      const stamp = dbUtil.nowIso();
+      const keys = Object.keys(fields);
+      const values = keys.map(function (k) { return fields[k]; }).concat([stamp, stamp]);
+      const info = db.prepare(
+        'INSERT INTO company_accounts (' + keys.join(', ') + ', created_at, updated_at) VALUES (' +
+        keys.map(function () { return '?'; }).join(', ') + ', ?, ?)'
+      ).run(...values);
+      return this.getCompanyAccount(info.lastInsertRowid);
+    },
+    async updateCompanyAccount(id, payload) {
+      const ca = require('./company-accounts');
+      const current = db.prepare('SELECT id FROM company_accounts WHERE id = ?').get(id);
+      if (!current) return null;
+      const input = ca.normalizeAccount(payload);
+      const fields = ca.accountDbFields(input);
+      const keys = Object.keys(fields);
+      const values = keys.map(function (k) { return fields[k]; }).concat([dbUtil.nowIso(), id]);
+      db.prepare(
+        'UPDATE company_accounts SET ' + keys.map(function (k) { return k + ' = ?'; }).join(', ') + ', updated_at = ? WHERE id = ?'
+      ).run(...values);
+      return this.getCompanyAccount(id);
+    },
+    async deleteCompanyAccount(id) {
+      const info = db.prepare('DELETE FROM company_accounts WHERE id = ?').run(id);
+      return info.changes > 0;
+    },
     async convertSalesDoc(id, type) {
       const current = await this.getSalesDoc(id);
       if (!current) return null;

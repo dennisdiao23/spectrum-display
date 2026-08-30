@@ -470,10 +470,37 @@ body.dash-col-resizing * {
 }
 body.cc-drawer-open #cc-drawer-scrim,
 body.inv-drawer-open #inv-drawer-scrim,
-body.vn-drawer-open #vn-drawer-scrim { display: block; }
+body.vn-drawer-open #vn-drawer-scrim,
+body.ca-drawer-open #ca-drawer-scrim,
+body.ci-drawer-open #ci-drawer-scrim { display: block; }
 body.cc-drawer-open #cc-drawer,
 body.inv-drawer-open #inv-drawer,
-body.vn-drawer-open #vn-drawer { transform: none; }
+body.vn-drawer-open #vn-drawer,
+body.ca-drawer-open #ca-drawer,
+body.ci-drawer-open #ci-drawer { transform: none; }
+.ca-secret {
+  display: flex;
+  gap: 0.45rem;
+  align-items: center;
+}
+.ca-secret input { flex: 1 1 auto; }
+.ca-secret-btn {
+  flex: 0 0 auto;
+  border: 1px solid var(--dash-line);
+  background: #f7f9fc;
+  color: var(--dash-muted);
+  border-radius: 999px;
+  padding: 0.35rem 0.75rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+.ca-profile-name {
+  font-size: 1.05rem !important;
+  line-height: 1.25;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
 html.dash-scroll-lock,
 html.dash-scroll-lock body.company-app {
   overflow: hidden;
