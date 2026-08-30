@@ -251,6 +251,47 @@ body.company-app {
 .company-main table {
   background: #fff;
 }
+.dash-cols {
+  table-layout: fixed;
+  min-width: 100%;
+}
+.dash-cols th,
+.dash-cols td {
+  position: relative;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.dash-col-grip {
+  position: absolute;
+  top: 0;
+  right: -3px;
+  width: 9px;
+  height: 100%;
+  cursor: col-resize;
+  z-index: 3;
+}
+.dash-col-grip::after {
+  content: "";
+  position: absolute;
+  top: 18%;
+  bottom: 18%;
+  left: 3px;
+  width: 2px;
+  background: #d5dcea;
+  border-radius: 2px;
+}
+.dash-col-grip:hover::after,
+.dash-col-grip.is-drag::after {
+  background: #2f6bff;
+  top: 0;
+  bottom: 0;
+}
+body.dash-col-resizing,
+body.dash-col-resizing * {
+  cursor: col-resize !important;
+  user-select: none !important;
+}
 .company-main tr.border-b,
 .company-main thead.border-b,
 .company-main .border-slate-800,
