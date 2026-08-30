@@ -105,6 +105,7 @@ function openDb() {
       gallery TEXT NOT NULL DEFAULT '[]',
       details TEXT NOT NULL DEFAULT '{}',
       sort_order INTEGER DEFAULT 0,
+      hidden INTEGER NOT NULL DEFAULT 0,
       created_at TEXT NOT NULL,
       updated_at TEXT NOT NULL,
       UNIQUE (brand_id, series_id),
@@ -112,6 +113,7 @@ function openDb() {
     );
   `);
   try { db.exec("ALTER TABLE products ADD COLUMN details TEXT NOT NULL DEFAULT '{}'"); } catch (e) { /* already present */ }
+  try { db.exec('ALTER TABLE products ADD COLUMN hidden INTEGER NOT NULL DEFAULT 0'); } catch (e) { /* already present */ }
   db.exec(`
     CREATE TABLE IF NOT EXISTS inventory_stock (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -480,6 +482,11 @@ function isControlRow(row, details) {
   return type === 'control' || (row && row.brand_id === 'novastar') || !!(details && details.subtype);
 }
 
+function isProductHidden(row) {
+  if (!row) return false;
+  return row.hidden === true || row.hidden === 1 || Number(row.hidden) === 1;
+}
+
 function rowToProduct(row, brand) {
   const pitches = parseJson(row.pitches, []);
   const gallery = parseJson(row.gallery, []);
@@ -507,6 +514,7 @@ function rowToProduct(row, brand) {
     image: row.image || '',
     gallery: gallery,
     details: details,
+    hidden: isProductHidden(row),
     cats: Array.isArray(details.cats) ? details.cats : [],
     pitchLabel: pitches.length
       ? pitches[0] + (pitches.length > 1 ? '–' + pitches[pitches.length - 1] : '') + ' mm'
@@ -528,11 +536,15 @@ function getCatalog(db) {
     byBrand[b.id] = { name: b.name, tagline: b.tagline || '', series: [] };
   });
   products.forEach((row) => {
+    if (isProductHidden(row)) return;
     if (!byBrand[row.brand_id]) {
       byBrand[row.brand_id] = { name: row.brand_id, tagline: '', series: [] };
     }
     const item = rowToProduct(row, { name: byBrand[row.brand_id].name });
     byBrand[row.brand_id].series.push(item);
+  });
+  Object.keys(byBrand).forEach(function (id) {
+    if (!(byBrand[id].series && byBrand[id].series.length)) delete byBrand[id];
   });
   Object.keys(byBrand).forEach(function (id) {
     const brand = byBrand[id];
@@ -571,6 +583,7 @@ module.exports = {
   listProducts,
   getProduct,
   rowToProduct,
+  isProductHidden,
   parseDetails,
   mergeProductDetails,
   nowIso,

@@ -157,6 +157,14 @@ function createSqliteStore() {
       const info = db.prepare('DELETE FROM products WHERE id = ?').run(id);
       return info.changes > 0;
     },
+    async setProductHidden(id, hidden) {
+      const info = db.prepare('UPDATE products SET hidden = ?, updated_at = ? WHERE id = ?')
+        .run(hidden ? 1 : 0, dbUtil.nowIso(), id);
+      if (!info.changes) return null;
+      const product = dbUtil.getProduct(db, id);
+      if (product) attachMapsToListedProducts(db, [product]);
+      return product;
+    },
     async getRawProduct(id) {
       return db.prepare('SELECT * FROM products WHERE id = ?').get(id) || null;
     },
