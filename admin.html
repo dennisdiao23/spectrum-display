@@ -683,7 +683,7 @@
 
     function fillInventoryForm(item) {
       document.getElementById('inv-item-id').value = item && item.id ? item.id : '';
-      document.getElementById('inv-title').textContent = item && item.name ? item.name : 'New inventory item';
+      document.getElementById('inv-title').textContent = (item && (item.sku || item.name)) || 'New inventory item';
       document.getElementById('inv-name').value = (item && item.name) || '';
       document.getElementById('inv-sku').value = (item && item.sku) || '';
       fillInvBrands(item && item.brandId);
