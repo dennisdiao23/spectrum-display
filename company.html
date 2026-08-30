@@ -74,7 +74,7 @@
   </header>
 
   <main class="company-main">
-    <section id="login-panel" class="dash-login">
+    <section id="login-panel" class="dash-login hidden">
       <h2>Company sign in</h2>
       <p>Spectrum staff only. Website pages, inventory, and customer accounts. This is not a dealer or customer login.</p>
       <form id="login-form" class="rounded-2xl border p-6 space-y-4">
@@ -623,8 +623,28 @@
       const next = String(href || '/company').replace(/\/+$/, '') || '/company';
       const here = companyPath();
       if (next === here && !location.hash) return false;
-      location.replace(next);
-      return true;
+      history.replaceState({ tab: tabFromPath() }, '', next);
+      return false;
+    }
+    function tabFromHref(href) {
+      try {
+        const p = new URL(href, location.origin).pathname.replace(/\/+$/, '') || '/company';
+        if (p === '/company/inventory') return 'inventory';
+        if (p === '/company/settings/roles') return 'roles';
+        if (p === '/company/settings') return 'staff';
+        if (p === '/company/website/accounts') return 'accounts';
+        if (p === '/company/website') return 'products';
+      } catch (err) {}
+      return '';
+    }
+    function openCompanyTab(name, push) {
+      if (!name || !currentAdminUser || !canUse(name)) return;
+      const dest = pathForTab(name);
+      if (push && (companyPath() !== dest || location.hash)) {
+        history.pushState({ tab: name }, '', dest);
+      }
+      showAdminTab(name);
+      openRoutedSection(name);
     }
     (function sendOldCompanyUrlToCleanPath() {
       const p = companyPath();
@@ -1314,6 +1334,23 @@
       showAdminTab(name);
       openRoutedSection(name);
     });
+    window.addEventListener('popstate', function () {
+      if (!currentAdminUser) return;
+      const name = tabFromPath() || firstAllowedTab();
+      if (!name || !canUse(name)) return;
+      showAdminTab(name);
+      openRoutedSection(name);
+    });
+    document.getElementById('dash-sidebar').addEventListener('click', function (e) {
+      if (!currentAdminUser || e.defaultPrevented) return;
+      if (e.metaKey || e.ctrlKey || e.shiftKey || e.altKey || e.button !== 0) return;
+      const a = e.target.closest('a[href]');
+      if (!a) return;
+      const name = tabFromHref(a.getAttribute('href'));
+      if (!name) return;
+      e.preventDefault();
+      openCompanyTab(name, true);
+    });
     async function openRoutedSection(name) {
       if (name === 'products') closeProductForm();
       if (name === 'accounts') {
@@ -1856,7 +1893,10 @@
           return openRoutedSection(tabFromPath());
         });
       }
-    }).catch(function () {});
+      loginPanel.classList.remove('hidden');
+    }).catch(function () {
+      loginPanel.classList.remove('hidden');
+    });
   </script>
 </body>
 </html>
