@@ -918,8 +918,9 @@ async function main() {
     res.status(400).json({ ok: false, error: err.message || 'Upload failed.' });
   });
 
-  app.listen(PORT, '0.0.0.0', function () {
+  app.listen(PORT, function () {
     console.log('Spectrum Display running on port ' + PORT);
+    console.log('Open http://127.0.0.1:' + PORT + '/company');
     console.log('Company: /company  /company/website  /company/inventory');
   });
 }
