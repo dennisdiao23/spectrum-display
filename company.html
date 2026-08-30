@@ -407,13 +407,13 @@
 
       <div id="vendors-section" class="hidden space-y-6">
         <div id="vendors-list-wrap">
-          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4">
-            <p class="text-slate-400 text-sm"><span id="vn-total">0</span> vendors for purchase orders.</p>
-            <div class="flex flex-wrap items-center gap-2">
-              <input id="vn-search" type="search" placeholder="Search vendor, company, email, phone" class="w-full sm:w-64 bg-slate-800 border border-slate-700 rounded-full px-3 py-1.5 text-sm">
-              <button id="vn-new-btn" type="button" class="px-4 py-2 rounded-full bg-sky-500 hover:bg-sky-400 text-white text-sm font-semibold">Add vendor</button>
-            </div>
+          <div class="flex items-center justify-end mb-4">
+            <button id="vn-new-btn" type="button" class="px-4 py-2 rounded-full bg-sky-500 hover:bg-sky-400 text-white text-sm font-semibold">Add vendor</button>
           </div>
+          <div class="flex flex-wrap items-center gap-2 mb-4">
+            <input id="vn-search" type="search" placeholder="Search vendor, company, email, phone" class="w-full sm:w-96 bg-slate-800 border border-slate-700 rounded-full px-3 py-1.5 text-sm">
+          </div>
+          <p class="text-slate-400 text-sm mb-4"><span id="vn-total">0</span> vendors for purchase orders.</p>
           <p id="vn-error" class="hidden text-sm text-red-400 mb-3"></p>
           <div class="overflow-x-auto rounded-2xl border border-slate-800">
             <table class="w-full text-sm">
@@ -434,13 +434,13 @@
 
       <div id="po-section" class="hidden space-y-6">
         <div id="po-list-wrap">
-          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4">
-            <p class="text-slate-400 text-sm"><span id="po-total">0</span> purchase orders.</p>
-            <div class="flex flex-wrap items-center gap-2">
-              <input id="po-search" type="search" placeholder="Search number, vendor" class="w-full sm:w-64 bg-slate-800 border border-slate-700 rounded-full px-3 py-1.5 text-sm">
-              <button id="po-new-btn" type="button" class="px-4 py-2 rounded-full bg-sky-500 hover:bg-sky-400 text-white text-sm font-semibold">Create purchase order</button>
-            </div>
+          <div class="flex items-center justify-end mb-4">
+            <button id="po-new-btn" type="button" class="px-4 py-2 rounded-full bg-sky-500 hover:bg-sky-400 text-white text-sm font-semibold">Create purchase order</button>
           </div>
+          <div class="flex flex-wrap items-center gap-2 mb-4">
+            <input id="po-search" type="search" placeholder="Search number, vendor" class="w-full sm:w-96 bg-slate-800 border border-slate-700 rounded-full px-3 py-1.5 text-sm">
+          </div>
+          <p class="text-slate-400 text-sm mb-4"><span id="po-total">0</span> purchase orders.</p>
           <p id="po-error" class="hidden text-sm text-red-400 mb-3"></p>
           <div class="overflow-x-auto rounded-2xl border border-slate-800">
             <table class="w-full text-sm">
@@ -560,13 +560,13 @@
 
       <div id="customers-section" class="hidden space-y-6">
         <div id="customers-list-wrap">
-          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4">
-            <p class="text-slate-400 text-sm"><span id="cc-total">0</span> customers for quotes and invoices. This is not the website Sign in list — those stay under Website → Accounts.</p>
-            <div class="flex flex-wrap items-center gap-2">
-              <input id="cc-search" type="search" placeholder="Search company, contact, email, phone" class="w-full sm:w-64 bg-slate-800 border border-slate-700 rounded-full px-3 py-1.5 text-sm">
-              <button id="cc-new-btn" type="button" class="px-4 py-2 rounded-full bg-sky-500 hover:bg-sky-400 text-white text-sm font-semibold">Add customer</button>
-            </div>
+          <div class="flex items-center justify-end mb-4">
+            <button id="cc-new-btn" type="button" class="px-4 py-2 rounded-full bg-sky-500 hover:bg-sky-400 text-white text-sm font-semibold">Add customer</button>
           </div>
+          <div class="flex flex-wrap items-center gap-2 mb-4">
+            <input id="cc-search" type="search" placeholder="Search company, contact, email, phone" class="w-full sm:w-96 bg-slate-800 border border-slate-700 rounded-full px-3 py-1.5 text-sm">
+          </div>
+          <p class="text-slate-400 text-sm mb-4"><span id="cc-total">0</span> customers for quotes and invoices. This is not the website Sign in list — those stay under Website → Accounts.</p>
           <p id="cc-error" class="hidden text-sm text-red-400 mb-3"></p>
           <div class="overflow-x-auto rounded-2xl border border-slate-800">
             <table class="w-full text-sm dash-cols" data-cols="customers">
@@ -589,13 +589,13 @@
 
       <div id="sales-section" class="hidden space-y-6">
         <div id="sales-list-wrap">
-          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4">
-            <p class="text-slate-400 text-sm"><span id="so-total">0</span> <span id="so-list-label">sales documents</span>. Pick a company customer, add line items, then save. Website Sign in accounts stay under Website → Accounts.</p>
-            <div class="flex flex-wrap items-center gap-2">
-              <input id="so-search" type="search" placeholder="Search number, customer, PO" class="w-full sm:w-64 bg-slate-800 border border-slate-700 rounded-full px-3 py-1.5 text-sm">
-              <button id="so-new-btn" type="button" class="px-4 py-2 rounded-full bg-sky-500 hover:bg-sky-400 text-white text-sm font-semibold">New sales quote</button>
-            </div>
+          <div class="flex items-center justify-end mb-4">
+            <button id="so-new-btn" type="button" class="px-4 py-2 rounded-full bg-sky-500 hover:bg-sky-400 text-white text-sm font-semibold">New sales quote</button>
           </div>
+          <div class="flex flex-wrap items-center gap-2 mb-4">
+            <input id="so-search" type="search" placeholder="Search number, customer, PO" class="w-full sm:w-96 bg-slate-800 border border-slate-700 rounded-full px-3 py-1.5 text-sm">
+          </div>
+          <p class="text-slate-400 text-sm mb-4"><span id="so-total">0</span> <span id="so-list-label">sales documents</span>. Pick a company customer, add line items, then save. Website Sign in accounts stay under Website → Accounts.</p>
           <p id="so-error" class="hidden text-sm text-red-400 mb-3"></p>
           <div class="overflow-x-auto rounded-2xl border border-slate-800">
             <table class="w-full text-sm dash-cols" data-cols="sales">
