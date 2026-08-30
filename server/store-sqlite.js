@@ -2,6 +2,7 @@ const fs = require('fs');
 const path = require('path');
 const crypto = require('crypto');
 const dbUtil = require('./db');
+const img = require('./image');
 
 const ROOT = path.join(__dirname, '..');
 const UPLOAD_DIR = path.join(ROOT, 'uploads', 'products');
@@ -356,10 +357,9 @@ function createSqliteStore() {
       return updated;
     },
     async saveUpload(file) {
-      const ext = path.extname(file.originalname || '').toLowerCase();
-      const safeExt = ['.jpg', '.jpeg', '.png', '.webp', '.gif'].includes(ext) ? ext : '.jpg';
-      const name = Date.now().toString(36) + '-' + crypto.randomBytes(4).toString('hex') + safeExt;
-      fs.writeFileSync(path.join(UPLOAD_DIR, name), file.buffer);
+      const prepared = await img.prepareUpload(file);
+      const name = Date.now().toString(36) + '-' + crypto.randomBytes(4).toString('hex') + prepared.ext;
+      fs.writeFileSync(path.join(UPLOAD_DIR, name), prepared.buffer);
       return '/uploads/products/' + name;
     }
   };

@@ -9,6 +9,7 @@ const multer = require('multer');
 const { getStore, hasSupabase } = require('./store');
 const siteAuth = require('./site-auth');
 const { sendContactEmail, sendDealerInquiryEmail, mailConfigured } = require('./mail');
+const img = require('./image');
 
 const ROOT = path.join(__dirname, '..');
 const COOKIE = 'spectrum_admin';
@@ -473,6 +474,20 @@ async function main() {
       supabaseAnonKey: process.env.SUPABASE_ANON_KEY || '',
       googleMapsApiKey: process.env.GOOGLE_MAPS_API_KEY || ''
     });
+  });
+
+  app.get('/api/img', async function (req, res) {
+    const src = String(req.query.u || '').trim();
+    const width = Number(req.query.w) || 1000;
+    if (!src) return res.status(400).type('text/plain').send('Missing image.');
+    try {
+      const body = await img.displayBuffer(src, width);
+      res.set('Cache-Control', 'public, max-age=604800, stale-while-revalidate=86400');
+      res.set('Content-Type', body.type || 'image/webp');
+      res.send(body.buffer);
+    } catch (err) {
+      res.status(404).type('text/plain').send('Image not found.');
+    }
   });
 
   app.get('/api/catalog', async function (_req, res, next) {

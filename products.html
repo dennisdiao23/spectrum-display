@@ -461,8 +461,9 @@
         const imgClass = control
           ? 'absolute inset-0 w-full h-full object-contain bg-slate-950 p-4 group-hover:scale-105 transition duration-300'
           : 'absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition duration-300';
+        const photoSrc = (window.spectrumDisplayImage ? spectrumDisplayImage(p.image, 'card') : p.image);
         const photo = p.image
-          ? '<img src="' + escAttr(p.image) + '" alt="' + escAttr(p.name) + '" class="' + imgClass + '" onerror="this.style.display=\'none\'">'
+          ? '<img src="' + escAttr(photoSrc) + '" alt="' + escAttr(p.name) + '" class="' + imgClass + '" loading="lazy" onerror="this.style.display=\'none\'">'
           : '';
         const href = 'product.html?brand=' + encodeURIComponent(p.brandId) + '&series=' + encodeURIComponent(p.id);
         const meta = control

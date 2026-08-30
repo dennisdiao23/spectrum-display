@@ -187,13 +187,28 @@
     return (brand.series || []).find(function (s) { return s.id === seriesId; }) || null;
   };
 
+  global.spectrumDisplayImage = function (src, kind) {
+    if (!src) return '';
+    var w = 1000;
+    if (kind === 'thumb') w = 160;
+    else if (kind === 'card') w = 640;
+    if (/^https:\/\/[^/]+\.supabase\.co\/storage\/v1\/object\/public\/product-images\//i.test(src)) {
+      return '/api/img?w=' + w + '&u=' + encodeURIComponent(src);
+    }
+    return src;
+  };
+
   global.spectrumCatalogReady = fetch('/api/catalog', { headers: { Accept: 'application/json' } })
     .then(function (res) { return res.ok ? res.json() : null; })
     .then(function (data) {
       applyCatalog(data && data.ok ? data.products : {});
-      return authReadyPromise().then(function () { return loadCatalogStock(); }).then(function () {
-        return global.SPECTRUM_PRODUCTS;
+      authReadyPromise().then(function () { return loadCatalogStock(); }).then(function () {
+        if (global.SPECTRUM_PRODUCTS) {
+          global.SPECTRUM_PRODUCT_LIST = rebuildList(global.SPECTRUM_PRODUCTS);
+        }
+        global.dispatchEvent(new CustomEvent('spectrum:catalog'));
       });
+      return global.SPECTRUM_PRODUCTS;
     })
     .catch(function () {
       applyCatalog({});
