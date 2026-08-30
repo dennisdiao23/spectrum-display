@@ -63,6 +63,7 @@ function publicAdmin(row) {
     name: row.name,
     role: role,
     roleName: row.role_name || row.roleName || (role === 'owner' ? 'Owner' : role),
+    created_at: row.created_at || row.createdAt || '',
     perms: perms
   };
 }

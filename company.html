@@ -200,12 +200,24 @@
               <div class="dash-home-panel-head">
                 <div>
                   <h3>Recent Activities</h3>
-                  <p>Website users who signed in on the public site.</p>
+                  <p>Website Sign in accounts, then company staff.</p>
                 </div>
-                <a href="/company/website/accounts">View users →</a>
               </div>
-              <p id="dash-activity-note" class="dash-home-note hidden"></p>
-              <ol class="dash-activity" id="dash-activity"></ol>
+              <div class="dash-activity-block">
+                <div class="dash-activity-label">
+                  <h4>Website users</h4>
+                  <a href="/company/website/accounts" data-home="website">View users →</a>
+                </div>
+                <p id="dash-activity-note" class="dash-home-note hidden"></p>
+                <ol class="dash-activity" id="dash-activity"></ol>
+              </div>
+              <div class="dash-activity-block">
+                <div class="dash-activity-label">
+                  <h4>Company users</h4>
+                  <a href="/company/settings">View users →</a>
+                </div>
+                <ol class="dash-activity" id="dash-company-activity"></ol>
+              </div>
             </section>
           </div>
         </div>
@@ -1620,6 +1632,7 @@
     let dashProducts = [];
     let dashAccounts = [];
     let dashAccountSource = '';
+    let dashStaff = [];
     let dashCustomers = [];
     let dashSales = [];
     let dashVendors = [];
@@ -1790,38 +1803,56 @@
     function renderDashActivity() {
       const note = document.getElementById('dash-activity-note');
       const list = document.getElementById('dash-activity');
-      if (!list) return;
-      if (!canUse('website')) {
-        note.classList.add('hidden');
-        list.innerHTML = '<p class="dash-activity-empty">Website access is needed to see user activity.</p>';
-        return;
+      const companyList = document.getElementById('dash-company-activity');
+      if (list) {
+        if (!canUse('website')) {
+          if (note) note.classList.add('hidden');
+          list.innerHTML = '<p class="dash-activity-empty">Website access is needed to see website user activity.</p>';
+        } else {
+          if (dashAccountSource === 'sqlite') {
+            note.textContent = 'Website user activity lives on the live site database. Add SUPABASE_URL to list website Sign in accounts here.';
+            note.classList.remove('hidden');
+          } else if (note) {
+            note.classList.add('hidden');
+          }
+          const rows = dashAccounts.slice().sort(function (a, b) {
+            return String(b.updated_at || b.created_at || '').localeCompare(String(a.updated_at || a.created_at || ''));
+          }).slice(0, 8);
+          list.innerHTML = rows.length
+            ? rows.map(function (a) {
+              const who = a.name || a.email || 'A user';
+              const updated = a.updated_at && a.created_at && a.updated_at !== a.created_at;
+              const action = updated
+                ? 'updated their ' + roleLabel(a.role) + ' account'
+                : 'joined as ' + roleLabel(a.role);
+              const when = dashWhen(a.updated_at || a.created_at);
+              return '<li class="dash-activity-item">' +
+                '<span class="dash-activity-avatar">' + esc(dashInitials(a.name, a.email)) + '</span>' +
+                '<div class="dash-activity-copy"><p><strong>' + esc(who) + '</strong> ' + esc(action) + '</p>' +
+                (a.company ? '<span>' + esc(a.company) + '</span>' : '') + '</div>' +
+                '<span class="dash-activity-when">' + esc(when) + '</span></li>';
+            }).join('')
+            : '<p class="dash-activity-empty">No website users yet.</p>';
+        }
       }
-      if (dashAccountSource === 'sqlite') {
-        note.textContent = 'User activity lives on the live site database. Add SUPABASE_URL to list website Sign in accounts here.';
-        note.classList.remove('hidden');
-      } else {
-        note.classList.add('hidden');
+      if (companyList) {
+        const rows = dashStaff.slice().sort(function (a, b) {
+          return String(b.created_at || '').localeCompare(String(a.created_at || ''));
+        }).slice(0, 8);
+        companyList.innerHTML = rows.length
+          ? rows.map(function (p) {
+            const who = p.name || p.email || 'Staff';
+            const role = p.roleName || staffRoleLabel(p.role);
+            const mine = currentAdminUser && String(p.id) === String(currentAdminUser.id);
+            const action = mine ? 'signed in as ' + role : 'joined as ' + role;
+            return '<li class="dash-activity-item">' +
+              '<span class="dash-activity-avatar dash-activity-avatar-company">' + esc(dashInitials(p.name, p.email)) + '</span>' +
+              '<div class="dash-activity-copy"><p><strong>' + esc(who) + '</strong> ' + esc(action) + '</p>' +
+              (p.email ? '<span>' + esc(p.email) + '</span>' : '') + '</div>' +
+              '<span class="dash-activity-when">' + esc(dashWhen(p.created_at) || (mine ? 'Now' : '')) + '</span></li>';
+          }).join('')
+          : '<p class="dash-activity-empty">No company users yet.</p>';
       }
-      const rows = dashAccounts.slice().sort(function (a, b) {
-        return String(b.updated_at || b.created_at || '').localeCompare(String(a.updated_at || a.created_at || ''));
-      }).slice(0, 8);
-      if (!rows.length) {
-        list.innerHTML = '<p class="dash-activity-empty">No website users yet.</p>';
-        return;
-      }
-      list.innerHTML = rows.map(function (a) {
-        const who = a.name || a.email || 'A user';
-        const updated = a.updated_at && a.created_at && a.updated_at !== a.created_at;
-        const action = updated
-          ? 'updated their ' + roleLabel(a.role) + ' account'
-          : 'joined as ' + roleLabel(a.role);
-        const when = dashWhen(a.updated_at || a.created_at);
-        return '<li class="dash-activity-item">' +
-          '<span class="dash-activity-avatar">' + esc(dashInitials(a.name, a.email)) + '</span>' +
-          '<div class="dash-activity-copy"><p><strong>' + esc(who) + '</strong> ' + esc(action) + '</p>' +
-          (a.company ? '<span>' + esc(a.company) + '</span>' : '') + '</div>' +
-          '<span class="dash-activity-when">' + esc(when) + '</span></li>';
-      }).join('');
     }
 
     async function loadDashboardHome() {
@@ -1860,10 +1891,15 @@
           dashSales = data.docs || [];
         }).catch(function () { dashSales = []; }));
       }
+      tasks.push(api('/api/admin/company-users').then(function (data) {
+        dashStaff = data.users || data.staff || [];
+      }).catch(function () { dashStaff = []; }));
       await Promise.all(tasks);
       if (!canUse(dashOverview)) dashOverview = firstDashOverview();
-      const actLink = document.querySelector('#dash-home .dash-home-activity .dash-home-panel-head a');
-      if (actLink) actLink.classList.toggle('hidden', !canUse('website'));
+      const webLink = document.querySelector('#dash-home .dash-activity-label a[href="/company/website/accounts"]');
+      if (webLink) webLink.classList.toggle('hidden', !canUse('website'));
+      const staffLink = document.querySelector('#dash-home .dash-activity-label a[href="/company/settings"]');
+      if (staffLink) staffLink.classList.toggle('hidden', !canUse('settings'));
       renderDashKpis();
       selectDashOverview(dashOverview);
       renderDashActivity();

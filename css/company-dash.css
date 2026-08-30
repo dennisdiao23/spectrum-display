@@ -1037,6 +1037,38 @@ html.dash-scroll-lock body.company-app {
   border-radius: 0.7rem;
   padding: 0.55rem 0.7rem;
 }
+.dash-activity-block + .dash-activity-block {
+  margin-top: 1.15rem;
+  padding-top: 1.05rem;
+  border-top: 1px solid var(--dash-line);
+}
+.dash-activity-label {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0.75rem;
+  margin-bottom: 0.65rem;
+}
+.dash-activity-label h4 {
+  margin: 0;
+  font-size: 0.78rem;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: #243056;
+}
+.dash-activity-label a {
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: #2f6bff;
+  text-decoration: none;
+}
+.dash-activity-label a:hover { text-decoration: underline; }
+.dash-activity-label a.hidden { display: none; }
+.dash-activity-avatar-company {
+  color: #1f9d57;
+  background: #e7f8ef;
+}
 .dash-activity {
   list-style: none;
   margin: 0;

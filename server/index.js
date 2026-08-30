@@ -978,6 +978,12 @@ async function main() {
     };
   }
 
+  app.get('/api/admin/company-users', requireAdmin, async function (_req, res, next) {
+    try {
+      res.json({ ok: true, users: await store.listAdmins() });
+    } catch (err) { next(err); }
+  });
+
   app.get('/api/admin/staff', requireAdmin, requirePerm('settings', 'edit'), async function (_req, res, next) {
     try {
       res.json({ ok: true, staff: await store.listAdmins() });
