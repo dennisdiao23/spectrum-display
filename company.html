@@ -528,119 +528,6 @@
             </table>
           </div>
         </div>
-        <div id="cc-detail" class="hidden space-y-6">
-          <button type="button" id="cc-back" class="text-sm text-sky-400 hover:text-sky-300">← All customers</button>
-          <form id="cc-form" class="rounded-2xl border border-slate-800 bg-slate-900/50 p-5 grid sm:grid-cols-2 gap-4">
-            <input type="hidden" id="cc-id">
-            <div class="sm:col-span-2">
-              <h2 id="cc-title" class="font-semibold text-lg">New customer</h2>
-              <p class="text-sm text-slate-400 mt-1">Used later for quotes and invoices. Not a website login.</p>
-            </div>
-            <div>
-              <label class="block text-xs text-slate-400 mb-1">Company name</label>
-              <input id="cc-company" type="text" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm" placeholder="Spectrum AV Inc.">
-            </div>
-            <div>
-              <label class="block text-xs text-slate-400 mb-1">Tax / resale #</label>
-              <input id="cc-tax" type="text" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm">
-            </div>
-            <div>
-              <label class="block text-xs text-slate-400 mb-1">First name</label>
-              <input id="cc-first" type="text" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm">
-            </div>
-            <div>
-              <label class="block text-xs text-slate-400 mb-1">Last name</label>
-              <input id="cc-last" type="text" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm">
-            </div>
-            <div>
-              <label class="block text-xs text-slate-400 mb-1">Email</label>
-              <input id="cc-email" type="email" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm">
-            </div>
-            <div>
-              <label class="block text-xs text-slate-400 mb-1">Phone</label>
-              <input id="cc-phone" type="text" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm">
-            </div>
-            <div>
-              <label class="block text-xs text-slate-400 mb-1">Mobile</label>
-              <input id="cc-mobile" type="text" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm">
-            </div>
-            <div>
-              <label class="block text-xs text-slate-400 mb-1">Website</label>
-              <input id="cc-website" type="text" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm" placeholder="https://">
-            </div>
-            <div class="sm:col-span-2">
-              <label class="block text-xs text-slate-400 mb-1">Payment terms</label>
-              <select id="cc-terms" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm">
-                <option value="Due on receipt">Due on receipt</option>
-                <option value="Net 15">Net 15</option>
-                <option value="Net 30" selected>Net 30</option>
-                <option value="Net 45">Net 45</option>
-                <option value="Net 60">Net 60</option>
-              </select>
-            </div>
-            <div class="sm:col-span-2 pt-2">
-              <h3 class="font-semibold text-sm">Billing address</h3>
-            </div>
-            <div class="sm:col-span-2">
-              <label class="block text-xs text-slate-400 mb-1">Street</label>
-              <input id="cc-bill-street" type="text" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm">
-            </div>
-            <div>
-              <label class="block text-xs text-slate-400 mb-1">City</label>
-              <input id="cc-bill-city" type="text" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm">
-            </div>
-            <div>
-              <label class="block text-xs text-slate-400 mb-1">State</label>
-              <input id="cc-bill-state" type="text" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm">
-            </div>
-            <div>
-              <label class="block text-xs text-slate-400 mb-1">ZIP</label>
-              <input id="cc-bill-zip" type="text" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm">
-            </div>
-            <div>
-              <label class="block text-xs text-slate-400 mb-1">Country</label>
-              <input id="cc-bill-country" type="text" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm" value="United States">
-            </div>
-            <div class="sm:col-span-2 pt-2 flex items-center justify-between gap-3">
-              <h3 class="font-semibold text-sm">Shipping address</h3>
-              <label class="text-sm text-slate-400 flex items-center gap-2">
-                <input id="cc-ship-same" type="checkbox" checked class="rounded border-slate-600">
-                Same as billing
-              </label>
-            </div>
-            <div id="cc-ship-fields" class="sm:col-span-2 hidden grid sm:grid-cols-2 gap-4">
-              <div class="sm:col-span-2">
-                <label class="block text-xs text-slate-400 mb-1">Street</label>
-                <input id="cc-ship-street" type="text" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm">
-              </div>
-              <div>
-                <label class="block text-xs text-slate-400 mb-1">City</label>
-                <input id="cc-ship-city" type="text" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm">
-              </div>
-              <div>
-                <label class="block text-xs text-slate-400 mb-1">State</label>
-                <input id="cc-ship-state" type="text" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm">
-              </div>
-              <div>
-                <label class="block text-xs text-slate-400 mb-1">ZIP</label>
-                <input id="cc-ship-zip" type="text" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm">
-              </div>
-              <div>
-                <label class="block text-xs text-slate-400 mb-1">Country</label>
-                <input id="cc-ship-country" type="text" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm">
-              </div>
-            </div>
-            <div class="sm:col-span-2">
-              <label class="block text-xs text-slate-400 mb-1">Notes</label>
-              <textarea id="cc-notes" rows="3" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm" placeholder="Job site, preferred contact, quote history…"></textarea>
-            </div>
-            <p id="cc-msg" class="sm:col-span-2 hidden text-sm"></p>
-            <div class="sm:col-span-2 flex flex-wrap items-center gap-2">
-              <button type="submit" id="cc-save" class="px-5 py-2 rounded-full bg-sky-500 hover:bg-sky-400 text-white text-sm font-semibold">Save customer</button>
-              <button id="cc-delete-btn" type="button" class="hidden px-5 py-2 rounded-full border border-slate-700 text-red-400 hover:border-red-500 text-sm">Delete</button>
-            </div>
-          </form>
-        </div>
       </div>
 
       <div id="sales-section" class="hidden space-y-6">
@@ -687,37 +574,6 @@
             <div>
               <label class="block text-xs text-slate-400 mb-1" id="so-number-label">Quote no.</label>
               <input id="so-number" type="text" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm" placeholder="SQ-1001">
-            </div>
-            <div id="so-new-customer" class="hidden sm:col-span-2 rounded-xl border border-sky-500/30 bg-slate-950/60 p-4 grid sm:grid-cols-2 gap-3">
-              <div class="sm:col-span-2">
-                <h3 class="font-semibold text-sm">Add customer</h3>
-                <p class="text-xs text-slate-400 mt-0.5">Saved to Company → Customer. Not a website Sign in account.</p>
-              </div>
-              <div>
-                <label class="block text-xs text-slate-400 mb-1">Company name</label>
-                <input id="so-nc-company" type="text" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm">
-              </div>
-              <div>
-                <label class="block text-xs text-slate-400 mb-1">Email</label>
-                <input id="so-nc-email" type="email" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm">
-              </div>
-              <div>
-                <label class="block text-xs text-slate-400 mb-1">First name</label>
-                <input id="so-nc-first" type="text" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm">
-              </div>
-              <div>
-                <label class="block text-xs text-slate-400 mb-1">Last name</label>
-                <input id="so-nc-last" type="text" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm">
-              </div>
-              <div>
-                <label class="block text-xs text-slate-400 mb-1">Phone</label>
-                <input id="so-nc-phone" type="text" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm">
-              </div>
-              <div class="flex flex-wrap items-end gap-2">
-                <button type="button" id="so-nc-save" class="px-4 py-2 rounded-full bg-sky-500 hover:bg-sky-400 text-white text-sm font-semibold">Save customer</button>
-                <button type="button" id="so-nc-cancel" class="px-4 py-2 rounded-full border border-slate-700 text-sm">Cancel</button>
-              </div>
-              <p id="so-nc-msg" class="hidden sm:col-span-2 text-sm text-red-400"></p>
             </div>
             <div>
               <label class="block text-xs text-slate-400 mb-1">Customer name</label>
@@ -896,6 +752,122 @@
     </section>
   </main>
   </div>
+  <div id="cc-drawer-scrim" class="cc-drawer-scrim"></div>
+  <aside id="cc-drawer" class="cc-drawer" aria-hidden="true">
+    <div class="cc-drawer-head">
+      <div>
+        <h2 id="cc-title">New customer</h2>
+        <p class="text-xs text-slate-400 mt-0.5">Company record for quotes and invoices. Not a website login.</p>
+      </div>
+      <button type="button" id="cc-drawer-close" class="cc-drawer-close" aria-label="Close">×</button>
+    </div>
+    <form id="cc-form" class="cc-drawer-body grid sm:grid-cols-2 gap-4">
+      <input type="hidden" id="cc-id">
+      <div>
+        <label class="block text-xs text-slate-400 mb-1">Company name</label>
+        <input id="cc-company" type="text" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm" placeholder="Spectrum AV Inc.">
+      </div>
+      <div>
+        <label class="block text-xs text-slate-400 mb-1">Tax / resale #</label>
+        <input id="cc-tax" type="text" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm">
+      </div>
+      <div>
+        <label class="block text-xs text-slate-400 mb-1">First name</label>
+        <input id="cc-first" type="text" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm">
+      </div>
+      <div>
+        <label class="block text-xs text-slate-400 mb-1">Last name</label>
+        <input id="cc-last" type="text" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm">
+      </div>
+      <div>
+        <label class="block text-xs text-slate-400 mb-1">Email</label>
+        <input id="cc-email" type="email" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm">
+      </div>
+      <div>
+        <label class="block text-xs text-slate-400 mb-1">Phone</label>
+        <input id="cc-phone" type="text" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm">
+      </div>
+      <div>
+        <label class="block text-xs text-slate-400 mb-1">Mobile</label>
+        <input id="cc-mobile" type="text" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm">
+      </div>
+      <div>
+        <label class="block text-xs text-slate-400 mb-1">Website</label>
+        <input id="cc-website" type="text" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm" placeholder="https://">
+      </div>
+      <div class="sm:col-span-2">
+        <label class="block text-xs text-slate-400 mb-1">Payment terms</label>
+        <select id="cc-terms" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm">
+          <option value="Due on receipt">Due on receipt</option>
+          <option value="Net 15">Net 15</option>
+          <option value="Net 30" selected>Net 30</option>
+          <option value="Net 45">Net 45</option>
+          <option value="Net 60">Net 60</option>
+        </select>
+      </div>
+      <div class="sm:col-span-2 pt-1">
+        <h3 class="font-semibold text-sm">Billing address</h3>
+      </div>
+      <div class="sm:col-span-2">
+        <label class="block text-xs text-slate-400 mb-1">Street</label>
+        <input id="cc-bill-street" type="text" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm">
+      </div>
+      <div>
+        <label class="block text-xs text-slate-400 mb-1">City</label>
+        <input id="cc-bill-city" type="text" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm">
+      </div>
+      <div>
+        <label class="block text-xs text-slate-400 mb-1">State</label>
+        <input id="cc-bill-state" type="text" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm">
+      </div>
+      <div>
+        <label class="block text-xs text-slate-400 mb-1">ZIP</label>
+        <input id="cc-bill-zip" type="text" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm">
+      </div>
+      <div>
+        <label class="block text-xs text-slate-400 mb-1">Country</label>
+        <input id="cc-bill-country" type="text" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm" value="United States">
+      </div>
+      <div class="sm:col-span-2 pt-1 flex items-center justify-between gap-3">
+        <h3 class="font-semibold text-sm">Shipping address</h3>
+        <label class="text-sm text-slate-400 flex items-center gap-2">
+          <input id="cc-ship-same" type="checkbox" checked class="rounded border-slate-600">
+          Same as billing
+        </label>
+      </div>
+      <div id="cc-ship-fields" class="sm:col-span-2 hidden grid sm:grid-cols-2 gap-4">
+        <div class="sm:col-span-2">
+          <label class="block text-xs text-slate-400 mb-1">Street</label>
+          <input id="cc-ship-street" type="text" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm">
+        </div>
+        <div>
+          <label class="block text-xs text-slate-400 mb-1">City</label>
+          <input id="cc-ship-city" type="text" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm">
+        </div>
+        <div>
+          <label class="block text-xs text-slate-400 mb-1">State</label>
+          <input id="cc-ship-state" type="text" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm">
+        </div>
+        <div>
+          <label class="block text-xs text-slate-400 mb-1">ZIP</label>
+          <input id="cc-ship-zip" type="text" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm">
+        </div>
+        <div>
+          <label class="block text-xs text-slate-400 mb-1">Country</label>
+          <input id="cc-ship-country" type="text" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm">
+        </div>
+      </div>
+      <div class="sm:col-span-2">
+        <label class="block text-xs text-slate-400 mb-1">Notes</label>
+        <textarea id="cc-notes" rows="3" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm" placeholder="Job site, preferred contact, quote history…"></textarea>
+      </div>
+      <p id="cc-msg" class="sm:col-span-2 hidden text-sm"></p>
+    </form>
+    <div class="cc-drawer-foot">
+      <button id="cc-delete-btn" type="button" class="hidden px-5 py-2 rounded-full border border-slate-700 text-red-400 hover:border-red-500 text-sm">Delete</button>
+      <button type="submit" form="cc-form" id="cc-save" class="px-5 py-2 rounded-full bg-sky-500 hover:bg-sky-400 text-white text-sm font-semibold">Save customer</button>
+    </div>
+  </aside>
   <link rel="stylesheet" href="/css/company-dash.css" />
 
   <script>
@@ -1232,6 +1204,7 @@
     }
 
     function showAdminTab(name) {
+      if (typeof closeCustomerDrawer === 'function') closeCustomerDrawer();
       const onWebsite = name === 'products' || name === 'accounts';
       const onSettings = name === 'staff' || name === 'roles';
       const onSales = name === 'quotes' || name === 'orders' || name === 'invoices' || name === 'sales';
@@ -1812,9 +1785,41 @@
       }).join('');
     }
 
+    let ccDrawerSource = 'list';
+
     function showCcList() {
       document.getElementById('customers-list-wrap').classList.remove('hidden');
-      document.getElementById('cc-detail').classList.add('hidden');
+    }
+
+    function closeCustomerDrawer() {
+      document.body.classList.remove('cc-drawer-open');
+      document.getElementById('cc-drawer').setAttribute('aria-hidden', 'true');
+      if (ccDrawerSource === 'sales') {
+        const sel = document.getElementById('so-customer');
+        if (sel && sel.value === '__new__') sel.value = '';
+      }
+    }
+
+    function openCustomerDrawer(customer, source) {
+      ccDrawerSource = source || 'list';
+      showCcMsg('');
+      if (customer && customer.id) {
+        document.getElementById('cc-title').textContent = customer.displayName || customer.companyName || 'Customer';
+        document.getElementById('cc-delete-btn').classList.remove('hidden');
+        fillCcForm(customer);
+      } else {
+        document.getElementById('cc-title').textContent = 'New customer';
+        document.getElementById('cc-delete-btn').classList.add('hidden');
+        fillCcForm({
+          paymentTerms: 'Net 30',
+          billCountry: 'United States',
+          shipCountry: 'United States',
+          shipSame: true
+        });
+      }
+      document.getElementById('cc-drawer').setAttribute('aria-hidden', 'false');
+      document.body.classList.add('cc-drawer-open');
+      document.getElementById('cc-company').focus();
     }
 
     async function loadCompanyCustomers() {
@@ -1830,31 +1835,14 @@
     }
 
     function openNewCustomer() {
-      document.getElementById('cc-title').textContent = 'New customer';
-      document.getElementById('cc-delete-btn').classList.add('hidden');
-      showCcMsg('');
-      fillCcForm({
-        paymentTerms: 'Net 30',
-        billCountry: 'United States',
-        shipCountry: 'United States',
-        shipSame: true
-      });
-      document.getElementById('customers-list-wrap').classList.add('hidden');
-      document.getElementById('cc-detail').classList.remove('hidden');
+      openCustomerDrawer(null, 'list');
     }
 
     async function openCompanyCustomer(id) {
-      showCcMsg('');
       showError('cc-error', '');
       try {
         const data = await api('/api/admin/company-customers/' + id);
-        const c = data.customer;
-        if (!c) return;
-        document.getElementById('cc-title').textContent = c.displayName || c.companyName || 'Customer';
-        document.getElementById('cc-delete-btn').classList.remove('hidden');
-        fillCcForm(c);
-        document.getElementById('customers-list-wrap').classList.add('hidden');
-        document.getElementById('cc-detail').classList.remove('hidden');
+        if (data.customer) openCustomerDrawer(data.customer, 'list');
       } catch (err) {
         showError('cc-error', err.message || 'Could not open this customer.');
       }
@@ -1918,16 +1906,6 @@
       if (type === 'order') return 'Sales order no.';
       if (type === 'invoice') return 'Invoice no.';
       return 'Quote no.';
-    }
-
-    function showSoNewCustomer(on) {
-      document.getElementById('so-new-customer').classList.toggle('hidden', !on);
-      if (!on) {
-        ['so-nc-company', 'so-nc-email', 'so-nc-first', 'so-nc-last', 'so-nc-phone'].forEach(function (id) {
-          document.getElementById(id).value = '';
-        });
-        document.getElementById('so-nc-msg').classList.add('hidden');
-      }
     }
 
     function applySoCustomer(c) {
@@ -2052,7 +2030,6 @@
       const type = doc.type || 'quote';
       setSoTypeUi(type);
       document.getElementById('so-id').value = doc.id || '';
-      showSoNewCustomer(false);
       fillSoCustomers(doc.customerId || '');
       fillSoStatuses(type, doc.status || 'draft');
       document.getElementById('so-number').value = doc.number || nextSoNumber(type);
@@ -2156,10 +2133,8 @@
     }
 
     document.getElementById('cc-new-btn').addEventListener('click', openNewCustomer);
-    document.getElementById('cc-back').addEventListener('click', function () {
-      showCcList();
-      loadCompanyCustomers();
-    });
+    document.getElementById('cc-drawer-close').addEventListener('click', closeCustomerDrawer);
+    document.getElementById('cc-drawer-scrim').addEventListener('click', closeCustomerDrawer);
     document.getElementById('cc-search').addEventListener('input', function () {
       renderCcTable(companyCustomers);
     });
@@ -2173,25 +2148,31 @@
       showCcMsg('');
       const id = document.getElementById('cc-id').value;
       try {
-        if (id) {
-          await api('/api/admin/company-customers/' + id, {
+        const data = id
+          ? await api('/api/admin/company-customers/' + id, {
             method: 'PUT',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(readCcForm())
-          });
-          showCcMsg('Customer saved.', true);
-        } else {
-          const data = await api('/api/admin/company-customers', {
+          })
+          : await api('/api/admin/company-customers', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(readCcForm())
           });
-          document.getElementById('cc-id').value = data.customer.id;
-          document.getElementById('cc-title').textContent = data.customer.displayName || 'Customer';
-          document.getElementById('cc-delete-btn').classList.remove('hidden');
-          showCcMsg('Customer added.', true);
-        }
+        const c = data.customer;
+        document.getElementById('cc-id').value = c.id;
+        document.getElementById('cc-title').textContent = c.displayName || 'Customer';
+        document.getElementById('cc-delete-btn').classList.remove('hidden');
         await loadCompanyCustomers();
+        salesCustomers = companyCustomers.slice();
+        if (ccDrawerSource === 'sales') {
+          fillSoCustomers(c.id);
+          applySoCustomer(c);
+          closeCustomerDrawer();
+          showSoMsg((c.displayName || 'Customer') + ' added.', true);
+        } else {
+          closeCustomerDrawer();
+        }
       } catch (err) {
         showCcMsg(err.message || 'Could not save customer.');
       }
@@ -2201,10 +2182,17 @@
       if (!id || !confirm('Delete this customer?')) return;
       try {
         await api('/api/admin/company-customers/' + id, { method: 'DELETE' });
-        showCcList();
+        closeCustomerDrawer();
         await loadCompanyCustomers();
+        salesCustomers = companyCustomers.slice();
+        fillSoCustomers('');
       } catch (err) {
         showCcMsg(err.message || 'Could not delete customer.');
+      }
+    });
+    document.addEventListener('keydown', function (e) {
+      if (e.key === 'Escape' && document.body.classList.contains('cc-drawer-open')) {
+        closeCustomerDrawer();
       }
     });
 
@@ -2240,44 +2228,11 @@
     document.getElementById('so-customer').addEventListener('change', function () {
       const id = this.value;
       if (id === '__new__') {
-        showSoNewCustomer(true);
-        document.getElementById('so-nc-company').focus();
+        openCustomerDrawer(null, 'sales');
         return;
       }
-      showSoNewCustomer(false);
       const c = (salesCustomers || []).find(function (row) { return String(row.id) === String(id); });
       applySoCustomer(c);
-    });
-    document.getElementById('so-nc-cancel').addEventListener('click', function () {
-      showSoNewCustomer(false);
-      document.getElementById('so-customer').value = '';
-    });
-    document.getElementById('so-nc-save').addEventListener('click', async function () {
-      const msg = document.getElementById('so-nc-msg');
-      msg.classList.add('hidden');
-      try {
-        const data = await api('/api/admin/company-customers', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            companyName: document.getElementById('so-nc-company').value.trim(),
-            contactFirst: document.getElementById('so-nc-first').value.trim(),
-            contactLast: document.getElementById('so-nc-last').value.trim(),
-            email: document.getElementById('so-nc-email').value.trim(),
-            phone: document.getElementById('so-nc-phone').value.trim(),
-            shipSame: true
-          })
-        });
-        const c = data.customer;
-        salesCustomers = (salesCustomers || []).concat([c]);
-        fillSoCustomers(c.id);
-        applySoCustomer(c);
-        showSoNewCustomer(false);
-        showSoMsg((c.displayName || 'Customer') + ' added.', true);
-      } catch (err) {
-        msg.textContent = err.message || 'Could not add customer.';
-        msg.classList.remove('hidden');
-      }
     });
     document.getElementById('so-form').addEventListener('submit', async function (e) {
       e.preventDefault();
