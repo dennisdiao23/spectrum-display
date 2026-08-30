@@ -101,6 +101,11 @@ async function main() {
     '/company/website',
     '/company/website/accounts',
     '/company/inventory',
+    '/company/customers',
+    '/company/sales',
+    '/company/sales/quotes',
+    '/company/sales/orders',
+    '/company/sales/invoices',
     '/company/settings',
     '/company/settings/roles'
   ];
@@ -666,6 +671,92 @@ async function main() {
     } catch (err) { next(err); }
   });
 
+  app.get('/api/admin/company-customers', requireAdmin, async function (_req, res, next) {
+    try {
+      res.json({ ok: true, customers: await store.listCompanyCustomers() });
+    } catch (err) { next(err); }
+  });
+
+  app.get('/api/admin/company-customers/:id', requireAdmin, async function (req, res, next) {
+    try {
+      const customer = await store.getCompanyCustomer(req.params.id);
+      if (!customer) return res.status(404).json({ ok: false, error: 'Customer not found.' });
+      res.json({ ok: true, customer: customer });
+    } catch (err) { next(err); }
+  });
+
+  app.post('/api/admin/company-customers', requireAdmin, async function (req, res, next) {
+    try {
+      res.json({ ok: true, customer: await store.createCompanyCustomer(req.body || {}) });
+    } catch (err) { next(err); }
+  });
+
+  app.put('/api/admin/company-customers/:id', requireAdmin, async function (req, res, next) {
+    try {
+      const customer = await store.updateCompanyCustomer(req.params.id, req.body || {});
+      if (!customer) return res.status(404).json({ ok: false, error: 'Customer not found.' });
+      res.json({ ok: true, customer: customer });
+    } catch (err) { next(err); }
+  });
+
+  app.delete('/api/admin/company-customers/:id', requireAdmin, async function (req, res, next) {
+    try {
+      const ok = await store.deleteCompanyCustomer(req.params.id);
+      if (!ok) return res.status(404).json({ ok: false, error: 'Customer not found.' });
+      res.json({ ok: true });
+    } catch (err) { next(err); }
+  });
+
+  app.get('/api/admin/sales-docs', requireAdmin, async function (req, res, next) {
+    try {
+      const type = String(req.query.type || '').trim().toLowerCase();
+      const filter = type === 'quote' || type === 'order' || type === 'invoice' ? type : '';
+      res.json({ ok: true, docs: await store.listSalesDocs(filter) });
+    } catch (err) { next(err); }
+  });
+
+  app.get('/api/admin/sales-docs/:id', requireAdmin, async function (req, res, next) {
+    try {
+      const doc = await store.getSalesDoc(req.params.id);
+      if (!doc) return res.status(404).json({ ok: false, error: 'Document not found.' });
+      res.json({ ok: true, doc: doc });
+    } catch (err) { next(err); }
+  });
+
+  app.post('/api/admin/sales-docs', requireAdmin, async function (req, res, next) {
+    try {
+      res.json({ ok: true, doc: await store.createSalesDoc(req.body || {}) });
+    } catch (err) { next(err); }
+  });
+
+  app.put('/api/admin/sales-docs/:id', requireAdmin, async function (req, res, next) {
+    try {
+      const doc = await store.updateSalesDoc(req.params.id, req.body || {});
+      if (!doc) return res.status(404).json({ ok: false, error: 'Document not found.' });
+      res.json({ ok: true, doc: doc });
+    } catch (err) { next(err); }
+  });
+
+  app.delete('/api/admin/sales-docs/:id', requireAdmin, async function (req, res, next) {
+    try {
+      const ok = await store.deleteSalesDoc(req.params.id);
+      if (!ok) return res.status(404).json({ ok: false, error: 'Document not found.' });
+      res.json({ ok: true });
+    } catch (err) { next(err); }
+  });
+
+  app.post('/api/admin/sales-docs/:id/convert', requireAdmin, async function (req, res, next) {
+    try {
+      const type = String((req.body && req.body.type) || '').trim().toLowerCase();
+      if (type !== 'order' && type !== 'invoice') {
+        return res.status(400).json({ ok: false, error: 'Convert to a sales order or invoice.' });
+      }
+      const doc = await store.convertSalesDoc(req.params.id, type);
+      if (!doc) return res.status(404).json({ ok: false, error: 'Document not found.' });
+      res.json({ ok: true, doc: doc });
+    } catch (err) { next(err); }
+  });
+
   app.get('/api/admin/accounts', requireAdmin, requirePerm('website', 'view'), async function (_req, res, next) {
     try {
       res.json({
@@ -947,6 +1038,8 @@ async function main() {
     console.log('Spectrum Display');
     console.log('Site:    http://localhost:' + PORT + '/');
     console.log('Company: http://localhost:' + PORT + '/company');
+    console.log('Customer: http://localhost:' + PORT + '/company/customers');
+    console.log('Sales:    http://localhost:' + PORT + '/company/sales');
   });
 }
 

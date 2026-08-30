@@ -465,6 +465,169 @@ function createSqliteStore() {
       attachMapsToListedProducts(db, [updated]);
       return updated;
     },
+    async listCompanyCustomers() {
+      const cc = require('./company-customers');
+      return db.prepare(
+        'SELECT * FROM company_customers ORDER BY company_name COLLATE NOCASE, contact_last COLLATE NOCASE, id DESC'
+      ).all().map(cc.formatCustomer);
+    },
+    async getCompanyCustomer(id) {
+      const cc = require('./company-customers');
+      return cc.formatCustomer(db.prepare('SELECT * FROM company_customers WHERE id = ?').get(id));
+    },
+    async createCompanyCustomer(payload) {
+      const cc = require('./company-customers');
+      const input = cc.normalizeCustomer(payload);
+      const fields = cc.dbFields(input);
+      const stamp = dbUtil.nowIso();
+      const info = db.prepare(`
+        INSERT INTO company_customers (
+          company_name, contact_first, contact_last, email, phone, mobile, website, tax_id, payment_terms,
+          bill_street, bill_city, bill_state, bill_zip, bill_country,
+          ship_same, ship_street, ship_city, ship_state, ship_zip, ship_country, notes, created_at, updated_at
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+      `).run(
+        fields.company_name, fields.contact_first, fields.contact_last, fields.email, fields.phone,
+        fields.mobile, fields.website, fields.tax_id, fields.payment_terms,
+        fields.bill_street, fields.bill_city, fields.bill_state, fields.bill_zip, fields.bill_country,
+        fields.ship_same, fields.ship_street, fields.ship_city, fields.ship_state, fields.ship_zip,
+        fields.ship_country, fields.notes, stamp, stamp
+      );
+      return this.getCompanyCustomer(info.lastInsertRowid);
+    },
+    async updateCompanyCustomer(id, payload) {
+      const cc = require('./company-customers');
+      const current = db.prepare('SELECT id FROM company_customers WHERE id = ?').get(id);
+      if (!current) return null;
+      const input = cc.normalizeCustomer(payload);
+      const fields = cc.dbFields(input);
+      db.prepare(`
+        UPDATE company_customers SET
+          company_name = ?, contact_first = ?, contact_last = ?, email = ?, phone = ?, mobile = ?,
+          website = ?, tax_id = ?, payment_terms = ?,
+          bill_street = ?, bill_city = ?, bill_state = ?, bill_zip = ?, bill_country = ?,
+          ship_same = ?, ship_street = ?, ship_city = ?, ship_state = ?, ship_zip = ?, ship_country = ?,
+          notes = ?, updated_at = ?
+        WHERE id = ?
+      `).run(
+        fields.company_name, fields.contact_first, fields.contact_last, fields.email, fields.phone,
+        fields.mobile, fields.website, fields.tax_id, fields.payment_terms,
+        fields.bill_street, fields.bill_city, fields.bill_state, fields.bill_zip, fields.bill_country,
+        fields.ship_same, fields.ship_street, fields.ship_city, fields.ship_state, fields.ship_zip,
+        fields.ship_country, fields.notes, dbUtil.nowIso(), id
+      );
+      return this.getCompanyCustomer(id);
+    },
+    async deleteCompanyCustomer(id) {
+      const info = db.prepare('DELETE FROM company_customers WHERE id = ?').run(id);
+      return info.changes > 0;
+    },
+    async listSalesDocs(type) {
+      const sales = require('./company-sales');
+      const rows = type
+        ? db.prepare('SELECT * FROM company_sales_docs WHERE type = ? ORDER BY id DESC').all(type)
+        : db.prepare('SELECT * FROM company_sales_docs ORDER BY id DESC').all();
+      return rows.map(function (row) {
+        const lines = db.prepare('SELECT * FROM company_sales_lines WHERE doc_id = ? ORDER BY sort_order, id').all(row.id);
+        return sales.formatDoc(row, lines);
+      });
+    },
+    async getSalesDoc(id) {
+      const sales = require('./company-sales');
+      const row = db.prepare('SELECT * FROM company_sales_docs WHERE id = ?').get(id);
+      if (!row) return null;
+      const lines = db.prepare('SELECT * FROM company_sales_lines WHERE doc_id = ? ORDER BY sort_order, id').all(row.id);
+      return sales.formatDoc(row, lines);
+    },
+    async createSalesDoc(payload) {
+      const sales = require('./company-sales');
+      const input = sales.normalizeDoc(payload);
+      if (input.customerId) {
+        const customer = await this.getCompanyCustomer(input.customerId);
+        if (customer) {
+          const snap = sales.snapshotFromCustomer(customer);
+          if (!input.customerName) input.customerName = snap.customerName;
+          if (!input.customerEmail) input.customerEmail = snap.customerEmail;
+          if (!input.paymentTerms) input.paymentTerms = snap.paymentTerms;
+          ['billStreet', 'billCity', 'billState', 'billZip', 'billCountry',
+            'shipStreet', 'shipCity', 'shipState', 'shipZip', 'shipCountry'].forEach(function (key) {
+            if (!input[key] && snap[key]) input[key] = snap[key];
+          });
+        }
+      }
+      const existing = db.prepare('SELECT number FROM company_sales_docs WHERE type = ?').all(input.type).map(function (r) { return r.number; });
+      if (!input.number) input.number = sales.nextDocNumber(existing, input.type);
+      const fields = sales.dbDocFields(input);
+      const stamp = dbUtil.nowIso();
+      const info = db.prepare(`
+        INSERT INTO company_sales_docs (
+          type, number, customer_id, customer_name, customer_email, po_number, issue_date, due_date,
+          payment_terms, status, tax_rate, discount, notes,
+          bill_street, bill_city, bill_state, bill_zip, bill_country,
+          ship_street, ship_city, ship_state, ship_zip, ship_country, created_at, updated_at
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+      `).run(
+        fields.type, fields.number, fields.customer_id, fields.customer_name, fields.customer_email,
+        fields.po_number, fields.issue_date, fields.due_date, fields.payment_terms, fields.status,
+        fields.tax_rate, fields.discount, fields.notes,
+        fields.bill_street, fields.bill_city, fields.bill_state, fields.bill_zip, fields.bill_country,
+        fields.ship_street, fields.ship_city, fields.ship_state, fields.ship_zip, fields.ship_country,
+        stamp, stamp
+      );
+      const insertLine = db.prepare(
+        'INSERT INTO company_sales_lines (doc_id, sku, description, qty, unit_price, sort_order) VALUES (?, ?, ?, ?, ?, ?)'
+      );
+      input.lines.forEach(function (line, i) {
+        insertLine.run(info.lastInsertRowid, line.sku, line.description, line.qty, line.unitPrice, i);
+      });
+      return this.getSalesDoc(info.lastInsertRowid);
+    },
+    async updateSalesDoc(id, payload) {
+      const sales = require('./company-sales');
+      const current = db.prepare('SELECT * FROM company_sales_docs WHERE id = ?').get(id);
+      if (!current) return null;
+      const input = sales.normalizeDoc(Object.assign({}, payload, { type: payload.type || current.type, number: payload.number || current.number }));
+      const fields = sales.dbDocFields(input);
+      db.prepare(`
+        UPDATE company_sales_docs SET
+          type = ?, number = ?, customer_id = ?, customer_name = ?, customer_email = ?, po_number = ?,
+          issue_date = ?, due_date = ?, payment_terms = ?, status = ?, tax_rate = ?, discount = ?, notes = ?,
+          bill_street = ?, bill_city = ?, bill_state = ?, bill_zip = ?, bill_country = ?,
+          ship_street = ?, ship_city = ?, ship_state = ?, ship_zip = ?, ship_country = ?, updated_at = ?
+        WHERE id = ?
+      `).run(
+        fields.type, fields.number, fields.customer_id, fields.customer_name, fields.customer_email,
+        fields.po_number, fields.issue_date, fields.due_date, fields.payment_terms, fields.status,
+        fields.tax_rate, fields.discount, fields.notes,
+        fields.bill_street, fields.bill_city, fields.bill_state, fields.bill_zip, fields.bill_country,
+        fields.ship_street, fields.ship_city, fields.ship_state, fields.ship_zip, fields.ship_country,
+        dbUtil.nowIso(), id
+      );
+      db.prepare('DELETE FROM company_sales_lines WHERE doc_id = ?').run(id);
+      const insertLine = db.prepare(
+        'INSERT INTO company_sales_lines (doc_id, sku, description, qty, unit_price, sort_order) VALUES (?, ?, ?, ?, ?, ?)'
+      );
+      input.lines.forEach(function (line, i) {
+        insertLine.run(id, line.sku, line.description, line.qty, line.unitPrice, i);
+      });
+      return this.getSalesDoc(id);
+    },
+    async deleteSalesDoc(id) {
+      db.prepare('DELETE FROM company_sales_lines WHERE doc_id = ?').run(id);
+      const info = db.prepare('DELETE FROM company_sales_docs WHERE id = ?').run(id);
+      return info.changes > 0;
+    },
+    async convertSalesDoc(id, type) {
+      const current = await this.getSalesDoc(id);
+      if (!current) return null;
+      const next = Object.assign({}, current, {
+        type: type,
+        number: '',
+        status: 'draft',
+        id: undefined
+      });
+      return this.createSalesDoc(next);
+    },
     async saveUpload(file) {
       const prepared = await img.prepareUpload(file);
       const name = Date.now().toString(36) + '-' + crypto.randomBytes(4).toString('hex') + prepared.ext;

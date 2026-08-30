@@ -37,6 +37,30 @@
         <svg class="dash-nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 10 12 4.5 21 10v9.5a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V10z"/><path d="M9 20.5V12h6v8.5"/></svg>
         <span>Inventory</span>
       </a>
+      <a href="/company/customers" id="tab-customers" class="dash-nav-link">
+        <svg class="dash-nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="8" r="3.25"/><path d="M5 19.2c.9-3.1 3.5-4.7 7-4.7s6.1 1.6 7 4.7"/></svg>
+        <span>Customer</span>
+      </a>
+      <div class="dash-nav-group">
+        <a href="/company/sales" id="tab-sales" class="dash-nav-link">
+          <svg class="dash-nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 3h8l4 4v14a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1z"/><path d="M15 3v5h5"/><path d="M9 13h6M9 17h4"/></svg>
+          <span>Sales</span>
+        </a>
+        <div id="sales-subnav" class="dash-sub hidden">
+          <a href="/company/sales/quotes" id="tab-quotes" class="dash-sub-link">
+            <svg class="dash-nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 4h8v4H8z"/><path d="M6 8h12v12H6z"/><path d="M9 12h6M9 16h4"/></svg>
+            <span>Sales Quote</span>
+          </a>
+          <a href="/company/sales/orders" id="tab-orders" class="dash-sub-link">
+            <svg class="dash-nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 7h16l-1.5 12H5.5L4 7z"/><path d="M9 7V5a3 3 0 0 1 6 0v2"/></svg>
+            <span>Sales Order</span>
+          </a>
+          <a href="/company/sales/invoices" id="tab-invoices" class="dash-sub-link">
+            <svg class="dash-nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="5" y="3" width="14" height="18" rx="1.5"/><path d="M8 8h8M8 12h8M8 16h5"/></svg>
+            <span>Invoice</span>
+          </a>
+        </div>
+      </div>
     </nav>
     <div class="dash-sidebar-foot hidden" id="admin-utils">
       <div class="dash-nav-group">
@@ -477,6 +501,272 @@
         </div>
       </div>
 
+      <div id="customers-section" class="hidden space-y-6">
+        <div id="customers-list-wrap">
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4">
+            <p class="text-slate-400 text-sm"><span id="cc-total">0</span> customers for quotes and invoices. This is not the website Sign in list — those stay under Website → Accounts.</p>
+            <div class="flex flex-wrap items-center gap-2">
+              <input id="cc-search" type="search" placeholder="Search company, contact, email, phone" class="w-full sm:w-64 bg-slate-800 border border-slate-700 rounded-full px-3 py-1.5 text-sm">
+              <button id="cc-new-btn" type="button" class="px-4 py-2 rounded-full bg-sky-500 hover:bg-sky-400 text-white text-sm font-semibold">Add customer</button>
+            </div>
+          </div>
+          <p id="cc-error" class="hidden text-sm text-red-400 mb-3"></p>
+          <div class="overflow-x-auto rounded-2xl border border-slate-800">
+            <table class="w-full text-sm">
+              <thead class="text-left text-slate-400 border-b border-slate-800">
+                <tr>
+                  <th class="py-3 px-4 font-medium">Company</th>
+                  <th class="py-3 px-4 font-medium">Contact</th>
+                  <th class="py-3 px-4 font-medium">Email</th>
+                  <th class="py-3 px-4 font-medium">Phone</th>
+                  <th class="py-3 px-4 font-medium">City</th>
+                  <th class="py-3 px-4 font-medium">Terms</th>
+                  <th class="py-3 px-4 font-medium"></th>
+                </tr>
+              </thead>
+              <tbody id="cc-table" class="text-slate-200"></tbody>
+            </table>
+          </div>
+        </div>
+        <div id="cc-detail" class="hidden space-y-6">
+          <button type="button" id="cc-back" class="text-sm text-sky-400 hover:text-sky-300">← All customers</button>
+          <form id="cc-form" class="rounded-2xl border border-slate-800 bg-slate-900/50 p-5 grid sm:grid-cols-2 gap-4">
+            <input type="hidden" id="cc-id">
+            <div class="sm:col-span-2">
+              <h2 id="cc-title" class="font-semibold text-lg">New customer</h2>
+              <p class="text-sm text-slate-400 mt-1">Used later for quotes and invoices. Not a website login.</p>
+            </div>
+            <div>
+              <label class="block text-xs text-slate-400 mb-1">Company name</label>
+              <input id="cc-company" type="text" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm" placeholder="Spectrum AV Inc.">
+            </div>
+            <div>
+              <label class="block text-xs text-slate-400 mb-1">Tax / resale #</label>
+              <input id="cc-tax" type="text" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm">
+            </div>
+            <div>
+              <label class="block text-xs text-slate-400 mb-1">First name</label>
+              <input id="cc-first" type="text" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm">
+            </div>
+            <div>
+              <label class="block text-xs text-slate-400 mb-1">Last name</label>
+              <input id="cc-last" type="text" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm">
+            </div>
+            <div>
+              <label class="block text-xs text-slate-400 mb-1">Email</label>
+              <input id="cc-email" type="email" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm">
+            </div>
+            <div>
+              <label class="block text-xs text-slate-400 mb-1">Phone</label>
+              <input id="cc-phone" type="text" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm">
+            </div>
+            <div>
+              <label class="block text-xs text-slate-400 mb-1">Mobile</label>
+              <input id="cc-mobile" type="text" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm">
+            </div>
+            <div>
+              <label class="block text-xs text-slate-400 mb-1">Website</label>
+              <input id="cc-website" type="text" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm" placeholder="https://">
+            </div>
+            <div class="sm:col-span-2">
+              <label class="block text-xs text-slate-400 mb-1">Payment terms</label>
+              <select id="cc-terms" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm">
+                <option value="Due on receipt">Due on receipt</option>
+                <option value="Net 15">Net 15</option>
+                <option value="Net 30" selected>Net 30</option>
+                <option value="Net 45">Net 45</option>
+                <option value="Net 60">Net 60</option>
+              </select>
+            </div>
+            <div class="sm:col-span-2 pt-2">
+              <h3 class="font-semibold text-sm">Billing address</h3>
+            </div>
+            <div class="sm:col-span-2">
+              <label class="block text-xs text-slate-400 mb-1">Street</label>
+              <input id="cc-bill-street" type="text" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm">
+            </div>
+            <div>
+              <label class="block text-xs text-slate-400 mb-1">City</label>
+              <input id="cc-bill-city" type="text" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm">
+            </div>
+            <div>
+              <label class="block text-xs text-slate-400 mb-1">State</label>
+              <input id="cc-bill-state" type="text" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm">
+            </div>
+            <div>
+              <label class="block text-xs text-slate-400 mb-1">ZIP</label>
+              <input id="cc-bill-zip" type="text" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm">
+            </div>
+            <div>
+              <label class="block text-xs text-slate-400 mb-1">Country</label>
+              <input id="cc-bill-country" type="text" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm" value="United States">
+            </div>
+            <div class="sm:col-span-2 pt-2 flex items-center justify-between gap-3">
+              <h3 class="font-semibold text-sm">Shipping address</h3>
+              <label class="text-sm text-slate-400 flex items-center gap-2">
+                <input id="cc-ship-same" type="checkbox" checked class="rounded border-slate-600">
+                Same as billing
+              </label>
+            </div>
+            <div id="cc-ship-fields" class="sm:col-span-2 hidden grid sm:grid-cols-2 gap-4">
+              <div class="sm:col-span-2">
+                <label class="block text-xs text-slate-400 mb-1">Street</label>
+                <input id="cc-ship-street" type="text" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm">
+              </div>
+              <div>
+                <label class="block text-xs text-slate-400 mb-1">City</label>
+                <input id="cc-ship-city" type="text" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm">
+              </div>
+              <div>
+                <label class="block text-xs text-slate-400 mb-1">State</label>
+                <input id="cc-ship-state" type="text" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm">
+              </div>
+              <div>
+                <label class="block text-xs text-slate-400 mb-1">ZIP</label>
+                <input id="cc-ship-zip" type="text" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm">
+              </div>
+              <div>
+                <label class="block text-xs text-slate-400 mb-1">Country</label>
+                <input id="cc-ship-country" type="text" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm">
+              </div>
+            </div>
+            <div class="sm:col-span-2">
+              <label class="block text-xs text-slate-400 mb-1">Notes</label>
+              <textarea id="cc-notes" rows="3" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm" placeholder="Job site, preferred contact, quote history…"></textarea>
+            </div>
+            <p id="cc-msg" class="sm:col-span-2 hidden text-sm"></p>
+            <div class="sm:col-span-2 flex flex-wrap items-center gap-2">
+              <button type="submit" id="cc-save" class="px-5 py-2 rounded-full bg-sky-500 hover:bg-sky-400 text-white text-sm font-semibold">Save customer</button>
+              <button id="cc-delete-btn" type="button" class="hidden px-5 py-2 rounded-full border border-slate-700 text-red-400 hover:border-red-500 text-sm">Delete</button>
+            </div>
+          </form>
+        </div>
+      </div>
+
+      <div id="sales-section" class="hidden space-y-6">
+        <div id="sales-list-wrap">
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4">
+            <p class="text-slate-400 text-sm"><span id="so-total">0</span> <span id="so-list-label">sales documents</span>. Pick a company customer, add line items, then save. Website Sign in accounts stay under Website → Accounts.</p>
+            <div class="flex flex-wrap items-center gap-2">
+              <input id="so-search" type="search" placeholder="Search number, customer, PO" class="w-full sm:w-64 bg-slate-800 border border-slate-700 rounded-full px-3 py-1.5 text-sm">
+              <button id="so-new-btn" type="button" class="px-4 py-2 rounded-full bg-sky-500 hover:bg-sky-400 text-white text-sm font-semibold">New sales quote</button>
+            </div>
+          </div>
+          <p id="so-error" class="hidden text-sm text-red-400 mb-3"></p>
+          <div class="overflow-x-auto rounded-2xl border border-slate-800">
+            <table class="w-full text-sm">
+              <thead class="text-left text-slate-400 border-b border-slate-800">
+                <tr>
+                  <th class="py-3 px-4 font-medium">Number</th>
+                  <th class="py-3 px-4 font-medium">Customer</th>
+                  <th class="py-3 px-4 font-medium">Date</th>
+                  <th class="py-3 px-4 font-medium">Status</th>
+                  <th class="py-3 px-4 font-medium">Total</th>
+                  <th class="py-3 px-4 font-medium"></th>
+                </tr>
+              </thead>
+              <tbody id="so-table" class="text-slate-200"></tbody>
+            </table>
+          </div>
+        </div>
+        <div id="so-detail" class="hidden space-y-6">
+          <button type="button" id="so-back" class="text-sm text-sky-400 hover:text-sky-300">← All documents</button>
+          <form id="so-form" class="rounded-2xl border border-slate-800 bg-slate-900/50 p-5 grid sm:grid-cols-2 gap-4">
+            <input type="hidden" id="so-id">
+            <input type="hidden" id="so-type" value="quote">
+            <div class="sm:col-span-2">
+              <h2 id="so-title" class="font-semibold text-lg">New sales quote</h2>
+              <p class="text-sm text-slate-400 mt-1">Company customers only — not website Sign in accounts.</p>
+            </div>
+            <div>
+              <label class="block text-xs text-slate-400 mb-1">Customer</label>
+              <select id="so-customer" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm">
+                <option value="">Select a customer</option>
+              </select>
+            </div>
+            <div>
+              <label class="block text-xs text-slate-400 mb-1">Customer name</label>
+              <input id="so-customer-name" type="text" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm" placeholder="Filled from Customer, or type a name">
+            </div>
+            <div>
+              <label class="block text-xs text-slate-400 mb-1">Email</label>
+              <input id="so-customer-email" type="email" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm">
+            </div>
+            <div>
+              <label class="block text-xs text-slate-400 mb-1">PO number</label>
+              <input id="so-po" type="text" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm">
+            </div>
+            <div>
+              <label class="block text-xs text-slate-400 mb-1">Issue date</label>
+              <input id="so-issue" type="date" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm">
+            </div>
+            <div>
+              <label class="block text-xs text-slate-400 mb-1" id="so-due-label">Valid until</label>
+              <input id="so-due" type="date" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm">
+            </div>
+            <div>
+              <label class="block text-xs text-slate-400 mb-1">Payment terms</label>
+              <select id="so-terms" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm">
+                <option value="Due on receipt">Due on receipt</option>
+                <option value="Net 15">Net 15</option>
+                <option value="Net 30" selected>Net 30</option>
+                <option value="Net 45">Net 45</option>
+                <option value="Net 60">Net 60</option>
+              </select>
+            </div>
+            <div>
+              <label class="block text-xs text-slate-400 mb-1">Status</label>
+              <select id="so-status" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm"></select>
+            </div>
+            <div class="sm:col-span-2 pt-2">
+              <div class="flex items-center justify-between gap-3 mb-2">
+                <h3 class="font-semibold text-sm">Line items</h3>
+                <button type="button" id="so-add-line" class="text-sm text-sky-400 hover:text-sky-300">+ Add line</button>
+              </div>
+              <div class="overflow-x-auto rounded-xl border border-slate-800">
+                <table class="w-full text-sm">
+                  <thead class="text-left text-slate-400 border-b border-slate-800">
+                    <tr>
+                      <th class="py-2 px-3 font-medium">SKU</th>
+                      <th class="py-2 px-3 font-medium">Description</th>
+                      <th class="py-2 px-3 font-medium w-24">Qty</th>
+                      <th class="py-2 px-3 font-medium w-28">Price</th>
+                      <th class="py-2 px-3 font-medium w-28">Amount</th>
+                      <th class="py-2 px-3 font-medium w-10"></th>
+                    </tr>
+                  </thead>
+                  <tbody id="so-lines"></tbody>
+                </table>
+              </div>
+            </div>
+            <div>
+              <label class="block text-xs text-slate-400 mb-1">Discount $</label>
+              <input id="so-discount" type="number" step="0.01" min="0" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm" value="0">
+            </div>
+            <div>
+              <label class="block text-xs text-slate-400 mb-1">Tax %</label>
+              <input id="so-tax-rate" type="number" step="0.01" min="0" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm" value="0">
+            </div>
+            <div class="sm:col-span-2 text-sm text-slate-300 space-y-1">
+              <div class="flex justify-between"><span>Subtotal</span><span id="so-subtotal">$0.00</span></div>
+              <div class="flex justify-between"><span>Tax</span><span id="so-tax">$0.00</span></div>
+              <div class="flex justify-between font-semibold"><span>Total</span><span id="so-grand">$0.00</span></div>
+            </div>
+            <div class="sm:col-span-2">
+              <label class="block text-xs text-slate-400 mb-1">Notes</label>
+              <textarea id="so-notes" rows="3" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm" placeholder="Job, ship date, special terms…"></textarea>
+            </div>
+            <p id="so-msg" class="sm:col-span-2 hidden text-sm"></p>
+            <div class="sm:col-span-2 flex flex-wrap items-center gap-2">
+              <button type="submit" id="so-save" class="px-5 py-2 rounded-full bg-sky-500 hover:bg-sky-400 text-white text-sm font-semibold">Save</button>
+              <button id="so-to-order" type="button" class="hidden px-5 py-2 rounded-full border border-slate-700 text-sm">Create sales order</button>
+              <button id="so-to-invoice" type="button" class="hidden px-5 py-2 rounded-full border border-slate-700 text-sm">Create invoice</button>
+              <button id="so-delete-btn" type="button" class="hidden px-5 py-2 rounded-full border border-slate-700 text-red-400 hover:border-red-500 text-sm">Delete</button>
+            </div>
+          </form>
+        </div>
+      </div>
+
       <div id="settings-pane" class="hidden space-y-6">
       <div id="staff-section" class="space-y-6">
         <p class="text-slate-400 text-sm">Admin logins for this page — not website Customer / Dealer / Sales accounts. Owner sees everything. Website can edit product pages and website accounts. Inventory can receive and adjust stock.</p>
@@ -586,6 +876,7 @@
     let editingRoleId = null;
     let websiteSubTab = 'products';
     let settingsSubTab = 'staff';
+    let salesSubTab = 'quotes';
     let adminRoles = [];
 
     function companyPath() {
@@ -598,7 +889,15 @@
       if (hash === 'settings' || hash === 'settings/staff') return 'staff';
       if (hash === 'website/accounts' || hash === 'accounts') return 'accounts';
       if (hash === 'website' || hash === 'website/products' || hash === 'products') return 'products';
+      if (hash === 'customers' || hash === 'customer') return 'customers';
+      if (hash === 'sales' || hash === 'quotes' || hash === 'sales/quotes') return 'quotes';
+      if (hash === 'orders' || hash === 'sales/orders') return 'orders';
+      if (hash === 'invoices' || hash === 'sales/invoices') return 'invoices';
       const p = companyPath();
+      if (p === '/company/customers') return 'customers';
+      if (p === '/company/sales/orders') return 'orders';
+      if (p === '/company/sales/invoices') return 'invoices';
+      if (p === '/company/sales' || p === '/company/sales/quotes') return 'quotes';
       if (p === '/company/inventory') return 'inventory';
       if (p === '/company/settings/roles') return 'roles';
       if (p === '/company/settings') return 'staff';
@@ -608,6 +907,10 @@
     }
     function pathForTab(name) {
       if (name === 'inventory') return '/company/inventory';
+      if (name === 'customers') return '/company/customers';
+      if (name === 'orders') return '/company/sales/orders';
+      if (name === 'invoices') return '/company/sales/invoices';
+      if (name === 'quotes' || name === 'sales') return '/company/sales/quotes';
       if (name === 'accounts') return '/company/website/accounts';
       if (name === 'staff') return '/company/settings';
       if (name === 'roles') return '/company/settings/roles';
@@ -616,6 +919,8 @@
     function firstAllowedTab() {
       if (canUse('website')) return 'products';
       if (canUse('inventory')) return 'inventory';
+      if (canUse('customers')) return 'customers';
+      if (canUse('quotes')) return 'quotes';
       if (canUse('settings')) return 'staff';
       return '';
     }
@@ -629,6 +934,10 @@
     function tabFromHref(href) {
       try {
         const p = new URL(href, location.origin).pathname.replace(/\/+$/, '') || '/company';
+        if (p === '/company/customers') return 'customers';
+        if (p === '/company/sales/orders') return 'orders';
+        if (p === '/company/sales/invoices') return 'invoices';
+        if (p === '/company/sales' || p === '/company/sales/quotes') return 'quotes';
         if (p === '/company/inventory') return 'inventory';
         if (p === '/company/settings/roles') return 'roles';
         if (p === '/company/settings') return 'staff';
@@ -672,6 +981,8 @@
     function canUse(section) {
       if (section === 'products' || section === 'website' || section === 'accounts') return canView('website');
       if (section === 'inventory') return canView('inventory');
+      if (section === 'customers') return !!currentAdminUser;
+      if (section === 'sales' || section === 'quotes' || section === 'orders' || section === 'invoices') return !!currentAdminUser;
       if (section === 'staff' || section === 'settings' || section === 'roles') return canView('settings');
       return false;
     }
@@ -716,6 +1027,8 @@
       document.getElementById('logout-btn').classList.remove('hidden');
       document.getElementById('tab-website').classList.toggle('hidden', !canUse('website'));
       document.getElementById('tab-inventory').classList.toggle('hidden', !canUse('inventory'));
+      document.getElementById('tab-customers').classList.toggle('hidden', !canUse('customers'));
+      document.getElementById('tab-sales').classList.toggle('hidden', !canUse('sales'));
       document.getElementById('header-settings').classList.toggle('hidden', !canUse('settings'));
       const fromPath = tabFromPath();
       const next = fromPath && canUse(fromPath) ? fromPath : firstAllowedTab();
@@ -724,6 +1037,7 @@
       }
       websiteSubTab = next === 'accounts' ? 'accounts' : 'products';
       settingsSubTab = next === 'roles' ? 'roles' : 'staff';
+      if (next === 'quotes' || next === 'orders' || next === 'invoices') salesSubTab = next;
       showAdminTab(next || 'products');
       return true;
     }
@@ -885,21 +1199,31 @@
     function showAdminTab(name) {
       const onWebsite = name === 'products' || name === 'accounts';
       const onSettings = name === 'staff' || name === 'roles';
+      const onSales = name === 'quotes' || name === 'orders' || name === 'invoices' || name === 'sales';
       if (onWebsite) websiteSubTab = name;
       if (onSettings) settingsSubTab = name;
+      if (onSales && name !== 'sales') salesSubTab = name;
       document.getElementById('website-pane').classList.toggle('hidden', !onWebsite);
       document.getElementById('settings-pane').classList.toggle('hidden', !onSettings);
       document.getElementById('products-section').classList.toggle('hidden', name !== 'products');
       document.getElementById('inventory-section').classList.toggle('hidden', name !== 'inventory');
+      document.getElementById('customers-section').classList.toggle('hidden', name !== 'customers');
+      document.getElementById('sales-section').classList.toggle('hidden', !onSales);
       document.getElementById('accounts-section').classList.toggle('hidden', name !== 'accounts');
       document.getElementById('staff-section').classList.toggle('hidden', name !== 'staff');
       document.getElementById('roles-section').classList.toggle('hidden', name !== 'roles');
       document.getElementById('website-subnav').classList.toggle('hidden', !onWebsite);
       document.getElementById('settings-subnav').classList.toggle('hidden', !onSettings);
+      document.getElementById('sales-subnav').classList.toggle('hidden', !onSales);
       document.getElementById('tab-website').className = navLinkClass(onWebsite, !canUse('website'));
       document.getElementById('tab-inventory').className = navLinkClass(name === 'inventory', !canUse('inventory'));
+      document.getElementById('tab-customers').className = navLinkClass(name === 'customers', !canUse('customers'));
+      document.getElementById('tab-sales').className = navLinkClass(onSales, !canUse('sales'));
       document.getElementById('tab-products').className = navLinkClass(name === 'products', false, 'sub');
       document.getElementById('tab-accounts').className = navLinkClass(name === 'accounts', !canUse('accounts'), 'sub');
+      document.getElementById('tab-quotes').className = navLinkClass(name === 'quotes', !canUse('quotes'), 'sub');
+      document.getElementById('tab-orders').className = navLinkClass(name === 'orders', !canUse('orders'), 'sub');
+      document.getElementById('tab-invoices').className = navLinkClass(name === 'invoices', !canUse('invoices'), 'sub');
       document.getElementById('tab-staff').className = navLinkClass(name === 'staff', !canUse('staff'), 'sub');
       document.getElementById('tab-roles').className = navLinkClass(name === 'roles', !canUse('roles'), 'sub');
       document.getElementById('header-settings').className = navLinkClass(onSettings, !canUse('settings'));
@@ -908,6 +1232,10 @@
         products: ['Website', 'Product pages'],
         accounts: ['Website', 'Website accounts'],
         inventory: ['Inventory', 'Warehouse SKUs'],
+        customers: ['Customer', 'Quote and invoice records'],
+        quotes: ['Sales', 'Sales Quote'],
+        orders: ['Sales', 'Sales Order'],
+        invoices: ['Sales', 'Invoice'],
         staff: ['Settings', 'Admin logins'],
         roles: ['Settings', 'Role Setting']
       };
@@ -1352,6 +1680,385 @@
       e.preventDefault();
       openCompanyTab(name, true);
     });
+    let companyCustomers = [];
+    let salesDocs = [];
+    let salesCustomers = [];
+
+    function showCcMsg(text, ok) {
+      const el = document.getElementById('cc-msg');
+      el.textContent = text || '';
+      el.className = 'sm:col-span-2 text-sm ' + (ok ? 'text-sky-400' : 'text-red-400');
+      el.classList.toggle('hidden', !text);
+    }
+
+    function syncCcShipFields() {
+      document.getElementById('cc-ship-fields').classList.toggle('hidden', document.getElementById('cc-ship-same').checked);
+    }
+
+    function fillCcForm(c) {
+      document.getElementById('cc-id').value = c.id || '';
+      document.getElementById('cc-company').value = c.companyName || '';
+      document.getElementById('cc-tax').value = c.taxId || '';
+      document.getElementById('cc-first').value = c.contactFirst || '';
+      document.getElementById('cc-last').value = c.contactLast || '';
+      document.getElementById('cc-email').value = c.email || '';
+      document.getElementById('cc-phone').value = c.phone || '';
+      document.getElementById('cc-mobile').value = c.mobile || '';
+      document.getElementById('cc-website').value = c.website || '';
+      document.getElementById('cc-terms').value = c.paymentTerms || 'Net 30';
+      document.getElementById('cc-bill-street').value = c.billStreet || '';
+      document.getElementById('cc-bill-city').value = c.billCity || '';
+      document.getElementById('cc-bill-state').value = c.billState || '';
+      document.getElementById('cc-bill-zip').value = c.billZip || '';
+      document.getElementById('cc-bill-country').value = c.billCountry || 'United States';
+      document.getElementById('cc-ship-same').checked = c.shipSame !== false;
+      document.getElementById('cc-ship-street').value = c.shipStreet || '';
+      document.getElementById('cc-ship-city').value = c.shipCity || '';
+      document.getElementById('cc-ship-state').value = c.shipState || '';
+      document.getElementById('cc-ship-zip').value = c.shipZip || '';
+      document.getElementById('cc-ship-country').value = c.shipCountry || 'United States';
+      document.getElementById('cc-notes').value = c.notes || '';
+      syncCcShipFields();
+    }
+
+    function readCcForm() {
+      return {
+        companyName: document.getElementById('cc-company').value.trim(),
+        taxId: document.getElementById('cc-tax').value.trim(),
+        contactFirst: document.getElementById('cc-first').value.trim(),
+        contactLast: document.getElementById('cc-last').value.trim(),
+        email: document.getElementById('cc-email').value.trim(),
+        phone: document.getElementById('cc-phone').value.trim(),
+        mobile: document.getElementById('cc-mobile').value.trim(),
+        website: document.getElementById('cc-website').value.trim(),
+        paymentTerms: document.getElementById('cc-terms').value,
+        billStreet: document.getElementById('cc-bill-street').value.trim(),
+        billCity: document.getElementById('cc-bill-city').value.trim(),
+        billState: document.getElementById('cc-bill-state').value.trim(),
+        billZip: document.getElementById('cc-bill-zip').value.trim(),
+        billCountry: document.getElementById('cc-bill-country').value.trim(),
+        shipSame: document.getElementById('cc-ship-same').checked,
+        shipStreet: document.getElementById('cc-ship-street').value.trim(),
+        shipCity: document.getElementById('cc-ship-city').value.trim(),
+        shipState: document.getElementById('cc-ship-state').value.trim(),
+        shipZip: document.getElementById('cc-ship-zip').value.trim(),
+        shipCountry: document.getElementById('cc-ship-country').value.trim(),
+        notes: document.getElementById('cc-notes').value.trim()
+      };
+    }
+
+    function renderCcTable(rows) {
+      const tbody = document.getElementById('cc-table');
+      const q = (document.getElementById('cc-search').value || '').toLowerCase();
+      const filtered = (rows || []).filter(function (c) {
+        if (!q) return true;
+        return [c.companyName, c.contactFirst, c.contactLast, c.email, c.phone, c.mobile, c.billCity, c.paymentTerms]
+          .join(' ').toLowerCase().indexOf(q) !== -1;
+      });
+      document.getElementById('cc-total').textContent = String((rows || []).length);
+      if (!filtered.length) {
+        tbody.innerHTML = '<tr><td class="py-6 px-4 text-slate-500" colspan="7">' +
+          (q ? 'No customers match this search.' : 'No customers yet. Add a customer to use on quotes and invoices.') +
+          '</td></tr>';
+        return;
+      }
+      tbody.innerHTML = filtered.map(function (c) {
+        const name = c.companyName || [c.contactFirst, c.contactLast].filter(Boolean).join(' ') || '—';
+        const contact = [c.contactFirst, c.contactLast].filter(Boolean).join(' ') || '—';
+        return '<tr class="border-b border-slate-800 hover:bg-slate-900/80 cursor-pointer" data-id="' + esc(c.id) + '">' +
+          '<td class="py-3 px-4 font-medium">' + esc(name) + '</td>' +
+          '<td class="py-3 px-4">' + esc(contact) + '</td>' +
+          '<td class="py-3 px-4">' + esc(c.email || '—') + '</td>' +
+          '<td class="py-3 px-4">' + esc(c.phone || c.mobile || '—') + '</td>' +
+          '<td class="py-3 px-4">' + esc(c.billCity || '—') + '</td>' +
+          '<td class="py-3 px-4">' + esc(c.paymentTerms || '—') + '</td>' +
+          '<td class="py-3 px-4 text-right"><span class="text-sky-400 text-xs font-medium">Open →</span></td>' +
+          '</tr>';
+      }).join('');
+    }
+
+    function showCcList() {
+      document.getElementById('customers-list-wrap').classList.remove('hidden');
+      document.getElementById('cc-detail').classList.add('hidden');
+    }
+
+    async function loadCompanyCustomers() {
+      showError('cc-error', '');
+      try {
+        const data = await api('/api/admin/company-customers');
+        companyCustomers = data.customers || [];
+        renderCcTable(companyCustomers);
+      } catch (err) {
+        showError('cc-error', err.message || 'Could not load customers.');
+        document.getElementById('cc-table').innerHTML = '<tr><td class="py-6 px-4 text-slate-500" colspan="7">Could not load customers.</td></tr>';
+      }
+    }
+
+    function openNewCustomer() {
+      document.getElementById('cc-title').textContent = 'New customer';
+      document.getElementById('cc-delete-btn').classList.add('hidden');
+      showCcMsg('');
+      fillCcForm({
+        paymentTerms: 'Net 30',
+        billCountry: 'United States',
+        shipCountry: 'United States',
+        shipSame: true
+      });
+      document.getElementById('customers-list-wrap').classList.add('hidden');
+      document.getElementById('cc-detail').classList.remove('hidden');
+    }
+
+    async function openCompanyCustomer(id) {
+      showCcMsg('');
+      showError('cc-error', '');
+      try {
+        const data = await api('/api/admin/company-customers/' + id);
+        const c = data.customer;
+        if (!c) return;
+        document.getElementById('cc-title').textContent = c.displayName || c.companyName || 'Customer';
+        document.getElementById('cc-delete-btn').classList.remove('hidden');
+        fillCcForm(c);
+        document.getElementById('customers-list-wrap').classList.add('hidden');
+        document.getElementById('cc-detail').classList.remove('hidden');
+      } catch (err) {
+        showError('cc-error', err.message || 'Could not open this customer.');
+      }
+    }
+
+    function money(n) {
+      return Math.round((Number(n) || 0) * 100) / 100;
+    }
+
+    function moneyText(n) {
+      return '$' + money(n).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    }
+
+    function salesTypeFromTab(name) {
+      if (name === 'orders') return 'order';
+      if (name === 'invoices') return 'invoice';
+      return 'quote';
+    }
+
+    function salesTypeLabel(type) {
+      if (type === 'order') return 'Sales Order';
+      if (type === 'invoice') return 'Invoice';
+      return 'Sales Quote';
+    }
+
+    function salesStatuses(type) {
+      if (type === 'quote') return ['draft', 'sent', 'accepted', 'expired', 'void'];
+      if (type === 'invoice') return ['draft', 'sent', 'paid', 'overdue', 'void'];
+      return ['draft', 'confirmed', 'fulfilled', 'cancelled'];
+    }
+
+    function fillSoStatuses(type, selected) {
+      const sel = document.getElementById('so-status');
+      sel.innerHTML = salesStatuses(type).map(function (s) {
+        return '<option value="' + s + '"' + (s === selected ? ' selected' : '') + '>' + s + '</option>';
+      }).join('');
+    }
+
+    function fillSoCustomers(selected) {
+      const sel = document.getElementById('so-customer');
+      sel.innerHTML = '<option value="">Select a customer</option>' + (salesCustomers || []).map(function (c) {
+        return '<option value="' + esc(c.id) + '"' + (String(c.id) === String(selected) ? ' selected' : '') + '>' +
+          esc(c.displayName || c.companyName || [c.contactFirst, c.contactLast].filter(Boolean).join(' ') || c.email) +
+          '</option>';
+      }).join('');
+    }
+
+    function applySoCustomer(c) {
+      if (!c) return;
+      document.getElementById('so-customer-name').value = c.displayName || c.companyName || [c.contactFirst, c.contactLast].filter(Boolean).join(' ') || '';
+      document.getElementById('so-customer-email').value = c.email || '';
+      if (c.paymentTerms) document.getElementById('so-terms').value = c.paymentTerms;
+    }
+
+    function soLineRow(line) {
+      const item = line || {};
+      return '<tr class="border-b border-slate-800 so-line">' +
+        '<td class="py-2 px-2"><input data-line="sku" value="' + esc(item.sku || '') + '" class="w-full bg-slate-800 border border-slate-700 rounded px-2 py-1.5 text-sm"></td>' +
+        '<td class="py-2 px-2"><input data-line="description" value="' + esc(item.description || '') + '" class="w-full bg-slate-800 border border-slate-700 rounded px-2 py-1.5 text-sm"></td>' +
+        '<td class="py-2 px-2"><input data-line="qty" type="number" step="0.01" value="' + esc(item.qty == null ? 1 : item.qty) + '" class="w-full bg-slate-800 border border-slate-700 rounded px-2 py-1.5 text-sm"></td>' +
+        '<td class="py-2 px-2"><input data-line="unitPrice" type="number" step="0.01" value="' + esc(item.unitPrice == null ? 0 : item.unitPrice) + '" class="w-full bg-slate-800 border border-slate-700 rounded px-2 py-1.5 text-sm"></td>' +
+        '<td class="py-2 px-2 text-slate-300" data-line-amt>' + moneyText((item.qty || 0) * (item.unitPrice || 0)) + '</td>' +
+        '<td class="py-2 px-2"><button type="button" data-remove-line class="text-slate-500 hover:text-red-400 text-xs">✕</button></td>' +
+        '</tr>';
+    }
+
+    function readSoLines() {
+      return Array.prototype.map.call(document.querySelectorAll('#so-lines .so-line'), function (row) {
+        return {
+          sku: (row.querySelector('[data-line="sku"]').value || '').trim(),
+          description: (row.querySelector('[data-line="description"]').value || '').trim(),
+          qty: money(row.querySelector('[data-line="qty"]').value),
+          unitPrice: money(row.querySelector('[data-line="unitPrice"]').value)
+        };
+      });
+    }
+
+    function refreshSoTotals() {
+      const lines = readSoLines();
+      const subtotal = money(lines.reduce(function (sum, line) { return sum + line.qty * line.unitPrice; }, 0));
+      const discount = money(document.getElementById('so-discount').value);
+      const rate = money(document.getElementById('so-tax-rate').value);
+      const tax = money(Math.max(0, subtotal - discount) * (rate / 100));
+      document.querySelectorAll('#so-lines .so-line').forEach(function (row) {
+        const qty = money(row.querySelector('[data-line="qty"]').value);
+        const price = money(row.querySelector('[data-line="unitPrice"]').value);
+        row.querySelector('[data-line-amt]').textContent = moneyText(qty * price);
+      });
+      document.getElementById('so-subtotal').textContent = moneyText(subtotal);
+      document.getElementById('so-tax').textContent = moneyText(tax);
+      document.getElementById('so-grand').textContent = moneyText(Math.max(0, subtotal - discount) + tax);
+    }
+
+    function setSoTypeUi(type) {
+      document.getElementById('so-type').value = type;
+      document.getElementById('so-due-label').textContent = type === 'quote' ? 'Valid until' : 'Due date';
+      document.getElementById('so-new-btn').textContent = 'New ' + salesTypeLabel(type).toLowerCase();
+      document.getElementById('so-list-label').textContent =
+        type === 'quote' ? 'sales quotes' : type === 'order' ? 'sales orders' : 'invoices';
+      document.getElementById('so-back').textContent = '← All ' +
+        (type === 'quote' ? 'quotes' : type === 'order' ? 'orders' : 'invoices');
+    }
+
+    function showSoList() {
+      document.getElementById('sales-list-wrap').classList.remove('hidden');
+      document.getElementById('so-detail').classList.add('hidden');
+    }
+
+    function renderSoTable(rows, type) {
+      const tbody = document.getElementById('so-table');
+      const q = (document.getElementById('so-search').value || '').toLowerCase();
+      const filtered = (rows || []).filter(function (d) {
+        if (!q) return true;
+        return [d.number, d.customerName, d.customerEmail, d.poNumber, d.status]
+          .join(' ').toLowerCase().indexOf(q) !== -1;
+      });
+      const count = (rows || []).length;
+      document.getElementById('so-total').textContent = String(count);
+      document.getElementById('so-list-label').textContent =
+        type === 'quote' ? (count === 1 ? 'sales quote' : 'sales quotes')
+          : type === 'order' ? (count === 1 ? 'sales order' : 'sales orders')
+            : (count === 1 ? 'invoice' : 'invoices');
+      if (!filtered.length) {
+        tbody.innerHTML = '<tr><td class="py-6 px-4 text-slate-500" colspan="6">' +
+          (q ? 'No documents match this search.' : 'No ' + salesTypeLabel(type).toLowerCase() + 's yet.') +
+          '</td></tr>';
+        return;
+      }
+      tbody.innerHTML = filtered.map(function (d) {
+        const when = d.issueDate ? new Date(d.issueDate + 'T00:00:00').toLocaleDateString() : '—';
+        return '<tr class="border-b border-slate-800 hover:bg-slate-900/80 cursor-pointer" data-id="' + esc(d.id) + '">' +
+          '<td class="py-3 px-4 font-medium">' + esc(d.number || '—') + '</td>' +
+          '<td class="py-3 px-4">' + esc(d.customerName || '—') + '</td>' +
+          '<td class="py-3 px-4">' + esc(when) + '</td>' +
+          '<td class="py-3 px-4"><span class="text-xs px-2 py-0.5 rounded-full bg-sky-500/15 text-sky-300">' + esc(d.status || 'draft') + '</span></td>' +
+          '<td class="py-3 px-4">' + moneyText(d.total) + '</td>' +
+          '<td class="py-3 px-4 text-right"><span class="text-sky-400 text-xs font-medium">Open →</span></td>' +
+          '</tr>';
+      }).join('');
+    }
+
+    async function loadSalesDocs(type) {
+      const t = type || salesTypeFromTab(salesSubTab);
+      setSoTypeUi(t);
+      showError('so-error', '');
+      try {
+        const [docsData, custData] = await Promise.all([
+          api('/api/admin/sales-docs?type=' + encodeURIComponent(t)),
+          api('/api/admin/company-customers')
+        ]);
+        salesDocs = docsData.docs || [];
+        salesCustomers = custData.customers || [];
+        fillSoCustomers('');
+        renderSoTable(salesDocs, t);
+      } catch (err) {
+        showError('so-error', err.message || 'Could not load sales documents.');
+        document.getElementById('so-table').innerHTML = '<tr><td class="py-6 px-4 text-slate-500" colspan="6">Could not load documents.</td></tr>';
+      }
+    }
+
+    function fillSoForm(doc) {
+      const type = doc.type || 'quote';
+      setSoTypeUi(type);
+      document.getElementById('so-id').value = doc.id || '';
+      fillSoCustomers(doc.customerId || '');
+      fillSoStatuses(type, doc.status || 'draft');
+      document.getElementById('so-customer-name').value = doc.customerName || '';
+      document.getElementById('so-customer-email').value = doc.customerEmail || '';
+      document.getElementById('so-po').value = doc.poNumber || '';
+      document.getElementById('so-issue').value = doc.issueDate || new Date().toISOString().slice(0, 10);
+      document.getElementById('so-due').value = doc.dueDate || '';
+      document.getElementById('so-terms').value = doc.paymentTerms || 'Net 30';
+      document.getElementById('so-discount').value = doc.discount || 0;
+      document.getElementById('so-tax-rate').value = doc.taxRate || 0;
+      document.getElementById('so-notes').value = doc.notes || '';
+      const lines = (doc.lines && doc.lines.length) ? doc.lines : [{ qty: 1, unitPrice: 0 }];
+      document.getElementById('so-lines').innerHTML = lines.map(soLineRow).join('');
+      document.getElementById('so-delete-btn').classList.toggle('hidden', !doc.id);
+      document.getElementById('so-to-order').classList.toggle('hidden', !doc.id || type === 'order');
+      document.getElementById('so-to-invoice').classList.toggle('hidden', !doc.id || type === 'invoice');
+      refreshSoTotals();
+    }
+
+    function readSoForm() {
+      return {
+        type: document.getElementById('so-type').value,
+        customerId: document.getElementById('so-customer').value,
+        customerName: document.getElementById('so-customer-name').value.trim(),
+        customerEmail: document.getElementById('so-customer-email').value.trim(),
+        poNumber: document.getElementById('so-po').value.trim(),
+        issueDate: document.getElementById('so-issue').value,
+        dueDate: document.getElementById('so-due').value,
+        paymentTerms: document.getElementById('so-terms').value,
+        status: document.getElementById('so-status').value,
+        discount: document.getElementById('so-discount').value,
+        taxRate: document.getElementById('so-tax-rate').value,
+        notes: document.getElementById('so-notes').value.trim(),
+        lines: readSoLines()
+      };
+    }
+
+    function showSoMsg(text, ok) {
+      const el = document.getElementById('so-msg');
+      el.textContent = text || '';
+      el.className = 'sm:col-span-2 text-sm ' + (ok ? 'text-sky-400' : 'text-red-400');
+      el.classList.toggle('hidden', !text);
+    }
+
+    function openNewSale(type) {
+      const t = type || salesTypeFromTab(salesSubTab);
+      document.getElementById('so-title').textContent = 'New ' + salesTypeLabel(t).toLowerCase();
+      showSoMsg('');
+      fillSoForm({
+        type: t,
+        status: 'draft',
+        paymentTerms: 'Net 30',
+        issueDate: new Date().toISOString().slice(0, 10),
+        lines: [{ qty: 1, unitPrice: 0 }]
+      });
+      document.getElementById('sales-list-wrap').classList.add('hidden');
+      document.getElementById('so-detail').classList.remove('hidden');
+    }
+
+    async function openSalesDoc(id) {
+      showSoMsg('');
+      showError('so-error', '');
+      try {
+        const data = await api('/api/admin/sales-docs/' + id);
+        const doc = data.doc;
+        if (!doc) return;
+        document.getElementById('so-title').textContent = (doc.number || salesTypeLabel(doc.type)) + ' · ' + (doc.customerName || '');
+        fillSoForm(doc);
+        document.getElementById('sales-list-wrap').classList.add('hidden');
+        document.getElementById('so-detail').classList.remove('hidden');
+      } catch (err) {
+        showError('so-error', err.message || 'Could not open this document.');
+      }
+    }
+
     async function openRoutedSection(name) {
       if (name === 'products') closeProductForm();
       if (name === 'accounts') {
@@ -1365,9 +2072,162 @@
         document.getElementById('inventory-detail').classList.add('hidden');
         await loadInventory();
       }
+      if (name === 'customers') {
+        showCcList();
+        await loadCompanyCustomers();
+      }
+      if (name === 'quotes' || name === 'orders' || name === 'invoices' || name === 'sales') {
+        showSoList();
+        await loadSalesDocs(salesTypeFromTab(name));
+      }
       if (name === 'staff') await loadStaff();
       if (name === 'roles') await loadRoles();
     }
+
+    document.getElementById('cc-new-btn').addEventListener('click', openNewCustomer);
+    document.getElementById('cc-back').addEventListener('click', function () {
+      showCcList();
+      loadCompanyCustomers();
+    });
+    document.getElementById('cc-search').addEventListener('input', function () {
+      renderCcTable(companyCustomers);
+    });
+    document.getElementById('cc-ship-same').addEventListener('change', syncCcShipFields);
+    document.getElementById('cc-table').addEventListener('click', function (e) {
+      const row = e.target.closest('tr[data-id]');
+      if (row) openCompanyCustomer(row.getAttribute('data-id'));
+    });
+    document.getElementById('cc-form').addEventListener('submit', async function (e) {
+      e.preventDefault();
+      showCcMsg('');
+      const id = document.getElementById('cc-id').value;
+      try {
+        if (id) {
+          await api('/api/admin/company-customers/' + id, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(readCcForm())
+          });
+          showCcMsg('Customer saved.', true);
+        } else {
+          const data = await api('/api/admin/company-customers', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(readCcForm())
+          });
+          document.getElementById('cc-id').value = data.customer.id;
+          document.getElementById('cc-title').textContent = data.customer.displayName || 'Customer';
+          document.getElementById('cc-delete-btn').classList.remove('hidden');
+          showCcMsg('Customer added.', true);
+        }
+        await loadCompanyCustomers();
+      } catch (err) {
+        showCcMsg(err.message || 'Could not save customer.');
+      }
+    });
+    document.getElementById('cc-delete-btn').addEventListener('click', async function () {
+      const id = document.getElementById('cc-id').value;
+      if (!id || !confirm('Delete this customer?')) return;
+      try {
+        await api('/api/admin/company-customers/' + id, { method: 'DELETE' });
+        showCcList();
+        await loadCompanyCustomers();
+      } catch (err) {
+        showCcMsg(err.message || 'Could not delete customer.');
+      }
+    });
+
+    document.getElementById('so-new-btn').addEventListener('click', function () {
+      openNewSale(salesTypeFromTab(salesSubTab));
+    });
+    document.getElementById('so-back').addEventListener('click', function () {
+      showSoList();
+      loadSalesDocs(salesTypeFromTab(salesSubTab));
+    });
+    document.getElementById('so-search').addEventListener('input', function () {
+      renderSoTable(salesDocs, salesTypeFromTab(salesSubTab));
+    });
+    document.getElementById('so-table').addEventListener('click', function (e) {
+      const row = e.target.closest('tr[data-id]');
+      if (row) openSalesDoc(row.getAttribute('data-id'));
+    });
+    document.getElementById('so-add-line').addEventListener('click', function () {
+      document.getElementById('so-lines').insertAdjacentHTML('beforeend', soLineRow({ qty: 1, unitPrice: 0 }));
+      refreshSoTotals();
+    });
+    document.getElementById('so-lines').addEventListener('input', refreshSoTotals);
+    document.getElementById('so-lines').addEventListener('click', function (e) {
+      const btn = e.target.closest('[data-remove-line]');
+      if (!btn) return;
+      const rows = document.querySelectorAll('#so-lines .so-line');
+      if (rows.length <= 1) return;
+      btn.closest('tr').remove();
+      refreshSoTotals();
+    });
+    document.getElementById('so-discount').addEventListener('input', refreshSoTotals);
+    document.getElementById('so-tax-rate').addEventListener('input', refreshSoTotals);
+    document.getElementById('so-customer').addEventListener('change', function () {
+      const id = this.value;
+      const c = (salesCustomers || []).find(function (row) { return String(row.id) === String(id); });
+      applySoCustomer(c);
+    });
+    document.getElementById('so-form').addEventListener('submit', async function (e) {
+      e.preventDefault();
+      showSoMsg('');
+      const id = document.getElementById('so-id').value;
+      try {
+        const payload = readSoForm();
+        const data = id
+          ? await api('/api/admin/sales-docs/' + id, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+          })
+          : await api('/api/admin/sales-docs', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+          });
+        fillSoForm(data.doc);
+        document.getElementById('so-title').textContent = (data.doc.number || salesTypeLabel(data.doc.type)) + ' · ' + (data.doc.customerName || '');
+        showSoMsg((data.doc.number || 'Document') + ' saved.', true);
+        await loadSalesDocs(data.doc.type);
+      } catch (err) {
+        showSoMsg(err.message || 'Could not save document.');
+      }
+    });
+    document.getElementById('so-delete-btn').addEventListener('click', async function () {
+      const id = document.getElementById('so-id').value;
+      if (!id || !confirm('Delete this document?')) return;
+      try {
+        await api('/api/admin/sales-docs/' + id, { method: 'DELETE' });
+        showSoList();
+        await loadSalesDocs(salesTypeFromTab(salesSubTab));
+      } catch (err) {
+        showSoMsg(err.message || 'Could not delete document.');
+      }
+    });
+    async function convertCurrentSale(type) {
+      const id = document.getElementById('so-id').value;
+      if (!id) return;
+      showSoMsg('');
+      try {
+        const data = await api('/api/admin/sales-docs/' + id + '/convert', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ type: type })
+        });
+        salesSubTab = type === 'invoice' ? 'invoices' : 'orders';
+        openCompanyTab(salesSubTab, true);
+        await openSalesDoc(data.doc.id);
+        showSoMsg('Created ' + (data.doc.number || salesTypeLabel(type)) + '.', true);
+      } catch (err) {
+        showSoMsg(err.message || 'Could not convert document.');
+      }
+    }
+    document.getElementById('so-to-order').addEventListener('click', function () { convertCurrentSale('order'); });
+    document.getElementById('so-to-invoice').addEventListener('click', function () { convertCurrentSale('invoice'); });
+
     function resetStaffForm() {
       editingStaffId = null;
       document.getElementById('staff-form').reset();
