@@ -5,26 +5,70 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Admin | Spectrum Display</title>
   <meta name="robots" content="noindex, nofollow" />
+  <link rel="stylesheet" href="css/site-header.css" />
   <script src="https://cdn.tailwindcss.com"></script>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-  <style>body { font-family: 'Inter', system-ui, sans-serif; }</style>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    body { font-family: 'Inter', system-ui, sans-serif; }
+    :root {
+      --nav-h: var(--site-header-h, 4rem);
+      --designer-bar-h: 3.75rem;
+      --content-gap: 1.5rem;
+    }
+    body.designer-app { padding-top: var(--nav-h); }
+    .admin-toolbar {
+      position: sticky;
+      top: var(--nav-h);
+      z-index: 40;
+      min-height: var(--designer-bar-h);
+      background: rgba(2, 6, 23, 0.9);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border-bottom: 1px solid #1e293b;
+    }
+    .admin-toolbar .site-nav-link { font-size: 0.8125rem; }
+  </style>
 </head>
-<body class="bg-slate-950 text-slate-100 antialiased min-h-screen">
-  <header class="border-b border-slate-800 bg-slate-950">
-    <div class="max-w-6xl mx-auto px-4 py-4 flex items-center justify-between gap-3">
-      <div>
-        <a href="/" class="text-xs text-slate-500 hover:text-sky-300">← Site</a>
-        <h1 class="text-lg font-bold">Spectrum Admin</h1>
-      </div>
-      <div class="flex items-center gap-3">
-        <button id="header-settings" type="button" class="hidden px-3 py-1.5 rounded-full text-sm text-slate-400 hover:text-white">Settings</button>
-        <span id="admin-name" class="text-sm text-slate-400"></span>
-        <button id="logout-btn" type="button" class="hidden px-3 py-1.5 rounded-full border border-slate-600 text-sm hover:border-sky-500">Sign out</button>
+<body class="designer-app bg-slate-950 text-slate-100 antialiased min-h-screen">
+  <header class="site-header" id="site-header">
+    <div class="site-header-inner">
+      <div class="site-header-top">
+        <a href="/" class="site-brand">
+          <img src="assets/spectrum-logo.png" alt="Spectrum" class="site-brand-logo" />
+        </a>
+        <nav class="site-nav hidden" id="admin-nav">
+          <button type="button" id="tab-website" class="site-nav-link is-active">Website</button>
+          <button type="button" id="tab-inventory" class="site-nav-link">Inventory</button>
+        </nav>
+        <div class="site-utils hidden" id="admin-utils">
+          <button type="button" id="header-settings" class="site-util">Settings</button>
+          <span id="admin-name" class="site-util" style="cursor:default"></span>
+          <button type="button" id="logout-btn" class="site-util">Sign out</button>
+        </div>
       </div>
     </div>
   </header>
 
-  <main class="max-w-6xl mx-auto px-4 py-8">
+  <header class="admin-toolbar hidden" id="admin-toolbar">
+    <div class="site-wrap h-[var(--designer-bar-h)] flex items-center justify-between gap-4">
+      <div class="min-w-0">
+        <h1 id="admin-page-title" class="text-base sm:text-lg font-bold leading-tight truncate">Website</h1>
+        <p id="admin-page-sub" class="hidden md:block text-xs leading-tight text-slate-400 truncate">Product pages and website accounts</p>
+      </div>
+      <div class="flex items-center gap-1 shrink-0">
+        <div id="website-subnav" class="flex flex-wrap gap-1">
+          <button type="button" id="tab-products" class="site-nav-link is-active">Products</button>
+          <button type="button" id="tab-accounts" class="site-nav-link">Accounts</button>
+        </div>
+        <div id="settings-subnav" class="hidden flex flex-wrap gap-1">
+          <button type="button" id="tab-staff" class="site-nav-link is-active">Manage users</button>
+          <button type="button" id="tab-roles" class="site-nav-link">Role Setting</button>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <main class="site-wrap" style="padding-top: var(--content-gap); padding-bottom: 5rem;">
     <section id="login-panel" class="max-w-md mx-auto">
       <h2 class="text-2xl font-bold mb-2">Company sign in</h2>
       <p class="text-sm text-slate-400 mb-6">Spectrum staff only. Website pages, inventory, and customer accounts. This is not a dealer or customer login.</p>
@@ -43,17 +87,7 @@
     </section>
 
     <section id="dash-panel" class="hidden space-y-8">
-      <div class="flex flex-wrap gap-2 border-b border-slate-800 pb-3">
-        <button type="button" id="tab-website" class="admin-tab px-4 py-2 rounded-full text-sm font-medium bg-sky-500/20 text-sky-300">Website</button>
-        <button type="button" id="tab-inventory" class="admin-tab px-4 py-2 rounded-full text-sm font-medium text-slate-400 hover:text-white">Inventory</button>
-      </div>
-
       <div id="website-pane" class="space-y-6">
-      <div id="website-subnav" class="flex flex-wrap gap-1 border-b border-slate-800/80 pb-3">
-        <button type="button" id="tab-products" class="website-subtab px-3 py-1.5 rounded-full text-sm font-medium bg-sky-500/20 text-sky-300">Products</button>
-        <button type="button" id="tab-accounts" class="website-subtab px-3 py-1.5 rounded-full text-sm font-medium text-slate-400 hover:text-white">Accounts</button>
-      </div>
-
       <div id="products-section" class="space-y-6">
       <div id="products-list-wrap">
       <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4">
@@ -439,10 +473,6 @@
       </div>
 
       <div id="settings-pane" class="hidden space-y-6">
-      <div id="settings-subnav" class="flex flex-wrap gap-1 border-b border-slate-800/80 pb-3">
-        <button type="button" id="tab-staff" class="settings-subtab px-3 py-1.5 rounded-full text-sm font-medium bg-sky-500/20 text-sky-300">Manage users</button>
-        <button type="button" id="tab-roles" class="settings-subtab px-3 py-1.5 rounded-full text-sm font-medium text-slate-400 hover:text-white">Role Setting</button>
-      </div>
       <div id="staff-section" class="space-y-6">
         <p class="text-slate-400 text-sm">Admin logins for this page — not website Customer / Dealer / Sales accounts. Owner sees everything. Website can edit product pages and website accounts. Inventory can receive and adjust stock.</p>
         <form id="staff-form" class="rounded-2xl border border-slate-800 bg-slate-900/50 p-5 grid sm:grid-cols-2 gap-4">
@@ -604,9 +634,11 @@
       currentAdminUser = admin;
       loginPanel.classList.add('hidden');
       dashPanel.classList.remove('hidden');
-      document.getElementById('logout-btn').classList.remove('hidden');
       const roleBit = admin.roleName && admin.role !== 'owner' ? ' · ' + admin.roleName : '';
       document.getElementById('admin-name').textContent = (admin.name || admin.email || '') + roleBit;
+      document.getElementById('admin-nav').classList.remove('hidden');
+      document.getElementById('admin-utils').classList.remove('hidden');
+      document.getElementById('admin-toolbar').classList.remove('hidden');
       document.getElementById('tab-website').classList.toggle('hidden', !canUse('website'));
       document.getElementById('tab-inventory').classList.toggle('hidden', !canUse('inventory'));
       document.getElementById('header-settings').classList.toggle('hidden', !canUse('settings'));
@@ -763,10 +795,8 @@
       return '<p class="text-slate-500 text-sm rounded-xl border border-dashed border-slate-800 p-4">' + esc(text) + '</p>';
     }
 
-    function tabClass(on, extra, hide) {
-      return extra + ' rounded-full text-sm font-medium ' +
-        (on ? 'bg-sky-500/20 text-sky-300' : 'text-slate-400 hover:text-white') +
-        (hide ? ' hidden' : '');
+    function navLinkClass(on, hide) {
+      return 'site-nav-link' + (on ? ' is-active' : '') + (hide ? ' hidden' : '');
     }
 
     function showAdminTab(name) {
@@ -781,15 +811,25 @@
       document.getElementById('accounts-section').classList.toggle('hidden', name !== 'accounts');
       document.getElementById('staff-section').classList.toggle('hidden', name !== 'staff');
       document.getElementById('roles-section').classList.toggle('hidden', name !== 'roles');
-      document.getElementById('tab-website').className = tabClass(onWebsite, 'admin-tab px-4 py-2', !canUse('website'));
-      document.getElementById('tab-inventory').className = tabClass(name === 'inventory', 'admin-tab px-4 py-2', !canUse('inventory'));
-      document.getElementById('tab-products').className = tabClass(name === 'products', 'website-subtab px-3 py-1.5', false);
-      document.getElementById('tab-accounts').className = tabClass(name === 'accounts', 'website-subtab px-3 py-1.5', !canUse('accounts'));
-      document.getElementById('tab-staff').className = tabClass(name === 'staff', 'settings-subtab px-3 py-1.5', !canUse('staff'));
-      document.getElementById('tab-roles').className = tabClass(name === 'roles', 'settings-subtab px-3 py-1.5', !canUse('roles'));
-      document.getElementById('header-settings').className = 'px-3 py-1.5 rounded-full text-sm ' +
-        (onSettings ? 'bg-sky-500/20 text-sky-300' : 'text-slate-400 hover:text-white') +
-        (canUse('settings') ? '' : ' hidden');
+      document.getElementById('website-subnav').classList.toggle('hidden', !onWebsite);
+      document.getElementById('settings-subnav').classList.toggle('hidden', !onSettings);
+      document.getElementById('tab-website').className = navLinkClass(onWebsite, !canUse('website'));
+      document.getElementById('tab-inventory').className = navLinkClass(name === 'inventory', !canUse('inventory'));
+      document.getElementById('tab-products').className = navLinkClass(name === 'products', false);
+      document.getElementById('tab-accounts').className = navLinkClass(name === 'accounts', !canUse('accounts'));
+      document.getElementById('tab-staff').className = navLinkClass(name === 'staff', !canUse('staff'));
+      document.getElementById('tab-roles').className = navLinkClass(name === 'roles', !canUse('roles'));
+      document.getElementById('header-settings').className = 'site-util' + (onSettings ? ' is-open' : '') + (canUse('settings') ? '' : ' hidden');
+      const titles = {
+        products: ['Website', 'Product pages'],
+        accounts: ['Website', 'Website accounts'],
+        inventory: ['Inventory', 'Warehouse SKUs'],
+        staff: ['Settings', 'Admin logins'],
+        roles: ['Settings', 'Role Setting']
+      };
+      const bits = titles[name] || ['Admin', ''];
+      document.getElementById('admin-page-title').textContent = bits[0];
+      document.getElementById('admin-page-sub').textContent = bits[1];
       const newBtn = document.getElementById('new-btn');
       if (newBtn) newBtn.classList.toggle('hidden', !canEdit('website'));
       const invNew = document.getElementById('inv-new-btn');
