@@ -288,6 +288,7 @@
             <div>
               <label class="block text-sm font-medium mb-2">Pixel Pitch</label>
               <div id="pitch-grid" class="flex flex-wrap gap-2"></div>
+              <p id="pitch-stock" class="text-sm text-slate-500 mt-2"></p>
             </div>
             <div>
               <label class="block text-sm font-medium mb-2">Panel Size</label>
@@ -296,10 +297,13 @@
               </select>
             </div>
             <div class="pt-4 border-t border-slate-800 flex items-end justify-between gap-4">
-              <div class="pricing-only">
-                <div class="text-sm text-slate-400">Estimated price</div>
-                <div class="text-3xl font-bold"><span id="price">—</span></div>
-                <div class="text-xs text-slate-500" id="price-unit"></div>
+              <div>
+                <div class="pricing-only">
+                  <div class="text-sm text-slate-400">Estimated price</div>
+                  <div class="text-3xl font-bold"><span id="price">—</span></div>
+                  <div class="text-xs text-slate-500" id="price-unit"></div>
+                </div>
+                <p id="product-stock" class="text-sm mt-2"></p>
               </div>
               <button id="add-to-cart" class="pricing-only px-8 py-3 rounded-full bg-sky-500 hover:bg-sky-400 text-white font-semibold transition">
                 Add to Cart
@@ -396,16 +400,67 @@
     const isControl = !!(seriesData && (seriesData.type === 'control' || brandId === 'novastar'));
     const isReceiver = !!(isControl && (seriesData.replacementOnly || seriesData.subtype === 'receiving-card'));
 
-    let basePrice = isControl
+    const seriesPrice = isControl
       ? (Number(seriesData && seriesData.priceEach) || 0)
       : (Number(seriesData && seriesData.pricePerM2) || 0);
+    let basePrice = seriesPrice;
     const productName = (seriesData && seriesData.name) || 'LED Series';
     const productId = brandId + '-' + ((seriesData && seriesData.id) || seriesId || 'series');
-    const hasPrice = basePrice > 0;
+
+    function pitchInventoryMap() {
+      return (seriesData && seriesData.pitchInventory) || {};
+    }
+
+    function linkedInvForPitch(pitch) {
+      const map = pitchInventoryMap();
+      const key = pitch == null ? '' : String(pitch);
+      if (map[key]) return map[key];
+      const n = Number(key);
+      if (key !== '' && isFinite(n) && map[String(n)]) return map[String(n)];
+      return null;
+    }
+
+    function linkedInv() {
+      if (isControl) return linkedInvForPitch('');
+      return linkedInvForPitch(selectedPitch());
+    }
+
+    function currentBasePrice() {
+      const inv = linkedInv();
+      if (inv && Number(inv.price) > 0) return Number(inv.price);
+      return seriesPrice;
+    }
+
+    function hasSellPrice() {
+      return currentBasePrice() > 0;
+    }
 
     function sellUnit() {
+      basePrice = currentBasePrice();
       if (window.SpectrumPricing && SpectrumPricing.apply) return SpectrumPricing.apply(basePrice);
       return Math.round(Number(basePrice) || 0);
+    }
+
+    function stockStatusLabel(status) {
+      if (status === 'out') return 'Out of stock';
+      if (status === 'low') return 'Low stock';
+      return 'In stock';
+    }
+
+    function updateStock() {
+      const inv = linkedInv();
+      const text = !inv
+        ? ''
+        : (stockStatusLabel(inv.status) + ' · ' + (Number(inv.qty) || 0).toLocaleString() + ' ' + (inv.unit === 'each' ? 'each' : 'panels'));
+      const cls = !inv
+        ? 'text-sm mt-2 hidden'
+        : ('text-sm mt-2 ' + (inv.status === 'out' ? 'text-red-400' : inv.status === 'low' ? 'text-amber-300' : 'text-emerald-400'));
+      ['pitch-stock', 'product-stock'].forEach(function (id) {
+        const el = document.getElementById(id);
+        if (!el) return;
+        el.textContent = text;
+        el.className = cls;
+      });
     }
 
     function esc(s) {
@@ -599,6 +654,8 @@
             btn.classList.remove('border-slate-700');
             syncCalculatorLink();
             syncSpecSummary();
+            if (typeof window.__spectrumUpdateProductPrice === 'function') window.__spectrumUpdateProductPrice();
+            if (typeof window.__spectrumUpdateProductStock === 'function') window.__spectrumUpdateProductStock();
           };
         });
       }
@@ -810,7 +867,7 @@
       if (stickyName) stickyName.textContent = productName;
       const stickyFrom = document.getElementById('sticky-from');
       const unitSuffix = isControl ? ' each' : ' / m²';
-      if (stickyFrom && hasPrice) {
+      if (stickyFrom && hasSellPrice()) {
         stickyFrom.textContent = 'From $' + sellUnit().toLocaleString() + unitSuffix;
       }
 
@@ -862,7 +919,7 @@
       }
       syncCalculatorLink();
       syncSpecSummary();
-      if (!hasPrice && !isControl) {
+      if (!hasSellPrice() && !isControl && !linkedInv()) {
         document.querySelectorAll('.pricing-only').forEach(function (el) { el.classList.add('hidden'); });
         var guestCtaQuote = document.getElementById('guest-price-cta');
         if (guestCtaQuote) {
@@ -1079,20 +1136,24 @@
     const stickyPrice = document.getElementById('sticky-price');
 
     function updatePrice() {
-      if (!hasPrice) return;
+      const priced = hasSellPrice();
       const unit = sellUnit();
-      priceEl.textContent = '$' + unit.toLocaleString();
-      stickyPrice.textContent = '$' + unit.toLocaleString();
+      if (priceEl) priceEl.textContent = priced ? ('$' + unit.toLocaleString()) : 'Quote';
+      if (stickyPrice) stickyPrice.textContent = priced ? ('$' + unit.toLocaleString()) : 'Quote';
       const priceUnit = document.getElementById('price-unit');
       if (priceUnit) {
-        priceUnit.textContent = isControl ? 'each' : '/ m²';
+        priceUnit.textContent = priced ? (isControl ? 'each' : '/ m²') : (linkedInv() ? 'Linked inventory has no price yet' : 'Request a quote');
       }
       const stickyFrom = document.getElementById('sticky-from');
       if (stickyFrom) {
-        stickyFrom.textContent = 'From $' + unit.toLocaleString() + (isControl ? ' each' : ' / m²');
+        stickyFrom.textContent = priced
+          ? ('From $' + unit.toLocaleString() + (isControl ? ' each' : ' / m²'))
+          : 'Request quote';
       }
+      updateStock();
     }
     window.__spectrumUpdateProductPrice = updatePrice;
+    window.__spectrumUpdateProductStock = updateStock;
     updatePrice();
 
     // Tabs
@@ -1111,7 +1172,7 @@
 
     // Cart
     function addToCart() {
-      if (!hasPrice) {
+      if (!hasSellPrice()) {
         location.href = 'contact.html';
         return;
       }

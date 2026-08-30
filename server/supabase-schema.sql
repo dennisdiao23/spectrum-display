@@ -301,7 +301,7 @@ $fn$;
 revoke all on function public.my_price_multiplier() from public;
 grant execute on function public.my_price_multiplier() to anon, authenticated;
 
--- Admin-only on-hand stock. Public catalog does not read these tables.
+-- Legacy catalog-tied stock (kept for one-time migration).
 create table if not exists public.inventory_stock (
   id bigint generated always as identity primary key,
   product_id bigint not null references public.products(id) on delete cascade,
@@ -340,3 +340,65 @@ for all using (public.is_spectrum_admin()) with check (public.is_spectrum_admin(
 
 grant all on public.inventory_stock to service_role;
 grant all on public.inventory_moves to service_role;
+
+-- Independent inventory SKUs. Website products link to these via product_inventory_map.
+create table if not exists public.inventory_items (
+  id bigint generated always as identity primary key,
+  sku text not null default '',
+  name text not null,
+  brand_id text not null default '',
+  pitch text not null default '',
+  unit text not null default 'panels',
+  qty integer not null default 0,
+  low_at integer not null default 8,
+  price double precision not null default 0,
+  notes text not null default '',
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now()
+);
+
+alter table public.inventory_items add column if not exists sku text not null default '';
+create unique index if not exists inventory_items_sku_uidx on public.inventory_items (sku);
+
+create table if not exists public.inventory_item_moves (
+  id bigint generated always as identity primary key,
+  item_id bigint not null references public.inventory_items(id) on delete cascade,
+  kind text not null,
+  qty_delta integer not null,
+  qty_after integer not null,
+  note text not null default '',
+  admin_email text not null default '',
+  created_at timestamptz not null default now()
+);
+
+create table if not exists public.product_inventory_map (
+  id bigint generated always as identity primary key,
+  product_id bigint not null references public.products(id) on delete cascade,
+  pitch text not null default '',
+  item_id bigint not null references public.inventory_items(id) on delete cascade,
+  unique (product_id, pitch)
+);
+
+create index if not exists inventory_items_brand_idx on public.inventory_items (brand_id, name);
+create index if not exists inventory_item_moves_item_idx on public.inventory_item_moves (item_id, created_at desc);
+create index if not exists product_inventory_map_item_idx on public.product_inventory_map (item_id);
+
+alter table public.inventory_items enable row level security;
+alter table public.inventory_item_moves enable row level security;
+alter table public.product_inventory_map enable row level security;
+
+drop policy if exists inventory_items_admin_all on public.inventory_items;
+create policy inventory_items_admin_all on public.inventory_items
+for all using (public.is_spectrum_admin()) with check (public.is_spectrum_admin());
+
+drop policy if exists inventory_item_moves_admin_all on public.inventory_item_moves;
+create policy inventory_item_moves_admin_all on public.inventory_item_moves
+for all using (public.is_spectrum_admin()) with check (public.is_spectrum_admin());
+
+drop policy if exists product_inventory_map_admin_all on public.product_inventory_map;
+create policy product_inventory_map_admin_all on public.product_inventory_map
+for all using (public.is_spectrum_admin()) with check (public.is_spectrum_admin());
+
+grant all on public.inventory_items to service_role;
+grant all on public.inventory_item_moves to service_role;
+grant all on public.product_inventory_map to service_role;

@@ -51,7 +51,7 @@
       <div id="products-section" class="space-y-6">
       <div id="products-list-wrap">
       <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4">
-        <p class="text-slate-400 text-sm"><span id="product-total">0</span> products in the database. They appear on the Products page and LED Wall Calculator. Click a row to edit.</p>
+        <p class="text-slate-400 text-sm"><span id="product-total">0</span> website product pages. These are catalog content only — photos, copy, and which pitches the page shows. Stock and live sell price live in Inventory. Click a row to edit and link SKUs.</p>
         <button id="new-btn" type="button" class="px-4 py-2 rounded-full bg-sky-500 hover:bg-sky-400 text-white text-sm font-semibold">Add product</button>
       </div>
       <div class="overflow-x-auto rounded-2xl border border-slate-800">
@@ -133,8 +133,9 @@
             <input id="pitches" type="text" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm" placeholder="1.25, 1.56, 1.87">
           </div>
           <div>
-            <label class="block text-xs text-slate-400 mb-1" id="price-label">Price per m² ($)</label>
+            <label class="block text-xs text-slate-400 mb-1" id="price-label">Fallback price per m² ($)</label>
             <input id="price" required type="number" min="0" step="1" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm">
+            <p class="text-[11px] text-slate-500 mt-1">Used only when a pitch has no inventory link. Linked pitches use the inventory item price.</p>
           </div>
           <div class="panel-only-fields">
             <label class="block text-xs text-slate-400 mb-1">Weight kg / m²</label>
@@ -171,28 +172,40 @@
           </div>
         </form>
         </div>
+        <div id="inventory-map-card" class="hidden rounded-2xl border border-slate-800 bg-slate-900/50 p-5">
+          <h3 class="font-semibold text-lg mb-1">Inventory links</h3>
+          <p class="text-sm text-slate-400 mb-4">Each pixel pitch on this product page can show stock and price from one inventory item. Unmapped pitches stay on the page as content only and do not pull warehouse qty. Inventory can also hold SKUs that never appear on the website.</p>
+          <p id="inventory-map-msg" class="hidden text-sm mb-3"></p>
+          <div id="inventory-map-rows" class="space-y-3"></div>
+        </div>
       </div>
       </div>
 
       <div id="inventory-section" class="hidden space-y-6">
         <div id="inventory-list-wrap">
           <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4">
-            <p class="text-slate-400 text-sm">On-hand stock for the catalog. LED series are counted in <span class="text-slate-200">panels</span> per pitch. Control gear is counted <span class="text-slate-200">each</span>. The public site does not show these numbers yet.</p>
+            <p class="text-slate-400 text-sm">Each warehouse line has its own SKU. Link a SKU to a website product pitch to show that qty and price on the site. Extra SKUs can stay off the website.</p>
+            <button id="inv-new-btn" type="button" class="px-4 py-2 rounded-full bg-sky-500 hover:bg-sky-400 text-white text-sm font-semibold">Add inventory item</button>
           </div>
           <div class="flex flex-wrap items-center gap-2 mb-4">
             <button type="button" data-inv-filter="all" class="inv-filter px-3 py-1.5 rounded-full text-xs font-medium bg-sky-500/20 text-sky-300">All</button>
             <button type="button" data-inv-filter="low" class="inv-filter px-3 py-1.5 rounded-full text-xs font-medium text-slate-400 hover:text-white">Low</button>
             <button type="button" data-inv-filter="out" class="inv-filter px-3 py-1.5 rounded-full text-xs font-medium text-slate-400 hover:text-white">Out</button>
-            <input id="inv-search" type="search" placeholder="Search product or brand" class="ml-auto w-full sm:w-56 bg-slate-800 border border-slate-700 rounded-full px-3 py-1.5 text-sm">
+            <button type="button" data-inv-filter="unmapped" class="inv-filter px-3 py-1.5 rounded-full text-xs font-medium text-slate-400 hover:text-white">Not on website</button>
+            <input id="inv-search" type="search" placeholder="Search SKU, name, brand" class="ml-auto w-full sm:w-56 bg-slate-800 border border-slate-700 rounded-full px-3 py-1.5 text-sm">
           </div>
           <p id="inventory-error" class="hidden text-sm text-red-400 mb-3"></p>
           <div class="overflow-x-auto rounded-2xl border border-slate-800">
             <table class="w-full text-sm">
               <thead class="text-left text-slate-400 border-b border-slate-800">
                 <tr>
-                  <th class="py-3 px-4 font-medium">Product</th>
+                  <th class="py-3 px-4 font-medium">SKU</th>
+                  <th class="py-3 px-4 font-medium">Item</th>
                   <th class="py-3 px-4 font-medium">Brand</th>
+                  <th class="py-3 px-4 font-medium">Pitch</th>
                   <th class="py-3 px-4 font-medium">On hand</th>
+                  <th class="py-3 px-4 font-medium">Price</th>
+                  <th class="py-3 px-4 font-medium">Website</th>
                   <th class="py-3 px-4 font-medium">Status</th>
                 </tr>
               </thead>
@@ -202,65 +215,98 @@
         </div>
         <div id="inventory-detail" class="hidden space-y-6">
           <button type="button" id="inventory-back" class="text-sm text-sky-400 hover:text-sky-300">← All inventory</button>
-          <div class="rounded-2xl border border-slate-800 bg-slate-900/50 p-5">
-            <h2 id="inv-title" class="font-semibold text-lg">Product</h2>
-            <p id="inv-meta" class="text-sm text-slate-400 mt-1"></p>
-            <div class="overflow-x-auto mt-4">
-              <table class="w-full text-sm">
-                <thead class="text-left text-slate-400 border-b border-slate-800">
-                  <tr>
-                    <th class="py-2 pr-4 font-medium">Bin</th>
-                    <th class="py-2 pr-4 font-medium">Qty</th>
-                    <th class="py-2 pr-4 font-medium">Low at</th>
-                    <th class="py-2 font-medium">Status</th>
-                  </tr>
-                </thead>
-                <tbody id="inv-bins"></tbody>
-              </table>
-            </div>
-          </div>
-          <form id="inv-adjust-form" class="rounded-2xl border border-slate-800 bg-slate-900/50 p-5 grid sm:grid-cols-2 gap-4">
-            <input type="hidden" id="inv-product-id">
-            <div>
-              <label class="block text-xs text-slate-400 mb-1">Bin</label>
-              <select id="inv-pitch" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm"></select>
+          <form id="inv-item-form" class="rounded-2xl border border-slate-800 bg-slate-900/50 p-5 grid sm:grid-cols-2 gap-4">
+            <input type="hidden" id="inv-item-id">
+            <div class="sm:col-span-2">
+              <h2 id="inv-title" class="font-semibold text-lg">Inventory item</h2>
+              <p class="text-sm text-slate-400 mt-1">This row is warehouse stock. It only appears on a product page if you link it there.</p>
             </div>
             <div>
-              <label class="block text-xs text-slate-400 mb-1">Action</label>
-              <select id="inv-kind" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm">
-                <option value="receive">Receive (add)</option>
-                <option value="sell">Sell (subtract)</option>
-                <option value="damage">Damage / write-off</option>
-                <option value="count">Count (set qty)</option>
+              <label class="block text-xs text-slate-400 mb-1">Name</label>
+              <input id="inv-name" required type="text" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm" placeholder="Discovery P0.93">
+            </div>
+            <div>
+              <label class="block text-xs text-slate-400 mb-1">SKU</label>
+              <input id="inv-sku" type="text" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm" placeholder="TRT-DISCOVERY-P0.93">
+              <p class="text-[11px] text-slate-500 mt-1">Unique warehouse code. Auto-filled if you leave this blank; you can change it later.</p>
+            </div>
+            <div>
+              <label class="block text-xs text-slate-400 mb-1">Brand</label>
+              <select id="inv-brand" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm"></select>
+            </div>
+            <div>
+              <label class="block text-xs text-slate-400 mb-1">Pitch (mm)</label>
+              <input id="inv-item-pitch" type="text" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm" placeholder="Leave blank for each">
+            </div>
+            <div>
+              <label class="block text-xs text-slate-400 mb-1">Unit</label>
+              <select id="inv-unit" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm">
+                <option value="panels">Panels</option>
+                <option value="each">Each</option>
               </select>
             </div>
             <div>
-              <label class="block text-xs text-slate-400 mb-1" id="inv-qty-label">Quantity</label>
-              <input id="inv-qty" required type="number" min="0" step="1" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm">
+              <label class="block text-xs text-slate-400 mb-1">Sell price ($)</label>
+              <input id="inv-price" type="number" min="0" step="1" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm">
+              <p class="text-[11px] text-slate-500 mt-1">Per m² for panels, each for control.</p>
             </div>
             <div>
               <label class="block text-xs text-slate-400 mb-1">Low-stock at</label>
-              <input id="inv-low" type="number" min="0" step="1" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm">
+              <input id="inv-item-low" type="number" min="0" step="1" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm">
             </div>
             <div class="sm:col-span-2">
-              <label class="block text-xs text-slate-400 mb-1">Note</label>
-              <input id="inv-note" type="text" maxlength="240" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm" placeholder="PO, job name, count date…">
+              <label class="block text-xs text-slate-400 mb-1">Notes</label>
+              <input id="inv-item-notes" type="text" maxlength="500" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm" placeholder="Warehouse location, vendor…">
             </div>
-            <p id="inv-msg" class="sm:col-span-2 hidden text-sm"></p>
-            <div class="sm:col-span-2">
-              <button type="submit" class="px-5 py-2 rounded-full bg-sky-500 hover:bg-sky-400 text-white text-sm font-semibold">Save adjustment</button>
+            <p id="inv-item-msg" class="sm:col-span-2 hidden text-sm"></p>
+            <div class="sm:col-span-2 flex flex-wrap gap-2">
+              <button type="submit" class="px-5 py-2 rounded-full bg-sky-500 hover:bg-sky-400 text-white text-sm font-semibold">Save item</button>
+              <button id="inv-delete-btn" type="button" class="hidden px-5 py-2 rounded-full border border-slate-700 text-red-400 hover:border-red-500 text-sm">Delete</button>
             </div>
           </form>
-          <div>
-            <h3 class="font-semibold mb-3">Recent movement</h3>
-            <div id="inv-moves" class="space-y-2 text-sm"></div>
+          <div id="inv-adjust-wrap" class="hidden space-y-6">
+            <form id="inv-adjust-form" class="rounded-2xl border border-slate-800 bg-slate-900/50 p-5 grid sm:grid-cols-2 gap-4">
+              <div class="sm:col-span-2">
+                <h3 class="font-semibold">Adjust on-hand</h3>
+                <p id="inv-meta" class="text-sm text-slate-400 mt-1"></p>
+              </div>
+              <div>
+                <label class="block text-xs text-slate-400 mb-1">Action</label>
+                <select id="inv-kind" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm">
+                  <option value="receive">Receive (add)</option>
+                  <option value="sell">Sell (subtract)</option>
+                  <option value="damage">Damage / write-off</option>
+                  <option value="count">Count (set qty)</option>
+                </select>
+              </div>
+              <div>
+                <label class="block text-xs text-slate-400 mb-1" id="inv-qty-label">Quantity</label>
+                <input id="inv-qty" required type="number" min="0" step="1" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm">
+              </div>
+              <div class="sm:col-span-2">
+                <label class="block text-xs text-slate-400 mb-1">Note</label>
+                <input id="inv-note" type="text" maxlength="240" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm" placeholder="PO, job name, count date…">
+              </div>
+              <p id="inv-msg" class="sm:col-span-2 hidden text-sm"></p>
+              <div class="sm:col-span-2">
+                <button type="submit" class="px-5 py-2 rounded-full bg-sky-500 hover:bg-sky-400 text-white text-sm font-semibold">Save adjustment</button>
+              </div>
+            </form>
+            <div>
+              <h3 class="font-semibold mb-3">Linked website products</h3>
+              <div id="inv-maps" class="space-y-2 text-sm"></div>
+            </div>
+            <div>
+              <h3 class="font-semibold mb-3">Recent movement</h3>
+              <div id="inv-moves" class="space-y-2 text-sm"></div>
+            </div>
           </div>
         </div>
       </div>
 
       <div id="accounts-section" class="hidden space-y-6">
         <div id="accounts-list-wrap">
-          <p class="text-slate-400 text-sm mb-4">All customer sign-ins. Open an account to see orders, saved calculator projects, custom panels, and to set Customer / Dealer / Sales.</p>
+          <p class="text-slate-400 text-sm mb-4">People who signed in on the website (My Account). The Admin email on this page is a CMS login — it is not a row here. Open an account to set Customer / Dealer / Sales, markup, orders, and saved projects.</p>
           <form id="price-tiers-form" class="rounded-2xl border border-slate-800 bg-slate-900/50 p-5 mb-6">
             <h3 class="font-semibold mb-1">Price tiers</h3>
             <p class="text-xs text-slate-500 mb-4">Markup % by account type. Signed-in users see catalog price × (1 + markup%). Only admin can see these percents — they never appear on My Account.</p>
@@ -407,7 +453,7 @@
       const brandId = document.getElementById('brand-id').value;
       const on = isControlType(type, brandId);
       document.getElementById('subtype-wrap').classList.toggle('hidden', !on);
-      document.getElementById('price-label').textContent = on ? 'Price each ($)' : 'Price per m² ($)';
+      document.getElementById('price-label').textContent = on ? 'Fallback price each ($)' : 'Fallback price per m² ($)';
       document.getElementById('pitches').required = !on;
       document.querySelectorAll('.panel-only-fields').forEach(function (el) {
         el.classList.toggle('hidden', on);
@@ -420,6 +466,7 @@
       document.getElementById('product-id').value = '';
       document.getElementById('form-title').textContent = 'New product';
       document.getElementById('image-preview').classList.add('hidden');
+      document.getElementById('inventory-map-card').classList.add('hidden');
       showError('form-error', '');
       fillBrands(brands[0] && brands[0].id);
       syncControlFields();
@@ -464,6 +511,7 @@
         img.src = product.image;
         img.classList.remove('hidden');
       }
+      renderInventoryMap(product);
     }
 
     function renderProducts(list) {
@@ -487,11 +535,13 @@
     }
 
     async function loadDash() {
-      const [brandData, productData] = await Promise.all([
+      const [brandData, productData, invData] = await Promise.all([
         api('/api/admin/brands'),
-        api('/api/admin/products')
+        api('/api/admin/products'),
+        api('/api/admin/inventory').catch(function () { return { items: [] }; })
       ]);
       brands = brandData.brands || [];
+      inventoryItems = invData.items || [];
       fillBrands(brands[0] && brands[0].id);
       renderProducts(productData.products || []);
     }
@@ -537,33 +587,46 @@
       return 'bg-emerald-500/15 text-emerald-300';
     }
 
+    function fillInvBrands(selected) {
+      const sel = document.getElementById('inv-brand');
+      sel.innerHTML = '<option value="">—</option>' + brands.map(function (b) {
+        return '<option value="' + esc(b.id) + '"' + (b.id === selected ? ' selected' : '') + '>' + esc(b.name) + '</option>';
+      }).join('');
+    }
+
     function renderInventoryTable() {
       const q = (document.getElementById('inv-search').value || '').trim().toLowerCase();
       const rows = inventoryItems.filter(function (item) {
         if (inventoryFilter === 'low' && item.status !== 'low') return false;
         if (inventoryFilter === 'out' && item.status !== 'out') return false;
+        if (inventoryFilter === 'unmapped' && item.maps && item.maps.length) return false;
         if (q) {
-          const blob = ((item.name || '') + ' ' + (item.brandName || '')).toLowerCase();
+          const blob = ((item.sku || '') + ' ' + (item.name || '') + ' ' + (item.brandName || '') + ' ' + (item.pitchLabel || '')).toLowerCase();
           if (blob.indexOf(q) === -1) return false;
         }
         return true;
       });
       const tb = document.getElementById('inventory-table');
       tb.innerHTML = rows.map(function (item) {
-        const qtyText = item.total.toLocaleString() + ' ' + item.unit;
-        const extra = !item.control && item.bins && item.bins.length > 1
-          ? '<div class="text-xs text-slate-500 mt-0.5">' + item.bins.map(function (b) {
-            return esc(b.label) + ' ' + b.qty;
-          }).join(' · ') + '</div>'
-          : '';
-        return '<tr class="border-b border-slate-800 hover:bg-slate-900/80 cursor-pointer" data-id="' + esc(item.dbId) + '">' +
-          '<td class="py-3 px-4 font-medium">' + esc(item.name || '') + extra + '</td>' +
-          '<td class="py-3 px-4 text-sky-400">' + esc(item.brandName || '') + '</td>' +
+        const qtyText = item.qty.toLocaleString() + ' ' + item.unit;
+        const priceText = item.price ? ('$' + Number(item.price).toLocaleString()) : '—';
+        const site = (item.maps && item.maps.length)
+          ? item.maps.map(function (m) {
+            return esc(m.productName || 'Product') + (m.pitch ? (' · P' + m.pitch) : '');
+          }).join(', ')
+          : 'Not on website';
+        return '<tr class="border-b border-slate-800 hover:bg-slate-900/80 cursor-pointer" data-id="' + esc(item.id) + '">' +
+          '<td class="py-3 px-4 font-mono text-xs text-sky-300">' + esc(item.sku || '—') + '</td>' +
+          '<td class="py-3 px-4 font-medium">' + esc(item.name || '') + '</td>' +
+          '<td class="py-3 px-4 text-sky-400">' + esc(item.brandName || '—') + '</td>' +
+          '<td class="py-3 px-4 text-slate-400">' + esc(item.pitchLabel || '—') + '</td>' +
           '<td class="py-3 px-4">' + esc(qtyText) + '</td>' +
+          '<td class="py-3 px-4">' + esc(priceText) + '</td>' +
+          '<td class="py-3 px-4 text-slate-400">' + site + '</td>' +
           '<td class="py-3 px-4"><span class="text-xs px-2 py-0.5 rounded-full ' + stockStatusClass(item.status) + '">' +
             esc(stockStatusLabel(item.status)) + '</span></td>' +
           '</tr>';
-      }).join('') || '<tr><td class="py-6 px-4 text-slate-500" colspan="4">No matching products.</td></tr>';
+      }).join('') || '<tr><td class="py-6 px-4 text-slate-500" colspan="8">No matching items.</td></tr>';
     }
 
     async function loadInventory() {
@@ -579,21 +642,6 @@
       }
     }
 
-    function fillInvPitch(item) {
-      const sel = document.getElementById('inv-pitch');
-      sel.innerHTML = (item.bins || []).map(function (b) {
-        return '<option value="' + esc(b.pitch) + '">' + esc(b.label) + ' — ' + b.qty + ' ' + b.unit + '</option>';
-      }).join('');
-      syncInvLowFromBin();
-    }
-
-    function syncInvLowFromBin() {
-      if (!inventoryDetail || !inventoryDetail.item) return;
-      const pitch = document.getElementById('inv-pitch').value;
-      const bin = (inventoryDetail.item.bins || []).filter(function (b) { return String(b.pitch) === String(pitch); })[0];
-      document.getElementById('inv-low').value = bin ? bin.lowAt : '';
-    }
-
     function renderInvMoves(moves) {
       const wrap = document.getElementById('inv-moves');
       const rows = moves || [];
@@ -605,9 +653,8 @@
         const when = m.created_at ? new Date(m.created_at).toLocaleString() : '';
         const delta = Number(m.qty_delta) || 0;
         const sign = delta > 0 ? '+' + delta : String(delta);
-        const pitch = m.pitch ? ('P' + m.pitch) : 'Each';
         return '<div class="rounded-xl border border-slate-800 px-4 py-3 flex flex-wrap gap-x-4 gap-y-1">' +
-          '<span class="text-slate-300">' + esc(m.kind) + ' ' + esc(pitch) + '</span>' +
+          '<span class="text-slate-300">' + esc(m.kind) + '</span>' +
           '<span class="' + (delta < 0 ? 'text-red-300' : 'text-emerald-300') + '">' + esc(sign) + ' → ' + esc(m.qty_after) + '</span>' +
           '<span class="text-slate-500">' + esc(when) + '</span>' +
           (m.note ? '<span class="text-slate-400">' + esc(m.note) + '</span>' : '') +
@@ -616,28 +663,65 @@
       }).join('');
     }
 
+    function renderInvMaps(maps) {
+      const wrap = document.getElementById('inv-maps');
+      const rows = maps || [];
+      if (!rows.length) {
+        wrap.innerHTML = emptyNote('Not linked to a website product page. It will not show on Products until you map it.');
+        return;
+      }
+      wrap.innerHTML = rows.map(function (m) {
+        const pitch = m.pitch ? ('P' + m.pitch) : 'Each';
+        const href = m.brandId && m.seriesId
+          ? ('/product.html?brand=' + encodeURIComponent(m.brandId) + '&series=' + encodeURIComponent(m.seriesId))
+          : '';
+        return '<div class="rounded-xl border border-slate-800 px-4 py-3">' +
+          esc(m.productName || 'Product') + ' · ' + esc(pitch) +
+          (href ? ' <a class="text-sky-400 text-xs ml-2" href="' + esc(href) + '" target="_blank" rel="noopener">View page</a>' : '') +
+          '</div>';
+      }).join('');
+    }
+
+    function fillInventoryForm(item) {
+      document.getElementById('inv-item-id').value = item && item.id ? item.id : '';
+      document.getElementById('inv-title').textContent = item && item.name ? item.name : 'New inventory item';
+      document.getElementById('inv-name').value = (item && item.name) || '';
+      document.getElementById('inv-sku').value = (item && item.sku) || '';
+      fillInvBrands(item && item.brandId);
+      document.getElementById('inv-item-pitch').value = (item && item.pitch) || '';
+      document.getElementById('inv-unit').value = (item && item.unit) || 'panels';
+      document.getElementById('inv-price').value = item && item.price != null ? item.price : '';
+      document.getElementById('inv-item-low').value = item && item.lowAt != null ? item.lowAt : '';
+      document.getElementById('inv-item-notes').value = (item && item.notes) || '';
+      document.getElementById('inv-delete-btn').classList.toggle('hidden', !(item && item.id));
+      document.getElementById('inv-item-msg').classList.add('hidden');
+    }
+
     function renderInventoryDetail(data) {
       inventoryDetail = data;
-      const item = data.item;
-      document.getElementById('inv-product-id').value = item.dbId;
-      document.getElementById('inv-title').textContent = item.name;
+      const item = data && data.item;
+      fillInventoryForm(item);
+      const adjustWrap = document.getElementById('inv-adjust-wrap');
+      if (!item || !item.id) {
+        adjustWrap.classList.add('hidden');
+        return;
+      }
+      adjustWrap.classList.remove('hidden');
       document.getElementById('inv-meta').textContent =
-        (item.brandName || '') + ' · ' + (item.control ? 'Control · each' : 'LED · panels') +
-        ' · ' + item.total.toLocaleString() + ' ' + item.unit + ' on hand';
-      document.getElementById('inv-bins').innerHTML = (item.bins || []).map(function (b) {
-        return '<tr class="border-b border-slate-800">' +
-          '<td class="py-2 pr-4">' + esc(b.label) + '</td>' +
-          '<td class="py-2 pr-4">' + b.qty.toLocaleString() + ' ' + esc(b.unit) + '</td>' +
-          '<td class="py-2 pr-4">' + b.lowAt + '</td>' +
-          '<td class="py-2"><span class="text-xs px-2 py-0.5 rounded-full ' + stockStatusClass(b.status) + '">' +
-            esc(stockStatusLabel(b.status)) + '</span></td>' +
-          '</tr>';
-      }).join('');
-      fillInvPitch(item);
+        (item.qty || 0).toLocaleString() + ' ' + item.unit + ' on hand · ' + stockStatusLabel(item.status);
       document.getElementById('inv-qty').value = '';
       document.getElementById('inv-note').value = '';
       document.getElementById('inv-msg').classList.add('hidden');
+      renderInvMaps(item.maps || []);
       renderInvMoves(data.moves || []);
+    }
+
+    function openNewInventory() {
+      inventoryDetail = { item: null, moves: [] };
+      document.getElementById('inventory-list-wrap').classList.add('hidden');
+      document.getElementById('inventory-detail').classList.remove('hidden');
+      fillInventoryForm(null);
+      document.getElementById('inv-adjust-wrap').classList.add('hidden');
     }
 
     async function openInventory(id) {
@@ -645,6 +729,106 @@
       document.getElementById('inventory-list-wrap').classList.add('hidden');
       document.getElementById('inventory-detail').classList.remove('hidden');
       renderInventoryDetail(data);
+    }
+
+    function mapSlotsForProduct(product) {
+      if (isControlType(product.type, product.brandId)) return [''];
+      const pitches = (product.pitches || []).map(function (p) { return String(p); });
+      return pitches.length ? pitches : [''];
+    }
+
+    function skuOptionLabel(item) {
+      return (item.sku ? (item.sku + ' · ') : '') +
+        (item.name || 'Item') +
+        (item.pitchLabel && item.pitchLabel !== '—' ? (' · ' + item.pitchLabel) : '') +
+        ' · ' + (item.qty || 0) + ' ' + (item.unit || '');
+    }
+
+    function currentMapSelection() {
+      const rows = [];
+      document.querySelectorAll('#inventory-map-rows [data-map-pitch]').forEach(function (sel) {
+        rows.push({ pitch: sel.getAttribute('data-map-pitch'), itemId: sel.value });
+      });
+      return rows;
+    }
+
+    async function saveProductMaps() {
+      if (!editingId) return;
+      const msg = document.getElementById('inventory-map-msg');
+      try {
+        const data = await api('/api/admin/products/' + encodeURIComponent(editingId) + '/maps', {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ maps: currentMapSelection() })
+        });
+        if (data.product) renderInventoryMap(data.product);
+        if (msg) {
+          msg.textContent = 'Links saved.';
+          msg.className = 'text-sm mb-3 text-sky-400';
+        }
+      } catch (err) {
+        if (msg) {
+          msg.textContent = err.message || 'Could not save links.';
+          msg.className = 'text-sm mb-3 text-red-400';
+        }
+      }
+    }
+
+    async function createSkuForPitch(pitch) {
+      const name = (document.getElementById('name').value || 'Item').trim() + (pitch ? (' P' + pitch) : '');
+      const unit = pitch ? 'panels' : 'each';
+      const created = await api('/api/admin/inventory', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          name: name,
+          brandId: document.getElementById('brand-id').value,
+          pitch: pitch,
+          unit: unit,
+          price: document.getElementById('price').value || 0,
+          qty: 0
+        })
+      });
+      await loadInventory();
+      const sel = document.querySelector('#inventory-map-rows [data-map-pitch="' + pitch + '"]');
+      if (sel && created.item) {
+        const opt = document.createElement('option');
+        opt.value = created.item.id;
+        opt.textContent = skuOptionLabel(created.item);
+        sel.appendChild(opt);
+        sel.value = String(created.item.id);
+      }
+      await saveProductMaps();
+    }
+
+    function renderInventoryMap(product) {
+      const card = document.getElementById('inventory-map-card');
+      const rows = document.getElementById('inventory-map-rows');
+      if (!product || !product.dbId) {
+        card.classList.add('hidden');
+        return;
+      }
+      card.classList.remove('hidden');
+      const maps = {};
+      (product.inventoryMaps || []).forEach(function (m) {
+        maps[String(m.pitch || '')] = String(m.itemId);
+      });
+      const slots = mapSlotsForProduct(product);
+      rows.innerHTML = slots.map(function (pitch) {
+        const label = pitch ? ('P' + pitch) : (isControlType(product.type, product.brandId) ? 'This product' : 'Stock');
+        const selected = maps[pitch] || '';
+        const options = ['<option value="">Not linked</option>'].concat(inventoryItems.map(function (item) {
+          return '<option value="' + esc(item.id) + '"' + (String(item.id) === String(selected) ? ' selected' : '') + '>' +
+            esc(skuOptionLabel(item)) + '</option>';
+        }));
+        return '<div class="flex flex-col sm:flex-row sm:items-center gap-2">' +
+          '<div class="sm:w-28 text-sm text-slate-300">' + esc(label) + '</div>' +
+          '<select data-map-pitch="' + esc(pitch) + '" class="flex-1 bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm">' +
+            options.join('') +
+          '</select>' +
+          '<button type="button" data-create-pitch="' + esc(pitch) + '" class="px-3 py-2 rounded-full border border-slate-600 text-xs hover:border-sky-500">Create SKU</button>' +
+          '</div>';
+      }).join('');
     }
 
     async function loadPriceTiers() {
@@ -659,10 +843,18 @@
       const tb = document.getElementById('accounts-table');
       const errEl = document.getElementById('accounts-error');
       errEl.classList.add('hidden');
+      errEl.classList.remove('text-amber-300');
+      errEl.classList.add('text-red-400');
       errEl.textContent = '';
       try {
         const data = await api('/api/admin/accounts');
         const rows = data.accounts || [];
+        if (data.source === 'sqlite') {
+          errEl.textContent = 'This local Admin is using a catalog file, not the live site database. Website Sign in accounts (Customer / Dealer / Sales) are at https://www.spectrumdisplay.com/admin.html. Add SUPABASE_URL to .env to list them here.';
+          errEl.classList.remove('text-red-400');
+          errEl.classList.add('text-amber-300');
+          errEl.classList.remove('hidden');
+        }
         tb.innerHTML = rows.map(function (a) {
           const when = a.created_at ? new Date(a.created_at).toLocaleDateString() : '';
           const pct = a.effective_markup_pct;
@@ -677,7 +869,7 @@
             '<td class="py-3 px-4 text-slate-500">' + esc(when) + '</td>' +
             '<td class="py-3 px-4 text-right"><span class="text-sky-400 text-xs font-medium">Open →</span></td>' +
             '</tr>';
-        }).join('') || '<tr><td class="py-6 px-4 text-slate-500" colspan="7">No accounts yet. Site Sign in accounts (not this admin login) appear here.</td></tr>';
+        }).join('') || '<tr><td class="py-6 px-4 text-slate-500" colspan="7">No website Sign in accounts yet. The Admin CMS login never appears in this list.</td></tr>';
       } catch (err) {
         errEl.textContent = err.message || 'Could not load accounts.';
         errEl.classList.remove('hidden');
@@ -777,6 +969,9 @@
       document.getElementById('inventory-list-wrap').classList.remove('hidden');
       await loadInventory();
     });
+    document.getElementById('inv-new-btn').addEventListener('click', function () {
+      openNewInventory();
+    });
     document.getElementById('inventory-table').addEventListener('click', function (e) {
       const row = e.target.closest('tr[data-id]');
       if (row) openInventory(row.getAttribute('data-id')).catch(function (err) {
@@ -796,24 +991,64 @@
         renderInventoryTable();
       });
     });
-    document.getElementById('inv-pitch').addEventListener('change', syncInvLowFromBin);
     document.getElementById('inv-kind').addEventListener('change', function () {
       document.getElementById('inv-qty-label').textContent =
         document.getElementById('inv-kind').value === 'count' ? 'Set quantity to' : 'Quantity';
     });
+    document.getElementById('inv-item-form').addEventListener('submit', async function (e) {
+      e.preventDefault();
+      const id = document.getElementById('inv-item-id').value;
+      const msg = document.getElementById('inv-item-msg');
+      const body = {
+        name: document.getElementById('inv-name').value,
+        sku: document.getElementById('inv-sku').value,
+        brandId: document.getElementById('inv-brand').value,
+        pitch: document.getElementById('inv-item-pitch').value,
+        unit: document.getElementById('inv-unit').value,
+        price: document.getElementById('inv-price').value,
+        lowAt: document.getElementById('inv-item-low').value,
+        notes: document.getElementById('inv-item-notes').value
+      };
+      try {
+        const data = id
+          ? await api('/api/admin/inventory/' + encodeURIComponent(id), {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(body)
+          })
+          : await api('/api/admin/inventory', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(body)
+          });
+        renderInventoryDetail(data);
+        msg.textContent = 'Saved.';
+        msg.className = 'sm:col-span-2 text-sm text-sky-400';
+      } catch (err) {
+        msg.textContent = err.message || 'Could not save.';
+        msg.className = 'sm:col-span-2 text-sm text-red-400';
+      }
+    });
+    document.getElementById('inv-delete-btn').addEventListener('click', async function () {
+      const id = document.getElementById('inv-item-id').value;
+      if (!id || !confirm('Delete this inventory item? Website links to it will be removed.')) return;
+      await api('/api/admin/inventory/' + encodeURIComponent(id), { method: 'DELETE' });
+      document.getElementById('inventory-detail').classList.add('hidden');
+      document.getElementById('inventory-list-wrap').classList.remove('hidden');
+      await loadInventory();
+    });
     document.getElementById('inv-adjust-form').addEventListener('submit', async function (e) {
       e.preventDefault();
-      const id = document.getElementById('inv-product-id').value;
+      const id = document.getElementById('inv-item-id').value;
       const msg = document.getElementById('inv-msg');
       try {
         const data = await api('/api/admin/inventory/' + encodeURIComponent(id) + '/adjust', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
-            pitch: document.getElementById('inv-pitch').value,
             kind: document.getElementById('inv-kind').value,
             qty: document.getElementById('inv-qty').value,
-            lowAt: document.getElementById('inv-low').value,
+            lowAt: document.getElementById('inv-item-low').value,
             note: document.getElementById('inv-note').value
           })
         });
@@ -824,6 +1059,18 @@
         msg.textContent = err.message || 'Could not save.';
         msg.className = 'sm:col-span-2 text-sm text-red-400';
       }
+    });
+    document.getElementById('inventory-map-rows').addEventListener('change', function (e) {
+      if (e.target && e.target.getAttribute('data-map-pitch') != null) saveProductMaps();
+    });
+    document.getElementById('inventory-map-rows').addEventListener('click', function (e) {
+      const btn = e.target.closest('[data-create-pitch]');
+      if (!btn) return;
+      createSkuForPitch(btn.getAttribute('data-create-pitch')).catch(function (err) {
+        const msg = document.getElementById('inventory-map-msg');
+        msg.textContent = err.message || 'Could not create SKU.';
+        msg.className = 'text-sm mb-3 text-red-400';
+      });
     });
     document.getElementById('account-back').addEventListener('click', async function () {
       document.getElementById('account-detail').classList.add('hidden');
@@ -925,6 +1172,7 @@
     table.addEventListener('click', async function (e) {
       const row = e.target.closest('tr[data-id]');
       if (!row) return;
+      await loadInventory();
       const data = await api('/api/admin/products/' + row.getAttribute('data-id'));
       openForm(data.product);
     });
