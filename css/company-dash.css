@@ -823,11 +823,91 @@ html.dash-scroll-lock body.company-app {
 .dash-tabbar[hidden] {
   display: none !important;
 }
+.dash-tabbar-sub,
+.dash-tabbar-sub-scrim {
+  display: none;
+}
+.dash-tabbar-sub[hidden],
+.dash-tabbar-sub-scrim[hidden] {
+  display: none !important;
+}
 
 @media (max-width: 900px) {
   body.company-app.dash-tabbar-on {
     --dash-tabbar-h: calc(3.65rem + env(safe-area-inset-bottom, 0px));
-    padding-bottom: var(--dash-tabbar-h);
+    --dash-tabbar-sub-h: 0px;
+    padding-bottom: calc(var(--dash-tabbar-h) + var(--dash-tabbar-sub-h));
+  }
+
+  body.company-app.dash-tabbar-sub-open {
+    --dash-tabbar-sub-h: 3.25rem;
+  }
+
+  body.company-app.dash-tabbar-on .dash-tabbar-sub:not([hidden]) {
+    display: block;
+    position: fixed;
+    left: 0;
+    right: 0;
+    bottom: var(--dash-tabbar-h);
+    z-index: 71;
+    background: linear-gradient(180deg, #0c204f 0%, #0a1b46 100%);
+    border-top: 1px solid rgba(255, 255, 255, 0.08);
+    box-shadow: 0 -6px 20px rgba(7, 21, 58, 0.2);
+    transform: translateY(0);
+    transition: transform 0.24s ease;
+  }
+
+  body.company-app.dash-tabbar-on.dash-tabbar-hidden .dash-tabbar-sub:not([hidden]) {
+    transform: translateY(calc(100% + var(--dash-tabbar-h)));
+    pointer-events: none;
+  }
+
+  .dash-tabbar-sub-inner {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0.55rem 0.65rem;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+  }
+  .dash-tabbar-sub-inner::-webkit-scrollbar { display: none; }
+
+  .dash-tabbar-sub-inner a {
+    display: inline-flex;
+    flex: 0 0 auto;
+    align-items: center;
+    gap: 0.4rem;
+    min-height: 2.1rem;
+    padding: 0.4rem 0.8rem;
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.06);
+    color: #c9d3ea;
+    text-decoration: none;
+    font-size: 0.75rem;
+    font-weight: 600;
+    white-space: nowrap;
+    -webkit-tap-highlight-color: transparent;
+    touch-action: manipulation;
+  }
+
+  .dash-tabbar-sub-inner a svg {
+    width: 1rem;
+    height: 1rem;
+    flex-shrink: 0;
+  }
+
+  .dash-tabbar-sub-inner a.is-active {
+    color: #fff;
+    background: rgba(47, 107, 255, 0.28);
+  }
+
+  body.company-app.dash-tabbar-on .dash-tabbar-sub-scrim:not([hidden]) {
+    display: block;
+    position: fixed;
+    inset: 0;
+    z-index: 65;
+    background: rgba(7, 21, 58, 0.22);
   }
 
   body.company-app.dash-tabbar-on .dash-tabbar:not([hidden]) {
@@ -885,6 +965,15 @@ html.dash-scroll-lock body.company-app {
   }
 
   .dash-tabbar a.is-active svg {
+    color: #5b8cff;
+    stroke-width: 2;
+  }
+
+  .dash-tabbar a.is-expanded {
+    color: #fff;
+  }
+
+  .dash-tabbar a.is-expanded svg {
     color: #5b8cff;
     stroke-width: 2;
   }

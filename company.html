@@ -1175,12 +1175,16 @@
     </div>
   </aside>
 
+  <div class="dash-tabbar-sub-scrim" id="dash-tabbar-sub-scrim" hidden></div>
+  <div class="dash-tabbar-sub" id="dash-tabbar-sub" hidden>
+    <div class="dash-tabbar-sub-inner" id="dash-tabbar-sub-inner"></div>
+  </div>
   <nav class="dash-tabbar" id="dash-tabbar" aria-label="Main" hidden>
-    <a href="/company/website" id="tabbar-website" class="hidden">
+    <a href="/company/website" id="tabbar-website" data-tabbar-group="website" class="hidden">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M3 8h18"/><path d="M8 12h5M8 16h8"/></svg>
       <span>Website</span>
     </a>
-    <a href="/company/inventory" id="tabbar-inventory" class="hidden">
+    <a href="/company/inventory" id="tabbar-inventory" data-tabbar-group="inventory" class="hidden">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 10 12 4.5 21 10v9.5a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V10z"/><path d="M9 20.5V12h6v8.5"/></svg>
       <span>Inventory</span>
     </a>
@@ -1188,11 +1192,11 @@
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="8" r="3.25"/><path d="M5 19.2c.9-3.1 3.5-4.7 7-4.7s6.1 1.6 7 4.7"/></svg>
       <span>Customer</span>
     </a>
-    <a href="/company/sales/quotes" id="tabbar-sales" class="hidden">
+    <a href="/company/sales/quotes" id="tabbar-sales" data-tabbar-group="sales" class="hidden">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 3h8l4 4v14a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1z"/><path d="M15 3v5h5"/><path d="M9 13h6M9 17h4"/></svg>
       <span>Sales</span>
     </a>
-    <a href="/company/settings" id="tabbar-settings" class="hidden">
+    <a href="/company/settings" id="tabbar-settings" data-tabbar-group="settings" class="hidden">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
       <span>Settings</span>
     </a>
@@ -1615,6 +1619,7 @@
       document.getElementById('tab-roles').className = navLinkClass(name === 'roles', !canUse('roles'), 'sub');
       document.getElementById('header-settings').className = navLinkClass(onSettings, !canUse('settings'));
       syncTabbarActive(name);
+      closeTabbarSub();
       document.body.classList.remove('dash-open');
       document.body.classList.remove('dash-tabbar-hidden');
       const titles = {
@@ -2584,6 +2589,67 @@
         if (map[id]) el.setAttribute('aria-current', 'page');
         else el.removeAttribute('aria-current');
       });
+      const subInner = document.getElementById('dash-tabbar-sub-inner');
+      if (subInner) {
+        subInner.querySelectorAll('a[href]').forEach(function (a) {
+          const tab = tabFromHref(a.getAttribute('href'));
+          const on = tab === name;
+          a.classList.toggle('is-active', on);
+          if (on) a.setAttribute('aria-current', 'page');
+          else a.removeAttribute('aria-current');
+        });
+      }
+    }
+
+    const TABBAR_SUBNAV = {
+      website: 'website-subnav',
+      inventory: 'inventory-subnav',
+      sales: 'sales-subnav',
+      settings: 'settings-subnav'
+    };
+
+    function tabbarSubItems(group) {
+      const subnav = document.getElementById(TABBAR_SUBNAV[group]);
+      if (!subnav) return [];
+      return Array.from(subnav.querySelectorAll('a.dash-sub-link')).filter(function (a) {
+        const tab = tabFromHref(a.getAttribute('href'));
+        return tab && canUse(tab) && !a.classList.contains('hidden');
+      }).map(function (a) {
+        return {
+          tab: tabFromHref(a.getAttribute('href')),
+          href: a.getAttribute('href'),
+          label: (a.querySelector('span') && a.querySelector('span').textContent) || '',
+          icon: (a.querySelector('svg') && a.querySelector('svg').outerHTML) || ''
+        };
+      });
+    }
+
+    function closeTabbarSub() {
+      document.body.classList.remove('dash-tabbar-sub-open');
+      document.body.removeAttribute('data-tabbar-sub-group');
+      document.getElementById('dash-tabbar-sub').hidden = true;
+      document.getElementById('dash-tabbar-sub-scrim').hidden = true;
+      document.querySelectorAll('#dash-tabbar [data-tabbar-group]').forEach(function (el) {
+        el.classList.remove('is-expanded');
+      });
+    }
+
+    function showTabbarSub(group) {
+      const items = tabbarSubItems(group);
+      if (!items.length) return;
+      const inner = document.getElementById('dash-tabbar-sub-inner');
+      inner.innerHTML = items.map(function (item) {
+        return '<a href="' + item.href + '">' + item.icon + '<span>' + item.label + '</span></a>';
+      }).join('');
+      document.body.classList.add('dash-tabbar-sub-open');
+      document.body.setAttribute('data-tabbar-sub-group', group);
+      document.getElementById('dash-tabbar-sub').hidden = false;
+      document.getElementById('dash-tabbar-sub-scrim').hidden = false;
+      document.body.classList.remove('dash-tabbar-hidden');
+      document.querySelectorAll('#dash-tabbar [data-tabbar-group]').forEach(function (el) {
+        el.classList.toggle('is-expanded', el.getAttribute('data-tabbar-group') === group);
+      });
+      syncTabbarActive(tabFromPath());
     }
 
     document.getElementById('dash-menu-btn').addEventListener('click', function () {
@@ -2619,13 +2685,35 @@
     document.getElementById('dash-tabbar').addEventListener('click', function (e) {
       if (!currentAdminUser || e.defaultPrevented) return;
       if (e.metaKey || e.ctrlKey || e.shiftKey || e.altKey || e.button !== 0) return;
-      const a = e.target.closest('a[href]');
+      const a = e.target.closest('#dash-tabbar > a[href]');
       if (!a || a.classList.contains('hidden')) return;
+      const group = a.getAttribute('data-tabbar-group');
+      if (group) {
+        e.preventDefault();
+        if (document.body.classList.contains('dash-tabbar-sub-open') &&
+            document.body.getAttribute('data-tabbar-sub-group') === group) {
+          closeTabbarSub();
+        } else {
+          showTabbarSub(group);
+        }
+        return;
+      }
+      e.preventDefault();
+      closeTabbarSub();
+      openCompanyTab('customers', true);
+    });
+    document.getElementById('dash-tabbar-sub-inner').addEventListener('click', function (e) {
+      if (!currentAdminUser || e.defaultPrevented) return;
+      if (e.metaKey || e.ctrlKey || e.shiftKey || e.altKey || e.button !== 0) return;
+      const a = e.target.closest('a[href]');
+      if (!a) return;
       const name = tabFromHref(a.getAttribute('href'));
       if (!name) return;
       e.preventDefault();
+      closeTabbarSub();
       openCompanyTab(name, true);
     });
+    document.getElementById('dash-tabbar-sub-scrim').addEventListener('click', closeTabbarSub);
     (function initDashTabbarScroll() {
       let lastY = window.scrollY || document.documentElement.scrollTop || 0;
       let ticking = false;
@@ -2643,6 +2731,7 @@
           document.body.classList.remove('dash-tabbar-hidden');
         } else if (delta > THRESHOLD) {
           document.body.classList.add('dash-tabbar-hidden');
+          closeTabbarSub();
         } else if (delta < -THRESHOLD) {
           document.body.classList.remove('dash-tabbar-hidden');
         }
