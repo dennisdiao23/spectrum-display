@@ -1936,7 +1936,12 @@
         return [d.number, d.customerName, d.customerEmail, d.poNumber, d.status]
           .join(' ').toLowerCase().indexOf(q) !== -1;
       });
-      document.getElementById('so-total').textContent = String((rows || []).length);
+      const count = (rows || []).length;
+      document.getElementById('so-total').textContent = String(count);
+      document.getElementById('so-list-label').textContent =
+        type === 'quote' ? (count === 1 ? 'sales quote' : 'sales quotes')
+          : type === 'order' ? (count === 1 ? 'sales order' : 'sales orders')
+            : (count === 1 ? 'invoice' : 'invoices');
       if (!filtered.length) {
         tbody.innerHTML = '<tr><td class="py-6 px-4 text-slate-500" colspan="6">' +
           (q ? 'No documents match this search.' : 'No ' + salesTypeLabel(type).toLowerCase() + 's yet.') +
