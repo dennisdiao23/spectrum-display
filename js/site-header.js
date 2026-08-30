@@ -274,7 +274,7 @@
           name: p.name,
           href: 'product.html?brand=' + encodeURIComponent(p.brandId) + '&series=' + encodeURIComponent(p.id),
           tag: 'NVS',
-          image: p.image
+          image: window.spectrumDisplayImage ? spectrumDisplayImage(p.image, 'thumb') : p.image
         };
       });
       items.push({ name: 'All control systems', href: 'products.html?cat=control', tag: 'NVS' });
@@ -289,7 +289,7 @@
         name: p.name,
         href: 'product.html?brand=' + encodeURIComponent(p.brandId) + '&series=' + encodeURIComponent(p.id),
         tag: brandTag(p.brandId),
-        image: p.image
+        image: window.spectrumDisplayImage ? spectrumDisplayImage(p.image, 'thumb') : p.image
       };
     });
   }

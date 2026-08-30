@@ -4,6 +4,7 @@ const crypto = require('crypto');
 const bcrypt = require('bcryptjs');
 const { createClient } = require('@supabase/supabase-js');
 const dbUtil = require('./db');
+const img = require('./image');
 
 const BUCKET = 'product-images';
 
@@ -858,12 +859,11 @@ function createSupabaseStore() {
       return this.getProduct(productId);
     },
     async saveUpload(file) {
-      const ext = path.extname(file.originalname || '').toLowerCase();
-      const safeExt = ['.jpg', '.jpeg', '.png', '.webp', '.gif'].includes(ext) ? ext : '.jpg';
-      const name = Date.now().toString(36) + '-' + crypto.randomBytes(4).toString('hex') + safeExt;
+      const prepared = await img.prepareUpload(file);
+      const name = Date.now().toString(36) + '-' + crypto.randomBytes(4).toString('hex') + prepared.ext;
       const objectPath = 'products/' + name;
-      const { error } = await supabase.storage.from(BUCKET).upload(objectPath, file.buffer, {
-        contentType: file.mimetype || 'image/jpeg',
+      const { error } = await supabase.storage.from(BUCKET).upload(objectPath, prepared.buffer, {
+        contentType: prepared.contentType,
         upsert: false
       });
       throwIf(error, 'Could not upload image to Supabase Storage.');
