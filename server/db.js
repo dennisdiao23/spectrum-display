@@ -175,6 +175,17 @@ function openDb() {
     CREATE INDEX IF NOT EXISTS product_inventory_map_item_idx ON product_inventory_map (item_id);
   `);
   try { db.exec("ALTER TABLE inventory_items ADD COLUMN sku TEXT NOT NULL DEFAULT ''"); } catch (e) { /* already present */ }
+  [
+    "ALTER TABLE inventory_items ADD COLUMN description TEXT NOT NULL DEFAULT ''",
+    "ALTER TABLE inventory_items ADD COLUMN cost REAL NOT NULL DEFAULT 0",
+    "ALTER TABLE inventory_items ADD COLUMN dealer_net REAL NOT NULL DEFAULT 0",
+    "ALTER TABLE inventory_items ADD COLUMN weight REAL NOT NULL DEFAULT 0",
+    "ALTER TABLE inventory_items ADD COLUMN panel_w REAL NOT NULL DEFAULT 0",
+    "ALTER TABLE inventory_items ADD COLUMN panel_h REAL NOT NULL DEFAULT 0",
+    "ALTER TABLE inventory_items ADD COLUMN image TEXT NOT NULL DEFAULT ''"
+  ].forEach(function (sql) {
+    try { db.exec(sql); } catch (e) { /* already present */ }
+  });
   migrateLegacyInventory(db);
   return db;
 }

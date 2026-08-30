@@ -219,20 +219,51 @@
             <input type="hidden" id="inv-item-id">
             <div class="sm:col-span-2">
               <h2 id="inv-title" class="font-semibold text-lg">Inventory item</h2>
-              <p class="text-sm text-slate-400 mt-1">This row is warehouse stock. It only appears on a product page if you link it there.</p>
+            </div>
+            <div>
+              <label class="block text-xs text-slate-400 mb-1">SKU</label>
+              <input id="inv-sku" type="text" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm" placeholder="TRT-DISCOVERY-P0.93">
             </div>
             <div>
               <label class="block text-xs text-slate-400 mb-1">Name</label>
               <input id="inv-name" required type="text" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm" placeholder="Discovery P0.93">
             </div>
             <div>
-              <label class="block text-xs text-slate-400 mb-1">SKU</label>
-              <input id="inv-sku" type="text" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm" placeholder="TRT-DISCOVERY-P0.93">
-              <p class="text-[11px] text-slate-500 mt-1">Unique warehouse code. Auto-filled if you leave this blank; you can change it later.</p>
-            </div>
-            <div>
               <label class="block text-xs text-slate-400 mb-1">Brand</label>
               <select id="inv-brand" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm"></select>
+            </div>
+            <div class="sm:col-span-2">
+              <label class="block text-xs text-slate-400 mb-1">Description</label>
+              <textarea id="inv-description" rows="2" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm" placeholder="Warehouse notes for this SKU"></textarea>
+            </div>
+            <div>
+              <label class="block text-xs text-slate-400 mb-1">Cost ($)</label>
+              <input id="inv-cost" type="number" min="0" step="0.01" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm">
+            </div>
+            <div>
+              <label class="block text-xs text-slate-400 mb-1">Dealer net ($)</label>
+              <input id="inv-dealer-net" type="number" min="0" step="0.01" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm">
+            </div>
+            <div>
+              <label class="block text-xs text-slate-400 mb-1">Sell price ($)</label>
+              <input id="inv-price" type="number" min="0" step="1" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm">
+              <p class="text-[11px] text-slate-500 mt-1">Per m² for panels, each for control.</p>
+            </div>
+            <div>
+              <label class="block text-xs text-slate-400 mb-1">Panel weight (kg)</label>
+              <input id="inv-weight" type="number" min="0" step="0.01" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm">
+            </div>
+            <div>
+              <label class="block text-xs text-slate-400 mb-1">Panel size W × H (mm)</label>
+              <div class="grid grid-cols-2 gap-2">
+                <input id="inv-panel-w" type="number" min="0" step="0.5" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm" placeholder="500">
+                <input id="inv-panel-h" type="number" min="0" step="0.5" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm" placeholder="500">
+              </div>
+            </div>
+            <div>
+              <label class="block text-xs text-slate-400 mb-1">Photo</label>
+              <input id="inv-image" type="file" accept="image/jpeg,image/png,image/webp,image/gif" class="w-full text-sm text-slate-400">
+              <img id="inv-image-preview" alt="" class="hidden mt-2 h-24 rounded-lg object-cover border border-slate-800">
             </div>
             <div>
               <label class="block text-xs text-slate-400 mb-1">Pitch (mm)</label>
@@ -246,11 +277,6 @@
               </select>
             </div>
             <div>
-              <label class="block text-xs text-slate-400 mb-1">Sell price ($)</label>
-              <input id="inv-price" type="number" min="0" step="1" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm">
-              <p class="text-[11px] text-slate-500 mt-1">Per m² for panels, each for control.</p>
-            </div>
-            <div>
               <label class="block text-xs text-slate-400 mb-1">Low-stock at</label>
               <input id="inv-item-low" type="number" min="0" step="1" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm">
             </div>
@@ -259,9 +285,10 @@
               <input id="inv-item-notes" type="text" maxlength="500" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm" placeholder="Warehouse location, vendor…">
             </div>
             <p id="inv-item-msg" class="sm:col-span-2 hidden text-sm"></p>
-            <div class="sm:col-span-2 flex flex-wrap gap-2">
+            <div class="sm:col-span-2 flex flex-wrap items-center gap-2">
               <button type="submit" class="px-5 py-2 rounded-full bg-sky-500 hover:bg-sky-400 text-white text-sm font-semibold">Save item</button>
               <button id="inv-delete-btn" type="button" class="hidden px-5 py-2 rounded-full border border-slate-700 text-red-400 hover:border-red-500 text-sm">Delete</button>
+              <p id="inv-delete-note" class="hidden text-xs text-slate-500">Cannot delete this SKU after stock has been received.</p>
             </div>
           </form>
           <div id="inv-adjust-wrap" class="hidden space-y-6">
@@ -683,16 +710,39 @@
 
     function fillInventoryForm(item) {
       document.getElementById('inv-item-id').value = item && item.id ? item.id : '';
-      document.getElementById('inv-title').textContent = item && item.name ? item.name : 'New inventory item';
+      document.getElementById('inv-title').textContent = (item && (item.sku || item.name)) || 'New inventory item';
       document.getElementById('inv-name').value = (item && item.name) || '';
       document.getElementById('inv-sku').value = (item && item.sku) || '';
       fillInvBrands(item && item.brandId);
+      document.getElementById('inv-description').value = (item && item.description) || '';
+      document.getElementById('inv-cost').value = item && item.cost != null ? item.cost : '';
+      document.getElementById('inv-dealer-net').value = item && item.dealerNet != null ? item.dealerNet : '';
       document.getElementById('inv-item-pitch').value = (item && item.pitch) || '';
       document.getElementById('inv-unit').value = (item && item.unit) || 'panels';
       document.getElementById('inv-price').value = item && item.price != null ? item.price : '';
+      document.getElementById('inv-weight').value = item && item.weight != null ? item.weight : '';
+      document.getElementById('inv-panel-w').value = item && item.panelW ? item.panelW : '';
+      document.getElementById('inv-panel-h').value = item && item.panelH ? item.panelH : '';
+      document.getElementById('inv-image').value = '';
+      const preview = document.getElementById('inv-image-preview');
+      if (item && item.image) {
+        preview.src = item.image;
+        preview.classList.remove('hidden');
+      } else {
+        preview.removeAttribute('src');
+        preview.classList.add('hidden');
+      }
       document.getElementById('inv-item-low').value = item && item.lowAt != null ? item.lowAt : '';
       document.getElementById('inv-item-notes').value = (item && item.notes) || '';
-      document.getElementById('inv-delete-btn').classList.toggle('hidden', !(item && item.id));
+      const hasId = !!(item && item.id);
+      const locked = hasId && ((Number(item.qty) || 0) > 0 || (inventoryDetail && (inventoryDetail.moves || []).length > 0));
+      const delBtn = document.getElementById('inv-delete-btn');
+      delBtn.classList.toggle('hidden', !hasId);
+      delBtn.disabled = locked;
+      delBtn.classList.toggle('opacity-40', locked);
+      delBtn.classList.toggle('cursor-not-allowed', locked);
+      delBtn.title = locked ? 'Cannot delete this SKU after stock has been received.' : '';
+      document.getElementById('inv-delete-note').classList.toggle('hidden', !locked);
       document.getElementById('inv-item-msg').classList.add('hidden');
     }
 
@@ -998,28 +1048,27 @@
       e.preventDefault();
       const id = document.getElementById('inv-item-id').value;
       const msg = document.getElementById('inv-item-msg');
-      const body = {
-        name: document.getElementById('inv-name').value,
-        sku: document.getElementById('inv-sku').value,
-        brandId: document.getElementById('inv-brand').value,
-        pitch: document.getElementById('inv-item-pitch').value,
-        unit: document.getElementById('inv-unit').value,
-        price: document.getElementById('inv-price').value,
-        lowAt: document.getElementById('inv-item-low').value,
-        notes: document.getElementById('inv-item-notes').value
-      };
+      const fd = new FormData();
+      fd.append('name', document.getElementById('inv-name').value);
+      fd.append('sku', document.getElementById('inv-sku').value);
+      fd.append('brandId', document.getElementById('inv-brand').value);
+      fd.append('description', document.getElementById('inv-description').value);
+      fd.append('cost', document.getElementById('inv-cost').value);
+      fd.append('dealerNet', document.getElementById('inv-dealer-net').value);
+      fd.append('pitch', document.getElementById('inv-item-pitch').value);
+      fd.append('unit', document.getElementById('inv-unit').value);
+      fd.append('price', document.getElementById('inv-price').value);
+      fd.append('weight', document.getElementById('inv-weight').value);
+      fd.append('panelW', document.getElementById('inv-panel-w').value);
+      fd.append('panelH', document.getElementById('inv-panel-h').value);
+      fd.append('lowAt', document.getElementById('inv-item-low').value);
+      fd.append('notes', document.getElementById('inv-item-notes').value);
+      const photo = document.getElementById('inv-image').files[0];
+      if (photo) fd.append('image', photo);
       try {
         const data = id
-          ? await api('/api/admin/inventory/' + encodeURIComponent(id), {
-            method: 'PUT',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(body)
-          })
-          : await api('/api/admin/inventory', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(body)
-          });
+          ? await api('/api/admin/inventory/' + encodeURIComponent(id), { method: 'PUT', body: fd })
+          : await api('/api/admin/inventory', { method: 'POST', body: fd });
         renderInventoryDetail(data);
         msg.textContent = 'Saved.';
         msg.className = 'sm:col-span-2 text-sm text-sky-400';
@@ -1030,11 +1079,21 @@
     });
     document.getElementById('inv-delete-btn').addEventListener('click', async function () {
       const id = document.getElementById('inv-item-id').value;
-      if (!id || !confirm('Delete this inventory item? Website links to it will be removed.')) return;
-      await api('/api/admin/inventory/' + encodeURIComponent(id), { method: 'DELETE' });
-      document.getElementById('inventory-detail').classList.add('hidden');
-      document.getElementById('inventory-list-wrap').classList.remove('hidden');
-      await loadInventory();
+      if (!id || this.disabled) return;
+      const item = inventoryDetail && inventoryDetail.item;
+      if ((Number(item && item.qty) || 0) > 0 || ((inventoryDetail && inventoryDetail.moves) || []).length) {
+        alert('Cannot delete this SKU after stock has been received. Deleting would erase stock history.');
+        return;
+      }
+      if (!confirm('Delete this inventory item? Website links to it will be removed.')) return;
+      try {
+        await api('/api/admin/inventory/' + encodeURIComponent(id), { method: 'DELETE' });
+        document.getElementById('inventory-detail').classList.add('hidden');
+        document.getElementById('inventory-list-wrap').classList.remove('hidden');
+        await loadInventory();
+      } catch (err) {
+        alert(err.message || 'Could not delete this SKU.');
+      }
     });
     document.getElementById('inv-adjust-form').addEventListener('submit', async function (e) {
       e.preventDefault();

@@ -724,19 +724,11 @@ function createSupabaseStore() {
         pitch: input.pitch
       }), taken);
       const stamp = new Date().toISOString();
-      const { data, error } = await supabase.from('inventory_items').insert({
-        sku: input.sku,
-        name: input.name,
-        brand_id: input.brandId,
-        pitch: input.pitch,
-        unit: input.unit,
-        qty: input.qty,
-        low_at: input.lowAt,
-        price: input.price,
-        notes: input.notes,
+      const fields = Object.assign(inv.dbFieldsFromInput(input), {
         created_at: stamp,
         updated_at: stamp
-      }).select('id').single();
+      });
+      const { data, error } = await supabase.from('inventory_items').insert(fields).select('id').single();
       throwIf(error, 'Could not create inventory item.');
       if (input.qty) {
         const { error: mErr } = await supabase.from('inventory_item_moves').insert({
@@ -776,12 +768,33 @@ function createSupabaseStore() {
       if (input.unit != null) patch.unit = input.unit;
       if (input.lowAt != null) patch.low_at = input.lowAt;
       if (input.price != null) patch.price = input.price;
+      if (input.cost != null) patch.cost = input.cost;
+      if (input.dealerNet != null) patch.dealer_net = input.dealerNet;
+      if (input.weight != null) patch.weight = input.weight;
+      if (input.panelW != null) patch.panel_w = input.panelW;
+      if (input.panelH != null) patch.panel_h = input.panelH;
+      if (input.description != null) patch.description = input.description;
+      if (input.image != null) patch.image = input.image;
       if (input.notes != null) patch.notes = input.notes;
       const { error } = await supabase.from('inventory_items').update(patch).eq('id', id);
       throwIf(error, 'Could not save inventory item.');
       return getInventoryItemDetail(id);
     },
     async deleteInventoryItem(id) {
+      const inv = require('./inventory');
+      const { data: current, error: cErr } = await supabase
+        .from('inventory_items')
+        .select('qty')
+        .eq('id', id)
+        .maybeSingle();
+      throwIf(cErr, 'Could not read inventory.');
+      if (!current) return false;
+      const { count, error: mErr } = await supabase
+        .from('inventory_item_moves')
+        .select('id', { count: 'exact', head: true })
+        .eq('item_id', id);
+      throwIf(mErr, 'Could not read inventory history.');
+      inv.assertCanDelete(current, count || 0);
       const { data, error } = await supabase.from('inventory_items').delete().eq('id', id).select('id');
       throwIf(error, 'Could not delete inventory item.');
       return !!(data && data.length);

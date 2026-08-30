@@ -656,15 +656,24 @@ async function main() {
     } catch (err) { next(err); }
   });
 
+  const inventoryUpload = upload.fields([{ name: 'image', maxCount: 1 }]);
+
+  async function inventoryPayload(req) {
+    const body = Object.assign({}, req.body || {});
+    const file = req.files && req.files.image && req.files.image[0];
+    if (file) body.image = await store.saveUpload(file);
+    return body;
+  }
+
   app.get('/api/admin/inventory', requireAdmin, async function (_req, res, next) {
     try {
       res.json({ ok: true, items: await store.listInventory() });
     } catch (err) { next(err); }
   });
 
-  app.post('/api/admin/inventory', requireAdmin, async function (req, res, next) {
+  app.post('/api/admin/inventory', requireAdmin, inventoryUpload, async function (req, res, next) {
     try {
-      const data = await store.createInventoryItem(req.body || {});
+      const data = await store.createInventoryItem(await inventoryPayload(req));
       res.json({ ok: true, item: data.item, moves: data.moves || [] });
     } catch (err) { next(err); }
   });
@@ -677,9 +686,9 @@ async function main() {
     } catch (err) { next(err); }
   });
 
-  app.put('/api/admin/inventory/:id', requireAdmin, async function (req, res, next) {
+  app.put('/api/admin/inventory/:id', requireAdmin, inventoryUpload, async function (req, res, next) {
     try {
-      const data = await store.updateInventoryItem(req.params.id, req.body || {});
+      const data = await store.updateInventoryItem(req.params.id, await inventoryPayload(req));
       if (!data) return res.status(404).json({ ok: false, error: 'Inventory item not found.' });
       res.json({ ok: true, item: data.item, moves: data.moves });
     } catch (err) { next(err); }
