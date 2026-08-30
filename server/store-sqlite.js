@@ -6,6 +6,69 @@ const dbUtil = require('./db');
 const ROOT = path.join(__dirname, '..');
 const UPLOAD_DIR = path.join(ROOT, 'uploads', 'products');
 
+function inventoryMapRows(db) {
+  return db.prepare(`
+    SELECT m.product_id, m.pitch, m.item_id, p.name AS product_name, p.series_id, p.brand_id
+    FROM product_inventory_map m
+    JOIN products p ON p.id = m.product_id
+  `).all();
+}
+
+function attachInventoryToCatalog(db, catalog) {
+  const inv = require('./inventory');
+  let items = [];
+  let maps = [];
+  try {
+    items = db.prepare('SELECT * FROM inventory_items').all();
+    maps = db.prepare('SELECT * FROM product_inventory_map').all();
+  } catch (e) {
+    return catalog;
+  }
+  return inv.applyToCatalog(catalog, maps, items);
+}
+
+function attachMapsToListedProducts(db, products) {
+  const inv = require('./inventory');
+  let maps = [];
+  try {
+    maps = db.prepare('SELECT product_id, pitch, item_id FROM product_inventory_map').all();
+  } catch (e) {
+    return products;
+  }
+  return inv.attachMapsToProducts(products, maps);
+}
+
+function listInventoryItems(db) {
+  const inv = require('./inventory');
+  const brands = {};
+  db.prepare('SELECT id, name FROM brands').all().forEach(function (b) { brands[b.id] = b.name; });
+  const items = db.prepare('SELECT * FROM inventory_items ORDER BY name COLLATE NOCASE, pitch').all();
+  const byItem = inv.mapsByItem(inventoryMapRows(db));
+  return items.map(function (row) {
+    return inv.formatItem(row, brands[row.brand_id], byItem[String(row.id)] || []);
+  });
+}
+
+function getInventoryItemDetail(db, id) {
+  const inv = require('./inventory');
+  const row = db.prepare('SELECT * FROM inventory_items WHERE id = ?').get(id);
+  if (!row) return null;
+  const brand = row.brand_id
+    ? db.prepare('SELECT name FROM brands WHERE id = ?').get(row.brand_id)
+    : null;
+  const maps = db.prepare(`
+    SELECT m.product_id, m.pitch, m.item_id, p.name AS product_name, p.series_id, p.brand_id
+    FROM product_inventory_map m
+    JOIN products p ON p.id = m.product_id
+    WHERE m.item_id = ?
+  `).all(id);
+  const byItem = inv.mapsByItem(maps);
+  const moves = db.prepare(
+    'SELECT * FROM inventory_item_moves WHERE item_id = ? ORDER BY datetime(created_at) DESC, id DESC LIMIT 40'
+  ).all(id);
+  return { item: inv.formatItem(row, brand && brand.name, byItem[String(row.id)] || []), moves: moves };
+}
+
 function createSqliteStore() {
   fs.mkdirSync(UPLOAD_DIR, { recursive: true });
   const db = dbUtil.openDb();
@@ -16,9 +79,22 @@ function createSqliteStore() {
 
   return {
     name: 'sqlite',
-    async getCatalog() { return dbUtil.getCatalog(db); },
-    async listProducts() { return dbUtil.listProducts(db); },
-    async getProduct(id) { return dbUtil.getProduct(db, id); },
+    async getCatalog() {
+      const catalog = dbUtil.getCatalog(db);
+      attachInventoryToCatalog(db, catalog);
+      return catalog;
+    },
+    async listProducts() {
+      const products = dbUtil.listProducts(db);
+      attachMapsToListedProducts(db, products);
+      return products;
+    },
+    async getProduct(id) {
+      const product = dbUtil.getProduct(db, id);
+      if (!product) return null;
+      attachMapsToListedProducts(db, [product]);
+      return product;
+    },
     async getProductByBrandSeries(brand, series) {
       const row = db.prepare('SELECT * FROM products WHERE brand_id = ? AND series_id = ?').get(brand, series);
       if (!row) return null;
@@ -111,67 +187,79 @@ function createSqliteStore() {
       return true;
     },
     async listInventory() {
-      const inv = require('./inventory');
-      const products = dbUtil.listProducts(db);
-      const stocks = db.prepare('SELECT * FROM inventory_stock').all();
-      const byProduct = {};
-      stocks.forEach(function (row) {
-        const key = String(row.product_id);
-        (byProduct[key] = byProduct[key] || []).push(row);
-      });
-      return products.map(function (p) {
-        return inv.inventoryItem(p, byProduct[String(p.dbId)] || []);
-      });
+      return listInventoryItems(db);
     },
-    async getInventoryProduct(id) {
+    async getInventoryItem(id) {
+      return getInventoryItemDetail(db, id);
+    },
+    async createInventoryItem(payload) {
       const inv = require('./inventory');
-      const product = dbUtil.getProduct(db, id);
-      if (!product) return null;
-      const stocks = db.prepare('SELECT * FROM inventory_stock WHERE product_id = ?').all(id);
-      const moves = db.prepare(
-        'SELECT * FROM inventory_moves WHERE product_id = ? ORDER BY datetime(created_at) DESC, id DESC LIMIT 40'
-      ).all(id);
-      return { item: inv.inventoryItem(product, stocks), moves: moves };
+      const input = inv.normalizeItemInput(payload);
+      const stamp = dbUtil.nowIso();
+      const info = db.prepare(`
+        INSERT INTO inventory_items (
+          name, brand_id, pitch, unit, qty, low_at, price, notes, created_at, updated_at
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+      `).run(
+        input.name, input.brandId, input.pitch, input.unit, input.qty,
+        input.lowAt, input.price, input.notes, stamp, stamp
+      );
+      if (input.qty) {
+        db.prepare(`
+          INSERT INTO inventory_item_moves (
+            item_id, kind, qty_delta, qty_after, note, admin_email, created_at
+          ) VALUES (?, 'count', ?, ?, 'Opening qty', '', ?)
+        `).run(info.lastInsertRowid, input.qty, input.qty, stamp);
+      }
+      return getInventoryItemDetail(db, info.lastInsertRowid);
+    },
+    async updateInventoryItem(id, payload) {
+      const inv = require('./inventory');
+      const current = db.prepare('SELECT * FROM inventory_items WHERE id = ?').get(id);
+      if (!current) return null;
+      const input = inv.normalizeItemInput(payload, { patch: true });
+      const next = {
+        name: input.name != null ? input.name : current.name,
+        brandId: input.brandId != null ? input.brandId : (current.brand_id || ''),
+        pitch: input.pitch != null ? input.pitch : inv.pitchKey(current.pitch),
+        unit: input.unit != null ? input.unit : inv.unitOf(current.unit),
+        lowAt: input.lowAt != null ? input.lowAt : Number(current.low_at),
+        price: input.price != null ? input.price : Number(current.price) || 0,
+        notes: input.notes != null ? input.notes : (current.notes || '')
+      };
+      db.prepare(`
+        UPDATE inventory_items SET
+          name = ?, brand_id = ?, pitch = ?, unit = ?, low_at = ?, price = ?, notes = ?, updated_at = ?
+        WHERE id = ?
+      `).run(next.name, next.brandId, next.pitch, next.unit, next.lowAt, next.price, next.notes, dbUtil.nowIso(), id);
+      return getInventoryItemDetail(db, id);
+    },
+    async deleteInventoryItem(id) {
+      const info = db.prepare('DELETE FROM inventory_items WHERE id = ?').run(id);
+      return info.changes > 0;
     },
     async adjustInventory(id, payload, adminEmail) {
       const inv = require('./inventory');
-      const product = dbUtil.getProduct(db, id);
-      if (!product) return null;
-      const pitch = inv.pitchKey(payload && payload.pitch);
-      const control = inv.isControlProduct(product);
-      if (!control) {
-        const allowed = (product.pitches || []).map(inv.pitchKey);
-        if (pitch && allowed.indexOf(pitch) === -1) {
-          throw new Error('That pitch is not on this series.');
-        }
-      } else if (pitch) {
-        throw new Error('Control gear is stocked as each, not by pitch.');
-      }
-      const current = db.prepare(
-        'SELECT qty, low_at FROM inventory_stock WHERE product_id = ? AND pitch = ?'
-      ).get(id, pitch);
-      const curQty = current ? Number(current.qty) || 0 : 0;
+      const current = db.prepare('SELECT * FROM inventory_items WHERE id = ?').get(id);
+      if (!current) return null;
+      const curQty = Math.max(0, Number(current.qty) || 0);
       const nextLow = payload && payload.lowAt != null && payload.lowAt !== ''
         ? Math.max(0, Math.round(Number(payload.lowAt)))
-        : (current && current.low_at != null ? Number(current.low_at) : inv.defaultLowAt(control));
+        : Number(current.low_at);
       if (!isFinite(nextLow)) throw new Error('Low-at must be a number.');
       const change = inv.applyKind(payload && payload.kind, payload && payload.qty, curQty);
       const stamp = dbUtil.nowIso();
       db.exec('BEGIN');
       try {
+        db.prepare(
+          'UPDATE inventory_items SET qty = ?, low_at = ?, updated_at = ? WHERE id = ?'
+        ).run(change.next, nextLow, stamp, id);
         db.prepare(`
-          INSERT INTO inventory_stock (product_id, pitch, qty, low_at, updated_at)
-          VALUES (?, ?, ?, ?, ?)
-          ON CONFLICT(product_id, pitch) DO UPDATE SET
-            qty = excluded.qty, low_at = excluded.low_at, updated_at = excluded.updated_at
-        `).run(id, pitch, change.next, nextLow, stamp);
-        db.prepare(`
-          INSERT INTO inventory_moves (
-            product_id, pitch, kind, qty_delta, qty_after, note, admin_email, created_at
-          ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+          INSERT INTO inventory_item_moves (
+            item_id, kind, qty_delta, qty_after, note, admin_email, created_at
+          ) VALUES (?, ?, ?, ?, ?, ?, ?)
         `).run(
           id,
-          pitch,
           String(payload.kind || '').toLowerCase(),
           change.delta,
           change.next,
@@ -184,7 +272,32 @@ function createSqliteStore() {
         try { db.exec('ROLLBACK'); } catch (e) { /* ignore */ }
         throw err;
       }
-      return this.getInventoryProduct(id);
+      return getInventoryItemDetail(db, id);
+    },
+    async setProductInventoryMaps(productId, maps) {
+      const inv = require('./inventory');
+      const product = dbUtil.getProduct(db, productId);
+      if (!product) return null;
+      const rows = inv.normalizeMaps(maps);
+      db.exec('BEGIN');
+      try {
+        db.prepare('DELETE FROM product_inventory_map WHERE product_id = ?').run(productId);
+        const insert = db.prepare(
+          'INSERT INTO product_inventory_map (product_id, pitch, item_id) VALUES (?, ?, ?)'
+        );
+        rows.forEach(function (row) {
+          const item = db.prepare('SELECT id FROM inventory_items WHERE id = ?').get(row.itemId);
+          if (!item) throw new Error('Inventory item not found.');
+          insert.run(productId, row.pitch, row.itemId);
+        });
+        db.exec('COMMIT');
+      } catch (err) {
+        try { db.exec('ROLLBACK'); } catch (e) { /* ignore */ }
+        throw err;
+      }
+      const updated = dbUtil.getProduct(db, productId);
+      attachMapsToListedProducts(db, [updated]);
+      return updated;
     },
     async saveUpload(file) {
       const ext = path.extname(file.originalname || '').toLowerCase();

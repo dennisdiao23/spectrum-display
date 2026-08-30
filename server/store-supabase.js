@@ -60,6 +60,12 @@ function createSupabaseStore() {
     } catch (e) {
       console.error('Could not rename cabinet copy to panel:', e.message || e);
     }
+
+    try {
+      await migrateLegacyInventory();
+    } catch (e) {
+      console.error('Could not migrate inventory bins to SKUs:', e.message || e);
+    }
   }
 
   async function upsertMissingCatalog() {
@@ -162,6 +168,152 @@ function createSupabaseStore() {
     if (n) console.log('Renamed cabinet copy to panel on ' + n + ' products');
   }
 
+  async function migrateLegacyInventory() {
+    const inv = require('./inventory');
+    const { count: itemCount, error: cErr } = await supabase
+      .from('inventory_items')
+      .select('id', { count: 'exact', head: true });
+    if (cErr) return;
+    if (itemCount) return;
+    const { data: stocks, error: sErr } = await supabase.from('inventory_stock').select('*');
+    if (sErr || !(stocks || []).length) return;
+    const products = await listProductsUnmapped();
+    const byId = {};
+    products.forEach(function (p) { byId[String(p.dbId)] = p; });
+    const keyToItemId = {};
+    for (let i = 0; i < stocks.length; i++) {
+      const row = stocks[i];
+      const product = byId[String(row.product_id)];
+      const pitch = inv.pitchKey(row.pitch);
+      const control = product ? inv.isControlProduct(product) : !pitch;
+      const unit = control ? 'each' : 'panels';
+      const { data: created, error: iErr } = await supabase.from('inventory_items').insert({
+        name: product ? inv.skuNameFromProduct(product, pitch) : ('Item ' + row.product_id),
+        brand_id: product ? (product.brandId || '') : '',
+        pitch: pitch,
+        unit: unit,
+        qty: Math.max(0, Number(row.qty) || 0),
+        low_at: row.low_at != null ? Number(row.low_at) : inv.defaultLowAt(unit),
+        price: inv.priceFromProduct(product),
+        notes: '',
+        updated_at: row.updated_at || new Date().toISOString()
+      }).select('id').single();
+      throwIf(iErr, 'Could not migrate inventory item.');
+      keyToItemId[String(row.product_id) + '|' + pitch] = created.id;
+      if (product) {
+        const { error: mErr } = await supabase.from('product_inventory_map').upsert({
+          product_id: Number(row.product_id),
+          pitch: pitch,
+          item_id: created.id
+        }, { onConflict: 'product_id,pitch' });
+        throwIf(mErr, 'Could not map migrated inventory item.');
+      }
+    }
+    const { data: moves } = await supabase.from('inventory_moves').select('*').order('id');
+    for (let i = 0; i < (moves || []).length; i++) {
+      const m = moves[i];
+      const itemId = keyToItemId[String(m.product_id) + '|' + inv.pitchKey(m.pitch)];
+      if (!itemId) continue;
+      const { error: mvErr } = await supabase.from('inventory_item_moves').insert({
+        item_id: itemId,
+        kind: String(m.kind || ''),
+        qty_delta: Number(m.qty_delta) || 0,
+        qty_after: Number(m.qty_after) || 0,
+        note: m.note || '',
+        admin_email: m.admin_email || '',
+        created_at: m.created_at || new Date().toISOString()
+      });
+      throwIf(mvErr, 'Could not migrate inventory history.');
+    }
+    console.log('Migrated ' + stocks.length + ' catalog stock bins into inventory items');
+  }
+
+  async function listProductsUnmapped() {
+    const { data: brands, error: bErr } = await supabase.from('brands').select('id, name');
+    throwIf(bErr);
+    const brandMap = {};
+    (brands || []).forEach(function (b) { brandMap[b.id] = b; });
+    const { data: products, error: pErr } = await supabase
+      .from('products')
+      .select('*')
+      .order('brand_id')
+      .order('sort_order')
+      .order('name');
+    throwIf(pErr);
+    return (products || []).map(function (row) { return dbUtil.rowToProduct(row, brandMap[row.brand_id]); });
+  }
+
+  async function loadInventoryMaps() {
+    const { data, error } = await supabase
+      .from('product_inventory_map')
+      .select('product_id, pitch, item_id, products(name, series_id, brand_id)');
+    if (error) {
+      const { data: plain, error: pErr } = await supabase
+        .from('product_inventory_map')
+        .select('product_id, pitch, item_id');
+      throwIf(pErr, 'Could not read inventory links.');
+      return plain || [];
+    }
+    return (data || []).map(function (row) {
+      const p = row.products || {};
+      return {
+        product_id: row.product_id,
+        pitch: row.pitch,
+        item_id: row.item_id,
+        product_name: p.name || '',
+        series_id: p.series_id || '',
+        brand_id: p.brand_id || ''
+      };
+    });
+  }
+
+  async function attachInventoryToCatalog(catalog) {
+    const inv = require('./inventory');
+    const { data: items, error: iErr } = await supabase.from('inventory_items').select('*');
+    if (iErr) return catalog;
+    const { data: maps, error: mErr } = await supabase.from('product_inventory_map').select('*');
+    if (mErr) return catalog;
+    return inv.applyToCatalog(catalog, maps || [], items || []);
+  }
+
+  async function attachMapsToListedProducts(products) {
+    const inv = require('./inventory');
+    const { data: maps, error } = await supabase
+      .from('product_inventory_map')
+      .select('product_id, pitch, item_id');
+    if (error) return products;
+    return inv.attachMapsToProducts(products, maps || []);
+  }
+
+  async function formatInventoryRow(row, maps) {
+    const inv = require('./inventory');
+    let brandName = row.brand_id || '';
+    if (row.brand_id) {
+      const { data: brand } = await supabase.from('brands').select('name').eq('id', row.brand_id).maybeSingle();
+      if (brand && brand.name) brandName = brand.name;
+    }
+    return inv.formatItem(row, brandName, maps || []);
+  }
+
+  async function getInventoryItemDetail(id) {
+    const inv = require('./inventory');
+    const { data: row, error } = await supabase.from('inventory_items').select('*').eq('id', id).maybeSingle();
+    throwIf(error, 'Could not read inventory.');
+    if (!row) return null;
+    const maps = (await loadInventoryMaps()).filter(function (m) {
+      return String(m.item_id) === String(id);
+    });
+    const byItem = inv.mapsByItem(maps);
+    const { data: moves, error: mErr } = await supabase
+      .from('inventory_item_moves')
+      .select('*')
+      .eq('item_id', id)
+      .order('created_at', { ascending: false })
+      .limit(40);
+    throwIf(mErr, 'Could not read inventory history.');
+    return { item: await formatInventoryRow(row, byItem[String(row.id)] || []), moves: moves || [] };
+  }
+
   return {
     name: 'supabase',
     ready: seedIfEmpty(),
@@ -186,28 +338,20 @@ function createSupabaseStore() {
           brand.kind = 'control';
         }
       });
-      return byBrand;
+      return attachInventoryToCatalog(byBrand);
     },
     async listProducts() {
-      const { data: brands, error: bErr } = await supabase.from('brands').select('id, name');
-      throwIf(bErr);
-      const brandMap = {};
-      (brands || []).forEach((b) => { brandMap[b.id] = b; });
-      const { data: products, error: pErr } = await supabase
-        .from('products')
-        .select('*')
-        .order('brand_id')
-        .order('sort_order')
-        .order('name');
-      throwIf(pErr);
-      return (products || []).map((row) => dbUtil.rowToProduct(row, brandMap[row.brand_id]));
+      const products = await listProductsUnmapped();
+      return attachMapsToListedProducts(products);
     },
     async getProduct(id) {
       const { data: row, error } = await supabase.from('products').select('*').eq('id', id).maybeSingle();
       throwIf(error);
       if (!row) return null;
       const { data: brand } = await supabase.from('brands').select('id, name').eq('id', row.brand_id).maybeSingle();
-      return dbUtil.rowToProduct(row, brand);
+      const product = dbUtil.rowToProduct(row, brand);
+      await attachMapsToListedProducts([product]);
+      return product;
     },
     async getProductByBrandSeries(brand, series) {
       const { data: row, error } = await supabase
@@ -471,75 +615,97 @@ function createSupabaseStore() {
     },
     async listInventory() {
       const inv = require('./inventory');
-      const products = await this.listProducts();
-      const { data: stocks, error } = await supabase.from('inventory_stock').select('*');
+      const { data: items, error } = await supabase
+        .from('inventory_items')
+        .select('*')
+        .order('name')
+        .order('pitch');
       throwIf(error, 'Could not read inventory.');
-      const byProduct = {};
-      (stocks || []).forEach(function (row) {
-        const key = String(row.product_id);
-        (byProduct[key] = byProduct[key] || []).push(row);
-      });
-      return products.map(function (p) {
-        return inv.inventoryItem(p, byProduct[String(p.dbId)] || []);
-      });
+      const maps = await loadInventoryMaps();
+      const byItem = inv.mapsByItem(maps);
+      const out = [];
+      for (let i = 0; i < (items || []).length; i++) {
+        const row = items[i];
+        out.push(await formatInventoryRow(row, byItem[String(row.id)] || []));
+      }
+      return out;
     },
-    async getInventoryProduct(id) {
+    async getInventoryItem(id) {
+      return getInventoryItemDetail(id);
+    },
+    async createInventoryItem(payload) {
       const inv = require('./inventory');
-      const product = await this.getProduct(id);
-      if (!product) return null;
-      const { data: stocks, error: sErr } = await supabase
-        .from('inventory_stock')
-        .select('*')
-        .eq('product_id', id);
-      throwIf(sErr, 'Could not read inventory.');
-      const { data: moves, error: mErr } = await supabase
-        .from('inventory_moves')
-        .select('*')
-        .eq('product_id', id)
-        .order('created_at', { ascending: false })
-        .limit(40);
-      throwIf(mErr, 'Could not read inventory history.');
-      return { item: inv.inventoryItem(product, stocks || []), moves: moves || [] };
+      const input = inv.normalizeItemInput(payload);
+      const stamp = new Date().toISOString();
+      const { data, error } = await supabase.from('inventory_items').insert({
+        name: input.name,
+        brand_id: input.brandId,
+        pitch: input.pitch,
+        unit: input.unit,
+        qty: input.qty,
+        low_at: input.lowAt,
+        price: input.price,
+        notes: input.notes,
+        created_at: stamp,
+        updated_at: stamp
+      }).select('id').single();
+      throwIf(error, 'Could not create inventory item.');
+      if (input.qty) {
+        const { error: mErr } = await supabase.from('inventory_item_moves').insert({
+          item_id: data.id,
+          kind: 'count',
+          qty_delta: input.qty,
+          qty_after: input.qty,
+          note: 'Opening qty',
+          admin_email: ''
+        });
+        throwIf(mErr, 'Could not save inventory history.');
+      }
+      return getInventoryItemDetail(data.id);
+    },
+    async updateInventoryItem(id, payload) {
+      const inv = require('./inventory');
+      const { data: current, error: cErr } = await supabase.from('inventory_items').select('*').eq('id', id).maybeSingle();
+      throwIf(cErr, 'Could not read inventory.');
+      if (!current) return null;
+      const input = inv.normalizeItemInput(payload, { patch: true });
+      const patch = { updated_at: new Date().toISOString() };
+      if (input.name != null) patch.name = input.name;
+      if (input.brandId != null) patch.brand_id = input.brandId;
+      if (input.pitch != null) patch.pitch = input.pitch;
+      if (input.unit != null) patch.unit = input.unit;
+      if (input.lowAt != null) patch.low_at = input.lowAt;
+      if (input.price != null) patch.price = input.price;
+      if (input.notes != null) patch.notes = input.notes;
+      const { error } = await supabase.from('inventory_items').update(patch).eq('id', id);
+      throwIf(error, 'Could not save inventory item.');
+      return getInventoryItemDetail(id);
+    },
+    async deleteInventoryItem(id) {
+      const { data, error } = await supabase.from('inventory_items').delete().eq('id', id).select('id');
+      throwIf(error, 'Could not delete inventory item.');
+      return !!(data && data.length);
     },
     async adjustInventory(id, payload, adminEmail) {
       const inv = require('./inventory');
-      const product = await this.getProduct(id);
-      if (!product) return null;
-      const pitch = inv.pitchKey(payload && payload.pitch);
-      const control = inv.isControlProduct(product);
-      if (!control) {
-        const allowed = (product.pitches || []).map(inv.pitchKey);
-        if (pitch && allowed.indexOf(pitch) === -1) {
-          throw new Error('That pitch is not on this series.');
-        }
-      } else if (pitch) {
-        throw new Error('Control gear is stocked as each, not by pitch.');
-      }
-      const { data: current, error: cErr } = await supabase
-        .from('inventory_stock')
-        .select('qty, low_at')
-        .eq('product_id', id)
-        .eq('pitch', pitch)
-        .maybeSingle();
+      const { data: current, error: cErr } = await supabase.from('inventory_items').select('*').eq('id', id).maybeSingle();
       throwIf(cErr, 'Could not read inventory.');
-      const curQty = current ? Number(current.qty) || 0 : 0;
+      if (!current) return null;
+      const curQty = Math.max(0, Number(current.qty) || 0);
       const nextLow = payload && payload.lowAt != null && payload.lowAt !== ''
         ? Math.max(0, Math.round(Number(payload.lowAt)))
-        : (current && current.low_at != null ? Number(current.low_at) : inv.defaultLowAt(control));
+        : Number(current.low_at);
       if (!isFinite(nextLow)) throw new Error('Low-at must be a number.');
       const change = inv.applyKind(payload && payload.kind, payload && payload.qty, curQty);
       const stamp = new Date().toISOString();
-      const { error: uErr } = await supabase.from('inventory_stock').upsert({
-        product_id: Number(id),
-        pitch: pitch,
+      const { error: uErr } = await supabase.from('inventory_items').update({
         qty: change.next,
         low_at: nextLow,
         updated_at: stamp
-      }, { onConflict: 'product_id,pitch' });
+      }).eq('id', id);
       throwIf(uErr, 'Could not save inventory.');
-      const { error: mErr } = await supabase.from('inventory_moves').insert({
-        product_id: Number(id),
-        pitch: pitch,
+      const { error: mErr } = await supabase.from('inventory_item_moves').insert({
+        item_id: Number(id),
         kind: String(payload.kind || '').toLowerCase(),
         qty_delta: change.delta,
         qty_after: change.next,
@@ -547,7 +713,22 @@ function createSupabaseStore() {
         admin_email: String(adminEmail || '').trim().slice(0, 120)
       });
       throwIf(mErr, 'Could not save inventory history.');
-      return this.getInventoryProduct(id);
+      return getInventoryItemDetail(id);
+    },
+    async setProductInventoryMaps(productId, maps) {
+      const inv = require('./inventory');
+      const product = await this.getProduct(productId);
+      if (!product) return null;
+      const rows = inv.normalizeMaps(maps);
+      const { error: dErr } = await supabase.from('product_inventory_map').delete().eq('product_id', productId);
+      throwIf(dErr, 'Could not update inventory links.');
+      if (rows.length) {
+        const { error: iErr } = await supabase.from('product_inventory_map').insert(rows.map(function (row) {
+          return { product_id: Number(productId), pitch: row.pitch, item_id: row.itemId };
+        }));
+        throwIf(iErr, 'Could not save inventory links.');
+      }
+      return this.getProduct(productId);
     },
     async saveUpload(file) {
       const ext = path.extname(file.originalname || '').toLowerCase();

@@ -137,8 +137,125 @@ function openDb() {
     );
     CREATE INDEX IF NOT EXISTS inventory_stock_product_idx ON inventory_stock (product_id);
     CREATE INDEX IF NOT EXISTS inventory_moves_product_idx ON inventory_moves (product_id, created_at);
+    CREATE TABLE IF NOT EXISTS inventory_items (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      name TEXT NOT NULL,
+      brand_id TEXT NOT NULL DEFAULT '',
+      pitch TEXT NOT NULL DEFAULT '',
+      unit TEXT NOT NULL DEFAULT 'panels',
+      qty INTEGER NOT NULL DEFAULT 0,
+      low_at INTEGER NOT NULL DEFAULT 8,
+      price REAL NOT NULL DEFAULT 0,
+      notes TEXT NOT NULL DEFAULT '',
+      created_at TEXT NOT NULL,
+      updated_at TEXT NOT NULL
+    );
+    CREATE TABLE IF NOT EXISTS inventory_item_moves (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      item_id INTEGER NOT NULL,
+      kind TEXT NOT NULL,
+      qty_delta INTEGER NOT NULL,
+      qty_after INTEGER NOT NULL,
+      note TEXT NOT NULL DEFAULT '',
+      admin_email TEXT NOT NULL DEFAULT '',
+      created_at TEXT NOT NULL,
+      FOREIGN KEY (item_id) REFERENCES inventory_items(id) ON DELETE CASCADE
+    );
+    CREATE TABLE IF NOT EXISTS product_inventory_map (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      product_id INTEGER NOT NULL,
+      pitch TEXT NOT NULL DEFAULT '',
+      item_id INTEGER NOT NULL,
+      UNIQUE (product_id, pitch),
+      FOREIGN KEY (product_id) REFERENCES products(id) ON DELETE CASCADE,
+      FOREIGN KEY (item_id) REFERENCES inventory_items(id) ON DELETE CASCADE
+    );
+    CREATE INDEX IF NOT EXISTS inventory_items_brand_idx ON inventory_items (brand_id, name);
+    CREATE INDEX IF NOT EXISTS inventory_item_moves_item_idx ON inventory_item_moves (item_id, created_at);
+    CREATE INDEX IF NOT EXISTS product_inventory_map_item_idx ON product_inventory_map (item_id);
   `);
+  migrateLegacyInventory(db);
   return db;
+}
+
+function migrateLegacyInventory(db) {
+  const inv = require('./inventory');
+  let itemCount = 0;
+  try {
+    itemCount = db.prepare('SELECT COUNT(*) AS n FROM inventory_items').get().n;
+  } catch (e) {
+    return;
+  }
+  if (itemCount) return;
+  let stocks = [];
+  try {
+    stocks = db.prepare('SELECT * FROM inventory_stock').all();
+  } catch (e) {
+    return;
+  }
+  if (!stocks.length) return;
+  const products = {};
+  listProducts(db).forEach(function (p) { products[String(p.dbId)] = p; });
+  const stamp = nowIso();
+  const keyToItemId = {};
+  db.exec('BEGIN');
+  try {
+    stocks.forEach(function (row) {
+      const product = products[String(row.product_id)];
+      const pitch = inv.pitchKey(row.pitch);
+      const control = product ? inv.isControlProduct(product) : !pitch;
+      const unit = control ? 'each' : 'panels';
+      const name = product ? inv.skuNameFromProduct(product, pitch) : ('Item ' + row.product_id);
+      const info = db.prepare(`
+        INSERT INTO inventory_items (
+          name, brand_id, pitch, unit, qty, low_at, price, notes, created_at, updated_at
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, '', ?, ?)
+      `).run(
+        name,
+        product ? (product.brandId || '') : '',
+        pitch,
+        unit,
+        Math.max(0, Number(row.qty) || 0),
+        row.low_at != null ? Number(row.low_at) : inv.defaultLowAt(unit),
+        inv.priceFromProduct(product),
+        row.updated_at || stamp,
+        stamp
+      );
+      const itemId = info.lastInsertRowid;
+      keyToItemId[String(row.product_id) + '|' + pitch] = itemId;
+      if (product) {
+        db.prepare(
+          'INSERT OR IGNORE INTO product_inventory_map (product_id, pitch, item_id) VALUES (?, ?, ?)'
+        ).run(row.product_id, pitch, itemId);
+      }
+    });
+    let moves = [];
+    try {
+      moves = db.prepare('SELECT * FROM inventory_moves ORDER BY id').all();
+    } catch (e) { /* ignore */ }
+    moves.forEach(function (m) {
+      const itemId = keyToItemId[String(m.product_id) + '|' + inv.pitchKey(m.pitch)];
+      if (!itemId) return;
+      db.prepare(`
+        INSERT INTO inventory_item_moves (
+          item_id, kind, qty_delta, qty_after, note, admin_email, created_at
+        ) VALUES (?, ?, ?, ?, ?, ?, ?)
+      `).run(
+        itemId,
+        String(m.kind || ''),
+        Number(m.qty_delta) || 0,
+        Number(m.qty_after) || 0,
+        m.note || '',
+        m.admin_email || '',
+        m.created_at || stamp
+      );
+    });
+    db.exec('COMMIT');
+    console.log('Migrated ' + stocks.length + ' catalog stock bins into inventory items');
+  } catch (err) {
+    try { db.exec('ROLLBACK'); } catch (e) { /* ignore */ }
+    console.error('Could not migrate inventory bins:', err.message || err);
+  }
 }
 
 function seedAdmin(db) {

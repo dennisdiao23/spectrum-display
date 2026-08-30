@@ -2,7 +2,19 @@
  * Panel and control catalog from /api/catalog (admin database).
  */
 (function (global) {
+  function cheapestMappedPrice(s) {
+    var map = (s && s.pitchInventory) || {};
+    var min = 0;
+    Object.keys(map).forEach(function (k) {
+      var n = Number(map[k] && map[k].price) || 0;
+      if (n > 0 && (!min || n < min)) min = n;
+    });
+    return min;
+  }
+
   function catalogUnitPrice(s) {
+    var mapped = cheapestMappedPrice(s);
+    if (mapped > 0) return mapped;
     if (s && (s.type === 'control' || s.subtype)) return Number(s.priceEach) || 0;
     return Number(s && s.pricePerM2) || 0;
   }
