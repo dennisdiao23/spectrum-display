@@ -778,6 +778,13 @@
     <button type="button" data-col-act="desc">Sort descending</button>
     <button type="button" data-col-act="left">Move left</button>
     <button type="button" data-col-act="right">Move right</button>
+    <div class="dash-col-menu-rule"></div>
+    <button type="button" data-col-act="hide">Hide column</button>
+    <button type="button" data-col-act="add">Add column</button>
+  </div>
+  <div id="dash-col-add" class="dash-col-add" hidden>
+    <p class="dash-col-add-title">Add column</p>
+    <div id="dash-col-add-list"></div>
   </div>
   <div id="cc-leave" class="cc-leave" hidden>
     <div class="cc-leave-card" role="dialog" aria-modal="true" aria-labelledby="cc-leave-title">
@@ -1341,14 +1348,28 @@
 
     function loadColState(table) {
       const name = dashColKey(table);
-      const fallback = { order: defaultColOrder(table), sortCol: '', sortDir: '', widths: {} };
+      const known = defaultColOrder(table);
+      const fallback = { order: known.slice(), hidden: [], sortCol: '', sortDir: '', widths: {} };
       try {
         const saved = JSON.parse(localStorage.getItem('dash-col-state-' + name) || '{}');
-        const known = fallback.order.slice();
-        const order = (saved.order || []).filter(function (id) { return known.indexOf(id) !== -1; });
-        known.forEach(function (id) { if (order.indexOf(id) === -1) order.push(id); });
+        const savedHidden = (saved.hidden || []).filter(function (id) { return known.indexOf(id) !== -1; });
+        const order = (saved.order || []).filter(function (id) {
+          return known.indexOf(id) !== -1 && savedHidden.indexOf(id) === -1;
+        });
+        const hidden = savedHidden.slice();
+        known.forEach(function (id) {
+          if (order.indexOf(id) !== -1 || hidden.indexOf(id) !== -1) return;
+          if (saved.order && saved.order.length) hidden.push(id);
+          else order.push(id);
+        });
+        if (!order.length && known.length) {
+          order.push(known[0]);
+          const drop = hidden.indexOf(known[0]);
+          if (drop !== -1) hidden.splice(drop, 1);
+        }
         return {
           order: order,
+          hidden: hidden,
           sortCol: saved.sortCol || '',
           sortDir: saved.sortDir || '',
           widths: saved.widths && typeof saved.widths === 'object' ? saved.widths : {}
@@ -1370,9 +1391,14 @@
         const th = row.querySelector('th[data-col="' + id + '"]');
         if (th) row.appendChild(th);
       });
+      state.hidden.forEach(function (id) {
+        const th = row.querySelector('th[data-col="' + id + '"]');
+        if (th) row.appendChild(th);
+      });
       locked.forEach(function (th) { row.appendChild(th); });
       Array.prototype.forEach.call(row.querySelectorAll('th[data-col]'), function (th) {
         const col = th.getAttribute('data-col');
+        th.hidden = state.hidden.indexOf(col) !== -1;
         const w = state.widths[col];
         if (w) th.style.width = w;
         const caret = th.querySelector('.dash-col-caret');
@@ -1387,6 +1413,21 @@
       return loadColState(table).order.map(function (id) { return cells[id] || ''; }).join('') + (lockedHtml || '');
     }
 
+    function dashColSpan(table) {
+      const locked = table.querySelectorAll('thead th:not([data-col])').length;
+      return loadColState(table).order.length + locked;
+    }
+
+    function colHeaderLabel(table, id) {
+      const th = table.querySelector('th[data-col="' + id + '"]');
+      if (!th) return id;
+      const copy = th.cloneNode(true);
+      Array.prototype.forEach.call(copy.querySelectorAll('.dash-col-caret, .dash-col-grip'), function (el) {
+        el.remove();
+      });
+      return (copy.textContent || id).trim();
+    }
+
     function sortColRows(rows, table, getValue) {
       const state = loadColState(table);
       if (!state.sortCol || !state.sortDir) return rows;
@@ -1399,20 +1440,64 @@
       });
     }
 
+    function closeColAdd() {
+      const panel = document.getElementById('dash-col-add');
+      if (panel) panel.hidden = true;
+      const addBtn = document.querySelector('#dash-col-menu [data-col-act="add"]');
+      if (addBtn) addBtn.classList.remove('is-on');
+    }
+
     function closeColMenu() {
+      closeColAdd();
       const menu = document.getElementById('dash-col-menu');
       menu.hidden = true;
       menu._table = null;
       menu._col = '';
     }
 
+    function placeColAdd(menu) {
+      const panel = document.getElementById('dash-col-add');
+      if (!panel || panel.hidden) return;
+      const box = menu.getBoundingClientRect();
+      const pw = panel.offsetWidth || 184;
+      let left = box.right + 6;
+      if (left + pw > window.innerWidth - 8) left = box.left - pw - 6;
+      panel.style.left = Math.max(8, left) + 'px';
+      panel.style.top = Math.max(8, box.top) + 'px';
+    }
+
+    function openColAdd(table) {
+      const menu = document.getElementById('dash-col-menu');
+      const panel = document.getElementById('dash-col-add');
+      const list = document.getElementById('dash-col-add-list');
+      const addBtn = menu.querySelector('[data-col-act="add"]');
+      if (!panel.hidden) {
+        closeColAdd();
+        return;
+      }
+      const hidden = loadColState(table).hidden;
+      if (!hidden.length) {
+        list.innerHTML = '<p class="dash-col-add-empty">No hidden columns</p>';
+      } else {
+        list.innerHTML = hidden.map(function (id) {
+          return '<button type="button" data-add-col="' + esc(id) + '">' + esc(colHeaderLabel(table, id)) + '</button>';
+        }).join('');
+      }
+      panel.hidden = false;
+      addBtn.classList.add('is-on');
+      placeColAdd(menu);
+    }
+
     function openColMenu(table, th) {
+      closeColAdd();
       const menu = document.getElementById('dash-col-menu');
       const col = th.getAttribute('data-col');
       const state = loadColState(table);
       const i = state.order.indexOf(col);
       menu.querySelector('[data-col-act="left"]').disabled = i <= 0;
       menu.querySelector('[data-col-act="right"]').disabled = i === -1 || i >= state.order.length - 1;
+      menu.querySelector('[data-col-act="hide"]').disabled = state.order.length <= 1;
+      menu.querySelector('[data-col-act="add"]').disabled = !state.hidden.length;
       menu._table = table;
       menu._col = col;
       menu.hidden = false;
@@ -1479,6 +1564,7 @@
     }
 
     const dashColMenu = document.getElementById('dash-col-menu');
+    const dashColAdd = document.getElementById('dash-col-add');
     if (dashColMenu) {
       dashColMenu.addEventListener('click', function (e) {
         const btn = e.target.closest('[data-col-act]');
@@ -1487,6 +1573,10 @@
         const col = dashColMenu._col;
         if (!table || !col) return;
         const act = btn.getAttribute('data-col-act');
+        if (act === 'add') {
+          openColAdd(table);
+          return;
+        }
         const state = loadColState(table);
         if (act === 'asc' || act === 'desc') {
           state.sortCol = col;
@@ -1500,6 +1590,29 @@
           next[i] = next[j];
           next[j] = swap;
           state.order = next;
+        } else if (act === 'hide') {
+          if (state.order.length <= 1) return;
+          state.order = state.order.filter(function (id) { return id !== col; });
+          if (state.hidden.indexOf(col) === -1) state.hidden.push(col);
+        }
+        saveColState(table, state);
+        closeColMenu();
+        refreshDashTable(table);
+      });
+    }
+    if (dashColAdd) {
+      dashColAdd.addEventListener('click', function (e) {
+        const btn = e.target.closest('[data-add-col]');
+        if (!btn || !dashColMenu) return;
+        const table = dashColMenu._table;
+        const at = dashColMenu._col;
+        const addId = btn.getAttribute('data-add-col');
+        if (!table || !addId) return;
+        const state = loadColState(table);
+        const i = state.order.indexOf(at);
+        state.hidden = state.hidden.filter(function (id) { return id !== addId; });
+        if (state.order.indexOf(addId) === -1) {
+          state.order.splice(i < 0 ? state.order.length : i, 0, addId);
         }
         saveColState(table, state);
         closeColMenu();
@@ -1510,6 +1623,7 @@
     document.addEventListener('click', function (e) {
       if (!dashColMenu || dashColMenu.hidden) return;
       if (dashColMenu.contains(e.target)) return;
+      if (dashColAdd && dashColAdd.contains(e.target)) return;
       if (e.target.closest && e.target.closest('table.dash-cols th[data-col]')) return;
       closeColMenu();
     });
@@ -1578,7 +1692,7 @@
         return '<tr class="border-b border-slate-800 hover:bg-slate-900/80 cursor-pointer" data-id="' + esc(item.id) + '">' +
           dashOrderedCells(table, cells) +
           '</tr>';
-      }).join('') || '<tr><td class="py-6 px-4 text-slate-500" colspan="8">No matching items.</td></tr>';
+      }).join('') || '<tr><td class="py-6 px-4 text-slate-500" colspan="' + dashColSpan(table) + '">No matching items.</td></tr>';
       applyColOrder(table);
     }
 
@@ -2215,7 +2329,7 @@
       });
       document.getElementById('cc-total').textContent = String((rows || []).length);
       if (!filtered.length) {
-        tbody.innerHTML = '<tr><td class="py-6 px-4 text-slate-500" colspan="7">' +
+        tbody.innerHTML = '<tr><td class="py-6 px-4 text-slate-500" colspan="' + dashColSpan(table) + '">' +
           (q ? 'No customers match this search.' : 'No customers yet. Add a customer to use on quotes and invoices.') +
           '</td></tr>';
         applyColOrder(table);
@@ -2551,7 +2665,7 @@
             : (count === 1 ? 'invoice' : 'invoices');
       const table = document.querySelector('table.dash-cols[data-cols="sales"]');
       if (!filtered.length) {
-        tbody.innerHTML = '<tr><td class="py-6 px-4 text-slate-500" colspan="6">' +
+        tbody.innerHTML = '<tr><td class="py-6 px-4 text-slate-500" colspan="' + dashColSpan(table) + '">' +
           (q ? 'No documents match this search.' : 'No ' + salesTypeLabel(type).toLowerCase() + 's yet.') +
           '</td></tr>';
         applyColOrder(table);
