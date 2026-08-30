@@ -26,7 +26,7 @@
   <main class="max-w-6xl mx-auto px-4 py-8">
     <section id="login-panel" class="max-w-md mx-auto">
       <h2 class="text-2xl font-bold mb-2">Admin sign in</h2>
-      <p class="text-sm text-slate-400 mb-6">Products, inventory, photos, pricing, and customer accounts.</p>
+      <p class="text-sm text-slate-400 mb-6">Website pages, inventory, photos, pricing, and customer accounts.</p>
       <form id="login-form" class="rounded-2xl border border-slate-800 bg-slate-900/60 p-6 space-y-4">
         <div>
           <label class="block text-xs text-slate-400 mb-1">Email</label>
@@ -43,7 +43,7 @@
 
     <section id="dash-panel" class="hidden space-y-8">
       <div class="flex flex-wrap gap-2 border-b border-slate-800 pb-3">
-        <button type="button" id="tab-products" class="admin-tab px-4 py-2 rounded-full text-sm font-medium bg-sky-500/20 text-sky-300">Products</button>
+        <button type="button" id="tab-products" class="admin-tab px-4 py-2 rounded-full text-sm font-medium bg-sky-500/20 text-sky-300">Website</button>
         <button type="button" id="tab-inventory" class="admin-tab px-4 py-2 rounded-full text-sm font-medium text-slate-400 hover:text-white">Inventory</button>
         <button type="button" id="tab-accounts" class="admin-tab px-4 py-2 rounded-full text-sm font-medium text-slate-400 hover:text-white">Accounts</button>
       </div>
@@ -72,7 +72,7 @@
       </div>
 
       <div id="form-wrap" class="hidden space-y-4">
-        <button type="button" id="product-back" class="text-sm text-sky-400 hover:text-sky-300">← All products</button>
+        <button type="button" id="product-back" class="text-sm text-sky-400 hover:text-sky-300">← Website</button>
         <div class="rounded-2xl border border-slate-800 bg-slate-900/50 p-5">
         <h2 id="form-title" class="font-semibold text-lg mb-4">New product</h2>
         <form id="product-form" class="grid sm:grid-cols-2 gap-4">
@@ -693,7 +693,7 @@
       const wrap = document.getElementById('inv-maps');
       const rows = maps || [];
       if (!rows.length) {
-        wrap.innerHTML = emptyNote('Not linked to a website product page. It will not show on Products until you map it.');
+        wrap.innerHTML = emptyNote('Not linked to a website product page. It will not show on Website until you map it.');
         return;
       }
       wrap.innerHTML = rows.map(function (m) {
