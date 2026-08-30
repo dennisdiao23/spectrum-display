@@ -649,7 +649,8 @@
     (function sendOldCompanyUrlToCleanPath() {
       const p = companyPath();
       const tab = tabFromPath();
-      if (p === '/company.html' || location.hash) {
+      if (p === '/company.html' || p === '/company/index.html') return;
+      if (location.hash) {
         location.replace(tab ? pathForTab(tab) : '/company');
       }
     })();

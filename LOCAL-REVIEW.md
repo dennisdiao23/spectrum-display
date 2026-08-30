@@ -46,25 +46,32 @@ git pull origin main
 npm install
 ```
 
-5. Run locally
+5. Stop every old Node first (this is why `/company` 404s while the homepage works)
+
+```
+taskkill /F /IM node.exe
+```
+
+Then start one server:
 
 ```
 npm start
 ```
 
+The PowerShell window should say `Listening on 0.0.0.0:3000` and `Company: http://localhost:3000/company`. Leave that window open.
+
 6. Open in browser
 
 - Site: http://localhost:3000
-- Designer: http://localhost:3000/led-wall-calculator
 - Company sign in: http://localhost:3000/company
+- If `/company` still fails: http://localhost:3000/company.html
+- Designer: http://localhost:3000/led-wall-calculator
 - Company website: http://localhost:3000/company/website
 - Company inventory: http://localhost:3000/company/inventory
 
-Leave the PowerShell window open while you look. Closing it, or Ctrl+C, stops the server.
-
 7. If it looks old
 
-- Stop the server: **Ctrl + C**
+- `taskkill /F /IM node.exe`
 - Pull again, then `npm start`
 - Hard refresh: **Ctrl + F5**
 

@@ -1,6 +1,7 @@
 require('dotenv').config();
 
 const path = require('path');
+const http = require('http');
 const crypto = require('crypto');
 const express = require('express');
 const cookieParser = require('cookie-parser');
@@ -921,10 +922,31 @@ async function main() {
     res.status(400).json({ ok: false, error: err.message || 'Upload failed.' });
   });
 
-  app.listen(PORT, function () {
-    console.log('Spectrum Display running on port ' + PORT);
-    console.log('Open http://127.0.0.1:' + PORT + '/company');
-    console.log('Company: /company  /company/website  /company/inventory');
+  function listenOn(host) {
+    return new Promise(function (resolve) {
+      const server = http.createServer(app);
+      server.on('error', function (err) {
+        console.log('Skip ' + host + ':' + PORT + ' (' + err.code + ')');
+        resolve(null);
+      });
+      server.listen(PORT, host, function () {
+        console.log('Listening on ' + host + ':' + PORT);
+        resolve(server);
+      });
+    });
+  }
+
+  Promise.all([
+    listenOn('0.0.0.0'),
+    listenOn('::')
+  ]).then(function (servers) {
+    if (!servers.some(Boolean)) {
+      console.error('Port ' + PORT + ' is already in use. In PowerShell: taskkill /F /IM node.exe   then   npm start');
+      process.exit(1);
+    }
+    console.log('Spectrum Display');
+    console.log('Site:    http://localhost:' + PORT + '/');
+    console.log('Company: http://localhost:' + PORT + '/company');
   });
 }
 
