@@ -995,4 +995,47 @@ html.dash-scroll-lock body.company-app {
   .dash-menu-btn { display: inline-flex !important; align-items: center; justify-content: center; }
   .company-main, .dash-topbar { padding-left: 1rem; padding-right: 1rem; }
   .dash-topbar h1 { font-size: 1.15rem; }
+
+  /* Admin tables: readable columns + horizontal scroll on mobile */
+  .company-main .overflow-x-auto {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    max-width: 100%;
+  }
+
+  .company-main table.dash-cols {
+    width: max-content;
+    min-width: 100%;
+    table-layout: auto;
+  }
+
+  .company-main table.dash-cols th[data-col],
+  .company-main table.dash-cols td {
+    width: auto !important;
+    min-width: 4.75rem;
+    max-width: 16rem;
+  }
+
+  .company-main table.dash-cols th[data-col="name"],
+  .company-main table.dash-cols th[data-col="description"],
+  .company-main table.dash-cols th[data-col="company"],
+  .company-main table.dash-cols th[data-col="contact"],
+  .company-main table.dash-cols th[data-col="customer"],
+  .company-main table.dash-cols th[data-col="product"] {
+    min-width: 7.5rem;
+  }
+
+  .company-main table.dash-cols th[data-col="sku"],
+  .company-main table.dash-cols th[data-col="email"],
+  .company-main table.dash-cols th[data-col="number"] {
+    min-width: 5.5rem;
+  }
+
+  .company-main table.dash-cols th[data-col="photo"] {
+    min-width: 3.5rem;
+  }
+
+  .company-main table.dash-cols .dash-col-grip {
+    display: none;
+  }
 }
