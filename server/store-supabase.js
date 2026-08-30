@@ -1332,6 +1332,75 @@ function createSupabaseStore() {
       throwIf(error, 'Could not delete purchase order.');
       return !!(data && data.length);
     },
+    async getCompanyProfile() {
+      const ca = require('./company-accounts');
+      const { data, error } = await supabase.from('company_profile').select('*').eq('id', 1).maybeSingle();
+      throwIf(error, 'Could not load company information.');
+      if (data) return ca.formatProfile(data);
+      const input = ca.normalizeProfile(ca.defaultProfile());
+      const fields = ca.profileDbFields(input);
+      const stamp = new Date().toISOString();
+      fields.id = 1;
+      fields.created_at = stamp;
+      fields.updated_at = stamp;
+      const { data: created, error: insErr } = await supabase.from('company_profile').insert(fields).select('*').single();
+      throwIf(insErr, 'Could not create company information.');
+      return ca.formatProfile(created);
+    },
+    async saveCompanyProfile(payload) {
+      const ca = require('./company-accounts');
+      const input = ca.normalizeProfile(payload);
+      const fields = ca.profileDbFields(input);
+      fields.updated_at = new Date().toISOString();
+      const { data, error } = await supabase.from('company_profile').update(fields).eq('id', 1).select('*').maybeSingle();
+      throwIf(error, 'Could not save company information.');
+      if (data) return ca.formatProfile(data);
+      fields.id = 1;
+      fields.created_at = fields.updated_at;
+      const { data: created, error: insErr } = await supabase.from('company_profile').insert(fields).select('*').single();
+      throwIf(insErr, 'Could not save company information.');
+      return ca.formatProfile(created);
+    },
+    async listCompanyAccounts() {
+      const ca = require('./company-accounts');
+      const { data, error } = await supabase
+        .from('company_accounts')
+        .select('id, name, category, website, login, email, notes, monthly_payment, monthly_payment_amount, monthly_billing, monthly_billing_amount, created_at, updated_at')
+        .order('name', { ascending: true });
+      throwIf(error, 'Could not list company accounts.');
+      return (data || []).map(function (row) { return ca.formatAccount(row, { includePassword: false }); });
+    },
+    async getCompanyAccount(id) {
+      const ca = require('./company-accounts');
+      const { data, error } = await supabase.from('company_accounts').select('*').eq('id', id).maybeSingle();
+      throwIf(error, 'Could not load company account.');
+      return ca.formatAccount(data);
+    },
+    async createCompanyAccount(payload) {
+      const ca = require('./company-accounts');
+      const input = ca.normalizeAccount(payload);
+      const fields = ca.forSupabaseAccount(ca.accountDbFields(input));
+      const stamp = new Date().toISOString();
+      fields.created_at = stamp;
+      fields.updated_at = stamp;
+      const { data, error } = await supabase.from('company_accounts').insert(fields).select('*').single();
+      throwIf(error, 'Could not add company account.');
+      return ca.formatAccount(data);
+    },
+    async updateCompanyAccount(id, payload) {
+      const ca = require('./company-accounts');
+      const input = ca.normalizeAccount(payload);
+      const fields = ca.forSupabaseAccount(ca.accountDbFields(input));
+      fields.updated_at = new Date().toISOString();
+      const { data, error } = await supabase.from('company_accounts').update(fields).eq('id', id).select('*').maybeSingle();
+      throwIf(error, 'Could not save company account.');
+      return ca.formatAccount(data);
+    },
+    async deleteCompanyAccount(id) {
+      const { data, error } = await supabase.from('company_accounts').delete().eq('id', id).select('id');
+      throwIf(error, 'Could not delete company account.');
+      return !!(data && data.length);
+    },
     async convertSalesDoc(id, type) {
       const current = await this.getSalesDoc(id);
       if (!current) return null;

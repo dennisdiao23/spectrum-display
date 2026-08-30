@@ -110,6 +110,7 @@ async function main() {
     '/company/sales/orders',
     '/company/sales/invoices',
     '/company/settings',
+    '/company/settings/company',
     '/company/settings/roles'
   ];
   COMPANY_PAGES.forEach(function (route) {
@@ -981,6 +982,60 @@ async function main() {
   app.get('/api/admin/company-users', requireAdmin, async function (_req, res, next) {
     try {
       res.json({ ok: true, users: await store.listAdmins() });
+    } catch (err) { next(err); }
+  });
+
+  app.get('/api/admin/company-profile', requireAdmin, requirePerm('settings', 'edit'), async function (_req, res, next) {
+    try {
+      res.json({ ok: true, profile: await store.getCompanyProfile() });
+    } catch (err) { next(err); }
+  });
+
+  app.put('/api/admin/company-profile', requireAdmin, requirePerm('settings', 'edit'), async function (req, res, next) {
+    try {
+      res.json({ ok: true, profile: await store.saveCompanyProfile(req.body || {}) });
+    } catch (err) {
+      res.status(400).json({ ok: false, error: err.message || 'Could not save company information.' });
+    }
+  });
+
+  app.get('/api/admin/company-accounts', requireAdmin, requirePerm('settings', 'edit'), async function (_req, res, next) {
+    try {
+      res.json({ ok: true, accounts: await store.listCompanyAccounts() });
+    } catch (err) { next(err); }
+  });
+
+  app.get('/api/admin/company-accounts/:id', requireAdmin, requirePerm('settings', 'edit'), async function (req, res, next) {
+    try {
+      const account = await store.getCompanyAccount(req.params.id);
+      if (!account) return res.status(404).json({ ok: false, error: 'Account not found.' });
+      res.json({ ok: true, account: account });
+    } catch (err) { next(err); }
+  });
+
+  app.post('/api/admin/company-accounts', requireAdmin, requirePerm('settings', 'edit'), async function (req, res, next) {
+    try {
+      res.json({ ok: true, account: await store.createCompanyAccount(req.body || {}) });
+    } catch (err) {
+      res.status(400).json({ ok: false, error: err.message || 'Could not add account.' });
+    }
+  });
+
+  app.put('/api/admin/company-accounts/:id', requireAdmin, requirePerm('settings', 'edit'), async function (req, res, next) {
+    try {
+      const account = await store.updateCompanyAccount(req.params.id, req.body || {});
+      if (!account) return res.status(404).json({ ok: false, error: 'Account not found.' });
+      res.json({ ok: true, account: account });
+    } catch (err) {
+      res.status(400).json({ ok: false, error: err.message || 'Could not save account.' });
+    }
+  });
+
+  app.delete('/api/admin/company-accounts/:id', requireAdmin, requirePerm('settings', 'edit'), async function (req, res, next) {
+    try {
+      const ok = await store.deleteCompanyAccount(req.params.id);
+      if (!ok) return res.status(404).json({ ok: false, error: 'Account not found.' });
+      res.json({ ok: true });
     } catch (err) { next(err); }
   });
 

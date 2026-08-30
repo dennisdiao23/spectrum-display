@@ -632,3 +632,53 @@ drop policy if exists purchase_order_lines_admin_all on public.purchase_order_li
 create policy purchase_order_lines_admin_all on public.purchase_order_lines
 for all using (public.is_spectrum_admin()) with check (public.is_spectrum_admin());
 grant all on public.purchase_order_lines to service_role;
+
+create table if not exists public.company_profile (
+  id bigint primary key,
+  legal_name text not null default 'Spectrum Display Inc.',
+  dba text not null default '',
+  phone text not null default '',
+  email text not null default '',
+  website text not null default '',
+  street text not null default '',
+  street2 text not null default '',
+  city text not null default '',
+  state text not null default '',
+  zip text not null default '',
+  country text not null default 'United States',
+  tax_id text not null default '',
+  notes text not null default '',
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now()
+);
+alter table public.company_profile enable row level security;
+drop policy if exists company_profile_admin_all on public.company_profile;
+create policy company_profile_admin_all on public.company_profile
+for all using (public.is_spectrum_admin()) with check (public.is_spectrum_admin());
+grant all on public.company_profile to service_role;
+insert into public.company_profile (id, legal_name, city, state, country)
+values (1, 'Spectrum Display Inc.', 'Los Angeles', 'CA', 'United States')
+on conflict (id) do nothing;
+
+create table if not exists public.company_accounts (
+  id bigint generated always as identity primary key,
+  name text not null,
+  category text not null default '',
+  website text not null default '',
+  login text not null default '',
+  password text not null default '',
+  email text not null default '',
+  notes text not null default '',
+  monthly_payment boolean not null default false,
+  monthly_payment_amount numeric not null default 0,
+  monthly_billing boolean not null default false,
+  monthly_billing_amount numeric not null default 0,
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now()
+);
+create index if not exists company_accounts_name_idx on public.company_accounts (name);
+alter table public.company_accounts enable row level security;
+drop policy if exists company_accounts_admin_all on public.company_accounts;
+create policy company_accounts_admin_all on public.company_accounts
+for all using (public.is_spectrum_admin()) with check (public.is_spectrum_admin());
+grant all on public.company_accounts to service_role;

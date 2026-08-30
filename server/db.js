@@ -121,6 +121,7 @@ function openDb() {
   ensureCompanySales(db);
   ensureInventoryVendors(db);
   ensurePurchaseOrders(db);
+  ensureCompanyAccounts(db);
   db.exec(`
     CREATE TABLE IF NOT EXISTS inventory_stock (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -520,6 +521,55 @@ function ensureInventoryVendors(db) {
   `);
 }
 
+function ensureCompanyAccounts(db) {
+  db.exec(`
+    CREATE TABLE IF NOT EXISTS company_profile (
+      id INTEGER PRIMARY KEY CHECK (id = 1),
+      legal_name TEXT NOT NULL DEFAULT 'Spectrum Display Inc.',
+      dba TEXT NOT NULL DEFAULT '',
+      phone TEXT NOT NULL DEFAULT '',
+      email TEXT NOT NULL DEFAULT '',
+      website TEXT NOT NULL DEFAULT '',
+      street TEXT NOT NULL DEFAULT '',
+      street2 TEXT NOT NULL DEFAULT '',
+      city TEXT NOT NULL DEFAULT '',
+      state TEXT NOT NULL DEFAULT '',
+      zip TEXT NOT NULL DEFAULT '',
+      country TEXT NOT NULL DEFAULT 'United States',
+      tax_id TEXT NOT NULL DEFAULT '',
+      notes TEXT NOT NULL DEFAULT '',
+      created_at TEXT NOT NULL,
+      updated_at TEXT NOT NULL
+    );
+    CREATE TABLE IF NOT EXISTS company_accounts (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      name TEXT NOT NULL,
+      category TEXT NOT NULL DEFAULT '',
+      website TEXT NOT NULL DEFAULT '',
+      login TEXT NOT NULL DEFAULT '',
+      password TEXT NOT NULL DEFAULT '',
+      email TEXT NOT NULL DEFAULT '',
+      notes TEXT NOT NULL DEFAULT '',
+      monthly_payment INTEGER NOT NULL DEFAULT 0,
+      monthly_payment_amount REAL NOT NULL DEFAULT 0,
+      monthly_billing INTEGER NOT NULL DEFAULT 0,
+      monthly_billing_amount REAL NOT NULL DEFAULT 0,
+      created_at TEXT NOT NULL,
+      updated_at TEXT NOT NULL
+    );
+    CREATE INDEX IF NOT EXISTS company_accounts_name_idx ON company_accounts (name);
+  `);
+  const row = db.prepare('SELECT id FROM company_profile WHERE id = 1').get();
+  if (!row) {
+    const stamp = nowIso();
+    db.prepare(`
+      INSERT INTO company_profile (
+        id, legal_name, dba, phone, email, website, street, street2, city, state, zip, country, tax_id, notes, created_at, updated_at
+      ) VALUES (1, 'Spectrum Display Inc.', '', '', '', '', '', '', 'Los Angeles', 'CA', '', 'United States', '', '', ?, ?)
+    `).run(stamp, stamp);
+  }
+}
+
 function ensurePurchaseOrders(db) {
   db.exec(`
     CREATE TABLE IF NOT EXISTS purchase_orders (
@@ -813,5 +863,6 @@ module.exports = {
   ensureCompanyCustomers,
   ensureCompanySales,
   ensureInventoryVendors,
-  ensurePurchaseOrders
+  ensurePurchaseOrders,
+  ensureCompanyAccounts
 };
