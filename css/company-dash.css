@@ -857,14 +857,12 @@ html.dash-scroll-lock body.company-app {
   min-height: 7.25rem;
   font-family: inherit;
   cursor: pointer;
+  transition: border-color 0.16s ease, box-shadow 0.16s ease, transform 0.16s ease;
 }
 .dash-kpi:hover {
-  border-color: #c9d6ee;
-  box-shadow: 0 12px 28px rgba(16, 32, 71, 0.07);
-}
-.dash-kpi.is-active {
-  border-color: #2f6bff;
-  box-shadow: 0 0 0 3px rgba(47, 107, 255, 0.14), 0 12px 28px rgba(16, 32, 71, 0.06);
+  border-color: #b7c8e8;
+  box-shadow: 0 14px 32px rgba(16, 32, 71, 0.1);
+  transform: translateY(-2px);
 }
 .dash-kpi-icon {
   grid-row: 1 / span 3;
@@ -955,6 +953,7 @@ html.dash-scroll-lock body.company-app {
   border-bottom: 1px solid var(--dash-line);
 }
 .dash-detail-row:last-child { border-bottom: 0; }
+.dash-detail-row:hover strong { color: #2f6bff; }
 .dash-detail-row strong {
   display: block;
   font-size: 0.88rem;
@@ -980,6 +979,12 @@ html.dash-scroll-lock body.company-app {
   border-radius: 1rem;
   box-shadow: 0 10px 30px rgba(16, 32, 71, 0.04);
   padding: 1.15rem 1.2rem 1.05rem;
+  transition: border-color 0.16s ease, box-shadow 0.16s ease, transform 0.16s ease;
+}
+.dash-home-panel:hover {
+  border-color: #b7c8e8;
+  box-shadow: 0 14px 32px rgba(16, 32, 71, 0.1);
+  transform: translateY(-2px);
 }
 .dash-home-panel-head {
   display: flex;
@@ -1083,6 +1088,7 @@ html.dash-scroll-lock body.company-app {
   border-top: 1px solid var(--dash-line);
 }
 .dash-activity-item:first-child { border-top: 0; padding-top: 0; }
+.dash-activity-item:hover .dash-activity-copy p { color: #2f6bff; }
 .dash-activity-avatar {
   width: 2.15rem;
   height: 2.15rem;
