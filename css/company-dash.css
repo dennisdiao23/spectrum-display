@@ -327,8 +327,10 @@ body.company-app {
   flex-direction: column;
   box-shadow: -16px 0 40px rgba(7, 21, 58, 0.18);
 }
-body.cc-drawer-open .cc-drawer-scrim { display: block; }
-body.cc-drawer-open .cc-drawer { transform: none; }
+body.cc-drawer-open #cc-drawer-scrim,
+body.inv-drawer-open #inv-drawer-scrim { display: block; }
+body.cc-drawer-open #cc-drawer,
+body.inv-drawer-open #inv-drawer { transform: none; }
 .cc-drawer-head,
 .cc-drawer-foot {
   flex: 0 0 auto;
@@ -521,6 +523,15 @@ body.cc-drawer-open .cc-drawer { transform: none; }
   color: #fff;
 }
 .cc-leave-yes:hover { background: #38bdf8; }
+.cc-mini-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem 0.85rem;
+  padding: 0.7rem 0.85rem;
+  border: 1px solid var(--dash-line);
+  border-radius: 0.55rem;
+  color: var(--dash-text);
+}
 
 @media (max-width: 900px) {
   .dash-sidebar {
