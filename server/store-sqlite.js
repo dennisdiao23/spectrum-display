@@ -603,6 +603,130 @@ function createSqliteStore() {
       const info = db.prepare('DELETE FROM company_sales_docs WHERE id = ?').run(id);
       return info.changes > 0;
     },
+    async listVendors() {
+      const vn = require('./inventory-vendors');
+      return db.prepare(
+        'SELECT * FROM inventory_vendors ORDER BY company_name COLLATE NOCASE, display_name COLLATE NOCASE, id DESC'
+      ).all().map(vn.formatVendor);
+    },
+    async getVendor(id) {
+      const vn = require('./inventory-vendors');
+      return vn.formatVendor(db.prepare('SELECT * FROM inventory_vendors WHERE id = ?').get(id));
+    },
+    async createVendor(payload) {
+      const vn = require('./inventory-vendors');
+      const input = vn.normalizeVendor(payload);
+      const fields = vn.dbFields(input);
+      const stamp = dbUtil.nowIso();
+      const keys = Object.keys(fields);
+      const info = db.prepare(
+        'INSERT INTO inventory_vendors (' + keys.join(', ') + ', created_at, updated_at) VALUES (' +
+        keys.map(function () { return '?'; }).join(', ') + ', ?, ?)'
+      ).run(keys.map(function (k) { return fields[k]; }).concat([stamp, stamp]));
+      return this.getVendor(info.lastInsertRowid);
+    },
+    async updateVendor(id, payload) {
+      const vn = require('./inventory-vendors');
+      const current = db.prepare('SELECT id FROM inventory_vendors WHERE id = ?').get(id);
+      if (!current) return null;
+      const input = vn.normalizeVendor(payload);
+      const fields = vn.dbFields(input);
+      const keys = Object.keys(fields);
+      db.prepare(
+        'UPDATE inventory_vendors SET ' + keys.map(function (k) { return k + ' = ?'; }).join(', ') + ', updated_at = ? WHERE id = ?'
+      ).run(keys.map(function (k) { return fields[k]; }).concat([dbUtil.nowIso(), id]));
+      return this.getVendor(id);
+    },
+    async deleteVendor(id) {
+      const info = db.prepare('DELETE FROM inventory_vendors WHERE id = ?').run(id);
+      return info.changes > 0;
+    },
+    async listPurchaseOrders() {
+      const po = require('./purchase-orders');
+      return db.prepare('SELECT * FROM purchase_orders ORDER BY id DESC').all().map(function (row) {
+        const lines = db.prepare('SELECT * FROM purchase_order_lines WHERE po_id = ? ORDER BY sort_order, id').all(row.id);
+        return po.formatPo(row, lines);
+      });
+    },
+    async getPurchaseOrder(id) {
+      const po = require('./purchase-orders');
+      const row = db.prepare('SELECT * FROM purchase_orders WHERE id = ?').get(id);
+      if (!row) return null;
+      const lines = db.prepare('SELECT * FROM purchase_order_lines WHERE po_id = ? ORDER BY sort_order, id').all(row.id);
+      return po.formatPo(row, lines);
+    },
+    async createPurchaseOrder(payload) {
+      const po = require('./purchase-orders');
+      const input = po.normalizePo(payload);
+      if (input.vendorId) {
+        const vendor = await this.getVendor(input.vendorId);
+        if (vendor) {
+          const snap = po.snapshotFromVendor(vendor);
+          if (!input.vendorName) input.vendorName = snap.vendorName;
+          if (!input.vendorEmail) input.vendorEmail = snap.vendorEmail;
+          if (!input.mailingAddress) input.mailingAddress = snap.mailingAddress;
+        }
+      }
+      const existing = db.prepare('SELECT number FROM purchase_orders').all().map(function (r) { return r.number; });
+      if (!input.number) input.number = po.nextPoNumber(existing);
+      if (db.prepare('SELECT id FROM purchase_orders WHERE number = ?').get(input.number)) {
+        throw new Error('That purchase order number is already used.');
+      }
+      const fields = po.dbPoFields(input);
+      const stamp = dbUtil.nowIso();
+      const info = db.prepare(`
+        INSERT INTO purchase_orders (
+          number, vendor_id, vendor_name, vendor_email, status, issue_date, due_date,
+          ship_via, permit_no, mailing_address, ship_to_customer_id, ship_to_name, shipping_address,
+          notes, created_at, updated_at
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+      `).run(
+        fields.number, fields.vendor_id, fields.vendor_name, fields.vendor_email, fields.status,
+        fields.issue_date, fields.due_date, fields.ship_via, fields.permit_no, fields.mailing_address,
+        fields.ship_to_customer_id, fields.ship_to_name, fields.shipping_address, fields.notes, stamp, stamp
+      );
+      const insertLine = db.prepare(
+        'INSERT INTO purchase_order_lines (po_id, item_id, product, sku, description, qty, unit_cost, sort_order) VALUES (?, ?, ?, ?, ?, ?, ?, ?)'
+      );
+      input.lines.forEach(function (line, i) {
+        insertLine.run(info.lastInsertRowid, line.itemId || null, line.product, line.sku, line.description, line.qty, line.rate, i);
+      });
+      return this.getPurchaseOrder(info.lastInsertRowid);
+    },
+    async updatePurchaseOrder(id, payload) {
+      const po = require('./purchase-orders');
+      const current = db.prepare('SELECT * FROM purchase_orders WHERE id = ?').get(id);
+      if (!current) return null;
+      const input = po.normalizePo(Object.assign({}, payload, { number: payload.number || current.number }));
+      const taken = db.prepare('SELECT id FROM purchase_orders WHERE number = ? AND id != ?').get(input.number, id);
+      if (taken) throw new Error('That purchase order number is already used.');
+      const fields = po.dbPoFields(input);
+      db.prepare(`
+        UPDATE purchase_orders SET
+          number = ?, vendor_id = ?, vendor_name = ?, vendor_email = ?, status = ?,
+          issue_date = ?, due_date = ?, ship_via = ?, permit_no = ?, mailing_address = ?,
+          ship_to_customer_id = ?, ship_to_name = ?, shipping_address = ?, notes = ?, updated_at = ?
+        WHERE id = ?
+      `).run(
+        fields.number, fields.vendor_id, fields.vendor_name, fields.vendor_email, fields.status,
+        fields.issue_date, fields.due_date, fields.ship_via, fields.permit_no, fields.mailing_address,
+        fields.ship_to_customer_id, fields.ship_to_name, fields.shipping_address, fields.notes,
+        dbUtil.nowIso(), id
+      );
+      db.prepare('DELETE FROM purchase_order_lines WHERE po_id = ?').run(id);
+      const insertLine = db.prepare(
+        'INSERT INTO purchase_order_lines (po_id, item_id, product, sku, description, qty, unit_cost, sort_order) VALUES (?, ?, ?, ?, ?, ?, ?, ?)'
+      );
+      input.lines.forEach(function (line, i) {
+        insertLine.run(id, line.itemId || null, line.product, line.sku, line.description, line.qty, line.rate, i);
+      });
+      return this.getPurchaseOrder(id);
+    },
+    async deletePurchaseOrder(id) {
+      db.prepare('DELETE FROM purchase_order_lines WHERE po_id = ?').run(id);
+      const info = db.prepare('DELETE FROM purchase_orders WHERE id = ?').run(id);
+      return info.changes > 0;
+    },
     async convertSalesDoc(id, type) {
       const current = await this.getSalesDoc(id);
       if (!current) return null;

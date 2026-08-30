@@ -119,6 +119,8 @@ function openDb() {
   seedAdminRoles(db);
   ensureCompanyCustomers(db);
   ensureCompanySales(db);
+  ensureInventoryVendors(db);
+  ensurePurchaseOrders(db);
   db.exec(`
     CREATE TABLE IF NOT EXISTS inventory_stock (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -475,6 +477,87 @@ function ensureCompanySales(db) {
   `);
 }
 
+function ensureInventoryVendors(db) {
+  db.exec(`
+    CREATE TABLE IF NOT EXISTS inventory_vendors (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      title TEXT NOT NULL DEFAULT '',
+      company_name TEXT NOT NULL DEFAULT '',
+      display_name TEXT NOT NULL DEFAULT '',
+      contact_first TEXT NOT NULL DEFAULT '',
+      contact_middle TEXT NOT NULL DEFAULT '',
+      contact_last TEXT NOT NULL DEFAULT '',
+      suffix TEXT NOT NULL DEFAULT '',
+      email TEXT NOT NULL DEFAULT '',
+      email_cc TEXT NOT NULL DEFAULT '',
+      email_bcc TEXT NOT NULL DEFAULT '',
+      phone TEXT NOT NULL DEFAULT '',
+      mobile TEXT NOT NULL DEFAULT '',
+      fax TEXT NOT NULL DEFAULT '',
+      other_phone TEXT NOT NULL DEFAULT '',
+      website TEXT NOT NULL DEFAULT '',
+      check_name TEXT NOT NULL DEFAULT '',
+      street TEXT NOT NULL DEFAULT '',
+      street2 TEXT NOT NULL DEFAULT '',
+      city TEXT NOT NULL DEFAULT '',
+      state TEXT NOT NULL DEFAULT '',
+      zip TEXT NOT NULL DEFAULT '',
+      country TEXT NOT NULL DEFAULT 'United States',
+      notes TEXT NOT NULL DEFAULT '',
+      bank_account TEXT NOT NULL DEFAULT '',
+      routing_number TEXT NOT NULL DEFAULT '',
+      tax_id TEXT NOT NULL DEFAULT '',
+      track_1099 INTEGER NOT NULL DEFAULT 0,
+      payment_terms TEXT NOT NULL DEFAULT 'Net 30',
+      account_no TEXT NOT NULL DEFAULT '',
+      expense_category TEXT NOT NULL DEFAULT '',
+      opening_balance REAL NOT NULL DEFAULT 0,
+      opening_as_of TEXT NOT NULL DEFAULT '',
+      created_at TEXT NOT NULL,
+      updated_at TEXT NOT NULL
+    );
+    CREATE INDEX IF NOT EXISTS inventory_vendors_name_idx ON inventory_vendors (company_name, display_name);
+  `);
+}
+
+function ensurePurchaseOrders(db) {
+  db.exec(`
+    CREATE TABLE IF NOT EXISTS purchase_orders (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      number TEXT NOT NULL UNIQUE,
+      vendor_id INTEGER,
+      vendor_name TEXT NOT NULL DEFAULT '',
+      vendor_email TEXT NOT NULL DEFAULT '',
+      status TEXT NOT NULL DEFAULT 'open',
+      issue_date TEXT NOT NULL DEFAULT '',
+      due_date TEXT NOT NULL DEFAULT '',
+      ship_via TEXT NOT NULL DEFAULT '',
+      permit_no TEXT NOT NULL DEFAULT '',
+      mailing_address TEXT NOT NULL DEFAULT '',
+      ship_to_customer_id INTEGER,
+      ship_to_name TEXT NOT NULL DEFAULT '',
+      shipping_address TEXT NOT NULL DEFAULT '',
+      notes TEXT NOT NULL DEFAULT '',
+      created_at TEXT NOT NULL,
+      updated_at TEXT NOT NULL
+    );
+    CREATE INDEX IF NOT EXISTS purchase_orders_vendor_idx ON purchase_orders (vendor_id, issue_date);
+    CREATE TABLE IF NOT EXISTS purchase_order_lines (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      po_id INTEGER NOT NULL,
+      item_id INTEGER,
+      product TEXT NOT NULL DEFAULT '',
+      sku TEXT NOT NULL DEFAULT '',
+      description TEXT NOT NULL DEFAULT '',
+      qty REAL NOT NULL DEFAULT 0,
+      unit_cost REAL NOT NULL DEFAULT 0,
+      sort_order INTEGER NOT NULL DEFAULT 0,
+      FOREIGN KEY (po_id) REFERENCES purchase_orders(id) ON DELETE CASCADE
+    );
+    CREATE INDEX IF NOT EXISTS purchase_order_lines_po_idx ON purchase_order_lines (po_id, sort_order);
+  `);
+}
+
 function seedAdmin(db) {
   const row = db.prepare('SELECT id FROM admins LIMIT 1').get();
   if (row) return;
@@ -728,5 +811,7 @@ module.exports = {
   parseJson,
   ensureCatalogSkus,
   ensureCompanyCustomers,
-  ensureCompanySales
+  ensureCompanySales,
+  ensureInventoryVendors,
+  ensurePurchaseOrders
 };
