@@ -229,12 +229,20 @@ function formatItem(row, brandName, maps) {
 function publicLink(item) {
   if (!item) return null;
   const unit = unitOf(item.unit);
+  return {
+    price: Number(item.price) || 0,
+    unit: unit
+  };
+}
+
+function stockLink(item) {
+  if (!item) return null;
+  const unit = unitOf(item.unit);
   const qty = Math.max(0, Number(item.qty) || 0);
   const lowAt = item.low_at != null ? Number(item.low_at) : (item.lowAt != null ? Number(item.lowAt) : defaultLowAt(unit));
   return {
     qty: qty,
     status: binStatus(qty, lowAt),
-    price: Number(item.price) || 0,
     unit: unit
   };
 }
@@ -272,6 +280,23 @@ function applyToCatalog(catalog, maps, items) {
     });
   });
   return catalog;
+}
+
+function catalogStock(maps, items) {
+  const byId = {};
+  (items || []).forEach(function (it) {
+    byId[String(it.id)] = it;
+  });
+  const out = {};
+  (maps || []).forEach(function (m) {
+    const item = byId[String(m.item_id)];
+    const link = stockLink(item);
+    if (!link) return;
+    const pid = String(m.product_id);
+    if (!out[pid]) out[pid] = {};
+    out[pid][pitchKey(m.pitch)] = link;
+  });
+  return out;
 }
 
 function mapsByProduct(maps) {
@@ -343,8 +368,10 @@ module.exports = {
   normalizeItemInput,
   formatItem,
   publicLink,
+  stockLink,
   cheapestMappedPrice,
   applyToCatalog,
+  catalogStock,
   mapsByProduct,
   mapsByItem,
   attachMapsToProducts,

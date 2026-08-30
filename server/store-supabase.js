@@ -381,6 +381,14 @@ function createSupabaseStore() {
   return {
     name: 'supabase',
     ready: seedIfEmpty(),
+    async getCatalogStock() {
+      const inv = require('./inventory');
+      const { data: items, error: iErr } = await supabase.from('inventory_items').select('*');
+      if (iErr) return {};
+      const { data: maps, error: mErr } = await supabase.from('product_inventory_map').select('*');
+      if (mErr) return {};
+      return inv.catalogStock(maps || [], items || []);
+    },
     async getCatalog() {
       const { data: brands, error: bErr } = await supabase.from('brands').select('id, name, tagline').order('name');
       throwIf(bErr);

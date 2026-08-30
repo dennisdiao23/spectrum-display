@@ -78,6 +78,85 @@
     global.dispatchEvent(new CustomEvent('spectrum:catalog'));
   }
 
+  function authReadyPromise() {
+    if (global.SpectrumAuth && SpectrumAuth.ready) return SpectrumAuth.ready;
+    return new Promise(function (resolve) {
+      var tries = 0;
+      var t = setInterval(function () {
+        tries += 1;
+        if (global.SpectrumAuth && SpectrumAuth.ready) {
+          clearInterval(t);
+          global.SpectrumAuth.ready.then(resolve);
+        } else if (tries > 100) {
+          clearInterval(t);
+          resolve();
+        }
+      }, 30);
+    });
+  }
+
+  function clearStock() {
+    const target = global.SPECTRUM_PRODUCTS || {};
+    Object.keys(target).forEach(function (brandId) {
+      ((target[brandId] && target[brandId].series) || []).forEach(function (s) {
+        const map = s.pitchInventory || {};
+        Object.keys(map).forEach(function (pitch) {
+          if (!map[pitch]) return;
+          delete map[pitch].qty;
+          delete map[pitch].status;
+        });
+      });
+    });
+  }
+
+  function mergeStock(stock) {
+    const target = global.SPECTRUM_PRODUCTS || {};
+    Object.keys(target).forEach(function (brandId) {
+      ((target[brandId] && target[brandId].series) || []).forEach(function (s) {
+        const byPitch = (stock && stock[String(s.dbId)]) || {};
+        s.pitchInventory = s.pitchInventory || {};
+        Object.keys(byPitch).forEach(function (pitch) {
+          s.pitchInventory[pitch] = Object.assign({}, s.pitchInventory[pitch], byPitch[pitch]);
+        });
+      });
+    });
+  }
+
+  function loadCatalogStock() {
+    if (!(global.SpectrumAuth && SpectrumAuth.canSeeStock && SpectrumAuth.canSeeStock())) {
+      clearStock();
+      return Promise.resolve(false);
+    }
+    return SpectrumAuth.accessToken().then(function (token) {
+      if (!token) {
+        clearStock();
+        return false;
+      }
+      return fetch('/api/catalog/stock', {
+        headers: { Accept: 'application/json', Authorization: 'Bearer ' + token }
+      }).then(function (res) { return res.ok ? res.json() : null; }).then(function (data) {
+        if (!(data && data.ok)) {
+          clearStock();
+          return false;
+        }
+        mergeStock(data.stock || {});
+        return true;
+      });
+    }).catch(function () {
+      clearStock();
+      return false;
+    });
+  }
+
+  function afterAuthStock() {
+    return loadCatalogStock().then(function () {
+      if (global.SPECTRUM_PRODUCTS) {
+        global.SPECTRUM_PRODUCT_LIST = rebuildList(global.SPECTRUM_PRODUCTS);
+      }
+      global.dispatchEvent(new CustomEvent('spectrum:catalog'));
+    });
+  }
+
   global.spectrumCatsFor = function (p) {
     var raw = (p && p.cats) || [];
     if (typeof raw === 'string') raw = raw.split(/[\s,]+/);
@@ -112,10 +191,16 @@
     .then(function (res) { return res.ok ? res.json() : null; })
     .then(function (data) {
       applyCatalog(data && data.ok ? data.products : {});
-      return global.SPECTRUM_PRODUCTS;
+      return authReadyPromise().then(function () { return loadCatalogStock(); }).then(function () {
+        return global.SPECTRUM_PRODUCTS;
+      });
     })
     .catch(function () {
       applyCatalog({});
       return global.SPECTRUM_PRODUCTS;
     });
+
+  global.addEventListener('spectrum:auth', function () {
+    afterAuthStock();
+  });
 })(window);

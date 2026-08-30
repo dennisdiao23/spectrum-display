@@ -7,6 +7,7 @@ const cookieParser = require('cookie-parser');
 const bcrypt = require('bcryptjs');
 const multer = require('multer');
 const { getStore, hasSupabase } = require('./store');
+const siteAuth = require('./site-auth');
 const { sendContactEmail, sendDealerInquiryEmail, mailConfigured } = require('./mail');
 
 const ROOT = path.join(__dirname, '..');
@@ -476,6 +477,16 @@ async function main() {
   app.get('/api/catalog', async function (_req, res, next) {
     try {
       res.json({ ok: true, products: await store.getCatalog() });
+    } catch (err) { next(err); }
+  });
+
+  app.get('/api/catalog/stock', async function (req, res, next) {
+    try {
+      const role = await siteAuth.roleFromBearer(req);
+      if (!siteAuth.canSeeStock(role)) {
+        return res.status(401).json({ ok: false, error: 'Sign in as dealer or sales to see stock.' });
+      }
+      res.json({ ok: true, stock: await store.getCatalogStock() });
     } catch (err) { next(err); }
   });
 
