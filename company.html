@@ -1680,6 +1680,25 @@
       return table.getAttribute('data-cols') || 'table';
     }
 
+    function isMobileDash() {
+      return window.matchMedia('(max-width: 900px)').matches;
+    }
+
+    const INVENTORY_MOBILE_COLS = ['sku', 'brand', 'price', 'qty'];
+
+    function applyMobileColState(table, state) {
+      if (!isMobileDash() || dashColKey(table) !== 'inventory') return state;
+      const known = defaultColOrder(table);
+      const order = INVENTORY_MOBILE_COLS.filter(function (id) { return known.indexOf(id) !== -1; });
+      return {
+        order: order,
+        hidden: known.filter(function (id) { return order.indexOf(id) === -1; }),
+        sortCol: state.sortCol,
+        sortDir: state.sortDir,
+        widths: {}
+      };
+    }
+
     function dashColCatalog(table) {
       if (dashColKey(table) === 'inventory') {
         return [
@@ -1742,7 +1761,7 @@
       try {
         const saved = JSON.parse(localStorage.getItem('dash-col-state-' + name) || '{}');
         const hasSaved = (saved.order && saved.order.length) || (saved.hidden && saved.hidden.length);
-        if (!hasSaved) return fallback;
+        if (!hasSaved) return applyMobileColState(table, fallback);
         const savedHidden = (saved.hidden || []).filter(function (id) { return known.indexOf(id) !== -1; });
         const order = (saved.order || []).filter(function (id) {
           return known.indexOf(id) !== -1 && savedHidden.indexOf(id) === -1;
@@ -1757,15 +1776,15 @@
           const drop = hidden.indexOf(known[0]);
           if (drop !== -1) hidden.splice(drop, 1);
         }
-        return {
+        return applyMobileColState(table, {
           order: order,
           hidden: hidden,
           sortCol: saved.sortCol || '',
           sortDir: saved.sortDir || '',
           widths: saved.widths && typeof saved.widths === 'object' ? saved.widths : {}
-        };
+        });
       } catch (err) {
-        return fallback;
+        return applyMobileColState(table, fallback);
       }
     }
 
@@ -1885,6 +1904,7 @@
     }
 
     function openColMenu(table, th) {
+      if (isMobileDash() && dashColKey(table) === 'inventory') return;
       closeColAdd();
       const menu = document.getElementById('dash-col-menu');
       const col = th.getAttribute('data-col');
@@ -4902,6 +4922,19 @@
     });
 
     document.querySelectorAll('table.dash-cols').forEach(enableColumnResize);
+
+    (function initMobileInventoryCols() {
+      let lastMobile = isMobileDash();
+      window.addEventListener('resize', function () {
+        const mobile = isMobileDash();
+        if (mobile === lastMobile) return;
+        lastMobile = mobile;
+        const inv = document.getElementById('inventory-section');
+        if (currentAdminUser && inv && !inv.classList.contains('hidden')) {
+          renderInventoryTable();
+        }
+      });
+    })();
 
     api('/api/admin/me').then(function (data) {
       if (data.ok && data.admin) {
