@@ -358,11 +358,11 @@
             <button id="inv-new-btn" type="button" class="px-4 py-2 rounded-full bg-sky-500 hover:bg-sky-400 text-white text-sm font-semibold">Add inventory item</button>
           </div>
           <div class="flex flex-wrap items-center gap-2 mb-4">
+            <input id="inv-search" type="search" placeholder="Search SKU, name, brand" class="w-full sm:w-56 bg-slate-800 border border-slate-700 rounded-full px-3 py-1.5 text-sm">
             <button type="button" data-inv-filter="all" class="inv-filter px-3 py-1.5 rounded-full text-xs font-medium bg-sky-500/20 text-sky-300">All</button>
             <button type="button" data-inv-filter="low" class="inv-filter px-3 py-1.5 rounded-full text-xs font-medium text-slate-400 hover:text-white">Low</button>
             <button type="button" data-inv-filter="out" class="inv-filter px-3 py-1.5 rounded-full text-xs font-medium text-slate-400 hover:text-white">Out</button>
             <button type="button" data-inv-filter="unmapped" class="inv-filter px-3 py-1.5 rounded-full text-xs font-medium text-slate-400 hover:text-white">Not on website</button>
-            <input id="inv-search" type="search" placeholder="Search SKU, name, brand" class="ml-auto w-full sm:w-56 bg-slate-800 border border-slate-700 rounded-full px-3 py-1.5 text-sm">
           </div>
           <p id="inventory-error" class="hidden text-sm text-red-400 mb-3"></p>
           <div class="overflow-x-auto rounded-2xl border border-slate-800">
