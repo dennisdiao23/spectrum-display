@@ -18,20 +18,20 @@
     <nav class="dash-nav hidden" id="admin-nav">
       <p class="dash-nav-label">Main</p>
       <div class="dash-nav-group">
-        <a href="/company.html#website" id="tab-website" class="dash-nav-link">Website</a>
+        <a href="/company/website" id="tab-website" class="dash-nav-link">Website</a>
         <div id="website-subnav" class="dash-sub hidden">
-          <a href="/company.html#website" id="tab-products" class="dash-sub-link">Products</a>
-          <a href="/company.html#website/accounts" id="tab-accounts" class="dash-sub-link">Accounts</a>
+          <a href="/company/website" id="tab-products" class="dash-sub-link">Products</a>
+          <a href="/company/website/accounts" id="tab-accounts" class="dash-sub-link">Accounts</a>
         </div>
       </div>
-      <a href="/company.html#inventory" id="tab-inventory" class="dash-nav-link">Inventory</a>
+      <a href="/company/inventory" id="tab-inventory" class="dash-nav-link">Inventory</a>
     </nav>
     <div class="dash-sidebar-foot hidden" id="admin-utils">
       <div class="dash-nav-group">
-        <a href="/company.html#settings" id="header-settings" class="dash-nav-link">Settings</a>
+        <a href="/company/settings" id="header-settings" class="dash-nav-link">Settings</a>
         <div id="settings-subnav" class="dash-sub hidden">
-          <a href="/company.html#settings" id="tab-staff" class="dash-sub-link">Manage users</a>
-          <a href="/company.html#settings/roles" id="tab-roles" class="dash-sub-link">Role Setting</a>
+          <a href="/company/settings" id="tab-staff" class="dash-sub-link">Manage users</a>
+          <a href="/company/settings/roles" id="tab-roles" class="dash-sub-link">Role Setting</a>
         </div>
       </div>
     </div>
@@ -568,14 +568,7 @@
     let adminRoles = [];
 
     function companyPath() {
-      return String(location.pathname || '/company.html').replace(/\/+$/, '') || '/company.html';
-    }
-    function hashForTab(name) {
-      if (name === 'inventory') return '#inventory';
-      if (name === 'accounts') return '#website/accounts';
-      if (name === 'staff') return '#settings';
-      if (name === 'roles') return '#settings/roles';
-      return '#website';
+      return String(location.pathname || '/company').replace(/\/+$/, '') || '/company';
     }
     function tabFromPath() {
       const hash = String(location.hash || '').replace(/^#\/?/, '');
@@ -593,7 +586,11 @@
       return '';
     }
     function pathForTab(name) {
-      return '/company.html' + hashForTab(name);
+      if (name === 'inventory') return '/company/inventory';
+      if (name === 'accounts') return '/company/website/accounts';
+      if (name === 'staff') return '/company/settings';
+      if (name === 'roles') return '/company/settings/roles';
+      return '/company/website';
     }
     function firstAllowedTab() {
       if (canUse('website')) return 'products';
@@ -602,16 +599,19 @@
       return '';
     }
     function goCompany(href) {
-      const next = String(href || '/company.html');
-      const here = (location.pathname || '') + (location.hash || '');
-      if (next === here) return false;
-      if ((location.pathname === '/company.html' || location.pathname === '/company') && next.indexOf('/company.html') === 0) {
-        history.replaceState(null, '', next);
-        return false;
-      }
+      const next = String(href || '/company').replace(/\/+$/, '') || '/company';
+      const here = companyPath();
+      if (next === here && !location.hash) return false;
       location.replace(next);
       return true;
     }
+    (function sendOldCompanyUrlToCleanPath() {
+      const p = companyPath();
+      const tab = tabFromPath();
+      if (p === '/company.html' || location.hash) {
+        location.replace(tab ? pathForTab(tab) : '/company');
+      }
+    })();
 
     function adminPerms() {
       const p = currentAdminUser && currentAdminUser.perms;
@@ -1739,7 +1739,7 @@
 
     document.getElementById('logout-btn').addEventListener('click', async function () {
       await api('/api/admin/logout', { method: 'POST' });
-      location.href = '/company.html';
+      location.href = '/company';
     });
 
     document.getElementById('type').addEventListener('change', syncControlFields);

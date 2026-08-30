@@ -106,9 +106,9 @@ async function main() {
   COMPANY_PAGES.forEach(function (route) {
     app.get([route, route + '/'], sendCompany);
   });
-  app.get(['/admin.html', '/admin', '/admin/'], function (req, res) {
+  app.get(['/company.html', '/admin.html', '/admin', '/admin/'], function (req, res) {
     const qs = req.url.includes('?') ? req.url.slice(req.url.indexOf('?')) : '';
-    res.redirect(302, '/company.html' + qs);
+    res.redirect(301, '/company' + qs);
   });
 
   const JOB_PAGES = [
