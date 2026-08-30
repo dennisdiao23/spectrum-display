@@ -85,6 +85,16 @@ function createSqliteStore() {
       attachInventoryToCatalog(db, catalog);
       return catalog;
     },
+    async getCatalogStock() {
+      const inv = require('./inventory');
+      try {
+        const items = db.prepare('SELECT * FROM inventory_items').all();
+        const maps = db.prepare('SELECT * FROM product_inventory_map').all();
+        return inv.catalogStock(maps, items);
+      } catch {
+        return {};
+      }
+    },
     async listProducts() {
       const products = dbUtil.listProducts(db);
       attachMapsToListedProducts(db, products);

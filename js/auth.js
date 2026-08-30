@@ -285,6 +285,15 @@
       const role = cached && cached.role;
       return role === 'dealer' || role === 'sales';
     },
+    canSeeStock: function () {
+      return Auth.canUsePreviewTools();
+    },
+    accessToken: async function () {
+      const client = sb();
+      if (!client) return '';
+      const { data } = await client.auth.getSession();
+      return (data && data.session && data.session.access_token) || '';
+    },
     register: async function ({ email, password, name }) {
       email = (email || '').trim().toLowerCase();
       if (!email || !password || password.length < 6) {

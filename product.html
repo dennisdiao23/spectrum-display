@@ -288,7 +288,7 @@
             <div>
               <label class="block text-sm font-medium mb-2">Pixel Pitch</label>
               <div id="pitch-grid" class="flex flex-wrap gap-2"></div>
-              <p id="pitch-stock" class="text-sm text-slate-500 mt-2"></p>
+              <p id="pitch-stock" class="text-sm text-slate-500 mt-2 hidden"></p>
             </div>
             <div>
               <label class="block text-sm font-medium mb-2">Panel Size</label>
@@ -303,7 +303,6 @@
                   <div class="text-3xl font-bold"><span id="price">—</span></div>
                   <div class="text-xs text-slate-500" id="price-unit"></div>
                 </div>
-                <p id="product-stock" class="text-sm mt-2"></p>
               </div>
               <button id="add-to-cart" class="pricing-only px-8 py-3 rounded-full bg-sky-500 hover:bg-sky-400 text-white font-semibold transition">
                 Add to Cart
@@ -447,20 +446,21 @@
       return 'In stock';
     }
 
+    function canSeeStock() {
+      return !!(window.SpectrumAuth && SpectrumAuth.canSeeStock && SpectrumAuth.canSeeStock());
+    }
+
     function updateStock() {
-      const inv = linkedInv();
-      const text = !inv
-        ? ''
-        : (stockStatusLabel(inv.status) + ' · ' + (Number(inv.qty) || 0).toLocaleString() + ' ' + (inv.unit === 'each' ? 'each' : 'panels'));
-      const cls = !inv
-        ? 'text-sm mt-2 hidden'
-        : ('text-sm mt-2 ' + (inv.status === 'out' ? 'text-red-400' : inv.status === 'low' ? 'text-amber-300' : 'text-emerald-400'));
-      ['pitch-stock', 'product-stock'].forEach(function (id) {
-        const el = document.getElementById(id);
-        if (!el) return;
-        el.textContent = text;
-        el.className = cls;
-      });
+      const el = document.getElementById('pitch-stock');
+      if (!el) return;
+      const inv = canSeeStock() ? linkedInv() : null;
+      const hasQty = !!(inv && inv.status);
+      el.textContent = hasQty
+        ? (stockStatusLabel(inv.status) + ' · ' + (Number(inv.qty) || 0).toLocaleString() + ' ' + (inv.unit === 'each' ? 'each' : 'panels'))
+        : '';
+      el.className = hasQty
+        ? ('text-sm mt-2 ' + (inv.status === 'out' ? 'text-red-400' : inv.status === 'low' ? 'text-amber-300' : 'text-emerald-400'))
+        : 'text-sm mt-2 hidden';
     }
 
     function esc(s) {
@@ -1199,6 +1199,10 @@
     }
     window.addEventListener('spectrum:auth', function () {
       if (window.SpectrumI18n && SpectrumI18n.apply) SpectrumI18n.apply();
+      if (typeof window.__spectrumUpdateProductStock === 'function') window.__spectrumUpdateProductStock();
+    });
+    window.addEventListener('spectrum:catalog', function () {
+      if (typeof window.__spectrumUpdateProductStock === 'function') window.__spectrumUpdateProductStock();
     });
     window.addEventListener('spectrum:pricing', function () {
       if (typeof window.__spectrumUpdateProductPrice === 'function') window.__spectrumUpdateProductPrice();
