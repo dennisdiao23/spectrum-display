@@ -331,6 +331,17 @@ body.cc-drawer-open #cc-drawer-scrim,
 body.inv-drawer-open #inv-drawer-scrim { display: block; }
 body.cc-drawer-open #cc-drawer,
 body.inv-drawer-open #inv-drawer { transform: none; }
+html.dash-scroll-lock,
+html.dash-scroll-lock body.company-app {
+  overflow: hidden;
+  overscroll-behavior: none;
+  height: 100%;
+}
+.cc-drawer,
+.cc-drawer-body,
+.cc-drawer-scrim {
+  overscroll-behavior: contain;
+}
 .cc-drawer-head,
 .cc-drawer-foot {
   flex: 0 0 auto;
@@ -445,6 +456,11 @@ body.inv-drawer-open #inv-drawer { transform: none; }
   font-size: 0.72rem;
   color: var(--dash-muted);
   margin-bottom: 0.28rem;
+}
+.cc-field input[type="file"] {
+  padding: 0.35rem 0;
+  background: transparent;
+  border: 0;
 }
 .cc-field input,
 .cc-field select,

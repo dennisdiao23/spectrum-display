@@ -1433,6 +1433,24 @@
       invSavedSnapshot = invFormSnapshot();
     }
 
+    function dashDrawerIsOpen() {
+      return document.body.classList.contains('cc-drawer-open') || document.body.classList.contains('inv-drawer-open');
+    }
+
+    function lockDashPageScroll() {
+      if (document.documentElement.classList.contains('dash-scroll-lock')) return;
+      document.documentElement.dataset.scrollY = String(window.scrollY || 0);
+      document.documentElement.classList.add('dash-scroll-lock');
+    }
+
+    function unlockDashPageScroll() {
+      if (dashDrawerIsOpen()) return;
+      const y = Number(document.documentElement.dataset.scrollY || 0);
+      document.documentElement.classList.remove('dash-scroll-lock');
+      delete document.documentElement.dataset.scrollY;
+      window.scrollTo(0, y);
+    }
+
     function invDrawerNeedsLeave() {
       return document.body.classList.contains('inv-drawer-open') && invFormSnapshot() !== invSavedSnapshot;
     }
@@ -1489,6 +1507,7 @@
       hideCcLeave();
       document.body.classList.remove('inv-drawer-open');
       document.getElementById('inv-drawer').setAttribute('aria-hidden', 'true');
+      unlockDashPageScroll();
     }
 
     function openInventoryDrawer() {
@@ -1498,6 +1517,7 @@
       });
       document.getElementById('inv-drawer').setAttribute('aria-hidden', 'false');
       document.body.classList.add('inv-drawer-open');
+      lockDashPageScroll();
       const body = document.getElementById('inv-scroll');
       if (body) body.scrollTop = 0;
       hideCcLeave();
@@ -2096,6 +2116,7 @@
         const sel = document.getElementById('so-customer');
         if (sel && sel.value === '__new__') sel.value = '';
       }
+      unlockDashPageScroll();
     }
 
     function openCustomerDrawer(customer, source) {
@@ -2121,6 +2142,7 @@
       });
       document.getElementById('cc-drawer').setAttribute('aria-hidden', 'false');
       document.body.classList.add('cc-drawer-open');
+      lockDashPageScroll();
       const body = document.getElementById('cc-form');
       if (body) body.scrollTop = 0;
       hideCcLeave();
@@ -2919,6 +2941,16 @@
       const jump = e.target.closest('[data-inv-jump]');
       if (jump) jumpInventorySection(jump.getAttribute('data-inv-jump'));
     });
+    document.addEventListener('wheel', function (e) {
+      if (!dashDrawerIsOpen()) return;
+      if (e.target.closest('.cc-drawer-body')) return;
+      e.preventDefault();
+    }, { passive: false });
+    document.addEventListener('touchmove', function (e) {
+      if (!dashDrawerIsOpen()) return;
+      if (e.target.closest('.cc-drawer-body')) return;
+      e.preventDefault();
+    }, { passive: false });
     document.getElementById('inv-search').addEventListener('input', renderInventoryTable);
     document.querySelectorAll('.inv-filter').forEach(function (btn) {
       btn.addEventListener('click', function () {
