@@ -152,7 +152,7 @@
         <div class="dash-home" id="dash-home">
           <div class="dash-home-head">
             <h2>Overview</h2>
-            <p>A snapshot of each company tab.</p>
+            <p>A snapshot of each main menu area.</p>
           </div>
           <div class="dash-home-kpis">
             <button type="button" class="dash-kpi" data-home="website" aria-pressed="true">
@@ -175,25 +175,25 @@
               <strong class="dash-kpi-value" id="dash-stat-inventory">—</strong>
               <span class="dash-kpi-hint" id="dash-hint-inventory">SKUs</span>
             </button>
-            <button type="button" class="dash-kpi" data-home="customers" aria-pressed="false">
+            <button type="button" class="dash-kpi" data-home="vendor" aria-pressed="false">
+              <span class="dash-kpi-icon dash-kpi-icon-vendor" aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="3.25"/><path d="M5 19.2c.9-3.1 3.5-4.7 7-4.7s6.1 1.6 7 4.7"/></svg>
+              </span>
+              <span class="dash-kpi-meta">
+                <span class="dash-kpi-label">Vendor</span>
+              </span>
+              <strong class="dash-kpi-value" id="dash-stat-vendor">—</strong>
+              <span class="dash-kpi-hint" id="dash-hint-vendor">Vendors</span>
+            </button>
+            <button type="button" class="dash-kpi" data-home="customer" aria-pressed="false">
               <span class="dash-kpi-icon dash-kpi-icon-customers" aria-hidden="true">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="3.25"/><path d="M5 19.2c.9-3.1 3.5-4.7 7-4.7s6.1 1.6 7 4.7"/></svg>
               </span>
               <span class="dash-kpi-meta">
                 <span class="dash-kpi-label">Customer</span>
               </span>
-              <strong class="dash-kpi-value" id="dash-stat-customers">—</strong>
-              <span class="dash-kpi-hint">Company records</span>
-            </button>
-            <button type="button" class="dash-kpi" data-home="sales" aria-pressed="false">
-              <span class="dash-kpi-icon dash-kpi-icon-sales" aria-hidden="true">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M7 3h8l4 4v14a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1z"/><path d="M15 3v5h5"/><path d="M9 13h6M9 17h4"/></svg>
-              </span>
-              <span class="dash-kpi-meta">
-                <span class="dash-kpi-label">Sales</span>
-              </span>
-              <strong class="dash-kpi-value" id="dash-stat-sales">—</strong>
-              <span class="dash-kpi-hint" id="dash-hint-sales">Quotes, orders, invoices</span>
+              <strong class="dash-kpi-value" id="dash-stat-customer">—</strong>
+              <span class="dash-kpi-hint" id="dash-hint-customer">Quotes, orders, invoices</span>
             </button>
           </div>
           <div class="dash-home-grid">
@@ -2131,6 +2131,18 @@
     let dashSales = [];
     let dashVendors = [];
     let dashPos = [];
+    let dashReceipts = [];
+
+    function canUseSalesDocs() {
+      return canUse('sales') || canUse('quotes') || canUse('orders') || canUse('invoices');
+    }
+    function canDashOverview(name) {
+      if (name === 'website') return canUse('website');
+      if (name === 'inventory') return canUseInventoryNav();
+      if (name === 'vendor') return canUseVendorNav();
+      if (name === 'customer') return canUseCustomerNav();
+      return false;
+    }
 
     function dashCount(n) {
       return n == null ? '—' : Number(n).toLocaleString();
@@ -2169,14 +2181,14 @@
 
     function firstDashOverview() {
       if (canUse('website')) return 'website';
-      if (canUse('inventory')) return 'inventory';
-      if (canUse('customers')) return 'customers';
-      if (canUse('sales')) return 'sales';
+      if (canUseInventoryNav()) return 'inventory';
+      if (canUseVendorNav()) return 'vendor';
+      if (canUseCustomerNav()) return 'customer';
       return 'website';
     }
 
     function selectDashOverview(name) {
-      if (!name || !canUse(name)) return;
+      if (!name || !canDashOverview(name)) return;
       dashOverview = name;
       document.querySelectorAll('#dash-home .dash-kpi').forEach(function (btn) {
         const on = btn.getAttribute('data-home') === name;
@@ -2191,24 +2203,59 @@
       const invN = inventoryItems.length;
       const custN = dashCustomers.length;
       const salesN = dashSales.length;
+      const vendorN = dashVendors.length;
+      const openPoN = dashPos.filter(function (o) { return String(o.status || '').toLowerCase() === 'open'; }).length;
+      const receiptN = dashReceipts.length;
       const webEl = document.getElementById('dash-stat-website');
       const invEl = document.getElementById('dash-stat-inventory');
-      const custEl = document.getElementById('dash-stat-customers');
-      const salesEl = document.getElementById('dash-stat-sales');
+      const vendorEl = document.getElementById('dash-stat-vendor');
+      const custEl = document.getElementById('dash-stat-customer');
       if (webEl) webEl.textContent = canUse('website') ? dashCount(websiteN) : '—';
       if (invEl) invEl.textContent = canUse('inventory') ? dashCount(invN) : '—';
-      if (custEl) custEl.textContent = canUse('customers') ? dashCount(custN) : '—';
-      if (salesEl) salesEl.textContent = canUse('sales') ? dashCount(salesN) : '—';
+      if (vendorEl) vendorEl.textContent = canUse('vendors') ? dashCount(vendorN) : (canUse('purchase-orders') ? dashCount(openPoN) : '—');
+      if (custEl) {
+        if (canUse('customers')) custEl.textContent = dashCount(custN);
+        else if (canUseSalesDocs()) custEl.textContent = dashCount(salesN);
+        else custEl.textContent = '—';
+      }
       const webHint = document.getElementById('dash-hint-website');
       if (webHint) {
         webHint.textContent = accountsN
           ? websiteN + ' pages · ' + accountsN + ' users'
           : 'Product pages';
       }
+      const invHint = document.getElementById('dash-hint-inventory');
+      if (invHint) {
+        const bits = [];
+        if (canUse('inventory')) bits.push('SKUs');
+        if (canUse('receipt-shipments') && receiptN) bits.push(receiptN + ' receipts');
+        invHint.textContent = bits.join(' · ') || 'SKUs';
+      }
+      const vendorHint = document.getElementById('dash-hint-vendor');
+      if (vendorHint) {
+        const bits = [];
+        if (canUse('vendors')) bits.push(vendorN + ' vendors');
+        if (canUse('purchase-orders')) bits.push(openPoN + ' open POs');
+        vendorHint.textContent = bits.join(' · ') || 'Vendors';
+      }
+      const custHint = document.getElementById('dash-hint-customer');
+      if (custHint) {
+        const quotes = dashSales.filter(function (d) { return d.type === 'quote'; }).length;
+        const orders = dashSales.filter(function (d) { return d.type === 'order'; }).length;
+        const invoices = dashSales.filter(function (d) { return d.type === 'invoice'; }).length;
+        const bits = [];
+        if (canUse('customers') && custN) bits.push(custN + ' records');
+        if (canUseSalesDocs()) {
+          if (quotes) bits.push(quotes + ' quotes');
+          if (orders) bits.push(orders + ' orders');
+          if (invoices) bits.push(invoices + ' invoices');
+        }
+        custHint.textContent = bits.join(' · ') || 'Quotes, orders, invoices';
+      }
     }
 
     function renderDashOverview() {
-      const name = canUse(dashOverview) ? dashOverview : firstDashOverview();
+      const name = canDashOverview(dashOverview) ? dashOverview : firstDashOverview();
       dashOverview = name;
       const title = document.getElementById('dash-detail-title');
       const sub = document.getElementById('dash-detail-sub');
@@ -2224,18 +2271,18 @@
         },
         inventory: {
           title: 'Inventory',
-          sub: 'Warehouse SKUs, vendors, and purchase orders.',
+          sub: 'Warehouse SKUs and receipt shipments.',
           href: '/company/inventory'
         },
-        customers: {
-          title: 'Customer',
-          sub: 'Company records for quotes and invoices.',
-          href: '/company/customers'
+        vendor: {
+          title: 'Vendor',
+          sub: 'Purchase vendors and purchase orders.',
+          href: '/company/inventory/vendors'
         },
-        sales: {
-          title: 'Sales',
-          sub: 'Sales quotes, sales orders, and invoices.',
-          href: '/company/sales'
+        customer: {
+          title: 'Customer',
+          sub: 'Company records, sales quotes, orders, and invoices.',
+          href: '/company/customers'
         }
       };
       const info = copy[name] || copy.website;
@@ -2261,8 +2308,7 @@
         stats.innerHTML = dashChip(inventoryItems.length, 'SKUs') +
           dashChip(low, 'Low') +
           dashChip(out, 'Out') +
-          dashChip(dashVendors.length, 'Vendors') +
-          dashChip(dashPos.length, 'Purchase orders');
+          (canUse('receipt-shipments') ? dashChip(dashReceipts.length, 'Receipt shipments') : '');
         const rows = inventoryItems.slice(0, 8).map(function (item) {
           return dashRow(
             item.sku || item.name || 'Item',
@@ -2273,24 +2319,36 @@
         list.innerHTML = rows || '<p class="dash-activity-empty">No inventory SKUs yet.</p>';
         return;
       }
-      if (name === 'customers') {
-        stats.innerHTML = dashChip(dashCustomers.length, 'Customers');
-        const rows = dashCustomers.slice(0, 8).map(function (c) {
-          const label = c.displayName || c.companyName || [c.contactFirst, c.contactLast].filter(Boolean).join(' ') || 'Customer';
-          return dashRow(label, [c.email, c.phone, c.mobile].filter(Boolean).join(' · ') || 'No contact yet', c.billCity || '');
+      if (name === 'vendor') {
+        const openPos = dashPos.filter(function (o) { return String(o.status || '').toLowerCase() === 'open'; }).length;
+        const withEmail = dashVendors.filter(function (v) { return v.email; }).length;
+        stats.innerHTML = dashChip(dashVendors.length, 'Vendors') +
+          dashChip(openPos, 'Open POs') +
+          dashChip(dashPos.length, 'Purchase orders') +
+          dashChip(withEmail, 'With email');
+        const rows = dashPos.slice(0, 8).map(function (o) {
+          return dashRow(o.number || 'PO', [o.vendorName, o.status].filter(Boolean).join(' · '), o.orderDate || '');
         }).join('');
-        list.innerHTML = rows || '<p class="dash-activity-empty">No company customers yet.</p>';
+        list.innerHTML = rows || '<p class="dash-activity-empty">No purchase orders yet.</p>';
         return;
       }
       const quotes = dashSales.filter(function (d) { return d.type === 'quote'; }).length;
       const orders = dashSales.filter(function (d) { return d.type === 'order'; }).length;
       const invoices = dashSales.filter(function (d) { return d.type === 'invoice'; }).length;
-      stats.innerHTML = dashChip(quotes, 'Quotes') + dashChip(orders, 'Orders') + dashChip(invoices, 'Invoices');
-      const rows = dashSales.slice(0, 8).map(function (d) {
+      stats.innerHTML =
+        (canUse('customers') ? dashChip(dashCustomers.length, 'Customers') : '') +
+        (canUseSalesDocs() ? dashChip(quotes, 'Quotes') + dashChip(orders, 'Orders') + dashChip(invoices, 'Invoices') : '');
+      const docRows = dashSales.slice(0, 5).map(function (d) {
         const kind = d.type === 'order' ? 'Sales Order' : d.type === 'invoice' ? 'Invoice' : 'Sales Quote';
         return dashRow(d.number || kind, [kind, d.customerName, d.status].filter(Boolean).join(' · '), moneyText(d.total));
       }).join('');
-      list.innerHTML = rows || '<p class="dash-activity-empty">No sales documents yet.</p>';
+      const custRows = canUse('customers')
+        ? dashCustomers.slice(0, 3).map(function (c) {
+          const label = c.displayName || c.companyName || [c.contactFirst, c.contactLast].filter(Boolean).join(' ') || 'Customer';
+          return dashRow(label, [c.email, c.phone, c.mobile].filter(Boolean).join(' · ') || 'No contact yet', c.billCity || '');
+        }).join('')
+        : '';
+      list.innerHTML = (docRows + custRows) || '<p class="dash-activity-empty">No customers or sales documents yet.</p>';
     }
 
     function renderDashActivity() {
@@ -2350,7 +2408,7 @@
 
     async function loadDashboardHome() {
       document.querySelectorAll('#dash-home .dash-kpi').forEach(function (el) {
-        el.classList.toggle('hidden', !canUse(el.getAttribute('data-home')));
+        el.classList.toggle('hidden', !canDashOverview(el.getAttribute('data-home')));
       });
       const tasks = [];
       if (canUse('website')) {
@@ -2367,9 +2425,18 @@
       }
       if (canUse('inventory')) {
         tasks.push((inventoryItems.length ? Promise.resolve() : loadInventory()).catch(function () {}));
+      }
+      if (canUse('receipt-shipments')) {
+        tasks.push(api('/api/admin/receipt-shipments').then(function (data) {
+          dashReceipts = data.receipts || [];
+        }).catch(function () { dashReceipts = []; }));
+      }
+      if (canUse('vendors')) {
         tasks.push(api('/api/admin/inventory-vendors').then(function (data) {
           dashVendors = data.vendors || [];
         }).catch(function () { dashVendors = []; }));
+      }
+      if (canUse('purchase-orders')) {
         tasks.push(api('/api/admin/purchase-orders').then(function (data) {
           dashPos = data.orders || data.purchaseOrders || [];
         }).catch(function () { dashPos = []; }));
@@ -2379,7 +2446,7 @@
           dashCustomers = data.customers || [];
         }).catch(function () { dashCustomers = []; }));
       }
-      if (canUse('sales')) {
+      if (canUseSalesDocs()) {
         tasks.push(api('/api/admin/sales-docs').then(function (data) {
           dashSales = data.docs || [];
         }).catch(function () { dashSales = []; }));
@@ -2388,7 +2455,7 @@
         dashStaff = data.users || data.staff || [];
       }).catch(function () { dashStaff = []; }));
       await Promise.all(tasks);
-      if (!canUse(dashOverview)) dashOverview = firstDashOverview();
+      if (!canDashOverview(dashOverview)) dashOverview = firstDashOverview();
       const webLink = document.querySelector('#dash-home .dash-activity-label a[href="/company/website/accounts"]');
       if (webLink) webLink.classList.toggle('hidden', !canUse('website'));
       const staffLink = document.querySelector('#dash-home .dash-activity-label a[href="/company/settings"]');

@@ -974,6 +974,7 @@ html.dash-scroll-lock body.company-app {
 .dash-kpi-icon-website { background: #e8f0ff; color: #2f6bff; }
 .dash-kpi-icon-inventory { background: #fff1e6; color: #e67a2e; }
 .dash-kpi-icon-customers { background: #fff6d8; color: #d39b12; }
+.dash-kpi-icon-vendor { background: #f3e8ff; color: #8b5cf6; }
 .dash-kpi-icon-sales { background: #e7f8ef; color: #1f9d57; }
 .dash-kpi-meta {
   display: flex;
