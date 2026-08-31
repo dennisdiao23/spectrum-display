@@ -378,6 +378,13 @@ body.dash-col-resizing * {
   cursor: pointer;
 }
 .dash-col-add button:hover { background: #eef2ff; color: #2f6bff; }
+.dash-col-add button.is-on,
+.dash-col-add button:disabled {
+  color: #8b93a7;
+  cursor: default;
+}
+.dash-col-add button.is-on:hover,
+.dash-col-add button:disabled:hover { background: transparent; color: #8b93a7; }
 .dash-col-add-empty {
   padding: 0.5rem 0.7rem 0.6rem;
   font-size: 0.8rem;

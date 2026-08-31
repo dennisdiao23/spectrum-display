@@ -814,6 +814,26 @@ function createSqliteStore() {
       });
       return this.createSalesDoc(next);
     },
+    async getColumnPrefs(adminId) {
+      const { parseColPrefs } = require('./column-prefs');
+      const row = db.prepare('SELECT prefs FROM admin_column_prefs WHERE admin_id = ?').get(adminId);
+      return parseColPrefs(row && row.prefs);
+    },
+    async getOwnerColumnPrefs() {
+      const owner = db.prepare("SELECT id FROM admins WHERE role = 'owner' ORDER BY id ASC LIMIT 1").get();
+      if (!owner) return {};
+      return this.getColumnPrefs(owner.id);
+    },
+    async saveColumnPrefs(adminId, prefs) {
+      const { sanitizeColPrefs, parseColPrefs } = require('./column-prefs');
+      const json = JSON.stringify(sanitizeColPrefs(prefs));
+      db.prepare(`
+        INSERT INTO admin_column_prefs (admin_id, prefs, updated_at)
+        VALUES (?, ?, ?)
+        ON CONFLICT(admin_id) DO UPDATE SET prefs = excluded.prefs, updated_at = excluded.updated_at
+      `).run(adminId, json, dbUtil.nowIso());
+      return parseColPrefs(json);
+    },
     async saveUpload(file) {
       const prepared = await img.prepareUpload(file);
       const name = Date.now().toString(36) + '-' + crypto.randomBytes(4).toString('hex') + prepared.ext;

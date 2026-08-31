@@ -122,6 +122,7 @@ function openDb() {
   ensureInventoryVendors(db);
   ensurePurchaseOrders(db);
   ensureCompanyAccounts(db);
+  ensureColumnPrefs(db);
   db.exec(`
     CREATE TABLE IF NOT EXISTS inventory_stock (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -572,6 +573,17 @@ function ensureCompanyAccounts(db) {
   }
 }
 
+function ensureColumnPrefs(db) {
+  db.exec(`
+    CREATE TABLE IF NOT EXISTS admin_column_prefs (
+      admin_id INTEGER PRIMARY KEY,
+      prefs TEXT NOT NULL DEFAULT '{}',
+      updated_at TEXT NOT NULL,
+      FOREIGN KEY (admin_id) REFERENCES admins(id) ON DELETE CASCADE
+    );
+  `);
+}
+
 function ensurePurchaseOrders(db) {
   db.exec(`
     CREATE TABLE IF NOT EXISTS purchase_orders (
@@ -866,5 +878,6 @@ module.exports = {
   ensureCompanySales,
   ensureInventoryVendors,
   ensurePurchaseOrders,
-  ensureCompanyAccounts
+  ensureCompanyAccounts,
+  ensureColumnPrefs
 };

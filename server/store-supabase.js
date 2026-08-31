@@ -1412,6 +1412,29 @@ function createSupabaseStore() {
       });
       return this.createSalesDoc(next);
     },
+    async getColumnPrefs(adminId) {
+      const { parseColPrefs } = require('./column-prefs');
+      const { data, error } = await supabase.from('admin_column_prefs').select('prefs').eq('admin_id', adminId).maybeSingle();
+      throwIf(error, 'Could not load column settings.');
+      return parseColPrefs(data && data.prefs);
+    },
+    async getOwnerColumnPrefs() {
+      const { data, error } = await supabase.from('admins').select('id').eq('role', 'owner').order('id', { ascending: true }).limit(1).maybeSingle();
+      throwIf(error, 'Could not load owner column settings.');
+      if (!data) return {};
+      return this.getColumnPrefs(data.id);
+    },
+    async saveColumnPrefs(adminId, prefs) {
+      const { sanitizeColPrefs, parseColPrefs } = require('./column-prefs');
+      const clean = sanitizeColPrefs(prefs);
+      const { data, error } = await supabase.from('admin_column_prefs').upsert({
+        admin_id: adminId,
+        prefs: clean,
+        updated_at: new Date().toISOString()
+      }, { onConflict: 'admin_id' }).select('prefs').single();
+      throwIf(error, 'Could not save column settings.');
+      return parseColPrefs(data && data.prefs);
+    },
     async saveUpload(file) {
       const prepared = await img.prepareUpload(file);
       const name = Date.now().toString(36) + '-' + crypto.randomBytes(4).toString('hex') + prepared.ext;
