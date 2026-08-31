@@ -4560,6 +4560,9 @@
         tel.classList.remove('hidden');
       } else tel.classList.add('hidden');
       setCcDetailTab(ccDetailTab);
+      document.getElementById('cc-detail-edit').classList.toggle('hidden', !canEdit('customers'));
+      const canTx = canEdit('quotes') || canEdit('orders') || canEdit('invoices');
+      document.getElementById('cc-detail-new').classList.toggle('hidden', !canTx);
       renderCustomerDetailTransactions();
       renderCustomerDetailDetails();
       renderCustomerDetailNotes();
