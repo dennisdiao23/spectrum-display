@@ -29,10 +29,10 @@ const MENU_GROUPS = [
       { key: 'receipt-shipments', label: 'Receipt Shipment' }
     ]
   },
-  { key: 'customers', label: 'Customer' },
   {
     label: 'Sales',
     children: [
+      { key: 'customers', label: 'Customer' },
       { key: 'sales', label: 'Sales' },
       { key: 'quotes', label: 'Sales Quote' },
       { key: 'orders', label: 'Sales Order' },
