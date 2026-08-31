@@ -317,7 +317,9 @@ body.dash-col-resizing * {
 }
 .dash-col-menu[hidden] { display: none; }
 .dash-col-menu button {
-  display: block;
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
   width: 100%;
   text-align: left;
   border: 0;
@@ -328,6 +330,16 @@ body.dash-col-resizing * {
   padding: 0.5rem 0.7rem;
   border-radius: 0.4rem;
   cursor: pointer;
+}
+.dash-col-ico {
+  width: 1rem;
+  height: 1rem;
+  flex: 0 0 1rem;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.8;
+  stroke-linecap: round;
+  stroke-linejoin: round;
 }
 .dash-col-menu button:hover { background: #eef2ff; color: #2f6bff; }
 .dash-col-menu button:disabled {
@@ -346,8 +358,7 @@ body.dash-col-resizing * {
   z-index: 96;
   min-width: 11.5rem;
   max-width: 14rem;
-  max-height: 18rem;
-  overflow: auto;
+  overflow: visible;
   background: #fff;
   border: 1px solid var(--dash-line);
   border-radius: 0.55rem;

@@ -1187,13 +1187,31 @@
     </div>
   </aside>
   <div id="dash-col-menu" class="dash-col-menu" hidden>
-    <button type="button" data-col-act="asc">Sort ascending</button>
-    <button type="button" data-col-act="desc">Sort descending</button>
-    <button type="button" data-col-act="left">Move left</button>
-    <button type="button" data-col-act="right">Move right</button>
+    <button type="button" data-col-act="asc">
+      <svg class="dash-col-ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M8 16V5M8 5 4.8 8.2M8 5l3.2 3.2"/><path d="M13 8h7M13 12h5M13 16h3"/></svg>
+      Sort ascending
+    </button>
+    <button type="button" data-col-act="desc">
+      <svg class="dash-col-ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M8 8v11M8 19l3.2-3.2M8 19l-3.2-3.2"/><path d="M13 8h3M13 12h5M13 16h7"/></svg>
+      Sort descending
+    </button>
+    <button type="button" data-col-act="left">
+      <svg class="dash-col-ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M19 12H6M10.5 7.5 6 12l4.5 4.5"/></svg>
+      Move left
+    </button>
+    <button type="button" data-col-act="right">
+      <svg class="dash-col-ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h13M13.5 7.5 18 12l-4.5 4.5"/></svg>
+      Move right
+    </button>
     <div class="dash-col-menu-rule"></div>
-    <button type="button" data-col-act="hide">Hide column</button>
-    <button type="button" data-col-act="add">Add column</button>
+    <button type="button" data-col-act="hide">
+      <svg class="dash-col-ico" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="8.2"/><path d="M8.2 12h7.6"/></svg>
+      Hide column
+    </button>
+    <button type="button" data-col-act="add">
+      <svg class="dash-col-ico" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="8.2"/><path d="M12 8.2v7.6M8.2 12h7.6"/></svg>
+      Add column
+    </button>
   </div>
   <div id="dash-col-add" class="dash-col-add" hidden>
     <p class="dash-col-add-title">Add column</p>
@@ -2825,10 +2843,13 @@
       if (!panel || panel.hidden) return;
       const box = menu.getBoundingClientRect();
       const pw = panel.offsetWidth || 184;
+      const ph = panel.offsetHeight || 0;
       let left = box.right + 6;
       if (left + pw > window.innerWidth - 8) left = box.left - pw - 6;
+      let top = box.top;
+      if (top + ph > window.innerHeight - 8) top = window.innerHeight - ph - 8;
       panel.style.left = Math.max(8, left) + 'px';
-      panel.style.top = Math.max(8, box.top) + 'px';
+      panel.style.top = Math.max(8, top) + 'px';
     }
 
     function openColAdd(table) {
@@ -2998,10 +3019,15 @@
       });
     }
 
-    document.addEventListener('click', function (e) {
+    document.addEventListener('pointerdown', function (e) {
       if (!dashColMenu || dashColMenu.hidden) return;
-      if (dashColMenu.contains(e.target)) return;
-      if (dashColAdd && dashColAdd.contains(e.target)) return;
+      const onMenu = dashColMenu.contains(e.target);
+      const onAdd = dashColAdd && !dashColAdd.hidden && dashColAdd.contains(e.target);
+      if (onAdd) return;
+      if (onMenu) {
+        if (dashColAdd && !dashColAdd.hidden && !e.target.closest('[data-col-act="add"]')) closeColAdd();
+        return;
+      }
       if (e.target.closest && e.target.closest('table.dash-cols th[data-col]')) return;
       closeColMenu();
     });
