@@ -723,6 +723,7 @@
           </div>
           <div class="cc-detail-tabs" role="tablist">
             <button type="button" class="cc-detail-tab is-on" data-vn-tab="pos" role="tab" aria-selected="true">Purchase orders</button>
+            <button type="button" class="cc-detail-tab" data-vn-tab="contacts" role="tab" aria-selected="false">Contacts</button>
             <button type="button" class="cc-detail-tab" data-vn-tab="details" role="tab" aria-selected="false">Vendor details</button>
             <button type="button" class="cc-detail-tab" data-vn-tab="notes" role="tab" aria-selected="false">Notes</button>
           </div>
@@ -750,6 +751,32 @@
               </table>
             </div>
             <p id="vn-detail-po-empty" class="cc-detail-empty hidden">No purchase orders for this vendor yet.</p>
+          </div>
+          <div id="vn-detail-panel-contacts" class="cc-detail-panel hidden" role="tabpanel" hidden>
+            <div class="cc-contact-toolbar">
+              <button type="button" id="vn-contact-add" class="cc-detail-btn cc-detail-btn-primary">Add contact</button>
+            </div>
+            <p id="vn-contacts-msg" class="hidden text-sm mb-3"></p>
+            <form id="vn-contact-form" class="cc-contact-form hidden">
+              <input type="hidden" id="vn-contact-id">
+              <div class="cc-contact-form-grid">
+                <div class="cc-field"><label>First name</label><input id="vn-contact-first" type="text"></div>
+                <div class="cc-field"><label>Last name</label><input id="vn-contact-last" type="text"></div>
+                <div class="cc-field"><label>Job title</label><input id="vn-contact-job" type="text"></div>
+                <div class="cc-field"><label>Role</label><input id="vn-contact-role" type="text" placeholder="Primary, AP…"></div>
+                <div class="cc-field"><label>Email</label><input id="vn-contact-email" type="email"></div>
+                <div class="cc-field"><label>Phone</label><input id="vn-contact-phone" type="text"></div>
+                <div class="cc-field"><label>Mobile</label><input id="vn-contact-mobile" type="text"></div>
+                <div class="cc-field cc-field-check"><label><input id="vn-contact-primary" type="checkbox"> Primary contact</label></div>
+                <div class="cc-field wide"><label>Notes</label><textarea id="vn-contact-notes" rows="2"></textarea></div>
+              </div>
+              <div class="cc-contact-form-actions">
+                <button type="submit" class="cc-detail-btn cc-detail-btn-primary">Save contact</button>
+                <button type="button" id="vn-contact-cancel" class="cc-detail-btn">Cancel</button>
+              </div>
+            </form>
+            <div id="vn-contacts-list" class="cc-contact-list"></div>
+            <p id="vn-contacts-empty" class="cc-detail-empty hidden">No contacts yet. Add someone at this vendor.</p>
           </div>
           <div id="vn-detail-panel-details" class="cc-detail-panel hidden" role="tabpanel" hidden>
             <dl class="cc-detail-read-grid" id="vn-detail-read"></dl>
@@ -1125,6 +1152,7 @@
           </div>
           <div class="cc-detail-tabs" role="tablist">
             <button type="button" class="cc-detail-tab is-on" data-cc-tab="transactions" role="tab" aria-selected="true">Transaction list</button>
+            <button type="button" class="cc-detail-tab" data-cc-tab="contacts" role="tab" aria-selected="false">Contacts</button>
             <button type="button" class="cc-detail-tab" data-cc-tab="details" role="tab" aria-selected="false">Customer details</button>
             <button type="button" class="cc-detail-tab" data-cc-tab="notes" role="tab" aria-selected="false">Notes</button>
           </div>
@@ -1158,6 +1186,32 @@
               </table>
             </div>
             <p id="cc-detail-tx-empty" class="cc-detail-empty hidden">No transactions for this customer yet.</p>
+          </div>
+          <div id="cc-detail-panel-contacts" class="cc-detail-panel hidden" role="tabpanel" hidden>
+            <div class="cc-contact-toolbar">
+              <button type="button" id="cc-contact-add" class="cc-detail-btn cc-detail-btn-primary">Add contact</button>
+            </div>
+            <p id="cc-contacts-msg" class="hidden text-sm mb-3"></p>
+            <form id="cc-contact-form" class="cc-contact-form hidden">
+              <input type="hidden" id="cc-contact-id">
+              <div class="cc-contact-form-grid">
+                <div class="cc-field"><label>First name</label><input id="cc-contact-first" type="text"></div>
+                <div class="cc-field"><label>Last name</label><input id="cc-contact-last" type="text"></div>
+                <div class="cc-field"><label>Job title</label><input id="cc-contact-job" type="text"></div>
+                <div class="cc-field"><label>Role</label><input id="cc-contact-role" type="text" placeholder="Primary, Billing…"></div>
+                <div class="cc-field"><label>Email</label><input id="cc-contact-email" type="email"></div>
+                <div class="cc-field"><label>Phone</label><input id="cc-contact-phone" type="text"></div>
+                <div class="cc-field"><label>Mobile</label><input id="cc-contact-mobile" type="text"></div>
+                <div class="cc-field cc-field-check"><label><input id="cc-contact-primary" type="checkbox"> Primary contact</label></div>
+                <div class="cc-field wide"><label>Notes</label><textarea id="cc-contact-notes" rows="2"></textarea></div>
+              </div>
+              <div class="cc-contact-form-actions">
+                <button type="submit" class="cc-detail-btn cc-detail-btn-primary">Save contact</button>
+                <button type="button" id="cc-contact-cancel" class="cc-detail-btn">Cancel</button>
+              </div>
+            </form>
+            <div id="cc-contacts-list" class="cc-contact-list"></div>
+            <p id="cc-contacts-empty" class="cc-detail-empty hidden">No contacts yet. Add someone at this company.</p>
           </div>
           <div id="cc-detail-panel-details" class="cc-detail-panel hidden" role="tabpanel" hidden>
             <dl class="cc-detail-read-grid" id="cc-detail-read"></dl>
@@ -4808,6 +4862,125 @@
       return ((bits[0] || '?').charAt(0) + (bits[1] ? bits[1].charAt(0) : '')).toUpperCase();
     }
 
+    function partyPrimaryContact(contacts) {
+      if (!contacts || !contacts.length) return null;
+      return contacts.find(function (c) { return c.isPrimary; }) || contacts[0];
+    }
+
+    function partyContactLabel(c) {
+      if (!c) return 'Contact';
+      return c.name || [c.firstName, c.lastName].filter(Boolean).join(' ') || c.email || 'Contact';
+    }
+
+    let ccContactEditingId = '';
+
+    function showCcContactsMsg(text, ok) {
+      const el = document.getElementById('cc-contacts-msg');
+      if (!el) return;
+      el.textContent = text || '';
+      el.className = 'text-sm mb-3 ' + (ok ? 'text-sky-400' : 'text-red-400');
+      el.classList.toggle('hidden', !text);
+    }
+
+    function hideCcContactForm() {
+      ccContactEditingId = '';
+      document.getElementById('cc-contact-form').classList.add('hidden');
+    }
+
+    function fillCcContactForm(contact) {
+      const c = contact || {};
+      document.getElementById('cc-contact-id').value = c.id || '';
+      document.getElementById('cc-contact-first').value = c.firstName || '';
+      document.getElementById('cc-contact-last').value = c.lastName || '';
+      document.getElementById('cc-contact-job').value = c.jobTitle || '';
+      document.getElementById('cc-contact-role').value = c.role || '';
+      document.getElementById('cc-contact-email').value = c.email || '';
+      document.getElementById('cc-contact-phone').value = c.phone || '';
+      document.getElementById('cc-contact-mobile').value = c.mobile || '';
+      document.getElementById('cc-contact-notes').value = c.notes || '';
+      const primary = document.getElementById('cc-contact-primary');
+      const contacts = (ccDetailCustomer && ccDetailCustomer.contacts) || [];
+      primary.checked = c.isPrimary || (!c.id && !contacts.length);
+    }
+
+    function readCcContactForm() {
+      return {
+        firstName: document.getElementById('cc-contact-first').value,
+        lastName: document.getElementById('cc-contact-last').value,
+        jobTitle: document.getElementById('cc-contact-job').value,
+        role: document.getElementById('cc-contact-role').value,
+        email: document.getElementById('cc-contact-email').value,
+        phone: document.getElementById('cc-contact-phone').value,
+        mobile: document.getElementById('cc-contact-mobile').value,
+        notes: document.getElementById('cc-contact-notes').value,
+        isPrimary: document.getElementById('cc-contact-primary').checked
+      };
+    }
+
+    function renderCcContactsList() {
+      const list = document.getElementById('cc-contacts-list');
+      const empty = document.getElementById('cc-contacts-empty');
+      const contacts = (ccDetailCustomer && ccDetailCustomer.contacts) || [];
+      if (!list) return;
+      if (!contacts.length) {
+        list.innerHTML = '';
+        if (empty) empty.classList.remove('hidden');
+        return;
+      }
+      if (empty) empty.classList.add('hidden');
+      const canEditContacts = canEdit('customers');
+      list.innerHTML = contacts.map(function (c) {
+        const meta = [c.role, c.jobTitle, c.email, c.phone || c.mobile].filter(Boolean).join(' · ');
+        return '<div class="cc-contact-card' + (c.isPrimary ? ' is-primary' : '') + '" data-id="' + esc(c.id) + '">' +
+          '<div class="cc-contact-card-main">' +
+          '<div class="cc-contact-card-head">' +
+          '<strong>' + esc(partyContactLabel(c)) + '</strong>' +
+          (c.isPrimary ? '<span class="cc-contact-badge">Primary</span>' : '') +
+          '</div>' +
+          (meta ? '<p class="cc-contact-card-meta">' + esc(meta) + '</p>' : '') +
+          (c.notes ? '<p class="cc-contact-card-notes">' + esc(c.notes) + '</p>' : '') +
+          '</div>' +
+          (canEditContacts
+            ? '<div class="cc-contact-card-actions">' +
+              '<button type="button" class="cc-contact-action" data-cc-contact-edit="' + esc(c.id) + '">Edit</button>' +
+              (!c.isPrimary ? '<button type="button" class="cc-contact-action" data-cc-contact-primary="' + esc(c.id) + '">Set primary</button>' : '') +
+              '<button type="button" class="cc-contact-action cc-contact-action-danger" data-cc-contact-delete="' + esc(c.id) + '">Delete</button>' +
+              '</div>'
+            : '') +
+          '</div>';
+      }).join('');
+    }
+
+    async function reloadCcContacts() {
+      if (!ccDetailId) return;
+      const data = await api('/api/admin/company-customers/' + ccDetailId + '/contacts');
+      if (ccDetailCustomer) ccDetailCustomer.contacts = data.contacts || [];
+      renderCcContactsList();
+      renderCustomerDetailHeroContact();
+    }
+
+    function renderCustomerDetailHeroContact() {
+      const c = ccDetailCustomer;
+      if (!c) return;
+      const primary = partyPrimaryContact(c.contacts);
+      const email = primary ? primary.email : c.email;
+      const phone = primary ? (primary.phone || primary.mobile) : (c.phone || c.mobile);
+      const mobile = primary ? primary.mobile : c.mobile;
+      document.getElementById('cc-detail-email').textContent = email || '—';
+      document.getElementById('cc-detail-phone').textContent = (primary ? primary.phone : c.phone) || '—';
+      document.getElementById('cc-detail-mobile').textContent = mobile || '—';
+      const mail = document.getElementById('cc-detail-mail');
+      const tel = document.getElementById('cc-detail-tel');
+      if (email) {
+        mail.href = 'mailto:' + email;
+        mail.classList.remove('hidden');
+      } else mail.classList.add('hidden');
+      if (phone) {
+        tel.href = 'tel:' + phone.replace(/\s+/g, '');
+        tel.classList.remove('hidden');
+      } else tel.classList.add('hidden');
+    }
+
     function ccFilteredCustomers(rows) {
       const q = (document.getElementById('cc-search').value || '').toLowerCase();
       const matchIds = customerIdsForFilter(ccFilter);
@@ -4875,12 +5048,12 @@
 
     function setCcDetailTab(name) {
       ccDetailTab = name || 'transactions';
-      document.querySelectorAll('.cc-detail-tab').forEach(function (btn) {
+      document.querySelectorAll('#cc-detail-pane .cc-detail-tab').forEach(function (btn) {
         const on = btn.getAttribute('data-cc-tab') === ccDetailTab;
         btn.classList.toggle('is-on', on);
         btn.setAttribute('aria-selected', on ? 'true' : 'false');
       });
-      ['transactions', 'details', 'notes'].forEach(function (key) {
+      ['transactions', 'contacts', 'details', 'notes'].forEach(function (key) {
         const panel = document.getElementById('cc-detail-panel-' + key);
         if (!panel) return;
         const on = key === ccDetailTab;
@@ -4969,9 +5142,7 @@
       document.getElementById('cc-detail-name').textContent = ccCustomerLabel(c);
       document.getElementById('cc-detail-subname').textContent = sub;
       document.getElementById('cc-detail-avatar').textContent = ccCustomerInitials(c);
-      document.getElementById('cc-detail-email').textContent = c.email || '—';
-      document.getElementById('cc-detail-phone').textContent = c.phone || '—';
-      document.getElementById('cc-detail-mobile').textContent = c.mobile || '—';
+      renderCustomerDetailHeroContact();
       document.getElementById('cc-detail-bill').textContent = ccFormatAddress(c, 'bill');
       document.getElementById('cc-detail-ship').textContent = ccFormatAddress(c, 'ship');
       document.getElementById('cc-detail-balance').textContent = moneyText(fin.openBalance);
@@ -4979,22 +5150,13 @@
       overdueEl.textContent = moneyText(fin.overdue);
       overdueEl.classList.toggle('is-overdue', fin.overdue > 0);
       document.getElementById('cc-detail-open-quotes').textContent = String(fin.openQuotes);
-      const mail = document.getElementById('cc-detail-mail');
-      const tel = document.getElementById('cc-detail-tel');
-      if (c.email) {
-        mail.href = 'mailto:' + c.email;
-        mail.classList.remove('hidden');
-      } else mail.classList.add('hidden');
-      const phone = c.phone || c.mobile;
-      if (phone) {
-        tel.href = 'tel:' + phone.replace(/\s+/g, '');
-        tel.classList.remove('hidden');
-      } else tel.classList.add('hidden');
       setCcDetailTab(ccDetailTab);
       document.getElementById('cc-detail-edit').classList.toggle('hidden', !canEdit('customers'));
+      document.getElementById('cc-contact-add').classList.toggle('hidden', !canEdit('customers'));
       const canTx = canEdit('quotes') || canEdit('orders') || canEdit('invoices');
       document.getElementById('cc-detail-new').classList.toggle('hidden', !canTx);
       renderCustomerDetailTransactions();
+      renderCcContactsList();
       renderCustomerDetailDetails();
       renderCustomerDetailNotes();
       renderCcSideList();
@@ -5003,6 +5165,8 @@
     function closeCustomerDetail(push) {
       ccDetailId = '';
       ccDetailCustomer = null;
+      hideCcContactForm();
+      showCcContactsMsg('');
       const ws = document.getElementById('cc-workspace');
       const pane = document.getElementById('cc-detail-pane');
       if (ws) ws.classList.remove('cc-detail-open');
@@ -5024,14 +5188,13 @@
       }
       showError('cc-error', '');
       try {
-        let customer = (companyCustomers || []).find(function (c) { return String(c.id) === String(id); });
-        if (!customer) {
-          const data = await api('/api/admin/company-customers/' + id);
-          customer = data.customer;
-        }
+        const data = await api('/api/admin/company-customers/' + id);
+        const customer = data.customer;
         if (!customer) throw new Error('Customer not found.');
         ccDetailId = String(id);
         ccDetailCustomer = customer;
+        if (!ccDetailCustomer.contacts) ccDetailCustomer.contacts = [];
+        hideCcContactForm();
         const ws = document.getElementById('cc-workspace');
         const pane = document.getElementById('cc-detail-pane');
         if (ws) ws.classList.add('cc-detail-open');
@@ -5480,6 +5643,115 @@
       return ((bits[0] || '?').charAt(0) + (bits[1] ? bits[1].charAt(0) : '')).toUpperCase();
     }
 
+    let vnContactEditingId = '';
+
+    function showVnContactsMsg(text, ok) {
+      const el = document.getElementById('vn-contacts-msg');
+      if (!el) return;
+      el.textContent = text || '';
+      el.className = 'text-sm mb-3 ' + (ok ? 'text-sky-400' : 'text-red-400');
+      el.classList.toggle('hidden', !text);
+    }
+
+    function hideVnContactForm() {
+      vnContactEditingId = '';
+      document.getElementById('vn-contact-form').classList.add('hidden');
+    }
+
+    function fillVnContactForm(contact) {
+      const c = contact || {};
+      document.getElementById('vn-contact-id').value = c.id || '';
+      document.getElementById('vn-contact-first').value = c.firstName || '';
+      document.getElementById('vn-contact-last').value = c.lastName || '';
+      document.getElementById('vn-contact-job').value = c.jobTitle || '';
+      document.getElementById('vn-contact-role').value = c.role || '';
+      document.getElementById('vn-contact-email').value = c.email || '';
+      document.getElementById('vn-contact-phone').value = c.phone || '';
+      document.getElementById('vn-contact-mobile').value = c.mobile || '';
+      document.getElementById('vn-contact-notes').value = c.notes || '';
+      const primary = document.getElementById('vn-contact-primary');
+      const contacts = (vnDetailVendor && vnDetailVendor.contacts) || [];
+      primary.checked = c.isPrimary || (!c.id && !contacts.length);
+    }
+
+    function readVnContactForm() {
+      return {
+        firstName: document.getElementById('vn-contact-first').value,
+        lastName: document.getElementById('vn-contact-last').value,
+        jobTitle: document.getElementById('vn-contact-job').value,
+        role: document.getElementById('vn-contact-role').value,
+        email: document.getElementById('vn-contact-email').value,
+        phone: document.getElementById('vn-contact-phone').value,
+        mobile: document.getElementById('vn-contact-mobile').value,
+        notes: document.getElementById('vn-contact-notes').value,
+        isPrimary: document.getElementById('vn-contact-primary').checked
+      };
+    }
+
+    function renderVnContactsList() {
+      const list = document.getElementById('vn-contacts-list');
+      const empty = document.getElementById('vn-contacts-empty');
+      const contacts = (vnDetailVendor && vnDetailVendor.contacts) || [];
+      if (!list) return;
+      if (!contacts.length) {
+        list.innerHTML = '';
+        if (empty) empty.classList.remove('hidden');
+        return;
+      }
+      if (empty) empty.classList.add('hidden');
+      const canEditContacts = canEdit('inventory');
+      list.innerHTML = contacts.map(function (c) {
+        const meta = [c.role, c.jobTitle, c.email, c.phone || c.mobile].filter(Boolean).join(' · ');
+        return '<div class="cc-contact-card' + (c.isPrimary ? ' is-primary' : '') + '" data-id="' + esc(c.id) + '">' +
+          '<div class="cc-contact-card-main">' +
+          '<div class="cc-contact-card-head">' +
+          '<strong>' + esc(partyContactLabel(c)) + '</strong>' +
+          (c.isPrimary ? '<span class="cc-contact-badge">Primary</span>' : '') +
+          '</div>' +
+          (meta ? '<p class="cc-contact-card-meta">' + esc(meta) + '</p>' : '') +
+          (c.notes ? '<p class="cc-contact-card-notes">' + esc(c.notes) + '</p>' : '') +
+          '</div>' +
+          (canEditContacts
+            ? '<div class="cc-contact-card-actions">' +
+              '<button type="button" class="cc-contact-action" data-vn-contact-edit="' + esc(c.id) + '">Edit</button>' +
+              (!c.isPrimary ? '<button type="button" class="cc-contact-action" data-vn-contact-primary="' + esc(c.id) + '">Set primary</button>' : '') +
+              '<button type="button" class="cc-contact-action cc-contact-action-danger" data-vn-contact-delete="' + esc(c.id) + '">Delete</button>' +
+              '</div>'
+            : '') +
+          '</div>';
+      }).join('');
+    }
+
+    async function reloadVnContacts() {
+      if (!vnDetailId) return;
+      const data = await api('/api/admin/inventory-vendors/' + encodeURIComponent(vnDetailId) + '/contacts');
+      if (vnDetailVendor) vnDetailVendor.contacts = data.contacts || [];
+      renderVnContactsList();
+      renderVendorDetailHeroContact();
+    }
+
+    function renderVendorDetailHeroContact() {
+      const v = vnDetailVendor;
+      if (!v) return;
+      const primary = partyPrimaryContact(v.contacts);
+      const email = primary ? primary.email : v.email;
+      const phone = primary ? (primary.phone || primary.mobile) : (v.phone || v.mobile);
+      const contactName = primary ? partyContactLabel(primary) : (v.contactName || '—');
+      document.getElementById('vn-detail-email').textContent = email || '—';
+      document.getElementById('vn-detail-phone').textContent = (primary ? primary.phone : v.phone) || phone || '—';
+      document.getElementById('vn-detail-contact').textContent = contactName;
+      const mail = document.getElementById('vn-detail-mail');
+      const tel = document.getElementById('vn-detail-tel');
+      if (email) {
+        mail.href = 'mailto:' + email;
+        mail.classList.remove('hidden');
+      } else mail.classList.add('hidden');
+      if (phone) {
+        tel.href = 'tel:' + phone.replace(/\s+/g, '');
+        tel.classList.remove('hidden');
+      } else tel.classList.add('hidden');
+    }
+
     function vnVendorPos(vendorId, statusFilter) {
       let docs = (purchaseOrders || []).filter(function (po) {
         return String(po.vendorId) === String(vendorId);
@@ -5520,7 +5792,7 @@
         btn.classList.toggle('is-on', on);
         btn.setAttribute('aria-selected', on ? 'true' : 'false');
       });
-      ['pos', 'details', 'notes'].forEach(function (key) {
+      ['pos', 'contacts', 'details', 'notes'].forEach(function (key) {
         const panel = document.getElementById('vn-detail-panel-' + key);
         if (!panel) return;
         const on = key === vnDetailTab;
@@ -5595,31 +5867,20 @@
       document.getElementById('vn-detail-name').textContent = vnVendorLabel(v);
       document.getElementById('vn-detail-subname').textContent = sub;
       document.getElementById('vn-detail-avatar').textContent = vnVendorInitials(v);
-      document.getElementById('vn-detail-email').textContent = v.email || '—';
-      document.getElementById('vn-detail-phone').textContent = v.phone || v.mobile || '—';
-      document.getElementById('vn-detail-contact').textContent = v.contactName || '—';
+      renderVendorDetailHeroContact();
       const addr = [v.street, v.street2, [v.city, v.state, v.zip].filter(Boolean).join(', '), v.country].filter(Boolean).join('\n');
       document.getElementById('vn-detail-address').textContent = addr || '—';
       document.getElementById('vn-detail-website').textContent = v.website || '—';
       document.getElementById('vn-detail-terms').textContent = v.paymentTerms || '—';
       document.getElementById('vn-detail-1099').textContent = v.track1099 ? 'Yes' : 'No';
       document.getElementById('vn-detail-open-pos').textContent = String(vnVendorPos(v.id, 'open').length);
-      const mail = document.getElementById('vn-detail-mail');
-      const tel = document.getElementById('vn-detail-tel');
-      if (v.email) {
-        mail.href = 'mailto:' + v.email;
-        mail.classList.remove('hidden');
-      } else mail.classList.add('hidden');
-      const phone = v.phone || v.mobile;
-      if (phone) {
-        tel.href = 'tel:' + phone.replace(/\s+/g, '');
-        tel.classList.remove('hidden');
-      } else tel.classList.add('hidden');
       document.getElementById('vn-detail-edit').classList.toggle('hidden', !canEdit('inventory'));
+      document.getElementById('vn-contact-add').classList.toggle('hidden', !canEdit('inventory'));
       const canPo = canEdit('inventory') || canUse('purchase-orders');
       document.getElementById('vn-detail-new').classList.toggle('hidden', !canPo);
       setVnDetailTab(vnDetailTab);
       renderVnDetailPos();
+      renderVnContactsList();
       renderVnDetailDetails();
       renderVnDetailNotes();
       renderVnSideList();
@@ -5628,6 +5889,8 @@
     function closeVendorDetail(push) {
       vnDetailId = '';
       vnDetailVendor = null;
+      hideVnContactForm();
+      showVnContactsMsg('');
       const ws = document.getElementById('vn-workspace');
       const pane = document.getElementById('vn-detail-pane');
       if (ws) ws.classList.remove('cc-detail-open');
@@ -5649,11 +5912,8 @@
       }
       showError('vn-error', '');
       try {
-        let vendor = (inventoryVendors || []).find(function (v) { return String(v.id) === String(id); });
-        if (!vendor) {
-          const data = await api('/api/admin/inventory-vendors/' + encodeURIComponent(id));
-          vendor = data.vendor;
-        }
+        const data = await api('/api/admin/inventory-vendors/' + encodeURIComponent(id));
+        const vendor = data.vendor;
         if (!vendor) throw new Error('Vendor not found.');
         if (!purchaseOrders.length) {
           const poData = await api('/api/admin/purchase-orders').catch(function () { return { orders: [] }; });
@@ -5661,6 +5921,8 @@
         }
         vnDetailId = String(id);
         vnDetailVendor = vendor;
+        if (!vnDetailVendor.contacts) vnDetailVendor.contacts = [];
+        hideVnContactForm();
         const ws = document.getElementById('vn-workspace');
         const pane = document.getElementById('vn-detail-pane');
         if (ws) ws.classList.add('cc-detail-open');
@@ -7162,10 +7424,88 @@
       if (!btn) return;
       openNewCustomerTransaction(btn.getAttribute('data-so-type'));
     });
-    document.querySelectorAll('.cc-detail-tab').forEach(function (btn) {
+    document.querySelectorAll('#cc-detail-pane .cc-detail-tab').forEach(function (btn) {
       btn.addEventListener('click', function () {
         setCcDetailTab(btn.getAttribute('data-cc-tab'));
       });
+    });
+    document.getElementById('cc-contact-add').addEventListener('click', function () {
+      ccContactEditingId = '';
+      fillCcContactForm(null);
+      document.getElementById('cc-contact-form').classList.remove('hidden');
+      showCcContactsMsg('');
+    });
+    document.getElementById('cc-contact-cancel').addEventListener('click', hideCcContactForm);
+    document.getElementById('cc-contact-form').addEventListener('submit', async function (e) {
+      e.preventDefault();
+      if (!ccDetailId || !canEdit('customers')) return;
+      showCcContactsMsg('');
+      try {
+        const body = readCcContactForm();
+        const id = document.getElementById('cc-contact-id').value;
+        if (id) {
+          await api('/api/admin/company-customers/' + ccDetailId + '/contacts/' + id, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(body)
+          });
+        } else {
+          await api('/api/admin/company-customers/' + ccDetailId + '/contacts', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(body)
+          });
+        }
+        hideCcContactForm();
+        await reloadCcContacts();
+        showCcContactsMsg('Contact saved.', true);
+      } catch (err) {
+        showCcContactsMsg(err.message || 'Could not save contact.');
+      }
+    });
+    document.getElementById('cc-contacts-list').addEventListener('click', async function (e) {
+      const editId = e.target.getAttribute('data-cc-contact-edit');
+      const primaryId = e.target.getAttribute('data-cc-contact-primary');
+      const deleteId = e.target.getAttribute('data-cc-contact-delete');
+      if (!ccDetailId || !canEdit('customers')) return;
+      if (editId) {
+        const contact = ((ccDetailCustomer && ccDetailCustomer.contacts) || []).find(function (c) {
+          return String(c.id) === String(editId);
+        });
+        if (!contact) return;
+        ccContactEditingId = editId;
+        fillCcContactForm(contact);
+        document.getElementById('cc-contact-form').classList.remove('hidden');
+        showCcContactsMsg('');
+        return;
+      }
+      if (primaryId) {
+        try {
+          const contact = ((ccDetailCustomer && ccDetailCustomer.contacts) || []).find(function (c) {
+            return String(c.id) === String(primaryId);
+          });
+          if (!contact) return;
+          await api('/api/admin/company-customers/' + ccDetailId + '/contacts/' + primaryId, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(Object.assign({}, contact, { isPrimary: true }))
+          });
+          await reloadCcContacts();
+        } catch (err) {
+          showCcContactsMsg(err.message || 'Could not update contact.');
+        }
+        return;
+      }
+      if (deleteId) {
+        if (!confirm('Delete this contact?')) return;
+        try {
+          await api('/api/admin/company-customers/' + ccDetailId + '/contacts/' + deleteId, { method: 'DELETE' });
+          hideCcContactForm();
+          await reloadCcContacts();
+        } catch (err) {
+          showCcContactsMsg(err.message || 'Could not delete contact.');
+        }
+      }
     });
     document.getElementById('cc-tx-type').addEventListener('change', renderCustomerDetailTransactions);
     document.getElementById('cc-tx-status').addEventListener('change', renderCustomerDetailTransactions);
@@ -8464,6 +8804,84 @@
       btn.addEventListener('click', function () {
         setVnDetailTab(btn.getAttribute('data-vn-tab'));
       });
+    });
+    document.getElementById('vn-contact-add').addEventListener('click', function () {
+      vnContactEditingId = '';
+      fillVnContactForm(null);
+      document.getElementById('vn-contact-form').classList.remove('hidden');
+      showVnContactsMsg('');
+    });
+    document.getElementById('vn-contact-cancel').addEventListener('click', hideVnContactForm);
+    document.getElementById('vn-contact-form').addEventListener('submit', async function (e) {
+      e.preventDefault();
+      if (!vnDetailId || !canEdit('inventory')) return;
+      showVnContactsMsg('');
+      try {
+        const body = readVnContactForm();
+        const id = document.getElementById('vn-contact-id').value;
+        if (id) {
+          await api('/api/admin/inventory-vendors/' + encodeURIComponent(vnDetailId) + '/contacts/' + id, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(body)
+          });
+        } else {
+          await api('/api/admin/inventory-vendors/' + encodeURIComponent(vnDetailId) + '/contacts', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(body)
+          });
+        }
+        hideVnContactForm();
+        await reloadVnContacts();
+        showVnContactsMsg('Contact saved.', true);
+      } catch (err) {
+        showVnContactsMsg(err.message || 'Could not save contact.');
+      }
+    });
+    document.getElementById('vn-contacts-list').addEventListener('click', async function (e) {
+      const editId = e.target.getAttribute('data-vn-contact-edit');
+      const primaryId = e.target.getAttribute('data-vn-contact-primary');
+      const deleteId = e.target.getAttribute('data-vn-contact-delete');
+      if (!vnDetailId || !canEdit('inventory')) return;
+      if (editId) {
+        const contact = ((vnDetailVendor && vnDetailVendor.contacts) || []).find(function (c) {
+          return String(c.id) === String(editId);
+        });
+        if (!contact) return;
+        vnContactEditingId = editId;
+        fillVnContactForm(contact);
+        document.getElementById('vn-contact-form').classList.remove('hidden');
+        showVnContactsMsg('');
+        return;
+      }
+      if (primaryId) {
+        try {
+          const contact = ((vnDetailVendor && vnDetailVendor.contacts) || []).find(function (c) {
+            return String(c.id) === String(primaryId);
+          });
+          if (!contact) return;
+          await api('/api/admin/inventory-vendors/' + encodeURIComponent(vnDetailId) + '/contacts/' + primaryId, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(Object.assign({}, contact, { isPrimary: true }))
+          });
+          await reloadVnContacts();
+        } catch (err) {
+          showVnContactsMsg(err.message || 'Could not update contact.');
+        }
+        return;
+      }
+      if (deleteId) {
+        if (!confirm('Delete this contact?')) return;
+        try {
+          await api('/api/admin/inventory-vendors/' + encodeURIComponent(vnDetailId) + '/contacts/' + deleteId, { method: 'DELETE' });
+          hideVnContactForm();
+          await reloadVnContacts();
+        } catch (err) {
+          showVnContactsMsg(err.message || 'Could not delete contact.');
+        }
+      }
     });
     document.addEventListener('click', function (e) {
       const menu = document.getElementById('vn-detail-new-menu');

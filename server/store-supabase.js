@@ -1034,7 +1034,10 @@ function createSupabaseStore() {
       const cc = require('./company-customers');
       const { data, error } = await supabase.from('company_customers').select('*').eq('id', id).maybeSingle();
       throwIf(error, 'Could not load customer.');
-      return cc.formatCustomer(data);
+      const customer = cc.formatCustomer(data);
+      if (!customer) return null;
+      customer.contacts = await this.listCustomerContacts(id);
+      return customer;
     },
     async createCompanyCustomer(payload) {
       const cc = require('./company-customers');
@@ -1059,6 +1062,77 @@ function createSupabaseStore() {
     async deleteCompanyCustomer(id) {
       const { data, error } = await supabase.from('company_customers').delete().eq('id', id).select('id');
       throwIf(error, 'Could not delete customer.');
+      return !!(data && data.length);
+    },
+    async listCustomerContacts(customerId) {
+      const pc = require('./party-contacts');
+      const { data, error } = await supabase
+        .from('company_customer_contacts')
+        .select('*')
+        .eq('customer_id', customerId)
+        .order('is_primary', { ascending: false })
+        .order('sort_order', { ascending: true })
+        .order('id', { ascending: true });
+      throwIf(error, 'Could not list customer contacts.');
+      return (data || []).map(pc.formatContact);
+    },
+    async getCustomerContact(customerId, contactId) {
+      const pc = require('./party-contacts');
+      const { data, error } = await supabase
+        .from('company_customer_contacts')
+        .select('*')
+        .eq('id', contactId)
+        .eq('customer_id', customerId)
+        .maybeSingle();
+      throwIf(error, 'Could not load customer contact.');
+      return pc.formatContact(data);
+    },
+    async _clearCustomerPrimary(customerId, exceptId) {
+      let q = supabase.from('company_customer_contacts').update({ is_primary: false }).eq('customer_id', customerId);
+      if (exceptId) q = q.neq('id', exceptId);
+      const { error } = await q;
+      throwIf(error, 'Could not update customer contacts.');
+    },
+    async createCustomerContact(customerId, payload) {
+      const pc = require('./party-contacts');
+      const { data: parent, error: pErr } = await supabase.from('company_customers').select('id').eq('id', customerId).maybeSingle();
+      throwIf(pErr, 'Could not load customer.');
+      if (!parent) return null;
+      const input = pc.normalizeContact(payload);
+      const fields = pc.forSupabase(pc.dbFields(input));
+      if (input.isPrimary) await this._clearCustomerPrimary(customerId);
+      const stamp = new Date().toISOString();
+      fields.customer_id = customerId;
+      fields.created_at = stamp;
+      fields.updated_at = stamp;
+      const { data, error } = await supabase.from('company_customer_contacts').insert(fields).select('*').single();
+      throwIf(error, 'Could not add customer contact.');
+      return pc.formatContact(data);
+    },
+    async updateCustomerContact(customerId, contactId, payload) {
+      const pc = require('./party-contacts');
+      const input = pc.normalizeContact(payload);
+      const fields = pc.forSupabase(pc.dbFields(input));
+      if (input.isPrimary) await this._clearCustomerPrimary(customerId, contactId);
+      fields.updated_at = new Date().toISOString();
+      const { data, error } = await supabase
+        .from('company_customer_contacts')
+        .update(fields)
+        .eq('id', contactId)
+        .eq('customer_id', customerId)
+        .select('*')
+        .maybeSingle();
+      throwIf(error, 'Could not save customer contact.');
+      return pc.formatContact(data);
+    },
+    async deleteCustomerContact(customerId, contactId) {
+      const { data, error } = await supabase
+        .from('company_customer_contacts')
+        .delete()
+        .eq('id', contactId)
+        .eq('customer_id', customerId)
+        .select('id');
+      throwIf(error, 'Could not delete customer contact.');
       return !!(data && data.length);
     },
     async listSalesDocs(type) {
@@ -1194,7 +1268,10 @@ function createSupabaseStore() {
       const vn = require('./inventory-vendors');
       const { data, error } = await supabase.from('inventory_vendors').select('*').eq('id', id).maybeSingle();
       throwIf(error, 'Could not load vendor.');
-      return vn.formatVendor(data);
+      const vendor = vn.formatVendor(data);
+      if (!vendor) return null;
+      vendor.contacts = await this.listVendorContacts(id);
+      return vendor;
     },
     async createVendor(payload) {
       const vn = require('./inventory-vendors');
@@ -1219,6 +1296,77 @@ function createSupabaseStore() {
     async deleteVendor(id) {
       const { data, error } = await supabase.from('inventory_vendors').delete().eq('id', id).select('id');
       throwIf(error, 'Could not delete vendor.');
+      return !!(data && data.length);
+    },
+    async listVendorContacts(vendorId) {
+      const pc = require('./party-contacts');
+      const { data, error } = await supabase
+        .from('inventory_vendor_contacts')
+        .select('*')
+        .eq('vendor_id', vendorId)
+        .order('is_primary', { ascending: false })
+        .order('sort_order', { ascending: true })
+        .order('id', { ascending: true });
+      throwIf(error, 'Could not list vendor contacts.');
+      return (data || []).map(pc.formatContact);
+    },
+    async getVendorContact(vendorId, contactId) {
+      const pc = require('./party-contacts');
+      const { data, error } = await supabase
+        .from('inventory_vendor_contacts')
+        .select('*')
+        .eq('id', contactId)
+        .eq('vendor_id', vendorId)
+        .maybeSingle();
+      throwIf(error, 'Could not load vendor contact.');
+      return pc.formatContact(data);
+    },
+    async _clearVendorPrimary(vendorId, exceptId) {
+      let q = supabase.from('inventory_vendor_contacts').update({ is_primary: false }).eq('vendor_id', vendorId);
+      if (exceptId) q = q.neq('id', exceptId);
+      const { error } = await q;
+      throwIf(error, 'Could not update vendor contacts.');
+    },
+    async createVendorContact(vendorId, payload) {
+      const pc = require('./party-contacts');
+      const { data: parent, error: pErr } = await supabase.from('inventory_vendors').select('id').eq('id', vendorId).maybeSingle();
+      throwIf(pErr, 'Could not load vendor.');
+      if (!parent) return null;
+      const input = pc.normalizeContact(payload);
+      const fields = pc.forSupabase(pc.dbFields(input));
+      if (input.isPrimary) await this._clearVendorPrimary(vendorId);
+      const stamp = new Date().toISOString();
+      fields.vendor_id = vendorId;
+      fields.created_at = stamp;
+      fields.updated_at = stamp;
+      const { data, error } = await supabase.from('inventory_vendor_contacts').insert(fields).select('*').single();
+      throwIf(error, 'Could not add vendor contact.');
+      return pc.formatContact(data);
+    },
+    async updateVendorContact(vendorId, contactId, payload) {
+      const pc = require('./party-contacts');
+      const input = pc.normalizeContact(payload);
+      const fields = pc.forSupabase(pc.dbFields(input));
+      if (input.isPrimary) await this._clearVendorPrimary(vendorId, contactId);
+      fields.updated_at = new Date().toISOString();
+      const { data, error } = await supabase
+        .from('inventory_vendor_contacts')
+        .update(fields)
+        .eq('id', contactId)
+        .eq('vendor_id', vendorId)
+        .select('*')
+        .maybeSingle();
+      throwIf(error, 'Could not save vendor contact.');
+      return pc.formatContact(data);
+    },
+    async deleteVendorContact(vendorId, contactId) {
+      const { data, error } = await supabase
+        .from('inventory_vendor_contacts')
+        .delete()
+        .eq('id', contactId)
+        .eq('vendor_id', vendorId)
+        .select('id');
+      throwIf(error, 'Could not delete vendor contact.');
       return !!(data && data.length);
     },
     async listPurchaseOrders() {

@@ -120,6 +120,7 @@ function openDb() {
   ensureCompanyCustomers(db);
   ensureCompanySales(db);
   ensureInventoryVendors(db);
+  ensurePartyContacts(db);
   ensurePurchaseOrders(db);
   ensureReceiptShipments(db);
   ensureCompanyAccounts(db);
@@ -525,6 +526,83 @@ function ensureInventoryVendors(db) {
   `);
 }
 
+function ensurePartyContacts(db) {
+  const pc = require('./party-contacts');
+  db.exec(`
+    CREATE TABLE IF NOT EXISTS company_customer_contacts (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      customer_id INTEGER NOT NULL,
+      title TEXT NOT NULL DEFAULT '',
+      first_name TEXT NOT NULL DEFAULT '',
+      middle_name TEXT NOT NULL DEFAULT '',
+      last_name TEXT NOT NULL DEFAULT '',
+      suffix TEXT NOT NULL DEFAULT '',
+      job_title TEXT NOT NULL DEFAULT '',
+      role TEXT NOT NULL DEFAULT '',
+      email TEXT NOT NULL DEFAULT '',
+      phone TEXT NOT NULL DEFAULT '',
+      mobile TEXT NOT NULL DEFAULT '',
+      fax TEXT NOT NULL DEFAULT '',
+      is_primary INTEGER NOT NULL DEFAULT 0,
+      notes TEXT NOT NULL DEFAULT '',
+      sort_order INTEGER NOT NULL DEFAULT 0,
+      created_at TEXT NOT NULL,
+      updated_at TEXT NOT NULL,
+      FOREIGN KEY (customer_id) REFERENCES company_customers(id) ON DELETE CASCADE
+    );
+    CREATE INDEX IF NOT EXISTS company_customer_contacts_customer_idx ON company_customer_contacts (customer_id, sort_order, id);
+    CREATE TABLE IF NOT EXISTS inventory_vendor_contacts (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      vendor_id INTEGER NOT NULL,
+      title TEXT NOT NULL DEFAULT '',
+      first_name TEXT NOT NULL DEFAULT '',
+      middle_name TEXT NOT NULL DEFAULT '',
+      last_name TEXT NOT NULL DEFAULT '',
+      suffix TEXT NOT NULL DEFAULT '',
+      job_title TEXT NOT NULL DEFAULT '',
+      role TEXT NOT NULL DEFAULT '',
+      email TEXT NOT NULL DEFAULT '',
+      phone TEXT NOT NULL DEFAULT '',
+      mobile TEXT NOT NULL DEFAULT '',
+      fax TEXT NOT NULL DEFAULT '',
+      is_primary INTEGER NOT NULL DEFAULT 0,
+      notes TEXT NOT NULL DEFAULT '',
+      sort_order INTEGER NOT NULL DEFAULT 0,
+      created_at TEXT NOT NULL,
+      updated_at TEXT NOT NULL,
+      FOREIGN KEY (vendor_id) REFERENCES inventory_vendors(id) ON DELETE CASCADE
+    );
+    CREATE INDEX IF NOT EXISTS inventory_vendor_contacts_vendor_idx ON inventory_vendor_contacts (vendor_id, sort_order, id);
+  `);
+  const stamp = nowIso();
+  const customers = db.prepare('SELECT * FROM company_customers').all();
+  customers.forEach(function (row) {
+    const has = db.prepare('SELECT id FROM company_customer_contacts WHERE customer_id = ? LIMIT 1').get(row.id);
+    if (has) return;
+    const input = pc.contactFromCustomerRow(row);
+    if (!input) return;
+    const fields = pc.dbFields(input);
+    const keys = Object.keys(fields);
+    db.prepare(
+      'INSERT INTO company_customer_contacts (' + keys.join(', ') + ', customer_id, created_at, updated_at) VALUES (' +
+      keys.map(function () { return '?'; }).join(', ') + ', ?, ?, ?)'
+    ).run(...keys.map(function (k) { return fields[k]; }).concat([row.id, stamp, stamp]));
+  });
+  const vendors = db.prepare('SELECT * FROM inventory_vendors').all();
+  vendors.forEach(function (row) {
+    const has = db.prepare('SELECT id FROM inventory_vendor_contacts WHERE vendor_id = ? LIMIT 1').get(row.id);
+    if (has) return;
+    const input = pc.contactFromVendorRow(row);
+    if (!input) return;
+    const fields = pc.dbFields(input);
+    const keys = Object.keys(fields);
+    db.prepare(
+      'INSERT INTO inventory_vendor_contacts (' + keys.join(', ') + ', vendor_id, created_at, updated_at) VALUES (' +
+      keys.map(function () { return '?'; }).join(', ') + ', ?, ?, ?)'
+    ).run(...keys.map(function (k) { return fields[k]; }).concat([row.id, stamp, stamp]));
+  });
+}
+
 function ensureCompanyAccounts(db) {
   db.exec(`
     CREATE TABLE IF NOT EXISTS company_profile (
@@ -912,6 +990,7 @@ module.exports = {
   ensureCompanyCustomers,
   ensureCompanySales,
   ensureInventoryVendors,
+  ensurePartyContacts,
   ensurePurchaseOrders,
   ensureReceiptShipments,
   ensureCompanyAccounts,

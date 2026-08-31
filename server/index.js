@@ -717,6 +717,38 @@ async function main() {
     } catch (err) { next(err); }
   });
 
+  app.get('/api/admin/company-customers/:id/contacts', requireAdmin, async function (req, res, next) {
+    try {
+      const customer = await store.getCompanyCustomer(req.params.id);
+      if (!customer) return res.status(404).json({ ok: false, error: 'Customer not found.' });
+      res.json({ ok: true, contacts: customer.contacts || [] });
+    } catch (err) { next(err); }
+  });
+
+  app.post('/api/admin/company-customers/:id/contacts', requireAdmin, async function (req, res, next) {
+    try {
+      const contact = await store.createCustomerContact(req.params.id, req.body || {});
+      if (!contact) return res.status(404).json({ ok: false, error: 'Customer not found.' });
+      res.json({ ok: true, contact: contact });
+    } catch (err) { next(err); }
+  });
+
+  app.put('/api/admin/company-customers/:customerId/contacts/:contactId', requireAdmin, async function (req, res, next) {
+    try {
+      const contact = await store.updateCustomerContact(req.params.customerId, req.params.contactId, req.body || {});
+      if (!contact) return res.status(404).json({ ok: false, error: 'Contact not found.' });
+      res.json({ ok: true, contact: contact });
+    } catch (err) { next(err); }
+  });
+
+  app.delete('/api/admin/company-customers/:customerId/contacts/:contactId', requireAdmin, async function (req, res, next) {
+    try {
+      const ok = await store.deleteCustomerContact(req.params.customerId, req.params.contactId);
+      if (!ok) return res.status(404).json({ ok: false, error: 'Contact not found.' });
+      res.json({ ok: true });
+    } catch (err) { next(err); }
+  });
+
   app.get('/api/admin/sales-docs', requireAdmin, async function (req, res, next) {
     try {
       const type = String(req.query.type || '').trim().toLowerCase();
@@ -779,6 +811,38 @@ async function main() {
     try {
       const ok = await store.deleteVendor(req.params.id);
       if (!ok) return res.status(404).json({ ok: false, error: 'Vendor not found.' });
+      res.json({ ok: true });
+    } catch (err) { next(err); }
+  });
+
+  app.get('/api/admin/inventory-vendors/:id/contacts', requireAdmin, requirePerm('inventory', 'view'), async function (req, res, next) {
+    try {
+      const vendor = await store.getVendor(req.params.id);
+      if (!vendor) return res.status(404).json({ ok: false, error: 'Vendor not found.' });
+      res.json({ ok: true, contacts: vendor.contacts || [] });
+    } catch (err) { next(err); }
+  });
+
+  app.post('/api/admin/inventory-vendors/:id/contacts', requireAdmin, requirePerm('inventory', 'edit'), async function (req, res, next) {
+    try {
+      const contact = await store.createVendorContact(req.params.id, req.body || {});
+      if (!contact) return res.status(404).json({ ok: false, error: 'Vendor not found.' });
+      res.json({ ok: true, contact: contact });
+    } catch (err) { next(err); }
+  });
+
+  app.put('/api/admin/inventory-vendors/:vendorId/contacts/:contactId', requireAdmin, requirePerm('inventory', 'edit'), async function (req, res, next) {
+    try {
+      const contact = await store.updateVendorContact(req.params.vendorId, req.params.contactId, req.body || {});
+      if (!contact) return res.status(404).json({ ok: false, error: 'Contact not found.' });
+      res.json({ ok: true, contact: contact });
+    } catch (err) { next(err); }
+  });
+
+  app.delete('/api/admin/inventory-vendors/:vendorId/contacts/:contactId', requireAdmin, requirePerm('inventory', 'edit'), async function (req, res, next) {
+    try {
+      const ok = await store.deleteVendorContact(req.params.vendorId, req.params.contactId);
+      if (!ok) return res.status(404).json({ ok: false, error: 'Contact not found.' });
       res.json({ ok: true });
     } catch (err) { next(err); }
   });

@@ -476,7 +476,10 @@ function createSqliteStore() {
     },
     async getCompanyCustomer(id) {
       const cc = require('./company-customers');
-      return cc.formatCustomer(db.prepare('SELECT * FROM company_customers WHERE id = ?').get(id));
+      const customer = cc.formatCustomer(db.prepare('SELECT * FROM company_customers WHERE id = ?').get(id));
+      if (!customer) return null;
+      customer.contacts = await this.listCustomerContacts(id);
+      return customer;
     },
     async createCompanyCustomer(payload) {
       const cc = require('./company-customers');
@@ -487,7 +490,7 @@ function createSqliteStore() {
       const info = db.prepare(
         'INSERT INTO company_customers (' + keys.join(', ') + ', created_at, updated_at) VALUES (' +
         keys.map(function () { return '?'; }).join(', ') + ', ?, ?)'
-      ).run(keys.map(function (k) { return fields[k]; }).concat([stamp, stamp]));
+      ).run(...keys.map(function (k) { return fields[k]; }).concat([stamp, stamp]));
       return this.getCompanyCustomer(info.lastInsertRowid);
     },
     async updateCompanyCustomer(id, payload) {
@@ -499,11 +502,67 @@ function createSqliteStore() {
       const keys = Object.keys(fields);
       db.prepare(
         'UPDATE company_customers SET ' + keys.map(function (k) { return k + ' = ?'; }).join(', ') + ', updated_at = ? WHERE id = ?'
-      ).run(keys.map(function (k) { return fields[k]; }).concat([dbUtil.nowIso(), id]));
+      ).run(...keys.map(function (k) { return fields[k]; }).concat([dbUtil.nowIso(), id]));
       return this.getCompanyCustomer(id);
     },
     async deleteCompanyCustomer(id) {
       const info = db.prepare('DELETE FROM company_customers WHERE id = ?').run(id);
+      return info.changes > 0;
+    },
+    async listCustomerContacts(customerId) {
+      const pc = require('./party-contacts');
+      const rows = db.prepare(
+        'SELECT * FROM company_customer_contacts WHERE customer_id = ? ORDER BY is_primary DESC, sort_order, id'
+      ).all(customerId);
+      return rows.map(pc.formatContact);
+    },
+    async getCustomerContact(customerId, contactId) {
+      const pc = require('./party-contacts');
+      return pc.formatContact(db.prepare(
+        'SELECT * FROM company_customer_contacts WHERE id = ? AND customer_id = ?'
+      ).get(contactId, customerId));
+    },
+    _clearCustomerPrimary(customerId, exceptId) {
+      if (exceptId) {
+        db.prepare('UPDATE company_customer_contacts SET is_primary = 0 WHERE customer_id = ? AND id <> ?')
+          .run(customerId, exceptId);
+      } else {
+        db.prepare('UPDATE company_customer_contacts SET is_primary = 0 WHERE customer_id = ?').run(customerId);
+      }
+    },
+    async createCustomerContact(customerId, payload) {
+      const parent = db.prepare('SELECT id FROM company_customers WHERE id = ?').get(customerId);
+      if (!parent) return null;
+      const pc = require('./party-contacts');
+      const input = pc.normalizeContact(payload);
+      const fields = pc.dbFields(input);
+      if (input.isPrimary) this._clearCustomerPrimary(customerId);
+      const stamp = dbUtil.nowIso();
+      const keys = Object.keys(fields);
+      const info = db.prepare(
+        'INSERT INTO company_customer_contacts (' + keys.join(', ') + ', customer_id, created_at, updated_at) VALUES (' +
+        keys.map(function () { return '?'; }).join(', ') + ', ?, ?, ?)'
+      ).run(...keys.map(function (k) { return fields[k]; }).concat([customerId, stamp, stamp]));
+      return this.getCustomerContact(customerId, info.lastInsertRowid);
+    },
+    async updateCustomerContact(customerId, contactId, payload) {
+      const current = db.prepare('SELECT id FROM company_customer_contacts WHERE id = ? AND customer_id = ?')
+        .get(contactId, customerId);
+      if (!current) return null;
+      const pc = require('./party-contacts');
+      const input = pc.normalizeContact(payload);
+      const fields = pc.dbFields(input);
+      if (input.isPrimary) this._clearCustomerPrimary(customerId, contactId);
+      const keys = Object.keys(fields);
+      db.prepare(
+        'UPDATE company_customer_contacts SET ' + keys.map(function (k) { return k + ' = ?'; }).join(', ') +
+        ', updated_at = ? WHERE id = ? AND customer_id = ?'
+      ).run(...keys.map(function (k) { return fields[k]; }).concat([dbUtil.nowIso(), contactId, customerId]));
+      return this.getCustomerContact(customerId, contactId);
+    },
+    async deleteCustomerContact(customerId, contactId) {
+      const info = db.prepare('DELETE FROM company_customer_contacts WHERE id = ? AND customer_id = ?')
+        .run(contactId, customerId);
       return info.changes > 0;
     },
     async listSalesDocs(type) {
@@ -614,7 +673,10 @@ function createSqliteStore() {
     },
     async getVendor(id) {
       const vn = require('./inventory-vendors');
-      return vn.formatVendor(db.prepare('SELECT * FROM inventory_vendors WHERE id = ?').get(id));
+      const vendor = vn.formatVendor(db.prepare('SELECT * FROM inventory_vendors WHERE id = ?').get(id));
+      if (!vendor) return null;
+      vendor.contacts = await this.listVendorContacts(id);
+      return vendor;
     },
     async createVendor(payload) {
       const vn = require('./inventory-vendors');
@@ -644,6 +706,62 @@ function createSqliteStore() {
     },
     async deleteVendor(id) {
       const info = db.prepare('DELETE FROM inventory_vendors WHERE id = ?').run(id);
+      return info.changes > 0;
+    },
+    async listVendorContacts(vendorId) {
+      const pc = require('./party-contacts');
+      const rows = db.prepare(
+        'SELECT * FROM inventory_vendor_contacts WHERE vendor_id = ? ORDER BY is_primary DESC, sort_order, id'
+      ).all(vendorId);
+      return rows.map(pc.formatContact);
+    },
+    async getVendorContact(vendorId, contactId) {
+      const pc = require('./party-contacts');
+      return pc.formatContact(db.prepare(
+        'SELECT * FROM inventory_vendor_contacts WHERE id = ? AND vendor_id = ?'
+      ).get(contactId, vendorId));
+    },
+    _clearVendorPrimary(vendorId, exceptId) {
+      if (exceptId) {
+        db.prepare('UPDATE inventory_vendor_contacts SET is_primary = 0 WHERE vendor_id = ? AND id <> ?')
+          .run(vendorId, exceptId);
+      } else {
+        db.prepare('UPDATE inventory_vendor_contacts SET is_primary = 0 WHERE vendor_id = ?').run(vendorId);
+      }
+    },
+    async createVendorContact(vendorId, payload) {
+      const parent = db.prepare('SELECT id FROM inventory_vendors WHERE id = ?').get(vendorId);
+      if (!parent) return null;
+      const pc = require('./party-contacts');
+      const input = pc.normalizeContact(payload);
+      const fields = pc.dbFields(input);
+      if (input.isPrimary) this._clearVendorPrimary(vendorId);
+      const stamp = dbUtil.nowIso();
+      const keys = Object.keys(fields);
+      const info = db.prepare(
+        'INSERT INTO inventory_vendor_contacts (' + keys.join(', ') + ', vendor_id, created_at, updated_at) VALUES (' +
+        keys.map(function () { return '?'; }).join(', ') + ', ?, ?, ?)'
+      ).run(...keys.map(function (k) { return fields[k]; }).concat([vendorId, stamp, stamp]));
+      return this.getVendorContact(vendorId, info.lastInsertRowid);
+    },
+    async updateVendorContact(vendorId, contactId, payload) {
+      const current = db.prepare('SELECT id FROM inventory_vendor_contacts WHERE id = ? AND vendor_id = ?')
+        .get(contactId, vendorId);
+      if (!current) return null;
+      const pc = require('./party-contacts');
+      const input = pc.normalizeContact(payload);
+      const fields = pc.dbFields(input);
+      if (input.isPrimary) this._clearVendorPrimary(vendorId, contactId);
+      const keys = Object.keys(fields);
+      db.prepare(
+        'UPDATE inventory_vendor_contacts SET ' + keys.map(function (k) { return k + ' = ?'; }).join(', ') +
+        ', updated_at = ? WHERE id = ? AND vendor_id = ?'
+      ).run(...keys.map(function (k) { return fields[k]; }).concat([dbUtil.nowIso(), contactId, vendorId]));
+      return this.getVendorContact(vendorId, contactId);
+    },
+    async deleteVendorContact(vendorId, contactId) {
+      const info = db.prepare('DELETE FROM inventory_vendor_contacts WHERE id = ? AND vendor_id = ?')
+        .run(contactId, vendorId);
       return info.changes > 0;
     },
     async listPurchaseOrders() {
