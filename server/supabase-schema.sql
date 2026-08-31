@@ -669,10 +669,10 @@ create table if not exists public.company_accounts (
   password text not null default '',
   email text not null default '',
   notes text not null default '',
-  monthly_payment boolean not null default false,
-  monthly_payment_amount numeric not null default 0,
   monthly_billing boolean not null default false,
   monthly_billing_amount numeric not null default 0,
+  yearly_billing boolean not null default false,
+  yearly_billing_amount numeric not null default 0,
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now()
 );
@@ -682,3 +682,14 @@ drop policy if exists company_accounts_admin_all on public.company_accounts;
 create policy company_accounts_admin_all on public.company_accounts
 for all using (public.is_spectrum_admin()) with check (public.is_spectrum_admin());
 grant all on public.company_accounts to service_role;
+
+create table if not exists public.admin_column_prefs (
+  admin_id bigint primary key references public.admins(id) on delete cascade,
+  prefs jsonb not null default '{}'::jsonb,
+  updated_at timestamptz not null default now()
+);
+alter table public.admin_column_prefs enable row level security;
+drop policy if exists admin_column_prefs_admin_all on public.admin_column_prefs;
+create policy admin_column_prefs_admin_all on public.admin_column_prefs
+for all using (public.is_spectrum_admin()) with check (public.is_spectrum_admin());
+grant all on public.admin_column_prefs to service_role;

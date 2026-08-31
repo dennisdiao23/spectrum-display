@@ -122,6 +122,7 @@ function openDb() {
   ensureInventoryVendors(db);
   ensurePurchaseOrders(db);
   ensureCompanyAccounts(db);
+  ensureColumnPrefs(db);
   db.exec(`
     CREATE TABLE IF NOT EXISTS inventory_stock (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -550,15 +551,17 @@ function ensureCompanyAccounts(db) {
       password TEXT NOT NULL DEFAULT '',
       email TEXT NOT NULL DEFAULT '',
       notes TEXT NOT NULL DEFAULT '',
-      monthly_payment INTEGER NOT NULL DEFAULT 0,
-      monthly_payment_amount REAL NOT NULL DEFAULT 0,
       monthly_billing INTEGER NOT NULL DEFAULT 0,
       monthly_billing_amount REAL NOT NULL DEFAULT 0,
+      yearly_billing INTEGER NOT NULL DEFAULT 0,
+      yearly_billing_amount REAL NOT NULL DEFAULT 0,
       created_at TEXT NOT NULL,
       updated_at TEXT NOT NULL
     );
     CREATE INDEX IF NOT EXISTS company_accounts_name_idx ON company_accounts (name);
   `);
+  try { db.exec('ALTER TABLE company_accounts ADD COLUMN yearly_billing INTEGER NOT NULL DEFAULT 0'); } catch (e) { /* already present */ }
+  try { db.exec('ALTER TABLE company_accounts ADD COLUMN yearly_billing_amount REAL NOT NULL DEFAULT 0'); } catch (e) { /* already present */ }
   const row = db.prepare('SELECT id FROM company_profile WHERE id = 1').get();
   if (!row) {
     const stamp = nowIso();
@@ -568,6 +571,17 @@ function ensureCompanyAccounts(db) {
       ) VALUES (1, 'Spectrum Display Inc.', '', '', '', '', '', '', 'Los Angeles', 'CA', '', 'United States', '', '', ?, ?)
     `).run(stamp, stamp);
   }
+}
+
+function ensureColumnPrefs(db) {
+  db.exec(`
+    CREATE TABLE IF NOT EXISTS admin_column_prefs (
+      admin_id INTEGER PRIMARY KEY,
+      prefs TEXT NOT NULL DEFAULT '{}',
+      updated_at TEXT NOT NULL,
+      FOREIGN KEY (admin_id) REFERENCES admins(id) ON DELETE CASCADE
+    );
+  `);
 }
 
 function ensurePurchaseOrders(db) {
@@ -864,5 +878,6 @@ module.exports = {
   ensureCompanySales,
   ensureInventoryVendors,
   ensurePurchaseOrders,
-  ensureCompanyAccounts
+  ensureCompanyAccounts,
+  ensureColumnPrefs
 };

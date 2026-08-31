@@ -230,16 +230,16 @@
         <button id="new-btn" type="button" class="px-4 py-2 rounded-full bg-sky-500 hover:bg-sky-400 text-white text-sm font-semibold">Add product</button>
       </div>
       <div class="overflow-x-auto rounded-2xl border border-slate-800">
-        <table class="w-full text-sm">
+        <table class="w-full text-sm dash-cols" data-cols="website-products">
           <thead class="text-left text-slate-400 border-b border-slate-800">
             <tr>
-              <th class="py-3 px-4 font-medium w-16"></th>
-              <th class="py-3 px-4 font-medium">Product</th>
-              <th class="py-3 px-4 font-medium">Brand</th>
-              <th class="py-3 px-4 font-medium">Type</th>
-              <th class="py-3 px-4 font-medium">Pitch</th>
-              <th class="py-3 px-4 font-medium">Price</th>
-              <th class="py-3 px-4 font-medium">Website</th>
+              <th class="py-3 px-4 font-medium w-16" data-col="photo">Photo <span class="dash-col-caret">▾</span><span class="dash-col-grip" aria-hidden="true"></span></th>
+              <th class="py-3 px-4 font-medium" data-col="product">Product <span class="dash-col-caret">▾</span><span class="dash-col-grip" aria-hidden="true"></span></th>
+              <th class="py-3 px-4 font-medium" data-col="brand">Brand <span class="dash-col-caret">▾</span><span class="dash-col-grip" aria-hidden="true"></span></th>
+              <th class="py-3 px-4 font-medium" data-col="type">Type <span class="dash-col-caret">▾</span><span class="dash-col-grip" aria-hidden="true"></span></th>
+              <th class="py-3 px-4 font-medium" data-col="pitch">Pitch <span class="dash-col-caret">▾</span><span class="dash-col-grip" aria-hidden="true"></span></th>
+              <th class="py-3 px-4 font-medium" data-col="price">Price <span class="dash-col-caret">▾</span><span class="dash-col-grip" aria-hidden="true"></span></th>
+              <th class="py-3 px-4 font-medium" data-col="website">Website <span class="dash-col-caret">▾</span><span class="dash-col-grip" aria-hidden="true"></span></th>
             </tr>
           </thead>
           <tbody id="product-table" class="text-slate-200"></tbody>
@@ -385,15 +385,15 @@
           </form>
           <p id="accounts-error" class="hidden text-sm text-red-400 mb-3"></p>
           <div class="overflow-x-auto rounded-2xl border border-slate-800">
-            <table class="w-full text-sm">
+            <table class="w-full text-sm dash-cols" data-cols="website-accounts">
               <thead class="text-left text-slate-400 border-b border-slate-800">
                 <tr>
-                  <th class="py-3 px-4 font-medium">Name</th>
-                  <th class="py-3 px-4 font-medium">Email</th>
-                  <th class="py-3 px-4 font-medium">Type</th>
-                  <th class="py-3 px-4 font-medium">Markup %</th>
-                  <th class="py-3 px-4 font-medium">Company</th>
-                  <th class="py-3 px-4 font-medium">Created</th>
+                  <th class="py-3 px-4 font-medium" data-col="name">Name <span class="dash-col-caret">▾</span><span class="dash-col-grip" aria-hidden="true"></span></th>
+                  <th class="py-3 px-4 font-medium" data-col="email">Email <span class="dash-col-caret">▾</span><span class="dash-col-grip" aria-hidden="true"></span></th>
+                  <th class="py-3 px-4 font-medium" data-col="type">Type <span class="dash-col-caret">▾</span><span class="dash-col-grip" aria-hidden="true"></span></th>
+                  <th class="py-3 px-4 font-medium" data-col="markup">Markup % <span class="dash-col-caret">▾</span><span class="dash-col-grip" aria-hidden="true"></span></th>
+                  <th class="py-3 px-4 font-medium" data-col="company">Company <span class="dash-col-caret">▾</span><span class="dash-col-grip" aria-hidden="true"></span></th>
+                  <th class="py-3 px-4 font-medium" data-col="created">Created <span class="dash-col-caret">▾</span><span class="dash-col-grip" aria-hidden="true"></span></th>
                   <th class="py-3 px-4 font-medium"></th>
                 </tr>
               </thead>
@@ -552,14 +552,20 @@
           <p class="text-slate-400 text-sm mb-4"><span id="vn-total">0</span> vendors for purchase orders.</p>
           <p id="vn-error" class="hidden text-sm text-red-400 mb-3"></p>
           <div class="overflow-x-auto rounded-2xl border border-slate-800">
-            <table class="w-full text-sm">
+            <table class="w-full text-sm dash-cols" data-cols="vendors">
               <thead class="text-left text-slate-400 border-b border-slate-800">
                 <tr>
-                  <th class="py-3 px-4 font-medium">Vendor</th>
-                  <th class="py-3 px-4 font-medium">Company name</th>
-                  <th class="py-3 px-4 font-medium">Phone</th>
-                  <th class="py-3 px-4 font-medium">Email</th>
-                  <th class="py-3 px-4 font-medium">1099</th>
+                  <th class="py-3 px-4 font-medium" data-col="vendor">Vendor <span class="dash-col-caret">▾</span><span class="dash-col-grip" aria-hidden="true"></span></th>
+                  <th class="py-3 px-4 font-medium" data-col="company">Company name <span class="dash-col-caret">▾</span><span class="dash-col-grip" aria-hidden="true"></span></th>
+                  <th class="py-3 px-4 font-medium" data-col="phone">Phone <span class="dash-col-caret">▾</span><span class="dash-col-grip" aria-hidden="true"></span></th>
+                  <th class="py-3 px-4 font-medium" data-col="email">Email <span class="dash-col-caret">▾</span><span class="dash-col-grip" aria-hidden="true"></span></th>
+                  <th class="py-3 px-4 font-medium" data-col="tax1099">1099 <span class="dash-col-caret">▾</span><span class="dash-col-grip" aria-hidden="true"></span></th>
+                  <th class="py-3 px-4 font-medium" data-col="contact">Contact <span class="dash-col-caret">▾</span><span class="dash-col-grip" aria-hidden="true"></span></th>
+                  <th class="py-3 px-4 font-medium" data-col="website">Website <span class="dash-col-caret">▾</span><span class="dash-col-grip" aria-hidden="true"></span></th>
+                  <th class="py-3 px-4 font-medium" data-col="city">City <span class="dash-col-caret">▾</span><span class="dash-col-grip" aria-hidden="true"></span></th>
+                  <th class="py-3 px-4 font-medium" data-col="state">State <span class="dash-col-caret">▾</span><span class="dash-col-grip" aria-hidden="true"></span></th>
+                  <th class="py-3 px-4 font-medium" data-col="terms">Terms <span class="dash-col-caret">▾</span><span class="dash-col-grip" aria-hidden="true"></span></th>
+                  <th class="py-3 px-4 font-medium" data-col="notes">Notes <span class="dash-col-caret">▾</span><span class="dash-col-grip" aria-hidden="true"></span></th>
                 </tr>
               </thead>
               <tbody id="vn-table" class="text-slate-200"></tbody>
@@ -605,14 +611,17 @@
           <p class="text-slate-400 text-sm mb-4"><span id="po-total">0</span> purchase orders.</p>
           <p id="po-error" class="hidden text-sm text-red-400 mb-3"></p>
           <div class="overflow-x-auto rounded-2xl border border-slate-800">
-            <table class="w-full text-sm">
+            <table class="w-full text-sm dash-cols" data-cols="purchase-orders">
               <thead class="text-left text-slate-400 border-b border-slate-800">
                 <tr>
-                  <th class="py-3 px-4 font-medium">Number</th>
-                  <th class="py-3 px-4 font-medium">Vendor</th>
-                  <th class="py-3 px-4 font-medium">Date</th>
-                  <th class="py-3 px-4 font-medium">Status</th>
-                  <th class="py-3 px-4 font-medium">Total</th>
+                  <th class="py-3 px-4 font-medium" data-col="number">Number <span class="dash-col-caret">▾</span><span class="dash-col-grip" aria-hidden="true"></span></th>
+                  <th class="py-3 px-4 font-medium" data-col="vendor">Vendor <span class="dash-col-caret">▾</span><span class="dash-col-grip" aria-hidden="true"></span></th>
+                  <th class="py-3 px-4 font-medium" data-col="date">Date <span class="dash-col-caret">▾</span><span class="dash-col-grip" aria-hidden="true"></span></th>
+                  <th class="py-3 px-4 font-medium" data-col="status">Status <span class="dash-col-caret">▾</span><span class="dash-col-grip" aria-hidden="true"></span></th>
+                  <th class="py-3 px-4 font-medium" data-col="total">Total <span class="dash-col-caret">▾</span><span class="dash-col-grip" aria-hidden="true"></span></th>
+                  <th class="py-3 px-4 font-medium" data-col="due">Due date <span class="dash-col-caret">▾</span><span class="dash-col-grip" aria-hidden="true"></span></th>
+                  <th class="py-3 px-4 font-medium" data-col="email">Email <span class="dash-col-caret">▾</span><span class="dash-col-grip" aria-hidden="true"></span></th>
+                  <th class="py-3 px-4 font-medium" data-col="notes">Notes <span class="dash-col-caret">▾</span><span class="dash-col-grip" aria-hidden="true"></span></th>
                   <th class="py-3 px-4 font-medium"></th>
                 </tr>
               </thead>
@@ -766,6 +775,13 @@
                   <th class="py-3 px-4 font-medium" data-col="phone">Phone <span class="dash-col-caret">▾</span><span class="dash-col-grip" aria-hidden="true"></span></th>
                   <th class="py-3 px-4 font-medium" data-col="city">City <span class="dash-col-caret">▾</span><span class="dash-col-grip" aria-hidden="true"></span></th>
                   <th class="py-3 px-4 font-medium" data-col="terms">Terms <span class="dash-col-caret">▾</span><span class="dash-col-grip" aria-hidden="true"></span></th>
+                  <th class="py-3 px-4 font-medium" data-col="mobile">Mobile <span class="dash-col-caret">▾</span><span class="dash-col-grip" aria-hidden="true"></span></th>
+                  <th class="py-3 px-4 font-medium" data-col="website">Website <span class="dash-col-caret">▾</span><span class="dash-col-grip" aria-hidden="true"></span></th>
+                  <th class="py-3 px-4 font-medium" data-col="state">State <span class="dash-col-caret">▾</span><span class="dash-col-grip" aria-hidden="true"></span></th>
+                  <th class="py-3 px-4 font-medium" data-col="zip">ZIP <span class="dash-col-caret">▾</span><span class="dash-col-grip" aria-hidden="true"></span></th>
+                  <th class="py-3 px-4 font-medium" data-col="industry">Industry <span class="dash-col-caret">▾</span><span class="dash-col-grip" aria-hidden="true"></span></th>
+                  <th class="py-3 px-4 font-medium" data-col="source">Source <span class="dash-col-caret">▾</span><span class="dash-col-grip" aria-hidden="true"></span></th>
+                  <th class="py-3 px-4 font-medium" data-col="notes">Notes <span class="dash-col-caret">▾</span><span class="dash-col-grip" aria-hidden="true"></span></th>
                   <th class="py-3 px-4 font-medium"></th>
                 </tr>
               </thead>
@@ -814,6 +830,11 @@
                   <th class="py-3 px-4 font-medium" data-col="date">Date <span class="dash-col-caret">▾</span><span class="dash-col-grip" aria-hidden="true"></span></th>
                   <th class="py-3 px-4 font-medium" data-col="status">Status <span class="dash-col-caret">▾</span><span class="dash-col-grip" aria-hidden="true"></span></th>
                   <th class="py-3 px-4 font-medium" data-col="total">Total <span class="dash-col-caret">▾</span><span class="dash-col-grip" aria-hidden="true"></span></th>
+                  <th class="py-3 px-4 font-medium" data-col="po">PO number <span class="dash-col-caret">▾</span><span class="dash-col-grip" aria-hidden="true"></span></th>
+                  <th class="py-3 px-4 font-medium" data-col="email">Email <span class="dash-col-caret">▾</span><span class="dash-col-grip" aria-hidden="true"></span></th>
+                  <th class="py-3 px-4 font-medium" data-col="due">Due date <span class="dash-col-caret">▾</span><span class="dash-col-grip" aria-hidden="true"></span></th>
+                  <th class="py-3 px-4 font-medium" data-col="terms">Terms <span class="dash-col-caret">▾</span><span class="dash-col-grip" aria-hidden="true"></span></th>
+                  <th class="py-3 px-4 font-medium" data-col="notes">Notes <span class="dash-col-caret">▾</span><span class="dash-col-grip" aria-hidden="true"></span></th>
                   <th class="py-3 px-4 font-medium"></th>
                 </tr>
               </thead>
@@ -932,17 +953,17 @@
             <strong class="dash-kpi-value" id="ca-stat-all">—</strong>
             <span class="dash-kpi-hint">Logins on file</span>
           </button>
-          <button type="button" class="dash-kpi" data-filter="payments" aria-pressed="false">
-            <span class="dash-kpi-icon dash-kpi-icon-sales" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="6" width="18" height="12" rx="2"/><path d="M3 10h18"/><path d="M7 15h4"/></svg></span>
-            <span class="dash-kpi-label">Monthly payments</span>
-            <strong class="dash-kpi-value" id="ca-stat-pay">—</strong>
-            <span class="dash-kpi-hint">Accounts we pay monthly</span>
-          </button>
           <button type="button" class="dash-kpi" data-filter="billings" aria-pressed="false">
             <span class="dash-kpi-icon dash-kpi-icon-inventory" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M7 3h8l4 4v14H7z"/><path d="M15 3v5h5"/><path d="M9 13h6M9 17h4"/></svg></span>
             <span class="dash-kpi-label">Monthly billings</span>
             <strong class="dash-kpi-value" id="ca-stat-bill">—</strong>
             <span class="dash-kpi-hint">Accounts that bill monthly</span>
+          </button>
+          <button type="button" class="dash-kpi" data-filter="yearly" aria-pressed="false">
+            <span class="dash-kpi-icon dash-kpi-icon-sales" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M8 3v4M16 3v4M3 11h18"/></svg></span>
+            <span class="dash-kpi-label">Yearly billings</span>
+            <strong class="dash-kpi-value" id="ca-stat-year">—</strong>
+            <span class="dash-kpi-hint">Accounts that bill yearly</span>
           </button>
           <button type="button" class="dash-kpi dash-kpi-profile" data-open="profile" aria-pressed="false">
             <span class="dash-kpi-icon dash-kpi-icon-customers" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20V9l8-5 8 5v11"/><path d="M9 20v-6h6v6"/></svg></span>
@@ -960,14 +981,17 @@
         <p class="text-slate-400 text-sm mb-4"><span id="ca-total">0</span> company accounts — logins and passwords.</p>
         <p id="ca-error" class="hidden text-sm text-red-400 mb-3"></p>
         <div class="overflow-x-auto rounded-2xl border border-slate-800">
-          <table class="w-full text-sm">
+          <table class="w-full text-sm dash-cols" data-cols="accounts">
             <thead class="text-left text-slate-400 border-b border-slate-800">
               <tr>
-                <th class="py-3 px-4 font-medium">Account</th>
-                <th class="py-3 px-4 font-medium">Login</th>
-                <th class="py-3 px-4 font-medium">Category</th>
-                <th class="py-3 px-4 font-medium">Monthly payment</th>
-                <th class="py-3 px-4 font-medium">Monthly billing</th>
+                <th class="py-3 px-4 font-medium" data-col="name">Account <span class="dash-col-caret">▾</span><span class="dash-col-grip" aria-hidden="true"></span></th>
+                <th class="py-3 px-4 font-medium" data-col="login">Login <span class="dash-col-caret">▾</span><span class="dash-col-grip" aria-hidden="true"></span></th>
+                <th class="py-3 px-4 font-medium" data-col="category">Category <span class="dash-col-caret">▾</span><span class="dash-col-grip" aria-hidden="true"></span></th>
+                <th class="py-3 px-4 font-medium" data-col="monthly">Monthly billing <span class="dash-col-caret">▾</span><span class="dash-col-grip" aria-hidden="true"></span></th>
+                <th class="py-3 px-4 font-medium" data-col="yearly">Yearly billing <span class="dash-col-caret">▾</span><span class="dash-col-grip" aria-hidden="true"></span></th>
+                <th class="py-3 px-4 font-medium" data-col="website">Website <span class="dash-col-caret">▾</span><span class="dash-col-grip" aria-hidden="true"></span></th>
+                <th class="py-3 px-4 font-medium" data-col="email">Email <span class="dash-col-caret">▾</span><span class="dash-col-grip" aria-hidden="true"></span></th>
+                <th class="py-3 px-4 font-medium" data-col="notes">Notes <span class="dash-col-caret">▾</span><span class="dash-col-grip" aria-hidden="true"></span></th>
               </tr>
             </thead>
             <tbody id="ca-table" class="text-slate-200"></tbody>
@@ -986,13 +1010,13 @@
           </div>
           <p id="role-error" class="hidden text-sm text-red-400"></p>
           <div class="overflow-x-auto rounded-2xl border border-slate-800">
-            <table class="w-full text-sm">
+            <table class="w-full text-sm dash-cols" data-cols="roles">
               <thead class="text-left text-slate-400 border-b border-slate-800">
                 <tr>
-                  <th class="py-3 px-4 font-medium">Role</th>
-                  <th class="py-3 px-4 font-medium">Website</th>
-                  <th class="py-3 px-4 font-medium">Inventory</th>
-                  <th class="py-3 px-4 font-medium">Users</th>
+                  <th class="py-3 px-4 font-medium" data-col="name">Role <span class="dash-col-caret">▾</span><span class="dash-col-grip" aria-hidden="true"></span></th>
+                  <th class="py-3 px-4 font-medium" data-col="website">Website <span class="dash-col-caret">▾</span><span class="dash-col-grip" aria-hidden="true"></span></th>
+                  <th class="py-3 px-4 font-medium" data-col="inventory">Inventory <span class="dash-col-caret">▾</span><span class="dash-col-grip" aria-hidden="true"></span></th>
+                  <th class="py-3 px-4 font-medium" data-col="users">Users <span class="dash-col-caret">▾</span><span class="dash-col-grip" aria-hidden="true"></span></th>
                 </tr>
               </thead>
               <tbody id="role-table" class="text-slate-200"></tbody>
@@ -1009,12 +1033,12 @@
           </div>
           <p id="staff-error" class="hidden text-sm text-red-400"></p>
           <div class="overflow-x-auto rounded-2xl border border-slate-800">
-            <table class="w-full text-sm">
+            <table class="w-full text-sm dash-cols" data-cols="staff">
               <thead class="text-left text-slate-400 border-b border-slate-800">
                 <tr>
-                  <th class="py-3 px-4 font-medium">Name</th>
-                  <th class="py-3 px-4 font-medium">Email</th>
-                  <th class="py-3 px-4 font-medium">Role</th>
+                  <th class="py-3 px-4 font-medium" data-col="name">Name <span class="dash-col-caret">▾</span><span class="dash-col-grip" aria-hidden="true"></span></th>
+                  <th class="py-3 px-4 font-medium" data-col="email">Email <span class="dash-col-caret">▾</span><span class="dash-col-grip" aria-hidden="true"></span></th>
+                  <th class="py-3 px-4 font-medium" data-col="role">Role <span class="dash-col-caret">▾</span><span class="dash-col-grip" aria-hidden="true"></span></th>
                 </tr>
               </thead>
               <tbody id="staff-table" class="text-slate-200"></tbody>
@@ -1432,12 +1456,12 @@
         </div>
       </section>
       <section class="cc-sec is-open">
-        <button type="button" class="cc-sec-btn"><span class="cc-sec-label"><svg class="cc-sec-ico" viewBox="0 0 24 24"><rect x="3" y="6" width="18" height="12" rx="2"/><path d="M3 10h18"/><path d="M7 15h4"/></svg> Monthly</span> <span class="cc-sec-chevron">▾</span></button>
+        <button type="button" class="cc-sec-btn"><span class="cc-sec-label"><svg class="cc-sec-ico" viewBox="0 0 24 24"><rect x="3" y="6" width="18" height="12" rx="2"/><path d="M3 10h18"/><path d="M7 15h4"/></svg> Billing</span> <span class="cc-sec-chevron">▾</span></button>
         <div class="cc-sec-body">
-          <label class="cc-check wide"><input id="ca-pay" type="checkbox"> Monthly payment</label>
-          <div class="cc-field"><label>Payment amount</label><input id="ca-pay-amt" type="number" min="0" step="0.01" value="0"></div>
           <label class="cc-check wide"><input id="ca-bill" type="checkbox"> Monthly billing</label>
-          <div class="cc-field"><label>Billing amount</label><input id="ca-bill-amt" type="number" min="0" step="0.01" value="0"></div>
+          <div class="cc-field"><label>Monthly amount</label><input id="ca-bill-amt" type="number" min="0" step="0.01" value="0"></div>
+          <label class="cc-check wide"><input id="ca-year" type="checkbox"> Yearly billing</label>
+          <div class="cc-field"><label>Yearly amount</label><input id="ca-year-amt" type="number" min="0" step="0.01" value="0"></div>
         </div>
       </section>
       <p id="ca-msg" class="hidden text-sm px-5 pt-3"></p>
@@ -1910,7 +1934,18 @@
     }
 
     function renderProducts(list) {
-      table.innerHTML = list.map(function (p) {
+      websiteProducts = list || [];
+      const dashTable = document.querySelector('table.dash-cols[data-cols="website-products"]');
+      const sorted = sortColRows(websiteProducts, dashTable, function (p, col) {
+        if (col === 'product') return p.name || '';
+        if (col === 'brand') return p.brandName || '';
+        if (col === 'type') return p.type || '';
+        if (col === 'pitch') return p.pitchLabel || '';
+        if (col === 'price') return p.priceLabel || '';
+        if (col === 'website') return p.hidden ? 'Hidden' : 'Shown';
+        return p.image || '';
+      });
+      table.innerHTML = sorted.map(function (p) {
         const img = p.image
           ? '<img src="' + esc(p.image) + '" alt="" class="h-11 w-11 rounded-md object-cover bg-slate-900 border border-slate-800">'
           : '<div class="h-11 w-11 rounded-md bg-slate-900 border border-slate-800 flex items-center justify-center text-[10px] text-slate-500">No photo</div>';
@@ -1919,18 +1954,20 @@
         const vis = p.hidden
           ? '<span class="text-amber-400">Hidden</span>'
           : '<a href="' + esc(pageHref) + '" target="_blank" rel="noopener" class="text-emerald-400 hover:underline py-1" data-open-site>Shown</a>';
-        return (
-          '<tr class="border-b border-slate-800 hover:bg-slate-900/80" data-id="' + esc(p.dbId) + '">' +
-            '<td class="py-2.5 px-4">' + img + '</td>' +
-            '<td class="py-2.5 px-4 font-medium" data-edit-name><span class="cursor-pointer hover:text-sky-300">' + esc(p.name || '') + '</span></td>' +
-            '<td class="py-2.5 px-4 text-sky-400">' + esc(p.brandName || '') + '</td>' +
-            '<td class="py-2.5 px-4 text-slate-400">' + esc(p.type || '') + '</td>' +
-            '<td class="py-2.5 px-4 text-slate-400">' + esc(p.pitchLabel || '') + '</td>' +
-            '<td class="py-2.5 px-4">' + esc(p.priceLabel || '') + '</td>' +
-            '<td class="py-2.5 px-4" data-website-cell>' + vis + '</td>' +
-          '</tr>'
-        );
-      }).join('') || '<tr><td class="py-6 px-4 text-slate-500" colspan="7">No products yet.</td></tr>';
+        const cells = {
+          photo: '<td class="py-2.5 px-4">' + img + '</td>',
+          product: '<td class="py-2.5 px-4 font-medium" data-edit-name><span class="cursor-pointer hover:text-sky-300">' + esc(p.name || '') + '</span></td>',
+          brand: '<td class="py-2.5 px-4 text-sky-400">' + esc(p.brandName || '') + '</td>',
+          type: '<td class="py-2.5 px-4 text-slate-400">' + esc(p.type || '') + '</td>',
+          pitch: '<td class="py-2.5 px-4 text-slate-400">' + esc(p.pitchLabel || '') + '</td>',
+          price: '<td class="py-2.5 px-4">' + esc(p.priceLabel || '') + '</td>',
+          website: '<td class="py-2.5 px-4" data-website-cell>' + vis + '</td>'
+        };
+        return '<tr class="border-b border-slate-800 hover:bg-slate-900/80" data-id="' + esc(p.dbId) + '">' +
+          dashOrderedCells(dashTable, cells) +
+          '</tr>';
+      }).join('') || '<tr><td class="py-6 px-4 text-slate-500" colspan="' + dashColSpan(dashTable) + '">No products yet.</td></tr>';
+      applyColOrder(dashTable);
       const total = document.getElementById('product-total');
       if (total) total.textContent = String((list && list.length) || 0);
     }
@@ -2422,33 +2459,142 @@
       };
     }
 
+    const DASH_COL_CATALOGS = {
+      inventory: [
+        { id: 'sku', label: 'SKU' },
+        { id: 'name', label: 'Item' },
+        { id: 'description', label: 'Description' },
+        { id: 'pitch', label: 'Pitch' },
+        { id: 'brand', label: 'Brand' },
+        { id: 'qty', label: 'On hand' },
+        { id: 'cost', label: 'Cost' },
+        { id: 'price', label: 'Sell price' },
+        { id: 'dealer', label: 'Dealer net' },
+        { id: 'status', label: 'Status' },
+        { id: 'photo', label: 'Photo' },
+        { id: 'website', label: 'Website' }
+      ],
+      customers: [
+        { id: 'company', label: 'Company' },
+        { id: 'contact', label: 'Contact' },
+        { id: 'email', label: 'Email' },
+        { id: 'phone', label: 'Phone' },
+        { id: 'city', label: 'City' },
+        { id: 'terms', label: 'Terms' },
+        { id: 'mobile', label: 'Mobile' },
+        { id: 'website', label: 'Website' },
+        { id: 'state', label: 'State' },
+        { id: 'zip', label: 'ZIP' },
+        { id: 'industry', label: 'Industry' },
+        { id: 'source', label: 'Source' },
+        { id: 'notes', label: 'Notes' }
+      ],
+      sales: [
+        { id: 'number', label: 'Number' },
+        { id: 'customer', label: 'Customer' },
+        { id: 'date', label: 'Date' },
+        { id: 'status', label: 'Status' },
+        { id: 'total', label: 'Total' },
+        { id: 'po', label: 'PO number' },
+        { id: 'email', label: 'Email' },
+        { id: 'due', label: 'Due date' },
+        { id: 'terms', label: 'Terms' },
+        { id: 'notes', label: 'Notes' }
+      ],
+      'po-lines': [
+        { id: 'product', label: 'Product/Service' },
+        { id: 'sku', label: 'SKU' },
+        { id: 'description', label: 'Description' },
+        { id: 'qty', label: 'Quantity' },
+        { id: 'rate', label: 'Rate' },
+        { id: 'amount', label: 'Amount' }
+      ],
+      'purchase-orders': [
+        { id: 'number', label: 'Number' },
+        { id: 'vendor', label: 'Vendor' },
+        { id: 'date', label: 'Date' },
+        { id: 'status', label: 'Status' },
+        { id: 'total', label: 'Total' },
+        { id: 'due', label: 'Due date' },
+        { id: 'email', label: 'Email' },
+        { id: 'notes', label: 'Notes' }
+      ],
+      vendors: [
+        { id: 'vendor', label: 'Vendor' },
+        { id: 'company', label: 'Company name' },
+        { id: 'phone', label: 'Phone' },
+        { id: 'email', label: 'Email' },
+        { id: 'tax1099', label: '1099' },
+        { id: 'contact', label: 'Contact' },
+        { id: 'website', label: 'Website' },
+        { id: 'city', label: 'City' },
+        { id: 'state', label: 'State' },
+        { id: 'terms', label: 'Terms' },
+        { id: 'notes', label: 'Notes' }
+      ],
+      accounts: [
+        { id: 'name', label: 'Account' },
+        { id: 'login', label: 'Login' },
+        { id: 'category', label: 'Category' },
+        { id: 'monthly', label: 'Monthly billing' },
+        { id: 'yearly', label: 'Yearly billing' },
+        { id: 'website', label: 'Website' },
+        { id: 'email', label: 'Email' },
+        { id: 'notes', label: 'Notes' }
+      ],
+      staff: [
+        { id: 'name', label: 'Name' },
+        { id: 'email', label: 'Email' },
+        { id: 'role', label: 'Role' }
+      ],
+      roles: [
+        { id: 'name', label: 'Role' },
+        { id: 'website', label: 'Website' },
+        { id: 'inventory', label: 'Inventory' },
+        { id: 'users', label: 'Users' }
+      ],
+      'website-products': [
+        { id: 'photo', label: 'Photo' },
+        { id: 'product', label: 'Product' },
+        { id: 'brand', label: 'Brand' },
+        { id: 'type', label: 'Type' },
+        { id: 'pitch', label: 'Pitch' },
+        { id: 'price', label: 'Price' },
+        { id: 'website', label: 'Website' }
+      ],
+      'website-accounts': [
+        { id: 'name', label: 'Name' },
+        { id: 'email', label: 'Email' },
+        { id: 'type', label: 'Type' },
+        { id: 'markup', label: 'Markup %' },
+        { id: 'company', label: 'Company' },
+        { id: 'created', label: 'Created' }
+      ]
+    };
+
+    const DASH_COL_DEFAULTS = {
+      inventory: ['sku', 'name', 'brand', 'pitch', 'qty', 'price', 'website', 'status'],
+      customers: ['company', 'contact', 'email', 'phone', 'city', 'terms'],
+      sales: ['number', 'customer', 'date', 'status', 'total'],
+      'po-lines': ['product', 'sku', 'description', 'qty', 'rate', 'amount'],
+      'purchase-orders': ['number', 'vendor', 'date', 'status', 'total'],
+      vendors: ['vendor', 'company', 'phone', 'email', 'tax1099'],
+      accounts: ['name', 'login', 'category', 'monthly', 'yearly'],
+      staff: ['name', 'email', 'role'],
+      roles: ['name', 'website', 'inventory', 'users'],
+      'website-products': ['photo', 'product', 'brand', 'type', 'pitch', 'price', 'website'],
+      'website-accounts': ['name', 'email', 'type', 'markup', 'company', 'created']
+    };
+
+    let dashColMine = {};
+    let dashColOwner = {};
+    let dashColSaveTimer = null;
+    let websiteProducts = [];
+    let websiteAccounts = [];
+
     function dashColCatalog(table) {
-      if (dashColKey(table) === 'inventory') {
-        return [
-          { id: 'sku', label: 'SKU' },
-          { id: 'name', label: 'Item' },
-          { id: 'description', label: 'Description' },
-          { id: 'pitch', label: 'Pitch' },
-          { id: 'brand', label: 'Brand' },
-          { id: 'qty', label: 'On hand' },
-          { id: 'cost', label: 'Cost' },
-          { id: 'price', label: 'Sell price' },
-          { id: 'dealer', label: 'Dealer net' },
-          { id: 'status', label: 'Status' },
-          { id: 'photo', label: 'Photo' },
-          { id: 'website', label: 'Website' }
-        ];
-      }
-      if (dashColKey(table) === 'po-lines') {
-        return [
-          { id: 'product', label: 'Product/Service' },
-          { id: 'sku', label: 'SKU' },
-          { id: 'description', label: 'Description' },
-          { id: 'qty', label: 'Quantity' },
-          { id: 'rate', label: 'Rate' },
-          { id: 'amount', label: 'Amount' }
-        ];
-      }
+      const listed = DASH_COL_CATALOGS[dashColKey(table)];
+      if (listed) return listed;
       return Array.prototype.map.call(table.querySelectorAll('thead th[data-col]'), function (th) {
         return { id: th.getAttribute('data-col'), label: colHeaderLabel(table, th.getAttribute('data-col')) };
       });
@@ -2459,9 +2605,8 @@
     }
 
     function defaultVisibleOrder(table) {
-      if (dashColKey(table) === 'inventory') {
-        return ['sku', 'name', 'brand', 'pitch', 'qty', 'price', 'website', 'status'];
-      }
+      const listed = DASH_COL_DEFAULTS[dashColKey(table)];
+      if (listed) return listed;
       return defaultColOrder(table);
     }
 
@@ -2470,8 +2615,18 @@
       return dashColCatalog(table).filter(function (col) { return shown.indexOf(col.id) === -1; });
     }
 
-    function loadColState(table) {
-      const name = dashColKey(table);
+    function colPrefsCacheKey() {
+      return 'dash-col-prefs-' + ((currentAdminUser && currentAdminUser.id) || 'anon');
+    }
+
+    function tableStateFromPrefs(prefs, name) {
+      const src = prefs && prefs[name];
+      if (!src || typeof src !== 'object') return null;
+      if ((src.order && src.order.length) || (src.hidden && src.hidden.length)) return src;
+      return null;
+    }
+
+    function mergeColState(table, saved) {
       const known = defaultColOrder(table);
       const startOrder = defaultVisibleOrder(table).filter(function (id) { return known.indexOf(id) !== -1; });
       const fallback = {
@@ -2481,38 +2636,110 @@
         sortDir: '',
         widths: {}
       };
-      try {
-        const saved = JSON.parse(localStorage.getItem('dash-col-state-' + name) || '{}');
-        const hasSaved = (saved.order && saved.order.length) || (saved.hidden && saved.hidden.length);
-        if (!hasSaved) return applyMobileColState(table, fallback);
-        const savedHidden = (saved.hidden || []).filter(function (id) { return known.indexOf(id) !== -1; });
-        const order = (saved.order || []).filter(function (id) {
-          return known.indexOf(id) !== -1 && savedHidden.indexOf(id) === -1;
-        });
-        const hidden = savedHidden.slice();
-        known.forEach(function (id) {
-          if (order.indexOf(id) !== -1 || hidden.indexOf(id) !== -1) return;
-          hidden.push(id);
-        });
-        if (!order.length && known.length) {
-          order.push(known[0]);
-          const drop = hidden.indexOf(known[0]);
-          if (drop !== -1) hidden.splice(drop, 1);
-        }
-        return applyMobileColState(table, {
-          order: order,
-          hidden: hidden,
-          sortCol: saved.sortCol || '',
-          sortDir: saved.sortDir || '',
-          widths: saved.widths && typeof saved.widths === 'object' ? saved.widths : {}
-        });
-      } catch (err) {
-        return applyMobileColState(table, fallback);
+      if (!saved) return applyMobileColState(table, fallback);
+      const savedHidden = (saved.hidden || []).filter(function (id) { return known.indexOf(id) !== -1; });
+      const order = (saved.order || []).filter(function (id) {
+        return known.indexOf(id) !== -1 && savedHidden.indexOf(id) === -1;
+      });
+      const hidden = savedHidden.slice();
+      known.forEach(function (id) {
+        if (order.indexOf(id) !== -1 || hidden.indexOf(id) !== -1) return;
+        hidden.push(id);
+      });
+      if (!order.length && known.length) {
+        order.push(known[0]);
+        const drop = hidden.indexOf(known[0]);
+        if (drop !== -1) hidden.splice(drop, 1);
       }
+      return applyMobileColState(table, {
+        order: order,
+        hidden: hidden,
+        sortCol: saved.sortCol || '',
+        sortDir: saved.sortDir || '',
+        widths: saved.widths && typeof saved.widths === 'object' ? saved.widths : {}
+      });
+    }
+
+    function loadColState(table) {
+      const name = dashColKey(table);
+      const saved = tableStateFromPrefs(dashColMine, name) || tableStateFromPrefs(dashColOwner, name);
+      return mergeColState(table, saved);
+    }
+
+    function readLegacyLocalCols() {
+      const out = {};
+      Object.keys(DASH_COL_CATALOGS).forEach(function (name) {
+        try {
+          const saved = JSON.parse(localStorage.getItem('dash-col-state-' + name) || '{}');
+          if ((saved.order && saved.order.length) || (saved.hidden && saved.hidden.length)) out[name] = saved;
+        } catch (err) {}
+      });
+      return out;
+    }
+
+    function cacheColPrefs() {
+      try { localStorage.setItem(colPrefsCacheKey(), JSON.stringify(dashColMine)); } catch (err) {}
     }
 
     function saveColState(table, state) {
-      try { localStorage.setItem('dash-col-state-' + dashColKey(table), JSON.stringify(state)); } catch (err) {}
+      const name = dashColKey(table);
+      dashColMine[name] = {
+        order: state.order.slice(),
+        hidden: state.hidden.slice(),
+        sortCol: state.sortCol || '',
+        sortDir: state.sortDir || '',
+        widths: state.widths && typeof state.widths === 'object' ? state.widths : {}
+      };
+      if (currentAdminUser && currentAdminUser.role === 'owner') {
+        dashColOwner = Object.assign({}, dashColMine);
+      }
+      cacheColPrefs();
+      scheduleColPrefsSave();
+    }
+
+    function scheduleColPrefsSave() {
+      clearTimeout(dashColSaveTimer);
+      dashColSaveTimer = setTimeout(pushColPrefs, 350);
+    }
+
+    async function pushColPrefs() {
+      if (!currentAdminUser) return;
+      try {
+        const data = await api('/api/admin/column-prefs', {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ prefs: dashColMine })
+        });
+        if (data.prefs) dashColMine = data.prefs;
+        if (data.ownerPrefs) dashColOwner = data.ownerPrefs;
+        cacheColPrefs();
+      } catch (err) {}
+    }
+
+    async function loadColumnPrefs() {
+      dashColMine = {};
+      dashColOwner = {};
+      try {
+        const cached = JSON.parse(localStorage.getItem(colPrefsCacheKey()) || '{}');
+        if (cached && typeof cached === 'object') dashColMine = cached;
+      } catch (err) {}
+      try {
+        const data = await api('/api/admin/column-prefs');
+        dashColMine = data.prefs && typeof data.prefs === 'object' ? data.prefs : {};
+        dashColOwner = data.ownerPrefs && typeof data.ownerPrefs === 'object' ? data.ownerPrefs : {};
+        if (!Object.keys(dashColMine).length) {
+          const legacy = readLegacyLocalCols();
+          if (Object.keys(legacy).length) {
+            dashColMine = legacy;
+            if (currentAdminUser && currentAdminUser.role === 'owner') dashColOwner = Object.assign({}, dashColMine);
+            await pushColPrefs();
+          }
+        }
+        cacheColPrefs();
+      } catch (err) {
+        if (!Object.keys(dashColMine).length) dashColMine = readLegacyLocalCols();
+      }
+      document.querySelectorAll('table.dash-cols').forEach(function (t) { applyColOrder(t); });
     }
 
     function applyColOrder(table) {
@@ -2613,12 +2840,16 @@
         closeColAdd();
         return;
       }
-      const addable = addableCols(table);
-      if (!addable.length) {
-        list.innerHTML = '<p class="dash-col-add-empty">All columns are shown</p>';
+      const shown = loadColState(table).order;
+      const catalog = dashColCatalog(table);
+      if (!catalog.length) {
+        list.innerHTML = '<p class="dash-col-add-empty">No columns to add</p>';
       } else {
-        list.innerHTML = addable.map(function (col) {
-          return '<button type="button" data-add-col="' + esc(col.id) + '">' + esc(col.label) + '</button>';
+        list.innerHTML = catalog.map(function (col) {
+          const on = shown.indexOf(col.id) !== -1;
+          return '<button type="button" data-add-col="' + esc(col.id) + '"' +
+            (on ? ' disabled class="is-on"' : '') + '>' +
+            (on ? '✓ ' : '') + esc(col.label) + '</button>';
         }).join('');
       }
       panel.hidden = false;
@@ -2636,7 +2867,7 @@
       menu.querySelector('[data-col-act="left"]').disabled = i <= 0;
       menu.querySelector('[data-col-act="right"]').disabled = i === -1 || i >= state.order.length - 1;
       menu.querySelector('[data-col-act="hide"]').disabled = state.order.length <= 1;
-      menu.querySelector('[data-col-act="add"]').disabled = !addableCols(table).length;
+      menu.querySelector('[data-col-act="add"]').disabled = !dashColCatalog(table).length;
       menu._table = table;
       menu._col = col;
       menu.hidden = false;
@@ -2654,6 +2885,13 @@
       else if (name === 'customers') renderCcTable(companyCustomers);
       else if (name === 'sales') renderSoTable(salesDocs, salesTypeFromTab(salesSubTab));
       else if (name === 'po-lines') renderPoLines();
+      else if (name === 'purchase-orders') renderPoTable(purchaseOrders);
+      else if (name === 'vendors') renderVnTable(inventoryVendors);
+      else if (name === 'accounts') renderCaTable(companyAccounts);
+      else if (name === 'staff') renderStaff(staffList);
+      else if (name === 'roles') renderRoles(adminRoles);
+      else if (name === 'website-products') renderProducts(websiteProducts);
+      else if (name === 'website-accounts') renderAccountsTable(websiteAccounts);
     }
 
     function enableColumnResize(table) {
@@ -3261,26 +3499,51 @@
           errEl.classList.add('text-amber-300');
           errEl.classList.remove('hidden');
         }
-        tb.innerHTML = rows.map(function (a) {
-          const when = a.created_at ? new Date(a.created_at).toLocaleDateString() : '';
-          const pct = a.effective_markup_pct;
-          const pctText = (pct == null ? 0 : Number(pct)) + '%';
-          const override = a.markup_override_pct != null;
-          return '<tr class="border-b border-slate-800 hover:bg-slate-900/80 cursor-pointer" data-id="' + esc(a.id) + '">' +
-            '<td class="py-3 px-4">' + esc(a.name || '—') + '</td>' +
-            '<td class="py-3 px-4">' + esc(a.email || '') + '</td>' +
-            '<td class="py-3 px-4"><span class="text-xs px-2 py-0.5 rounded-full bg-sky-500/15 text-sky-300">' + esc(roleLabel(a.role)) + '</span></td>' +
-            '<td class="py-3 px-4 text-slate-300">' + esc(pctText) + (override ? ' <span class="text-xs text-slate-500">override</span>' : '') + '</td>' +
-            '<td class="py-3 px-4 text-slate-400">' + esc(a.company || '—') + '</td>' +
-            '<td class="py-3 px-4 text-slate-500">' + esc(when) + '</td>' +
-            '<td class="py-3 px-4 text-right"><span class="text-sky-400 text-xs font-medium">Open →</span></td>' +
-            '</tr>';
-        }).join('') || '<tr><td class="py-6 px-4 text-slate-500" colspan="7">No website Sign in accounts yet. The Admin CMS login never appears in this list.</td></tr>';
+        websiteAccounts = rows;
+        renderAccountsTable(rows);
       } catch (err) {
         errEl.textContent = err.message || 'Could not load accounts.';
         errEl.classList.remove('hidden');
         tb.innerHTML = '<tr><td class="py-6 px-4 text-slate-500" colspan="7">Could not load accounts.</td></tr>';
       }
+    }
+
+    function renderAccountsTable(rows) {
+      const dashTable = document.querySelector('table.dash-cols[data-cols="website-accounts"]');
+      const tb = document.getElementById('accounts-table');
+      const list = rows || websiteAccounts || [];
+      if (!list.length) {
+        tb.innerHTML = '<tr><td class="py-6 px-4 text-slate-500" colspan="' + dashColSpan(dashTable) + '">No website Sign in accounts yet. The Admin CMS login never appears in this list.</td></tr>';
+        applyColOrder(dashTable);
+        return;
+      }
+      const sorted = sortColRows(list, dashTable, function (a, col) {
+        if (col === 'name') return a.name || '';
+        if (col === 'email') return a.email || '';
+        if (col === 'type') return roleLabel(a.role);
+        if (col === 'markup') return Number(a.effective_markup_pct) || 0;
+        if (col === 'company') return a.company || '';
+        if (col === 'created') return a.created_at || '';
+        return '';
+      });
+      tb.innerHTML = sorted.map(function (a) {
+        const when = a.created_at ? new Date(a.created_at).toLocaleDateString() : '';
+        const pct = a.effective_markup_pct;
+        const pctText = (pct == null ? 0 : Number(pct)) + '%';
+        const override = a.markup_override_pct != null;
+        const cells = {
+          name: '<td class="py-3 px-4">' + esc(a.name || '—') + '</td>',
+          email: '<td class="py-3 px-4">' + esc(a.email || '') + '</td>',
+          type: '<td class="py-3 px-4"><span class="text-xs px-2 py-0.5 rounded-full bg-sky-500/15 text-sky-300">' + esc(roleLabel(a.role)) + '</span></td>',
+          markup: '<td class="py-3 px-4 text-slate-300">' + esc(pctText) + (override ? ' <span class="text-xs text-slate-500">override</span>' : '') + '</td>',
+          company: '<td class="py-3 px-4 text-slate-400">' + esc(a.company || '—') + '</td>',
+          created: '<td class="py-3 px-4 text-slate-500">' + esc(when) + '</td>'
+        };
+        return '<tr class="border-b border-slate-800 hover:bg-slate-900/80 cursor-pointer" data-id="' + esc(a.id) + '">' +
+          dashOrderedCells(dashTable, cells, '<td class="py-3 px-4 text-right"><span class="text-sky-400 text-xs font-medium">Open →</span></td>') +
+          '</tr>';
+      }).join('');
+      applyColOrder(dashTable);
     }
 
     function renderAccountLists(account) {
@@ -3708,6 +3971,13 @@
         if (col === 'phone') return c.phone || c.mobile || '';
         if (col === 'city') return c.billCity || '';
         if (col === 'terms') return c.paymentTerms || '';
+        if (col === 'mobile') return c.mobile || '';
+        if (col === 'website') return c.website || '';
+        if (col === 'state') return c.billState || '';
+        if (col === 'zip') return c.billZip || '';
+        if (col === 'industry') return c.industry || '';
+        if (col === 'source') return c.source || '';
+        if (col === 'notes') return c.notes || '';
         return '';
       });
       tbody.innerHTML = sorted.map(function (c) {
@@ -3719,7 +3989,14 @@
           email: '<td class="py-3 px-4">' + esc(c.email || '—') + '</td>',
           phone: '<td class="py-3 px-4">' + esc(c.phone || c.mobile || '—') + '</td>',
           city: '<td class="py-3 px-4">' + esc(c.billCity || '—') + '</td>',
-          terms: '<td class="py-3 px-4">' + esc(c.paymentTerms || '—') + '</td>'
+          terms: '<td class="py-3 px-4">' + esc(c.paymentTerms || '—') + '</td>',
+          mobile: '<td class="py-3 px-4">' + esc(c.mobile || '—') + '</td>',
+          website: '<td class="py-3 px-4">' + esc(c.website || '—') + '</td>',
+          state: '<td class="py-3 px-4">' + esc(c.billState || '—') + '</td>',
+          zip: '<td class="py-3 px-4">' + esc(c.billZip || '—') + '</td>',
+          industry: '<td class="py-3 px-4">' + esc(c.industry || '—') + '</td>',
+          source: '<td class="py-3 px-4">' + esc(c.source || '—') + '</td>',
+          notes: '<td class="py-3 px-4">' + esc(c.notes || '—') + '</td>'
         };
         return '<tr class="border-b border-slate-800 hover:bg-slate-900/80 cursor-pointer" data-id="' + esc(c.id) + '">' +
           dashOrderedCells(table, cells, '<td class="py-3 px-4 text-right"><span class="text-sky-400 text-xs font-medium">Open →</span></td>') +
@@ -4061,6 +4338,7 @@
     }
 
     function renderVnTable(rows) {
+      const table = document.querySelector('table.dash-cols[data-cols="vendors"]');
       const tbody = document.getElementById('vn-table');
       const q = (document.getElementById('vn-search').value || '').toLowerCase();
       const filtered = (rows || []).filter(function (v) {
@@ -4073,20 +4351,45 @@
       document.getElementById('vn-total').textContent = String((rows || []).length);
       fillVnOverview();
       if (!filtered.length) {
-        tbody.innerHTML = '<tr><td class="py-6 px-4 text-slate-500" colspan="5">' +
+        tbody.innerHTML = '<tr><td class="py-6 px-4 text-slate-500" colspan="' + dashColSpan(table) + '">' +
           (q || vnFilter !== 'all' ? 'No vendors match this view.' : 'No vendors yet. Add a vendor to use on purchase orders.') +
           '</td></tr>';
+        applyColOrder(table);
         return;
       }
-      tbody.innerHTML = filtered.map(function (v) {
+      const sorted = sortColRows(filtered, table, function (v, col) {
+        if (col === 'vendor') return v.displayName || '';
+        if (col === 'company') return v.companyName || '';
+        if (col === 'phone') return v.phone || v.mobile || '';
+        if (col === 'email') return v.email || '';
+        if (col === 'tax1099') return v.track1099 ? 'Yes' : '';
+        if (col === 'contact') return v.contactName || '';
+        if (col === 'website') return v.website || '';
+        if (col === 'city') return v.city || '';
+        if (col === 'state') return v.state || '';
+        if (col === 'terms') return v.paymentTerms || '';
+        if (col === 'notes') return v.notes || '';
+        return '';
+      });
+      tbody.innerHTML = sorted.map(function (v) {
+        const cells = {
+          vendor: '<td class="py-3 px-4 font-medium">' + esc(v.displayName || '—') + '</td>',
+          company: '<td class="py-3 px-4">' + esc(v.companyName || '—') + '</td>',
+          phone: '<td class="py-3 px-4">' + esc(v.phone || v.mobile || '—') + '</td>',
+          email: '<td class="py-3 px-4">' + esc(v.email || '—') + '</td>',
+          tax1099: '<td class="py-3 px-4">' + (v.track1099 ? 'Yes' : '—') + '</td>',
+          contact: '<td class="py-3 px-4">' + esc(v.contactName || '—') + '</td>',
+          website: '<td class="py-3 px-4">' + esc(v.website || '—') + '</td>',
+          city: '<td class="py-3 px-4">' + esc(v.city || '—') + '</td>',
+          state: '<td class="py-3 px-4">' + esc(v.state || '—') + '</td>',
+          terms: '<td class="py-3 px-4">' + esc(v.paymentTerms || '—') + '</td>',
+          notes: '<td class="py-3 px-4">' + esc(v.notes || '—') + '</td>'
+        };
         return '<tr class="border-b border-slate-800 hover:bg-slate-900/80 cursor-pointer" data-id="' + esc(v.id) + '">' +
-          '<td class="py-3 px-4 font-medium">' + esc(v.displayName || '—') + '</td>' +
-          '<td class="py-3 px-4">' + esc(v.companyName || '—') + '</td>' +
-          '<td class="py-3 px-4">' + esc(v.phone || v.mobile || '—') + '</td>' +
-          '<td class="py-3 px-4">' + esc(v.email || '—') + '</td>' +
-          '<td class="py-3 px-4">' + (v.track1099 ? 'Yes' : '—') + '</td>' +
+          dashOrderedCells(table, cells) +
           '</tr>';
       }).join('');
+      applyColOrder(table);
     }
 
     function fillVnOverview() {
@@ -4111,21 +4414,22 @@
         fillPoVendors(keep === '__new__' ? '' : keep);
       } catch (err) {
         showError('vn-error', err.message || 'Could not load vendors.');
-        document.getElementById('vn-table').innerHTML = '<tr><td class="py-6 px-4 text-slate-500" colspan="5">Could not load vendors.</td></tr>';
+        document.getElementById('vn-table').innerHTML = '<tr><td class="py-6 px-4 text-slate-500" colspan="' +
+          dashColSpan(document.querySelector('table.dash-cols[data-cols="vendors"]')) + '">Could not load vendors.</td></tr>';
       }
     }
 
-    function hasMonthlyPayment(a) {
-      return !!(a && (a.monthlyPayment || Number(a.monthlyPaymentAmount) > 0));
-    }
     function hasMonthlyBilling(a) {
       return !!(a && (a.monthlyBilling || Number(a.monthlyBillingAmount) > 0));
+    }
+    function hasYearlyBilling(a) {
+      return !!(a && (a.yearlyBilling || Number(a.yearlyBillingAmount) > 0));
     }
     function fillCaOverview() {
       const rows = companyAccounts || [];
       setText('ca-stat-all', rows.length);
-      setText('ca-stat-pay', rows.filter(hasMonthlyPayment).length);
       setText('ca-stat-bill', rows.filter(hasMonthlyBilling).length);
+      setText('ca-stat-year', rows.filter(hasYearlyBilling).length);
       const p = companyProfile || {};
       const nameEl = document.getElementById('ca-stat-company');
       const hintEl = document.getElementById('ca-hint-company');
@@ -4141,10 +4445,11 @@
       renderCaTable(companyAccounts);
     }
     function renderCaTable(list) {
+      const table = document.querySelector('table.dash-cols[data-cols="accounts"]');
       const q = (document.getElementById('ca-search').value || '').trim().toLowerCase();
       let rows = (list || []).slice();
-      if (caFilter === 'payments') rows = rows.filter(hasMonthlyPayment);
       if (caFilter === 'billings') rows = rows.filter(hasMonthlyBilling);
+      if (caFilter === 'yearly') rows = rows.filter(hasYearlyBilling);
       if (q) {
         rows = rows.filter(function (a) {
           return [a.name, a.login, a.email, a.website, a.category].join(' ').toLowerCase().indexOf(q) >= 0;
@@ -4152,15 +4457,39 @@
       }
       document.getElementById('ca-total').textContent = String(rows.length);
       const body = document.getElementById('ca-table');
-      body.innerHTML = rows.map(function (a) {
+      if (!rows.length) {
+        body.innerHTML = '<tr><td class="py-6 px-4 text-slate-500" colspan="' + dashColSpan(table) + '">No accounts yet. Add a login.</td></tr>';
+        applyColOrder(table);
+        fillCaOverview();
+        return;
+      }
+      const sorted = sortColRows(rows, table, function (a, col) {
+        if (col === 'name') return a.name || '';
+        if (col === 'login') return a.login || a.email || '';
+        if (col === 'category') return a.category || '';
+        if (col === 'monthly') return Number(a.monthlyBillingAmount) || 0;
+        if (col === 'yearly') return Number(a.yearlyBillingAmount) || 0;
+        if (col === 'website') return a.website || '';
+        if (col === 'email') return a.email || '';
+        if (col === 'notes') return a.notes || '';
+        return '';
+      });
+      body.innerHTML = sorted.map(function (a) {
+        const cells = {
+          name: '<td class="py-3 px-4">' + esc(a.name || 'Account') + '</td>',
+          login: '<td class="py-3 px-4">' + esc(a.login || a.email || '—') + '</td>',
+          category: '<td class="py-3 px-4">' + esc(a.category || '—') + '</td>',
+          monthly: '<td class="py-3 px-4">' + (hasMonthlyBilling(a) ? (a.monthlyBillingAmount ? moneyText(a.monthlyBillingAmount) : 'Yes') : '—') + '</td>',
+          yearly: '<td class="py-3 px-4">' + (hasYearlyBilling(a) ? (a.yearlyBillingAmount ? moneyText(a.yearlyBillingAmount) : 'Yes') : '—') + '</td>',
+          website: '<td class="py-3 px-4">' + esc(a.website || '—') + '</td>',
+          email: '<td class="py-3 px-4">' + esc(a.email || '—') + '</td>',
+          notes: '<td class="py-3 px-4">' + esc(a.notes || '—') + '</td>'
+        };
         return '<tr class="border-b border-slate-800 hover:bg-slate-800/40 cursor-pointer" data-id="' + esc(a.id) + '">' +
-          '<td class="py-3 px-4">' + esc(a.name || 'Account') + '</td>' +
-          '<td class="py-3 px-4">' + esc(a.login || a.email || '—') + '</td>' +
-          '<td class="py-3 px-4">' + esc(a.category || '—') + '</td>' +
-          '<td class="py-3 px-4">' + (hasMonthlyPayment(a) ? (a.monthlyPaymentAmount ? moneyText(a.monthlyPaymentAmount) : 'Yes') : '—') + '</td>' +
-          '<td class="py-3 px-4">' + (hasMonthlyBilling(a) ? (a.monthlyBillingAmount ? moneyText(a.monthlyBillingAmount) : 'Yes') : '—') + '</td>' +
+          dashOrderedCells(table, cells) +
           '</tr>';
-      }).join('') || '<tr><td class="py-6 px-4 text-slate-500" colspan="5">No accounts yet. Add a login.</td></tr>';
+      }).join('');
+      applyColOrder(table);
       fillCaOverview();
     }
     async function loadCompanyAccounts() {
@@ -4175,7 +4504,8 @@
         renderCaTable(companyAccounts);
       } catch (err) {
         showError('ca-error', err.message || 'Could not load company accounts.');
-        document.getElementById('ca-table').innerHTML = '<tr><td class="py-6 px-4 text-slate-500" colspan="5">Could not load accounts.</td></tr>';
+        document.getElementById('ca-table').innerHTML = '<tr><td class="py-6 px-4 text-slate-500" colspan="' +
+          dashColSpan(document.querySelector('table.dash-cols[data-cols="accounts"]')) + '">Could not load accounts.</td></tr>';
       }
     }
     function showCaMsg(text, ok) {
@@ -4276,10 +4606,10 @@
       set('ca-password', src.password || '');
       set('ca-email', src.email || '');
       set('ca-notes', src.notes || '');
-      document.getElementById('ca-pay').checked = !!src.monthlyPayment;
-      set('ca-pay-amt', src.monthlyPaymentAmount != null ? src.monthlyPaymentAmount : 0);
       document.getElementById('ca-bill').checked = !!src.monthlyBilling;
       set('ca-bill-amt', src.monthlyBillingAmount != null ? src.monthlyBillingAmount : 0);
+      document.getElementById('ca-year').checked = !!src.yearlyBilling;
+      set('ca-year-amt', src.yearlyBillingAmount != null ? src.yearlyBillingAmount : 0);
       document.getElementById('ca-password').type = 'password';
       document.getElementById('ca-password-toggle').textContent = 'Show';
     }
@@ -4292,10 +4622,10 @@
         password: document.getElementById('ca-password').value,
         email: document.getElementById('ca-email').value,
         notes: document.getElementById('ca-notes').value,
-        monthlyPayment: document.getElementById('ca-pay').checked,
-        monthlyPaymentAmount: document.getElementById('ca-pay-amt').value,
         monthlyBilling: document.getElementById('ca-bill').checked,
-        monthlyBillingAmount: document.getElementById('ca-bill-amt').value
+        monthlyBillingAmount: document.getElementById('ca-bill-amt').value,
+        yearlyBilling: document.getElementById('ca-year').checked,
+        yearlyBillingAmount: document.getElementById('ca-year-amt').value
       };
     }
     function fillCiForm(p) {
@@ -4627,6 +4957,7 @@
     }
 
     function renderPoTable(rows) {
+      const table = document.querySelector('table.dash-cols[data-cols="purchase-orders"]');
       const tbody = document.getElementById('po-table');
       const q = (document.getElementById('po-search').value || '').toLowerCase();
       const filtered = (rows || []).filter(function (d) {
@@ -4637,22 +4968,41 @@
       document.getElementById('po-total').textContent = String((rows || []).length);
       fillPoOverview();
       if (!filtered.length) {
-        tbody.innerHTML = '<tr><td class="py-6 px-4 text-slate-500" colspan="6">' +
+        tbody.innerHTML = '<tr><td class="py-6 px-4 text-slate-500" colspan="' + dashColSpan(table) + '">' +
           (q || poFilter !== 'all' ? 'No purchase orders match this view.' : 'No purchase orders yet.') +
           '</td></tr>';
+        applyColOrder(table);
         return;
       }
-      tbody.innerHTML = filtered.map(function (d) {
+      const sorted = sortColRows(filtered, table, function (d, col) {
+        if (col === 'number') return d.number || '';
+        if (col === 'vendor') return d.vendorName || '';
+        if (col === 'date') return d.issueDate || '';
+        if (col === 'status') return d.status || '';
+        if (col === 'total') return Number(d.total) || 0;
+        if (col === 'due') return d.dueDate || '';
+        if (col === 'email') return d.vendorEmail || '';
+        if (col === 'notes') return d.notes || '';
+        return '';
+      });
+      tbody.innerHTML = sorted.map(function (d) {
         const when = d.issueDate ? new Date(d.issueDate + 'T00:00:00').toLocaleDateString() : '—';
+        const due = d.dueDate ? new Date(d.dueDate + 'T00:00:00').toLocaleDateString() : '—';
+        const cells = {
+          number: '<td class="py-3 px-4 font-medium">' + esc(d.number || '—') + '</td>',
+          vendor: '<td class="py-3 px-4">' + esc(d.vendorName || '—') + '</td>',
+          date: '<td class="py-3 px-4">' + esc(when) + '</td>',
+          status: '<td class="py-3 px-4"><span class="text-xs px-2 py-0.5 rounded-full bg-sky-500/15 text-sky-300">' + esc(d.status || 'open') + '</span></td>',
+          total: '<td class="py-3 px-4">' + moneyText(d.total) + '</td>',
+          due: '<td class="py-3 px-4">' + esc(due) + '</td>',
+          email: '<td class="py-3 px-4">' + esc(d.vendorEmail || '—') + '</td>',
+          notes: '<td class="py-3 px-4">' + esc(d.notes || '—') + '</td>'
+        };
         return '<tr class="border-b border-slate-800 hover:bg-slate-900/80 cursor-pointer" data-id="' + esc(d.id) + '">' +
-          '<td class="py-3 px-4 font-medium">' + esc(d.number || '—') + '</td>' +
-          '<td class="py-3 px-4">' + esc(d.vendorName || '—') + '</td>' +
-          '<td class="py-3 px-4">' + esc(when) + '</td>' +
-          '<td class="py-3 px-4"><span class="text-xs px-2 py-0.5 rounded-full bg-sky-500/15 text-sky-300">' + esc(d.status || 'open') + '</span></td>' +
-          '<td class="py-3 px-4">' + moneyText(d.total) + '</td>' +
-          '<td class="py-3 px-4 text-right"><span class="text-sky-400 text-xs font-medium">Open →</span></td>' +
+          dashOrderedCells(table, cells, '<td class="py-3 px-4 text-right"><span class="text-sky-400 text-xs font-medium">Open →</span></td>') +
           '</tr>';
       }).join('');
+      applyColOrder(table);
     }
 
     function fillPoOverview() {
@@ -4912,16 +5262,27 @@
         if (col === 'date') return d.issueDate || '';
         if (col === 'status') return d.status || '';
         if (col === 'total') return Number(d.total) || 0;
+        if (col === 'po') return d.poNumber || '';
+        if (col === 'email') return d.customerEmail || '';
+        if (col === 'due') return d.dueDate || '';
+        if (col === 'terms') return d.paymentTerms || '';
+        if (col === 'notes') return d.notes || '';
         return '';
       });
       tbody.innerHTML = sorted.map(function (d) {
         const when = d.issueDate ? new Date(d.issueDate + 'T00:00:00').toLocaleDateString() : '—';
+        const due = d.dueDate ? new Date(d.dueDate + 'T00:00:00').toLocaleDateString() : '—';
         const cells = {
           number: '<td class="py-3 px-4 font-medium">' + esc(d.number || '—') + '</td>',
           customer: '<td class="py-3 px-4">' + esc(d.customerName || '—') + '</td>',
           date: '<td class="py-3 px-4">' + esc(when) + '</td>',
           status: '<td class="py-3 px-4"><span class="text-xs px-2 py-0.5 rounded-full bg-sky-500/15 text-sky-300">' + esc(d.status || 'draft') + '</span></td>',
-          total: '<td class="py-3 px-4">' + moneyText(d.total) + '</td>'
+          total: '<td class="py-3 px-4">' + moneyText(d.total) + '</td>',
+          po: '<td class="py-3 px-4">' + esc(d.poNumber || '—') + '</td>',
+          email: '<td class="py-3 px-4">' + esc(d.customerEmail || '—') + '</td>',
+          due: '<td class="py-3 px-4">' + esc(due) + '</td>',
+          terms: '<td class="py-3 px-4">' + esc(d.paymentTerms || '—') + '</td>',
+          notes: '<td class="py-3 px-4">' + esc(d.notes || '—') + '</td>'
         };
         return '<tr class="border-b border-slate-800 hover:bg-slate-900/80 cursor-pointer" data-id="' + esc(d.id) + '">' +
           dashOrderedCells(table, cells, '<td class="py-3 px-4 text-right"><span class="text-sky-400 text-xs font-medium">Open →</span></td>') +
@@ -5527,28 +5888,61 @@
 
     function renderStaff(list) {
       staffList = list || [];
+      const table = document.querySelector('table.dash-cols[data-cols="staff"]');
       const me = currentAdminUser && String(currentAdminUser.id);
-      document.getElementById('staff-table').innerHTML = staffList.map(function (p) {
+      if (!staffList.length) {
+        document.getElementById('staff-table').innerHTML = '<tr><td class="py-6 px-4 text-slate-500" colspan="' + dashColSpan(table) + '">No staff logins yet.</td></tr>';
+        applyColOrder(table);
+        return;
+      }
+      const sorted = sortColRows(staffList, table, function (p, col) {
+        if (col === 'name') return p.name || '';
+        if (col === 'email') return p.email || '';
+        if (col === 'role') return staffRoleLabel(p.role);
+        return '';
+      });
+      document.getElementById('staff-table').innerHTML = sorted.map(function (p) {
         const mine = String(p.id) === me;
+        const cells = {
+          name: '<td class="py-2.5 px-4 font-medium">' + esc(p.name || '') + (mine ? ' <span class="text-xs text-slate-500">(you)</span>' : '') + '</td>',
+          email: '<td class="py-2.5 px-4 text-slate-400">' + esc(p.email || '') + '</td>',
+          role: '<td class="py-2.5 px-4"><span class="text-xs px-2 py-0.5 rounded-full bg-sky-500/15 text-sky-300">' + esc(staffRoleLabel(p.role)) + '</span></td>'
+        };
         return '<tr class="border-b border-slate-800 hover:bg-slate-800/40 cursor-pointer" data-staff-id="' + esc(p.id) + '">' +
-          '<td class="py-2.5 px-4 font-medium">' + esc(p.name || '') + (mine ? ' <span class="text-xs text-slate-500">(you)</span>' : '') + '</td>' +
-          '<td class="py-2.5 px-4 text-slate-400">' + esc(p.email || '') + '</td>' +
-          '<td class="py-2.5 px-4"><span class="text-xs px-2 py-0.5 rounded-full bg-sky-500/15 text-sky-300">' + esc(staffRoleLabel(p.role)) + '</span></td>' +
+          dashOrderedCells(table, cells) +
           '</tr>';
-      }).join('') || '<tr><td class="py-6 px-4 text-slate-500" colspan="3">No staff logins yet.</td></tr>';
+      }).join('');
+      applyColOrder(table);
     }
 
     function renderRoles(list) {
       adminRoles = list || [];
       fillStaffRoleSelect();
-      document.getElementById('role-table').innerHTML = adminRoles.map(function (r) {
+      const table = document.querySelector('table.dash-cols[data-cols="roles"]');
+      if (!adminRoles.length) {
+        document.getElementById('role-table').innerHTML = '<tr><td class="py-6 px-4 text-slate-500" colspan="' + dashColSpan(table) + '">No roles yet.</td></tr>';
+        applyColOrder(table);
+        return;
+      }
+      const sorted = sortColRows(adminRoles, table, function (r, col) {
+        if (col === 'name') return r.name || '';
+        if (col === 'website') return accessLabel(r.website);
+        if (col === 'inventory') return accessLabel(r.inventory);
+        if (col === 'users') return Number(r.userCount) || 0;
+        return '';
+      });
+      document.getElementById('role-table').innerHTML = sorted.map(function (r) {
+        const cells = {
+          name: '<td class="py-2.5 px-4 font-medium">' + esc(r.name) + (r.locked ? ' <span class="text-xs text-slate-500">(locked)</span>' : '') + '</td>',
+          website: '<td class="py-2.5 px-4 text-slate-400">' + esc(accessLabel(r.website)) + '</td>',
+          inventory: '<td class="py-2.5 px-4 text-slate-400">' + esc(accessLabel(r.inventory)) + '</td>',
+          users: '<td class="py-2.5 px-4 text-slate-400">' + esc(r.userCount) + '</td>'
+        };
         return '<tr class="border-b border-slate-800 hover:bg-slate-800/40 cursor-pointer" data-role-id="' + esc(r.id) + '">' +
-          '<td class="py-2.5 px-4 font-medium">' + esc(r.name) + (r.locked ? ' <span class="text-xs text-slate-500">(locked)</span>' : '') + '</td>' +
-          '<td class="py-2.5 px-4 text-slate-400">' + esc(accessLabel(r.website)) + '</td>' +
-          '<td class="py-2.5 px-4 text-slate-400">' + esc(accessLabel(r.inventory)) + '</td>' +
-          '<td class="py-2.5 px-4 text-slate-400">' + esc(r.userCount) + '</td>' +
+          dashOrderedCells(table, cells) +
           '</tr>';
-      }).join('') || '<tr><td class="py-6 px-4 text-slate-500" colspan="4">No roles yet.</td></tr>';
+      }).join('');
+      applyColOrder(table);
     }
 
     async function loadStaff() {
@@ -5977,6 +6371,7 @@
           })
         });
         if (!showDash(data.admin)) return;
+        await loadColumnPrefs();
         await loadDash();
         await openRoutedSection(tabFromPath());
       } catch (err) {
@@ -6109,11 +6504,11 @@
       input.type = show ? 'text' : 'password';
       this.textContent = show ? 'Hide' : 'Show';
     });
-    document.getElementById('ca-pay-amt').addEventListener('input', function () {
-      if (Number(this.value) > 0) document.getElementById('ca-pay').checked = true;
-    });
     document.getElementById('ca-bill-amt').addEventListener('input', function () {
       if (Number(this.value) > 0) document.getElementById('ca-bill').checked = true;
+    });
+    document.getElementById('ca-year-amt').addEventListener('input', function () {
+      if (Number(this.value) > 0) document.getElementById('ca-year').checked = true;
     });
     document.getElementById('ca-form').addEventListener('submit', async function (e) {
       e.preventDefault();
@@ -6401,8 +6796,10 @@
     api('/api/admin/me').then(function (data) {
       if (data.ok && data.admin) {
         if (!showDash(data.admin)) return;
-        return loadDash().then(function () {
-          return openRoutedSection(tabFromPath());
+        return loadColumnPrefs().then(function () {
+          return loadDash().then(function () {
+            return openRoutedSection(tabFromPath());
+          });
         });
       }
       loginPanel.classList.remove('hidden');

@@ -981,6 +981,32 @@ async function main() {
     };
   }
 
+  app.get('/api/admin/column-prefs', requireAdmin, async function (req, res, next) {
+    try {
+      const prefs = await store.getColumnPrefs(req.admin.id);
+      const ownerPrefs = await store.getOwnerColumnPrefs();
+      res.json({
+        ok: true,
+        prefs: prefs,
+        ownerPrefs: ownerPrefs,
+        isOwner: req.admin.role === 'owner'
+      });
+    } catch (err) { next(err); }
+  });
+
+  app.put('/api/admin/column-prefs', requireAdmin, async function (req, res, next) {
+    try {
+      const prefs = await store.saveColumnPrefs(req.admin.id, req.body && req.body.prefs);
+      const ownerPrefs = await store.getOwnerColumnPrefs();
+      res.json({
+        ok: true,
+        prefs: prefs,
+        ownerPrefs: ownerPrefs,
+        isOwner: req.admin.role === 'owner'
+      });
+    } catch (err) { next(err); }
+  });
+
   app.get('/api/admin/company-users', requireAdmin, async function (_req, res, next) {
     try {
       res.json({ ok: true, users: await store.listAdmins() });

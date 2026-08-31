@@ -114,10 +114,10 @@ function normalizeAccount(input) {
   const name = trim(src.name, 160);
   if (!name) throw new Error('Enter an account name.');
   const category = trim(src.category, 40);
-  const monthlyPaymentAmount = Math.max(0, num(src.monthlyPaymentAmount != null ? src.monthlyPaymentAmount : src.monthly_payment_amount));
   const monthlyBillingAmount = Math.max(0, num(src.monthlyBillingAmount != null ? src.monthlyBillingAmount : src.monthly_billing_amount));
-  const monthlyPayment = bool(src.monthlyPayment != null ? src.monthlyPayment : src.monthly_payment) || monthlyPaymentAmount > 0;
+  const yearlyBillingAmount = Math.max(0, num(src.yearlyBillingAmount != null ? src.yearlyBillingAmount : src.yearly_billing_amount));
   const monthlyBilling = bool(src.monthlyBilling != null ? src.monthlyBilling : src.monthly_billing) || monthlyBillingAmount > 0;
+  const yearlyBilling = bool(src.yearlyBilling != null ? src.yearlyBilling : src.yearly_billing) || yearlyBillingAmount > 0;
   return {
     name: name,
     category: CATEGORIES.indexOf(category) >= 0 ? category : (category || ''),
@@ -126,20 +126,20 @@ function normalizeAccount(input) {
     password: String(src.password == null ? '' : src.password).slice(0, 240),
     email: trim(src.email, 160).toLowerCase(),
     notes: trim(src.notes, 4000),
-    monthlyPayment: monthlyPayment,
-    monthlyPaymentAmount: monthlyPaymentAmount,
     monthlyBilling: monthlyBilling,
-    monthlyBillingAmount: monthlyBillingAmount
+    monthlyBillingAmount: monthlyBillingAmount,
+    yearlyBilling: yearlyBilling,
+    yearlyBillingAmount: yearlyBillingAmount
   };
 }
 
 function formatAccount(row, opts) {
   if (!row) return null;
   const includePassword = !opts || opts.includePassword !== false;
-  const monthlyPayment = !!(row.monthly_payment === 1 || row.monthly_payment === true);
   const monthlyBilling = !!(row.monthly_billing === 1 || row.monthly_billing === true);
-  const monthlyPaymentAmount = Number(row.monthly_payment_amount) || 0;
+  const yearlyBilling = !!(row.yearly_billing === 1 || row.yearly_billing === true);
   const monthlyBillingAmount = Number(row.monthly_billing_amount) || 0;
+  const yearlyBillingAmount = Number(row.yearly_billing_amount) || 0;
   const account = {
     id: row.id,
     name: row.name || '',
@@ -148,10 +148,10 @@ function formatAccount(row, opts) {
     login: row.login || '',
     email: row.email || '',
     notes: row.notes || '',
-    monthlyPayment: monthlyPayment || monthlyPaymentAmount > 0,
-    monthlyPaymentAmount: monthlyPaymentAmount,
     monthlyBilling: monthlyBilling || monthlyBillingAmount > 0,
     monthlyBillingAmount: monthlyBillingAmount,
+    yearlyBilling: yearlyBilling || yearlyBillingAmount > 0,
+    yearlyBillingAmount: yearlyBillingAmount,
     createdAt: row.created_at || '',
     updatedAt: row.updated_at || ''
   };
@@ -168,17 +168,17 @@ function accountDbFields(input) {
     password: input.password,
     email: input.email,
     notes: input.notes,
-    monthly_payment: input.monthlyPayment ? 1 : 0,
-    monthly_payment_amount: input.monthlyPaymentAmount,
     monthly_billing: input.monthlyBilling ? 1 : 0,
-    monthly_billing_amount: input.monthlyBillingAmount
+    monthly_billing_amount: input.monthlyBillingAmount,
+    yearly_billing: input.yearlyBilling ? 1 : 0,
+    yearly_billing_amount: input.yearlyBillingAmount
   };
 }
 
 function forSupabaseAccount(fields) {
   const out = Object.assign({}, fields);
-  out.monthly_payment = !!fields.monthly_payment;
   out.monthly_billing = !!fields.monthly_billing;
+  out.yearly_billing = !!fields.yearly_billing;
   return out;
 }
 
