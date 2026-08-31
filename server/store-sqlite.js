@@ -261,27 +261,30 @@ function createSqliteStore() {
       return publicRole(row, 0);
     },
     async createRole(input) {
-      const { accessLevel, slugifyRole, publicRole } = require('./admin-roles');
+      const { accessLevel, slugifyRole, publicRole, OWNER_ROLE_SLUG } = require('./admin-roles');
       let slug = slugifyRole(input.name);
+      if (slug === OWNER_ROLE_SLUG) throw new Error('Owner is a built-in role.');
       let n = 2;
       while (db.prepare('SELECT id FROM admin_roles WHERE slug = ?').get(slug)) {
         slug = slugifyRole(input.name) + '-' + n;
         n += 1;
       }
+      const menuJson = input.menuJson || '{}';
       const info = db.prepare(
-        'INSERT INTO admin_roles (slug, name, website_access, inventory_access, locked, created_at) VALUES (?, ?, ?, ?, 0, ?)'
-      ).run(slug, input.name, accessLevel(input.website), accessLevel(input.inventory), dbUtil.nowIso());
+        'INSERT INTO admin_roles (slug, name, website_access, inventory_access, menu_access, locked, created_at) VALUES (?, ?, ?, ?, ?, 0, ?)'
+      ).run(slug, input.name, accessLevel(input.website), accessLevel(input.inventory), menuJson, dbUtil.nowIso());
       return publicRole(db.prepare('SELECT * FROM admin_roles WHERE id = ?').get(info.lastInsertRowid), 0);
     },
     async updateRole(id, input) {
       const { accessLevel, publicRole } = require('./admin-roles');
       const current = db.prepare('SELECT * FROM admin_roles WHERE id = ?').get(id);
       if (!current) return null;
-      const name = input.name != null ? input.name : current.name;
+      const name = current.locked ? current.name : (input.name != null ? input.name : current.name);
       const website = current.locked ? 'edit' : accessLevel(input.website != null ? input.website : current.website_access);
       const inventory = current.locked ? 'edit' : accessLevel(input.inventory != null ? input.inventory : current.inventory_access);
-      db.prepare('UPDATE admin_roles SET name = ?, website_access = ?, inventory_access = ? WHERE id = ?')
-        .run(name, website, inventory, id);
+      const menuJson = current.locked ? current.menu_access : (input.menuJson != null ? input.menuJson : current.menu_access);
+      db.prepare('UPDATE admin_roles SET name = ?, website_access = ?, inventory_access = ?, menu_access = ? WHERE id = ?')
+        .run(name, website, inventory, menuJson || '{}', id);
       const n = db.prepare('SELECT COUNT(*) AS n FROM admins WHERE role = ?').get(current.slug);
       return publicRole(db.prepare('SELECT * FROM admin_roles WHERE id = ?').get(id), n && n.n);
     },
