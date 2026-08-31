@@ -732,6 +732,88 @@ function createSqliteStore() {
       const info = db.prepare('DELETE FROM purchase_orders WHERE id = ?').run(id);
       return info.changes > 0;
     },
+    async listReceiptShipments() {
+      const rs = require('./receipt-shipments');
+      return db.prepare('SELECT * FROM receipt_shipments ORDER BY id DESC').all().map(function (row) {
+        const lines = db.prepare('SELECT * FROM receipt_shipment_lines WHERE receipt_id = ? ORDER BY sort_order, id').all(row.id);
+        return rs.formatReceipt(row, lines);
+      });
+    },
+    async getReceiptShipment(id) {
+      const rs = require('./receipt-shipments');
+      const row = db.prepare('SELECT * FROM receipt_shipments WHERE id = ?').get(id);
+      if (!row) return null;
+      const lines = db.prepare('SELECT * FROM receipt_shipment_lines WHERE receipt_id = ? ORDER BY sort_order, id').all(row.id);
+      return rs.formatReceipt(row, lines);
+    },
+    async createReceiptShipment(payload, adminEmail) {
+      const rs = require('./receipt-shipments');
+      const inv = require('./inventory');
+      const input = rs.normalizeReceipt(payload);
+      if (input.vendorId) {
+        const vendor = await this.getVendor(input.vendorId);
+        if (vendor && !input.vendorName) input.vendorName = rs.snapshotFromVendor(vendor).vendorName;
+      }
+      if (input.poId) {
+        const po = await this.getPurchaseOrder(input.poId);
+        if (po && !input.poNumber) input.poNumber = po.number;
+      }
+      const existing = db.prepare('SELECT number FROM receipt_shipments').all().map(function (r) { return r.number; });
+      if (!input.number) input.number = rs.nextReceiptNumber(existing);
+      if (db.prepare('SELECT id FROM receipt_shipments WHERE number = ?').get(input.number)) {
+        throw new Error('That receipt number is already used.');
+      }
+      const fields = rs.dbReceiptFields(input);
+      const stamp = dbUtil.nowIso();
+      const noteBase = input.poNumber ? (input.number + ' / ' + input.poNumber) : input.number;
+      const findSku = db.prepare('SELECT id, name, sku, qty FROM inventory_items WHERE lower(sku) = lower(?)');
+      db.exec('BEGIN');
+      try {
+        const info = db.prepare(`
+          INSERT INTO receipt_shipments (
+            number, vendor_id, vendor_name, po_id, po_number, receipt_date, memo, status, created_at, updated_at
+          ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        `).run(
+          fields.number, fields.vendor_id, fields.vendor_name, fields.po_id, fields.po_number,
+          fields.receipt_date, fields.memo, fields.status, stamp, stamp
+        );
+        const receiptId = info.lastInsertRowid;
+        const insertLine = db.prepare(
+          'INSERT INTO receipt_shipment_lines (receipt_id, po_line_id, item_id, sku, product, po_qty, qty_received, sort_order) VALUES (?, ?, ?, ?, ?, ?, ?, ?)'
+        );
+        const updateQty = db.prepare('UPDATE inventory_items SET qty = ?, updated_at = ? WHERE id = ?');
+        const insertMove = db.prepare(`
+          INSERT INTO inventory_item_moves (item_id, kind, qty_delta, qty_after, note, admin_email, created_at)
+          VALUES (?, ?, ?, ?, ?, ?, ?)
+        `);
+        input.lines.forEach(function (line, i) {
+          let itemId = line.itemId || '';
+          let product = line.product;
+          let sku = line.sku;
+          if (line.qtyReceived > 0) {
+            if (!itemId && sku) {
+              const row = findSku.get(sku);
+              if (!row) throw new Error('SKU not found: ' + sku);
+              itemId = row.id;
+              if (!product) product = row.name;
+              sku = row.sku;
+            }
+            if (!itemId) throw new Error('SKU not found for a received line.');
+            const current = db.prepare('SELECT * FROM inventory_items WHERE id = ?').get(itemId);
+            if (!current) throw new Error('Inventory item not found.');
+            const change = inv.applyKind('receive', line.qtyReceived, current.qty);
+            updateQty.run(change.next, stamp, itemId);
+            insertMove.run(itemId, 'receive', change.delta, change.next, noteBase, String(adminEmail || '').trim().slice(0, 120), stamp);
+          }
+          insertLine.run(receiptId, line.poLineId || null, itemId || null, sku, product, line.poQty, line.qtyReceived, i);
+        });
+        db.exec('COMMIT');
+        return this.getReceiptShipment(receiptId);
+      } catch (err) {
+        try { db.exec('ROLLBACK'); } catch (e) { /* ignore */ }
+        throw err;
+      }
+    },
     async getCompanyProfile() {
       const ca = require('./company-accounts');
       return ca.formatProfile(db.prepare('SELECT * FROM company_profile WHERE id = 1').get());

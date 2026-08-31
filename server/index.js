@@ -104,6 +104,7 @@ async function main() {
     '/company/inventory',
     '/company/inventory/vendors',
     '/company/inventory/purchase-orders',
+    '/company/inventory/receipt-shipments',
     '/company/customers',
     '/company/sales',
     '/company/sales/quotes',
@@ -813,6 +814,29 @@ async function main() {
       if (!ok) return res.status(404).json({ ok: false, error: 'Purchase order not found.' });
       res.json({ ok: true });
     } catch (err) { next(err); }
+  });
+
+  app.get('/api/admin/receipt-shipments', requireAdmin, requirePerm('inventory', 'view'), async function (_req, res, next) {
+    try {
+      res.json({ ok: true, receipts: await store.listReceiptShipments() });
+    } catch (err) { next(err); }
+  });
+
+  app.get('/api/admin/receipt-shipments/:id', requireAdmin, requirePerm('inventory', 'view'), async function (req, res, next) {
+    try {
+      const receipt = await store.getReceiptShipment(req.params.id);
+      if (!receipt) return res.status(404).json({ ok: false, error: 'Receipt not found.' });
+      res.json({ ok: true, receipt: receipt });
+    } catch (err) { next(err); }
+  });
+
+  app.post('/api/admin/receipt-shipments', requireAdmin, requirePerm('inventory', 'edit'), async function (req, res, next) {
+    try {
+      const receipt = await store.createReceiptShipment(req.body || {}, req.admin && req.admin.email);
+      res.json({ ok: true, receipt: receipt });
+    } catch (err) {
+      res.status(400).json({ ok: false, error: err.message || 'Could not save receipt.' });
+    }
   });
 
   app.delete('/api/admin/sales-docs/:id', requireAdmin, async function (req, res, next) {
