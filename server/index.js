@@ -11,7 +11,7 @@ const { getStore, hasSupabase } = require('./store');
 const siteAuth = require('./site-auth');
 const { sendContactEmail, sendDealerInquiryEmail, mailConfigured } = require('./mail');
 const img = require('./image');
-const { publicAdmin, hasPerm, isOwnerAdmin, accessLevel } = require('./admin-roles');
+const { publicAdmin, hasPerm, isOwnerAdmin, isOwnerRole, OWNER_ROLE_SLUG, roleInputFromBody } = require('./admin-roles');
 
 const ROOT = path.join(__dirname, '..');
 const COOKIE = 'spectrum_admin';
@@ -974,10 +974,13 @@ async function main() {
   function rolePayload(body) {
     const name = String((body && body.name) || '').trim();
     if (!name) throw new Error('Name the role.');
+    const input = roleInputFromBody(body || {});
     return {
       name: name,
-      website: accessLevel(body && body.website),
-      inventory: accessLevel(body && body.inventory)
+      website: input.website,
+      inventory: input.inventory,
+      menu: input.menu,
+      menuJson: input.menuJson
     };
   }
 
@@ -1079,6 +1082,12 @@ async function main() {
       if (!(await store.getRoleBySlug(input.role))) {
         return res.status(400).json({ ok: false, error: 'Choose a role.' });
       }
+      if (isOwnerRole(input.role)) {
+        const owners = await store.countAdminsByRole(OWNER_ROLE_SLUG);
+        if (owners >= 1) {
+          return res.status(400).json({ ok: false, error: 'Owner can only be assigned to one user.' });
+        }
+      }
       const staff = await store.createAdmin(input);
       res.json({ ok: true, staff: staff });
     } catch (err) {
@@ -1099,7 +1108,14 @@ async function main() {
       }
       const all = await store.listAdmins();
       const current = all.find(function (row) { return String(row.id) === String(id); });
-      if (!isOwnerAdmin({ role: input.role, perms: { settings: input.role === 'owner' } }) && current && isOwnerAdmin(current)) {
+      if (isOwnerRole(input.role)) {
+        const owners = all.filter(function (row) { return isOwnerRole(row.role); });
+        const taken = owners.some(function (row) { return String(row.id) !== String(id); });
+        if (taken) {
+          return res.status(400).json({ ok: false, error: 'Owner can only be assigned to one user.' });
+        }
+      }
+      if (!isOwnerRole(input.role) && current && isOwnerAdmin(current)) {
         const owners = all.filter(isOwnerAdmin).length;
         if (owners <= 1) return res.status(400).json({ ok: false, error: 'Keep at least one Owner login.' });
       }

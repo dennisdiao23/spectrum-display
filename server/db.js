@@ -355,10 +355,12 @@ function seedAdminRoles(db) {
       name TEXT NOT NULL,
       website_access TEXT NOT NULL DEFAULT 'none',
       inventory_access TEXT NOT NULL DEFAULT 'none',
+      menu_access TEXT NOT NULL DEFAULT '{}',
       locked INTEGER NOT NULL DEFAULT 0,
       created_at TEXT NOT NULL
     );
   `);
+  try { db.exec("ALTER TABLE admin_roles ADD COLUMN menu_access TEXT NOT NULL DEFAULT '{}'"); } catch (e) { /* already present */ }
   const count = db.prepare('SELECT COUNT(*) AS n FROM admin_roles').get();
   if (count && count.n) return;
   const stamp = nowIso();

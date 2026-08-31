@@ -643,6 +643,28 @@ html.dash-scroll-lock body.company-app {
 }
 .cc-sec.is-open .cc-sec-body { display: grid; }
 .cc-sec-body .wide { grid-column: 1 / -1; }
+.role-menu-access {
+  display: flex;
+  flex-direction: column;
+  gap: 0.55rem;
+}
+.role-menu-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+  padding-top: 0.15rem;
+}
+.role-menu-group-label {
+  margin: 0;
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--dash-muted);
+}
+.role-menu-row.is-sub label {
+  padding-left: 0.85rem;
+}
 .cc-field label {
   display: block;
   font-size: 0.72rem;

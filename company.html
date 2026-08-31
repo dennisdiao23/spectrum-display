@@ -1004,7 +1004,7 @@
           <div class="flex items-start justify-between gap-4">
             <div>
               <h2 class="text-base font-semibold text-slate-800">Role Setting</h2>
-              <p class="text-slate-400 text-sm mt-1">Name a role and choose whether it can view or edit Website and Inventory. Delete a role only when no user is assigned to it.</p>
+              <p class="text-slate-400 text-sm mt-1">Name a role and set access for each menu and sub-menu. Owner is limited to one user and always has full access. Delete a role only when no user is assigned to it.</p>
             </div>
             <button id="role-new-btn" type="button" class="shrink-0 px-4 py-2 rounded-full bg-sky-500 hover:bg-sky-400 text-white text-sm font-semibold">Add role</button>
           </div>
@@ -1568,20 +1568,8 @@
         <button type="button" class="cc-sec-btn"><span class="cc-sec-label"><svg class="cc-sec-ico" viewBox="0 0 24 24"><path d="M12 3 4.6 6.4v5.3c0 4.8 3.2 8.1 7.4 9.3 4.2-1.2 7.4-4.5 7.4-9.3V6.4L12 3z"/><path d="m9 12.2 2.1 2.1 4-4"/></svg> Access</span> <span class="cc-sec-chevron">▾</span></button>
         <div class="cc-sec-body">
           <div class="cc-field wide"><label>Role name</label><input id="role-name" required type="text" placeholder="Warehouse"></div>
-          <div class="cc-field"><label>Website</label>
-            <select id="role-website">
-              <option value="none">No access</option>
-              <option value="view">View</option>
-              <option value="edit">View and edit</option>
-            </select>
-          </div>
-          <div class="cc-field"><label>Inventory</label>
-            <select id="role-inventory">
-              <option value="none">No access</option>
-              <option value="view">View</option>
-              <option value="edit">View and edit</option>
-            </select>
-          </div>
+          <p id="role-owner-note" class="hidden cc-note wide">Owner always has full access to every menu. Only one user can hold this role.</p>
+          <div id="role-menu-access" class="role-menu-access wide"></div>
         </div>
       </section>
       <p id="role-msg" class="hidden text-sm px-5 pt-3"></p>
@@ -1775,25 +1763,47 @@
     function adminPerms() {
       const p = currentAdminUser && currentAdminUser.perms;
       if (p && typeof p === 'object') return p;
-      return { website: 'edit', inventory: 'edit', settings: true };
+      return { settings: true, menu: {}, website: 'edit', inventory: 'edit' };
     }
     function canView(mod) {
-      if (mod === 'settings') return !!adminPerms().settings;
+      if (adminPerms().settings) return true;
+      if (mod === 'settings') return canUse('settings') || canUse('company') || canUse('staff');
+      if (mod === 'website') return canUse('website') || canUse('products') || canUse('accounts');
+      if (mod === 'inventory') return canUse('inventory') || canUse('vendors') || canUse('purchase-orders');
       const v = adminPerms()[mod];
       return v === 'view' || v === 'edit';
     }
     function canEdit(mod) {
-      if (mod === 'settings') return !!adminPerms().settings;
+      if (adminPerms().settings) return true;
+      if (mod === 'settings') return canUse('staff') && ((adminPerms().menu || {}).staff === 'edit' || (adminPerms().menu || {}).settings === 'edit');
+      if (mod === 'website') return canUse('products') && ((adminPerms().menu || {}).website === 'edit' || (adminPerms().menu || {}).products === 'edit');
+      if (mod === 'inventory') return canUse('inventory') && (adminPerms().menu || {}).inventory === 'edit';
       return adminPerms()[mod] === 'edit';
     }
+    const SECTION_MENU_KEY = {
+      dashboard: 'dashboard',
+      website: 'website',
+      products: 'products',
+      accounts: 'accounts',
+      inventory: 'inventory',
+      vendors: 'vendors',
+      'purchase-orders': 'purchase-orders',
+      customers: 'customers',
+      sales: 'sales',
+      quotes: 'quotes',
+      orders: 'orders',
+      invoices: 'invoices',
+      settings: 'settings',
+      company: 'company',
+      staff: 'staff',
+      roles: 'staff'
+    };
     function canUse(section) {
-      if (section === 'dashboard') return !!currentAdminUser;
-      if (section === 'products' || section === 'website' || section === 'accounts') return canView('website');
-      if (section === 'inventory' || section === 'vendors' || section === 'purchase-orders') return canView('inventory');
-      if (section === 'customers') return !!currentAdminUser;
-      if (section === 'sales' || section === 'quotes' || section === 'orders' || section === 'invoices') return !!currentAdminUser;
-      if (section === 'staff' || section === 'settings' || section === 'roles' || section === 'company') return canView('settings');
-      return false;
+      if (!currentAdminUser) return false;
+      if (adminPerms().settings) return true;
+      const key = SECTION_MENU_KEY[section] || section;
+      const level = (adminPerms().menu || {})[key];
+      return level === 'view' || level === 'edit';
     }
     function staffRoleLabel(role) {
       const found = adminRoles.find(function (r) { return r.slug === role; });
@@ -5784,11 +5794,103 @@
       showCcLeave();
     }
 
+    const ROLE_MENU_TREE = [
+      { key: 'dashboard', label: 'Dashboard' },
+      { label: 'Website', children: [
+        { key: 'website', label: 'Website' },
+        { key: 'products', label: 'Products' },
+        { key: 'accounts', label: 'Accounts' }
+      ]},
+      { label: 'Inventory', children: [
+        { key: 'inventory', label: 'Inventory' },
+        { key: 'vendors', label: 'Vendor' },
+        { key: 'purchase-orders', label: 'Purchase Order' }
+      ]},
+      { key: 'customers', label: 'Customer' },
+      { label: 'Sales', children: [
+        { key: 'sales', label: 'Sales' },
+        { key: 'quotes', label: 'Sales Quote' },
+        { key: 'orders', label: 'Sales Order' },
+        { key: 'invoices', label: 'Invoice' }
+      ]},
+      { label: 'Settings', children: [
+        { key: 'settings', label: 'Settings' },
+        { key: 'company', label: 'Company' },
+        { key: 'staff', label: 'Manage users' }
+      ]}
+    ];
+    function roleMenuOptions(selected) {
+      const value = selected || 'none';
+      return ['none', 'view', 'edit'].map(function (level) {
+        const label = accessLabel(level);
+        return '<option value="' + level + '"' + (level === value ? ' selected' : '') + '>' + label + '</option>';
+      }).join('');
+    }
+    function roleMenuRowHtml(key, label, sub) {
+      return '<div class="cc-field role-menu-row' + (sub ? ' is-sub' : '') + '"><label>' + esc(label) + '</label>' +
+        '<select data-role-menu-key="' + esc(key) + '">' + roleMenuOptions('none') + '</select></div>';
+    }
+    function ensureRoleMenuAccessBuilt() {
+      const host = document.getElementById('role-menu-access');
+      if (!host || host.dataset.built) return;
+      let html = '';
+      ROLE_MENU_TREE.forEach(function (group) {
+        if (group.key) {
+          html += roleMenuRowHtml(group.key, group.label, false);
+          return;
+        }
+        html += '<div class="role-menu-group"><p class="role-menu-group-label">' + esc(group.label) + '</p>';
+        (group.children || []).forEach(function (child) {
+          html += roleMenuRowHtml(child.key, child.label, true);
+        });
+        html += '</div>';
+      });
+      host.innerHTML = html;
+      host.dataset.built = '1';
+    }
+    function readRoleMenuFromForm() {
+      const menu = {};
+      document.querySelectorAll('#role-menu-access [data-role-menu-key]').forEach(function (sel) {
+        menu[sel.getAttribute('data-role-menu-key')] = sel.value || 'none';
+      });
+      return menu;
+    }
+    function fillRoleMenuAccess(menu, locked) {
+      ensureRoleMenuAccessBuilt();
+      document.querySelectorAll('#role-menu-access [data-role-menu-key]').forEach(function (sel) {
+        const key = sel.getAttribute('data-role-menu-key');
+        const value = (menu && menu[key]) || 'none';
+        sel.innerHTML = roleMenuOptions(locked ? 'edit' : value);
+        sel.value = locked ? 'edit' : value;
+        sel.disabled = !!locked;
+      });
+    }
+    function setRoleMenuAccessDisabled(disabled) {
+      document.querySelectorAll('#role-menu-access [data-role-menu-key]').forEach(function (sel) {
+        sel.disabled = !!disabled;
+      });
+    }
+    function ownerAssignedToOther() {
+      const owner = staffList.find(function (p) { return p.role === 'owner'; });
+      if (!owner) return null;
+      if (editingStaffId && String(owner.id) === String(editingStaffId)) return null;
+      return owner;
+    }
+
     function fillStaffRoleSelect(selected) {
       const sel = document.getElementById('staff-role');
-      const value = selected || sel.value || 'owner';
-      sel.innerHTML = adminRoles.map(function (r) {
-        return '<option value="' + esc(r.slug) + '"' + (r.slug === value ? ' selected' : '') + '>' + esc(r.name) + '</option>';
+      const blockedOwner = ownerAssignedToOther();
+      const roles = adminRoles.filter(function (r) {
+        return !(r.slug === 'owner' && blockedOwner);
+      });
+      let value = selected || sel.value || '';
+      if (!value || (value === 'owner' && blockedOwner)) {
+        const fallback = roles.find(function (r) { return r.slug !== 'owner'; }) || roles[0];
+        value = fallback ? fallback.slug : '';
+      }
+      sel.innerHTML = roles.map(function (r) {
+        const note = r.slug === 'owner' ? ' (1 user only)' : '';
+        return '<option value="' + esc(r.slug) + '"' + (r.slug === value ? ' selected' : '') + '>' + esc(r.name) + note + '</option>';
       }).join('');
     }
 
@@ -5813,8 +5915,11 @@
       editingRoleId = null;
       document.getElementById('role-form').reset();
       document.getElementById('role-id').value = '';
-      document.getElementById('role-website').disabled = false;
-      document.getElementById('role-inventory').disabled = false;
+      document.getElementById('role-name').disabled = false;
+      document.getElementById('role-owner-note').classList.add('hidden');
+      fillRoleMenuAccess({}, false);
+      document.getElementById('role-save').classList.remove('hidden');
+      document.getElementById('role-save').disabled = false;
       document.getElementById('role-save').textContent = 'Save role';
       document.getElementById('role-delete-btn').classList.add('hidden');
       document.getElementById('rl-title').textContent = 'Role';
@@ -5860,16 +5965,19 @@
     function openRoleDrawer(role) {
       showRoleMsg('');
       closeStaffDrawer(true);
+      ensureRoleMenuAccessBuilt();
       if (role && role.id) {
         editingRoleId = role.id;
+        const isOwner = !!(role.ownerRole || role.slug === 'owner' || role.locked);
         const canDelete = !role.locked && !role.userCount;
         document.getElementById('rl-title').textContent = role.name || 'Role';
         document.getElementById('role-id').value = role.id;
         document.getElementById('role-name').value = role.name || '';
-        document.getElementById('role-website').value = role.website || 'none';
-        document.getElementById('role-inventory').value = role.inventory || 'none';
-        document.getElementById('role-website').disabled = !!role.locked;
-        document.getElementById('role-inventory').disabled = !!role.locked;
+        document.getElementById('role-name').disabled = !!role.locked;
+        fillRoleMenuAccess(role.menu || {}, !!role.locked);
+        document.getElementById('role-owner-note').classList.toggle('hidden', !isOwner);
+        document.getElementById('role-save').classList.toggle('hidden', !!role.locked);
+        document.getElementById('role-save').disabled = !!role.locked;
         document.getElementById('role-save').textContent = 'Save role';
         document.getElementById('role-delete-btn').classList.toggle('hidden', !canDelete);
       } else {
@@ -5959,10 +6067,12 @@
       });
       document.getElementById('role-table').innerHTML = sorted.map(function (r) {
         const cells = {
-          name: '<td class="py-2.5 px-4 font-medium">' + esc(r.name) + (r.locked ? ' <span class="text-xs text-slate-500">(locked)</span>' : '') + '</td>',
+          name: '<td class="py-2.5 px-4 font-medium">' + esc(r.name) +
+            (r.ownerRole ? ' <span class="text-xs text-slate-500">(1 user · full access)</span>' :
+              (r.locked ? ' <span class="text-xs text-slate-500">(locked)</span>' : '')) + '</td>',
           website: '<td class="py-2.5 px-4 text-slate-400">' + esc(accessLabel(r.website)) + '</td>',
           inventory: '<td class="py-2.5 px-4 text-slate-400">' + esc(accessLabel(r.inventory)) + '</td>',
-          users: '<td class="py-2.5 px-4 text-slate-400">' + esc(r.userCount) + '</td>'
+          users: '<td class="py-2.5 px-4 text-slate-400">' + esc(r.userCount) + (r.singleUser && r.userCount > 1 ? ' <span class="text-xs text-red-400">max 1</span>' : '') + '</td>'
         };
         return '<tr class="border-b border-slate-800 hover:bg-slate-800/40 cursor-pointer" data-role-id="' + esc(r.id) + '">' +
           dashOrderedCells(table, cells) +
@@ -6089,8 +6199,7 @@
       showError('role-error', '');
       const body = {
         name: document.getElementById('role-name').value.trim(),
-        website: document.getElementById('role-website').value,
-        inventory: document.getElementById('role-inventory').value
+        menu: readRoleMenuFromForm()
       };
       try {
         if (editingRoleId) {

@@ -50,9 +50,12 @@ create table if not exists public.admin_roles (
   name text not null,
   website_access text not null default 'none',
   inventory_access text not null default 'none',
+  menu_access jsonb not null default '{}'::jsonb,
   locked boolean not null default false,
   created_at timestamptz not null default now()
 );
+
+alter table public.admin_roles add column if not exists menu_access jsonb not null default '{}'::jsonb;
 
 insert into public.admin_roles (slug, name, website_access, inventory_access, locked)
 values

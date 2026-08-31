@@ -669,8 +669,9 @@ function createSupabaseStore() {
       return data ? publicRole(data, 0) : null;
     },
     async createRole(input) {
-      const { accessLevel, slugifyRole, publicRole } = require('./admin-roles');
+      const { accessLevel, slugifyRole, publicRole, OWNER_ROLE_SLUG } = require('./admin-roles');
       let slug = slugifyRole(input.name);
+      if (slug === OWNER_ROLE_SLUG) throw new Error('Owner is a built-in role.');
       let n = 2;
       while (true) {
         const { data } = await supabase.from('admin_roles').select('id').eq('slug', slug).maybeSingle();
@@ -683,6 +684,7 @@ function createSupabaseStore() {
         name: input.name,
         website_access: accessLevel(input.website),
         inventory_access: accessLevel(input.inventory),
+        menu_access: input.menuJson || '{}',
         locked: false
       }).select('*').single();
       throwIf(error);
@@ -693,13 +695,14 @@ function createSupabaseStore() {
       const { data: current, error: cErr } = await supabase.from('admin_roles').select('*').eq('id', id).maybeSingle();
       throwIf(cErr);
       if (!current) return null;
-      const patch = { name: input.name != null ? input.name : current.name };
+      const patch = { name: current.locked ? current.name : (input.name != null ? input.name : current.name) };
       if (current.locked) {
         patch.website_access = 'edit';
         patch.inventory_access = 'edit';
       } else {
         patch.website_access = accessLevel(input.website != null ? input.website : current.website_access);
         patch.inventory_access = accessLevel(input.inventory != null ? input.inventory : current.inventory_access);
+        if (input.menuJson != null) patch.menu_access = input.menuJson;
       }
       const { data, error } = await supabase.from('admin_roles').update(patch).eq('id', id).select('*').single();
       throwIf(error);
