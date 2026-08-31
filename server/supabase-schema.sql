@@ -497,6 +497,33 @@ create policy company_customers_admin_all on public.company_customers
 for all using (public.is_spectrum_admin()) with check (public.is_spectrum_admin());
 grant all on public.company_customers to service_role;
 
+create table if not exists public.company_customer_contacts (
+  id bigint generated always as identity primary key,
+  customer_id bigint not null references public.company_customers(id) on delete cascade,
+  title text not null default '',
+  first_name text not null default '',
+  middle_name text not null default '',
+  last_name text not null default '',
+  suffix text not null default '',
+  job_title text not null default '',
+  role text not null default '',
+  email text not null default '',
+  phone text not null default '',
+  mobile text not null default '',
+  fax text not null default '',
+  is_primary boolean not null default false,
+  notes text not null default '',
+  sort_order integer not null default 0,
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now()
+);
+create index if not exists company_customer_contacts_customer_idx on public.company_customer_contacts (customer_id, sort_order, id);
+alter table public.company_customer_contacts enable row level security;
+drop policy if exists company_customer_contacts_admin_all on public.company_customer_contacts;
+create policy company_customer_contacts_admin_all on public.company_customer_contacts
+for all using (public.is_spectrum_admin()) with check (public.is_spectrum_admin());
+grant all on public.company_customer_contacts to service_role;
+
 create table if not exists public.company_sales_docs (
   id bigint generated always as identity primary key,
   type text not null,
@@ -591,6 +618,33 @@ drop policy if exists inventory_vendors_admin_all on public.inventory_vendors;
 create policy inventory_vendors_admin_all on public.inventory_vendors
 for all using (public.is_spectrum_admin()) with check (public.is_spectrum_admin());
 grant all on public.inventory_vendors to service_role;
+
+create table if not exists public.inventory_vendor_contacts (
+  id bigint generated always as identity primary key,
+  vendor_id bigint not null references public.inventory_vendors(id) on delete cascade,
+  title text not null default '',
+  first_name text not null default '',
+  middle_name text not null default '',
+  last_name text not null default '',
+  suffix text not null default '',
+  job_title text not null default '',
+  role text not null default '',
+  email text not null default '',
+  phone text not null default '',
+  mobile text not null default '',
+  fax text not null default '',
+  is_primary boolean not null default false,
+  notes text not null default '',
+  sort_order integer not null default 0,
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now()
+);
+create index if not exists inventory_vendor_contacts_vendor_idx on public.inventory_vendor_contacts (vendor_id, sort_order, id);
+alter table public.inventory_vendor_contacts enable row level security;
+drop policy if exists inventory_vendor_contacts_admin_all on public.inventory_vendor_contacts;
+create policy inventory_vendor_contacts_admin_all on public.inventory_vendor_contacts
+for all using (public.is_spectrum_admin()) with check (public.is_spectrum_admin());
+grant all on public.inventory_vendor_contacts to service_role;
 
 create table if not exists public.purchase_orders (
   id bigint generated always as identity primary key,

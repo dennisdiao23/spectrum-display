@@ -1859,3 +1859,120 @@ html.dash-scroll-lock body.company-app {
     display: none;
   }
 }
+
+/* Party contacts (customer + vendor detail panes) */
+.cc-contact-toolbar {
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: 0.75rem;
+}
+.cc-contact-form {
+  border: 1px solid var(--dash-line);
+  border-radius: 0.85rem;
+  padding: 1rem;
+  margin-bottom: 1rem;
+  background: #fafbfd;
+}
+.cc-contact-form-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.65rem 1rem;
+}
+.cc-contact-form-grid .cc-field.wide {
+  grid-column: 1 / -1;
+}
+.cc-contact-form-grid .cc-field-check {
+  display: flex;
+  align-items: center;
+}
+.cc-contact-form-grid .cc-field-check label {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-size: 0.875rem;
+  margin: 0;
+}
+.cc-contact-form-actions {
+  display: flex;
+  gap: 0.5rem;
+  margin-top: 0.85rem;
+}
+.cc-contact-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.65rem;
+}
+.cc-contact-card {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 0.75rem;
+  border: 1px solid var(--dash-line);
+  border-radius: 0.85rem;
+  padding: 0.85rem 1rem;
+  background: #fff;
+}
+.cc-contact-card.is-primary {
+  border-color: #7dd3fc;
+  background: #f0f9ff;
+}
+.cc-contact-card-head {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-bottom: 0.25rem;
+}
+.cc-contact-badge {
+  font-size: 0.6875rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: #0369a1;
+  background: #e0f2fe;
+  border-radius: 999px;
+  padding: 0.15rem 0.45rem;
+}
+.cc-contact-card-meta {
+  margin: 0;
+  font-size: 0.8125rem;
+  color: var(--dash-muted);
+}
+.cc-contact-card-notes {
+  margin: 0.35rem 0 0;
+  font-size: 0.8125rem;
+  white-space: pre-wrap;
+}
+.cc-contact-card-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+  flex-shrink: 0;
+}
+.cc-contact-action {
+  border: 1px solid var(--dash-line);
+  border-radius: 999px;
+  padding: 0.25rem 0.65rem;
+  font-size: 0.75rem;
+  background: #fff;
+  color: var(--dash-text);
+  cursor: pointer;
+}
+.cc-contact-action:hover {
+  background: #f4f6f8;
+}
+.cc-contact-action-danger {
+  color: #b91c1c;
+  border-color: #fecaca;
+}
+.cc-contact-action-danger:hover {
+  background: #fef2f2;
+}
+@media (max-width: 640px) {
+  .cc-contact-form-grid {
+    grid-template-columns: 1fr;
+  }
+  .cc-contact-card {
+    flex-direction: column;
+  }
+}
