@@ -110,8 +110,7 @@ async function main() {
     '/company/sales/orders',
     '/company/sales/invoices',
     '/company/settings',
-    '/company/settings/company',
-    '/company/settings/roles'
+    '/company/settings/company'
   ];
   COMPANY_PAGES.forEach(function (route) {
     app.get([route, route + '/'], sendCompany);
@@ -122,6 +121,9 @@ async function main() {
   });
   app.get(['/company/inventory/customers', '/company/inventory/customers/'], function (_req, res) {
     res.redirect(301, '/company/inventory');
+  });
+  app.get(['/company/settings/roles', '/company/settings/roles/'], function (_req, res) {
+    res.redirect(301, '/company/settings');
   });
 
   const JOB_PAGES = [

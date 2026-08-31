@@ -472,12 +472,16 @@ body.cc-drawer-open #cc-drawer-scrim,
 body.inv-drawer-open #inv-drawer-scrim,
 body.vn-drawer-open #vn-drawer-scrim,
 body.ca-drawer-open #ca-drawer-scrim,
-body.ci-drawer-open #ci-drawer-scrim { display: block; }
+body.ci-drawer-open #ci-drawer-scrim,
+body.st-drawer-open #st-drawer-scrim,
+body.rl-drawer-open #rl-drawer-scrim { display: block; }
 body.cc-drawer-open #cc-drawer,
 body.inv-drawer-open #inv-drawer,
 body.vn-drawer-open #vn-drawer,
 body.ca-drawer-open #ca-drawer,
-body.ci-drawer-open #ci-drawer { transform: none; }
+body.ci-drawer-open #ci-drawer,
+body.st-drawer-open #st-drawer,
+body.rl-drawer-open #rl-drawer { transform: none; }
 .ca-secret {
   display: flex;
   gap: 0.45rem;
