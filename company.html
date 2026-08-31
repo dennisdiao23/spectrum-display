@@ -2843,10 +2843,13 @@
       if (!panel || panel.hidden) return;
       const box = menu.getBoundingClientRect();
       const pw = panel.offsetWidth || 184;
+      const ph = panel.offsetHeight || 0;
       let left = box.right + 6;
       if (left + pw > window.innerWidth - 8) left = box.left - pw - 6;
+      let top = box.top;
+      if (top + ph > window.innerHeight - 8) top = window.innerHeight - ph - 8;
       panel.style.left = Math.max(8, left) + 'px';
-      panel.style.top = Math.max(8, box.top) + 'px';
+      panel.style.top = Math.max(8, top) + 'px';
     }
 
     function openColAdd(table) {
@@ -3016,10 +3019,15 @@
       });
     }
 
-    document.addEventListener('click', function (e) {
+    document.addEventListener('pointerdown', function (e) {
       if (!dashColMenu || dashColMenu.hidden) return;
-      if (dashColMenu.contains(e.target)) return;
-      if (dashColAdd && dashColAdd.contains(e.target)) return;
+      const onMenu = dashColMenu.contains(e.target);
+      const onAdd = dashColAdd && !dashColAdd.hidden && dashColAdd.contains(e.target);
+      if (onAdd) return;
+      if (onMenu) {
+        if (dashColAdd && !dashColAdd.hidden && !e.target.closest('[data-col-act="add"]')) closeColAdd();
+        return;
+      }
       if (e.target.closest && e.target.closest('table.dash-cols th[data-col]')) return;
       closeColMenu();
     });

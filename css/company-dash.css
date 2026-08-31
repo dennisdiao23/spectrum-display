@@ -358,8 +358,7 @@ body.dash-col-resizing * {
   z-index: 96;
   min-width: 11.5rem;
   max-width: 14rem;
-  max-height: 18rem;
-  overflow: auto;
+  overflow: visible;
   background: #fff;
   border: 1px solid var(--dash-line);
   border-radius: 0.55rem;
