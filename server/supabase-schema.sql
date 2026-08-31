@@ -636,6 +636,44 @@ create policy purchase_order_lines_admin_all on public.purchase_order_lines
 for all using (public.is_spectrum_admin()) with check (public.is_spectrum_admin());
 grant all on public.purchase_order_lines to service_role;
 
+create table if not exists public.receipt_shipments (
+  id bigint generated always as identity primary key,
+  number text not null unique,
+  vendor_id bigint references public.inventory_vendors(id) on delete set null,
+  vendor_name text not null default '',
+  po_id bigint references public.purchase_orders(id) on delete set null,
+  po_number text not null default '',
+  receipt_date text not null default '',
+  memo text not null default '',
+  status text not null default 'received',
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now()
+);
+create index if not exists receipt_shipments_vendor_idx on public.receipt_shipments (vendor_id, receipt_date);
+alter table public.receipt_shipments enable row level security;
+drop policy if exists receipt_shipments_admin_all on public.receipt_shipments;
+create policy receipt_shipments_admin_all on public.receipt_shipments
+for all using (public.is_spectrum_admin()) with check (public.is_spectrum_admin());
+grant all on public.receipt_shipments to service_role;
+
+create table if not exists public.receipt_shipment_lines (
+  id bigint generated always as identity primary key,
+  receipt_id bigint not null references public.receipt_shipments(id) on delete cascade,
+  po_line_id bigint,
+  item_id bigint,
+  sku text not null default '',
+  product text not null default '',
+  po_qty numeric not null default 0,
+  qty_received numeric not null default 0,
+  sort_order integer not null default 0
+);
+create index if not exists receipt_shipment_lines_receipt_idx on public.receipt_shipment_lines (receipt_id, sort_order);
+alter table public.receipt_shipment_lines enable row level security;
+drop policy if exists receipt_shipment_lines_admin_all on public.receipt_shipment_lines;
+create policy receipt_shipment_lines_admin_all on public.receipt_shipment_lines
+for all using (public.is_spectrum_admin()) with check (public.is_spectrum_admin());
+grant all on public.receipt_shipment_lines to service_role;
+
 create table if not exists public.company_profile (
   id bigint primary key,
   legal_name text not null default 'Spectrum Display Inc.',

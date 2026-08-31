@@ -55,6 +55,10 @@
             <svg class="dash-nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 3h8l4 4v14a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1z"/><path d="M15 3v5h5"/><path d="M9 13h6M9 17h4"/></svg>
             <span>Purchase Order</span>
           </a>
+          <a href="/company/inventory/receipt-shipments" id="tab-receipt-shipments" class="dash-sub-link">
+            <svg class="dash-nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 7h16l-1.5 12H5.5L4 7z"/><path d="M9 7V5a3 3 0 0 1 6 0v2"/><path d="M9 14h6M9 18h4"/></svg>
+            <span>Receipt Shipment</span>
+          </a>
         </div>
       </div>
       <a href="/company/customers" id="tab-customers" class="dash-nav-link">
@@ -724,6 +728,95 @@
               <button type="button" id="po-cancel" class="px-4 py-2 rounded-full border border-slate-700 text-sm">Cancel</button>
               <button type="button" id="po-delete-btn" class="hidden px-4 py-2 rounded-full border border-slate-700 text-red-400 text-sm">Delete</button>
               <button type="submit" class="px-5 py-2 rounded-full bg-sky-500 hover:bg-sky-400 text-white text-sm font-semibold">Save</button>
+            </div>
+          </form>
+        </div>
+      </div>
+
+      <div id="rs-section" class="hidden space-y-6">
+        <div id="rs-list-wrap">
+          <div class="flex items-center justify-end mb-4">
+            <button id="rs-new-btn" type="button" class="px-4 py-2 rounded-full bg-sky-500 hover:bg-sky-400 text-white text-sm font-semibold">New receipt</button>
+          </div>
+          <div class="flex flex-wrap items-center gap-2 mb-4">
+            <input id="rs-search" type="search" placeholder="Search number, vendor, PO" class="w-full sm:w-96 bg-slate-800 border border-slate-700 rounded-full px-3 py-1.5 text-sm">
+          </div>
+          <p class="text-slate-400 text-sm mb-4"><span id="rs-total">0</span> receipt shipments.</p>
+          <p id="rs-error" class="hidden text-sm text-red-400 mb-3"></p>
+          <div class="overflow-x-auto rounded-2xl border border-slate-800">
+            <table class="w-full text-sm dash-cols" data-cols="receipt-shipments">
+              <thead class="text-left text-slate-400 border-b border-slate-800">
+                <tr>
+                  <th class="py-3 px-4 font-medium" data-col="number">Number <span class="dash-col-caret">▾</span><span class="dash-col-grip" aria-hidden="true"></span></th>
+                  <th class="py-3 px-4 font-medium" data-col="vendor">Vendor <span class="dash-col-caret">▾</span><span class="dash-col-grip" aria-hidden="true"></span></th>
+                  <th class="py-3 px-4 font-medium" data-col="po">PO <span class="dash-col-caret">▾</span><span class="dash-col-grip" aria-hidden="true"></span></th>
+                  <th class="py-3 px-4 font-medium" data-col="date">Date <span class="dash-col-caret">▾</span><span class="dash-col-grip" aria-hidden="true"></span></th>
+                  <th class="py-3 px-4 font-medium" data-col="qty">Qty received <span class="dash-col-caret">▾</span><span class="dash-col-grip" aria-hidden="true"></span></th>
+                  <th class="py-3 px-4 font-medium" data-col="memo">Memo <span class="dash-col-caret">▾</span><span class="dash-col-grip" aria-hidden="true"></span></th>
+                  <th class="py-3 px-4 font-medium"></th>
+                </tr>
+              </thead>
+              <tbody id="rs-table" class="text-slate-200"></tbody>
+            </table>
+          </div>
+        </div>
+        <div id="rs-detail" class="hidden">
+          <button type="button" id="rs-back" class="text-sm text-sky-400 hover:text-sky-300 mb-3">← All receipt shipments</button>
+          <form id="rs-form" class="po-sheet">
+            <input type="hidden" id="rs-id">
+            <div class="po-sheet-head">
+              <div>
+                <h2>Receipt Shipment</h2>
+                <label class="po-no">No. <input id="rs-number" type="text" placeholder="RS-1001"></label>
+              </div>
+              <div class="po-amount">QTY <strong id="rs-qty-total">0</strong></div>
+            </div>
+            <div class="po-grid">
+              <div class="po-field">
+                <label>Vendor</label>
+                <select id="rs-vendor"><option value="">Choose a vendor</option></select>
+              </div>
+              <div class="po-field">
+                <label>Purchase order</label>
+                <select id="rs-po" disabled><option value="">No open PO — add items manually</option></select>
+              </div>
+              <div class="po-field">
+                <label>Receipt date</label>
+                <input id="rs-date" type="date">
+              </div>
+            </div>
+            <div class="po-items">
+              <h3>Item details</h3>
+              <div class="overflow-x-auto">
+                <table class="w-full text-sm">
+                  <thead>
+                    <tr class="text-left text-slate-500 border-b border-slate-200">
+                      <th class="py-2 px-3 font-medium w-10">#</th>
+                      <th class="py-2 px-3 font-medium">SKU</th>
+                      <th class="py-2 px-3 font-medium">Product</th>
+                      <th class="py-2 px-3 font-medium w-24">PO QTY</th>
+                      <th class="py-2 px-3 font-medium w-28">QTY received</th>
+                      <th class="py-2 px-3 font-medium w-10"></th>
+                    </tr>
+                  </thead>
+                  <tbody id="rs-lines"></tbody>
+                </table>
+              </div>
+              <div class="po-item-actions">
+                <button type="button" id="rs-add-line" class="po-link">Add lines</button>
+                <button type="button" id="rs-clear-lines" class="po-link">Clear all lines</button>
+              </div>
+            </div>
+            <div class="po-field po-memo">
+              <label>Memo</label>
+              <textarea id="rs-memo" rows="3"></textarea>
+            </div>
+            <p id="rs-msg" class="hidden text-sm"></p>
+            <datalist id="rs-sku-list"></datalist>
+            <div class="po-foot">
+              <button type="button" id="rs-cancel" class="px-4 py-2 rounded-full border border-slate-700 text-sm">Cancel</button>
+              <button type="submit" id="rs-save" class="px-5 py-2 rounded-full border border-slate-700 text-sm">Save</button>
+              <button type="button" id="rs-save-close" class="px-5 py-2 rounded-full bg-sky-500 hover:bg-sky-400 text-white text-sm font-semibold">Save and close</button>
             </div>
           </form>
         </div>
@@ -1636,6 +1729,7 @@
       const hash = String(location.hash || '').replace(/^#\/?/, '');
       if (hash === 'inventory/vendors' || hash === 'vendors') return 'vendors';
       if (hash === 'inventory/purchase-orders' || hash === 'purchase-orders') return 'purchase-orders';
+      if (hash === 'inventory/receipt-shipments' || hash === 'receipt-shipments') return 'receipt-shipments';
       if (hash === 'inventory') return 'inventory';
       if (hash === 'settings/company' || hash === 'company') return 'company';
       if (hash === 'settings/roles' || hash === 'roles') return 'staff';
@@ -1655,6 +1749,7 @@
       if (p === '/company/sales' || p === '/company/sales/quotes') return 'quotes';
       if (p === '/company/inventory/vendors') return 'vendors';
       if (p === '/company/inventory/purchase-orders') return 'purchase-orders';
+      if (p === '/company/inventory/receipt-shipments') return 'receipt-shipments';
       if (p === '/company/inventory') return 'inventory';
       if (p === '/company/settings/company') return 'company';
       if (p === '/company/settings/roles') return 'staff';
@@ -1667,6 +1762,7 @@
       if (name === 'dashboard') return '/company';
       if (name === 'vendors') return '/company/inventory/vendors';
       if (name === 'purchase-orders') return '/company/inventory/purchase-orders';
+      if (name === 'receipt-shipments') return '/company/inventory/receipt-shipments';
       if (name === 'inventory') return '/company/inventory';
       if (name === 'customers') return '/company/customers';
       if (name === 'orders') return '/company/sales/orders';
@@ -1702,6 +1798,7 @@
         if (p === '/company/sales' || p === '/company/sales/quotes') return 'quotes';
         if (p === '/company/inventory/vendors') return 'vendors';
         if (p === '/company/inventory/purchase-orders') return 'purchase-orders';
+        if (p === '/company/inventory/receipt-shipments') return 'receipt-shipments';
         if (p === '/company/inventory') return 'inventory';
         if (p === '/company/settings/company') return 'company';
         if (p === '/company/settings/roles' || p === '/company/settings') return 'staff';
@@ -1769,7 +1866,7 @@
       if (adminPerms().settings) return true;
       if (mod === 'settings') return canUse('settings') || canUse('company') || canUse('staff');
       if (mod === 'website') return canUse('website') || canUse('products') || canUse('accounts');
-      if (mod === 'inventory') return canUse('inventory') || canUse('vendors') || canUse('purchase-orders');
+      if (mod === 'inventory') return canUse('inventory') || canUse('vendors') || canUse('purchase-orders') || canUse('receipt-shipments');
       const v = adminPerms()[mod];
       return v === 'view' || v === 'edit';
     }
@@ -1788,6 +1885,7 @@
       inventory: 'inventory',
       vendors: 'vendors',
       'purchase-orders': 'purchase-orders',
+      'receipt-shipments': 'receipt-shipments',
       customers: 'customers',
       sales: 'sales',
       quotes: 'quotes',
@@ -2353,7 +2451,7 @@
       const onWebsite = name === 'products' || name === 'accounts';
       const onSettings = name === 'staff' || name === 'roles' || name === 'company';
       const onSales = name === 'quotes' || name === 'orders' || name === 'invoices' || name === 'sales';
-      const onInventory = name === 'inventory' || name === 'vendors' || name === 'purchase-orders';
+      const onInventory = name === 'inventory' || name === 'vendors' || name === 'purchase-orders' || name === 'receipt-shipments';
       if (onWebsite) websiteSubTab = name;
       if (onSettings) settingsSubTab = name;
       if (onSales && name !== 'sales') salesSubTab = name;
@@ -2365,6 +2463,7 @@
       document.getElementById('inventory-section').classList.toggle('hidden', name !== 'inventory');
       document.getElementById('vendors-section').classList.toggle('hidden', name !== 'vendors');
       document.getElementById('po-section').classList.toggle('hidden', name !== 'purchase-orders');
+      document.getElementById('rs-section').classList.toggle('hidden', name !== 'receipt-shipments');
       document.getElementById('customers-section').classList.toggle('hidden', name !== 'customers');
       document.getElementById('sales-section').classList.toggle('hidden', !onSales);
       document.getElementById('accounts-section').classList.toggle('hidden', name !== 'accounts');
@@ -2381,6 +2480,7 @@
       document.getElementById('tab-inv-items').className = navLinkClass(name === 'inventory', false, 'sub');
       document.getElementById('tab-vendors').className = navLinkClass(name === 'vendors', false, 'sub');
       document.getElementById('tab-purchase-orders').className = navLinkClass(name === 'purchase-orders', false, 'sub');
+      document.getElementById('tab-receipt-shipments').className = navLinkClass(name === 'receipt-shipments', false, 'sub');
       document.getElementById('tab-products').className = navLinkClass(name === 'products', false, 'sub');
       document.getElementById('tab-accounts').className = navLinkClass(name === 'accounts', !canUse('accounts'), 'sub');
       document.getElementById('tab-quotes').className = navLinkClass(name === 'quotes', !canUse('quotes'), 'sub');
@@ -2400,6 +2500,7 @@
         inventory: ['Inventory', ''],
         vendors: ['Vendor', 'Purchase order vendors'],
         'purchase-orders': ['Purchase Order', ''],
+        'receipt-shipments': ['Receipt Shipment', 'Receive stock against a PO or by SKU'],
         customers: ['Customer', 'Quote and invoice records'],
         quotes: ['Sales', 'Sales Quote'],
         orders: ['Sales', 'Sales Order'],
@@ -2422,6 +2523,8 @@
       if (vnNew) vnNew.classList.toggle('hidden', !canEdit('inventory'));
       const poNew = document.getElementById('po-new-btn');
       if (poNew) poNew.classList.toggle('hidden', !canEdit('inventory'));
+      const rsNew = document.getElementById('rs-new-btn');
+      if (rsNew) rsNew.classList.toggle('hidden', !canEdit('inventory'));
       const caNew = document.getElementById('ca-new-btn');
       if (caNew) caNew.classList.toggle('hidden', !canEdit('settings'));
       const staffNew = document.getElementById('staff-new-btn');
@@ -2447,6 +2550,7 @@
     let invPoLineRow = null;
     let inventoryVendors = [];
     let purchaseOrders = [];
+    let receiptShipments = [];
     let poCustomers = [];
     let vnSavedSnapshot = '';
     let vnDrawerSource = '';
@@ -2547,6 +2651,14 @@
         { id: 'email', label: 'Email' },
         { id: 'notes', label: 'Notes' }
       ],
+      'receipt-shipments': [
+        { id: 'number', label: 'Number' },
+        { id: 'vendor', label: 'Vendor' },
+        { id: 'po', label: 'PO' },
+        { id: 'date', label: 'Date' },
+        { id: 'qty', label: 'Qty received' },
+        { id: 'memo', label: 'Memo' }
+      ],
       vendors: [
         { id: 'vendor', label: 'Vendor' },
         { id: 'company', label: 'Company name' },
@@ -2606,6 +2718,7 @@
       sales: ['number', 'customer', 'date', 'status', 'total'],
       'po-lines': ['product', 'sku', 'description', 'qty', 'rate', 'amount'],
       'purchase-orders': ['number', 'vendor', 'date', 'status', 'total'],
+      'receipt-shipments': ['number', 'vendor', 'po', 'date', 'qty'],
       vendors: ['vendor', 'company', 'phone', 'email', 'tax1099'],
       accounts: ['name', 'login', 'category', 'monthly', 'yearly'],
       staff: ['name', 'email', 'role'],
@@ -2917,6 +3030,7 @@
       else if (name === 'sales') renderSoTable(salesDocs, salesTypeFromTab(salesSubTab));
       else if (name === 'po-lines') renderPoLines();
       else if (name === 'purchase-orders') renderPoTable(purchaseOrders);
+      else if (name === 'receipt-shipments') renderRsTable(receiptShipments);
       else if (name === 'vendors') renderVnTable(inventoryVendors);
       else if (name === 'accounts') renderCaTable(companyAccounts);
       else if (name === 'staff') renderStaff(staffList);
@@ -3168,6 +3282,7 @@
         inventoryItems = data.items || [];
         purchaseOrders = poData.orders || purchaseOrders || [];
         renderInventoryTable();
+        refreshRsSkuList();
       } catch (err) {
         errEl.textContent = err.message || 'Could not load inventory.';
         errEl.classList.remove('hidden');
@@ -3654,7 +3769,7 @@
 
     function syncTabbarActive(name) {
       const onWebsite = name === 'products' || name === 'accounts';
-      const onInventory = name === 'inventory' || name === 'vendors' || name === 'purchase-orders';
+      const onInventory = name === 'inventory' || name === 'vendors' || name === 'purchase-orders' || name === 'receipt-shipments';
       const onSales = name === 'sales' || name === 'quotes' || name === 'orders' || name === 'invoices';
       const onSettings = name === 'staff' || name === 'roles' || name === 'company';
       const map = {
@@ -4777,6 +4892,10 @@
         const sel = document.getElementById('po-vendor');
         if (sel && sel.value === '__new__') sel.value = '';
       }
+      if (vnDrawerSource === 'rs') {
+        const sel = document.getElementById('rs-vendor');
+        if (sel && sel.value === '__new__') sel.value = '';
+      }
       vnDrawerSource = '';
       unlockDashPageScroll();
     }
@@ -5148,9 +5267,348 @@
         fillPoVendors(onForm && keepVendor !== '__new__' ? keepVendor : '');
         fillPoShipTo(onForm ? keepShip : '');
         renderPoTable(purchaseOrders);
+        if (!document.getElementById('rs-detail').classList.contains('hidden')) {
+          fillRsVendors(document.getElementById('rs-vendor').value);
+          fillRsPoSelect(document.getElementById('rs-vendor').value, document.getElementById('rs-po').value);
+        }
       } catch (err) {
         showError('po-error', err.message || 'Could not load purchase orders.');
         document.getElementById('po-table').innerHTML = '<tr><td class="py-6 px-4 text-slate-500" colspan="6">Could not load purchase orders.</td></tr>';
+      }
+    }
+
+    let rsLineState = [];
+    let rsReadOnly = false;
+    let rsSaveCloseAfter = false;
+
+    function showRsMsg(text, ok) {
+      const el = document.getElementById('rs-msg');
+      el.textContent = text || '';
+      el.className = 'text-sm ' + (ok ? 'text-sky-600' : 'text-red-500');
+      el.classList.toggle('hidden', !text);
+    }
+
+    function showRsList() {
+      document.getElementById('rs-list-wrap').classList.remove('hidden');
+      document.getElementById('rs-detail').classList.add('hidden');
+    }
+
+    function setRsFormReadOnly(readonly) {
+      rsReadOnly = !!readonly;
+      document.getElementById('rs-number').disabled = rsReadOnly;
+      document.getElementById('rs-vendor').disabled = rsReadOnly;
+      document.getElementById('rs-po').disabled = rsReadOnly || !document.getElementById('rs-vendor').value || document.getElementById('rs-vendor').value === '__new__';
+      document.getElementById('rs-date').disabled = rsReadOnly;
+      document.getElementById('rs-memo').disabled = rsReadOnly;
+      document.getElementById('rs-add-line').classList.toggle('hidden', rsReadOnly);
+      document.getElementById('rs-clear-lines').classList.toggle('hidden', rsReadOnly);
+      document.getElementById('rs-save').classList.toggle('hidden', rsReadOnly);
+      document.getElementById('rs-save-close').classList.toggle('hidden', rsReadOnly);
+      document.querySelectorAll('#rs-lines input').forEach(function (el) {
+        el.disabled = rsReadOnly || el.getAttribute('data-line') === 'poQty';
+      });
+      document.querySelectorAll('#rs-lines [data-remove-line]').forEach(function (el) {
+        el.classList.toggle('hidden', rsReadOnly);
+      });
+    }
+
+    function fillRsVendors(selected) {
+      const sel = document.getElementById('rs-vendor');
+      if (!sel) return;
+      sel.innerHTML = '<option value="">Choose a vendor</option>' +
+        (rsReadOnly ? '' : '<option value="__new__">+ Add new</option>') +
+        (inventoryVendors || []).map(function (v) {
+          return '<option value="' + esc(v.id) + '"' + (String(v.id) === String(selected) ? ' selected' : '') + '>' +
+            esc(v.displayName || v.companyName || v.email || 'Vendor') +
+            '</option>';
+        }).join('');
+    }
+
+    function openPosForVendor(vendorId) {
+      return (purchaseOrders || []).filter(function (po) {
+        return (po.status || 'open') === 'open' &&
+          (String(po.vendorId) === String(vendorId) || (!po.vendorId && vendorId));
+      });
+    }
+
+    function fillRsPoSelect(vendorId, selectedPoId) {
+      const sel = document.getElementById('rs-po');
+      if (!sel) return;
+      const open = vendorId && vendorId !== '__new__' ? openPosForVendor(vendorId) : [];
+      if (!vendorId || vendorId === '__new__') {
+        sel.disabled = true;
+        sel.innerHTML = '<option value="">Choose a vendor first</option>';
+        return;
+      }
+      sel.disabled = rsReadOnly;
+      sel.innerHTML = '<option value="">No PO — add items manually</option>' +
+        open.map(function (po) {
+          return '<option value="' + esc(po.id) + '"' + (String(po.id) === String(selectedPoId) ? ' selected' : '') + '>' +
+            esc(po.number || ('PO #' + po.id)) +
+            '</option>';
+        }).join('');
+      if (open.length) {
+        sel.options[0].textContent = 'No PO — add items manually';
+      }
+    }
+
+    function rsLineRow(line, index) {
+      const poQty = line.poQty == null ? '' : line.poQty;
+      const received = line.qtyReceived == null ? '' : line.qtyReceived;
+      const fromPo = !!line.poLineId || Number(line.poQty) > 0;
+      return '<tr class="border-b border-slate-200 rs-line">' +
+        '<td class="py-2 px-3 rs-line-num text-slate-400">' + (index + 1) + '</td>' +
+        '<td class="py-2 px-2"><input data-line="sku" list="rs-sku-list" value="' + esc(line.sku || '') + '"' + (fromPo ? ' readonly' : '') + ' placeholder="SKU"></td>' +
+        '<td class="py-2 px-2"><input data-line="product" value="' + esc(line.product || '') + '" readonly placeholder="Product"></td>' +
+        '<td class="py-2 px-2"><input data-line="poQty" type="number" step="0.01" value="' + esc(poQty) + '" readonly class="bg-slate-50"></td>' +
+        '<td class="py-2 px-2"><input data-line="qtyReceived" type="number" step="0.01" min="0" value="' + esc(received) + '" placeholder="0"></td>' +
+        '<td class="py-2 px-2"><button type="button" data-remove-line class="text-slate-400 hover:text-red-500 text-xs' + (rsReadOnly ? ' hidden' : '') + '">✕</button></td>' +
+        '<input type="hidden" data-line="itemId" value="' + esc(line.itemId || '') + '">' +
+        '<input type="hidden" data-line="poLineId" value="' + esc(line.poLineId || '') + '">' +
+        '</tr>';
+    }
+
+    function readRsLines() {
+      return Array.prototype.map.call(document.querySelectorAll('#rs-lines .rs-line'), function (row) {
+        const val = function (key) {
+          const el = row.querySelector('[data-line="' + key + '"]');
+          return el ? String(el.value || '').trim() : '';
+        };
+        return {
+          poLineId: val('poLineId'),
+          itemId: val('itemId'),
+          sku: val('sku'),
+          product: val('product'),
+          poQty: money(val('poQty') || 0),
+          qtyReceived: money(val('qtyReceived') || 0)
+        };
+      });
+    }
+
+    function renderRsLines(lines) {
+      const tb = document.getElementById('rs-lines');
+      const rows = lines && lines.length ? lines : [{ sku: '', product: '', poQty: 0, qtyReceived: 0 }];
+      rsLineState = rows.slice();
+      tb.innerHTML = rows.map(function (line, i) { return rsLineRow(line, i); }).join('');
+      refreshRsTotals();
+    }
+
+    function refreshRsTotals() {
+      document.querySelectorAll('#rs-lines .rs-line').forEach(function (row, i) {
+        const num = row.querySelector('.rs-line-num');
+        if (num) num.textContent = String(i + 1);
+      });
+      const total = readRsLines().reduce(function (sum, line) { return sum + (Number(line.qtyReceived) || 0); }, 0);
+      document.getElementById('rs-qty-total').textContent = String(total);
+    }
+
+    function applyRsItemToLine(row, item) {
+      if (!row || !item) return;
+      const sku = row.querySelector('[data-line="sku"]');
+      const product = row.querySelector('[data-line="product"]');
+      const itemId = row.querySelector('[data-line="itemId"]');
+      if (sku) sku.value = item.sku || '';
+      if (product) product.value = item.name || '';
+      if (itemId) itemId.value = item.id || '';
+    }
+
+    function lookupRsSku(row) {
+      const skuEl = row.querySelector('[data-line="sku"]');
+      if (!skuEl || skuEl.readOnly) return;
+      const sku = String(skuEl.value || '').trim().toLowerCase();
+      if (!sku) return;
+      const item = (inventoryItems || []).find(function (i) {
+        return String(i.sku || '').toLowerCase() === sku;
+      });
+      if (item) applyRsItemToLine(row, item);
+      else {
+        const product = row.querySelector('[data-line="product"]');
+        const itemId = row.querySelector('[data-line="itemId"]');
+        if (product) product.value = '';
+        if (itemId) itemId.value = '';
+      }
+    }
+
+    function applyRsPoLines(po) {
+      if (!po || !po.lines || !po.lines.length) {
+        renderRsLines([{ sku: '', product: '', poQty: 0, qtyReceived: 0 }]);
+        return;
+      }
+      renderRsLines(po.lines.map(function (line) {
+        return {
+          poLineId: line.id || '',
+          itemId: line.itemId || '',
+          sku: line.sku || '',
+          product: line.product || '',
+          poQty: line.qty || 0,
+          qtyReceived: 0
+        };
+      }));
+    }
+
+    function onRsVendorChange() {
+      const vendorId = document.getElementById('rs-vendor').value;
+      if (vendorId === '__new__') {
+        openNewVendor('rs');
+        return;
+      }
+      fillRsPoSelect(vendorId, '');
+      if (!rsReadOnly) renderRsLines([{ sku: '', product: '', poQty: 0, qtyReceived: 0 }]);
+    }
+
+    function onRsPoChange() {
+      const poId = document.getElementById('rs-po').value;
+      if (!poId) {
+        if (!rsReadOnly) renderRsLines([{ sku: '', product: '', poQty: 0, qtyReceived: 0 }]);
+        return;
+      }
+      const po = (purchaseOrders || []).find(function (p) { return String(p.id) === String(poId); });
+      if (po) applyRsPoLines(po);
+    }
+
+    function fillRsForm(doc) {
+      const src = doc || {};
+      document.getElementById('rs-id').value = src.id || '';
+      document.getElementById('rs-number').value = src.number || '';
+      fillRsVendors(src.vendorId || '');
+      fillRsPoSelect(src.vendorId || '', src.poId || '');
+      document.getElementById('rs-date').value = src.receiptDate || new Date().toISOString().slice(0, 10);
+      document.getElementById('rs-memo').value = src.memo || '';
+      renderRsLines(src.lines && src.lines.length ? src.lines : [{ sku: '', product: '', poQty: 0, qtyReceived: 0 }]);
+      setRsFormReadOnly(!!src.id);
+      showRsMsg('');
+    }
+
+    function readRsForm() {
+      const vendorId = document.getElementById('rs-vendor').value;
+      const vendor = (inventoryVendors || []).find(function (v) { return String(v.id) === String(vendorId); });
+      const poId = document.getElementById('rs-po').value;
+      const po = poId ? (purchaseOrders || []).find(function (p) { return String(p.id) === String(poId); }) : null;
+      return {
+        number: document.getElementById('rs-number').value.trim(),
+        vendorId: vendorId === '__new__' ? '' : vendorId,
+        vendorName: vendor ? (vendor.displayName || vendor.companyName || '') : '',
+        poId: poId,
+        poNumber: po ? (po.number || '') : '',
+        receiptDate: document.getElementById('rs-date').value,
+        memo: document.getElementById('rs-memo').value.trim(),
+        lines: readRsLines()
+      };
+    }
+
+    function renderRsTable(rows) {
+      const table = document.querySelector('table.dash-cols[data-cols="receipt-shipments"]');
+      const tbody = document.getElementById('rs-table');
+      const q = (document.getElementById('rs-search').value || '').toLowerCase();
+      const filtered = (rows || []).filter(function (d) {
+        if (!q) return true;
+        return [d.number, d.vendorName, d.poNumber, d.memo].join(' ').toLowerCase().indexOf(q) !== -1;
+      });
+      document.getElementById('rs-total').textContent = String((rows || []).length);
+      if (!filtered.length) {
+        tbody.innerHTML = '<tr><td class="py-6 px-4 text-slate-500" colspan="' + dashColSpan(table) + '">' +
+          (q ? 'No receipts match this search.' : 'No receipt shipments yet.') +
+          '</td></tr>';
+        applyColOrder(table);
+        return;
+      }
+      const sorted = sortColRows(filtered, table, function (d, col) {
+        if (col === 'number') return d.number || '';
+        if (col === 'vendor') return d.vendorName || '';
+        if (col === 'po') return d.poNumber || '';
+        if (col === 'date') return d.receiptDate || '';
+        if (col === 'qty') return Number(d.totalReceived) || 0;
+        if (col === 'memo') return d.memo || '';
+        return '';
+      });
+      tbody.innerHTML = sorted.map(function (d) {
+        const when = d.receiptDate ? new Date(d.receiptDate + 'T00:00:00').toLocaleDateString() : '—';
+        const cells = {
+          number: '<td class="py-3 px-4 font-medium">' + esc(d.number || '—') + '</td>',
+          vendor: '<td class="py-3 px-4">' + esc(d.vendorName || '—') + '</td>',
+          po: '<td class="py-3 px-4">' + esc(d.poNumber || '—') + '</td>',
+          date: '<td class="py-3 px-4">' + esc(when) + '</td>',
+          qty: '<td class="py-3 px-4">' + esc(d.totalReceived) + '</td>',
+          memo: '<td class="py-3 px-4">' + esc(d.memo || '—') + '</td>'
+        };
+        return '<tr class="border-b border-slate-800 hover:bg-slate-900/80 cursor-pointer" data-id="' + esc(d.id) + '">' +
+          dashOrderedCells(table, cells, '<td class="py-3 px-4 text-right"><span class="text-sky-400 text-xs font-medium">Open →</span></td>') +
+          '</tr>';
+      }).join('');
+      applyColOrder(table);
+    }
+
+    function openNewRs() {
+      rsReadOnly = false;
+      fillRsForm({
+        receiptDate: new Date().toISOString().slice(0, 10),
+        lines: [{ sku: '', product: '', poQty: 0, qtyReceived: 0 }]
+      });
+      document.getElementById('rs-list-wrap').classList.add('hidden');
+      document.getElementById('rs-detail').classList.remove('hidden');
+    }
+
+    async function openReceiptShipment(id) {
+      showRsMsg('');
+      showError('rs-error', '');
+      try {
+        const data = await api('/api/admin/receipt-shipments/' + encodeURIComponent(id));
+        if (!data.receipt) return;
+        fillRsForm(data.receipt);
+        document.getElementById('rs-list-wrap').classList.add('hidden');
+        document.getElementById('rs-detail').classList.remove('hidden');
+      } catch (err) {
+        showError('rs-error', err.message || 'Could not open this receipt.');
+      }
+    }
+
+    function refreshRsSkuList() {
+      const list = document.getElementById('rs-sku-list');
+      if (!list) return;
+      list.innerHTML = (inventoryItems || []).map(function (item) {
+        return '<option value="' + esc(item.sku || '') + '">' + esc(item.name || '') + '</option>';
+      }).join('');
+    }
+
+    async function loadReceiptShipments() {
+      showError('rs-error', '');
+      try {
+        const [rsData, poData, vnData, invData] = await Promise.all([
+          api('/api/admin/receipt-shipments'),
+          api('/api/admin/purchase-orders'),
+          api('/api/admin/inventory-vendors'),
+          inventoryItems.length ? Promise.resolve({ items: inventoryItems }) : api('/api/admin/inventory')
+        ]);
+        receiptShipments = rsData.receipts || [];
+        purchaseOrders = poData.orders || purchaseOrders || [];
+        inventoryVendors = vnData.vendors || inventoryVendors || [];
+        if (!inventoryItems.length) inventoryItems = invData.items || [];
+        refreshRsSkuList();
+        renderRsTable(receiptShipments);
+      } catch (err) {
+        showError('rs-error', err.message || 'Could not load receipt shipments.');
+        document.getElementById('rs-table').innerHTML = '<tr><td class="py-6 px-4 text-slate-500" colspan="6">Could not load receipt shipments.</td></tr>';
+      }
+    }
+
+    async function saveReceipt(closeAfter) {
+      showRsMsg('');
+      if (rsReadOnly) return;
+      try {
+        const data = await api('/api/admin/receipt-shipments', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(readRsForm())
+        });
+        await loadReceiptShipments();
+        await loadInventory();
+        if (closeAfter) {
+          showRsList();
+        } else if (data.receipt) {
+          fillRsForm(data.receipt);
+        }
+      } catch (err) {
+        showRsMsg(err.message || 'Could not save receipt.', false);
       }
     }
 
@@ -5463,6 +5921,10 @@
       if (name === 'purchase-orders') {
         showPoList();
         await loadPurchaseOrders();
+      }
+      if (name === 'receipt-shipments') {
+        showRsList();
+        await loadReceiptShipments();
       }
       if (name === 'customers') {
         showCcList();
@@ -5804,7 +6266,8 @@
       { label: 'Inventory', children: [
         { key: 'inventory', label: 'Inventory' },
         { key: 'vendors', label: 'Vendor' },
-        { key: 'purchase-orders', label: 'Purchase Order' }
+        { key: 'purchase-orders', label: 'Purchase Order' },
+        { key: 'receipt-shipments', label: 'Receipt Shipment' }
       ]},
       { key: 'customers', label: 'Customer' },
       { label: 'Sales', children: [
@@ -6790,6 +7253,10 @@
           fillPoVendors(v.id);
           applyPoVendor(v);
           closeVendorDrawer(true);
+        } else if (vnDrawerSource === 'rs') {
+          fillRsVendors(v.id);
+          onRsVendorChange();
+          closeVendorDrawer(true);
         } else {
           closeVendorDrawer(true);
         }
@@ -6911,6 +7378,56 @@
       } catch (err) {
         showPoMsg(err.message || 'Could not delete purchase order.');
       }
+    });
+
+    document.getElementById('rs-new-btn').addEventListener('click', openNewRs);
+    document.getElementById('rs-back').addEventListener('click', function () {
+      showRsList();
+      loadReceiptShipments();
+    });
+    document.getElementById('rs-cancel').addEventListener('click', function () {
+      showRsList();
+      loadReceiptShipments();
+    });
+    document.getElementById('rs-search').addEventListener('input', function () {
+      renderRsTable(receiptShipments);
+    });
+    document.getElementById('rs-table').addEventListener('click', function (e) {
+      const row = e.target.closest('tr[data-id]');
+      if (row) openReceiptShipment(row.getAttribute('data-id'));
+    });
+    document.getElementById('rs-vendor').addEventListener('change', onRsVendorChange);
+    document.getElementById('rs-po').addEventListener('change', onRsPoChange);
+    document.getElementById('rs-add-line').addEventListener('click', function () {
+      const lines = readRsLines();
+      lines.push({ sku: '', product: '', poQty: 0, qtyReceived: 0 });
+      renderRsLines(lines);
+    });
+    document.getElementById('rs-clear-lines').addEventListener('click', function () {
+      renderRsLines([{ sku: '', product: '', poQty: 0, qtyReceived: 0 }]);
+    });
+    document.getElementById('rs-lines').addEventListener('change', function (e) {
+      const sku = e.target.closest('[data-line="sku"]');
+      if (sku) lookupRsSku(sku.closest('tr'));
+    });
+    document.getElementById('rs-lines').addEventListener('input', function (e) {
+      if (e.target.closest('[data-line="qtyReceived"]')) refreshRsTotals();
+      if (e.target.closest('[data-line="sku"]')) lookupRsSku(e.target.closest('tr'));
+    });
+    document.getElementById('rs-lines').addEventListener('click', function (e) {
+      const btn = e.target.closest('[data-remove-line]');
+      if (!btn) return;
+      const row = btn.closest('tr');
+      if (row) row.remove();
+      if (!document.querySelector('#rs-lines .rs-line')) renderRsLines([{ sku: '', product: '', poQty: 0, qtyReceived: 0 }]);
+      else refreshRsTotals();
+    });
+    document.getElementById('rs-form').addEventListener('submit', function (e) {
+      e.preventDefault();
+      saveReceipt(false);
+    });
+    document.getElementById('rs-save-close').addEventListener('click', function () {
+      saveReceipt(true);
     });
 
     document.querySelectorAll('table.dash-cols').forEach(enableColumnResize);

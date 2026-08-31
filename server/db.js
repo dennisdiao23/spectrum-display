@@ -121,6 +121,7 @@ function openDb() {
   ensureCompanySales(db);
   ensureInventoryVendors(db);
   ensurePurchaseOrders(db);
+  ensureReceiptShipments(db);
   ensureCompanyAccounts(db);
   ensureColumnPrefs(db);
   db.exec(`
@@ -586,6 +587,38 @@ function ensureColumnPrefs(db) {
   `);
 }
 
+function ensureReceiptShipments(db) {
+  db.exec(`
+    CREATE TABLE IF NOT EXISTS receipt_shipments (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      number TEXT NOT NULL UNIQUE,
+      vendor_id INTEGER,
+      vendor_name TEXT NOT NULL DEFAULT '',
+      po_id INTEGER,
+      po_number TEXT NOT NULL DEFAULT '',
+      receipt_date TEXT NOT NULL DEFAULT '',
+      memo TEXT NOT NULL DEFAULT '',
+      status TEXT NOT NULL DEFAULT 'received',
+      created_at TEXT NOT NULL,
+      updated_at TEXT NOT NULL
+    );
+    CREATE INDEX IF NOT EXISTS receipt_shipments_vendor_idx ON receipt_shipments (vendor_id, receipt_date);
+    CREATE TABLE IF NOT EXISTS receipt_shipment_lines (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      receipt_id INTEGER NOT NULL,
+      po_line_id INTEGER,
+      item_id INTEGER,
+      sku TEXT NOT NULL DEFAULT '',
+      product TEXT NOT NULL DEFAULT '',
+      po_qty REAL NOT NULL DEFAULT 0,
+      qty_received REAL NOT NULL DEFAULT 0,
+      sort_order INTEGER NOT NULL DEFAULT 0,
+      FOREIGN KEY (receipt_id) REFERENCES receipt_shipments(id) ON DELETE CASCADE
+    );
+    CREATE INDEX IF NOT EXISTS receipt_shipment_lines_receipt_idx ON receipt_shipment_lines (receipt_id, sort_order);
+  `);
+}
+
 function ensurePurchaseOrders(db) {
   db.exec(`
     CREATE TABLE IF NOT EXISTS purchase_orders (
@@ -880,6 +913,7 @@ module.exports = {
   ensureCompanySales,
   ensureInventoryVendors,
   ensurePurchaseOrders,
+  ensureReceiptShipments,
   ensureCompanyAccounts,
   ensureColumnPrefs
 };

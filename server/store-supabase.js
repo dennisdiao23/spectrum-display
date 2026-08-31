@@ -1335,6 +1335,93 @@ function createSupabaseStore() {
       throwIf(error, 'Could not delete purchase order.');
       return !!(data && data.length);
     },
+    async listReceiptShipments() {
+      const rs = require('./receipt-shipments');
+      const { data, error } = await supabase.from('receipt_shipments').select('*').order('id', { ascending: false });
+      throwIf(error, 'Could not load receipt shipments.');
+      const rows = data || [];
+      const out = [];
+      for (let i = 0; i < rows.length; i++) {
+        const { data: lines, error: lErr } = await supabase.from('receipt_shipment_lines')
+          .select('*').eq('receipt_id', rows[i].id).order('sort_order').order('id');
+        throwIf(lErr, 'Could not load receipt lines.');
+        out.push(rs.formatReceipt(rows[i], lines || []));
+      }
+      return out;
+    },
+    async getReceiptShipment(id) {
+      const rs = require('./receipt-shipments');
+      const { data, error } = await supabase.from('receipt_shipments').select('*').eq('id', id).maybeSingle();
+      throwIf(error, 'Could not load receipt shipment.');
+      if (!data) return null;
+      const { data: lines, error: lErr } = await supabase.from('receipt_shipment_lines')
+        .select('*').eq('receipt_id', id).order('sort_order').order('id');
+      throwIf(lErr, 'Could not load receipt lines.');
+      return rs.formatReceipt(data, lines || []);
+    },
+    async createReceiptShipment(payload, adminEmail) {
+      const rs = require('./receipt-shipments');
+      const input = rs.normalizeReceipt(payload);
+      if (input.vendorId) {
+        const vendor = await this.getVendor(input.vendorId);
+        if (vendor && !input.vendorName) input.vendorName = rs.snapshotFromVendor(vendor).vendorName;
+      }
+      if (input.poId) {
+        const po = await this.getPurchaseOrder(input.poId);
+        if (po && !input.poNumber) input.poNumber = po.number;
+      }
+      const { data: existingRows } = await supabase.from('receipt_shipments').select('number');
+      const existing = (existingRows || []).map(function (r) { return r.number; });
+      if (!input.number) input.number = rs.nextReceiptNumber(existing);
+      const { data: taken } = await supabase.from('receipt_shipments').select('id').eq('number', input.number).maybeSingle();
+      if (taken) throw new Error('That receipt number is already used.');
+      const fields = rs.dbReceiptFields(input);
+      const stamp = new Date().toISOString();
+      fields.created_at = stamp;
+      fields.updated_at = stamp;
+      const noteBase = input.poNumber ? (input.number + ' / ' + input.poNumber) : input.number;
+      const { data: header, error: hErr } = await supabase.from('receipt_shipments').insert(fields).select('*').single();
+      throwIf(hErr, 'Could not save receipt shipment.');
+      try {
+        for (let i = 0; i < input.lines.length; i++) {
+          const line = input.lines[i];
+          let itemId = line.itemId || '';
+          let product = line.product;
+          let sku = line.sku;
+          if (line.qtyReceived > 0) {
+            if (!itemId && sku) {
+              const { data: items, error: skuErr } = await supabase.from('inventory_items').select('id,name,sku');
+              throwIf(skuErr, 'Could not look up SKU.');
+              const itemRow = (items || []).find(function (row) {
+                return String(row.sku || '').toLowerCase() === String(sku).toLowerCase();
+              });
+              if (!itemRow) throw new Error('SKU not found: ' + sku);
+              itemId = String(itemRow.id);
+              if (!product) product = itemRow.name;
+              sku = itemRow.sku;
+            }
+            if (!itemId) throw new Error('SKU not found for a received line.');
+            await this.adjustInventory(itemId, { kind: 'receive', qty: line.qtyReceived, note: noteBase }, adminEmail);
+          }
+          const { error: lErr } = await supabase.from('receipt_shipment_lines').insert({
+            receipt_id: header.id,
+            po_line_id: line.poLineId ? Number(line.poLineId) : null,
+            item_id: itemId ? Number(itemId) : null,
+            sku: sku,
+            product: product,
+            po_qty: line.poQty,
+            qty_received: line.qtyReceived,
+            sort_order: i
+          });
+          throwIf(lErr, 'Could not save receipt line.');
+        }
+      } catch (err) {
+        await supabase.from('receipt_shipment_lines').delete().eq('receipt_id', header.id);
+        await supabase.from('receipt_shipments').delete().eq('id', header.id);
+        throw err;
+      }
+      return this.getReceiptShipment(header.id);
+    },
     async getCompanyProfile() {
       const ca = require('./company-accounts');
       const { data, error } = await supabase.from('company_profile').select('*').eq('id', 1).maybeSingle();

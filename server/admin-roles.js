@@ -4,7 +4,7 @@ const OWNER_ROLE_SLUG = 'owner';
 const MENU_KEYS = [
   'dashboard',
   'website', 'products', 'accounts',
-  'inventory', 'vendors', 'purchase-orders',
+  'inventory', 'vendors', 'purchase-orders', 'receipt-shipments',
   'customers',
   'sales', 'quotes', 'orders', 'invoices',
   'settings', 'company', 'staff'
@@ -25,7 +25,8 @@ const MENU_GROUPS = [
     children: [
       { key: 'inventory', label: 'Inventory' },
       { key: 'vendors', label: 'Vendor' },
-      { key: 'purchase-orders', label: 'Purchase Order' }
+      { key: 'purchase-orders', label: 'Purchase Order' },
+      { key: 'receipt-shipments', label: 'Receipt Shipment' }
     ]
   },
   { key: 'customers', label: 'Customer' },
@@ -104,6 +105,7 @@ function menuFromLegacy(website, inventory, settings) {
     inventory: i,
     vendors: i,
     'purchase-orders': i,
+    'receipt-shipments': i,
     customers: open,
     sales: open,
     quotes: open,
@@ -159,7 +161,7 @@ function menuAccessFromRow(row) {
 function summaryFromMenu(menu) {
   return {
     website: highestAccess(menu.website, menu.products, menu.accounts),
-    inventory: highestAccess(menu.inventory, menu.vendors, menu['purchase-orders']),
+    inventory: highestAccess(menu.inventory, menu.vendors, menu['purchase-orders'], menu['receipt-shipments']),
     settings: highestAccess(menu.settings, menu.company, menu.staff)
   };
 }
@@ -235,7 +237,7 @@ function menuLevel(perms, key) {
   const menu = perms.menu || perms;
   if (key === 'settings') return highestAccess(menu.settings, menu.company, menu.staff);
   if (key === 'website') return highestAccess(menu.website, menu.products, menu.accounts);
-  if (key === 'inventory') return highestAccess(menu.inventory, menu.vendors, menu['purchase-orders']);
+  if (key === 'inventory') return highestAccess(menu.inventory, menu.vendors, menu['purchase-orders'], menu['receipt-shipments']);
   return accessLevel(menu[key]);
 }
 
@@ -278,6 +280,7 @@ function roleInputFromBody(body, currentRow) {
     menu.inventory = i;
     menu.vendors = i;
     menu['purchase-orders'] = i;
+    menu['receipt-shipments'] = i;
   }
   const summary = summaryFromMenu(menu);
   return {
