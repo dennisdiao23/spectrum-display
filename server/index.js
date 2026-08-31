@@ -116,6 +116,7 @@ async function main() {
   COMPANY_PAGES.forEach(function (route) {
     app.get([route, route + '/'], sendCompany);
   });
+  app.get(['/company/customers/:id', '/company/customers/:id/'], sendCompany);
   app.get(['/company.html', '/admin.html', '/admin', '/admin/'], function (req, res) {
     const qs = req.url.includes('?') ? req.url.slice(req.url.indexOf('?')) : '';
     res.redirect(301, '/company' + qs);
