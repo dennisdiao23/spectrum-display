@@ -830,9 +830,11 @@
         </div>
       </div>
 
-      <div id="customers-section" class="hidden space-y-6">
-        <div id="customers-list-wrap">
-          <div class="page-kpis" id="cc-overview">
+      <div id="customers-section" class="hidden">
+        <div id="cc-workspace" class="cc-workspace">
+        <aside id="cc-list-pane" class="cc-list-pane">
+        <div id="customers-list-wrap" class="cc-list-inner">
+          <div class="page-kpis cc-list-kpis" id="cc-overview">
             <button type="button" class="dash-kpi is-on" data-filter="all" aria-pressed="true">
               <span class="dash-kpi-icon dash-kpi-icon-customers" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="3.25"/><path d="M5 19.2c.9-3.1 3.5-4.7 7-4.7s6.1 1.6 7 4.7"/></svg></span>
               <span class="dash-kpi-label">Customers</span>
@@ -864,9 +866,10 @@
           <div class="flex flex-wrap items-center gap-2 mb-4">
             <input id="cc-search" type="search" placeholder="Search company, contact, email, phone" class="w-full sm:w-96 bg-slate-800 border border-slate-700 rounded-full px-3 py-1.5 text-sm">
           </div>
-          <p class="text-slate-400 text-sm mb-4"><span id="cc-total">0</span> customers for quotes and invoices. This is not the website Sign in list — those stay under Website → Accounts.</p>
+          <p class="text-slate-400 text-sm mb-4 cc-list-desc"><span id="cc-total">0</span> customers for quotes and invoices. This is not the website Sign in list — those stay under Website → Accounts.</p>
           <p id="cc-error" class="hidden text-sm text-red-400 mb-3"></p>
-          <div class="overflow-x-auto rounded-2xl border border-slate-800">
+          <div id="cc-side-list" class="cc-side-list hidden" role="listbox" aria-label="Customers"></div>
+          <div id="cc-table-wrap" class="overflow-x-auto rounded-2xl border border-slate-800">
             <table class="w-full text-sm dash-cols" data-cols="customers">
               <thead class="text-left text-slate-400 border-b border-slate-800">
                 <tr>
@@ -889,6 +892,105 @@
               <tbody id="cc-table" class="text-slate-200"></tbody>
             </table>
           </div>
+        </div>
+        </aside>
+        <div id="cc-detail-pane" class="cc-detail-pane" hidden aria-hidden="true">
+          <div class="cc-detail-toolbar">
+            <button type="button" id="cc-detail-back" class="cc-detail-back">← Customers</button>
+            <div class="cc-detail-toolbar-actions">
+              <div class="cc-detail-new-wrap">
+                <button type="button" id="cc-detail-new" class="cc-detail-btn cc-detail-btn-primary">New transaction ▾</button>
+                <div id="cc-detail-new-menu" class="cc-detail-menu hidden">
+                  <button type="button" data-so-type="quote">Sales quote</button>
+                  <button type="button" data-so-type="order">Sales order</button>
+                  <button type="button" data-so-type="invoice">Invoice</button>
+                </div>
+              </div>
+              <button type="button" id="cc-detail-edit" class="cc-detail-btn">Edit</button>
+            </div>
+          </div>
+          <div class="cc-detail-hero">
+            <div class="cc-detail-hero-main">
+              <span id="cc-detail-avatar" class="cc-detail-avatar" aria-hidden="true"></span>
+              <div class="cc-detail-hero-copy">
+                <h2 id="cc-detail-name">Customer</h2>
+                <p id="cc-detail-subname" class="cc-detail-subname"></p>
+                <div class="cc-detail-quick">
+                  <a id="cc-detail-mail" class="cc-detail-quick-btn hidden" href="#" title="Email"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="m3 7 9 6 9-6"/></svg></a>
+                  <a id="cc-detail-tel" class="cc-detail-quick-btn hidden" href="#" title="Phone"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M5 4h4l2 5-2.5 1.5a11 11 0 0 0 5 5L15 13l5 2v4a2 2 0 0 1-2 2A15 15 0 0 1 3 6a2 2 0 0 1 2-2z"/></svg></a>
+                </div>
+              </div>
+            </div>
+            <div class="cc-detail-hero-grid">
+              <div class="cc-detail-block">
+                <h3>Contact</h3>
+                <dl class="cc-detail-dl">
+                  <div><dt>Email</dt><dd id="cc-detail-email">—</dd></div>
+                  <div><dt>Phone</dt><dd id="cc-detail-phone">—</dd></div>
+                  <div><dt>Mobile</dt><dd id="cc-detail-mobile">—</dd></div>
+                </dl>
+              </div>
+              <div class="cc-detail-block">
+                <h3>Addresses</h3>
+                <dl class="cc-detail-dl">
+                  <div><dt>Billing</dt><dd id="cc-detail-bill">—</dd></div>
+                  <div><dt>Shipping</dt><dd id="cc-detail-ship">—</dd></div>
+                </dl>
+              </div>
+              <div class="cc-detail-block cc-detail-finance">
+                <h3>Financial summary</h3>
+                <dl class="cc-detail-dl cc-detail-finance-dl">
+                  <div><dt>Open balance</dt><dd id="cc-detail-balance">—</dd></div>
+                  <div><dt>Overdue</dt><dd id="cc-detail-overdue" class="cc-detail-overdue">—</dd></div>
+                  <div><dt>Open quotes</dt><dd id="cc-detail-open-quotes">—</dd></div>
+                </dl>
+              </div>
+            </div>
+          </div>
+          <div class="cc-detail-tabs" role="tablist">
+            <button type="button" class="cc-detail-tab is-on" data-cc-tab="transactions" role="tab" aria-selected="true">Transaction list</button>
+            <button type="button" class="cc-detail-tab" data-cc-tab="details" role="tab" aria-selected="false">Customer details</button>
+            <button type="button" class="cc-detail-tab" data-cc-tab="notes" role="tab" aria-selected="false">Notes</button>
+          </div>
+          <div id="cc-detail-panel-transactions" class="cc-detail-panel" role="tabpanel">
+            <div class="cc-detail-filters">
+              <select id="cc-tx-type" class="cc-detail-filter">
+                <option value="all">All types</option>
+                <option value="quote">Sales quote</option>
+                <option value="order">Sales order</option>
+                <option value="invoice">Invoice</option>
+              </select>
+              <select id="cc-tx-status" class="cc-detail-filter">
+                <option value="all">All statuses</option>
+                <option value="open">Open</option>
+                <option value="closed">Closed</option>
+              </select>
+            </div>
+            <div class="overflow-x-auto rounded-2xl border border-slate-800">
+              <table class="w-full text-sm cc-detail-tx-table">
+                <thead class="text-left text-slate-400 border-b border-slate-800">
+                  <tr>
+                    <th class="py-3 px-4 font-medium">Date</th>
+                    <th class="py-3 px-4 font-medium">Type</th>
+                    <th class="py-3 px-4 font-medium">No.</th>
+                    <th class="py-3 px-4 font-medium">Amount</th>
+                    <th class="py-3 px-4 font-medium">Status</th>
+                    <th class="py-3 px-4 font-medium"></th>
+                  </tr>
+                </thead>
+                <tbody id="cc-detail-tx-body" class="text-slate-200"></tbody>
+              </table>
+            </div>
+            <p id="cc-detail-tx-empty" class="cc-detail-empty hidden">No transactions for this customer yet.</p>
+          </div>
+          <div id="cc-detail-panel-details" class="cc-detail-panel hidden" role="tabpanel" hidden>
+            <dl class="cc-detail-read-grid" id="cc-detail-read"></dl>
+          </div>
+          <div id="cc-detail-panel-notes" class="cc-detail-panel hidden" role="tabpanel" hidden>
+            <div class="cc-detail-notes-box" id="cc-detail-notes-text">—</div>
+            <p class="cc-detail-meta" id="cc-detail-updated"></p>
+          </div>
+        </div>
         </div>
       </div>
 
@@ -1752,6 +1854,7 @@
       const p = companyPath();
       if (p === '/company' || p === '/company/dashboard') return 'dashboard';
       if (p === '/company/customers') return 'customers';
+      if (/^\/company\/customers\/\d+$/.test(p)) return 'customers';
       if (p === '/company/sales/orders') return 'orders';
       if (p === '/company/sales/invoices') return 'invoices';
       if (p === '/company/sales' || p === '/company/sales/quotes') return 'quotes';
@@ -1781,6 +1884,13 @@
       if (name === 'staff' || name === 'roles') return '/company/settings';
       return '/company/website';
     }
+    function customerIdFromPath() {
+      const m = companyPath().match(/^\/company\/customers\/(\d+)$/);
+      return m ? m[1] : '';
+    }
+    function pathForCustomer(id) {
+      return id ? '/company/customers/' + id : '/company/customers';
+    }
     function firstAllowedTab() {
       if (canUse('dashboard')) return 'dashboard';
       if (canUse('website')) return 'products';
@@ -1801,6 +1911,7 @@
       try {
         const p = new URL(href, location.origin).pathname.replace(/\/+$/, '') || '/company';
         if (p === '/company/customers') return 'customers';
+        if (/^\/company\/customers\/\d+$/.test(p)) return 'customers';
         if (p === '/company/sales/orders') return 'orders';
         if (p === '/company/sales/invoices') return 'invoices';
         if (p === '/company/sales' || p === '/company/sales/quotes') return 'quotes';
@@ -2539,6 +2650,7 @@
       if (typeof closeProfileDrawer === 'function') closeProfileDrawer(true);
       if (typeof closeStaffDrawer === 'function') closeStaffDrawer(true);
       if (typeof closeRoleDrawer === 'function') closeRoleDrawer(true);
+      if (name !== 'customers' && typeof closeCustomerDetail === 'function') closeCustomerDetail(false);
       const onWebsite = name === 'products' || name === 'accounts';
       const onSettings = name === 'staff' || name === 'roles' || name === 'company';
       const onCustomerNav = name === 'quotes' || name === 'orders' || name === 'invoices' || name === 'sales' || name === 'customers';
@@ -4195,21 +4307,15 @@
     function renderCcTable(rows) {
       const table = document.querySelector('table.dash-cols[data-cols="customers"]');
       const tbody = document.getElementById('cc-table');
-      const q = (document.getElementById('cc-search').value || '').toLowerCase();
-      const matchIds = customerIdsForFilter(ccFilter);
-      const filtered = (rows || []).filter(function (c) {
-        if (ccFilter !== 'all' && !matchIds[String(c.id)]) return false;
-        if (!q) return true;
-        return [c.companyName, c.contactFirst, c.contactLast, c.email, c.phone, c.mobile, c.billCity, c.paymentTerms]
-          .join(' ').toLowerCase().indexOf(q) !== -1;
-      });
+      const filtered = ccFilteredCustomers(rows);
       document.getElementById('cc-total').textContent = String((rows || []).length);
       fillCcOverview();
       if (!filtered.length) {
         tbody.innerHTML = '<tr><td class="py-6 px-4 text-slate-500" colspan="' + dashColSpan(table) + '">' +
-          (q || ccFilter !== 'all' ? 'No customers match this view.' : 'No customers yet. Add a customer to use on quotes and invoices.') +
+          (document.getElementById('cc-search').value || ccFilter !== 'all' ? 'No customers match this view.' : 'No customers yet. Add a customer to use on quotes and invoices.') +
           '</td></tr>';
         applyColOrder(table);
+        renderCcSideList(filtered);
         return;
       }
       const sorted = sortColRows(filtered, table, function (c, col) {
@@ -4246,11 +4352,286 @@
           source: '<td class="py-3 px-4">' + esc(c.source || '—') + '</td>',
           notes: '<td class="py-3 px-4">' + esc(c.notes || '—') + '</td>'
         };
-        return '<tr class="border-b border-slate-800 hover:bg-slate-900/80 cursor-pointer" data-id="' + esc(c.id) + '">' +
+        return '<tr class="border-b border-slate-800 hover:bg-slate-900/80 cursor-pointer' +
+          (String(c.id) === String(ccDetailId) ? ' bg-sky-500/10' : '') +
+          '" data-id="' + esc(c.id) + '">' +
           dashOrderedCells(table, cells, '<td class="py-3 px-4 text-right"><span class="text-sky-400 text-xs font-medium">Open →</span></td>') +
           '</tr>';
       }).join('');
       applyColOrder(table);
+      renderCcSideList(filtered);
+    }
+
+    let ccDetailId = '';
+    let ccDetailCustomer = null;
+    let ccDetailTab = 'transactions';
+
+    function ccCustomerLabel(c) {
+      if (!c) return 'Customer';
+      return c.displayName || c.companyName || [c.contactFirst, c.contactLast].filter(Boolean).join(' ') || 'Customer';
+    }
+
+    function ccCustomerInitials(c) {
+      const label = ccCustomerLabel(c);
+      const bits = String(label).trim().split(/\s+/);
+      return ((bits[0] || '?').charAt(0) + (bits[1] ? bits[1].charAt(0) : '')).toUpperCase();
+    }
+
+    function ccFilteredCustomers(rows) {
+      const q = (document.getElementById('cc-search').value || '').toLowerCase();
+      const matchIds = customerIdsForFilter(ccFilter);
+      return (rows || []).filter(function (c) {
+        if (ccFilter !== 'all' && !matchIds[String(c.id)]) return false;
+        if (!q) return true;
+        return [c.companyName, c.contactFirst, c.contactLast, c.email, c.phone, c.mobile, c.billCity, c.paymentTerms]
+          .join(' ').toLowerCase().indexOf(q) !== -1;
+      });
+    }
+
+    function ccCustomerDocs(customerId) {
+      return (salesAllDocs || []).filter(function (d) {
+        return String(d.customerId) === String(customerId);
+      }).sort(function (a, b) {
+        return String(b.issueDate || b.created_at || '').localeCompare(String(a.issueDate || a.created_at || ''));
+      });
+    }
+
+    function ccCustomerFinance(customerId) {
+      const docs = ccCustomerDocs(customerId);
+      let openBalance = 0;
+      let overdue = 0;
+      let openQuotes = 0;
+      const today = new Date().toISOString().slice(0, 10);
+      docs.forEach(function (d) {
+        if (d.type === 'quote' && isOpenQuote(d)) openQuotes += 1;
+        if (d.type !== 'invoice') return;
+        if (['draft', 'sent', 'overdue'].indexOf(d.status) === -1) return;
+        const amt = Number(d.total) || 0;
+        openBalance += amt;
+        if (d.status === 'overdue' || (d.dueDate && d.dueDate < today && d.status !== 'paid')) overdue += amt;
+      });
+      return { openBalance: openBalance, overdue: overdue, openQuotes: openQuotes };
+    }
+
+    function ccFormatAddress(c, kind) {
+      const bill = [c.billStreet, c.billStreet2, [c.billCity, c.billState, c.billZip].filter(Boolean).join(', '), c.billCountry].filter(Boolean).join('\n');
+      if (kind === 'bill') return bill || '—';
+      if (c.shipSame !== false && c.shipSame !== 0 && c.shipSame !== '0') return bill ? ('Same as billing') : '—';
+      const ship = [c.shipStreet, c.shipStreet2, [c.shipCity, c.shipState, c.shipZip].filter(Boolean).join(', '), c.shipCountry].filter(Boolean).join('\n');
+      return ship || '—';
+    }
+
+    function renderCcSideList(filtered) {
+      const wrap = document.getElementById('cc-side-list');
+      if (!wrap) return;
+      const rows = filtered || ccFilteredCustomers(companyCustomers);
+      if (!rows.length) {
+        wrap.innerHTML = '<p class="cc-detail-empty">No customers match.</p>';
+        return;
+      }
+      wrap.innerHTML = rows.map(function (c) {
+        const name = ccCustomerLabel(c);
+        const fin = ccCustomerFinance(c.id);
+        const balance = fin.openBalance > 0 ? moneyText(fin.openBalance) : '—';
+        const active = String(c.id) === String(ccDetailId) ? ' is-active' : '';
+        const meta = [c.billCity, c.email].filter(Boolean).join(' · ');
+        return '<button type="button" class="cc-side-item' + active + '" data-id="' + esc(c.id) + '">' +
+          '<span><span class="cc-side-item-name">' + esc(name) + '</span>' +
+          (meta ? '<span class="cc-side-item-meta">' + esc(meta) + '</span>' : '') + '</span>' +
+          '<span class="cc-side-item-balance">' + esc(balance) + '</span></button>';
+      }).join('');
+    }
+
+    function setCcDetailTab(name) {
+      ccDetailTab = name || 'transactions';
+      document.querySelectorAll('.cc-detail-tab').forEach(function (btn) {
+        const on = btn.getAttribute('data-cc-tab') === ccDetailTab;
+        btn.classList.toggle('is-on', on);
+        btn.setAttribute('aria-selected', on ? 'true' : 'false');
+      });
+      ['transactions', 'details', 'notes'].forEach(function (key) {
+        const panel = document.getElementById('cc-detail-panel-' + key);
+        if (!panel) return;
+        const on = key === ccDetailTab;
+        panel.classList.toggle('hidden', !on);
+        panel.hidden = !on;
+      });
+    }
+
+    function renderCustomerDetailTransactions() {
+      const body = document.getElementById('cc-detail-tx-body');
+      const empty = document.getElementById('cc-detail-tx-empty');
+      if (!body || !ccDetailCustomer) return;
+      const typeFilter = document.getElementById('cc-tx-type').value;
+      const statusFilter = document.getElementById('cc-tx-status').value;
+      let docs = ccCustomerDocs(ccDetailCustomer.id);
+      if (typeFilter !== 'all') docs = docs.filter(function (d) { return d.type === typeFilter; });
+      if (statusFilter === 'open') {
+        docs = docs.filter(function (d) {
+          return (d.type === 'quote' && isOpenQuote(d)) ||
+            (d.type === 'order' && isOpenSalesOrder(d)) ||
+            (d.type === 'invoice' && isPendingInvoice(d));
+        });
+      } else if (statusFilter === 'closed') {
+        docs = docs.filter(function (d) {
+          return (d.type === 'quote' && !isOpenQuote(d)) ||
+            (d.type === 'order' && !isOpenSalesOrder(d)) ||
+            (d.type === 'invoice' && !isPendingInvoice(d));
+        });
+      }
+      if (!docs.length) {
+        body.innerHTML = '';
+        empty.classList.remove('hidden');
+        return;
+      }
+      empty.classList.add('hidden');
+      body.innerHTML = docs.map(function (d) {
+        const kind = d.type === 'order' ? 'Sales Order' : d.type === 'invoice' ? 'Invoice' : 'Sales Quote';
+        return '<tr class="border-b border-slate-800 hover:bg-slate-900/80 cursor-pointer" data-doc-id="' + esc(d.id) + '" data-doc-type="' + esc(d.type) + '">' +
+          '<td class="py-3 px-4">' + esc(d.issueDate || '—') + '</td>' +
+          '<td class="py-3 px-4">' + esc(kind) + '</td>' +
+          '<td class="py-3 px-4 font-medium">' + esc(d.number || '—') + '</td>' +
+          '<td class="py-3 px-4">' + esc(moneyText(d.total)) + '</td>' +
+          '<td class="py-3 px-4">' + esc(d.status || '—') + '</td>' +
+          '<td class="py-3 px-4 text-right"><span class="text-sky-400 text-xs font-medium">View →</span></td></tr>';
+      }).join('');
+    }
+
+    function renderCustomerDetailDetails() {
+      const wrap = document.getElementById('cc-detail-read');
+      const c = ccDetailCustomer;
+      if (!wrap || !c) return;
+      const rows = [
+        ['Display name', ccCustomerLabel(c)],
+        ['Company', c.companyName || '—'],
+        ['Contact', [c.contactFirst, c.contactLast].filter(Boolean).join(' ') || '—'],
+        ['Email', c.email || '—'],
+        ['Phone', c.phone || '—'],
+        ['Mobile', c.mobile || '—'],
+        ['Website', c.website || '—'],
+        ['Terms', c.paymentTerms || '—'],
+        ['Industry', c.industry || '—'],
+        ['Source', c.source || '—'],
+        ['Tax / resale #', c.taxId || '—'],
+        ['Preferred contact', c.preferredContact || '—']
+      ];
+      wrap.innerHTML = rows.map(function (pair) {
+        return '<div><dt>' + esc(pair[0]) + '</dt><dd>' + esc(pair[1]) + '</dd></div>';
+      }).join('');
+    }
+
+    function renderCustomerDetailNotes() {
+      const c = ccDetailCustomer;
+      if (!c) return;
+      document.getElementById('cc-detail-notes-text').textContent = c.notes || 'No notes yet.';
+      const updated = c.updatedAt || c.updated_at || c.createdAt || c.created_at || '';
+      document.getElementById('cc-detail-updated').textContent = updated
+        ? ('Last updated ' + new Date(updated).toLocaleString())
+        : '';
+    }
+
+    function renderCustomerDetail() {
+      const c = ccDetailCustomer;
+      if (!c) return;
+      const fin = ccCustomerFinance(c.id);
+      const sub = c.companyName && c.companyName !== ccCustomerLabel(c) ? c.companyName : '';
+      document.getElementById('cc-detail-name').textContent = ccCustomerLabel(c);
+      document.getElementById('cc-detail-subname').textContent = sub;
+      document.getElementById('cc-detail-avatar').textContent = ccCustomerInitials(c);
+      document.getElementById('cc-detail-email').textContent = c.email || '—';
+      document.getElementById('cc-detail-phone').textContent = c.phone || '—';
+      document.getElementById('cc-detail-mobile').textContent = c.mobile || '—';
+      document.getElementById('cc-detail-bill').textContent = ccFormatAddress(c, 'bill');
+      document.getElementById('cc-detail-ship').textContent = ccFormatAddress(c, 'ship');
+      document.getElementById('cc-detail-balance').textContent = moneyText(fin.openBalance);
+      const overdueEl = document.getElementById('cc-detail-overdue');
+      overdueEl.textContent = moneyText(fin.overdue);
+      overdueEl.classList.toggle('is-overdue', fin.overdue > 0);
+      document.getElementById('cc-detail-open-quotes').textContent = String(fin.openQuotes);
+      const mail = document.getElementById('cc-detail-mail');
+      const tel = document.getElementById('cc-detail-tel');
+      if (c.email) {
+        mail.href = 'mailto:' + c.email;
+        mail.classList.remove('hidden');
+      } else mail.classList.add('hidden');
+      const phone = c.phone || c.mobile;
+      if (phone) {
+        tel.href = 'tel:' + phone.replace(/\s+/g, '');
+        tel.classList.remove('hidden');
+      } else tel.classList.add('hidden');
+      setCcDetailTab(ccDetailTab);
+      document.getElementById('cc-detail-edit').classList.toggle('hidden', !canEdit('customers'));
+      const canTx = canEdit('quotes') || canEdit('orders') || canEdit('invoices');
+      document.getElementById('cc-detail-new').classList.toggle('hidden', !canTx);
+      renderCustomerDetailTransactions();
+      renderCustomerDetailDetails();
+      renderCustomerDetailNotes();
+      renderCcSideList();
+    }
+
+    function closeCustomerDetail(push) {
+      ccDetailId = '';
+      ccDetailCustomer = null;
+      const ws = document.getElementById('cc-workspace');
+      const pane = document.getElementById('cc-detail-pane');
+      if (ws) ws.classList.remove('cc-detail-open');
+      if (pane) {
+        pane.hidden = true;
+        pane.setAttribute('aria-hidden', 'true');
+      }
+      document.getElementById('cc-detail-new-menu').classList.add('hidden');
+      renderCcTable(companyCustomers);
+      if (push !== false) history.pushState({ tab: 'customers' }, '', '/company/customers');
+    }
+
+    async function openCustomerDetail(id, opts) {
+      opts = opts || {};
+      if (!id) return;
+      if (ccDrawerNeedsLeave()) {
+        ccAskLeave(function () { openCustomerDetail(id, opts); });
+        return;
+      }
+      showError('cc-error', '');
+      try {
+        let customer = (companyCustomers || []).find(function (c) { return String(c.id) === String(id); });
+        if (!customer) {
+          const data = await api('/api/admin/company-customers/' + id);
+          customer = data.customer;
+        }
+        if (!customer) throw new Error('Customer not found.');
+        ccDetailId = String(id);
+        ccDetailCustomer = customer;
+        const ws = document.getElementById('cc-workspace');
+        const pane = document.getElementById('cc-detail-pane');
+        if (ws) ws.classList.add('cc-detail-open');
+        if (pane) {
+          pane.hidden = false;
+          pane.setAttribute('aria-hidden', 'false');
+        }
+        if (opts.push !== false) {
+          history.pushState({ tab: 'customers', customerId: id }, '', pathForCustomer(id));
+        }
+        renderCustomerDetail();
+      } catch (err) {
+        showError('cc-error', err.message || 'Could not open this customer.');
+      }
+    }
+
+    async function openCustomerTransaction(docId, type) {
+      const tab = type === 'invoice' ? 'invoices' : type === 'order' ? 'orders' : 'quotes';
+      openCompanyTab(tab, true);
+      await openSalesDoc(docId);
+    }
+
+    async function openNewCustomerTransaction(type) {
+      if (!ccDetailCustomer) return;
+      const tab = type === 'invoice' ? 'invoices' : type === 'order' ? 'orders' : 'quotes';
+      document.getElementById('cc-detail-new-menu').classList.add('hidden');
+      openCompanyTab(tab, true);
+      await loadSalesDocs(type);
+      openNewSale(type);
+      fillSoCustomers(ccDetailCustomer.id);
+      applySoCustomer(ccDetailCustomer);
     }
 
     let ccDrawerSource = 'list';
@@ -4431,6 +4812,10 @@
         companyCustomers = data.customers || [];
         salesAllDocs = salesData.docs || [];
         renderCcTable(companyCustomers);
+        if (ccDetailId) {
+          ccDetailCustomer = companyCustomers.find(function (c) { return String(c.id) === String(ccDetailId); }) || ccDetailCustomer;
+          if (ccDetailCustomer) renderCustomerDetail();
+        }
       } catch (err) {
         showError('cc-error', err.message || 'Could not load customers.');
         document.getElementById('cc-table').innerHTML = '<tr><td class="py-6 px-4 text-slate-500" colspan="7">Could not load customers.</td></tr>';
@@ -4446,13 +4831,11 @@
     }
 
     async function openCompanyCustomer(id) {
-      showError('cc-error', '');
-      try {
-        const data = await api('/api/admin/company-customers/' + id);
-        if (data.customer) openCustomerDrawer(data.customer, 'list');
-      } catch (err) {
-        showError('cc-error', err.message || 'Could not open this customer.');
+      if (ccDrawerNeedsLeave()) {
+        ccAskLeave(function () { openCompanyCustomer(id); });
+        return;
       }
+      await openCustomerDetail(id, { push: true });
     }
 
     function money(n) {
@@ -6026,6 +6409,9 @@
       if (name === 'customers') {
         showCcList();
         await loadCompanyCustomers();
+        const cid = customerIdFromPath();
+        if (cid && canUse('customers')) await openCustomerDetail(cid, { push: false });
+        else closeCustomerDetail(false);
       }
       if (name === 'quotes' || name === 'orders' || name === 'invoices' || name === 'sales') {
         showSoList();
@@ -6085,6 +6471,45 @@
     document.getElementById('cc-search').addEventListener('input', function () {
       renderCcTable(companyCustomers);
     });
+    document.getElementById('cc-detail-back').addEventListener('click', function () {
+      closeCustomerDetail(true);
+    });
+    document.getElementById('cc-detail-edit').addEventListener('click', function () {
+      if (ccDetailCustomer) openCustomerDrawer(ccDetailCustomer, 'detail');
+    });
+    document.getElementById('cc-detail-new').addEventListener('click', function () {
+      document.getElementById('cc-detail-new-menu').classList.toggle('hidden');
+    });
+    document.getElementById('cc-detail-new-menu').addEventListener('click', function (e) {
+      const btn = e.target.closest('button[data-so-type]');
+      if (!btn) return;
+      openNewCustomerTransaction(btn.getAttribute('data-so-type'));
+    });
+    document.querySelectorAll('.cc-detail-tab').forEach(function (btn) {
+      btn.addEventListener('click', function () {
+        setCcDetailTab(btn.getAttribute('data-cc-tab'));
+      });
+    });
+    document.getElementById('cc-tx-type').addEventListener('change', renderCustomerDetailTransactions);
+    document.getElementById('cc-tx-status').addEventListener('change', renderCustomerDetailTransactions);
+    document.getElementById('cc-side-list').addEventListener('click', function (e) {
+      const btn = e.target.closest('.cc-side-item[data-id]');
+      if (!btn) return;
+      openCompanyCustomer(btn.getAttribute('data-id'));
+    });
+    document.getElementById('cc-detail-tx-body').addEventListener('click', function (e) {
+      const row = e.target.closest('tr[data-doc-id]');
+      if (!row) return;
+      openCustomerTransaction(row.getAttribute('data-doc-id'), row.getAttribute('data-doc-type'));
+    });
+    document.addEventListener('click', function (e) {
+      const menu = document.getElementById('cc-detail-new-menu');
+      const toggle = document.getElementById('cc-detail-new');
+      if (!menu || menu.classList.contains('hidden')) return;
+      if (toggle && toggle.contains(e.target)) return;
+      if (menu.contains(e.target)) return;
+      menu.classList.add('hidden');
+    });
     document.getElementById('cc-ship-same').addEventListener('change', syncCcShipFields);
     document.getElementById('cc-table').addEventListener('click', function (e) {
       const row = e.target.closest('tr[data-id]');
@@ -6119,6 +6544,10 @@
         markCcClean();
         await loadCompanyCustomers();
         salesCustomers = companyCustomers.slice();
+        if (String(ccDetailId) === String(c.id)) {
+          ccDetailCustomer = (companyCustomers || []).find(function (x) { return String(x.id) === String(c.id); }) || c;
+          renderCustomerDetail();
+        }
         if (ccDrawerSource === 'sales') {
           fillSoCustomers(c.id);
           applySoCustomer(c);
@@ -6126,6 +6555,7 @@
           showSoMsg((c.displayName || 'Customer') + ' added.', true);
         } else {
           closeCustomerDrawer(true);
+          await openCustomerDetail(c.id, { push: true });
         }
       } catch (err) {
         showCcMsg(err.message || 'Could not save customer.');
@@ -6136,6 +6566,7 @@
       if (!id || !confirm('Delete this customer?')) return;
       try {
         await api('/api/admin/company-customers/' + id, { method: 'DELETE' });
+        if (String(ccDetailId) === String(id)) closeCustomerDetail(true);
         closeCustomerDrawer(true);
         await loadCompanyCustomers();
         salesCustomers = companyCustomers.slice();
