@@ -1513,9 +1513,17 @@ html.dash-scroll-lock body.company-app {
   min-height: 0;
 }
 .cc-workspace.cc-detail-open .cc-list-kpis,
-.cc-workspace.cc-detail-open #cc-table-wrap,
-.cc-workspace.cc-detail-open .cc-list-desc {
+.cc-workspace.cc-detail-open .cc-table-wrap,
+.cc-workspace.cc-detail-open .cc-list-desc,
+.cc-workspace.cc-detail-open .cc-list-tools,
+.cc-workspace.cc-detail-open .inv-filter {
   display: none !important;
+}
+.cc-detail-photo img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: inherit;
 }
 .cc-workspace.cc-detail-open .cc-side-list {
   display: flex !important;

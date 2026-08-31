@@ -117,6 +117,8 @@ async function main() {
     app.get([route, route + '/'], sendCompany);
   });
   app.get(['/company/customers/:id', '/company/customers/:id/'], sendCompany);
+  app.get(['/company/inventory/vendors/:id', '/company/inventory/vendors/:id/'], sendCompany);
+  app.get(['/company/inventory/:id', '/company/inventory/:id/'], sendCompany);
   app.get(['/company.html', '/admin.html', '/admin', '/admin/'], function (req, res) {
     const qs = req.url.includes('?') ? req.url.slice(req.url.indexOf('?')) : '';
     res.redirect(301, '/company' + qs);

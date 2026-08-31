@@ -469,9 +469,11 @@
 
       </div>
 
-      <div id="inventory-section" class="hidden space-y-6">
-        <div id="inventory-list-wrap">
-          <div class="page-kpis" id="inv-overview">
+      <div id="inventory-section" class="hidden">
+        <div id="inv-workspace" class="cc-workspace">
+        <aside id="inv-list-pane" class="cc-list-pane">
+        <div id="inventory-list-wrap" class="cc-list-inner">
+          <div class="page-kpis cc-list-kpis" id="inv-overview">
             <button type="button" class="dash-kpi is-on" data-filter="all" aria-pressed="true">
               <span class="dash-kpi-icon dash-kpi-icon-inventory" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M3 10 12 4.5 21 10v9.5a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V10z"/><path d="M9 20.5V12h6v8.5"/></svg></span>
               <span class="dash-kpi-label">SKUs</span>
@@ -497,10 +499,10 @@
               <span class="dash-kpi-hint">Open purchase orders</span>
             </button>
           </div>
-          <div class="flex items-center justify-end mb-4">
+          <div class="flex items-center justify-end mb-4 cc-list-tools">
             <button id="inv-new-btn" type="button" class="px-4 py-2 rounded-full bg-sky-500 hover:bg-sky-400 text-white text-sm font-semibold">Add inventory item</button>
           </div>
-          <div class="flex flex-wrap items-center gap-2 mb-4">
+          <div class="flex flex-wrap items-center gap-2 mb-4 cc-list-tools">
             <input id="inv-search" type="search" placeholder="Search SKU, name, brand" class="w-full sm:w-96 bg-slate-800 border border-slate-700 rounded-full px-3 py-1.5 text-sm">
             <button type="button" data-inv-filter="all" class="inv-filter px-3 py-1.5 rounded-full text-xs font-medium bg-sky-500/20 text-sky-300">All</button>
             <button type="button" data-inv-filter="low" class="inv-filter px-3 py-1.5 rounded-full text-xs font-medium text-slate-400 hover:text-white">Low</button>
@@ -508,7 +510,8 @@
             <button type="button" data-inv-filter="unmapped" class="inv-filter px-3 py-1.5 rounded-full text-xs font-medium text-slate-400 hover:text-white">Not on website</button>
           </div>
           <p id="inventory-error" class="hidden text-sm text-red-400 mb-3"></p>
-          <div class="overflow-x-auto rounded-2xl border border-slate-800">
+          <div id="inv-side-list" class="cc-side-list hidden" role="listbox" aria-label="Inventory items"></div>
+          <div id="inv-table-wrap" class="cc-table-wrap overflow-x-auto rounded-2xl border border-slate-800">
             <table class="w-full text-sm dash-cols" data-cols="inventory">
               <thead class="text-left text-slate-400 border-b border-slate-800">
                 <tr>
@@ -530,12 +533,93 @@
             </table>
           </div>
         </div>
-        <div id="inventory-detail" class="hidden"></div>
+        </aside>
+        <div id="inv-detail-pane" class="cc-detail-pane" hidden aria-hidden="true">
+          <div class="cc-detail-toolbar">
+            <button type="button" id="inv-detail-back" class="cc-detail-back">← Inventory</button>
+            <div class="cc-detail-toolbar-actions">
+              <button type="button" id="inv-detail-adjust" class="cc-detail-btn">Adjust stock</button>
+              <button type="button" id="inv-detail-edit" class="cc-detail-btn">Edit</button>
+            </div>
+          </div>
+          <div class="cc-detail-hero">
+            <div class="cc-detail-hero-main">
+              <span id="inv-detail-photo" class="cc-detail-avatar cc-detail-photo" aria-hidden="true"></span>
+              <div class="cc-detail-hero-copy">
+                <h2 id="inv-detail-name">Item</h2>
+                <p id="inv-detail-subname" class="cc-detail-subname"></p>
+              </div>
+            </div>
+            <div class="cc-detail-hero-grid">
+              <div class="cc-detail-block">
+                <h3>Stock</h3>
+                <dl class="cc-detail-dl">
+                  <div><dt>On hand</dt><dd id="inv-detail-qty">—</dd></div>
+                  <div><dt>Status</dt><dd id="inv-detail-status">—</dd></div>
+                  <div><dt>Low at</dt><dd id="inv-detail-low">—</dd></div>
+                </dl>
+              </div>
+              <div class="cc-detail-block">
+                <h3>Pricing</h3>
+                <dl class="cc-detail-dl">
+                  <div><dt>Cost</dt><dd id="inv-detail-cost">—</dd></div>
+                  <div><dt>Sell price</dt><dd id="inv-detail-price">—</dd></div>
+                  <div><dt>Dealer net</dt><dd id="inv-detail-dealer">—</dd></div>
+                </dl>
+              </div>
+              <div class="cc-detail-block">
+                <h3>Specs</h3>
+                <dl class="cc-detail-dl">
+                  <div><dt>Brand</dt><dd id="inv-detail-brand">—</dd></div>
+                  <div><dt>Pitch</dt><dd id="inv-detail-pitch">—</dd></div>
+                  <div><dt>Unit</dt><dd id="inv-detail-unit">—</dd></div>
+                </dl>
+              </div>
+            </div>
+          </div>
+          <div class="cc-detail-tabs" role="tablist">
+            <button type="button" class="cc-detail-tab is-on" data-inv-tab="moves" role="tab" aria-selected="true">Stock history</button>
+            <button type="button" class="cc-detail-tab" data-inv-tab="details" role="tab" aria-selected="false">Item details</button>
+            <button type="button" class="cc-detail-tab" data-inv-tab="website" role="tab" aria-selected="false">Website</button>
+            <button type="button" class="cc-detail-tab" data-inv-tab="notes" role="tab" aria-selected="false">Notes</button>
+          </div>
+          <div id="inv-detail-panel-moves" class="cc-detail-panel" role="tabpanel">
+            <div class="overflow-x-auto rounded-2xl border border-slate-800">
+              <table class="w-full text-sm cc-detail-tx-table">
+                <thead class="text-left text-slate-400 border-b border-slate-800">
+                  <tr>
+                    <th class="py-3 px-4 font-medium">Date</th>
+                    <th class="py-3 px-4 font-medium">Kind</th>
+                    <th class="py-3 px-4 font-medium">Change</th>
+                    <th class="py-3 px-4 font-medium">After</th>
+                    <th class="py-3 px-4 font-medium">Note</th>
+                    <th class="py-3 px-4 font-medium">By</th>
+                  </tr>
+                </thead>
+                <tbody id="inv-detail-moves-body" class="text-slate-200"></tbody>
+              </table>
+            </div>
+            <p id="inv-detail-moves-empty" class="cc-detail-empty hidden">No stock movements yet.</p>
+          </div>
+          <div id="inv-detail-panel-details" class="cc-detail-panel hidden" role="tabpanel" hidden>
+            <dl class="cc-detail-read-grid" id="inv-detail-read"></dl>
+          </div>
+          <div id="inv-detail-panel-website" class="cc-detail-panel hidden" role="tabpanel" hidden>
+            <div id="inv-detail-maps" class="cc-detail-notes-box"></div>
+          </div>
+          <div id="inv-detail-panel-notes" class="cc-detail-panel hidden" role="tabpanel" hidden>
+            <div class="cc-detail-notes-box" id="inv-detail-notes-text">—</div>
+            <p class="cc-detail-meta" id="inv-detail-updated"></p>
+          </div>
+        </div>
+        </div>
       </div>
 
-      <div id="vendors-section" class="hidden space-y-6">
-        <div id="vendors-list-wrap">
-          <div class="page-kpis page-kpis-3" id="vn-overview">
+      <div id="vendors-section" class="hidden">
+        <div id="vn-workspace" class="cc-workspace">
+        <aside id="vn-list-pane" class="cc-list-pane">
+        <div id="vendors-list-wrap" class="cc-list-inner">
+          <div class="page-kpis page-kpis-3 cc-list-kpis" id="vn-overview">
             <button type="button" class="dash-kpi is-on" data-filter="all" aria-pressed="true">
               <span class="dash-kpi-icon dash-kpi-icon-customers" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="3.25"/><path d="M5 19.2c.9-3.1 3.5-4.7 7-4.7s6.1 1.6 7 4.7"/></svg></span>
               <span class="dash-kpi-label">Vendors</span>
@@ -555,15 +639,16 @@
               <span class="dash-kpi-hint">Track 1099</span>
             </button>
           </div>
-          <div class="flex items-center justify-end mb-4">
+          <div class="flex items-center justify-end mb-4 cc-list-tools">
             <button id="vn-new-btn" type="button" class="px-4 py-2 rounded-full bg-sky-500 hover:bg-sky-400 text-white text-sm font-semibold">Add vendor</button>
           </div>
-          <div class="flex flex-wrap items-center gap-2 mb-4">
+          <div class="flex flex-wrap items-center gap-2 mb-4 cc-list-tools">
             <input id="vn-search" type="search" placeholder="Search vendor, company, email, phone" class="w-full sm:w-96 bg-slate-800 border border-slate-700 rounded-full px-3 py-1.5 text-sm">
           </div>
-          <p class="text-slate-400 text-sm mb-4"><span id="vn-total">0</span> vendors for purchase orders.</p>
+          <p class="text-slate-400 text-sm mb-4 cc-list-desc"><span id="vn-total">0</span> vendors for purchase orders.</p>
           <p id="vn-error" class="hidden text-sm text-red-400 mb-3"></p>
-          <div class="overflow-x-auto rounded-2xl border border-slate-800">
+          <div id="vn-side-list" class="cc-side-list hidden" role="listbox" aria-label="Vendors"></div>
+          <div id="vn-table-wrap" class="cc-table-wrap overflow-x-auto rounded-2xl border border-slate-800">
             <table class="w-full text-sm dash-cols" data-cols="vendors">
               <thead class="text-left text-slate-400 border-b border-slate-800">
                 <tr>
@@ -583,6 +668,97 @@
               <tbody id="vn-table" class="text-slate-200"></tbody>
             </table>
           </div>
+        </div>
+        </aside>
+        <div id="vn-detail-pane" class="cc-detail-pane" hidden aria-hidden="true">
+          <div class="cc-detail-toolbar">
+            <button type="button" id="vn-detail-back" class="cc-detail-back">← Vendors</button>
+            <div class="cc-detail-toolbar-actions">
+              <div class="cc-detail-new-wrap">
+                <button type="button" id="vn-detail-new" class="cc-detail-btn cc-detail-btn-primary">New PO ▾</button>
+                <div id="vn-detail-new-menu" class="cc-detail-menu hidden">
+                  <button type="button" data-vn-po="new">Purchase order</button>
+                </div>
+              </div>
+              <button type="button" id="vn-detail-edit" class="cc-detail-btn">Edit</button>
+            </div>
+          </div>
+          <div class="cc-detail-hero">
+            <div class="cc-detail-hero-main">
+              <span id="vn-detail-avatar" class="cc-detail-avatar" aria-hidden="true"></span>
+              <div class="cc-detail-hero-copy">
+                <h2 id="vn-detail-name">Vendor</h2>
+                <p id="vn-detail-subname" class="cc-detail-subname"></p>
+                <div class="cc-detail-quick">
+                  <a id="vn-detail-mail" class="cc-detail-quick-btn hidden" href="#" title="Email"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="m3 7 9 6 9-6"/></svg></a>
+                  <a id="vn-detail-tel" class="cc-detail-quick-btn hidden" href="#" title="Phone"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M5 4h4l2 5-2.5 1.5a11 11 0 0 0 5 5L15 13l5 2v4a2 2 0 0 1-2 2A15 15 0 0 1 3 6a2 2 0 0 1 2-2z"/></svg></a>
+                </div>
+              </div>
+            </div>
+            <div class="cc-detail-hero-grid">
+              <div class="cc-detail-block">
+                <h3>Contact</h3>
+                <dl class="cc-detail-dl">
+                  <div><dt>Email</dt><dd id="vn-detail-email">—</dd></div>
+                  <div><dt>Phone</dt><dd id="vn-detail-phone">—</dd></div>
+                  <div><dt>Contact</dt><dd id="vn-detail-contact">—</dd></div>
+                </dl>
+              </div>
+              <div class="cc-detail-block">
+                <h3>Address</h3>
+                <dl class="cc-detail-dl">
+                  <div><dt>Location</dt><dd id="vn-detail-address">—</dd></div>
+                  <div><dt>Website</dt><dd id="vn-detail-website">—</dd></div>
+                </dl>
+              </div>
+              <div class="cc-detail-block cc-detail-finance">
+                <h3>Terms</h3>
+                <dl class="cc-detail-dl cc-detail-finance-dl">
+                  <div><dt>Payment terms</dt><dd id="vn-detail-terms">—</dd></div>
+                  <div><dt>Track 1099</dt><dd id="vn-detail-1099">—</dd></div>
+                  <div><dt>Open POs</dt><dd id="vn-detail-open-pos">—</dd></div>
+                </dl>
+              </div>
+            </div>
+          </div>
+          <div class="cc-detail-tabs" role="tablist">
+            <button type="button" class="cc-detail-tab is-on" data-vn-tab="pos" role="tab" aria-selected="true">Purchase orders</button>
+            <button type="button" class="cc-detail-tab" data-vn-tab="details" role="tab" aria-selected="false">Vendor details</button>
+            <button type="button" class="cc-detail-tab" data-vn-tab="notes" role="tab" aria-selected="false">Notes</button>
+          </div>
+          <div id="vn-detail-panel-pos" class="cc-detail-panel" role="tabpanel">
+            <div class="cc-detail-filters">
+              <select id="vn-po-status" class="cc-detail-filter">
+                <option value="all">All statuses</option>
+                <option value="open">Open</option>
+                <option value="closed">Closed</option>
+                <option value="cancelled">Cancelled</option>
+              </select>
+            </div>
+            <div class="overflow-x-auto rounded-2xl border border-slate-800">
+              <table class="w-full text-sm cc-detail-tx-table">
+                <thead class="text-left text-slate-400 border-b border-slate-800">
+                  <tr>
+                    <th class="py-3 px-4 font-medium">Date</th>
+                    <th class="py-3 px-4 font-medium">Number</th>
+                    <th class="py-3 px-4 font-medium">Total</th>
+                    <th class="py-3 px-4 font-medium">Status</th>
+                    <th class="py-3 px-4 font-medium"></th>
+                  </tr>
+                </thead>
+                <tbody id="vn-detail-po-body" class="text-slate-200"></tbody>
+              </table>
+            </div>
+            <p id="vn-detail-po-empty" class="cc-detail-empty hidden">No purchase orders for this vendor yet.</p>
+          </div>
+          <div id="vn-detail-panel-details" class="cc-detail-panel hidden" role="tabpanel" hidden>
+            <dl class="cc-detail-read-grid" id="vn-detail-read"></dl>
+          </div>
+          <div id="vn-detail-panel-notes" class="cc-detail-panel hidden" role="tabpanel" hidden>
+            <div class="cc-detail-notes-box" id="vn-detail-notes-text">—</div>
+            <p class="cc-detail-meta" id="vn-detail-updated"></p>
+          </div>
+        </div>
         </div>
       </div>
 
@@ -860,16 +1036,16 @@
               <span class="dash-kpi-hint">Unpaid or sent</span>
             </button>
           </div>
-          <div class="flex items-center justify-end mb-4">
+          <div class="flex items-center justify-end mb-4 cc-list-tools">
             <button id="cc-new-btn" type="button" class="px-4 py-2 rounded-full bg-sky-500 hover:bg-sky-400 text-white text-sm font-semibold">Add customer</button>
           </div>
-          <div class="flex flex-wrap items-center gap-2 mb-4">
+          <div class="flex flex-wrap items-center gap-2 mb-4 cc-list-tools">
             <input id="cc-search" type="search" placeholder="Search company, contact, email, phone" class="w-full sm:w-96 bg-slate-800 border border-slate-700 rounded-full px-3 py-1.5 text-sm">
           </div>
           <p class="text-slate-400 text-sm mb-4 cc-list-desc"><span id="cc-total">0</span> customers for quotes and invoices. This is not the website Sign in list — those stay under Website → Accounts.</p>
           <p id="cc-error" class="hidden text-sm text-red-400 mb-3"></p>
           <div id="cc-side-list" class="cc-side-list hidden" role="listbox" aria-label="Customers"></div>
-          <div id="cc-table-wrap" class="overflow-x-auto rounded-2xl border border-slate-800">
+          <div id="cc-table-wrap" class="cc-table-wrap overflow-x-auto rounded-2xl border border-slate-800">
             <table class="w-full text-sm dash-cols" data-cols="customers">
               <thead class="text-left text-slate-400 border-b border-slate-800">
                 <tr>
@@ -1859,6 +2035,8 @@
       if (p === '/company/sales/invoices') return 'invoices';
       if (p === '/company/sales' || p === '/company/sales/quotes') return 'quotes';
       if (p === '/company/inventory/vendors') return 'vendors';
+      if (/^\/company\/inventory\/vendors\/\d+$/.test(p)) return 'vendors';
+      if (/^\/company\/inventory\/\d+$/.test(p)) return 'inventory';
       if (p === '/company/inventory/purchase-orders') return 'purchase-orders';
       if (p === '/company/inventory/receipt-shipments') return 'receipt-shipments';
       if (p === '/company/inventory') return 'inventory';
@@ -1871,10 +2049,10 @@
     }
     function pathForTab(name) {
       if (name === 'dashboard') return '/company';
+      if (name === 'inventory') return '/company/inventory';
       if (name === 'vendors') return '/company/inventory/vendors';
       if (name === 'purchase-orders') return '/company/inventory/purchase-orders';
       if (name === 'receipt-shipments') return '/company/inventory/receipt-shipments';
-      if (name === 'inventory') return '/company/inventory';
       if (name === 'customers') return '/company/customers';
       if (name === 'orders') return '/company/sales/orders';
       if (name === 'invoices') return '/company/sales/invoices';
@@ -1890,6 +2068,20 @@
     }
     function pathForCustomer(id) {
       return id ? '/company/customers/' + id : '/company/customers';
+    }
+    function inventoryIdFromPath() {
+      const m = companyPath().match(/^\/company\/inventory\/(\d+)$/);
+      return m ? m[1] : '';
+    }
+    function pathForInventory(id) {
+      return id ? '/company/inventory/' + id : '/company/inventory';
+    }
+    function vendorIdFromPath() {
+      const m = companyPath().match(/^\/company\/inventory\/vendors\/(\d+)$/);
+      return m ? m[1] : '';
+    }
+    function pathForVendor(id) {
+      return id ? '/company/inventory/vendors/' + id : '/company/inventory/vendors';
     }
     function firstAllowedTab() {
       if (canUse('dashboard')) return 'dashboard';
@@ -1916,6 +2108,8 @@
         if (p === '/company/sales/invoices') return 'invoices';
         if (p === '/company/sales' || p === '/company/sales/quotes') return 'quotes';
         if (p === '/company/inventory/vendors') return 'vendors';
+        if (/^\/company\/inventory\/vendors\/\d+$/.test(p)) return 'vendors';
+        if (/^\/company\/inventory\/\d+$/.test(p)) return 'inventory';
         if (p === '/company/inventory/purchase-orders') return 'purchase-orders';
         if (p === '/company/inventory/receipt-shipments') return 'receipt-shipments';
         if (p === '/company/inventory') return 'inventory';
@@ -2651,6 +2845,8 @@
       if (typeof closeStaffDrawer === 'function') closeStaffDrawer(true);
       if (typeof closeRoleDrawer === 'function') closeRoleDrawer(true);
       if (name !== 'customers' && typeof closeCustomerDetail === 'function') closeCustomerDetail(false);
+      if (name !== 'inventory' && typeof closeInventoryDetail === 'function') closeInventoryDetail(false);
+      if (name !== 'vendors' && typeof closeVendorDetail === 'function') closeVendorDetail(false);
       const onWebsite = name === 'products' || name === 'accounts';
       const onSettings = name === 'staff' || name === 'roles' || name === 'company';
       const onCustomerNav = name === 'quotes' || name === 'orders' || name === 'invoices' || name === 'sales' || name === 'customers';
@@ -2752,10 +2948,16 @@
     let poFilter = 'all';
     let salesAllDocs = [];
     let inventoryDetail = null;
+    let invDetailId = '';
+    let invDetailData = null;
+    let invDetailTab = 'moves';
     let invSavedSnapshot = '';
     let invDrawerSource = '';
     let invPoLineRow = null;
     let inventoryVendors = [];
+    let vnDetailId = '';
+    let vnDetailVendor = null;
+    let vnDetailTab = 'pos';
     let purchaseOrders = [];
     let receiptShipments = [];
     let poCustomers = [];
@@ -3435,12 +3637,226 @@
           status: '<td class="py-3 px-4"><span class="text-xs px-2 py-0.5 rounded-full ' + stockStatusClass(item.status) + '">' +
             esc(stockStatusLabel(item.status)) + '</span></td>'
         };
-        return '<tr class="border-b border-slate-800 hover:bg-slate-900/80 cursor-pointer" data-id="' + esc(item.id) + '">' +
+        return '<tr class="border-b border-slate-800 hover:bg-slate-900/80 cursor-pointer' +
+          (String(item.id) === String(invDetailId) ? ' bg-sky-500/10' : '') +
+          '" data-id="' + esc(item.id) + '">' +
           dashOrderedCells(table, cells) +
           '</tr>';
       }).join('') || '<tr><td class="py-6 px-4 text-slate-500" colspan="' + dashColSpan(table) + '">No matching items.</td></tr>';
       applyColOrder(table);
       fillInvOverview();
+      renderInvSideList(rows);
+    }
+
+    function invFilteredItems(rows) {
+      const q = (document.getElementById('inv-search').value || '').trim().toLowerCase();
+      return (rows || inventoryItems).filter(function (item) {
+        if (inventoryFilter === 'low' && item.status !== 'low') return false;
+        if (inventoryFilter === 'out' && item.status !== 'out') return false;
+        if (inventoryFilter === 'unmapped' && item.maps && item.maps.length) return false;
+        if (q) {
+          const blob = ((item.sku || '') + ' ' + (item.name || '') + ' ' + (item.brandName || '') + ' ' + (item.pitchLabel || '') + ' ' + (item.description || '')).toLowerCase();
+          if (blob.indexOf(q) === -1) return false;
+        }
+        return true;
+      });
+    }
+
+    function renderInvSideList(filtered) {
+      const wrap = document.getElementById('inv-side-list');
+      if (!wrap) return;
+      const rows = filtered || invFilteredItems();
+      if (!rows.length) {
+        wrap.innerHTML = '<p class="cc-detail-empty">No items match.</p>';
+        return;
+      }
+      wrap.innerHTML = rows.map(function (item) {
+        const name = item.name || item.sku || 'Item';
+        const active = String(item.id) === String(invDetailId) ? ' is-active' : '';
+        const meta = [item.sku, item.brandName].filter(Boolean).join(' · ');
+        const qty = (item.qty || 0).toLocaleString() + ' ' + (item.unit || '');
+        return '<button type="button" class="cc-side-item' + active + '" data-id="' + esc(item.id) + '">' +
+          '<span><span class="cc-side-item-name">' + esc(name) + '</span>' +
+          (meta ? '<span class="cc-side-item-meta">' + esc(meta) + '</span>' : '') + '</span>' +
+          '<span class="cc-side-item-balance">' + esc(qty) + '</span></button>';
+      }).join('');
+    }
+
+    function setInvDetailTab(name) {
+      invDetailTab = name || 'moves';
+      document.querySelectorAll('#inv-detail-pane .cc-detail-tab').forEach(function (btn) {
+        const on = btn.getAttribute('data-inv-tab') === invDetailTab;
+        btn.classList.toggle('is-on', on);
+        btn.setAttribute('aria-selected', on ? 'true' : 'false');
+      });
+      ['moves', 'details', 'website', 'notes'].forEach(function (key) {
+        const panel = document.getElementById('inv-detail-panel-' + key);
+        if (!panel) return;
+        const on = key === invDetailTab;
+        panel.classList.toggle('hidden', !on);
+        panel.hidden = !on;
+      });
+    }
+
+    function renderInvDetailMoves() {
+      const body = document.getElementById('inv-detail-moves-body');
+      const empty = document.getElementById('inv-detail-moves-empty');
+      const moves = (invDetailData && invDetailData.moves) || [];
+      if (!body) return;
+      if (!moves.length) {
+        body.innerHTML = '';
+        if (empty) empty.classList.remove('hidden');
+        return;
+      }
+      if (empty) empty.classList.add('hidden');
+      body.innerHTML = moves.map(function (m) {
+        const when = m.created_at ? new Date(m.created_at).toLocaleString() : '—';
+        const delta = Number(m.qty_delta) || 0;
+        const sign = delta > 0 ? '+' + delta : String(delta);
+        return '<tr class="border-b border-slate-800">' +
+          '<td class="py-3 px-4">' + esc(when) + '</td>' +
+          '<td class="py-3 px-4">' + esc(m.kind || '—') + '</td>' +
+          '<td class="py-3 px-4 ' + (delta < 0 ? 'text-red-500' : 'text-emerald-600') + '">' + esc(sign) + '</td>' +
+          '<td class="py-3 px-4">' + esc(m.qty_after != null ? m.qty_after : '—') + '</td>' +
+          '<td class="py-3 px-4 text-slate-400">' + esc(m.note || '—') + '</td>' +
+          '<td class="py-3 px-4 text-slate-400 text-xs">' + esc(m.admin_email || '—') + '</td></tr>';
+      }).join('');
+    }
+
+    function renderInvDetailDetails() {
+      const wrap = document.getElementById('inv-detail-read');
+      const item = invDetailData && invDetailData.item;
+      if (!wrap || !item) return;
+      const rows = [
+        ['SKU', item.sku || '—'],
+        ['Name', item.name || '—'],
+        ['Description', item.description || '—'],
+        ['Brand', item.brandName || '—'],
+        ['Pitch', item.pitchLabel || item.pitch || '—'],
+        ['Unit', item.unit || '—'],
+        ['Weight', item.weight != null ? String(item.weight) : '—'],
+        ['Panel size', item.panelW && item.panelH ? (item.panelW + ' × ' + item.panelH) : '—'],
+        ['Cost', item.cost != null ? moneyText(item.cost) : '—'],
+        ['Sell price', item.price != null ? moneyText(item.price) : '—'],
+        ['Dealer net', item.dealerNet != null ? moneyText(item.dealerNet) : '—']
+      ];
+      wrap.innerHTML = rows.map(function (pair) {
+        return '<div><dt>' + esc(pair[0]) + '</dt><dd>' + esc(pair[1]) + '</dd></div>';
+      }).join('');
+    }
+
+    function renderInvDetailWebsite() {
+      const wrap = document.getElementById('inv-detail-maps');
+      const item = invDetailData && invDetailData.item;
+      if (!wrap || !item) return;
+      const maps = item.maps || [];
+      if (!maps.length) {
+        wrap.innerHTML = emptyNote('Not linked to a website product page.');
+        return;
+      }
+      wrap.innerHTML = maps.map(function (m) {
+        const pitch = m.pitch ? ('P' + m.pitch) : 'Each';
+        const href = m.brandId && m.seriesId
+          ? ('/product.html?brand=' + encodeURIComponent(m.brandId) + '&series=' + encodeURIComponent(m.seriesId))
+          : '';
+        return '<div class="cc-mini-row">' + esc(m.productName || 'Product') + ' · ' + esc(pitch) +
+          (href ? ' <a class="text-sky-500 text-xs" href="' + esc(href) + '" target="_blank" rel="noopener">View page</a>' : '') +
+          '</div>';
+      }).join('');
+    }
+
+    function renderInvDetailNotes() {
+      const item = invDetailData && invDetailData.item;
+      if (!item) return;
+      document.getElementById('inv-detail-notes-text').textContent = item.notes || 'No notes yet.';
+      const updated = item.updatedAt || item.updated_at || item.createdAt || item.created_at || '';
+      document.getElementById('inv-detail-updated').textContent = updated
+        ? ('Last updated ' + new Date(updated).toLocaleString())
+        : '';
+    }
+
+    function renderInventoryDetailView() {
+      const item = invDetailData && invDetailData.item;
+      if (!item) return;
+      const money = function (n) { return n ? moneyText(n) : '—'; };
+      document.getElementById('inv-detail-name').textContent = item.name || item.sku || 'Item';
+      document.getElementById('inv-detail-subname').textContent = item.sku && item.name ? item.sku : '';
+      const photo = document.getElementById('inv-detail-photo');
+      if (item.image) {
+        photo.innerHTML = '<img src="' + esc(item.image) + '" alt="">';
+      } else {
+        photo.textContent = (item.name || item.sku || '?').charAt(0).toUpperCase();
+      }
+      document.getElementById('inv-detail-qty').textContent = (item.qty || 0).toLocaleString() + ' ' + (item.unit || '');
+      const statusEl = document.getElementById('inv-detail-status');
+      statusEl.innerHTML = '<span class="text-xs px-2 py-0.5 rounded-full ' + stockStatusClass(item.status) + '">' +
+        esc(stockStatusLabel(item.status)) + '</span>';
+      document.getElementById('inv-detail-low').textContent = item.lowAt != null ? String(item.lowAt) : '—';
+      document.getElementById('inv-detail-cost').textContent = money(item.cost);
+      document.getElementById('inv-detail-price').textContent = money(item.price);
+      document.getElementById('inv-detail-dealer').textContent = money(item.dealerNet);
+      document.getElementById('inv-detail-brand').textContent = item.brandName || '—';
+      document.getElementById('inv-detail-pitch').textContent = item.pitchLabel || item.pitch || '—';
+      document.getElementById('inv-detail-unit').textContent = item.unit || '—';
+      document.getElementById('inv-detail-edit').classList.toggle('hidden', !canEdit('inventory'));
+      document.getElementById('inv-detail-adjust').classList.toggle('hidden', !canEdit('inventory'));
+      setInvDetailTab(invDetailTab);
+      renderInvDetailMoves();
+      renderInvDetailDetails();
+      renderInvDetailWebsite();
+      renderInvDetailNotes();
+      renderInvSideList();
+    }
+
+    function closeInventoryDetail(push) {
+      invDetailId = '';
+      invDetailData = null;
+      const ws = document.getElementById('inv-workspace');
+      const pane = document.getElementById('inv-detail-pane');
+      if (ws) ws.classList.remove('cc-detail-open');
+      if (pane) {
+        pane.hidden = true;
+        pane.setAttribute('aria-hidden', 'true');
+      }
+      renderInventoryTable();
+      if (push !== false) history.pushState({ tab: 'inventory' }, '', '/company/inventory');
+    }
+
+    async function openInventoryDetail(id, opts) {
+      opts = opts || {};
+      if (!id) return;
+      if (invDrawerNeedsLeave()) {
+        invAskLeave(function () { openInventoryDetail(id, opts); });
+        return;
+      }
+      const errEl = document.getElementById('inventory-error');
+      errEl.classList.add('hidden');
+      try {
+        const data = await api('/api/admin/inventory/' + encodeURIComponent(id));
+        if (!data || !data.item) throw new Error('Item not found.');
+        invDetailId = String(id);
+        invDetailData = data;
+        inventoryDetail = data;
+        const ws = document.getElementById('inv-workspace');
+        const pane = document.getElementById('inv-detail-pane');
+        if (ws) ws.classList.add('cc-detail-open');
+        if (pane) {
+          pane.hidden = false;
+          pane.setAttribute('aria-hidden', 'false');
+        }
+        if (opts.push !== false) {
+          history.pushState({ tab: 'inventory', itemId: id }, '', pathForInventory(id));
+        }
+        renderInventoryDetailView();
+        renderInventoryTable();
+      } catch (err) {
+        errEl.textContent = err.message || 'Could not open this item.';
+        errEl.classList.remove('hidden');
+      }
+    }
+
+    function openInventoryItem(id) {
+      openInventoryDetail(id, { push: true });
     }
 
     function markPageKpis(rootId, key, attr) {
@@ -3490,6 +3906,13 @@
         purchaseOrders = poData.orders || purchaseOrders || [];
         renderInventoryTable();
         refreshRsSkuList();
+        if (invDetailId) {
+          const found = inventoryItems.find(function (i) { return String(i.id) === String(invDetailId); });
+          if (found && invDetailData && invDetailData.item) {
+            invDetailData.item = Object.assign({}, invDetailData.item, found);
+            renderInventoryDetailView();
+          }
+        }
       } catch (err) {
         errEl.textContent = err.message || 'Could not load inventory.';
         errEl.classList.remove('hidden');
@@ -3728,6 +4151,14 @@
     async function openInventory(id) {
       const data = await api('/api/admin/inventory/' + encodeURIComponent(id));
       renderInventoryDetail(data);
+      invDrawerSource = 'list';
+      openInventoryDrawer();
+    }
+
+    function openInventoryFromDetail() {
+      if (!invDetailData || !invDetailData.item) return;
+      renderInventoryDetail(invDetailData);
+      invDrawerSource = 'detail';
       openInventoryDrawer();
     }
 
@@ -4986,6 +5417,7 @@
           (q || vnFilter !== 'all' ? 'No vendors match this view.' : 'No vendors yet. Add a vendor to use on purchase orders.') +
           '</td></tr>';
         applyColOrder(table);
+        renderVnSideList([]);
         return;
       }
       const sorted = sortColRows(filtered, table, function (v, col) {
@@ -5016,11 +5448,248 @@
           terms: '<td class="py-3 px-4">' + esc(v.paymentTerms || '—') + '</td>',
           notes: '<td class="py-3 px-4">' + esc(v.notes || '—') + '</td>'
         };
-        return '<tr class="border-b border-slate-800 hover:bg-slate-900/80 cursor-pointer" data-id="' + esc(v.id) + '">' +
+        return '<tr class="border-b border-slate-800 hover:bg-slate-900/80 cursor-pointer' +
+          (String(v.id) === String(vnDetailId) ? ' bg-sky-500/10' : '') +
+          '" data-id="' + esc(v.id) + '">' +
           dashOrderedCells(table, cells) +
           '</tr>';
       }).join('');
       applyColOrder(table);
+      renderVnSideList(filtered);
+    }
+
+    function vnFilteredVendors(rows) {
+      const q = (document.getElementById('vn-search').value || '').toLowerCase();
+      return (rows || inventoryVendors).filter(function (v) {
+        if (vnFilter === 'email' && !(v.email || '').trim()) return false;
+        if (vnFilter === '1099' && !v.track1099) return false;
+        if (!q) return true;
+        return [v.displayName, v.companyName, v.email, v.phone, v.mobile, v.contactName]
+          .join(' ').toLowerCase().indexOf(q) !== -1;
+      });
+    }
+
+    function vnVendorLabel(v) {
+      if (!v) return 'Vendor';
+      return v.displayName || v.companyName || v.email || 'Vendor';
+    }
+
+    function vnVendorInitials(v) {
+      const label = vnVendorLabel(v);
+      const bits = String(label).trim().split(/\s+/);
+      return ((bits[0] || '?').charAt(0) + (bits[1] ? bits[1].charAt(0) : '')).toUpperCase();
+    }
+
+    function vnVendorPos(vendorId, statusFilter) {
+      let docs = (purchaseOrders || []).filter(function (po) {
+        return String(po.vendorId) === String(vendorId);
+      });
+      if (statusFilter && statusFilter !== 'all') {
+        docs = docs.filter(function (po) { return (po.status || 'open') === statusFilter; });
+      }
+      return docs.sort(function (a, b) {
+        return String(b.issueDate || b.created_at || '').localeCompare(String(a.issueDate || a.created_at || ''));
+      });
+    }
+
+    function renderVnSideList(filtered) {
+      const wrap = document.getElementById('vn-side-list');
+      if (!wrap) return;
+      const rows = filtered || vnFilteredVendors();
+      if (!rows.length) {
+        wrap.innerHTML = '<p class="cc-detail-empty">No vendors match.</p>';
+        return;
+      }
+      wrap.innerHTML = rows.map(function (v) {
+        const name = vnVendorLabel(v);
+        const active = String(v.id) === String(vnDetailId) ? ' is-active' : '';
+        const meta = [v.city, v.email].filter(Boolean).join(' · ');
+        const openPos = vnVendorPos(v.id, 'open').length;
+        const badge = openPos > 0 ? String(openPos) + ' PO' : '—';
+        return '<button type="button" class="cc-side-item' + active + '" data-id="' + esc(v.id) + '">' +
+          '<span><span class="cc-side-item-name">' + esc(name) + '</span>' +
+          (meta ? '<span class="cc-side-item-meta">' + esc(meta) + '</span>' : '') + '</span>' +
+          '<span class="cc-side-item-balance">' + esc(badge) + '</span></button>';
+      }).join('');
+    }
+
+    function setVnDetailTab(name) {
+      vnDetailTab = name || 'pos';
+      document.querySelectorAll('#vn-detail-pane .cc-detail-tab').forEach(function (btn) {
+        const on = btn.getAttribute('data-vn-tab') === vnDetailTab;
+        btn.classList.toggle('is-on', on);
+        btn.setAttribute('aria-selected', on ? 'true' : 'false');
+      });
+      ['pos', 'details', 'notes'].forEach(function (key) {
+        const panel = document.getElementById('vn-detail-panel-' + key);
+        if (!panel) return;
+        const on = key === vnDetailTab;
+        panel.classList.toggle('hidden', !on);
+        panel.hidden = !on;
+      });
+    }
+
+    function renderVnDetailPos() {
+      const body = document.getElementById('vn-detail-po-body');
+      const empty = document.getElementById('vn-detail-po-empty');
+      if (!body || !vnDetailVendor) return;
+      const statusFilter = document.getElementById('vn-po-status').value;
+      const docs = vnVendorPos(vnDetailVendor.id, statusFilter);
+      if (!docs.length) {
+        body.innerHTML = '';
+        if (empty) empty.classList.remove('hidden');
+        return;
+      }
+      if (empty) empty.classList.add('hidden');
+      body.innerHTML = docs.map(function (po) {
+        const when = po.issueDate ? new Date(po.issueDate + 'T00:00:00').toLocaleDateString() : '—';
+        return '<tr class="border-b border-slate-800 hover:bg-slate-900/80 cursor-pointer" data-po-id="' + esc(po.id) + '">' +
+          '<td class="py-3 px-4">' + esc(when) + '</td>' +
+          '<td class="py-3 px-4 font-medium">' + esc(po.number || '—') + '</td>' +
+          '<td class="py-3 px-4">' + esc(moneyText(po.total)) + '</td>' +
+          '<td class="py-3 px-4">' + esc(po.status || 'open') + '</td>' +
+          '<td class="py-3 px-4 text-right"><span class="text-sky-400 text-xs font-medium">Open →</span></td></tr>';
+      }).join('');
+    }
+
+    function renderVnDetailDetails() {
+      const wrap = document.getElementById('vn-detail-read');
+      const v = vnDetailVendor;
+      if (!wrap || !v) return;
+      const rows = [
+        ['Display name', vnVendorLabel(v)],
+        ['Company', v.companyName || '—'],
+        ['Contact', v.contactName || '—'],
+        ['Email', v.email || '—'],
+        ['Phone', v.phone || '—'],
+        ['Mobile', v.mobile || '—'],
+        ['Website', v.website || '—'],
+        ['City', v.city || '—'],
+        ['State', v.state || '—'],
+        ['ZIP', v.zip || '—'],
+        ['Country', v.country || '—'],
+        ['Payment terms', v.paymentTerms || '—'],
+        ['Track 1099', v.track1099 ? 'Yes' : 'No'],
+        ['Account #', v.accountNo || '—'],
+        ['Expense category', v.expenseCategory || '—']
+      ];
+      wrap.innerHTML = rows.map(function (pair) {
+        return '<div><dt>' + esc(pair[0]) + '</dt><dd>' + esc(pair[1]) + '</dd></div>';
+      }).join('');
+    }
+
+    function renderVnDetailNotes() {
+      const v = vnDetailVendor;
+      if (!v) return;
+      document.getElementById('vn-detail-notes-text').textContent = v.notes || 'No notes yet.';
+      const updated = v.updatedAt || v.updated_at || v.createdAt || v.created_at || '';
+      document.getElementById('vn-detail-updated').textContent = updated
+        ? ('Last updated ' + new Date(updated).toLocaleString())
+        : '';
+    }
+
+    function renderVendorDetail() {
+      const v = vnDetailVendor;
+      if (!v) return;
+      const sub = v.companyName && v.companyName !== vnVendorLabel(v) ? v.companyName : '';
+      document.getElementById('vn-detail-name').textContent = vnVendorLabel(v);
+      document.getElementById('vn-detail-subname').textContent = sub;
+      document.getElementById('vn-detail-avatar').textContent = vnVendorInitials(v);
+      document.getElementById('vn-detail-email').textContent = v.email || '—';
+      document.getElementById('vn-detail-phone').textContent = v.phone || v.mobile || '—';
+      document.getElementById('vn-detail-contact').textContent = v.contactName || '—';
+      const addr = [v.street, v.street2, [v.city, v.state, v.zip].filter(Boolean).join(', '), v.country].filter(Boolean).join('\n');
+      document.getElementById('vn-detail-address').textContent = addr || '—';
+      document.getElementById('vn-detail-website').textContent = v.website || '—';
+      document.getElementById('vn-detail-terms').textContent = v.paymentTerms || '—';
+      document.getElementById('vn-detail-1099').textContent = v.track1099 ? 'Yes' : 'No';
+      document.getElementById('vn-detail-open-pos').textContent = String(vnVendorPos(v.id, 'open').length);
+      const mail = document.getElementById('vn-detail-mail');
+      const tel = document.getElementById('vn-detail-tel');
+      if (v.email) {
+        mail.href = 'mailto:' + v.email;
+        mail.classList.remove('hidden');
+      } else mail.classList.add('hidden');
+      const phone = v.phone || v.mobile;
+      if (phone) {
+        tel.href = 'tel:' + phone.replace(/\s+/g, '');
+        tel.classList.remove('hidden');
+      } else tel.classList.add('hidden');
+      document.getElementById('vn-detail-edit').classList.toggle('hidden', !canEdit('inventory'));
+      const canPo = canEdit('inventory') || canUse('purchase-orders');
+      document.getElementById('vn-detail-new').classList.toggle('hidden', !canPo);
+      setVnDetailTab(vnDetailTab);
+      renderVnDetailPos();
+      renderVnDetailDetails();
+      renderVnDetailNotes();
+      renderVnSideList();
+    }
+
+    function closeVendorDetail(push) {
+      vnDetailId = '';
+      vnDetailVendor = null;
+      const ws = document.getElementById('vn-workspace');
+      const pane = document.getElementById('vn-detail-pane');
+      if (ws) ws.classList.remove('cc-detail-open');
+      if (pane) {
+        pane.hidden = true;
+        pane.setAttribute('aria-hidden', 'true');
+      }
+      document.getElementById('vn-detail-new-menu').classList.add('hidden');
+      renderVnTable(inventoryVendors);
+      if (push !== false) history.pushState({ tab: 'vendors' }, '', '/company/inventory/vendors');
+    }
+
+    async function openVendorDetail(id, opts) {
+      opts = opts || {};
+      if (!id) return;
+      if (vnDrawerNeedsLeave()) {
+        vnAskLeave(function () { openVendorDetail(id, opts); });
+        return;
+      }
+      showError('vn-error', '');
+      try {
+        let vendor = (inventoryVendors || []).find(function (v) { return String(v.id) === String(id); });
+        if (!vendor) {
+          const data = await api('/api/admin/inventory-vendors/' + encodeURIComponent(id));
+          vendor = data.vendor;
+        }
+        if (!vendor) throw new Error('Vendor not found.');
+        if (!purchaseOrders.length) {
+          const poData = await api('/api/admin/purchase-orders').catch(function () { return { orders: [] }; });
+          purchaseOrders = poData.orders || [];
+        }
+        vnDetailId = String(id);
+        vnDetailVendor = vendor;
+        const ws = document.getElementById('vn-workspace');
+        const pane = document.getElementById('vn-detail-pane');
+        if (ws) ws.classList.add('cc-detail-open');
+        if (pane) {
+          pane.hidden = false;
+          pane.setAttribute('aria-hidden', 'false');
+        }
+        if (opts.push !== false) {
+          history.pushState({ tab: 'vendors', vendorId: id }, '', pathForVendor(id));
+        }
+        renderVendorDetail();
+        renderVnTable(inventoryVendors);
+      } catch (err) {
+        showError('vn-error', err.message || 'Could not open this vendor.');
+      }
+    }
+
+    function openVendorItem(id) {
+      openVendorDetail(id, { push: true });
+    }
+
+    async function openNewVendorPo() {
+      if (!vnDetailVendor) return;
+      document.getElementById('vn-detail-new-menu').classList.add('hidden');
+      openCompanyTab('purchase-orders', true);
+      await loadPurchaseOrders();
+      openNewPo();
+      fillPoVendors(vnDetailVendor.id);
+      applyPoVendor(vnDetailVendor);
     }
 
     function fillVnOverview() {
@@ -5041,6 +5710,10 @@
         const data = await api('/api/admin/inventory-vendors');
         inventoryVendors = data.vendors || [];
         renderVnTable(inventoryVendors);
+        if (vnDetailId) {
+          vnDetailVendor = inventoryVendors.find(function (v) { return String(v.id) === String(vnDetailId); }) || vnDetailVendor;
+          if (vnDetailVendor) renderVendorDetail();
+        }
         const keep = document.getElementById('po-vendor').value;
         fillPoVendors(keep === '__new__' ? '' : keep);
       } catch (err) {
@@ -6391,12 +7064,16 @@
         await loadAccounts();
       }
       if (name === 'inventory') {
-        document.getElementById('inventory-list-wrap').classList.remove('hidden');
-        document.getElementById('inventory-detail').classList.add('hidden');
         await loadInventory();
+        const iid = inventoryIdFromPath();
+        if (iid && canUse('inventory')) await openInventoryDetail(iid, { push: false });
+        else closeInventoryDetail(false);
       }
       if (name === 'vendors') {
         await loadVendors();
+        const vid = vendorIdFromPath();
+        if (vid && canUse('vendors')) await openVendorDetail(vid, { push: false });
+        else closeVendorDetail(false);
       }
       if (name === 'purchase-orders') {
         showPoList();
@@ -6597,6 +7274,18 @@
       }
       if (document.body.classList.contains('vn-drawer-open')) {
         closeVendorDrawer();
+        return;
+      }
+      if (invDetailId) {
+        closeInventoryDetail(true);
+        return;
+      }
+      if (vnDetailId) {
+        closeVendorDetail(true);
+        return;
+      }
+      if (ccDetailId) {
+        closeCustomerDetail(true);
       }
     });
 
@@ -7236,17 +7925,32 @@
       const row = e.target.closest('tr[data-id]');
       if (!row) return;
       const id = row.getAttribute('data-id');
-      const go = function () {
-        openInventory(id).catch(function (err) {
-          document.getElementById('inventory-error').textContent = err.message || 'Could not open.';
-          document.getElementById('inventory-error').classList.remove('hidden');
-        });
-      };
+      const go = function () { openInventoryItem(id); };
       if (invDrawerNeedsLeave()) {
         invAskLeave(go);
         return;
       }
       go();
+    });
+    document.getElementById('inv-detail-back').addEventListener('click', function () {
+      closeInventoryDetail(true);
+    });
+    document.getElementById('inv-detail-edit').addEventListener('click', function () {
+      openInventoryFromDetail();
+    });
+    document.getElementById('inv-detail-adjust').addEventListener('click', function () {
+      openInventoryFromDetail();
+      setTimeout(function () { jumpInventorySection('inv-sec-onhand'); }, 120);
+    });
+    document.getElementById('inv-side-list').addEventListener('click', function (e) {
+      const btn = e.target.closest('.cc-side-item[data-id]');
+      if (!btn) return;
+      openInventoryItem(btn.getAttribute('data-id'));
+    });
+    document.querySelectorAll('#inv-detail-pane .cc-detail-tab').forEach(function (btn) {
+      btn.addEventListener('click', function () {
+        setInvDetailTab(btn.getAttribute('data-inv-tab'));
+      });
     });
     document.getElementById('inv-drawer-close').addEventListener('click', function () {
       closeInventoryDrawer();
@@ -7356,6 +8060,12 @@
           invPoLineRow = null;
           applyPoItemToLine(row, data.item);
           closeInventoryDrawer(true);
+        } else if (invDrawerSource === 'detail') {
+          invDetailData = data;
+          invDetailId = String(data.item.id);
+          closeInventoryDrawer(true);
+          renderInventoryDetailView();
+          renderInventoryTable();
         } else {
           closeInventoryDrawer(true);
         }
@@ -7376,6 +8086,7 @@
       if (!confirm('Delete this inventory item? Website links to it will be removed.')) return;
       try {
         await api('/api/admin/inventory/' + encodeURIComponent(id), { method: 'DELETE' });
+        if (String(invDetailId) === String(id)) closeInventoryDetail(true);
         closeInventoryDrawer(true);
         await loadInventory();
       } catch (err) {
@@ -7400,6 +8111,10 @@
         renderInventoryDetail(data);
         markInvClean();
         await loadInventory();
+        if (String(invDetailId) === String(id)) {
+          invDetailData = data;
+          renderInventoryDetailView();
+        }
         msg.textContent = 'Saved.';
         msg.className = 'wide text-sm text-sky-600';
         msg.classList.remove('hidden');
@@ -7715,10 +8430,48 @@
       if (!row) return;
       const id = row.getAttribute('data-id');
       if (vnDrawerNeedsLeave()) {
-        vnAskLeave(function () { openVendor(id); });
+        vnAskLeave(function () { openVendorItem(id); });
         return;
       }
-      openVendor(id);
+      openVendorItem(id);
+    });
+    document.getElementById('vn-detail-back').addEventListener('click', function () {
+      closeVendorDetail(true);
+    });
+    document.getElementById('vn-detail-edit').addEventListener('click', function () {
+      if (vnDetailVendor) openVendorDrawer(vnDetailVendor, 'detail');
+    });
+    document.getElementById('vn-detail-new').addEventListener('click', function () {
+      document.getElementById('vn-detail-new-menu').classList.toggle('hidden');
+    });
+    document.getElementById('vn-detail-new-menu').addEventListener('click', function (e) {
+      const btn = e.target.closest('button[data-vn-po]');
+      if (!btn) return;
+      openNewVendorPo();
+    });
+    document.getElementById('vn-po-status').addEventListener('change', renderVnDetailPos);
+    document.getElementById('vn-side-list').addEventListener('click', function (e) {
+      const btn = e.target.closest('.cc-side-item[data-id]');
+      if (!btn) return;
+      openVendorItem(btn.getAttribute('data-id'));
+    });
+    document.getElementById('vn-detail-po-body').addEventListener('click', function (e) {
+      const row = e.target.closest('tr[data-po-id]');
+      if (!row) return;
+      openPurchaseOrder(row.getAttribute('data-po-id'));
+    });
+    document.querySelectorAll('#vn-detail-pane .cc-detail-tab').forEach(function (btn) {
+      btn.addEventListener('click', function () {
+        setVnDetailTab(btn.getAttribute('data-vn-tab'));
+      });
+    });
+    document.addEventListener('click', function (e) {
+      const menu = document.getElementById('vn-detail-new-menu');
+      const toggle = document.getElementById('vn-detail-new');
+      if (!menu || menu.classList.contains('hidden')) return;
+      if (toggle && toggle.contains(e.target)) return;
+      if (menu.contains(e.target)) return;
+      menu.classList.add('hidden');
     });
     document.getElementById('vn-drawer-close').addEventListener('click', function () {
       closeVendorDrawer();
@@ -7787,6 +8540,12 @@
           fillRsVendors(v.id);
           onRsVendorChange();
           closeVendorDrawer(true);
+        } else if (vnDrawerSource === 'detail') {
+          vnDetailVendor = v;
+          vnDetailId = String(v.id);
+          closeVendorDrawer(true);
+          renderVendorDetail();
+          renderVnTable(inventoryVendors);
         } else {
           closeVendorDrawer(true);
         }
@@ -7799,6 +8558,7 @@
       if (!id || !confirm('Delete this vendor?')) return;
       try {
         await api('/api/admin/inventory-vendors/' + encodeURIComponent(id), { method: 'DELETE' });
+        if (String(vnDetailId) === String(id)) closeVendorDetail(true);
         closeVendorDrawer(true);
         await loadVendors();
         fillPoVendors('');
