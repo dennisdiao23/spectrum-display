@@ -47,6 +47,18 @@
             <svg class="dash-nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 10 12 4.5 21 10v9.5a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V10z"/><path d="M9 20.5V12h6v8.5"/></svg>
             <span>Inventory</span>
           </a>
+          <a href="/company/inventory/receipt-shipments" id="tab-receipt-shipments" class="dash-sub-link">
+            <svg class="dash-nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 7h16l-1.5 12H5.5L4 7z"/><path d="M9 7V5a3 3 0 0 1 6 0v2"/><path d="M9 14h6M9 18h4"/></svg>
+            <span>Receipt Shipment</span>
+          </a>
+        </div>
+      </div>
+      <div class="dash-nav-group">
+        <a href="/company/inventory/vendors" id="tab-vendor" class="dash-nav-link">
+          <svg class="dash-nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="8" r="3.25"/><path d="M5 19.2c.9-3.1 3.5-4.7 7-4.7s6.1 1.6 7 4.7"/></svg>
+          <span>Vendor</span>
+        </a>
+        <div id="vendor-subnav" class="dash-sub hidden">
           <a href="/company/inventory/vendors" id="tab-vendors" class="dash-sub-link">
             <svg class="dash-nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="8" r="3.25"/><path d="M5 19.2c.9-3.1 3.5-4.7 7-4.7s6.1 1.6 7 4.7"/></svg>
             <span>Vendor</span>
@@ -55,18 +67,14 @@
             <svg class="dash-nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 3h8l4 4v14a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1z"/><path d="M15 3v5h5"/><path d="M9 13h6M9 17h4"/></svg>
             <span>Purchase Order</span>
           </a>
-          <a href="/company/inventory/receipt-shipments" id="tab-receipt-shipments" class="dash-sub-link">
-            <svg class="dash-nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 7h16l-1.5 12H5.5L4 7z"/><path d="M9 7V5a3 3 0 0 1 6 0v2"/><path d="M9 14h6M9 18h4"/></svg>
-            <span>Receipt Shipment</span>
-          </a>
         </div>
       </div>
       <div class="dash-nav-group">
-        <a href="/company/sales" id="tab-sales" class="dash-nav-link">
-          <svg class="dash-nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 3h8l4 4v14a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1z"/><path d="M15 3v5h5"/><path d="M9 13h6M9 17h4"/></svg>
-          <span>Sales</span>
+        <a href="/company/customers" id="tab-customer" class="dash-nav-link">
+          <svg class="dash-nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="8" r="3.25"/><path d="M5 19.2c.9-3.1 3.5-4.7 7-4.7s6.1 1.6 7 4.7"/></svg>
+          <span>Customer</span>
         </a>
-        <div id="sales-subnav" class="dash-sub hidden">
+        <div id="customer-subnav" class="dash-sub hidden">
           <a href="/company/customers" id="tab-customers" class="dash-sub-link">
             <svg class="dash-nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="8" r="3.25"/><path d="M5 19.2c.9-3.1 3.5-4.7 7-4.7s6.1 1.6 7 4.7"/></svg>
             <span>Customer</span>
@@ -1690,9 +1698,13 @@
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 10 12 4.5 21 10v9.5a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V10z"/><path d="M9 20.5V12h6v8.5"/></svg>
       <span>Inventory</span>
     </a>
-    <a href="/company/sales/quotes" id="tabbar-sales" data-tabbar-group="sales" class="hidden">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 3h8l4 4v14a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1z"/><path d="M15 3v5h5"/><path d="M9 13h6M9 17h4"/></svg>
-      <span>Sales</span>
+    <a href="/company/inventory/vendors" id="tabbar-vendor" data-tabbar-group="vendor" class="hidden">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="8" r="3.25"/><path d="M5 19.2c.9-3.1 3.5-4.7 7-4.7s6.1 1.6 7 4.7"/></svg>
+      <span>Vendor</span>
+    </a>
+    <a href="/company/customers" id="tabbar-customer" data-tabbar-group="customer" class="hidden">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="8" r="3.25"/><path d="M5 19.2c.9-3.1 3.5-4.7 7-4.7s6.1 1.6 7 4.7"/></svg>
+      <span>Customer</span>
     </a>
     <a href="/company/settings" id="tabbar-settings" data-tabbar-group="settings" class="hidden">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
@@ -1902,6 +1914,15 @@
     function canUseSalesNav() {
       return canUse('sales') || canUse('customers') || canUse('quotes') || canUse('orders') || canUse('invoices');
     }
+    function canUseCustomerNav() {
+      return canUseSalesNav();
+    }
+    function canUseInventoryNav() {
+      return canUse('inventory') || canUse('receipt-shipments');
+    }
+    function canUseVendorNav() {
+      return canUse('vendors') || canUse('purchase-orders');
+    }
     function staffRoleLabel(role) {
       const found = adminRoles.find(function (r) { return r.slug === role; });
       if (found) return found.name;
@@ -1942,14 +1963,19 @@
       document.getElementById('admin-toolbar').classList.remove('hidden');
       document.getElementById('logout-btn').classList.remove('hidden');
       document.getElementById('tab-website').classList.toggle('hidden', !canUse('website'));
-      document.getElementById('tab-inventory').classList.toggle('hidden', !canUse('inventory'));
+      document.getElementById('tab-inventory').classList.toggle('hidden', !canUseInventoryNav());
+      document.getElementById('tab-vendor').classList.toggle('hidden', !canUseVendorNav());
+      document.getElementById('tab-vendors').classList.toggle('hidden', !canUse('vendors'));
+      document.getElementById('tab-purchase-orders').classList.toggle('hidden', !canUse('purchase-orders'));
+      document.getElementById('tab-receipt-shipments').classList.toggle('hidden', !canUse('receipt-shipments'));
       document.getElementById('tab-customers').classList.toggle('hidden', !canUse('customers'));
-      document.getElementById('tab-sales').classList.toggle('hidden', !canUseSalesNav());
+      document.getElementById('tab-customer').classList.toggle('hidden', !canUseCustomerNav());
       document.getElementById('header-settings').classList.toggle('hidden', !canUse('settings'));
       document.getElementById('tabbar-dashboard').classList.toggle('hidden', !canUse('dashboard'));
       document.getElementById('tabbar-website').classList.toggle('hidden', !canUse('website'));
-      document.getElementById('tabbar-inventory').classList.toggle('hidden', !canUse('inventory'));
-      document.getElementById('tabbar-sales').classList.toggle('hidden', !canUseSalesNav());
+      document.getElementById('tabbar-inventory').classList.toggle('hidden', !canUseInventoryNav());
+      document.getElementById('tabbar-vendor').classList.toggle('hidden', !canUseVendorNav());
+      document.getElementById('tabbar-customer').classList.toggle('hidden', !canUseCustomerNav());
       document.getElementById('tabbar-settings').classList.toggle('hidden', !canUse('settings'));
       const tabbar = document.getElementById('dash-tabbar');
       tabbar.hidden = false;
@@ -2448,9 +2474,10 @@
       if (typeof closeRoleDrawer === 'function') closeRoleDrawer(true);
       const onWebsite = name === 'products' || name === 'accounts';
       const onSettings = name === 'staff' || name === 'roles' || name === 'company';
-      const onSalesNav = name === 'quotes' || name === 'orders' || name === 'invoices' || name === 'sales' || name === 'customers';
+      const onCustomerNav = name === 'quotes' || name === 'orders' || name === 'invoices' || name === 'sales' || name === 'customers';
       const onSales = name === 'quotes' || name === 'orders' || name === 'invoices' || name === 'sales';
-      const onInventory = name === 'inventory' || name === 'vendors' || name === 'purchase-orders' || name === 'receipt-shipments';
+      const onInventory = name === 'inventory' || name === 'receipt-shipments';
+      const onVendorNav = name === 'vendors' || name === 'purchase-orders';
       if (onWebsite) websiteSubTab = name;
       if (onSettings) settingsSubTab = name;
       if (onSales && name !== 'sales') salesSubTab = name;
@@ -2470,12 +2497,14 @@
       document.getElementById('staff-section').classList.toggle('hidden', name !== 'staff' && name !== 'roles');
       document.getElementById('website-subnav').classList.toggle('hidden', !onWebsite);
       document.getElementById('settings-subnav').classList.toggle('hidden', !onSettings);
-      document.getElementById('sales-subnav').classList.toggle('hidden', !onSalesNav);
+      document.getElementById('customer-subnav').classList.toggle('hidden', !onCustomerNav);
       document.getElementById('inventory-subnav').classList.toggle('hidden', !onInventory);
+      document.getElementById('vendor-subnav').classList.toggle('hidden', !onVendorNav);
       document.getElementById('tab-website').className = navLinkClass(onWebsite, !canUse('website'));
-      document.getElementById('tab-inventory').className = navLinkClass(onInventory, !canUse('inventory'));
+      document.getElementById('tab-inventory').className = navLinkClass(onInventory, !canUseInventoryNav());
+      document.getElementById('tab-vendor').className = navLinkClass(onVendorNav, !canUseVendorNav());
       document.getElementById('tab-customers').className = navLinkClass(name === 'customers', !canUse('customers'), 'sub');
-      document.getElementById('tab-sales').className = navLinkClass(onSalesNav, !canUseSalesNav());
+      document.getElementById('tab-customer').className = navLinkClass(onCustomerNav, !canUseCustomerNav());
       document.getElementById('tab-inv-items').className = navLinkClass(name === 'inventory', false, 'sub');
       document.getElementById('tab-vendors').className = navLinkClass(name === 'vendors', false, 'sub');
       document.getElementById('tab-purchase-orders').className = navLinkClass(name === 'purchase-orders', false, 'sub');
@@ -2497,13 +2526,13 @@
         products: ['Website', 'Product pages'],
         accounts: ['Website', 'Website accounts'],
         inventory: ['Inventory', ''],
-        vendors: ['Vendor', 'Purchase order vendors'],
-        'purchase-orders': ['Purchase Order', ''],
-        'receipt-shipments': ['Receipt Shipment', 'Receive stock against a PO or by SKU'],
-        customers: ['Sales', 'Customer'],
-        quotes: ['Sales', 'Sales Quote'],
-        orders: ['Sales', 'Sales Order'],
-        invoices: ['Sales', 'Invoice'],
+        vendors: ['Vendor', ''],
+        'purchase-orders': ['Vendor', 'Purchase Order'],
+        'receipt-shipments': ['Inventory', 'Receipt Shipment'],
+        customers: ['Customer', ''],
+        quotes: ['Customer', 'Sales Quote'],
+        orders: ['Customer', 'Sales Order'],
+        invoices: ['Customer', 'Invoice'],
         company: ['Settings', 'Company accounts'],
         staff: ['Settings', 'Manage users'],
         roles: ['Settings', 'Manage users']
@@ -3768,14 +3797,16 @@
 
     function syncTabbarActive(name) {
       const onWebsite = name === 'products' || name === 'accounts';
-      const onInventory = name === 'inventory' || name === 'vendors' || name === 'purchase-orders' || name === 'receipt-shipments';
-      const onSales = name === 'sales' || name === 'quotes' || name === 'orders' || name === 'invoices' || name === 'customers';
+      const onInventory = name === 'inventory' || name === 'receipt-shipments';
+      const onVendorNav = name === 'vendors' || name === 'purchase-orders';
+      const onCustomerNav = name === 'sales' || name === 'quotes' || name === 'orders' || name === 'invoices' || name === 'customers';
       const onSettings = name === 'staff' || name === 'roles' || name === 'company';
       const map = {
         'tabbar-dashboard': name === 'dashboard',
         'tabbar-website': onWebsite,
         'tabbar-inventory': onInventory,
-        'tabbar-sales': onSales,
+        'tabbar-vendor': onVendorNav,
+        'tabbar-customer': onCustomerNav,
         'tabbar-settings': onSettings
       };
       Object.keys(map).forEach(function (id) {
@@ -3800,7 +3831,8 @@
     const TABBAR_SUBNAV = {
       website: 'website-subnav',
       inventory: 'inventory-subnav',
-      sales: 'sales-subnav',
+      vendor: 'vendor-subnav',
+      customer: 'customer-subnav',
       settings: 'settings-subnav'
     };
 
@@ -6263,11 +6295,13 @@
       ]},
       { label: 'Inventory', children: [
         { key: 'inventory', label: 'Inventory' },
-        { key: 'vendors', label: 'Vendor' },
-        { key: 'purchase-orders', label: 'Purchase Order' },
         { key: 'receipt-shipments', label: 'Receipt Shipment' }
       ]},
-      { label: 'Sales', children: [
+      { label: 'Vendor', children: [
+        { key: 'vendors', label: 'Vendor' },
+        { key: 'purchase-orders', label: 'Purchase Order' }
+      ]},
+      { label: 'Customer', children: [
         { key: 'customers', label: 'Customer' },
         { key: 'sales', label: 'Sales' },
         { key: 'quotes', label: 'Sales Quote' },

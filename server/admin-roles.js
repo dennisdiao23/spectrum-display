@@ -24,13 +24,18 @@ const MENU_GROUPS = [
     label: 'Inventory',
     children: [
       { key: 'inventory', label: 'Inventory' },
-      { key: 'vendors', label: 'Vendor' },
-      { key: 'purchase-orders', label: 'Purchase Order' },
       { key: 'receipt-shipments', label: 'Receipt Shipment' }
     ]
   },
   {
-    label: 'Sales',
+    label: 'Vendor',
+    children: [
+      { key: 'vendors', label: 'Vendor' },
+      { key: 'purchase-orders', label: 'Purchase Order' }
+    ]
+  },
+  {
+    label: 'Customer',
     children: [
       { key: 'customers', label: 'Customer' },
       { key: 'sales', label: 'Sales' },
