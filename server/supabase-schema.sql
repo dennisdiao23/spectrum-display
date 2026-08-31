@@ -669,10 +669,10 @@ create table if not exists public.company_accounts (
   password text not null default '',
   email text not null default '',
   notes text not null default '',
-  monthly_payment boolean not null default false,
-  monthly_payment_amount numeric not null default 0,
   monthly_billing boolean not null default false,
   monthly_billing_amount numeric not null default 0,
+  yearly_billing boolean not null default false,
+  yearly_billing_amount numeric not null default 0,
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now()
 );

@@ -1365,7 +1365,7 @@ function createSupabaseStore() {
       const ca = require('./company-accounts');
       const { data, error } = await supabase
         .from('company_accounts')
-        .select('id, name, category, website, login, email, notes, monthly_payment, monthly_payment_amount, monthly_billing, monthly_billing_amount, created_at, updated_at')
+        .select('id, name, category, website, login, email, notes, monthly_billing, monthly_billing_amount, yearly_billing, yearly_billing_amount, created_at, updated_at')
         .order('name', { ascending: true });
       throwIf(error, 'Could not list company accounts.');
       return (data || []).map(function (row) { return ca.formatAccount(row, { includePassword: false }); });

@@ -932,17 +932,17 @@
             <strong class="dash-kpi-value" id="ca-stat-all">—</strong>
             <span class="dash-kpi-hint">Logins on file</span>
           </button>
-          <button type="button" class="dash-kpi" data-filter="payments" aria-pressed="false">
-            <span class="dash-kpi-icon dash-kpi-icon-sales" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="6" width="18" height="12" rx="2"/><path d="M3 10h18"/><path d="M7 15h4"/></svg></span>
-            <span class="dash-kpi-label">Monthly payments</span>
-            <strong class="dash-kpi-value" id="ca-stat-pay">—</strong>
-            <span class="dash-kpi-hint">Accounts we pay monthly</span>
-          </button>
           <button type="button" class="dash-kpi" data-filter="billings" aria-pressed="false">
             <span class="dash-kpi-icon dash-kpi-icon-inventory" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M7 3h8l4 4v14H7z"/><path d="M15 3v5h5"/><path d="M9 13h6M9 17h4"/></svg></span>
             <span class="dash-kpi-label">Monthly billings</span>
             <strong class="dash-kpi-value" id="ca-stat-bill">—</strong>
             <span class="dash-kpi-hint">Accounts that bill monthly</span>
+          </button>
+          <button type="button" class="dash-kpi" data-filter="yearly" aria-pressed="false">
+            <span class="dash-kpi-icon dash-kpi-icon-sales" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M8 3v4M16 3v4M3 11h18"/></svg></span>
+            <span class="dash-kpi-label">Yearly billings</span>
+            <strong class="dash-kpi-value" id="ca-stat-year">—</strong>
+            <span class="dash-kpi-hint">Accounts that bill yearly</span>
           </button>
           <button type="button" class="dash-kpi dash-kpi-profile" data-open="profile" aria-pressed="false">
             <span class="dash-kpi-icon dash-kpi-icon-customers" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20V9l8-5 8 5v11"/><path d="M9 20v-6h6v6"/></svg></span>
@@ -966,8 +966,8 @@
                 <th class="py-3 px-4 font-medium">Account</th>
                 <th class="py-3 px-4 font-medium">Login</th>
                 <th class="py-3 px-4 font-medium">Category</th>
-                <th class="py-3 px-4 font-medium">Monthly payment</th>
                 <th class="py-3 px-4 font-medium">Monthly billing</th>
+                <th class="py-3 px-4 font-medium">Yearly billing</th>
               </tr>
             </thead>
             <tbody id="ca-table" class="text-slate-200"></tbody>
@@ -1432,12 +1432,12 @@
         </div>
       </section>
       <section class="cc-sec is-open">
-        <button type="button" class="cc-sec-btn"><span class="cc-sec-label"><svg class="cc-sec-ico" viewBox="0 0 24 24"><rect x="3" y="6" width="18" height="12" rx="2"/><path d="M3 10h18"/><path d="M7 15h4"/></svg> Monthly</span> <span class="cc-sec-chevron">▾</span></button>
+        <button type="button" class="cc-sec-btn"><span class="cc-sec-label"><svg class="cc-sec-ico" viewBox="0 0 24 24"><rect x="3" y="6" width="18" height="12" rx="2"/><path d="M3 10h18"/><path d="M7 15h4"/></svg> Billing</span> <span class="cc-sec-chevron">▾</span></button>
         <div class="cc-sec-body">
-          <label class="cc-check wide"><input id="ca-pay" type="checkbox"> Monthly payment</label>
-          <div class="cc-field"><label>Payment amount</label><input id="ca-pay-amt" type="number" min="0" step="0.01" value="0"></div>
           <label class="cc-check wide"><input id="ca-bill" type="checkbox"> Monthly billing</label>
-          <div class="cc-field"><label>Billing amount</label><input id="ca-bill-amt" type="number" min="0" step="0.01" value="0"></div>
+          <div class="cc-field"><label>Monthly amount</label><input id="ca-bill-amt" type="number" min="0" step="0.01" value="0"></div>
+          <label class="cc-check wide"><input id="ca-year" type="checkbox"> Yearly billing</label>
+          <div class="cc-field"><label>Yearly amount</label><input id="ca-year-amt" type="number" min="0" step="0.01" value="0"></div>
         </div>
       </section>
       <p id="ca-msg" class="hidden text-sm px-5 pt-3"></p>
@@ -4115,17 +4115,17 @@
       }
     }
 
-    function hasMonthlyPayment(a) {
-      return !!(a && (a.monthlyPayment || Number(a.monthlyPaymentAmount) > 0));
-    }
     function hasMonthlyBilling(a) {
       return !!(a && (a.monthlyBilling || Number(a.monthlyBillingAmount) > 0));
+    }
+    function hasYearlyBilling(a) {
+      return !!(a && (a.yearlyBilling || Number(a.yearlyBillingAmount) > 0));
     }
     function fillCaOverview() {
       const rows = companyAccounts || [];
       setText('ca-stat-all', rows.length);
-      setText('ca-stat-pay', rows.filter(hasMonthlyPayment).length);
       setText('ca-stat-bill', rows.filter(hasMonthlyBilling).length);
+      setText('ca-stat-year', rows.filter(hasYearlyBilling).length);
       const p = companyProfile || {};
       const nameEl = document.getElementById('ca-stat-company');
       const hintEl = document.getElementById('ca-hint-company');
@@ -4143,8 +4143,8 @@
     function renderCaTable(list) {
       const q = (document.getElementById('ca-search').value || '').trim().toLowerCase();
       let rows = (list || []).slice();
-      if (caFilter === 'payments') rows = rows.filter(hasMonthlyPayment);
       if (caFilter === 'billings') rows = rows.filter(hasMonthlyBilling);
+      if (caFilter === 'yearly') rows = rows.filter(hasYearlyBilling);
       if (q) {
         rows = rows.filter(function (a) {
           return [a.name, a.login, a.email, a.website, a.category].join(' ').toLowerCase().indexOf(q) >= 0;
@@ -4157,8 +4157,8 @@
           '<td class="py-3 px-4">' + esc(a.name || 'Account') + '</td>' +
           '<td class="py-3 px-4">' + esc(a.login || a.email || '—') + '</td>' +
           '<td class="py-3 px-4">' + esc(a.category || '—') + '</td>' +
-          '<td class="py-3 px-4">' + (hasMonthlyPayment(a) ? (a.monthlyPaymentAmount ? moneyText(a.monthlyPaymentAmount) : 'Yes') : '—') + '</td>' +
           '<td class="py-3 px-4">' + (hasMonthlyBilling(a) ? (a.monthlyBillingAmount ? moneyText(a.monthlyBillingAmount) : 'Yes') : '—') + '</td>' +
+          '<td class="py-3 px-4">' + (hasYearlyBilling(a) ? (a.yearlyBillingAmount ? moneyText(a.yearlyBillingAmount) : 'Yes') : '—') + '</td>' +
           '</tr>';
       }).join('') || '<tr><td class="py-6 px-4 text-slate-500" colspan="5">No accounts yet. Add a login.</td></tr>';
       fillCaOverview();
@@ -4276,10 +4276,10 @@
       set('ca-password', src.password || '');
       set('ca-email', src.email || '');
       set('ca-notes', src.notes || '');
-      document.getElementById('ca-pay').checked = !!src.monthlyPayment;
-      set('ca-pay-amt', src.monthlyPaymentAmount != null ? src.monthlyPaymentAmount : 0);
       document.getElementById('ca-bill').checked = !!src.monthlyBilling;
       set('ca-bill-amt', src.monthlyBillingAmount != null ? src.monthlyBillingAmount : 0);
+      document.getElementById('ca-year').checked = !!src.yearlyBilling;
+      set('ca-year-amt', src.yearlyBillingAmount != null ? src.yearlyBillingAmount : 0);
       document.getElementById('ca-password').type = 'password';
       document.getElementById('ca-password-toggle').textContent = 'Show';
     }
@@ -4292,10 +4292,10 @@
         password: document.getElementById('ca-password').value,
         email: document.getElementById('ca-email').value,
         notes: document.getElementById('ca-notes').value,
-        monthlyPayment: document.getElementById('ca-pay').checked,
-        monthlyPaymentAmount: document.getElementById('ca-pay-amt').value,
         monthlyBilling: document.getElementById('ca-bill').checked,
-        monthlyBillingAmount: document.getElementById('ca-bill-amt').value
+        monthlyBillingAmount: document.getElementById('ca-bill-amt').value,
+        yearlyBilling: document.getElementById('ca-year').checked,
+        yearlyBillingAmount: document.getElementById('ca-year-amt').value
       };
     }
     function fillCiForm(p) {
@@ -6109,11 +6109,11 @@
       input.type = show ? 'text' : 'password';
       this.textContent = show ? 'Hide' : 'Show';
     });
-    document.getElementById('ca-pay-amt').addEventListener('input', function () {
-      if (Number(this.value) > 0) document.getElementById('ca-pay').checked = true;
-    });
     document.getElementById('ca-bill-amt').addEventListener('input', function () {
       if (Number(this.value) > 0) document.getElementById('ca-bill').checked = true;
+    });
+    document.getElementById('ca-year-amt').addEventListener('input', function () {
+      if (Number(this.value) > 0) document.getElementById('ca-year').checked = true;
     });
     document.getElementById('ca-form').addEventListener('submit', async function (e) {
       e.preventDefault();
