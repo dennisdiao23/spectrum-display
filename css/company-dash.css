@@ -2632,53 +2632,32 @@ body.inv-split-dragging {
   }
 }
 
-html.so-invoice-window-boot .dash-sidebar,
-html.so-invoice-window-boot .dash-scrim,
-html.so-invoice-window-boot .dash-tabbar,
-html.so-invoice-window-boot .dash-tabbar-sub,
-html.so-invoice-window-boot .dash-tabbar-sub-scrim,
-html.so-invoice-window-boot .dash-menu-btn,
-html.so-invoice-window-boot #admin-page-helper,
-body.so-invoice-window .dash-sidebar,
-body.so-invoice-window .dash-scrim,
-body.so-invoice-window .dash-tabbar,
-body.so-invoice-window .dash-tabbar-sub,
-body.so-invoice-window .dash-tabbar-sub-scrim,
-body.so-invoice-window .dash-menu-btn,
-body.so-invoice-window #admin-page-helper,
-html.so-invoice-window-boot body.company-app.dash-tabbar-on .dash-tabbar,
-html.so-invoice-window-boot body.company-app.dash-tabbar-on .dash-tabbar:not([hidden]),
-body.company-app.so-invoice-window.dash-tabbar-on .dash-tabbar,
-body.company-app.so-invoice-window.dash-tabbar-on .dash-tabbar:not([hidden]) {
+body.so-invoice-float #sales-section {
+  display: block !important;
+  position: fixed;
+  z-index: 45;
+  top: var(--dash-top);
+  left: var(--dash-side);
+  right: 0;
+  bottom: var(--dash-tabbar-h);
+  overflow: auto;
+  margin: 0;
+  padding: 0.85rem 1.6rem 1.5rem;
+  background: var(--dash-bg);
+}
+body.so-invoice-float #sales-list-wrap,
+body.so-invoice-float #so-overview,
+body.so-invoice-float #so-error {
   display: none !important;
 }
-html.so-invoice-window-boot,
-body.so-invoice-window,
-body.company-app.so-invoice-window.dash-tabbar-on {
-  --dash-tabbar-h: 0px;
-  --dash-tabbar-sub-h: 0px;
-  padding-bottom: 0;
-}
-html.so-invoice-window-boot .dash-shell,
-body.so-invoice-window .dash-shell {
-  margin-left: 0;
-}
-html.so-invoice-window-boot #sales-list-wrap,
-body.so-invoice-window #sales-list-wrap {
-  display: none !important;
-}
-body.so-invoice-window #so-detail {
+body.so-invoice-float #so-detail {
   display: block !important;
 }
-body.so-invoice-window #sales-section {
-  display: block !important;
-}
-body.so-invoice-window #dash-panel.space-y-8 {
-  padding-bottom: 1.5rem;
-}
-body.so-invoice-window #so-form {
+body.so-invoice-float #so-form {
   max-width: none;
 }
-body.so-invoice-window .company-main {
-  padding-top: 0.35rem;
+@media (max-width: 900px) {
+  body.so-invoice-float #sales-section {
+    left: 0;
+  }
 }

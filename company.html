@@ -20,12 +20,6 @@
         var ccPx = prefs.customers && prefs.customers.splitLeftPx;
         if (ccPx && ccPx >= 160) document.documentElement.style.setProperty('--cc-split-left-boot', ccPx + 'px');
       } catch (e) {}
-      try {
-        var path = String(location.pathname || '').replace(/\/+$/, '');
-        if (/^\/company\/sales\/invoices\/(\d+|new)$/.test(path)) {
-          document.documentElement.classList.add('so-invoice-window-boot');
-        }
-      } catch (e) {}
     })();
   </script>
   <script src="https://cdn.tailwindcss.com"></script>
@@ -2252,6 +2246,7 @@
     function openCompanyTab(name, push) {
       if (!name || !currentAdminUser || !canUse(name)) return;
       const go = function () {
+        if (typeof isInvoiceDocWindow === 'function' && isInvoiceDocWindow()) closeInvoiceWindow();
         const dest = pathForTab(name);
         if (push && (companyPath() !== dest || location.hash)) {
           history.pushState({ tab: name }, '', dest);
@@ -4391,10 +4386,13 @@
         return;
       }
       if (ref.type === 'sale') {
-        if (ref.tab === 'invoices' && openInvoiceWindow(ref.id, { type: 'invoice' })) return;
+        if (ref.tab === 'invoices') {
+          await openInvoiceWindow(ref.id, { type: 'invoice' });
+          return;
+        }
         openCompanyTab(ref.tab || 'quotes', true);
-        await loadSalesDocs(ref.tab === 'invoices' ? 'invoice' : ref.tab === 'orders' ? 'order' : 'quote');
-        await openSalesDoc(ref.id, { inline: true, type: ref.tab === 'invoices' ? 'invoice' : ref.tab === 'orders' ? 'order' : 'quote' });
+        await loadSalesDocs(ref.tab === 'orders' ? 'order' : 'quote');
+        await openSalesDoc(ref.id, { inline: true, type: ref.tab === 'orders' ? 'order' : 'quote' });
       }
     }
 
@@ -6287,8 +6285,11 @@
     }
 
     async function openCustomerTransaction(docId, type) {
-      if (type === 'invoice' && openInvoiceWindow(docId, { type: 'invoice' })) return;
-      const tab = type === 'invoice' ? 'invoices' : type === 'order' ? 'orders' : 'quotes';
+      if (type === 'invoice') {
+        await openInvoiceWindow(docId, { type: 'invoice' });
+        return;
+      }
+      const tab = type === 'order' ? 'orders' : 'quotes';
       openCompanyTab(tab, true);
       await openSalesDoc(docId, { inline: true, type: type });
     }
@@ -6296,8 +6297,11 @@
     async function openNewCustomerTransaction(type) {
       if (!ccDetailCustomer) return;
       document.getElementById('cc-detail-new-menu').classList.add('hidden');
-      if (type === 'invoice' && openInvoiceWindow('new', { type: 'invoice', customerId: ccDetailCustomer.id })) return;
-      const tab = type === 'invoice' ? 'invoices' : type === 'order' ? 'orders' : 'quotes';
+      if (type === 'invoice') {
+        await openInvoiceWindow('new', { type: 'invoice', customerId: ccDetailCustomer.id });
+        return;
+      }
+      const tab = type === 'order' ? 'orders' : 'quotes';
       openCompanyTab(tab, true);
       await loadSalesDocs(type);
       openNewSale(type, { inline: true });
@@ -8119,60 +8123,47 @@
     }
 
     function isInvoiceDocWindow() {
-      return document.body.classList.contains('so-invoice-window') ||
-        document.documentElement.classList.contains('so-invoice-window-boot');
-    }
-
-    function soInvoiceWindowFeatures() {
-      const w = Math.min(1120, Math.max(720, (screen.availWidth || 1200) - 48));
-      const h = Math.min(860, Math.max(560, (screen.availHeight || 900) - 48));
-      const left = Math.max(0, Math.round(((screen.availWidth || w) - w) / 2));
-      const top = Math.max(0, Math.round(((screen.availHeight || h) - h) / 4));
-      return 'popup=yes,width=' + w + ',height=' + h + ',left=' + left + ',top=' + top + ',resizable=yes,scrollbars=yes';
-    }
-
-    function invoiceWindowUrl(id, opts) {
-      opts = opts || {};
-      let url = pathForInvoice(id);
-      if (opts.customerId) url += '?customer=' + encodeURIComponent(opts.customerId);
-      return url;
+      return document.body.classList.contains('so-invoice-float');
     }
 
     function applyInvoiceWindowChrome(on) {
-      document.documentElement.classList.toggle('so-invoice-window-boot', !!on);
-      document.body.classList.toggle('so-invoice-window', !!on);
+      document.body.classList.toggle('so-invoice-float', !!on);
       const back = document.getElementById('so-back');
       if (back) back.textContent = on ? 'Close' : ('← All ' + (salesSubTab === 'quotes' ? 'quotes' : salesSubTab === 'orders' ? 'orders' : 'invoices'));
-      const helper = document.getElementById('admin-page-helper');
-      if (helper && on) helper.hidden = true;
     }
 
-    function openInvoiceWindow(id, opts) {
+    async function openInvoiceWindow(id, opts) {
       opts = opts || {};
       if (opts.inline) return false;
-      if (isInvoiceDocWindow() && String(invoiceIdFromPath()) === String(id || 'new')) return false;
-      const url = invoiceWindowUrl(id, opts);
-      const name = 'so-invoice-' + (id && id !== 'new' ? id : ('new-' + String(opts.customerId || Date.now())));
-      let win = null;
-      try { win = window.open(url, name, soInvoiceWindowFeatures()); }
-      catch (err) { win = null; }
-      if (!win) return false;
-      try { win.focus(); } catch (err) {}
+      applyInvoiceWindowChrome(true);
+      try { await loadSalesDocs('invoice'); }
+      catch (err) {}
+      if (!id || id === 'new') {
+        openNewSale('invoice', { inline: true, customerId: opts.customerId });
+        if (opts.customerId) {
+          fillSoCustomers(opts.customerId);
+          const c = (salesCustomers || []).find(function (row) { return String(row.id) === String(opts.customerId); })
+            || (companyCustomers || []).find(function (row) { return String(row.id) === String(opts.customerId); });
+          applySoCustomer(c);
+        }
+      } else {
+        await openSalesDoc(id, { inline: true, type: 'invoice' });
+      }
+      document.getElementById('so-detail').classList.remove('hidden');
       return true;
     }
 
     function closeInvoiceWindow() {
       applyInvoiceWindowChrome(false);
-      if (window.opener && !window.opener.closed) {
-        try { window.close(); return; } catch (err) {}
+      document.getElementById('so-detail').classList.add('hidden');
+      const sales = document.getElementById('sales-section');
+      if (sales && !sales.classList.contains('hidden')) showSoList();
+      if (invoiceIdFromPath()) {
+        history.pushState({ tab: 'invoices' }, '', '/company/sales/invoices');
       }
-      history.pushState({ tab: 'invoices' }, '', '/company/sales/invoices');
-      showSoList();
-      loadSalesDocs('invoice');
     }
 
     function shouldOpenInvoiceInWindow(type) {
-      if (isInvoiceDocWindow()) return false;
       return type === 'invoice' || (!type && salesSubTab === 'invoices');
     }
 
@@ -8423,7 +8414,10 @@
     function openNewSale(type, opts) {
       opts = opts || {};
       const t = type || salesTypeFromTab(salesSubTab);
-      if (t === 'invoice' && !opts.inline && openInvoiceWindow('new', { type: 'invoice', customerId: opts.customerId })) return;
+      if (t === 'invoice' && !opts.inline) {
+        void openInvoiceWindow('new', { type: 'invoice', customerId: opts.customerId });
+        return;
+      }
       document.getElementById('so-title').textContent = 'New ' + salesTypeLabel(t).toLowerCase();
       showSoMsg('');
       fillSoForm({
@@ -8435,36 +8429,28 @@
       });
       document.getElementById('sales-list-wrap').classList.add('hidden');
       document.getElementById('so-detail').classList.remove('hidden');
-      if (t === 'invoice' && isInvoiceDocWindow()) {
-        document.getElementById('admin-page-title').textContent = 'Invoice';
-        const pageSub = document.getElementById('admin-page-sub');
-        pageSub.textContent = 'New invoice';
-        pageSub.hidden = false;
-        document.title = 'New invoice | Spectrum Display';
-      }
     }
 
     async function openSalesDoc(id, opts) {
       opts = opts || {};
-      if (!opts.inline && shouldOpenInvoiceInWindow(opts.type) && openInvoiceWindow(id, opts)) return;
+      if (!opts.inline && shouldOpenInvoiceInWindow(opts.type)) {
+        await openInvoiceWindow(id, opts);
+        return;
+      }
       showSoMsg('');
       showError('so-error', '');
       try {
         const data = await api('/api/admin/sales-docs/' + id);
         const doc = data.doc;
         if (!doc) return;
-        if (!opts.inline && doc.type === 'invoice' && shouldOpenInvoiceInWindow('invoice') && openInvoiceWindow(id, { type: 'invoice' })) return;
+        if (!opts.inline && doc.type === 'invoice') {
+          await openInvoiceWindow(id, { type: 'invoice' });
+          return;
+        }
         document.getElementById('so-title').textContent = (doc.number || salesTypeLabel(doc.type)) + ' · ' + (doc.customerName || '');
         fillSoForm(doc);
         document.getElementById('sales-list-wrap').classList.add('hidden');
         document.getElementById('so-detail').classList.remove('hidden');
-        if (doc.type === 'invoice' && isInvoiceDocWindow()) {
-          document.getElementById('admin-page-title').textContent = 'Invoice';
-          const pageSub = document.getElementById('admin-page-sub');
-          pageSub.textContent = doc.number || 'Invoice';
-          pageSub.hidden = false;
-          document.title = (doc.number || 'Invoice') + ' | Spectrum Display';
-        }
       } catch (err) {
         showError('so-error', err.message || 'Could not open this document.');
       }
@@ -8887,17 +8873,6 @@
         fillSoForm(data.doc);
         document.getElementById('so-title').textContent = (data.doc.number || salesTypeLabel(data.doc.type)) + ' · ' + (data.doc.customerName || '');
         showSoMsg((data.doc.number || 'Document') + ' saved.', true);
-        if (data.doc.type === 'invoice' && data.doc.id) {
-          const next = pathForInvoice(data.doc.id);
-          if (companyPath() !== next) history.replaceState({ tab: 'invoices', invoiceId: data.doc.id }, '', next);
-          if (isInvoiceDocWindow()) {
-            document.getElementById('admin-page-title').textContent = 'Invoice';
-            const pageSub = document.getElementById('admin-page-sub');
-            pageSub.textContent = data.doc.number || 'Invoice';
-            pageSub.hidden = false;
-            document.title = (data.doc.number || 'Invoice') + ' | Spectrum Display';
-          }
-        }
         await loadSalesDocs(data.doc.type);
       } catch (err) {
         showSoMsg(err.message || 'Could not save document.');
@@ -8922,11 +8897,6 @@
       const id = document.getElementById('so-id').value;
       if (!id) return;
       showSoMsg('');
-      let pending = null;
-      if (type === 'invoice' && !isInvoiceDocWindow()) {
-        try { pending = window.open('about:blank', 'so-invoice-new-' + Date.now(), soInvoiceWindowFeatures()); }
-        catch (err) { pending = null; }
-      }
       try {
         const data = await api('/api/admin/sales-docs/' + id + '/convert', {
           method: 'POST',
@@ -8934,25 +8904,15 @@
           body: JSON.stringify({ type: type })
         });
         if (type === 'invoice' && data.doc && data.doc.id) {
-          const url = invoiceWindowUrl(data.doc.id);
-          if (pending && !pending.closed) {
-            pending.location.href = url;
-            try { pending.focus(); } catch (err) {}
-            showSoMsg('Created ' + (data.doc.number || 'invoice') + ' in a new window.', true);
-            return;
-          }
-          if (openInvoiceWindow(data.doc.id, { type: 'invoice' })) {
-            showSoMsg('Created ' + (data.doc.number || 'invoice') + ' in a new window.', true);
-            return;
-          }
+          await openInvoiceWindow(data.doc.id, { type: 'invoice' });
+          showSoMsg('Created ' + (data.doc.number || 'invoice') + '.', true);
+          return;
         }
-        if (pending && !pending.closed) try { pending.close(); } catch (err) {}
-        salesSubTab = type === 'invoice' ? 'invoices' : 'orders';
-        openCompanyTab(salesSubTab, true);
-        await openSalesDoc(data.doc.id, { inline: true, type: type });
+        salesSubTab = 'orders';
+        openCompanyTab('orders', true);
+        await openSalesDoc(data.doc.id, { inline: true, type: 'order' });
         showSoMsg('Created ' + (data.doc.number || salesTypeLabel(type)) + '.', true);
       } catch (err) {
-        if (pending && !pending.closed) try { pending.close(); } catch (e) {}
         showSoMsg(err.message || 'Could not convert document.');
       }
     }
