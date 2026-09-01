@@ -2146,8 +2146,19 @@ body.inv-layout-lock .inv-split {
   flex: 1 1 auto;
   min-height: 0;
   max-height: none;
-  overflow: auto;
+  overflow-x: hidden;
+  overflow-y: auto;
   -webkit-overflow-scrolling: touch;
+}
+.inv-split-left table.dash-cols[data-cols="inventory"] {
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+  table-layout: fixed;
+}
+.inv-split-left table.dash-cols[data-cols="inventory"] th[data-col],
+.inv-split-left table.dash-cols[data-cols="inventory"] td {
+  min-width: 0;
 }
 body.inv-layout-lock .inv-right-panel,
 body.inv-layout-lock .inv-activity-wrap,
