@@ -533,7 +533,7 @@
                       <th class="py-3 px-4 font-medium" data-col="dealer">Dealer net <span class="dash-col-caret">▾</span><span class="dash-col-grip" aria-hidden="true"></span></th>
                       <th class="py-3 px-4 font-medium" data-col="photo">Photo <span class="dash-col-caret">▾</span><span class="dash-col-grip" aria-hidden="true"></span></th>
                       <th class="py-3 px-4 font-medium" data-col="website">Website <span class="dash-col-caret">▾</span></th>
-                      <th class="py-3 px-4 font-medium inv-status-col" data-lock="end">Status</th>
+                      <th class="py-3 px-4 font-medium" data-col="status">Status <span class="dash-col-caret">▾</span><span class="dash-col-grip" aria-hidden="true"></span></th>
                     </tr>
                   </thead>
                   <tbody id="inventory-table" class="text-slate-200"></tbody>
@@ -3105,8 +3105,6 @@
     const INVENTORY_MAX_COLS = 5;
 
     function capInventoryColState(state) {
-      state.order = (state.order || []).filter(function (id) { return id !== 'status'; });
-      state.hidden = (state.hidden || []).filter(function (id) { return id !== 'status'; });
       if (state.order.length > INVENTORY_MAX_COLS) {
         state.order.slice(INVENTORY_MAX_COLS).forEach(function (id) {
           if (state.hidden.indexOf(id) === -1) state.hidden.push(id);
@@ -3114,6 +3112,11 @@
         state.order = state.order.slice(0, INVENTORY_MAX_COLS);
       }
       return state;
+    }
+
+    function invQtyDisplay(item) {
+      if (!item || item.qty == null) return '—';
+      return Number(item.qty).toLocaleString();
     }
 
     function applyMobileColState(table, state) {
@@ -3140,6 +3143,7 @@
         { id: 'cost', label: 'Cost' },
         { id: 'price', label: 'Sell price' },
         { id: 'dealer', label: 'Dealer net' },
+        { id: 'status', label: 'Status' },
         { id: 'photo', label: 'Photo' },
         { id: 'website', label: 'Website' }
       ],
@@ -3747,7 +3751,7 @@
         return '';
       });
       tb.innerHTML = sorted.map(function (item) {
-        const qtyText = item.qty.toLocaleString() + ' ' + item.unit;
+        const qtyText = invQtyDisplay(item);
         const money = function (n) { return n ? ('$' + Number(n).toLocaleString()) : '—'; };
         const site = (item.maps && item.maps.length)
           ? item.maps.map(function (m) {
@@ -3757,8 +3761,6 @@
         const photo = item.image
           ? '<img src="' + esc(item.image) + '" alt="" class="dash-col-photo">'
           : '<span class="text-slate-400">—</span>';
-        const statusCell = '<td class="py-3 px-4"><span class="text-xs px-2 py-0.5 rounded-full ' + stockStatusClass(item.status) + '">' +
-          esc(stockStatusLabel(item.status)) + '</span></td>';
         const cells = {
           sku: '<td class="py-3 px-4 font-mono text-xs text-sky-300">' + esc(item.sku || '—') + '</td>',
           name: '<td class="py-3 px-4 font-medium">' + esc(item.name || '') + '</td>',
@@ -3770,13 +3772,15 @@
           price: '<td class="py-3 px-4">' + money(item.price) + '</td>',
           dealer: '<td class="py-3 px-4">' + money(item.dealerNet) + '</td>',
           website: '<td class="py-3 px-4 text-slate-400">' + site + '</td>',
-          photo: '<td class="py-3 px-4">' + photo + '</td>'
+          photo: '<td class="py-3 px-4">' + photo + '</td>',
+          status: '<td class="py-3 px-4"><span class="text-xs px-2 py-0.5 rounded-full ' + stockStatusClass(item.status) + '">' +
+            esc(stockStatusLabel(item.status)) + '</span></td>'
         };
         const selected = String(item.id) === String(invDetailId);
         return '<tr class="border-b border-slate-800 hover:bg-slate-900/80 cursor-pointer' +
           (selected ? ' is-selected' : '') +
           '" data-id="' + esc(item.id) + '">' +
-          dashOrderedCells(table, cells, statusCell) +
+          dashOrderedCells(table, cells) +
           '</tr>';
       }).join('') || '<tr><td class="py-6 px-4 text-slate-500" colspan="' + dashColSpan(table) + '">No matching items.</td></tr>';
       applyColOrder(table);
@@ -3897,21 +3901,31 @@
 
     function initInvSplitResize() {
       const split = document.getElementById('inv-split');
-      const left = document.getElementById('inv-split-left');
       const resizer = document.getElementById('inv-split-resizer');
-      if (!split || !left || !resizer || resizer.dataset.ready === '1') return;
+      if (!split || !resizer || resizer.dataset.ready === '1') return;
       resizer.dataset.ready = '1';
       const key = 'inv-split-left-px';
+      const MIN_LEFT = 400;
+      const MIN_RIGHT = 600;
+      const RESIZER_W = 7;
+      function clampLeft(w) {
+        const total = split.getBoundingClientRect().width;
+        const maxLeft = Math.max(MIN_LEFT, total - MIN_RIGHT - RESIZER_W);
+        return Math.max(MIN_LEFT, Math.min(w, maxLeft));
+      }
+      function applyLeft(w) {
+        const clamped = clampLeft(w);
+        split.style.setProperty('--inv-left-w', clamped + 'px');
+        localStorage.setItem(key, String(Math.round(clamped)));
+      }
       const saved = parseInt(localStorage.getItem(key) || '', 10);
-      if (saved > 200) left.style.flex = '0 0 ' + saved + 'px';
+      applyLeft(saved > MIN_LEFT ? saved : MIN_LEFT);
       let dragging = false;
       function onMove(e) {
         if (!dragging) return;
         const rect = split.getBoundingClientRect();
         const x = (e.touches ? e.touches[0].clientX : e.clientX) - rect.left;
-        const w = Math.max(280, Math.min(x, rect.width - 320));
-        left.style.flex = '0 0 ' + w + 'px';
-        localStorage.setItem(key, String(Math.round(w)));
+        applyLeft(x);
       }
       function onUp() {
         dragging = false;
@@ -3925,6 +3939,10 @@
         document.body.classList.add('inv-split-dragging');
         document.addEventListener('mousemove', onMove);
         document.addEventListener('mouseup', onUp);
+      });
+      window.addEventListener('resize', function () {
+        const current = parseInt(localStorage.getItem(key) || String(MIN_LEFT), 10);
+        applyLeft(current);
       });
     }
 
@@ -4033,7 +4051,7 @@
       } else {
         photo.textContent = (item.name || item.sku || '?').charAt(0).toUpperCase();
       }
-      document.getElementById('inv-detail-qty').textContent = (item.qty || 0).toLocaleString() + ' ' + (item.unit || '');
+      document.getElementById('inv-detail-qty').textContent = invQtyDisplay(item);
       const statusEl = document.getElementById('inv-detail-status');
       statusEl.innerHTML = '<span class="text-xs px-2 py-0.5 rounded-full ' + stockStatusClass(item.status) + '">' +
         esc(stockStatusLabel(item.status)) + '</span>';
@@ -4377,7 +4395,7 @@
       }
       adjustWrap.classList.remove('hidden');
       document.getElementById('inv-meta').textContent =
-        (item.qty || 0).toLocaleString() + ' ' + item.unit + ' on hand · ' + stockStatusLabel(item.status);
+        invQtyDisplay(item) + ' on hand · ' + stockStatusLabel(item.status);
       document.getElementById('inv-qty').value = '';
       document.getElementById('inv-note').value = '';
       document.getElementById('inv-msg').classList.add('hidden');
@@ -4428,7 +4446,7 @@
       return (item.sku ? (item.sku + ' · ') : '') +
         (item.name || 'Item') +
         (item.pitchLabel && item.pitchLabel !== '—' ? (' · ' + item.pitchLabel) : '') +
-        ' · ' + (item.qty || 0) + ' ' + (item.unit || '');
+        ' · ' + invQtyDisplay(item);
     }
 
     function currentMapSelection() {
