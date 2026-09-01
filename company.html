@@ -2968,7 +2968,6 @@
       if (typeof closeStaffDrawer === 'function') closeStaffDrawer(true);
       if (typeof closeRoleDrawer === 'function') closeRoleDrawer(true);
       if (name !== 'customers' && typeof closeCustomerDetail === 'function') closeCustomerDetail(false);
-      if (name !== 'inventory' && typeof closeInventoryDetail === 'function') closeInventoryDetail(false);
       if (name !== 'vendors' && typeof closeVendorDetail === 'function') closeVendorDetail(false);
       const onWebsite = name === 'products' || name === 'accounts';
       const onSettings = name === 'staff' || name === 'roles' || name === 'company';
@@ -4143,6 +4142,34 @@
       showInvOverview({ push: push !== false });
     }
 
+    function restoreInventoryView(opts) {
+      opts = opts || {};
+      const push = opts.push !== false;
+      invOpenTabs = invOpenTabs.filter(function (id) {
+        return inventoryItems.some(function (i) { return String(i.id) === String(id); });
+      });
+      Object.keys(invTabDetailTab).forEach(function (id) {
+        if (invOpenTabs.indexOf(id) === -1) delete invTabDetailTab[id];
+      });
+      const pathId = inventoryIdFromPath();
+      if (pathId && canUse('inventory')) {
+        const found = inventoryItems.find(function (i) { return String(i.id) === String(pathId); });
+        if (found) {
+          openInvTab(pathId, { push: push });
+          return;
+        }
+      }
+      if (String(invActiveTab) !== 'overview' && invOpenTabs.indexOf(String(invActiveTab)) !== -1) {
+        activateInvTab(invActiveTab, { push: push });
+        return;
+      }
+      if (invDetailId && invOpenTabs.indexOf(String(invDetailId)) !== -1) {
+        activateInvTab(invDetailId, { push: push });
+        return;
+      }
+      showInvOverview({ push: push });
+    }
+
     function invActivityLabel(act) {
       if (act.type === 'edit') return 'Item updated';
       const kind = String(act.kind || '').toLowerCase();
@@ -4536,17 +4563,7 @@
         renderInvActivity();
         initInvSplitResize();
         refreshRsSkuList();
-        if (invDetailId) {
-          const found = inventoryItems.find(function (i) { return String(i.id) === String(invDetailId); });
-          if (found) {
-            if (invOpenTabs.indexOf(String(invDetailId)) === -1) invOpenTabs.push(String(invDetailId));
-            activateInvTab(invDetailId, { push: false });
-          } else {
-            closeInventoryDetail(false);
-          }
-        } else {
-          showInvOverview({ push: false });
-        }
+        restoreInventoryView({ push: false });
       } catch (err) {
         errEl.textContent = err.message || 'Could not load inventory.';
         errEl.classList.remove('hidden');
@@ -7921,9 +7938,6 @@
       }
       if (name === 'inventory') {
         await loadInventory();
-        const iid = inventoryIdFromPath();
-        if (iid && canUse('inventory')) selectInventoryItem(iid, { push: false });
-        else closeInventoryDetail(false);
       }
       if (name === 'vendors') {
         await loadVendors();
