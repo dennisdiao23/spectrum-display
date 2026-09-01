@@ -9,6 +9,17 @@
   <title>Company | Spectrum Display</title>
   <meta name="robots" content="noindex, nofollow" />
   <link rel="stylesheet" href="/css/company-dash.css" />
+  <script>
+    (function () {
+      try {
+        var uid = localStorage.getItem('dash-active-admin-id');
+        if (!uid) return;
+        var prefs = JSON.parse(localStorage.getItem('dash-col-prefs-' + uid) || '{}');
+        var px = prefs.inventory && prefs.inventory.splitLeftPx;
+        if (px && px >= 160) document.documentElement.style.setProperty('--inv-split-left-boot', px + 'px');
+      } catch (e) {}
+    })();
+  </script>
   <script src="https://cdn.tailwindcss.com"></script>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
 </head>
@@ -2342,6 +2353,8 @@
 
     function showDash(admin) {
       currentAdminUser = admin;
+      try { localStorage.setItem('dash-active-admin-id', String(admin.id)); } catch (err) {}
+      applyInvSplitFromCache();
       loginPanel.classList.add('hidden');
       dashPanel.classList.remove('hidden');
       const roleBit = admin.roleName && admin.role !== 'owner' ? ' · ' + admin.roleName : '';
@@ -3362,6 +3375,11 @@
 
     function cacheColPrefs() {
       try { localStorage.setItem(colPrefsCacheKey(), JSON.stringify(dashColMine)); } catch (err) {}
+      try {
+        const inv = dashColMine.inventory;
+        const px = inv && inv.splitLeftPx ? parseInt(inv.splitLeftPx, 10) : 0;
+        if (px >= 160) document.documentElement.style.setProperty('--inv-split-left-boot', px + 'px');
+      } catch (err) {}
     }
 
     function saveColState(table, state) {
@@ -3401,31 +3419,69 @@
       } catch (err) {}
     }
 
-    async function loadColumnPrefs() {
-      dashColMine = {};
-      dashColOwner = {};
+    function applyInvSplitFromCache() {
+      const split = document.getElementById('inv-split');
+      if (!split) return;
+      const px = invSplitLeftFromPrefs();
+      const MIN_LEFT = 400;
+      const target = px >= MIN_LEFT ? px : 0;
+      if (!target) return;
+      split.style.setProperty('--inv-left-w', target + 'px');
+      try { document.documentElement.style.setProperty('--inv-split-left-boot', target + 'px'); } catch (err) {}
+    }
+
+    function applyColumnPrefsFromLocal() {
       try {
         const cached = JSON.parse(localStorage.getItem(colPrefsCacheKey()) || '{}');
         if (cached && typeof cached === 'object') dashColMine = cached;
       } catch (err) {}
+      applyInvSplitFromCache();
+      document.querySelectorAll('table.dash-cols').forEach(function (t) { applyColOrder(t); });
+      migrateLegacyInvSplitPref();
+    }
+
+    async function syncColumnPrefsFromServer(localFirst) {
       try {
         const data = await api('/api/admin/column-prefs');
-        dashColMine = data.prefs && typeof data.prefs === 'object' ? data.prefs : {};
         dashColOwner = data.ownerPrefs && typeof data.ownerPrefs === 'object' ? data.ownerPrefs : {};
+        const remote = data.prefs && typeof data.prefs === 'object' ? data.prefs : {};
+        if (!localFirst && Object.keys(remote).length) {
+          dashColMine = remote;
+          cacheColPrefs();
+          applyColumnPrefsFromLocal();
+        }
         if (!Object.keys(dashColMine).length) {
           const legacy = readLegacyLocalCols();
           if (Object.keys(legacy).length) {
             dashColMine = legacy;
             if (currentAdminUser && currentAdminUser.role === 'owner') dashColOwner = Object.assign({}, dashColMine);
+            cacheColPrefs();
+            applyColumnPrefsFromLocal();
             await pushColPrefs();
           }
         }
-        cacheColPrefs();
       } catch (err) {
-        if (!Object.keys(dashColMine).length) dashColMine = readLegacyLocalCols();
+        if (!Object.keys(dashColMine).length) {
+          dashColMine = readLegacyLocalCols();
+          applyColumnPrefsFromLocal();
+        }
       }
-      document.querySelectorAll('table.dash-cols').forEach(function (t) { applyColOrder(t); });
-      migrateLegacyInvSplitPref();
+    }
+
+    async function loadColumnPrefs() {
+      dashColMine = {};
+      dashColOwner = {};
+      let hadLocal = false;
+      try {
+        const cached = JSON.parse(localStorage.getItem(colPrefsCacheKey()) || '{}');
+        hadLocal = !!(cached && typeof cached === 'object' && Object.keys(cached).length);
+      } catch (err) {}
+      applyColumnPrefsFromLocal();
+      if (hadLocal) {
+        void syncColumnPrefsFromServer(true);
+        return;
+      }
+      await syncColumnPrefsFromServer(false);
     }
 
     function applyColOrder(table) {
@@ -4237,9 +4293,14 @@
         migrateLegacyInvSplitPref();
         const saved = invSplitLeftFromPrefs();
         const target = saved >= MIN_LEFT ? saved : MIN_LEFT;
-        split.style.setProperty('--inv-left-w', target + 'px');
+        const existing = parseInt(split.style.getPropertyValue('--inv-left-w'), 10);
+        if (!existing || existing < MIN_LEFT) split.style.setProperty('--inv-left-w', target + 'px');
         whenInvSplitReady(split, function () {
-          applyLeft(target, { save: false });
+          const start = parseInt(split.style.getPropertyValue('--inv-left-w'), 10) || target;
+          const clamped = clampLeft(start);
+          if (Math.abs(clamped - start) > 2) split.style.setProperty('--inv-left-w', clamped + 'px');
+          refreshInventorySplitCols();
+          fitInvTabWidths();
         });
       }
       if (resizer.dataset.ready !== '1') {
@@ -9128,6 +9189,7 @@
     });
 
     document.getElementById('logout-btn').addEventListener('click', async function () {
+      try { localStorage.removeItem('dash-active-admin-id'); } catch (err) {}
       await api('/api/admin/logout', { method: 'POST' });
       location.href = '/company';
     });

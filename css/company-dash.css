@@ -2117,7 +2117,7 @@ body.inv-layout-lock #inventory-section #inventory-error {
 }
 .inv-split {
   display: grid;
-  grid-template-columns: var(--inv-left-w, 400px) 14px minmax(0, 1fr);
+  grid-template-columns: var(--inv-left-w, var(--inv-split-left-boot, 400px)) 14px minmax(0, 1fr);
   align-items: stretch;
   gap: 0;
   min-height: 0;
