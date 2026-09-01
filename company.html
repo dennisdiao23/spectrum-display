@@ -476,8 +476,7 @@
       </div>
 
       <div id="inventory-section" class="hidden">
-        <div id="inv-workspace" class="cc-workspace">
-        <aside id="inv-list-pane" class="cc-list-pane">
+        <div id="inv-workspace">
         <div id="inventory-list-wrap" class="cc-list-inner">
           <div class="page-kpis cc-list-kpis" id="inv-overview">
             <button type="button" class="dash-kpi is-on" data-filter="all" aria-pressed="true">
@@ -516,108 +515,137 @@
             <button id="inv-new-btn" type="button" class="cc-list-add-btn px-4 py-2 rounded-full bg-sky-500 hover:bg-sky-400 text-white text-sm font-semibold">Add inventory item</button>
           </div>
           <p id="inventory-error" class="hidden text-sm text-red-400 mb-3"></p>
-          <div id="inv-side-list" class="cc-side-list hidden" role="listbox" aria-label="Inventory items"></div>
-          <div class="cc-table-card rounded-2xl border border-slate-800">
-            <div id="inv-table-wrap" class="cc-table-wrap overflow-x-auto">
-            <table class="w-full text-sm dash-cols" data-cols="inventory">
-              <thead class="text-left text-slate-400 border-b border-slate-800">
-                <tr>
-                  <th class="py-3 px-4 font-medium" data-col="sku">SKU <span class="dash-col-caret">▾</span><span class="dash-col-grip" aria-hidden="true"></span></th>
-                  <th class="py-3 px-4 font-medium" data-col="name">Item <span class="dash-col-caret">▾</span><span class="dash-col-grip" aria-hidden="true"></span></th>
-                  <th class="py-3 px-4 font-medium" data-col="description">Description <span class="dash-col-caret">▾</span><span class="dash-col-grip" aria-hidden="true"></span></th>
-                  <th class="py-3 px-4 font-medium" data-col="pitch">Pitch <span class="dash-col-caret">▾</span><span class="dash-col-grip" aria-hidden="true"></span></th>
-                  <th class="py-3 px-4 font-medium" data-col="brand">Brand <span class="dash-col-caret">▾</span><span class="dash-col-grip" aria-hidden="true"></span></th>
-                  <th class="py-3 px-4 font-medium" data-col="qty">On hand <span class="dash-col-caret">▾</span><span class="dash-col-grip" aria-hidden="true"></span></th>
-                  <th class="py-3 px-4 font-medium" data-col="cost">Cost <span class="dash-col-caret">▾</span><span class="dash-col-grip" aria-hidden="true"></span></th>
-                  <th class="py-3 px-4 font-medium" data-col="price">Sell price <span class="dash-col-caret">▾</span><span class="dash-col-grip" aria-hidden="true"></span></th>
-                  <th class="py-3 px-4 font-medium" data-col="dealer">Dealer net <span class="dash-col-caret">▾</span><span class="dash-col-grip" aria-hidden="true"></span></th>
-                  <th class="py-3 px-4 font-medium" data-col="status">Status <span class="dash-col-caret">▾</span><span class="dash-col-grip" aria-hidden="true"></span></th>
-                  <th class="py-3 px-4 font-medium" data-col="photo">Photo <span class="dash-col-caret">▾</span><span class="dash-col-grip" aria-hidden="true"></span></th>
-                  <th class="py-3 px-4 font-medium" data-col="website">Website <span class="dash-col-caret">▾</span></th>
-                </tr>
-              </thead>
-              <tbody id="inventory-table" class="text-slate-200"></tbody>
-            </table>
-            </div>
-          </div>
-        </div>
-        </aside>
-        <div id="inv-detail-pane" class="cc-detail-pane" hidden aria-hidden="true">
-          <div class="cc-detail-toolbar">
-            <button type="button" id="inv-detail-back" class="cc-detail-back">← Inventory</button>
-            <div class="cc-detail-toolbar-actions">
-              <button type="button" id="inv-detail-adjust" class="cc-detail-btn">Adjust stock</button>
-              <button type="button" id="inv-detail-edit" class="cc-detail-btn">Edit</button>
-            </div>
-          </div>
-          <div class="cc-detail-hero">
-            <div class="cc-detail-hero-main">
-              <span id="inv-detail-photo" class="cc-detail-avatar cc-detail-photo" aria-hidden="true"></span>
-              <div class="cc-detail-hero-copy">
-                <h2 id="inv-detail-name">Item</h2>
-                <p id="inv-detail-subname" class="cc-detail-subname"></p>
+          <div id="inv-split" class="inv-split">
+            <div id="inv-split-left" class="inv-split-left">
+              <div class="cc-table-card rounded-2xl border border-slate-800">
+                <div id="inv-table-wrap" class="cc-table-wrap overflow-x-auto">
+                <table class="w-full text-sm dash-cols" data-cols="inventory">
+                  <thead class="text-left text-slate-400 border-b border-slate-800">
+                    <tr>
+                      <th class="py-3 px-4 font-medium" data-col="sku">SKU <span class="dash-col-caret">▾</span><span class="dash-col-grip" aria-hidden="true"></span></th>
+                      <th class="py-3 px-4 font-medium" data-col="name">Item <span class="dash-col-caret">▾</span><span class="dash-col-grip" aria-hidden="true"></span></th>
+                      <th class="py-3 px-4 font-medium" data-col="description">Description <span class="dash-col-caret">▾</span><span class="dash-col-grip" aria-hidden="true"></span></th>
+                      <th class="py-3 px-4 font-medium" data-col="pitch">Pitch <span class="dash-col-caret">▾</span><span class="dash-col-grip" aria-hidden="true"></span></th>
+                      <th class="py-3 px-4 font-medium" data-col="brand">Brand <span class="dash-col-caret">▾</span><span class="dash-col-grip" aria-hidden="true"></span></th>
+                      <th class="py-3 px-4 font-medium" data-col="qty">On hand <span class="dash-col-caret">▾</span><span class="dash-col-grip" aria-hidden="true"></span></th>
+                      <th class="py-3 px-4 font-medium" data-col="cost">Cost <span class="dash-col-caret">▾</span><span class="dash-col-grip" aria-hidden="true"></span></th>
+                      <th class="py-3 px-4 font-medium" data-col="price">Sell price <span class="dash-col-caret">▾</span><span class="dash-col-grip" aria-hidden="true"></span></th>
+                      <th class="py-3 px-4 font-medium" data-col="dealer">Dealer net <span class="dash-col-caret">▾</span><span class="dash-col-grip" aria-hidden="true"></span></th>
+                      <th class="py-3 px-4 font-medium" data-col="photo">Photo <span class="dash-col-caret">▾</span><span class="dash-col-grip" aria-hidden="true"></span></th>
+                      <th class="py-3 px-4 font-medium" data-col="website">Website <span class="dash-col-caret">▾</span></th>
+                      <th class="py-3 px-4 font-medium inv-status-col" data-lock="end">Status</th>
+                    </tr>
+                  </thead>
+                  <tbody id="inventory-table" class="text-slate-200"></tbody>
+                </table>
+                </div>
               </div>
             </div>
-            <div class="cc-detail-hero-grid">
-              <div class="cc-detail-block">
-                <h3>Stock</h3>
-                <dl class="cc-detail-dl">
-                  <div><dt>On hand</dt><dd id="inv-detail-qty">—</dd></div>
-                  <div><dt>Status</dt><dd id="inv-detail-status">—</dd></div>
-                  <div><dt>Low at</dt><dd id="inv-detail-low">—</dd></div>
-                </dl>
+            <div id="inv-split-resizer" class="inv-split-resizer" role="separator" aria-orientation="vertical" aria-label="Resize inventory panels" tabindex="0"></div>
+            <div id="inv-split-right" class="inv-split-right">
+              <div id="inv-overview-panel" class="inv-right-panel">
+                <div class="inv-right-head">
+                  <h2 class="inv-right-title">Overview</h2>
+                </div>
+                <div class="inv-overview-summary">
+                  <p class="inv-overview-lead">Warehouse activity — manual stock changes and item edits. Bulk PO receipts and packing lists are not listed here.</p>
+                </div>
+                <h3 class="inv-activity-heading">Recent activity</h3>
+                <div class="inv-activity-wrap overflow-x-auto rounded-2xl border border-slate-800">
+                  <table class="w-full text-sm inv-activity-table">
+                    <thead class="text-left text-slate-400 border-b border-slate-800">
+                      <tr>
+                        <th class="py-3 px-4 font-medium">Date</th>
+                        <th class="py-3 px-4 font-medium">Item</th>
+                        <th class="py-3 px-4 font-medium">Action</th>
+                        <th class="py-3 px-4 font-medium">Change</th>
+                        <th class="py-3 px-4 font-medium">By</th>
+                      </tr>
+                    </thead>
+                    <tbody id="inv-activity-body" class="text-slate-200"></tbody>
+                  </table>
+                </div>
+                <p id="inv-activity-empty" class="cc-detail-empty hidden">No recent inventory activity yet.</p>
               </div>
-              <div class="cc-detail-block">
-                <h3>Pricing</h3>
-                <dl class="cc-detail-dl">
-                  <div><dt>Cost</dt><dd id="inv-detail-cost">—</dd></div>
-                  <div><dt>Sell price</dt><dd id="inv-detail-price">—</dd></div>
-                  <div><dt>Dealer net</dt><dd id="inv-detail-dealer">—</dd></div>
-                </dl>
-              </div>
-              <div class="cc-detail-block">
-                <h3>Specs</h3>
-                <dl class="cc-detail-dl">
-                  <div><dt>Brand</dt><dd id="inv-detail-brand">—</dd></div>
-                  <div><dt>Pitch</dt><dd id="inv-detail-pitch">—</dd></div>
-                  <div><dt>Unit</dt><dd id="inv-detail-unit">—</dd></div>
-                </dl>
+              <div id="inv-item-panel" class="inv-right-panel hidden" aria-hidden="true">
+                <div class="cc-detail-toolbar inv-item-toolbar">
+                  <button type="button" id="inv-overview-btn" class="cc-detail-back">Overview</button>
+                  <div class="cc-detail-toolbar-actions">
+                    <button type="button" id="inv-detail-adjust" class="cc-detail-btn">Adjust stock</button>
+                    <button type="button" id="inv-detail-edit" class="cc-detail-btn">Edit</button>
+                  </div>
+                </div>
+                <div class="cc-detail-hero">
+                  <div class="cc-detail-hero-main">
+                    <span id="inv-detail-photo" class="cc-detail-avatar cc-detail-photo" aria-hidden="true"></span>
+                    <div class="cc-detail-hero-copy">
+                      <h2 id="inv-detail-name">Item</h2>
+                      <p id="inv-detail-subname" class="cc-detail-subname"></p>
+                    </div>
+                  </div>
+                  <div class="cc-detail-hero-grid">
+                    <div class="cc-detail-block">
+                      <h3>Stock</h3>
+                      <dl class="cc-detail-dl">
+                        <div><dt>On hand</dt><dd id="inv-detail-qty">—</dd></div>
+                        <div><dt>Status</dt><dd id="inv-detail-status">—</dd></div>
+                        <div><dt>Low at</dt><dd id="inv-detail-low">—</dd></div>
+                      </dl>
+                    </div>
+                    <div class="cc-detail-block">
+                      <h3>Pricing</h3>
+                      <dl class="cc-detail-dl">
+                        <div><dt>Cost</dt><dd id="inv-detail-cost">—</dd></div>
+                        <div><dt>Sell price</dt><dd id="inv-detail-price">—</dd></div>
+                        <div><dt>Dealer net</dt><dd id="inv-detail-dealer">—</dd></div>
+                      </dl>
+                    </div>
+                    <div class="cc-detail-block">
+                      <h3>Specs</h3>
+                      <dl class="cc-detail-dl">
+                        <div><dt>Brand</dt><dd id="inv-detail-brand">—</dd></div>
+                        <div><dt>Pitch</dt><dd id="inv-detail-pitch">—</dd></div>
+                        <div><dt>Unit</dt><dd id="inv-detail-unit">—</dd></div>
+                      </dl>
+                    </div>
+                  </div>
+                </div>
+                <div class="cc-detail-tabs" role="tablist">
+                  <button type="button" class="cc-detail-tab is-on" data-inv-tab="moves" role="tab" aria-selected="true">Stock history</button>
+                  <button type="button" class="cc-detail-tab" data-inv-tab="details" role="tab" aria-selected="false">Item details</button>
+                  <button type="button" class="cc-detail-tab" data-inv-tab="website" role="tab" aria-selected="false">Website</button>
+                  <button type="button" class="cc-detail-tab" data-inv-tab="notes" role="tab" aria-selected="false">Notes</button>
+                </div>
+                <div id="inv-detail-panel-moves" class="cc-detail-panel" role="tabpanel">
+                  <div class="overflow-x-auto rounded-2xl border border-slate-800">
+                    <table class="w-full text-sm cc-detail-tx-table">
+                      <thead class="text-left text-slate-400 border-b border-slate-800">
+                        <tr>
+                          <th class="py-3 px-4 font-medium">Date</th>
+                          <th class="py-3 px-4 font-medium">Kind</th>
+                          <th class="py-3 px-4 font-medium">Change</th>
+                          <th class="py-3 px-4 font-medium">After</th>
+                          <th class="py-3 px-4 font-medium">Note</th>
+                          <th class="py-3 px-4 font-medium">By</th>
+                        </tr>
+                      </thead>
+                      <tbody id="inv-detail-moves-body" class="text-slate-200"></tbody>
+                    </table>
+                  </div>
+                  <p id="inv-detail-moves-empty" class="cc-detail-empty hidden">No stock movements yet.</p>
+                </div>
+                <div id="inv-detail-panel-details" class="cc-detail-panel hidden" role="tabpanel" hidden>
+                  <dl class="cc-detail-read-grid" id="inv-detail-read"></dl>
+                </div>
+                <div id="inv-detail-panel-website" class="cc-detail-panel hidden" role="tabpanel" hidden>
+                  <div id="inv-detail-maps" class="cc-detail-notes-box"></div>
+                </div>
+                <div id="inv-detail-panel-notes" class="cc-detail-panel hidden" role="tabpanel" hidden>
+                  <div class="cc-detail-notes-box" id="inv-detail-notes-text">—</div>
+                  <p class="cc-detail-meta" id="inv-detail-updated"></p>
+                </div>
               </div>
             </div>
-          </div>
-          <div class="cc-detail-tabs" role="tablist">
-            <button type="button" class="cc-detail-tab is-on" data-inv-tab="moves" role="tab" aria-selected="true">Stock history</button>
-            <button type="button" class="cc-detail-tab" data-inv-tab="details" role="tab" aria-selected="false">Item details</button>
-            <button type="button" class="cc-detail-tab" data-inv-tab="website" role="tab" aria-selected="false">Website</button>
-            <button type="button" class="cc-detail-tab" data-inv-tab="notes" role="tab" aria-selected="false">Notes</button>
-          </div>
-          <div id="inv-detail-panel-moves" class="cc-detail-panel" role="tabpanel">
-            <div class="overflow-x-auto rounded-2xl border border-slate-800">
-              <table class="w-full text-sm cc-detail-tx-table">
-                <thead class="text-left text-slate-400 border-b border-slate-800">
-                  <tr>
-                    <th class="py-3 px-4 font-medium">Date</th>
-                    <th class="py-3 px-4 font-medium">Kind</th>
-                    <th class="py-3 px-4 font-medium">Change</th>
-                    <th class="py-3 px-4 font-medium">After</th>
-                    <th class="py-3 px-4 font-medium">Note</th>
-                    <th class="py-3 px-4 font-medium">By</th>
-                  </tr>
-                </thead>
-                <tbody id="inv-detail-moves-body" class="text-slate-200"></tbody>
-              </table>
-            </div>
-            <p id="inv-detail-moves-empty" class="cc-detail-empty hidden">No stock movements yet.</p>
-          </div>
-          <div id="inv-detail-panel-details" class="cc-detail-panel hidden" role="tabpanel" hidden>
-            <dl class="cc-detail-read-grid" id="inv-detail-read"></dl>
-          </div>
-          <div id="inv-detail-panel-website" class="cc-detail-panel hidden" role="tabpanel" hidden>
-            <div id="inv-detail-maps" class="cc-detail-notes-box"></div>
-          </div>
-          <div id="inv-detail-panel-notes" class="cc-detail-panel hidden" role="tabpanel" hidden>
-            <div class="cc-detail-notes-box" id="inv-detail-notes-text">—</div>
-            <p class="cc-detail-meta" id="inv-detail-updated"></p>
           </div>
         </div>
         </div>
@@ -3023,6 +3051,8 @@
     }
 
     let inventoryItems = [];
+    let inventoryRecentActivity = [];
+    let inventoryMovesCache = [];
     let inventoryFilter = 'all';
     let ccFilter = 'all';
     let vnFilter = 'all';
@@ -3072,6 +3102,19 @@
     }
 
     const INVENTORY_MOBILE_COLS = ['sku', 'brand', 'price', 'qty'];
+    const INVENTORY_MAX_COLS = 5;
+
+    function capInventoryColState(state) {
+      state.order = (state.order || []).filter(function (id) { return id !== 'status'; });
+      state.hidden = (state.hidden || []).filter(function (id) { return id !== 'status'; });
+      if (state.order.length > INVENTORY_MAX_COLS) {
+        state.order.slice(INVENTORY_MAX_COLS).forEach(function (id) {
+          if (state.hidden.indexOf(id) === -1) state.hidden.push(id);
+        });
+        state.order = state.order.slice(0, INVENTORY_MAX_COLS);
+      }
+      return state;
+    }
 
     function applyMobileColState(table, state) {
       if (!isMobileDash() || dashColKey(table) !== 'inventory') return state;
@@ -3097,7 +3140,6 @@
         { id: 'cost', label: 'Cost' },
         { id: 'price', label: 'Sell price' },
         { id: 'dealer', label: 'Dealer net' },
-        { id: 'status', label: 'Status' },
         { id: 'photo', label: 'Photo' },
         { id: 'website', label: 'Website' }
       ],
@@ -3208,7 +3250,7 @@
     };
 
     const DASH_COL_DEFAULTS = {
-      inventory: ['sku', 'name', 'brand', 'pitch', 'qty', 'price', 'website', 'status'],
+      inventory: ['sku', 'name', 'qty', 'cost', 'price'],
       customers: ['company', 'contact', 'email', 'phone', 'city', 'terms'],
       sales: ['number', 'customer', 'date', 'status', 'total'],
       'po-lines': ['product', 'sku', 'description', 'qty', 'rate', 'amount'],
@@ -3272,7 +3314,10 @@
         sortDir: '',
         widths: {}
       };
-      if (!saved) return applyMobileColState(table, fallback);
+      if (!saved) {
+        const base = dashColKey(table) === 'inventory' ? capInventoryColState(fallback) : fallback;
+        return applyMobileColState(table, base);
+      }
       const savedHidden = (saved.hidden || []).filter(function (id) { return known.indexOf(id) !== -1; });
       const order = (saved.order || []).filter(function (id) {
         return known.indexOf(id) !== -1 && savedHidden.indexOf(id) === -1;
@@ -3287,13 +3332,15 @@
         const drop = hidden.indexOf(known[0]);
         if (drop !== -1) hidden.splice(drop, 1);
       }
-      return applyMobileColState(table, {
+      const merged = {
         order: order,
         hidden: hidden,
         sortCol: saved.sortCol || '',
         sortDir: saved.sortDir || '',
         widths: saved.widths && typeof saved.widths === 'object' ? saved.widths : {}
-      });
+      };
+      const state = dashColKey(table) === 'inventory' ? capInventoryColState(merged) : merged;
+      return applyMobileColState(table, state);
     }
 
     function loadColState(table) {
@@ -3608,11 +3655,12 @@
           next[i] = next[j];
           next[j] = swap;
           state.order = next;
-        } else if (act === 'hide') {
+        } else         if (act === 'hide') {
           if (state.order.length <= 1) return;
           state.order = state.order.filter(function (id) { return id !== col; });
           if (state.hidden.indexOf(col) === -1) state.hidden.push(col);
         }
+        if (dashColKey(table) === 'inventory') capInventoryColState(state);
         saveColState(table, state);
         closeColMenu();
         refreshDashTable(table);
@@ -3632,6 +3680,7 @@
         if (state.order.indexOf(addId) === -1) {
           state.order.splice(i < 0 ? state.order.length : i, 0, addId);
         }
+        if (dashColKey(table) === 'inventory') capInventoryColState(state);
         saveColState(table, state);
         closeColMenu();
         refreshDashTable(table);
@@ -3708,6 +3757,8 @@
         const photo = item.image
           ? '<img src="' + esc(item.image) + '" alt="" class="dash-col-photo">'
           : '<span class="text-slate-400">—</span>';
+        const statusCell = '<td class="py-3 px-4"><span class="text-xs px-2 py-0.5 rounded-full ' + stockStatusClass(item.status) + '">' +
+          esc(stockStatusLabel(item.status)) + '</span></td>';
         const cells = {
           sku: '<td class="py-3 px-4 font-mono text-xs text-sky-300">' + esc(item.sku || '—') + '</td>',
           name: '<td class="py-3 px-4 font-medium">' + esc(item.name || '') + '</td>',
@@ -3719,60 +3770,167 @@
           price: '<td class="py-3 px-4">' + money(item.price) + '</td>',
           dealer: '<td class="py-3 px-4">' + money(item.dealerNet) + '</td>',
           website: '<td class="py-3 px-4 text-slate-400">' + site + '</td>',
-          photo: '<td class="py-3 px-4">' + photo + '</td>',
-          status: '<td class="py-3 px-4"><span class="text-xs px-2 py-0.5 rounded-full ' + stockStatusClass(item.status) + '">' +
-            esc(stockStatusLabel(item.status)) + '</span></td>'
+          photo: '<td class="py-3 px-4">' + photo + '</td>'
         };
+        const selected = String(item.id) === String(invDetailId);
         return '<tr class="border-b border-slate-800 hover:bg-slate-900/80 cursor-pointer' +
-          (String(item.id) === String(invDetailId) ? ' bg-sky-500/10' : '') +
+          (selected ? ' is-selected' : '') +
           '" data-id="' + esc(item.id) + '">' +
-          dashOrderedCells(table, cells) +
+          dashOrderedCells(table, cells, statusCell) +
           '</tr>';
       }).join('') || '<tr><td class="py-6 px-4 text-slate-500" colspan="' + dashColSpan(table) + '">No matching items.</td></tr>';
       applyColOrder(table);
       fillInvOverview();
-      renderInvSideList(rows);
       const invTotalEl = document.getElementById('inv-total');
       if (invTotalEl) invTotalEl.textContent = String(rows.length);
     }
 
-    function invFilteredItems(rows) {
-      const q = (document.getElementById('inv-search').value || '').trim().toLowerCase();
-      return (rows || inventoryItems).filter(function (item) {
-        if (inventoryFilter === 'low' && item.status !== 'low') return false;
-        if (inventoryFilter === 'out' && item.status !== 'out') return false;
-        if (inventoryFilter === 'unmapped' && item.maps && item.maps.length) return false;
-        if (q) {
-          const blob = ((item.sku || '') + ' ' + (item.name || '') + ' ' + (item.brandName || '') + ' ' + (item.pitchLabel || '') + ' ' + (item.description || '')).toLowerCase();
-          if (blob.indexOf(q) === -1) return false;
-        }
-        return true;
+    function invMovesForItem(id) {
+      return inventoryMovesCache.filter(function (m) {
+        return String(m.itemId) === String(id);
+      }).map(function (m) {
+        return {
+          created_at: m.createdAt,
+          qty_delta: m.qtyDelta,
+          kind: m.kind,
+          qty_after: m.qtyAfter,
+          note: m.note,
+          admin_email: m.adminEmail
+        };
       });
     }
 
-    function renderInvSideList(filtered) {
-      const wrap = document.getElementById('inv-side-list');
-      if (!wrap) return;
-      const rows = filtered || invFilteredItems();
-      if (!rows.length) {
-        wrap.innerHTML = '<p class="cc-detail-empty">No items match.</p>';
+    function showInvRightPanel(mode) {
+      const overview = document.getElementById('inv-overview-panel');
+      const item = document.getElementById('inv-item-panel');
+      if (!overview || !item) return;
+      const showItem = mode === 'item';
+      overview.classList.toggle('hidden', showItem);
+      item.classList.toggle('hidden', !showItem);
+      item.setAttribute('aria-hidden', showItem ? 'false' : 'true');
+    }
+
+    function invActivityLabel(act) {
+      if (act.type === 'edit') return 'Item updated';
+      const kind = String(act.kind || '').toLowerCase();
+      if (kind === 'count') return 'Stock count';
+      if (kind === 'sell') return 'Sold';
+      if (kind === 'damage') return 'Damaged';
+      return kind || 'Stock change';
+    }
+
+    function resolveActivityRef(act) {
+      const note = String(act.note || '');
+      const noteUp = note.toUpperCase();
+      const po = (purchaseOrders || []).find(function (p) {
+        const num = String(p.number || '').trim();
+        return num && noteUp.indexOf(num.toUpperCase()) !== -1;
+      });
+      if (po) return { type: 'po', id: po.id };
+      const receipt = (receiptShipments || []).find(function (r) {
+        const num = String(r.number || '').trim();
+        return num && noteUp.indexOf(num.toUpperCase()) !== -1;
+      });
+      if (receipt) return { type: 'receipt', id: receipt.id };
+      const sale = (salesAllDocs || []).find(function (d) {
+        const num = String(d.number || '').trim();
+        return num && noteUp.indexOf(num.toUpperCase()) !== -1;
+      });
+      if (sale) {
+        const tab = sale.type === 'invoice' ? 'invoices' : sale.type === 'order' ? 'orders' : 'quotes';
+        return { type: 'sale', id: sale.id, tab: tab };
+      }
+      return null;
+    }
+
+    async function followActivityRef(ref) {
+      if (!ref) return;
+      if (ref.type === 'po') {
+        openCompanyTab('purchase-orders', true);
+        await loadPurchaseOrders();
+        openPurchaseOrder(ref.id);
         return;
       }
-      wrap.innerHTML = rows.map(function (item) {
-        const name = item.name || item.sku || 'Item';
-        const active = String(item.id) === String(invDetailId) ? ' is-active' : '';
-        const meta = [item.sku, item.brandName].filter(Boolean).join(' · ');
-        const qty = (item.qty || 0).toLocaleString() + ' ' + (item.unit || '');
-        return '<button type="button" class="cc-side-item' + active + '" data-id="' + esc(item.id) + '">' +
-          '<span><span class="cc-side-item-name">' + esc(name) + '</span>' +
-          (meta ? '<span class="cc-side-item-meta">' + esc(meta) + '</span>' : '') + '</span>' +
-          '<span class="cc-side-item-balance">' + esc(qty) + '</span></button>';
+      if (ref.type === 'receipt') {
+        openCompanyTab('receipt-shipments', true);
+        await loadReceiptShipments();
+        return;
+      }
+      if (ref.type === 'sale') {
+        openCompanyTab(ref.tab || 'quotes', true);
+        await loadSalesDocs(ref.tab === 'invoices' ? 'invoice' : ref.tab === 'orders' ? 'order' : 'quote');
+        await openSalesDoc(ref.id);
+      }
+    }
+
+    function renderInvActivity() {
+      const body = document.getElementById('inv-activity-body');
+      const empty = document.getElementById('inv-activity-empty');
+      const wrap = document.querySelector('.inv-activity-wrap');
+      if (!body) return;
+      const rows = inventoryRecentActivity || [];
+      if (!rows.length) {
+        body.innerHTML = '';
+        if (empty) empty.classList.remove('hidden');
+        if (wrap) wrap.classList.add('hidden');
+        return;
+      }
+      if (empty) empty.classList.add('hidden');
+      if (wrap) wrap.classList.remove('hidden');
+      body.innerHTML = rows.map(function (act, idx) {
+        const when = act.createdAt ? new Date(act.createdAt).toLocaleString() : '—';
+        const label = invActivityLabel(act);
+        const itemLabel = [act.itemSku, act.itemName].filter(Boolean).join(' · ') || 'Item';
+        const delta = Number(act.qtyDelta) || 0;
+        const change = act.type === 'edit'
+          ? '—'
+          : (delta > 0 ? '+' + delta : String(delta));
+        const changeClass = act.type === 'edit' ? 'text-slate-400' : (delta < 0 ? 'text-red-500' : 'text-emerald-600');
+        return '<tr class="border-b border-slate-800 inv-activity-row" data-activity-idx="' + idx + '">' +
+          '<td class="py-3 px-4 text-xs">' + esc(when) + '</td>' +
+          '<td class="py-3 px-4">' + esc(itemLabel) + '</td>' +
+          '<td class="py-3 px-4">' + esc(label) + '</td>' +
+          '<td class="py-3 px-4 ' + changeClass + '">' + esc(change) + '</td>' +
+          '<td class="py-3 px-4 text-slate-400 text-xs">' + esc(act.adminEmail || '—') + '</td></tr>';
       }).join('');
+    }
+
+    function initInvSplitResize() {
+      const split = document.getElementById('inv-split');
+      const left = document.getElementById('inv-split-left');
+      const resizer = document.getElementById('inv-split-resizer');
+      if (!split || !left || !resizer || resizer.dataset.ready === '1') return;
+      resizer.dataset.ready = '1';
+      const key = 'inv-split-left-px';
+      const saved = parseInt(localStorage.getItem(key) || '', 10);
+      if (saved > 200) left.style.flex = '0 0 ' + saved + 'px';
+      let dragging = false;
+      function onMove(e) {
+        if (!dragging) return;
+        const rect = split.getBoundingClientRect();
+        const x = (e.touches ? e.touches[0].clientX : e.clientX) - rect.left;
+        const w = Math.max(280, Math.min(x, rect.width - 320));
+        left.style.flex = '0 0 ' + w + 'px';
+        localStorage.setItem(key, String(Math.round(w)));
+      }
+      function onUp() {
+        dragging = false;
+        document.body.classList.remove('inv-split-dragging');
+        document.removeEventListener('mousemove', onMove);
+        document.removeEventListener('mouseup', onUp);
+      }
+      resizer.addEventListener('mousedown', function (e) {
+        e.preventDefault();
+        dragging = true;
+        document.body.classList.add('inv-split-dragging');
+        document.addEventListener('mousemove', onMove);
+        document.addEventListener('mouseup', onUp);
+      });
     }
 
     function setInvDetailTab(name) {
       invDetailTab = name || 'moves';
-      document.querySelectorAll('#inv-detail-pane .cc-detail-tab').forEach(function (btn) {
+      document.querySelectorAll('#inv-item-panel .cc-detail-tab').forEach(function (btn) {
         const on = btn.getAttribute('data-inv-tab') === invDetailTab;
         btn.classList.toggle('is-on', on);
         btn.setAttribute('aria-selected', on ? 'true' : 'false');
@@ -3893,62 +4051,50 @@
       renderInvDetailDetails();
       renderInvDetailWebsite();
       renderInvDetailNotes();
-      renderInvSideList();
     }
 
     function closeInventoryDetail(push) {
       invDetailId = '';
       invDetailData = null;
-      const ws = document.getElementById('inv-workspace');
-      const pane = document.getElementById('inv-detail-pane');
-      if (ws) ws.classList.remove('cc-detail-open');
-      syncDetailOpenBodyClass();
-      syncPageHelper('inventory');
-      if (pane) {
-        pane.hidden = true;
-        pane.setAttribute('aria-hidden', 'true');
-      }
+      inventoryDetail = null;
+      showInvRightPanel('overview');
       renderInventoryTable();
       if (push !== false) history.pushState({ tab: 'inventory' }, '', '/company/inventory');
     }
 
-    async function openInventoryDetail(id, opts) {
+    function selectInventoryItem(id, opts) {
       opts = opts || {};
-      if (!id) return;
-      if (invDrawerNeedsLeave()) {
-        invAskLeave(function () { openInventoryDetail(id, opts); });
+      if (!id) {
+        closeInventoryDetail(opts.push !== false);
         return;
       }
-      const errEl = document.getElementById('inventory-error');
-      errEl.classList.add('hidden');
-      try {
-        const data = await api('/api/admin/inventory/' + encodeURIComponent(id));
-        if (!data || !data.item) throw new Error('Item not found.');
-        invDetailId = String(id);
-        invDetailData = data;
-        inventoryDetail = data;
-        const ws = document.getElementById('inv-workspace');
-        const pane = document.getElementById('inv-detail-pane');
-        if (ws) ws.classList.add('cc-detail-open');
-        syncDetailOpenBodyClass();
-        syncPageHelper('inventory');
-        if (pane) {
-          pane.hidden = false;
-          pane.setAttribute('aria-hidden', 'false');
-        }
-        if (opts.push !== false) {
-          history.pushState({ tab: 'inventory', itemId: id }, '', pathForInventory(id));
-        }
-        renderInventoryDetailView();
-        renderInventoryTable();
-      } catch (err) {
-        errEl.textContent = err.message || 'Could not open this item.';
-        errEl.classList.remove('hidden');
+      if (invDrawerNeedsLeave()) {
+        invAskLeave(function () { selectInventoryItem(id, opts); });
+        return;
+      }
+      if (String(id) === String(invDetailId)) {
+        closeInventoryDetail(opts.push !== false);
+        return;
+      }
+      const item = inventoryItems.find(function (i) { return String(i.id) === String(id); });
+      if (!item) return;
+      invDetailId = String(id);
+      invDetailData = { item: item, moves: invMovesForItem(id) };
+      inventoryDetail = invDetailData;
+      showInvRightPanel('item');
+      renderInventoryDetailView();
+      renderInventoryTable();
+      if (opts.push !== false) {
+        history.pushState({ tab: 'inventory', itemId: id }, '', pathForInventory(id));
       }
     }
 
+    function openInventoryDetail(id, opts) {
+      selectInventoryItem(id, opts);
+    }
+
     function openInventoryItem(id) {
-      openInventoryDetail(id, { push: true });
+      selectInventoryItem(id, { push: true });
     }
 
     function markPageKpis(rootId, key, attr) {
@@ -3990,20 +4136,32 @@
       const errEl = document.getElementById('inventory-error');
       errEl.classList.add('hidden');
       try {
-        const [data, poData] = await Promise.all([
+        const [data, poData, actData, movesData] = await Promise.all([
           api('/api/admin/inventory'),
-          api('/api/admin/purchase-orders').catch(function () { return { orders: purchaseOrders }; })
+          api('/api/admin/purchase-orders').catch(function () { return { orders: purchaseOrders }; }),
+          api('/api/admin/inventory/activity?limit=25').catch(function () { return { activity: [] }; }),
+          api('/api/admin/inventory/recent-moves?limit=400').catch(function () { return { moves: [] }; })
         ]);
         inventoryItems = data.items || [];
         purchaseOrders = poData.orders || purchaseOrders || [];
+        inventoryRecentActivity = actData.activity || [];
+        inventoryMovesCache = movesData.moves || [];
         renderInventoryTable();
+        renderInvActivity();
+        initInvSplitResize();
         refreshRsSkuList();
         if (invDetailId) {
           const found = inventoryItems.find(function (i) { return String(i.id) === String(invDetailId); });
-          if (found && invDetailData && invDetailData.item) {
-            invDetailData.item = Object.assign({}, invDetailData.item, found);
+          if (found) {
+            invDetailData = { item: found, moves: invMovesForItem(invDetailId) };
+            inventoryDetail = invDetailData;
+            showInvRightPanel('item');
             renderInventoryDetailView();
+          } else {
+            closeInventoryDetail(false);
           }
+        } else {
+          showInvRightPanel('overview');
         }
       } catch (err) {
         errEl.textContent = err.message || 'Could not load inventory.';
@@ -4241,7 +4399,13 @@
     }
 
     async function openInventory(id) {
-      const data = await api('/api/admin/inventory/' + encodeURIComponent(id));
+      let data = null;
+      const cached = inventoryItems.find(function (i) { return String(i.id) === String(id); });
+      if (cached) {
+        data = { item: cached, moves: invMovesForItem(id) };
+      } else {
+        data = await api('/api/admin/inventory/' + encodeURIComponent(id));
+      }
       renderInventoryDetail(data);
       invDrawerSource = 'list';
       openInventoryDrawer();
@@ -7374,7 +7538,7 @@
       if (name === 'inventory') {
         await loadInventory();
         const iid = inventoryIdFromPath();
-        if (iid && canUse('inventory')) await openInventoryDetail(iid, { push: false });
+        if (iid && canUse('inventory')) selectInventoryItem(iid, { push: false });
         else closeInventoryDetail(false);
       }
       if (name === 'vendors') {
@@ -8318,7 +8482,7 @@
       }
       go();
     });
-    document.getElementById('inv-detail-back').addEventListener('click', function () {
+    document.getElementById('inv-overview-btn').addEventListener('click', function () {
       closeInventoryDetail(true);
     });
     document.getElementById('inv-detail-edit').addEventListener('click', function () {
@@ -8328,12 +8492,17 @@
       openInventoryFromDetail();
       setTimeout(function () { jumpInventorySection('inv-sec-onhand'); }, 120);
     });
-    document.getElementById('inv-side-list').addEventListener('click', function (e) {
-      const btn = e.target.closest('.cc-side-item[data-id]');
-      if (!btn) return;
-      openInventoryItem(btn.getAttribute('data-id'));
+    document.getElementById('inv-activity-body').addEventListener('click', async function (e) {
+      const row = e.target.closest('.inv-activity-row');
+      if (!row) return;
+      const idx = Number(row.getAttribute('data-activity-idx'));
+      const act = (inventoryRecentActivity || [])[idx];
+      if (!act || !act.itemId) return;
+      selectInventoryItem(act.itemId, { push: true });
+      const ref = resolveActivityRef(act);
+      if (ref) await followActivityRef(ref);
     });
-    document.querySelectorAll('#inv-detail-pane .cc-detail-tab').forEach(function (btn) {
+    document.querySelectorAll('#inv-item-panel .cc-detail-tab').forEach(function (btn) {
       btn.addEventListener('click', function () {
         setInvDetailTab(btn.getAttribute('data-inv-tab'));
       });

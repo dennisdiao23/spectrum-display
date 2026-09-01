@@ -50,6 +50,86 @@ function listInventoryItems(db) {
   });
 }
 
+const INVENTORY_BULK_MOVE_KINDS = ['receive'];
+
+function formatInventoryMoveRow(row) {
+  return {
+    id: row.id,
+    itemId: row.item_id,
+    itemName: row.item_name || '',
+    itemSku: row.item_sku || '',
+    kind: row.kind || '',
+    qtyDelta: Number(row.qty_delta) || 0,
+    qtyAfter: row.qty_after,
+    note: row.note || '',
+    adminEmail: row.admin_email || '',
+    createdAt: row.created_at || ''
+  };
+}
+
+function listInventoryRecentMoves(db, limit, opts) {
+  const exclude = (opts && opts.excludeKinds) || [];
+  const cap = Math.max(1, Math.min(Number(limit) || 25, 500));
+  let sql = `
+    SELECT m.*, i.name AS item_name, i.sku AS item_sku
+    FROM inventory_item_moves m
+    JOIN inventory_items i ON i.id = m.item_id
+  `;
+  const params = [];
+  if (exclude.length) {
+    sql += ' WHERE m.kind NOT IN (' + exclude.map(function () { return '?'; }).join(', ') + ')';
+    params.push.apply(params, exclude);
+  }
+  sql += ' ORDER BY datetime(m.created_at) DESC, m.id DESC LIMIT ?';
+  params.push(cap);
+  return db.prepare(sql).all(...params).map(formatInventoryMoveRow);
+}
+
+function listInventoryActivity(db, limit) {
+  const cap = Math.max(1, Math.min(Number(limit) || 25, 100));
+  const moves = listInventoryRecentMoves(db, cap * 2, { excludeKinds: INVENTORY_BULK_MOVE_KINDS.slice() });
+  const edits = db.prepare(`
+    SELECT id, name, sku, updated_at, created_at
+    FROM inventory_items
+    WHERE datetime(updated_at) > datetime(created_at, '+1 second')
+    ORDER BY datetime(updated_at) DESC, id DESC
+    LIMIT ?
+  `).all(cap * 2);
+  const rows = moves.map(function (m) {
+    return {
+      type: 'move',
+      id: 'move-' + m.id,
+      itemId: m.itemId,
+      itemName: m.itemName,
+      itemSku: m.itemSku,
+      kind: m.kind,
+      qtyDelta: m.qtyDelta,
+      qtyAfter: m.qtyAfter,
+      note: m.note,
+      adminEmail: m.adminEmail,
+      createdAt: m.createdAt
+    };
+  }).concat(edits.map(function (row) {
+    return {
+      type: 'edit',
+      id: 'edit-' + row.id,
+      itemId: row.id,
+      itemName: row.name || '',
+      itemSku: row.sku || '',
+      kind: 'edit',
+      qtyDelta: 0,
+      qtyAfter: null,
+      note: 'Item updated',
+      adminEmail: '',
+      createdAt: row.updated_at || row.created_at || ''
+    };
+  }));
+  rows.sort(function (a, b) {
+    return String(b.createdAt).localeCompare(String(a.createdAt));
+  });
+  return rows.slice(0, cap);
+}
+
 function getInventoryItemDetail(db, id) {
   const inv = require('./inventory');
   const row = db.prepare('SELECT * FROM inventory_items WHERE id = ?').get(id);
@@ -320,6 +400,12 @@ function createSqliteStore() {
     },
     async listInventory() {
       return listInventoryItems(db);
+    },
+    async listInventoryActivity(limit) {
+      return listInventoryActivity(db, limit);
+    },
+    async listInventoryRecentMoves(limit, opts) {
+      return listInventoryRecentMoves(db, limit, opts);
     },
     async getInventoryItem(id) {
       return getInventoryItemDetail(db, id);
