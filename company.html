@@ -3418,6 +3418,20 @@
       dashColSaveTimer = setTimeout(pushColPrefs, 350);
     }
 
+    function mergeRemoteColPrefs(remote) {
+      const prev = dashColMine || {};
+      const next = remote && typeof remote === 'object' ? Object.assign({}, remote) : {};
+      Object.keys(prev).forEach(function (name) {
+        const oldPx = prev[name] && parseInt(prev[name].splitLeftPx, 10);
+        if (!oldPx) return;
+        if (!next[name] || typeof next[name] !== 'object') next[name] = Object.assign({}, prev[name]);
+        else if (!parseInt(next[name].splitLeftPx, 10)) {
+          next[name] = Object.assign({}, next[name], { splitLeftPx: oldPx });
+        }
+      });
+      return next;
+    }
+
     async function pushColPrefs() {
       if (!currentAdminUser) return;
       try {
@@ -3426,7 +3440,7 @@
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ prefs: dashColMine })
         });
-        if (data.prefs) dashColMine = data.prefs;
+        if (data.prefs) dashColMine = mergeRemoteColPrefs(data.prefs);
         if (data.ownerPrefs) dashColOwner = data.ownerPrefs;
         cacheColPrefs();
       } catch (err) {}
