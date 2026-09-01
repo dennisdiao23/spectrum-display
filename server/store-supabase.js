@@ -379,6 +379,98 @@ function createSupabaseStore() {
     return inv.formatItem(row, brandName, maps || []);
   }
 
+  const INVENTORY_BULK_MOVE_KINDS = ['receive'];
+
+  function formatInventoryMoveRow(row, itemById) {
+    const item = itemById[String(row.item_id)] || {};
+    return {
+      id: row.id,
+      itemId: row.item_id,
+      itemName: item.name || '',
+      itemSku: item.sku || '',
+      kind: row.kind || '',
+      qtyDelta: Number(row.qty_delta) || 0,
+      qtyAfter: row.qty_after,
+      note: row.note || '',
+      adminEmail: row.admin_email || '',
+      createdAt: row.created_at || ''
+    };
+  }
+
+  async function listInventoryRecentMoves(limit, opts) {
+    const cap = Math.max(1, Math.min(Number(limit) || 25, 500));
+    const exclude = (opts && opts.excludeKinds) || [];
+    let query = supabase
+      .from('inventory_item_moves')
+      .select('*')
+      .order('created_at', { ascending: false })
+      .limit(cap);
+    const { data: moves, error } = await query;
+    throwIf(error, 'Could not read inventory moves.');
+    const filtered = exclude.length
+      ? (moves || []).filter(function (m) { return exclude.indexOf(String(m.kind || '').toLowerCase()) === -1; })
+      : (moves || []);
+    const itemIds = Array.from(new Set(filtered.map(function (m) { return m.item_id; })));
+    const itemById = {};
+    if (itemIds.length) {
+      const { data: items, error: iErr } = await supabase
+        .from('inventory_items')
+        .select('id, name, sku')
+        .in('id', itemIds);
+      throwIf(iErr, 'Could not read inventory items.');
+      (items || []).forEach(function (item) { itemById[String(item.id)] = item; });
+    }
+    return filtered.map(function (row) { return formatInventoryMoveRow(row, itemById); });
+  }
+
+  async function fetchInventoryActivity(limit) {
+    const cap = Math.max(1, Math.min(Number(limit) || 25, 100));
+    const [moveRows, editRows] = await Promise.all([
+      listInventoryRecentMoves(cap * 2, { excludeKinds: INVENTORY_BULK_MOVE_KINDS.slice() }),
+      supabase
+        .from('inventory_items')
+        .select('id, name, sku, updated_at, created_at')
+        .order('updated_at', { ascending: false })
+        .limit(cap * 2)
+    ]);
+    throwIf(editRows.error, 'Could not read inventory edits.');
+    const rows = (moveRows || []).map(function (m) {
+      return {
+        type: 'move',
+        id: 'move-' + m.id,
+        itemId: m.itemId,
+        itemName: m.itemName,
+        itemSku: m.itemSku,
+        kind: m.kind,
+        qtyDelta: m.qtyDelta,
+        qtyAfter: m.qtyAfter,
+        note: m.note,
+        adminEmail: m.adminEmail,
+        createdAt: m.createdAt
+      };
+    }).concat((editRows.data || []).filter(function (row) {
+      return row.updated_at && row.created_at && String(row.updated_at) !== String(row.created_at);
+    }).map(function (row) {
+      return {
+        type: 'edit',
+        id: 'edit-' + row.id,
+        itemId: row.id,
+        itemName: row.name || '',
+        itemSku: row.sku || '',
+        kind: 'edit',
+        qtyDelta: 0,
+        qtyAfter: null,
+        note: 'Item updated',
+        adminEmail: '',
+        createdAt: row.updated_at || row.created_at || ''
+      };
+    }));
+    rows.sort(function (a, b) {
+      return String(b.createdAt).localeCompare(String(a.createdAt));
+    });
+    return rows.slice(0, cap);
+  }
+
   async function getInventoryItemDetail(id) {
     const inv = require('./inventory');
     const { data: row, error } = await supabase.from('inventory_items').select('*').eq('id', id).maybeSingle();
@@ -883,6 +975,12 @@ function createSupabaseStore() {
       return (items || []).map(function (row) {
         return inv.formatItem(row, brandNames[row.brand_id] || row.brand_id || '', byItem[String(row.id)] || []);
       });
+    },
+    async listInventoryActivity(limit) {
+      return fetchInventoryActivity(limit);
+    },
+    async listInventoryRecentMoves(limit, opts) {
+      return listInventoryRecentMoves(limit, opts);
     },
     async getInventoryItem(id) {
       return getInventoryItemDetail(id);

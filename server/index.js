@@ -995,6 +995,21 @@ async function main() {
     } catch (err) { next(err); }
   });
 
+  app.get('/api/admin/inventory/activity', requireAdmin, requireCatalogRead, async function (req, res, next) {
+    try {
+      const limit = req.query && req.query.limit;
+      res.json({ ok: true, activity: await store.listInventoryActivity(limit) });
+    } catch (err) { next(err); }
+  });
+
+  app.get('/api/admin/inventory/recent-moves', requireAdmin, requireCatalogRead, async function (req, res, next) {
+    try {
+      const limit = req.query && req.query.limit;
+      const exclude = String((req.query && req.query.excludeKinds) || '').split(',').filter(Boolean);
+      res.json({ ok: true, moves: await store.listInventoryRecentMoves(limit, { excludeKinds: exclude }) });
+    } catch (err) { next(err); }
+  });
+
   app.post('/api/admin/inventory', requireAdmin, requirePerm('inventory', 'edit'), inventoryUpload, async function (req, res, next) {
     try {
       const data = await store.createInventoryItem(await inventoryPayload(req));
