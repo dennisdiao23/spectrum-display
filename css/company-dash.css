@@ -2638,18 +2638,26 @@ html.so-invoice-window-boot .dash-tabbar,
 html.so-invoice-window-boot .dash-tabbar-sub,
 html.so-invoice-window-boot .dash-tabbar-sub-scrim,
 html.so-invoice-window-boot .dash-menu-btn,
+html.so-invoice-window-boot #admin-page-helper,
 body.so-invoice-window .dash-sidebar,
 body.so-invoice-window .dash-scrim,
 body.so-invoice-window .dash-tabbar,
 body.so-invoice-window .dash-tabbar-sub,
 body.so-invoice-window .dash-tabbar-sub-scrim,
-body.so-invoice-window .dash-menu-btn {
+body.so-invoice-window .dash-menu-btn,
+body.so-invoice-window #admin-page-helper,
+html.so-invoice-window-boot body.company-app.dash-tabbar-on .dash-tabbar,
+html.so-invoice-window-boot body.company-app.dash-tabbar-on .dash-tabbar:not([hidden]),
+body.company-app.so-invoice-window.dash-tabbar-on .dash-tabbar,
+body.company-app.so-invoice-window.dash-tabbar-on .dash-tabbar:not([hidden]) {
   display: none !important;
 }
 html.so-invoice-window-boot,
-body.so-invoice-window {
+body.so-invoice-window,
+body.company-app.so-invoice-window.dash-tabbar-on {
   --dash-tabbar-h: 0px;
   --dash-tabbar-sub-h: 0px;
+  padding-bottom: 0;
 }
 html.so-invoice-window-boot .dash-shell,
 body.so-invoice-window .dash-shell {

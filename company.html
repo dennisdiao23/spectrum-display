@@ -2961,7 +2961,7 @@
       const html = LIST_PAGE_HELPERS[name];
       if (html) {
         helper.innerHTML = html;
-        helper.hidden = document.body.classList.contains('dash-detail-open');
+        helper.hidden = document.body.classList.contains('dash-detail-open') || isInvoiceDocWindow();
       } else {
         helper.innerHTML = '';
         helper.hidden = true;
@@ -8143,6 +8143,8 @@
       document.body.classList.toggle('so-invoice-window', !!on);
       const back = document.getElementById('so-back');
       if (back) back.textContent = on ? 'Close' : ('← All ' + (salesSubTab === 'quotes' ? 'quotes' : salesSubTab === 'orders' ? 'orders' : 'invoices'));
+      const helper = document.getElementById('admin-page-helper');
+      if (helper && on) helper.hidden = true;
     }
 
     function openInvoiceWindow(id, opts) {
