@@ -543,7 +543,7 @@
             </div>
             <div id="inv-split-resizer" class="inv-split-resizer" role="separator" aria-orientation="vertical" aria-label="Resize inventory panels" tabindex="0"></div>
             <div id="inv-split-right" class="inv-split-right">
-              <div id="inv-tab-bar" class="inv-tab-bar hidden">
+              <div id="inv-tab-bar" class="inv-tab-bar">
                 <div id="inv-tab-strip" class="inv-tab-strip" role="tablist" aria-label="Open inventory items"></div>
                 <div class="inv-tab-actions cc-detail-toolbar-actions">
                   <button type="button" id="inv-detail-adjust" class="cc-detail-btn">Adjust stock</button>
@@ -3957,10 +3957,8 @@
       const bar = document.getElementById('inv-tab-bar');
       const strip = document.getElementById('inv-tab-strip');
       if (!bar || !strip) return;
-      const hasTabs = invOpenTabs.length > 0;
-      bar.classList.toggle('hidden', !hasTabs);
-      bar.setAttribute('aria-hidden', hasTabs ? 'false' : 'true');
-      if (!hasTabs) return;
+      bar.classList.remove('hidden');
+      bar.setAttribute('aria-hidden', 'false');
       let html = '<button type="button" class="inv-browser-tab' +
         (invActiveTab === 'overview' ? ' is-active' : '') +
         '" data-inv-tab-id="overview" role="tab" aria-selected="' + (invActiveTab === 'overview' ? 'true' : 'false') + '">' +
