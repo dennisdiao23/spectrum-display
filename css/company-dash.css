@@ -2182,12 +2182,17 @@ body.inv-layout-lock #inv-item-panel .cc-detail-panel {
   left: 50%;
   width: 2px;
   margin-left: -1px;
-  background: #d5dcea;
+  background: transparent;
   border-radius: 2px;
-  transition: background 0.12s ease;
+  opacity: 0;
+  transition: opacity 0.12s ease, background 0.12s ease;
 }
-.inv-split-resizer:hover::after,
+.inv-split-resizer:hover::after {
+  opacity: 1;
+  background: #d5dcea;
+}
 body.inv-split-dragging .inv-split-resizer::after {
+  opacity: 1;
   background: #2f6bff;
   top: 0;
   bottom: 0;
@@ -2304,7 +2309,8 @@ body.inv-split-dragging .inv-split-resizer::after {
   flex-shrink: 0;
   min-width: 0;
   min-height: 3.8125rem;
-  padding: 0 0.85rem 0 0.85rem;
+  /* Tab label text aligns with .inv-right-panel body (0.85rem) */
+  padding: 0 0.85rem 0 calc(0.85rem - 0.65rem);
   background: #eef2f8;
   border-bottom: 1px solid var(--dash-line);
   box-sizing: border-box;
