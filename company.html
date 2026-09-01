@@ -3463,7 +3463,7 @@
       if (dashColKey(table) === 'inventory') fitInventorySplitCols(table);
     }
 
-    const INV_SPLIT_COL_WEIGHTS = {
+    const INV_SPLIT_COL_DEFAULT_PCT = {
       sku: 18,
       name: 34,
       qty: 10,
@@ -3477,26 +3477,49 @@
       website: 22,
       status: 12
     };
+    const INV_COL_MIN_PX = 50;
+
+    function invSplitColWidthPx(col, savedWidth, paneWidth) {
+      if (savedWidth && String(savedWidth).indexOf('px') !== -1) {
+        const n = Math.round(parseFloat(savedWidth));
+        if (n > 0) return Math.max(INV_COL_MIN_PX, n);
+      }
+      const pct = INV_SPLIT_COL_DEFAULT_PCT[col] || 12;
+      return Math.max(INV_COL_MIN_PX, Math.round(paneWidth * pct / 100));
+    }
+
+    function shrinkInvSplitWidths(widths, paneWidth) {
+      const next = widths.slice();
+      let total = next.reduce(function (a, b) { return a + b; }, 0);
+      if (total <= paneWidth) return next;
+      for (let i = next.length - 1; i >= 0 && total > paneWidth; i--) {
+        const excess = total - paneWidth;
+        const canShrink = next[i] - INV_COL_MIN_PX;
+        if (canShrink <= 0) continue;
+        const shrink = Math.min(canShrink, excess);
+        next[i] -= shrink;
+        total -= shrink;
+      }
+      return next;
+    }
 
     function fitInventorySplitCols(table) {
       if (!table || dashColKey(table) !== 'inventory') return;
       const wrap = document.getElementById('inv-table-wrap');
       if (!wrap || !wrap.closest('.inv-split-left')) return;
+      const paneWidth = wrap.clientWidth;
+      if (paneWidth <= 0) return;
       const state = loadColState(table);
       const visibleCols = state.order.filter(function (id) {
         return state.hidden.indexOf(id) === -1;
       });
       if (!visibleCols.length) return;
-      const weights = visibleCols.map(function (col) {
-        const w = state.widths[col];
-        if (w && String(w).indexOf('px') !== -1) {
-          const n = parseFloat(w);
-          if (n > 0) return n;
-        }
-        return INV_SPLIT_COL_WEIGHTS[col] || 12;
-      });
-      let sum = weights.reduce(function (a, b) { return a + b; }, 0);
-      if (sum <= 0) sum = visibleCols.length;
+      const widths = shrinkInvSplitWidths(
+        visibleCols.map(function (col) {
+          return invSplitColWidthPx(col, state.widths[col], paneWidth);
+        }),
+        paneWidth
+      );
       Array.prototype.forEach.call(table.querySelectorAll('thead th[data-col]'), function (th) {
         const col = th.getAttribute('data-col');
         if (th.hidden || visibleCols.indexOf(col) === -1) {
@@ -3504,7 +3527,7 @@
           return;
         }
         const idx = visibleCols.indexOf(col);
-        th.style.width = ((weights[idx] / sum) * 100).toFixed(2) + '%';
+        th.style.width = widths[idx] + 'px';
       });
       table.style.width = '100%';
       table.style.maxWidth = '100%';
