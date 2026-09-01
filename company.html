@@ -514,7 +514,9 @@
           </div>
           <p id="inventory-error" class="hidden text-sm text-red-400 mb-3"></p>
           <div id="inv-side-list" class="cc-side-list hidden" role="listbox" aria-label="Inventory items"></div>
-          <div id="inv-table-wrap" class="cc-table-wrap overflow-x-auto rounded-2xl border border-slate-800">
+          <div class="cc-table-card rounded-2xl border border-slate-800">
+            <p class="cc-list-desc"><span id="inv-total">0</span> warehouse SKUs — stock, cost, and website mapping. Unmapped items stay off the public site.</p>
+            <div id="inv-table-wrap" class="cc-table-wrap overflow-x-auto">
             <table class="w-full text-sm dash-cols" data-cols="inventory">
               <thead class="text-left text-slate-400 border-b border-slate-800">
                 <tr>
@@ -534,6 +536,7 @@
               </thead>
               <tbody id="inventory-table" class="text-slate-200"></tbody>
             </table>
+            </div>
           </div>
         </div>
         </aside>
@@ -646,10 +649,11 @@
             <input id="vn-search" type="search" placeholder="Search vendor, company, email, phone" class="cc-list-search bg-slate-800 border border-slate-700 rounded-full px-3 py-1.5 text-sm">
             <button id="vn-new-btn" type="button" class="cc-list-add-btn px-4 py-2 rounded-full bg-sky-500 hover:bg-sky-400 text-white text-sm font-semibold">Add vendor</button>
           </div>
-          <p class="cc-list-desc"><span id="vn-total">0</span> vendors for purchase orders.</p>
           <p id="vn-error" class="hidden text-sm text-red-400 mb-3"></p>
           <div id="vn-side-list" class="cc-side-list hidden" role="listbox" aria-label="Vendors"></div>
-          <div id="vn-table-wrap" class="cc-table-wrap overflow-x-auto rounded-2xl border border-slate-800">
+          <div class="cc-table-card rounded-2xl border border-slate-800">
+            <p class="cc-list-desc"><span id="vn-total">0</span> vendors for purchase orders.</p>
+            <div id="vn-table-wrap" class="cc-table-wrap overflow-x-auto">
             <table class="w-full text-sm dash-cols" data-cols="vendors">
               <thead class="text-left text-slate-400 border-b border-slate-800">
                 <tr>
@@ -668,6 +672,7 @@
               </thead>
               <tbody id="vn-table" class="text-slate-200"></tbody>
             </table>
+            </div>
           </div>
         </div>
         </aside>
@@ -822,9 +827,10 @@
             <input id="po-search" type="search" placeholder="Search number, vendor" class="cc-list-search bg-slate-800 border border-slate-700 rounded-full px-3 py-1.5 text-sm">
             <button id="po-new-btn" type="button" class="cc-list-add-btn px-4 py-2 rounded-full bg-sky-500 hover:bg-sky-400 text-white text-sm font-semibold">Create purchase order</button>
           </div>
-          <p class="cc-list-desc"><span id="po-total">0</span> purchase orders.</p>
           <p id="po-error" class="hidden text-sm text-red-400 mb-3"></p>
-          <div class="overflow-x-auto rounded-2xl border border-slate-800">
+          <div class="cc-table-card rounded-2xl border border-slate-800">
+            <p class="cc-list-desc"><span id="po-total">0</span> purchase orders.</p>
+            <div class="cc-table-wrap overflow-x-auto">
             <table class="w-full text-sm dash-cols" data-cols="purchase-orders">
               <thead class="text-left text-slate-400 border-b border-slate-800">
                 <tr>
@@ -841,6 +847,7 @@
               </thead>
               <tbody id="po-table" class="text-slate-200"></tbody>
             </table>
+            </div>
           </div>
         </div>
         <div id="po-detail" class="hidden">
@@ -949,9 +956,10 @@
             <input id="rs-search" type="search" placeholder="Search number, vendor, PO" class="cc-list-search bg-slate-800 border border-slate-700 rounded-full px-3 py-1.5 text-sm">
             <button id="rs-new-btn" type="button" class="cc-list-add-btn px-4 py-2 rounded-full bg-sky-500 hover:bg-sky-400 text-white text-sm font-semibold">New receipt</button>
           </div>
-          <p class="cc-list-desc"><span id="rs-total">0</span> receipt shipments.</p>
           <p id="rs-error" class="hidden text-sm text-red-400 mb-3"></p>
-          <div class="overflow-x-auto rounded-2xl border border-slate-800">
+          <div class="cc-table-card rounded-2xl border border-slate-800">
+            <p class="cc-list-desc"><span id="rs-total">0</span> receipt shipments.</p>
+            <div class="cc-table-wrap overflow-x-auto">
             <table class="w-full text-sm dash-cols" data-cols="receipt-shipments">
               <thead class="text-left text-slate-400 border-b border-slate-800">
                 <tr>
@@ -966,6 +974,7 @@
               </thead>
               <tbody id="rs-table" class="text-slate-200"></tbody>
             </table>
+            </div>
           </div>
         </div>
         <div id="rs-detail" class="hidden">
@@ -1064,10 +1073,11 @@
             <input id="cc-search" type="search" placeholder="Search company, contact, email, phone" class="cc-list-search bg-slate-800 border border-slate-700 rounded-full px-3 py-1.5 text-sm">
             <button id="cc-new-btn" type="button" class="cc-list-add-btn px-4 py-2 rounded-full bg-sky-500 hover:bg-sky-400 text-white text-sm font-semibold">Add customer</button>
           </div>
-          <p class="cc-list-desc"><span id="cc-total">0</span> customers for quotes and invoices. This is not the website Sign in list — those stay under Website → Accounts.</p>
           <p id="cc-error" class="hidden text-sm text-red-400 mb-3"></p>
           <div id="cc-side-list" class="cc-side-list hidden" role="listbox" aria-label="Customers"></div>
-          <div id="cc-table-wrap" class="cc-table-wrap overflow-x-auto rounded-2xl border border-slate-800">
+          <div class="cc-table-card rounded-2xl border border-slate-800">
+            <p class="cc-list-desc"><span id="cc-total">0</span> customers for quotes and invoices. This is not the website Sign in list — those stay under Website → Accounts.</p>
+            <div id="cc-table-wrap" class="cc-table-wrap overflow-x-auto">
             <table class="w-full text-sm dash-cols" data-cols="customers">
               <thead class="text-left text-slate-400 border-b border-slate-800">
                 <tr>
@@ -1089,6 +1099,7 @@
               </thead>
               <tbody id="cc-table" class="text-slate-200"></tbody>
             </table>
+            </div>
           </div>
         </div>
         </aside>
@@ -1245,9 +1256,10 @@
             <input id="so-search" type="search" placeholder="Search number, customer, PO" class="cc-list-search bg-slate-800 border border-slate-700 rounded-full px-3 py-1.5 text-sm">
             <button id="so-new-btn" type="button" class="cc-list-add-btn px-4 py-2 rounded-full bg-sky-500 hover:bg-sky-400 text-white text-sm font-semibold">New sales quote</button>
           </div>
-          <p class="cc-list-desc"><span id="so-total">0</span> <span id="so-list-label">sales documents</span>. Pick a company customer, add line items, then save. Website Sign in accounts stay under Website → Accounts.</p>
           <p id="so-error" class="hidden text-sm text-red-400 mb-3"></p>
-          <div class="overflow-x-auto rounded-2xl border border-slate-800">
+          <div class="cc-table-card rounded-2xl border border-slate-800">
+            <p class="cc-list-desc"><span id="so-total">0</span> <span id="so-list-label">sales documents</span>. Pick a company customer, add line items, then save. Website Sign in accounts stay under Website → Accounts.</p>
+            <div class="cc-table-wrap overflow-x-auto">
             <table class="w-full text-sm dash-cols" data-cols="sales">
               <thead class="text-left text-slate-400 border-b border-slate-800">
                 <tr>
@@ -1266,6 +1278,7 @@
               </thead>
               <tbody id="so-table" class="text-slate-200"></tbody>
             </table>
+            </div>
           </div>
         </div>
         <div id="so-detail" class="hidden space-y-6">
@@ -1402,9 +1415,10 @@
           <input id="ca-search" type="search" placeholder="Search account, login, website" class="cc-list-search bg-slate-800 border border-slate-700 rounded-full px-3 py-1.5 text-sm">
           <button id="ca-new-btn" type="button" class="cc-list-add-btn px-4 py-2 rounded-full bg-sky-500 hover:bg-sky-400 text-white text-sm font-semibold">Add account</button>
         </div>
-        <p class="cc-list-desc"><span id="ca-total">0</span> company accounts — logins and passwords.</p>
         <p id="ca-error" class="hidden text-sm text-red-400 mb-3"></p>
-        <div class="overflow-x-auto rounded-2xl border border-slate-800">
+        <div class="cc-table-card rounded-2xl border border-slate-800">
+          <p class="cc-list-desc"><span id="ca-total">0</span> company accounts — logins and passwords.</p>
+          <div class="cc-table-wrap overflow-x-auto">
           <table class="w-full text-sm dash-cols" data-cols="accounts">
             <thead class="text-left text-slate-400 border-b border-slate-800">
               <tr>
@@ -1420,6 +1434,7 @@
             </thead>
             <tbody id="ca-table" class="text-slate-200"></tbody>
           </table>
+          </div>
         </div>
       </div>
 
@@ -3691,6 +3706,8 @@
       applyColOrder(table);
       fillInvOverview();
       renderInvSideList(rows);
+      const invTotalEl = document.getElementById('inv-total');
+      if (invTotalEl) invTotalEl.textContent = String(rows.length);
     }
 
     function invFilteredItems(rows) {

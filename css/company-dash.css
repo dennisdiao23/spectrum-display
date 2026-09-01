@@ -1538,15 +1538,39 @@ html.dash-scroll-lock body.company-app {
   flex-shrink: 0;
 }
 .cc-list-desc {
-  margin: 0 0 0.25rem;
+  margin: 0;
   font-size: 0.8125rem;
   color: var(--dash-muted);
+}
+.cc-table-card {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  flex: 1 1 auto;
+  background: #fff;
+  overflow: hidden;
+}
+.cc-table-card .cc-list-desc {
+  padding: 0.45rem 1rem 0.4rem;
+  border-bottom: 1px solid var(--dash-line);
+  flex-shrink: 0;
+}
+.cc-table-card > .cc-table-wrap {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow: auto;
+  border: none;
+  border-radius: 0;
 }
 .cc-list-kpis,
 #po-overview,
 #so-overview,
 #ca-overview {
   margin-bottom: 0.65rem !important;
+}
+.cc-list-inner > .cc-table-card {
+  min-height: max(14rem, calc(100vh - 17rem));
+  max-height: calc(100vh - 17rem);
 }
 .cc-list-inner > .cc-table-wrap,
 .cc-list-inner > .overflow-x-auto {
@@ -1556,6 +1580,7 @@ html.dash-scroll-lock body.company-app {
   overflow: auto;
 }
 .cc-workspace.cc-detail-open .cc-list-kpis,
+.cc-workspace.cc-detail-open .cc-table-card,
 .cc-workspace.cc-detail-open .cc-table-wrap,
 .cc-workspace.cc-detail-open .cc-list-desc,
 .cc-workspace.cc-detail-open .cc-list-tools,
