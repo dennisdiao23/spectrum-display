@@ -122,8 +122,11 @@
     <button type="button" class="dash-menu-btn" id="dash-menu-btn" aria-label="Open menu">
       <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" d="M4 7h16M4 12h16M4 17h16"/></svg>
     </button>
-    <div class="min-w-0 flex-1">
-      <h1 id="admin-page-title">Company</h1>
+    <div class="min-w-0 flex-1 dash-topbar-head">
+      <div class="dash-topbar-title-row">
+        <h1 id="admin-page-title">Company</h1>
+        <p id="admin-page-helper" class="dash-page-helper cc-list-desc" hidden></p>
+      </div>
       <p id="admin-page-sub">Staff sign in</p>
     </div>
     <div class="dash-top-user">
@@ -502,19 +505,20 @@
               <span class="dash-kpi-hint">Open purchase orders</span>
             </button>
           </div>
-          <div class="flex items-center justify-end mb-4 cc-list-tools">
-            <button id="inv-new-btn" type="button" class="px-4 py-2 rounded-full bg-sky-500 hover:bg-sky-400 text-white text-sm font-semibold">Add inventory item</button>
-          </div>
-          <div class="flex flex-wrap items-center gap-2 mb-4 cc-list-tools">
-            <input id="inv-search" type="search" placeholder="Search SKU, name, brand" class="w-full sm:w-96 bg-slate-800 border border-slate-700 rounded-full px-3 py-1.5 text-sm">
-            <button type="button" data-inv-filter="all" class="inv-filter px-3 py-1.5 rounded-full text-xs font-medium bg-sky-500/20 text-sky-300">All</button>
-            <button type="button" data-inv-filter="low" class="inv-filter px-3 py-1.5 rounded-full text-xs font-medium text-slate-400 hover:text-white">Low</button>
-            <button type="button" data-inv-filter="out" class="inv-filter px-3 py-1.5 rounded-full text-xs font-medium text-slate-400 hover:text-white">Out</button>
-            <button type="button" data-inv-filter="unmapped" class="inv-filter px-3 py-1.5 rounded-full text-xs font-medium text-slate-400 hover:text-white">Not on website</button>
+          <div class="cc-list-toolbar cc-list-tools">
+            <input id="inv-search" type="search" placeholder="Search SKU, name, brand" class="cc-list-search bg-slate-800 border border-slate-700 rounded-full px-3 py-1.5 text-sm">
+            <div class="cc-list-filters">
+              <button type="button" data-inv-filter="all" class="inv-filter px-3 py-1.5 rounded-full text-xs font-medium bg-sky-500/20 text-sky-300">All</button>
+              <button type="button" data-inv-filter="low" class="inv-filter px-3 py-1.5 rounded-full text-xs font-medium text-slate-400 hover:text-white">Low</button>
+              <button type="button" data-inv-filter="out" class="inv-filter px-3 py-1.5 rounded-full text-xs font-medium text-slate-400 hover:text-white">Out</button>
+              <button type="button" data-inv-filter="unmapped" class="inv-filter px-3 py-1.5 rounded-full text-xs font-medium text-slate-400 hover:text-white">Not on website</button>
+            </div>
+            <button id="inv-new-btn" type="button" class="cc-list-add-btn px-4 py-2 rounded-full bg-sky-500 hover:bg-sky-400 text-white text-sm font-semibold">Add inventory item</button>
           </div>
           <p id="inventory-error" class="hidden text-sm text-red-400 mb-3"></p>
           <div id="inv-side-list" class="cc-side-list hidden" role="listbox" aria-label="Inventory items"></div>
-          <div id="inv-table-wrap" class="cc-table-wrap overflow-x-auto rounded-2xl border border-slate-800">
+          <div class="cc-table-card rounded-2xl border border-slate-800">
+            <div id="inv-table-wrap" class="cc-table-wrap overflow-x-auto">
             <table class="w-full text-sm dash-cols" data-cols="inventory">
               <thead class="text-left text-slate-400 border-b border-slate-800">
                 <tr>
@@ -534,6 +538,7 @@
               </thead>
               <tbody id="inventory-table" class="text-slate-200"></tbody>
             </table>
+            </div>
           </div>
         </div>
         </aside>
@@ -642,16 +647,14 @@
               <span class="dash-kpi-hint">Track 1099</span>
             </button>
           </div>
-          <div class="flex items-center justify-end mb-4 cc-list-tools">
-            <button id="vn-new-btn" type="button" class="px-4 py-2 rounded-full bg-sky-500 hover:bg-sky-400 text-white text-sm font-semibold">Add vendor</button>
+          <div class="cc-list-toolbar cc-list-tools">
+            <input id="vn-search" type="search" placeholder="Search vendor, company, email, phone" class="cc-list-search bg-slate-800 border border-slate-700 rounded-full px-3 py-1.5 text-sm">
+            <button id="vn-new-btn" type="button" class="cc-list-add-btn px-4 py-2 rounded-full bg-sky-500 hover:bg-sky-400 text-white text-sm font-semibold">Add vendor</button>
           </div>
-          <div class="flex flex-wrap items-center gap-2 mb-4 cc-list-tools">
-            <input id="vn-search" type="search" placeholder="Search vendor, company, email, phone" class="w-full sm:w-96 bg-slate-800 border border-slate-700 rounded-full px-3 py-1.5 text-sm">
-          </div>
-          <p class="text-slate-400 text-sm mb-4 cc-list-desc"><span id="vn-total">0</span> vendors for purchase orders.</p>
           <p id="vn-error" class="hidden text-sm text-red-400 mb-3"></p>
           <div id="vn-side-list" class="cc-side-list hidden" role="listbox" aria-label="Vendors"></div>
-          <div id="vn-table-wrap" class="cc-table-wrap overflow-x-auto rounded-2xl border border-slate-800">
+          <div class="cc-table-card rounded-2xl border border-slate-800">
+            <div id="vn-table-wrap" class="cc-table-wrap overflow-x-auto">
             <table class="w-full text-sm dash-cols" data-cols="vendors">
               <thead class="text-left text-slate-400 border-b border-slate-800">
                 <tr>
@@ -670,6 +673,7 @@
               </thead>
               <tbody id="vn-table" class="text-slate-200"></tbody>
             </table>
+            </div>
           </div>
         </div>
         </aside>
@@ -793,7 +797,7 @@
       </div>
 
       <div id="po-section" class="hidden space-y-6">
-        <div id="po-list-wrap">
+        <div id="po-list-wrap" class="cc-list-inner">
           <div class="page-kpis" id="po-overview">
             <button type="button" class="dash-kpi is-on" data-filter="all" aria-pressed="true">
               <span class="dash-kpi-icon dash-kpi-icon-website" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M7 3h8l4 4v14a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1z"/><path d="M15 3v5h5"/></svg></span>
@@ -820,15 +824,13 @@
               <span class="dash-kpi-hint">Cancelled</span>
             </button>
           </div>
-          <div class="flex items-center justify-end mb-4">
-            <button id="po-new-btn" type="button" class="px-4 py-2 rounded-full bg-sky-500 hover:bg-sky-400 text-white text-sm font-semibold">Create purchase order</button>
+          <div class="cc-list-toolbar cc-list-tools">
+            <input id="po-search" type="search" placeholder="Search number, vendor" class="cc-list-search bg-slate-800 border border-slate-700 rounded-full px-3 py-1.5 text-sm">
+            <button id="po-new-btn" type="button" class="cc-list-add-btn px-4 py-2 rounded-full bg-sky-500 hover:bg-sky-400 text-white text-sm font-semibold">Create purchase order</button>
           </div>
-          <div class="flex flex-wrap items-center gap-2 mb-4">
-            <input id="po-search" type="search" placeholder="Search number, vendor" class="w-full sm:w-96 bg-slate-800 border border-slate-700 rounded-full px-3 py-1.5 text-sm">
-          </div>
-          <p class="text-slate-400 text-sm mb-4"><span id="po-total">0</span> purchase orders.</p>
           <p id="po-error" class="hidden text-sm text-red-400 mb-3"></p>
-          <div class="overflow-x-auto rounded-2xl border border-slate-800">
+          <div class="cc-table-card rounded-2xl border border-slate-800">
+            <div class="cc-table-wrap overflow-x-auto">
             <table class="w-full text-sm dash-cols" data-cols="purchase-orders">
               <thead class="text-left text-slate-400 border-b border-slate-800">
                 <tr>
@@ -845,6 +847,7 @@
               </thead>
               <tbody id="po-table" class="text-slate-200"></tbody>
             </table>
+            </div>
           </div>
         </div>
         <div id="po-detail" class="hidden">
@@ -948,16 +951,14 @@
       </div>
 
       <div id="rs-section" class="hidden space-y-6">
-        <div id="rs-list-wrap">
-          <div class="flex items-center justify-end mb-4">
-            <button id="rs-new-btn" type="button" class="px-4 py-2 rounded-full bg-sky-500 hover:bg-sky-400 text-white text-sm font-semibold">New receipt</button>
+        <div id="rs-list-wrap" class="cc-list-inner">
+          <div class="cc-list-toolbar cc-list-tools">
+            <input id="rs-search" type="search" placeholder="Search number, vendor, PO" class="cc-list-search bg-slate-800 border border-slate-700 rounded-full px-3 py-1.5 text-sm">
+            <button id="rs-new-btn" type="button" class="cc-list-add-btn px-4 py-2 rounded-full bg-sky-500 hover:bg-sky-400 text-white text-sm font-semibold">New receipt</button>
           </div>
-          <div class="flex flex-wrap items-center gap-2 mb-4">
-            <input id="rs-search" type="search" placeholder="Search number, vendor, PO" class="w-full sm:w-96 bg-slate-800 border border-slate-700 rounded-full px-3 py-1.5 text-sm">
-          </div>
-          <p class="text-slate-400 text-sm mb-4"><span id="rs-total">0</span> receipt shipments.</p>
           <p id="rs-error" class="hidden text-sm text-red-400 mb-3"></p>
-          <div class="overflow-x-auto rounded-2xl border border-slate-800">
+          <div class="cc-table-card rounded-2xl border border-slate-800">
+            <div class="cc-table-wrap overflow-x-auto">
             <table class="w-full text-sm dash-cols" data-cols="receipt-shipments">
               <thead class="text-left text-slate-400 border-b border-slate-800">
                 <tr>
@@ -972,6 +973,7 @@
               </thead>
               <tbody id="rs-table" class="text-slate-200"></tbody>
             </table>
+            </div>
           </div>
         </div>
         <div id="rs-detail" class="hidden">
@@ -1066,16 +1068,14 @@
               <span class="dash-kpi-hint">Unpaid or sent</span>
             </button>
           </div>
-          <div class="flex items-center justify-end mb-4 cc-list-tools">
-            <button id="cc-new-btn" type="button" class="px-4 py-2 rounded-full bg-sky-500 hover:bg-sky-400 text-white text-sm font-semibold">Add customer</button>
+          <div class="cc-list-toolbar cc-list-tools">
+            <input id="cc-search" type="search" placeholder="Search company, contact, email, phone" class="cc-list-search bg-slate-800 border border-slate-700 rounded-full px-3 py-1.5 text-sm">
+            <button id="cc-new-btn" type="button" class="cc-list-add-btn px-4 py-2 rounded-full bg-sky-500 hover:bg-sky-400 text-white text-sm font-semibold">Add customer</button>
           </div>
-          <div class="flex flex-wrap items-center gap-2 mb-4 cc-list-tools">
-            <input id="cc-search" type="search" placeholder="Search company, contact, email, phone" class="w-full sm:w-96 bg-slate-800 border border-slate-700 rounded-full px-3 py-1.5 text-sm">
-          </div>
-          <p class="text-slate-400 text-sm mb-4 cc-list-desc"><span id="cc-total">0</span> customers for quotes and invoices. This is not the website Sign in list — those stay under Website → Accounts.</p>
           <p id="cc-error" class="hidden text-sm text-red-400 mb-3"></p>
           <div id="cc-side-list" class="cc-side-list hidden" role="listbox" aria-label="Customers"></div>
-          <div id="cc-table-wrap" class="cc-table-wrap overflow-x-auto rounded-2xl border border-slate-800">
+          <div class="cc-table-card rounded-2xl border border-slate-800">
+            <div id="cc-table-wrap" class="cc-table-wrap overflow-x-auto">
             <table class="w-full text-sm dash-cols" data-cols="customers">
               <thead class="text-left text-slate-400 border-b border-slate-800">
                 <tr>
@@ -1097,6 +1097,7 @@
               </thead>
               <tbody id="cc-table" class="text-slate-200"></tbody>
             </table>
+            </div>
           </div>
         </div>
         </aside>
@@ -1228,7 +1229,7 @@
       </div>
 
       <div id="sales-section" class="hidden space-y-6">
-        <div id="sales-list-wrap">
+        <div id="sales-list-wrap" class="cc-list-inner">
           <div class="page-kpis page-kpis-3" id="so-overview">
             <button type="button" class="dash-kpi" data-nav="quotes" aria-pressed="false">
               <span class="dash-kpi-icon dash-kpi-icon-website" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M8 4h8v4H8z"/><path d="M6 8h12v12H6z"/><path d="M9 12h6M9 16h4"/></svg></span>
@@ -1249,15 +1250,13 @@
               <span class="dash-kpi-hint">Invoices</span>
             </button>
           </div>
-          <div class="flex items-center justify-end mb-4">
-            <button id="so-new-btn" type="button" class="px-4 py-2 rounded-full bg-sky-500 hover:bg-sky-400 text-white text-sm font-semibold">New sales quote</button>
+          <div class="cc-list-toolbar cc-list-tools">
+            <input id="so-search" type="search" placeholder="Search number, customer, PO" class="cc-list-search bg-slate-800 border border-slate-700 rounded-full px-3 py-1.5 text-sm">
+            <button id="so-new-btn" type="button" class="cc-list-add-btn px-4 py-2 rounded-full bg-sky-500 hover:bg-sky-400 text-white text-sm font-semibold">New sales quote</button>
           </div>
-          <div class="flex flex-wrap items-center gap-2 mb-4">
-            <input id="so-search" type="search" placeholder="Search number, customer, PO" class="w-full sm:w-96 bg-slate-800 border border-slate-700 rounded-full px-3 py-1.5 text-sm">
-          </div>
-          <p class="text-slate-400 text-sm mb-4"><span id="so-total">0</span> <span id="so-list-label">sales documents</span>. Pick a company customer, add line items, then save. Website Sign in accounts stay under Website → Accounts.</p>
           <p id="so-error" class="hidden text-sm text-red-400 mb-3"></p>
-          <div class="overflow-x-auto rounded-2xl border border-slate-800">
+          <div class="cc-table-card rounded-2xl border border-slate-800">
+            <div class="cc-table-wrap overflow-x-auto">
             <table class="w-full text-sm dash-cols" data-cols="sales">
               <thead class="text-left text-slate-400 border-b border-slate-800">
                 <tr>
@@ -1276,6 +1275,7 @@
               </thead>
               <tbody id="so-table" class="text-slate-200"></tbody>
             </table>
+            </div>
           </div>
         </div>
         <div id="so-detail" class="hidden space-y-6">
@@ -1381,7 +1381,7 @@
       </div>
 
       <div id="settings-pane" class="hidden space-y-6">
-      <div id="company-section" class="hidden space-y-6">
+      <div id="company-section" class="hidden cc-list-inner">
         <div class="page-kpis" id="ca-overview">
           <button type="button" class="dash-kpi is-on" data-filter="all" aria-pressed="true">
             <span class="dash-kpi-icon dash-kpi-icon-website" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="5" width="16" height="14" rx="2"/><path d="M8 9h8M8 13h5"/></svg></span>
@@ -1408,15 +1408,13 @@
             <span class="dash-kpi-hint" id="ca-hint-company">Legal name and address</span>
           </button>
         </div>
-        <div class="flex items-center justify-end mb-4">
-          <button id="ca-new-btn" type="button" class="px-4 py-2 rounded-full bg-sky-500 hover:bg-sky-400 text-white text-sm font-semibold">Add account</button>
+        <div class="cc-list-toolbar cc-list-tools">
+          <input id="ca-search" type="search" placeholder="Search account, login, website" class="cc-list-search bg-slate-800 border border-slate-700 rounded-full px-3 py-1.5 text-sm">
+          <button id="ca-new-btn" type="button" class="cc-list-add-btn px-4 py-2 rounded-full bg-sky-500 hover:bg-sky-400 text-white text-sm font-semibold">Add account</button>
         </div>
-        <div class="flex flex-wrap items-center gap-2 mb-4">
-          <input id="ca-search" type="search" placeholder="Search account, login, website" class="w-full sm:w-96 bg-slate-800 border border-slate-700 rounded-full px-3 py-1.5 text-sm">
-        </div>
-        <p class="text-slate-400 text-sm mb-4"><span id="ca-total">0</span> company accounts — logins and passwords.</p>
         <p id="ca-error" class="hidden text-sm text-red-400 mb-3"></p>
-        <div class="overflow-x-auto rounded-2xl border border-slate-800">
+        <div class="cc-table-card rounded-2xl border border-slate-800">
+          <div class="cc-table-wrap overflow-x-auto">
           <table class="w-full text-sm dash-cols" data-cols="accounts">
             <thead class="text-left text-slate-400 border-b border-slate-800">
               <tr>
@@ -1432,6 +1430,7 @@
             </thead>
             <tbody id="ca-table" class="text-slate-200"></tbody>
           </table>
+          </div>
         </div>
       </div>
 
@@ -2865,6 +2864,35 @@
       return base + (on ? ' is-active' : '') + (hide ? ' hidden' : '');
     }
 
+    const LIST_PAGE_HELPERS = {
+      inventory: '<span id="inv-total">0</span> warehouse SKUs — stock, cost, and website mapping. Unmapped items stay off the public site.',
+      vendors: '<span id="vn-total">0</span> vendors for purchase orders.',
+      'purchase-orders': '<span id="po-total">0</span> purchase orders.',
+      'receipt-shipments': '<span id="rs-total">0</span> receipt shipments.',
+      customers: '<span id="cc-total">0</span> customers for quotes and invoices. This is not the website Sign in list — those stay under Website → Accounts.',
+      quotes: '<span id="so-total">0</span> <span id="so-list-label">sales documents</span>. Pick a company customer, add line items, then save. Website Sign in accounts stay under Website → Accounts.',
+      orders: '<span id="so-total">0</span> <span id="so-list-label">sales documents</span>. Pick a company customer, add line items, then save. Website Sign in accounts stay under Website → Accounts.',
+      invoices: '<span id="so-total">0</span> <span id="so-list-label">sales documents</span>. Pick a company customer, add line items, then save. Website Sign in accounts stay under Website → Accounts.',
+      company: '<span id="ca-total">0</span> company accounts — logins and passwords.'
+    };
+
+    function syncDetailOpenBodyClass() {
+      document.body.classList.toggle('dash-detail-open', !!document.querySelector('.cc-workspace.cc-detail-open'));
+    }
+
+    function syncPageHelper(name) {
+      const helper = document.getElementById('admin-page-helper');
+      if (!helper) return;
+      const html = LIST_PAGE_HELPERS[name];
+      if (html) {
+        helper.innerHTML = html;
+        helper.hidden = document.body.classList.contains('dash-detail-open');
+      } else {
+        helper.innerHTML = '';
+        helper.hidden = true;
+      }
+    }
+
     function showAdminTab(name) {
       if (typeof ccDrawerNeedsLeave === 'function' && ccDrawerNeedsLeave()) {
         ccAskLeave(function () { showAdminTab(name); });
@@ -2974,6 +3002,7 @@
       const pageSub = document.getElementById('admin-page-sub');
       pageSub.textContent = bits[1];
       pageSub.hidden = !bits[1];
+      syncPageHelper(name);
       document.title = (bits[0] ? bits[0] + ' | ' : '') + 'Company | Spectrum Display';
       const newBtn = document.getElementById('new-btn');
       if (newBtn) newBtn.classList.toggle('hidden', !canEdit('website'));
@@ -3703,6 +3732,8 @@
       applyColOrder(table);
       fillInvOverview();
       renderInvSideList(rows);
+      const invTotalEl = document.getElementById('inv-total');
+      if (invTotalEl) invTotalEl.textContent = String(rows.length);
     }
 
     function invFilteredItems(rows) {
@@ -3871,6 +3902,8 @@
       const ws = document.getElementById('inv-workspace');
       const pane = document.getElementById('inv-detail-pane');
       if (ws) ws.classList.remove('cc-detail-open');
+      syncDetailOpenBodyClass();
+      syncPageHelper('inventory');
       if (pane) {
         pane.hidden = true;
         pane.setAttribute('aria-hidden', 'true');
@@ -3897,6 +3930,8 @@
         const ws = document.getElementById('inv-workspace');
         const pane = document.getElementById('inv-detail-pane');
         if (ws) ws.classList.add('cc-detail-open');
+        syncDetailOpenBodyClass();
+        syncPageHelper('inventory');
         if (pane) {
           pane.hidden = false;
           pane.setAttribute('aria-hidden', 'false');
@@ -5173,6 +5208,8 @@
       const ws = document.getElementById('cc-workspace');
       const pane = document.getElementById('cc-detail-pane');
       if (ws) ws.classList.remove('cc-detail-open');
+      syncDetailOpenBodyClass();
+      syncPageHelper('customers');
       if (pane) {
         pane.hidden = true;
         pane.setAttribute('aria-hidden', 'true');
@@ -5201,6 +5238,8 @@
         const ws = document.getElementById('cc-workspace');
         const pane = document.getElementById('cc-detail-pane');
         if (ws) ws.classList.add('cc-detail-open');
+        syncDetailOpenBodyClass();
+        syncPageHelper('customers');
         if (pane) {
           pane.hidden = false;
           pane.setAttribute('aria-hidden', 'false');
@@ -5897,6 +5936,8 @@
       const ws = document.getElementById('vn-workspace');
       const pane = document.getElementById('vn-detail-pane');
       if (ws) ws.classList.remove('cc-detail-open');
+      syncDetailOpenBodyClass();
+      syncPageHelper('vendors');
       if (pane) {
         pane.hidden = true;
         pane.setAttribute('aria-hidden', 'true');
@@ -5929,6 +5970,8 @@
         const ws = document.getElementById('vn-workspace');
         const pane = document.getElementById('vn-detail-pane');
         if (ws) ws.classList.add('cc-detail-open');
+        syncDetailOpenBodyClass();
+        syncPageHelper('vendors');
         if (pane) {
           pane.hidden = false;
           pane.setAttribute('aria-hidden', 'false');
