@@ -518,7 +518,7 @@
           <div id="inv-split" class="inv-split">
             <div id="inv-split-left" class="inv-split-left">
               <div class="cc-table-card rounded-2xl border border-slate-800">
-                <div id="inv-table-wrap" class="cc-table-wrap overflow-x-auto">
+                <div id="inv-table-wrap" class="cc-table-wrap">
                 <table class="w-full text-sm dash-cols" data-cols="inventory">
                   <thead class="text-left text-slate-400 border-b border-slate-800">
                     <tr>
@@ -551,7 +551,7 @@
                   <p class="inv-overview-lead">Warehouse activity — manual stock changes and item edits. Bulk PO receipts and packing lists are not listed here.</p>
                 </div>
                 <h3 class="inv-activity-heading">Recent activity</h3>
-                <div class="inv-activity-wrap overflow-x-auto rounded-2xl border border-slate-800">
+                <div class="inv-activity-wrap rounded-2xl border border-slate-800">
                   <table class="w-full text-sm inv-activity-table">
                     <thead class="text-left text-slate-400 border-b border-slate-800">
                       <tr>
@@ -2975,6 +2975,7 @@
       document.getElementById('settings-pane').classList.toggle('hidden', !onSettings);
       document.getElementById('products-section').classList.toggle('hidden', name !== 'products');
       document.getElementById('inventory-section').classList.toggle('hidden', name !== 'inventory');
+      document.body.classList.toggle('inv-layout-lock', name === 'inventory');
       document.getElementById('vendors-section').classList.toggle('hidden', name !== 'vendors');
       document.getElementById('po-section').classList.toggle('hidden', name !== 'purchase-orders');
       document.getElementById('rs-section').classList.toggle('hidden', name !== 'receipt-shipments');
@@ -3908,10 +3909,19 @@
       const MIN_LEFT = 400;
       const MIN_RIGHT = 600;
       const RESIZER_W = 7;
+      function effectiveMins(total) {
+        if (total >= MIN_LEFT + MIN_RIGHT + RESIZER_W) {
+          return { minLeft: MIN_LEFT, minRight: MIN_RIGHT };
+        }
+        const minLeft = Math.max(160, Math.floor(total * 0.28));
+        const minRight = Math.max(200, total - minLeft - RESIZER_W);
+        return { minLeft: minLeft, minRight: minRight };
+      }
       function clampLeft(w) {
         const total = split.getBoundingClientRect().width;
-        const maxLeft = Math.max(MIN_LEFT, total - MIN_RIGHT - RESIZER_W);
-        return Math.max(MIN_LEFT, Math.min(w, maxLeft));
+        const mins = effectiveMins(total);
+        const maxLeft = Math.max(mins.minLeft, total - mins.minRight - RESIZER_W);
+        return Math.max(mins.minLeft, Math.min(w, maxLeft));
       }
       function applyLeft(w) {
         const clamped = clampLeft(w);
