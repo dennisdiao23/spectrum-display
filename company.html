@@ -543,10 +543,10 @@
             </div>
             <div id="inv-split-resizer" class="inv-split-resizer" role="separator" aria-orientation="vertical" aria-label="Resize inventory panels" tabindex="0"></div>
             <div id="inv-split-right" class="inv-split-right">
+              <div id="inv-tab-bar" class="inv-tab-bar">
+                <div id="inv-tab-strip" class="inv-tab-strip" role="tablist" aria-label="Open inventory items"></div>
+              </div>
               <div id="inv-overview-panel" class="inv-right-panel">
-                <div class="inv-right-head">
-                  <h2 class="inv-right-title">Overview</h2>
-                </div>
                 <div class="inv-overview-summary">
                   <p class="inv-overview-lead">Warehouse activity — manual stock changes and item edits. Bulk PO receipts and packing lists are not listed here.</p>
                 </div>
@@ -568,8 +568,7 @@
                 <p id="inv-activity-empty" class="cc-detail-empty hidden">No recent inventory activity yet.</p>
               </div>
               <div id="inv-item-panel" class="inv-right-panel hidden" aria-hidden="true">
-                <div class="cc-detail-toolbar inv-item-toolbar">
-                  <button type="button" id="inv-overview-btn" class="cc-detail-back">Overview</button>
+                <div class="inv-detail-toolbar cc-detail-toolbar">
                   <div class="cc-detail-toolbar-actions">
                     <button type="button" id="inv-detail-adjust" class="cc-detail-btn">Adjust stock</button>
                     <button type="button" id="inv-detail-edit" class="cc-detail-btn">Edit</button>
@@ -3068,6 +3067,10 @@
     let invDetailId = '';
     let invDetailData = null;
     let invDetailTab = 'moves';
+    const INV_TAB_MAX = 7;
+    let invOpenTabs = [];
+    let invActiveTab = 'overview';
+    let invTabDetailTab = {};
     let invSavedSnapshot = '';
     let invDrawerSource = '';
     let invPoLineRow = null;
@@ -3878,6 +3881,177 @@
       item.setAttribute('aria-hidden', showItem ? 'false' : 'true');
     }
 
+    function invTabItem(id) {
+      return inventoryItems.find(function (i) { return String(i.id) === String(id); });
+    }
+
+    function invTabLabel(id) {
+      const item = invTabItem(id);
+      if (!item) return 'Item';
+      return String(item.sku || '').trim() || 'Item';
+    }
+
+    function invTabStatusClass(status) {
+      if (status === 'out') return 'is-out';
+      if (status === 'low') return 'is-low';
+      return 'is-in';
+    }
+
+    function fitInvTabWidths() {
+      const strip = document.getElementById('inv-tab-strip');
+      if (!strip) return;
+      const allTabs = Array.prototype.slice.call(strip.querySelectorAll('.inv-browser-tab'));
+      if (!allTabs.length) return;
+      const gap = 2;
+      const MIN_ITEM_TAB = 72;
+      const overviewTab = strip.querySelector('.inv-browser-tab[data-inv-tab-id="overview"]');
+      const itemTabs = allTabs.filter(function (tab) {
+        return tab.getAttribute('data-inv-tab-id') !== 'overview';
+      });
+
+      allTabs.forEach(function (tab) {
+        tab.style.flex = '';
+        tab.style.width = '';
+        tab.style.minWidth = '';
+        tab.style.maxWidth = '';
+      });
+
+      if (overviewTab) {
+        overviewTab.style.flex = '0 0 auto';
+      }
+
+      const stripWidth = strip.clientWidth;
+      if (stripWidth <= 0 || !itemTabs.length) return;
+
+      const overviewWidth = overviewTab ? Math.round(overviewTab.getBoundingClientRect().width) : 0;
+      const availableForItems = stripWidth - overviewWidth - gap * (allTabs.length - 1);
+
+      let itemWidths = itemTabs.map(function (tab) {
+        return Math.round(tab.getBoundingClientRect().width);
+      });
+      let itemTotal = itemWidths.reduce(function (a, b) { return a + b; }, 0);
+      if (itemTotal <= availableForItems) return;
+
+      itemWidths = itemWidths.map(function (w) { return Math.max(MIN_ITEM_TAB, w); });
+      itemTotal = itemWidths.reduce(function (a, b) { return a + b; }, 0);
+
+      if (itemTotal <= availableForItems) {
+        itemTabs.forEach(function (tab, i) {
+          tab.style.flex = '0 0 ' + itemWidths[i] + 'px';
+          tab.style.width = itemWidths[i] + 'px';
+          tab.style.minWidth = MIN_ITEM_TAB + 'px';
+          tab.style.maxWidth = itemWidths[i] + 'px';
+        });
+        return;
+      }
+
+      const sum = itemWidths.reduce(function (a, b) { return a + b; }, 0);
+      itemTabs.forEach(function (tab, i) {
+        const w = Math.max(MIN_ITEM_TAB, Math.floor(itemWidths[i] * availableForItems / sum));
+        tab.style.flex = '0 0 ' + w + 'px';
+        tab.style.width = w + 'px';
+        tab.style.minWidth = MIN_ITEM_TAB + 'px';
+        tab.style.maxWidth = w + 'px';
+      });
+    }
+
+    function renderInvTabBar() {
+      const bar = document.getElementById('inv-tab-bar');
+      const strip = document.getElementById('inv-tab-strip');
+      if (!bar || !strip) return;
+      bar.classList.remove('hidden');
+      bar.setAttribute('aria-hidden', 'false');
+      let html = '<button type="button" class="inv-browser-tab' +
+        (invActiveTab === 'overview' ? ' is-active' : '') +
+        '" data-inv-tab-id="overview" role="tab" aria-selected="' + (invActiveTab === 'overview' ? 'true' : 'false') + '">' +
+        '<span class="inv-browser-tab-label">Overview</span></button>';
+      invOpenTabs.forEach(function (id) {
+        const item = invTabItem(id);
+        const active = String(invActiveTab) === String(id);
+        const status = item && item.status;
+        html += '<button type="button" class="inv-browser-tab' + (active ? ' is-active' : '') +
+          '" data-inv-tab-id="' + esc(id) + '" role="tab" aria-selected="' + (active ? 'true' : 'false') + '">' +
+          '<span class="inv-browser-tab-status ' + invTabStatusClass(status) + '" aria-hidden="true" title="' +
+          esc(stockStatusLabel(status)) + '"></span>' +
+          '<span class="inv-browser-tab-label">' + esc(invTabLabel(id)) + '</span>' +
+          '<span class="inv-browser-tab-close" data-inv-tab-close="' + esc(id) + '" aria-label="Close tab" role="button" tabindex="-1">×</span></button>';
+      });
+      strip.innerHTML = html;
+      fitInvTabWidths();
+    }
+
+    function showInvOverview(opts) {
+      opts = opts || {};
+      invActiveTab = 'overview';
+      invDetailId = '';
+      invDetailData = null;
+      inventoryDetail = null;
+      showInvRightPanel('overview');
+      renderInvTabBar();
+      renderInventoryTable();
+      if (opts.push !== false) {
+        history.pushState({ tab: 'inventory' }, '', '/company/inventory');
+      }
+    }
+
+    function activateInvTab(id, opts) {
+      opts = opts || {};
+      const sid = String(id);
+      const item = invTabItem(sid);
+      if (!item) return;
+      invActiveTab = sid;
+      invDetailId = sid;
+      invDetailData = { item: item, moves: invMovesForItem(sid) };
+      inventoryDetail = invDetailData;
+      invDetailTab = invTabDetailTab[sid] || 'moves';
+      showInvRightPanel('item');
+      renderInventoryDetailView();
+      renderInvTabBar();
+      renderInventoryTable();
+      if (opts.push !== false) {
+        history.pushState({ tab: 'inventory', itemId: sid }, '', pathForInventory(sid));
+      }
+    }
+
+    function openInvTab(id, opts) {
+      opts = opts || {};
+      const sid = String(id);
+      if (invOpenTabs.indexOf(sid) !== -1) {
+        activateInvTab(sid, opts);
+        return;
+      }
+      if (invOpenTabs.length >= INV_TAB_MAX) {
+        const dropped = invOpenTabs.shift();
+        delete invTabDetailTab[dropped];
+      }
+      invOpenTabs.push(sid);
+      activateInvTab(sid, opts);
+    }
+
+    function closeInvTab(id, push) {
+      const sid = String(id);
+      const idx = invOpenTabs.indexOf(sid);
+      if (idx === -1) return;
+      invOpenTabs.splice(idx, 1);
+      delete invTabDetailTab[sid];
+      if (String(invActiveTab) === sid) {
+        if (invOpenTabs.length) {
+          const nextId = invOpenTabs[Math.min(idx, invOpenTabs.length - 1)];
+          activateInvTab(nextId, { push: push !== false });
+        } else {
+          showInvOverview({ push: push !== false });
+        }
+      } else {
+        renderInvTabBar();
+      }
+    }
+
+    function closeAllInvTabs(push) {
+      invOpenTabs = [];
+      invTabDetailTab = {};
+      showInvOverview({ push: push !== false });
+    }
+
     function invActivityLabel(act) {
       if (act.type === 'edit') return 'Item updated';
       const kind = String(act.kind || '').toLowerCase();
@@ -3971,7 +4145,7 @@
       const key = 'inv-split-left-px';
       const MIN_LEFT = 400;
       const MIN_RIGHT = 600;
-      const RESIZER_W = 7;
+      const RESIZER_W = 14;
       function effectiveMins(total) {
         if (total >= MIN_LEFT + MIN_RIGHT + RESIZER_W) {
           return { minLeft: MIN_LEFT, minRight: MIN_RIGHT };
@@ -3991,6 +4165,7 @@
         split.style.setProperty('--inv-left-w', clamped + 'px');
         localStorage.setItem(key, String(Math.round(clamped)));
         refreshInventorySplitCols();
+        fitInvTabWidths();
       }
       const saved = parseInt(localStorage.getItem(key) || '', 10);
       applyLeft(saved > MIN_LEFT ? saved : MIN_LEFT);
@@ -4017,11 +4192,13 @@
       window.addEventListener('resize', function () {
         const current = parseInt(localStorage.getItem(key) || String(MIN_LEFT), 10);
         applyLeft(current);
+        fitInvTabWidths();
       });
     }
 
     function setInvDetailTab(name) {
       invDetailTab = name || 'moves';
+      if (invDetailId) invTabDetailTab[invDetailId] = invDetailTab;
       document.querySelectorAll('#inv-item-panel .cc-detail-tab').forEach(function (btn) {
         const on = btn.getAttribute('data-inv-tab') === invDetailTab;
         btn.classList.toggle('is-on', on);
@@ -4146,39 +4323,20 @@
     }
 
     function closeInventoryDetail(push) {
-      invDetailId = '';
-      invDetailData = null;
-      inventoryDetail = null;
-      showInvRightPanel('overview');
-      renderInventoryTable();
-      if (push !== false) history.pushState({ tab: 'inventory' }, '', '/company/inventory');
+      closeAllInvTabs(push);
     }
 
     function selectInventoryItem(id, opts) {
       opts = opts || {};
       if (!id) {
-        closeInventoryDetail(opts.push !== false);
+        showInvOverview({ push: opts.push !== false });
         return;
       }
       if (invDrawerNeedsLeave()) {
         invAskLeave(function () { selectInventoryItem(id, opts); });
         return;
       }
-      if (String(id) === String(invDetailId)) {
-        closeInventoryDetail(opts.push !== false);
-        return;
-      }
-      const item = inventoryItems.find(function (i) { return String(i.id) === String(id); });
-      if (!item) return;
-      invDetailId = String(id);
-      invDetailData = { item: item, moves: invMovesForItem(id) };
-      inventoryDetail = invDetailData;
-      showInvRightPanel('item');
-      renderInventoryDetailView();
-      renderInventoryTable();
-      if (opts.push !== false) {
-        history.pushState({ tab: 'inventory', itemId: id }, '', pathForInventory(id));
-      }
+      openInvTab(id, opts);
     }
 
     function openInventoryDetail(id, opts) {
@@ -4245,15 +4403,13 @@
         if (invDetailId) {
           const found = inventoryItems.find(function (i) { return String(i.id) === String(invDetailId); });
           if (found) {
-            invDetailData = { item: found, moves: invMovesForItem(invDetailId) };
-            inventoryDetail = invDetailData;
-            showInvRightPanel('item');
-            renderInventoryDetailView();
+            if (invOpenTabs.indexOf(String(invDetailId)) === -1) invOpenTabs.push(String(invDetailId));
+            activateInvTab(invDetailId, { push: false });
           } else {
             closeInventoryDetail(false);
           }
         } else {
-          showInvRightPanel('overview');
+          showInvOverview({ push: false });
         }
       } catch (err) {
         errEl.textContent = err.message || 'Could not load inventory.';
@@ -7919,7 +8075,7 @@
         return;
       }
       if (invDetailId) {
-        closeInventoryDetail(true);
+        showInvOverview({ push: true });
         return;
       }
       if (vnDetailId) {
@@ -8574,8 +8730,30 @@
       }
       go();
     });
-    document.getElementById('inv-overview-btn').addEventListener('click', function () {
-      closeInventoryDetail(true);
+    document.getElementById('inv-tab-strip').addEventListener('click', function (e) {
+      const closeBtn = e.target.closest('[data-inv-tab-close]');
+      if (closeBtn) {
+        e.preventDefault();
+        e.stopPropagation();
+        closeInvTab(closeBtn.getAttribute('data-inv-tab-close'), true);
+        return;
+      }
+      const tab = e.target.closest('.inv-browser-tab[data-inv-tab-id]');
+      if (!tab) return;
+      const tabId = tab.getAttribute('data-inv-tab-id');
+      if (tabId === 'overview') {
+        if (invDrawerNeedsLeave()) {
+          invAskLeave(function () { showInvOverview({ push: true }); });
+          return;
+        }
+        showInvOverview({ push: true });
+        return;
+      }
+      if (invDrawerNeedsLeave()) {
+        invAskLeave(function () { activateInvTab(tabId, { push: true }); });
+        return;
+      }
+      activateInvTab(tabId, { push: true });
     });
     document.getElementById('inv-detail-edit').addEventListener('click', function () {
       openInventoryFromDetail();
@@ -8707,11 +8885,14 @@
           invPoLineRow = null;
           applyPoItemToLine(row, data.item);
           closeInventoryDrawer(true);
-        } else if (invDrawerSource === 'detail') {
+        } else         if (invDrawerSource === 'detail') {
           invDetailData = data;
           invDetailId = String(data.item.id);
+          if (invOpenTabs.indexOf(invDetailId) === -1) invOpenTabs.push(invDetailId);
+          invActiveTab = invDetailId;
           closeInventoryDrawer(true);
           renderInventoryDetailView();
+          renderInvTabBar();
           renderInventoryTable();
         } else {
           closeInventoryDrawer(true);
@@ -8733,7 +8914,7 @@
       if (!confirm('Delete this inventory item? Website links to it will be removed.')) return;
       try {
         await api('/api/admin/inventory/' + encodeURIComponent(id), { method: 'DELETE' });
-        if (String(invDetailId) === String(id)) closeInventoryDetail(true);
+        if (invOpenTabs.indexOf(String(id)) !== -1) closeInvTab(id, true);
         closeInventoryDrawer(true);
         await loadInventory();
       } catch (err) {
