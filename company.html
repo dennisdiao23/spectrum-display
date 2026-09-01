@@ -1330,105 +1330,176 @@
             </div>
           </div>
         </div>
-        <div id="so-detail" class="hidden space-y-6">
-          <button type="button" id="so-back" class="text-sm text-sky-400 hover:text-sky-300">← All documents</button>
-          <form id="so-form" class="rounded-2xl border border-slate-800 bg-slate-900/50 p-5 grid sm:grid-cols-2 gap-4">
-            <input type="hidden" id="so-id">
-            <input type="hidden" id="so-type" value="quote">
-            <div class="sm:col-span-2">
-              <h2 id="so-title" class="font-semibold text-lg">New sales quote</h2>
-              <p class="text-sm text-slate-400 mt-1">Company customers only — not website Sign in accounts.</p>
+        <div id="so-detail" class="hidden so-doc">
+          <button type="button" id="so-back" class="so-doc-back">← All documents</button>
+          <div class="so-doc-frame">
+            <div class="so-doc-caption" id="so-doc-caption">
+              <span id="so-caption-title">Create Invoices</span>
+              <button type="button" id="so-caption-close" aria-label="Close">×</button>
             </div>
-            <div>
-              <label class="block text-xs text-slate-400 mb-1">Customer</label>
-              <select id="so-customer" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm">
-                <option value="">Select a customer</option>
-              </select>
+            <div class="so-doc-ribbon" id="so-doc-ribbon">
+              <button type="button" id="so-ribbon-find" class="so-doc-ribbon-btn" title="Find">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="11" cy="11" r="6"/><path d="m20 20-3.5-3.5"/></svg>
+                <span>Find</span>
+              </button>
+              <button type="button" id="so-ribbon-new" class="so-doc-ribbon-btn" title="New">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="5" y="3" width="14" height="18" rx="1.5"/><path d="M8 8h8M8 12h8M8 16h5"/></svg>
+                <span>New</span>
+              </button>
+              <button type="submit" form="so-form" class="so-doc-ribbon-btn" data-so-after="stay" title="Save">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M5 5h11l3 3v11H5z"/><path d="M8 5v5h8V5M8 19v-6h8v6"/></svg>
+                <span>Save</span>
+              </button>
+              <button type="button" id="so-ribbon-delete" class="so-doc-ribbon-btn" title="Delete">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 7h16M9 7V5h6v2M8 7l1 12h6l1-12"/></svg>
+                <span>Delete</span>
+              </button>
+              <button type="button" id="so-ribbon-print" class="so-doc-ribbon-btn" title="Print">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M7 9V4h10v5"/><rect x="6" y="13" width="12" height="7"/><path d="M6 17H4V9h16v8h-2"/></svg>
+                <span>Print</span>
+              </button>
+              <button type="button" id="so-ribbon-email" class="so-doc-ribbon-btn" title="Email">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="6" width="18" height="12" rx="1.5"/><path d="m3 8 9 6 9-6"/></svg>
+                <span>Email</span>
+              </button>
             </div>
-            <div>
-              <label class="block text-xs text-slate-400 mb-1" id="so-number-label">Quote no.</label>
-              <input id="so-number" type="text" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm" placeholder="SQ-1001">
+            <div class="so-doc-workspace">
+              <form id="so-form" class="so-doc-main">
+                <input type="hidden" id="so-id">
+                <input type="hidden" id="so-type" value="quote">
+                <div class="so-doc-scroll">
+                <div class="so-doc-legacy-title">
+                  <h2 id="so-title" class="font-semibold text-lg">New sales quote</h2>
+                  <p class="so-doc-note">Company customers only — not website Sign in accounts.</p>
+                </div>
+                <div class="so-doc-headblock">
+                  <div class="so-doc-kind">
+                    <h2 id="so-kind-label">Invoice</h2>
+                    <span id="so-status-badge" class="so-status-badge" hidden></span>
+                  </div>
+                  <div class="so-doc-top">
+                    <label class="so-field so-f-customer"><span>Customer<span class="so-job-bit">:Job</span></span>
+                      <select id="so-customer">
+                        <option value="">Select a customer</option>
+                      </select>
+                    </label>
+                    <label class="so-field so-f-number"><span id="so-number-label">Quote no.</span>
+                      <input id="so-number" type="text" placeholder="SQ-1001">
+                    </label>
+                    <label class="so-field so-f-date"><span>Date</span>
+                      <input id="so-issue" type="date">
+                    </label>
+                    <div class="so-doc-meta">
+                      <label class="so-field so-f-po"><span>P.O. number</span>
+                        <input id="so-po" type="text">
+                      </label>
+                      <label class="so-field so-f-terms"><span>Terms</span>
+                        <select id="so-terms">
+                          <option value="Due on receipt">Due on receipt</option>
+                          <option value="Net 15">Net 15</option>
+                          <option value="Net 30" selected>Net 30</option>
+                          <option value="Net 45">Net 45</option>
+                          <option value="Net 60">Net 60</option>
+                        </select>
+                      </label>
+                      <label class="so-field so-f-due"><span id="so-due-label">Valid until</span>
+                        <input id="so-due" type="date">
+                      </label>
+                      <label class="so-field so-f-status"><span>Status</span>
+                        <select id="so-status"></select>
+                      </label>
+                    </div>
+                    <label class="so-field so-field-name"><span>Customer name</span>
+                      <input id="so-customer-name" type="text" placeholder="Filled from Customer, or type a name">
+                    </label>
+                    <label class="so-field so-field-email"><span>Email</span>
+                      <input id="so-customer-email" type="email">
+                    </label>
+                  </div>
+                </div>
+                <div class="so-doc-addresses">
+                  <div>
+                    <h3>Bill to</h3>
+                    <pre id="so-bill-to">—</pre>
+                  </div>
+                  <div>
+                    <h3>Ship to</h3>
+                    <pre id="so-ship-to">—</pre>
+                  </div>
+                </div>
+                <div class="so-doc-lines">
+                  <div class="so-doc-lines-head">
+                    <h3>Item</h3>
+                    <button type="button" id="so-add-line">+ Add line</button>
+                  </div>
+                  <div class="so-doc-lines-wrap">
+                    <table>
+                      <thead>
+                        <tr>
+                          <th>Item</th>
+                          <th>Description</th>
+                          <th>Qty</th>
+                          <th>Price</th>
+                          <th>Amount</th>
+                          <th></th>
+                        </tr>
+                      </thead>
+                      <tbody id="so-lines"></tbody>
+                    </table>
+                  </div>
+                </div>
+                <div class="so-doc-foot">
+                  <div class="so-doc-memo">
+                    <label class="so-field"><span>Customer message / memo</span>
+                      <textarea id="so-notes" rows="3" placeholder="Job, ship date, special terms…"></textarea>
+                    </label>
+                    <p id="so-msg" class="hidden text-sm"></p>
+                  </div>
+                  <div class="so-doc-totals">
+                    <label class="so-field so-field-inline"><span>Discount $</span>
+                      <input id="so-discount" type="number" step="0.01" min="0" value="0">
+                    </label>
+                    <label class="so-field so-field-inline"><span>Tax %</span>
+                      <input id="so-tax-rate" type="number" step="0.01" min="0" value="0">
+                    </label>
+                    <div class="so-doc-total-row"><span>Subtotal</span><span id="so-subtotal">$0.00</span></div>
+                    <div class="so-doc-total-row"><span>Tax</span><span id="so-tax">$0.00</span></div>
+                    <div class="so-doc-total-row is-grand"><span>Total</span><span id="so-grand">$0.00</span></div>
+                    <div class="so-doc-total-row" id="so-payments-row"><span>Payments applied</span><span id="so-payments-applied">$0.00</span></div>
+                    <div class="so-doc-total-row" id="so-balance-row"><span>Balance due</span><span id="so-balance-due">$0.00</span></div>
+                  </div>
+                </div>
+                </div>
+                <div class="so-doc-actions">
+                  <button type="submit" id="so-save" class="so-doc-btn so-doc-btn-primary" data-so-after="stay">Save</button>
+                  <button type="submit" id="so-save-close" class="so-doc-btn so-doc-btn-primary" data-so-after="close">Save &amp; Close</button>
+                  <button type="submit" id="so-save-new" class="so-doc-btn" data-so-after="new">Save &amp; New</button>
+                  <button type="button" id="so-revert" class="so-doc-btn">Revert</button>
+                  <button type="button" id="so-to-order" class="so-doc-btn hidden">Create sales order</button>
+                  <button type="button" id="so-to-invoice" class="so-doc-btn hidden">Create invoice</button>
+                  <button type="button" id="so-delete-btn" class="so-doc-btn hidden">Delete</button>
+                </div>
+              </form>
+              <aside class="so-doc-side" id="so-doc-side">
+                <h3 id="so-side-name">Customer</h3>
+                <div class="so-side-tabs">
+                  <button type="button" class="is-on" data-so-side="customer">Customer</button>
+                  <button type="button" data-so-side="tx">Transaction</button>
+                </div>
+                <div id="so-side-customer">
+                  <dl class="so-side-dl">
+                    <div><dt>Phone</dt><dd id="so-side-phone">—</dd></div>
+                    <div><dt>Email</dt><dd id="so-side-email">—</dd></div>
+                    <div><dt>Open balance</dt><dd id="so-side-balance">—</dd></div>
+                  </dl>
+                </div>
+                <div id="so-side-tx" hidden>
+                  <p class="so-side-label">Recent transactions</p>
+                  <div id="so-side-tx-list" class="so-side-tx-list"></div>
+                </div>
+              </aside>
             </div>
-            <div>
-              <label class="block text-xs text-slate-400 mb-1">Customer name</label>
-              <input id="so-customer-name" type="text" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm" placeholder="Filled from Customer, or type a name">
-            </div>
-            <div>
-              <label class="block text-xs text-slate-400 mb-1">Email</label>
-              <input id="so-customer-email" type="email" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm">
-            </div>
-            <div>
-              <label class="block text-xs text-slate-400 mb-1">PO number</label>
-              <input id="so-po" type="text" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm">
-            </div>
-            <div>
-              <label class="block text-xs text-slate-400 mb-1">Issue date</label>
-              <input id="so-issue" type="date" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm">
-            </div>
-            <div>
-              <label class="block text-xs text-slate-400 mb-1" id="so-due-label">Valid until</label>
-              <input id="so-due" type="date" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm">
-            </div>
-            <div>
-              <label class="block text-xs text-slate-400 mb-1">Payment terms</label>
-              <select id="so-terms" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm">
-                <option value="Due on receipt">Due on receipt</option>
-                <option value="Net 15">Net 15</option>
-                <option value="Net 30" selected>Net 30</option>
-                <option value="Net 45">Net 45</option>
-                <option value="Net 60">Net 60</option>
-              </select>
-            </div>
-            <div>
-              <label class="block text-xs text-slate-400 mb-1">Status</label>
-              <select id="so-status" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm"></select>
-            </div>
-            <div class="sm:col-span-2 pt-2">
-              <div class="flex items-center justify-between gap-3 mb-2">
-                <h3 class="font-semibold text-sm">Line items</h3>
-                <button type="button" id="so-add-line" class="text-sm text-sky-400 hover:text-sky-300">+ Add line</button>
-              </div>
-              <div class="overflow-x-auto rounded-xl border border-slate-800">
-                <table class="w-full text-sm">
-                  <thead class="text-left text-slate-400 border-b border-slate-800">
-                    <tr>
-                      <th class="py-2 px-3 font-medium">SKU</th>
-                      <th class="py-2 px-3 font-medium">Description</th>
-                      <th class="py-2 px-3 font-medium w-24">Qty</th>
-                      <th class="py-2 px-3 font-medium w-28">Price</th>
-                      <th class="py-2 px-3 font-medium w-28">Amount</th>
-                      <th class="py-2 px-3 font-medium w-10"></th>
-                    </tr>
-                  </thead>
-                  <tbody id="so-lines"></tbody>
-                </table>
-              </div>
-            </div>
-            <div>
-              <label class="block text-xs text-slate-400 mb-1">Discount $</label>
-              <input id="so-discount" type="number" step="0.01" min="0" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm" value="0">
-            </div>
-            <div>
-              <label class="block text-xs text-slate-400 mb-1">Tax %</label>
-              <input id="so-tax-rate" type="number" step="0.01" min="0" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm" value="0">
-            </div>
-            <div class="sm:col-span-2 text-sm text-slate-300 space-y-1">
-              <div class="flex justify-between"><span>Subtotal</span><span id="so-subtotal">$0.00</span></div>
-              <div class="flex justify-between"><span>Tax</span><span id="so-tax">$0.00</span></div>
-              <div class="flex justify-between font-semibold"><span>Total</span><span id="so-grand">$0.00</span></div>
-            </div>
-            <div class="sm:col-span-2">
-              <label class="block text-xs text-slate-400 mb-1">Notes</label>
-              <textarea id="so-notes" rows="3" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm" placeholder="Job, ship date, special terms…"></textarea>
-            </div>
-            <p id="so-msg" class="sm:col-span-2 hidden text-sm"></p>
-            <div class="sm:col-span-2 flex flex-wrap items-center gap-2">
-              <button type="submit" id="so-save" class="px-5 py-2 rounded-full bg-sky-500 hover:bg-sky-400 text-white text-sm font-semibold">Save</button>
-              <button id="so-to-order" type="button" class="hidden px-5 py-2 rounded-full border border-slate-700 text-sm">Create sales order</button>
-              <button id="so-to-invoice" type="button" class="hidden px-5 py-2 rounded-full border border-slate-700 text-sm">Create invoice</button>
-              <button id="so-delete-btn" type="button" class="hidden px-5 py-2 rounded-full border border-slate-700 text-red-400 hover:border-red-500 text-sm">Delete</button>
-            </div>
-          </form>
+          </div>
         </div>
       </div>
 
@@ -8180,11 +8251,20 @@
       }).join('');
     }
 
+    function soCustomerList() {
+      const byId = {};
+      (companyCustomers || []).concat(salesCustomers || []).forEach(function (c) {
+        if (c && c.id != null) byId[String(c.id)] = c;
+      });
+      return Object.keys(byId).map(function (k) { return byId[k]; });
+    }
+
     function fillSoCustomers(selected) {
       const sel = document.getElementById('so-customer');
+      const list = soCustomerList();
       sel.innerHTML = '<option value="">Select a customer</option>' +
         '<option value="__new__">+ Add new</option>' +
-        (salesCustomers || []).map(function (c) {
+        list.map(function (c) {
           return '<option value="' + esc(c.id) + '"' + (String(c.id) === String(selected) ? ' selected' : '') + '>' +
             esc(c.displayName || c.companyName || [c.contactFirst, c.contactLast].filter(Boolean).join(' ') || c.email) +
             '</option>';
@@ -8208,21 +8288,88 @@
     }
 
     function applySoCustomer(c) {
-      if (!c) return;
+      if (!c) {
+        fillSoDocSide(null);
+        return;
+      }
       document.getElementById('so-customer-name').value = c.displayName || c.companyName || [c.contactFirst, c.contactLast].filter(Boolean).join(' ') || '';
       document.getElementById('so-customer-email').value = c.email || '';
       if (c.paymentTerms) document.getElementById('so-terms').value = c.paymentTerms;
+      fillSoDocSide(c);
+    }
+
+    function soCustomerById(id) {
+      if (!id) return null;
+      return soCustomerList().find(function (row) { return String(row.id) === String(id); }) || null;
+    }
+
+    function fillSoStatusBadge(status) {
+      const badge = document.getElementById('so-status-badge');
+      if (!badge) return;
+      const st = String(status || '').toLowerCase();
+      if (!st) { badge.hidden = true; badge.textContent = ''; return; }
+      badge.hidden = false;
+      badge.className = 'so-status-badge is-' + st;
+      badge.textContent = st === 'paid' ? 'Paid' : st;
+    }
+
+    function fillSoDocSide(c) {
+      const nameEl = document.getElementById('so-side-name');
+      const phoneEl = document.getElementById('so-side-phone');
+      const emailEl = document.getElementById('so-side-email');
+      const balEl = document.getElementById('so-side-balance');
+      const bill = document.getElementById('so-bill-to');
+      const ship = document.getElementById('so-ship-to');
+      const txList = document.getElementById('so-side-tx-list');
+      if (!c) {
+        if (nameEl) nameEl.textContent = 'Customer';
+        if (phoneEl) phoneEl.textContent = '—';
+        if (emailEl) emailEl.textContent = '—';
+        if (balEl) balEl.textContent = '—';
+        if (bill) bill.textContent = '—';
+        if (ship) ship.textContent = '—';
+        if (txList) txList.innerHTML = '';
+        return;
+      }
+      if (nameEl) nameEl.textContent = ccCustomerLabel(c);
+      if (phoneEl) phoneEl.textContent = c.phone || c.mobile || '—';
+      if (emailEl) emailEl.textContent = c.email || '—';
+      if (balEl) {
+        const fin = ccCustomerFinance(c.id);
+        balEl.textContent = fin.openBalance > 0 ? moneyText(fin.openBalance) : '$0.00';
+      }
+      if (bill) bill.textContent = ccFormatAddress(c, 'bill');
+      if (ship) ship.textContent = ccFormatAddress(c, 'ship');
+      if (txList) {
+        const docs = (typeof ccCustomerDocs === 'function' ? ccCustomerDocs(c.id) : []).slice(0, 6);
+        txList.innerHTML = docs.length ? docs.map(function (d) {
+          const kind = d.type === 'invoice' ? 'Invoice' : d.type === 'order' ? 'Sales Order' : 'Quote';
+          return '<div class="so-side-tx"><b>' + esc(d.number || kind) + '</b><span>' +
+            esc(kind) + ' · ' + esc(d.status || '') + ' · ' + esc(moneyText(d.total)) + '</span></div>';
+        }).join('') : '<p class="so-detail-empty">No transactions yet.</p>';
+      }
+    }
+
+    let soSavedSnapshot = '';
+    let soAfterSave = 'stay';
+
+    function markSoClean() {
+      try {
+        const snap = readSoForm();
+        snap.id = document.getElementById('so-id').value;
+        soSavedSnapshot = JSON.stringify(snap);
+      } catch (err) { soSavedSnapshot = ''; }
     }
 
     function soLineRow(line) {
       const item = line || {};
-      return '<tr class="border-b border-slate-800 so-line">' +
-        '<td class="py-2 px-2"><input data-line="sku" value="' + esc(item.sku || '') + '" class="w-full bg-slate-800 border border-slate-700 rounded px-2 py-1.5 text-sm"></td>' +
-        '<td class="py-2 px-2"><input data-line="description" value="' + esc(item.description || '') + '" class="w-full bg-slate-800 border border-slate-700 rounded px-2 py-1.5 text-sm"></td>' +
-        '<td class="py-2 px-2"><input data-line="qty" type="number" step="0.01" value="' + esc(item.qty == null ? 1 : item.qty) + '" class="w-full bg-slate-800 border border-slate-700 rounded px-2 py-1.5 text-sm"></td>' +
-        '<td class="py-2 px-2"><input data-line="unitPrice" type="number" step="0.01" value="' + esc(item.unitPrice == null ? 0 : item.unitPrice) + '" class="w-full bg-slate-800 border border-slate-700 rounded px-2 py-1.5 text-sm"></td>' +
-        '<td class="py-2 px-2 text-slate-300" data-line-amt>' + moneyText((item.qty || 0) * (item.unitPrice || 0)) + '</td>' +
-        '<td class="py-2 px-2"><button type="button" data-remove-line class="text-slate-500 hover:text-red-400 text-xs">✕</button></td>' +
+      return '<tr class="border-b so-line">' +
+        '<td><input data-line="sku" value="' + esc(item.sku || '') + '"></td>' +
+        '<td><input data-line="description" value="' + esc(item.description || '') + '"></td>' +
+        '<td><input data-line="qty" type="number" step="0.01" value="' + esc(item.qty == null ? 1 : item.qty) + '"></td>' +
+        '<td><input data-line="unitPrice" type="number" step="0.01" value="' + esc(item.unitPrice == null ? 0 : item.unitPrice) + '"></td>' +
+        '<td data-line-amt>' + moneyText((item.qty || 0) * (item.unitPrice || 0)) + '</td>' +
+        '<td><button type="button" data-remove-line class="text-slate-500 hover:text-red-400 text-xs">✕</button></td>' +
         '</tr>';
     }
 
@@ -8250,7 +8397,13 @@
       });
       document.getElementById('so-subtotal').textContent = moneyText(subtotal);
       document.getElementById('so-tax').textContent = moneyText(tax);
-      document.getElementById('so-grand').textContent = moneyText(Math.max(0, subtotal - discount) + tax);
+      const grand = Math.max(0, subtotal - discount) + tax;
+      document.getElementById('so-grand').textContent = moneyText(grand);
+      const paid = document.getElementById('so-status').value === 'paid';
+      const payEl = document.getElementById('so-payments-applied');
+      const dueEl = document.getElementById('so-balance-due');
+      if (payEl) payEl.textContent = moneyText(paid ? grand : 0);
+      if (dueEl) dueEl.textContent = moneyText(paid ? 0 : grand);
     }
 
     function setSoTypeUi(type) {
@@ -8258,12 +8411,23 @@
       document.getElementById('so-due-label').textContent = type === 'quote' ? 'Valid until' : 'Due date';
       document.getElementById('so-number-label').textContent = numberLabel(type);
       document.getElementById('so-number').placeholder = nextSoNumber(type);
-      document.getElementById('so-new-btn').textContent = 'New ' + salesTypeLabel(type).toLowerCase();
-      document.getElementById('so-list-label').textContent =
-        type === 'quote' ? 'sales quotes' : type === 'order' ? 'sales orders' : 'invoices';
-      document.getElementById('so-back').textContent = isInvoiceDocWindow()
-        ? 'Close'
-        : ('← All ' + (type === 'quote' ? 'quotes' : type === 'order' ? 'orders' : 'invoices'));
+      const newBtn = document.getElementById('so-new-btn');
+      if (newBtn) newBtn.textContent = 'New ' + salesTypeLabel(type).toLowerCase();
+      const listLabel = document.getElementById('so-list-label');
+      if (listLabel) {
+        listLabel.textContent =
+          type === 'quote' ? 'sales quotes' : type === 'order' ? 'sales orders' : 'invoices';
+      }
+      const back = document.getElementById('so-back');
+      if (back) {
+        back.textContent = isInvoiceDocWindow()
+          ? 'Close'
+          : ('← All ' + (type === 'quote' ? 'quotes' : type === 'order' ? 'orders' : 'invoices'));
+      }
+      const kind = document.getElementById('so-kind-label');
+      if (kind) kind.textContent = salesTypeLabel(type);
+      const caption = document.getElementById('so-caption-title');
+      if (caption) caption.textContent = type === 'invoice' ? 'Create Invoices' : salesTypeLabel(type);
     }
 
     function showSoList() {
@@ -8280,8 +8444,10 @@
           .join(' ').toLowerCase().indexOf(q) !== -1;
       });
       const count = (rows || []).length;
-      document.getElementById('so-total').textContent = String(count);
-      document.getElementById('so-list-label').textContent =
+      const totalEl = document.getElementById('so-total');
+      if (totalEl) totalEl.textContent = String(count);
+      const listLabel = document.getElementById('so-list-label');
+      if (listLabel) listLabel.textContent =
         type === 'quote' ? (count === 1 ? 'sales quote' : 'sales quotes')
           : type === 'order' ? (count === 1 ? 'sales order' : 'sales orders')
             : (count === 1 ? 'invoice' : 'invoices');
@@ -8382,7 +8548,17 @@
       document.getElementById('so-delete-btn').classList.toggle('hidden', !doc.id);
       document.getElementById('so-to-order').classList.toggle('hidden', !doc.id || type === 'order');
       document.getElementById('so-to-invoice').classList.toggle('hidden', !doc.id || type === 'invoice');
+      const ribbonDel = document.getElementById('so-ribbon-delete');
+      if (ribbonDel) ribbonDel.disabled = !doc.id;
       refreshSoTotals();
+      fillSoStatusBadge(doc.status || 'draft');
+      fillSoDocSide(soCustomerById(doc.customerId) || (doc.customerName ? {
+        displayName: doc.customerName,
+        email: doc.customerEmail,
+        phone: '',
+        id: doc.customerId
+      } : null));
+      markSoClean();
     }
 
     function readSoForm() {
@@ -8850,12 +9026,54 @@
         openCustomerDrawer(null, 'sales');
         return;
       }
-      const c = (salesCustomers || []).find(function (row) { return String(row.id) === String(id); });
-      applySoCustomer(c);
+      applySoCustomer(soCustomerById(id));
+    });
+    document.getElementById('so-status').addEventListener('change', function () {
+      fillSoStatusBadge(this.value);
+      refreshSoTotals();
+    });
+    document.querySelector('.so-side-tabs').addEventListener('click', function (e) {
+      const btn = e.target.closest('button[data-so-side]');
+      if (!btn) return;
+      const tab = btn.getAttribute('data-so-side');
+      this.querySelectorAll('button').forEach(function (b) { b.classList.toggle('is-on', b === btn); });
+      document.getElementById('so-side-customer').hidden = tab !== 'customer';
+      document.getElementById('so-side-tx').hidden = tab !== 'tx';
+    });
+    document.getElementById('so-ribbon-new').addEventListener('click', function () {
+      openNewSale('invoice', { inline: true });
+    });
+    document.getElementById('so-caption-close').addEventListener('click', function () {
+      closeInvoiceWindow();
+    });
+    document.getElementById('so-ribbon-find').addEventListener('click', function () {
+      const sel = document.getElementById('so-customer');
+      if (sel) { sel.focus(); if (typeof sel.showPicker === 'function') sel.showPicker(); }
+    });
+    document.getElementById('so-ribbon-delete').addEventListener('click', function () {
+      document.getElementById('so-delete-btn').click();
+    });
+    document.getElementById('so-ribbon-print').addEventListener('click', function () {
+      window.print();
+    });
+    document.getElementById('so-ribbon-email').addEventListener('click', function () {
+      const email = (document.getElementById('so-customer-email').value || '').trim();
+      const number = (document.getElementById('so-number').value || '').trim();
+      if (!email) return;
+      location.href = 'mailto:' + encodeURIComponent(email) +
+        (number ? '?subject=' + encodeURIComponent(number) : '');
+    });
+    document.getElementById('so-revert').addEventListener('click', function () {
+      if (!soSavedSnapshot) return;
+      try { fillSoForm(JSON.parse(soSavedSnapshot)); }
+      catch (err) {}
     });
     document.getElementById('so-form').addEventListener('submit', async function (e) {
       e.preventDefault();
       showSoMsg('');
+      const afterBtn = e.submitter && e.submitter.getAttribute('data-so-after');
+      const after = afterBtn || soAfterSave || 'stay';
+      soAfterSave = 'stay';
       const id = document.getElementById('so-id').value;
       try {
         const payload = readSoForm();
@@ -8874,6 +9092,8 @@
         document.getElementById('so-title').textContent = (data.doc.number || salesTypeLabel(data.doc.type)) + ' · ' + (data.doc.customerName || '');
         showSoMsg((data.doc.number || 'Document') + ' saved.', true);
         await loadSalesDocs(data.doc.type);
+        if (after === 'close' && isInvoiceDocWindow()) closeInvoiceWindow();
+        if (after === 'new') openNewSale(data.doc.type || 'invoice', { inline: true });
       } catch (err) {
         showSoMsg(err.message || 'Could not save document.');
       }
