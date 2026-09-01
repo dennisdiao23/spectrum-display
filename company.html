@@ -545,10 +545,6 @@
             <div id="inv-split-right" class="inv-split-right">
               <div id="inv-tab-bar" class="inv-tab-bar">
                 <div id="inv-tab-strip" class="inv-tab-strip" role="tablist" aria-label="Open inventory items"></div>
-                <div class="inv-tab-actions cc-detail-toolbar-actions">
-                  <button type="button" id="inv-detail-adjust" class="cc-detail-btn">Adjust stock</button>
-                  <button type="button" id="inv-detail-edit" class="cc-detail-btn">Edit</button>
-                </div>
               </div>
               <div id="inv-overview-panel" class="inv-right-panel">
                 <div class="inv-overview-summary">
@@ -572,6 +568,12 @@
                 <p id="inv-activity-empty" class="cc-detail-empty hidden">No recent inventory activity yet.</p>
               </div>
               <div id="inv-item-panel" class="inv-right-panel hidden" aria-hidden="true">
+                <div class="inv-detail-toolbar cc-detail-toolbar">
+                  <div class="cc-detail-toolbar-actions">
+                    <button type="button" id="inv-detail-adjust" class="cc-detail-btn">Adjust stock</button>
+                    <button type="button" id="inv-detail-edit" class="cc-detail-btn">Edit</button>
+                  </div>
+                </div>
                 <div class="cc-detail-hero">
                   <div class="cc-detail-hero-main">
                     <span id="inv-detail-photo" class="cc-detail-avatar cc-detail-photo" aria-hidden="true"></span>
@@ -3976,11 +3978,6 @@
       });
       strip.innerHTML = html;
       fitInvTabWidths();
-      const onItem = invActiveTab !== 'overview';
-      const adjust = document.getElementById('inv-detail-adjust');
-      const edit = document.getElementById('inv-detail-edit');
-      if (adjust) adjust.classList.toggle('hidden', !onItem || !canEdit('inventory'));
-      if (edit) edit.classList.toggle('hidden', !onItem || !canEdit('inventory'));
     }
 
     function showInvOverview(opts) {

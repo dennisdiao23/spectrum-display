@@ -2295,6 +2295,13 @@ body.inv-split-dragging .inv-split-resizer::after {
   background: #fff;
   padding-top: 0;
 }
+#inv-item-panel .inv-detail-toolbar {
+  flex-shrink: 0;
+  justify-content: flex-end;
+  padding: 0.5rem 1rem 0.35rem 0.85rem;
+  background: #fff;
+  border-bottom: none;
+}
 #inv-overview-panel {
   background: #fff;
 }
@@ -2327,12 +2334,6 @@ body.inv-split-dragging .inv-split-resizer::after {
   overflow: hidden;
   padding-top: 0.5rem;
   min-height: 3.3125rem;
-}
-.inv-tab-actions {
-  flex-shrink: 0;
-  display: flex;
-  align-items: center;
-  padding-bottom: 0.625rem;
 }
 .inv-browser-tab {
   -webkit-appearance: none;
@@ -2454,6 +2455,9 @@ body.inv-split-dragging {
     min-height: 0;
   }
   .inv-right-panel {
+    padding-left: 0;
+  }
+  .inv-tab-bar {
     padding-left: 0;
   }
   body.inv-layout-lock .inv-split {
