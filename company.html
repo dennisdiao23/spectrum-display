@@ -3435,7 +3435,14 @@
     function applyCcSplitFromCache() {
       const split = document.getElementById('cc-split');
       if (!split) return;
-      const px = ccSplitLeftFromPrefs();
+      let px = ccSplitLeftFromPrefs();
+      if (px < 160) {
+        try {
+          const cached = JSON.parse(localStorage.getItem(colPrefsCacheKey()) || '{}');
+          const saved = cached && cached.customers && cached.customers.splitLeftPx;
+          px = saved ? parseInt(saved, 10) : 0;
+        } catch (err) {}
+      }
       const MIN_LEFT = 400;
       const target = px >= MIN_LEFT ? px : 0;
       if (!target) return;
@@ -4430,9 +4437,20 @@
         fitCcTabWidths();
         return clamped;
       }
+      function currentLeftPx() {
+        return parseInt(split.style.getPropertyValue('--dash-left-w'), 10) || ccSplitLeftFromPrefs() || MIN_LEFT;
+      }
+      function bootCssLeftPx() {
+        try {
+          return parseInt(getComputedStyle(document.documentElement).getPropertyValue('--cc-split-left-boot'), 10) || 0;
+        } catch (err) {
+          return 0;
+        }
+      }
       function bootSplit() {
         const saved = ccSplitLeftFromPrefs();
-        const target = saved >= MIN_LEFT ? saved : MIN_LEFT;
+        const bootCss = bootCssLeftPx();
+        const target = saved >= MIN_LEFT ? saved : (bootCss >= MIN_LEFT ? bootCss : MIN_LEFT);
         const existing = parseInt(split.style.getPropertyValue('--dash-left-w'), 10);
         if (!existing || existing < MIN_LEFT) split.style.setProperty('--dash-left-w', target + 'px');
         whenInvSplitReady(split, function () {
@@ -4447,26 +4465,37 @@
         let dragging = false;
         function onMove(e) {
           if (!dragging) return;
+          const point = e.touches ? e.touches[0] : e;
           const rect = split.getBoundingClientRect();
-          const x = (e.touches ? e.touches[0].clientX : e.clientX) - rect.left;
-          applyLeft(x);
+          applyLeft(point.clientX - rect.left);
         }
         function onUp() {
+          if (!dragging) return;
           dragging = false;
           document.body.classList.remove('inv-split-dragging');
           document.removeEventListener('mousemove', onMove);
           document.removeEventListener('mouseup', onUp);
+          document.removeEventListener('pointermove', onMove);
+          document.removeEventListener('pointerup', onUp);
+          saveCcSplitLeftPx(currentLeftPx());
+          pushColPrefs();
         }
-        resizer.addEventListener('mousedown', function (e) {
+        function onDown(e) {
           e.preventDefault();
           dragging = true;
           document.body.classList.add('inv-split-dragging');
           document.addEventListener('mousemove', onMove);
           document.addEventListener('mouseup', onUp);
-        });
+          document.addEventListener('pointermove', onMove);
+          document.addEventListener('pointerup', onUp);
+        }
+        resizer.addEventListener('mousedown', onDown);
+        resizer.addEventListener('pointerdown', onDown);
         window.addEventListener('resize', function () {
           const saved = ccSplitLeftFromPrefs();
-          applyLeft(saved >= MIN_LEFT ? saved : MIN_LEFT, { save: false });
+          const bootCss = bootCssLeftPx();
+          const target = saved >= MIN_LEFT ? saved : (bootCss >= MIN_LEFT ? bootCss : MIN_LEFT);
+          applyLeft(target, { save: false });
           fitCcTabWidths();
         });
       }
