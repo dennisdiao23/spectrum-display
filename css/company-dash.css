@@ -2240,7 +2240,18 @@ body.inv-split-dragging .inv-split-resizer::after {
   padding: 0.75rem 1rem 0.55rem;
 }
 #inv-item-panel .cc-detail-hero-main {
+  align-items: center;
   margin-bottom: 0.65rem;
+}
+#inv-item-panel .cc-detail-hero-copy {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+#inv-item-panel .inv-detail-hero-actions {
+  margin-left: auto;
+  flex-shrink: 0;
+  align-self: flex-start;
+  padding-top: 0.15rem;
 }
 #inv-item-panel .cc-detail-hero-grid {
   gap: 0.45rem;
@@ -2294,13 +2305,6 @@ body.inv-split-dragging .inv-split-resizer::after {
 #inv-item-panel {
   background: #fff;
   padding-top: 0;
-}
-#inv-item-panel .inv-detail-toolbar {
-  flex-shrink: 0;
-  justify-content: flex-end;
-  padding: 0.5rem 1rem 0.35rem 0.85rem;
-  background: #fff;
-  border-bottom: none;
 }
 #inv-overview-panel {
   background: #fff;
