@@ -3103,17 +3103,6 @@
     }
 
     const INVENTORY_MOBILE_COLS = ['sku', 'brand', 'price', 'qty'];
-    const INVENTORY_MAX_COLS = 5;
-
-    function capInventoryColState(state) {
-      if (state.order.length > INVENTORY_MAX_COLS) {
-        state.order.slice(INVENTORY_MAX_COLS).forEach(function (id) {
-          if (state.hidden.indexOf(id) === -1) state.hidden.push(id);
-        });
-        state.order = state.order.slice(0, INVENTORY_MAX_COLS);
-      }
-      return state;
-    }
 
     function invQtyDisplay(item) {
       if (!item || item.qty == null) return '—';
@@ -3320,8 +3309,7 @@
         widths: {}
       };
       if (!saved) {
-        const base = dashColKey(table) === 'inventory' ? capInventoryColState(fallback) : fallback;
-        return applyMobileColState(table, base);
+        return applyMobileColState(table, fallback);
       }
       const savedHidden = (saved.hidden || []).filter(function (id) { return known.indexOf(id) !== -1; });
       const order = (saved.order || []).filter(function (id) {
@@ -3344,8 +3332,8 @@
         sortDir: saved.sortDir || '',
         widths: saved.widths && typeof saved.widths === 'object' ? saved.widths : {}
       };
-      const state = dashColKey(table) === 'inventory' ? capInventoryColState(merged) : merged;
-      return applyMobileColState(table, state);
+      const state = applyMobileColState(table, merged);
+      return state;
     }
 
     function loadColState(table) {
@@ -3742,7 +3730,6 @@
           state.order = state.order.filter(function (id) { return id !== col; });
           if (state.hidden.indexOf(col) === -1) state.hidden.push(col);
         }
-        if (dashColKey(table) === 'inventory') capInventoryColState(state);
         saveColState(table, state);
         closeColMenu();
         refreshDashTable(table);
@@ -3762,7 +3749,6 @@
         if (state.order.indexOf(addId) === -1) {
           state.order.splice(i < 0 ? state.order.length : i, 0, addId);
         }
-        if (dashColKey(table) === 'inventory') capInventoryColState(state);
         saveColState(table, state);
         closeColMenu();
         refreshDashTable(table);
