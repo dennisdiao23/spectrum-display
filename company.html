@@ -15,8 +15,10 @@
         var uid = localStorage.getItem('dash-active-admin-id');
         if (!uid) return;
         var prefs = JSON.parse(localStorage.getItem('dash-col-prefs-' + uid) || '{}');
-        var px = prefs.inventory && prefs.inventory.splitLeftPx;
-        if (px && px >= 160) document.documentElement.style.setProperty('--inv-split-left-boot', px + 'px');
+        var invPx = prefs.inventory && prefs.inventory.splitLeftPx;
+        if (invPx && invPx >= 160) document.documentElement.style.setProperty('--inv-split-left-boot', invPx + 'px');
+        var ccPx = prefs.customers && prefs.customers.splitLeftPx;
+        if (ccPx && ccPx >= 160) document.documentElement.style.setProperty('--cc-split-left-boot', ccPx + 'px');
       } catch (e) {}
     })();
   </script>
@@ -1076,7 +1078,6 @@
 
       <div id="customers-section" class="hidden">
         <div id="cc-workspace" class="cc-workspace">
-        <aside id="cc-list-pane" class="cc-list-pane">
         <div id="customers-list-wrap" class="cc-list-inner">
           <div class="page-kpis cc-list-kpis" id="cc-overview">
             <button type="button" class="dash-kpi is-on" data-filter="all" aria-pressed="true">
@@ -1109,6 +1110,8 @@
             <button id="cc-new-btn" type="button" class="cc-list-add-btn px-4 py-2 rounded-full bg-sky-500 hover:bg-sky-400 text-white text-sm font-semibold">Add customer</button>
           </div>
           <p id="cc-error" class="hidden text-sm text-red-400 mb-3"></p>
+          <div id="cc-split" class="dash-split">
+            <div id="cc-split-left" class="dash-split-left">
           <div id="cc-side-list" class="cc-side-list hidden" role="listbox" aria-label="Customers"></div>
           <div class="cc-table-card rounded-2xl border border-slate-800">
             <div id="cc-table-wrap" class="cc-table-wrap overflow-x-auto">
@@ -1135,23 +1138,18 @@
             </table>
             </div>
           </div>
-        </div>
-        </aside>
-        <div id="cc-detail-pane" class="cc-detail-pane" hidden aria-hidden="true">
-          <div class="cc-detail-toolbar">
-            <button type="button" id="cc-detail-back" class="cc-detail-back">← Customers</button>
-            <div class="cc-detail-toolbar-actions">
-              <div class="cc-detail-new-wrap">
-                <button type="button" id="cc-detail-new" class="cc-detail-btn cc-detail-btn-primary">New transaction ▾</button>
-                <div id="cc-detail-new-menu" class="cc-detail-menu hidden">
-                  <button type="button" data-so-type="quote">Sales quote</button>
-                  <button type="button" data-so-type="order">Sales order</button>
-                  <button type="button" data-so-type="invoice">Invoice</button>
+            </div>
+            <div id="cc-split-resizer" class="dash-split-resizer" role="separator" aria-orientation="vertical" aria-label="Resize customer panels" tabindex="0"></div>
+            <div id="cc-split-right" class="dash-split-right">
+              <div id="cc-tab-bar" class="inv-tab-bar">
+                <div id="cc-tab-strip" class="inv-tab-strip" role="tablist" aria-label="Open customers"></div>
+              </div>
+              <div id="cc-overview-panel" class="inv-right-panel">
+                <div class="inv-overview-summary">
+                  <p class="inv-overview-lead">Customer records for quotes and invoices — not website Sign in accounts. Open a customer to see transactions, contacts, and notes.</p>
                 </div>
               </div>
-              <button type="button" id="cc-detail-edit" class="cc-detail-btn">Edit</button>
-            </div>
-          </div>
+        <div id="cc-detail-pane" class="cc-detail-pane inv-right-panel hidden" hidden aria-hidden="true">
           <div class="cc-detail-hero">
             <div class="cc-detail-hero-main">
               <span id="cc-detail-avatar" class="cc-detail-avatar" aria-hidden="true"></span>
@@ -1162,6 +1160,17 @@
                   <a id="cc-detail-mail" class="cc-detail-quick-btn hidden" href="#" title="Email"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="m3 7 9 6 9-6"/></svg></a>
                   <a id="cc-detail-tel" class="cc-detail-quick-btn hidden" href="#" title="Phone"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M5 4h4l2 5-2.5 1.5a11 11 0 0 0 5 5L15 13l5 2v4a2 2 0 0 1-2 2A15 15 0 0 1 3 6a2 2 0 0 1 2-2z"/></svg></a>
                 </div>
+              </div>
+              <div class="cc-detail-toolbar-actions inv-detail-hero-actions">
+                <div class="cc-detail-new-wrap">
+                  <button type="button" id="cc-detail-new" class="cc-detail-btn cc-detail-btn-primary">New transaction ▾</button>
+                  <div id="cc-detail-new-menu" class="cc-detail-menu hidden">
+                    <button type="button" data-so-type="quote">Sales quote</button>
+                    <button type="button" data-so-type="order">Sales order</button>
+                    <button type="button" data-so-type="invoice">Invoice</button>
+                  </div>
+                </div>
+                <button type="button" id="cc-detail-edit" class="cc-detail-btn">Edit</button>
               </div>
             </div>
             <div class="cc-detail-hero-grid">
@@ -1259,6 +1268,9 @@
           <div id="cc-detail-panel-notes" class="cc-detail-panel hidden" role="tabpanel" hidden>
             <div class="cc-detail-notes-box" id="cc-detail-notes-text">—</div>
             <p class="cc-detail-meta" id="cc-detail-updated"></p>
+          </div>
+        </div>
+            </div>
           </div>
         </div>
         </div>
@@ -2353,6 +2365,7 @@
       currentAdminUser = admin;
       try { localStorage.setItem('dash-active-admin-id', String(admin.id)); } catch (err) {}
       applyInvSplitFromCache();
+      applyCcSplitFromCache();
       loginPanel.classList.add('hidden');
       dashPanel.classList.remove('hidden');
       const roleBit = admin.roleName && admin.role !== 'owner' ? ' · ' + admin.roleName : '';
@@ -2967,7 +2980,6 @@
       if (typeof closeProfileDrawer === 'function') closeProfileDrawer(true);
       if (typeof closeStaffDrawer === 'function') closeStaffDrawer(true);
       if (typeof closeRoleDrawer === 'function') closeRoleDrawer(true);
-      if (name !== 'customers' && typeof closeCustomerDetail === 'function') closeCustomerDetail(false);
       if (name !== 'vendors' && typeof closeVendorDetail === 'function') closeVendorDetail(false);
       const onWebsite = name === 'products' || name === 'accounts';
       const onSettings = name === 'staff' || name === 'roles' || name === 'company';
@@ -2985,6 +2997,7 @@
       document.getElementById('products-section').classList.toggle('hidden', name !== 'products');
       document.getElementById('inventory-section').classList.toggle('hidden', name !== 'inventory');
       document.body.classList.toggle('inv-layout-lock', name === 'inventory');
+      document.body.classList.toggle('dash-split-lock', name === 'customers');
       document.getElementById('vendors-section').classList.toggle('hidden', name !== 'vendors');
       document.getElementById('po-section').classList.toggle('hidden', name !== 'purchase-orders');
       document.getElementById('rs-section').classList.toggle('hidden', name !== 'receipt-shipments');
@@ -3374,8 +3387,11 @@
       try { localStorage.setItem(colPrefsCacheKey(), JSON.stringify(dashColMine)); } catch (err) {}
       try {
         const inv = dashColMine.inventory;
-        const px = inv && inv.splitLeftPx ? parseInt(inv.splitLeftPx, 10) : 0;
-        if (px >= 160) document.documentElement.style.setProperty('--inv-split-left-boot', px + 'px');
+        const invPx = inv && inv.splitLeftPx ? parseInt(inv.splitLeftPx, 10) : 0;
+        if (invPx >= 160) document.documentElement.style.setProperty('--inv-split-left-boot', invPx + 'px');
+        const cc = dashColMine.customers;
+        const ccPx = cc && cc.splitLeftPx ? parseInt(cc.splitLeftPx, 10) : 0;
+        if (ccPx >= 160) document.documentElement.style.setProperty('--cc-split-left-boot', ccPx + 'px');
       } catch (err) {}
     }
 
@@ -3416,6 +3432,17 @@
       } catch (err) {}
     }
 
+    function applyCcSplitFromCache() {
+      const split = document.getElementById('cc-split');
+      if (!split) return;
+      const px = ccSplitLeftFromPrefs();
+      const MIN_LEFT = 400;
+      const target = px >= MIN_LEFT ? px : 0;
+      if (!target) return;
+      split.style.setProperty('--dash-left-w', target + 'px');
+      try { document.documentElement.style.setProperty('--cc-split-left-boot', target + 'px'); } catch (err) {}
+    }
+
     function applyInvSplitFromCache() {
       const split = document.getElementById('inv-split');
       if (!split) return;
@@ -3433,6 +3460,7 @@
         if (cached && typeof cached === 'object') dashColMine = cached;
       } catch (err) {}
       applyInvSplitFromCache();
+      applyCcSplitFromCache();
       document.querySelectorAll('table.dash-cols').forEach(function (t) { applyColOrder(t); });
       migrateLegacyInvSplitPref();
     }
@@ -3572,6 +3600,20 @@
       state.splitLeftPx = Math.round(px);
       saveColState(table, state);
       try { localStorage.removeItem('inv-split-left-px'); } catch (err) {}
+    }
+
+    function ccSplitLeftFromPrefs() {
+      const saved = tableStateFromPrefs(dashColMine, 'customers') || tableStateFromPrefs(dashColOwner, 'customers');
+      const px = saved && saved.splitLeftPx ? parseInt(saved.splitLeftPx, 10) : 0;
+      return px > 0 ? px : 0;
+    }
+
+    function saveCcSplitLeftPx(px) {
+      const table = document.querySelector('table.dash-cols[data-cols="customers"]');
+      if (!table) return;
+      const state = loadColState(table);
+      state.splitLeftPx = Math.round(px);
+      saveColState(table, state);
     }
 
     function migrateLegacyInvSplitPref() {
@@ -4354,6 +4396,78 @@
           const saved = invSplitLeftFromPrefs();
           applyLeft(saved >= MIN_LEFT ? saved : MIN_LEFT, { save: false });
           fitInvTabWidths();
+        });
+      }
+      bootSplit();
+    }
+
+    function initCcSplitResize() {
+      const split = document.getElementById('cc-split');
+      const resizer = document.getElementById('cc-split-resizer');
+      if (!split || !resizer) return;
+      const MIN_LEFT = 400;
+      const MIN_RIGHT = 600;
+      const RESIZER_W = 14;
+      function effectiveMins(total) {
+        if (total >= MIN_LEFT + MIN_RIGHT + RESIZER_W) {
+          return { minLeft: MIN_LEFT, minRight: MIN_RIGHT };
+        }
+        const minLeft = Math.max(160, Math.floor(total * 0.28));
+        const minRight = Math.max(200, total - minLeft - RESIZER_W);
+        return { minLeft: minLeft, minRight: minRight };
+      }
+      function clampLeft(w) {
+        const total = split.getBoundingClientRect().width;
+        const mins = effectiveMins(total);
+        const maxLeft = Math.max(mins.minLeft, total - mins.minRight - RESIZER_W);
+        return Math.max(mins.minLeft, Math.min(w, maxLeft));
+      }
+      function applyLeft(w, opts) {
+        opts = opts || {};
+        const clamped = clampLeft(w);
+        split.style.setProperty('--dash-left-w', clamped + 'px');
+        if (opts.save !== false) saveCcSplitLeftPx(clamped);
+        fitCcTabWidths();
+        return clamped;
+      }
+      function bootSplit() {
+        const saved = ccSplitLeftFromPrefs();
+        const target = saved >= MIN_LEFT ? saved : MIN_LEFT;
+        const existing = parseInt(split.style.getPropertyValue('--dash-left-w'), 10);
+        if (!existing || existing < MIN_LEFT) split.style.setProperty('--dash-left-w', target + 'px');
+        whenInvSplitReady(split, function () {
+          const start = parseInt(split.style.getPropertyValue('--dash-left-w'), 10) || target;
+          const clamped = clampLeft(start);
+          if (Math.abs(clamped - start) > 2) split.style.setProperty('--dash-left-w', clamped + 'px');
+          fitCcTabWidths();
+        });
+      }
+      if (resizer.dataset.ready !== '1') {
+        resizer.dataset.ready = '1';
+        let dragging = false;
+        function onMove(e) {
+          if (!dragging) return;
+          const rect = split.getBoundingClientRect();
+          const x = (e.touches ? e.touches[0].clientX : e.clientX) - rect.left;
+          applyLeft(x);
+        }
+        function onUp() {
+          dragging = false;
+          document.body.classList.remove('inv-split-dragging');
+          document.removeEventListener('mousemove', onMove);
+          document.removeEventListener('mouseup', onUp);
+        }
+        resizer.addEventListener('mousedown', function (e) {
+          e.preventDefault();
+          dragging = true;
+          document.body.classList.add('inv-split-dragging');
+          document.addEventListener('mousemove', onMove);
+          document.addEventListener('mouseup', onUp);
+        });
+        window.addEventListener('resize', function () {
+          const saved = ccSplitLeftFromPrefs();
+          applyLeft(saved >= MIN_LEFT ? saved : MIN_LEFT, { save: false });
+          fitCcTabWidths();
         });
       }
       bootSplit();
@@ -5441,9 +5555,9 @@
           notes: '<td class="py-3 px-4">' + esc(c.notes || '—') + '</td>'
         };
         return '<tr class="border-b border-slate-800 hover:bg-slate-900/80 cursor-pointer' +
-          (String(c.id) === String(ccDetailId) ? ' bg-sky-500/10' : '') +
+          (String(c.id) === String(ccDetailId) ? ' is-selected' : '') +
           '" data-id="' + esc(c.id) + '">' +
-          dashOrderedCells(table, cells, '<td class="py-3 px-4 text-right"><span class="text-sky-400 text-xs font-medium">Open →</span></td>') +
+          dashOrderedCells(table, cells, '<td class="py-3 px-4"></td>') +
           '</tr>';
       }).join('');
       applyColOrder(table);
@@ -5453,6 +5567,10 @@
     let ccDetailId = '';
     let ccDetailCustomer = null;
     let ccDetailTab = 'transactions';
+    const CC_TAB_MAX = 7;
+    let ccOpenTabs = [];
+    let ccActiveTab = 'overview';
+    let ccTabDetailTab = {};
 
     function ccCustomerLabel(c) {
       if (!c) return 'Customer';
@@ -5651,6 +5769,7 @@
 
     function setCcDetailTab(name) {
       ccDetailTab = name || 'transactions';
+      if (ccDetailId) ccTabDetailTab[ccDetailId] = ccDetailTab;
       document.querySelectorAll('#cc-detail-pane .cc-detail-tab').forEach(function (btn) {
         const on = btn.getAttribute('data-cc-tab') === ccDetailTab;
         btn.classList.toggle('is-on', on);
@@ -5765,23 +5884,168 @@
       renderCcSideList();
     }
 
-    function closeCustomerDetail(push) {
+    function ccTabCustomer(id) {
+      return (companyCustomers || []).find(function (c) { return String(c.id) === String(id); });
+    }
+
+    function ccTabLabel(id) {
+      const c = ccTabCustomer(id) || (String(ccDetailId) === String(id) ? ccDetailCustomer : null);
+      return ccCustomerLabel(c);
+    }
+
+    function showCcRightPanel(which) {
+      const overview = document.getElementById('cc-overview-panel');
+      const pane = document.getElementById('cc-detail-pane');
+      const onOverview = which === 'overview';
+      if (overview) overview.classList.toggle('hidden', !onOverview);
+      if (pane) {
+        pane.classList.toggle('hidden', onOverview);
+        pane.hidden = onOverview;
+        pane.setAttribute('aria-hidden', onOverview ? 'true' : 'false');
+      }
+    }
+
+    function fitCcTabWidths() {
+      const strip = document.getElementById('cc-tab-strip');
+      if (!strip) return;
+      const allTabs = Array.prototype.slice.call(strip.querySelectorAll('.inv-browser-tab'));
+      if (!allTabs.length) return;
+      const gap = 2;
+      const MIN_ITEM_TAB = 72;
+      const overviewTab = strip.querySelector('.inv-browser-tab[data-cc-tab-id="overview"]');
+      const itemTabs = allTabs.filter(function (tab) {
+        return tab.getAttribute('data-cc-tab-id') !== 'overview';
+      });
+      allTabs.forEach(function (tab) {
+        tab.style.flex = '';
+        tab.style.width = '';
+        tab.style.minWidth = '';
+        tab.style.maxWidth = '';
+      });
+      if (overviewTab) overviewTab.style.flex = '0 0 auto';
+      const stripWidth = strip.clientWidth;
+      if (stripWidth <= 0 || !itemTabs.length) return;
+      const overviewWidth = overviewTab ? Math.round(overviewTab.getBoundingClientRect().width) : 0;
+      const availableForItems = stripWidth - overviewWidth - gap * (allTabs.length - 1);
+      let itemWidths = itemTabs.map(function (tab) {
+        return Math.round(tab.getBoundingClientRect().width);
+      });
+      let itemTotal = itemWidths.reduce(function (a, b) { return a + b; }, 0);
+      if (itemTotal <= availableForItems) return;
+      itemWidths = itemWidths.map(function (w) { return Math.max(MIN_ITEM_TAB, w); });
+      itemTotal = itemWidths.reduce(function (a, b) { return a + b; }, 0);
+      const sum = itemWidths.reduce(function (a, b) { return a + b; }, 0);
+      itemTabs.forEach(function (tab, i) {
+        const w = itemTotal <= availableForItems
+          ? itemWidths[i]
+          : Math.max(MIN_ITEM_TAB, Math.floor(itemWidths[i] * availableForItems / sum));
+        tab.style.flex = '0 0 ' + w + 'px';
+        tab.style.width = w + 'px';
+        tab.style.minWidth = MIN_ITEM_TAB + 'px';
+        tab.style.maxWidth = w + 'px';
+      });
+    }
+
+    function renderCcTabBar() {
+      const strip = document.getElementById('cc-tab-strip');
+      if (!strip) return;
+      let html = '<button type="button" class="inv-browser-tab' +
+        (ccActiveTab === 'overview' ? ' is-active' : '') +
+        '" data-cc-tab-id="overview" role="tab" aria-selected="' + (ccActiveTab === 'overview' ? 'true' : 'false') + '">' +
+        '<span class="inv-browser-tab-label">Overview</span></button>';
+      ccOpenTabs.forEach(function (id) {
+        const active = String(ccActiveTab) === String(id);
+        html += '<button type="button" class="inv-browser-tab' + (active ? ' is-active' : '') +
+          '" data-cc-tab-id="' + esc(id) + '" role="tab" aria-selected="' + (active ? 'true' : 'false') + '">' +
+          '<span class="inv-browser-tab-label">' + esc(ccTabLabel(id)) + '</span>' +
+          '<span class="inv-browser-tab-close" data-cc-tab-close="' + esc(id) + '" aria-label="Close tab" role="button" tabindex="-1">×</span></button>';
+      });
+      strip.innerHTML = html;
+      fitCcTabWidths();
+    }
+
+    function showCcOverview(opts) {
+      opts = opts || {};
+      ccActiveTab = 'overview';
       ccDetailId = '';
       ccDetailCustomer = null;
       hideCcContactForm();
       showCcContactsMsg('');
-      const ws = document.getElementById('cc-workspace');
-      const pane = document.getElementById('cc-detail-pane');
-      if (ws) ws.classList.remove('cc-detail-open');
+      document.getElementById('cc-detail-new-menu').classList.add('hidden');
+      showCcRightPanel('overview');
       syncDetailOpenBodyClass();
       syncPageHelper('customers');
-      if (pane) {
-        pane.hidden = true;
-        pane.setAttribute('aria-hidden', 'true');
-      }
-      document.getElementById('cc-detail-new-menu').classList.add('hidden');
+      renderCcTabBar();
       renderCcTable(companyCustomers);
-      if (push !== false) history.pushState({ tab: 'customers' }, '', '/company/customers');
+      if (opts.push !== false) history.pushState({ tab: 'customers' }, '', '/company/customers');
+    }
+
+    function closeCustomerDetail(push) {
+      showCcOverview({ push: push !== false });
+    }
+
+    async function activateCcTab(id, opts) {
+      opts = opts || {};
+      await openCustomerDetail(id, opts);
+    }
+
+    async function openCcTab(id, opts) {
+      opts = opts || {};
+      const sid = String(id);
+      if (ccOpenTabs.indexOf(sid) === -1) {
+        if (ccOpenTabs.length >= CC_TAB_MAX) {
+          const dropped = ccOpenTabs.shift();
+          delete ccTabDetailTab[dropped];
+        }
+        ccOpenTabs.push(sid);
+      }
+      await activateCcTab(sid, opts);
+    }
+
+    function closeCcTab(id, push) {
+      const sid = String(id);
+      const idx = ccOpenTabs.indexOf(sid);
+      if (idx === -1) return;
+      ccOpenTabs.splice(idx, 1);
+      delete ccTabDetailTab[sid];
+      if (String(ccActiveTab) === sid) {
+        if (ccOpenTabs.length) {
+          const nextId = ccOpenTabs[Math.min(idx, ccOpenTabs.length - 1)];
+          activateCcTab(nextId, { push: push !== false });
+        } else {
+          showCcOverview({ push: push !== false });
+        }
+      } else {
+        renderCcTabBar();
+      }
+    }
+
+    function restoreCcView(opts) {
+      opts = opts || {};
+      const push = opts.push !== false;
+      ccOpenTabs = ccOpenTabs.filter(function (id) {
+        return companyCustomers.some(function (c) { return String(c.id) === String(id); });
+      });
+      Object.keys(ccTabDetailTab).forEach(function (id) {
+        if (ccOpenTabs.indexOf(id) === -1) delete ccTabDetailTab[id];
+      });
+      const pathId = customerIdFromPath();
+      if (pathId && canUse('customers')) {
+        const found = companyCustomers.find(function (c) { return String(c.id) === String(pathId); });
+        if (found) {
+          openCcTab(pathId, { push: push });
+          return;
+        }
+      }
+      if (String(ccActiveTab) !== 'overview' && ccOpenTabs.indexOf(String(ccActiveTab)) !== -1) {
+        activateCcTab(ccActiveTab, { push: push });
+        return;
+      }
+      if (ccDetailId && ccOpenTabs.indexOf(String(ccDetailId)) !== -1) {
+        activateCcTab(ccDetailId, { push: push });
+        return;
+      }
+      showCcOverview({ push: push });
     }
 
     async function openCustomerDetail(id, opts) {
@@ -5796,23 +6060,23 @@
         const data = await api('/api/admin/company-customers/' + id);
         const customer = data.customer;
         if (!customer) throw new Error('Customer not found.');
-        ccDetailId = String(id);
+        const sid = String(id);
+        ccDetailId = sid;
+        ccActiveTab = sid;
         ccDetailCustomer = customer;
         if (!ccDetailCustomer.contacts) ccDetailCustomer.contacts = [];
+        ccDetailTab = ccTabDetailTab[sid] || 'transactions';
         hideCcContactForm();
-        const ws = document.getElementById('cc-workspace');
-        const pane = document.getElementById('cc-detail-pane');
-        if (ws) ws.classList.add('cc-detail-open');
+        document.getElementById('cc-detail-new-menu').classList.add('hidden');
+        showCcRightPanel('item');
         syncDetailOpenBodyClass();
         syncPageHelper('customers');
-        if (pane) {
-          pane.hidden = false;
-          pane.setAttribute('aria-hidden', 'false');
-        }
         if (opts.push !== false) {
           history.pushState({ tab: 'customers', customerId: id }, '', pathForCustomer(id));
         }
         renderCustomerDetail();
+        renderCcTabBar();
+        renderCcTable(companyCustomers);
       } catch (err) {
         showError('cc-error', err.message || 'Could not open this customer.');
       }
@@ -6013,10 +6277,8 @@
         companyCustomers = data.customers || [];
         salesAllDocs = salesData.docs || [];
         renderCcTable(companyCustomers);
-        if (ccDetailId) {
-          ccDetailCustomer = companyCustomers.find(function (c) { return String(c.id) === String(ccDetailId); }) || ccDetailCustomer;
-          if (ccDetailCustomer) renderCustomerDetail();
-        }
+        initCcSplitResize();
+        restoreCcView({ push: false });
       } catch (err) {
         showError('cc-error', err.message || 'Could not load customers.');
         document.getElementById('cc-table').innerHTML = '<tr><td class="py-6 px-4 text-slate-500" colspan="7">Could not load customers.</td></tr>';
@@ -6036,7 +6298,7 @@
         ccAskLeave(function () { openCompanyCustomer(id); });
         return;
       }
-      await openCustomerDetail(id, { push: true });
+      await openCcTab(id, { push: true });
     }
 
     function money(n) {
@@ -7956,9 +8218,6 @@
       if (name === 'customers') {
         showCcList();
         await loadCompanyCustomers();
-        const cid = customerIdFromPath();
-        if (cid && canUse('customers')) await openCustomerDetail(cid, { push: false });
-        else closeCustomerDetail(false);
       }
       if (name === 'quotes' || name === 'orders' || name === 'invoices' || name === 'sales') {
         showSoList();
@@ -8018,8 +8277,30 @@
     document.getElementById('cc-search').addEventListener('input', function () {
       renderCcTable(companyCustomers);
     });
-    document.getElementById('cc-detail-back').addEventListener('click', function () {
-      closeCustomerDetail(true);
+    document.getElementById('cc-tab-strip').addEventListener('click', function (e) {
+      const closeBtn = e.target.closest('[data-cc-tab-close]');
+      if (closeBtn) {
+        e.preventDefault();
+        e.stopPropagation();
+        closeCcTab(closeBtn.getAttribute('data-cc-tab-close'), true);
+        return;
+      }
+      const tab = e.target.closest('.inv-browser-tab[data-cc-tab-id]');
+      if (!tab) return;
+      const tabId = tab.getAttribute('data-cc-tab-id');
+      if (tabId === 'overview') {
+        if (ccDrawerNeedsLeave()) {
+          ccAskLeave(function () { showCcOverview({ push: true }); });
+          return;
+        }
+        showCcOverview({ push: true });
+        return;
+      }
+      if (ccDrawerNeedsLeave()) {
+        ccAskLeave(function () { activateCcTab(tabId, { push: true }); });
+        return;
+      }
+      activateCcTab(tabId, { push: true });
     });
     document.getElementById('cc-detail-edit').addEventListener('click', function () {
       if (ccDetailCustomer) openCustomerDrawer(ccDetailCustomer, 'detail');
@@ -8180,7 +8461,7 @@
           showSoMsg((c.displayName || 'Customer') + ' added.', true);
         } else {
           closeCustomerDrawer(true);
-          await openCustomerDetail(c.id, { push: true });
+          await openCcTab(c.id, { push: true });
         }
       } catch (err) {
         showCcMsg(err.message || 'Could not save customer.');
@@ -8191,7 +8472,8 @@
       if (!id || !confirm('Delete this customer?')) return;
       try {
         await api('/api/admin/company-customers/' + id, { method: 'DELETE' });
-        if (String(ccDetailId) === String(id)) closeCustomerDetail(true);
+        if (ccOpenTabs.indexOf(String(id)) !== -1) closeCcTab(id, true);
+        else if (String(ccDetailId) === String(id)) showCcOverview({ push: true });
         closeCustomerDrawer(true);
         await loadCompanyCustomers();
         salesCustomers = companyCustomers.slice();
@@ -8224,16 +8506,16 @@
         closeVendorDrawer();
         return;
       }
-      if (invDetailId) {
+      if (!document.getElementById('inventory-section').classList.contains('hidden') && invDetailId) {
         showInvOverview({ push: true });
         return;
       }
-      if (vnDetailId) {
+      if (!document.getElementById('vendors-section').classList.contains('hidden') && vnDetailId) {
         closeVendorDetail(true);
         return;
       }
-      if (ccDetailId) {
-        closeCustomerDetail(true);
+      if (!document.getElementById('customers-section').classList.contains('hidden') && ccDetailId) {
+        showCcOverview({ push: true });
       }
     });
 
