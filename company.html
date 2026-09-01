@@ -4128,6 +4128,7 @@
         split.style.setProperty('--inv-left-w', clamped + 'px');
         localStorage.setItem(key, String(Math.round(clamped)));
         refreshInventorySplitCols();
+        fitInvTabWidths();
       }
       const saved = parseInt(localStorage.getItem(key) || '', 10);
       applyLeft(saved > MIN_LEFT ? saved : MIN_LEFT);
