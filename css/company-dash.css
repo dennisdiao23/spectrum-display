@@ -2631,3 +2631,46 @@ body.inv-split-dragging {
     grid-template-rows: minmax(0, 1.2fr) minmax(0, 0.8fr);
   }
 }
+
+html.so-invoice-window-boot .dash-sidebar,
+html.so-invoice-window-boot .dash-scrim,
+html.so-invoice-window-boot .dash-tabbar,
+html.so-invoice-window-boot .dash-tabbar-sub,
+html.so-invoice-window-boot .dash-tabbar-sub-scrim,
+html.so-invoice-window-boot .dash-menu-btn,
+body.so-invoice-window .dash-sidebar,
+body.so-invoice-window .dash-scrim,
+body.so-invoice-window .dash-tabbar,
+body.so-invoice-window .dash-tabbar-sub,
+body.so-invoice-window .dash-tabbar-sub-scrim,
+body.so-invoice-window .dash-menu-btn {
+  display: none !important;
+}
+html.so-invoice-window-boot,
+body.so-invoice-window {
+  --dash-tabbar-h: 0px;
+  --dash-tabbar-sub-h: 0px;
+}
+html.so-invoice-window-boot .dash-shell,
+body.so-invoice-window .dash-shell {
+  margin-left: 0;
+}
+html.so-invoice-window-boot #sales-list-wrap,
+body.so-invoice-window #sales-list-wrap {
+  display: none !important;
+}
+body.so-invoice-window #so-detail {
+  display: block !important;
+}
+body.so-invoice-window #sales-section {
+  display: block !important;
+}
+body.so-invoice-window #dash-panel.space-y-8 {
+  padding-bottom: 1.5rem;
+}
+body.so-invoice-window #so-form {
+  max-width: none;
+}
+body.so-invoice-window .company-main {
+  padding-top: 0.35rem;
+}
