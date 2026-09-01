@@ -2283,12 +2283,12 @@ body.inv-split-dragging .inv-split-resizer {
 }
 .inv-tab-bar {
   display: flex;
-  align-items: flex-end;
+  align-items: stretch;
   gap: 0.75rem;
   flex-shrink: 0;
   min-width: 0;
-  min-height: 3.8125rem;
-  padding: 0 0.85rem 0 0.35rem;
+  min-height: 3.3125rem;
+  padding: 0 0.85rem 0 0.85rem;
   background: #eef2f8;
   border-bottom: 1px solid var(--dash-line);
   box-sizing: border-box;
@@ -2298,19 +2298,18 @@ body.inv-split-dragging .inv-split-resizer {
 }
 .inv-tab-strip {
   display: flex;
-  align-items: flex-end;
+  align-items: stretch;
   gap: 0.12rem;
   min-width: 0;
   flex: 1 1 auto;
   overflow: hidden;
-  padding-top: 0.5rem;
   min-height: 3.3125rem;
 }
 .inv-tab-actions {
   flex-shrink: 0;
   display: flex;
   align-items: center;
-  padding-bottom: 0.625rem;
+  align-self: center;
 }
 .inv-browser-tab {
   -webkit-appearance: none;
@@ -2322,8 +2321,10 @@ body.inv-split-dragging .inv-split-resizer {
   width: auto;
   max-width: 12rem;
   min-width: 0;
-  min-height: 2.15rem;
-  padding: 0.625rem 0.55rem 0.625rem 0.65rem;
+  height: 100%;
+  min-height: 3.3125rem;
+  box-sizing: border-box;
+  padding: 0 0.55rem 0 0.65rem;
   border: 1px solid transparent;
   border-bottom: none;
   border-radius: 0.65rem 0.65rem 0 0;
@@ -2335,7 +2336,7 @@ body.inv-split-dragging .inv-split-resizer {
   cursor: pointer;
   white-space: nowrap;
   outline: none;
-  transition: border-color 0.16s ease, box-shadow 0.16s ease, transform 0.16s ease, background 0.16s ease;
+  transition: border-color 0.16s ease, box-shadow 0.16s ease, background 0.16s ease;
 }
 .inv-browser-tab[data-inv-tab-id="overview"] {
   flex: 0 0 auto;
@@ -2350,25 +2351,21 @@ body.inv-split-dragging .inv-split-resizer {
   color: #102047;
   border-color: var(--dash-line);
   box-shadow: none;
-  transform: translateY(1px);
   z-index: 1;
   position: relative;
   margin-bottom: -1px;
-  padding-bottom: calc(0.625rem + 1px);
 }
-.inv-browser-tab:hover,
-.inv-browser-tab:focus-visible {
+.inv-browser-tab:not(.is-active):hover,
+.inv-browser-tab:not(.is-active):focus-visible {
   border-color: #b7c8e8;
   background: #f7f9ff;
-  box-shadow: 0 14px 32px rgba(16, 32, 71, 0.1);
-  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(16, 32, 71, 0.08);
 }
 .inv-browser-tab.is-active:hover,
 .inv-browser-tab.is-active:focus-visible {
   background: #fff;
   border-color: var(--dash-line);
   box-shadow: none;
-  transform: translateY(1px);
 }
 .inv-browser-tab-status {
   width: 0.5rem;
