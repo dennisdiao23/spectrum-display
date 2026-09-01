@@ -3900,14 +3900,41 @@
 
     function fitInvTabWidths() {
       const strip = document.getElementById('inv-tab-strip');
-      if (!strip || strip.classList.contains('hidden')) return;
-      const tabs = strip.querySelectorAll('.inv-browser-tab');
+      if (!strip) return;
+      const tabs = Array.prototype.slice.call(strip.querySelectorAll('.inv-browser-tab'));
       if (!tabs.length) return;
+      const gap = 2;
+      const MIN_TAB = 72;
+
       tabs.forEach(function (tab) {
-        tab.style.flex = '1 1 0';
-        tab.style.minWidth = '0';
-        tab.style.maxWidth = '';
+        tab.style.flex = '';
         tab.style.width = '';
+        tab.style.minWidth = '';
+        tab.style.maxWidth = '';
+      });
+
+      const stripWidth = strip.clientWidth;
+      if (stripWidth <= 0) return;
+
+      let widths = tabs.map(function (tab) {
+        return Math.round(tab.getBoundingClientRect().width);
+      });
+      let total = widths.reduce(function (a, b) { return a + b; }, 0) + gap * (tabs.length - 1);
+      if (total <= stripWidth) return;
+
+      widths = widths.map(function (w) { return Math.max(MIN_TAB, w); });
+      total = widths.reduce(function (a, b) { return a + b; }, 0) + gap * (tabs.length - 1);
+      const available = stripWidth - gap * (tabs.length - 1);
+      const sum = widths.reduce(function (a, b) { return a + b; }, 0);
+
+      tabs.forEach(function (tab, i) {
+        const w = total <= stripWidth
+          ? widths[i]
+          : Math.max(MIN_TAB, Math.floor(widths[i] * available / sum));
+        tab.style.flex = '0 0 ' + w + 'px';
+        tab.style.width = w + 'px';
+        tab.style.minWidth = MIN_TAB + 'px';
+        tab.style.maxWidth = w + 'px';
       });
     }
 

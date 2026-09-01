@@ -2318,7 +2318,9 @@ body.inv-split-dragging .inv-split-resizer {
   display: inline-flex;
   align-items: center;
   gap: 0.35rem;
-  flex: 1 1 0;
+  flex: 0 1 auto;
+  width: auto;
+  max-width: 12rem;
   min-width: 0;
   min-height: 2.15rem;
   padding: 0.625rem 0.55rem 0.625rem 0.65rem;
@@ -2334,6 +2336,10 @@ body.inv-split-dragging .inv-split-resizer {
   white-space: nowrap;
   outline: none;
   transition: border-color 0.16s ease, box-shadow 0.16s ease, transform 0.16s ease, background 0.16s ease;
+}
+.inv-browser-tab[data-inv-tab-id="overview"] {
+  flex: 0 0 auto;
+  max-width: none;
 }
 .inv-browser-tab.is-active {
   background: #fff;
