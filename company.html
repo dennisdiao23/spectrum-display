@@ -3425,6 +3425,7 @@
         if (!Object.keys(dashColMine).length) dashColMine = readLegacyLocalCols();
       }
       document.querySelectorAll('table.dash-cols').forEach(function (t) { applyColOrder(t); });
+      migrateLegacyInvSplitPref();
     }
 
     function applyColOrder(table) {
@@ -4173,6 +4174,35 @@
       }).join('');
     }
 
+    function whenInvSplitReady(split, fn) {
+      const MIN_TOTAL = 400 + 600 + 14;
+      function ready() {
+        return split.getBoundingClientRect().width >= MIN_TOTAL;
+      }
+      if (ready()) {
+        fn();
+        return;
+      }
+      if (typeof ResizeObserver !== 'undefined') {
+        let done = false;
+        const finish = function () {
+          if (done) return;
+          done = true;
+          try { ro.disconnect(); } catch (err) {}
+          fn();
+        };
+        const ro = new ResizeObserver(function () {
+          if (ready()) finish();
+        });
+        ro.observe(split);
+        setTimeout(finish, 2500);
+      } else {
+        requestAnimationFrame(function () {
+          requestAnimationFrame(fn);
+        });
+      }
+    }
+
     function initInvSplitResize() {
       const split = document.getElementById('inv-split');
       const resizer = document.getElementById('inv-split-resizer');
@@ -4196,23 +4226,21 @@
       }
       function applyLeft(w, opts) {
         opts = opts || {};
-        const total = split.getBoundingClientRect().width;
-        if (total < MIN_LEFT + MIN_RIGHT + RESIZER_W) {
-          if (!opts.deferred) {
-            requestAnimationFrame(function () { applyLeft(w, { deferred: true, save: opts.save }); });
-          }
-          return;
-        }
         const clamped = clampLeft(w);
         split.style.setProperty('--inv-left-w', clamped + 'px');
         if (opts.save !== false) saveInvSplitLeftPx(clamped);
         refreshInventorySplitCols();
         fitInvTabWidths();
+        return clamped;
       }
       function bootSplit() {
         migrateLegacyInvSplitPref();
         const saved = invSplitLeftFromPrefs();
-        applyLeft(saved > MIN_LEFT ? saved : MIN_LEFT, { save: saved > MIN_LEFT });
+        const target = saved >= MIN_LEFT ? saved : MIN_LEFT;
+        split.style.setProperty('--inv-left-w', target + 'px');
+        whenInvSplitReady(split, function () {
+          applyLeft(target, { save: false });
+        });
       }
       if (resizer.dataset.ready !== '1') {
         resizer.dataset.ready = '1';
@@ -4238,7 +4266,7 @@
         });
         window.addEventListener('resize', function () {
           const saved = invSplitLeftFromPrefs();
-          applyLeft(saved > MIN_LEFT ? saved : MIN_LEFT, { save: false });
+          applyLeft(saved >= MIN_LEFT ? saved : MIN_LEFT, { save: false });
           fitInvTabWidths();
         });
       }
