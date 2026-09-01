@@ -2058,6 +2058,10 @@ html.dash-scroll-lock body.company-app {
 }
 
 /* Inventory split layout (table left, overview/detail right) */
+html:has(body.inv-layout-lock) {
+  overflow: hidden;
+  height: 100%;
+}
 body.company-app.inv-layout-lock {
   overflow: hidden;
   height: 100vh;
@@ -2145,14 +2149,8 @@ body.inv-layout-lock .inv-split {
   overflow: auto;
   -webkit-overflow-scrolling: touch;
 }
-body.inv-layout-lock .inv-right-panel {
-  overflow: hidden;
-}
-body.inv-layout-lock .inv-activity-wrap {
-  flex: 1 1 auto;
-  min-height: 0;
-  overflow: hidden;
-}
+body.inv-layout-lock .inv-right-panel,
+body.inv-layout-lock .inv-activity-wrap,
 body.inv-layout-lock #inv-item-panel .cc-detail-panel {
   overflow: hidden;
 }
@@ -2174,6 +2172,10 @@ body.inv-split-dragging .inv-split-resizer {
   flex-direction: column;
   overflow: hidden;
 }
+.inv-split-right > .inv-right-panel:not(.hidden) {
+  flex: 1 1 auto;
+  min-height: 0;
+}
 .inv-right-panel {
   flex: 1 1 auto;
   min-height: 0;
@@ -2183,11 +2185,34 @@ body.inv-split-dragging .inv-split-resizer {
   overflow: hidden;
   padding: 0.15rem 0 0.25rem 0.85rem;
 }
+.inv-right-head,
+.inv-overview-summary,
+.inv-activity-heading,
+#inv-overview-panel #inv-activity-empty {
+  flex-shrink: 0;
+}
+#inv-item-panel .cc-detail-toolbar,
+#inv-item-panel .cc-detail-hero,
+#inv-item-panel .cc-detail-tabs {
+  flex-shrink: 0;
+}
+#inv-item-panel .cc-detail-tabs {
+  overflow: hidden;
+  flex-wrap: wrap;
+}
+#inv-item-panel .cc-detail-hero {
+  padding: 0.75rem 1rem 0.55rem;
+}
+#inv-item-panel .cc-detail-hero-main {
+  margin-bottom: 0.65rem;
+}
+#inv-item-panel .cc-detail-hero-grid {
+  gap: 0.45rem;
+}
 .inv-right-head {
   display: flex;
   align-items: center;
   gap: 0.75rem;
-  flex-shrink: 0;
 }
 .inv-right-title {
   margin: 0;
@@ -2211,8 +2236,8 @@ body.inv-split-dragging .inv-split-resizer {
 }
 .inv-activity-wrap {
   flex: 1 1 auto;
-  min-height: 8rem;
-  overflow: auto;
+  min-height: 0;
+  overflow: hidden;
 }
 .inv-activity-table tbody tr {
   cursor: pointer;
@@ -2224,6 +2249,11 @@ body.inv-split-dragging .inv-split-resizer {
   flex: 1 1 auto;
   min-height: 0;
   overflow: hidden;
+  padding: 0.65rem 1rem 0.75rem;
+}
+#inv-item-panel .cc-detail-panel > div {
+  overflow: hidden;
+  max-height: 100%;
 }
 #inv-item-panel .cc-detail-hero,
 #inv-item-panel .inv-item-toolbar {
