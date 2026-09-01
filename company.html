@@ -3901,39 +3901,57 @@
     function fitInvTabWidths() {
       const strip = document.getElementById('inv-tab-strip');
       if (!strip) return;
-      const tabs = Array.prototype.slice.call(strip.querySelectorAll('.inv-browser-tab'));
-      if (!tabs.length) return;
+      const allTabs = Array.prototype.slice.call(strip.querySelectorAll('.inv-browser-tab'));
+      if (!allTabs.length) return;
       const gap = 2;
-      const MIN_TAB = 72;
+      const MIN_ITEM_TAB = 72;
+      const overviewTab = strip.querySelector('.inv-browser-tab[data-inv-tab-id="overview"]');
+      const itemTabs = allTabs.filter(function (tab) {
+        return tab.getAttribute('data-inv-tab-id') !== 'overview';
+      });
 
-      tabs.forEach(function (tab) {
+      allTabs.forEach(function (tab) {
         tab.style.flex = '';
         tab.style.width = '';
         tab.style.minWidth = '';
         tab.style.maxWidth = '';
       });
 
-      const stripWidth = strip.clientWidth;
-      if (stripWidth <= 0) return;
+      if (overviewTab) {
+        overviewTab.style.flex = '0 0 auto';
+      }
 
-      let widths = tabs.map(function (tab) {
+      const stripWidth = strip.clientWidth;
+      if (stripWidth <= 0 || !itemTabs.length) return;
+
+      const overviewWidth = overviewTab ? Math.round(overviewTab.getBoundingClientRect().width) : 0;
+      const availableForItems = stripWidth - overviewWidth - gap * (allTabs.length - 1);
+
+      let itemWidths = itemTabs.map(function (tab) {
         return Math.round(tab.getBoundingClientRect().width);
       });
-      let total = widths.reduce(function (a, b) { return a + b; }, 0) + gap * (tabs.length - 1);
-      if (total <= stripWidth) return;
+      let itemTotal = itemWidths.reduce(function (a, b) { return a + b; }, 0);
+      if (itemTotal <= availableForItems) return;
 
-      widths = widths.map(function (w) { return Math.max(MIN_TAB, w); });
-      total = widths.reduce(function (a, b) { return a + b; }, 0) + gap * (tabs.length - 1);
-      const available = stripWidth - gap * (tabs.length - 1);
-      const sum = widths.reduce(function (a, b) { return a + b; }, 0);
+      itemWidths = itemWidths.map(function (w) { return Math.max(MIN_ITEM_TAB, w); });
+      itemTotal = itemWidths.reduce(function (a, b) { return a + b; }, 0);
 
-      tabs.forEach(function (tab, i) {
-        const w = total <= stripWidth
-          ? widths[i]
-          : Math.max(MIN_TAB, Math.floor(widths[i] * available / sum));
+      if (itemTotal <= availableForItems) {
+        itemTabs.forEach(function (tab, i) {
+          tab.style.flex = '0 0 ' + itemWidths[i] + 'px';
+          tab.style.width = itemWidths[i] + 'px';
+          tab.style.minWidth = MIN_ITEM_TAB + 'px';
+          tab.style.maxWidth = itemWidths[i] + 'px';
+        });
+        return;
+      }
+
+      const sum = itemWidths.reduce(function (a, b) { return a + b; }, 0);
+      itemTabs.forEach(function (tab, i) {
+        const w = Math.max(MIN_ITEM_TAB, Math.floor(itemWidths[i] * availableForItems / sum));
         tab.style.flex = '0 0 ' + w + 'px';
         tab.style.width = w + 'px';
-        tab.style.minWidth = MIN_TAB + 'px';
+        tab.style.minWidth = MIN_ITEM_TAB + 'px';
         tab.style.maxWidth = w + 'px';
       });
     }

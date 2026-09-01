@@ -2341,6 +2341,10 @@ body.inv-split-dragging .inv-split-resizer {
   flex: 0 0 auto;
   max-width: none;
 }
+.inv-browser-tab[data-inv-tab-id="overview"] .inv-browser-tab-label {
+  overflow: visible;
+  text-overflow: clip;
+}
 .inv-browser-tab.is-active {
   background: #fff;
   color: #102047;
