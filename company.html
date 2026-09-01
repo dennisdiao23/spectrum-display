@@ -3892,6 +3892,25 @@
       return String(item.sku || '').trim() || 'Item';
     }
 
+    function invTabStatusClass(status) {
+      if (status === 'out') return 'is-out';
+      if (status === 'low') return 'is-low';
+      return 'is-in';
+    }
+
+    function fitInvTabWidths() {
+      const strip = document.getElementById('inv-tab-strip');
+      if (!strip || strip.classList.contains('hidden')) return;
+      const tabs = strip.querySelectorAll('.inv-browser-tab');
+      if (!tabs.length) return;
+      tabs.forEach(function (tab) {
+        tab.style.flex = '1 1 0';
+        tab.style.minWidth = '0';
+        tab.style.maxWidth = '';
+        tab.style.width = '';
+      });
+    }
+
     function renderInvTabBar() {
       const bar = document.getElementById('inv-tab-bar');
       const strip = document.getElementById('inv-tab-strip');
@@ -3907,14 +3926,16 @@
       invOpenTabs.forEach(function (id) {
         const item = invTabItem(id);
         const active = String(invActiveTab) === String(id);
-        const initial = item ? (item.sku || item.name || '?').charAt(0).toUpperCase() : '?';
+        const status = item && item.status;
         html += '<button type="button" class="inv-browser-tab' + (active ? ' is-active' : '') +
           '" data-inv-tab-id="' + esc(id) + '" role="tab" aria-selected="' + (active ? 'true' : 'false') + '">' +
-          '<span class="inv-browser-tab-icon" aria-hidden="true">' + esc(initial) + '</span>' +
+          '<span class="inv-browser-tab-status ' + invTabStatusClass(status) + '" aria-hidden="true" title="' +
+          esc(stockStatusLabel(status)) + '"></span>' +
           '<span class="inv-browser-tab-label">' + esc(invTabLabel(id)) + '</span>' +
           '<span class="inv-browser-tab-close" data-inv-tab-close="' + esc(id) + '" aria-label="Close tab" role="button" tabindex="-1">×</span></button>';
       });
       strip.innerHTML = html;
+      fitInvTabWidths();
       const onItem = invActiveTab !== 'overview';
       const adjust = document.getElementById('inv-detail-adjust');
       const edit = document.getElementById('inv-detail-edit');
@@ -4133,6 +4154,7 @@
       window.addEventListener('resize', function () {
         const current = parseInt(localStorage.getItem(key) || String(MIN_LEFT), 10);
         applyLeft(current);
+        fitInvTabWidths();
       });
     }
 

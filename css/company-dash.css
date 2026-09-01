@@ -2278,7 +2278,7 @@ body.inv-split-dragging .inv-split-resizer {
   flex-shrink: 0;
   min-width: 0;
   padding: 0.35rem 0.85rem 0 0.35rem;
-  background: #e8edf5;
+  background: var(--dash-bg);
   border-bottom: 1px solid var(--dash-line);
 }
 .inv-tab-bar.hidden {
@@ -2287,16 +2287,11 @@ body.inv-split-dragging .inv-split-resizer {
 .inv-tab-strip {
   display: flex;
   align-items: flex-end;
-  gap: 0.15rem;
+  gap: 0.12rem;
   min-width: 0;
   flex: 1 1 auto;
-  overflow-x: auto;
-  overflow-y: hidden;
+  overflow: hidden;
   padding-top: 0.35rem;
-  scrollbar-width: thin;
-}
-.inv-tab-strip::-webkit-scrollbar {
-  height: 4px;
 }
 .inv-tab-actions {
   flex-shrink: 0;
@@ -2307,28 +2302,28 @@ body.inv-split-dragging .inv-split-resizer {
   appearance: none;
   display: inline-flex;
   align-items: center;
-  gap: 0.4rem;
-  max-width: 12rem;
-  padding: 0.45rem 0.55rem 0.45rem 0.65rem;
+  gap: 0.35rem;
+  flex: 1 1 0;
+  min-width: 0;
+  padding: 0.45rem 0.5rem 0.45rem 0.6rem;
   border: 1px solid transparent;
   border-bottom: none;
   border-radius: 0.65rem 0.65rem 0 0;
-  background: #d5deeb;
+  background: #e3e9f3;
   color: #4b5875;
   font-family: inherit;
-  font-size: 0.78rem;
+  font-size: 0.76rem;
   font-weight: 600;
   cursor: pointer;
   white-space: nowrap;
   outline: none;
   transition: border-color 0.16s ease, box-shadow 0.16s ease, transform 0.16s ease, background 0.16s ease;
-  flex-shrink: 0;
 }
 .inv-browser-tab.is-active {
-  background: #fff;
+  background: var(--dash-bg);
   color: #102047;
   border-color: var(--dash-line);
-  box-shadow: 0 -2px 8px rgba(16, 32, 71, 0.04);
+  box-shadow: none;
   transform: translateY(1px);
   z-index: 1;
   position: relative;
@@ -2336,34 +2331,38 @@ body.inv-split-dragging .inv-split-resizer {
 .inv-browser-tab:hover,
 .inv-browser-tab:focus-visible {
   border-color: #b7c8e8;
-  background: #f7f9ff;
+  background: #eef2fa;
   box-shadow: 0 14px 32px rgba(16, 32, 71, 0.1);
   transform: translateY(-2px);
 }
 .inv-browser-tab.is-active:hover,
 .inv-browser-tab.is-active:focus-visible {
-  background: #fff;
+  background: var(--dash-bg);
   border-color: var(--dash-line);
-  box-shadow: 0 -2px 8px rgba(16, 32, 71, 0.04);
+  box-shadow: none;
   transform: translateY(1px);
 }
-.inv-browser-tab-icon {
-  width: 1.15rem;
-  height: 1.15rem;
+.inv-browser-tab-status {
+  width: 0.5rem;
+  height: 0.5rem;
   border-radius: 999px;
-  background: #fff1e6;
-  color: #e67a2e;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 0.62rem;
-  font-weight: 800;
   flex-shrink: 0;
+  box-shadow: 0 0 0 1px rgba(16, 32, 71, 0.08);
+}
+.inv-browser-tab-status.is-in {
+  background: #22c55e;
+}
+.inv-browser-tab-status.is-low {
+  background: #eab308;
+}
+.inv-browser-tab-status.is-out {
+  background: #ef4444;
 }
 .inv-browser-tab-label {
   overflow: hidden;
   text-overflow: ellipsis;
   min-width: 0;
+  flex: 1 1 auto;
 }
 .inv-browser-tab-close {
   display: inline-flex;
