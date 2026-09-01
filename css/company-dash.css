@@ -2117,7 +2117,7 @@ body.inv-layout-lock #inventory-section #inventory-error {
 }
 .inv-split {
   display: grid;
-  grid-template-columns: var(--inv-left-w, 400px) 7px minmax(0, 1fr);
+  grid-template-columns: var(--inv-left-w, 400px) 14px minmax(0, 1fr);
   align-items: stretch;
   gap: 0;
   min-height: 0;
@@ -2166,9 +2166,10 @@ body.inv-layout-lock #inv-item-panel .cc-detail-panel {
   overflow: hidden;
 }
 .inv-split-resizer {
-  flex: 0 0 7px;
+  flex: 0 0 14px;
+  width: 14px;
   cursor: col-resize;
-  background: linear-gradient(90deg, transparent, var(--dash-line) 45%, var(--dash-line) 55%, transparent);
+  background: linear-gradient(90deg, transparent, var(--dash-line) 42%, var(--dash-line) 58%, transparent);
   touch-action: none;
   user-select: none;
 }
