@@ -15,13 +15,18 @@ function sanitizeColState(state) {
       if (id && width) widths[id] = width;
     });
   }
-  return {
+  let splitLeftPx = parseInt(state.splitLeftPx, 10);
+  if (!Number.isFinite(splitLeftPx) || splitLeftPx < 160) splitLeftPx = 0;
+  if (splitLeftPx > 4000) splitLeftPx = 4000;
+  const out = {
     order: asStringList(state.order),
     hidden: asStringList(state.hidden),
     sortCol: String(state.sortCol || '').trim().slice(0, 40),
     sortDir: state.sortDir === 'desc' ? 'desc' : (state.sortDir === 'asc' ? 'asc' : ''),
     widths: widths
   };
+  if (splitLeftPx) out.splitLeftPx = splitLeftPx;
+  return out;
 }
 
 function sanitizeColPrefs(input) {
