@@ -2239,6 +2239,13 @@ body.dash-split-lock .dash-split {
 .inv-split-left table.dash-cols[data-cols="inventory"] td {
   min-width: 0;
 }
+.dash-split-left table.dash-cols[data-cols="customers"] thead th:not([data-col]),
+.dash-split-left table.dash-cols[data-cols="customers"] tbody td:last-child {
+  width: 0 !important;
+  min-width: 0 !important;
+  padding: 0 !important;
+  overflow: hidden;
+}
 body.inv-layout-lock .inv-right-panel,
 body.inv-layout-lock .inv-activity-wrap,
 body.inv-layout-lock #inv-item-panel .cc-detail-panel,

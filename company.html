@@ -1122,6 +1122,7 @@
                   <th class="py-3 px-4 font-medium" data-col="contact">Contact <span class="dash-col-caret">▾</span><span class="dash-col-grip" aria-hidden="true"></span></th>
                   <th class="py-3 px-4 font-medium" data-col="email">Email <span class="dash-col-caret">▾</span><span class="dash-col-grip" aria-hidden="true"></span></th>
                   <th class="py-3 px-4 font-medium" data-col="phone">Phone <span class="dash-col-caret">▾</span><span class="dash-col-grip" aria-hidden="true"></span></th>
+                  <th class="py-3 px-4 font-medium" data-col="balance">Balance <span class="dash-col-caret">▾</span><span class="dash-col-grip" aria-hidden="true"></span></th>
                   <th class="py-3 px-4 font-medium" data-col="city">City <span class="dash-col-caret">▾</span><span class="dash-col-grip" aria-hidden="true"></span></th>
                   <th class="py-3 px-4 font-medium" data-col="terms">Terms <span class="dash-col-caret">▾</span><span class="dash-col-grip" aria-hidden="true"></span></th>
                   <th class="py-3 px-4 font-medium" data-col="mobile">Mobile <span class="dash-col-caret">▾</span><span class="dash-col-grip" aria-hidden="true"></span></th>
@@ -3171,6 +3172,7 @@
         { id: 'contact', label: 'Contact' },
         { id: 'email', label: 'Email' },
         { id: 'phone', label: 'Phone' },
+        { id: 'balance', label: 'Balance' },
         { id: 'city', label: 'City' },
         { id: 'terms', label: 'Terms' },
         { id: 'mobile', label: 'Mobile' },
@@ -3274,7 +3276,7 @@
 
     const DASH_COL_DEFAULTS = {
       inventory: ['sku', 'name', 'qty', 'cost', 'price'],
-      customers: ['company', 'contact', 'email', 'phone', 'city', 'terms'],
+      customers: ['company', 'contact', 'email', 'phone', 'balance'],
       sales: ['number', 'customer', 'date', 'status', 'total'],
       'po-lines': ['product', 'sku', 'description', 'qty', 'rate', 'amount'],
       'purchase-orders': ['number', 'vendor', 'date', 'status', 'total'],
@@ -3329,16 +3331,50 @@
       return null;
     }
 
+    function sameColList(a, b) {
+      if (!a || !b || a.length !== b.length) return false;
+      for (let i = 0; i < a.length; i++) if (a[i] !== b[i]) return false;
+      return true;
+    }
+
+    function customerHasCustomColPrefs(saved) {
+      if (!saved || typeof saved !== 'object') return false;
+      const widths = saved.widths && typeof saved.widths === 'object' ? saved.widths : {};
+      const hasWidths = Object.keys(widths).some(function (key) { return widths[key]; });
+      if (hasWidths) return true;
+      const order = saved.order || [];
+      if (!order.length) return false;
+      const oldDefault = ['company', 'contact', 'email', 'phone', 'city', 'terms'];
+      const nextDefault = DASH_COL_DEFAULTS.customers;
+      if (sameColList(order, oldDefault) || sameColList(order, nextDefault)) return false;
+      return true;
+    }
+
+    function defaultCustomerColWidths() {
+      const out = {};
+      (DASH_COL_DEFAULTS.customers || []).forEach(function (id) {
+        out[id] = '20%';
+      });
+      return out;
+    }
+
     function mergeColState(table, saved) {
       const known = defaultColOrder(table);
       const startOrder = defaultVisibleOrder(table).filter(function (id) { return known.indexOf(id) !== -1; });
+      const isCustomers = dashColKey(table) === 'customers';
+      let keptSplit = 0;
+      if (isCustomers && saved && !customerHasCustomColPrefs(saved)) {
+        keptSplit = saved.splitLeftPx ? parseInt(saved.splitLeftPx, 10) || 0 : 0;
+        saved = null;
+      }
+      const fallbackWidths = isCustomers ? defaultCustomerColWidths() : {};
       const fallback = {
         order: startOrder.slice(),
         hidden: known.filter(function (id) { return startOrder.indexOf(id) === -1; }),
         sortCol: '',
         sortDir: '',
-        widths: {},
-        splitLeftPx: 0
+        widths: fallbackWidths,
+        splitLeftPx: keptSplit
       };
       if (!saved) {
         return applyMobileColState(table, fallback);
@@ -3564,6 +3600,7 @@
         }
       });
       if (dashColKey(table) === 'inventory') fitInventorySplitCols(table);
+      if (dashColKey(table) === 'customers') fitCustomerSplitCols(table);
     }
 
     const INV_SPLIT_COL_DEFAULT_PCT = {
@@ -3683,6 +3720,56 @@
     function refreshInventorySplitCols() {
       const table = document.querySelector('table.dash-cols[data-cols="inventory"]');
       if (table) fitInventorySplitCols(table);
+    }
+
+    function fitCustomerSplitCols(table) {
+      if (!table || dashColKey(table) !== 'customers') return;
+      const wrap = document.getElementById('cc-table-wrap');
+      if (!wrap || !wrap.closest('.dash-split-left')) return;
+      const paneWidth = wrap.clientWidth;
+      if (paneWidth < 120) return;
+      const state = loadColState(table);
+      const visibleCols = state.order.filter(function (id) {
+        return state.hidden.indexOf(id) === -1;
+      });
+      if (!visibleCols.length) return;
+      const hasPx = visibleCols.some(function (col) {
+        return state.widths[col] && String(state.widths[col]).indexOf('px') !== -1;
+      });
+      const widths = visibleCols.map(function (col) {
+        const saved = state.widths[col];
+        if (hasPx && saved && String(saved).indexOf('px') !== -1) {
+          const n = Math.round(parseFloat(saved));
+          if (n > 0) return Math.max(64, n);
+        }
+        if (saved && String(saved).indexOf('%') !== -1) {
+          const pct = parseFloat(saved);
+          if (pct > 0) return Math.max(64, Math.round(paneWidth * pct / 100));
+        }
+        return Math.max(64, Math.round(paneWidth / visibleCols.length));
+      });
+      const fitted = shrinkInvSplitWidths(widths, paneWidth);
+      Array.prototype.forEach.call(table.querySelectorAll('thead th[data-col]'), function (th) {
+        const col = th.getAttribute('data-col');
+        if (th.hidden || visibleCols.indexOf(col) === -1) {
+          th.style.width = '';
+          return;
+        }
+        const idx = visibleCols.indexOf(col);
+        th.style.width = fitted[idx] + 'px';
+      });
+      Array.prototype.forEach.call(table.querySelectorAll('thead th:not([data-col])'), function (th) {
+        th.style.width = '0px';
+        th.style.minWidth = '0';
+        th.style.padding = '0';
+      });
+      table.style.width = '100%';
+      table.style.maxWidth = '100%';
+    }
+
+    function refreshCustomerSplitCols() {
+      const table = document.querySelector('table.dash-cols[data-cols="customers"]');
+      if (table) fitCustomerSplitCols(table);
     }
 
     function dashOrderedCells(table, cells, lockedHtml, leadHtml) {
@@ -3837,6 +3924,7 @@
               if (col) state.widths[col] = th.style.width || Math.round(th.getBoundingClientRect().width) + 'px';
               saveColState(table, state);
               if (dashColKey(table) === 'inventory') fitInventorySplitCols(table);
+              if (dashColKey(table) === 'customers') fitCustomerSplitCols(table);
             }
             document.addEventListener('mousemove', move);
             document.addEventListener('mouseup', up);
@@ -4452,6 +4540,7 @@
         split.style.setProperty('--dash-left-w', clamped + 'px');
         if (opts.save !== false) saveCcSplitLeftPx(clamped);
         fitCcTabWidths();
+        refreshCustomerSplitCols();
         return clamped;
       }
       function currentLeftPx() {
@@ -4475,6 +4564,7 @@
           const clamped = clampLeft(start);
           if (Math.abs(clamped - start) > 2) split.style.setProperty('--dash-left-w', clamped + 'px');
           fitCcTabWidths();
+          refreshCustomerSplitCols();
         });
       }
       if (resizer.dataset.ready !== '1') {
@@ -5571,6 +5661,7 @@
         if (col === 'contact') return [c.contactFirst, c.contactLast].filter(Boolean).join(' ');
         if (col === 'email') return c.email || '';
         if (col === 'phone') return c.phone || c.mobile || '';
+        if (col === 'balance') return (ccCustomerFinance(c.id).openBalance) || 0;
         if (col === 'city') return c.billCity || '';
         if (col === 'terms') return c.paymentTerms || '';
         if (col === 'mobile') return c.mobile || '';
@@ -5586,6 +5677,7 @@
         const name = c.displayName || c.companyName || [c.contactFirst, c.contactLast].filter(Boolean).join(' ') || '—';
         const contact = [c.contactFirst, c.contactLast].filter(Boolean).join(' ') || '—';
         const acct = ccAccountStatus(c.id);
+        const fin = ccCustomerFinance(c.id);
         const cells = {
           company: '<td class="py-3 px-4 font-medium"><span class="cc-acct-cell">' +
             ccAccountStatusIcon(acct) +
@@ -5593,6 +5685,7 @@
           contact: '<td class="py-3 px-4">' + esc(contact) + '</td>',
           email: '<td class="py-3 px-4">' + esc(c.email || '—') + '</td>',
           phone: '<td class="py-3 px-4">' + esc(c.phone || c.mobile || '—') + '</td>',
+          balance: '<td class="py-3 px-4">' + esc(fin.openBalance > 0 ? moneyText(fin.openBalance) : '—') + '</td>',
           city: '<td class="py-3 px-4">' + esc(c.billCity || '—') + '</td>',
           terms: '<td class="py-3 px-4">' + esc(c.paymentTerms || '—') + '</td>',
           mobile: '<td class="py-3 px-4">' + esc(c.mobile || '—') + '</td>',
