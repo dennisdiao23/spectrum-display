@@ -2185,6 +2185,9 @@ body.inv-split-dragging .inv-split-resizer {
   overflow: hidden;
   padding: 0.15rem 0 0.25rem 0.85rem;
 }
+.inv-right-panel.hidden {
+  display: none !important;
+}
 .inv-right-head,
 .inv-overview-summary,
 .inv-activity-heading,
