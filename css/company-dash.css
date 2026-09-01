@@ -2166,16 +2166,31 @@ body.inv-layout-lock #inv-item-panel .cc-detail-panel {
   overflow: hidden;
 }
 .inv-split-resizer {
+  position: relative;
   flex: 0 0 14px;
   width: 14px;
   cursor: col-resize;
-  background: linear-gradient(90deg, transparent, var(--dash-line) 42%, var(--dash-line) 58%, transparent);
+  background: transparent;
   touch-action: none;
   user-select: none;
 }
-.inv-split-resizer:hover,
-body.inv-split-dragging .inv-split-resizer {
-  background: linear-gradient(90deg, transparent, #2f6bff 45%, #2f6bff 55%, transparent);
+.inv-split-resizer::after {
+  content: "";
+  position: absolute;
+  top: 18%;
+  bottom: 18%;
+  left: 50%;
+  width: 2px;
+  margin-left: -1px;
+  background: #d5dcea;
+  border-radius: 2px;
+  transition: background 0.12s ease;
+}
+.inv-split-resizer:hover::after,
+body.inv-split-dragging .inv-split-resizer::after {
+  background: #2f6bff;
+  top: 0;
+  bottom: 0;
 }
 .inv-split-right {
   min-width: 0;
