@@ -1154,7 +1154,10 @@
             <div class="cc-detail-hero-main">
               <span id="cc-detail-avatar" class="cc-detail-avatar" aria-hidden="true"></span>
               <div class="cc-detail-hero-copy">
-                <h2 id="cc-detail-name">Customer</h2>
+                <h2 class="cc-detail-name-row">
+                  <span id="cc-detail-acct" class="cc-acct-status is-none" title="No open invoice" aria-label="No open invoice"></span>
+                  <span id="cc-detail-name">Customer</span>
+                </h2>
                 <p id="cc-detail-subname" class="cc-detail-subname"></p>
                 <div class="cc-detail-quick">
                   <a id="cc-detail-mail" class="cc-detail-quick-btn hidden" href="#" title="Email"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="m3 7 9 6 9-6"/></svg></a>
@@ -5582,8 +5585,11 @@
       tbody.innerHTML = sorted.map(function (c) {
         const name = c.displayName || c.companyName || [c.contactFirst, c.contactLast].filter(Boolean).join(' ') || '—';
         const contact = [c.contactFirst, c.contactLast].filter(Boolean).join(' ') || '—';
+        const acct = ccAccountStatus(c.id);
         const cells = {
-          company: '<td class="py-3 px-4 font-medium">' + esc(name) + '</td>',
+          company: '<td class="py-3 px-4 font-medium"><span class="cc-acct-cell">' +
+            ccAccountStatusIcon(acct) +
+            '<span class="cc-acct-name">' + esc(name) + '</span></span></td>',
           contact: '<td class="py-3 px-4">' + esc(contact) + '</td>',
           email: '<td class="py-3 px-4">' + esc(c.email || '—') + '</td>',
           phone: '<td class="py-3 px-4">' + esc(c.phone || c.mobile || '—') + '</td>',
@@ -5764,6 +5770,37 @@
       });
     }
 
+    function ccDaysUntilDue(ymd) {
+      if (!ymd) return null;
+      const due = new Date(String(ymd).slice(0, 10) + 'T00:00:00');
+      if (isNaN(due.getTime())) return null;
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      return Math.round((due.getTime() - today.getTime()) / 86400000);
+    }
+
+    function ccAccountStatus(customerId) {
+      const docs = ccCustomerDocs(customerId).filter(isPendingInvoice);
+      if (!docs.length) {
+        return { key: 'none', cls: 'is-none', label: 'No open invoice' };
+      }
+      let overdue = false;
+      let dueSoon = false;
+      docs.forEach(function (d) {
+        const days = ccDaysUntilDue(d.dueDate);
+        if (d.status === 'overdue' || (days !== null && days < 0)) overdue = true;
+        else if (days !== null && days <= 5) dueSoon = true;
+      });
+      if (overdue) return { key: 'overdue', cls: 'is-overdue', label: 'Past due' };
+      if (dueSoon) return { key: 'dueSoon', cls: 'is-due-soon', label: 'Due within 5 days' };
+      return { key: 'good', cls: 'is-good', label: 'Good — open invoice, not past due' };
+    }
+
+    function ccAccountStatusIcon(acct) {
+      const s = acct || { cls: 'is-none', label: 'No open invoice' };
+      return '<span class="cc-acct-status ' + s.cls + '" title="' + esc(s.label) + '" aria-label="' + esc(s.label) + '"></span>';
+    }
+
     function ccCustomerFinance(customerId) {
       const docs = ccCustomerDocs(customerId);
       let openBalance = 0;
@@ -5803,8 +5840,9 @@
         const balance = fin.openBalance > 0 ? moneyText(fin.openBalance) : '—';
         const active = String(c.id) === String(ccDetailId) ? ' is-active' : '';
         const meta = [c.billCity, c.email].filter(Boolean).join(' · ');
+        const acct = ccAccountStatus(c.id);
         return '<button type="button" class="cc-side-item' + active + '" data-id="' + esc(c.id) + '">' +
-          '<span><span class="cc-side-item-name">' + esc(name) + '</span>' +
+          '<span><span class="cc-side-item-name">' + ccAccountStatusIcon(acct) + esc(name) + '</span>' +
           (meta ? '<span class="cc-side-item-meta">' + esc(meta) + '</span>' : '') + '</span>' +
           '<span class="cc-side-item-balance">' + esc(balance) + '</span></button>';
       }).join('');
@@ -5905,6 +5943,13 @@
       const fin = ccCustomerFinance(c.id);
       const sub = c.companyName && c.companyName !== ccCustomerLabel(c) ? c.companyName : '';
       document.getElementById('cc-detail-name').textContent = ccCustomerLabel(c);
+      const acct = ccAccountStatus(c.id);
+      const acctEl = document.getElementById('cc-detail-acct');
+      if (acctEl) {
+        acctEl.className = 'cc-acct-status ' + acct.cls;
+        acctEl.title = acct.label;
+        acctEl.setAttribute('aria-label', acct.label);
+      }
       document.getElementById('cc-detail-subname').textContent = sub;
       document.getElementById('cc-detail-avatar').textContent = ccCustomerInitials(c);
       renderCustomerDetailHeroContact();
@@ -5998,8 +6043,10 @@
         '<span class="inv-browser-tab-label">Overview</span></button>';
       ccOpenTabs.forEach(function (id) {
         const active = String(ccActiveTab) === String(id);
+        const acct = ccAccountStatus(id);
         html += '<button type="button" class="inv-browser-tab' + (active ? ' is-active' : '') +
           '" data-cc-tab-id="' + esc(id) + '" role="tab" aria-selected="' + (active ? 'true' : 'false') + '">' +
+          ccAccountStatusIcon(acct) +
           '<span class="inv-browser-tab-label">' + esc(ccTabLabel(id)) + '</span>' +
           '<span class="inv-browser-tab-close" data-cc-tab-close="' + esc(id) + '" aria-label="Close tab" role="button" tabindex="-1">×</span></button>';
       });

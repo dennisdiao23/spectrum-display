@@ -1647,6 +1647,9 @@ html.dash-scroll-lock body.company-app {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
 }
 .cc-side-item-meta {
   font-size: 0.75rem;
@@ -1760,11 +1763,54 @@ html.dash-scroll-lock body.company-app {
   font-weight: 700;
   font-size: 0.95rem;
 }
-.cc-detail-hero-copy h2 {
+.cc-detail-hero-copy h2,
+.cc-detail-name-row {
   font-size: 1.35rem;
   font-weight: 700;
   line-height: 1.2;
   margin: 0;
+}
+.cc-detail-name-row {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  min-width: 0;
+}
+.cc-acct-cell {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  min-width: 0;
+  max-width: 100%;
+}
+.cc-acct-name {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.cc-acct-status {
+  width: 0.55rem;
+  height: 0.55rem;
+  border-radius: 999px;
+  flex-shrink: 0;
+  box-shadow: 0 0 0 1px rgba(16, 32, 71, 0.08);
+}
+.cc-acct-status.is-good {
+  background: #22c55e;
+}
+.cc-acct-status.is-due-soon {
+  background: #eab308;
+}
+.cc-acct-status.is-overdue {
+  background: #ef4444;
+}
+.cc-acct-status.is-none {
+  background: #94a3b8;
+}
+.inv-browser-tab > .cc-acct-status {
+  width: 0.5rem;
+  height: 0.5rem;
 }
 .cc-detail-subname {
   margin: 0.2rem 0 0;
