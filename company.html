@@ -3298,6 +3298,8 @@
       const src = prefs && prefs[name];
       if (!src || typeof src !== 'object') return null;
       if ((src.order && src.order.length) || (src.hidden && src.hidden.length)) return src;
+      if (src.splitLeftPx) return src;
+      if (src.widths && typeof src.widths === 'object' && Object.keys(src.widths).length) return src;
       return null;
     }
 
@@ -3309,7 +3311,8 @@
         hidden: known.filter(function (id) { return startOrder.indexOf(id) === -1; }),
         sortCol: '',
         sortDir: '',
-        widths: {}
+        widths: {},
+        splitLeftPx: 0
       };
       if (!saved) {
         return applyMobileColState(table, fallback);
@@ -3333,7 +3336,8 @@
         hidden: hidden,
         sortCol: saved.sortCol || '',
         sortDir: saved.sortDir || '',
-        widths: saved.widths && typeof saved.widths === 'object' ? saved.widths : {}
+        widths: saved.widths && typeof saved.widths === 'object' ? saved.widths : {},
+        splitLeftPx: saved.splitLeftPx ? parseInt(saved.splitLeftPx, 10) || 0 : 0
       };
       const state = applyMobileColState(table, merged);
       return state;
@@ -3362,12 +3366,14 @@
 
     function saveColState(table, state) {
       const name = dashColKey(table);
+      const prev = dashColMine[name] || {};
       dashColMine[name] = {
         order: state.order.slice(),
         hidden: state.hidden.slice(),
         sortCol: state.sortCol || '',
         sortDir: state.sortDir || '',
-        widths: state.widths && typeof state.widths === 'object' ? state.widths : {}
+        widths: state.widths && typeof state.widths === 'object' ? state.widths : {},
+        splitLeftPx: state.splitLeftPx || prev.splitLeftPx || 0
       };
       if (currentAdminUser && currentAdminUser.role === 'owner') {
         dashColOwner = Object.assign({}, dashColMine);
@@ -3494,12 +3500,42 @@
       return next;
     }
 
+    function invSplitLeftFromPrefs() {
+      const saved = tableStateFromPrefs(dashColMine, 'inventory') || tableStateFromPrefs(dashColOwner, 'inventory');
+      const px = saved && saved.splitLeftPx ? parseInt(saved.splitLeftPx, 10) : 0;
+      if (px > 0) return px;
+      try {
+        const legacy = parseInt(localStorage.getItem('inv-split-left-px') || '', 10);
+        if (legacy > 0) return legacy;
+      } catch (err) {}
+      return 0;
+    }
+
+    function saveInvSplitLeftPx(px) {
+      const table = document.querySelector('table.dash-cols[data-cols="inventory"]');
+      if (!table) return;
+      const state = loadColState(table);
+      state.splitLeftPx = Math.round(px);
+      saveColState(table, state);
+      try { localStorage.removeItem('inv-split-left-px'); } catch (err) {}
+    }
+
+    function migrateLegacyInvSplitPref() {
+      if (invSplitLeftFromPrefs() <= 0) return;
+      const table = document.querySelector('table.dash-cols[data-cols="inventory"]');
+      if (!table) return;
+      const saved = tableStateFromPrefs(dashColMine, 'inventory');
+      if (saved && saved.splitLeftPx) return;
+      const legacy = invSplitLeftFromPrefs();
+      if (legacy > 0) saveInvSplitLeftPx(legacy);
+    }
+
     function fitInventorySplitCols(table) {
       if (!table || dashColKey(table) !== 'inventory') return;
       const wrap = document.getElementById('inv-table-wrap');
       if (!wrap || !wrap.closest('.inv-split-left')) return;
       const paneWidth = wrap.clientWidth;
-      if (paneWidth <= 0) return;
+      if (paneWidth < 120) return;
       const state = loadColState(table);
       const visibleCols = state.order.filter(function (id) {
         return state.hidden.indexOf(id) === -1;
@@ -4140,9 +4176,7 @@
     function initInvSplitResize() {
       const split = document.getElementById('inv-split');
       const resizer = document.getElementById('inv-split-resizer');
-      if (!split || !resizer || resizer.dataset.ready === '1') return;
-      resizer.dataset.ready = '1';
-      const key = 'inv-split-left-px';
+      if (!split || !resizer) return;
       const MIN_LEFT = 400;
       const MIN_RIGHT = 600;
       const RESIZER_W = 14;
@@ -4160,40 +4194,55 @@
         const maxLeft = Math.max(mins.minLeft, total - mins.minRight - RESIZER_W);
         return Math.max(mins.minLeft, Math.min(w, maxLeft));
       }
-      function applyLeft(w) {
+      function applyLeft(w, opts) {
+        opts = opts || {};
+        const total = split.getBoundingClientRect().width;
+        if (total < MIN_LEFT + MIN_RIGHT + RESIZER_W) {
+          if (!opts.deferred) {
+            requestAnimationFrame(function () { applyLeft(w, { deferred: true, save: opts.save }); });
+          }
+          return;
+        }
         const clamped = clampLeft(w);
         split.style.setProperty('--inv-left-w', clamped + 'px');
-        localStorage.setItem(key, String(Math.round(clamped)));
+        if (opts.save !== false) saveInvSplitLeftPx(clamped);
         refreshInventorySplitCols();
         fitInvTabWidths();
       }
-      const saved = parseInt(localStorage.getItem(key) || '', 10);
-      applyLeft(saved > MIN_LEFT ? saved : MIN_LEFT);
-      let dragging = false;
-      function onMove(e) {
-        if (!dragging) return;
-        const rect = split.getBoundingClientRect();
-        const x = (e.touches ? e.touches[0].clientX : e.clientX) - rect.left;
-        applyLeft(x);
+      function bootSplit() {
+        migrateLegacyInvSplitPref();
+        const saved = invSplitLeftFromPrefs();
+        applyLeft(saved > MIN_LEFT ? saved : MIN_LEFT, { save: saved > MIN_LEFT });
       }
-      function onUp() {
-        dragging = false;
-        document.body.classList.remove('inv-split-dragging');
-        document.removeEventListener('mousemove', onMove);
-        document.removeEventListener('mouseup', onUp);
+      if (resizer.dataset.ready !== '1') {
+        resizer.dataset.ready = '1';
+        let dragging = false;
+        function onMove(e) {
+          if (!dragging) return;
+          const rect = split.getBoundingClientRect();
+          const x = (e.touches ? e.touches[0].clientX : e.clientX) - rect.left;
+          applyLeft(x);
+        }
+        function onUp() {
+          dragging = false;
+          document.body.classList.remove('inv-split-dragging');
+          document.removeEventListener('mousemove', onMove);
+          document.removeEventListener('mouseup', onUp);
+        }
+        resizer.addEventListener('mousedown', function (e) {
+          e.preventDefault();
+          dragging = true;
+          document.body.classList.add('inv-split-dragging');
+          document.addEventListener('mousemove', onMove);
+          document.addEventListener('mouseup', onUp);
+        });
+        window.addEventListener('resize', function () {
+          const saved = invSplitLeftFromPrefs();
+          applyLeft(saved > MIN_LEFT ? saved : MIN_LEFT, { save: false });
+          fitInvTabWidths();
+        });
       }
-      resizer.addEventListener('mousedown', function (e) {
-        e.preventDefault();
-        dragging = true;
-        document.body.classList.add('inv-split-dragging');
-        document.addEventListener('mousemove', onMove);
-        document.addEventListener('mouseup', onUp);
-      });
-      window.addEventListener('resize', function () {
-        const current = parseInt(localStorage.getItem(key) || String(MIN_LEFT), 10);
-        applyLeft(current);
-        fitInvTabWidths();
-      });
+      bootSplit();
     }
 
     function setInvDetailTab(name) {
