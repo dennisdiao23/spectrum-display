@@ -1581,6 +1581,87 @@ html.dash-scroll-lock body.company-app {
   .company-main table.dash-cols[data-cols="inventory"] .dash-col-caret {
     display: none;
   }
+
+  /* Inventory mobile: tighter top spacing, KPI row, 10-row table viewport */
+  body.dash-master-on .company-main {
+    padding-top: 0.35rem;
+  }
+
+  #dash-panel.space-y-8 > #inventory-section:not(.hidden) {
+    margin-top: 0 !important;
+  }
+
+  #inv-overview.page-kpis {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 0.35rem;
+    margin: 0 0 0.45rem !important;
+  }
+
+  #inv-overview .dash-kpi {
+    min-height: 0;
+    padding: 0.4rem 0.25rem 0.35rem;
+    grid-template-columns: 1fr;
+    grid-template-rows: auto auto auto;
+    column-gap: 0;
+    row-gap: 0.02rem;
+    text-align: center;
+    border-radius: 0.65rem;
+  }
+
+  #inv-overview .dash-kpi-icon {
+    display: none;
+  }
+
+  #inv-overview .dash-kpi-label,
+  #inv-overview .dash-kpi-value,
+  #inv-overview .dash-kpi-hint {
+    grid-column: 1;
+  }
+
+  #inv-overview .dash-kpi-label {
+    font-size: 0.58rem;
+    letter-spacing: 0.01em;
+    line-height: 1.1;
+  }
+
+  #inv-overview .dash-kpi-value {
+    font-size: 0.92rem;
+    line-height: 1.05;
+  }
+
+  #inv-overview .dash-kpi-hint {
+    display: none;
+  }
+
+  #inventory-section .cc-list-toolbar {
+    margin-bottom: 0.35rem;
+  }
+
+  #inventory-section #inv-table-wrap {
+    --inv-mobile-row-h: 2.625rem;
+    --inv-mobile-head-h: 2.375rem;
+    max-height: calc(var(--inv-mobile-head-h) + var(--inv-mobile-row-h) * 10);
+    overflow-x: hidden;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  #inventory-section table.dash-cols[data-cols="inventory"] thead {
+    position: sticky;
+    top: 0;
+    z-index: 2;
+    background: #fff;
+  }
+
+  #inventory-section table.dash-cols[data-cols="inventory"] tbody tr {
+    height: var(--inv-mobile-row-h);
+  }
+
+  #inventory-section table.dash-cols[data-cols="inventory"] th,
+  #inventory-section table.dash-cols[data-cols="inventory"] td {
+    padding-top: 0.45rem;
+    padding-bottom: 0.45rem;
+  }
 }
 
 /* Customer split workspace + detail mega window */
@@ -2743,7 +2824,7 @@ body.inv-split-dragging {
     flex: none;
     min-height: auto;
   }
-  body.company-app:not(.inv-layout-lock) #inv-table-wrap,
+  body.company-app:not(.inv-layout-lock) .dash-split-left .cc-table-wrap:not(#inv-table-wrap),
   body.company-app:not(.dash-split-lock) .dash-split-left .cc-table-wrap {
     flex: none;
     min-height: auto;
