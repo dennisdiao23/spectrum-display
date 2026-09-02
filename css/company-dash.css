@@ -1495,7 +1495,7 @@ html.dash-scroll-lock body.company-app {
     font-weight: 600;
     white-space: nowrap;
     -webkit-tap-highlight-color: transparent;
-    touch-action: manipulation;
+    touch-action: pan-x;
   }
 
   .dash-tabbar-sub-inner a svg {
@@ -1611,6 +1611,11 @@ html.dash-scroll-lock body.company-app {
     overflow-x: auto;
     overflow-y: hidden;
     -webkit-overflow-scrolling: touch;
+    touch-action: pan-x;
+    scrollbar-width: none;
+  }
+  body.dash-master-on .dash-master-tabs::-webkit-scrollbar {
+    display: none;
   }
   body.dash-master-on .dash-master-tabs .inv-tab-strip {
     overflow: visible;
@@ -2843,6 +2848,25 @@ body.inv-split-dragging {
   }
   .inv-tab-bar {
     padding-left: 0;
+    overflow-x: auto;
+    overflow-y: hidden;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+    touch-action: pan-x;
+  }
+  .inv-tab-bar::-webkit-scrollbar {
+    display: none;
+  }
+  .inv-tab-bar .inv-tab-strip {
+    overflow: visible;
+    flex: 0 0 auto;
+    min-width: max-content;
+  }
+  .inv-tab-bar .inv-browser-tab {
+    flex: 0 0 auto;
+  }
+  .dash-tabbar-sub-inner {
+    touch-action: pan-x;
   }
   body.inv-layout-lock .inv-split,
   body.dash-split-lock .dash-split {
