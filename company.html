@@ -3690,6 +3690,11 @@
         if (order.indexOf(id) !== -1 || hidden.indexOf(id) !== -1) return;
         hidden.push(id);
       });
+      if (dashColKey(table) === 'so-lines' && order.indexOf('item') === -1) {
+        order.unshift('item');
+        const dropItem = hidden.indexOf('item');
+        if (dropItem !== -1) hidden.splice(dropItem, 1);
+      }
       if (!order.length && known.length) {
         order.push(known[0]);
         const drop = hidden.indexOf(known[0]);
