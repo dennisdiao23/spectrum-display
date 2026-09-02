@@ -2601,10 +2601,19 @@
       const viewport = document.getElementById('preview-viewport');
       const sceneBg = document.getElementById('scene-bg');
       const wallTransform = document.getElementById('wall-transform');
-      if (!viewport || !wallTransform || typeof html2canvas !== 'function') return '';
+      const wallWrapper = document.getElementById('wall-wrapper');
+      if (!viewport || !wallTransform || !wallWrapper || typeof html2canvas !== 'function') return '';
 
-      const saved = { view: viewMode, zoom: zoom, panX: panX, panY: panY };
-      if (viewMode === 'wiring') setViewMode('front');
+      const saved = {
+        view: viewMode,
+        zoom: zoom,
+        panX: panX,
+        panY: panY,
+        fig: figureMode
+      };
+      if (viewMode === 'wiring') setViewMode('front', { skipApply: true });
+      // PDF: no human scale — also frees layout space for dimension labels
+      setFigureMode('off', { skipApply: true });
       zoom = 1;
       panX = 0;
       panY = 0;
@@ -2614,51 +2623,65 @@
       const viewportPrev = viewport.getAttribute('style') || '';
       const scenePrev = sceneBg ? (sceneBg.getAttribute('style') || '') : '';
       const transformPrev = wallTransform.getAttribute('style') || '';
-      const transformClass = wallTransform.className;
 
-      // html2canvas mishandles translate(-50%,-50%). Temporarily center with flex.
       viewport.classList.add('spec-capture');
       viewport.style.cssText = viewportPrev
         + ';background:#fff!important;display:flex!important;align-items:center!important;justify-content:center!important;';
       if (sceneBg) {
         sceneBg.style.cssText = scenePrev + ';display:none!important;';
       }
+      // Avoid CSS translate for html2canvas; keep wall centered with flex
       wallTransform.style.left = 'auto';
       wallTransform.style.top = 'auto';
       wallTransform.style.transform = 'none';
       wallTransform.style.position = 'relative';
       wallTransform.style.margin = '0 auto';
+      wallTransform.classList.remove('has-figure');
 
       await new Promise(function(resolve) {
         requestAnimationFrame(function() { requestAnimationFrame(resolve); });
       });
 
       try {
-        const wallCanvas = await html2canvas(wallTransform, {
-          backgroundColor: null,
+        // Capture the viewport (not wall-transform) so top/side dims that
+        // overflow the wall box are still painted.
+        const full = await html2canvas(viewport, {
+          backgroundColor: '#ffffff',
           scale: 2,
           useCORS: true,
           allowTaint: true,
-          logging: false
+          logging: false,
+          ignoreElements: function(el) {
+            return el.id === 'scale-figure'
+              || el.id === 'wall-balance'
+              || el.id === 'scene-bg';
+          }
         });
 
-        const outW = Math.max(900, Math.round(viewport.clientWidth * 2));
-        const outH = Math.max(520, Math.round(viewport.clientHeight * 2));
+        const vr = viewport.getBoundingClientRect();
+        const wr = wallWrapper.getBoundingClientRect();
+        const dimW = document.querySelector('.wall-dim-w');
+        const dimH = document.querySelector('.wall-dim-h');
+        const dwr = dimW ? dimW.getBoundingClientRect() : wr;
+        const dhr = dimH ? dimH.getBoundingClientRect() : wr;
+        const pad = 16;
+        const cropL = Math.max(0, Math.min(wr.left, dwr.left, dhr.left) - vr.left - pad);
+        const cropT = Math.max(0, Math.min(wr.top, dwr.top, dhr.top) - vr.top - pad);
+        const cropR = Math.min(vr.width, Math.max(wr.right, dwr.right, dhr.right) - vr.left + pad);
+        const cropB = Math.min(vr.height, Math.max(wr.bottom, dwr.bottom, dhr.bottom) - vr.top + pad);
+        const scale = 2;
+        const sx = Math.round(cropL * scale);
+        const sy = Math.round(cropT * scale);
+        const sw = Math.max(2, Math.round((cropR - cropL) * scale));
+        const sh = Math.max(2, Math.round((cropB - cropT) * scale));
+
         const out = document.createElement('canvas');
-        out.width = outW;
-        out.height = outH;
+        out.width = sw;
+        out.height = sh;
         const ctx = out.getContext('2d');
         ctx.fillStyle = '#ffffff';
-        ctx.fillRect(0, 0, outW, outH);
-
-        const padX = outW * 0.08;
-        const padY = outH * 0.08;
-        const maxW = outW - padX * 2;
-        const maxH = outH - padY * 2;
-        const scale = Math.min(maxW / wallCanvas.width, maxH / wallCanvas.height);
-        const dw = wallCanvas.width * scale;
-        const dh = wallCanvas.height * scale;
-        ctx.drawImage(wallCanvas, (outW - dw) / 2, (outH - dh) / 2, dw, dh);
+        ctx.fillRect(0, 0, sw, sh);
+        ctx.drawImage(full, sx, sy, sw, sh, 0, 0, sw, sh);
         return out.toDataURL('image/png');
       } catch (err) {
         console.warn('Preview capture failed', err);
@@ -2668,12 +2691,13 @@
         viewport.setAttribute('style', viewportPrev);
         if (sceneBg) sceneBg.setAttribute('style', scenePrev);
         wallTransform.setAttribute('style', transformPrev);
-        wallTransform.className = transformClass;
         zoom = saved.zoom;
         panX = saved.panX;
         panY = saved.panY;
-        if (saved.view === 'wiring') setViewMode('wiring');
+        if (saved.view === 'wiring') setViewMode('wiring', { skipApply: true });
+        setFigureMode(saved.fig, { skipApply: true });
         applyTransform();
+        updateDesign();
       }
     }
 
