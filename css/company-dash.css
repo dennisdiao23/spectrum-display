@@ -241,6 +241,13 @@ body.dash-master-on .dash-menu-btn {
   overflow: visible;
   text-overflow: clip;
 }
+#dash-tab-strip .inv-browser-tab {
+  font-size: 1.05rem;
+  font-weight: 700;
+  min-height: 2.4rem;
+  padding: 0.7rem 0.75rem 0.7rem 0.85rem;
+  letter-spacing: -0.01em;
+}
 .dash-top-user {
   display: flex;
   align-items: center;
