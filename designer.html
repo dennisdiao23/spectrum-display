@@ -2623,6 +2623,8 @@
       const viewportPrev = viewport.getAttribute('style') || '';
       const scenePrev = sceneBg ? (sceneBg.getAttribute('style') || '') : '';
       const transformPrev = wallTransform.getAttribute('style') || '';
+      const dimHLabel = document.querySelector('.wall-dim-h .wall-dim-label');
+      const dimHLabelPrev = dimHLabel ? dimHLabel.getAttribute('style') || '' : '';
 
       viewport.classList.add('spec-capture');
       viewport.style.cssText = viewportPrev
@@ -2635,8 +2637,13 @@
       wallTransform.style.top = 'auto';
       wallTransform.style.transform = 'none';
       wallTransform.style.position = 'relative';
-      wallTransform.style.margin = '0 auto';
+      wallTransform.style.margin = '56px auto 28px';
       wallTransform.classList.remove('has-figure');
+      // html2canvas garbles vertical-rl + rotate labels — force horizontal for PDF
+      if (dimHLabel) {
+        dimHLabel.style.writingMode = 'horizontal-tb';
+        dimHLabel.style.transform = 'none';
+      }
 
       await new Promise(function(resolve) {
         requestAnimationFrame(function() { requestAnimationFrame(resolve); });
@@ -2664,7 +2671,7 @@
         const dimH = document.querySelector('.wall-dim-h');
         const dwr = dimW ? dimW.getBoundingClientRect() : wr;
         const dhr = dimH ? dimH.getBoundingClientRect() : wr;
-        const pad = 40;
+        const pad = 56;
         const cropL = Math.max(0, Math.min(wr.left, dwr.left, dhr.left) - vr.left - pad);
         const cropT = Math.max(0, Math.min(wr.top, dwr.top, dhr.top) - vr.top - pad);
         const cropR = Math.min(vr.width, Math.max(wr.right, dwr.right, dhr.right) - vr.left + pad);
@@ -2691,6 +2698,7 @@
         viewport.setAttribute('style', viewportPrev);
         if (sceneBg) sceneBg.setAttribute('style', scenePrev);
         wallTransform.setAttribute('style', transformPrev);
+        if (dimHLabel) dimHLabel.setAttribute('style', dimHLabelPrev);
         zoom = saved.zoom;
         panX = saved.panX;
         panY = saved.panY;
