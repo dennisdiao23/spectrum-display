@@ -8895,7 +8895,10 @@
 
     function scrollSoLinesEnd() {
       const wrap = document.querySelector('#so-detail .so-doc-lines-wrap');
-      if (wrap) wrap.scrollTop = wrap.scrollHeight;
+      const scroll = document.querySelector('#so-detail .so-doc-scroll');
+      const target = scroll || wrap;
+      if (target) target.scrollTop = target.scrollHeight;
+      if (wrap && wrap !== target) wrap.scrollTop = wrap.scrollHeight;
     }
 
     function applySoItemToLine(row, item) {

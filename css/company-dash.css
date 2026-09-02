@@ -3400,8 +3400,9 @@ body.so-invoice-float .so-doc-lines {
   display: flex;
   flex-direction: column;
   align-items: stretch;
-  flex: 1;
+  flex: 0 0 auto;
   min-height: 10rem;
+  overflow: visible;
   padding: 0;
   margin-top: 0.3rem;
 }
@@ -3428,14 +3429,14 @@ body.so-invoice-float #so-add-line {
 }
 body.so-invoice-float #so-add-line:hover { text-decoration: underline; }
 body.so-invoice-float .so-doc-lines-wrap {
-  flex: 1;
+  flex: 0 0 auto;
   min-width: 0;
   min-height: 0;
   background: transparent;
   border: 0;
   border-radius: 0;
-  overflow-x: hidden;
-  overflow-y: auto;
+  overflow: visible;
+  height: auto;
 }
 body.so-invoice-float .so-doc-lines .dash-cols {
   width: 100%;
