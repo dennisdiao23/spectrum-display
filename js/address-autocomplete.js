@@ -1,4 +1,5 @@
 (function (root) {
+  if (root.SpectrumPlaces) return;
   var loaded = false;
   var loading = null;
   var bound = [];
@@ -132,11 +133,43 @@
       .catch(function () { return false; });
   }
 
+  function autoBind() {
+    var nodes = document.querySelectorAll('[data-places-fields]');
+    for (var i = 0; i < nodes.length; i++) {
+      var input = nodes[i];
+      var parts = String(input.getAttribute('data-places-fields') || '')
+        .split(',')
+        .map(function (s) { return s.trim(); });
+      var countries = String(input.getAttribute('data-places-countries') || '')
+        .split(',')
+        .map(function (s) { return s.trim(); })
+        .filter(Boolean);
+      bind(input, {
+        street: parts[0] || input.id,
+        line2: parts[1],
+        city: parts[2],
+        state: parts[3],
+        zip: parts[4],
+        country: parts[5]
+      }, {
+        countries: countries,
+        countryShort: input.getAttribute('data-places-country-short') === '1'
+      });
+    }
+  }
+
   root.SpectrumPlaces = {
     load: load,
     bind: bind,
     parsePlace: parsePlace,
     fillFields: fillFields,
-    bootFromConfig: bootFromConfig
+    bootFromConfig: bootFromConfig,
+    autoBind: autoBind
   };
+
+  function start() {
+    bootFromConfig(autoBind);
+  }
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', start);
+  else start();
 })(window);
