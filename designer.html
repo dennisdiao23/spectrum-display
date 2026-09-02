@@ -480,6 +480,14 @@
       background-repeat: no-repeat;
     }
     .scene-bg.photo-mode { }
+    .preview-viewport.spec-capture,
+    .preview-viewport.spec-capture .scene-bg {
+      background: #fff !important;
+      background-image: none !important;
+    }
+    .preview-viewport.spec-capture .wall-container.glow-edge {
+      box-shadow: 0 0 0 1px #e2e8f0;
+    }
 
     .wall-transform {
       position: absolute;
@@ -2591,6 +2599,7 @@
 
     async function capturePreviewForSpec() {
       const viewport = document.getElementById('preview-viewport');
+      const sceneBg = document.getElementById('scene-bg');
       if (!viewport || typeof html2canvas !== 'function') return '';
 
       const saved = { view: viewMode, zoom: zoom, panX: panX, panY: panY };
@@ -2599,23 +2608,27 @@
       panX = 0;
       panY = 0;
       applyTransform();
+      viewport.classList.add('spec-capture');
+      if (sceneBg) sceneBg.classList.add('spec-capture');
       await new Promise(function(resolve) {
         requestAnimationFrame(function() { requestAnimationFrame(resolve); });
       });
 
       try {
         const canvas = await html2canvas(viewport, {
-          backgroundColor: '#0a0f1a',
+          backgroundColor: '#ffffff',
           scale: 2,
           useCORS: true,
           allowTaint: true,
           logging: false
         });
-        return canvas.toDataURL('image/jpeg', 0.9);
+        return canvas.toDataURL('image/png');
       } catch (err) {
         console.warn('Preview capture failed', err);
         return '';
       } finally {
+        viewport.classList.remove('spec-capture');
+        if (sceneBg) sceneBg.classList.remove('spec-capture');
         zoom = saved.zoom;
         panX = saved.panX;
         panY = saved.panY;
@@ -2628,7 +2641,7 @@
       const date = new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
       const title = spec.brand + ' ' + spec.series + ' · ' + spec.cols + '×' + spec.rows;
       const productLine = [spec.brand, spec.series, spec.type].filter(Boolean).join(' · ');
-      const logoUrl = new URL('assets/spectrum-logo.png', window.location.href).href;
+      const logoUrl = new URL('assets/spectrum-logo-print.jpg', window.location.href).href;
       const previewBlock = previewImage
         ? '<figure class="hero"><img src="' + previewImage + '" alt="LED wall preview"/></figure>'
         : '<figure class="hero hero-fallback"><div class="hero-placeholder">Preview unavailable</div></figure>';
@@ -2641,13 +2654,13 @@
         + '.bar{height:6px;background:linear-gradient(90deg,#0ea5e9,#38bdf8);margin:-0.55in -0.6in 0.4in}'
         + 'header{display:flex;justify-content:space-between;align-items:flex-start;gap:16px;border-bottom:1px solid #e2e8f0;padding-bottom:16px;margin-bottom:18px}'
         + '.brand{display:flex;align-items:center;gap:12px}'
-        + '.logo{height:2rem;width:auto;display:block}'
+        + '.logo{height:2.25rem;width:auto;display:block}'
         + '.co{font-weight:700;font-size:15px;letter-spacing:.02em}'
         + '.sub{font-size:11px;color:#64748b;margin-top:2px}'
         + '.meta{text-align:right;font-size:11px;color:#64748b;line-height:1.5}'
         + 'h1{font-size:22px;margin:0 0 4px;letter-spacing:-.02em}'
         + '.lead{font-size:13px;color:#475569;margin:0 0 16px}'
-        + '.hero{margin:0 0 20px;border-radius:12px;overflow:hidden;border:1px solid #cbd5e1;background:#0a0f1a}'
+        + '.hero{margin:0 0 20px;border-radius:12px;overflow:hidden;border:1px solid #e2e8f0;background:#fff}'
         + '.hero img{display:block;width:100%;height:auto;max-height:4.25in;object-fit:contain;margin:0 auto}'
         + '.hero-fallback{min-height:2.5in;display:flex;align-items:center;justify-content:center}'
         + '.hero-placeholder{font-size:12px;color:#94a3b8}'
