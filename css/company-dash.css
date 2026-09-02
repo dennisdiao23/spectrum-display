@@ -2779,6 +2779,7 @@ body.so-invoice-float .so-doc-back {
 #so-balance-row { display: none; }
 .so-doc-scroll,
 .so-doc-headblock,
+.so-doc-head-right,
 .so-doc-meta { display: contents; }
 .so-job-bit { display: none; }
 
@@ -2851,13 +2852,20 @@ body.so-invoice-float .so-doc-back {
 }
 .so-doc-lines-wrap {
   grid-column: 1 / -1;
-  overflow: auto;
+  overflow: hidden;
+  min-width: 0;
+}
+.so-doc-lines .dash-cols {
+  width: 100%;
+  min-width: 0;
+  max-width: 100%;
+  table-layout: fixed;
 }
 .so-doc-lines .dash-cols td {
-  overflow: visible;
-  white-space: normal;
+  overflow: hidden;
+  white-space: nowrap;
 }
-.so-doc-lines .dash-cols th { white-space: nowrap; }
+.so-doc-lines .dash-cols th { white-space: nowrap; overflow: hidden; }
 .so-doc-lines .dash-cols input,
 .so-doc-lines .dash-cols select {
   width: 100%;
@@ -3033,13 +3041,14 @@ body.so-invoice-float .so-doc-scroll {
 }
 body.so-invoice-float .so-doc-headblock {
   display: grid;
-  grid-template-columns: repeat(3, minmax(10.5rem, 14.5rem)) minmax(0, 1fr);
-  gap: 0.4rem 0.75rem;
-  align-items: end;
+  grid-template-columns: minmax(16rem, 22rem) minmax(1.5rem, 1fr) minmax(22rem, 38rem);
+  align-items: start;
+  column-gap: 0;
+  row-gap: 0.4rem;
+  width: 100%;
   padding: 0;
 }
-body.so-invoice-float .so-doc-top,
-body.so-invoice-float .so-doc-meta {
+body.so-invoice-float .so-doc-top {
   display: contents;
 }
 body.so-invoice-float .so-doc-kind {
@@ -3050,7 +3059,6 @@ body.so-invoice-float .so-doc-kind {
   padding: 0;
   grid-column: 1;
   grid-row: 1;
-  align-self: end;
 }
 body.so-invoice-float .so-doc-kind h2 {
   margin: 0;
@@ -3060,12 +3068,18 @@ body.so-invoice-float .so-doc-kind h2 {
   letter-spacing: 0;
   line-height: 1.2;
 }
+body.so-invoice-float .so-doc-head-right {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 0.4rem;
+  grid-column: 3;
+  grid-row: 1 / 4;
+  min-width: 0;
+}
 body.so-invoice-float .so-doc-amount {
   display: block;
-  grid-column: 4;
-  grid-row: 1;
-  justify-self: end;
-  align-self: start;
+  align-self: flex-end;
   text-align: right;
   font-size: 0.68rem;
   letter-spacing: 0.06em;
@@ -3084,10 +3098,8 @@ body.so-invoice-float .so-f-number {
   align-items: center;
   gap: 0.35rem;
   font-size: 0.75rem;
-  grid-column: 2;
-  grid-row: 1;
-  align-self: end;
-  margin: 0 0 0.15rem;
+  grid-column: 1;
+  grid-row: 2;
 }
 body.so-invoice-float .so-f-number span { white-space: nowrap; }
 body.so-invoice-float .so-f-number input {
@@ -3099,7 +3111,7 @@ body.so-invoice-float .so-f-number input {
 }
 body.so-invoice-float .so-f-customer {
   grid-column: 1;
-  grid-row: 2;
+  grid-row: 3;
   flex-direction: column;
   align-items: stretch;
   gap: 0.18rem;
@@ -3117,16 +3129,21 @@ body.so-invoice-float .so-f-customer span {
 }
 body.so-invoice-float .so-f-customer select {
   max-width: none;
+  width: 100%;
   border-color: var(--dash-line);
   border-radius: 0.45rem;
   padding: 0.32rem 0.5rem;
   font-size: 0.82rem;
 }
-body.so-invoice-float .so-f-date { grid-column: 2; grid-row: 2; }
-body.so-invoice-float .so-f-po { grid-column: 3; grid-row: 2; }
-body.so-invoice-float .so-f-terms { grid-column: 1; grid-row: 3; }
-body.so-invoice-float .so-f-due { grid-column: 2; grid-row: 3; }
-body.so-invoice-float .so-f-status { grid-column: 3; grid-row: 3; }
+body.so-invoice-float .so-doc-meta {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.35rem 0.75rem;
+  align-content: start;
+  padding: 0;
+  background: transparent;
+  border: 0;
+}
 body.so-invoice-float .so-field-name,
 body.so-invoice-float .so-field-email { display: none; }
 .so-status-badge {
@@ -3228,19 +3245,17 @@ body.so-invoice-float #so-add-line {
 body.so-invoice-float #so-add-line:hover { text-decoration: underline; }
 body.so-invoice-float .so-doc-lines-wrap {
   flex: 1;
+  min-width: 0;
   background: transparent;
   border: 0;
   border-radius: 0;
-  overflow: auto;
+  overflow: hidden;
 }
-body.so-invoice-float .so-doc-lines .dash-cols th[data-col="item"] { width: 12rem; }
-body.so-invoice-float .so-doc-lines .dash-cols th[data-col="sku"] { width: 9rem; }
-body.so-invoice-float .so-doc-lines .dash-cols th[data-col="qty"],
-body.so-invoice-float .so-doc-lines .dash-cols th[data-col="onHand"],
-body.so-invoice-float .so-doc-lines .dash-cols th[data-col="cost"],
-body.so-invoice-float .so-doc-lines .dash-cols th[data-col="dealer"],
-body.so-invoice-float .so-doc-lines .dash-cols th[data-col="price"],
-body.so-invoice-float .so-doc-lines .dash-cols th[data-col="amount"] { width: 7.5rem; }
+body.so-invoice-float .so-doc-lines .dash-cols {
+  width: 100%;
+  min-width: 0;
+  max-width: 100%;
+}
 body.so-invoice-float .so-doc-lines th {
   background: #fff;
   color: var(--dash-muted);
@@ -3358,16 +3373,16 @@ body.so-invoice-float .so-doc-side {
   body.so-invoice-float .so-doc-workspace { grid-template-columns: 1fr; }
   body.so-invoice-float .so-doc-side { border-left: 0; border-top: 1px solid var(--dash-line); }
   body.so-invoice-float .so-doc-headblock {
-    grid-template-columns: repeat(2, minmax(10rem, 14.5rem)) minmax(0, 1fr);
+    grid-template-columns: 1fr;
   }
-  body.so-invoice-float .so-doc-kind { grid-column: 1; grid-row: 1; }
-  body.so-invoice-float .so-f-number { grid-column: 2; grid-row: 1; }
-  body.so-invoice-float .so-doc-amount { grid-column: 3; grid-row: 1; }
-  body.so-invoice-float .so-f-customer { grid-column: 1; grid-row: 2; }
-  body.so-invoice-float .so-f-date { grid-column: 2; grid-row: 2; }
-  body.so-invoice-float .so-f-po { grid-column: 1; grid-row: 3; }
-  body.so-invoice-float .so-f-terms { grid-column: 2; grid-row: 3; }
-  body.so-invoice-float .so-f-due { grid-column: 1; grid-row: 4; }
-  body.so-invoice-float .so-f-status { grid-column: 2; grid-row: 4; }
+  body.so-invoice-float .so-doc-kind,
+  body.so-invoice-float .so-f-number,
+  body.so-invoice-float .so-f-customer,
+  body.so-invoice-float .so-doc-head-right { grid-column: 1; }
+  body.so-invoice-float .so-doc-kind { grid-row: 1; }
+  body.so-invoice-float .so-f-number { grid-row: 2; }
+  body.so-invoice-float .so-f-customer { grid-row: 3; }
+  body.so-invoice-float .so-doc-head-right { grid-row: 4; }
+  body.so-invoice-float .so-doc-meta { grid-template-columns: 1fr 1fr; }
   body.so-invoice-float .so-doc-foot { grid-template-columns: 1fr; }
 }

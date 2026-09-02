@@ -1382,7 +1382,6 @@
                     <h2 id="so-kind-label">Invoice</h2>
                     <span id="so-status-badge" class="so-status-badge" hidden></span>
                   </div>
-                  <div class="so-doc-amount">AMOUNT <strong id="so-head-amount">$0.00</strong></div>
                   <div class="so-doc-top">
                     <label class="so-field so-f-customer"><span>Customer<span class="so-job-bit">:Job</span></span>
                       <select id="so-customer">
@@ -1392,28 +1391,31 @@
                     <label class="so-field so-f-number"><span id="so-number-label">Quote no.</span>
                       <input id="so-number" type="text" placeholder="SQ-1001">
                     </label>
-                    <label class="so-field so-f-date"><span>Date</span>
-                      <input id="so-issue" type="date">
-                    </label>
-                    <div class="so-doc-meta">
-                      <label class="so-field so-f-po"><span>P.O. number</span>
-                        <input id="so-po" type="text">
-                      </label>
-                      <label class="so-field so-f-terms"><span>Terms</span>
-                        <select id="so-terms">
-                          <option value="Due on receipt">Due on receipt</option>
-                          <option value="Net 15">Net 15</option>
-                          <option value="Net 30" selected>Net 30</option>
-                          <option value="Net 45">Net 45</option>
-                          <option value="Net 60">Net 60</option>
-                        </select>
-                      </label>
-                      <label class="so-field so-f-due"><span id="so-due-label">Valid until</span>
-                        <input id="so-due" type="date">
-                      </label>
-                      <label class="so-field so-f-status"><span>Status</span>
-                        <select id="so-status"></select>
-                      </label>
+                    <div class="so-doc-head-right">
+                      <div class="so-doc-amount">AMOUNT <strong id="so-head-amount">$0.00</strong></div>
+                      <div class="so-doc-meta">
+                        <label class="so-field so-f-date"><span>Date</span>
+                          <input id="so-issue" type="date">
+                        </label>
+                        <label class="so-field so-f-po"><span>P.O. number</span>
+                          <input id="so-po" type="text">
+                        </label>
+                        <label class="so-field so-f-terms"><span>Terms</span>
+                          <select id="so-terms">
+                            <option value="Due on receipt">Due on receipt</option>
+                            <option value="Net 15">Net 15</option>
+                            <option value="Net 30" selected>Net 30</option>
+                            <option value="Net 45">Net 45</option>
+                            <option value="Net 60">Net 60</option>
+                          </select>
+                        </label>
+                        <label class="so-field so-f-due"><span id="so-due-label">Valid until</span>
+                          <input id="so-due" type="date">
+                        </label>
+                        <label class="so-field so-f-status"><span>Status</span>
+                          <select id="so-status"></select>
+                        </label>
+                      </div>
                     </div>
                     <label class="so-field so-field-name"><span>Customer name</span>
                       <input id="so-customer-name" type="text" placeholder="Filled from Customer, or type a name">
@@ -3690,7 +3692,7 @@
         if (order.indexOf(id) !== -1 || hidden.indexOf(id) !== -1) return;
         hidden.push(id);
       });
-      if (dashColKey(table) === 'so-lines' && order.indexOf('item') === -1) {
+      if (dashColKey(table) === 'so-lines' && order.indexOf('item') === -1 && sameColList(order, ['sku', 'description', 'qty', 'price', 'amount'])) {
         order.unshift('item');
         const dropItem = hidden.indexOf('item');
         if (dropItem !== -1) hidden.splice(dropItem, 1);
@@ -3908,6 +3910,7 @@
       });
       if (dashColKey(table) === 'inventory') fitInventorySplitCols(table);
       if (dashColKey(table) === 'customers') fitCustomerSplitCols(table);
+      if (dashColKey(table) === 'so-lines') fitSoLineCols(table);
     }
 
     const INV_SPLIT_COL_DEFAULT_PCT = {
@@ -4079,6 +4082,62 @@
       if (table) fitCustomerSplitCols(table);
     }
 
+    const SO_LINE_COL_PCT = {
+      item: 22,
+      sku: 12,
+      description: 28,
+      qty: 8,
+      onHand: 10,
+      cost: 10,
+      dealer: 12,
+      price: 10,
+      amount: 12
+    };
+
+    function fitSoLineCols(table) {
+      if (!table || dashColKey(table) !== 'so-lines') return;
+      const wrap = table.closest('.so-doc-lines-wrap');
+      if (!wrap) return;
+      const paneWidth = wrap.clientWidth;
+      if (paneWidth < 120) return;
+      const state = loadColState(table);
+      const visibleCols = state.order.filter(function (id) {
+        return state.hidden.indexOf(id) === -1;
+      });
+      if (!visibleCols.length) return;
+      let locked = 0;
+      Array.prototype.forEach.call(table.querySelectorAll('thead th:not([data-col])'), function (th) {
+        if (th.hidden) return;
+        locked += 40;
+      });
+      const usable = Math.max(120, paneWidth - locked);
+      const widths = visibleCols.map(function (col) {
+        const saved = state.widths[col];
+        if (saved && String(saved).indexOf('px') !== -1) {
+          const n = Math.round(parseFloat(saved));
+          if (n > 0) return Math.max(INV_COL_MIN_PX, n);
+        }
+        const pct = SO_LINE_COL_PCT[col] || 12;
+        return Math.max(INV_COL_MIN_PX, Math.round(usable * pct / 100));
+      });
+      const fitted = shrinkInvSplitWidths(widths, usable);
+      Array.prototype.forEach.call(table.querySelectorAll('thead th[data-col]'), function (th) {
+        const col = th.getAttribute('data-col');
+        if (th.hidden || visibleCols.indexOf(col) === -1) {
+          th.style.width = '';
+          return;
+        }
+        th.style.width = fitted[visibleCols.indexOf(col)] + 'px';
+      });
+      table.style.width = '100%';
+      table.style.maxWidth = '100%';
+    }
+
+    function refreshSoLineCols() {
+      const table = document.querySelector('table.dash-cols[data-cols="so-lines"]');
+      if (table) fitSoLineCols(table);
+    }
+
     function dashOrderedCells(table, cells, lockedHtml, leadHtml) {
       return (leadHtml || '') + loadColState(table).order.map(function (id) { return cells[id] || ''; }).join('') + (lockedHtml || '');
     }
@@ -4233,6 +4292,7 @@
               saveColState(table, state);
               if (dashColKey(table) === 'inventory') fitInventorySplitCols(table);
               if (dashColKey(table) === 'customers') fitCustomerSplitCols(table);
+              if (dashColKey(table) === 'so-lines') fitSoLineCols(table);
             }
             document.addEventListener('mousemove', move);
             document.addEventListener('mouseup', up);
@@ -8443,7 +8503,10 @@
       const back = document.getElementById('so-back');
       if (back) back.textContent = on ? 'Close' : ('← All ' + (salesSubTab === 'quotes' ? 'quotes' : salesSubTab === 'orders' ? 'orders' : 'invoices'));
       if (on && document.getElementById('so-lines')) {
-        requestAnimationFrame(function () { renderSoLines(readSoLines(true)); });
+        requestAnimationFrame(function () {
+          renderSoLines(readSoLines(true));
+          refreshSoLineCols();
+        });
       }
     }
 
@@ -11041,6 +11104,21 @@
     });
 
     document.querySelectorAll('table.dash-cols').forEach(enableColumnResize);
+
+    (function initSoLineColFit() {
+      const wrap = document.querySelector('.so-doc-lines-wrap');
+      if (!wrap || typeof ResizeObserver === 'undefined') return;
+      let ticking = false;
+      const ro = new ResizeObserver(function () {
+        if (ticking) return;
+        ticking = true;
+        requestAnimationFrame(function () {
+          ticking = false;
+          refreshSoLineCols();
+        });
+      });
+      ro.observe(wrap);
+    })();
 
     (function initMobileInventoryCols() {
       let lastMobile = isMobileDash();
