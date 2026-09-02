@@ -453,6 +453,92 @@ body.dash-col-resizing * {
   padding: 0.3rem;
 }
 .dash-col-add[hidden] { display: none; }
+.so-sku-search {
+  position: relative;
+  min-width: 0;
+}
+.so-sku-search-ico {
+  position: absolute;
+  left: 0.45rem;
+  top: 50%;
+  width: 0.85rem;
+  height: 0.85rem;
+  transform: translateY(-50%);
+  color: var(--dash-muted);
+  pointer-events: none;
+}
+.so-sku-search input {
+  padding-left: 1.65rem;
+}
+.so-sku-search input::-webkit-search-decoration,
+.so-sku-search input::-webkit-search-cancel-button {
+  -webkit-appearance: none;
+}
+.so-sku-menu {
+  position: fixed;
+  z-index: 97;
+  min-width: 16rem;
+  max-width: 26rem;
+  max-height: 18rem;
+  overflow: auto;
+  background: #fff;
+  border: 1px solid var(--dash-line);
+  border-radius: 0.55rem;
+  box-shadow: 0 12px 32px rgba(7, 21, 58, 0.16);
+  padding: 0.3rem;
+}
+.so-sku-menu[hidden] { display: none; }
+.so-sku-opt,
+.so-sku-add {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: baseline;
+  gap: 0.45rem 0.65rem;
+  width: 100%;
+  text-align: left;
+  border: 0;
+  background: transparent;
+  color: var(--dash-text);
+  font: inherit;
+  font-size: 0.82rem;
+  padding: 0.45rem 0.65rem;
+  border-radius: 0.4rem;
+  cursor: pointer;
+}
+.so-sku-opt-sku {
+  font-weight: 650;
+  font-variant-numeric: tabular-nums;
+}
+.so-sku-opt-name {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: var(--dash-text);
+}
+.so-sku-opt-meta {
+  color: var(--dash-muted);
+  font-size: 0.75rem;
+  white-space: nowrap;
+}
+.so-sku-opt.is-on,
+.so-sku-opt:hover { background: #f7f9fc; }
+.so-sku-empty {
+  padding: 0.55rem 0.65rem;
+  font-size: 0.82rem;
+  color: var(--dash-muted);
+}
+.so-sku-add {
+  display: flex;
+  grid-template-columns: none;
+  font-weight: 650;
+  color: #102047;
+  border-top: 1px solid var(--dash-line);
+  border-radius: 0;
+  margin-top: 0.2rem;
+  padding-top: 0.55rem;
+}
+.so-sku-add:hover { background: #f7f9fc; }
 .dash-col-add-title {
   margin: 0;
   padding: 0.4rem 0.7rem 0.2rem;
@@ -2913,6 +2999,9 @@ body.so-invoice-float .so-doc-back {
   font-size: 0.85rem;
   background: #fff;
   color: var(--dash-text);
+}
+.so-doc-lines .so-sku-search input {
+  padding-left: 1.65rem;
 }
 .so-doc-lines table { width: 100%; border-collapse: collapse; font-size: 0.84rem; }
 .so-doc-lines th {
