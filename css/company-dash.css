@@ -3233,8 +3233,12 @@ body.so-invoice-float .so-doc-lines-wrap {
   border-radius: 0;
   overflow: auto;
 }
-body.so-invoice-float .so-doc-lines .dash-cols th[data-col="sku"] { width: 11rem; }
+body.so-invoice-float .so-doc-lines .dash-cols th[data-col="item"] { width: 12rem; }
+body.so-invoice-float .so-doc-lines .dash-cols th[data-col="sku"] { width: 9rem; }
 body.so-invoice-float .so-doc-lines .dash-cols th[data-col="qty"],
+body.so-invoice-float .so-doc-lines .dash-cols th[data-col="onHand"],
+body.so-invoice-float .so-doc-lines .dash-cols th[data-col="cost"],
+body.so-invoice-float .so-doc-lines .dash-cols th[data-col="dealer"],
 body.so-invoice-float .so-doc-lines .dash-cols th[data-col="price"],
 body.so-invoice-float .so-doc-lines .dash-cols th[data-col="amount"] { width: 7.5rem; }
 body.so-invoice-float .so-doc-lines th {

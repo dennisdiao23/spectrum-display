@@ -1442,9 +1442,13 @@
                       <thead>
                         <tr>
                           <th class="py-2 px-3 font-medium w-10" data-lock="start">#</th>
-                          <th class="py-2 px-3 font-medium" data-col="sku">Item <span class="dash-col-caret">▾</span><span class="dash-col-grip" aria-hidden="true"></span></th>
+                          <th class="py-2 px-3 font-medium" data-col="item">Item <span class="dash-col-caret">▾</span><span class="dash-col-grip" aria-hidden="true"></span></th>
+                          <th class="py-2 px-3 font-medium" data-col="sku">SKU <span class="dash-col-caret">▾</span><span class="dash-col-grip" aria-hidden="true"></span></th>
                           <th class="py-2 px-3 font-medium" data-col="description">Description <span class="dash-col-caret">▾</span><span class="dash-col-grip" aria-hidden="true"></span></th>
                           <th class="py-2 px-3 font-medium" data-col="qty">Qty <span class="dash-col-caret">▾</span><span class="dash-col-grip" aria-hidden="true"></span></th>
+                          <th class="py-2 px-3 font-medium" data-col="onHand">On hand <span class="dash-col-caret">▾</span><span class="dash-col-grip" aria-hidden="true"></span></th>
+                          <th class="py-2 px-3 font-medium" data-col="cost">Cost <span class="dash-col-caret">▾</span><span class="dash-col-grip" aria-hidden="true"></span></th>
+                          <th class="py-2 px-3 font-medium" data-col="dealer">Dealer Price <span class="dash-col-caret">▾</span><span class="dash-col-grip" aria-hidden="true"></span></th>
                           <th class="py-2 px-3 font-medium" data-col="price">Price <span class="dash-col-caret">▾</span><span class="dash-col-grip" aria-hidden="true"></span></th>
                           <th class="py-2 px-3 font-medium" data-col="amount">Amount <span class="dash-col-caret">▾</span><span class="dash-col-grip" aria-hidden="true"></span></th>
                           <th class="py-2 px-3 font-medium w-10"></th>
@@ -3482,9 +3486,13 @@
         { id: 'notes', label: 'Notes' }
       ],
       'so-lines': [
-        { id: 'sku', label: 'Item' },
+        { id: 'item', label: 'Item' },
+        { id: 'sku', label: 'SKU' },
         { id: 'description', label: 'Description' },
         { id: 'qty', label: 'Qty' },
+        { id: 'onHand', label: 'On hand' },
+        { id: 'cost', label: 'Cost' },
+        { id: 'dealer', label: 'Dealer Price' },
         { id: 'price', label: 'Price' },
         { id: 'amount', label: 'Amount' }
       ],
@@ -3571,7 +3579,7 @@
       inventory: ['sku', 'name', 'qty', 'cost', 'price'],
       customers: ['company', 'contact', 'email', 'phone', 'balance'],
       sales: ['number', 'customer', 'date', 'status', 'total'],
-      'so-lines': ['sku', 'description', 'qty', 'price', 'amount'],
+      'so-lines': ['item', 'description', 'qty', 'price', 'amount'],
       'po-lines': ['product', 'sku', 'description', 'qty', 'rate', 'amount'],
       'purchase-orders': ['number', 'vendor', 'date', 'status', 'total'],
       'receipt-shipments': ['number', 'vendor', 'po', 'date', 'qty'],
@@ -5250,7 +5258,7 @@
       hideCcLeave();
       document.body.classList.remove('inv-drawer-open');
       document.getElementById('inv-drawer').setAttribute('aria-hidden', 'true');
-      if (invDrawerSource === 'po' && invPoLineRow) {
+      if ((invDrawerSource === 'po' || invDrawerSource === 'sales') && invPoLineRow) {
         const sel = invPoLineRow.querySelector('[data-line="itemId"]');
         if (sel && sel.value === '__new__') sel.value = '';
       }
@@ -8593,16 +8601,51 @@
     }
 
     function soBlankLine() {
-      return { sku: '', description: '', qty: '', unitPrice: '' };
+      return { itemId: '', sku: '', description: '', qty: '', unitPrice: '' };
     }
 
     function soLineHasContent(line) {
       if (!line) return false;
       return !!(
+        String(line.itemId || '').trim() ||
         String(line.sku || '').trim() ||
         String(line.description || '').trim() ||
         money(line.unitPrice)
       );
+    }
+
+    function soInvById(id) {
+      if (!id) return null;
+      return (inventoryItems || []).find(function (i) { return String(i.id) === String(id); }) || null;
+    }
+
+    function soInvBySku(sku) {
+      const key = String(sku || '').trim().toLowerCase();
+      if (!key) return null;
+      return (inventoryItems || []).find(function (i) { return String(i.sku || '').trim().toLowerCase() === key; }) || null;
+    }
+
+    function soInvForLine(line) {
+      return soInvById(line && line.itemId) || soInvBySku(line && line.sku);
+    }
+
+    function soProductOptions(selected, sku) {
+      let sel = selected || '';
+      if (!sel && sku) {
+        const found = soInvBySku(sku);
+        if (found) sel = String(found.id);
+      }
+      return '<option value="">Select</option>' +
+        '<option value="__new__">+ Add new</option>' +
+        (inventoryItems || []).map(function (item) {
+          return '<option value="' + esc(item.id) + '"' + (String(item.id) === String(sel) ? ' selected' : '') + '>' +
+            esc(item.name || item.sku || 'Item') +
+            '</option>';
+        }).join('');
+    }
+
+    function soInvCell(value) {
+      return value == null || value === '' ? '—' : value;
     }
 
     function soLinesTable() {
@@ -8633,13 +8676,18 @@
     function soLineRow(line, index) {
       const item = line || soBlankLine();
       const table = soLinesTable();
+      const inv = soInvForLine(item);
       const qty = item.qty == null || item.qty === '' ? '' : item.qty;
       const price = item.unitPrice == null || item.unitPrice === '' ? '' : item.unitPrice;
       const amt = money(qty) * money(price);
       const cells = {
-        sku: '<td class="py-2 px-2"><input data-line="sku" value="' + esc(item.sku || '') + '"></td>',
+        item: '<td class="py-2 px-2"><select data-line="itemId">' + soProductOptions(item.itemId, item.sku) + '</select></td>',
+        sku: '<td class="py-2 px-2"><input data-line="sku" value="' + esc(item.sku || (inv && inv.sku) || '') + '"></td>',
         description: '<td class="py-2 px-2"><input data-line="description" value="' + esc(item.description || '') + '"></td>',
         qty: '<td class="py-2 px-2"><input data-line="qty" type="number" step="0.01" value="' + esc(qty) + '"></td>',
+        onHand: '<td class="py-2 px-2 tabular-nums so-inv-read" data-line="onHand">' + soInvCell(inv && inv.qty != null ? invQtyDisplay(inv) : '') + '</td>',
+        cost: '<td class="py-2 px-2 tabular-nums so-inv-read" data-line="cost">' + soInvCell(inv && inv.cost != null ? moneyText(inv.cost) : '') + '</td>',
+        dealer: '<td class="py-2 px-2 tabular-nums so-inv-read" data-line="dealer">' + soInvCell(inv && inv.dealerNet != null ? moneyText(inv.dealerNet) : '') + '</td>',
         price: '<td class="py-2 px-2"><input data-line="unitPrice" type="number" step="0.01" value="' + esc(price) + '"></td>',
         amount: '<td class="py-2 px-2 text-right tabular-nums" data-line-amt>' + (soLineHasContent(item) || amt ? moneyText(amt) : '') + '</td>'
       };
@@ -8662,7 +8710,12 @@
       };
       const qtyRaw = val('qty', prev.qty);
       const priceRaw = val('unitPrice', prev.unitPrice);
+      const sel = row.querySelector('[data-line="itemId"]');
+      const itemId = sel
+        ? (sel.value && sel.value !== '__new__' ? sel.value : '')
+        : (prev.itemId || '');
       return {
+        itemId: itemId,
         sku: val('sku', prev.sku || ''),
         description: val('description', prev.description || ''),
         qty: qtyRaw === '' ? '' : money(qtyRaw),
@@ -8701,6 +8754,42 @@
       soLineState = readSoLines(true);
       const table = soLinesTable();
       if (table) applyColOrder(table);
+    }
+
+    function applySoItemToLine(row, item) {
+      if (!row || !item) return;
+      const sel = row.querySelector('[data-line="itemId"]');
+      if (sel) sel.innerHTML = soProductOptions(item.id, item.sku);
+      const sku = row.querySelector('[data-line="sku"]');
+      const desc = row.querySelector('[data-line="description"]');
+      const price = row.querySelector('[data-line="unitPrice"]');
+      const onHand = row.querySelector('[data-line="onHand"]');
+      const cost = row.querySelector('[data-line="cost"]');
+      const dealer = row.querySelector('[data-line="dealer"]');
+      if (sku) sku.value = item.sku || '';
+      if (desc && !(desc.value || '').trim()) desc.value = item.description || item.name || '';
+      if (price && (price.value === '' || money(price.value) === 0) && item.price != null) price.value = item.price;
+      if (onHand) onHand.textContent = soInvCell(item.qty != null ? invQtyDisplay(item) : '');
+      if (cost) cost.textContent = soInvCell(item.cost != null ? moneyText(item.cost) : '');
+      if (dealer) dealer.textContent = soInvCell(item.dealerNet != null ? moneyText(item.dealerNet) : '');
+      const idx = Array.prototype.indexOf.call(document.querySelectorAll('#so-lines .so-line'), row);
+      if (idx !== -1) {
+        soLineState[idx] = Object.assign({}, soLineState[idx], {
+          itemId: item.id,
+          sku: item.sku || '',
+          description: (desc && desc.value) || item.description || item.name || '',
+          unitPrice: price ? price.value : (item.price != null ? item.price : '')
+        });
+      }
+      refreshSoTotals();
+      ensureSoSpareLines();
+    }
+
+    function lookupSoSku(row) {
+      if (!row) return;
+      const skuEl = row.querySelector('[data-line="sku"]');
+      const item = soInvBySku(skuEl ? skuEl.value : '');
+      if (item) applySoItemToLine(row, item);
     }
 
     function refreshSoTotals() {
@@ -8869,6 +8958,9 @@
       const lines = (doc.lines && doc.lines.length) ? doc.lines : [];
       renderSoLines(lines);
       requestAnimationFrame(function () { renderSoLines(readSoLines(true)); });
+      if (!inventoryItems.length) {
+        loadInventory().then(function () { renderSoLines(readSoLines(true)); }).catch(function () {});
+      }
       document.getElementById('so-delete-btn').classList.toggle('hidden', !doc.id);
       document.getElementById('so-to-order').classList.toggle('hidden', !doc.id || type === 'order');
       document.getElementById('so-to-invoice').classList.toggle('hidden', !doc.id || type === 'invoice');
@@ -9344,6 +9436,21 @@
       if (table) applyColOrder(table);
       soLineState = readSoLines(true);
       refreshSoTotals();
+    });
+    document.getElementById('so-lines').addEventListener('change', function (e) {
+      const sel = e.target.closest('[data-line="itemId"]');
+      if (sel) {
+        const row = sel.closest('tr');
+        if (sel.value === '__new__') {
+          if (typeof openNewInventory === 'function') openNewInventory('sales', row);
+          else sel.value = '';
+          return;
+        }
+        const item = soInvById(sel.value);
+        if (item) applySoItemToLine(row, item);
+        return;
+      }
+      if (e.target.closest('[data-line="sku"]')) lookupSoSku(e.target.closest('tr'));
     });
     document.getElementById('so-lines').addEventListener('input', function () {
       refreshSoTotals();
@@ -10179,6 +10286,12 @@
           invDrawerSource = '';
           invPoLineRow = null;
           applyPoItemToLine(row, data.item);
+          closeInventoryDrawer(true);
+        } else if (invDrawerSource === 'sales' && invPoLineRow) {
+          const row = invPoLineRow;
+          invDrawerSource = '';
+          invPoLineRow = null;
+          applySoItemToLine(row, data.item);
           closeInventoryDrawer(true);
         } else         if (invDrawerSource === 'detail') {
           invDetailData = data;
