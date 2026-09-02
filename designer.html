@@ -1136,7 +1136,7 @@
                 <span class="inline-flex items-center gap-1.5"><span class="w-4 h-0.5 bg-sky-400"></span> Data</span>
                 <span class="inline-flex items-center gap-1.5"><span class="w-4 h-0.5 bg-amber-400"></span> Power</span>
               </div>
-              <div>Drag wall to move · Scroll wheel or slider = zoom · Reset centers the wall</div>
+              <div>Drag wall to move · Slider = zoom · Reset centers the wall</div>
             </div>
           </div>
 
@@ -2926,11 +2926,6 @@
     document.getElementById('zoom-in').addEventListener('click', () => setZoom(zoom + 0.1));
     document.getElementById('zoom-out').addEventListener('click', () => setZoom(zoom - 0.1));
     document.getElementById('zoom-reset').addEventListener('click', resetView);
-
-    viewport.addEventListener('wheel', (e) => {
-      e.preventDefault();
-      setZoom(zoom + (e.deltaY > 0 ? -0.08 : 0.08), e.clientX, e.clientY);
-    }, { passive: false });
 
     viewport.addEventListener('mousedown', (e) => {
       if (e.button !== 0) return;
