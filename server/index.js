@@ -1300,14 +1300,15 @@ async function main() {
     res.status(400).json({ ok: false, error: err.message || 'Upload failed.' });
   });
 
-  function listenOn(host) {
+  function listenOn(host, extra) {
     return new Promise(function (resolve) {
       const server = http.createServer(app);
       server.on('error', function (err) {
         console.log('Skip ' + host + ':' + PORT + ' (' + err.code + ')');
         resolve(null);
       });
-      server.listen(PORT, host, function () {
+      const opts = Object.assign({ port: PORT, host: host }, extra || {});
+      server.listen(opts, function () {
         console.log('Listening on ' + host + ':' + PORT);
         resolve(server);
       });
@@ -1316,7 +1317,7 @@ async function main() {
 
   Promise.all([
     listenOn('0.0.0.0'),
-    listenOn('::')
+    listenOn('::', { ipv6Only: true })
   ]).then(function (servers) {
     if (!servers.some(Boolean)) {
       console.error('Port ' + PORT + ' is already in use. In PowerShell: taskkill /F /IM node.exe   then   npm start');
