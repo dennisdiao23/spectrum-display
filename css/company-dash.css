@@ -2781,7 +2781,6 @@ body.so-invoice-float .so-doc-back {
 .so-doc-headblock,
 .so-doc-meta { display: contents; }
 .so-job-bit { display: none; }
-body.so-invoice-float .so-job-bit { display: inline; }
 
 .so-doc-main {
   display: grid;
