@@ -1336,35 +1336,37 @@
         <div id="so-detail" class="hidden so-doc">
           <button type="button" id="so-back" class="so-doc-back">← All documents</button>
           <div class="so-doc-frame">
-            <div class="so-doc-caption" id="so-doc-caption">
-              <span id="so-caption-title">Create Invoices</span>
-              <button type="button" id="so-caption-close" aria-label="Close">×</button>
-            </div>
-            <div class="so-doc-ribbon" id="so-doc-ribbon">
-              <button type="button" id="so-ribbon-find" class="so-doc-ribbon-btn" title="Find">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="11" cy="11" r="6"/><path d="m20 20-3.5-3.5"/></svg>
-                <span>Find</span>
-              </button>
-              <button type="button" id="so-ribbon-new" class="so-doc-ribbon-btn" title="New">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="5" y="3" width="14" height="18" rx="1.5"/><path d="M8 8h8M8 12h8M8 16h5"/></svg>
-                <span>New</span>
-              </button>
-              <button type="submit" form="so-form" class="so-doc-ribbon-btn" data-so-after="stay" title="Save">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M5 5h11l3 3v11H5z"/><path d="M8 5v5h8V5M8 19v-6h8v6"/></svg>
-                <span>Save</span>
-              </button>
-              <button type="button" id="so-ribbon-delete" class="so-doc-ribbon-btn" title="Delete">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 7h16M9 7V5h6v2M8 7l1 12h6l1-12"/></svg>
-                <span>Delete</span>
-              </button>
-              <button type="button" id="so-ribbon-print" class="so-doc-ribbon-btn" title="Print">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M7 9V4h10v5"/><rect x="6" y="13" width="12" height="7"/><path d="M6 17H4V9h16v8h-2"/></svg>
-                <span>Print</span>
-              </button>
-              <button type="button" id="so-ribbon-email" class="so-doc-ribbon-btn" title="Email">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="6" width="18" height="12" rx="1.5"/><path d="m3 8 9 6 9-6"/></svg>
-                <span>Email</span>
-              </button>
+            <div class="so-doc-chrome">
+              <div class="so-doc-caption" id="so-doc-caption">
+                <span id="so-caption-title">Create Invoices</span>
+              </div>
+              <div class="so-doc-ribbon" id="so-doc-ribbon">
+                <button type="button" id="so-ribbon-find" class="so-doc-ribbon-btn" title="Find">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="11" cy="11" r="6"/><path d="m20 20-3.5-3.5"/></svg>
+                  <span>Find</span>
+                </button>
+                <button type="button" id="so-ribbon-new" class="so-doc-ribbon-btn" title="New">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="5" y="3" width="14" height="18" rx="1.5"/><path d="M8 8h8M8 12h8M8 16h5"/></svg>
+                  <span>New</span>
+                </button>
+                <button type="submit" form="so-form" class="so-doc-ribbon-btn" data-so-after="stay" title="Save">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M5 5h11l3 3v11H5z"/><path d="M8 5v5h8V5M8 19v-6h8v6"/></svg>
+                  <span>Save</span>
+                </button>
+                <button type="button" id="so-ribbon-delete" class="so-doc-ribbon-btn" title="Delete">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 7h16M9 7V5h6v2M8 7l1 12h6l1-12"/></svg>
+                  <span>Delete</span>
+                </button>
+                <button type="button" id="so-ribbon-print" class="so-doc-ribbon-btn" title="Print">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M7 9V4h10v5"/><rect x="6" y="13" width="12" height="7"/><path d="M6 17H4V9h16v8h-2"/></svg>
+                  <span>Print</span>
+                </button>
+                <button type="button" id="so-ribbon-email" class="so-doc-ribbon-btn" title="Email">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="6" width="18" height="12" rx="1.5"/><path d="m3 8 9 6 9-6"/></svg>
+                  <span>Email</span>
+                </button>
+              </div>
+              <button type="button" id="so-caption-close" class="so-doc-close" aria-label="Close">×</button>
             </div>
             <div class="so-doc-workspace">
               <form id="so-form" class="so-doc-main">
@@ -1389,28 +1391,31 @@
                     <label class="so-field so-f-number"><span id="so-number-label">Quote no.</span>
                       <input id="so-number" type="text" placeholder="SQ-1001">
                     </label>
-                    <label class="so-field so-f-date"><span>Date</span>
-                      <input id="so-issue" type="date">
-                    </label>
-                    <div class="so-doc-meta">
-                      <label class="so-field so-f-po"><span>P.O. number</span>
-                        <input id="so-po" type="text">
-                      </label>
-                      <label class="so-field so-f-terms"><span>Terms</span>
-                        <select id="so-terms">
-                          <option value="Due on receipt">Due on receipt</option>
-                          <option value="Net 15">Net 15</option>
-                          <option value="Net 30" selected>Net 30</option>
-                          <option value="Net 45">Net 45</option>
-                          <option value="Net 60">Net 60</option>
-                        </select>
-                      </label>
-                      <label class="so-field so-f-due"><span id="so-due-label">Valid until</span>
-                        <input id="so-due" type="date">
-                      </label>
-                      <label class="so-field so-f-status"><span>Status</span>
-                        <select id="so-status"></select>
-                      </label>
+                    <div class="so-doc-head-right">
+                      <div class="so-doc-amount">AMOUNT <strong id="so-head-amount">$0.00</strong></div>
+                      <div class="so-doc-meta">
+                        <label class="so-field so-f-date"><span>Date</span>
+                          <input id="so-issue" type="date">
+                        </label>
+                        <label class="so-field so-f-po"><span>P.O. number</span>
+                          <input id="so-po" type="text">
+                        </label>
+                        <label class="so-field so-f-terms"><span>Terms</span>
+                          <select id="so-terms">
+                            <option value="Due on receipt">Due on receipt</option>
+                            <option value="Net 15">Net 15</option>
+                            <option value="Net 30" selected>Net 30</option>
+                            <option value="Net 45">Net 45</option>
+                            <option value="Net 60">Net 60</option>
+                          </select>
+                        </label>
+                        <label class="so-field so-f-due"><span id="so-due-label">Valid until</span>
+                          <input id="so-due" type="date">
+                        </label>
+                        <label class="so-field so-f-status"><span>Status</span>
+                          <select id="so-status"></select>
+                        </label>
+                      </div>
                     </div>
                     <label class="so-field so-field-name"><span>Customer name</span>
                       <input id="so-customer-name" type="text" placeholder="Filled from Customer, or type a name">
@@ -1432,24 +1437,29 @@
                 </div>
                 <div class="so-doc-lines">
                   <div class="so-doc-lines-head">
-                    <h3>Item</h3>
-                    <button type="button" id="so-add-line">+ Add line</button>
+                    <h3>Item details</h3>
                   </div>
                   <div class="so-doc-lines-wrap">
-                    <table>
+                    <table class="w-full text-sm dash-cols" data-cols="so-lines">
                       <thead>
                         <tr>
-                          <th>Item</th>
-                          <th>Description</th>
-                          <th>Qty</th>
-                          <th>Price</th>
-                          <th>Amount</th>
-                          <th></th>
+                          <th class="py-2 px-3 font-medium w-10" data-lock="start">#</th>
+                          <th class="py-2 px-3 font-medium" data-col="item">Item <span class="dash-col-caret">▾</span><span class="dash-col-grip" aria-hidden="true"></span></th>
+                          <th class="py-2 px-3 font-medium" data-col="sku">SKU <span class="dash-col-caret">▾</span><span class="dash-col-grip" aria-hidden="true"></span></th>
+                          <th class="py-2 px-3 font-medium" data-col="description">Description <span class="dash-col-caret">▾</span><span class="dash-col-grip" aria-hidden="true"></span></th>
+                          <th class="py-2 px-3 font-medium" data-col="qty">Qty <span class="dash-col-caret">▾</span><span class="dash-col-grip" aria-hidden="true"></span></th>
+                          <th class="py-2 px-3 font-medium" data-col="onHand">On hand <span class="dash-col-caret">▾</span><span class="dash-col-grip" aria-hidden="true"></span></th>
+                          <th class="py-2 px-3 font-medium" data-col="cost">Cost <span class="dash-col-caret">▾</span><span class="dash-col-grip" aria-hidden="true"></span></th>
+                          <th class="py-2 px-3 font-medium" data-col="dealer">Dealer Price <span class="dash-col-caret">▾</span><span class="dash-col-grip" aria-hidden="true"></span></th>
+                          <th class="py-2 px-3 font-medium" data-col="price">Price <span class="dash-col-caret">▾</span><span class="dash-col-grip" aria-hidden="true"></span></th>
+                          <th class="py-2 px-3 font-medium" data-col="amount">Amount <span class="dash-col-caret">▾</span><span class="dash-col-grip" aria-hidden="true"></span></th>
+                          <th class="py-2 px-3 font-medium w-10"></th>
                         </tr>
                       </thead>
                       <tbody id="so-lines"></tbody>
                     </table>
                   </div>
+                  <button type="button" id="so-add-line" class="po-link">Add lines</button>
                 </div>
                 <div class="so-doc-foot">
                   <div class="so-doc-memo">
@@ -3392,6 +3402,7 @@
     let vnSavedSnapshot = '';
     let vnDrawerSource = '';
     let poLineState = [];
+    let soLineState = [];
 
     function stockStatusLabel(status) {
       if (status === 'out') return 'Out';
@@ -3476,6 +3487,17 @@
         { id: 'terms', label: 'Terms' },
         { id: 'notes', label: 'Notes' }
       ],
+      'so-lines': [
+        { id: 'item', label: 'Item' },
+        { id: 'sku', label: 'SKU' },
+        { id: 'description', label: 'Description' },
+        { id: 'qty', label: 'Qty' },
+        { id: 'onHand', label: 'On hand' },
+        { id: 'cost', label: 'Cost' },
+        { id: 'dealer', label: 'Dealer Price' },
+        { id: 'price', label: 'Price' },
+        { id: 'amount', label: 'Amount' }
+      ],
       'po-lines': [
         { id: 'product', label: 'Product/Service' },
         { id: 'sku', label: 'SKU' },
@@ -3559,6 +3581,7 @@
       inventory: ['sku', 'name', 'qty', 'cost', 'price'],
       customers: ['company', 'contact', 'email', 'phone', 'balance'],
       sales: ['number', 'customer', 'date', 'status', 'total'],
+      'so-lines': ['item', 'description', 'qty', 'price', 'amount'],
       'po-lines': ['product', 'sku', 'description', 'qty', 'rate', 'amount'],
       'purchase-orders': ['number', 'vendor', 'date', 'status', 'total'],
       'receipt-shipments': ['number', 'vendor', 'po', 'date', 'qty'],
@@ -3669,6 +3692,11 @@
         if (order.indexOf(id) !== -1 || hidden.indexOf(id) !== -1) return;
         hidden.push(id);
       });
+      if (dashColKey(table) === 'so-lines' && order.indexOf('item') === -1 && sameColList(order, ['sku', 'description', 'qty', 'price', 'amount'])) {
+        order.unshift('item');
+        const dropItem = hidden.indexOf('item');
+        if (dropItem !== -1) hidden.splice(dropItem, 1);
+      }
       if (!order.length && known.length) {
         order.push(known[0]);
         const drop = hidden.indexOf(known[0]);
@@ -3882,6 +3910,7 @@
       });
       if (dashColKey(table) === 'inventory') fitInventorySplitCols(table);
       if (dashColKey(table) === 'customers') fitCustomerSplitCols(table);
+      if (dashColKey(table) === 'so-lines') fitSoLineCols(table);
     }
 
     const INV_SPLIT_COL_DEFAULT_PCT = {
@@ -4053,6 +4082,62 @@
       if (table) fitCustomerSplitCols(table);
     }
 
+    const SO_LINE_COL_PCT = {
+      item: 22,
+      sku: 12,
+      description: 28,
+      qty: 8,
+      onHand: 10,
+      cost: 10,
+      dealer: 12,
+      price: 10,
+      amount: 12
+    };
+
+    function fitSoLineCols(table) {
+      if (!table || dashColKey(table) !== 'so-lines') return;
+      const wrap = table.closest('.so-doc-lines-wrap');
+      if (!wrap) return;
+      const paneWidth = wrap.clientWidth;
+      if (paneWidth < 120) return;
+      const state = loadColState(table);
+      const visibleCols = state.order.filter(function (id) {
+        return state.hidden.indexOf(id) === -1;
+      });
+      if (!visibleCols.length) return;
+      let locked = 0;
+      Array.prototype.forEach.call(table.querySelectorAll('thead th:not([data-col])'), function (th) {
+        if (th.hidden) return;
+        locked += 40;
+      });
+      const usable = Math.max(120, paneWidth - locked);
+      const widths = visibleCols.map(function (col) {
+        const saved = state.widths[col];
+        if (saved && String(saved).indexOf('px') !== -1) {
+          const n = Math.round(parseFloat(saved));
+          if (n > 0) return Math.max(INV_COL_MIN_PX, n);
+        }
+        const pct = SO_LINE_COL_PCT[col] || 12;
+        return Math.max(INV_COL_MIN_PX, Math.round(usable * pct / 100));
+      });
+      const fitted = shrinkInvSplitWidths(widths, usable);
+      Array.prototype.forEach.call(table.querySelectorAll('thead th[data-col]'), function (th) {
+        const col = th.getAttribute('data-col');
+        if (th.hidden || visibleCols.indexOf(col) === -1) {
+          th.style.width = '';
+          return;
+        }
+        th.style.width = fitted[visibleCols.indexOf(col)] + 'px';
+      });
+      table.style.width = '100%';
+      table.style.maxWidth = '100%';
+    }
+
+    function refreshSoLineCols() {
+      const table = document.querySelector('table.dash-cols[data-cols="so-lines"]');
+      if (table) fitSoLineCols(table);
+    }
+
     function dashOrderedCells(table, cells, lockedHtml, leadHtml) {
       return (leadHtml || '') + loadColState(table).order.map(function (id) { return cells[id] || ''; }).join('') + (lockedHtml || '');
     }
@@ -4166,6 +4251,7 @@
       if (name === 'inventory') renderInventoryTable();
       else if (name === 'customers') renderCcTable(companyCustomers);
       else if (name === 'sales') renderSoTable(salesDocs, salesTypeFromTab(salesSubTab));
+      else if (name === 'so-lines') renderSoLines();
       else if (name === 'po-lines') renderPoLines();
       else if (name === 'purchase-orders') renderPoTable(purchaseOrders);
       else if (name === 'receipt-shipments') renderRsTable(receiptShipments);
@@ -4206,6 +4292,7 @@
               saveColState(table, state);
               if (dashColKey(table) === 'inventory') fitInventorySplitCols(table);
               if (dashColKey(table) === 'customers') fitCustomerSplitCols(table);
+              if (dashColKey(table) === 'so-lines') fitSoLineCols(table);
             }
             document.addEventListener('mousemove', move);
             document.addEventListener('mouseup', up);
@@ -5236,7 +5323,7 @@
       hideCcLeave();
       document.body.classList.remove('inv-drawer-open');
       document.getElementById('inv-drawer').setAttribute('aria-hidden', 'true');
-      if (invDrawerSource === 'po' && invPoLineRow) {
+      if ((invDrawerSource === 'po' || invDrawerSource === 'sales') && invPoLineRow) {
         const sel = invPoLineRow.querySelector('[data-line="itemId"]');
         if (sel && sel.value === '__new__') sel.value = '';
       }
@@ -8415,6 +8502,12 @@
       document.body.classList.toggle('so-invoice-float', !!on);
       const back = document.getElementById('so-back');
       if (back) back.textContent = on ? 'Close' : ('← All ' + (salesSubTab === 'quotes' ? 'quotes' : salesSubTab === 'orders' ? 'orders' : 'invoices'));
+      if (on && document.getElementById('so-lines')) {
+        requestAnimationFrame(function () {
+          renderSoLines(readSoLines(true));
+          refreshSoLineCols();
+        });
+      }
     }
 
     async function openInvoiceWindow(id, opts) {
@@ -8575,44 +8668,217 @@
       } catch (err) { soSavedSnapshot = ''; }
     }
 
-    function soLineRow(line) {
-      const item = line || {};
+    function soBlankLine() {
+      return { itemId: '', sku: '', description: '', qty: '', unitPrice: '' };
+    }
+
+    function soLineHasContent(line) {
+      if (!line) return false;
+      return !!(
+        String(line.itemId || '').trim() ||
+        String(line.sku || '').trim() ||
+        String(line.description || '').trim() ||
+        money(line.unitPrice)
+      );
+    }
+
+    function soInvById(id) {
+      if (!id) return null;
+      return (inventoryItems || []).find(function (i) { return String(i.id) === String(id); }) || null;
+    }
+
+    function soInvBySku(sku) {
+      const key = String(sku || '').trim().toLowerCase();
+      if (!key) return null;
+      return (inventoryItems || []).find(function (i) { return String(i.sku || '').trim().toLowerCase() === key; }) || null;
+    }
+
+    function soInvForLine(line) {
+      return soInvById(line && line.itemId) || soInvBySku(line && line.sku);
+    }
+
+    function soProductOptions(selected, sku) {
+      let sel = selected || '';
+      if (!sel && sku) {
+        const found = soInvBySku(sku);
+        if (found) sel = String(found.id);
+      }
+      return '<option value="">Select</option>' +
+        '<option value="__new__">+ Add new</option>' +
+        (inventoryItems || []).map(function (item) {
+          return '<option value="' + esc(item.id) + '"' + (String(item.id) === String(sel) ? ' selected' : '') + '>' +
+            esc(item.name || item.sku || 'Item') +
+            '</option>';
+        }).join('');
+    }
+
+    function soInvCell(value) {
+      return value == null || value === '' ? '—' : value;
+    }
+
+    function soLinesTable() {
+      return document.querySelector('table.dash-cols[data-cols="so-lines"]');
+    }
+
+    function soVisibleRowCount() {
+      const wrap = document.querySelector('#so-detail .so-doc-lines-wrap');
+      if (!wrap) return 6;
+      const head = wrap.querySelector('thead');
+      const headH = head ? head.getBoundingClientRect().height : 34;
+      const sample = wrap.querySelector('.so-line');
+      const rowH = sample ? Math.max(sample.getBoundingClientRect().height, 34) : 38;
+      const avail = wrap.clientHeight - headH;
+      if (avail < 40) return isInvoiceDocWindow() ? 8 : 6;
+      return Math.max(6, Math.min(20, Math.floor(avail / rowH)));
+    }
+
+    function padSoLines(lines) {
+      const content = (lines || []).filter(soLineHasContent);
+      const out = content.length ? content.slice() : [];
+      const target = soVisibleRowCount();
+      while (out.length < target) out.push(soBlankLine());
+      if (!out.length || soLineHasContent(out[out.length - 1])) out.push(soBlankLine());
+      return out;
+    }
+
+    function soLineRow(line, index) {
+      const item = line || soBlankLine();
+      const table = soLinesTable();
+      const inv = soInvForLine(item);
+      const qty = item.qty == null || item.qty === '' ? '' : item.qty;
+      const price = item.unitPrice == null || item.unitPrice === '' ? '' : item.unitPrice;
+      const amt = money(qty) * money(price);
+      const cells = {
+        item: '<td class="py-2 px-2"><select data-line="itemId">' + soProductOptions(item.itemId, item.sku) + '</select></td>',
+        sku: '<td class="py-2 px-2"><input data-line="sku" value="' + esc(item.sku || (inv && inv.sku) || '') + '"></td>',
+        description: '<td class="py-2 px-2"><input data-line="description" value="' + esc(item.description || '') + '"></td>',
+        qty: '<td class="py-2 px-2"><input data-line="qty" type="number" step="0.01" value="' + esc(qty) + '"></td>',
+        onHand: '<td class="py-2 px-2 tabular-nums so-inv-read" data-line="onHand">' + soInvCell(inv && inv.qty != null ? invQtyDisplay(inv) : '') + '</td>',
+        cost: '<td class="py-2 px-2 tabular-nums so-inv-read" data-line="cost">' + soInvCell(inv && inv.cost != null ? moneyText(inv.cost) : '') + '</td>',
+        dealer: '<td class="py-2 px-2 tabular-nums so-inv-read" data-line="dealer">' + soInvCell(inv && inv.dealerNet != null ? moneyText(inv.dealerNet) : '') + '</td>',
+        price: '<td class="py-2 px-2"><input data-line="unitPrice" type="number" step="0.01" value="' + esc(price) + '"></td>',
+        amount: '<td class="py-2 px-2 text-right tabular-nums" data-line-amt>' + (soLineHasContent(item) || amt ? moneyText(amt) : '') + '</td>'
+      };
       return '<tr class="border-b so-line">' +
-        '<td><input data-line="sku" value="' + esc(item.sku || '') + '"></td>' +
-        '<td><input data-line="description" value="' + esc(item.description || '') + '"></td>' +
-        '<td><input data-line="qty" type="number" step="0.01" value="' + esc(item.qty == null ? 1 : item.qty) + '"></td>' +
-        '<td><input data-line="unitPrice" type="number" step="0.01" value="' + esc(item.unitPrice == null ? 0 : item.unitPrice) + '"></td>' +
-        '<td data-line-amt>' + moneyText((item.qty || 0) * (item.unitPrice || 0)) + '</td>' +
-        '<td><button type="button" data-remove-line class="text-slate-500 hover:text-red-400 text-xs">✕</button></td>' +
+        dashOrderedCells(
+          table,
+          cells,
+          '<td class="py-2 px-2"><button type="button" data-remove-line class="text-slate-400 hover:text-red-500 text-xs">✕</button></td>',
+          '<td class="py-2 px-3 so-line-num text-slate-400">' + (index + 1) + '</td>'
+        ) +
         '</tr>';
     }
 
-    function readSoLines() {
-      return Array.prototype.map.call(document.querySelectorAll('#so-lines .so-line'), function (row) {
-        return {
-          sku: (row.querySelector('[data-line="sku"]').value || '').trim(),
-          description: (row.querySelector('[data-line="description"]').value || '').trim(),
-          qty: money(row.querySelector('[data-line="qty"]').value),
-          unitPrice: money(row.querySelector('[data-line="unitPrice"]').value)
-        };
-      });
+    function readSoLineRow(row, i) {
+      const prev = soLineState[i] || soBlankLine();
+      const val = function (key, fallback) {
+        const el = row.querySelector('[data-line="' + key + '"]');
+        if (!el) return fallback;
+        return String(el.value || '').trim();
+      };
+      const qtyRaw = val('qty', prev.qty);
+      const priceRaw = val('unitPrice', prev.unitPrice);
+      const sel = row.querySelector('[data-line="itemId"]');
+      const itemId = sel
+        ? (sel.value && sel.value !== '__new__' ? sel.value : '')
+        : (prev.itemId || '');
+      return {
+        itemId: itemId,
+        sku: val('sku', prev.sku || ''),
+        description: val('description', prev.description || ''),
+        qty: qtyRaw === '' ? '' : money(qtyRaw),
+        unitPrice: priceRaw === '' ? '' : money(priceRaw)
+      };
+    }
+
+    function readSoLines(keepBlanks) {
+      const rows = Array.prototype.map.call(document.querySelectorAll('#so-lines .so-line'), readSoLineRow);
+      if (keepBlanks) return rows;
+      const content = rows.filter(soLineHasContent);
+      return content.length ? content : [{ sku: '', description: '', qty: 1, unitPrice: 0 }];
+    }
+
+    function renderSoLines(lines) {
+      const table = soLinesTable();
+      const tb = document.getElementById('so-lines');
+      const source = lines || readSoLines(true);
+      const padded = padSoLines(source);
+      soLineState = padded.slice();
+      tb.innerHTML = padded.map(function (line, i) { return soLineRow(line, i); }).join('');
+      if (table) applyColOrder(table);
+      refreshSoTotals();
+    }
+
+    function ensureSoSpareLines() {
+      const rows = document.querySelectorAll('#so-lines .so-line');
+      if (!rows.length) {
+        renderSoLines([]);
+        return;
+      }
+      const last = rows[rows.length - 1];
+      const line = readSoLineRow(last, rows.length - 1);
+      if (!soLineHasContent(line)) return;
+      last.insertAdjacentHTML('afterend', soLineRow(soBlankLine(), rows.length));
+      soLineState = readSoLines(true);
+      const table = soLinesTable();
+      if (table) applyColOrder(table);
+    }
+
+    function applySoItemToLine(row, item) {
+      if (!row || !item) return;
+      const sel = row.querySelector('[data-line="itemId"]');
+      if (sel) sel.innerHTML = soProductOptions(item.id, item.sku);
+      const sku = row.querySelector('[data-line="sku"]');
+      const desc = row.querySelector('[data-line="description"]');
+      const price = row.querySelector('[data-line="unitPrice"]');
+      const onHand = row.querySelector('[data-line="onHand"]');
+      const cost = row.querySelector('[data-line="cost"]');
+      const dealer = row.querySelector('[data-line="dealer"]');
+      if (sku) sku.value = item.sku || '';
+      if (desc && !(desc.value || '').trim()) desc.value = item.description || item.name || '';
+      if (price && (price.value === '' || money(price.value) === 0) && item.price != null) price.value = item.price;
+      if (onHand) onHand.textContent = soInvCell(item.qty != null ? invQtyDisplay(item) : '');
+      if (cost) cost.textContent = soInvCell(item.cost != null ? moneyText(item.cost) : '');
+      if (dealer) dealer.textContent = soInvCell(item.dealerNet != null ? moneyText(item.dealerNet) : '');
+      const idx = Array.prototype.indexOf.call(document.querySelectorAll('#so-lines .so-line'), row);
+      if (idx !== -1) {
+        soLineState[idx] = Object.assign({}, soLineState[idx], {
+          itemId: item.id,
+          sku: item.sku || '',
+          description: (desc && desc.value) || item.description || item.name || '',
+          unitPrice: price ? price.value : (item.price != null ? item.price : '')
+        });
+      }
+      refreshSoTotals();
+      ensureSoSpareLines();
+    }
+
+    function lookupSoSku(row) {
+      if (!row) return;
+      const skuEl = row.querySelector('[data-line="sku"]');
+      const item = soInvBySku(skuEl ? skuEl.value : '');
+      if (item) applySoItemToLine(row, item);
     }
 
     function refreshSoTotals() {
       const lines = readSoLines();
-      const subtotal = money(lines.reduce(function (sum, line) { return sum + line.qty * line.unitPrice; }, 0));
+      const subtotal = money(lines.reduce(function (sum, line) { return sum + money(line.qty) * money(line.unitPrice); }, 0));
       const discount = money(document.getElementById('so-discount').value);
       const rate = money(document.getElementById('so-tax-rate').value);
       const tax = money(Math.max(0, subtotal - discount) * (rate / 100));
-      document.querySelectorAll('#so-lines .so-line').forEach(function (row) {
-        const qty = money(row.querySelector('[data-line="qty"]').value);
-        const price = money(row.querySelector('[data-line="unitPrice"]').value);
-        row.querySelector('[data-line-amt]').textContent = moneyText(qty * price);
+      document.querySelectorAll('#so-lines .so-line').forEach(function (row, i) {
+        const line = readSoLineRow(row, i);
+        const amt = row.querySelector('[data-line-amt]');
+        if (!amt) return;
+        const n = money(line.qty) * money(line.unitPrice);
+        amt.textContent = soLineHasContent(line) || n ? moneyText(n) : '';
       });
       document.getElementById('so-subtotal').textContent = moneyText(subtotal);
       document.getElementById('so-tax').textContent = moneyText(tax);
       const grand = Math.max(0, subtotal - discount) + tax;
       document.getElementById('so-grand').textContent = moneyText(grand);
+      const headAmt = document.getElementById('so-head-amount');
+      if (headAmt) headAmt.textContent = moneyText(grand);
       const paid = document.getElementById('so-status').value === 'paid';
       const payEl = document.getElementById('so-payments-applied');
       const dueEl = document.getElementById('so-balance-due');
@@ -8623,7 +8889,7 @@
     function setSoTypeUi(type) {
       document.getElementById('so-type').value = type;
       document.getElementById('so-due-label').textContent = type === 'quote' ? 'Valid until' : 'Due date';
-      document.getElementById('so-number-label').textContent = numberLabel(type);
+      document.getElementById('so-number-label').textContent = isInvoiceDocWindow() ? 'No.' : numberLabel(type);
       document.getElementById('so-number').placeholder = nextSoNumber(type);
       const newBtn = document.getElementById('so-new-btn');
       if (newBtn) newBtn.textContent = 'New ' + salesTypeLabel(type).toLowerCase();
@@ -8757,8 +9023,12 @@
       document.getElementById('so-discount').value = doc.discount || 0;
       document.getElementById('so-tax-rate').value = doc.taxRate || 0;
       document.getElementById('so-notes').value = doc.notes || '';
-      const lines = (doc.lines && doc.lines.length) ? doc.lines : [{ qty: 1, unitPrice: 0 }];
-      document.getElementById('so-lines').innerHTML = lines.map(soLineRow).join('');
+      const lines = (doc.lines && doc.lines.length) ? doc.lines : [];
+      renderSoLines(lines);
+      requestAnimationFrame(function () { renderSoLines(readSoLines(true)); });
+      if (!inventoryItems.length) {
+        loadInventory().then(function () { renderSoLines(readSoLines(true)); }).catch(function () {});
+      }
       document.getElementById('so-delete-btn').classList.toggle('hidden', !doc.id);
       document.getElementById('so-to-order').classList.toggle('hidden', !doc.id || type === 'order');
       document.getElementById('so-to-invoice').classList.toggle('hidden', !doc.id || type === 'invoice');
@@ -9227,17 +9497,39 @@
       if (row) openSalesDoc(row.getAttribute('data-id'), { type: salesTypeFromTab(salesSubTab) });
     });
     document.getElementById('so-add-line').addEventListener('click', function () {
-      document.getElementById('so-lines').insertAdjacentHTML('beforeend', soLineRow({ qty: 1, unitPrice: 0 }));
+      const tb = document.getElementById('so-lines');
+      const n = tb.querySelectorAll('.so-line').length;
+      tb.insertAdjacentHTML('beforeend', soLineRow(soBlankLine(), n) + soLineRow(soBlankLine(), n + 1) + soLineRow(soBlankLine(), n + 2));
+      const table = soLinesTable();
+      if (table) applyColOrder(table);
+      soLineState = readSoLines(true);
       refreshSoTotals();
     });
-    document.getElementById('so-lines').addEventListener('input', refreshSoTotals);
+    document.getElementById('so-lines').addEventListener('change', function (e) {
+      const sel = e.target.closest('[data-line="itemId"]');
+      if (sel) {
+        const row = sel.closest('tr');
+        if (sel.value === '__new__') {
+          if (typeof openNewInventory === 'function') openNewInventory('sales', row);
+          else sel.value = '';
+          return;
+        }
+        const item = soInvById(sel.value);
+        if (item) applySoItemToLine(row, item);
+        return;
+      }
+      if (e.target.closest('[data-line="sku"]')) lookupSoSku(e.target.closest('tr'));
+    });
+    document.getElementById('so-lines').addEventListener('input', function () {
+      refreshSoTotals();
+      ensureSoSpareLines();
+    });
     document.getElementById('so-lines').addEventListener('click', function (e) {
       const btn = e.target.closest('[data-remove-line]');
       if (!btn) return;
-      const rows = document.querySelectorAll('#so-lines .so-line');
-      if (rows.length <= 1) return;
       btn.closest('tr').remove();
-      refreshSoTotals();
+      soLineState = readSoLines(true);
+      renderSoLines(soLineState);
     });
     document.getElementById('so-discount').addEventListener('input', refreshSoTotals);
     document.getElementById('so-tax-rate').addEventListener('input', refreshSoTotals);
@@ -10063,6 +10355,12 @@
           invPoLineRow = null;
           applyPoItemToLine(row, data.item);
           closeInventoryDrawer(true);
+        } else if (invDrawerSource === 'sales' && invPoLineRow) {
+          const row = invPoLineRow;
+          invDrawerSource = '';
+          invPoLineRow = null;
+          applySoItemToLine(row, data.item);
+          closeInventoryDrawer(true);
         } else         if (invDrawerSource === 'detail') {
           invDetailData = data;
           invDetailId = String(data.item.id);
@@ -10806,6 +11104,21 @@
     });
 
     document.querySelectorAll('table.dash-cols').forEach(enableColumnResize);
+
+    (function initSoLineColFit() {
+      const wrap = document.querySelector('.so-doc-lines-wrap');
+      if (!wrap || typeof ResizeObserver === 'undefined') return;
+      let ticking = false;
+      const ro = new ResizeObserver(function () {
+        if (ticking) return;
+        ticking = true;
+        requestAnimationFrame(function () {
+          ticking = false;
+          refreshSoLineCols();
+        });
+      });
+      ro.observe(wrap);
+    })();
 
     (function initMobileInventoryCols() {
       let lastMobile = isMobileDash();

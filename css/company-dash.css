@@ -2766,8 +2766,8 @@ body.so-invoice-float #sales-section {
   bottom: var(--dash-tabbar-h);
   overflow: hidden;
   margin: 0;
-  padding: 0;
-  background: #d8dee8;
+  padding: 0.75rem 0.85rem 0.85rem;
+  background: var(--dash-bg);
 }
 body.so-invoice-float #sales-list-wrap,
 body.so-invoice-float #so-overview,
@@ -2800,11 +2800,14 @@ body.so-invoice-float .so-doc-back {
   cursor: pointer;
 }
 .so-doc-note { margin: 0.2rem 0 0; font-size: 0.82rem; color: var(--dash-muted); }
+.so-doc-chrome { display: contents; }
 .so-doc-caption,
 .so-doc-ribbon,
 .so-doc-kind,
+.so-doc-amount,
 .so-doc-addresses,
 .so-doc-side,
+.so-doc-close,
 #so-save-close,
 #so-save-new,
 #so-revert,
@@ -2812,9 +2815,9 @@ body.so-invoice-float .so-doc-back {
 #so-balance-row { display: none; }
 .so-doc-scroll,
 .so-doc-headblock,
+.so-doc-head-right,
 .so-doc-meta { display: contents; }
 .so-job-bit { display: none; }
-body.so-invoice-float .so-job-bit { display: inline; }
 
 .so-doc-main {
   display: grid;
@@ -2856,27 +2859,60 @@ body.so-invoice-float .so-job-bit { display: inline; }
   color: var(--dash-text);
   background: #fff;
 }
-.so-doc-lines { min-width: 0; }
-.so-doc-lines-head {
-  display: flex;
+.so-doc-lines {
+  min-width: 0;
+  display: grid;
+  grid-template-columns: 1fr auto;
   align-items: center;
-  justify-content: space-between;
+}
+.so-doc-lines-head {
+  grid-column: 1;
+  grid-row: 1;
   margin-bottom: 0.4rem;
 }
 .so-doc-lines-head h3 { margin: 0; font-size: 0.88rem; color: var(--dash-text); }
 .so-doc-lines-head button,
 #so-add-line {
+  grid-column: 2;
+  grid-row: 1;
+  justify-self: end;
+  margin-bottom: 0.4rem;
   border: 0;
   background: none;
   color: #2f6bff;
   font: inherit;
   font-size: 0.82rem;
+  font-weight: 650;
   cursor: pointer;
+  padding: 0;
 }
 .so-doc-lines-wrap {
-  overflow: auto;
+  grid-column: 1 / -1;
+  overflow: hidden;
+  min-width: 0;
+}
+.so-doc-lines .dash-cols {
+  width: 100%;
+  min-width: 0;
+  max-width: 100%;
+  table-layout: fixed;
+}
+.so-doc-lines .dash-cols td {
+  overflow: hidden;
+  white-space: nowrap;
+}
+.so-doc-lines .dash-cols th { white-space: nowrap; overflow: hidden; }
+.so-doc-lines .dash-cols input,
+.so-doc-lines .dash-cols select {
+  width: 100%;
+  min-width: 0;
   border: 1px solid var(--dash-line);
-  border-radius: 0.65rem;
+  border-radius: 0.4rem;
+  padding: 0.4rem 0.5rem;
+  font: inherit;
+  font-size: 0.85rem;
+  background: #fff;
+  color: var(--dash-text);
 }
 .so-doc-lines table { width: 100%; border-collapse: collapse; font-size: 0.84rem; }
 .so-doc-lines th {
@@ -2943,68 +2979,87 @@ body.so-invoice-float .so-doc-frame {
   min-height: 0;
   display: flex;
   flex-direction: column;
+  overflow: hidden;
   background: #fff;
-  border: 1px solid #9aa7bc;
-  box-shadow: 0 8px 24px rgba(16, 32, 71, 0.12);
+  border: 1px solid var(--dash-line);
+  border-radius: 1rem;
+  box-shadow: 0 10px 30px rgba(16, 32, 71, 0.04);
 }
-body.so-invoice-float .so-doc-caption {
+body.so-invoice-float .so-doc-chrome {
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  height: 1.75rem;
-  padding: 0 0.55rem 0 0.75rem;
-  background: linear-gradient(180deg, #5d6b82 0%, #3f4c61 100%);
-  color: #fff;
-  font-size: 0.78rem;
-  font-weight: 700;
+  gap: 0.5rem;
   flex-shrink: 0;
+  padding: 0.55rem 1rem;
+  background: #fafbfd;
+  border-bottom: 1px solid var(--dash-line);
 }
-body.so-invoice-float .so-doc-caption button {
-  width: 1.35rem;
-  height: 1.2rem;
-  border: 0;
-  background: transparent;
-  color: #fff;
-  font-size: 1.05rem;
-  line-height: 1;
-  cursor: pointer;
-}
-body.so-invoice-float .so-doc-caption button:hover { background: #c2410c; }
+body.so-invoice-float .so-doc-caption { display: none; }
 body.so-invoice-float .so-doc-ribbon {
   display: flex;
-  align-items: stretch;
-  gap: 0.15rem;
-  padding: 0.28rem 0.45rem 0.35rem;
-  background: linear-gradient(180deg, #f4f7fb 0%, #dfe6f0 100%);
-  border-bottom: 1px solid #b7c2d4;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+  margin: 0 auto 0 0;
+  padding: 0;
+  background: transparent;
+  border: 0;
   flex-shrink: 0;
 }
 .so-doc-ribbon-btn {
-  display: flex;
-  flex-direction: column;
+  display: inline-flex;
+  flex-direction: row;
   align-items: center;
   justify-content: center;
-  gap: 0.12rem;
-  min-width: 3.4rem;
-  height: 3.15rem;
-  padding: 0.2rem 0.4rem;
-  border: 1px solid transparent;
-  border-radius: 0.25rem;
-  background: transparent;
-  color: #1c2c4f;
+  gap: 0.35rem;
+  min-width: 0;
+  height: auto;
+  padding: 0.45rem 0.9rem;
+  border: 1px solid var(--dash-line);
+  border-radius: 999px;
+  background: #fff;
+  color: #102047;
   font: inherit;
-  font-size: 0.68rem;
+  font-size: 0.8125rem;
   font-weight: 600;
   cursor: pointer;
 }
 .so-doc-ribbon-btn svg {
-  width: 1.15rem;
-  height: 1.15rem;
+  width: 1rem;
+  height: 1rem;
+  color: inherit;
+  stroke: currentColor;
   stroke-linecap: round;
   stroke-linejoin: round;
 }
-.so-doc-ribbon-btn:hover { background: #fff; border-color: #c5d0e0; }
+body.so-invoice-float .so-doc-chrome .so-doc-ribbon-btn {
+  color: #102047;
+}
+body.so-invoice-float .so-doc-chrome .so-doc-ribbon-btn:hover {
+  background: #f7f9fc;
+  color: #102047;
+  text-decoration: none;
+}
 .so-doc-ribbon-btn:disabled { opacity: 0.4; cursor: default; }
+body.so-invoice-float .so-doc-close {
+  display: grid;
+  place-items: center;
+  width: 2rem;
+  height: 2rem;
+  margin-left: 0.15rem;
+  border: 0;
+  border-radius: 999px;
+  background: transparent;
+  color: var(--dash-text);
+  font-size: 1.25rem;
+  line-height: 1;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+body.so-invoice-float .so-doc-close:hover {
+  background: #f7f9fc;
+  color: var(--dash-text);
+}
 body.so-invoice-float .so-doc-workspace {
   flex: 1;
   min-height: 0;
@@ -3018,8 +3073,8 @@ body.so-invoice-float .so-doc-main {
   overflow: hidden;
   border: 0;
   border-radius: 0;
-  padding: 0;
-  background: #f7f9fc;
+  padding: 1.15rem 1.35rem 0.35rem;
+  background: #fff;
 }
 body.so-invoice-float .so-doc-scroll {
   display: flex;
@@ -3027,69 +3082,112 @@ body.so-invoice-float .so-doc-scroll {
   flex: 1;
   min-height: 0;
   overflow: auto;
-  gap: 0;
+  gap: 0.75rem;
 }
 body.so-invoice-float .so-doc-headblock {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) 10.5rem 10.5rem;
-  grid-template-areas:
-    "customer customer customer"
-    "kind date number";
-  gap: 0.45rem 0.85rem;
-  align-items: end;
+  grid-template-columns: minmax(16rem, 22rem) minmax(1.5rem, 1fr) minmax(22rem, 38rem);
+  align-items: start;
+  column-gap: 0;
+  row-gap: 0.4rem;
+  width: 100%;
   padding: 0;
 }
-body.so-invoice-float .so-doc-top { display: contents; }
-body.so-invoice-float .so-f-customer {
-  grid-area: customer;
-  flex-direction: row;
-  align-items: center;
-  gap: 0.75rem;
-  padding: 0.4rem 0.85rem;
-  background: #5c6573;
-  color: #fff;
-}
-body.so-invoice-float .so-f-customer span {
-  color: #e8edf6;
-  font-size: 0.68rem;
-  font-weight: 800;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-  white-space: nowrap;
-}
-body.so-invoice-float .so-f-customer select {
-  max-width: 22rem;
-  background: #fff;
-  color: var(--dash-text);
+body.so-invoice-float .so-doc-top {
+  display: contents;
 }
 body.so-invoice-float .so-doc-kind {
-  grid-area: kind;
   display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  justify-content: center;
-  gap: 0.15rem;
-  padding: 0.15rem 0.85rem 0;
+  flex-direction: row;
+  align-items: baseline;
+  gap: 0.45rem;
+  padding: 0;
+  grid-column: 1;
+  grid-row: 1;
 }
 body.so-invoice-float .so-doc-kind h2 {
   margin: 0;
-  font-size: 1.85rem;
-  font-weight: 800;
-  color: #163a7a;
-  letter-spacing: -0.03em;
-  line-height: 1;
+  font-size: 1.2rem;
+  font-weight: 700;
+  color: var(--dash-text);
+  letter-spacing: 0;
+  line-height: 1.2;
 }
-body.so-invoice-float .so-f-date { grid-area: date; padding-right: 0.25rem; }
-body.so-invoice-float .so-f-number { grid-area: number; padding-right: 0.85rem; }
+body.so-invoice-float .so-doc-head-right {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 0.4rem;
+  grid-column: 3;
+  grid-row: 1 / 4;
+  min-width: 0;
+}
+body.so-invoice-float .so-doc-amount {
+  display: block;
+  align-self: flex-end;
+  text-align: right;
+  font-size: 0.68rem;
+  letter-spacing: 0.06em;
+  color: var(--dash-muted);
+}
+body.so-invoice-float .so-doc-amount strong {
+  display: block;
+  font-size: 1.35rem;
+  letter-spacing: 0;
+  color: var(--dash-text);
+  font-weight: 750;
+}
+body.so-invoice-float .so-f-number {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 0.35rem;
+  font-size: 0.75rem;
+  grid-column: 1;
+  grid-row: 2;
+}
+body.so-invoice-float .so-f-number span { white-space: nowrap; }
+body.so-invoice-float .so-f-number input {
+  width: 8.5rem;
+  padding: 0.28rem 0.45rem;
+  font-size: 0.82rem;
+  border-radius: 0.4rem;
+  border-color: var(--dash-line);
+}
+body.so-invoice-float .so-f-customer {
+  grid-column: 1;
+  grid-row: 3;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 0.18rem;
+  padding: 0;
+  background: transparent;
+  color: var(--dash-muted);
+  font-size: 0.75rem;
+}
+body.so-invoice-float .so-f-customer span {
+  color: var(--dash-muted);
+  font-size: 0.75rem;
+  font-weight: 500;
+  letter-spacing: 0;
+  text-transform: none;
+}
+body.so-invoice-float .so-f-customer select {
+  max-width: none;
+  width: 100%;
+  border-color: var(--dash-line);
+  border-radius: 0.45rem;
+  padding: 0.32rem 0.5rem;
+  font-size: 0.82rem;
+}
 body.so-invoice-float .so-doc-meta {
-  grid-column: 1 / -1;
   display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 0.45rem 0.75rem;
-  padding: 0.45rem 0.85rem;
-  background: #e4eaf3;
-  border-top: 1px solid #c5d0e0;
-  border-bottom: 1px solid #c5d0e0;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.35rem 0.75rem;
+  align-content: start;
+  padding: 0;
+  background: transparent;
+  border: 0;
 }
 body.so-invoice-float .so-field-name,
 body.so-invoice-float .so-field-email { display: none; }
@@ -3098,8 +3196,8 @@ body.so-invoice-float .so-field-email { display: none; }
   align-items: center;
   gap: 0.35rem;
   font-size: 0.78rem;
-  font-weight: 800;
-  letter-spacing: 0.05em;
+  font-weight: 700;
+  letter-spacing: 0.04em;
   text-transform: uppercase;
   color: #0f7a3a;
 }
@@ -3118,137 +3216,218 @@ body.so-invoice-float .so-field-email { display: none; }
 .so-status-badge.is-draft,
 .so-status-badge.is-sent,
 .so-status-badge.is-void { color: #3b5b9c; }
+body.so-invoice-float .so-field span {
+  font-size: 0.72rem;
+  color: var(--dash-muted);
+}
+body.so-invoice-float .so-field {
+  gap: 0.16rem;
+}
+body.so-invoice-float .so-field input,
+body.so-invoice-float .so-field select,
+body.so-invoice-float .so-field textarea {
+  border-color: var(--dash-line);
+  border-radius: 0.45rem;
+  padding: 0.32rem 0.5rem;
+  font-size: 0.82rem;
+}
 body.so-invoice-float .so-doc-addresses {
   display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 0.75rem;
-  padding: 0.65rem 0.85rem 0.35rem;
+  grid-template-columns: repeat(2, minmax(10.5rem, 14.5rem));
+  gap: 0.4rem 0.75rem;
+  padding: 0;
+  justify-content: start;
 }
 .so-doc-addresses h3 {
-  margin: 0 0 0.25rem;
-  font-size: 0.68rem;
-  font-weight: 800;
-  letter-spacing: 0.05em;
-  text-transform: uppercase;
+  margin: 0 0 0.3rem;
+  font-size: 0.75rem;
+  font-weight: 500;
+  letter-spacing: 0;
+  text-transform: none;
   color: var(--dash-muted);
 }
 .so-doc-addresses pre {
   margin: 0;
-  min-height: 3.6rem;
-  padding: 0.45rem 0.55rem;
-  border: 1px solid #d5dcea;
-  border-radius: 0.2rem;
+  min-height: 5.25rem;
+  padding: 0.5rem 0.65rem;
+  border: 1px solid var(--dash-line);
+  border-radius: 0.45rem;
   background: #fff;
   font: inherit;
-  font-size: 0.82rem;
+  font-size: 0.875rem;
   color: var(--dash-text);
   white-space: pre-wrap;
 }
 body.so-invoice-float .so-doc-lines {
-  flex: 1;
-  min-height: 10rem;
   display: flex;
   flex-direction: column;
-  padding: 0.25rem 0.85rem 0;
+  align-items: stretch;
+  flex: 1;
+  min-height: 10rem;
+  padding: 0;
+  margin-top: 0.3rem;
 }
-body.so-invoice-float .so-doc-lines-head h3 { display: none; }
+body.so-invoice-float .so-doc-lines-head {
+  margin-bottom: 0.65rem;
+}
+body.so-invoice-float .so-doc-lines-head h3 {
+  display: block;
+  font-size: 1.02rem;
+  font-weight: 700;
+  color: var(--dash-text);
+}
+body.so-invoice-float .so-doc-lines-head button,
+body.so-invoice-float #so-add-line {
+  grid-column: auto;
+  grid-row: auto;
+  justify-self: start;
+  align-self: start;
+  margin: 0.75rem 0 0;
+  font-size: 0.85rem;
+  font-weight: 650;
+  color: #2f6bff;
+}
+body.so-invoice-float #so-add-line:hover { text-decoration: underline; }
 body.so-invoice-float .so-doc-lines-wrap {
   flex: 1;
-  background:
-    repeating-linear-gradient(to bottom, #fff 0 1.7rem, #eef4fb 1.7rem 3.4rem);
+  min-width: 0;
+  background: transparent;
+  border: 0;
   border-radius: 0;
-  border-color: #b7c2d4;
+  overflow: hidden;
+}
+body.so-invoice-float .so-doc-lines .dash-cols {
+  width: 100%;
+  min-width: 0;
+  max-width: 100%;
 }
 body.so-invoice-float .so-doc-lines th {
-  background: #d9e2ef;
-  color: #31415f;
-  font-size: 0.72rem;
-  font-weight: 800;
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
+  background: #fff;
+  color: var(--dash-muted);
+  font-size: 0.78rem;
+  font-weight: 600;
+  letter-spacing: 0;
+  text-transform: none;
   position: sticky;
   top: 0;
+  border-bottom: 1px solid var(--dash-line);
 }
-body.so-invoice-float .so-doc-lines tbody tr:nth-child(even) { background: rgba(238, 244, 251, 0.7); }
+body.so-invoice-float .so-doc-lines tbody tr:nth-child(even) { background: transparent; }
 body.so-invoice-float .so-doc-lines td input {
-  border: 0;
-  background: transparent;
-  border-radius: 0;
-  padding: 0.28rem 0.2rem;
+  border: 1px solid var(--dash-line);
+  background: #fff;
+  border-radius: 0.4rem;
+  padding: 0.4rem 0.5rem;
+  font-size: 0.85rem;
 }
 body.so-invoice-float .so-doc-foot {
-  padding: 0.55rem 0.85rem 0.35rem;
-  background: #f7f9fc;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 16rem;
+  gap: 1rem;
+  padding: 0;
+  background: transparent;
+  align-items: start;
 }
-body.so-invoice-float .so-doc-total-row.is-grand { font-size: 1rem; }
-body.so-invoice-float #so-balance-row { font-weight: 800; }
+body.so-invoice-float .so-doc-total-row.is-grand {
+  font-weight: 750;
+  border-top: 1px solid var(--dash-line);
+  margin-top: 0.35rem;
+  padding-top: 0.45rem;
+  font-size: 0.9rem;
+  letter-spacing: 0;
+  color: var(--dash-text);
+}
+body.so-invoice-float .so-doc-total-row.is-grand span:first-child {
+  font-size: 0.9rem;
+  font-weight: 750;
+  letter-spacing: 0;
+  color: var(--dash-text);
+  align-self: center;
+}
+body.so-invoice-float #so-balance-row { font-weight: 750; }
 body.so-invoice-float .so-doc-actions {
   flex-shrink: 0;
   justify-content: flex-end;
-  gap: 0.4rem;
-  padding: 0.55rem 0.85rem 0.7rem;
-  background: #eceff4;
-  border-top: 1px solid #c5d0e0;
+  gap: 0.5rem;
+  padding: 0.35rem 1.35rem 1.2rem;
+  background: #fff;
+  border-top: 0;
 }
+body.so-invoice-float .so-doc-btn {
+  height: auto;
+  padding: 0.5rem 1.15rem;
+  border-radius: 999px;
+  font-size: 0.875rem;
+}
+body.so-invoice-float .so-doc-btn-primary {
+  background: #0ea5e9;
+  border-color: #0ea5e9;
+}
+body.so-invoice-float .so-doc-btn-primary:hover { background: #38bdf8; border-color: #38bdf8; }
 body.so-invoice-float .so-doc-side {
   display: flex;
   flex-direction: column;
   gap: 0.65rem;
-  padding: 0.85rem 0.9rem;
-  background: #eceff4;
-  border-left: 1px solid #c5d0e0;
+  padding: 1.15rem 1.15rem 1.2rem;
+  background: #fff;
+  border-left: 1px solid var(--dash-line);
   overflow: auto;
 }
 .so-doc-side h3 {
   margin: 0;
-  font-size: 0.95rem;
-  font-weight: 800;
-  color: #163a7a;
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: var(--dash-text);
 }
 .so-side-tabs {
   display: flex;
   gap: 0.25rem;
-  border-bottom: 1px solid #c5d0e0;
+  border-bottom: 1px solid var(--dash-line);
 }
 .so-side-tabs button {
   border: 0;
   background: none;
-  padding: 0.35rem 0.45rem;
+  padding: 0.4rem 0.55rem;
   font: inherit;
-  font-size: 0.78rem;
-  font-weight: 700;
-  color: #6b7894;
+  font-size: 0.8rem;
+  font-weight: 650;
+  color: var(--dash-muted);
   cursor: pointer;
 }
 .so-side-tabs button.is-on {
-  color: #163a7a;
+  color: #2f6bff;
   box-shadow: inset 0 -2px 0 #2f6bff;
 }
 .so-side-dl { margin: 0; display: grid; gap: 0.45rem; }
 .so-side-dl div { display: grid; gap: 0.1rem; }
-.so-side-dl dt { font-size: 0.7rem; color: var(--dash-muted); text-transform: uppercase; letter-spacing: 0.04em; }
-.so-side-dl dd { margin: 0; font-size: 0.84rem; color: var(--dash-text); }
-.so-side-label { margin: 0; font-size: 0.72rem; font-weight: 700; color: var(--dash-muted); text-transform: uppercase; }
+.so-side-dl dt { font-size: 0.75rem; color: var(--dash-muted); text-transform: none; letter-spacing: 0; }
+.so-side-dl dd { margin: 0; font-size: 0.875rem; color: var(--dash-text); }
+.so-side-label { margin: 0; font-size: 0.75rem; font-weight: 650; color: var(--dash-muted); text-transform: none; }
 .so-side-tx-list { display: grid; gap: 0.35rem; }
 .so-side-tx {
   display: grid;
   gap: 0.1rem;
-  padding: 0.4rem 0.45rem;
+  padding: 0.55rem 0.65rem;
   background: #fff;
-  border: 1px solid #d5dcea;
-  border-radius: 0.35rem;
-  font-size: 0.78rem;
+  border: 1px solid var(--dash-line);
+  border-radius: 0.65rem;
+  font-size: 0.82rem;
 }
-.so-side-tx b { font-size: 0.8rem; }
+.so-side-tx b { font-size: 0.85rem; }
 @media (max-width: 1100px) {
   body.so-invoice-float .so-doc-workspace { grid-template-columns: 1fr; }
-  body.so-invoice-float .so-doc-side { border-left: 0; border-top: 1px solid #c5d0e0; }
+  body.so-invoice-float .so-doc-side { border-left: 0; border-top: 1px solid var(--dash-line); }
   body.so-invoice-float .so-doc-headblock {
-    grid-template-columns: 1fr 1fr;
-    grid-template-areas:
-      "customer customer"
-      "kind kind"
-      "date number";
+    grid-template-columns: 1fr;
   }
+  body.so-invoice-float .so-doc-kind,
+  body.so-invoice-float .so-f-number,
+  body.so-invoice-float .so-f-customer,
+  body.so-invoice-float .so-doc-head-right { grid-column: 1; }
+  body.so-invoice-float .so-doc-kind { grid-row: 1; }
+  body.so-invoice-float .so-f-number { grid-row: 2; }
+  body.so-invoice-float .so-f-customer { grid-row: 3; }
+  body.so-invoice-float .so-doc-head-right { grid-row: 4; }
   body.so-invoice-float .so-doc-meta { grid-template-columns: 1fr 1fr; }
+  body.so-invoice-float .so-doc-foot { grid-template-columns: 1fr; }
 }
