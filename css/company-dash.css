@@ -3004,7 +3004,6 @@ body.so-invoice-float .so-doc-chrome .so-doc-ribbon-btn:hover {
   color: #102047;
   text-decoration: none;
 }
-.so-doc-ribbon-btn:hover { background: #f7f9fc; text-decoration: none; }
 .so-doc-ribbon-btn:disabled { opacity: 0.4; cursor: default; }
 body.so-invoice-float .so-doc-close {
   display: grid;
