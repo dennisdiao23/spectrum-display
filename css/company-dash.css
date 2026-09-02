@@ -2952,10 +2952,10 @@ body.so-invoice-float .so-doc-frame {
 body.so-invoice-float .so-doc-chrome {
   display: flex;
   align-items: center;
-  gap: 0.65rem;
+  gap: 0.5rem;
   flex-shrink: 0;
-  padding: 0.45rem 1.15rem 0.4rem;
-  background: #fff;
+  padding: 0.55rem 1rem;
+  background: #fafbfd;
   border-bottom: 1px solid var(--dash-line);
 }
 body.so-invoice-float .so-doc-caption { display: none; }
@@ -2963,7 +2963,7 @@ body.so-invoice-float .so-doc-ribbon {
   display: flex;
   align-items: center;
   flex-wrap: wrap;
-  gap: 0.15rem 0.2rem;
+  gap: 0.35rem;
   margin: 0 auto 0 0;
   padding: 0;
   background: transparent;
@@ -2977,15 +2977,15 @@ body.so-invoice-float .so-doc-ribbon {
   justify-content: center;
   gap: 0.35rem;
   min-width: 0;
-  height: 2.15rem;
-  padding: 0 0.8rem;
-  border: 0;
+  height: auto;
+  padding: 0.45rem 0.9rem;
+  border: 1px solid var(--dash-line);
   border-radius: 999px;
-  background: transparent;
-  color: #2f6bff;
+  background: #fff;
+  color: var(--dash-text);
   font: inherit;
-  font-size: 0.85rem;
-  font-weight: 650;
+  font-size: 0.8125rem;
+  font-weight: 600;
   cursor: pointer;
 }
 .so-doc-ribbon-btn svg {
@@ -2994,7 +2994,7 @@ body.so-invoice-float .so-doc-ribbon {
   stroke-linecap: round;
   stroke-linejoin: round;
 }
-.so-doc-ribbon-btn:hover { background: #eef2ff; text-decoration: none; }
+.so-doc-ribbon-btn:hover { background: #f7f9fc; text-decoration: none; }
 .so-doc-ribbon-btn:disabled { opacity: 0.4; cursor: default; }
 body.so-invoice-float .so-doc-close {
   display: grid;
@@ -3005,15 +3005,15 @@ body.so-invoice-float .so-doc-close {
   border: 0;
   border-radius: 999px;
   background: transparent;
-  color: var(--dash-muted);
+  color: var(--dash-text);
   font-size: 1.25rem;
   line-height: 1;
   cursor: pointer;
   flex-shrink: 0;
 }
 body.so-invoice-float .so-doc-close:hover {
-  background: #eef2ff;
-  color: #102047;
+  background: #f7f9fc;
+  color: var(--dash-text);
 }
 body.so-invoice-float .so-doc-workspace {
   flex: 1;
