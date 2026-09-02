@@ -461,6 +461,7 @@ body.dash-col-resizing * {
   position: absolute;
   left: 0.45rem;
   top: 50%;
+  z-index: 1;
   width: 0.85rem;
   height: 0.85rem;
   transform: translateY(-50%);
