@@ -9,6 +9,7 @@
   <title>Company | Spectrum Display</title>
   <meta name="robots" content="noindex, nofollow" />
   <link rel="stylesheet" href="/css/company-dash.css" />
+  <script src="/js/address-autocomplete.js"></script>
   <script>
     (function () {
       try {
@@ -1685,7 +1686,7 @@
         <button type="button" class="cc-sec-btn"><span class="cc-sec-label"><svg class="cc-sec-ico" viewBox="0 0 24 24"><path d="M12 21s7-6.2 7-11a7 7 0 1 0-14 0c0 4.8 7 11 7 11z"/><circle cx="12" cy="10" r="2.2"/></svg> Addresses</span> <span class="cc-sec-chevron">▾</span></button>
         <div class="cc-sec-body">
           <p class="cc-note">Billing address</p>
-          <div class="cc-field wide"><label>Street address 1</label><input id="cc-bill-street" type="text"></div>
+          <div class="cc-field wide"><label>Street address 1</label><input id="cc-bill-street" type="text" placeholder="Start typing an address" autocomplete="off" data-places-fields="cc-bill-street,cc-bill-street2,cc-bill-city,cc-bill-state,cc-bill-zip,cc-bill-country"></div>
           <div class="cc-field wide"><label>Street address 2</label><input id="cc-bill-street2" type="text"></div>
           <div class="cc-field"><label>City</label><input id="cc-bill-city" type="text"></div>
           <div class="cc-field"><label>State</label><input id="cc-bill-state" type="text"></div>
@@ -1694,7 +1695,7 @@
           <label class="cc-check wide"><input id="cc-ship-same" type="checkbox" checked> Add billing address as the shipping address</label>
           <div id="cc-ship-fields" class="wide hidden grid" style="grid-template-columns:1fr 1fr;gap:0.75rem 0.85rem">
             <p class="cc-note" style="grid-column:1/-1">Shipping address</p>
-            <div class="cc-field" style="grid-column:1/-1"><label>Street address 1</label><input id="cc-ship-street" type="text"></div>
+            <div class="cc-field" style="grid-column:1/-1"><label>Street address 1</label><input id="cc-ship-street" type="text" placeholder="Start typing an address" autocomplete="off" data-places-fields="cc-ship-street,cc-ship-street2,cc-ship-city,cc-ship-state,cc-ship-zip,cc-ship-country"></div>
             <div class="cc-field" style="grid-column:1/-1"><label>Street address 2</label><input id="cc-ship-street2" type="text"></div>
             <div class="cc-field"><label>City</label><input id="cc-ship-city" type="text"></div>
             <div class="cc-field"><label>State</label><input id="cc-ship-state" type="text"></div>
@@ -1961,7 +1962,7 @@
       <section class="cc-sec is-open" id="vn-sec-address">
         <button type="button" class="cc-sec-btn"><span class="cc-sec-label"><svg class="cc-sec-ico" viewBox="0 0 24 24"><path d="M12 21s7-6.2 7-11a7 7 0 1 0-14 0c0 4.8 7 11 7 11z"/><circle cx="12" cy="10" r="2.2"/></svg> Address</span> <span class="cc-sec-chevron">▾</span></button>
         <div class="cc-sec-body">
-          <div class="cc-field wide"><label>Street address 1</label><input id="vn-street" type="text"></div>
+          <div class="cc-field wide"><label>Street address 1</label><input id="vn-street" type="text" placeholder="Start typing an address" autocomplete="off" data-places-fields="vn-street,vn-street2,vn-city,vn-state,vn-zip,vn-country"></div>
           <div class="cc-field wide"><label>Street address 2</label><input id="vn-street2" type="text"></div>
           <div class="cc-field"><label>City</label><input id="vn-city" type="text"></div>
           <div class="cc-field"><label>State</label><input id="vn-state" type="text"></div>
@@ -2077,7 +2078,7 @@
           <div class="cc-field"><label>Phone</label><input id="ci-phone" type="text"></div>
           <div class="cc-field"><label>Email</label><input id="ci-email" type="email"></div>
           <div class="cc-field wide"><label>Website</label><input id="ci-website" type="text" placeholder="https://"></div>
-          <div class="cc-field wide"><label>Street address 1</label><input id="ci-street" type="text"></div>
+          <div class="cc-field wide"><label>Street address 1</label><input id="ci-street" type="text" placeholder="Start typing an address" autocomplete="off" data-places-fields="ci-street,ci-street2,ci-city,ci-state,ci-zip,ci-country"></div>
           <div class="cc-field wide"><label>Street address 2</label><input id="ci-street2" type="text"></div>
           <div class="cc-field"><label>City</label><input id="ci-city" type="text"></div>
           <div class="cc-field"><label>State</label><input id="ci-state" type="text"></div>
@@ -5909,6 +5910,19 @@
 
     function syncCcShipFields() {
       document.getElementById('cc-ship-fields').classList.toggle('hidden', document.getElementById('cc-ship-same').checked);
+      bindCompanyAddressPlaces();
+    }
+
+    function bindCompanyAddressPlaces() {
+      if (!window.SpectrumPlaces || !SpectrumPlaces.bind) return;
+      [
+        { street: 'cc-bill-street', line2: 'cc-bill-street2', city: 'cc-bill-city', state: 'cc-bill-state', zip: 'cc-bill-zip', country: 'cc-bill-country' },
+        { street: 'cc-ship-street', line2: 'cc-ship-street2', city: 'cc-ship-city', state: 'cc-ship-state', zip: 'cc-ship-zip', country: 'cc-ship-country' },
+        { street: 'vn-street', line2: 'vn-street2', city: 'vn-city', state: 'vn-state', zip: 'vn-zip', country: 'vn-country' },
+        { street: 'ci-street', line2: 'ci-street2', city: 'ci-city', state: 'ci-state', zip: 'ci-zip', country: 'ci-country' }
+      ].forEach(function (fields) {
+        SpectrumPlaces.bind(fields.street, fields);
+      });
     }
 
     function fillCcForm(c) {
@@ -11155,6 +11169,7 @@
     }).catch(function () {
       loginPanel.classList.remove('hidden');
     });
+    if (window.SpectrumPlaces) SpectrumPlaces.bootFromConfig(bindCompanyAddressPlaces);
   </script>
 </body>
 </html>

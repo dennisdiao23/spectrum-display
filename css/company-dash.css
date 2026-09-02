@@ -587,6 +587,24 @@ body.ca-drawer-open #ca-drawer,
 body.ci-drawer-open #ci-drawer,
 body.st-drawer-open #st-drawer,
 body.rl-drawer-open #rl-drawer { transform: none; }
+.pac-container {
+  z-index: 12000 !important;
+  border-radius: 0.55rem;
+  border: 1px solid var(--dash-line);
+  box-shadow: 0 12px 32px rgba(7, 21, 58, 0.16);
+  font-family: Inter, system-ui, sans-serif;
+  margin-top: 0.2rem;
+}
+.pac-item {
+  padding: 0.45rem 0.7rem;
+  cursor: pointer;
+  font-size: 0.85rem;
+  color: var(--dash-text);
+}
+.pac-item:hover,
+.pac-item-selected {
+  background: #f7f9fc;
+}
 .ca-secret {
   display: flex;
   gap: 0.45rem;
