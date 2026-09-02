@@ -38,8 +38,6 @@
       gap: 2rem;
     }
     .designer-toolbar {
-      position: sticky;
-      top: var(--nav-h);
       z-index: 40;
       height: var(--designer-bar-h);
       overflow: hidden;
@@ -47,22 +45,86 @@
       backdrop-filter: blur(16px);
       -webkit-backdrop-filter: blur(16px);
       border-bottom: 1px solid #1e293b;
+      position: sticky;
+      top: var(--nav-h);
+    }
+    @media (min-width: 1024px) {
+      html {
+        overflow: hidden;
+        height: 100%;
+      }
+      body.designer-app {
+        height: 100vh;
+        height: 100dvh;
+        overflow: hidden;
+        display: flex;
+        flex-direction: column;
+        box-sizing: border-box;
+        padding-top: calc(var(--nav-h) + var(--designer-bar-h));
+      }
+      .designer-toolbar {
+        position: fixed;
+        top: var(--nav-h);
+        left: 0;
+        right: 0;
+      }
+      .designer-main {
+        flex: 1 1 auto;
+        min-height: 0;
+        overflow: hidden;
+        padding-bottom: 0 !important;
+        padding-top: 0 !important;
+        margin-top: 0;
+      }
+      .designer-main > .site-wrap {
+        height: 100%;
+        overflow: hidden;
+      }
+      .designer-controls-pane {
+        display: flex;
+        flex-direction: column;
+        min-height: 0;
+        max-height: 100%;
+        overflow: hidden;
+        padding-top: var(--content-gap);
+        padding-bottom: var(--content-gap);
+        box-sizing: border-box;
+      }
+      .designer-controls {
+        flex: 1 1 auto;
+        overflow-y: auto;
+        min-height: 0;
+        max-height: 100%;
+        overscroll-behavior: contain;
+        scrollbar-width: none;
+        -ms-overflow-style: none;
+      }
+      .designer-controls::-webkit-scrollbar {
+        display: none;
+        width: 0;
+        height: 0;
+      }
     }
     @media (min-width: 1024px) {
       .designer-layout {
         grid-template-columns: minmax(18rem, 26rem) minmax(0, 1fr);
-        align-items: start;
+        align-items: stretch;
+        height: 100%;
+        overflow: hidden;
       }
       .preview-pane {
-        position: sticky;
-        top: calc(var(--nav-h) + var(--designer-bar-h) + var(--content-gap));
-        align-self: start;
-        height: calc(100vh - var(--nav-h) - var(--designer-bar-h) - var(--content-gap));
-        max-height: calc(100vh - var(--nav-h) - var(--designer-bar-h) - var(--content-gap));
+        position: relative;
+        top: auto;
+        align-self: stretch;
+        height: 100%;
+        max-height: 100%;
         overflow: hidden;
         display: flex;
         flex-direction: column;
         background: #020617;
+        padding-top: var(--content-gap);
+        padding-bottom: var(--content-gap);
+        box-sizing: border-box;
       }
       .preview-sticky {
         display: flex;
@@ -73,8 +135,21 @@
       .preview-pane .preview-frame {
         flex: 1 1 auto;
         height: auto;
-        min-height: 28rem;
+        min-height: 16rem;
         max-height: none;
+      }
+      .preview-extras {
+        flex-shrink: 0;
+        max-height: 38%;
+        overflow-y: auto;
+        overscroll-behavior: contain;
+        scrollbar-width: none;
+        -ms-overflow-style: none;
+      }
+      .preview-extras::-webkit-scrollbar {
+        display: none;
+        width: 0;
+        height: 0;
       }
     }
     .preview-frame {
@@ -89,6 +164,43 @@
       overflow: hidden;
       height: 360px;
     }
+    .preview-frame .preview-meta {
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      z-index: 10;
+      margin: 0;
+      padding: 0.5rem 0.65rem;
+      background: linear-gradient(180deg, rgba(2, 6, 23, 0.92) 0%, rgba(2, 6, 23, 0.72) 70%, rgba(2, 6, 23, 0) 100%);
+      pointer-events: none;
+    }
+    .preview-frame .preview-meta > * {
+      pointer-events: auto;
+    }
+    .preview-frame .preview-meta h2 {
+      color: #f8fafc;
+      font-size: 0.875rem;
+      white-space: nowrap;
+    }
+    .preview-frame .preview-meta-left {
+      color: #94a3b8;
+    }
+    .preview-frame .preview-foot {
+      position: absolute;
+      bottom: 0;
+      right: 0;
+      left: auto;
+      z-index: 10;
+      margin: 0;
+      padding: 0.35rem 0.65rem;
+      font-size: 0.75rem;
+      line-height: 1.4;
+      color: #64748b;
+      text-align: right;
+      background: linear-gradient(0deg, rgba(2, 6, 23, 0.88) 0%, rgba(2, 6, 23, 0) 100%);
+      pointer-events: none;
+    }
     @media (min-width: 640px) and (max-width: 1023px) {
       .preview-frame {
         height: clamp(
@@ -101,6 +213,10 @@
     @media (max-width: 1023px) {
       :root {
         --content-gap: 0.2rem;
+      }
+      .designer-main {
+        padding-top: var(--content-gap);
+        padding-bottom: 5rem;
       }
       .preview-pane {
         display: contents;
@@ -118,17 +234,17 @@
         border-bottom: 1px solid #1e293b;
         box-shadow: 0 10px 24px rgba(0, 0, 0, 0.35);
       }
-      .preview-sticky h2 {
-        display: none;
-      }
-      .preview-sticky .preview-meta {
-        margin-bottom: 0.35rem;
+      .preview-frame .preview-meta {
+        padding: 0.35rem 0.5rem;
         gap: 0.5rem;
       }
-      .preview-sticky .preview-meta-left {
+      .preview-frame .preview-meta-left {
         font-size: 0.7rem;
       }
       .designer-controls {
+        order: 0;
+      }
+      .designer-controls-pane {
         order: 0;
       }
       .preview-extras {
@@ -142,6 +258,9 @@
       .preview-sticky .preview-frame {
         height: 17.5rem;
         max-height: 50vh;
+      }
+      .preview-frame .preview-meta h2 {
+        display: none;
       }
       .preview-desktop {
         display: none;
@@ -644,10 +763,11 @@
     </div>
   </header>
 
-  <section class="designer-main pb-20" style="padding-top: var(--content-gap)">
+  <section class="designer-main">
     <div class="site-wrap designer-layout">
       
       <!-- Controls -->
+      <div class="designer-controls-pane min-w-0">
       <div class="designer-controls space-y-5">
         <!-- 1. Product -->
         <div class="p-5 rounded-2xl border border-slate-800 bg-slate-900/60 space-y-4">
@@ -903,32 +1023,33 @@
           </a>
         </div>
       </div>
+      </div>
 
       <!-- Preview -->
       <div class="preview-pane min-w-0">
           <div class="preview-sticky">
-          <div class="preview-meta flex items-center justify-between gap-3 mb-3 shrink-0">
-            <h2 class="font-semibold text-base hidden lg:block" data-i18n="designer.preview">Live Wall Preview</h2>
-            <div class="preview-meta-left text-sm text-slate-400 min-w-0">
-              <span id="preview-size">11'10" × 6'8"</span>
-              <span class="preview-desktop">
-                · <span id="preview-resolution">3,840 × 2,160</span>
-                (<span id="preview-grid">6×6</span>)
-              </span>
-              <span class="preview-mobile"> · <span id="preview-screens">36 panels</span></span>
-              · <span id="preview-weight">—</span>
-              · <span id="preview-power">—</span>
-            </div>
-            <div class="zoom-controls shrink-0">
-              <button id="zoom-out" type="button" class="w-7 h-7 rounded-full border border-slate-600 hover:border-sky-500 text-slate-300 text-sm flex items-center justify-center" title="Zoom out">−</button>
-              <input id="zoom-slider" type="range" min="50" max="200" value="100" step="5" class="w-28 sm:w-36">
-              <button id="zoom-in" type="button" class="w-7 h-7 rounded-full border border-slate-600 hover:border-sky-500 text-slate-300 text-sm flex items-center justify-center" title="Zoom in">+</button>
-              <span id="zoom-value" class="text-xs text-slate-400 w-10 text-right">100%</span>
-              <button id="zoom-reset" type="button" class="text-xs px-2 py-1 rounded border border-slate-700 hover:border-sky-500 text-slate-400" title="Reset view">Reset</button>
-            </div>
-          </div>
-          
           <div class="preview-frame">
+            <div class="preview-meta flex items-center justify-between gap-3 shrink-0">
+              <h2 class="font-semibold text-base hidden lg:block" data-i18n="designer.preview">Live Wall Preview</h2>
+              <div class="preview-meta-left text-sm text-slate-400 min-w-0">
+                <span id="preview-size">11'10" × 6'8"</span>
+                <span class="preview-desktop">
+                  · <span id="preview-resolution">3,840 × 2,160</span>
+                  (<span id="preview-grid">6×6</span>)
+                </span>
+                <span class="preview-mobile"> · <span id="preview-screens">36 panels</span></span>
+                · <span id="preview-weight">—</span>
+                · <span id="preview-power">—</span>
+              </div>
+              <div class="zoom-controls shrink-0">
+                <button id="zoom-out" type="button" class="w-7 h-7 rounded-full border border-slate-600 hover:border-sky-500 text-slate-300 text-sm flex items-center justify-center" title="Zoom out">−</button>
+                <input id="zoom-slider" type="range" min="50" max="200" value="100" step="5" class="w-28 sm:w-36">
+                <button id="zoom-in" type="button" class="w-7 h-7 rounded-full border border-slate-600 hover:border-sky-500 text-slate-300 text-sm flex items-center justify-center" title="Zoom in">+</button>
+                <span id="zoom-value" class="text-xs text-slate-400 w-10 text-right">100%</span>
+                <button id="zoom-reset" type="button" class="text-xs px-2 py-1 rounded border border-slate-700 hover:border-sky-500 text-slate-400" title="Reset view">Reset</button>
+              </div>
+            </div>
+            <p class="preview-foot">© 2026 Spectrum Display Inc. • spectrumdisplay.com</p>
             <div class="preview-viewport" id="preview-viewport">
               <div class="scene-bg" id="scene-bg"></div>
               <div class="wall-transform" id="wall-transform">
@@ -1021,13 +1142,13 @@
                 <span class="inline-flex items-center gap-1.5"><span class="w-4 h-0.5 bg-sky-400"></span> Data</span>
                 <span class="inline-flex items-center gap-1.5"><span class="w-4 h-0.5 bg-amber-400"></span> Power</span>
               </div>
-              <div>Drag wall to move · Scroll wheel or slider = zoom · Reset centers the wall</div>
+              <div>Drag wall to move · Slider = zoom · Reset centers the wall</div>
             </div>
           </div>
 
-          <div class="mt-5 p-4 rounded-xl bg-slate-900/50 border border-slate-800 text-sm text-slate-400">
-            <strong class="text-slate-200">Note:</strong> This is a planning visualization. Final panel count, exact resolution, mounting method, and pricing are confirmed by our team after reviewing site conditions and content requirements.
-          </div>
+          <p class="mt-3 text-xs text-slate-500 leading-snug">
+            <strong class="text-slate-400 font-medium">Note:</strong> This is a planning visualization. Final panel count, exact resolution, mounting method, and pricing are confirmed by our team after reviewing site conditions and content requirements.
+          </p>
           </div>
       </div>
     </div>
@@ -1040,10 +1161,6 @@
     </div>
     <iframe id="spec-frame" title="Project spec sheet"></iframe>
   </div>
-
-  <footer class="border-t border-slate-800 py-10 px-4 text-center text-sm text-slate-500">
-    <p>© 2026 Spectrum Display Inc. • spectrumdisplay.com</p>
-  </footer>
 
   <script src="js/control-systems.js"></script>
   <script src="js/catalog-api.js"></script>
@@ -2815,11 +2932,6 @@
     document.getElementById('zoom-in').addEventListener('click', () => setZoom(zoom + 0.1));
     document.getElementById('zoom-out').addEventListener('click', () => setZoom(zoom - 0.1));
     document.getElementById('zoom-reset').addEventListener('click', resetView);
-
-    viewport.addEventListener('wheel', (e) => {
-      e.preventDefault();
-      setZoom(zoom + (e.deltaY > 0 ? -0.08 : 0.08), e.clientX, e.clientY);
-    }, { passive: false });
 
     viewport.addEventListener('mousedown', (e) => {
       if (e.button !== 0) return;
