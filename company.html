@@ -3281,8 +3281,8 @@
       document.getElementById('settings-pane').classList.toggle('hidden', !onSettings);
       document.getElementById('products-section').classList.toggle('hidden', name !== 'products');
       document.getElementById('inventory-section').classList.toggle('hidden', name !== 'inventory');
-      document.body.classList.toggle('inv-layout-lock', name === 'inventory');
-      document.body.classList.toggle('dash-split-lock', name === 'customers');
+      document.body.classList.toggle('inv-layout-lock', name === 'inventory' && !isMobileDash());
+      document.body.classList.toggle('dash-split-lock', name === 'customers' && !isMobileDash());
       document.getElementById('vendors-section').classList.toggle('hidden', name !== 'vendors');
       document.getElementById('po-section').classList.toggle('hidden', name !== 'purchase-orders');
       document.getElementById('rs-section').classList.toggle('hidden', name !== 'receipt-shipments');
@@ -10809,10 +10809,19 @@
 
     (function initMobileInventoryCols() {
       let lastMobile = isMobileDash();
+      function syncSplitLayoutLock() {
+        const inv = document.getElementById('inventory-section');
+        const cc = document.getElementById('customers-section');
+        const onInventory = inv && !inv.classList.contains('hidden');
+        const onCustomers = cc && !cc.classList.contains('hidden');
+        document.body.classList.toggle('inv-layout-lock', onInventory && !isMobileDash());
+        document.body.classList.toggle('dash-split-lock', onCustomers && !isMobileDash());
+      }
       window.addEventListener('resize', function () {
         const mobile = isMobileDash();
         if (mobile === lastMobile) return;
         lastMobile = mobile;
+        syncSplitLayoutLock();
         const inv = document.getElementById('inventory-section');
         if (currentAdminUser && inv && !inv.classList.contains('hidden')) {
           renderInventoryTable();

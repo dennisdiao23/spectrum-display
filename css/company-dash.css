@@ -2714,6 +2714,42 @@ body.inv-split-dragging {
   body.dash-split-lock .dash-split {
     grid-template-rows: minmax(0, 1.2fr) minmax(0, 0.8fr);
   }
+  /* Mobile inventory/customers: page scroll instead of locked inner panes */
+  body.company-app:not(.inv-layout-lock) #inv-workspace,
+  body.company-app:not(.inv-layout-lock) #inventory-list-wrap,
+  body.company-app:not(.dash-split-lock) #cc-workspace,
+  body.company-app:not(.dash-split-lock) #customers-list-wrap {
+    flex: none;
+    min-height: auto;
+    overflow: visible;
+  }
+  body.company-app:not(.inv-layout-lock) .inv-split {
+    grid-template-rows: auto auto;
+    flex: none;
+    min-height: auto;
+  }
+  body.company-app:not(.dash-split-lock) .dash-split {
+    grid-template-rows: auto auto;
+    flex: none;
+    min-height: auto;
+  }
+  body.company-app:not(.inv-layout-lock) .inv-split-left,
+  body.company-app:not(.dash-split-lock) .dash-split-left {
+    overflow: visible;
+    min-height: auto;
+  }
+  body.company-app:not(.inv-layout-lock) .inv-split-left > .cc-table-card,
+  body.company-app:not(.dash-split-lock) .dash-split-left > .cc-table-card {
+    flex: none;
+    min-height: auto;
+  }
+  body.company-app:not(.inv-layout-lock) #inv-table-wrap,
+  body.company-app:not(.dash-split-lock) .dash-split-left .cc-table-wrap {
+    flex: none;
+    min-height: auto;
+    max-height: none;
+    overflow: visible;
+  }
 }
 
 body.so-invoice-float .dash-topbar {
