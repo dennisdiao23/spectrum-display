@@ -480,6 +480,14 @@
       background-repeat: no-repeat;
     }
     .scene-bg.photo-mode { }
+    .preview-viewport.spec-capture,
+    .preview-viewport.spec-capture .scene-bg {
+      background: #fff !important;
+      background-image: none !important;
+    }
+    .preview-viewport.spec-capture .wall-container.glow-edge {
+      box-shadow: 0 0 0 1px #e2e8f0;
+    }
 
     .wall-transform {
       position: absolute;
@@ -1170,6 +1178,7 @@
   <script src="js/auth.js"></script>
   <script src="js/site-header.js"></script>
   <script src="js/i18n.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
   <script>
     window.SPECTRUM_PRODUCTS = window.SPECTRUM_PRODUCTS || {};
     const products = window.SPECTRUM_PRODUCTS;
@@ -2588,60 +2597,109 @@
       return '<tr><th>' + escHtml(label) + '</th><td>' + escHtml(value) + '</td></tr>';
     }
 
-    function schematicHtml(spec) {
-      const ratio = (spec.actualW / Math.max(spec.actualH, 0.01)).toFixed(4);
-      if (spec.panels > 800) {
-        return '<div class="schematic-box" style="aspect-ratio:' + ratio + '"></div>'
-          + '<p class="note">' + spec.cols + ' × ' + spec.rows + ' panels</p>';
+    async function capturePreviewForSpec() {
+      const viewport = document.getElementById('preview-viewport');
+      const sceneBg = document.getElementById('scene-bg');
+      if (!viewport || typeof html2canvas !== 'function') return '';
+
+      const saved = { view: viewMode, zoom: zoom, panX: panX, panY: panY };
+      if (viewMode === 'wiring') setViewMode('front');
+      zoom = 1;
+      panX = 0;
+      panY = 0;
+      applyTransform();
+      updateDesign();
+      viewport.classList.add('spec-capture');
+      const scenePrev = sceneBg ? sceneBg.style.cssText : '';
+      const viewportPrev = viewport.style.cssText;
+      if (sceneBg) {
+        sceneBg.style.cssText = 'background:#fff!important;background-image:none!important';
       }
-      const cells = new Array(spec.panels + 1).join('<i></i>');
-      return '<div class="schematic" style="grid-template-columns:repeat(' + spec.cols + ',minmax(0,1fr));aspect-ratio:' + ratio + '">'
-        + cells + '</div>';
+      viewport.style.background = '#fff';
+      await new Promise(function(resolve) {
+        requestAnimationFrame(function() { requestAnimationFrame(resolve); });
+      });
+
+      try {
+        const canvas = await html2canvas(viewport, {
+          backgroundColor: '#ffffff',
+          scale: 2,
+          useCORS: true,
+          allowTaint: true,
+          logging: false,
+          width: viewport.offsetWidth,
+          height: viewport.offsetHeight,
+          windowWidth: viewport.offsetWidth,
+          windowHeight: viewport.offsetHeight
+        });
+        return canvas.toDataURL('image/png');
+      } catch (err) {
+        console.warn('Preview capture failed', err);
+        return '';
+      } finally {
+        viewport.classList.remove('spec-capture');
+        if (sceneBg) sceneBg.style.cssText = scenePrev;
+        viewport.style.cssText = viewportPrev;
+        zoom = saved.zoom;
+        panX = saved.panX;
+        panY = saved.panY;
+        if (saved.view === 'wiring') setViewMode('wiring');
+        applyTransform();
+      }
     }
 
-    function buildSpecHtml(spec) {
+    function buildSpecHtml(spec, previewImage) {
       const date = new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
       const title = spec.brand + ' ' + spec.series + ' · ' + spec.cols + '×' + spec.rows;
       const productLine = [spec.brand, spec.series, spec.type].filter(Boolean).join(' · ');
+      const logoUrl = new URL('assets/spectrum-logo-print.jpg', window.location.href).href;
+      const previewBlock = previewImage
+        ? '<figure class="hero"><img src="' + previewImage + '" alt="LED wall preview"/></figure>'
+        : '<figure class="hero hero-fallback"><div class="hero-placeholder">Preview unavailable</div></figure>';
+
       return '<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"/>'
         + '<title>' + escHtml(title) + ' | Spectrum Display</title>'
         + '<style>'
         + '*{box-sizing:border-box}body{margin:0;font-family:Inter,Segoe UI,system-ui,sans-serif;color:#0f172a;background:#fff}'
-        + '.sheet{max-width:8.5in;margin:0 auto;padding:0.55in 0.6in 0.45in}'
-        + '.bar{height:6px;background:linear-gradient(90deg,#0ea5e9,#38bdf8);margin:-0.55in -0.6in 0.4in}'
-        + 'header{display:flex;justify-content:space-between;align-items:flex-start;gap:16px;border-bottom:1px solid #e2e8f0;padding-bottom:16px;margin-bottom:18px}'
-        + '.brand{display:flex;align-items:center;gap:10px}'
-        + '.mark{width:32px;height:32px;border-radius:8px;background:#0ea5e9;color:#fff;font-weight:800;display:flex;align-items:center;justify-content:center;font-size:16px}'
+        + '.sheet{max-width:8.5in;margin:0 auto;padding:0.4in 0.55in 0.4in}'
+        + '.bar{height:4px;background:linear-gradient(90deg,#0ea5e9,#38bdf8);margin:-0.4in -0.55in 0.28in}'
+        + 'header{display:flex;justify-content:space-between;align-items:flex-start;gap:16px;border-bottom:1px solid #e2e8f0;padding-bottom:12px;margin-bottom:12px}'
+        + '.brand{display:flex;align-items:center;gap:12px;min-width:0}'
+        + '.logo{height:2.85rem;width:auto;display:block;flex-shrink:0}'
         + '.co{font-weight:700;font-size:15px;letter-spacing:.02em}'
         + '.sub{font-size:11px;color:#64748b;margin-top:2px}'
-        + '.meta{text-align:right;font-size:11px;color:#64748b;line-height:1.5}'
-        + 'h1{font-size:22px;margin:0 0 4px;letter-spacing:-.02em}'
-        + '.lead{font-size:13px;color:#475569;margin:0 0 18px}'
-        + '.grid{display:grid;grid-template-columns:1.35fr .85fr;gap:22px;align-items:start}'
-        + 'table{width:100%;border-collapse:collapse;font-size:12px}'
-        + 'th{text-align:left;color:#64748b;font-weight:500;width:38%;padding:6px 10px 6px 0;border-bottom:1px solid #f1f5f9;vertical-align:top}'
-        + 'td{padding:6px 0;border-bottom:1px solid #f1f5f9;font-weight:600}'
-        + 'h2{font-size:11px;text-transform:uppercase;letter-spacing:.08em;color:#64748b;margin:0 0 10px}'
-        + '.schematic{display:grid;gap:1px;background:#cbd5e1;border:1px solid #94a3b8;width:100%;max-height:2.6in}'
-        + '.schematic i{background:#0f172a;display:block;min-height:2px}'
-        + '.schematic-box{width:100%;background:#0f172a;border:1px solid #94a3b8}'
-        + '.note{font-size:11px;color:#64748b;margin:8px 0 0;text-align:center}'
+        + '.meta{text-align:right;font-size:11px;color:#64748b;line-height:1.5;flex-shrink:0}'
+        + 'h1{font-size:20px;margin:0 0 3px;letter-spacing:-.02em}'
+        + '.lead{font-size:12px;color:#475569;margin:0 0 10px}'
+        + '.hero{margin:0 0 14px;border-radius:10px;overflow:hidden;border:1px solid #e2e8f0;background:#fff;min-height:3in;display:flex;align-items:center;justify-content:center;padding:0.12in}'
+        + '.hero img{display:block;width:auto;height:auto;max-width:100%;max-height:2.85in;object-fit:contain;margin:0 auto}'
+        + '.hero-fallback{min-height:3in;display:flex;align-items:center;justify-content:center}'
+        + '.hero-placeholder{font-size:12px;color:#94a3b8}'
+        + 'table{width:100%;border-collapse:collapse;font-size:11px}'
+        + 'th{text-align:left;color:#64748b;font-weight:500;width:42%;padding:4px 8px 4px 0;border-bottom:1px solid #f1f5f9;vertical-align:top}'
+        + 'td{padding:4px 0;border-bottom:1px solid #f1f5f9;font-weight:600}'
+        + 'h2{font-size:10px;text-transform:uppercase;letter-spacing:.08em;color:#64748b;margin:0 0 8px}'
+        + '.specs{display:grid;grid-template-columns:1fr 1fr;gap:18px;align-items:start}'
+        + '.note{font-size:11px;color:#64748b;margin:12px 0 0;line-height:1.45}'
         + '.price{margin-top:18px;padding:12px 14px;background:#f0f9ff;border:1px solid #bae6fd;border-radius:8px}'
         + '.price strong{font-size:18px;color:#0369a1}'
         + '.price span{display:block;font-size:11px;color:#0369a1;margin-bottom:2px;text-transform:uppercase;letter-spacing:.06em}'
         + 'footer{margin-top:22px;padding-top:12px;border-top:1px solid #e2e8f0;font-size:10px;color:#64748b;line-height:1.45}'
         + '.noprint{margin:16px 0 0;text-align:right}'
         + '.noprint button{font:inherit;font-size:13px;padding:8px 16px;border:0;border-radius:999px;background:#0ea5e9;color:#fff;cursor:pointer}'
-        + '@media print{body{-webkit-print-color-adjust:exact;print-color-adjust:exact}.noprint{display:none}.sheet{padding:0} .bar{margin:0 0 16px}}'
-        + '@page{size:letter;margin:.55in}'
+        + '@media print{body{-webkit-print-color-adjust:exact;print-color-adjust:exact}.noprint{display:none}.sheet{padding:0}.bar{margin:0 0 10px;height:4px}}'
+        + '@media (max-width:640px){.specs{grid-template-columns:1fr}}'
+        + '@page{size:letter;margin:0.45in}'
         + '</style></head><body><div class="sheet">'
         + '<div class="bar"></div>'
-        + '<header><div class="brand"><div class="mark">S</div><div><div class="co">Spectrum Display Inc.</div>'
+        + '<header><div class="brand"><img class="logo" src="' + escHtml(logoUrl) + '" alt="Spectrum Display Inc."/>'
+        + '<div><div class="co">Spectrum Display Inc.</div>'
         + '<div class="sub">spectrumdisplay.com</div></div></div>'
         + '<div class="meta">Project spec sheet<br>' + escHtml(date) + '</div></header>'
         + '<h1>' + escHtml(title) + '</h1>'
         + '<p class="lead">' + escHtml(productLine) + ' · P' + escHtml(String(spec.pitch)) + ' mm</p>'
-        + '<div class="grid"><div>'
+        + previewBlock
+        + '<div class="specs"><div>'
         + '<h2>Configuration</h2><table>'
         + specRow('Product', productLine)
         + specRow('Pixel pitch', 'P' + spec.pitch + ' mm')
@@ -2653,8 +2711,8 @@
         + specRow('Resolution', spec.resolution)
         + specRow('Min viewing', spec.viewMin)
         + specRow('Recommended', spec.viewRec)
-        + '</table>'
-        + '<h2 style="margin-top:18px">Install &amp; power</h2><table>'
+        + '</table></div><div>'
+        + '<h2>Install &amp; power</h2><table>'
         + specRow('Mount', spec.mount)
         + specRow('Voltage', spec.voltage)
         + specRow('Weight (est.)', spec.weight)
@@ -2664,30 +2722,40 @@
         + specRow('Data ports', spec.ports)
         + specRow('Processor', spec.processor)
         + (spec.playback && spec.playback !== 'None' ? specRow('Playback', spec.playback) : '')
-        + '</table>'
-        + '<p class="note" style="text-align:left;margin-top:10px">Receiving cards are included in each panel. Do not add spare receiving cards to a new-wall quote.</p>'
+        + '</table></div></div>'
+        + '<p class="note">Receiving cards are included in each panel. Do not add spare receiving cards to a new-wall quote.</p>'
         + (spec.price
           ? '<div class="price"><span>Estimated price</span><strong>' + escHtml(spec.price) + '</strong></div>'
           : '')
-        + '</div><div>'
-        + '<h2>Panel layout</h2>'
-        + schematicHtml(spec)
-        + '</div></div>'
         + '<footer>Estimates only — not a formal quote. Power, weight, circuits, and processor counts are typical for this series and grid; confirm on site. Prices exclude installation, structure, processing extras, and freight. '
         + 'Open this design: ' + escHtml(spec.designerUrl) + '<br>© 2026 Spectrum Display Inc. · spectrumdisplay.com</footer>'
         + '<div class="noprint"><button type="button" onclick="window.print()">Print / Save as PDF</button></div>'
         + '</div></body></html>';
     }
 
-    function exportSpecSheet() {
+    async function exportSpecSheet() {
       updateDesign();
       if (!lastSpec) return;
-      const html = buildSpecHtml(lastSpec);
-      const overlay = document.getElementById('spec-overlay');
-      const frame = document.getElementById('spec-frame');
-      frame.srcdoc = html;
-      overlay.classList.add('is-open');
-      overlay.setAttribute('aria-hidden', 'false');
+      const pdfBtn = document.getElementById('pdf-btn');
+      const prevLabel = pdfBtn ? pdfBtn.innerHTML : '';
+      if (pdfBtn) {
+        pdfBtn.disabled = true;
+        pdfBtn.innerHTML = '<span class="hidden sm:inline">Preparing PDF…</span><span class="sm:hidden">…</span>';
+      }
+      try {
+        const previewImage = await capturePreviewForSpec();
+        const html = buildSpecHtml(lastSpec, previewImage);
+        const overlay = document.getElementById('spec-overlay');
+        const frame = document.getElementById('spec-frame');
+        frame.srcdoc = html;
+        overlay.classList.add('is-open');
+        overlay.setAttribute('aria-hidden', 'false');
+      } finally {
+        if (pdfBtn) {
+          pdfBtn.disabled = false;
+          pdfBtn.innerHTML = prevLabel;
+        }
+      }
     }
 
     document.getElementById('pdf-btn').addEventListener('click', exportSpecSheet);
