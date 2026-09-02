@@ -136,11 +136,14 @@
       <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" d="M4 7h16M4 12h16M4 17h16"/></svg>
     </button>
     <div class="min-w-0 flex-1 dash-topbar-head">
-      <div class="dash-topbar-title-row">
+      <div class="dash-topbar-title-row" id="dash-title-row">
         <h1 id="admin-page-title">Company</h1>
         <p id="admin-page-helper" class="dash-page-helper cc-list-desc" hidden></p>
       </div>
       <p id="admin-page-sub">Staff sign in</p>
+      <div id="dash-tab-bar" class="dash-master-tabs" hidden>
+        <div id="dash-tab-strip" class="inv-tab-strip" role="tablist" aria-label="Open windows"></div>
+      </div>
     </div>
     <div class="dash-top-user">
       <span id="admin-name"></span>
@@ -2314,16 +2317,21 @@
       } catch (err) {}
       return '';
     }
-    function openCompanyTab(name, push) {
+    function openCompanyTab(name, push, opts) {
       if (!name || !currentAdminUser || !canUse(name)) return;
+      opts = opts || {};
       const go = function () {
-        if (typeof isInvoiceDocWindow === 'function' && isInvoiceDocWindow()) closeInvoiceWindow();
-        const dest = pathForTab(name);
+        if (typeof isInvoiceDocWindow === 'function' && isInvoiceDocWindow() && name !== 'invoices') {
+          closeInvoiceWindow();
+        }
+        const dest = opts.restorePath || pathForTab(name);
         if (push && (companyPath() !== dest || location.hash)) {
           history.pushState({ tab: name }, '', dest);
         }
+        rememberMasterTab(name);
         showAdminTab(name);
-        openRoutedSection(name);
+        renderDashTabBar();
+        if (opts.reload || masterRouteNeedsLoad(name)) openRoutedSection(name);
       };
       if (typeof ccDrawerNeedsLeave === 'function' && ccDrawerNeedsLeave()) {
         ccAskLeave(go);
@@ -2354,6 +2362,178 @@
         return;
       }
       go();
+    }
+
+    const MASTER_TAB_LABEL = {
+      dashboard: 'Dashboard',
+      website: 'Website',
+      inventory: 'Inventory',
+      vendor: 'Vendor',
+      customer: 'Customer',
+      settings: 'Settings'
+    };
+    let dashOpenTabs = [];
+    let dashActiveGroup = 'dashboard';
+    let dashTabInner = {
+      dashboard: 'dashboard',
+      website: 'products',
+      inventory: 'inventory',
+      vendor: 'vendors',
+      customer: 'customers',
+      settings: 'staff'
+    };
+    let dashTabPath = {
+      dashboard: '/company',
+      website: '/company/website',
+      inventory: '/company/inventory',
+      vendor: '/company/inventory/vendors',
+      customer: '/company/customers',
+      settings: '/company/settings'
+    };
+    let dashLoadedInner = {};
+
+    function masterGroupFor(name) {
+      if (name === 'dashboard') return 'dashboard';
+      if (name === 'products' || name === 'accounts' || name === 'website') return 'website';
+      if (name === 'inventory' || name === 'receipt-shipments') return 'inventory';
+      if (name === 'vendors' || name === 'purchase-orders') return 'vendor';
+      if (name === 'customers' || name === 'quotes' || name === 'orders' || name === 'invoices' || name === 'sales') return 'customer';
+      if (name === 'staff' || name === 'roles' || name === 'company') return 'settings';
+      return '';
+    }
+
+    function masterDefaultInner(group) {
+      if (group === 'website') return 'products';
+      if (group === 'inventory') return 'inventory';
+      if (group === 'vendor') return 'vendors';
+      if (group === 'customer') return 'customers';
+      if (group === 'settings') return 'staff';
+      return 'dashboard';
+    }
+
+    function masterInnersFor(group) {
+      if (group === 'website') return ['products', 'accounts'];
+      if (group === 'inventory') return ['inventory', 'receipt-shipments'];
+      if (group === 'vendor') return ['vendors', 'purchase-orders'];
+      if (group === 'customer') return ['customers', 'quotes', 'orders', 'invoices', 'sales'];
+      if (group === 'settings') return ['staff', 'roles', 'company'];
+      return ['dashboard'];
+    }
+
+    function rememberMasterTab(name) {
+      const group = masterGroupFor(name);
+      if (!group) return;
+      dashActiveGroup = group;
+      dashTabInner[group] = name;
+      dashTabPath[group] = companyPath() + (location.search || '');
+      if (group !== 'dashboard' && dashOpenTabs.indexOf(group) === -1) dashOpenTabs.push(group);
+    }
+
+    function masterRouteNeedsLoad(name) {
+      return !dashLoadedInner[name];
+    }
+
+    function fitDashTabWidths() {
+      const strip = document.getElementById('dash-tab-strip');
+      if (!strip) return;
+      const allTabs = Array.prototype.slice.call(strip.querySelectorAll('.inv-browser-tab'));
+      if (!allTabs.length) return;
+      const gap = 2;
+      const MIN_ITEM_TAB = 72;
+      const pin = strip.querySelector('.inv-browser-tab[data-dash-tab="dashboard"]');
+      const itemTabs = allTabs.filter(function (tab) {
+        return tab.getAttribute('data-dash-tab') !== 'dashboard';
+      });
+      allTabs.forEach(function (tab) {
+        tab.style.flex = '';
+        tab.style.width = '';
+        tab.style.minWidth = '';
+        tab.style.maxWidth = '';
+      });
+      if (pin) pin.style.flex = '0 0 auto';
+      const stripWidth = strip.clientWidth;
+      if (stripWidth <= 0 || !itemTabs.length) return;
+      const pinWidth = pin ? Math.round(pin.getBoundingClientRect().width) : 0;
+      const availableForItems = stripWidth - pinWidth - gap * (allTabs.length - 1);
+      let itemWidths = itemTabs.map(function (tab) {
+        return Math.round(tab.getBoundingClientRect().width);
+      });
+      let itemTotal = itemWidths.reduce(function (a, b) { return a + b; }, 0);
+      if (itemTotal <= availableForItems) return;
+      itemWidths = itemWidths.map(function (w) { return Math.max(MIN_ITEM_TAB, w); });
+      itemTotal = itemWidths.reduce(function (a, b) { return a + b; }, 0);
+      if (itemTotal <= availableForItems) {
+        itemTabs.forEach(function (tab, i) {
+          tab.style.flex = '0 0 ' + itemWidths[i] + 'px';
+          tab.style.width = itemWidths[i] + 'px';
+          tab.style.minWidth = MIN_ITEM_TAB + 'px';
+          tab.style.maxWidth = itemWidths[i] + 'px';
+        });
+        return;
+      }
+      const sum = itemWidths.reduce(function (a, b) { return a + b; }, 0);
+      itemTabs.forEach(function (tab, i) {
+        const w = Math.max(MIN_ITEM_TAB, Math.floor(itemWidths[i] * availableForItems / sum));
+        tab.style.flex = '0 0 ' + w + 'px';
+        tab.style.width = w + 'px';
+        tab.style.minWidth = MIN_ITEM_TAB + 'px';
+        tab.style.maxWidth = w + 'px';
+      });
+    }
+
+    function renderDashTabBar() {
+      const bar = document.getElementById('dash-tab-bar');
+      const strip = document.getElementById('dash-tab-strip');
+      if (!bar || !strip || !currentAdminUser) return;
+      bar.hidden = false;
+      document.body.classList.add('dash-master-on');
+      const pinOn = canUse('dashboard');
+      let html = '';
+      if (pinOn) {
+        html += '<button type="button" class="inv-browser-tab' +
+          (dashActiveGroup === 'dashboard' ? ' is-active' : '') +
+          '" data-dash-tab="dashboard" role="tab" aria-selected="' +
+          (dashActiveGroup === 'dashboard' ? 'true' : 'false') + '">' +
+          '<span class="inv-browser-tab-label">Dashboard</span></button>';
+      }
+      dashOpenTabs.forEach(function (group) {
+        const active = dashActiveGroup === group;
+        html += '<button type="button" class="inv-browser-tab' + (active ? ' is-active' : '') +
+          '" data-dash-tab="' + esc(group) + '" role="tab" aria-selected="' + (active ? 'true' : 'false') + '">' +
+          '<span class="inv-browser-tab-label">' + esc(MASTER_TAB_LABEL[group] || group) + '</span>' +
+          '<span class="inv-browser-tab-close" data-dash-tab-close="' + esc(group) + '" aria-label="Close tab" role="button" tabindex="-1">×</span></button>';
+      });
+      strip.innerHTML = html;
+      fitDashTabWidths();
+    }
+
+    function closeMasterTab(group) {
+      if (!group || group === 'dashboard') return;
+      const idx = dashOpenTabs.indexOf(group);
+      if (idx < 0) return;
+      dashOpenTabs.splice(idx, 1);
+      masterInnersFor(group).forEach(function (n) { delete dashLoadedInner[n]; });
+      dashTabInner[group] = masterDefaultInner(group);
+      dashTabPath[group] = pathForTab(masterDefaultInner(group));
+      if (dashActiveGroup === group) {
+        const nextGroup = dashOpenTabs[Math.min(idx, dashOpenTabs.length - 1)]
+          || (canUse('dashboard') ? 'dashboard' : dashOpenTabs[0]);
+        if (!nextGroup) {
+          const fallback = firstAllowedTab();
+          if (fallback) openCompanyTab(fallback, true);
+          else renderDashTabBar();
+          return;
+        }
+        activateMasterTab(nextGroup);
+        return;
+      }
+      renderDashTabBar();
+    }
+
+    function activateMasterTab(group) {
+      if (!group) return;
+      const inner = dashTabInner[group] || masterDefaultInner(group);
+      openCompanyTab(inner, true, { restorePath: dashTabPath[group] });
     }
     (function sendOldCompanyUrlToCleanPath() {
       const p = companyPath();
@@ -2491,7 +2671,9 @@
       websiteSubTab = next === 'accounts' ? 'accounts' : 'products';
       settingsSubTab = next === 'company' ? 'company' : 'staff';
       if (next === 'quotes' || next === 'orders' || next === 'invoices') salesSubTab = next;
+      rememberMasterTab(next || 'dashboard');
       showAdminTab(next || 'dashboard');
+      renderDashTabBar();
       return true;
     }
 
@@ -5510,14 +5692,18 @@
       if (!currentAdminUser) return;
       const name = tabFromPath();
       if (!name || !canUse(name)) return;
+      rememberMasterTab(name);
       showAdminTab(name);
+      renderDashTabBar();
       openRoutedSection(name);
     });
     window.addEventListener('popstate', function () {
       if (!currentAdminUser) return;
       const name = tabFromPath() || firstAllowedTab();
       if (!name || !canUse(name)) return;
+      rememberMasterTab(name);
       showAdminTab(name);
+      renderDashTabBar();
       openRoutedSection(name);
     });
     document.getElementById('dash-sidebar').addEventListener('click', function (e) {
@@ -5529,6 +5715,21 @@
       if (!name) return;
       e.preventDefault();
       openCompanyTab(name, true);
+    });
+    document.getElementById('dash-tab-strip').addEventListener('click', function (e) {
+      const closeBtn = e.target.closest('[data-dash-tab-close]');
+      if (closeBtn) {
+        e.preventDefault();
+        e.stopPropagation();
+        closeMasterTab(closeBtn.getAttribute('data-dash-tab-close'));
+        return;
+      }
+      const tab = e.target.closest('.inv-browser-tab[data-dash-tab]');
+      if (!tab) return;
+      activateMasterTab(tab.getAttribute('data-dash-tab'));
+    });
+    window.addEventListener('resize', function () {
+      if (currentAdminUser) fitDashTabWidths();
     });
     document.getElementById('dash-tabbar').addEventListener('click', function (e) {
       if (!currentAdminUser || e.defaultPrevented) return;
@@ -8633,8 +8834,11 @@
     }
 
     async function openRoutedSection(name) {
+      let loaded = false;
+      try {
       if (name === 'dashboard') {
         await loadDashboardHome();
+        loaded = true;
         return;
       }
       if (name === 'products') closeProductForm();
@@ -8691,6 +8895,10 @@
       if (name === 'staff' || name === 'roles') {
         await loadStaff();
         await loadRoles();
+      }
+      loaded = true;
+      } finally {
+        if (loaded && name) dashLoadedInner[name] = true;
       }
     }
 

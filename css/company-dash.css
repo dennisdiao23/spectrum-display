@@ -186,6 +186,61 @@ body.company-app {
 }
 .dash-topbar p[hidden] { display: none; }
 body.dash-detail-open #admin-page-helper { display: none !important; }
+.dash-master-tabs {
+  display: none;
+  min-width: 0;
+  flex: 1;
+  align-self: stretch;
+  overflow: hidden;
+}
+.dash-master-tabs .inv-tab-strip {
+  height: 100%;
+  min-height: 0;
+  padding-top: 0.55rem;
+}
+body.dash-master-on {
+  --dash-top: 3.85rem;
+}
+body.dash-master-on .dash-topbar {
+  position: sticky;
+  top: 0;
+  align-items: flex-end;
+  min-height: var(--dash-top);
+  padding: 0 1.15rem 0 0.85rem;
+  background: #eef2f8;
+  z-index: 50;
+}
+body.dash-master-on .dash-topbar-head {
+  display: flex;
+  align-items: flex-end;
+  align-self: stretch;
+}
+body.dash-master-on #dash-title-row,
+body.dash-master-on #admin-page-sub {
+  display: none;
+}
+body.dash-master-on .dash-master-tabs {
+  display: flex;
+  align-items: flex-end;
+}
+body.dash-master-on .dash-master-tabs[hidden] {
+  display: none;
+}
+body.dash-master-on .dash-top-user {
+  align-self: center;
+  padding-bottom: 0.15rem;
+}
+body.dash-master-on .dash-menu-btn {
+  align-self: center;
+}
+.inv-browser-tab[data-dash-tab="dashboard"] {
+  flex: 0 0 auto;
+  max-width: none;
+}
+.inv-browser-tab[data-dash-tab="dashboard"] .inv-browser-tab-label {
+  overflow: visible;
+  text-overflow: clip;
+}
 .dash-top-user {
   display: flex;
   align-items: center;
