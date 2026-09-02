@@ -655,10 +655,10 @@ body.dash-col-resizing * {
   color: var(--dash-text);
   z-index: 81;
   transform: translateX(105%);
-  transition: transform 0.2s ease;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
   display: flex;
   flex-direction: column;
-  box-shadow: -16px 0 40px rgba(7, 21, 58, 0.18);
+  box-shadow: none;
 }
 body.cc-drawer-open #cc-drawer-scrim,
 body.inv-drawer-open #inv-drawer-scrim,
@@ -673,7 +673,10 @@ body.vn-drawer-open #vn-drawer,
 body.ca-drawer-open #ca-drawer,
 body.ci-drawer-open #ci-drawer,
 body.st-drawer-open #st-drawer,
-body.rl-drawer-open #rl-drawer { transform: none; }
+body.rl-drawer-open #rl-drawer {
+  transform: none;
+  box-shadow: -16px 0 40px rgba(7, 21, 58, 0.18);
+}
 .pac-container {
   z-index: 12000 !important;
   border-radius: 0.55rem;
@@ -1671,10 +1674,9 @@ html.dash-scroll-lock body.company-app {
     max-width: none;
   }
 
-  .company-main table.dash-cols[data-cols="inventory"] th[data-col="sku"] { width: 28%; }
-  .company-main table.dash-cols[data-cols="inventory"] th[data-col="brand"] { width: 22%; }
-  .company-main table.dash-cols[data-cols="inventory"] th[data-col="price"] { width: 26%; }
-  .company-main table.dash-cols[data-cols="inventory"] th[data-col="qty"] { width: 24%; }
+  .company-main table.dash-cols[data-cols="inventory"] th[data-col="sku"] { width: 42%; }
+  .company-main table.dash-cols[data-cols="inventory"] th[data-col="price"] { width: 30%; }
+  .company-main table.dash-cols[data-cols="inventory"] th[data-col="qty"] { width: 28%; }
 
   .company-main table.dash-cols[data-cols="inventory"] th {
     white-space: normal;
