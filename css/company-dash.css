@@ -3022,8 +3022,9 @@ body.so-invoice-float .so-doc-back {
 }
 .so-doc-lines-wrap {
   grid-column: 1 / -1;
-  overflow: hidden;
+  overflow: auto;
   min-width: 0;
+  min-height: 0;
 }
 .so-doc-lines .dash-cols {
   width: 100%;
@@ -3419,6 +3420,7 @@ body.so-invoice-float #so-add-line {
   grid-row: auto;
   justify-self: start;
   align-self: start;
+  flex-shrink: 0;
   margin: 0.75rem 0 0;
   font-size: 0.85rem;
   font-weight: 650;
@@ -3428,10 +3430,12 @@ body.so-invoice-float #so-add-line:hover { text-decoration: underline; }
 body.so-invoice-float .so-doc-lines-wrap {
   flex: 1;
   min-width: 0;
+  min-height: 0;
   background: transparent;
   border: 0;
   border-radius: 0;
-  overflow: hidden;
+  overflow-x: hidden;
+  overflow-y: auto;
 }
 body.so-invoice-float .so-doc-lines .dash-cols {
   width: 100%;

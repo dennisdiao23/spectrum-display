@@ -2378,13 +2378,27 @@
       go();
     }
 
+    const MASTER_TAB_MAX = 15;
     const MASTER_TAB_LABEL = {
       dashboard: 'Dashboard',
       website: 'Website',
+      products: 'Website',
+      accounts: 'Accounts',
       inventory: 'Inventory',
+      'receipt-shipments': 'Receipt Shipment',
       vendor: 'Vendor',
+      vendors: 'Vendor',
+      'purchase-orders': 'Purchase Order',
       customer: 'Customer',
-      settings: 'Settings'
+      customers: 'Customer',
+      quotes: 'Sales Quote',
+      sales: 'Sales Quote',
+      orders: 'Sales Order',
+      invoices: 'Invoice',
+      settings: 'Settings',
+      company: 'Company',
+      staff: 'Manage users',
+      roles: 'Manage users'
     };
     const MASTER_TAB_ICON = {
       dashboard: '<svg class="dash-master-tab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="8" height="8" rx="1.5"/><rect x="13" y="3" width="8" height="8" rx="1.5"/><rect x="3" y="13" width="8" height="8" rx="1.5"/><rect x="13" y="13" width="8" height="8" rx="1.5"/></svg>',
@@ -2392,25 +2406,37 @@
       inventory: '<svg class="dash-master-tab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 10 12 4.5 21 10v9.5a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V10z"/><path d="M9 20.5V12h6v8.5"/></svg>',
       vendor: '<svg class="dash-master-tab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="8" r="3.25"/><path d="M5 19.2c.9-3.1 3.5-4.7 7-4.7s6.1 1.6 7 4.7"/></svg>',
       customer: '<svg class="dash-master-tab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="8" r="3.25"/><path d="M5 19.2c.9-3.1 3.5-4.7 7-4.7s6.1 1.6 7 4.7"/></svg>',
-      settings: '<svg class="dash-master-tab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>'
+      settings: '<svg class="dash-master-tab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>',
+      quotes: '<svg class="dash-master-tab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 4h8v4H8z"/><path d="M6 8h12v12H6z"/><path d="M9 12h6M9 16h4"/></svg>',
+      orders: '<svg class="dash-master-tab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 7h16l-1.5 12H5.5L4 7z"/><path d="M9 7V5a3 3 0 0 1 6 0v2"/></svg>',
+      invoices: '<svg class="dash-master-tab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="5" y="3" width="14" height="18" rx="1.5"/><path d="M8 8h8M8 12h8M8 16h5"/></svg>',
+      'purchase-orders': '<svg class="dash-master-tab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 3h8l4 4v14a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1z"/><path d="M15 3v5h5"/><path d="M9 13h6M9 17h4"/></svg>',
+      'receipt-shipments': '<svg class="dash-master-tab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 7h16l-1.5 12H5.5L4 7z"/><path d="M9 7V5a3 3 0 0 1 6 0v2"/><path d="M9 14h6M9 18h4"/></svg>'
     };
+    MASTER_TAB_ICON.products = MASTER_TAB_ICON.website;
+    MASTER_TAB_ICON.accounts = MASTER_TAB_ICON.customer;
+    MASTER_TAB_ICON.vendors = MASTER_TAB_ICON.vendor;
+    MASTER_TAB_ICON.customers = MASTER_TAB_ICON.customer;
+    MASTER_TAB_ICON.company = MASTER_TAB_ICON.settings;
+    MASTER_TAB_ICON.staff = MASTER_TAB_ICON.settings;
+    MASTER_TAB_ICON.roles = MASTER_TAB_ICON.settings;
+    MASTER_TAB_ICON.sales = MASTER_TAB_ICON.quotes;
     let dashOpenTabs = [];
     let dashActiveGroup = 'dashboard';
-    let dashTabInner = {
-      dashboard: 'dashboard',
-      website: 'products',
-      inventory: 'inventory',
-      vendor: 'vendors',
-      customer: 'customers',
-      settings: 'staff'
-    };
     let dashTabPath = {
       dashboard: '/company',
-      website: '/company/website',
+      products: '/company/website',
+      accounts: '/company/website/accounts',
       inventory: '/company/inventory',
-      vendor: '/company/inventory/vendors',
-      customer: '/company/customers',
-      settings: '/company/settings'
+      'receipt-shipments': '/company/inventory/receipt-shipments',
+      vendors: '/company/inventory/vendors',
+      'purchase-orders': '/company/inventory/purchase-orders',
+      customers: '/company/customers',
+      quotes: '/company/sales/quotes',
+      orders: '/company/sales/orders',
+      invoices: '/company/sales/invoices',
+      company: '/company/settings/company',
+      staff: '/company/settings'
     };
     let dashLoadedInner = {};
 
@@ -2442,13 +2468,27 @@
       return ['dashboard'];
     }
 
+    function canonicalMasterTab(name) {
+      if (name === 'sales') return 'quotes';
+      if (name === 'roles') return 'staff';
+      if (name === 'website') return 'products';
+      return name;
+    }
+
     function rememberMasterTab(name) {
-      const group = masterGroupFor(name);
-      if (!group) return;
-      dashActiveGroup = group;
-      dashTabInner[group] = name;
-      dashTabPath[group] = companyPath() + (location.search || '');
-      if (group !== 'dashboard' && dashOpenTabs.indexOf(group) === -1) dashOpenTabs.push(group);
+      name = canonicalMasterTab(name);
+      if (!name) return;
+      if (name !== 'dashboard' && !masterGroupFor(name)) return;
+      dashActiveGroup = name;
+      dashTabPath[name] = companyPath() + (location.search || '');
+      if (name === 'dashboard') return;
+      if (dashOpenTabs.indexOf(name) !== -1) return;
+      const pinned = canUse('dashboard') ? 1 : 0;
+      while (dashOpenTabs.length + pinned >= MASTER_TAB_MAX) {
+        const drop = dashOpenTabs.shift();
+        if (drop) delete dashLoadedInner[drop];
+      }
+      dashOpenTabs.push(name);
     }
 
     function masterRouteNeedsLoad(name) {
@@ -2504,13 +2544,14 @@
       });
     }
 
-    function masterTabButton(group, active, closable) {
+    function masterTabButton(name, active, closable) {
+      const icon = MASTER_TAB_ICON[name] || MASTER_TAB_ICON[masterGroupFor(name)] || '';
       return '<button type="button" class="inv-browser-tab' + (active ? ' is-active' : '') +
-        '" data-dash-tab="' + esc(group) + '" role="tab" aria-selected="' + (active ? 'true' : 'false') + '">' +
-        (MASTER_TAB_ICON[group] || '') +
-        '<span class="inv-browser-tab-label">' + esc(MASTER_TAB_LABEL[group] || group) + '</span>' +
+        '" data-dash-tab="' + esc(name) + '" role="tab" aria-selected="' + (active ? 'true' : 'false') + '">' +
+        icon +
+        '<span class="inv-browser-tab-label">' + esc(MASTER_TAB_LABEL[name] || name) + '</span>' +
         (closable
-          ? '<span class="inv-browser-tab-close" data-dash-tab-close="' + esc(group) + '" aria-label="Close tab" role="button" tabindex="-1">×</span>'
+          ? '<span class="inv-browser-tab-close" data-dash-tab-close="' + esc(name) + '" aria-label="Close tab" role="button" tabindex="-1">×</span>'
           : '') +
         '</button>';
     }
@@ -2534,15 +2575,15 @@
       }
     }
 
-    function closeMasterTab(group) {
-      if (!group || group === 'dashboard') return;
-      const idx = dashOpenTabs.indexOf(group);
+    function closeMasterTab(name) {
+      name = canonicalMasterTab(name);
+      if (!name || name === 'dashboard') return;
+      const idx = dashOpenTabs.indexOf(name);
       if (idx < 0) return;
       dashOpenTabs.splice(idx, 1);
-      masterInnersFor(group).forEach(function (n) { delete dashLoadedInner[n]; });
-      dashTabInner[group] = masterDefaultInner(group);
-      dashTabPath[group] = pathForTab(masterDefaultInner(group));
-      if (dashActiveGroup === group) {
+      delete dashLoadedInner[name];
+      dashTabPath[name] = pathForTab(name);
+      if (dashActiveGroup === name) {
         const nextGroup = dashOpenTabs[Math.min(idx, dashOpenTabs.length - 1)]
           || (canUse('dashboard') ? 'dashboard' : dashOpenTabs[0]);
         if (!nextGroup) {
@@ -2557,10 +2598,10 @@
       renderDashTabBar();
     }
 
-    function activateMasterTab(group) {
-      if (!group) return;
-      const inner = dashTabInner[group] || masterDefaultInner(group);
-      openCompanyTab(inner, true, { restorePath: dashTabPath[group] });
+    function activateMasterTab(name) {
+      name = canonicalMasterTab(name);
+      if (!name) return;
+      openCompanyTab(name, true, { restorePath: dashTabPath[name] });
     }
     (function sendOldCompanyUrlToCleanPath() {
       const p = companyPath();
@@ -8536,6 +8577,9 @@
     async function openInvoiceWindow(id, opts) {
       opts = opts || {};
       if (opts.inline) return false;
+      rememberMasterTab('invoices');
+      showAdminTab('invoices');
+      renderDashTabBar();
       applyInvoiceWindowChrome(true);
       try { await loadSalesDocs('invoice'); }
       catch (err) {}
@@ -8846,6 +8890,12 @@
       soLineState = readSoLines(true);
       const table = soLinesTable();
       if (table) applyColOrder(table);
+      scrollSoLinesEnd();
+    }
+
+    function scrollSoLinesEnd() {
+      const wrap = document.querySelector('#so-detail .so-doc-lines-wrap');
+      if (wrap) wrap.scrollTop = wrap.scrollHeight;
     }
 
     function applySoItemToLine(row, item) {
@@ -9623,6 +9673,7 @@
       if (table) applyColOrder(table);
       soLineState = readSoLines(true);
       refreshSoTotals();
+      scrollSoLinesEnd();
     });
     document.getElementById('so-lines').addEventListener('change', function (e) {
       const sel = e.target.closest('[data-line="itemId"]');
