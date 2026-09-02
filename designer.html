@@ -33,6 +33,69 @@
     body.designer-app {
       padding-top: var(--nav-h);
     }
+    @media (min-width: 1024px) {
+      html {
+        overflow: hidden;
+        height: 100%;
+      }
+      body.designer-app {
+        height: 100vh;
+        height: 100dvh;
+        overflow: hidden;
+        display: flex;
+        flex-direction: column;
+        box-sizing: border-box;
+      }
+      .designer-toolbar {
+        flex-shrink: 0;
+      }
+      .designer-main {
+        flex: 1 1 auto;
+        min-height: 0;
+        overflow: hidden;
+        padding-bottom: 0 !important;
+      }
+      .designer-main > .site-wrap {
+        height: 100%;
+        overflow: hidden;
+      }
+      .designer-controls-pane {
+        display: flex;
+        flex-direction: column;
+        min-height: 0;
+        max-height: 100%;
+        overflow: hidden;
+      }
+      .designer-controls {
+        flex: 1 1 auto;
+        overflow-y: auto;
+        min-height: 0;
+        max-height: 100%;
+        overscroll-behavior: contain;
+        scrollbar-width: none;
+        -ms-overflow-style: none;
+      }
+      .designer-controls::-webkit-scrollbar {
+        display: none;
+        width: 0;
+        height: 0;
+      }
+      .designer-controls-foot {
+        flex-shrink: 0;
+        padding: 0.75rem 0 0.25rem;
+        text-align: center;
+        font-size: 0.875rem;
+        line-height: 1.4;
+        color: #64748b;
+      }
+    }
+    .designer-controls-foot {
+      padding: 1.25rem 0 0.5rem;
+      text-align: center;
+      font-size: 0.875rem;
+      line-height: 1.4;
+      color: #64748b;
+    }
     .designer-layout {
       display: grid;
       gap: 2rem;
@@ -51,14 +114,16 @@
     @media (min-width: 1024px) {
       .designer-layout {
         grid-template-columns: minmax(18rem, 26rem) minmax(0, 1fr);
-        align-items: start;
+        align-items: stretch;
+        height: 100%;
+        overflow: hidden;
       }
       .preview-pane {
-        position: sticky;
-        top: calc(var(--nav-h) + var(--designer-bar-h) + var(--content-gap));
-        align-self: start;
-        height: calc(100vh - var(--nav-h) - var(--designer-bar-h) - var(--content-gap));
-        max-height: calc(100vh - var(--nav-h) - var(--designer-bar-h) - var(--content-gap));
+        position: relative;
+        top: auto;
+        align-self: stretch;
+        height: 100%;
+        max-height: 100%;
         overflow: hidden;
         display: flex;
         flex-direction: column;
@@ -73,8 +138,21 @@
       .preview-pane .preview-frame {
         flex: 1 1 auto;
         height: auto;
-        min-height: 28rem;
+        min-height: 16rem;
         max-height: none;
+      }
+      .preview-extras {
+        flex-shrink: 0;
+        max-height: 38%;
+        overflow-y: auto;
+        overscroll-behavior: contain;
+        scrollbar-width: none;
+        -ms-overflow-style: none;
+      }
+      .preview-extras::-webkit-scrollbar {
+        display: none;
+        width: 0;
+        height: 0;
       }
     }
     .preview-frame {
@@ -148,6 +226,9 @@
         font-size: 0.7rem;
       }
       .designer-controls {
+        order: 0;
+      }
+      .designer-controls-pane {
         order: 0;
       }
       .preview-extras {
@@ -670,6 +751,7 @@
     <div class="site-wrap designer-layout">
       
       <!-- Controls -->
+      <div class="designer-controls-pane min-w-0">
       <div class="designer-controls space-y-5">
         <!-- 1. Product -->
         <div class="p-5 rounded-2xl border border-slate-800 bg-slate-900/60 space-y-4">
@@ -925,6 +1007,8 @@
           </a>
         </div>
       </div>
+      <p class="designer-controls-foot">© 2026 Spectrum Display Inc. • spectrumdisplay.com</p>
+      </div>
 
       <!-- Preview -->
       <div class="preview-pane min-w-0">
@@ -1061,10 +1145,6 @@
     </div>
     <iframe id="spec-frame" title="Project spec sheet"></iframe>
   </div>
-
-  <footer class="border-t border-slate-800 py-10 px-4 text-center text-sm text-slate-500">
-    <p>© 2026 Spectrum Display Inc. • spectrumdisplay.com</p>
-  </footer>
 
   <script src="js/control-systems.js"></script>
   <script src="js/catalog-api.js"></script>
