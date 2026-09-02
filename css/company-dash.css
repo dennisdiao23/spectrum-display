@@ -247,6 +247,13 @@ body.dash-master-on .dash-menu-btn {
   min-height: 2.4rem;
   padding: 0.7rem 0.75rem 0.7rem 0.85rem;
   letter-spacing: -0.01em;
+  gap: 0.45rem;
+}
+#dash-tab-strip .dash-master-tab-icon {
+  width: 1.15rem;
+  height: 1.15rem;
+  flex-shrink: 0;
+  display: block;
 }
 .dash-top-user {
   display: flex;
