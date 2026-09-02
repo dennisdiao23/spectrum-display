@@ -1438,15 +1438,16 @@
                     <h3>Item details</h3>
                   </div>
                   <div class="so-doc-lines-wrap">
-                    <table>
+                    <table class="w-full text-sm dash-cols" data-cols="so-lines">
                       <thead>
                         <tr>
-                          <th>Item</th>
-                          <th>Description</th>
-                          <th>Qty</th>
-                          <th>Price</th>
-                          <th>Amount</th>
-                          <th></th>
+                          <th class="py-2 px-3 font-medium w-10" data-lock="start">#</th>
+                          <th class="py-2 px-3 font-medium" data-col="sku">Item <span class="dash-col-caret">▾</span><span class="dash-col-grip" aria-hidden="true"></span></th>
+                          <th class="py-2 px-3 font-medium" data-col="description">Description <span class="dash-col-caret">▾</span><span class="dash-col-grip" aria-hidden="true"></span></th>
+                          <th class="py-2 px-3 font-medium" data-col="qty">Qty <span class="dash-col-caret">▾</span><span class="dash-col-grip" aria-hidden="true"></span></th>
+                          <th class="py-2 px-3 font-medium" data-col="price">Price <span class="dash-col-caret">▾</span><span class="dash-col-grip" aria-hidden="true"></span></th>
+                          <th class="py-2 px-3 font-medium" data-col="amount">Amount <span class="dash-col-caret">▾</span><span class="dash-col-grip" aria-hidden="true"></span></th>
+                          <th class="py-2 px-3 font-medium w-10"></th>
                         </tr>
                       </thead>
                       <tbody id="so-lines"></tbody>
@@ -3395,6 +3396,7 @@
     let vnSavedSnapshot = '';
     let vnDrawerSource = '';
     let poLineState = [];
+    let soLineState = [];
 
     function stockStatusLabel(status) {
       if (status === 'out') return 'Out';
@@ -3479,6 +3481,13 @@
         { id: 'terms', label: 'Terms' },
         { id: 'notes', label: 'Notes' }
       ],
+      'so-lines': [
+        { id: 'sku', label: 'Item' },
+        { id: 'description', label: 'Description' },
+        { id: 'qty', label: 'Qty' },
+        { id: 'price', label: 'Price' },
+        { id: 'amount', label: 'Amount' }
+      ],
       'po-lines': [
         { id: 'product', label: 'Product/Service' },
         { id: 'sku', label: 'SKU' },
@@ -3562,6 +3571,7 @@
       inventory: ['sku', 'name', 'qty', 'cost', 'price'],
       customers: ['company', 'contact', 'email', 'phone', 'balance'],
       sales: ['number', 'customer', 'date', 'status', 'total'],
+      'so-lines': ['sku', 'description', 'qty', 'price', 'amount'],
       'po-lines': ['product', 'sku', 'description', 'qty', 'rate', 'amount'],
       'purchase-orders': ['number', 'vendor', 'date', 'status', 'total'],
       'receipt-shipments': ['number', 'vendor', 'po', 'date', 'qty'],
@@ -4169,6 +4179,7 @@
       if (name === 'inventory') renderInventoryTable();
       else if (name === 'customers') renderCcTable(companyCustomers);
       else if (name === 'sales') renderSoTable(salesDocs, salesTypeFromTab(salesSubTab));
+      else if (name === 'so-lines') renderSoLines();
       else if (name === 'po-lines') renderPoLines();
       else if (name === 'purchase-orders') renderPoTable(purchaseOrders);
       else if (name === 'receipt-shipments') renderRsTable(receiptShipments);
@@ -8418,6 +8429,9 @@
       document.body.classList.toggle('so-invoice-float', !!on);
       const back = document.getElementById('so-back');
       if (back) back.textContent = on ? 'Close' : ('← All ' + (salesSubTab === 'quotes' ? 'quotes' : salesSubTab === 'orders' ? 'orders' : 'invoices'));
+      if (on && document.getElementById('so-lines')) {
+        requestAnimationFrame(function () { renderSoLines(readSoLines(true)); });
+      }
     }
 
     async function openInvoiceWindow(id, opts) {
@@ -8578,39 +8592,129 @@
       } catch (err) { soSavedSnapshot = ''; }
     }
 
-    function soLineRow(line) {
-      const item = line || {};
+    function soBlankLine() {
+      return { sku: '', description: '', qty: '', unitPrice: '' };
+    }
+
+    function soLineHasContent(line) {
+      if (!line) return false;
+      return !!(
+        String(line.sku || '').trim() ||
+        String(line.description || '').trim() ||
+        money(line.unitPrice)
+      );
+    }
+
+    function soLinesTable() {
+      return document.querySelector('table.dash-cols[data-cols="so-lines"]');
+    }
+
+    function soVisibleRowCount() {
+      const wrap = document.querySelector('#so-detail .so-doc-lines-wrap');
+      if (!wrap) return 6;
+      const head = wrap.querySelector('thead');
+      const headH = head ? head.getBoundingClientRect().height : 34;
+      const sample = wrap.querySelector('.so-line');
+      const rowH = sample ? Math.max(sample.getBoundingClientRect().height, 34) : 38;
+      const avail = wrap.clientHeight - headH;
+      if (avail < 40) return isInvoiceDocWindow() ? 8 : 6;
+      return Math.max(6, Math.min(20, Math.floor(avail / rowH)));
+    }
+
+    function padSoLines(lines) {
+      const content = (lines || []).filter(soLineHasContent);
+      const out = content.length ? content.slice() : [];
+      const target = soVisibleRowCount();
+      while (out.length < target) out.push(soBlankLine());
+      if (!out.length || soLineHasContent(out[out.length - 1])) out.push(soBlankLine());
+      return out;
+    }
+
+    function soLineRow(line, index) {
+      const item = line || soBlankLine();
+      const table = soLinesTable();
+      const qty = item.qty == null || item.qty === '' ? '' : item.qty;
+      const price = item.unitPrice == null || item.unitPrice === '' ? '' : item.unitPrice;
+      const amt = money(qty) * money(price);
+      const cells = {
+        sku: '<td class="py-2 px-2"><input data-line="sku" value="' + esc(item.sku || '') + '"></td>',
+        description: '<td class="py-2 px-2"><input data-line="description" value="' + esc(item.description || '') + '"></td>',
+        qty: '<td class="py-2 px-2"><input data-line="qty" type="number" step="0.01" value="' + esc(qty) + '"></td>',
+        price: '<td class="py-2 px-2"><input data-line="unitPrice" type="number" step="0.01" value="' + esc(price) + '"></td>',
+        amount: '<td class="py-2 px-2 text-right tabular-nums" data-line-amt>' + (soLineHasContent(item) || amt ? moneyText(amt) : '') + '</td>'
+      };
       return '<tr class="border-b so-line">' +
-        '<td><input data-line="sku" value="' + esc(item.sku || '') + '"></td>' +
-        '<td><input data-line="description" value="' + esc(item.description || '') + '"></td>' +
-        '<td><input data-line="qty" type="number" step="0.01" value="' + esc(item.qty == null ? 1 : item.qty) + '"></td>' +
-        '<td><input data-line="unitPrice" type="number" step="0.01" value="' + esc(item.unitPrice == null ? 0 : item.unitPrice) + '"></td>' +
-        '<td data-line-amt>' + moneyText((item.qty || 0) * (item.unitPrice || 0)) + '</td>' +
-        '<td><button type="button" data-remove-line class="text-slate-500 hover:text-red-400 text-xs">✕</button></td>' +
+        dashOrderedCells(
+          table,
+          cells,
+          '<td class="py-2 px-2"><button type="button" data-remove-line class="text-slate-400 hover:text-red-500 text-xs">✕</button></td>',
+          '<td class="py-2 px-3 so-line-num text-slate-400">' + (index + 1) + '</td>'
+        ) +
         '</tr>';
     }
 
-    function readSoLines() {
-      return Array.prototype.map.call(document.querySelectorAll('#so-lines .so-line'), function (row) {
-        return {
-          sku: (row.querySelector('[data-line="sku"]').value || '').trim(),
-          description: (row.querySelector('[data-line="description"]').value || '').trim(),
-          qty: money(row.querySelector('[data-line="qty"]').value),
-          unitPrice: money(row.querySelector('[data-line="unitPrice"]').value)
-        };
-      });
+    function readSoLineRow(row, i) {
+      const prev = soLineState[i] || soBlankLine();
+      const val = function (key, fallback) {
+        const el = row.querySelector('[data-line="' + key + '"]');
+        if (!el) return fallback;
+        return String(el.value || '').trim();
+      };
+      const qtyRaw = val('qty', prev.qty);
+      const priceRaw = val('unitPrice', prev.unitPrice);
+      return {
+        sku: val('sku', prev.sku || ''),
+        description: val('description', prev.description || ''),
+        qty: qtyRaw === '' ? '' : money(qtyRaw),
+        unitPrice: priceRaw === '' ? '' : money(priceRaw)
+      };
+    }
+
+    function readSoLines(keepBlanks) {
+      const rows = Array.prototype.map.call(document.querySelectorAll('#so-lines .so-line'), readSoLineRow);
+      if (keepBlanks) return rows;
+      const content = rows.filter(soLineHasContent);
+      return content.length ? content : [{ sku: '', description: '', qty: 1, unitPrice: 0 }];
+    }
+
+    function renderSoLines(lines) {
+      const table = soLinesTable();
+      const tb = document.getElementById('so-lines');
+      const source = lines || readSoLines(true);
+      const padded = padSoLines(source);
+      soLineState = padded.slice();
+      tb.innerHTML = padded.map(function (line, i) { return soLineRow(line, i); }).join('');
+      if (table) applyColOrder(table);
+      refreshSoTotals();
+    }
+
+    function ensureSoSpareLines() {
+      const rows = document.querySelectorAll('#so-lines .so-line');
+      if (!rows.length) {
+        renderSoLines([]);
+        return;
+      }
+      const last = rows[rows.length - 1];
+      const line = readSoLineRow(last, rows.length - 1);
+      if (!soLineHasContent(line)) return;
+      last.insertAdjacentHTML('afterend', soLineRow(soBlankLine(), rows.length));
+      soLineState = readSoLines(true);
+      const table = soLinesTable();
+      if (table) applyColOrder(table);
     }
 
     function refreshSoTotals() {
       const lines = readSoLines();
-      const subtotal = money(lines.reduce(function (sum, line) { return sum + line.qty * line.unitPrice; }, 0));
+      const subtotal = money(lines.reduce(function (sum, line) { return sum + money(line.qty) * money(line.unitPrice); }, 0));
       const discount = money(document.getElementById('so-discount').value);
       const rate = money(document.getElementById('so-tax-rate').value);
       const tax = money(Math.max(0, subtotal - discount) * (rate / 100));
-      document.querySelectorAll('#so-lines .so-line').forEach(function (row) {
-        const qty = money(row.querySelector('[data-line="qty"]').value);
-        const price = money(row.querySelector('[data-line="unitPrice"]').value);
-        row.querySelector('[data-line-amt]').textContent = moneyText(qty * price);
+      document.querySelectorAll('#so-lines .so-line').forEach(function (row, i) {
+        const line = readSoLineRow(row, i);
+        const amt = row.querySelector('[data-line-amt]');
+        if (!amt) return;
+        const n = money(line.qty) * money(line.unitPrice);
+        amt.textContent = soLineHasContent(line) || n ? moneyText(n) : '';
       });
       document.getElementById('so-subtotal').textContent = moneyText(subtotal);
       document.getElementById('so-tax').textContent = moneyText(tax);
@@ -8762,8 +8866,9 @@
       document.getElementById('so-discount').value = doc.discount || 0;
       document.getElementById('so-tax-rate').value = doc.taxRate || 0;
       document.getElementById('so-notes').value = doc.notes || '';
-      const lines = (doc.lines && doc.lines.length) ? doc.lines : [{ qty: 1, unitPrice: 0 }];
-      document.getElementById('so-lines').innerHTML = lines.map(soLineRow).join('');
+      const lines = (doc.lines && doc.lines.length) ? doc.lines : [];
+      renderSoLines(lines);
+      requestAnimationFrame(function () { renderSoLines(readSoLines(true)); });
       document.getElementById('so-delete-btn').classList.toggle('hidden', !doc.id);
       document.getElementById('so-to-order').classList.toggle('hidden', !doc.id || type === 'order');
       document.getElementById('so-to-invoice').classList.toggle('hidden', !doc.id || type === 'invoice');
@@ -9232,17 +9337,24 @@
       if (row) openSalesDoc(row.getAttribute('data-id'), { type: salesTypeFromTab(salesSubTab) });
     });
     document.getElementById('so-add-line').addEventListener('click', function () {
-      document.getElementById('so-lines').insertAdjacentHTML('beforeend', soLineRow({ qty: 1, unitPrice: 0 }));
+      const tb = document.getElementById('so-lines');
+      const n = tb.querySelectorAll('.so-line').length;
+      tb.insertAdjacentHTML('beforeend', soLineRow(soBlankLine(), n) + soLineRow(soBlankLine(), n + 1) + soLineRow(soBlankLine(), n + 2));
+      const table = soLinesTable();
+      if (table) applyColOrder(table);
+      soLineState = readSoLines(true);
       refreshSoTotals();
     });
-    document.getElementById('so-lines').addEventListener('input', refreshSoTotals);
+    document.getElementById('so-lines').addEventListener('input', function () {
+      refreshSoTotals();
+      ensureSoSpareLines();
+    });
     document.getElementById('so-lines').addEventListener('click', function (e) {
       const btn = e.target.closest('[data-remove-line]');
       if (!btn) return;
-      const rows = document.querySelectorAll('#so-lines .so-line');
-      if (rows.length <= 1) return;
       btn.closest('tr').remove();
-      refreshSoTotals();
+      soLineState = readSoLines(true);
+      renderSoLines(soLineState);
     });
     document.getElementById('so-discount').addEventListener('input', refreshSoTotals);
     document.getElementById('so-tax-rate').addEventListener('input', refreshSoTotals);
