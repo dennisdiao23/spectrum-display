@@ -45,15 +45,23 @@
         display: flex;
         flex-direction: column;
         box-sizing: border-box;
+        padding-top: 0;
       }
       .designer-toolbar {
+        position: fixed;
+        top: var(--nav-h);
+        left: 0;
+        right: 0;
         flex-shrink: 0;
+        z-index: 40;
       }
       .designer-main {
         flex: 1 1 auto;
         min-height: 0;
         overflow: hidden;
         padding-bottom: 0 !important;
+        padding-top: 0 !important;
+        margin-top: calc(var(--nav-h) + var(--designer-bar-h));
       }
       .designer-main > .site-wrap {
         height: 100%;
