@@ -89,6 +89,28 @@
       overflow: hidden;
       height: 360px;
     }
+    .preview-frame .preview-meta {
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      z-index: 10;
+      margin: 0;
+      padding: 0.5rem 0.65rem;
+      background: linear-gradient(180deg, rgba(2, 6, 23, 0.92) 0%, rgba(2, 6, 23, 0.72) 70%, rgba(2, 6, 23, 0) 100%);
+      pointer-events: none;
+    }
+    .preview-frame .preview-meta > * {
+      pointer-events: auto;
+    }
+    .preview-frame .preview-meta h2 {
+      color: #f8fafc;
+      font-size: 0.875rem;
+      white-space: nowrap;
+    }
+    .preview-frame .preview-meta-left {
+      color: #94a3b8;
+    }
     @media (min-width: 640px) and (max-width: 1023px) {
       .preview-frame {
         height: clamp(
@@ -118,14 +140,11 @@
         border-bottom: 1px solid #1e293b;
         box-shadow: 0 10px 24px rgba(0, 0, 0, 0.35);
       }
-      .preview-sticky h2 {
-        display: none;
-      }
-      .preview-sticky .preview-meta {
-        margin-bottom: 0.35rem;
+      .preview-frame .preview-meta {
+        padding: 0.35rem 0.5rem;
         gap: 0.5rem;
       }
-      .preview-sticky .preview-meta-left {
+      .preview-frame .preview-meta-left {
         font-size: 0.7rem;
       }
       .designer-controls {
@@ -142,6 +161,9 @@
       .preview-sticky .preview-frame {
         height: 17.5rem;
         max-height: 50vh;
+      }
+      .preview-frame .preview-meta h2 {
+        display: none;
       }
       .preview-desktop {
         display: none;
@@ -907,28 +929,27 @@
       <!-- Preview -->
       <div class="preview-pane min-w-0">
           <div class="preview-sticky">
-          <div class="preview-meta flex items-center justify-between gap-3 mb-3 shrink-0">
-            <h2 class="font-semibold text-base hidden lg:block" data-i18n="designer.preview">Live Wall Preview</h2>
-            <div class="preview-meta-left text-sm text-slate-400 min-w-0">
-              <span id="preview-size">11'10" × 6'8"</span>
-              <span class="preview-desktop">
-                · <span id="preview-resolution">3,840 × 2,160</span>
-                (<span id="preview-grid">6×6</span>)
-              </span>
-              <span class="preview-mobile"> · <span id="preview-screens">36 panels</span></span>
-              · <span id="preview-weight">—</span>
-              · <span id="preview-power">—</span>
-            </div>
-            <div class="zoom-controls shrink-0">
-              <button id="zoom-out" type="button" class="w-7 h-7 rounded-full border border-slate-600 hover:border-sky-500 text-slate-300 text-sm flex items-center justify-center" title="Zoom out">−</button>
-              <input id="zoom-slider" type="range" min="50" max="200" value="100" step="5" class="w-28 sm:w-36">
-              <button id="zoom-in" type="button" class="w-7 h-7 rounded-full border border-slate-600 hover:border-sky-500 text-slate-300 text-sm flex items-center justify-center" title="Zoom in">+</button>
-              <span id="zoom-value" class="text-xs text-slate-400 w-10 text-right">100%</span>
-              <button id="zoom-reset" type="button" class="text-xs px-2 py-1 rounded border border-slate-700 hover:border-sky-500 text-slate-400" title="Reset view">Reset</button>
-            </div>
-          </div>
-          
           <div class="preview-frame">
+            <div class="preview-meta flex items-center justify-between gap-3 shrink-0">
+              <h2 class="font-semibold text-base hidden lg:block" data-i18n="designer.preview">Live Wall Preview</h2>
+              <div class="preview-meta-left text-sm text-slate-400 min-w-0">
+                <span id="preview-size">11'10" × 6'8"</span>
+                <span class="preview-desktop">
+                  · <span id="preview-resolution">3,840 × 2,160</span>
+                  (<span id="preview-grid">6×6</span>)
+                </span>
+                <span class="preview-mobile"> · <span id="preview-screens">36 panels</span></span>
+                · <span id="preview-weight">—</span>
+                · <span id="preview-power">—</span>
+              </div>
+              <div class="zoom-controls shrink-0">
+                <button id="zoom-out" type="button" class="w-7 h-7 rounded-full border border-slate-600 hover:border-sky-500 text-slate-300 text-sm flex items-center justify-center" title="Zoom out">−</button>
+                <input id="zoom-slider" type="range" min="50" max="200" value="100" step="5" class="w-28 sm:w-36">
+                <button id="zoom-in" type="button" class="w-7 h-7 rounded-full border border-slate-600 hover:border-sky-500 text-slate-300 text-sm flex items-center justify-center" title="Zoom in">+</button>
+                <span id="zoom-value" class="text-xs text-slate-400 w-10 text-right">100%</span>
+                <button id="zoom-reset" type="button" class="text-xs px-2 py-1 rounded border border-slate-700 hover:border-sky-500 text-slate-400" title="Reset view">Reset</button>
+              </div>
+            </div>
             <div class="preview-viewport" id="preview-viewport">
               <div class="scene-bg" id="scene-bg"></div>
               <div class="wall-transform" id="wall-transform">
