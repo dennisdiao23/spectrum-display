@@ -2438,6 +2438,7 @@
       if (!strip) return;
       const allTabs = Array.prototype.slice.call(strip.querySelectorAll('.inv-browser-tab'));
       if (!allTabs.length) return;
+      if (window.innerWidth <= 900) return;
       const gap = 2;
       const MIN_ITEM_TAB = 72;
       const pin = strip.querySelector('.inv-browser-tab[data-dash-tab="dashboard"]');
@@ -2505,6 +2506,10 @@
       });
       strip.innerHTML = html;
       fitDashTabWidths();
+      const activeTab = strip.querySelector('.inv-browser-tab.is-active');
+      if (activeTab && typeof activeTab.scrollIntoView === 'function') {
+        try { activeTab.scrollIntoView({ inline: 'nearest', block: 'nearest' }); } catch (err) {}
+      }
     }
 
     function closeMasterTab(group) {
