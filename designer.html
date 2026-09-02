@@ -2600,7 +2600,9 @@
     async function capturePreviewForSpec() {
       const viewport = document.getElementById('preview-viewport');
       const sceneBg = document.getElementById('scene-bg');
-      if (!viewport || typeof html2canvas !== 'function') return '';
+      const wallTransform = document.getElementById('wall-transform');
+      const target = wallTransform || viewport;
+      if (!target || typeof html2canvas !== 'function') return '';
 
       const saved = { view: viewMode, zoom: zoom, panX: panX, panY: panY };
       if (viewMode === 'wiring') setViewMode('front');
@@ -2609,13 +2611,18 @@
       panY = 0;
       applyTransform();
       viewport.classList.add('spec-capture');
-      if (sceneBg) sceneBg.classList.add('spec-capture');
+      const scenePrev = sceneBg ? sceneBg.style.cssText : '';
+      const viewportPrev = viewport.style.cssText;
+      if (sceneBg) {
+        sceneBg.style.cssText = 'background:#fff!important;background-image:none!important';
+      }
+      viewport.style.background = '#fff';
       await new Promise(function(resolve) {
         requestAnimationFrame(function() { requestAnimationFrame(resolve); });
       });
 
       try {
-        const canvas = await html2canvas(viewport, {
+        const canvas = await html2canvas(target, {
           backgroundColor: '#ffffff',
           scale: 2,
           useCORS: true,
@@ -2628,7 +2635,8 @@
         return '';
       } finally {
         viewport.classList.remove('spec-capture');
-        if (sceneBg) sceneBg.classList.remove('spec-capture');
+        if (sceneBg) sceneBg.style.cssText = scenePrev;
+        viewport.style.cssText = viewportPrev;
         zoom = saved.zoom;
         panX = saved.panX;
         panY = saved.panY;
@@ -2681,7 +2689,7 @@
         + '@page{size:letter;margin:.55in}'
         + '</style></head><body><div class="sheet">'
         + '<div class="bar"></div>'
-        + '<header><div class="brand"><img class="logo" src="' + escHtml(logoUrl) + '" alt="Spectrum Display"/>'
+        + '<header><div class="brand"><img class="logo" src="' + escHtml(logoUrl) + '" alt="Spectrum Display Inc."/>'
         + '<div><div class="co">Spectrum Display Inc.</div>'
         + '<div class="sub">spectrumdisplay.com</div></div></div>'
         + '<div class="meta">Project spec sheet<br>' + escHtml(date) + '</div></header>'
