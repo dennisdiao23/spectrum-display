@@ -2664,7 +2664,7 @@
         const dimH = document.querySelector('.wall-dim-h');
         const dwr = dimW ? dimW.getBoundingClientRect() : wr;
         const dhr = dimH ? dimH.getBoundingClientRect() : wr;
-        const pad = 16;
+        const pad = 40;
         const cropL = Math.max(0, Math.min(wr.left, dwr.left, dhr.left) - vr.left - pad);
         const cropT = Math.max(0, Math.min(wr.top, dwr.top, dhr.top) - vr.top - pad);
         const cropR = Math.min(vr.width, Math.max(wr.right, dwr.right, dhr.right) - vr.left + pad);
