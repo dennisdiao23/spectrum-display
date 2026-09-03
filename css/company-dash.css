@@ -1,7 +1,7 @@
-/* Company dashboard — navy chrome + inset light workspace */
+/* Company dashboard — Rubick chrome + inset light workspace */
 :root {
-  --dash-navy: #07153a;
-  --dash-navy-2: #0b1d4d;
+  --dash-navy: #1c3faa;
+  --dash-navy-2: #16348f;
   --dash-side: 14.025rem;
   --dash-top: 4.25rem;
   --dash-tabbar-h: 0px;
@@ -34,7 +34,7 @@ body.company-app {
   position: fixed;
   inset: 0 auto 0 0;
   width: var(--dash-side);
-  background: linear-gradient(180deg, #07153a 0%, #0a1b46 100%);
+  background: var(--dash-navy);
   color: #e8eeff;
   z-index: 60;
   display: flex;
@@ -70,18 +70,18 @@ body.company-app {
 .dash-nav {
   display: flex;
   flex-direction: column;
-  gap: 0.2rem;
+  gap: 0.55rem;
   flex: 1 1 auto;
   min-height: 0;
   overflow: auto;
 }
 
-.dash-nav-group { display: flex; flex-direction: column; gap: 0.15rem; }
+.dash-nav-group { display: flex; flex-direction: column; gap: 0.45rem; }
 .dash-nav-group:has(.dash-sub:not(.hidden)) {
-  background: rgba(0, 0, 0, 0.22);
+  background: rgba(0, 0, 0, 0.18);
   border-radius: 1.25rem;
-  padding: 0.2rem;
-  gap: 0.12rem;
+  padding: 0.25rem;
+  gap: 0.2rem;
 }
 
 .dash-nav-link,
@@ -143,8 +143,8 @@ body.company-app {
 .dash-sub {
   display: flex;
   flex-direction: column;
-  gap: 0.1rem;
-  padding: 0.1rem 0 0.35rem 0.85rem;
+  gap: 0.2rem;
+  padding: 0.15rem 0 0.4rem 0.85rem;
 }
 .dash-sub.hidden { display: none; }
 .dash-sub-link {
@@ -170,15 +170,15 @@ body.company-app {
 }
 
 .dash-shell {
-  margin: var(--dash-chrome) var(--dash-chrome) var(--dash-chrome) var(--dash-side);
-  height: calc(100dvh - (2 * var(--dash-chrome)) - var(--dash-tabbar-h, 0px));
+  margin: var(--dash-chrome) var(--dash-chrome) 0 var(--dash-side);
+  height: calc(100dvh - var(--dash-chrome) - var(--dash-tabbar-h, 0px));
   min-height: 0;
   display: flex;
   flex-direction: column;
   overflow: hidden;
   background: var(--dash-bg);
-  border-radius: var(--dash-shell-radius);
-  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.18);
+  border-radius: var(--dash-shell-radius) var(--dash-shell-radius) 0 0;
+  box-shadow: 0 10px 40px rgba(28, 63, 170, 0.18);
 }
 
 .dash-topbar {
@@ -1507,7 +1507,7 @@ html.dash-scroll-lock body.company-app {
     right: 0;
     bottom: var(--dash-tabbar-h);
     z-index: 71;
-    background: linear-gradient(180deg, #0c204f 0%, #0a1b46 100%);
+    background: var(--dash-navy-2);
     border-top: 1px solid rgba(255, 255, 255, 0.08);
     box-shadow: 0 -6px 20px rgba(7, 21, 58, 0.2);
     transform: translateY(0);
@@ -1579,7 +1579,7 @@ html.dash-scroll-lock body.company-app {
     box-sizing: border-box;
     height: var(--dash-tabbar-h);
     padding: 0.35rem 0.15rem calc(0.35rem + env(safe-area-inset-bottom, 0px));
-    background: linear-gradient(180deg, #0a1b46 0%, #07153a 100%);
+    background: var(--dash-navy);
     border-top: 1px solid rgba(255, 255, 255, 0.08);
     box-shadow: 0 -8px 24px rgba(7, 21, 58, 0.28);
     transform: translateY(0);
@@ -2394,7 +2394,7 @@ body.company-app.so-split-lock {
 body.inv-layout-lock .dash-shell,
 body.dash-split-lock .dash-shell,
 body.so-split-lock .dash-shell {
-  height: calc(100dvh - (2 * var(--dash-chrome)) - var(--dash-tabbar-h, 0px));
+  height: calc(100dvh - var(--dash-chrome) - var(--dash-tabbar-h, 0px));
   min-height: 0;
   overflow: hidden;
 }
@@ -3028,12 +3028,12 @@ body.so-invoice-float #sales-section {
   top: calc(var(--dash-chrome) + var(--dash-top));
   left: var(--dash-side);
   right: var(--dash-chrome);
-  bottom: calc(var(--dash-chrome) + var(--dash-tabbar-h, 0px));
+  bottom: var(--dash-tabbar-h, 0px);
   overflow: hidden;
   margin: 0;
   padding: 0.75rem 0.85rem 0.85rem;
   background: var(--dash-bg);
-  border-radius: 0 0 var(--dash-shell-radius) var(--dash-shell-radius);
+  border-radius: 0;
 }
 body.so-invoice-float #sales-list-wrap {
   display: flex !important;
