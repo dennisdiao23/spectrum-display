@@ -1,10 +1,12 @@
-/* Company dashboard — light workspace + navy sidebar */
+/* Company dashboard — navy chrome + inset light workspace */
 :root {
   --dash-navy: #07153a;
   --dash-navy-2: #0b1d4d;
   --dash-side: 14.025rem;
   --dash-top: 4.25rem;
   --dash-tabbar-h: 0px;
+  --dash-chrome: 0.85rem;
+  --dash-shell-radius: 1.75rem;
   --dash-blue: #2f6bff;
   --dash-bg: #f4f6fb;
   --dash-card: #ffffff;
@@ -16,13 +18,14 @@
 * { box-sizing: border-box; }
 
 html, body.company-app {
-  min-height: 100%;
+  height: 100%;
+  overflow: hidden;
 }
 
 body.company-app {
   margin: 0;
   font-family: Inter, system-ui, sans-serif;
-  background: var(--dash-bg);
+  background: var(--dash-navy);
   color: var(--dash-text);
   padding: 0;
 }
@@ -74,6 +77,12 @@ body.company-app {
 }
 
 .dash-nav-group { display: flex; flex-direction: column; gap: 0.15rem; }
+.dash-nav-group:has(.dash-sub:not(.hidden)) {
+  background: rgba(0, 0, 0, 0.22);
+  border-radius: 1.25rem;
+  padding: 0.2rem;
+  gap: 0.12rem;
+}
 
 .dash-nav-link,
 .dash-sub-link {
@@ -82,7 +91,7 @@ body.company-app {
   gap: 0.55rem;
   min-height: 2.4rem;
   padding: 0 0.7rem;
-  border-radius: 0.75rem;
+  border-radius: 999px;
   color: #c9d3ea;
   text-decoration: none;
   font-size: 1.05rem;
@@ -91,6 +100,28 @@ body.company-app {
   background: transparent;
   font-family: inherit;
   cursor: pointer;
+  position: relative;
+}
+.dash-nav-group > .dash-nav-link {
+  padding-right: 1.55rem;
+}
+.dash-nav-group > .dash-nav-link::after {
+  content: "";
+  position: absolute;
+  right: 0.65rem;
+  top: 50%;
+  width: 0.38rem;
+  height: 0.38rem;
+  margin-top: -0.28rem;
+  border-right: 1.7px solid currentColor;
+  border-bottom: 1.7px solid currentColor;
+  transform: rotate(45deg);
+  opacity: 0.75;
+  pointer-events: none;
+}
+.dash-nav-group:has(.dash-sub:not(.hidden)) > .dash-nav-link::after {
+  margin-top: -0.08rem;
+  transform: rotate(-135deg);
 }
 .dash-nav-icon {
   width: 1.15rem;
@@ -103,9 +134,11 @@ body.company-app {
   color: #fff;
   background: rgba(255, 255, 255, 0.06);
 }
-.dash-nav-link.is-active {
-  color: #fff;
-  background: rgba(47, 107, 255, 0.28);
+.dash-nav-link.is-active,
+.dash-nav-link.is-active:hover {
+  color: var(--dash-navy);
+  background: #fff;
+  box-shadow: 0 2px 10px rgba(7, 21, 58, 0.12);
 }
 .dash-sub {
   display: flex;
@@ -124,9 +157,10 @@ body.company-app {
   width: 1.05rem;
   height: 1.05rem;
 }
-.dash-sub-link.is-active {
+.dash-sub-link.is-active,
+.dash-sub-link.is-active:hover {
   color: #fff;
-  background: rgba(255, 255, 255, 0.08);
+  background: rgba(4, 12, 32, 0.55);
 }
 
 .dash-sidebar-foot {
@@ -136,16 +170,22 @@ body.company-app {
 }
 
 .dash-shell {
-  margin-left: var(--dash-side);
-  min-height: 100vh;
+  margin: var(--dash-chrome) var(--dash-chrome) var(--dash-chrome) var(--dash-side);
+  height: calc(100dvh - (2 * var(--dash-chrome)) - var(--dash-tabbar-h, 0px));
+  min-height: 0;
   display: flex;
   flex-direction: column;
+  overflow: hidden;
+  background: var(--dash-bg);
+  border-radius: var(--dash-shell-radius);
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.18);
 }
 
 .dash-topbar {
   position: sticky;
   top: 0;
   z-index: 40;
+  flex-shrink: 0;
   min-height: var(--dash-top);
   background: #fff;
   border-bottom: 1px solid var(--dash-line);
@@ -292,6 +332,9 @@ body.dash-master-on .dash-menu-btn {
 }
 
 .company-main {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow: auto;
   padding: 1.35rem 1.6rem 3.5rem;
   width: 100%;
 }
@@ -1442,10 +1485,15 @@ html.dash-scroll-lock body.company-app {
 }
 
 @media (max-width: 900px) {
+  body.company-app {
+    --dash-chrome: 0px;
+    --dash-shell-radius: 0px;
+  }
+
   body.company-app.dash-tabbar-on {
     --dash-tabbar-h: calc(3.65rem + env(safe-area-inset-bottom, 0px));
     --dash-tabbar-sub-h: 0px;
-    padding-bottom: calc(var(--dash-tabbar-h) + var(--dash-tabbar-sub-h));
+    padding-bottom: 0;
   }
 
   body.company-app.dash-tabbar-sub-open {
@@ -2346,7 +2394,7 @@ body.company-app.so-split-lock {
 body.inv-layout-lock .dash-shell,
 body.dash-split-lock .dash-shell,
 body.so-split-lock .dash-shell {
-  height: calc(100dvh - var(--dash-tabbar-h, 0px));
+  height: calc(100dvh - (2 * var(--dash-chrome)) - var(--dash-tabbar-h, 0px));
   min-height: 0;
   overflow: hidden;
 }
@@ -2977,14 +3025,15 @@ body.so-invoice-float #sales-section {
   flex-direction: column;
   position: fixed;
   z-index: 45;
-  top: var(--dash-top);
+  top: calc(var(--dash-chrome) + var(--dash-top));
   left: var(--dash-side);
-  right: 0;
-  bottom: var(--dash-tabbar-h);
+  right: var(--dash-chrome);
+  bottom: calc(var(--dash-chrome) + var(--dash-tabbar-h, 0px));
   overflow: hidden;
   margin: 0;
   padding: 0.75rem 0.85rem 0.85rem;
   background: var(--dash-bg);
+  border-radius: 0 0 var(--dash-shell-radius) var(--dash-shell-radius);
 }
 body.so-invoice-float #sales-list-wrap {
   display: flex !important;
@@ -3023,6 +3072,10 @@ body.so-invoice-float .so-doc-back {
 @media (max-width: 900px) {
   body.so-invoice-float #sales-section {
     left: 0;
+    right: 0;
+    top: var(--dash-top);
+    bottom: var(--dash-tabbar-h);
+    border-radius: 0;
   }
 }
 
