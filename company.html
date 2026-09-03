@@ -8835,6 +8835,17 @@
       const n = String(number || '').trim();
       const kind = document.getElementById('so-kind-label');
       if (kind) kind.textContent = n || salesTypeLabel(type || 'quote');
+      const title = document.getElementById('so-title');
+      if (title) {
+        const cust = ((document.getElementById('so-customer-name') || {}).value || '').trim();
+        title.textContent = n
+          ? (n + (cust ? ' · ' + cust : ''))
+          : ('New ' + salesTypeLabel(type || 'quote').toLowerCase());
+      }
+      if (type === 'invoice' && isInvoiceSplitOn() && !isInvoiceDocWindow()) {
+        setMasterTabCaption('invoices', '');
+        return;
+      }
       setMasterTabCaption(soMasterPage(type), n);
     }
 
@@ -9426,7 +9437,10 @@
       delete soTabCache[sid];
       if (String(soActiveTab) === sid) {
         if (soOpenTabs.length) activateSoTab(soOpenTabs[Math.min(idx, soOpenTabs.length - 1)]);
-        else showSoOverviewPane();
+        else {
+          showSoOverviewPane();
+          history.pushState({ tab: 'invoices' }, '', '/company/sales/invoices');
+        }
       } else {
         renderSoTabBar();
       }
@@ -9548,8 +9562,8 @@
       fillSoCustomers(doc.customerId || '');
       fillSoStatuses(type, doc.status || 'draft');
       document.getElementById('so-number').value = doc.number || nextSoNumber(type);
-      syncSoPageName(type, document.getElementById('so-number').value);
       document.getElementById('so-customer-name').value = doc.customerName || '';
+      syncSoPageName(type, document.getElementById('so-number').value);
       document.getElementById('so-customer-email').value = doc.customerEmail || '';
       document.getElementById('so-po').value = doc.poNumber || '';
       document.getElementById('so-issue').value = doc.issueDate || new Date().toISOString().slice(0, 10);
