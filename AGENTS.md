@@ -50,3 +50,11 @@ catalog API and a cookie-session company login used by `/company`, `/company/web
 
 - There are no lint, test, or build scripts. `package.json` defines only `start`. The site is plain
   HTML/JS with no bundler.
+
+### Agent workflow preferences (Dennis)
+
+- **Always include the PR number** (and link) at the end of a finished change.
+- When the user says **push**, that means: `git push` the branch, then **merge the PR into `main`**
+  so Railway deploys production. Hosting is Railway-only; merge to `main` triggers deploy.
+- If the PR cannot merge (conflicts, failing checks), resolve or report the blocker — do not stop at
+  push-only when the user asked to push.

@@ -2600,58 +2600,136 @@
     async function capturePreviewForSpec() {
       const viewport = document.getElementById('preview-viewport');
       const sceneBg = document.getElementById('scene-bg');
-      if (!viewport || typeof html2canvas !== 'function') return '';
+      const wallTransform = document.getElementById('wall-transform');
+      const wallWrapper = document.getElementById('wall-wrapper');
+      if (!viewport || !wallTransform || !wallWrapper || typeof html2canvas !== 'function') return '';
 
-      const saved = { view: viewMode, zoom: zoom, panX: panX, panY: panY };
-      if (viewMode === 'wiring') setViewMode('front');
+      const saved = {
+        view: viewMode,
+        zoom: zoom,
+        panX: panX,
+        panY: panY,
+        fig: figureMode
+      };
+      if (viewMode === 'wiring') setViewMode('front', { skipApply: true });
+      // PDF: no human scale — also frees layout space for dimension labels
+      setFigureMode('off', { skipApply: true });
       zoom = 1;
       panX = 0;
       panY = 0;
       applyTransform();
       updateDesign();
+
+      const viewportPrev = viewport.getAttribute('style') || '';
+      const scenePrev = sceneBg ? (sceneBg.getAttribute('style') || '') : '';
+      const transformPrev = wallTransform.getAttribute('style') || '';
+      const dimHLabel = document.querySelector('.wall-dim-h .wall-dim-label');
+      const dimHLabelPrev = dimHLabel ? dimHLabel.getAttribute('style') || '' : '';
+
       viewport.classList.add('spec-capture');
-      const scenePrev = sceneBg ? sceneBg.style.cssText : '';
-      const viewportPrev = viewport.style.cssText;
+      viewport.style.cssText = viewportPrev
+        + ';background:#fff!important;display:flex!important;align-items:center!important;justify-content:center!important;';
       if (sceneBg) {
-        sceneBg.style.cssText = 'background:#fff!important;background-image:none!important';
+        sceneBg.style.cssText = scenePrev + ';display:none!important;';
       }
-      viewport.style.background = '#fff';
+      // Avoid CSS translate for html2canvas; keep wall centered with flex
+      wallTransform.style.left = 'auto';
+      wallTransform.style.top = 'auto';
+      wallTransform.style.transform = 'none';
+      wallTransform.style.position = 'relative';
+      wallTransform.style.margin = '56px auto 28px';
+      wallTransform.classList.remove('has-figure');
+      // html2canvas garbles vertical-rl + rotate labels — force horizontal for PDF
+      if (dimHLabel) {
+        dimHLabel.style.writingMode = 'horizontal-tb';
+        dimHLabel.style.transform = 'none';
+      }
+
       await new Promise(function(resolve) {
         requestAnimationFrame(function() { requestAnimationFrame(resolve); });
       });
 
       try {
-        const canvas = await html2canvas(viewport, {
+        // Capture the viewport (not wall-transform) so top/side dims that
+        // overflow the wall box are still painted.
+        const full = await html2canvas(viewport, {
           backgroundColor: '#ffffff',
           scale: 2,
           useCORS: true,
           allowTaint: true,
           logging: false,
-          width: viewport.offsetWidth,
-          height: viewport.offsetHeight,
-          windowWidth: viewport.offsetWidth,
-          windowHeight: viewport.offsetHeight
+          ignoreElements: function(el) {
+            return el.id === 'scale-figure'
+              || el.id === 'wall-balance'
+              || el.id === 'scene-bg';
+          }
         });
-        return canvas.toDataURL('image/png');
+
+        const vr = viewport.getBoundingClientRect();
+        const wr = wallWrapper.getBoundingClientRect();
+        const dimW = document.querySelector('.wall-dim-w');
+        const dimH = document.querySelector('.wall-dim-h');
+        const dwr = dimW ? dimW.getBoundingClientRect() : wr;
+        const dhr = dimH ? dimH.getBoundingClientRect() : wr;
+        const pad = 56;
+        const cropL = Math.max(0, Math.min(wr.left, dwr.left, dhr.left) - vr.left - pad);
+        const cropT = Math.max(0, Math.min(wr.top, dwr.top, dhr.top) - vr.top - pad);
+        const cropR = Math.min(vr.width, Math.max(wr.right, dwr.right, dhr.right) - vr.left + pad);
+        const cropB = Math.min(vr.height, Math.max(wr.bottom, dwr.bottom, dhr.bottom) - vr.top + pad);
+        const scale = 2;
+        const sx = Math.round(cropL * scale);
+        const sy = Math.round(cropT * scale);
+        const sw = Math.max(2, Math.round((cropR - cropL) * scale));
+        const sh = Math.max(2, Math.round((cropB - cropT) * scale));
+
+        const out = document.createElement('canvas');
+        const edge = 28;
+        out.width = sw + edge * 2;
+        out.height = sh + edge * 2;
+        const ctx = out.getContext('2d');
+        ctx.fillStyle = '#ffffff';
+        ctx.fillRect(0, 0, out.width, out.height);
+        ctx.drawImage(full, sx, sy, sw, sh, edge, edge, sw, sh);
+        return out.toDataURL('image/png');
       } catch (err) {
         console.warn('Preview capture failed', err);
         return '';
       } finally {
         viewport.classList.remove('spec-capture');
-        if (sceneBg) sceneBg.style.cssText = scenePrev;
-        viewport.style.cssText = viewportPrev;
+        viewport.setAttribute('style', viewportPrev);
+        if (sceneBg) sceneBg.setAttribute('style', scenePrev);
+        wallTransform.setAttribute('style', transformPrev);
+        if (dimHLabel) dimHLabel.setAttribute('style', dimHLabelPrev);
         zoom = saved.zoom;
         panX = saved.panX;
         panY = saved.panY;
-        if (saved.view === 'wiring') setViewMode('wiring');
+        if (saved.view === 'wiring') setViewMode('wiring', { skipApply: true });
+        setFigureMode(saved.fig, { skipApply: true });
         applyTransform();
+        updateDesign();
       }
+    }
+
+    function specDisplayTitle(spec) {
+      const grid = spec.cols + '×' + spec.rows;
+      if (!spec.brand || spec.brand === 'Custom') {
+        return (spec.series || 'Custom Panel') + ' · ' + grid;
+      }
+      return spec.brand + ' ' + spec.series + ' · ' + grid;
+    }
+
+    function specProductLine(spec) {
+      const parts = [];
+      if (spec.brand && spec.brand !== 'Custom') parts.push(spec.brand);
+      if (spec.series) parts.push(spec.series);
+      if (spec.type && spec.type !== 'Custom' && spec.type !== spec.series) parts.push(spec.type);
+      return parts.join(' · ') || (spec.series || 'Custom Panel');
     }
 
     function buildSpecHtml(spec, previewImage) {
       const date = new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
-      const title = spec.brand + ' ' + spec.series + ' · ' + spec.cols + '×' + spec.rows;
-      const productLine = [spec.brand, spec.series, spec.type].filter(Boolean).join(' · ');
+      const title = specDisplayTitle(spec);
+      const productLine = specProductLine(spec);
       const logoUrl = new URL('assets/spectrum-logo-print.jpg', window.location.href).href;
       const previewBlock = previewImage
         ? '<figure class="hero"><img src="' + previewImage + '" alt="LED wall preview"/></figure>'
@@ -2663,7 +2741,7 @@
         + '*{box-sizing:border-box}body{margin:0;font-family:Inter,Segoe UI,system-ui,sans-serif;color:#0f172a;background:#fff}'
         + '.sheet{max-width:8.5in;margin:0 auto;padding:0.4in 0.55in 0.4in}'
         + '.bar{height:4px;background:linear-gradient(90deg,#0ea5e9,#38bdf8);margin:-0.4in -0.55in 0.28in}'
-        + 'header{display:flex;justify-content:space-between;align-items:flex-start;gap:16px;border-bottom:1px solid #e2e8f0;padding-bottom:12px;margin-bottom:12px}'
+        + 'header{display:flex;justify-content:space-between;align-items:center;gap:16px;border-bottom:1px solid #e2e8f0;padding-bottom:12px;margin-bottom:12px}'
         + '.brand{display:flex;align-items:center;gap:12px;min-width:0}'
         + '.logo{height:2.85rem;width:auto;display:block;flex-shrink:0}'
         + '.co{font-weight:700;font-size:15px;letter-spacing:.02em}'
@@ -2671,9 +2749,9 @@
         + '.meta{text-align:right;font-size:11px;color:#64748b;line-height:1.5;flex-shrink:0}'
         + 'h1{font-size:20px;margin:0 0 3px;letter-spacing:-.02em}'
         + '.lead{font-size:12px;color:#475569;margin:0 0 10px}'
-        + '.hero{margin:0 0 14px;border-radius:10px;overflow:hidden;border:1px solid #e2e8f0;background:#fff;min-height:3in;display:flex;align-items:center;justify-content:center;padding:0.12in}'
-        + '.hero img{display:block;width:auto;height:auto;max-width:100%;max-height:2.85in;object-fit:contain;margin:0 auto}'
-        + '.hero-fallback{min-height:3in;display:flex;align-items:center;justify-content:center}'
+        + '.hero{margin:0 0 14px;border-radius:10px;overflow:visible;border:1px solid #e2e8f0;background:#fff;display:flex;align-items:center;justify-content:center;padding:0.18in}'
+        + '.hero img{display:block;width:auto;height:auto;max-width:100%;max-height:3.25in;object-fit:contain;object-position:center;margin:0 auto}'
+        + '.hero-fallback{min-height:2.5in;display:flex;align-items:center;justify-content:center}'
         + '.hero-placeholder{font-size:12px;color:#94a3b8}'
         + 'table{width:100%;border-collapse:collapse;font-size:11px}'
         + 'th{text-align:left;color:#64748b;font-weight:500;width:42%;padding:4px 8px 4px 0;border-bottom:1px solid #f1f5f9;vertical-align:top}'
@@ -2684,7 +2762,7 @@
         + '.price{margin-top:18px;padding:12px 14px;background:#f0f9ff;border:1px solid #bae6fd;border-radius:8px}'
         + '.price strong{font-size:18px;color:#0369a1}'
         + '.price span{display:block;font-size:11px;color:#0369a1;margin-bottom:2px;text-transform:uppercase;letter-spacing:.06em}'
-        + 'footer{margin-top:22px;padding-top:12px;border-top:1px solid #e2e8f0;font-size:10px;color:#64748b;line-height:1.45}'
+        + 'footer{margin-top:22px;padding-top:12px;border-top:1px solid #e2e8f0;font-size:10px;color:#64748b;line-height:1.45;word-break:break-word}'
         + '.noprint{margin:16px 0 0;text-align:right}'
         + '.noprint button{font:inherit;font-size:13px;padding:8px 16px;border:0;border-radius:999px;background:#0ea5e9;color:#fff;cursor:pointer}'
         + '@media print{body{-webkit-print-color-adjust:exact;print-color-adjust:exact}.noprint{display:none}.sheet{padding:0}.bar{margin:0 0 10px;height:4px}}'
