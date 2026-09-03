@@ -1308,6 +1308,32 @@
               <span class="dash-kpi-hint">Invoices</span>
             </button>
           </div>
+          <div class="page-kpis hidden" id="so-inv-overview">
+            <button type="button" class="dash-kpi" data-filter="open" aria-pressed="false">
+              <span class="dash-kpi-icon dash-kpi-icon-sales" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="3" width="14" height="18" rx="1.5"/><path d="M8 8h8M8 12h8M8 16h5"/></svg></span>
+              <span class="dash-kpi-label">Open Invoice</span>
+              <strong class="dash-kpi-value" id="so-stat-open">—</strong>
+              <span class="dash-kpi-hint">Unpaid, not draft</span>
+            </button>
+            <button type="button" class="dash-kpi" data-filter="dueSoon" aria-pressed="false">
+              <span class="dash-kpi-icon dash-kpi-icon-customers" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="3" width="14" height="18" rx="1.5"/><path d="M8 8h8M8 12h8M8 16h5"/></svg></span>
+              <span class="dash-kpi-label">Due soon</span>
+              <strong class="dash-kpi-value" id="so-stat-due-soon">—</strong>
+              <span class="dash-kpi-hint">Due within 5 days</span>
+            </button>
+            <button type="button" class="dash-kpi" data-filter="overdue" aria-pressed="false">
+              <span class="dash-kpi-icon dash-kpi-icon-overdue" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="3" width="14" height="18" rx="1.5"/><path d="M8 8h8M8 12h8M8 16h5"/></svg></span>
+              <span class="dash-kpi-label">Past due</span>
+              <strong class="dash-kpi-value" id="so-stat-overdue">—</strong>
+              <span class="dash-kpi-hint">Overdue</span>
+            </button>
+            <button type="button" class="dash-kpi" data-filter="draft" aria-pressed="false">
+              <span class="dash-kpi-icon dash-kpi-icon-website" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="3" width="14" height="18" rx="1.5"/><path d="M8 8h8M8 12h8M8 16h5"/></svg></span>
+              <span class="dash-kpi-label">Draft</span>
+              <strong class="dash-kpi-value" id="so-stat-draft">—</strong>
+              <span class="dash-kpi-hint">Not sent yet</span>
+            </button>
+          </div>
           <div class="cc-list-toolbar cc-list-tools">
             <input id="so-search" type="search" placeholder="Search number, customer, PO" class="cc-list-search bg-slate-800 border border-slate-700 rounded-full px-3 py-1.5 text-sm">
             <button id="so-new-btn" type="button" class="cc-list-add-btn px-4 py-2 rounded-full bg-sky-500 hover:bg-sky-400 text-white text-sm font-semibold">New sales quote</button>
@@ -3380,6 +3406,10 @@
       document.getElementById('rs-section').classList.toggle('hidden', name !== 'receipt-shipments');
       document.getElementById('customers-section').classList.toggle('hidden', name !== 'customers');
       document.getElementById('sales-section').classList.toggle('hidden', !onSales);
+      const soNavKpis = document.getElementById('so-overview');
+      const soInvKpis = document.getElementById('so-inv-overview');
+      if (soNavKpis) soNavKpis.classList.toggle('hidden', name === 'invoices');
+      if (soInvKpis) soInvKpis.classList.toggle('hidden', name !== 'invoices');
       document.getElementById('accounts-section').classList.toggle('hidden', name !== 'accounts');
       document.getElementById('company-section').classList.toggle('hidden', name !== 'company');
       document.getElementById('staff-section').classList.toggle('hidden', name !== 'staff' && name !== 'roles');
@@ -3462,6 +3492,7 @@
     let caSavedSnapshot = '';
     let ciSavedSnapshot = '';
     let poFilter = 'all';
+    let soInvFilter = 'all';
     let salesAllDocs = [];
     let inventoryDetail = null;
     let invDetailId = '';
@@ -9297,6 +9328,24 @@
       return '<span class="cc-acct-status ' + s.cls + '" title="' + esc(s.label) + '" aria-label="' + esc(s.label) + '"></span>';
     }
 
+    function soInvoiceFilterMatch(d, filter) {
+      if (!d || d.type !== 'invoice') return false;
+      if (!filter || filter === 'all') return true;
+      const st = String(d.status || 'draft').toLowerCase();
+      const acct = soDocStatus(d);
+      if (filter === 'draft') return st === 'draft';
+      if (filter === 'overdue') return acct.cls === 'is-overdue';
+      if (filter === 'dueSoon') return acct.cls === 'is-due-soon';
+      if (filter === 'open') return st !== 'paid' && st !== 'void' && st !== 'draft';
+      return true;
+    }
+
+    function setSoInvFilter(name) {
+      const next = name || 'all';
+      soInvFilter = soInvFilter === next ? 'all' : next;
+      renderSoTable(salesDocs, 'invoice');
+    }
+
     function isInvoiceSplitOn() {
       const sec = document.getElementById('sales-section');
       return !!(sec && sec.classList.contains('so-split-on') && !isMobileDash() && !isInvoiceDocWindow());
@@ -9483,6 +9532,7 @@
       const tbody = document.getElementById('so-table');
       const q = (document.getElementById('so-search').value || '').toLowerCase();
       const filtered = (rows || []).filter(function (d) {
+        if (type === 'invoice' && !soInvoiceFilterMatch(d, soInvFilter)) return false;
         if (!q) return true;
         return [d.number, d.customerName, d.customerEmail, d.poNumber, d.status]
           .join(' ').toLowerCase().indexOf(q) !== -1;
@@ -9498,7 +9548,9 @@
       const table = document.querySelector('table.dash-cols[data-cols="sales"]');
       if (!filtered.length) {
         tbody.innerHTML = '<tr><td class="py-6 px-4 text-slate-500" colspan="' + dashColSpan(table) + '">' +
-          (q ? 'No documents match this search.' : 'No ' + salesTypeLabel(type).toLowerCase() + 's yet.') +
+          (q || (type === 'invoice' && soInvFilter && soInvFilter !== 'all')
+            ? 'No documents match this view.'
+            : 'No ' + salesTypeLabel(type).toLowerCase() + 's yet.') +
           '</td></tr>';
         applyColOrder(table);
         fillSoOverview();
@@ -9546,10 +9598,16 @@
 
     function fillSoOverview() {
       const rows = salesAllDocs || [];
+      const invoices = rows.filter(function (d) { return d.type === 'invoice'; });
       setText('so-stat-quote', rows.filter(function (d) { return d.type === 'quote'; }).length);
       setText('so-stat-order', rows.filter(function (d) { return d.type === 'order'; }).length);
-      setText('so-stat-invoice', rows.filter(function (d) { return d.type === 'invoice'; }).length);
+      setText('so-stat-invoice', invoices.length);
+      setText('so-stat-open', invoices.filter(function (d) { return soInvoiceFilterMatch(d, 'open'); }).length);
+      setText('so-stat-due-soon', invoices.filter(function (d) { return soInvoiceFilterMatch(d, 'dueSoon'); }).length);
+      setText('so-stat-overdue', invoices.filter(function (d) { return soInvoiceFilterMatch(d, 'overdue'); }).length);
+      setText('so-stat-draft', invoices.filter(function (d) { return soInvoiceFilterMatch(d, 'draft'); }).length);
       markPageKpis('so-overview', salesSubTab === 'sales' ? 'quotes' : salesSubTab, 'data-nav');
+      markPageKpis('so-inv-overview', soInvFilter);
     }
 
     async function loadSalesDocs(type) {
@@ -11030,6 +11088,9 @@
     bindPageKpis('so-overview', function (btn) {
       const nav = btn.getAttribute('data-nav');
       if (nav) openCompanyTab(nav, true);
+    });
+    bindPageKpis('so-inv-overview', function (btn) {
+      setSoInvFilter(btn.getAttribute('data-filter') || 'open');
     });
     document.getElementById('inv-kind').addEventListener('change', function () {
       document.getElementById('inv-qty-label').textContent =
