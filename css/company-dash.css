@@ -1106,6 +1106,7 @@ html.dash-scroll-lock body.company-app {
   gap: 1rem;
 }
 .page-kpis { margin: 0 0 1.15rem; }
+.page-kpis.hidden { display: none !important; }
 .page-kpis-3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
 .page-kpis .dash-kpi-label,
 .page-kpis .dash-kpi-value,
