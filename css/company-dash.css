@@ -1,7 +1,7 @@
 /* Company dashboard — Rubick chrome + inset light workspace */
 :root {
-  --dash-navy: #1c3faa;
-  --dash-navy-2: #16348f;
+  --dash-navy: #2563eb;
+  --dash-navy-2: #1d4ed8;
   --dash-side: 14.025rem;
   --dash-top: 4.25rem;
   --dash-tabbar-h: 0px;
@@ -70,13 +70,13 @@ body.company-app {
 .dash-nav {
   display: flex;
   flex-direction: column;
-  gap: 0.55rem;
+  gap: 0.8rem;
   flex: 1 1 auto;
   min-height: 0;
   overflow: auto;
 }
 
-.dash-nav-group { display: flex; flex-direction: column; gap: 0.45rem; }
+.dash-nav-group { display: flex; flex-direction: column; gap: 0.65rem; }
 .dash-nav-group:has(.dash-sub:not(.hidden)) {
   background: rgba(0, 0, 0, 0.18);
   border-radius: 1.25rem;
@@ -89,7 +89,7 @@ body.company-app {
   display: flex;
   align-items: center;
   gap: 0.55rem;
-  min-height: 2.4rem;
+  min-height: 2.55rem;
   padding: 0 0.7rem;
   border-radius: 999px;
   color: #c9d3ea;
@@ -148,7 +148,7 @@ body.company-app {
 }
 .dash-sub.hidden { display: none; }
 .dash-sub-link {
-  min-height: 2.2rem;
+  min-height: 2.35rem;
   font-size: 1.05rem;
   font-weight: 700;
   color: #9aa8c8;
@@ -171,14 +171,14 @@ body.company-app {
 
 .dash-shell {
   margin: var(--dash-chrome) var(--dash-chrome) 0 var(--dash-side);
-  height: calc(100dvh - var(--dash-chrome) - var(--dash-tabbar-h, 0px));
+  height: calc(100% - var(--dash-chrome));
   min-height: 0;
   display: flex;
   flex-direction: column;
   overflow: hidden;
   background: var(--dash-bg);
   border-radius: var(--dash-shell-radius) var(--dash-shell-radius) 0 0;
-  box-shadow: 0 10px 40px rgba(28, 63, 170, 0.18);
+  box-shadow: none;
 }
 
 .dash-topbar {
@@ -2394,7 +2394,7 @@ body.company-app.so-split-lock {
 body.inv-layout-lock .dash-shell,
 body.dash-split-lock .dash-shell,
 body.so-split-lock .dash-shell {
-  height: calc(100dvh - var(--dash-chrome) - var(--dash-tabbar-h, 0px));
+  height: calc(100% - var(--dash-chrome) - var(--dash-tabbar-h, 0px));
   min-height: 0;
   overflow: hidden;
 }
