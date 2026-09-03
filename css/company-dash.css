@@ -2323,25 +2323,29 @@ html.dash-scroll-lock body.company-app {
 
 /* Split layout (table left, overview/detail right) — inventory, vendor, customer, PO, sales */
 html:has(body.inv-layout-lock),
-html:has(body.dash-split-lock) {
+html:has(body.dash-split-lock),
+html:has(body.so-split-lock) {
   overflow: hidden;
   height: 100%;
 }
 body.company-app.inv-layout-lock,
-body.company-app.dash-split-lock {
+body.company-app.dash-split-lock,
+body.company-app.so-split-lock {
   overflow: hidden;
   height: 100vh;
   height: 100dvh;
   padding-bottom: 0 !important;
 }
 body.inv-layout-lock .dash-shell,
-body.dash-split-lock .dash-shell {
+body.dash-split-lock .dash-shell,
+body.so-split-lock .dash-shell {
   height: calc(100dvh - var(--dash-tabbar-h, 0px));
   min-height: 0;
   overflow: hidden;
 }
 body.inv-layout-lock .company-main,
-body.dash-split-lock .company-main {
+body.dash-split-lock .company-main,
+body.so-split-lock .company-main {
   flex: 1 1 auto;
   min-height: 0;
   overflow: hidden;
@@ -2350,7 +2354,8 @@ body.dash-split-lock .company-main {
   padding-bottom: 0;
 }
 body.inv-layout-lock #dash-panel,
-body.dash-split-lock #dash-panel {
+body.dash-split-lock #dash-panel,
+body.so-split-lock #dash-panel {
   flex: 1 1 auto;
   min-height: 0;
   overflow: hidden;
@@ -2358,11 +2363,13 @@ body.dash-split-lock #dash-panel {
   flex-direction: column;
 }
 body.inv-layout-lock #dash-panel.space-y-8 > :not([hidden]),
-body.dash-split-lock #dash-panel.space-y-8 > :not([hidden]) {
+body.dash-split-lock #dash-panel.space-y-8 > :not([hidden]),
+body.so-split-lock #dash-panel.space-y-8 > :not([hidden]) {
   margin-top: 0 !important;
 }
 body.inv-layout-lock #inventory-section:not(.hidden),
-body.dash-split-lock #customers-section:not(.hidden) {
+body.dash-split-lock #customers-section:not(.hidden),
+body.so-split-lock #sales-section:not(.hidden) {
   flex: 1 1 auto;
   min-height: 0;
   overflow: hidden;
@@ -2374,7 +2381,10 @@ body.inv-layout-lock #inventory-section .cc-list-toolbar,
 body.inv-layout-lock #inventory-section #inventory-error,
 body.dash-split-lock #customers-section .cc-list-kpis,
 body.dash-split-lock #customers-section .cc-list-toolbar,
-body.dash-split-lock #customers-section #cc-error {
+body.dash-split-lock #customers-section #cc-error,
+body.so-split-lock #sales-section .page-kpis,
+body.so-split-lock #sales-section .cc-list-toolbar,
+body.so-split-lock #sales-section #so-error {
   flex-shrink: 0;
 }
 #cc-workspace,
@@ -2390,7 +2400,8 @@ body.dash-split-lock #customers-section #cc-error {
   min-height: 0;
   flex: 1 1 auto;
 }
-#inventory-list-wrap {
+#inventory-list-wrap,
+#sales-list-wrap {
   display: flex;
   flex-direction: column;
   min-height: 0;
@@ -2415,8 +2426,12 @@ body.dash-split-lock #customers-section #cc-error {
 #cc-split {
   grid-template-columns: var(--dash-left-w, var(--cc-split-left-boot, 400px)) 14px minmax(0, 1fr);
 }
+#so-split {
+  grid-template-columns: var(--so-left-w, var(--so-split-left-boot, 400px)) 14px minmax(0, 1fr);
+}
 body.inv-layout-lock .inv-split,
-body.dash-split-lock .dash-split {
+body.dash-split-lock .dash-split,
+body.so-split-lock .so-split {
   min-height: 0;
   max-height: none;
 }
@@ -2535,6 +2550,47 @@ body.inv-split-dragging .inv-split-resizer::after {
   min-height: 0;
   overflow: auto;
   padding: 0.75rem 1rem 1rem;
+}
+
+#sales-section:not(.so-split-on) #so-split {
+  display: block;
+}
+#sales-section:not(.so-split-on) #so-split-resizer,
+#sales-section:not(.so-split-on) #so-tab-bar,
+#sales-section:not(.so-split-on) #so-overview-panel {
+  display: none !important;
+}
+#sales-section:not(.so-split-on).so-doc-open #so-overview,
+#sales-section:not(.so-split-on).so-doc-open .cc-list-toolbar,
+#sales-section:not(.so-split-on).so-doc-open #so-error,
+#sales-section:not(.so-split-on).so-doc-open #so-split-left {
+  display: none !important;
+}
+#sales-section.so-split-on #so-back {
+  display: none;
+}
+body.so-split-lock #so-split-left table.dash-cols[data-cols="sales"] thead th:not([data-col]),
+body.so-split-lock #so-split-left table.dash-cols[data-cols="sales"] tbody td:last-child {
+  width: 0 !important;
+  min-width: 0 !important;
+  padding: 0 !important;
+  overflow: hidden;
+}
+body.so-split-lock #so-detail:not(.hidden) {
+  display: flex;
+  flex-direction: column;
+  padding: 0;
+  overflow: hidden;
+}
+body.so-split-lock #so-detail .so-doc-frame {
+  flex: 1 1 auto;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  overflow: auto;
+}
+body.so-split-lock #so-table tr.is-active {
+  background: #eef4ff;
 }
 .inv-right-panel {
   flex: 1 1 auto;
@@ -2903,10 +2959,28 @@ body.so-invoice-float #sales-section {
   padding: 0.75rem 0.85rem 0.85rem;
   background: var(--dash-bg);
 }
-body.so-invoice-float #sales-list-wrap,
+body.so-invoice-float #sales-list-wrap {
+  display: flex !important;
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow: hidden;
+}
 body.so-invoice-float #so-overview,
-body.so-invoice-float #so-error {
+body.so-invoice-float #sales-section .cc-list-toolbar,
+body.so-invoice-float #so-error,
+body.so-invoice-float #so-split-left,
+body.so-invoice-float #so-split-resizer,
+body.so-invoice-float #so-tab-bar,
+body.so-invoice-float #so-overview-panel {
   display: none !important;
+}
+body.so-invoice-float #so-split,
+body.so-invoice-float #so-split-right {
+  display: flex !important;
+  flex-direction: column;
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow: hidden;
 }
 body.so-invoice-float #so-detail {
   display: flex !important;
