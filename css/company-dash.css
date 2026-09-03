@@ -111,7 +111,7 @@ body.company-app {
   display: flex;
   flex-direction: column;
   gap: 0.1rem;
-  padding: 0.1rem 0 0.35rem 1.15rem;
+  padding: 0.1rem 0 0.35rem 0.85rem;
 }
 .dash-sub.hidden { display: none; }
 .dash-sub-link {
