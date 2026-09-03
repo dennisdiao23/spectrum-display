@@ -2388,7 +2388,8 @@
         rememberMasterTab(name);
         showAdminTab(name);
         renderDashTabBar();
-        if (opts.reload || masterRouteNeedsLoad(name)) openRoutedSection(name);
+        const salesTab = name === 'quotes' || name === 'orders' || name === 'invoices' || name === 'sales';
+        if (opts.reload || masterRouteNeedsLoad(name) || salesTab) openRoutedSection(name);
       };
       if (typeof ccDrawerNeedsLeave === 'function' && ccDrawerNeedsLeave()) {
         ccAskLeave(go);
@@ -3390,6 +3391,7 @@
       if (onWebsite) websiteSubTab = name;
       if (onSettings) settingsSubTab = name;
       if (onSales && name !== 'sales') salesSubTab = name;
+      if (onSales && typeof refreshSalesListView === 'function') refreshSalesListView(name);
       document.getElementById('dashboard-section').classList.toggle('hidden', name !== 'dashboard');
       document.getElementById('tab-dashboard').className = navLinkClass(name === 'dashboard', !canUse('dashboard'));
       document.getElementById('website-pane').classList.toggle('hidden', !onWebsite);
@@ -8735,6 +8737,15 @@
       if (name === 'orders') return 'order';
       if (name === 'invoices') return 'invoice';
       return 'quote';
+    }
+
+    function refreshSalesListView(name) {
+      const tab = name === 'sales' ? 'quotes' : name;
+      if (tab !== 'quotes' && tab !== 'orders' && tab !== 'invoices') return;
+      const t = salesTypeFromTab(tab);
+      salesDocs = (salesAllDocs || []).filter(function (d) { return d.type === t; });
+      if (typeof setSoTypeUi === 'function') setSoTypeUi(t);
+      if (typeof renderSoTable === 'function') renderSoTable(salesDocs, t);
     }
 
     function salesTypeLabel(type) {
