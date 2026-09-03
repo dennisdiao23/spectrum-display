@@ -2439,6 +2439,7 @@
       staff: '/company/settings'
     };
     let dashLoadedInner = {};
+    let dashTabCaption = {};
 
     function masterGroupFor(name) {
       if (name === 'dashboard') return 'dashboard';
@@ -2544,12 +2545,27 @@
       });
     }
 
+    function masterTabCaption(name) {
+      name = canonicalMasterTab(name);
+      return dashTabCaption[name] || MASTER_TAB_LABEL[name] || name;
+    }
+
+    function setMasterTabCaption(name, caption) {
+      name = canonicalMasterTab(name);
+      if (!name) return;
+      const next = String(caption || '').trim();
+      const prev = dashTabCaption[name] || '';
+      if (next) dashTabCaption[name] = next;
+      else delete dashTabCaption[name];
+      if (prev !== (dashTabCaption[name] || '')) renderDashTabBar();
+    }
+
     function masterTabButton(name, active, closable) {
       const icon = MASTER_TAB_ICON[name] || MASTER_TAB_ICON[masterGroupFor(name)] || '';
       return '<button type="button" class="inv-browser-tab' + (active ? ' is-active' : '') +
         '" data-dash-tab="' + esc(name) + '" role="tab" aria-selected="' + (active ? 'true' : 'false') + '">' +
         icon +
-        '<span class="inv-browser-tab-label">' + esc(MASTER_TAB_LABEL[name] || name) + '</span>' +
+        '<span class="inv-browser-tab-label">' + esc(masterTabCaption(name)) + '</span>' +
         (closable
           ? '<span class="inv-browser-tab-close" data-dash-tab-close="' + esc(name) + '" aria-label="Close tab" role="button" tabindex="-1">×</span>'
           : '') +
@@ -2582,6 +2598,7 @@
       if (idx < 0) return;
       dashOpenTabs.splice(idx, 1);
       delete dashLoadedInner[name];
+      delete dashTabCaption[name];
       dashTabPath[name] = pathForTab(name);
       if (dashActiveGroup === name) {
         const nextGroup = dashOpenTabs[Math.min(idx, dashOpenTabs.length - 1)]
@@ -4650,6 +4667,7 @@
       if (opts.push !== false) {
         history.pushState({ tab: 'inventory' }, '', '/company/inventory');
       }
+      setMasterTabCaption('inventory', '');
     }
 
     function activateInvTab(id, opts) {
@@ -4669,6 +4687,7 @@
       if (opts.push !== false) {
         history.pushState({ tab: 'inventory', itemId: sid }, '', pathForInventory(sid));
       }
+      setMasterTabCaption('inventory', invTabLabel(sid));
     }
 
     function openInvTab(id, opts) {
@@ -5125,8 +5144,8 @@
       const item = invDetailData && invDetailData.item;
       if (!item) return;
       const money = function (n) { return n ? moneyText(n) : '—'; };
-      document.getElementById('inv-detail-name').textContent = item.name || item.sku || 'Item';
-      document.getElementById('inv-detail-subname').textContent = item.sku && item.name ? item.sku : '';
+      document.getElementById('inv-detail-name').textContent = item.sku || item.name || 'Item';
+      document.getElementById('inv-detail-subname').textContent = item.sku && item.name ? item.name : '';
       const photo = document.getElementById('inv-detail-photo');
       if (item.image) {
         photo.innerHTML = '<img src="' + esc(item.image) + '" alt="">';
@@ -8648,11 +8667,26 @@
     function nextSoNumber(type) {
       const prefix = type === 'quote' ? 'SQ' : type === 'invoice' ? 'INV' : 'SO';
       let max = 1000;
-      (salesDocs || []).forEach(function (d) {
+      const rows = (salesAllDocs && salesAllDocs.length) ? salesAllDocs : (salesDocs || []);
+      rows.forEach(function (d) {
+        if (type && d.type && d.type !== type) return;
         const m = String(d.number || '').toUpperCase().match(new RegExp('^' + prefix + '-(\\d+)$'));
         if (m) max = Math.max(max, parseInt(m[1], 10));
       });
       return prefix + '-' + (max + 1);
+    }
+
+    function soMasterPage(type) {
+      if (type === 'invoice') return 'invoices';
+      if (type === 'order') return 'orders';
+      return 'quotes';
+    }
+
+    function syncSoPageName(type, number) {
+      const n = String(number || '').trim();
+      const kind = document.getElementById('so-kind-label');
+      if (kind) kind.textContent = n || salesTypeLabel(type || 'quote');
+      setMasterTabCaption(soMasterPage(type), n);
     }
 
     function numberLabel(type) {
@@ -9085,6 +9119,8 @@
     function showSoList() {
       document.getElementById('sales-list-wrap').classList.remove('hidden');
       document.getElementById('so-detail').classList.add('hidden');
+      const type = document.getElementById('so-type').value || salesTypeFromTab(salesSubTab);
+      setMasterTabCaption(soMasterPage(type), '');
     }
 
     function renderSoTable(rows, type) {
@@ -9159,6 +9195,9 @@
     async function loadSalesDocs(type) {
       const t = type || salesTypeFromTab(salesSubTab);
       setSoTypeUi(t);
+      if (!document.getElementById('so-detail').classList.contains('hidden')) {
+        syncSoPageName(t, document.getElementById('so-number').value);
+      }
       showError('so-error', '');
       try {
         const [docsData, custData] = await Promise.all([
@@ -9186,6 +9225,7 @@
       fillSoCustomers(doc.customerId || '');
       fillSoStatuses(type, doc.status || 'draft');
       document.getElementById('so-number').value = doc.number || nextSoNumber(type);
+      syncSoPageName(type, document.getElementById('so-number').value);
       document.getElementById('so-customer-name').value = doc.customerName || '';
       document.getElementById('so-customer-email').value = doc.customerEmail || '';
       document.getElementById('so-po').value = doc.poNumber || '';
@@ -9250,17 +9290,24 @@
         void openInvoiceWindow('new', { type: 'invoice', customerId: opts.customerId });
         return;
       }
-      document.getElementById('so-title').textContent = 'New ' + salesTypeLabel(t).toLowerCase();
-      showSoMsg('');
-      fillSoForm({
-        type: t,
-        status: 'draft',
-        paymentTerms: 'Net 30',
-        issueDate: new Date().toISOString().slice(0, 10),
-        lines: [{ qty: 1, unitPrice: 0 }]
-      });
-      document.getElementById('sales-list-wrap').classList.add('hidden');
-      document.getElementById('so-detail').classList.remove('hidden');
+      const go = function () {
+        document.getElementById('so-title').textContent = 'New ' + salesTypeLabel(t).toLowerCase();
+        showSoMsg('');
+        fillSoForm({
+          type: t,
+          status: 'draft',
+          paymentTerms: 'Net 30',
+          issueDate: new Date().toISOString().slice(0, 10),
+          lines: [{ qty: 1, unitPrice: 0 }]
+        });
+        document.getElementById('sales-list-wrap').classList.add('hidden');
+        document.getElementById('so-detail').classList.remove('hidden');
+      };
+      if ((salesAllDocs || []).some(function (d) { return d.type === t; }) || (salesDocs || []).length) {
+        go();
+        return;
+      }
+      loadSalesDocs(t).then(go).catch(go);
     }
 
     async function openSalesDoc(id, opts) {
@@ -9759,6 +9806,10 @@
       renderSoLines(soLineState);
     });
     document.getElementById('so-discount').addEventListener('input', refreshSoTotals);
+    document.getElementById('so-number').addEventListener('input', function () {
+      const type = document.getElementById('so-type').value || 'quote';
+      syncSoPageName(type, this.value);
+    });
     document.getElementById('so-tax-rate').addEventListener('input', refreshSoTotals);
     document.getElementById('so-customer').addEventListener('change', function () {
       const id = this.value;
