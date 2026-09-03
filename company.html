@@ -20,6 +20,8 @@
         if (invPx && invPx >= 160) document.documentElement.style.setProperty('--inv-split-left-boot', invPx + 'px');
         var ccPx = prefs.customers && prefs.customers.splitLeftPx;
         if (ccPx && ccPx >= 160) document.documentElement.style.setProperty('--cc-split-left-boot', ccPx + 'px');
+        var soPx = prefs.sales && prefs.sales.splitLeftPx;
+        if (soPx && soPx >= 160) document.documentElement.style.setProperty('--so-split-left-boot', soPx + 'px');
       } catch (e) {}
     })();
   </script>
@@ -1306,13 +1308,41 @@
               <span class="dash-kpi-hint">Invoices</span>
             </button>
           </div>
+          <div class="page-kpis hidden" id="so-inv-overview">
+            <button type="button" class="dash-kpi" data-filter="open" aria-pressed="false">
+              <span class="dash-kpi-icon dash-kpi-icon-sales" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="3" width="14" height="18" rx="1.5"/><path d="M8 8h8M8 12h8M8 16h5"/></svg></span>
+              <span class="dash-kpi-label">Open Invoice</span>
+              <strong class="dash-kpi-value" id="so-stat-open">—</strong>
+              <span class="dash-kpi-hint">Unpaid, not draft</span>
+            </button>
+            <button type="button" class="dash-kpi" data-filter="dueSoon" aria-pressed="false">
+              <span class="dash-kpi-icon dash-kpi-icon-customers" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="3" width="14" height="18" rx="1.5"/><path d="M8 8h8M8 12h8M8 16h5"/></svg></span>
+              <span class="dash-kpi-label">Due soon</span>
+              <strong class="dash-kpi-value" id="so-stat-due-soon">—</strong>
+              <span class="dash-kpi-hint">Due within 5 days</span>
+            </button>
+            <button type="button" class="dash-kpi" data-filter="overdue" aria-pressed="false">
+              <span class="dash-kpi-icon dash-kpi-icon-overdue" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="3" width="14" height="18" rx="1.5"/><path d="M8 8h8M8 12h8M8 16h5"/></svg></span>
+              <span class="dash-kpi-label">Past due</span>
+              <strong class="dash-kpi-value" id="so-stat-overdue">—</strong>
+              <span class="dash-kpi-hint">Overdue</span>
+            </button>
+            <button type="button" class="dash-kpi" data-filter="draft" aria-pressed="false">
+              <span class="dash-kpi-icon dash-kpi-icon-website" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="3" width="14" height="18" rx="1.5"/><path d="M8 8h8M8 12h8M8 16h5"/></svg></span>
+              <span class="dash-kpi-label">Draft</span>
+              <strong class="dash-kpi-value" id="so-stat-draft">—</strong>
+              <span class="dash-kpi-hint">Not sent yet</span>
+            </button>
+          </div>
           <div class="cc-list-toolbar cc-list-tools">
             <input id="so-search" type="search" placeholder="Search number, customer, PO" class="cc-list-search bg-slate-800 border border-slate-700 rounded-full px-3 py-1.5 text-sm">
             <button id="so-new-btn" type="button" class="cc-list-add-btn px-4 py-2 rounded-full bg-sky-500 hover:bg-sky-400 text-white text-sm font-semibold">New sales quote</button>
           </div>
           <p id="so-error" class="hidden text-sm text-red-400 mb-3"></p>
+          <div id="so-split" class="dash-split so-split">
+            <div id="so-split-left" class="dash-split-left">
           <div class="cc-table-card rounded-2xl border border-slate-800">
-            <div class="cc-table-wrap overflow-x-auto">
+            <div id="so-table-wrap" class="cc-table-wrap overflow-x-auto">
             <table class="w-full text-sm dash-cols" data-cols="sales">
               <thead class="text-left text-slate-400 border-b border-slate-800">
                 <tr>
@@ -1333,7 +1363,17 @@
             </table>
             </div>
           </div>
-        </div>
+            </div>
+            <div id="so-split-resizer" class="dash-split-resizer" role="separator" aria-orientation="vertical" aria-label="Resize invoice panels" tabindex="0"></div>
+            <div id="so-split-right" class="dash-split-right">
+              <div id="so-tab-bar" class="inv-tab-bar">
+                <div id="so-tab-strip" class="inv-tab-strip" role="tablist" aria-label="Open invoices"></div>
+              </div>
+              <div id="so-overview-panel" class="inv-right-panel">
+                <div class="inv-overview-summary">
+                  <p class="inv-overview-lead">Select an invoice to view or edit it here. New invoice still opens as a full page.</p>
+                </div>
+              </div>
         <div id="so-detail" class="hidden so-doc">
           <button type="button" id="so-back" class="so-doc-back">← All documents</button>
           <div class="so-doc-frame">
@@ -1512,6 +1552,9 @@
                   <div id="so-side-tx-list" class="so-side-tx-list"></div>
                 </div>
               </aside>
+            </div>
+          </div>
+        </div>
             </div>
           </div>
         </div>
@@ -2378,13 +2421,27 @@
       go();
     }
 
+    const MASTER_TAB_MAX = 15;
     const MASTER_TAB_LABEL = {
       dashboard: 'Dashboard',
       website: 'Website',
+      products: 'Website',
+      accounts: 'Accounts',
       inventory: 'Inventory',
+      'receipt-shipments': 'Receipt Shipment',
       vendor: 'Vendor',
+      vendors: 'Vendor',
+      'purchase-orders': 'Purchase Order',
       customer: 'Customer',
-      settings: 'Settings'
+      customers: 'Customer',
+      quotes: 'Sales Quote',
+      sales: 'Sales Quote',
+      orders: 'Sales Order',
+      invoices: 'Invoice',
+      settings: 'Settings',
+      company: 'Company',
+      staff: 'Manage users',
+      roles: 'Manage users'
     };
     const MASTER_TAB_ICON = {
       dashboard: '<svg class="dash-master-tab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="8" height="8" rx="1.5"/><rect x="13" y="3" width="8" height="8" rx="1.5"/><rect x="3" y="13" width="8" height="8" rx="1.5"/><rect x="13" y="13" width="8" height="8" rx="1.5"/></svg>',
@@ -2392,27 +2449,40 @@
       inventory: '<svg class="dash-master-tab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 10 12 4.5 21 10v9.5a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V10z"/><path d="M9 20.5V12h6v8.5"/></svg>',
       vendor: '<svg class="dash-master-tab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="8" r="3.25"/><path d="M5 19.2c.9-3.1 3.5-4.7 7-4.7s6.1 1.6 7 4.7"/></svg>',
       customer: '<svg class="dash-master-tab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="8" r="3.25"/><path d="M5 19.2c.9-3.1 3.5-4.7 7-4.7s6.1 1.6 7 4.7"/></svg>',
-      settings: '<svg class="dash-master-tab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>'
+      settings: '<svg class="dash-master-tab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>',
+      quotes: '<svg class="dash-master-tab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 4h8v4H8z"/><path d="M6 8h12v12H6z"/><path d="M9 12h6M9 16h4"/></svg>',
+      orders: '<svg class="dash-master-tab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 7h16l-1.5 12H5.5L4 7z"/><path d="M9 7V5a3 3 0 0 1 6 0v2"/></svg>',
+      invoices: '<svg class="dash-master-tab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="5" y="3" width="14" height="18" rx="1.5"/><path d="M8 8h8M8 12h8M8 16h5"/></svg>',
+      'purchase-orders': '<svg class="dash-master-tab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 3h8l4 4v14a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1z"/><path d="M15 3v5h5"/><path d="M9 13h6M9 17h4"/></svg>',
+      'receipt-shipments': '<svg class="dash-master-tab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 7h16l-1.5 12H5.5L4 7z"/><path d="M9 7V5a3 3 0 0 1 6 0v2"/><path d="M9 14h6M9 18h4"/></svg>'
     };
+    MASTER_TAB_ICON.products = MASTER_TAB_ICON.website;
+    MASTER_TAB_ICON.accounts = MASTER_TAB_ICON.customer;
+    MASTER_TAB_ICON.vendors = MASTER_TAB_ICON.vendor;
+    MASTER_TAB_ICON.customers = MASTER_TAB_ICON.customer;
+    MASTER_TAB_ICON.company = MASTER_TAB_ICON.settings;
+    MASTER_TAB_ICON.staff = MASTER_TAB_ICON.settings;
+    MASTER_TAB_ICON.roles = MASTER_TAB_ICON.settings;
+    MASTER_TAB_ICON.sales = MASTER_TAB_ICON.quotes;
     let dashOpenTabs = [];
     let dashActiveGroup = 'dashboard';
-    let dashTabInner = {
-      dashboard: 'dashboard',
-      website: 'products',
-      inventory: 'inventory',
-      vendor: 'vendors',
-      customer: 'customers',
-      settings: 'staff'
-    };
     let dashTabPath = {
       dashboard: '/company',
-      website: '/company/website',
+      products: '/company/website',
+      accounts: '/company/website/accounts',
       inventory: '/company/inventory',
-      vendor: '/company/inventory/vendors',
-      customer: '/company/customers',
-      settings: '/company/settings'
+      'receipt-shipments': '/company/inventory/receipt-shipments',
+      vendors: '/company/inventory/vendors',
+      'purchase-orders': '/company/inventory/purchase-orders',
+      customers: '/company/customers',
+      quotes: '/company/sales/quotes',
+      orders: '/company/sales/orders',
+      invoices: '/company/sales/invoices',
+      company: '/company/settings/company',
+      staff: '/company/settings'
     };
     let dashLoadedInner = {};
+    let dashTabCaption = {};
 
     function masterGroupFor(name) {
       if (name === 'dashboard') return 'dashboard';
@@ -2442,13 +2512,27 @@
       return ['dashboard'];
     }
 
+    function canonicalMasterTab(name) {
+      if (name === 'sales') return 'quotes';
+      if (name === 'roles') return 'staff';
+      if (name === 'website') return 'products';
+      return name;
+    }
+
     function rememberMasterTab(name) {
-      const group = masterGroupFor(name);
-      if (!group) return;
-      dashActiveGroup = group;
-      dashTabInner[group] = name;
-      dashTabPath[group] = companyPath() + (location.search || '');
-      if (group !== 'dashboard' && dashOpenTabs.indexOf(group) === -1) dashOpenTabs.push(group);
+      name = canonicalMasterTab(name);
+      if (!name) return;
+      if (name !== 'dashboard' && !masterGroupFor(name)) return;
+      dashActiveGroup = name;
+      dashTabPath[name] = companyPath() + (location.search || '');
+      if (name === 'dashboard') return;
+      if (dashOpenTabs.indexOf(name) !== -1) return;
+      const pinned = canUse('dashboard') ? 1 : 0;
+      while (dashOpenTabs.length + pinned >= MASTER_TAB_MAX) {
+        const drop = dashOpenTabs.shift();
+        if (drop) delete dashLoadedInner[drop];
+      }
+      dashOpenTabs.push(name);
     }
 
     function masterRouteNeedsLoad(name) {
@@ -2504,13 +2588,29 @@
       });
     }
 
-    function masterTabButton(group, active, closable) {
+    function masterTabCaption(name) {
+      name = canonicalMasterTab(name);
+      return dashTabCaption[name] || MASTER_TAB_LABEL[name] || name;
+    }
+
+    function setMasterTabCaption(name, caption) {
+      name = canonicalMasterTab(name);
+      if (!name) return;
+      const next = String(caption || '').trim();
+      const prev = dashTabCaption[name] || '';
+      if (next) dashTabCaption[name] = next;
+      else delete dashTabCaption[name];
+      if (prev !== (dashTabCaption[name] || '')) renderDashTabBar();
+    }
+
+    function masterTabButton(name, active, closable) {
+      const icon = MASTER_TAB_ICON[name] || MASTER_TAB_ICON[masterGroupFor(name)] || '';
       return '<button type="button" class="inv-browser-tab' + (active ? ' is-active' : '') +
-        '" data-dash-tab="' + esc(group) + '" role="tab" aria-selected="' + (active ? 'true' : 'false') + '">' +
-        (MASTER_TAB_ICON[group] || '') +
-        '<span class="inv-browser-tab-label">' + esc(MASTER_TAB_LABEL[group] || group) + '</span>' +
+        '" data-dash-tab="' + esc(name) + '" role="tab" aria-selected="' + (active ? 'true' : 'false') + '">' +
+        icon +
+        '<span class="inv-browser-tab-label">' + esc(masterTabCaption(name)) + '</span>' +
         (closable
-          ? '<span class="inv-browser-tab-close" data-dash-tab-close="' + esc(group) + '" aria-label="Close tab" role="button" tabindex="-1">×</span>'
+          ? '<span class="inv-browser-tab-close" data-dash-tab-close="' + esc(name) + '" aria-label="Close tab" role="button" tabindex="-1">×</span>'
           : '') +
         '</button>';
     }
@@ -2534,15 +2634,16 @@
       }
     }
 
-    function closeMasterTab(group) {
-      if (!group || group === 'dashboard') return;
-      const idx = dashOpenTabs.indexOf(group);
+    function closeMasterTab(name) {
+      name = canonicalMasterTab(name);
+      if (!name || name === 'dashboard') return;
+      const idx = dashOpenTabs.indexOf(name);
       if (idx < 0) return;
       dashOpenTabs.splice(idx, 1);
-      masterInnersFor(group).forEach(function (n) { delete dashLoadedInner[n]; });
-      dashTabInner[group] = masterDefaultInner(group);
-      dashTabPath[group] = pathForTab(masterDefaultInner(group));
-      if (dashActiveGroup === group) {
+      delete dashLoadedInner[name];
+      delete dashTabCaption[name];
+      dashTabPath[name] = pathForTab(name);
+      if (dashActiveGroup === name) {
         const nextGroup = dashOpenTabs[Math.min(idx, dashOpenTabs.length - 1)]
           || (canUse('dashboard') ? 'dashboard' : dashOpenTabs[0]);
         if (!nextGroup) {
@@ -2557,10 +2658,10 @@
       renderDashTabBar();
     }
 
-    function activateMasterTab(group) {
-      if (!group) return;
-      const inner = dashTabInner[group] || masterDefaultInner(group);
-      openCompanyTab(inner, true, { restorePath: dashTabPath[group] });
+    function activateMasterTab(name) {
+      name = canonicalMasterTab(name);
+      if (!name) return;
+      openCompanyTab(name, true, { restorePath: dashTabPath[name] });
     }
     (function sendOldCompanyUrlToCleanPath() {
       const p = companyPath();
@@ -3297,11 +3398,18 @@
       document.getElementById('inventory-section').classList.toggle('hidden', name !== 'inventory');
       document.body.classList.toggle('inv-layout-lock', name === 'inventory' && !isMobileDash());
       document.body.classList.toggle('dash-split-lock', name === 'customers' && !isMobileDash());
+      document.body.classList.toggle('so-split-lock', name === 'invoices' && !isMobileDash() && !document.body.classList.contains('so-invoice-float'));
+      const salesSec = document.getElementById('sales-section');
+      if (salesSec) salesSec.classList.toggle('so-split-on', name === 'invoices' && !isMobileDash());
       document.getElementById('vendors-section').classList.toggle('hidden', name !== 'vendors');
       document.getElementById('po-section').classList.toggle('hidden', name !== 'purchase-orders');
       document.getElementById('rs-section').classList.toggle('hidden', name !== 'receipt-shipments');
       document.getElementById('customers-section').classList.toggle('hidden', name !== 'customers');
       document.getElementById('sales-section').classList.toggle('hidden', !onSales);
+      const soNavKpis = document.getElementById('so-overview');
+      const soInvKpis = document.getElementById('so-inv-overview');
+      if (soNavKpis) soNavKpis.classList.toggle('hidden', name === 'invoices');
+      if (soInvKpis) soInvKpis.classList.toggle('hidden', name !== 'invoices');
       document.getElementById('accounts-section').classList.toggle('hidden', name !== 'accounts');
       document.getElementById('company-section').classList.toggle('hidden', name !== 'company');
       document.getElementById('staff-section').classList.toggle('hidden', name !== 'staff' && name !== 'roles');
@@ -3384,6 +3492,7 @@
     let caSavedSnapshot = '';
     let ciSavedSnapshot = '';
     let poFilter = 'all';
+    let soInvFilter = 'all';
     let salesAllDocs = [];
     let inventoryDetail = null;
     let invDetailId = '';
@@ -3393,6 +3502,10 @@
     let invOpenTabs = [];
     let invActiveTab = 'overview';
     let invTabDetailTab = {};
+    const SO_TAB_MAX = 7;
+    let soOpenTabs = [];
+    let soActiveTab = 'overview';
+    let soTabCache = {};
     let invSavedSnapshot = '';
     let invDrawerSource = '';
     let invPoLineRow = null;
@@ -3744,6 +3857,9 @@
         const cc = dashColMine.customers;
         const ccPx = cc && cc.splitLeftPx ? parseInt(cc.splitLeftPx, 10) : 0;
         if (ccPx >= 160) document.documentElement.style.setProperty('--cc-split-left-boot', ccPx + 'px');
+        const so = dashColMine.sales;
+        const soPx = so && so.splitLeftPx ? parseInt(so.splitLeftPx, 10) : 0;
+        if (soPx >= 160) document.documentElement.style.setProperty('--so-split-left-boot', soPx + 'px');
       } catch (err) {}
     }
 
@@ -3985,6 +4101,20 @@
 
     function saveCcSplitLeftPx(px) {
       const table = document.querySelector('table.dash-cols[data-cols="customers"]');
+      if (!table) return;
+      const state = loadColState(table);
+      state.splitLeftPx = Math.round(px);
+      saveColState(table, state);
+    }
+
+    function soSplitLeftFromPrefs() {
+      const saved = tableStateFromPrefs(dashColMine, 'sales') || tableStateFromPrefs(dashColOwner, 'sales');
+      const px = saved && saved.splitLeftPx ? parseInt(saved.splitLeftPx, 10) : 0;
+      return px > 0 ? px : 0;
+    }
+
+    function saveSoSplitLeftPx(px) {
+      const table = document.querySelector('table.dash-cols[data-cols="sales"]');
       if (!table) return;
       const state = loadColState(table);
       state.splitLeftPx = Math.round(px);
@@ -4609,6 +4739,7 @@
       if (opts.push !== false) {
         history.pushState({ tab: 'inventory' }, '', '/company/inventory');
       }
+      setMasterTabCaption('inventory', '');
     }
 
     function activateInvTab(id, opts) {
@@ -4628,6 +4759,7 @@
       if (opts.push !== false) {
         history.pushState({ tab: 'inventory', itemId: sid }, '', pathForInventory(sid));
       }
+      setMasterTabCaption('inventory', invTabLabel(sid));
     }
 
     function openInvTab(id, opts) {
@@ -4986,6 +5118,100 @@
       bootSplit();
     }
 
+    function initSoSplitResize() {
+      const split = document.getElementById('so-split');
+      const resizer = document.getElementById('so-split-resizer');
+      if (!split || !resizer) return;
+      const MIN_LEFT = 400;
+      const MIN_RIGHT = 600;
+      const RESIZER_W = 14;
+      function effectiveMins(total) {
+        if (total >= MIN_LEFT + MIN_RIGHT + RESIZER_W) {
+          return { minLeft: MIN_LEFT, minRight: MIN_RIGHT };
+        }
+        const minLeft = Math.max(160, Math.floor(total * 0.28));
+        const minRight = Math.max(200, total - minLeft - RESIZER_W);
+        return { minLeft: minLeft, minRight: minRight };
+      }
+      function clampLeft(w) {
+        const total = split.getBoundingClientRect().width;
+        const mins = effectiveMins(total);
+        const maxLeft = Math.max(mins.minLeft, total - mins.minRight - RESIZER_W);
+        return Math.max(mins.minLeft, Math.min(w, maxLeft));
+      }
+      function applyLeft(w, opts) {
+        opts = opts || {};
+        const clamped = clampLeft(w);
+        split.style.setProperty('--so-left-w', clamped + 'px');
+        if (opts.save !== false) saveSoSplitLeftPx(clamped);
+        fitSoTabWidths();
+        return clamped;
+      }
+      function currentLeftPx() {
+        return parseInt(split.style.getPropertyValue('--so-left-w'), 10) || soSplitLeftFromPrefs() || MIN_LEFT;
+      }
+      function bootCssLeftPx() {
+        try {
+          return parseInt(getComputedStyle(document.documentElement).getPropertyValue('--so-split-left-boot'), 10) || 0;
+        } catch (err) {
+          return 0;
+        }
+      }
+      function bootSplit() {
+        const saved = soSplitLeftFromPrefs();
+        const bootCss = bootCssLeftPx();
+        const target = saved >= MIN_LEFT ? saved : (bootCss >= MIN_LEFT ? bootCss : MIN_LEFT);
+        const existing = parseInt(split.style.getPropertyValue('--so-left-w'), 10);
+        if (!existing || existing < MIN_LEFT) split.style.setProperty('--so-left-w', target + 'px');
+        whenInvSplitReady(split, function () {
+          const start = parseInt(split.style.getPropertyValue('--so-left-w'), 10) || target;
+          const clamped = clampLeft(start);
+          if (Math.abs(clamped - start) > 2) split.style.setProperty('--so-left-w', clamped + 'px');
+          fitSoTabWidths();
+        });
+      }
+      if (resizer.dataset.ready !== '1') {
+        resizer.dataset.ready = '1';
+        let dragging = false;
+        function onMove(e) {
+          if (!dragging) return;
+          const point = e.touches ? e.touches[0] : e;
+          const rect = split.getBoundingClientRect();
+          applyLeft(point.clientX - rect.left);
+        }
+        function onUp() {
+          if (!dragging) return;
+          dragging = false;
+          document.body.classList.remove('inv-split-dragging');
+          document.removeEventListener('mousemove', onMove);
+          document.removeEventListener('mouseup', onUp);
+          document.removeEventListener('pointermove', onMove);
+          document.removeEventListener('pointerup', onUp);
+          saveSoSplitLeftPx(currentLeftPx());
+          pushColPrefs();
+        }
+        function onDown(e) {
+          e.preventDefault();
+          dragging = true;
+          document.body.classList.add('inv-split-dragging');
+          document.addEventListener('mousemove', onMove);
+          document.addEventListener('mouseup', onUp);
+          document.addEventListener('pointermove', onMove);
+          document.addEventListener('pointerup', onUp);
+        }
+        resizer.addEventListener('mousedown', onDown);
+        resizer.addEventListener('pointerdown', onDown);
+        window.addEventListener('resize', function () {
+          const saved = soSplitLeftFromPrefs();
+          const bootCss = bootCssLeftPx();
+          const target = saved >= MIN_LEFT ? saved : (bootCss >= MIN_LEFT ? bootCss : MIN_LEFT);
+          applyLeft(target, { save: false });
+          fitSoTabWidths();
+        });
+      }
+      bootSplit();
+    }
+
     function setInvDetailTab(name) {
       invDetailTab = name || 'moves';
       if (invDetailId) invTabDetailTab[invDetailId] = invDetailTab;
@@ -5084,8 +5310,8 @@
       const item = invDetailData && invDetailData.item;
       if (!item) return;
       const money = function (n) { return n ? moneyText(n) : '—'; };
-      document.getElementById('inv-detail-name').textContent = item.name || item.sku || 'Item';
-      document.getElementById('inv-detail-subname').textContent = item.sku && item.name ? item.sku : '';
+      document.getElementById('inv-detail-name').textContent = item.sku || item.name || 'Item';
+      document.getElementById('inv-detail-subname').textContent = item.sku && item.name ? item.name : '';
       const photo = document.getElementById('inv-detail-photo');
       if (item.image) {
         photo.innerHTML = '<img src="' + esc(item.image) + '" alt="">';
@@ -8523,6 +8749,10 @@
 
     function applyInvoiceWindowChrome(on) {
       document.body.classList.toggle('so-invoice-float', !!on);
+      if (on) document.body.classList.remove('so-split-lock');
+      else if (document.getElementById('sales-section').classList.contains('so-split-on') && !isMobileDash()) {
+        document.body.classList.add('so-split-lock');
+      }
       const back = document.getElementById('so-back');
       if (back) back.textContent = on ? 'Close' : ('← All ' + (salesSubTab === 'quotes' ? 'quotes' : salesSubTab === 'orders' ? 'orders' : 'invoices'));
       if (on && document.getElementById('so-lines')) {
@@ -8536,6 +8766,10 @@
     async function openInvoiceWindow(id, opts) {
       opts = opts || {};
       if (opts.inline) return false;
+      if (typeof stashSoActiveTab === 'function') stashSoActiveTab();
+      rememberMasterTab('invoices');
+      showAdminTab('invoices');
+      renderDashTabBar();
       applyInvoiceWindowChrome(true);
       try { await loadSalesDocs('invoice'); }
       catch (err) {}
@@ -8556,8 +8790,17 @@
 
     function closeInvoiceWindow() {
       applyInvoiceWindowChrome(false);
-      document.getElementById('so-detail').classList.add('hidden');
       const sales = document.getElementById('sales-section');
+      if (sales && !sales.classList.contains('hidden') && isInvoiceSplitOn()) {
+        if (soActiveTab && soActiveTab !== 'overview' && soOpenTabs.indexOf(String(soActiveTab)) !== -1) {
+          activateSoTab(soActiveTab, { push: true });
+        } else {
+          showSoList();
+          history.pushState({ tab: 'invoices' }, '', '/company/sales/invoices');
+        }
+        return;
+      }
+      document.getElementById('so-detail').classList.add('hidden');
       if (sales && !sales.classList.contains('hidden')) showSoList();
       if (invoiceIdFromPath()) {
         history.pushState({ tab: 'invoices' }, '', '/company/sales/invoices');
@@ -8604,11 +8847,37 @@
     function nextSoNumber(type) {
       const prefix = type === 'quote' ? 'SQ' : type === 'invoice' ? 'INV' : 'SO';
       let max = 1000;
-      (salesDocs || []).forEach(function (d) {
+      const rows = (salesAllDocs && salesAllDocs.length) ? salesAllDocs : (salesDocs || []);
+      rows.forEach(function (d) {
+        if (type && d.type && d.type !== type) return;
         const m = String(d.number || '').toUpperCase().match(new RegExp('^' + prefix + '-(\\d+)$'));
         if (m) max = Math.max(max, parseInt(m[1], 10));
       });
       return prefix + '-' + (max + 1);
+    }
+
+    function soMasterPage(type) {
+      if (type === 'invoice') return 'invoices';
+      if (type === 'order') return 'orders';
+      return 'quotes';
+    }
+
+    function syncSoPageName(type, number) {
+      const n = String(number || '').trim();
+      const kind = document.getElementById('so-kind-label');
+      if (kind) kind.textContent = n || salesTypeLabel(type || 'quote');
+      const title = document.getElementById('so-title');
+      if (title) {
+        const cust = ((document.getElementById('so-customer-name') || {}).value || '').trim();
+        title.textContent = n
+          ? (n + (cust ? ' · ' + cust : ''))
+          : ('New ' + salesTypeLabel(type || 'quote').toLowerCase());
+      }
+      if (type === 'invoice' && isInvoiceSplitOn() && !isInvoiceDocWindow()) {
+        setMasterTabCaption('invoices', '');
+        return;
+      }
+      setMasterTabCaption(soMasterPage(type), n);
     }
 
     function numberLabel(type) {
@@ -8846,6 +9115,15 @@
       soLineState = readSoLines(true);
       const table = soLinesTable();
       if (table) applyColOrder(table);
+      scrollSoLinesEnd();
+    }
+
+    function scrollSoLinesEnd() {
+      const wrap = document.querySelector('#so-detail .so-doc-lines-wrap');
+      const scroll = document.querySelector('#so-detail .so-doc-scroll');
+      const target = scroll || wrap;
+      if (target) target.scrollTop = target.scrollHeight;
+      if (wrap && wrap !== target) wrap.scrollTop = wrap.scrollHeight;
     }
 
     function applySoItemToLine(row, item) {
@@ -9029,15 +9307,232 @@
       if (caption) caption.textContent = type === 'invoice' ? 'Create Invoices' : salesTypeLabel(type);
     }
 
+    function soDocStatus(d) {
+      const st = String((d && d.status) || 'draft').toLowerCase();
+      if (st === 'overdue' || st === 'expired') return { cls: 'is-overdue', label: st === 'expired' ? 'Expired' : 'Past due' };
+      if (st === 'paid' || st === 'accepted' || st === 'fulfilled' || st === 'confirmed') {
+        return { cls: 'is-good', label: st.charAt(0).toUpperCase() + st.slice(1) };
+      }
+      if (st === 'sent') {
+        const days = typeof ccDaysUntilDue === 'function' ? ccDaysUntilDue(d && d.dueDate) : null;
+        if (days !== null && days < 0) return { cls: 'is-overdue', label: 'Past due' };
+        if (days !== null && days <= 5) return { cls: 'is-due-soon', label: 'Due within 5 days' };
+        return { cls: 'is-good', label: 'Sent' };
+      }
+      if (st === 'draft') return { cls: 'is-none', label: 'Draft' };
+      return { cls: 'is-none', label: st.charAt(0).toUpperCase() + st.slice(1) };
+    }
+
+    function soDocStatusIcon(d) {
+      const s = soDocStatus(d);
+      return '<span class="cc-acct-status ' + s.cls + '" title="' + esc(s.label) + '" aria-label="' + esc(s.label) + '"></span>';
+    }
+
+    function soInvoiceFilterMatch(d, filter) {
+      if (!d || d.type !== 'invoice') return false;
+      if (!filter || filter === 'all') return true;
+      const st = String(d.status || 'draft').toLowerCase();
+      const acct = soDocStatus(d);
+      if (filter === 'draft') return st === 'draft';
+      if (filter === 'overdue') return acct.cls === 'is-overdue';
+      if (filter === 'dueSoon') return acct.cls === 'is-due-soon';
+      if (filter === 'open') return st !== 'paid' && st !== 'void' && st !== 'draft';
+      return true;
+    }
+
+    function setSoInvFilter(name) {
+      const next = name || 'all';
+      soInvFilter = soInvFilter === next ? 'all' : next;
+      renderSoTable(salesDocs, 'invoice');
+    }
+
+    function isInvoiceSplitOn() {
+      const sec = document.getElementById('sales-section');
+      return !!(sec && sec.classList.contains('so-split-on') && !isMobileDash() && !isInvoiceDocWindow());
+    }
+
+    function soDocById(id) {
+      return (salesAllDocs || []).concat(salesDocs || []).find(function (d) {
+        return String(d.id) === String(id);
+      }) || soTabCache[String(id)] || null;
+    }
+
+    function soTabLabel(id) {
+      const doc = soDocById(id);
+      return String((doc && doc.number) || '').trim() || 'Invoice';
+    }
+
+    function stashSoActiveTab() {
+      if (!soActiveTab || soActiveTab === 'overview') return;
+      const detail = document.getElementById('so-detail');
+      if (!detail || detail.classList.contains('hidden')) return;
+      soTabCache[String(soActiveTab)] = Object.assign({ id: soActiveTab }, readSoForm());
+    }
+
+    function showSoRightPanel(mode) {
+      const overview = document.getElementById('so-overview-panel');
+      const detail = document.getElementById('so-detail');
+      const showItem = mode === 'item';
+      if (overview) overview.classList.toggle('hidden', showItem);
+      if (detail) {
+        detail.classList.toggle('hidden', !showItem);
+        detail.setAttribute('aria-hidden', showItem ? 'false' : 'true');
+      }
+    }
+
+    function renderSoTabBar() {
+      const strip = document.getElementById('so-tab-strip');
+      if (!strip) return;
+      let html = '<button type="button" class="inv-browser-tab' +
+        (soActiveTab === 'overview' ? ' is-active' : '') +
+        '" data-so-tab-id="overview" role="tab" aria-selected="' + (soActiveTab === 'overview' ? 'true' : 'false') + '">' +
+        '<span class="inv-browser-tab-label">Overview</span></button>';
+      soOpenTabs.forEach(function (id) {
+        const active = String(soActiveTab) === String(id);
+        html += '<button type="button" class="inv-browser-tab' + (active ? ' is-active' : '') +
+          '" data-so-tab-id="' + esc(id) + '" role="tab" aria-selected="' + (active ? 'true' : 'false') + '">' +
+          soDocStatusIcon(soDocById(id)) +
+          '<span class="inv-browser-tab-label">' + esc(soTabLabel(id)) + '</span>' +
+          '<span class="inv-browser-tab-close" data-so-tab-close="' + esc(id) + '" aria-label="Close tab" role="button" tabindex="-1">×</span></button>';
+      });
+      strip.innerHTML = html;
+      fitSoTabWidths();
+    }
+
+    function fitSoTabWidths() {
+      const strip = document.getElementById('so-tab-strip');
+      if (!strip) return;
+      const allTabs = Array.prototype.slice.call(strip.querySelectorAll('.inv-browser-tab'));
+      if (!allTabs.length) return;
+      const gap = 2;
+      const MIN_ITEM_TAB = 72;
+      const overviewTab = strip.querySelector('.inv-browser-tab[data-so-tab-id="overview"]');
+      const itemTabs = allTabs.filter(function (tab) {
+        return tab.getAttribute('data-so-tab-id') !== 'overview';
+      });
+      allTabs.forEach(function (tab) {
+        tab.style.flex = '';
+        tab.style.width = '';
+        tab.style.minWidth = '';
+        tab.style.maxWidth = '';
+      });
+      if (overviewTab) overviewTab.style.flex = '0 0 auto';
+      const stripWidth = strip.clientWidth;
+      if (stripWidth <= 0 || !itemTabs.length) return;
+      const overviewWidth = overviewTab ? Math.round(overviewTab.getBoundingClientRect().width) : 0;
+      const availableForItems = stripWidth - overviewWidth - gap * (allTabs.length - 1);
+      let itemWidths = itemTabs.map(function (tab) {
+        return Math.round(tab.getBoundingClientRect().width);
+      });
+      let itemTotal = itemWidths.reduce(function (a, b) { return a + b; }, 0);
+      if (itemTotal <= availableForItems) return;
+      itemWidths = itemWidths.map(function (w) { return Math.max(MIN_ITEM_TAB, w); });
+      itemTotal = itemWidths.reduce(function (a, b) { return a + b; }, 0);
+      if (itemTotal <= availableForItems) {
+        itemTabs.forEach(function (tab, i) {
+          tab.style.flex = '0 0 ' + itemWidths[i] + 'px';
+          tab.style.width = itemWidths[i] + 'px';
+          tab.style.minWidth = MIN_ITEM_TAB + 'px';
+          tab.style.maxWidth = itemWidths[i] + 'px';
+        });
+        return;
+      }
+      const scale = availableForItems / itemTotal;
+      itemTabs.forEach(function (tab, i) {
+        const w = Math.max(MIN_ITEM_TAB, Math.floor(itemWidths[i] * scale));
+        tab.style.flex = '0 0 ' + w + 'px';
+        tab.style.width = w + 'px';
+        tab.style.minWidth = MIN_ITEM_TAB + 'px';
+        tab.style.maxWidth = w + 'px';
+      });
+    }
+
+    function showSoOverviewPane() {
+      stashSoActiveTab();
+      soActiveTab = 'overview';
+      showSoRightPanel('overview');
+      setMasterTabCaption('invoices', '');
+      renderSoTabBar();
+      renderSoTable(salesDocs, 'invoice');
+    }
+
+    async function activateSoTab(id, opts) {
+      opts = opts || {};
+      const sid = String(id);
+      if (sid === 'overview') {
+        showSoOverviewPane();
+        return;
+      }
+      if (soActiveTab && soActiveTab !== sid) stashSoActiveTab();
+      soActiveTab = sid;
+      showSoRightPanel('item');
+      const cached = soTabCache[sid];
+      if (cached && cached.number != null) {
+        fillSoForm(cached);
+      } else {
+        try {
+          const data = await api('/api/admin/sales-docs/' + encodeURIComponent(sid));
+          if (data && data.doc) {
+            soTabCache[sid] = data.doc;
+            fillSoForm(data.doc);
+          }
+        } catch (err) {
+          showError('so-error', err.message || 'Could not open this invoice.');
+          return;
+        }
+      }
+      renderSoTabBar();
+      renderSoTable(salesDocs, 'invoice');
+      if (opts.push !== false) {
+        history.pushState({ tab: 'invoices', invoiceId: sid }, '', pathForInvoice(sid));
+      }
+    }
+
+    function openSoTab(id, opts) {
+      const sid = String(id);
+      if (soOpenTabs.indexOf(sid) === -1) {
+        if (soOpenTabs.length >= SO_TAB_MAX) {
+          const dropped = soOpenTabs.shift();
+          delete soTabCache[dropped];
+        }
+        soOpenTabs.push(sid);
+      }
+      return activateSoTab(sid, opts);
+    }
+
+    function closeSoTab(id) {
+      const sid = String(id);
+      const idx = soOpenTabs.indexOf(sid);
+      if (idx === -1) return;
+      soOpenTabs.splice(idx, 1);
+      delete soTabCache[sid];
+      if (String(soActiveTab) === sid) {
+        if (soOpenTabs.length) activateSoTab(soOpenTabs[Math.min(idx, soOpenTabs.length - 1)]);
+        else {
+          showSoOverviewPane();
+          history.pushState({ tab: 'invoices' }, '', '/company/sales/invoices');
+        }
+      } else {
+        renderSoTabBar();
+      }
+    }
+
     function showSoList() {
-      document.getElementById('sales-list-wrap').classList.remove('hidden');
+      document.getElementById('sales-section').classList.remove('so-doc-open');
       document.getElementById('so-detail').classList.add('hidden');
+      const type = document.getElementById('so-type').value || salesTypeFromTab(salesSubTab);
+      if (isInvoiceSplitOn()) {
+        showSoOverviewPane();
+        return;
+      }
+      setMasterTabCaption(soMasterPage(type), '');
     }
 
     function renderSoTable(rows, type) {
       const tbody = document.getElementById('so-table');
       const q = (document.getElementById('so-search').value || '').toLowerCase();
       const filtered = (rows || []).filter(function (d) {
+        if (type === 'invoice' && !soInvoiceFilterMatch(d, soInvFilter)) return false;
         if (!q) return true;
         return [d.number, d.customerName, d.customerEmail, d.poNumber, d.status]
           .join(' ').toLowerCase().indexOf(q) !== -1;
@@ -9053,7 +9548,9 @@
       const table = document.querySelector('table.dash-cols[data-cols="sales"]');
       if (!filtered.length) {
         tbody.innerHTML = '<tr><td class="py-6 px-4 text-slate-500" colspan="' + dashColSpan(table) + '">' +
-          (q ? 'No documents match this search.' : 'No ' + salesTypeLabel(type).toLowerCase() + 's yet.') +
+          (q || (type === 'invoice' && soInvFilter && soInvFilter !== 'all')
+            ? 'No documents match this view.'
+            : 'No ' + salesTypeLabel(type).toLowerCase() + 's yet.') +
           '</td></tr>';
         applyColOrder(table);
         fillSoOverview();
@@ -9076,7 +9573,9 @@
         const when = d.issueDate ? new Date(d.issueDate + 'T00:00:00').toLocaleDateString() : '—';
         const due = d.dueDate ? new Date(d.dueDate + 'T00:00:00').toLocaleDateString() : '—';
         const cells = {
-          number: '<td class="py-3 px-4 font-medium">' + esc(d.number || '—') + '</td>',
+          number: '<td class="py-3 px-4 font-medium"><span class="cc-acct-cell">' +
+            soDocStatusIcon(d) +
+            '<span class="cc-acct-name">' + esc(d.number || '—') + '</span></span></td>',
           customer: '<td class="py-3 px-4">' + esc(d.customerName || '—') + '</td>',
           date: '<td class="py-3 px-4">' + esc(when) + '</td>',
           status: '<td class="py-3 px-4"><span class="text-xs px-2 py-0.5 rounded-full bg-sky-500/15 text-sky-300">' + esc(d.status || 'draft') + '</span></td>',
@@ -9087,7 +9586,9 @@
           terms: '<td class="py-3 px-4">' + esc(d.paymentTerms || '—') + '</td>',
           notes: '<td class="py-3 px-4">' + esc(d.notes || '—') + '</td>'
         };
-        return '<tr class="border-b border-slate-800 hover:bg-slate-900/80 cursor-pointer" data-id="' + esc(d.id) + '">' +
+        return '<tr class="border-b border-slate-800 hover:bg-slate-900/80 cursor-pointer' +
+          (isInvoiceSplitOn() && String(soActiveTab) === String(d.id) ? ' is-active' : '') +
+          '" data-id="' + esc(d.id) + '">' +
           dashOrderedCells(table, cells, '<td class="py-3 px-4 text-right"><span class="text-sky-400 text-xs font-medium">Open →</span></td>') +
           '</tr>';
       }).join('');
@@ -9097,15 +9598,24 @@
 
     function fillSoOverview() {
       const rows = salesAllDocs || [];
+      const invoices = rows.filter(function (d) { return d.type === 'invoice'; });
       setText('so-stat-quote', rows.filter(function (d) { return d.type === 'quote'; }).length);
       setText('so-stat-order', rows.filter(function (d) { return d.type === 'order'; }).length);
-      setText('so-stat-invoice', rows.filter(function (d) { return d.type === 'invoice'; }).length);
+      setText('so-stat-invoice', invoices.length);
+      setText('so-stat-open', invoices.filter(function (d) { return soInvoiceFilterMatch(d, 'open'); }).length);
+      setText('so-stat-due-soon', invoices.filter(function (d) { return soInvoiceFilterMatch(d, 'dueSoon'); }).length);
+      setText('so-stat-overdue', invoices.filter(function (d) { return soInvoiceFilterMatch(d, 'overdue'); }).length);
+      setText('so-stat-draft', invoices.filter(function (d) { return soInvoiceFilterMatch(d, 'draft'); }).length);
       markPageKpis('so-overview', salesSubTab === 'sales' ? 'quotes' : salesSubTab, 'data-nav');
+      markPageKpis('so-inv-overview', soInvFilter);
     }
 
     async function loadSalesDocs(type) {
       const t = type || salesTypeFromTab(salesSubTab);
       setSoTypeUi(t);
+      if (!document.getElementById('so-detail').classList.contains('hidden')) {
+        syncSoPageName(t, document.getElementById('so-number').value);
+      }
       showError('so-error', '');
       try {
         const [docsData, custData] = await Promise.all([
@@ -9120,6 +9630,7 @@
           : document.getElementById('so-customer').value;
         fillSoCustomers(keep === '__new__' ? '' : keep);
         renderSoTable(salesDocs, t);
+        if (t === 'invoice') initSoSplitResize();
       } catch (err) {
         showError('so-error', err.message || 'Could not load sales documents.');
         document.getElementById('so-table').innerHTML = '<tr><td class="py-6 px-4 text-slate-500" colspan="6">Could not load documents.</td></tr>';
@@ -9134,6 +9645,7 @@
       fillSoStatuses(type, doc.status || 'draft');
       document.getElementById('so-number').value = doc.number || nextSoNumber(type);
       document.getElementById('so-customer-name').value = doc.customerName || '';
+      syncSoPageName(type, document.getElementById('so-number').value);
       document.getElementById('so-customer-email').value = doc.customerEmail || '';
       document.getElementById('so-po').value = doc.poNumber || '';
       document.getElementById('so-issue').value = doc.issueDate || new Date().toISOString().slice(0, 10);
@@ -9197,17 +9709,31 @@
         void openInvoiceWindow('new', { type: 'invoice', customerId: opts.customerId });
         return;
       }
-      document.getElementById('so-title').textContent = 'New ' + salesTypeLabel(t).toLowerCase();
-      showSoMsg('');
-      fillSoForm({
-        type: t,
-        status: 'draft',
-        paymentTerms: 'Net 30',
-        issueDate: new Date().toISOString().slice(0, 10),
-        lines: [{ qty: 1, unitPrice: 0 }]
-      });
-      document.getElementById('sales-list-wrap').classList.add('hidden');
-      document.getElementById('so-detail').classList.remove('hidden');
+      const go = function () {
+        document.getElementById('so-title').textContent = 'New ' + salesTypeLabel(t).toLowerCase();
+        showSoMsg('');
+        fillSoForm({
+          type: t,
+          status: 'draft',
+          paymentTerms: 'Net 30',
+          issueDate: new Date().toISOString().slice(0, 10),
+          lines: [{ qty: 1, unitPrice: 0 }]
+        });
+        const wrap = document.getElementById('sales-list-wrap');
+        if (wrap) wrap.classList.remove('hidden');
+        document.getElementById('so-detail').classList.remove('hidden');
+        if (isInvoiceDocWindow() || isInvoiceSplitOn()) {
+          document.getElementById('sales-section').classList.remove('so-doc-open');
+          if (isInvoiceSplitOn() && !isInvoiceDocWindow()) showSoRightPanel('item');
+        } else {
+          document.getElementById('sales-section').classList.add('so-doc-open');
+        }
+      };
+      if ((salesAllDocs || []).some(function (d) { return d.type === t; }) || (salesDocs || []).length) {
+        go();
+        return;
+      }
+      loadSalesDocs(t).then(go).catch(go);
     }
 
     async function openSalesDoc(id, opts) {
@@ -9228,8 +9754,12 @@
         }
         document.getElementById('so-title').textContent = (doc.number || salesTypeLabel(doc.type)) + ' · ' + (doc.customerName || '');
         fillSoForm(doc);
-        document.getElementById('sales-list-wrap').classList.add('hidden');
         document.getElementById('so-detail').classList.remove('hidden');
+        if (isInvoiceSplitOn() && !isInvoiceDocWindow()) {
+          document.getElementById('sales-section').classList.remove('so-doc-open');
+        } else {
+          document.getElementById('sales-section').classList.add('so-doc-open');
+        }
       } catch (err) {
         showError('so-error', err.message || 'Could not open this document.');
       }
@@ -9273,20 +9803,24 @@
       }
       if (name === 'quotes' || name === 'orders' || name === 'invoices' || name === 'sales') {
         const invoiceId = name === 'invoices' ? invoiceIdFromPath() : '';
-        if (invoiceId) {
+        if (invoiceId === 'new') {
           applyInvoiceWindowChrome(true);
           await loadSalesDocs('invoice');
-          if (invoiceId === 'new') {
-            openNewSale('invoice', { inline: true });
-            const cid = invoiceCustomerFromQuery();
-            if (cid) {
-              fillSoCustomers(cid);
-              const c = (salesCustomers || []).find(function (row) { return String(row.id) === String(cid); });
-              applySoCustomer(c);
-            }
-          } else {
-            await openSalesDoc(invoiceId, { inline: true, type: 'invoice' });
+          openNewSale('invoice', { inline: true });
+          const cid = invoiceCustomerFromQuery();
+          if (cid) {
+            fillSoCustomers(cid);
+            const c = (salesCustomers || []).find(function (row) { return String(row.id) === String(cid); });
+            applySoCustomer(c);
           }
+        } else if (invoiceId && !isMobileDash()) {
+          applyInvoiceWindowChrome(false);
+          await loadSalesDocs('invoice');
+          await openSoTab(invoiceId, { push: false });
+        } else if (invoiceId) {
+          applyInvoiceWindowChrome(true);
+          await loadSalesDocs('invoice');
+          await openSalesDoc(invoiceId, { inline: true, type: 'invoice' });
         } else {
           applyInvoiceWindowChrome(false);
           showSoList();
@@ -9588,6 +10122,10 @@
         showInvOverview({ push: true });
         return;
       }
+      if (!document.getElementById('sales-section').classList.contains('hidden') && isInvoiceSplitOn() && soActiveTab !== 'overview') {
+        showSoOverviewPane();
+        return;
+      }
       if (!document.getElementById('vendors-section').classList.contains('hidden') && vnDetailId) {
         closeVendorDetail(true);
         return;
@@ -9613,7 +10151,32 @@
     });
     document.getElementById('so-table').addEventListener('click', function (e) {
       const row = e.target.closest('tr[data-id]');
-      if (row) openSalesDoc(row.getAttribute('data-id'), { type: salesTypeFromTab(salesSubTab) });
+      if (!row) return;
+      const id = row.getAttribute('data-id');
+      const type = salesTypeFromTab(salesSubTab);
+      if (type === 'invoice' && isInvoiceSplitOn()) {
+        openSoTab(id);
+        return;
+      }
+      openSalesDoc(id, { type: type });
+    });
+    document.getElementById('so-tab-strip').addEventListener('click', function (e) {
+      const closeBtn = e.target.closest('[data-so-tab-close]');
+      if (closeBtn) {
+        e.preventDefault();
+        e.stopPropagation();
+        closeSoTab(closeBtn.getAttribute('data-so-tab-close'));
+        return;
+      }
+      const tab = e.target.closest('.inv-browser-tab[data-so-tab-id]');
+      if (!tab) return;
+      const tabId = tab.getAttribute('data-so-tab-id');
+      if (tabId === 'overview') {
+        showSoOverviewPane();
+        history.pushState({ tab: 'invoices' }, '', '/company/sales/invoices');
+        return;
+      }
+      activateSoTab(tabId, { push: true });
     });
     document.getElementById('so-add-line').addEventListener('click', function () {
       const tb = document.getElementById('so-lines');
@@ -9623,6 +10186,7 @@
       if (table) applyColOrder(table);
       soLineState = readSoLines(true);
       refreshSoTotals();
+      scrollSoLinesEnd();
     });
     document.getElementById('so-lines').addEventListener('change', function (e) {
       const sel = e.target.closest('[data-line="itemId"]');
@@ -9705,6 +10269,10 @@
       renderSoLines(soLineState);
     });
     document.getElementById('so-discount').addEventListener('input', refreshSoTotals);
+    document.getElementById('so-number').addEventListener('input', function () {
+      const type = document.getElementById('so-type').value || 'quote';
+      syncSoPageName(type, this.value);
+    });
     document.getElementById('so-tax-rate').addEventListener('input', refreshSoTotals);
     document.getElementById('so-customer').addEventListener('change', function () {
       const id = this.value;
@@ -9727,10 +10295,18 @@
       document.getElementById('so-side-tx').hidden = tab !== 'tx';
     });
     document.getElementById('so-ribbon-new').addEventListener('click', function () {
-      openNewSale('invoice', { inline: true });
+      openNewSale(document.getElementById('so-type').value || salesTypeFromTab(salesSubTab));
     });
     document.getElementById('so-caption-close').addEventListener('click', function () {
-      closeInvoiceWindow();
+      if (isInvoiceDocWindow()) {
+        closeInvoiceWindow();
+        return;
+      }
+      if (isInvoiceSplitOn() && soActiveTab && soActiveTab !== 'overview') {
+        closeSoTab(soActiveTab);
+        return;
+      }
+      showSoList();
     });
     document.getElementById('so-ribbon-find').addEventListener('click', function () {
       const sel = document.getElementById('so-customer');
@@ -9777,9 +10353,32 @@
         fillSoForm(data.doc);
         document.getElementById('so-title').textContent = (data.doc.number || salesTypeLabel(data.doc.type)) + ' · ' + (data.doc.customerName || '');
         showSoMsg((data.doc.number || 'Document') + ' saved.', true);
+        if (data.doc && data.doc.id) {
+          soTabCache[String(data.doc.id)] = data.doc;
+          if (data.doc.type === 'invoice' && isInvoiceSplitOn() && !isInvoiceDocWindow()) {
+            const oldId = id ? String(id) : '';
+            const newId = String(data.doc.id);
+            if (oldId && oldId !== newId) {
+              const idx = soOpenTabs.indexOf(oldId);
+              if (idx !== -1) soOpenTabs[idx] = newId;
+              delete soTabCache[oldId];
+            } else if (soOpenTabs.indexOf(newId) === -1) {
+              soOpenTabs.push(newId);
+            }
+            soActiveTab = newId;
+            renderSoTabBar();
+          }
+        }
         await loadSalesDocs(data.doc.type);
-        if (after === 'close' && isInvoiceDocWindow()) closeInvoiceWindow();
-        if (after === 'new') openNewSale(data.doc.type || 'invoice', { inline: true });
+        if (after === 'close') {
+          if (isInvoiceDocWindow()) closeInvoiceWindow();
+          else if (data.doc.type === 'invoice' && isInvoiceSplitOn()) closeSoTab(data.doc.id);
+          else showSoList();
+        }
+        if (after === 'new') {
+          if ((data.doc.type || 'invoice') === 'invoice') openNewSale('invoice');
+          else openNewSale(data.doc.type || 'invoice', { inline: true });
+        }
       } catch (err) {
         showSoMsg(err.message || 'Could not save document.');
       }
@@ -9793,7 +10392,8 @@
           closeInvoiceWindow();
           return;
         }
-        showSoList();
+        if (soOpenTabs.indexOf(String(id)) !== -1) closeSoTab(id);
+        else showSoList();
         await loadSalesDocs(salesTypeFromTab(salesSubTab));
       } catch (err) {
         showSoMsg(err.message || 'Could not delete document.');
@@ -10488,6 +11088,9 @@
     bindPageKpis('so-overview', function (btn) {
       const nav = btn.getAttribute('data-nav');
       if (nav) openCompanyTab(nav, true);
+    });
+    bindPageKpis('so-inv-overview', function (btn) {
+      setSoInvFilter(btn.getAttribute('data-filter') || 'open');
     });
     document.getElementById('inv-kind').addEventListener('change', function () {
       document.getElementById('inv-qty-label').textContent =
@@ -11298,10 +11901,16 @@
       function syncSplitLayoutLock() {
         const inv = document.getElementById('inventory-section');
         const cc = document.getElementById('customers-section');
-        const onInventory = inv && !inv.classList.contains('hidden');
-        const onCustomers = cc && !cc.classList.contains('hidden');
-        document.body.classList.toggle('inv-layout-lock', onInventory && !isMobileDash());
-        document.body.classList.toggle('dash-split-lock', onCustomers && !isMobileDash());
+        const sales = document.getElementById('sales-section');
+        const desktop = !isMobileDash();
+        const floating = document.body.classList.contains('so-invoice-float');
+        const onInventory = !!(inv && !inv.classList.contains('hidden'));
+        const onCustomers = !!(cc && !cc.classList.contains('hidden'));
+        const onInvoices = !!(sales && !sales.classList.contains('hidden') && salesSubTab === 'invoices');
+        document.body.classList.toggle('inv-layout-lock', onInventory && desktop);
+        document.body.classList.toggle('dash-split-lock', onCustomers && desktop);
+        if (sales) sales.classList.toggle('so-split-on', onInvoices && desktop);
+        document.body.classList.toggle('so-split-lock', onInvoices && desktop && !floating);
       }
       window.addEventListener('resize', function () {
         const mobile = isMobileDash();
