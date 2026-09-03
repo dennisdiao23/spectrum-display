@@ -9276,6 +9276,27 @@
       if (caption) caption.textContent = type === 'invoice' ? 'Create Invoices' : salesTypeLabel(type);
     }
 
+    function soDocStatus(d) {
+      const st = String((d && d.status) || 'draft').toLowerCase();
+      if (st === 'overdue' || st === 'expired') return { cls: 'is-overdue', label: st === 'expired' ? 'Expired' : 'Past due' };
+      if (st === 'paid' || st === 'accepted' || st === 'fulfilled' || st === 'confirmed') {
+        return { cls: 'is-good', label: st.charAt(0).toUpperCase() + st.slice(1) };
+      }
+      if (st === 'sent') {
+        const days = typeof ccDaysUntilDue === 'function' ? ccDaysUntilDue(d && d.dueDate) : null;
+        if (days !== null && days < 0) return { cls: 'is-overdue', label: 'Past due' };
+        if (days !== null && days <= 5) return { cls: 'is-due-soon', label: 'Due within 5 days' };
+        return { cls: 'is-good', label: 'Sent' };
+      }
+      if (st === 'draft') return { cls: 'is-none', label: 'Draft' };
+      return { cls: 'is-none', label: st.charAt(0).toUpperCase() + st.slice(1) };
+    }
+
+    function soDocStatusIcon(d) {
+      const s = soDocStatus(d);
+      return '<span class="cc-acct-status ' + s.cls + '" title="' + esc(s.label) + '" aria-label="' + esc(s.label) + '"></span>';
+    }
+
     function isInvoiceSplitOn() {
       const sec = document.getElementById('sales-section');
       return !!(sec && sec.classList.contains('so-split-on') && !isMobileDash() && !isInvoiceDocWindow());
@@ -9321,6 +9342,7 @@
         const active = String(soActiveTab) === String(id);
         html += '<button type="button" class="inv-browser-tab' + (active ? ' is-active' : '') +
           '" data-so-tab-id="' + esc(id) + '" role="tab" aria-selected="' + (active ? 'true' : 'false') + '">' +
+          soDocStatusIcon(soDocById(id)) +
           '<span class="inv-browser-tab-label">' + esc(soTabLabel(id)) + '</span>' +
           '<span class="inv-browser-tab-close" data-so-tab-close="' + esc(id) + '" aria-label="Close tab" role="button" tabindex="-1">×</span></button>';
       });
@@ -9499,7 +9521,9 @@
         const when = d.issueDate ? new Date(d.issueDate + 'T00:00:00').toLocaleDateString() : '—';
         const due = d.dueDate ? new Date(d.dueDate + 'T00:00:00').toLocaleDateString() : '—';
         const cells = {
-          number: '<td class="py-3 px-4 font-medium">' + esc(d.number || '—') + '</td>',
+          number: '<td class="py-3 px-4 font-medium"><span class="cc-acct-cell">' +
+            soDocStatusIcon(d) +
+            '<span class="cc-acct-name">' + esc(d.number || '—') + '</span></span></td>',
           customer: '<td class="py-3 px-4">' + esc(d.customerName || '—') + '</td>',
           date: '<td class="py-3 px-4">' + esc(when) + '</td>',
           status: '<td class="py-3 px-4"><span class="text-xs px-2 py-0.5 rounded-full bg-sky-500/15 text-sky-300">' + esc(d.status || 'draft') + '</span></td>',
