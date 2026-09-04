@@ -58,3 +58,12 @@ catalog API and a cookie-session company login used by `/company`, `/company/web
   so Railway deploys production. Hosting is Railway-only; merge to `main` triggers deploy.
 - If the PR cannot merge (conflicts, failing checks), resolve or report the blocker — do not stop at
   push-only when the user asked to push.
+
+### Company list tables
+
+- Every company list table keeps its column header row pinned while the body scrolls (Inventory, Vendor,
+  Customer, Sales, PO, Receipt Shipment, Website Products/Accounts, Settings staff/roles, and any new
+  list). Same for inner document line tables.
+- Implement with sticky `thead th` inside the table’s scroll wrap (`overflow: auto` on `.cc-table-wrap`
+  or equivalent). Header cells need an opaque background so rows do not paint through.
+- Do not drop this when adding a new split-view or list page.
