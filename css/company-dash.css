@@ -3336,8 +3336,20 @@ body.po-doc-float #po-detail {
 .so-doc-top { grid-column: 1 / -1; }
 .so-doc-top {
   display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 0.85rem 1rem;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.4rem 0.75rem;
+  align-items: end;
+}
+.so-doc-top .so-field {
+  gap: 0.12rem;
+  font-size: 0.72rem;
+}
+.so-doc-top .so-field input,
+.so-doc-top .so-field select,
+.so-doc-top .so-field textarea {
+  padding: 0.28rem 0.5rem;
+  font-size: 0.82rem;
+  border-radius: 0.4rem;
 }
 .so-field {
   display: flex;
