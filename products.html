@@ -529,11 +529,37 @@
 
     function filterHref(nextCat, nextBrand, nextSub) {
       const p = new URLSearchParams();
-      if (nextCat) p.set('cat', nextCat);
-      if (nextBrand) p.set('brand', nextBrand);
-      if (nextSub) p.set('sub', nextSub === 'receiving-card' ? 'receiving-cards' : nextSub);
+      // Brand and category are mutually exclusive — brand wins over cat/sub.
+      if (nextBrand) {
+        p.set('brand', nextBrand);
+      } else {
+        if (nextCat) p.set('cat', nextCat);
+        if (nextSub) p.set('sub', nextSub === 'receiving-card' ? 'receiving-cards' : nextSub);
+      }
       const q = p.toString();
       return 'products.html' + (q ? '?' + q : '');
+    }
+
+    function brandLabel(brandId) {
+      const b = window.SPECTRUM_PRODUCTS && window.SPECTRUM_PRODUCTS[brandId];
+      return (b && b.name) || brandId;
+    }
+
+    /** Drop stacked ?cat=&brand= URLs so brand always means "all products" for that brand. */
+    function dropCatWhenBrandSelected() {
+      const params = new URLSearchParams(window.location.search);
+      const brand = (params.get('brand') || '').trim();
+      if (!brand) return false;
+      if (!params.get('cat') && !params.get('sub')) return false;
+      params.delete('cat');
+      params.delete('sub');
+      const q = params.toString();
+      history.replaceState(null, '', 'products.html' + (q ? '?' + q : ''));
+      return true;
+    }
+
+    function currentBrand() {
+      return (new URLSearchParams(window.location.search).get('brand') || '').toLowerCase() || null;
     }
 
     function highlightFilters() {
@@ -545,19 +571,21 @@
       const isControlCat = cat === 'control' || brand === 'novastar';
       document.querySelectorAll('[data-cat-link]').forEach(function (a) {
         const id = a.getAttribute('data-cat-link') || '';
-        a.href = filterHref(id, brand === 'novastar' ? '' : brand);
+        // Category pick clears brand. "All products" keeps brand (category = all).
+        a.href = id ? filterHref(id, '') : filterHref('', brand);
         a.className = id === cat ? LINK_ON : LINK_IDLE;
       });
       document.querySelectorAll('[data-brand-link]').forEach(function (a) {
         const id = a.getAttribute('data-brand-link') || '';
-        a.href = filterHref(cat === 'control' ? cat : cat, id);
+        // Brand pick clears category. "All brands" keeps category (brand = all).
+        a.href = id ? filterHref('', id) : filterHref(cat, '');
         a.className = id === brand ? LINK_ON : LINK_IDLE;
       });
       const subnav = document.getElementById('control-subnav');
       if (subnav) subnav.classList.toggle('hidden', !isControlCat);
       document.querySelectorAll('[data-sub-link]').forEach(function (a) {
         const id = a.getAttribute('data-sub-link') || '';
-        a.href = filterHref('control', brand === 'novastar' ? 'novastar' : '', id);
+        a.href = filterHref('control', '', id);
         a.className = id === sub ? LINK_ON : LINK_IDLE;
       });
       const pitchBlock = document.getElementById('pitch-filter-block');
@@ -584,6 +612,9 @@
       if (h1 && brand === 'novastar') {
         h1.removeAttribute('data-i18n');
         h1.textContent = 'NovaStar control systems';
+      } else if (h1 && brand) {
+        h1.removeAttribute('data-i18n');
+        h1.textContent = brandLabel(brand);
       } else if (h1 && cat && CAT_LABELS[cat]) {
         h1.removeAttribute('data-i18n');
         h1.textContent = CAT_LABELS[cat];
@@ -591,20 +622,24 @@
       if (lead && brand === 'novastar') {
         lead.removeAttribute('data-i18n');
         lead.textContent = CAT_LEADS.control;
+      } else if (lead && brand) {
+        lead.removeAttribute('data-i18n');
+        lead.textContent = 'All products from ' + brandLabel(brand) + '.';
       } else if (lead && cat && CAT_LEADS[cat]) {
         lead.removeAttribute('data-i18n');
         lead.textContent = CAT_LEADS[cat];
       }
     }
 
-    const params = new URLSearchParams(window.location.search);
+    dropCatWhenBrandSelected();
     highlightFilters();
-    renderProducts(params.get('brand') || null);
+    renderProducts(currentBrand());
     window.addEventListener('spectrum:catalog', function () {
-      renderProducts(params.get('brand') || null);
+      highlightFilters();
+      renderProducts(currentBrand());
     });
     window.addEventListener('spectrum:pricing', function () {
-      renderProducts(params.get('brand') || null);
+      renderProducts(currentBrand());
     });
   </script>
 </body>
