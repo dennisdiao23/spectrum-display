@@ -24,6 +24,12 @@
         if (soPx && soPx >= 160) document.documentElement.style.setProperty('--so-split-left-boot', soPx + 'px');
         var poPx = prefs['purchase-orders'] && prefs['purchase-orders'].splitLeftPx;
         if (poPx && poPx >= 160) document.documentElement.style.setProperty('--po-split-left-boot', poPx + 'px');
+        var vnPx = prefs.vendors && prefs.vendors.splitLeftPx;
+        if (vnPx && vnPx >= 160) document.documentElement.style.setProperty('--vn-split-left-boot', vnPx + 'px');
+        var wpPx = prefs['website-products'] && prefs['website-products'].splitLeftPx;
+        if (wpPx && wpPx >= 160) document.documentElement.style.setProperty('--wp-split-left-boot', wpPx + 'px');
+        var waPx = prefs['website-accounts'] && prefs['website-accounts'].splitLeftPx;
+        if (waPx && waPx >= 160) document.documentElement.style.setProperty('--wa-split-left-boot', waPx + 'px');
       } catch (e) {}
     })();
   </script>
@@ -261,14 +267,17 @@
           </div>
         </div>
       </div>
-      <div id="website-pane" class="hidden space-y-6">
-      <div id="products-section" class="space-y-6">
-      <div id="products-list-wrap">
-      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4">
+      <div id="website-pane" class="hidden">
+      <div id="products-section">
+      <div id="products-list-wrap" class="cc-list-inner">
+      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4 wp-list-head">
         <p class="text-slate-400 text-sm"><span id="product-total">0</span> website product pages. These are catalog content only — photos, copy, and which pitches the page shows. Stock and live sell price live in Inventory. Click a product name to edit. Click Shown to open the live page.</p>
         <button id="new-btn" type="button" class="px-4 py-2 rounded-full bg-sky-500 hover:bg-sky-400 text-white text-sm font-semibold">Add product</button>
       </div>
-      <div class="overflow-x-auto rounded-2xl border border-slate-800">
+      <div id="wp-split" class="dash-split wp-split">
+        <div id="wp-split-left" class="dash-split-left">
+      <div class="cc-table-card rounded-2xl border border-slate-800">
+        <div class="cc-table-wrap overflow-x-auto">
         <table class="w-full text-sm dash-cols" data-cols="website-products">
           <thead class="text-left text-slate-400 border-b border-slate-800">
             <tr>
@@ -283,10 +292,20 @@
           </thead>
           <tbody id="product-table" class="text-slate-200"></tbody>
         </table>
+        </div>
       </div>
-      </div>
-
-      <div id="form-wrap" class="hidden space-y-4">
+        </div>
+        <div id="wp-split-resizer" class="dash-split-resizer" role="separator" aria-orientation="vertical" aria-label="Resize product panels" tabindex="0"></div>
+        <div id="wp-split-right" class="dash-split-right">
+          <div id="wp-tab-bar" class="inv-tab-bar">
+            <div id="wp-tab-strip" class="inv-tab-strip" role="tablist" aria-label="Open products"></div>
+          </div>
+          <div id="wp-overview-panel" class="inv-right-panel">
+            <div class="inv-overview-summary">
+              <p class="inv-overview-lead">Select a product to edit photos, copy, and inventory links. Add product opens here.</p>
+            </div>
+          </div>
+      <div id="form-wrap" class="hidden space-y-4 inv-right-panel">
         <button type="button" id="product-back" class="text-sm text-sky-400 hover:text-sky-300">← Products</button>
         <div class="rounded-2xl border border-slate-800 bg-slate-900/50 p-5">
         <h2 id="form-title" class="font-semibold text-lg mb-4">New product</h2>
@@ -395,12 +414,14 @@
           <div id="inventory-map-rows" class="space-y-3"></div>
         </div>
       </div>
+            </div>
+          </div>
+        </div>
       </div>
 
-      <div id="accounts-section" class="hidden space-y-6">
-        <div id="accounts-list-wrap">
-          <p class="text-slate-400 text-sm mb-4">People who signed in on the public website (Customer, Dealer, Sales). Admin logins are under Settings → Manage users, not here. Open an account to set type, markup, orders, and saved projects.</p>
-          <form id="price-tiers-form" class="rounded-2xl border border-slate-800 bg-slate-900/50 p-5 mb-6">
+      <div id="accounts-section" class="hidden">
+          <p class="text-slate-400 text-sm mb-4 wa-list-head">People who signed in on the public website (Customer, Dealer, Sales). Admin logins are under Settings → Manage users, not here. Open an account to set type, markup, orders, and saved projects.</p>
+          <form id="price-tiers-form" class="rounded-2xl border border-slate-800 bg-slate-900/50 p-5 mb-6 wa-list-head">
             <h3 class="font-semibold mb-1">Price tiers</h3>
             <p class="text-xs text-slate-500 mb-4">Markup % by account type. Signed-in users see catalog price × (1 + markup%). Only admin can see these percents — they never appear on My Account.</p>
             <div class="grid sm:grid-cols-3 gap-4">
@@ -422,8 +443,12 @@
               <p id="tiers-msg" class="hidden text-sm text-sky-400"></p>
             </div>
           </form>
-          <p id="accounts-error" class="hidden text-sm text-red-400 mb-3"></p>
-          <div class="overflow-x-auto rounded-2xl border border-slate-800">
+          <p id="accounts-error" class="hidden text-sm text-red-400 mb-3 wa-list-head"></p>
+        <div id="accounts-list-wrap" class="cc-list-inner">
+          <div id="wa-split" class="dash-split wa-split">
+            <div id="wa-split-left" class="dash-split-left">
+          <div class="cc-table-card rounded-2xl border border-slate-800">
+            <div class="cc-table-wrap overflow-x-auto">
             <table class="w-full text-sm dash-cols" data-cols="website-accounts">
               <thead class="text-left text-slate-400 border-b border-slate-800">
                 <tr>
@@ -438,9 +463,20 @@
               </thead>
               <tbody id="accounts-table" class="text-slate-200"></tbody>
             </table>
+            </div>
           </div>
-        </div>
-        <div id="account-detail" class="hidden space-y-6">
+            </div>
+            <div id="wa-split-resizer" class="dash-split-resizer" role="separator" aria-orientation="vertical" aria-label="Resize account panels" tabindex="0"></div>
+            <div id="wa-split-right" class="dash-split-right">
+              <div id="wa-tab-bar" class="inv-tab-bar">
+                <div id="wa-tab-strip" class="inv-tab-strip" role="tablist" aria-label="Open accounts"></div>
+              </div>
+              <div id="wa-overview-panel" class="inv-right-panel">
+                <div class="inv-overview-summary">
+                  <p class="inv-overview-lead">Select an account to set type, markup, orders, and saved projects.</p>
+                </div>
+              </div>
+        <div id="account-detail" class="hidden space-y-6 inv-right-panel">
           <button type="button" id="account-back" class="text-sm text-sky-400 hover:text-sky-300">← All accounts</button>
           <form id="account-form" class="rounded-2xl border border-slate-800 bg-slate-900/50 p-5 grid sm:grid-cols-2 gap-4">
             <input type="hidden" id="acct-id">
@@ -490,6 +526,9 @@
           <div>
             <h3 class="font-semibold mb-3">Custom panels</h3>
             <div id="acct-panels" class="space-y-2 text-sm"></div>
+          </div>
+        </div>
+            </div>
           </div>
         </div>
       </div>
@@ -671,7 +710,6 @@
 
       <div id="vendors-section" class="hidden">
         <div id="vn-workspace" class="cc-workspace">
-        <aside id="vn-list-pane" class="cc-list-pane">
         <div id="vendors-list-wrap" class="cc-list-inner">
           <div class="page-kpis page-kpis-3 cc-list-kpis" id="vn-overview">
             <button type="button" class="dash-kpi is-on" data-filter="all" aria-pressed="true">
@@ -698,6 +736,8 @@
             <button id="vn-new-btn" type="button" class="cc-list-add-btn px-4 py-2 rounded-full bg-sky-500 hover:bg-sky-400 text-white text-sm font-semibold">Add vendor</button>
           </div>
           <p id="vn-error" class="hidden text-sm text-red-400 mb-3"></p>
+          <div id="vn-split" class="dash-split vn-split">
+            <div id="vn-split-left" class="dash-split-left">
           <div id="vn-side-list" class="cc-side-list hidden" role="listbox" aria-label="Vendors"></div>
           <div class="cc-table-card rounded-2xl border border-slate-800">
             <div id="vn-table-wrap" class="cc-table-wrap overflow-x-auto">
@@ -721,9 +761,18 @@
             </table>
             </div>
           </div>
-        </div>
-        </aside>
-        <div id="vn-detail-pane" class="cc-detail-pane" hidden aria-hidden="true">
+            </div>
+            <div id="vn-split-resizer" class="dash-split-resizer" role="separator" aria-orientation="vertical" aria-label="Resize vendor panels" tabindex="0"></div>
+            <div id="vn-split-right" class="dash-split-right">
+              <div id="vn-tab-bar" class="inv-tab-bar">
+                <div id="vn-tab-strip" class="inv-tab-strip" role="tablist" aria-label="Open vendors"></div>
+              </div>
+              <div id="vn-overview-panel" class="inv-right-panel">
+                <div class="inv-overview-summary">
+                  <p class="inv-overview-lead">Select a vendor to view purchase orders, contacts, and notes. Add vendor opens in a drawer.</p>
+                </div>
+              </div>
+        <div id="vn-detail-pane" class="cc-detail-pane inv-right-panel hidden" hidden aria-hidden="true">
           <div class="cc-detail-toolbar">
             <button type="button" id="vn-detail-back" class="cc-detail-back">← Vendors</button>
             <div class="cc-detail-toolbar-actions">
@@ -837,6 +886,9 @@
           <div id="vn-detail-panel-notes" class="cc-detail-panel hidden" role="tabpanel" hidden>
             <div class="cc-detail-notes-box" id="vn-detail-notes-text">—</div>
             <p class="cc-detail-meta" id="vn-detail-updated"></p>
+          </div>
+        </div>
+            </div>
           </div>
         </div>
         </div>
@@ -3074,16 +3126,113 @@
       syncControlFields();
     }
 
-    function closeProductForm() {
-      formWrap.classList.add('hidden');
-      document.getElementById('products-list-wrap').classList.remove('hidden');
-      resetForm();
+    function isWpSplitOn() {
+      return !isMobileDash();
     }
-
-    function openForm(product) {
+    function showWpRightPanel(which) {
+      const overview = document.getElementById('wp-overview-panel');
+      const form = document.getElementById('form-wrap');
+      const onOverview = which === 'overview';
+      if (overview) overview.classList.toggle('hidden', !onOverview);
+      if (form) form.classList.toggle('hidden', onOverview);
+      const sec = document.getElementById('products-section');
+      if (sec) sec.classList.toggle('wp-form-open', !onOverview && !isWpSplitOn());
+      if (onOverview || isWpSplitOn()) {
+        const list = document.getElementById('products-list-wrap');
+        if (list) list.classList.remove('hidden');
+      }
+    }
+    function wpTabLabel(id) {
+      if (id === 'new') return wpTabLabels.new || 'New product';
+      if (wpTabLabels[id]) return wpTabLabels[id];
+      const p = (websiteProducts || []).find(function (row) { return String(row.dbId) === String(id); });
+      return (p && p.name) || 'Product';
+    }
+    function fitWpTabWidths() {
+      fitBrowserTabWidths('wp-tab-strip', 'data-wp-tab-id');
+    }
+    function renderWpTabBar() {
+      const strip = document.getElementById('wp-tab-strip');
+      if (!strip) return;
+      let html = '<button type="button" class="inv-browser-tab' +
+        (wpActiveTab === 'overview' ? ' is-active' : '') +
+        '" data-wp-tab-id="overview" role="tab" aria-selected="' + (wpActiveTab === 'overview' ? 'true' : 'false') + '">' +
+        '<span class="inv-browser-tab-label">Overview</span></button>';
+      wpOpenTabs.forEach(function (id) {
+        const active = String(wpActiveTab) === String(id);
+        html += '<button type="button" class="inv-browser-tab' + (active ? ' is-active' : '') +
+          '" data-wp-tab-id="' + esc(id) + '" role="tab" aria-selected="' + (active ? 'true' : 'false') + '">' +
+          '<span class="inv-browser-tab-label">' + esc(wpTabLabel(id)) + '</span>' +
+          '<span class="inv-browser-tab-close" data-wp-tab-close="' + esc(id) + '" aria-label="Close tab" role="button" tabindex="-1">×</span></button>';
+      });
+      strip.innerHTML = html;
+      fitWpTabWidths();
+    }
+    function readWpFormValues() {
+      const form = document.getElementById('product-form');
+      if (!form) return {};
+      const out = {};
+      Array.prototype.forEach.call(form.querySelectorAll('input, select, textarea'), function (el) {
+        if (!el.id || el.type === 'file') return;
+        if (el.type === 'checkbox') out[el.id] = el.checked;
+        else out[el.id] = el.value;
+      });
+      out._editingId = editingId;
+      out._editingHidden = editingHidden;
+      const title = document.getElementById('form-title');
+      out._title = title ? title.textContent : '';
+      const img = document.getElementById('image-preview');
+      out._imageSrc = img && !img.classList.contains('hidden') ? img.src : '';
+      return out;
+    }
+    function applyWpFormValues(vals) {
+      if (!vals) return;
+      Object.keys(vals).forEach(function (id) {
+        if (id.charAt(0) === '_') return;
+        const el = document.getElementById(id);
+        if (!el) return;
+        if (el.type === 'checkbox') el.checked = !!vals[id];
+        else el.value = vals[id];
+      });
+      editingId = vals._editingId || null;
+      editingHidden = !!vals._editingHidden;
+      const title = document.getElementById('form-title');
+      if (title && vals._title) title.textContent = vals._title;
+      const img = document.getElementById('image-preview');
+      if (img) {
+        if (vals._imageSrc) {
+          img.src = vals._imageSrc;
+          img.classList.remove('hidden');
+        } else {
+          img.classList.add('hidden');
+        }
+      }
+      const delBtn = document.getElementById('delete-btn');
+      const hideBtn = document.getElementById('hide-btn');
+      delBtn.classList.toggle('hidden', !editingId);
+      hideBtn.classList.toggle('hidden', !editingId);
+      if (editingId) hideBtn.textContent = editingHidden ? 'Show on website' : 'Hide';
+      document.getElementById('product-id').value = editingId || '';
+      syncControlFields();
+    }
+    function stashWpActiveTab() {
+      if (!wpActiveTab || wpActiveTab === 'overview') return;
+      const cache = wpTabCache[String(wpActiveTab)] || {};
+      cache.form = readWpFormValues();
+      wpTabCache[String(wpActiveTab)] = cache;
+      const nameEl = document.getElementById('name');
+      if (nameEl && nameEl.value.trim()) wpTabLabels[String(wpActiveTab)] = nameEl.value.trim();
+    }
+    function showWpOverview() {
+      stashWpActiveTab();
+      wpActiveTab = 'overview';
+      editingId = null;
+      showWpRightPanel('overview');
+      renderWpTabBar();
+      renderProducts(websiteProducts);
+    }
+    function fillProductForm(product) {
       resetForm();
-      document.getElementById('products-list-wrap').classList.add('hidden');
-      formWrap.classList.remove('hidden');
       const delBtn = document.getElementById('delete-btn');
       const hideBtn = document.getElementById('hide-btn');
       delBtn.classList.toggle('hidden', !product);
@@ -3119,6 +3268,119 @@
       }
       renderInventoryMap(product);
     }
+    async function activateWpTab(id, opts) {
+      opts = opts || {};
+      const sid = String(id);
+      wpActiveTab = sid;
+      if (sid === 'new') {
+        resetForm();
+        if (wpTabCache.new && wpTabCache.new.form) applyWpFormValues(wpTabCache.new.form);
+        else fillProductForm(null);
+        showWpRightPanel('item');
+        renderWpTabBar();
+        renderProducts(websiteProducts);
+        return;
+      }
+      let product = opts.product || (wpTabCache[sid] && wpTabCache[sid].product);
+      if (!product) {
+        const data = await api('/api/admin/products/' + encodeURIComponent(sid));
+        product = data.product;
+      }
+      wpTabCache[sid] = wpTabCache[sid] || {};
+      wpTabCache[sid].product = product;
+      wpTabLabels[sid] = (product && product.name) || 'Product';
+      fillProductForm(product);
+      if (wpTabCache[sid].form) applyWpFormValues(wpTabCache[sid].form);
+      showWpRightPanel('item');
+      renderWpTabBar();
+      renderProducts(websiteProducts);
+    }
+    async function openWpTab(id, opts) {
+      opts = opts || {};
+      const sid = String(id);
+      stashWpActiveTab();
+      if (wpOpenTabs.indexOf(sid) === -1) {
+        if (wpOpenTabs.length >= WP_TAB_MAX) {
+          const dropped = wpOpenTabs.shift();
+          delete wpTabCache[dropped];
+          delete wpTabLabels[dropped];
+        }
+        wpOpenTabs.push(sid);
+      }
+      await activateWpTab(sid, opts);
+    }
+    function closeWpTab(id) {
+      const sid = String(id);
+      const idx = wpOpenTabs.indexOf(sid);
+      if (idx === -1) return;
+      if (String(wpActiveTab) === sid) stashWpActiveTab();
+      wpOpenTabs.splice(idx, 1);
+      delete wpTabCache[sid];
+      delete wpTabLabels[sid];
+      if (String(wpActiveTab) === sid) {
+        if (wpOpenTabs.length) {
+          activateWpTab(wpOpenTabs[Math.min(idx, wpOpenTabs.length - 1)]);
+        } else {
+          showWpOverview();
+        }
+      } else {
+        renderWpTabBar();
+      }
+    }
+    function afterWpSave(product) {
+      if (!product || !product.dbId) {
+        if (isWpSplitOn()) {
+          showWpRightPanel('item');
+          renderWpTabBar();
+        }
+        return;
+      }
+      const newId = String(product.dbId);
+      const oldId = wpActiveTab === 'new' ? 'new' : String(editingId || wpActiveTab);
+      if (oldId && oldId !== newId) {
+        const idx = wpOpenTabs.indexOf(oldId);
+        if (idx !== -1) wpOpenTabs[idx] = newId;
+        else if (wpOpenTabs.indexOf(newId) === -1) wpOpenTabs.push(newId);
+        delete wpTabCache[oldId];
+        delete wpTabLabels[oldId];
+      } else if (wpOpenTabs.indexOf(newId) === -1) {
+        wpOpenTabs.push(newId);
+      }
+      wpActiveTab = newId;
+      wpTabCache[newId] = { product: product };
+      wpTabLabels[newId] = product.name || 'Product';
+      fillProductForm(product);
+      showWpRightPanel('item');
+      renderWpTabBar();
+      renderProducts(websiteProducts);
+    }
+
+    function closeProductForm() {
+      if (isWpSplitOn()) {
+        if (wpActiveTab && wpActiveTab !== 'overview') closeWpTab(wpActiveTab);
+        else showWpOverview();
+        return;
+      }
+      formWrap.classList.add('hidden');
+      document.getElementById('products-list-wrap').classList.remove('hidden');
+      const sec = document.getElementById('products-section');
+      if (sec) sec.classList.remove('wp-form-open');
+      resetForm();
+    }
+
+    function openForm(product) {
+      const id = product && product.dbId ? String(product.dbId) : 'new';
+      if (isWpSplitOn()) {
+        openWpTab(id, { product: product || null });
+        initWpSplitResize();
+        return;
+      }
+      fillProductForm(product);
+      document.getElementById('products-list-wrap').classList.add('hidden');
+      formWrap.classList.remove('hidden');
+      const sec = document.getElementById('products-section');
+      if (sec) sec.classList.add('wp-form-open');
+    }
 
     function renderProducts(list) {
       websiteProducts = list || [];
@@ -3150,7 +3412,9 @@
           price: '<td class="py-2.5 px-4">' + esc(p.priceLabel || '') + '</td>',
           website: '<td class="py-2.5 px-4" data-website-cell>' + vis + '</td>'
         };
-        return '<tr class="border-b border-slate-800 hover:bg-slate-900/80" data-id="' + esc(p.dbId) + '">' +
+        return '<tr class="border-b border-slate-800 hover:bg-slate-900/80 cursor-pointer' +
+          (String(p.dbId) === String(wpActiveTab) ? ' is-selected' : '') +
+          '" data-id="' + esc(p.dbId) + '">' +
           dashOrderedCells(dashTable, cells) +
           '</tr>';
       }).join('') || '<tr><td class="py-6 px-4 text-slate-500" colspan="' + dashColSpan(dashTable) + '">No products yet.</td></tr>';
@@ -3605,7 +3869,6 @@
       if (typeof closeProfileDrawer === 'function') closeProfileDrawer(true);
       if (typeof closeStaffDrawer === 'function') closeStaffDrawer(true);
       if (typeof closeRoleDrawer === 'function') closeRoleDrawer(true);
-      if (name !== 'vendors' && typeof closeVendorDetail === 'function') closeVendorDetail(false);
       const doc = parseDocMasterTab(name);
       const view = viewTabForMaster(name);
       const onWebsite = view === 'products' || view === 'accounts';
@@ -3638,7 +3901,16 @@
       document.getElementById('products-section').classList.toggle('hidden', view !== 'products');
       document.getElementById('inventory-section').classList.toggle('hidden', view !== 'inventory');
       document.body.classList.toggle('inv-layout-lock', view === 'inventory' && !isMobileDash());
-      document.body.classList.toggle('dash-split-lock', view === 'customers' && !isMobileDash());
+      document.body.classList.toggle('dash-split-lock',
+        (view === 'customers' || view === 'vendors' || view === 'products' || view === 'accounts') && !isMobileDash());
+      const vnSec = document.getElementById('vendors-section');
+      if (vnSec) vnSec.classList.toggle('vn-split-on', view === 'vendors' && !isMobileDash());
+      const wpSec = document.getElementById('products-section');
+      if (wpSec) wpSec.classList.toggle('wp-split-on', view === 'products' && !isMobileDash());
+      const waSec = document.getElementById('accounts-section');
+      if (waSec) waSec.classList.toggle('wa-split-on', view === 'accounts' && !isMobileDash());
+      if (view !== 'products' && typeof stashWpActiveTab === 'function') stashWpActiveTab();
+      if (view !== 'accounts' && typeof stashWaActiveTab === 'function') stashWaActiveTab();
       const onSalesList = onSales && !doc;
       const onPoList = view === 'purchase-orders' && !doc;
       document.body.classList.toggle('so-split-lock', onSalesList && !isMobileDash() && !document.body.classList.contains('so-invoice-float'));
@@ -3768,6 +4040,10 @@
     let vnDetailId = '';
     let vnDetailVendor = null;
     let vnDetailTab = 'pos';
+    const VN_TAB_MAX = 7;
+    let vnOpenTabs = [];
+    let vnActiveTab = 'overview';
+    let vnTabDetailTab = {};
     let purchaseOrders = [];
     let receiptShipments = [];
     let poCustomers = [];
@@ -3970,6 +4246,16 @@
     let dashColSaveTimer = null;
     let websiteProducts = [];
     let websiteAccounts = [];
+    const WP_TAB_MAX = 7;
+    let wpOpenTabs = [];
+    let wpActiveTab = 'overview';
+    let wpTabCache = {};
+    let wpTabLabels = {};
+    const WA_TAB_MAX = 7;
+    let waOpenTabs = [];
+    let waActiveTab = 'overview';
+    let waTabCache = {};
+    let waDetailId = '';
 
     function dashColCatalog(table) {
       const listed = DASH_COL_CATALOGS[dashColKey(table)];
@@ -4115,6 +4401,18 @@
         const so = dashColMine.sales;
         const soPx = so && so.splitLeftPx ? parseInt(so.splitLeftPx, 10) : 0;
         if (soPx >= 160) document.documentElement.style.setProperty('--so-split-left-boot', soPx + 'px');
+        const po = dashColMine['purchase-orders'];
+        const poPx = po && po.splitLeftPx ? parseInt(po.splitLeftPx, 10) : 0;
+        if (poPx >= 160) document.documentElement.style.setProperty('--po-split-left-boot', poPx + 'px');
+        const vn = dashColMine.vendors;
+        const vnPx = vn && vn.splitLeftPx ? parseInt(vn.splitLeftPx, 10) : 0;
+        if (vnPx >= 160) document.documentElement.style.setProperty('--vn-split-left-boot', vnPx + 'px');
+        const wp = dashColMine['website-products'];
+        const wpPx = wp && wp.splitLeftPx ? parseInt(wp.splitLeftPx, 10) : 0;
+        if (wpPx >= 160) document.documentElement.style.setProperty('--wp-split-left-boot', wpPx + 'px');
+        const wa = dashColMine['website-accounts'];
+        const waPx = wa && wa.splitLeftPx ? parseInt(wa.splitLeftPx, 10) : 0;
+        if (waPx >= 160) document.documentElement.style.setProperty('--wa-split-left-boot', waPx + 'px');
       } catch (err) {}
     }
 
@@ -4384,6 +4682,43 @@
 
     function savePoSplitLeftPx(px) {
       const table = document.querySelector('table.dash-cols[data-cols="purchase-orders"]');
+      if (!table) return;
+      const state = loadColState(table);
+      state.splitLeftPx = Math.round(px);
+      saveColState(table, state);
+    }
+
+    function vnSplitLeftFromPrefs() {
+      const saved = tableStateFromPrefs(dashColMine, 'vendors') || tableStateFromPrefs(dashColOwner, 'vendors');
+      const px = saved && saved.splitLeftPx ? parseInt(saved.splitLeftPx, 10) : 0;
+      return px > 0 ? px : 0;
+    }
+    function saveVnSplitLeftPx(px) {
+      const table = document.querySelector('table.dash-cols[data-cols="vendors"]');
+      if (!table) return;
+      const state = loadColState(table);
+      state.splitLeftPx = Math.round(px);
+      saveColState(table, state);
+    }
+    function wpSplitLeftFromPrefs() {
+      const saved = tableStateFromPrefs(dashColMine, 'website-products') || tableStateFromPrefs(dashColOwner, 'website-products');
+      const px = saved && saved.splitLeftPx ? parseInt(saved.splitLeftPx, 10) : 0;
+      return px > 0 ? px : 0;
+    }
+    function saveWpSplitLeftPx(px) {
+      const table = document.querySelector('table.dash-cols[data-cols="website-products"]');
+      if (!table) return;
+      const state = loadColState(table);
+      state.splitLeftPx = Math.round(px);
+      saveColState(table, state);
+    }
+    function waSplitLeftFromPrefs() {
+      const saved = tableStateFromPrefs(dashColMine, 'website-accounts') || tableStateFromPrefs(dashColOwner, 'website-accounts');
+      const px = saved && saved.splitLeftPx ? parseInt(saved.splitLeftPx, 10) : 0;
+      return px > 0 ? px : 0;
+    }
+    function saveWaSplitLeftPx(px) {
+      const table = document.querySelector('table.dash-cols[data-cols="website-accounts"]');
       if (!table) return;
       const state = loadColState(table);
       state.splitLeftPx = Math.round(px);
@@ -5384,6 +5719,137 @@
       bootSplit();
     }
 
+    function initNamedSplitResize(cfg) {
+      const split = document.getElementById(cfg.splitId);
+      const resizer = document.getElementById(cfg.resizerId);
+      if (!split || !resizer) return;
+      const MIN_LEFT = 400;
+      const MIN_RIGHT = 600;
+      const RESIZER_W = 14;
+      const cssVar = cfg.cssVar;
+      const bootVar = cfg.bootVar;
+      function fromPrefs() { return cfg.fromPrefs() || 0; }
+      function fit() { if (typeof cfg.fit === 'function') cfg.fit(); }
+      function effectiveMins(total) {
+        if (total >= MIN_LEFT + MIN_RIGHT + RESIZER_W) {
+          return { minLeft: MIN_LEFT, minRight: MIN_RIGHT };
+        }
+        const minLeft = Math.max(160, Math.floor(total * 0.28));
+        const minRight = Math.max(200, total - minLeft - RESIZER_W);
+        return { minLeft: minLeft, minRight: minRight };
+      }
+      function clampLeft(w) {
+        const total = split.getBoundingClientRect().width;
+        const mins = effectiveMins(total);
+        const maxLeft = Math.max(mins.minLeft, total - mins.minRight - RESIZER_W);
+        return Math.max(mins.minLeft, Math.min(w, maxLeft));
+      }
+      function applyLeft(w, opts) {
+        opts = opts || {};
+        const clamped = clampLeft(w);
+        split.style.setProperty(cssVar, clamped + 'px');
+        if (opts.save !== false) cfg.save(clamped);
+        fit();
+        return clamped;
+      }
+      function currentLeftPx() {
+        return parseInt(split.style.getPropertyValue(cssVar), 10) || fromPrefs() || MIN_LEFT;
+      }
+      function bootCssLeftPx() {
+        try {
+          return parseInt(getComputedStyle(document.documentElement).getPropertyValue(bootVar), 10) || 0;
+        } catch (err) {
+          return 0;
+        }
+      }
+      function bootSplit() {
+        const saved = fromPrefs();
+        const bootCss = bootCssLeftPx();
+        const target = saved >= MIN_LEFT ? saved : (bootCss >= MIN_LEFT ? bootCss : MIN_LEFT);
+        const existing = parseInt(split.style.getPropertyValue(cssVar), 10);
+        if (!existing || existing < MIN_LEFT) split.style.setProperty(cssVar, target + 'px');
+        whenInvSplitReady(split, function () {
+          const start = parseInt(split.style.getPropertyValue(cssVar), 10) || target;
+          const clamped = clampLeft(start);
+          if (Math.abs(clamped - start) > 2) split.style.setProperty(cssVar, clamped + 'px');
+          fit();
+        });
+      }
+      if (resizer.dataset.ready !== '1') {
+        resizer.dataset.ready = '1';
+        let dragging = false;
+        function onMove(e) {
+          if (!dragging) return;
+          const point = e.touches ? e.touches[0] : e;
+          const rect = split.getBoundingClientRect();
+          applyLeft(point.clientX - rect.left);
+        }
+        function onUp() {
+          if (!dragging) return;
+          dragging = false;
+          document.body.classList.remove('inv-split-dragging');
+          document.removeEventListener('mousemove', onMove);
+          document.removeEventListener('mouseup', onUp);
+          document.removeEventListener('pointermove', onMove);
+          document.removeEventListener('pointerup', onUp);
+          cfg.save(currentLeftPx());
+          pushColPrefs();
+        }
+        function onDown(e) {
+          e.preventDefault();
+          dragging = true;
+          document.body.classList.add('inv-split-dragging');
+          document.addEventListener('mousemove', onMove);
+          document.addEventListener('mouseup', onUp);
+          document.addEventListener('pointermove', onMove);
+          document.addEventListener('pointerup', onUp);
+        }
+        resizer.addEventListener('mousedown', onDown);
+        resizer.addEventListener('pointerdown', onDown);
+        window.addEventListener('resize', function () {
+          const saved = fromPrefs();
+          const bootCss = bootCssLeftPx();
+          const target = saved >= MIN_LEFT ? saved : (bootCss >= MIN_LEFT ? bootCss : MIN_LEFT);
+          applyLeft(target, { save: false });
+          fit();
+        });
+      }
+      bootSplit();
+    }
+    function initVnSplitResize() {
+      initNamedSplitResize({
+        splitId: 'vn-split',
+        resizerId: 'vn-split-resizer',
+        cssVar: '--vn-left-w',
+        bootVar: '--vn-split-left-boot',
+        fromPrefs: vnSplitLeftFromPrefs,
+        save: saveVnSplitLeftPx,
+        fit: function () { if (typeof fitVnTabWidths === 'function') fitVnTabWidths(); }
+      });
+    }
+    function initWpSplitResize() {
+      initNamedSplitResize({
+        splitId: 'wp-split',
+        resizerId: 'wp-split-resizer',
+        cssVar: '--wp-left-w',
+        bootVar: '--wp-split-left-boot',
+        fromPrefs: wpSplitLeftFromPrefs,
+        save: saveWpSplitLeftPx,
+        fit: function () { if (typeof fitWpTabWidths === 'function') fitWpTabWidths(); }
+      });
+    }
+    function initWaSplitResize() {
+      initNamedSplitResize({
+        splitId: 'wa-split',
+        resizerId: 'wa-split-resizer',
+        cssVar: '--wa-left-w',
+        bootVar: '--wa-split-left-boot',
+        fromPrefs: waSplitLeftFromPrefs,
+        save: saveWaSplitLeftPx,
+        fit: function () { if (typeof fitWaTabWidths === 'function') fitWaTabWidths(); }
+      });
+    }
+
     function initSoSplitResize() {
       const split = document.getElementById('so-split');
       const resizer = document.getElementById('so-split-resizer');
@@ -6165,6 +6631,8 @@
         }
         websiteAccounts = rows;
         renderAccountsTable(rows);
+        initWaSplitResize();
+        renderWaTabBar();
       } catch (err) {
         errEl.textContent = err.message || 'Could not load accounts.';
         errEl.classList.remove('hidden');
@@ -6203,7 +6671,9 @@
           company: '<td class="py-3 px-4 text-slate-400">' + esc(a.company || '—') + '</td>',
           created: '<td class="py-3 px-4 text-slate-500">' + esc(when) + '</td>'
         };
-        return '<tr class="border-b border-slate-800 hover:bg-slate-900/80 cursor-pointer" data-id="' + esc(a.id) + '">' +
+        return '<tr class="border-b border-slate-800 hover:bg-slate-900/80 cursor-pointer' +
+          (String(a.id) === String(waActiveTab) ? ' is-selected' : '') +
+          '" data-id="' + esc(a.id) + '">' +
           dashOrderedCells(dashTable, cells, '<td class="py-3 px-4 text-right"><span class="text-sky-400 text-xs font-medium">Open →</span></td>') +
           '</tr>';
       }).join('');
@@ -6246,38 +6716,159 @@
         : emptyNote('No custom panels saved.');
     }
 
-    async function openAccount(id) {
+    function isWaSplitOn() {
+      return !isMobileDash();
+    }
+    function showWaRightPanel(which) {
+      const overview = document.getElementById('wa-overview-panel');
+      const pane = document.getElementById('account-detail');
+      const onOverview = which === 'overview';
+      if (overview) overview.classList.toggle('hidden', !onOverview);
+      if (pane) pane.classList.toggle('hidden', onOverview);
+      const sec = document.getElementById('accounts-section');
+      if (sec) sec.classList.toggle('wa-detail-open', !onOverview && !isWaSplitOn());
+      const list = document.getElementById('accounts-list-wrap');
+      if (list) list.classList.remove('hidden');
+    }
+    function waTabLabel(id) {
+      const cached = waTabCache[String(id)];
+      const p = cached && cached.account && cached.account.profile;
+      if (p && (p.name || p.email)) return p.name || p.email;
+      const row = (websiteAccounts || []).find(function (a) { return String(a.id) === String(id); });
+      return (row && (row.name || row.email)) || 'Account';
+    }
+    function fitWaTabWidths() {
+      fitBrowserTabWidths('wa-tab-strip', 'data-wa-tab-id');
+    }
+    function renderWaTabBar() {
+      const strip = document.getElementById('wa-tab-strip');
+      if (!strip) return;
+      let html = '<button type="button" class="inv-browser-tab' +
+        (waActiveTab === 'overview' ? ' is-active' : '') +
+        '" data-wa-tab-id="overview" role="tab" aria-selected="' + (waActiveTab === 'overview' ? 'true' : 'false') + '">' +
+        '<span class="inv-browser-tab-label">Overview</span></button>';
+      waOpenTabs.forEach(function (id) {
+        const active = String(waActiveTab) === String(id);
+        html += '<button type="button" class="inv-browser-tab' + (active ? ' is-active' : '') +
+          '" data-wa-tab-id="' + esc(id) + '" role="tab" aria-selected="' + (active ? 'true' : 'false') + '">' +
+          '<span class="inv-browser-tab-label">' + esc(waTabLabel(id)) + '</span>' +
+          '<span class="inv-browser-tab-close" data-wa-tab-close="' + esc(id) + '" aria-label="Close tab" role="button" tabindex="-1">×</span></button>';
+      });
+      strip.innerHTML = html;
+      fitWaTabWidths();
+    }
+    function readWaFormValues() {
+      return {
+        name: document.getElementById('acct-name').value,
+        role: document.getElementById('acct-role').value,
+        company: document.getElementById('acct-company').value,
+        phone: document.getElementById('acct-phone').value,
+        markup: document.getElementById('acct-markup').value
+      };
+    }
+    function applyWaFormValues(vals) {
+      if (!vals) return;
+      if (vals.name != null) document.getElementById('acct-name').value = vals.name;
+      if (vals.role != null) document.getElementById('acct-role').value = vals.role;
+      if (vals.company != null) document.getElementById('acct-company').value = vals.company;
+      if (vals.phone != null) document.getElementById('acct-phone').value = vals.phone;
+      if (vals.markup != null) document.getElementById('acct-markup').value = vals.markup;
+    }
+    function stashWaActiveTab() {
+      if (!waActiveTab || waActiveTab === 'overview') return;
+      const cache = waTabCache[String(waActiveTab)] || {};
+      cache.form = readWaFormValues();
+      waTabCache[String(waActiveTab)] = cache;
+    }
+    function showWaOverview() {
+      stashWaActiveTab();
+      waActiveTab = 'overview';
+      waDetailId = '';
+      showWaRightPanel('overview');
+      renderWaTabBar();
+      renderAccountsTable(websiteAccounts);
+    }
+    function fillAccountDetail(account) {
+      const p = account.profile || {};
+      document.getElementById('acct-id').value = p.id;
+      document.getElementById('acct-name').value = p.name || '';
+      document.getElementById('acct-email').value = p.email || '';
+      document.getElementById('acct-role').value = (p.role === 'dealer' || p.role === 'sales') ? p.role : 'customer';
+      document.getElementById('acct-company').value = p.company || '';
+      document.getElementById('acct-phone').value = p.phone || '';
+      const markupEl = document.getElementById('acct-markup');
+      const hint = document.getElementById('acct-markup-hint');
+      const typePct = p.type_markup_pct != null ? Number(p.type_markup_pct) : 0;
+      if (p.markup_override_pct != null && p.markup_override_pct !== '') {
+        markupEl.value = String(p.markup_override_pct);
+      } else {
+        markupEl.value = '';
+      }
+      markupEl.placeholder = 'Type default (' + typePct + '%)';
+      hint.textContent = 'Leave blank to use the ' + roleLabel(p.role) + ' default (' + typePct + '%). Filling this overwrites the type % for this account only. The user never sees this percent.';
+      document.getElementById('acct-msg').classList.add('hidden');
+      renderAccountLists(account);
+    }
+    async function activateWaTab(id) {
+      const sid = String(id);
+      waActiveTab = sid;
+      waDetailId = sid;
       const errEl = document.getElementById('accounts-error');
       errEl.classList.add('hidden');
       try {
-        const data = await api('/api/admin/accounts/' + encodeURIComponent(id));
-        const account = data.account;
-        if (!account || !account.profile) throw new Error('Account not found.');
-        const p = account.profile || {};
-        document.getElementById('accounts-list-wrap').classList.add('hidden');
-        document.getElementById('account-detail').classList.remove('hidden');
-        document.getElementById('acct-id').value = p.id;
-        document.getElementById('acct-name').value = p.name || '';
-        document.getElementById('acct-email').value = p.email || '';
-        document.getElementById('acct-role').value = (p.role === 'dealer' || p.role === 'sales') ? p.role : 'customer';
-        document.getElementById('acct-company').value = p.company || '';
-        document.getElementById('acct-phone').value = p.phone || '';
-        const markupEl = document.getElementById('acct-markup');
-        const hint = document.getElementById('acct-markup-hint');
-        const typePct = p.type_markup_pct != null ? Number(p.type_markup_pct) : 0;
-        if (p.markup_override_pct != null && p.markup_override_pct !== '') {
-          markupEl.value = String(p.markup_override_pct);
-        } else {
-          markupEl.value = '';
+        let account = waTabCache[sid] && waTabCache[sid].account;
+        if (!account || !account.profile) {
+          const data = await api('/api/admin/accounts/' + encodeURIComponent(sid));
+          account = data.account;
         }
-        markupEl.placeholder = 'Type default (' + typePct + '%)';
-        hint.textContent = 'Leave blank to use the ' + roleLabel(p.role) + ' default (' + typePct + '%). Filling this overwrites the type % for this account only. The user never sees this percent.';
-        document.getElementById('acct-msg').classList.add('hidden');
-        renderAccountLists(account);
+        if (!account || !account.profile) throw new Error('Account not found.');
+        waTabCache[sid] = waTabCache[sid] || {};
+        waTabCache[sid].account = account;
+        fillAccountDetail(account);
+        if (waTabCache[sid].form) applyWaFormValues(waTabCache[sid].form);
+        showWaRightPanel('item');
+        renderWaTabBar();
+        renderAccountsTable(websiteAccounts);
       } catch (err) {
         errEl.textContent = err.message || 'Could not open this account.';
         errEl.classList.remove('hidden');
       }
+    }
+    async function openWaTab(id) {
+      const sid = String(id);
+      stashWaActiveTab();
+      if (waOpenTabs.indexOf(sid) === -1) {
+        if (waOpenTabs.length >= WA_TAB_MAX) {
+          const dropped = waOpenTabs.shift();
+          delete waTabCache[dropped];
+        }
+        waOpenTabs.push(sid);
+      }
+      await activateWaTab(sid);
+    }
+    function closeWaTab(id) {
+      const sid = String(id);
+      const idx = waOpenTabs.indexOf(sid);
+      if (idx === -1) return;
+      if (String(waActiveTab) === sid) stashWaActiveTab();
+      waOpenTabs.splice(idx, 1);
+      delete waTabCache[sid];
+      if (String(waActiveTab) === sid) {
+        if (waOpenTabs.length) activateWaTab(waOpenTabs[Math.min(idx, waOpenTabs.length - 1)]);
+        else showWaOverview();
+      } else {
+        renderWaTabBar();
+      }
+    }
+
+    async function openAccount(id) {
+      if (!id) return;
+      if (isWaSplitOn()) {
+        await openWaTab(id);
+        initWaSplitResize();
+        return;
+      }
+      await activateWaTab(id);
     }
 
     function syncTabbarActive(name) {
@@ -7665,7 +8256,7 @@
           notes: '<td class="py-3 px-4">' + esc(v.notes || '—') + '</td>'
         };
         return '<tr class="border-b border-slate-800 hover:bg-slate-900/80 cursor-pointer' +
-          (String(v.id) === String(vnDetailId) ? ' bg-sky-500/10' : '') +
+          (String(v.id) === String(vnDetailId) ? ' is-selected bg-sky-500/10' : '') +
           '" data-id="' + esc(v.id) + '">' +
           dashOrderedCells(table, cells) +
           '</tr>';
@@ -7840,6 +8431,7 @@
 
     function setVnDetailTab(name) {
       vnDetailTab = name || 'pos';
+      if (vnDetailId) vnTabDetailTab[String(vnDetailId)] = vnDetailTab;
       document.querySelectorAll('#vn-detail-pane .cc-detail-tab').forEach(function (btn) {
         const on = btn.getAttribute('data-vn-tab') === vnDetailTab;
         btn.classList.toggle('is-on', on);
@@ -7939,23 +8531,163 @@
       renderVnSideList();
     }
 
-    function closeVendorDetail(push) {
+    function fitBrowserTabWidths(stripId, overviewAttr) {
+      const strip = document.getElementById(stripId);
+      if (!strip) return;
+      const allTabs = Array.prototype.slice.call(strip.querySelectorAll('.inv-browser-tab'));
+      if (!allTabs.length) return;
+      const gap = 2;
+      const MIN_ITEM_TAB = 72;
+      const overviewTab = strip.querySelector('.inv-browser-tab[' + overviewAttr + '="overview"]');
+      const itemTabs = allTabs.filter(function (tab) {
+        return tab.getAttribute(overviewAttr) !== 'overview';
+      });
+      allTabs.forEach(function (tab) {
+        tab.style.flex = '';
+        tab.style.width = '';
+        tab.style.minWidth = '';
+        tab.style.maxWidth = '';
+      });
+      if (overviewTab) overviewTab.style.flex = '0 0 auto';
+      const stripWidth = strip.clientWidth;
+      if (stripWidth <= 0 || !itemTabs.length) return;
+      const overviewWidth = overviewTab ? Math.round(overviewTab.getBoundingClientRect().width) : 0;
+      const availableForItems = stripWidth - overviewWidth - gap * (allTabs.length - 1);
+      let itemWidths = itemTabs.map(function (tab) {
+        return Math.round(tab.getBoundingClientRect().width);
+      });
+      let itemTotal = itemWidths.reduce(function (a, b) { return a + b; }, 0);
+      if (itemTotal <= availableForItems) return;
+      itemWidths = itemWidths.map(function (w) { return Math.max(MIN_ITEM_TAB, w); });
+      itemTotal = itemWidths.reduce(function (a, b) { return a + b; }, 0);
+      const sum = itemWidths.reduce(function (a, b) { return a + b; }, 0);
+      itemTabs.forEach(function (tab, i) {
+        const w = itemTotal <= availableForItems
+          ? itemWidths[i]
+          : Math.max(MIN_ITEM_TAB, Math.floor(itemWidths[i] * availableForItems / sum));
+        tab.style.flex = '0 0 ' + w + 'px';
+        tab.style.width = w + 'px';
+        tab.style.minWidth = MIN_ITEM_TAB + 'px';
+        tab.style.maxWidth = w + 'px';
+      });
+    }
+    function isVnSplitOn() {
+      return !isMobileDash();
+    }
+    function showVnRightPanel(which) {
+      const overview = document.getElementById('vn-overview-panel');
+      const pane = document.getElementById('vn-detail-pane');
+      const onOverview = which === 'overview';
+      if (overview) overview.classList.toggle('hidden', !onOverview);
+      if (pane) {
+        pane.classList.toggle('hidden', onOverview);
+        pane.hidden = onOverview;
+        pane.setAttribute('aria-hidden', onOverview ? 'true' : 'false');
+      }
+    }
+    function vnTabLabel(id) {
+      const v = (inventoryVendors || []).find(function (row) { return String(row.id) === String(id); })
+        || (String(vnDetailId) === String(id) ? vnDetailVendor : null);
+      return vnVendorLabel(v);
+    }
+    function fitVnTabWidths() {
+      fitBrowserTabWidths('vn-tab-strip', 'data-vn-tab-id');
+    }
+    function renderVnTabBar() {
+      const strip = document.getElementById('vn-tab-strip');
+      if (!strip) return;
+      let html = '<button type="button" class="inv-browser-tab' +
+        (vnActiveTab === 'overview' ? ' is-active' : '') +
+        '" data-vn-tab-id="overview" role="tab" aria-selected="' + (vnActiveTab === 'overview' ? 'true' : 'false') + '">' +
+        '<span class="inv-browser-tab-label">Overview</span></button>';
+      vnOpenTabs.forEach(function (id) {
+        const active = String(vnActiveTab) === String(id);
+        html += '<button type="button" class="inv-browser-tab' + (active ? ' is-active' : '') +
+          '" data-vn-tab-id="' + esc(id) + '" role="tab" aria-selected="' + (active ? 'true' : 'false') + '">' +
+          '<span class="inv-browser-tab-label">' + esc(vnTabLabel(id)) + '</span>' +
+          '<span class="inv-browser-tab-close" data-vn-tab-close="' + esc(id) + '" aria-label="Close tab" role="button" tabindex="-1">×</span></button>';
+      });
+      strip.innerHTML = html;
+      fitVnTabWidths();
+    }
+    function showVnOverview(opts) {
+      opts = opts || {};
+      vnActiveTab = 'overview';
       vnDetailId = '';
       vnDetailVendor = null;
       hideVnContactForm();
       showVnContactsMsg('');
       const ws = document.getElementById('vn-workspace');
-      const pane = document.getElementById('vn-detail-pane');
       if (ws) ws.classList.remove('cc-detail-open');
       syncDetailOpenBodyClass();
       syncPageHelper('vendors');
-      if (pane) {
-        pane.hidden = true;
-        pane.setAttribute('aria-hidden', 'true');
-      }
       document.getElementById('vn-detail-new-menu').classList.add('hidden');
+      showVnRightPanel('overview');
+      renderVnTabBar();
       renderVnTable(inventoryVendors);
-      if (push !== false) history.pushState({ tab: 'vendors' }, '', '/company/inventory/vendors');
+      if (opts.push !== false) history.pushState({ tab: 'vendors' }, '', '/company/inventory/vendors');
+    }
+    function closeVnTab(id, push) {
+      const sid = String(id);
+      const idx = vnOpenTabs.indexOf(sid);
+      if (idx === -1) return;
+      vnOpenTabs.splice(idx, 1);
+      delete vnTabDetailTab[sid];
+      if (String(vnActiveTab) === sid) {
+        if (vnOpenTabs.length) {
+          activateVnTab(vnOpenTabs[Math.min(idx, vnOpenTabs.length - 1)], { push: push !== false });
+        } else {
+          showVnOverview({ push: push !== false });
+        }
+      } else {
+        renderVnTabBar();
+      }
+    }
+    async function activateVnTab(id, opts) {
+      await openVendorDetail(id, opts);
+    }
+    async function openVnTab(id, opts) {
+      opts = opts || {};
+      const sid = String(id);
+      if (vnOpenTabs.indexOf(sid) === -1) {
+        if (vnOpenTabs.length >= VN_TAB_MAX) {
+          const dropped = vnOpenTabs.shift();
+          delete vnTabDetailTab[dropped];
+        }
+        vnOpenTabs.push(sid);
+      }
+      await activateVnTab(sid, opts);
+    }
+    function restoreVnView(opts) {
+      opts = opts || {};
+      const push = opts.push !== false;
+      vnOpenTabs = vnOpenTabs.filter(function (id) {
+        return inventoryVendors.some(function (v) { return String(v.id) === String(id); });
+      });
+      Object.keys(vnTabDetailTab).forEach(function (id) {
+        if (vnOpenTabs.indexOf(id) === -1) delete vnTabDetailTab[id];
+      });
+      const pathId = vendorIdFromPath();
+      if (pathId && canUse('vendors')) {
+        const found = inventoryVendors.find(function (v) { return String(v.id) === String(pathId); });
+        if (found) {
+          openVnTab(pathId, { push: push });
+          return;
+        }
+      }
+      if (String(vnActiveTab) !== 'overview' && vnOpenTabs.indexOf(String(vnActiveTab)) !== -1) {
+        activateVnTab(vnActiveTab, { push: push });
+        return;
+      }
+      if (vnDetailId && vnOpenTabs.indexOf(String(vnDetailId)) !== -1) {
+        activateVnTab(vnDetailId, { push: push });
+        return;
+      }
+      showVnOverview({ push: push });
+    }
+
+    function closeVendorDetail(push) {
+      showVnOverview({ push: push !== false });
     }
 
     async function openVendorDetail(id, opts) {
@@ -7974,23 +8706,36 @@
           const poData = await api('/api/admin/purchase-orders').catch(function () { return { orders: [] }; });
           purchaseOrders = poData.orders || [];
         }
-        vnDetailId = String(id);
+        const sid = String(id);
+        vnDetailId = sid;
+        vnActiveTab = sid;
         vnDetailVendor = vendor;
         if (!vnDetailVendor.contacts) vnDetailVendor.contacts = [];
+        vnDetailTab = vnTabDetailTab[sid] || vnDetailTab || 'pos';
+        vnTabDetailTab[sid] = vnDetailTab;
         hideVnContactForm();
+        document.getElementById('vn-detail-new-menu').classList.add('hidden');
         const ws = document.getElementById('vn-workspace');
-        const pane = document.getElementById('vn-detail-pane');
-        if (ws) ws.classList.add('cc-detail-open');
+        if (isVnSplitOn()) {
+          if (ws) ws.classList.remove('cc-detail-open');
+          if (vnOpenTabs.indexOf(sid) === -1) {
+            if (vnOpenTabs.length >= VN_TAB_MAX) {
+              const dropped = vnOpenTabs.shift();
+              delete vnTabDetailTab[dropped];
+            }
+            vnOpenTabs.push(sid);
+          }
+        } else if (ws) {
+          ws.classList.add('cc-detail-open');
+        }
         syncDetailOpenBodyClass();
         syncPageHelper('vendors');
-        if (pane) {
-          pane.hidden = false;
-          pane.setAttribute('aria-hidden', 'false');
-        }
+        showVnRightPanel('item');
         if (opts.push !== false) {
           history.pushState({ tab: 'vendors', vendorId: id }, '', pathForVendor(id));
         }
         renderVendorDetail();
+        renderVnTabBar();
         renderVnTable(inventoryVendors);
       } catch (err) {
         showError('vn-error', err.message || 'Could not open this vendor.');
@@ -7998,7 +8743,8 @@
     }
 
     function openVendorItem(id) {
-      openVendorDetail(id, { push: true });
+      if (isVnSplitOn()) openVnTab(id, { push: true });
+      else openVendorDetail(id, { push: true });
     }
 
     async function openNewVendorPo() {
@@ -8025,10 +8771,8 @@
         const data = await api('/api/admin/inventory-vendors');
         inventoryVendors = data.vendors || [];
         renderVnTable(inventoryVendors);
-        if (vnDetailId) {
-          vnDetailVendor = inventoryVendors.find(function (v) { return String(v.id) === String(vnDetailId); }) || vnDetailVendor;
-          if (vnDetailVendor) renderVendorDetail();
-        }
+        initVnSplitResize();
+        restoreVnView({ push: false });
         const keep = document.getElementById('po-vendor').value;
         fillPoVendors(keep === '__new__' ? '' : keep);
       } catch (err) {
@@ -10541,21 +11285,38 @@
         loaded = true;
         return;
       }
-      if (name === 'products') closeProductForm();
+      if (name === 'products') {
+        if (isWpSplitOn()) {
+          initWpSplitResize();
+          if (wpActiveTab && wpActiveTab !== 'overview' && wpOpenTabs.indexOf(String(wpActiveTab)) !== -1) {
+            activateWpTab(wpActiveTab);
+          } else {
+            showWpOverview();
+          }
+        } else if (wpActiveTab === 'overview' || !wpActiveTab) {
+          showWpOverview();
+        }
+      }
       if (name === 'accounts') {
         document.getElementById('accounts-list-wrap').classList.remove('hidden');
-        document.getElementById('account-detail').classList.add('hidden');
         await loadPriceTiers();
         await loadAccounts();
+        if (isWaSplitOn()) {
+          initWaSplitResize();
+          if (waActiveTab && waActiveTab !== 'overview' && waOpenTabs.indexOf(String(waActiveTab)) !== -1) {
+            activateWaTab(waActiveTab);
+          } else {
+            showWaOverview();
+          }
+        } else {
+          showWaOverview();
+        }
       }
       if (name === 'inventory') {
         await loadInventory();
       }
       if (name === 'vendors') {
         await loadVendors();
-        const vid = vendorIdFromPath();
-        if (vid && canUse('vendors')) await openVendorDetail(vid, { push: false });
-        else closeVendorDetail(false);
       }
       if (name === 'purchase-orders') {
         const poId = poIdFromPath();
@@ -10934,8 +11695,16 @@
         showPoOverviewPane();
         return;
       }
-      if (!document.getElementById('vendors-section').classList.contains('hidden') && vnDetailId) {
-        closeVendorDetail(true);
+      if (!document.getElementById('vendors-section').classList.contains('hidden') && vnActiveTab !== 'overview') {
+        showVnOverview({ push: true });
+        return;
+      }
+      if (!document.getElementById('products-section').classList.contains('hidden') && isWpSplitOn() && wpActiveTab !== 'overview') {
+        showWpOverview();
+        return;
+      }
+      if (!document.getElementById('accounts-section').classList.contains('hidden') && isWaSplitOn() && waActiveTab !== 'overview') {
+        showWaOverview();
         return;
       }
       if (!document.getElementById('customers-section').classList.contains('hidden') && ccDetailId) {
@@ -12029,10 +12798,24 @@
         msg.className = 'text-sm mb-3 text-red-400';
       });
     });
-    document.getElementById('account-back').addEventListener('click', async function () {
-      document.getElementById('account-detail').classList.add('hidden');
-      document.getElementById('accounts-list-wrap').classList.remove('hidden');
-      await loadAccounts();
+    document.getElementById('account-back').addEventListener('click', function () {
+      if (isWaSplitOn()) showWaOverview();
+      else showWaOverview();
+    });
+    const waTabStrip = document.getElementById('wa-tab-strip');
+    if (waTabStrip) waTabStrip.addEventListener('click', function (e) {
+      const closeBtn = e.target.closest('[data-wa-tab-close]');
+      if (closeBtn) {
+        e.preventDefault();
+        e.stopPropagation();
+        closeWaTab(closeBtn.getAttribute('data-wa-tab-close'));
+        return;
+      }
+      const tab = e.target.closest('.inv-browser-tab[data-wa-tab-id]');
+      if (!tab) return;
+      const tabId = tab.getAttribute('data-wa-tab-id');
+      if (tabId === 'overview') showWaOverview();
+      else activateWaTab(tabId);
     });
     document.getElementById('accounts-table').addEventListener('click', function (e) {
       const row = e.target.closest('tr[data-id]');
@@ -12060,6 +12843,12 @@
         msg.classList.remove('hidden');
         msg.classList.remove('text-red-400');
         msg.classList.add('text-sky-400');
+        if (id) {
+          waTabCache[id] = waTabCache[id] || {};
+          waTabCache[id].form = readWaFormValues();
+        }
+        await loadAccounts();
+        renderWaTabBar();
       } catch (err) {
         msg.textContent = err.message || 'Could not save.';
         msg.classList.remove('hidden');
@@ -12128,6 +12917,21 @@
     });
     document.getElementById('cancel-btn').addEventListener('click', closeProductForm);
     document.getElementById('product-back').addEventListener('click', closeProductForm);
+    const wpTabStrip = document.getElementById('wp-tab-strip');
+    if (wpTabStrip) wpTabStrip.addEventListener('click', function (e) {
+      const closeBtn = e.target.closest('[data-wp-tab-close]');
+      if (closeBtn) {
+        e.preventDefault();
+        e.stopPropagation();
+        closeWpTab(closeBtn.getAttribute('data-wp-tab-close'));
+        return;
+      }
+      const tab = e.target.closest('.inv-browser-tab[data-wp-tab-id]');
+      if (!tab) return;
+      const tabId = tab.getAttribute('data-wp-tab-id');
+      if (tabId === 'overview') showWpOverview();
+      else activateWpTab(tabId);
+    });
 
     table.addEventListener('click', async function (e) {
       const row = e.target.closest('tr[data-id]');
@@ -12139,10 +12943,11 @@
         window.open(siteLink.href, '_blank', 'noopener,noreferrer');
         return;
       }
-      if (!e.target.closest('[data-edit-name]')) return;
-      await loadInventory();
-      const data = await api('/api/admin/products/' + row.getAttribute('data-id'));
-      openForm(data.product);
+      if (!e.target.closest('a[data-open-site]') && !e.target.closest('[data-website-cell] a')) {
+        await loadInventory();
+        const data = await api('/api/admin/products/' + row.getAttribute('data-id'));
+        openForm(data.product);
+      }
     });
 
     document.getElementById('hide-btn').addEventListener('click', async function () {
@@ -12166,8 +12971,10 @@
 
     document.getElementById('delete-btn').addEventListener('click', async function () {
       if (!editingId || !confirm('Delete this product?')) return;
+      const id = String(editingId);
       await api('/api/admin/products/' + editingId, { method: 'DELETE' });
-      closeProductForm();
+      if (isWpSplitOn()) closeWpTab(id);
+      else closeProductForm();
       await loadDash();
     });
 
@@ -12197,11 +13004,17 @@
       Array.from(document.getElementById('gallery').files).forEach(function (f) { fd.append('gallery', f); });
       try {
         const url = editingId ? '/api/admin/products/' + editingId : '/api/admin/products';
-        await api(url, { method: editingId ? 'PUT' : 'POST', body: fd });
-        formWrap.classList.add('hidden');
-        document.getElementById('products-list-wrap').classList.remove('hidden');
-        resetForm();
+        const data = await api(url, { method: editingId ? 'PUT' : 'POST', body: fd });
         await loadDash();
+        if (data && data.product) afterWpSave(data.product);
+        else if (isWpSplitOn()) {
+          showWpRightPanel('item');
+          renderWpTabBar();
+        } else {
+          formWrap.classList.add('hidden');
+          document.getElementById('products-list-wrap').classList.remove('hidden');
+          resetForm();
+        }
       } catch (err) {
         showError('form-error', err.message);
       }
@@ -12328,6 +13141,32 @@
         return;
       }
       openVendorItem(id);
+    });
+    const vnTabStrip = document.getElementById('vn-tab-strip');
+    if (vnTabStrip) vnTabStrip.addEventListener('click', function (e) {
+      const closeBtn = e.target.closest('[data-vn-tab-close]');
+      if (closeBtn) {
+        e.preventDefault();
+        e.stopPropagation();
+        closeVnTab(closeBtn.getAttribute('data-vn-tab-close'), true);
+        return;
+      }
+      const tab = e.target.closest('.inv-browser-tab[data-vn-tab-id]');
+      if (!tab) return;
+      const tabId = tab.getAttribute('data-vn-tab-id');
+      if (tabId === 'overview') {
+        if (vnDrawerNeedsLeave()) {
+          vnAskLeave(function () { showVnOverview({ push: true }); });
+          return;
+        }
+        showVnOverview({ push: true });
+        return;
+      }
+      if (vnDrawerNeedsLeave()) {
+        vnAskLeave(function () { activateVnTab(tabId, { push: true }); });
+        return;
+      }
+      activateVnTab(tabId, { push: true });
     });
     document.getElementById('vn-detail-back').addEventListener('click', function () {
       closeVendorDetail(true);
@@ -12530,7 +13369,8 @@
       if (!id || !confirm('Delete this vendor?')) return;
       try {
         await api('/api/admin/inventory-vendors/' + encodeURIComponent(id), { method: 'DELETE' });
-        if (String(vnDetailId) === String(id)) closeVendorDetail(true);
+        if (vnOpenTabs.indexOf(String(id)) !== -1) closeVnTab(id, true);
+        else if (String(vnDetailId) === String(id)) closeVendorDetail(true);
         closeVendorDrawer(true);
         await loadVendors();
         fillPoVendors('');
@@ -12785,7 +13625,16 @@
         const onPo = !!(po && !po.classList.contains('hidden'));
         const poFloating = document.body.classList.contains('po-doc-float');
         document.body.classList.toggle('inv-layout-lock', onInventory && desktop);
-        document.body.classList.toggle('dash-split-lock', onCustomers && desktop);
+        const vn = document.getElementById('vendors-section');
+        const products = document.getElementById('products-section');
+        const accounts = document.getElementById('accounts-section');
+        const onVendors = !!(vn && !vn.classList.contains('hidden'));
+        const onProducts = !!(products && !products.classList.contains('hidden'));
+        const onAccounts = !!(accounts && !accounts.classList.contains('hidden'));
+        document.body.classList.toggle('dash-split-lock', (onCustomers || onVendors || onProducts || onAccounts) && desktop);
+        if (vn) vn.classList.toggle('vn-split-on', onVendors && desktop);
+        if (products) products.classList.toggle('wp-split-on', onProducts && desktop);
+        if (accounts) accounts.classList.toggle('wa-split-on', onAccounts && desktop);
         if (sales) sales.classList.toggle('so-split-on', onSales && desktop && !floating);
         document.body.classList.toggle('so-split-lock', onSales && desktop && !floating);
         if (po) po.classList.toggle('po-split-on', onPo && desktop && !poFloating);
