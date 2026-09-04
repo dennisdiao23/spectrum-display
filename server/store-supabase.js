@@ -13,6 +13,14 @@ function throwIf(error, fallback) {
   throw new Error(error.message || fallback || 'Supabase error');
 }
 
+function roleMenuJson(raw) {
+  if (raw && typeof raw === 'object' && !Array.isArray(raw)) return raw;
+  if (typeof raw === 'string' && raw.trim()) {
+    try { return JSON.parse(raw); } catch (e) { return {}; }
+  }
+  return {};
+}
+
 async function seedAdminRoles(supabase) {
   const { count, error } = await supabase.from('admin_roles').select('id', { count: 'exact', head: true });
   if (error) throwIf(error, 'Could not read admin roles.');
@@ -776,7 +784,7 @@ function createSupabaseStore() {
         name: input.name,
         website_access: accessLevel(input.website),
         inventory_access: accessLevel(input.inventory),
-        menu_access: input.menuJson || '{}',
+        menu_access: roleMenuJson(input.menuJson),
         locked: false
       }).select('*').single();
       throwIf(error);
@@ -794,7 +802,7 @@ function createSupabaseStore() {
       } else {
         patch.website_access = accessLevel(input.website != null ? input.website : current.website_access);
         patch.inventory_access = accessLevel(input.inventory != null ? input.inventory : current.inventory_access);
-        if (input.menuJson != null) patch.menu_access = input.menuJson;
+        if (input.menuJson != null) patch.menu_access = roleMenuJson(input.menuJson);
       }
       const { data, error } = await supabase.from('admin_roles').update(patch).eq('id', id).select('*').single();
       throwIf(error);

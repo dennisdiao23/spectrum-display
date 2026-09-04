@@ -126,6 +126,8 @@ function menuFromLegacy(website, inventory, settings) {
 function parseMenuAccess(raw) {
   if (!raw) return null;
   if (typeof raw === 'object' && !Array.isArray(raw)) {
+    const keys = Object.keys(raw);
+    if (!keys.length) return null;
     const menu = {};
     MENU_KEYS.forEach(function (key) {
       menu[key] = accessLevel(raw[key]);
@@ -133,8 +135,10 @@ function parseMenuAccess(raw) {
     return menu;
   }
   if (typeof raw === 'string') {
+    const trimmed = raw.trim();
+    if (!trimmed || trimmed === '{}') return null;
     try {
-      return parseMenuAccess(JSON.parse(raw));
+      return parseMenuAccess(JSON.parse(trimmed));
     } catch (e) {
       return null;
     }

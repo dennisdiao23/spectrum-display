@@ -65,12 +65,12 @@ values
 on conflict (slug) do nothing;
 
 grant all on public.admin_roles to service_role;
+grant select, insert, update, delete on public.admin_roles to anon, authenticated;
 
 alter table public.admin_roles enable row level security;
 drop policy if exists admin_roles_admin_all on public.admin_roles;
 create policy admin_roles_admin_all on public.admin_roles
 for all using (public.is_spectrum_admin()) with check (public.is_spectrum_admin());
-revoke all on public.admin_roles from anon, authenticated, public;
 
 create table if not exists public.sessions (
   token text primary key,
