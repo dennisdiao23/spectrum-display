@@ -831,7 +831,7 @@
                 '<ul class="mt-5 space-y-3">' +
                   files.map(function (f) {
                     return '<li><a class="inline-flex items-center gap-3 text-sm text-sky-400 hover:text-sky-300" href="' +
-                      esc(f.url) + '" target="_blank" rel="noopener">' +
+                      esc(f.url) + '" target="_blank" rel="noopener" download>' +
                       '<span class="grid grid-cols-2 gap-0.5 w-3.5 h-3.5 shrink-0" aria-hidden="true">' +
                         '<span class="bg-sky-400/80 rounded-[1px]"></span><span class="bg-sky-400/80 rounded-[1px]"></span>' +
                         '<span class="bg-sky-400/80 rounded-[1px]"></span><span class="bg-sky-400/80 rounded-[1px]"></span>' +
@@ -840,7 +840,9 @@
                   }).join('') +
                 '</ul>' +
               '</div>' +
-              '<p class="text-xs text-slate-500 mt-4">Files hosted by NovaStar. Spectrum provides these links for convenience; always verify you have the latest version for your installation.</p>' +
+              (brandId === 'novastar'
+                ? '<p class="text-xs text-slate-500 mt-4">Files hosted by NovaStar. Spectrum provides these links for convenience; always verify you have the latest version for your installation.</p>'
+                : '<p class="text-xs text-slate-500 mt-4">Official specification sheet from Spectrum Display. Contact sales if you need drawings, CAD, or a revised revision for your project.</p>') +
             '</div>';
         } else {
           if (downloadsTabBtn) downloadsTabBtn.classList.add('hidden');

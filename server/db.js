@@ -868,7 +868,7 @@ function mergeProductDetails(current, incoming) {
   const extra = incoming && typeof incoming === 'object' && !Array.isArray(incoming) ? incoming : {};
   const next = Object.assign({}, extra, cur);
   if (!(cur.cats && cur.cats.length) && extra.cats) next.cats = extra.cats;
-  ['specTable', 'lead', 'sourceUrl', 'features'].forEach(function (k) {
+  ['specTable', 'lead', 'sourceUrl', 'features', 'downloads', 'downloadVersion'].forEach(function (k) {
     if ((cur[k] == null || (Array.isArray(cur[k]) && !cur[k].length)) && extra[k] != null) next[k] = extra[k];
   });
   return next;

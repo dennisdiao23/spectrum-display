@@ -260,7 +260,7 @@
   var currentMegaKey = 'indoor-rental';
 
   function brandTag(brandId) {
-    return ({ gloshine: 'GLO', bako: 'BAKO', trt: 'TRT', diao: 'DIAO', element: 'ELT', novastar: 'NVS' })[brandId]
+    return ({ gloshine: 'GLO', bako: 'BAKO', trt: 'TRT', diao: 'DIAO', element: 'ELT', spectrum: 'SPEC', novastar: 'NVS' })[brandId]
       || String(brandId || '').slice(0, 4).toUpperCase();
   }
 

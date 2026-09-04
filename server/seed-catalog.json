@@ -1079,5 +1079,32 @@
         "image": "assets/products/element-creative.jpg"
       }
     ]
+  },
+  {
+    "id": "spectrum",
+    "name": "Spectrum",
+    "tagline": "Spectrum Display exclusive Flip-Chip COB",
+    "series": [
+      {
+        "id": "xp",
+        "name": "XP Series",
+        "pitches": [
+          0.93,
+          1.25,
+          1.56,
+          1.875
+        ],
+        "pricePerM2": 0,
+        "weightPerM2": 17,
+        "powerAvg": 150,
+        "powerMax": 320,
+        "cabinetW": 0.6,
+        "cabinetH": 0.3375,
+        "type": "Fixed",
+        "description": "XP Series Flip-Chip COB UHD display — cost-effective fine pitch for command centers, studios, and commercial walls. Full front maintenance, IP65 face, 600 × 337.5 mm cabinets.",
+        "badge": "COB",
+        "image": "assets/products/spectrum/xp-series.jpg"
+      }
+    ]
   }
 ]
