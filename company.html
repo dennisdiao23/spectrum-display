@@ -4250,7 +4250,9 @@
         hidden: known.filter(function (id) { return order.indexOf(id) === -1; }),
         sortCol: state.sortCol,
         sortDir: state.sortDir,
-        widths: {}
+        widths: {},
+        schema: state.schema,
+        splitLeftPx: state.splitLeftPx
       };
     }
 
@@ -4530,26 +4532,35 @@
         const dropItem = hidden.indexOf('item');
         if (dropItem !== -1) hidden.splice(dropItem, 1);
       }
-      if (dashColKey(table) === 'inventory' && order.indexOf('warehouse') === -1 && sameColList(order, ['sku', 'name', 'qty', 'cost', 'price'])) {
-        const qtyAt = order.indexOf('qty');
-        order.splice(qtyAt + 1, 0, 'warehouse', 'bin');
-        ['warehouse', 'bin'].forEach(function (id) {
-          const drop = hidden.indexOf(id);
-          if (drop !== -1) hidden.splice(drop, 1);
-        });
-      }
-      if (dashColKey(table) === 'po-lines' && order.indexOf('ourHands') === -1 && sameColList(order, ['product', 'sku', 'description', 'qty', 'rate', 'amount'])) {
-        const qtyAt = order.indexOf('qty');
-        order.splice(qtyAt + 1, 0, 'ourHands', 'vendorHands');
-        ['ourHands', 'vendorHands'].forEach(function (id) {
-          const drop = hidden.indexOf(id);
-          if (drop !== -1) hidden.splice(drop, 1);
-        });
-      }
       if (!order.length && known.length) {
         order.push(known[0]);
         const drop = hidden.indexOf(known[0]);
         if (drop !== -1) hidden.splice(drop, 1);
+      }
+      let schema = Number(saved.schema) || 0;
+      if (dashColKey(table) === 'inventory' && schema < 1) {
+        if (order.indexOf('warehouse') === -1) {
+          const qtyAt = order.indexOf('qty');
+          const at = qtyAt === -1 ? order.length : qtyAt + 1;
+          order.splice(at, 0, 'warehouse', 'bin');
+          ['warehouse', 'bin'].forEach(function (id) {
+            const drop = hidden.indexOf(id);
+            if (drop !== -1) hidden.splice(drop, 1);
+          });
+        }
+        schema = 1;
+      }
+      if (dashColKey(table) === 'po-lines' && schema < 1) {
+        if (order.indexOf('ourHands') === -1) {
+          const qtyAt = order.indexOf('qty');
+          const at = qtyAt === -1 ? order.length : qtyAt + 1;
+          order.splice(at, 0, 'ourHands', 'vendorHands');
+          ['ourHands', 'vendorHands'].forEach(function (id) {
+            const drop = hidden.indexOf(id);
+            if (drop !== -1) hidden.splice(drop, 1);
+          });
+        }
+        schema = 1;
       }
       const merged = {
         order: order,
@@ -4557,6 +4568,7 @@
         sortCol: saved.sortCol || '',
         sortDir: saved.sortDir || '',
         widths: saved.widths && typeof saved.widths === 'object' ? saved.widths : {},
+        schema: schema,
         splitLeftPx: saved.splitLeftPx ? parseInt(saved.splitLeftPx, 10) || 0 : 0
       };
       const state = applyMobileColState(table, merged);
@@ -4619,7 +4631,8 @@
         sortCol: state.sortCol || '',
         sortDir: state.sortDir || '',
         widths: state.widths && typeof state.widths === 'object' ? state.widths : {},
-        splitLeftPx: state.splitLeftPx || prev.splitLeftPx || 0
+        splitLeftPx: state.splitLeftPx || prev.splitLeftPx || 0,
+        schema: state.schema != null ? state.schema : (prev.schema || 0)
       };
       if (currentAdminUser && currentAdminUser.role === 'owner') {
         dashColOwner = Object.assign({}, dashColMine);
@@ -4784,6 +4797,8 @@
       sku: 18,
       name: 34,
       qty: 10,
+      warehouse: 16,
+      bin: 10,
       cost: 19,
       price: 19,
       description: 28,
