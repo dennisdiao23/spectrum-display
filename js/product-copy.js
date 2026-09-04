@@ -383,6 +383,13 @@
       extraTitle: 'What you get with Spectrum',
       extra: ''
     },
+    spectrum: {
+      warrantyTitle: 'Limited Warranty',
+      warranty: WARRANTY,
+      extraTitle: 'Spectrum Display exclusive',
+      extra:
+        'XP Series is Spectrum Display’s own Flip-Chip COB line. Specification PDFs and first-line support come directly from Spectrum — use Downloads on this page for the latest datasheet.'
+    },
     novastar: {
       warrantyTitle: 'Control gear warranty',
       warranty: 'Warranty coverage for NovaStar processors, senders, playback boxes, and spare receiving cards is quoted by Spectrum sales for the model on your order. We do not publish a generic control-gear term here. Email sales@spectrumdisplay.com with the model and serial if you need a warranty statement.',
