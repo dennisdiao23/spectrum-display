@@ -2379,13 +2379,15 @@ html.dash-scroll-lock body.company-app {
 /* Split layout (table left, overview/detail right) — inventory, vendor, customer, PO, sales */
 html:has(body.inv-layout-lock),
 html:has(body.dash-split-lock),
-html:has(body.so-split-lock) {
+html:has(body.so-split-lock),
+html:has(body.po-split-lock) {
   overflow: hidden;
   height: 100%;
 }
 body.company-app.inv-layout-lock,
 body.company-app.dash-split-lock,
-body.company-app.so-split-lock {
+body.company-app.so-split-lock,
+body.company-app.po-split-lock {
   overflow: hidden;
   height: 100vh;
   height: 100dvh;
@@ -2393,14 +2395,16 @@ body.company-app.so-split-lock {
 }
 body.inv-layout-lock .dash-shell,
 body.dash-split-lock .dash-shell,
-body.so-split-lock .dash-shell {
+body.so-split-lock .dash-shell,
+body.po-split-lock .dash-shell {
   height: calc(100% - var(--dash-chrome) - var(--dash-tabbar-h, 0px));
   min-height: 0;
   overflow: hidden;
 }
 body.inv-layout-lock .company-main,
 body.dash-split-lock .company-main,
-body.so-split-lock .company-main {
+body.so-split-lock .company-main,
+body.po-split-lock .company-main {
   flex: 1 1 auto;
   min-height: 0;
   overflow: hidden;
@@ -2410,7 +2414,8 @@ body.so-split-lock .company-main {
 }
 body.inv-layout-lock #dash-panel,
 body.dash-split-lock #dash-panel,
-body.so-split-lock #dash-panel {
+body.so-split-lock #dash-panel,
+body.po-split-lock #dash-panel {
   flex: 1 1 auto;
   min-height: 0;
   overflow: hidden;
@@ -2419,12 +2424,18 @@ body.so-split-lock #dash-panel {
 }
 body.inv-layout-lock #dash-panel.space-y-8 > :not([hidden]),
 body.dash-split-lock #dash-panel.space-y-8 > :not([hidden]),
-body.so-split-lock #dash-panel.space-y-8 > :not([hidden]) {
+body.so-split-lock #dash-panel.space-y-8 > :not([hidden]),
+body.po-split-lock #dash-panel.space-y-8 > :not([hidden]) {
   margin-top: 0 !important;
 }
 body.inv-layout-lock #inventory-section:not(.hidden),
 body.dash-split-lock #customers-section:not(.hidden),
-body.so-split-lock #sales-section:not(.hidden) {
+body.dash-split-lock #vendors-section:not(.hidden),
+body.dash-split-lock #website-pane:not(.hidden),
+body.dash-split-lock #products-section:not(.hidden),
+body.dash-split-lock #accounts-section:not(.hidden),
+body.so-split-lock #sales-section:not(.hidden),
+body.po-split-lock #po-section:not(.hidden) {
   flex: 1 1 auto;
   min-height: 0;
   overflow: hidden;
@@ -2437,13 +2448,25 @@ body.inv-layout-lock #inventory-section #inventory-error,
 body.dash-split-lock #customers-section .cc-list-kpis,
 body.dash-split-lock #customers-section .cc-list-toolbar,
 body.dash-split-lock #customers-section #cc-error,
+body.dash-split-lock #vendors-section .cc-list-kpis,
+body.dash-split-lock #vendors-section .cc-list-toolbar,
+body.dash-split-lock #vendors-section #vn-error,
+body.dash-split-lock #products-section .wp-list-head,
+body.dash-split-lock #accounts-section .wa-list-head,
 body.so-split-lock #sales-section .page-kpis,
 body.so-split-lock #sales-section .cc-list-toolbar,
-body.so-split-lock #sales-section #so-error {
+body.so-split-lock #sales-section #so-error,
+body.po-split-lock #po-section .page-kpis,
+body.po-split-lock #po-section .cc-list-toolbar,
+body.po-split-lock #po-section #po-error {
   flex-shrink: 0;
 }
 #cc-workspace,
-#customers-list-wrap {
+#customers-list-wrap,
+#vn-workspace,
+#vendors-list-wrap,
+#products-list-wrap,
+#accounts-list-wrap {
   display: flex;
   flex-direction: column;
   min-height: 0;
@@ -2456,7 +2479,11 @@ body.so-split-lock #sales-section #so-error {
   flex: 1 1 auto;
 }
 #inventory-list-wrap,
-#sales-list-wrap {
+#sales-list-wrap,
+#po-list-wrap,
+#products-list-wrap,
+#accounts-list-wrap,
+#vendors-list-wrap {
   display: flex;
   flex-direction: column;
   min-height: 0;
@@ -2484,9 +2511,22 @@ body.so-split-lock #sales-section #so-error {
 #so-split {
   grid-template-columns: var(--so-left-w, var(--so-split-left-boot, 400px)) 14px minmax(0, 1fr);
 }
+#po-split {
+  grid-template-columns: var(--po-left-w, var(--po-split-left-boot, 400px)) 14px minmax(0, 1fr);
+}
+#vn-split {
+  grid-template-columns: var(--vn-left-w, var(--vn-split-left-boot, 400px)) 14px minmax(0, 1fr);
+}
+#wp-split {
+  grid-template-columns: var(--wp-left-w, var(--wp-split-left-boot, 400px)) 14px minmax(0, 1fr);
+}
+#wa-split {
+  grid-template-columns: var(--wa-left-w, var(--wa-split-left-boot, 400px)) 14px minmax(0, 1fr);
+}
 body.inv-layout-lock .inv-split,
 body.dash-split-lock .dash-split,
-body.so-split-lock .so-split {
+body.so-split-lock .so-split,
+body.po-split-lock .po-split {
   min-height: 0;
   max-height: none;
 }
@@ -2625,8 +2665,66 @@ body.inv-split-dragging .inv-split-resizer::after {
 #sales-section.so-split-on #so-back {
   display: none;
 }
-body.so-split-lock #so-split-left table.dash-cols[data-cols="sales"] thead th:not([data-col]),
-body.so-split-lock #so-split-left table.dash-cols[data-cols="sales"] tbody td:last-child {
+#po-section:not(.po-split-on) #po-split {
+  display: block;
+}
+#po-section:not(.po-split-on) #po-split-resizer,
+#po-section:not(.po-split-on) #po-tab-bar,
+#po-section:not(.po-split-on) #po-overview-panel {
+  display: none !important;
+}
+#po-section:not(.po-split-on).po-doc-open #po-overview,
+#po-section:not(.po-split-on).po-doc-open .cc-list-toolbar,
+#po-section:not(.po-split-on).po-doc-open #po-error,
+#po-section:not(.po-split-on).po-doc-open #po-split-left {
+  display: none !important;
+}
+#po-section.po-split-on #po-back {
+  display: none;
+}
+#vendors-section:not(.vn-split-on) #vn-split {
+  display: block;
+}
+#vendors-section:not(.vn-split-on) #vn-split-resizer,
+#vendors-section:not(.vn-split-on) #vn-tab-bar,
+#vendors-section:not(.vn-split-on) #vn-overview-panel {
+  display: none !important;
+}
+#vendors-section.vn-split-on #vn-detail-back {
+  display: none;
+}
+#products-section:not(.wp-split-on) #wp-split {
+  display: block;
+}
+#products-section:not(.wp-split-on) #wp-split-resizer,
+#products-section:not(.wp-split-on) #wp-tab-bar,
+#products-section:not(.wp-split-on) #wp-overview-panel {
+  display: none !important;
+}
+#products-section:not(.wp-split-on).wp-form-open .wp-list-head,
+#products-section:not(.wp-split-on).wp-form-open #wp-split-left {
+  display: none !important;
+}
+#products-section.wp-split-on #product-back {
+  display: none;
+}
+#accounts-section:not(.wa-split-on) #wa-split {
+  display: block;
+}
+#accounts-section:not(.wa-split-on) #wa-split-resizer,
+#accounts-section:not(.wa-split-on) #wa-tab-bar,
+#accounts-section:not(.wa-split-on) #wa-overview-panel {
+  display: none !important;
+}
+#accounts-section:not(.wa-split-on).wa-detail-open .wa-list-head,
+#accounts-section:not(.wa-split-on).wa-detail-open #wa-split-left {
+  display: none !important;
+}
+#accounts-section.wa-split-on #account-back {
+  display: none;
+}
+body.dash-split-lock #wa-split-left table.dash-cols[data-cols="website-accounts"] thead th:not([data-col]),
+body.dash-split-lock #wa-split-left table.dash-cols[data-cols="website-accounts"] tbody td:last-child {
   width: 0 !important;
   min-width: 0 !important;
   padding: 0 !important;
@@ -2645,8 +2743,14 @@ body.so-split-lock #so-detail .so-doc-frame {
   flex-direction: column;
   overflow: auto;
 }
-body.so-split-lock #so-table tr.is-active {
+body.so-split-lock #so-table tr.is-active,
+body.po-split-lock #po-table tr.is-active {
   background: #eef4ff;
+}
+body.po-split-lock #po-detail:not(.hidden) {
+  display: flex;
+  flex-direction: column;
+  overflow: auto;
 }
 .inv-right-panel {
   flex: 1 1 auto;
@@ -2891,10 +2995,22 @@ body.inv-split-dragging {
 #cc-split-right > .cc-detail-pane.hidden {
   display: none !important;
 }
-#cc-detail-pane.inv-right-panel {
+#vn-split-right > .cc-detail-pane:not(.hidden) {
+  display: flex !important;
+}
+#vn-workspace:not(.cc-detail-open) #vn-split-right > .cc-detail-pane:not(.hidden) {
+  display: flex !important;
+}
+#vn-split-right > .cc-detail-pane.hidden {
+  display: none !important;
+}
+#cc-detail-pane.inv-right-panel,
+#vn-detail-pane.inv-right-panel {
   padding-top: 0;
   background: #fff;
 }
+#vn-detail-pane .cc-detail-hero,
+#vn-detail-pane .cc-detail-tabs,
 #cc-detail-pane .cc-detail-hero,
 #cc-detail-pane .cc-detail-tabs {
   flex-shrink: 0;
@@ -2903,12 +3019,25 @@ body.inv-split-dragging {
   overflow: hidden;
   flex-wrap: wrap;
 }
-#cc-detail-pane .cc-detail-hero {
+#vn-detail-pane .cc-detail-tabs {
+  overflow: hidden;
+  flex-wrap: wrap;
+}
+#cc-detail-pane .cc-detail-hero,
+#vn-detail-pane .cc-detail-hero {
   padding: 0.75rem 1rem 0.55rem;
 }
-#cc-table tr.is-selected {
+#cc-table tr.is-selected,
+#vn-table tr.is-selected,
+#product-table tr.is-selected,
+#accounts-table tr.is-selected {
   background: rgba(56, 189, 248, 0.12) !important;
   box-shadow: inset 3px 0 0 #38bdf8;
+}
+#form-wrap.inv-right-panel:not(.hidden),
+#account-detail.inv-right-panel:not(.hidden) {
+  overflow: auto;
+  padding: 0.75rem 1rem 1rem;
 }
 #cc-detail-pane .cc-detail-hero-main {
   align-items: center;
@@ -2925,7 +3054,7 @@ body.inv-split-dragging {
 #cc-detail-pane .cc-detail-hero-grid {
   gap: 0.45rem;
 }
-#cc-detail-pane .cc-detail-panel {
+#vn-detail-pane .cc-detail-panel {
   flex: 1 1 auto;
   min-height: 0;
   overflow: auto;
@@ -2983,7 +3112,11 @@ body.inv-split-dragging {
   body.company-app:not(.inv-layout-lock) #inv-workspace,
   body.company-app:not(.inv-layout-lock) #inventory-list-wrap,
   body.company-app:not(.dash-split-lock) #cc-workspace,
-  body.company-app:not(.dash-split-lock) #customers-list-wrap {
+  body.company-app:not(.dash-split-lock) #customers-list-wrap,
+  body.company-app:not(.dash-split-lock) #vn-workspace,
+  body.company-app:not(.dash-split-lock) #vendors-list-wrap,
+  body.company-app:not(.dash-split-lock) #products-list-wrap,
+  body.company-app:not(.dash-split-lock) #accounts-list-wrap {
     flex: none;
     min-height: auto;
     overflow: visible;
@@ -3094,12 +3227,29 @@ body.po-doc-float #po-section {
   padding: 0.75rem 0.85rem 0.85rem;
   background: var(--dash-bg);
 }
-body.po-doc-float #po-list-wrap,
+body.po-doc-float #po-list-wrap {
+  display: flex !important;
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow: hidden;
+}
 body.po-doc-float #po-overview,
 body.po-doc-float #po-section .cc-list-toolbar,
 body.po-doc-float #po-error,
+body.po-doc-float #po-split-left,
+body.po-doc-float #po-split-resizer,
+body.po-doc-float #po-tab-bar,
+body.po-doc-float #po-overview-panel,
 body.po-doc-float #po-back {
   display: none !important;
+}
+body.po-doc-float #po-split,
+body.po-doc-float #po-split-right {
+  display: flex !important;
+  flex-direction: column;
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow: hidden;
 }
 body.po-doc-float #po-detail {
   display: flex !important;
