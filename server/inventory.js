@@ -191,6 +191,12 @@ function normalizeItemInput(body, opts) {
   if (!patch || src.notes != null) {
     out.notes = String(src.notes || '').trim().slice(0, 500);
   }
+  if (!patch || src.warehouseId != null || src.warehouse_id != null) {
+    out.warehouseId = String(src.warehouseId != null ? src.warehouseId : (src.warehouse_id || '')).trim();
+  }
+  if (!patch || src.bin != null) {
+    out.bin = String(src.bin || '').trim().slice(0, 80);
+  }
   if (!patch || src.description != null) {
     out.description = String(src.description || '').trim().slice(0, 4000);
   }
@@ -259,12 +265,78 @@ function dbFieldsFromInput(input) {
   return row;
 }
 
-function formatItem(row, brandName, maps) {
+function formatLocation(row) {
+  if (!row) return null;
+  const type = String(row.warehouse_type || row.warehouseType || 'spectrum').toLowerCase() === 'partner'
+    ? 'partner'
+    : 'spectrum';
+  return {
+    id: row.id,
+    itemId: row.item_id != null ? row.item_id : row.itemId,
+    warehouseId: row.warehouse_id != null ? row.warehouse_id : row.warehouseId,
+    warehouseName: row.warehouse_name || row.warehouseName || '',
+    warehouseType: type,
+    vendorId: row.vendor_id != null ? row.vendor_id : (row.vendorId || ''),
+    vendorName: row.vendor_name || row.vendorName || '',
+    bin: row.bin || '',
+    qty: Math.max(0, Number(row.qty) || 0)
+  };
+}
+
+function spectrumQtyFromLocations(locations) {
+  return (locations || []).reduce(function (sum, loc) {
+    const type = loc.warehouseType || loc.warehouse_type;
+    if (type === 'partner') return sum;
+    return sum + Math.max(0, Number(loc.qty) || 0);
+  }, 0);
+}
+
+function partnerQtyFromLocations(locations) {
+  return (locations || []).reduce(function (sum, loc) {
+    const type = loc.warehouseType || loc.warehouse_type;
+    if (type !== 'partner') return sum;
+    return sum + Math.max(0, Number(loc.qty) || 0);
+  }, 0);
+}
+
+function vendorHandsFromLocations(locations, vendorId) {
+  if (vendorId == null || vendorId === '') return 0;
+  return (locations || []).reduce(function (sum, loc) {
+    const id = loc.vendorId != null ? loc.vendorId : loc.vendor_id;
+    if (String(id) !== String(vendorId)) return sum;
+    return sum + Math.max(0, Number(loc.qty) || 0);
+  }, 0);
+}
+
+function pickPrimaryLocation(locations) {
+  const list = locations || [];
+  for (let i = 0; i < list.length; i++) {
+    if (list[i].warehouseType !== 'partner') return list[i];
+  }
+  return list[0] || null;
+}
+
+function applyLocations(item, locations) {
+  if (!item) return item;
+  const locs = (locations || []).map(function (row) {
+    return row && row.warehouseType ? row : formatLocation(row);
+  }).filter(Boolean);
+  item.locations = locs;
+  item.partnerQty = partnerQtyFromLocations(locs);
+  const primary = pickPrimaryLocation(locs);
+  item.warehouseId = primary ? primary.warehouseId : '';
+  item.warehouse = primary ? primary.warehouseName : '';
+  item.bin = primary ? primary.bin : '';
+  item.warehouseType = primary ? primary.warehouseType : '';
+  return item;
+}
+
+function formatItem(row, brandName, maps, locations) {
   const unit = unitOf(row && row.unit);
   const qty = Math.max(0, Number(row && row.qty) || 0);
   const lowAt = row && row.low_at != null ? Number(row.low_at) : defaultLowAt(unit);
   const pitch = pitchKey(row && row.pitch);
-  return {
+  const item = {
     id: row && row.id,
     sku: (row && row.sku) || '',
     name: (row && row.name) || '',
@@ -286,8 +358,15 @@ function formatItem(row, brandName, maps) {
     notes: (row && row.notes) || '',
     status: binStatus(qty, lowAt),
     updatedAt: row && row.updated_at,
-    maps: maps || []
+    maps: maps || [],
+    locations: [],
+    partnerQty: 0,
+    warehouseId: '',
+    warehouse: '',
+    bin: '',
+    warehouseType: ''
   };
+  return applyLocations(item, locations);
 }
 
 function publicLink(item) {
@@ -400,8 +479,9 @@ function attachMapsToProducts(products, maps) {
 
 function assertCanDelete(item, moves) {
   const qty = Math.max(0, Number(item && (item.qty != null ? item.qty : item)) || 0);
+  const partner = Math.max(0, Number(item && item.partnerQty) || 0);
   const history = Array.isArray(moves) ? moves.length : (Number(moves) || 0);
-  if (qty > 0 || history > 0) {
+  if (qty > 0 || partner > 0 || history > 0) {
     throw new Error('Cannot delete this SKU after stock has been received. Deleting would erase stock history.');
   }
 }
@@ -440,6 +520,12 @@ module.exports = {
   normalizeItemInput,
   dbFieldsFromInput,
   formatItem,
+  formatLocation,
+  applyLocations,
+  spectrumQtyFromLocations,
+  partnerQtyFromLocations,
+  vendorHandsFromLocations,
+  pickPrimaryLocation,
   publicLink,
   stockLink,
   cheapestMappedPrice,

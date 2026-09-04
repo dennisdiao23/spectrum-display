@@ -199,6 +199,7 @@ function openDb() {
   ].forEach(function (sql) {
     try { db.exec(sql); } catch (e) { /* already present */ }
   });
+  ensureInventoryWarehouses(db);
   migrateLegacyInventory(db);
   return db;
 }
@@ -481,6 +482,67 @@ function ensureCompanySales(db) {
     );
     CREATE INDEX IF NOT EXISTS company_sales_lines_doc_idx ON company_sales_lines (doc_id, sort_order);
   `);
+}
+
+function ensureInventoryWarehouses(db) {
+  const wh = require('./inventory-warehouses');
+  db.exec(`
+    CREATE TABLE IF NOT EXISTS inventory_warehouses (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      name TEXT NOT NULL,
+      type TEXT NOT NULL DEFAULT 'spectrum',
+      vendor_id INTEGER,
+      notes TEXT NOT NULL DEFAULT '',
+      created_at TEXT NOT NULL,
+      updated_at TEXT NOT NULL,
+      FOREIGN KEY (vendor_id) REFERENCES inventory_vendors(id) ON DELETE SET NULL
+    );
+    CREATE INDEX IF NOT EXISTS inventory_warehouses_type_idx ON inventory_warehouses (type, name);
+    CREATE TABLE IF NOT EXISTS inventory_item_locations (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      item_id INTEGER NOT NULL,
+      warehouse_id INTEGER NOT NULL,
+      bin TEXT NOT NULL DEFAULT '',
+      qty INTEGER NOT NULL DEFAULT 0,
+      created_at TEXT NOT NULL,
+      updated_at TEXT NOT NULL,
+      UNIQUE (item_id, warehouse_id),
+      FOREIGN KEY (item_id) REFERENCES inventory_items(id) ON DELETE CASCADE,
+      FOREIGN KEY (warehouse_id) REFERENCES inventory_warehouses(id) ON DELETE RESTRICT
+    );
+    CREATE INDEX IF NOT EXISTS inventory_item_locations_wh_idx ON inventory_item_locations (warehouse_id);
+  `);
+  const stamp = nowIso();
+  const count = db.prepare('SELECT COUNT(*) AS n FROM inventory_warehouses').get();
+  if (!count || !count.n) {
+    db.prepare(
+      'INSERT INTO inventory_warehouses (name, type, vendor_id, notes, created_at, updated_at) VALUES (?, ?, NULL, ?, ?, ?)'
+    ).run(wh.DEFAULT_SPECTRUM_NAME, 'spectrum', '', stamp, stamp);
+  }
+  const spectrum = db.prepare(
+    "SELECT id FROM inventory_warehouses WHERE type = 'spectrum' ORDER BY id LIMIT 1"
+  ).get();
+  if (!spectrum) return;
+  const items = db.prepare(`
+    SELECT i.id, i.qty
+    FROM inventory_items i
+    WHERE NOT EXISTS (SELECT 1 FROM inventory_item_locations l WHERE l.item_id = i.id)
+  `).all();
+  if (!items.length) return;
+  const insert = db.prepare(`
+    INSERT INTO inventory_item_locations (item_id, warehouse_id, bin, qty, created_at, updated_at)
+    VALUES (?, ?, '', ?, ?, ?)
+  `);
+  db.exec('BEGIN');
+  try {
+    items.forEach(function (item) {
+      insert.run(item.id, spectrum.id, Math.max(0, Number(item.qty) || 0), stamp, stamp);
+    });
+    db.exec('COMMIT');
+  } catch (err) {
+    try { db.exec('ROLLBACK'); } catch (e) { /* ignore */ }
+    console.error('Could not migrate inventory locations:', err.message || err);
+  }
 }
 
 function ensureInventoryVendors(db) {
@@ -990,6 +1052,7 @@ module.exports = {
   ensureCompanyCustomers,
   ensureCompanySales,
   ensureInventoryVendors,
+  ensureInventoryWarehouses,
   ensurePartyContacts,
   ensurePurchaseOrders,
   ensureReceiptShipments,
