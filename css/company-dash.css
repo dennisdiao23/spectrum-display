@@ -2430,6 +2430,10 @@ body.po-split-lock #dash-panel.space-y-8 > :not([hidden]) {
 }
 body.inv-layout-lock #inventory-section:not(.hidden),
 body.dash-split-lock #customers-section:not(.hidden),
+body.dash-split-lock #vendors-section:not(.hidden),
+body.dash-split-lock #website-pane:not(.hidden),
+body.dash-split-lock #products-section:not(.hidden),
+body.dash-split-lock #accounts-section:not(.hidden),
 body.so-split-lock #sales-section:not(.hidden),
 body.po-split-lock #po-section:not(.hidden) {
   flex: 1 1 auto;
@@ -2444,6 +2448,11 @@ body.inv-layout-lock #inventory-section #inventory-error,
 body.dash-split-lock #customers-section .cc-list-kpis,
 body.dash-split-lock #customers-section .cc-list-toolbar,
 body.dash-split-lock #customers-section #cc-error,
+body.dash-split-lock #vendors-section .cc-list-kpis,
+body.dash-split-lock #vendors-section .cc-list-toolbar,
+body.dash-split-lock #vendors-section #vn-error,
+body.dash-split-lock #products-section .wp-list-head,
+body.dash-split-lock #accounts-section .wa-list-head,
 body.so-split-lock #sales-section .page-kpis,
 body.so-split-lock #sales-section .cc-list-toolbar,
 body.so-split-lock #sales-section #so-error,
@@ -2453,7 +2462,11 @@ body.po-split-lock #po-section #po-error {
   flex-shrink: 0;
 }
 #cc-workspace,
-#customers-list-wrap {
+#customers-list-wrap,
+#vn-workspace,
+#vendors-list-wrap,
+#products-list-wrap,
+#accounts-list-wrap {
   display: flex;
   flex-direction: column;
   min-height: 0;
@@ -2467,7 +2480,10 @@ body.po-split-lock #po-section #po-error {
 }
 #inventory-list-wrap,
 #sales-list-wrap,
-#po-list-wrap {
+#po-list-wrap,
+#products-list-wrap,
+#accounts-list-wrap,
+#vendors-list-wrap {
   display: flex;
   flex-direction: column;
   min-height: 0;
@@ -2497,6 +2513,15 @@ body.po-split-lock #po-section #po-error {
 }
 #po-split {
   grid-template-columns: var(--po-left-w, var(--po-split-left-boot, 400px)) 14px minmax(0, 1fr);
+}
+#vn-split {
+  grid-template-columns: var(--vn-left-w, var(--vn-split-left-boot, 400px)) 14px minmax(0, 1fr);
+}
+#wp-split {
+  grid-template-columns: var(--wp-left-w, var(--wp-split-left-boot, 400px)) 14px minmax(0, 1fr);
+}
+#wa-split {
+  grid-template-columns: var(--wa-left-w, var(--wa-split-left-boot, 400px)) 14px minmax(0, 1fr);
 }
 body.inv-layout-lock .inv-split,
 body.dash-split-lock .dash-split,
@@ -2657,10 +2682,49 @@ body.inv-split-dragging .inv-split-resizer::after {
 #po-section.po-split-on #po-back {
   display: none;
 }
-body.so-split-lock #so-split-left table.dash-cols[data-cols="sales"] thead th:not([data-col]),
-body.so-split-lock #so-split-left table.dash-cols[data-cols="sales"] tbody td:last-child,
-body.po-split-lock #po-split-left table.dash-cols[data-cols="purchase-orders"] thead th:not([data-col]),
-body.po-split-lock #po-split-left table.dash-cols[data-cols="purchase-orders"] tbody td:last-child {
+#vendors-section:not(.vn-split-on) #vn-split {
+  display: block;
+}
+#vendors-section:not(.vn-split-on) #vn-split-resizer,
+#vendors-section:not(.vn-split-on) #vn-tab-bar,
+#vendors-section:not(.vn-split-on) #vn-overview-panel {
+  display: none !important;
+}
+#vendors-section.vn-split-on #vn-detail-back {
+  display: none;
+}
+#products-section:not(.wp-split-on) #wp-split {
+  display: block;
+}
+#products-section:not(.wp-split-on) #wp-split-resizer,
+#products-section:not(.wp-split-on) #wp-tab-bar,
+#products-section:not(.wp-split-on) #wp-overview-panel {
+  display: none !important;
+}
+#products-section:not(.wp-split-on).wp-form-open .wp-list-head,
+#products-section:not(.wp-split-on).wp-form-open #wp-split-left {
+  display: none !important;
+}
+#products-section.wp-split-on #product-back {
+  display: none;
+}
+#accounts-section:not(.wa-split-on) #wa-split {
+  display: block;
+}
+#accounts-section:not(.wa-split-on) #wa-split-resizer,
+#accounts-section:not(.wa-split-on) #wa-tab-bar,
+#accounts-section:not(.wa-split-on) #wa-overview-panel {
+  display: none !important;
+}
+#accounts-section:not(.wa-split-on).wa-detail-open .wa-list-head,
+#accounts-section:not(.wa-split-on).wa-detail-open #wa-split-left {
+  display: none !important;
+}
+#accounts-section.wa-split-on #account-back {
+  display: none;
+}
+body.dash-split-lock #wa-split-left table.dash-cols[data-cols="website-accounts"] thead th:not([data-col]),
+body.dash-split-lock #wa-split-left table.dash-cols[data-cols="website-accounts"] tbody td:last-child {
   width: 0 !important;
   min-width: 0 !important;
   padding: 0 !important;
@@ -2931,10 +2995,22 @@ body.inv-split-dragging {
 #cc-split-right > .cc-detail-pane.hidden {
   display: none !important;
 }
-#cc-detail-pane.inv-right-panel {
+#vn-split-right > .cc-detail-pane:not(.hidden) {
+  display: flex !important;
+}
+#vn-workspace:not(.cc-detail-open) #vn-split-right > .cc-detail-pane:not(.hidden) {
+  display: flex !important;
+}
+#vn-split-right > .cc-detail-pane.hidden {
+  display: none !important;
+}
+#cc-detail-pane.inv-right-panel,
+#vn-detail-pane.inv-right-panel {
   padding-top: 0;
   background: #fff;
 }
+#vn-detail-pane .cc-detail-hero,
+#vn-detail-pane .cc-detail-tabs,
 #cc-detail-pane .cc-detail-hero,
 #cc-detail-pane .cc-detail-tabs {
   flex-shrink: 0;
@@ -2943,12 +3019,25 @@ body.inv-split-dragging {
   overflow: hidden;
   flex-wrap: wrap;
 }
-#cc-detail-pane .cc-detail-hero {
+#vn-detail-pane .cc-detail-tabs {
+  overflow: hidden;
+  flex-wrap: wrap;
+}
+#cc-detail-pane .cc-detail-hero,
+#vn-detail-pane .cc-detail-hero {
   padding: 0.75rem 1rem 0.55rem;
 }
-#cc-table tr.is-selected {
+#cc-table tr.is-selected,
+#vn-table tr.is-selected,
+#product-table tr.is-selected,
+#accounts-table tr.is-selected {
   background: rgba(56, 189, 248, 0.12) !important;
   box-shadow: inset 3px 0 0 #38bdf8;
+}
+#form-wrap.inv-right-panel:not(.hidden),
+#account-detail.inv-right-panel:not(.hidden) {
+  overflow: auto;
+  padding: 0.75rem 1rem 1rem;
 }
 #cc-detail-pane .cc-detail-hero-main {
   align-items: center;
@@ -2965,7 +3054,7 @@ body.inv-split-dragging {
 #cc-detail-pane .cc-detail-hero-grid {
   gap: 0.45rem;
 }
-#cc-detail-pane .cc-detail-panel {
+#vn-detail-pane .cc-detail-panel {
   flex: 1 1 auto;
   min-height: 0;
   overflow: auto;
@@ -3023,7 +3112,11 @@ body.inv-split-dragging {
   body.company-app:not(.inv-layout-lock) #inv-workspace,
   body.company-app:not(.inv-layout-lock) #inventory-list-wrap,
   body.company-app:not(.dash-split-lock) #cc-workspace,
-  body.company-app:not(.dash-split-lock) #customers-list-wrap {
+  body.company-app:not(.dash-split-lock) #customers-list-wrap,
+  body.company-app:not(.dash-split-lock) #vn-workspace,
+  body.company-app:not(.dash-split-lock) #vendors-list-wrap,
+  body.company-app:not(.dash-split-lock) #products-list-wrap,
+  body.company-app:not(.dash-split-lock) #accounts-list-wrap {
     flex: none;
     min-height: auto;
     overflow: visible;
