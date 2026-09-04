@@ -1,7 +1,7 @@
 /* Company dashboard — Rubick chrome + inset light workspace */
 :root {
-  --dash-navy: #2563eb;
-  --dash-navy-2: #1d4ed8;
+  --dash-navy: #07153a;
+  --dash-navy-2: #0b1d4d;
   --dash-side: 14.025rem;
   --dash-top: 4.25rem;
   --dash-tabbar-h: 0px;
@@ -34,7 +34,7 @@ body.company-app {
   position: fixed;
   inset: 0 auto 0 0;
   width: var(--dash-side);
-  background: var(--dash-navy);
+  background: linear-gradient(180deg, #07153a 0%, #0a1b46 100%);
   color: #e8eeff;
   z-index: 60;
   display: flex;
@@ -171,7 +171,7 @@ body.company-app {
 
 .dash-shell {
   margin: var(--dash-chrome) var(--dash-chrome) 0 var(--dash-side);
-  height: calc(100% - var(--dash-chrome));
+  height: calc(100% - var(--dash-chrome) - var(--dash-tabbar-h, 0px));
   min-height: 0;
   display: flex;
   flex-direction: column;
@@ -1507,7 +1507,7 @@ html.dash-scroll-lock body.company-app {
     right: 0;
     bottom: var(--dash-tabbar-h);
     z-index: 71;
-    background: var(--dash-navy-2);
+    background: linear-gradient(180deg, #0c204f 0%, #0a1b46 100%);
     border-top: 1px solid rgba(255, 255, 255, 0.08);
     box-shadow: 0 -6px 20px rgba(7, 21, 58, 0.2);
     transform: translateY(0);
@@ -1579,7 +1579,7 @@ html.dash-scroll-lock body.company-app {
     box-sizing: border-box;
     height: var(--dash-tabbar-h);
     padding: 0.35rem 0.15rem calc(0.35rem + env(safe-area-inset-bottom, 0px));
-    background: var(--dash-navy);
+    background: linear-gradient(180deg, #0a1b46 0%, #07153a 100%);
     border-top: 1px solid rgba(255, 255, 255, 0.08);
     box-shadow: 0 -8px 24px rgba(7, 21, 58, 0.28);
     transform: translateY(0);
