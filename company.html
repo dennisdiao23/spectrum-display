@@ -22,6 +22,8 @@
         if (ccPx && ccPx >= 160) document.documentElement.style.setProperty('--cc-split-left-boot', ccPx + 'px');
         var soPx = prefs.sales && prefs.sales.splitLeftPx;
         if (soPx && soPx >= 160) document.documentElement.style.setProperty('--so-split-left-boot', soPx + 'px');
+        var poPx = prefs['purchase-orders'] && prefs['purchase-orders'].splitLeftPx;
+        if (poPx && poPx >= 160) document.documentElement.style.setProperty('--po-split-left-boot', poPx + 'px');
       } catch (e) {}
     })();
   </script>
@@ -873,8 +875,10 @@
             <button id="po-new-btn" type="button" class="cc-list-add-btn px-4 py-2 rounded-full bg-sky-500 hover:bg-sky-400 text-white text-sm font-semibold">Create purchase order</button>
           </div>
           <p id="po-error" class="hidden text-sm text-red-400 mb-3"></p>
+          <div id="po-split" class="dash-split po-split">
+            <div id="po-split-left" class="dash-split-left">
           <div class="cc-table-card rounded-2xl border border-slate-800">
-            <div class="cc-table-wrap overflow-x-auto">
+            <div class="cc-table-wrap overflow-x-auto" id="po-table-wrap">
             <table class="w-full text-sm dash-cols" data-cols="purchase-orders">
               <thead class="text-left text-slate-400 border-b border-slate-800">
                 <tr>
@@ -893,7 +897,17 @@
             </table>
             </div>
           </div>
-        </div>
+            </div>
+            <div id="po-split-resizer" class="dash-split-resizer" role="separator" aria-orientation="vertical" aria-label="Resize purchase order panels" tabindex="0"></div>
+            <div id="po-split-right" class="dash-split-right">
+              <div id="po-tab-bar" class="inv-tab-bar">
+                <div id="po-tab-strip" class="inv-tab-strip" role="tablist" aria-label="Open purchase orders"></div>
+              </div>
+              <div id="po-overview-panel" class="inv-right-panel">
+                <div class="inv-overview-summary">
+                  <p class="inv-overview-lead">Select a purchase order to view or edit it here. New PO opens in its own tab.</p>
+                </div>
+              </div>
         <div id="po-detail" class="hidden">
           <button type="button" id="po-back" class="text-sm text-sky-400 hover:text-sky-300 mb-3">← All purchase orders</button>
           <form id="po-form" class="po-sheet">
@@ -991,6 +1005,9 @@
               <button type="submit" class="px-5 py-2 rounded-full bg-sky-500 hover:bg-sky-400 text-white text-sm font-semibold">Save</button>
             </div>
           </form>
+        </div>
+            </div>
+          </div>
         </div>
       </div>
 
@@ -1364,14 +1381,14 @@
             </div>
           </div>
             </div>
-            <div id="so-split-resizer" class="dash-split-resizer" role="separator" aria-orientation="vertical" aria-label="Resize invoice panels" tabindex="0"></div>
+            <div id="so-split-resizer" class="dash-split-resizer" role="separator" aria-orientation="vertical" aria-label="Resize document panels" tabindex="0"></div>
             <div id="so-split-right" class="dash-split-right">
               <div id="so-tab-bar" class="inv-tab-bar">
-                <div id="so-tab-strip" class="inv-tab-strip" role="tablist" aria-label="Open invoices"></div>
+                <div id="so-tab-strip" class="inv-tab-strip" role="tablist" aria-label="Open documents"></div>
               </div>
               <div id="so-overview-panel" class="inv-right-panel">
                 <div class="inv-overview-summary">
-                  <p class="inv-overview-lead">Select an invoice to view or edit it here. New invoice opens in its own tab.</p>
+                  <p class="inv-overview-lead" id="so-overview-lead">Select an invoice to view or edit it here. New invoice opens in its own tab.</p>
                 </div>
               </div>
         <div id="so-detail" class="hidden so-doc">
@@ -2376,12 +2393,23 @@
       return id ? '/company/inventory/vendors/' + id : '/company/inventory/vendors';
     }
     function invoiceIdFromPath() {
-      const m = companyPath().match(/^\/company\/sales\/invoices\/(\d+|new)$/);
+      return salesDocIdFromPath('invoice');
+    }
+    function salesDocIdFromPath(type) {
+      const list = type === 'order' ? 'orders' : type === 'invoice' ? 'invoices' : 'quotes';
+      const m = companyPath().match(new RegExp('^\\/company\\/sales\\/' + list + '\\/(\\d+|new)$'));
       return m ? m[1] : '';
     }
     function pathForInvoice(id) {
       if (!id || id === 'new') return '/company/sales/invoices/new';
       return '/company/sales/invoices/' + id;
+    }
+    function poIdFromPath() {
+      const m = companyPath().match(/^\/company\/inventory\/purchase-orders\/(\d+|new)$/);
+      return m ? m[1] : '';
+    }
+    function pathForPo(id) {
+      return id ? '/company/inventory/purchase-orders/' + id : '/company/inventory/purchase-orders';
     }
     function invoiceCustomerFromQuery() {
       try { return new URLSearchParams(location.search).get('customer') || ''; }
@@ -3588,6 +3616,18 @@
       const onVendorNav = view === 'vendors' || view === 'purchase-orders';
       if (onWebsite) websiteSubTab = view;
       if (onSettings) settingsSubTab = view;
+      if (typeof persistSoSplitType === 'function') {
+        const salesNow = document.getElementById('sales-section');
+        if (salesNow && !salesNow.classList.contains('hidden') && salesNow.classList.contains('so-split-on')) {
+          persistSoSplitType(salesTypeFromTab(salesSubTab));
+        }
+      }
+      if (typeof stashPoActiveTab === 'function') {
+        const poNow = document.getElementById('po-section');
+        if (poNow && !poNow.classList.contains('hidden') && poNow.classList.contains('po-split-on')) {
+          stashPoActiveTab();
+        }
+      }
       if (onSales && view !== 'sales') salesSubTab = view;
       if (onSales && !doc && typeof refreshSalesListView === 'function') refreshSalesListView(view);
       if (typeof syncDocWindowChrome === 'function') syncDocWindowChrome(name);
@@ -3599,9 +3639,14 @@
       document.getElementById('inventory-section').classList.toggle('hidden', view !== 'inventory');
       document.body.classList.toggle('inv-layout-lock', view === 'inventory' && !isMobileDash());
       document.body.classList.toggle('dash-split-lock', view === 'customers' && !isMobileDash());
-      document.body.classList.toggle('so-split-lock', view === 'invoices' && !doc && !isMobileDash() && !document.body.classList.contains('so-invoice-float'));
+      const onSalesList = onSales && !doc;
+      const onPoList = view === 'purchase-orders' && !doc;
+      document.body.classList.toggle('so-split-lock', onSalesList && !isMobileDash() && !document.body.classList.contains('so-invoice-float'));
       const salesSec = document.getElementById('sales-section');
-      if (salesSec) salesSec.classList.toggle('so-split-on', view === 'invoices' && !doc && !isMobileDash());
+      if (salesSec) salesSec.classList.toggle('so-split-on', onSalesList && !isMobileDash());
+      document.body.classList.toggle('po-split-lock', onPoList && !isMobileDash() && !document.body.classList.contains('po-doc-float'));
+      const poSec = document.getElementById('po-section');
+      if (poSec) poSec.classList.toggle('po-split-on', onPoList && !isMobileDash());
       document.getElementById('vendors-section').classList.toggle('hidden', view !== 'vendors');
       document.getElementById('po-section').classList.toggle('hidden', view !== 'purchase-orders');
       document.getElementById('rs-section').classList.toggle('hidden', view !== 'receipt-shipments');
@@ -3707,6 +3752,15 @@
     let soOpenTabs = [];
     let soActiveTab = 'overview';
     let soTabCache = {};
+    const soSplitByType = {
+      quote: { open: [], active: 'overview' },
+      order: { open: [], active: 'overview' },
+      invoice: { open: [], active: 'overview' }
+    };
+    const PO_TAB_MAX = 7;
+    let poOpenTabs = [];
+    let poActiveTab = 'overview';
+    let poTabCache = {};
     let invSavedSnapshot = '';
     let invDrawerSource = '';
     let invPoLineRow = null;
@@ -4316,6 +4370,20 @@
 
     function saveSoSplitLeftPx(px) {
       const table = document.querySelector('table.dash-cols[data-cols="sales"]');
+      if (!table) return;
+      const state = loadColState(table);
+      state.splitLeftPx = Math.round(px);
+      saveColState(table, state);
+    }
+
+    function poSplitLeftFromPrefs() {
+      const saved = tableStateFromPrefs(dashColMine, 'purchase-orders') || tableStateFromPrefs(dashColOwner, 'purchase-orders');
+      const px = saved && saved.splitLeftPx ? parseInt(saved.splitLeftPx, 10) : 0;
+      return px > 0 ? px : 0;
+    }
+
+    function savePoSplitLeftPx(px) {
+      const table = document.querySelector('table.dash-cols[data-cols="purchase-orders"]');
       if (!table) return;
       const state = loadColState(table);
       state.splitLeftPx = Math.round(px);
@@ -5066,9 +5134,7 @@
     async function followActivityRef(ref) {
       if (!ref) return;
       if (ref.type === 'po') {
-        openCompanyTab('purchase-orders', true);
-        await loadPurchaseOrders();
-        openPurchaseOrder(ref.id);
+        openCompanyTab('purchase-orders', true, { restorePath: pathForPo(ref.id) });
         return;
       }
       if (ref.type === 'receipt') {
@@ -5081,9 +5147,8 @@
           await openInvoiceWindow(ref.id, { type: 'invoice' });
           return;
         }
-        openCompanyTab(ref.tab || 'quotes', true);
-        await loadSalesDocs(ref.tab === 'orders' ? 'order' : 'quote');
-        await openSalesDoc(ref.id, { inline: true, type: ref.tab === 'orders' ? 'order' : 'quote' });
+        const kind = ref.tab === 'orders' ? 'order' : 'quote';
+        openCompanyTab(ref.tab || 'quotes', true, { restorePath: pathForDocMaster(kind, ref.id) });
       }
     }
 
@@ -5408,6 +5473,100 @@
           const target = saved >= MIN_LEFT ? saved : (bootCss >= MIN_LEFT ? bootCss : MIN_LEFT);
           applyLeft(target, { save: false });
           fitSoTabWidths();
+        });
+      }
+      bootSplit();
+    }
+
+    function initPoSplitResize() {
+      const split = document.getElementById('po-split');
+      const resizer = document.getElementById('po-split-resizer');
+      if (!split || !resizer) return;
+      const MIN_LEFT = 400;
+      const MIN_RIGHT = 600;
+      const RESIZER_W = 14;
+      function effectiveMins(total) {
+        if (total >= MIN_LEFT + MIN_RIGHT + RESIZER_W) {
+          return { minLeft: MIN_LEFT, minRight: MIN_RIGHT };
+        }
+        const minLeft = Math.max(160, Math.floor(total * 0.28));
+        const minRight = Math.max(200, total - minLeft - RESIZER_W);
+        return { minLeft: minLeft, minRight: minRight };
+      }
+      function clampLeft(w) {
+        const total = split.getBoundingClientRect().width;
+        const mins = effectiveMins(total);
+        const maxLeft = Math.max(mins.minLeft, total - mins.minRight - RESIZER_W);
+        return Math.max(mins.minLeft, Math.min(w, maxLeft));
+      }
+      function applyLeft(w, opts) {
+        opts = opts || {};
+        const clamped = clampLeft(w);
+        split.style.setProperty('--po-left-w', clamped + 'px');
+        if (opts.save !== false) savePoSplitLeftPx(clamped);
+        fitPoTabWidths();
+        return clamped;
+      }
+      function currentLeftPx() {
+        return parseInt(split.style.getPropertyValue('--po-left-w'), 10) || poSplitLeftFromPrefs() || MIN_LEFT;
+      }
+      function bootCssLeftPx() {
+        try {
+          return parseInt(getComputedStyle(document.documentElement).getPropertyValue('--po-split-left-boot'), 10) || 0;
+        } catch (err) {
+          return 0;
+        }
+      }
+      function bootSplit() {
+        const saved = poSplitLeftFromPrefs();
+        const bootCss = bootCssLeftPx();
+        const target = saved >= MIN_LEFT ? saved : (bootCss >= MIN_LEFT ? bootCss : MIN_LEFT);
+        const existing = parseInt(split.style.getPropertyValue('--po-left-w'), 10);
+        if (!existing || existing < MIN_LEFT) split.style.setProperty('--po-left-w', target + 'px');
+        whenInvSplitReady(split, function () {
+          const start = parseInt(split.style.getPropertyValue('--po-left-w'), 10) || target;
+          const clamped = clampLeft(start);
+          if (Math.abs(clamped - start) > 2) split.style.setProperty('--po-left-w', clamped + 'px');
+          fitPoTabWidths();
+        });
+      }
+      if (resizer.dataset.ready !== '1') {
+        resizer.dataset.ready = '1';
+        let dragging = false;
+        function onMove(e) {
+          if (!dragging) return;
+          const point = e.touches ? e.touches[0] : e;
+          const rect = split.getBoundingClientRect();
+          applyLeft(point.clientX - rect.left);
+        }
+        function onUp() {
+          if (!dragging) return;
+          dragging = false;
+          document.body.classList.remove('inv-split-dragging');
+          document.removeEventListener('mousemove', onMove);
+          document.removeEventListener('mouseup', onUp);
+          document.removeEventListener('pointermove', onMove);
+          document.removeEventListener('pointerup', onUp);
+          savePoSplitLeftPx(currentLeftPx());
+          pushColPrefs();
+        }
+        function onDown(e) {
+          e.preventDefault();
+          dragging = true;
+          document.body.classList.add('inv-split-dragging');
+          document.addEventListener('mousemove', onMove);
+          document.addEventListener('mouseup', onUp);
+          document.addEventListener('pointermove', onMove);
+          document.addEventListener('pointerup', onUp);
+        }
+        resizer.addEventListener('mousedown', onDown);
+        resizer.addEventListener('pointerdown', onDown);
+        window.addEventListener('resize', function () {
+          const saved = poSplitLeftFromPrefs();
+          const bootCss = bootCssLeftPx();
+          const target = saved >= MIN_LEFT ? saved : (bootCss >= MIN_LEFT ? bootCss : MIN_LEFT);
+          applyLeft(target, { save: false });
+          fitPoTabWidths();
         });
       }
       bootSplit();
@@ -8416,8 +8575,13 @@
     }
 
     function showPoList() {
-      document.getElementById('po-list-wrap').classList.remove('hidden');
+      const sec = document.getElementById('po-section');
+      if (sec) sec.classList.remove('po-doc-open');
       document.getElementById('po-detail').classList.add('hidden');
+      if (isPoSplitOn()) {
+        showPoOverviewPane();
+        return;
+      }
     }
 
     function renderPoTable(rows) {
@@ -8462,7 +8626,9 @@
           email: '<td class="py-3 px-4">' + esc(d.vendorEmail || '—') + '</td>',
           notes: '<td class="py-3 px-4">' + esc(d.notes || '—') + '</td>'
         };
-        return '<tr class="border-b border-slate-800 hover:bg-slate-900/80 cursor-pointer" data-id="' + esc(d.id) + '">' +
+        return '<tr class="border-b border-slate-800 hover:bg-slate-900/80 cursor-pointer' +
+          (isPoSplitOn() && String(poActiveTab) === String(d.id) ? ' is-active' : '') +
+          '" data-id="' + esc(d.id) + '">' +
           dashOrderedCells(table, cells, '<td class="py-3 px-4 text-right"><span class="text-sky-400 text-xs font-medium">Open →</span></td>') +
           '</tr>';
       }).join('');
@@ -8533,6 +8699,179 @@
       };
     }
 
+    function isPoDocWindow() {
+      return document.body.classList.contains('po-doc-float');
+    }
+
+    function isPoSplitOn() {
+      const sec = document.getElementById('po-section');
+      return !!(sec && sec.classList.contains('po-split-on') && !isMobileDash() && !isPoDocWindow());
+    }
+
+    function poDocById(id) {
+      return (purchaseOrders || []).find(function (d) {
+        return String(d.id) === String(id);
+      }) || poTabCache[String(id)] || null;
+    }
+
+    function poTabLabel(id) {
+      const doc = poDocById(id);
+      return String((doc && doc.number) || '').trim() || 'PO';
+    }
+
+    function stashPoActiveTab() {
+      if (!poActiveTab || poActiveTab === 'overview') return;
+      const detail = document.getElementById('po-detail');
+      if (!detail || detail.classList.contains('hidden')) return;
+      poTabCache[String(poActiveTab)] = Object.assign({ id: poActiveTab }, readPoForm());
+    }
+
+    function showPoRightPanel(mode) {
+      const overview = document.getElementById('po-overview-panel');
+      const detail = document.getElementById('po-detail');
+      const showItem = mode === 'item';
+      if (overview) overview.classList.toggle('hidden', showItem);
+      if (detail) {
+        detail.classList.toggle('hidden', !showItem);
+        detail.setAttribute('aria-hidden', showItem ? 'false' : 'true');
+      }
+    }
+
+    function renderPoTabBar() {
+      const strip = document.getElementById('po-tab-strip');
+      if (!strip) return;
+      let html = '<button type="button" class="inv-browser-tab' +
+        (poActiveTab === 'overview' ? ' is-active' : '') +
+        '" data-po-tab-id="overview" role="tab" aria-selected="' + (poActiveTab === 'overview' ? 'true' : 'false') + '">' +
+        '<span class="inv-browser-tab-label">Overview</span></button>';
+      poOpenTabs.forEach(function (id) {
+        const active = String(poActiveTab) === String(id);
+        html += '<button type="button" class="inv-browser-tab' + (active ? ' is-active' : '') +
+          '" data-po-tab-id="' + esc(id) + '" role="tab" aria-selected="' + (active ? 'true' : 'false') + '">' +
+          '<span class="inv-browser-tab-label">' + esc(poTabLabel(id)) + '</span>' +
+          '<span class="inv-browser-tab-close" data-po-tab-close="' + esc(id) + '" aria-label="Close tab" role="button" tabindex="-1">×</span></button>';
+      });
+      strip.innerHTML = html;
+      fitPoTabWidths();
+    }
+
+    function fitPoTabWidths() {
+      const strip = document.getElementById('po-tab-strip');
+      if (!strip) return;
+      const allTabs = Array.prototype.slice.call(strip.querySelectorAll('.inv-browser-tab'));
+      if (!allTabs.length) return;
+      const gap = 2;
+      const MIN_ITEM_TAB = 72;
+      const overviewTab = strip.querySelector('.inv-browser-tab[data-po-tab-id="overview"]');
+      const itemTabs = allTabs.filter(function (tab) {
+        return tab.getAttribute('data-po-tab-id') !== 'overview';
+      });
+      allTabs.forEach(function (tab) {
+        tab.style.flex = '';
+        tab.style.width = '';
+        tab.style.minWidth = '';
+        tab.style.maxWidth = '';
+      });
+      if (overviewTab) overviewTab.style.flex = '0 0 auto';
+      const stripWidth = strip.clientWidth;
+      if (stripWidth <= 0 || !itemTabs.length) return;
+      const overviewWidth = overviewTab ? Math.round(overviewTab.getBoundingClientRect().width) : 0;
+      const availableForItems = stripWidth - overviewWidth - gap * (allTabs.length - 1);
+      let itemWidths = itemTabs.map(function (tab) {
+        return Math.round(tab.getBoundingClientRect().width);
+      });
+      let itemTotal = itemWidths.reduce(function (a, b) { return a + b; }, 0);
+      if (itemTotal <= availableForItems) return;
+      itemWidths = itemWidths.map(function (w) { return Math.max(MIN_ITEM_TAB, w); });
+      itemTotal = itemWidths.reduce(function (a, b) { return a + b; }, 0);
+      if (itemTotal <= availableForItems) {
+        itemTabs.forEach(function (tab, i) {
+          tab.style.flex = '0 0 ' + itemWidths[i] + 'px';
+          tab.style.width = itemWidths[i] + 'px';
+          tab.style.minWidth = MIN_ITEM_TAB + 'px';
+          tab.style.maxWidth = itemWidths[i] + 'px';
+        });
+        return;
+      }
+      const scale = availableForItems / itemTotal;
+      itemTabs.forEach(function (tab, i) {
+        const w = Math.max(MIN_ITEM_TAB, Math.floor(itemWidths[i] * scale));
+        tab.style.flex = '0 0 ' + w + 'px';
+        tab.style.width = w + 'px';
+        tab.style.minWidth = MIN_ITEM_TAB + 'px';
+        tab.style.maxWidth = w + 'px';
+      });
+    }
+
+    function showPoOverviewPane() {
+      stashPoActiveTab();
+      poActiveTab = 'overview';
+      showPoRightPanel('overview');
+      renderPoTabBar();
+      renderPoTable(purchaseOrders);
+    }
+
+    async function activatePoTab(id, opts) {
+      opts = opts || {};
+      const sid = String(id);
+      if (sid === 'overview') {
+        showPoOverviewPane();
+        return;
+      }
+      if (poActiveTab && poActiveTab !== sid) stashPoActiveTab();
+      poActiveTab = sid;
+      showPoRightPanel('item');
+      const cached = poTabCache[sid];
+      if (cached && (cached.number != null || cached.vendorName != null || cached.lines)) {
+        fillPoForm(cached);
+      } else {
+        try {
+          const data = await api('/api/admin/purchase-orders/' + encodeURIComponent(sid));
+          if (data && data.order) {
+            poTabCache[sid] = data.order;
+            fillPoForm(data.order);
+          }
+        } catch (err) {
+          showError('po-error', err.message || 'Could not open this purchase order.');
+          return;
+        }
+      }
+      renderPoTabBar();
+      renderPoTable(purchaseOrders);
+      if (opts.push !== false) {
+        history.pushState({ tab: 'purchase-orders', poId: sid }, '', pathForPo(sid));
+      }
+    }
+
+    function openPoTab(id, opts) {
+      const sid = String(id);
+      if (poOpenTabs.indexOf(sid) === -1) {
+        if (poOpenTabs.length >= PO_TAB_MAX) {
+          const dropped = poOpenTabs.shift();
+          delete poTabCache[dropped];
+        }
+        poOpenTabs.push(sid);
+      }
+      return activatePoTab(sid, opts);
+    }
+
+    function closePoTab(id) {
+      const sid = String(id);
+      const idx = poOpenTabs.indexOf(sid);
+      if (idx === -1) return;
+      poOpenTabs.splice(idx, 1);
+      delete poTabCache[sid];
+      if (String(poActiveTab) === sid) {
+        if (poOpenTabs.length) activatePoTab(poOpenTabs[Math.min(idx, poOpenTabs.length - 1)]);
+        else {
+          showPoOverviewPane();
+          history.pushState({ tab: 'purchase-orders' }, '', '/company/inventory/purchase-orders');
+        }
+      } else {
+        renderPoTabBar();
+      }
+    }
+
     function fillPoNewForm() {
       fillPoForm({
         status: 'open',
@@ -8546,14 +8885,19 @@
       void openDocMasterTab('po', 'new', opts || {});
     }
 
-    async function openPurchaseOrder(id) {
+    async function openPurchaseOrder(id, opts) {
+      opts = opts || {};
+      if (!opts.inline && isPoSplitOn()) {
+        return openPoTab(id, opts);
+      }
       showPoMsg('');
       showError('po-error', '');
       try {
         const data = await api('/api/admin/purchase-orders/' + encodeURIComponent(id));
         if (!data.order) return;
         fillPoForm(data.order);
-        document.getElementById('po-list-wrap').classList.add('hidden');
+        const sec = document.getElementById('po-section');
+        if (sec) sec.classList.add('po-doc-open');
         document.getElementById('po-detail').classList.remove('hidden');
       } catch (err) {
         showError('po-error', err.message || 'Could not open this purchase order.');
@@ -8579,6 +8923,8 @@
         fillPoVendors(onForm && keepVendor !== '__new__' ? keepVendor : '');
         fillPoShipTo(onForm ? keepShip : '');
         renderPoTable(purchaseOrders);
+        if (typeof initPoSplitResize === 'function') initPoSplitResize();
+        if (isPoSplitOn()) renderPoTabBar();
         if (!document.getElementById('rs-detail').classList.contains('hidden')) {
           fillRsVendors(document.getElementById('rs-vendor').value);
           fillRsPoSelect(document.getElementById('rs-vendor').value, document.getElementById('rs-po').value);
@@ -8934,9 +9280,11 @@
       const tab = name === 'sales' ? 'quotes' : name;
       if (tab !== 'quotes' && tab !== 'orders' && tab !== 'invoices') return;
       const t = salesTypeFromTab(tab);
+      restoreSoSplitType(t);
       salesDocs = (salesAllDocs || []).filter(function (d) { return d.type === t; });
       if (typeof setSoTypeUi === 'function') setSoTypeUi(t);
       if (typeof renderSoTable === 'function') renderSoTable(salesDocs, t);
+      if (typeof renderSoTabBar === 'function' && isSalesSplitOn()) renderSoTabBar();
     }
 
     function salesTypeLabel(type) {
@@ -8971,8 +9319,14 @@
       document.body.classList.toggle('po-doc-float', !!on);
       if (on) {
         document.body.classList.remove('so-invoice-float');
+        document.body.classList.remove('po-split-lock');
         const detail = document.getElementById('po-detail');
         if (detail) detail.classList.remove('hidden');
+      } else {
+        const poSec = document.getElementById('po-section');
+        if (poSec && poSec.classList.contains('po-split-on') && !isMobileDash()) {
+          document.body.classList.add('po-split-lock');
+        }
       }
     }
 
@@ -9011,7 +9365,8 @@
     function parkDocMasterWindows(nextName) {
       const cur = parseDocMasterTab(dashActiveGroup);
       if (!cur) {
-        if (viewTabForMaster(nextName) !== 'invoices' && typeof stashSoActiveTab === 'function') stashSoActiveTab();
+        if (typeof persistSoSplitType === 'function') persistSoSplitType();
+        if (typeof stashPoActiveTab === 'function') stashPoActiveTab();
         return;
       }
       if (dashActiveGroup === nextName) return;
@@ -9038,7 +9393,7 @@
         } else if (doc.id === 'new') {
           fillPoNewForm();
         } else {
-          await openPurchaseOrder(doc.id);
+          await openPurchaseOrder(doc.id, { inline: true });
           applyPoWindowChrome(true);
         }
         return;
@@ -9151,12 +9506,12 @@
       }
       applyInvoiceWindowChrome(false);
       const sales = document.getElementById('sales-section');
-      if (sales && !sales.classList.contains('hidden') && isInvoiceSplitOn()) {
+      if (sales && !sales.classList.contains('hidden') && isSalesSplitOn()) {
         if (soActiveTab && soActiveTab !== 'overview' && soOpenTabs.indexOf(String(soActiveTab)) !== -1) {
           activateSoTab(soActiveTab, { push: true });
         } else {
           showSoList();
-          history.pushState({ tab: 'invoices' }, '', '/company/sales/invoices');
+          history.pushState({ tab: salesSubTab || 'invoices' }, '', pathForTab(salesSubTab || 'invoices'));
         }
         return;
       }
@@ -9233,8 +9588,8 @@
           ? (n + (cust ? ' · ' + cust : ''))
           : ('New ' + salesTypeLabel(type || 'quote').toLowerCase());
       }
-      if (type === 'invoice' && isInvoiceSplitOn() && !isInvoiceDocWindow()) {
-        setMasterTabCaption('invoices', '');
+      if (isSalesSplitOn() && !isInvoiceDocWindow()) {
+        setMasterTabCaption(soMasterPage(type), '');
         return;
       }
       const docTab = parseDocMasterTab(dashActiveGroup);
@@ -9674,6 +10029,14 @@
       if (kind) kind.textContent = salesTypeLabel(type);
       const caption = document.getElementById('so-caption-title');
       if (caption) caption.textContent = type === 'invoice' ? 'Create Invoices' : salesTypeLabel(type);
+      const lead = document.getElementById('so-overview-lead');
+      if (lead) {
+        lead.textContent = type === 'quote'
+          ? 'Select a quote to view or edit it here. New quote opens in its own tab.'
+          : type === 'order'
+            ? 'Select an order to view or edit it here. New order opens in its own tab.'
+            : 'Select an invoice to view or edit it here. New invoice opens in its own tab.';
+      }
     }
 
     function soDocStatus(d) {
@@ -9715,9 +10078,36 @@
       renderSoTable(salesDocs, 'invoice');
     }
 
-    function isInvoiceSplitOn() {
+    function isSalesSplitOn() {
       const sec = document.getElementById('sales-section');
       return !!(sec && sec.classList.contains('so-split-on') && !isMobileDash() && !isInvoiceDocWindow());
+    }
+    function isInvoiceSplitOn() {
+      return isSalesSplitOn();
+    }
+
+    function currentSoType() {
+      return (document.getElementById('so-type') || {}).value || salesTypeFromTab(salesSubTab) || 'quote';
+    }
+
+    function persistSoSplitType(type) {
+      type = type || currentSoType();
+      if (!soSplitByType[type]) soSplitByType[type] = { open: [], active: 'overview' };
+      stashSoActiveTab();
+      soSplitByType[type] = { open: soOpenTabs.slice(), active: soActiveTab };
+    }
+
+    function restoreSoSplitType(type) {
+      type = type || currentSoType();
+      const st = soSplitByType[type] || { open: [], active: 'overview' };
+      soOpenTabs = (st.open || []).slice();
+      soActiveTab = st.active || 'overview';
+    }
+
+    function syncSoSplitTypeState() {
+      const t = currentSoType();
+      if (!soSplitByType[t]) soSplitByType[t] = { open: [], active: 'overview' };
+      soSplitByType[t] = { open: soOpenTabs.slice(), active: soActiveTab };
     }
 
     function soDocById(id) {
@@ -9728,7 +10118,9 @@
 
     function soTabLabel(id) {
       const doc = soDocById(id);
-      return String((doc && doc.number) || '').trim() || 'Invoice';
+      if (doc && String(doc.number || '').trim()) return String(doc.number).trim();
+      const t = currentSoType();
+      return t === 'order' ? 'Order' : t === 'quote' ? 'Quote' : 'Invoice';
     }
 
     function stashSoActiveTab() {
@@ -9819,10 +10211,12 @@
     function showSoOverviewPane() {
       stashSoActiveTab();
       soActiveTab = 'overview';
+      syncSoSplitTypeState();
       showSoRightPanel('overview');
-      setMasterTabCaption('invoices', '');
+      const type = currentSoType();
+      setMasterTabCaption(soMasterPage(type), '');
       renderSoTabBar();
-      renderSoTable(salesDocs, 'invoice');
+      renderSoTable(salesDocs, type);
     }
 
     async function activateSoTab(id, opts) {
@@ -9846,14 +10240,16 @@
             fillSoForm(data.doc);
           }
         } catch (err) {
-          showError('so-error', err.message || 'Could not open this invoice.');
+          showError('so-error', err.message || 'Could not open this document.');
           return;
         }
       }
+      syncSoSplitTypeState();
       renderSoTabBar();
-      renderSoTable(salesDocs, 'invoice');
+      renderSoTable(salesDocs, currentSoType());
       if (opts.push !== false) {
-        history.pushState({ tab: 'invoices', invoiceId: sid }, '', pathForInvoice(sid));
+        const kind = salesKindFromType(currentSoType());
+        history.pushState({ tab: soMasterPage(kind), docId: sid }, '', pathForDocMaster(kind, sid));
       }
     }
 
@@ -9866,6 +10262,7 @@
         }
         soOpenTabs.push(sid);
       }
+      syncSoSplitTypeState();
       return activateSoTab(sid, opts);
     }
 
@@ -9879,18 +10276,19 @@
         if (soOpenTabs.length) activateSoTab(soOpenTabs[Math.min(idx, soOpenTabs.length - 1)]);
         else {
           showSoOverviewPane();
-          history.pushState({ tab: 'invoices' }, '', '/company/sales/invoices');
+          history.pushState({ tab: soMasterPage(currentSoType()) }, '', pathForTab(soMasterPage(currentSoType())));
         }
       } else {
         renderSoTabBar();
       }
+      syncSoSplitTypeState();
     }
 
     function showSoList() {
       document.getElementById('sales-section').classList.remove('so-doc-open');
       document.getElementById('so-detail').classList.add('hidden');
       const type = document.getElementById('so-type').value || salesTypeFromTab(salesSubTab);
-      if (isInvoiceSplitOn()) {
+      if (isSalesSplitOn()) {
         showSoOverviewPane();
         return;
       }
@@ -9956,7 +10354,7 @@
           notes: '<td class="py-3 px-4">' + esc(d.notes || '—') + '</td>'
         };
         return '<tr class="border-b border-slate-800 hover:bg-slate-900/80 cursor-pointer' +
-          (isInvoiceSplitOn() && String(soActiveTab) === String(d.id) ? ' is-active' : '') +
+          (isSalesSplitOn() && String(soActiveTab) === String(d.id) ? ' is-active' : '') +
           '" data-id="' + esc(d.id) + '">' +
           dashOrderedCells(table, cells, '<td class="py-3 px-4 text-right"><span class="text-sky-400 text-xs font-medium">Open →</span></td>') +
           '</tr>';
@@ -9999,7 +10397,8 @@
           : document.getElementById('so-customer').value;
         fillSoCustomers(keep === '__new__' ? '' : keep);
         renderSoTable(salesDocs, t);
-        if (t === 'invoice') initSoSplitResize();
+        initSoSplitResize();
+        if (isSalesSplitOn()) renderSoTabBar();
       } catch (err) {
         showError('so-error', err.message || 'Could not load sales documents.');
         document.getElementById('so-table').innerHTML = '<tr><td class="py-6 px-4 text-slate-500" colspan="6">Could not load documents.</td></tr>';
@@ -10091,9 +10490,9 @@
         const wrap = document.getElementById('sales-list-wrap');
         if (wrap) wrap.classList.remove('hidden');
         document.getElementById('so-detail').classList.remove('hidden');
-        if (isInvoiceDocWindow() || isInvoiceSplitOn()) {
+        if (isInvoiceDocWindow() || isSalesSplitOn()) {
           document.getElementById('sales-section').classList.remove('so-doc-open');
-          if (isInvoiceSplitOn() && !isInvoiceDocWindow()) showSoRightPanel('item');
+          if (isSalesSplitOn() && !isInvoiceDocWindow()) showSoRightPanel('item');
         } else {
           document.getElementById('sales-section').classList.add('so-doc-open');
         }
@@ -10124,7 +10523,7 @@
         document.getElementById('so-title').textContent = (doc.number || salesTypeLabel(doc.type)) + ' · ' + (doc.customerName || '');
         fillSoForm(doc);
         document.getElementById('so-detail').classList.remove('hidden');
-        if (isInvoiceSplitOn() && !isInvoiceDocWindow()) {
+        if (isSalesSplitOn() && !isInvoiceDocWindow()) {
           document.getElementById('sales-section').classList.remove('so-doc-open');
         } else {
           document.getElementById('sales-section').classList.add('so-doc-open');
@@ -10159,8 +10558,24 @@
         else closeVendorDetail(false);
       }
       if (name === 'purchase-orders') {
-        showPoList();
-        await loadPurchaseOrders();
+        const poId = poIdFromPath();
+        if (poId === 'new') {
+          await openDocMasterTab('po', 'new');
+        } else if (poId && masterTabIsOpen('po-' + poId)) {
+          activateMasterTab('po-' + poId);
+        } else if (poId && !isMobileDash()) {
+          applyPoWindowChrome(false);
+          await loadPurchaseOrders();
+          await openPoTab(poId, { push: false });
+        } else if (poId) {
+          applyPoWindowChrome(true);
+          await loadPurchaseOrders();
+          await openPurchaseOrder(poId, { inline: true });
+        } else {
+          applyPoWindowChrome(false);
+          showPoList();
+          await loadPurchaseOrders();
+        }
       }
       const routedDoc = parseDocMasterTab(name);
       if (routedDoc) {
@@ -10177,23 +10592,25 @@
         await loadCompanyCustomers();
       }
       if (name === 'quotes' || name === 'orders' || name === 'invoices' || name === 'sales') {
-        const invoiceId = name === 'invoices' ? invoiceIdFromPath() : '';
-        if (invoiceId === 'new') {
-          await openDocMasterTab('invoice', 'new', { customerId: invoiceCustomerFromQuery() });
-        } else if (invoiceId && masterTabIsOpen('invoice-' + invoiceId)) {
-          activateMasterTab('invoice-' + invoiceId);
-        } else if (invoiceId && !isMobileDash()) {
+        const t = salesTypeFromTab(name);
+        const kind = t;
+        const docId = salesDocIdFromPath(t);
+        if (docId === 'new') {
+          await openDocMasterTab(kind, 'new', { customerId: invoiceCustomerFromQuery() });
+        } else if (docId && masterTabIsOpen(kind + '-' + docId)) {
+          activateMasterTab(kind + '-' + docId);
+        } else if (docId && !isMobileDash()) {
           applyInvoiceWindowChrome(false);
-          await loadSalesDocs('invoice');
-          await openSoTab(invoiceId, { push: false });
-        } else if (invoiceId) {
+          await loadSalesDocs(t);
+          await openSoTab(docId, { push: false });
+        } else if (docId) {
           applyInvoiceWindowChrome(true);
-          await loadSalesDocs('invoice');
-          await openSalesDoc(invoiceId, { inline: true, type: 'invoice' });
+          await loadSalesDocs(t);
+          await openSalesDoc(docId, { inline: true, type: t });
         } else {
           applyInvoiceWindowChrome(false);
           showSoList();
-          await loadSalesDocs(salesTypeFromTab(name));
+          await loadSalesDocs(t);
         }
       }
       if (name === 'company') await loadCompanyAccounts();
@@ -10509,8 +10926,12 @@
         showInvOverview({ push: true });
         return;
       }
-      if (!document.getElementById('sales-section').classList.contains('hidden') && isInvoiceSplitOn() && soActiveTab !== 'overview') {
+      if (!document.getElementById('sales-section').classList.contains('hidden') && isSalesSplitOn() && soActiveTab !== 'overview') {
         showSoOverviewPane();
+        return;
+      }
+      if (!document.getElementById('po-section').classList.contains('hidden') && isPoSplitOn() && poActiveTab !== 'overview') {
+        showPoOverviewPane();
         return;
       }
       if (!document.getElementById('vendors-section').classList.contains('hidden') && vnDetailId) {
@@ -10546,7 +10967,7 @@
         activateMasterTab(kind + '-' + id);
         return;
       }
-      if (type === 'invoice' && isInvoiceSplitOn()) {
+      if (isSalesSplitOn()) {
         openSoTab(id);
         return;
       }
@@ -10565,7 +10986,7 @@
       const tabId = tab.getAttribute('data-so-tab-id');
       if (tabId === 'overview') {
         showSoOverviewPane();
-        history.pushState({ tab: 'invoices' }, '', '/company/sales/invoices');
+        history.pushState({ tab: soMasterPage(currentSoType()) }, '', pathForTab(soMasterPage(currentSoType())));
         return;
       }
       activateSoTab(tabId, { push: true });
@@ -10694,7 +11115,7 @@
         closeInvoiceWindow();
         return;
       }
-      if (isInvoiceSplitOn() && soActiveTab && soActiveTab !== 'overview') {
+      if (isSalesSplitOn() && soActiveTab && soActiveTab !== 'overview') {
         closeSoTab(soActiveTab);
         return;
       }
@@ -10748,7 +11169,7 @@
         if (data.doc && data.doc.id) {
           soTabCache[String(data.doc.id)] = data.doc;
           promoteDocMasterAfterSave(data.doc.type || 'quote', data.doc);
-          if (data.doc.type === 'invoice' && isInvoiceSplitOn() && !isInvoiceDocWindow()) {
+          if (isSalesSplitOn() && !isInvoiceDocWindow()) {
             const oldId = id ? String(id) : '';
             const newId = String(data.doc.id);
             if (oldId && oldId !== newId) {
@@ -10759,13 +11180,14 @@
               soOpenTabs.push(newId);
             }
             soActiveTab = newId;
+            syncSoSplitTypeState();
             renderSoTabBar();
           }
         }
         await loadSalesDocs(data.doc.type);
         if (after === 'close') {
           if (isInvoiceDocWindow()) closeInvoiceWindow();
-          else if (data.doc.type === 'invoice' && isInvoiceSplitOn()) closeSoTab(data.doc.id);
+          else if (isSalesSplitOn()) closeSoTab(data.doc.id);
           else showSoList();
         }
         if (after === 'new') {
@@ -10807,8 +11229,7 @@
           return;
         }
         salesSubTab = 'orders';
-        openCompanyTab('orders', true);
-        await openSalesDoc(data.doc.id, { inline: true, type: 'order' });
+        openCompanyTab('orders', true, { restorePath: pathForDocMaster('order', data.doc.id) });
         showSoMsg('Created ' + (data.doc.number || salesTypeLabel(type)) + '.', true);
       } catch (err) {
         showSoMsg(err.message || 'Could not convert document.');
@@ -11931,7 +12352,7 @@
     document.getElementById('vn-detail-po-body').addEventListener('click', function (e) {
       const row = e.target.closest('tr[data-po-id]');
       if (!row) return;
-      openPurchaseOrder(row.getAttribute('data-po-id'));
+      openCompanyTab('purchase-orders', true, { restorePath: pathForPo(row.getAttribute('data-po-id')) });
     });
     document.querySelectorAll('#vn-detail-pane .cc-detail-tab').forEach(function (btn) {
       btn.addEventListener('click', function () {
@@ -12125,6 +12546,10 @@
         closeMasterTab(dashActiveGroup);
         return;
       }
+      if (isPoSplitOn() && poActiveTab && poActiveTab !== 'overview') {
+        closePoTab(poActiveTab);
+        return;
+      }
       showPoList();
       loadPurchaseOrders();
     });
@@ -12132,6 +12557,10 @@
       const poTab = parseDocMasterTab(dashActiveGroup);
       if (poTab && poTab.kind === 'po') {
         closeMasterTab(dashActiveGroup);
+        return;
+      }
+      if (isPoSplitOn() && poActiveTab && poActiveTab !== 'overview') {
+        closePoTab(poActiveTab);
         return;
       }
       showPoList();
@@ -12145,8 +12574,27 @@
       if (row) {
         const id = row.getAttribute('data-id');
         if (masterTabIsOpen('po-' + id)) activateMasterTab('po-' + id);
+        else if (isPoSplitOn()) openPoTab(id);
         else openPurchaseOrder(id);
       }
+    });
+    document.getElementById('po-tab-strip').addEventListener('click', function (e) {
+      const closeBtn = e.target.closest('[data-po-tab-close]');
+      if (closeBtn) {
+        e.preventDefault();
+        e.stopPropagation();
+        closePoTab(closeBtn.getAttribute('data-po-tab-close'));
+        return;
+      }
+      const tab = e.target.closest('.inv-browser-tab[data-po-tab-id]');
+      if (!tab) return;
+      const tabId = tab.getAttribute('data-po-tab-id');
+      if (tabId === 'overview') {
+        showPoOverviewPane();
+        history.pushState({ tab: 'purchase-orders' }, '', '/company/inventory/purchase-orders');
+        return;
+      }
+      activatePoTab(tabId, { push: true });
     });
     document.getElementById('po-cc-toggle').addEventListener('click', function () {
       document.getElementById('po-cc-field').classList.toggle('hidden');
@@ -12218,7 +12666,23 @@
           });
         fillPoForm(data.order);
         showPoMsg('Saved.', true);
-        if (data.order) promoteDocMasterAfterSave('po', data.order);
+        if (data.order) {
+          poTabCache[String(data.order.id)] = data.order;
+          promoteDocMasterAfterSave('po', data.order);
+          if (isPoSplitOn() && !isPoDocWindow()) {
+            const oldId = id ? String(id) : '';
+            const newId = String(data.order.id);
+            if (oldId && oldId !== newId) {
+              const idx = poOpenTabs.indexOf(oldId);
+              if (idx !== -1) poOpenTabs[idx] = newId;
+              delete poTabCache[oldId];
+            } else if (poOpenTabs.indexOf(newId) === -1) {
+              poOpenTabs.push(newId);
+            }
+            poActiveTab = newId;
+            renderPoTabBar();
+          }
+        }
         await loadPurchaseOrders();
       } catch (err) {
         showPoMsg(err.message || 'Could not save purchase order.');
@@ -12231,6 +12695,7 @@
         await api('/api/admin/purchase-orders/' + encodeURIComponent(id), { method: 'DELETE' });
         const poTab = parseDocMasterTab(dashActiveGroup);
         if (poTab && poTab.kind === 'po') closeMasterTab(dashActiveGroup);
+        else if (poOpenTabs.indexOf(String(id)) !== -1) closePoTab(id);
         else showPoList();
         await loadPurchaseOrders();
       } catch (err) {
@@ -12315,11 +12780,16 @@
         const floating = document.body.classList.contains('so-invoice-float');
         const onInventory = !!(inv && !inv.classList.contains('hidden'));
         const onCustomers = !!(cc && !cc.classList.contains('hidden'));
-        const onInvoices = !!(sales && !sales.classList.contains('hidden') && salesSubTab === 'invoices');
+        const onSales = !!(sales && !sales.classList.contains('hidden') && (salesSubTab === 'quotes' || salesSubTab === 'orders' || salesSubTab === 'invoices' || salesSubTab === 'sales'));
+        const po = document.getElementById('po-section');
+        const onPo = !!(po && !po.classList.contains('hidden'));
+        const poFloating = document.body.classList.contains('po-doc-float');
         document.body.classList.toggle('inv-layout-lock', onInventory && desktop);
         document.body.classList.toggle('dash-split-lock', onCustomers && desktop);
-        if (sales) sales.classList.toggle('so-split-on', onInvoices && desktop);
-        document.body.classList.toggle('so-split-lock', onInvoices && desktop && !floating);
+        if (sales) sales.classList.toggle('so-split-on', onSales && desktop && !floating);
+        document.body.classList.toggle('so-split-lock', onSales && desktop && !floating);
+        if (po) po.classList.toggle('po-split-on', onPo && desktop && !poFloating);
+        document.body.classList.toggle('po-split-lock', onPo && desktop && !poFloating);
       }
       window.addEventListener('resize', function () {
         const mobile = isMobileDash();
