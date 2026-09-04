@@ -3079,6 +3079,44 @@ body.so-invoice-float .so-doc-back {
   }
 }
 
+body.po-doc-float .dash-topbar { z-index: 50; }
+body.po-doc-float #po-section {
+  display: flex !important;
+  flex-direction: column;
+  position: fixed;
+  z-index: 45;
+  top: calc(var(--dash-chrome) + var(--dash-top));
+  left: var(--dash-side);
+  right: var(--dash-chrome);
+  bottom: var(--dash-tabbar-h, 0px);
+  overflow: hidden;
+  margin: 0;
+  padding: 0.75rem 0.85rem 0.85rem;
+  background: var(--dash-bg);
+}
+body.po-doc-float #po-list-wrap,
+body.po-doc-float #po-overview,
+body.po-doc-float #po-section .cc-list-toolbar,
+body.po-doc-float #po-error,
+body.po-doc-float #po-back {
+  display: none !important;
+}
+body.po-doc-float #po-detail {
+  display: flex !important;
+  flex-direction: column;
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow: auto;
+}
+@media (max-width: 900px) {
+  body.po-doc-float #po-section {
+    left: 0;
+    right: 0;
+    top: var(--dash-top);
+    bottom: var(--dash-tabbar-h);
+  }
+}
+
 .so-doc-back {
   background: none;
   border: 0;

@@ -1371,7 +1371,7 @@
               </div>
               <div id="so-overview-panel" class="inv-right-panel">
                 <div class="inv-overview-summary">
-                  <p class="inv-overview-lead">Select an invoice to view or edit it here. New invoice still opens as a full page.</p>
+                  <p class="inv-overview-lead">Select an invoice to view or edit it here. New invoice opens in its own tab.</p>
                 </div>
               </div>
         <div id="so-detail" class="hidden so-doc">
@@ -1844,6 +1844,14 @@
       </div>
     </div>
   </div>
+  <div id="dash-tab-max" class="cc-leave" hidden>
+    <div class="cc-leave-card" role="dialog" aria-modal="true" aria-labelledby="dash-tab-max-title">
+      <p id="dash-tab-max-title" class="cc-leave-title">You've reached the maximum of 15 tabs. Close a tab before opening a new one.</p>
+      <div class="cc-leave-actions">
+        <button type="button" id="dash-tab-max-ok" class="cc-leave-yes">OK</button>
+      </div>
+    </div>
+  </div>
   <div id="inv-drawer-scrim" class="cc-drawer-scrim"></div>
   <aside id="inv-drawer" class="cc-drawer" aria-hidden="true">
     <div class="cc-drawer-head">
@@ -2250,6 +2258,43 @@
     function companyPath() {
       return String(location.pathname || '/company').replace(/\/+$/, '') || '/company';
     }
+    function parseDocMasterTab(name) {
+      const m = String(name || '').match(/^(quote|order|invoice|po)-(new|\d+)$/);
+      if (!m) return null;
+      return { kind: m[1], id: m[2] };
+    }
+    function docMasterListTab(kind) {
+      if (kind === 'po') return 'purchase-orders';
+      if (kind === 'invoice') return 'invoices';
+      if (kind === 'order') return 'orders';
+      return 'quotes';
+    }
+    function docMasterTabName(kind, id) {
+      return kind + '-' + (id || 'new');
+    }
+    function pathForDocMaster(kind, id) {
+      const key = id || 'new';
+      if (kind === 'po') return '/company/inventory/purchase-orders/' + key;
+      if (kind === 'invoice') return '/company/sales/invoices/' + key;
+      if (kind === 'order') return '/company/sales/orders/' + key;
+      return '/company/sales/quotes/' + key;
+    }
+    function docMasterFromPath() {
+      const p = companyPath();
+      let m = p.match(/^\/company\/sales\/(quotes|orders|invoices)\/(\d+|new)$/);
+      if (m) {
+        const kind = m[1] === 'quotes' ? 'quote' : m[1] === 'orders' ? 'order' : 'invoice';
+        return { kind: kind, id: m[2], tab: kind + '-' + m[2] };
+      }
+      m = p.match(/^\/company\/inventory\/purchase-orders\/(\d+|new)$/);
+      if (m) return { kind: 'po', id: m[1], tab: 'po-' + m[1] };
+      return null;
+    }
+    function viewTabForMaster(name) {
+      const doc = parseDocMasterTab(name);
+      if (!doc) return name;
+      return docMasterListTab(doc.kind);
+    }
     function tabFromPath() {
       const hash = String(location.hash || '').replace(/^#\/?/, '');
       if (hash === 'inventory/vendors' || hash === 'vendors') return 'vendors';
@@ -2271,7 +2316,12 @@
       if (p === '/company/customers') return 'customers';
       if (/^\/company\/customers\/\d+$/.test(p)) return 'customers';
       if (p === '/company/sales/orders') return 'orders';
-      if (/^\/company\/sales\/invoices\/(\d+|new)$/.test(p)) return 'invoices';
+      const docPath = docMasterFromPath();
+      if (docPath) {
+        if (docPath.id === 'new') return docPath.tab;
+        if (typeof dashOpenTabs !== 'undefined' && dashOpenTabs.indexOf(docPath.tab) !== -1) return docPath.tab;
+        return docMasterListTab(docPath.kind);
+      }
       if (p === '/company/sales/invoices') return 'invoices';
       if (p === '/company/sales' || p === '/company/sales/quotes') return 'quotes';
       if (p === '/company/inventory/vendors') return 'vendors';
@@ -2297,6 +2347,8 @@
       if (name === 'orders') return '/company/sales/orders';
       if (name === 'invoices') return '/company/sales/invoices';
       if (name === 'quotes' || name === 'sales') return '/company/sales/quotes';
+      const doc = parseDocMasterTab(name);
+      if (doc) return pathForDocMaster(doc.kind, doc.id);
       if (name === 'accounts') return '/company/website/accounts';
       if (name === 'company') return '/company/settings/company';
       if (name === 'staff' || name === 'roles') return '/company/settings';
@@ -2357,7 +2409,23 @@
         if (p === '/company/customers') return 'customers';
         if (/^\/company\/customers\/\d+$/.test(p)) return 'customers';
         if (p === '/company/sales/orders') return 'orders';
-        if (/^\/company\/sales\/invoices\/(\d+|new)$/.test(p)) return 'invoices';
+        const docHref = (function () {
+          const sm = p.match(/^\/company\/sales\/(quotes|orders|invoices)\/(\d+|new)$/);
+          if (sm) {
+            const kind = sm[1] === 'quotes' ? 'quote' : sm[1] === 'orders' ? 'order' : 'invoice';
+            const tab = kind + '-' + sm[2];
+            if (sm[2] === 'new' || (typeof dashOpenTabs !== 'undefined' && dashOpenTabs.indexOf(tab) !== -1)) return tab;
+            return sm[1];
+          }
+          const pm = p.match(/^\/company\/inventory\/purchase-orders\/(\d+|new)$/);
+          if (pm) {
+            const tab = 'po-' + pm[1];
+            if (pm[1] === 'new' || (typeof dashOpenTabs !== 'undefined' && dashOpenTabs.indexOf(tab) !== -1)) return tab;
+            return 'purchase-orders';
+          }
+          return '';
+        })();
+        if (docHref) return docHref;
         if (p === '/company/sales/invoices') return 'invoices';
         if (p === '/company/sales' || p === '/company/sales/quotes') return 'quotes';
         if (p === '/company/inventory/vendors') return 'vendors';
@@ -2377,9 +2445,14 @@
     function openCompanyTab(name, push, opts) {
       if (!name || !currentAdminUser || !canUse(name)) return;
       opts = opts || {};
+      name = canonicalMasterTab(name);
       const go = function () {
-        if (typeof isInvoiceDocWindow === 'function' && isInvoiceDocWindow() && name !== 'invoices') {
-          closeInvoiceWindow();
+        if (typeof parkDocMasterWindows === 'function') parkDocMasterWindows(name);
+        if (name !== 'dashboard' && typeof masterTabIsOpen === 'function' && !masterTabIsOpen(name)) {
+          if (typeof canAddMasterTabs === 'function' && !canAddMasterTabs(1)) {
+            showMasterTabMaxDialog();
+            return;
+          }
         }
         const dest = opts.restorePath || pathForTab(name);
         if (push && (companyPath() !== dest || location.hash)) {
@@ -2388,8 +2461,10 @@
         rememberMasterTab(name);
         showAdminTab(name);
         renderDashTabBar();
-        const salesTab = name === 'quotes' || name === 'orders' || name === 'invoices' || name === 'sales';
-        if (opts.reload || masterRouteNeedsLoad(name) || salesTab) openRoutedSection(name);
+        const view = viewTabForMaster(name);
+        const salesTab = view === 'quotes' || view === 'orders' || view === 'invoices' || view === 'sales' || !!parseDocMasterTab(name);
+        const poTab = view === 'purchase-orders' || (parseDocMasterTab(name) || {}).kind === 'po';
+        if (opts.reload || masterRouteNeedsLoad(name) || salesTab || poTab) openRoutedSection(name);
       };
       if (typeof ccDrawerNeedsLeave === 'function' && ccDrawerNeedsLeave()) {
         ccAskLeave(go);
@@ -2439,6 +2514,10 @@
       sales: 'Sales Quote',
       orders: 'Sales Order',
       invoices: 'Invoice',
+      'quote-new': 'New quote',
+      'order-new': 'New order',
+      'invoice-new': 'New invoice',
+      'po-new': 'New PO',
       settings: 'Settings',
       company: 'Company',
       staff: 'Manage users',
@@ -2465,6 +2544,10 @@
     MASTER_TAB_ICON.staff = MASTER_TAB_ICON.settings;
     MASTER_TAB_ICON.roles = MASTER_TAB_ICON.settings;
     MASTER_TAB_ICON.sales = MASTER_TAB_ICON.quotes;
+    MASTER_TAB_ICON['quote-new'] = MASTER_TAB_ICON.quotes;
+    MASTER_TAB_ICON['order-new'] = MASTER_TAB_ICON.orders;
+    MASTER_TAB_ICON['invoice-new'] = MASTER_TAB_ICON.invoices;
+    MASTER_TAB_ICON['po-new'] = MASTER_TAB_ICON['purchase-orders'];
     let dashOpenTabs = [];
     let dashActiveGroup = 'dashboard';
     let dashTabPath = {
@@ -2484,8 +2567,12 @@
     };
     let dashLoadedInner = {};
     let dashTabCaption = {};
+    let soMasterCache = {};
+    let poMasterCache = {};
 
     function masterGroupFor(name) {
+      const doc = parseDocMasterTab(name);
+      if (doc) return doc.kind === 'po' ? 'vendor' : 'customer';
       if (name === 'dashboard') return 'dashboard';
       if (name === 'products' || name === 'accounts' || name === 'website') return 'website';
       if (name === 'inventory' || name === 'receipt-shipments') return 'inventory';
@@ -2520,20 +2607,103 @@
       return name;
     }
 
-    function rememberMasterTab(name) {
+    function masterTabIsOpen(name) {
       name = canonicalMasterTab(name);
-      if (!name) return;
-      if (name !== 'dashboard' && !masterGroupFor(name)) return;
-      dashActiveGroup = name;
-      dashTabPath[name] = companyPath() + (location.search || '');
-      if (name === 'dashboard') return;
-      if (dashOpenTabs.indexOf(name) !== -1) return;
-      const pinned = canUse('dashboard') ? 1 : 0;
-      while (dashOpenTabs.length + pinned >= MASTER_TAB_MAX) {
-        const drop = dashOpenTabs.shift();
-        if (drop) delete dashLoadedInner[drop];
+      if (!name || name === 'dashboard') return true;
+      return dashOpenTabs.indexOf(name) !== -1;
+    }
+
+    function masterTabPinnedCount() {
+      return canUse('dashboard') ? 1 : 0;
+    }
+
+    function canAddMasterTabs(n) {
+      const need = Math.max(0, Number(n) || 0);
+      if (!need) return true;
+      return dashOpenTabs.length + masterTabPinnedCount() + need <= MASTER_TAB_MAX;
+    }
+
+    function showMasterTabMaxDialog() {
+      const box = document.getElementById('dash-tab-max');
+      if (!box) {
+        window.alert('You\'ve reached the maximum of 15 tabs. Close a tab before opening a new one.');
+        return;
+      }
+      box.hidden = false;
+      box.classList.add('is-open');
+      const ok = document.getElementById('dash-tab-max-ok');
+      if (ok) ok.focus();
+    }
+
+    function hideMasterTabMaxDialog() {
+      const box = document.getElementById('dash-tab-max');
+      if (!box) return;
+      box.classList.remove('is-open');
+      box.hidden = true;
+    }
+
+    function ensureMasterTab(name, path) {
+      name = canonicalMasterTab(name);
+      if (!name || name === 'dashboard') return true;
+      if (dashOpenTabs.indexOf(name) !== -1) return true;
+      if (!masterGroupFor(name)) return false;
+      if (!canAddMasterTabs(1)) {
+        showMasterTabMaxDialog();
+        return false;
       }
       dashOpenTabs.push(name);
+      dashTabPath[name] = path || pathForTab(name);
+      return true;
+    }
+
+    function renameMasterTab(from, to, caption) {
+      from = canonicalMasterTab(from);
+      to = canonicalMasterTab(to);
+      if (!from || !to || from === to) {
+        if (to && caption) setMasterTabCaption(to, caption);
+        return to || from;
+      }
+      const idx = dashOpenTabs.indexOf(from);
+      if (idx !== -1) dashOpenTabs[idx] = to;
+      else if (dashOpenTabs.indexOf(to) === -1) dashOpenTabs.push(to);
+      dashTabPath[to] = dashTabPath[from] || pathForTab(to);
+      delete dashTabPath[from];
+      if (dashLoadedInner[from]) {
+        dashLoadedInner[to] = dashLoadedInner[from];
+        delete dashLoadedInner[from];
+      }
+      if (dashTabCaption[from]) {
+        dashTabCaption[to] = dashTabCaption[from];
+        delete dashTabCaption[from];
+      }
+      if (soMasterCache[from]) {
+        soMasterCache[to] = soMasterCache[from];
+        delete soMasterCache[from];
+      }
+      if (poMasterCache[from]) {
+        poMasterCache[to] = poMasterCache[from];
+        delete poMasterCache[from];
+      }
+      if (dashActiveGroup === from) dashActiveGroup = to;
+      if (caption) dashTabCaption[to] = String(caption).trim();
+      renderDashTabBar();
+      return to;
+    }
+
+    function rememberMasterTab(name) {
+      name = canonicalMasterTab(name);
+      if (!name) return false;
+      if (name !== 'dashboard' && !masterGroupFor(name)) return false;
+      dashActiveGroup = name;
+      dashTabPath[name] = companyPath() + (location.search || '');
+      if (name === 'dashboard') return true;
+      if (dashOpenTabs.indexOf(name) !== -1) return true;
+      if (!canAddMasterTabs(1)) {
+        showMasterTabMaxDialog();
+        return false;
+      }
+      dashOpenTabs.push(name);
+      return true;
     }
 
     function masterRouteNeedsLoad(name) {
@@ -2604,8 +2774,19 @@
       if (prev !== (dashTabCaption[name] || '')) renderDashTabBar();
     }
 
+    function masterTabIcon(name) {
+      const doc = parseDocMasterTab(name);
+      if (doc) {
+        if (doc.kind === 'po') return MASTER_TAB_ICON['purchase-orders'];
+        if (doc.kind === 'invoice') return MASTER_TAB_ICON.invoices;
+        if (doc.kind === 'order') return MASTER_TAB_ICON.orders;
+        return MASTER_TAB_ICON.quotes;
+      }
+      return MASTER_TAB_ICON[name] || MASTER_TAB_ICON[masterGroupFor(name)] || '';
+    }
+
     function masterTabButton(name, active, closable) {
-      const icon = MASTER_TAB_ICON[name] || MASTER_TAB_ICON[masterGroupFor(name)] || '';
+      const icon = masterTabIcon(name);
       return '<button type="button" class="inv-browser-tab' + (active ? ' is-active' : '') +
         '" data-dash-tab="' + esc(name) + '" role="tab" aria-selected="' + (active ? 'true' : 'false') + '">' +
         icon +
@@ -2640,11 +2821,19 @@
       if (!name || name === 'dashboard') return;
       const idx = dashOpenTabs.indexOf(name);
       if (idx < 0) return;
+      const doc = parseDocMasterTab(name);
+      const wasActive = dashActiveGroup === name;
       dashOpenTabs.splice(idx, 1);
       delete dashLoadedInner[name];
       delete dashTabCaption[name];
+      delete soMasterCache[name];
+      delete poMasterCache[name];
       dashTabPath[name] = pathForTab(name);
-      if (dashActiveGroup === name) {
+      if (doc && wasActive) {
+        if (doc.kind === 'po') applyPoWindowChrome(false);
+        else applyInvoiceWindowChrome(false);
+      }
+      if (wasActive) {
         const nextGroup = dashOpenTabs[Math.min(idx, dashOpenTabs.length - 1)]
           || (canUse('dashboard') ? 'dashboard' : dashOpenTabs[0]);
         if (!nextGroup) {
@@ -2715,6 +2904,8 @@
     function canUse(section) {
       if (!currentAdminUser) return false;
       if (adminPerms().settings) return true;
+      const doc = parseDocMasterTab(section);
+      if (doc) section = docMasterListTab(doc.kind);
       const key = SECTION_MENU_KEY[section] || section;
       const level = (adminPerms().menu || {})[key];
       return level === 'view' || level === 'edit';
@@ -2800,6 +2991,11 @@
       websiteSubTab = next === 'accounts' ? 'accounts' : 'products';
       settingsSubTab = next === 'company' ? 'company' : 'staff';
       if (next === 'quotes' || next === 'orders' || next === 'invoices') salesSubTab = next;
+      const bootDoc = parseDocMasterTab(next);
+      if (bootDoc) {
+        salesSubTab = docMasterListTab(bootDoc.kind) === 'purchase-orders' ? salesSubTab : docMasterListTab(bootDoc.kind);
+        ensureMasterTab(docMasterListTab(bootDoc.kind), pathForTab(docMasterListTab(bootDoc.kind)));
+      }
       rememberMasterTab(next || 'dashboard');
       showAdminTab(next || 'dashboard');
       renderDashTabBar();
@@ -3382,39 +3578,42 @@
       if (typeof closeStaffDrawer === 'function') closeStaffDrawer(true);
       if (typeof closeRoleDrawer === 'function') closeRoleDrawer(true);
       if (name !== 'vendors' && typeof closeVendorDetail === 'function') closeVendorDetail(false);
-      const onWebsite = name === 'products' || name === 'accounts';
-      const onSettings = name === 'staff' || name === 'roles' || name === 'company';
-      const onCustomerNav = name === 'quotes' || name === 'orders' || name === 'invoices' || name === 'sales' || name === 'customers';
-      const onSales = name === 'quotes' || name === 'orders' || name === 'invoices' || name === 'sales';
-      const onInventory = name === 'inventory' || name === 'receipt-shipments';
-      const onVendorNav = name === 'vendors' || name === 'purchase-orders';
-      if (onWebsite) websiteSubTab = name;
-      if (onSettings) settingsSubTab = name;
-      if (onSales && name !== 'sales') salesSubTab = name;
-      if (onSales && typeof refreshSalesListView === 'function') refreshSalesListView(name);
-      document.getElementById('dashboard-section').classList.toggle('hidden', name !== 'dashboard');
-      document.getElementById('tab-dashboard').className = navLinkClass(name === 'dashboard', !canUse('dashboard'));
+      const doc = parseDocMasterTab(name);
+      const view = viewTabForMaster(name);
+      const onWebsite = view === 'products' || view === 'accounts';
+      const onSettings = view === 'staff' || view === 'roles' || view === 'company';
+      const onCustomerNav = view === 'quotes' || view === 'orders' || view === 'invoices' || view === 'sales' || view === 'customers';
+      const onSales = view === 'quotes' || view === 'orders' || view === 'invoices' || view === 'sales';
+      const onInventory = view === 'inventory' || view === 'receipt-shipments';
+      const onVendorNav = view === 'vendors' || view === 'purchase-orders';
+      if (onWebsite) websiteSubTab = view;
+      if (onSettings) settingsSubTab = view;
+      if (onSales && view !== 'sales') salesSubTab = view;
+      if (onSales && !doc && typeof refreshSalesListView === 'function') refreshSalesListView(view);
+      if (typeof syncDocWindowChrome === 'function') syncDocWindowChrome(name);
+      document.getElementById('dashboard-section').classList.toggle('hidden', view !== 'dashboard');
+      document.getElementById('tab-dashboard').className = navLinkClass(view === 'dashboard', !canUse('dashboard'));
       document.getElementById('website-pane').classList.toggle('hidden', !onWebsite);
       document.getElementById('settings-pane').classList.toggle('hidden', !onSettings);
-      document.getElementById('products-section').classList.toggle('hidden', name !== 'products');
-      document.getElementById('inventory-section').classList.toggle('hidden', name !== 'inventory');
-      document.body.classList.toggle('inv-layout-lock', name === 'inventory' && !isMobileDash());
-      document.body.classList.toggle('dash-split-lock', name === 'customers' && !isMobileDash());
-      document.body.classList.toggle('so-split-lock', name === 'invoices' && !isMobileDash() && !document.body.classList.contains('so-invoice-float'));
+      document.getElementById('products-section').classList.toggle('hidden', view !== 'products');
+      document.getElementById('inventory-section').classList.toggle('hidden', view !== 'inventory');
+      document.body.classList.toggle('inv-layout-lock', view === 'inventory' && !isMobileDash());
+      document.body.classList.toggle('dash-split-lock', view === 'customers' && !isMobileDash());
+      document.body.classList.toggle('so-split-lock', view === 'invoices' && !doc && !isMobileDash() && !document.body.classList.contains('so-invoice-float'));
       const salesSec = document.getElementById('sales-section');
-      if (salesSec) salesSec.classList.toggle('so-split-on', name === 'invoices' && !isMobileDash());
-      document.getElementById('vendors-section').classList.toggle('hidden', name !== 'vendors');
-      document.getElementById('po-section').classList.toggle('hidden', name !== 'purchase-orders');
-      document.getElementById('rs-section').classList.toggle('hidden', name !== 'receipt-shipments');
-      document.getElementById('customers-section').classList.toggle('hidden', name !== 'customers');
+      if (salesSec) salesSec.classList.toggle('so-split-on', view === 'invoices' && !doc && !isMobileDash());
+      document.getElementById('vendors-section').classList.toggle('hidden', view !== 'vendors');
+      document.getElementById('po-section').classList.toggle('hidden', view !== 'purchase-orders');
+      document.getElementById('rs-section').classList.toggle('hidden', view !== 'receipt-shipments');
+      document.getElementById('customers-section').classList.toggle('hidden', view !== 'customers');
       document.getElementById('sales-section').classList.toggle('hidden', !onSales);
       const soNavKpis = document.getElementById('so-overview');
       const soInvKpis = document.getElementById('so-inv-overview');
-      if (soNavKpis) soNavKpis.classList.toggle('hidden', name === 'invoices');
-      if (soInvKpis) soInvKpis.classList.toggle('hidden', name !== 'invoices');
-      document.getElementById('accounts-section').classList.toggle('hidden', name !== 'accounts');
-      document.getElementById('company-section').classList.toggle('hidden', name !== 'company');
-      document.getElementById('staff-section').classList.toggle('hidden', name !== 'staff' && name !== 'roles');
+      if (soNavKpis) soNavKpis.classList.toggle('hidden', view === 'invoices');
+      if (soInvKpis) soInvKpis.classList.toggle('hidden', view !== 'invoices');
+      document.getElementById('accounts-section').classList.toggle('hidden', view !== 'accounts');
+      document.getElementById('company-section').classList.toggle('hidden', view !== 'company');
+      document.getElementById('staff-section').classList.toggle('hidden', view !== 'staff' && view !== 'roles');
       document.getElementById('website-subnav').classList.toggle('hidden', !onWebsite);
       document.getElementById('settings-subnav').classList.toggle('hidden', !onSettings);
       document.getElementById('customer-subnav').classList.toggle('hidden', !onCustomerNav);
@@ -3423,21 +3622,21 @@
       document.getElementById('tab-website').className = navLinkClass(onWebsite, !canUse('website'));
       document.getElementById('tab-inventory').className = navLinkClass(onInventory, !canUseInventoryNav());
       document.getElementById('tab-vendor').className = navLinkClass(onVendorNav, !canUseVendorNav());
-      document.getElementById('tab-customers').className = navLinkClass(name === 'customers', !canUse('customers'), 'sub');
+      document.getElementById('tab-customers').className = navLinkClass(view === 'customers', !canUse('customers'), 'sub');
       document.getElementById('tab-customer').className = navLinkClass(onCustomerNav, !canUseCustomerNav());
-      document.getElementById('tab-inv-items').className = navLinkClass(name === 'inventory', false, 'sub');
-      document.getElementById('tab-vendors').className = navLinkClass(name === 'vendors', false, 'sub');
-      document.getElementById('tab-purchase-orders').className = navLinkClass(name === 'purchase-orders', false, 'sub');
-      document.getElementById('tab-receipt-shipments').className = navLinkClass(name === 'receipt-shipments', false, 'sub');
-      document.getElementById('tab-products').className = navLinkClass(name === 'products', false, 'sub');
-      document.getElementById('tab-accounts').className = navLinkClass(name === 'accounts', !canUse('accounts'), 'sub');
-      document.getElementById('tab-quotes').className = navLinkClass(name === 'quotes', !canUse('quotes'), 'sub');
-      document.getElementById('tab-orders').className = navLinkClass(name === 'orders', !canUse('orders'), 'sub');
-      document.getElementById('tab-invoices').className = navLinkClass(name === 'invoices', !canUse('invoices'), 'sub');
-      document.getElementById('tab-company').className = navLinkClass(name === 'company', !canUse('company'), 'sub');
-      document.getElementById('tab-staff').className = navLinkClass(name === 'staff' || name === 'roles', !canUse('staff'), 'sub');
+      document.getElementById('tab-inv-items').className = navLinkClass(view === 'inventory', false, 'sub');
+      document.getElementById('tab-vendors').className = navLinkClass(view === 'vendors', false, 'sub');
+      document.getElementById('tab-purchase-orders').className = navLinkClass(view === 'purchase-orders', false, 'sub');
+      document.getElementById('tab-receipt-shipments').className = navLinkClass(view === 'receipt-shipments', false, 'sub');
+      document.getElementById('tab-products').className = navLinkClass(view === 'products', false, 'sub');
+      document.getElementById('tab-accounts').className = navLinkClass(view === 'accounts', !canUse('accounts'), 'sub');
+      document.getElementById('tab-quotes').className = navLinkClass(view === 'quotes', !canUse('quotes'), 'sub');
+      document.getElementById('tab-orders').className = navLinkClass(view === 'orders', !canUse('orders'), 'sub');
+      document.getElementById('tab-invoices').className = navLinkClass(view === 'invoices', !canUse('invoices'), 'sub');
+      document.getElementById('tab-company').className = navLinkClass(view === 'company', !canUse('company'), 'sub');
+      document.getElementById('tab-staff').className = navLinkClass(view === 'staff' || view === 'roles', !canUse('staff'), 'sub');
       document.getElementById('header-settings').className = navLinkClass(onSettings, !canUse('settings'));
-      syncTabbarActive(name);
+      syncTabbarActive(view);
       closeTabbarSub();
       document.body.classList.remove('dash-open');
       document.body.classList.remove('dash-tabbar-hidden');
@@ -3457,12 +3656,12 @@
         staff: ['Settings', 'Manage users'],
         roles: ['Settings', 'Manage users']
       };
-      const bits = titles[name] || ['Company', ''];
+      const bits = titles[view] || titles[name] || ['Company', ''];
       document.getElementById('admin-page-title').textContent = bits[0];
       const pageSub = document.getElementById('admin-page-sub');
       pageSub.textContent = bits[1];
       pageSub.hidden = !bits[1];
-      syncPageHelper(name);
+      syncPageHelper(view);
       document.title = (bits[0] ? bits[0] + ' | ' : '') + 'Company | Spectrum Display';
       const newBtn = document.getElementById('new-btn');
       if (newBtn) newBtn.classList.toggle('hidden', !canEdit('website'));
@@ -6920,16 +7119,9 @@
     async function openNewCustomerTransaction(type) {
       if (!ccDetailCustomer) return;
       document.getElementById('cc-detail-new-menu').classList.add('hidden');
-      if (type === 'invoice') {
-        await openInvoiceWindow('new', { type: 'invoice', customerId: ccDetailCustomer.id });
-        return;
-      }
-      const tab = type === 'order' ? 'orders' : 'quotes';
-      openCompanyTab(tab, true);
-      await loadSalesDocs(type);
-      openNewSale(type, { inline: true });
-      fillSoCustomers(ccDetailCustomer.id);
-      applySoCustomer(ccDetailCustomer);
+      await openDocMasterTab(type === 'invoice' ? 'invoice' : type === 'order' ? 'order' : 'quote', 'new', {
+        customerId: ccDetailCustomer.id
+      });
     }
 
     let ccDrawerSource = 'list';
@@ -7653,11 +7845,7 @@
     async function openNewVendorPo() {
       if (!vnDetailVendor) return;
       document.getElementById('vn-detail-new-menu').classList.add('hidden');
-      openCompanyTab('purchase-orders', true);
-      await loadPurchaseOrders();
-      openNewPo();
-      fillPoVendors(vnDetailVendor.id);
-      applyPoVendor(vnDetailVendor);
+      await openDocMasterTab('po', 'new', { vendorId: vnDetailVendor.id });
     }
 
     function fillVnOverview() {
@@ -8345,14 +8533,17 @@
       };
     }
 
-    function openNewPo() {
+    function fillPoNewForm() {
       fillPoForm({
         status: 'open',
         issueDate: new Date().toISOString().slice(0, 10),
         lines: [{ qty: 1, rate: 0 }]
       });
-      document.getElementById('po-list-wrap').classList.add('hidden');
       document.getElementById('po-detail').classList.remove('hidden');
+    }
+
+    function openNewPo(opts) {
+      void openDocMasterTab('po', 'new', opts || {});
     }
 
     async function openPurchaseOrder(id) {
@@ -8760,8 +8951,10 @@
 
     function applyInvoiceWindowChrome(on) {
       document.body.classList.toggle('so-invoice-float', !!on);
-      if (on) document.body.classList.remove('so-split-lock');
-      else if (document.getElementById('sales-section').classList.contains('so-split-on') && !isMobileDash()) {
+      if (on) {
+        document.body.classList.remove('so-split-lock');
+        document.body.classList.remove('po-doc-float');
+      } else if (document.getElementById('sales-section').classList.contains('so-split-on') && !isMobileDash()) {
         document.body.classList.add('so-split-lock');
       }
       const back = document.getElementById('so-back');
@@ -8774,32 +8967,188 @@
       }
     }
 
+    function applyPoWindowChrome(on) {
+      document.body.classList.toggle('po-doc-float', !!on);
+      if (on) {
+        document.body.classList.remove('so-invoice-float');
+        const detail = document.getElementById('po-detail');
+        if (detail) detail.classList.remove('hidden');
+      }
+    }
+
+    function syncDocWindowChrome(name) {
+      const doc = parseDocMasterTab(name);
+      if (doc && doc.kind === 'po') {
+        applyInvoiceWindowChrome(false);
+        applyPoWindowChrome(true);
+        return;
+      }
+      if (doc) {
+        applyPoWindowChrome(false);
+        applyInvoiceWindowChrome(true);
+        return;
+      }
+      applyInvoiceWindowChrome(false);
+      applyPoWindowChrome(false);
+    }
+
+    function stashSalesMasterForm() {
+      const tab = parseDocMasterTab(dashActiveGroup);
+      if (!tab || tab.kind === 'po') return;
+      const detail = document.getElementById('so-detail');
+      if (!detail || detail.classList.contains('hidden')) return;
+      soMasterCache[dashActiveGroup] = Object.assign({ id: document.getElementById('so-id').value }, readSoForm());
+    }
+
+    function stashPoMasterForm() {
+      const tab = parseDocMasterTab(dashActiveGroup);
+      if (!tab || tab.kind !== 'po') return;
+      const detail = document.getElementById('po-detail');
+      if (!detail || detail.classList.contains('hidden')) return;
+      poMasterCache[dashActiveGroup] = Object.assign({ id: document.getElementById('po-id').value }, readPoForm());
+    }
+
+    function parkDocMasterWindows(nextName) {
+      const cur = parseDocMasterTab(dashActiveGroup);
+      if (!cur) {
+        if (viewTabForMaster(nextName) !== 'invoices' && typeof stashSoActiveTab === 'function') stashSoActiveTab();
+        return;
+      }
+      if (dashActiveGroup === nextName) return;
+      if (cur.kind === 'po') stashPoMasterForm();
+      else stashSalesMasterForm();
+    }
+
+    function salesKindFromType(type) {
+      if (type === 'order') return 'order';
+      if (type === 'invoice') return 'invoice';
+      if (type === 'po') return 'po';
+      return 'quote';
+    }
+
+    async function restoreDocMasterTab(doc) {
+      const tab = docMasterTabName(doc.kind, doc.id);
+      if (doc.kind === 'po') {
+        try { await loadPurchaseOrders(); } catch (err) {}
+        applyPoWindowChrome(true);
+        const cached = poMasterCache[tab];
+        if (cached) {
+          fillPoForm(cached);
+          document.getElementById('po-detail').classList.remove('hidden');
+        } else if (doc.id === 'new') {
+          fillPoNewForm();
+        } else {
+          await openPurchaseOrder(doc.id);
+          applyPoWindowChrome(true);
+        }
+        return;
+      }
+      try { await loadSalesDocs(doc.kind); } catch (err) {}
+      applyInvoiceWindowChrome(true);
+      const cached = soMasterCache[tab];
+      if (cached) {
+        fillSoForm(cached);
+        document.getElementById('so-detail').classList.remove('hidden');
+        document.getElementById('sales-section').classList.remove('so-doc-open');
+      } else if (doc.id === 'new') {
+        openNewSale(doc.kind, { inline: true });
+        const cid = invoiceCustomerFromQuery();
+        if (cid) {
+          fillSoCustomers(cid);
+          const c = (salesCustomers || []).find(function (row) { return String(row.id) === String(cid); })
+            || (companyCustomers || []).find(function (row) { return String(row.id) === String(cid); });
+          applySoCustomer(c);
+        }
+      } else {
+        await openSalesDoc(doc.id, { inline: true, type: doc.kind });
+        applyInvoiceWindowChrome(true);
+      }
+    }
+
+    async function openDocMasterTab(kind, id, opts) {
+      opts = opts || {};
+      kind = salesKindFromType(kind);
+      const isNew = !id || id === 'new';
+      const docId = isNew ? 'new' : String(id);
+      const listTab = docMasterListTab(kind);
+      const docTab = docMasterTabName(kind, docId);
+      if (masterTabIsOpen(docTab) && dashActiveGroup === docTab && !opts.customerId && !opts.vendorId) {
+        return true;
+      }
+      const need = (masterTabIsOpen(listTab) ? 0 : 1) + (masterTabIsOpen(docTab) ? 0 : 1);
+      if (need && !canAddMasterTabs(need)) {
+        showMasterTabMaxDialog();
+        return false;
+      }
+      if (!ensureMasterTab(listTab, pathForTab(listTab))) return false;
+      if (!ensureMasterTab(docTab, pathForDocMaster(kind, docId))) return false;
+      if (typeof stashSoActiveTab === 'function') stashSoActiveTab();
+      parkDocMasterWindows(docTab);
+      let dest = pathForDocMaster(kind, docId);
+      if (opts.customerId) dest += (dest.indexOf('?') === -1 ? '?' : '&') + 'customer=' + encodeURIComponent(opts.customerId);
+      history.pushState({ tab: docTab }, '', dest);
+      dashActiveGroup = docTab;
+      dashTabPath[docTab] = dest;
+      showAdminTab(docTab);
+      renderDashTabBar();
+      await restoreDocMasterTab({ kind: kind, id: docId });
+      if (opts.customerId && kind !== 'po') {
+        fillSoCustomers(opts.customerId);
+        const c = (salesCustomers || []).find(function (row) { return String(row.id) === String(opts.customerId); })
+          || (companyCustomers || []).find(function (row) { return String(row.id) === String(opts.customerId); });
+        applySoCustomer(c);
+      }
+      if (opts.vendorId && kind === 'po') {
+        fillPoVendors(opts.vendorId);
+        const v = (inventoryVendors || []).find(function (row) { return String(row.id) === String(opts.vendorId); });
+        applyPoVendor(v);
+      }
+      dashLoadedInner[docTab] = true;
+      return true;
+    }
+
+    function promoteDocMasterAfterSave(kind, saved) {
+      if (!saved || !saved.id) return;
+      const cur = parseDocMasterTab(dashActiveGroup);
+      if (!cur || cur.kind !== kind) return;
+      const next = docMasterTabName(kind, saved.id);
+      const caption = saved.number || masterTabCaption(dashActiveGroup);
+      renameMasterTab(dashActiveGroup, next, caption);
+      const dest = pathForDocMaster(kind, saved.id);
+      dashTabPath[next] = dest;
+      if (kind === 'po') poMasterCache[next] = saved;
+      else soMasterCache[next] = saved;
+      history.replaceState({ tab: next }, '', dest);
+    }
+
     async function openInvoiceWindow(id, opts) {
       opts = opts || {};
       if (opts.inline) return false;
+      if (!id || id === 'new') return openDocMasterTab('invoice', 'new', opts);
+      const existingTab = 'invoice-' + id;
+      if (masterTabIsOpen(existingTab)) {
+        activateMasterTab(existingTab);
+        return true;
+      }
       if (typeof stashSoActiveTab === 'function') stashSoActiveTab();
+      if (!ensureMasterTab('invoices', pathForTab('invoices'))) return false;
       rememberMasterTab('invoices');
       showAdminTab('invoices');
       renderDashTabBar();
       applyInvoiceWindowChrome(true);
       try { await loadSalesDocs('invoice'); }
       catch (err) {}
-      if (!id || id === 'new') {
-        openNewSale('invoice', { inline: true, customerId: opts.customerId });
-        if (opts.customerId) {
-          fillSoCustomers(opts.customerId);
-          const c = (salesCustomers || []).find(function (row) { return String(row.id) === String(opts.customerId); })
-            || (companyCustomers || []).find(function (row) { return String(row.id) === String(opts.customerId); });
-          applySoCustomer(c);
-        }
-      } else {
-        await openSalesDoc(id, { inline: true, type: 'invoice' });
-      }
+      await openSalesDoc(id, { inline: true, type: 'invoice' });
       document.getElementById('so-detail').classList.remove('hidden');
       return true;
     }
 
     function closeInvoiceWindow() {
+      const tab = parseDocMasterTab(dashActiveGroup);
+      if (tab && tab.kind !== 'po') {
+        closeMasterTab(dashActiveGroup);
+        return;
+      }
       applyInvoiceWindowChrome(false);
       const sales = document.getElementById('sales-section');
       if (sales && !sales.classList.contains('hidden') && isInvoiceSplitOn()) {
@@ -8886,6 +9235,11 @@
       }
       if (type === 'invoice' && isInvoiceSplitOn() && !isInvoiceDocWindow()) {
         setMasterTabCaption('invoices', '');
+        return;
+      }
+      const docTab = parseDocMasterTab(dashActiveGroup);
+      if (docTab && docTab.kind !== 'po') {
+        setMasterTabCaption(dashActiveGroup, n || ('New ' + (type === 'invoice' ? 'invoice' : type === 'order' ? 'order' : 'quote')));
         return;
       }
       setMasterTabCaption(soMasterPage(type), n);
@@ -9716,8 +10070,8 @@
     function openNewSale(type, opts) {
       opts = opts || {};
       const t = type || salesTypeFromTab(salesSubTab);
-      if (t === 'invoice' && !opts.inline) {
-        void openInvoiceWindow('new', { type: 'invoice', customerId: opts.customerId });
+      if (!opts.inline) {
+        void openDocMasterTab(t, 'new', { customerId: opts.customerId });
         return;
       }
       const go = function () {
@@ -9804,6 +10158,12 @@
         showPoList();
         await loadPurchaseOrders();
       }
+      const routedDoc = parseDocMasterTab(name);
+      if (routedDoc) {
+        await restoreDocMasterTab(routedDoc);
+        loaded = true;
+        return;
+      }
       if (name === 'receipt-shipments') {
         showRsList();
         await loadReceiptShipments();
@@ -9815,15 +10175,9 @@
       if (name === 'quotes' || name === 'orders' || name === 'invoices' || name === 'sales') {
         const invoiceId = name === 'invoices' ? invoiceIdFromPath() : '';
         if (invoiceId === 'new') {
-          applyInvoiceWindowChrome(true);
-          await loadSalesDocs('invoice');
-          openNewSale('invoice', { inline: true });
-          const cid = invoiceCustomerFromQuery();
-          if (cid) {
-            fillSoCustomers(cid);
-            const c = (salesCustomers || []).find(function (row) { return String(row.id) === String(cid); });
-            applySoCustomer(c);
-          }
+          await openDocMasterTab('invoice', 'new', { customerId: invoiceCustomerFromQuery() });
+        } else if (invoiceId && masterTabIsOpen('invoice-' + invoiceId)) {
+          activateMasterTab('invoice-' + invoiceId);
         } else if (invoiceId && !isMobileDash()) {
           applyInvoiceWindowChrome(false);
           await loadSalesDocs('invoice');
@@ -9886,6 +10240,10 @@
       ccLeaveThen = null;
       closeCustomerDrawer(true);
       if (then) then();
+    });
+    document.getElementById('dash-tab-max-ok').addEventListener('click', hideMasterTabMaxDialog);
+    document.getElementById('dash-tab-max').addEventListener('click', function (e) {
+      if (e.target.id === 'dash-tab-max') hideMasterTabMaxDialog();
     });
     document.getElementById('cc-leave').addEventListener('click', function (e) {
       if (e.target === this) {
@@ -10103,6 +10461,11 @@
     });
     document.addEventListener('keydown', function (e) {
       if (e.key !== 'Escape') return;
+      const tabMax = document.getElementById('dash-tab-max');
+      if (tabMax && tabMax.classList.contains('is-open')) {
+        hideMasterTabMaxDialog();
+        return;
+      }
       const colMenu = document.getElementById('dash-col-menu');
       if (colMenu && !colMenu.hidden) {
         closeColMenu();
@@ -10110,6 +10473,15 @@
       }
       if (isInvoiceDocWindow()) {
         closeInvoiceWindow();
+        return;
+      }
+      if (document.body.classList.contains('po-doc-float')) {
+        const poTab = parseDocMasterTab(dashActiveGroup);
+        if (poTab && poTab.kind === 'po') closeMasterTab(dashActiveGroup);
+        else {
+          applyPoWindowChrome(false);
+          showPoList();
+        }
         return;
       }
       if (document.getElementById('cc-leave').classList.contains('is-open')) {
@@ -10165,6 +10537,11 @@
       if (!row) return;
       const id = row.getAttribute('data-id');
       const type = salesTypeFromTab(salesSubTab);
+      const kind = type === 'invoice' ? 'invoice' : type === 'order' ? 'order' : 'quote';
+      if (masterTabIsOpen(kind + '-' + id)) {
+        activateMasterTab(kind + '-' + id);
+        return;
+      }
       if (type === 'invoice' && isInvoiceSplitOn()) {
         openSoTab(id);
         return;
@@ -10366,6 +10743,7 @@
         showSoMsg((data.doc.number || 'Document') + ' saved.', true);
         if (data.doc && data.doc.id) {
           soTabCache[String(data.doc.id)] = data.doc;
+          promoteDocMasterAfterSave(data.doc.type || 'quote', data.doc);
           if (data.doc.type === 'invoice' && isInvoiceSplitOn() && !isInvoiceDocWindow()) {
             const oldId = id ? String(id) : '';
             const newId = String(data.doc.id);
@@ -10387,8 +10765,7 @@
           else showSoList();
         }
         if (after === 'new') {
-          if ((data.doc.type || 'invoice') === 'invoice') openNewSale('invoice');
-          else openNewSale(data.doc.type || 'invoice', { inline: true });
+          openNewSale(data.doc.type || 'quote');
         }
       } catch (err) {
         showSoMsg(err.message || 'Could not save document.');
@@ -11739,10 +12116,20 @@
 
     document.getElementById('po-new-btn').addEventListener('click', openNewPo);
     document.getElementById('po-back').addEventListener('click', function () {
+      const poTab = parseDocMasterTab(dashActiveGroup);
+      if (poTab && poTab.kind === 'po') {
+        closeMasterTab(dashActiveGroup);
+        return;
+      }
       showPoList();
       loadPurchaseOrders();
     });
     document.getElementById('po-cancel').addEventListener('click', function () {
+      const poTab = parseDocMasterTab(dashActiveGroup);
+      if (poTab && poTab.kind === 'po') {
+        closeMasterTab(dashActiveGroup);
+        return;
+      }
       showPoList();
       loadPurchaseOrders();
     });
@@ -11751,7 +12138,11 @@
     });
     document.getElementById('po-table').addEventListener('click', function (e) {
       const row = e.target.closest('tr[data-id]');
-      if (row) openPurchaseOrder(row.getAttribute('data-id'));
+      if (row) {
+        const id = row.getAttribute('data-id');
+        if (masterTabIsOpen('po-' + id)) activateMasterTab('po-' + id);
+        else openPurchaseOrder(id);
+      }
     });
     document.getElementById('po-cc-toggle').addEventListener('click', function () {
       document.getElementById('po-cc-field').classList.toggle('hidden');
@@ -11823,6 +12214,7 @@
           });
         fillPoForm(data.order);
         showPoMsg('Saved.', true);
+        if (data.order) promoteDocMasterAfterSave('po', data.order);
         await loadPurchaseOrders();
       } catch (err) {
         showPoMsg(err.message || 'Could not save purchase order.');
@@ -11833,7 +12225,9 @@
       if (!id || !confirm('Delete this purchase order?')) return;
       try {
         await api('/api/admin/purchase-orders/' + encodeURIComponent(id), { method: 'DELETE' });
-        showPoList();
+        const poTab = parseDocMasterTab(dashActiveGroup);
+        if (poTab && poTab.kind === 'po') closeMasterTab(dashActiveGroup);
+        else showPoList();
         await loadPurchaseOrders();
       } catch (err) {
         showPoMsg(err.message || 'Could not delete purchase order.');

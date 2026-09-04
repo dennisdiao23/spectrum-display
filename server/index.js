@@ -117,8 +117,11 @@ async function main() {
     app.get([route, route + '/'], sendCompany);
   });
   app.get(['/company/customers/:id', '/company/customers/:id/'], sendCompany);
+  app.get(['/company/sales/quotes/:id', '/company/sales/quotes/:id/'], sendCompany);
+  app.get(['/company/sales/orders/:id', '/company/sales/orders/:id/'], sendCompany);
   app.get(['/company/sales/invoices/:id', '/company/sales/invoices/:id/'], sendCompany);
   app.get(['/company/inventory/vendors/:id', '/company/inventory/vendors/:id/'], sendCompany);
+  app.get(['/company/inventory/purchase-orders/:id', '/company/inventory/purchase-orders/:id/'], sendCompany);
   app.get(['/company/inventory/:id', '/company/inventory/:id/'], sendCompany);
   app.get(['/company.html', '/admin.html', '/admin', '/admin/'], function (req, res) {
     const qs = req.url.includes('?') ? req.url.slice(req.url.indexOf('?')) : '';
