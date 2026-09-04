@@ -45,8 +45,179 @@ function listInventoryItems(db) {
   db.prepare('SELECT id, name FROM brands').all().forEach(function (b) { brands[b.id] = b.name; });
   const items = db.prepare('SELECT * FROM inventory_items ORDER BY name COLLATE NOCASE, pitch').all();
   const byItem = inv.mapsByItem(inventoryMapRows(db));
+  const locs = locationsByItem(db);
   return items.map(function (row) {
-    return inv.formatItem(row, brands[row.brand_id], byItem[String(row.id)] || []);
+    return inv.formatItem(row, brands[row.brand_id], byItem[String(row.id)] || [], locs[String(row.id)] || []);
+  });
+}
+
+function locationJoinSql() {
+  return `
+    SELECT l.*, w.name AS warehouse_name, w.type AS warehouse_type, w.vendor_id, w.untracked,
+      COALESCE(v.display_name, v.company_name, '') AS vendor_name
+    FROM inventory_item_locations l
+    JOIN inventory_warehouses w ON w.id = l.warehouse_id
+    LEFT JOIN inventory_vendors v ON v.id = w.vendor_id
+  `;
+}
+
+function locationsByItem(db) {
+  const inv = require('./inventory');
+  const out = {};
+  try {
+    db.prepare(locationJoinSql() + ' ORDER BY w.type, w.name COLLATE NOCASE, l.id').all().forEach(function (row) {
+      const key = String(row.item_id);
+      (out[key] = out[key] || []).push(inv.formatLocation(row));
+    });
+  } catch (e) { /* tables may not exist yet */ }
+  return out;
+}
+
+function locationsForItem(db, itemId) {
+  const inv = require('./inventory');
+  try {
+    return db.prepare(locationJoinSql() + ' WHERE l.item_id = ? ORDER BY w.type, w.name COLLATE NOCASE, l.id')
+      .all(itemId)
+      .map(inv.formatLocation);
+  } catch (e) {
+    return [];
+  }
+}
+
+function defaultSpectrumWarehouse(db) {
+  const wh = require('./inventory-warehouses');
+  const rows = db.prepare(
+    'SELECT * FROM inventory_warehouses ORDER BY id'
+  ).all();
+  const tracked = rows.filter(function (row) { return !wh.rowUntracked(row); });
+  const prefer = tracked.filter(function (row) {
+    const k = wh.locationKind(row.type);
+    return k === 'warehouse';
+  });
+  const row = prefer[0] || tracked[0] || rows[0];
+  if (!row) throw new Error('Add a tracked location first.');
+  return row;
+}
+
+function resolveWarehouse(db, warehouseId, opts) {
+  const wh = require('./inventory-warehouses');
+  const trackedOnly = !!(opts && (opts.spectrumOnly || opts.trackedOnly));
+  if (warehouseId) {
+    const row = db.prepare('SELECT * FROM inventory_warehouses WHERE id = ?').get(warehouseId);
+    if (!row) throw new Error('Location not found.');
+    if (trackedOnly && wh.rowUntracked(row)) return defaultSpectrumWarehouse(db);
+    return row;
+  }
+  return defaultSpectrumWarehouse(db);
+}
+
+function countTrackedWarehouses(db, exceptId) {
+  const wh = require('./inventory-warehouses');
+  return db.prepare('SELECT * FROM inventory_warehouses').all().filter(function (row) {
+    if (exceptId != null && String(row.id) === String(exceptId)) return false;
+    return !wh.rowUntracked(row);
+  }).length;
+}
+
+function syncItemSpectrumQty(db, itemId, stamp) {
+  const inv = require('./inventory');
+  const locs = locationsForItem(db, itemId);
+  const qty = inv.spectrumQtyFromLocations(locs);
+  db.prepare('UPDATE inventory_items SET qty = ?, updated_at = ? WHERE id = ?').run(qty, stamp, itemId);
+  return qty;
+}
+
+function upsertItemLocation(db, itemId, warehouseId, bin, qty, stamp) {
+  const existing = db.prepare(
+    'SELECT * FROM inventory_item_locations WHERE item_id = ? AND warehouse_id = ?'
+  ).get(itemId, warehouseId);
+  if (existing) {
+    db.prepare(
+      'UPDATE inventory_item_locations SET bin = ?, qty = ?, updated_at = ? WHERE id = ?'
+    ).run(bin == null ? existing.bin : bin, qty, stamp, existing.id);
+    return existing.id;
+  }
+  const info = db.prepare(`
+    INSERT INTO inventory_item_locations (item_id, warehouse_id, bin, qty, created_at, updated_at)
+    VALUES (?, ?, ?, ?, ?, ?)
+  `).run(itemId, warehouseId, bin || '', qty, stamp, stamp);
+  return info.lastInsertRowid;
+}
+
+function applyLocationChange(db, itemId, payload, adminEmail) {
+  const inv = require('./inventory');
+  const current = db.prepare('SELECT * FROM inventory_items WHERE id = ?').get(itemId);
+  if (!current) return null;
+  const warehouse = resolveWarehouse(db, payload && payload.warehouseId, {
+    spectrumOnly: !!(payload && payload.spectrumOnly)
+  });
+  let loc = db.prepare(
+    'SELECT * FROM inventory_item_locations WHERE item_id = ? AND warehouse_id = ?'
+  ).get(itemId, warehouse.id);
+  if (!loc) {
+    const stamp0 = dbUtil.nowIso();
+    upsertItemLocation(db, itemId, warehouse.id, '', 0, stamp0);
+    loc = db.prepare(
+      'SELECT * FROM inventory_item_locations WHERE item_id = ? AND warehouse_id = ?'
+    ).get(itemId, warehouse.id);
+  }
+  const curQty = Math.max(0, Number(loc.qty) || 0);
+  const nextLow = payload && payload.lowAt != null && payload.lowAt !== ''
+    ? Math.max(0, Math.round(Number(payload.lowAt)))
+    : Number(current.low_at);
+  if (!isFinite(nextLow)) throw new Error('Low-at must be a number.');
+  const change = inv.applyKind(payload && payload.kind, payload && payload.qty, curQty);
+  const stamp = dbUtil.nowIso();
+  const noteBits = [String((payload && payload.note) || '').trim()].filter(Boolean);
+  if (warehouse.name) noteBits.unshift(warehouse.name);
+  db.prepare(
+    'UPDATE inventory_item_locations SET qty = ?, updated_at = ? WHERE id = ?'
+  ).run(change.next, stamp, loc.id);
+  db.prepare('UPDATE inventory_items SET low_at = ?, updated_at = ? WHERE id = ?')
+    .run(nextLow, stamp, itemId);
+  syncItemSpectrumQty(db, itemId, stamp);
+  db.prepare(`
+    INSERT INTO inventory_item_moves (
+      item_id, kind, qty_delta, qty_after, note, admin_email, created_at
+    ) VALUES (?, ?, ?, ?, ?, ?, ?)
+  `).run(
+    itemId,
+    String((payload && payload.kind) || '').toLowerCase(),
+    change.delta,
+    change.next,
+    noteBits.join(' · ').slice(0, 240),
+    String(adminEmail || '').trim().slice(0, 120),
+    stamp
+  );
+  return true;
+}
+
+function warehouseStats(db) {
+  const rows = db.prepare(`
+    SELECT warehouse_id, COUNT(*) AS item_count, COALESCE(SUM(qty), 0) AS qty
+    FROM inventory_item_locations
+    GROUP BY warehouse_id
+  `).all();
+  const out = {};
+  rows.forEach(function (row) {
+    out[String(row.warehouse_id)] = { itemCount: row.item_count, qty: row.qty };
+  });
+  return out;
+}
+
+function formatWarehouseRow(db, row) {
+  const wh = require('./inventory-warehouses');
+  if (!row) return null;
+  const stats = warehouseStats(db)[String(row.id)] || { itemCount: 0, qty: 0 };
+  let vendorName = '';
+  if (row.vendor_id) {
+    const vendor = db.prepare('SELECT display_name, company_name FROM inventory_vendors WHERE id = ?').get(row.vendor_id);
+    vendorName = vendor ? (vendor.display_name || vendor.company_name || '') : '';
+  }
+  return wh.formatWarehouse(row, {
+    itemCount: stats.itemCount,
+    qty: stats.qty,
+    vendorName: vendorName
   });
 }
 
@@ -147,7 +318,10 @@ function getInventoryItemDetail(db, id) {
   const moves = db.prepare(
     'SELECT * FROM inventory_item_moves WHERE item_id = ? ORDER BY datetime(created_at) DESC, id DESC LIMIT 40'
   ).all(id);
-  return { item: inv.formatItem(row, brand && brand.name, byItem[String(row.id)] || []), moves: moves };
+  return {
+    item: inv.formatItem(row, brand && brand.name, byItem[String(row.id)] || [], locationsForItem(db, id)),
+    moves: moves
+  };
 }
 
 function createSqliteStore() {
@@ -158,6 +332,7 @@ function createSqliteStore() {
   dbUtil.fillMissingProductDetails(db);
   dbUtil.rewriteExistingCabinetCopy(db);
   dbUtil.ensureCatalogSkus(db);
+  dbUtil.ensureInventoryWarehouses(db);
 
   return {
     name: 'sqlite',
@@ -171,7 +346,11 @@ function createSqliteStore() {
       try {
         const items = db.prepare('SELECT * FROM inventory_items').all();
         const maps = db.prepare('SELECT * FROM product_inventory_map').all();
-        return inv.catalogStock(maps, items);
+        const locs = locationsByItem(db);
+        const formatted = items.map(function (row) {
+          return inv.formatItem(row, '', [], locs[String(row.id)] || []);
+        });
+        return inv.catalogStock(maps, formatted);
       } catch {
         return {};
       }
@@ -424,23 +603,27 @@ function createSqliteStore() {
       }), taken);
       const stamp = dbUtil.nowIso();
       const fields = inv.dbFieldsFromInput(input);
+      const warehouse = resolveWarehouse(db, input.warehouseId);
+      const locQty = Math.max(0, Number(input.qty) || 0);
+      const itemQty = require('./inventory-warehouses').rowUntracked(warehouse) ? 0 : locQty;
       const info = db.prepare(`
         INSERT INTO inventory_items (
           sku, name, brand_id, pitch, unit, qty, low_at, price, cost, dealer_net,
           weight, panel_w, panel_h, description, image, notes, created_at, updated_at
         ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
       `).run(
-        fields.sku, fields.name, fields.brand_id, fields.pitch, fields.unit, fields.qty,
+        fields.sku, fields.name, fields.brand_id, fields.pitch, fields.unit, itemQty,
         fields.low_at, fields.price, fields.cost, fields.dealer_net, fields.weight,
         fields.panel_w, fields.panel_h, fields.description, fields.image, fields.notes,
         stamp, stamp
       );
-      if (input.qty) {
+      upsertItemLocation(db, info.lastInsertRowid, warehouse.id, input.bin || '', locQty, stamp);
+      if (locQty) {
         db.prepare(`
           INSERT INTO inventory_item_moves (
             item_id, kind, qty_delta, qty_after, note, admin_email, created_at
-          ) VALUES (?, 'count', ?, ?, 'Opening qty', '', ?)
-        `).run(info.lastInsertRowid, input.qty, input.qty, stamp);
+          ) VALUES (?, 'count', ?, ?, ?, '', ?)
+        `).run(info.lastInsertRowid, locQty, locQty, warehouse.name + ' · Opening qty', stamp);
       }
       return getInventoryItemDetail(db, info.lastInsertRowid);
     },
@@ -482,46 +665,48 @@ function createSqliteStore() {
         next.cost, next.dealerNet, next.weight, next.panelW, next.panelH,
         next.description, next.image, next.notes, dbUtil.nowIso(), id
       );
+      if (input.warehouseId || input.bin != null) {
+        const stamp = dbUtil.nowIso();
+        const locs = locationsForItem(db, id);
+        const primary = inv.pickPrimaryLocation(locs);
+        const warehouse = resolveWarehouse(db, input.warehouseId || (primary && primary.warehouseId));
+        const bin = input.bin != null ? input.bin : (primary && primary.bin) || '';
+        if (primary && String(primary.warehouseId) === String(warehouse.id)) {
+          db.prepare('UPDATE inventory_item_locations SET bin = ?, updated_at = ? WHERE id = ?')
+            .run(bin, stamp, primary.id);
+        } else if (primary && !db.prepare(
+          'SELECT id FROM inventory_item_locations WHERE item_id = ? AND warehouse_id = ?'
+        ).get(id, warehouse.id)) {
+          db.prepare('UPDATE inventory_item_locations SET warehouse_id = ?, bin = ?, updated_at = ? WHERE id = ?')
+            .run(warehouse.id, bin, stamp, primary.id);
+          syncItemSpectrumQty(db, id, stamp);
+        } else if (!primary) {
+          upsertItemLocation(db, id, warehouse.id, bin, 0, stamp);
+          syncItemSpectrumQty(db, id, stamp);
+        } else {
+          db.prepare('UPDATE inventory_item_locations SET bin = ?, updated_at = ? WHERE id = ?')
+            .run(bin, stamp, primary.id);
+        }
+      }
       return getInventoryItemDetail(db, id);
     },
     async deleteInventoryItem(id) {
       const inv = require('./inventory');
-      const current = db.prepare('SELECT qty FROM inventory_items WHERE id = ?').get(id);
-      if (!current) return false;
+      const detail = getInventoryItemDetail(db, id);
+      if (!detail) return false;
       const history = db.prepare('SELECT COUNT(*) AS n FROM inventory_item_moves WHERE item_id = ?').get(id).n;
-      inv.assertCanDelete(current, history);
+      inv.assertCanDelete(detail.item, history);
       const info = db.prepare('DELETE FROM inventory_items WHERE id = ?').run(id);
       return info.changes > 0;
     },
     async adjustInventory(id, payload, adminEmail) {
-      const inv = require('./inventory');
-      const current = db.prepare('SELECT * FROM inventory_items WHERE id = ?').get(id);
-      if (!current) return null;
-      const curQty = Math.max(0, Number(current.qty) || 0);
-      const nextLow = payload && payload.lowAt != null && payload.lowAt !== ''
-        ? Math.max(0, Math.round(Number(payload.lowAt)))
-        : Number(current.low_at);
-      if (!isFinite(nextLow)) throw new Error('Low-at must be a number.');
-      const change = inv.applyKind(payload && payload.kind, payload && payload.qty, curQty);
-      const stamp = dbUtil.nowIso();
       db.exec('BEGIN');
       try {
-        db.prepare(
-          'UPDATE inventory_items SET qty = ?, low_at = ?, updated_at = ? WHERE id = ?'
-        ).run(change.next, nextLow, stamp, id);
-        db.prepare(`
-          INSERT INTO inventory_item_moves (
-            item_id, kind, qty_delta, qty_after, note, admin_email, created_at
-          ) VALUES (?, ?, ?, ?, ?, ?, ?)
-        `).run(
-          id,
-          String(payload.kind || '').toLowerCase(),
-          change.delta,
-          change.next,
-          String((payload && payload.note) || '').trim().slice(0, 240),
-          String(adminEmail || '').trim().slice(0, 120),
-          stamp
-        );
+        const ok = applyLocationChange(db, id, payload || {}, adminEmail);
+        if (!ok) {
+          db.exec('ROLLBACK');
+          return null;
+        }
         db.exec('COMMIT');
       } catch (err) {
         try { db.exec('ROLLBACK'); } catch (e) { /* ignore */ }
@@ -952,7 +1137,6 @@ function createSqliteStore() {
     },
     async createReceiptShipment(payload, adminEmail) {
       const rs = require('./receipt-shipments');
-      const inv = require('./inventory');
       const input = rs.normalizeReceipt(payload);
       if (input.vendorId) {
         const vendor = await this.getVendor(input.vendorId);
@@ -985,11 +1169,6 @@ function createSqliteStore() {
         const insertLine = db.prepare(
           'INSERT INTO receipt_shipment_lines (receipt_id, po_line_id, item_id, sku, product, po_qty, qty_received, sort_order) VALUES (?, ?, ?, ?, ?, ?, ?, ?)'
         );
-        const updateQty = db.prepare('UPDATE inventory_items SET qty = ?, updated_at = ? WHERE id = ?');
-        const insertMove = db.prepare(`
-          INSERT INTO inventory_item_moves (item_id, kind, qty_delta, qty_after, note, admin_email, created_at)
-          VALUES (?, ?, ?, ?, ?, ?, ?)
-        `);
         input.lines.forEach(function (line, i) {
           let itemId = line.itemId || '';
           let product = line.product;
@@ -1003,11 +1182,13 @@ function createSqliteStore() {
               sku = row.sku;
             }
             if (!itemId) throw new Error('SKU not found for a received line.');
-            const current = db.prepare('SELECT * FROM inventory_items WHERE id = ?').get(itemId);
-            if (!current) throw new Error('Inventory item not found.');
-            const change = inv.applyKind('receive', line.qtyReceived, current.qty);
-            updateQty.run(change.next, stamp, itemId);
-            insertMove.run(itemId, 'receive', change.delta, change.next, noteBase, String(adminEmail || '').trim().slice(0, 120), stamp);
+            const ok = applyLocationChange(db, itemId, {
+              kind: 'receive',
+              qty: line.qtyReceived,
+              note: noteBase,
+              spectrumOnly: true
+            }, adminEmail);
+            if (!ok) throw new Error('Inventory item not found.');
           }
           insertLine.run(receiptId, line.poLineId || null, itemId || null, sku, product, line.poQty, line.qtyReceived, i);
         });
@@ -1017,6 +1198,129 @@ function createSqliteStore() {
         try { db.exec('ROLLBACK'); } catch (e) { /* ignore */ }
         throw err;
       }
+    },
+    async listWarehouses() {
+      return db.prepare(
+        'SELECT * FROM inventory_warehouses ORDER BY type, name COLLATE NOCASE, id'
+      ).all().map(function (row) { return formatWarehouseRow(db, row); });
+    },
+    async getWarehouse(id) {
+      const row = db.prepare('SELECT * FROM inventory_warehouses WHERE id = ?').get(id);
+      if (!row) return null;
+      const warehouse = formatWarehouseRow(db, row);
+      warehouse.items = listInventoryItems(db).filter(function (item) {
+        return (item.locations || []).some(function (loc) {
+          return String(loc.warehouseId) === String(id);
+        });
+      }).map(function (item) {
+        const loc = (item.locations || []).find(function (row) {
+          return String(row.warehouseId) === String(id);
+        });
+        return {
+          id: item.id,
+          sku: item.sku,
+          name: item.name,
+          qty: loc ? loc.qty : 0,
+          bin: loc ? loc.bin : '',
+          unit: item.unit
+        };
+      });
+      return warehouse;
+    },
+    async createWarehouse(payload) {
+      const wh = require('./inventory-warehouses');
+      const input = wh.normalizeWarehouse(payload);
+      if (input.vendorId) {
+        const vendor = db.prepare('SELECT id FROM inventory_vendors WHERE id = ?').get(input.vendorId);
+        if (!vendor) throw new Error('Vendor not found.');
+      }
+      const fields = wh.dbFields(input);
+      const stamp = dbUtil.nowIso();
+      const info = db.prepare(`
+        INSERT INTO inventory_warehouses (name, type, vendor_id, untracked, notes, created_at, updated_at)
+        VALUES (?, ?, ?, ?, ?, ?, ?)
+      `).run(fields.name, fields.type, fields.vendor_id, fields.untracked, fields.notes, stamp, stamp);
+      return this.getWarehouse(info.lastInsertRowid);
+    },
+    async updateWarehouse(id, payload) {
+      const wh = require('./inventory-warehouses');
+      const current = db.prepare('SELECT * FROM inventory_warehouses WHERE id = ?').get(id);
+      if (!current) return null;
+      const input = wh.normalizeWarehouse(payload);
+      if (!wh.rowUntracked(current) && input.untracked && !countTrackedWarehouses(db, id)) {
+        throw new Error('Keep at least one tracked location.');
+      }
+      if (input.vendorId) {
+        const vendor = db.prepare('SELECT id FROM inventory_vendors WHERE id = ?').get(input.vendorId);
+        if (!vendor) throw new Error('Vendor not found.');
+      }
+      const fields = wh.dbFields(input);
+      db.prepare(
+        'UPDATE inventory_warehouses SET name = ?, type = ?, vendor_id = ?, untracked = ?, notes = ?, updated_at = ? WHERE id = ?'
+      ).run(fields.name, fields.type, fields.vendor_id, fields.untracked, fields.notes, dbUtil.nowIso(), id);
+      const items = db.prepare('SELECT DISTINCT item_id FROM inventory_item_locations WHERE warehouse_id = ?').all(id);
+      const stamp = dbUtil.nowIso();
+      items.forEach(function (row) { syncItemSpectrumQty(db, row.item_id, stamp); });
+      return this.getWarehouse(id);
+    },
+    async deleteWarehouse(id) {
+      const wh = require('./inventory-warehouses');
+      const current = db.prepare('SELECT * FROM inventory_warehouses WHERE id = ?').get(id);
+      if (!current) return false;
+      if (!wh.rowUntracked(current) && !countTrackedWarehouses(db, id)) {
+        throw new Error('Keep at least one tracked location.');
+      }
+      const stock = db.prepare(
+        'SELECT COALESCE(SUM(qty), 0) AS qty FROM inventory_item_locations WHERE warehouse_id = ?'
+      ).get(id).qty;
+      if (stock > 0) throw new Error('Transfer or count this location to zero before deleting it.');
+      db.prepare('DELETE FROM inventory_item_locations WHERE warehouse_id = ?').run(id);
+      const info = db.prepare('DELETE FROM inventory_warehouses WHERE id = ?').run(id);
+      return info.changes > 0;
+    },
+    async transferWarehouseStock(fromId, payload, adminEmail) {
+      const from = db.prepare('SELECT * FROM inventory_warehouses WHERE id = ?').get(fromId);
+      if (!from) return null;
+      const toId = payload && (payload.toLocationId != null ? payload.toLocationId : payload.toWarehouseId);
+      if (!toId || String(toId) === String(fromId)) throw new Error('Pick a different location.');
+      const to = db.prepare('SELECT * FROM inventory_warehouses WHERE id = ?').get(toId);
+      if (!to) throw new Error('Destination location not found.');
+      const itemId = payload && (payload.itemId != null ? payload.itemId : payload.item_id);
+      if (!itemId) throw new Error('Pick an item.');
+      const qty = Math.round(Number(payload && payload.qty));
+      if (!isFinite(qty) || qty <= 0) throw new Error('Quantity must be a whole number greater than 0.');
+      const src = db.prepare(
+        'SELECT * FROM inventory_item_locations WHERE item_id = ? AND warehouse_id = ?'
+      ).get(itemId, fromId);
+      const have = src ? Math.max(0, Number(src.qty) || 0) : 0;
+      if (have < qty) throw new Error('Only ' + have + ' at this location.');
+      const dest = db.prepare(
+        'SELECT * FROM inventory_item_locations WHERE item_id = ? AND warehouse_id = ?'
+      ).get(itemId, toId);
+      const destQty = dest ? Math.max(0, Number(dest.qty) || 0) : 0;
+      const stamp = dbUtil.nowIso();
+      const email = String(adminEmail || '').trim().slice(0, 120);
+      db.exec('BEGIN');
+      try {
+        upsertItemLocation(db, itemId, fromId, src ? src.bin : '', have - qty, stamp);
+        upsertItemLocation(db, itemId, toId, dest ? dest.bin : '', destQty + qty, stamp);
+        syncItemSpectrumQty(db, itemId, stamp);
+        db.prepare(`
+          INSERT INTO inventory_item_moves (
+            item_id, kind, qty_delta, qty_after, note, admin_email, created_at
+          ) VALUES (?, 'transfer', ?, ?, ?, ?, ?)
+        `).run(itemId, -qty, have - qty, 'To ' + to.name, email, stamp);
+        db.prepare(`
+          INSERT INTO inventory_item_moves (
+            item_id, kind, qty_delta, qty_after, note, admin_email, created_at
+          ) VALUES (?, 'transfer', ?, ?, ?, ?, ?)
+        `).run(itemId, qty, destQty + qty, 'From ' + from.name, email, stamp);
+        db.exec('COMMIT');
+      } catch (err) {
+        try { db.exec('ROLLBACK'); } catch (e) { /* ignore */ }
+        throw err;
+      }
+      return this.getWarehouse(fromId);
     },
     async getCompanyProfile() {
       const ca = require('./company-accounts');

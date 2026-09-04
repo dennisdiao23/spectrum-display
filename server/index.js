@@ -102,6 +102,7 @@ async function main() {
     '/company/website',
     '/company/website/accounts',
     '/company/inventory',
+    '/company/inventory/locations',
     '/company/inventory/vendors',
     '/company/inventory/purchase-orders',
     '/company/inventory/receipt-shipments',
@@ -120,6 +121,13 @@ async function main() {
   app.get(['/company/sales/quotes/:id', '/company/sales/quotes/:id/'], sendCompany);
   app.get(['/company/sales/orders/:id', '/company/sales/orders/:id/'], sendCompany);
   app.get(['/company/sales/invoices/:id', '/company/sales/invoices/:id/'], sendCompany);
+  app.get(['/company/inventory/locations/:id', '/company/inventory/locations/:id/'], sendCompany);
+  app.get(['/company/inventory/warehouses', '/company/inventory/warehouses/'], function (_req, res) {
+    res.redirect(301, '/company/inventory/locations');
+  });
+  app.get(['/company/inventory/warehouses/:id', '/company/inventory/warehouses/:id/'], function (req, res) {
+    res.redirect(301, '/company/inventory/locations/' + encodeURIComponent(req.params.id));
+  });
   app.get(['/company/inventory/vendors/:id', '/company/inventory/vendors/:id/'], sendCompany);
   app.get(['/company/inventory/purchase-orders/:id', '/company/inventory/purchase-orders/:id/'], sendCompany);
   app.get(['/company/inventory/:id', '/company/inventory/:id/'], sendCompany);
@@ -780,6 +788,52 @@ async function main() {
       const doc = await store.updateSalesDoc(req.params.id, req.body || {});
       if (!doc) return res.status(404).json({ ok: false, error: 'Document not found.' });
       res.json({ ok: true, doc: doc });
+    } catch (err) { next(err); }
+  });
+
+  app.get('/api/admin/inventory-warehouses', requireAdmin, requirePerm('inventory', 'view'), async function (_req, res, next) {
+    try {
+      const warehouses = await store.listWarehouses();
+      res.json({ ok: true, warehouses: warehouses, locations: warehouses });
+    } catch (err) { next(err); }
+  });
+
+  app.get('/api/admin/inventory-warehouses/:id', requireAdmin, requirePerm('inventory', 'view'), async function (req, res, next) {
+    try {
+      const warehouse = await store.getWarehouse(req.params.id);
+      if (!warehouse) return res.status(404).json({ ok: false, error: 'Location not found.' });
+      res.json({ ok: true, warehouse: warehouse, location: warehouse });
+    } catch (err) { next(err); }
+  });
+
+  app.post('/api/admin/inventory-warehouses', requireAdmin, requirePerm('inventory', 'edit'), async function (req, res, next) {
+    try {
+      const warehouse = await store.createWarehouse(req.body || {});
+      res.json({ ok: true, warehouse: warehouse, location: warehouse });
+    } catch (err) { next(err); }
+  });
+
+  app.put('/api/admin/inventory-warehouses/:id', requireAdmin, requirePerm('inventory', 'edit'), async function (req, res, next) {
+    try {
+      const warehouse = await store.updateWarehouse(req.params.id, req.body || {});
+      if (!warehouse) return res.status(404).json({ ok: false, error: 'Location not found.' });
+      res.json({ ok: true, warehouse: warehouse, location: warehouse });
+    } catch (err) { next(err); }
+  });
+
+  app.post('/api/admin/inventory-warehouses/:id/transfer', requireAdmin, requirePerm('inventory', 'edit'), async function (req, res, next) {
+    try {
+      const warehouse = await store.transferWarehouseStock(req.params.id, req.body || {}, req.admin && req.admin.email);
+      if (!warehouse) return res.status(404).json({ ok: false, error: 'Location not found.' });
+      res.json({ ok: true, warehouse: warehouse, location: warehouse });
+    } catch (err) { next(err); }
+  });
+
+  app.delete('/api/admin/inventory-warehouses/:id', requireAdmin, requirePerm('inventory', 'edit'), async function (req, res, next) {
+    try {
+      const ok = await store.deleteWarehouse(req.params.id);
+      if (!ok) return res.status(404).json({ ok: false, error: 'Location not found.' });
+      res.json({ ok: true });
     } catch (err) { next(err); }
   });
 

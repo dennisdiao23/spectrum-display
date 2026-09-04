@@ -4,7 +4,7 @@ const OWNER_ROLE_SLUG = 'owner';
 const MENU_KEYS = [
   'dashboard',
   'website', 'products', 'accounts',
-  'inventory', 'vendors', 'purchase-orders', 'receipt-shipments',
+  'inventory', 'warehouses', 'vendors', 'purchase-orders', 'receipt-shipments',
   'customers',
   'sales', 'quotes', 'orders', 'invoices',
   'settings', 'company', 'staff'
@@ -24,6 +24,7 @@ const MENU_GROUPS = [
     label: 'Inventory',
     children: [
       { key: 'inventory', label: 'Inventory' },
+      { key: 'warehouses', label: 'Location' },
       { key: 'receipt-shipments', label: 'Receipt Shipment' }
     ]
   },
@@ -108,6 +109,7 @@ function menuFromLegacy(website, inventory, settings) {
     products: w,
     accounts: w,
     inventory: i,
+    warehouses: i,
     vendors: i,
     'purchase-orders': i,
     'receipt-shipments': i,
@@ -246,7 +248,7 @@ function menuLevel(perms, key) {
   const menu = perms.menu || perms;
   if (key === 'settings') return highestAccess(menu.settings, menu.company, menu.staff);
   if (key === 'website') return highestAccess(menu.website, menu.products, menu.accounts);
-  if (key === 'inventory') return highestAccess(menu.inventory, menu.vendors, menu['purchase-orders'], menu['receipt-shipments']);
+  if (key === 'inventory') return highestAccess(menu.inventory, menu.warehouses, menu.vendors, menu['purchase-orders'], menu['receipt-shipments']);
   return accessLevel(menu[key]);
 }
 

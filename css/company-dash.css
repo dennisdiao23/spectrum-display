@@ -2444,6 +2444,7 @@ body.po-split-lock #dash-panel.space-y-8 > :not([hidden]) {
 body.inv-layout-lock #inventory-section:not(.hidden),
 body.dash-split-lock #customers-section:not(.hidden),
 body.dash-split-lock #vendors-section:not(.hidden),
+body.dash-split-lock #warehouses-section:not(.hidden),
 body.dash-split-lock #website-pane:not(.hidden),
 body.dash-split-lock #products-section:not(.hidden),
 body.dash-split-lock #accounts-section:not(.hidden),
@@ -2464,6 +2465,9 @@ body.dash-split-lock #customers-section #cc-error,
 body.dash-split-lock #vendors-section .cc-list-kpis,
 body.dash-split-lock #vendors-section .cc-list-toolbar,
 body.dash-split-lock #vendors-section #vn-error,
+body.dash-split-lock #warehouses-section .cc-list-kpis,
+body.dash-split-lock #warehouses-section .cc-list-toolbar,
+body.dash-split-lock #warehouses-section #wh-error,
 body.dash-split-lock #products-section .wp-list-head,
 body.dash-split-lock #accounts-section .wa-list-head,
 body.so-split-lock #sales-section .page-kpis,
@@ -2478,6 +2482,8 @@ body.po-split-lock #po-section #po-error {
 #customers-list-wrap,
 #vn-workspace,
 #vendors-list-wrap,
+#wh-workspace,
+#warehouses-list-wrap,
 #products-list-wrap,
 #accounts-list-wrap {
   display: flex;
@@ -2529,6 +2535,9 @@ body.po-split-lock #po-section #po-error {
 }
 #vn-split {
   grid-template-columns: var(--vn-left-w, var(--vn-split-left-boot, 400px)) 14px minmax(0, 1fr);
+}
+#wh-split {
+  grid-template-columns: var(--wh-left-w, var(--wh-split-left-boot, 400px)) 14px minmax(0, 1fr);
 }
 #wp-split {
   grid-template-columns: var(--wp-left-w, var(--wp-split-left-boot, 400px)) 14px minmax(0, 1fr);
@@ -3128,6 +3137,8 @@ body.inv-split-dragging {
   body.company-app:not(.dash-split-lock) #customers-list-wrap,
   body.company-app:not(.dash-split-lock) #vn-workspace,
   body.company-app:not(.dash-split-lock) #vendors-list-wrap,
+  body.company-app:not(.dash-split-lock) #wh-workspace,
+  body.company-app:not(.dash-split-lock) #warehouses-list-wrap,
   body.company-app:not(.dash-split-lock) #products-list-wrap,
   body.company-app:not(.dash-split-lock) #accounts-list-wrap {
     flex: none;
