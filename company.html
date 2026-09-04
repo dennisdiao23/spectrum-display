@@ -4513,7 +4513,8 @@
         sortCol: '',
         sortDir: '',
         widths: fallbackWidths,
-        splitLeftPx: keptSplit
+        splitLeftPx: keptSplit,
+        schema: (dashColKey(table) === 'inventory' || dashColKey(table) === 'po-lines') ? 1 : 0
       };
       if (!saved) {
         return applyMobileColState(table, fallback);
