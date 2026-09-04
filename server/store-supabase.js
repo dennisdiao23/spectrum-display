@@ -453,9 +453,10 @@ function createSupabaseStore() {
         item_id: row.item_id,
         warehouse_id: row.warehouse_id,
         warehouse_name: wh.name || '',
-        warehouse_type: wh.type || 'spectrum',
+        warehouse_type: wh.type || 'warehouse',
         vendor_id: wh.vendor_id || '',
         vendor_name: wh.vendor_id ? (names[String(wh.vendor_id)] || '') : '',
+        untracked: wh.untracked,
         bin: row.bin,
         qty: row.qty
       });
@@ -484,25 +485,35 @@ function createSupabaseStore() {
   }
 
   async function defaultSpectrumWarehouse() {
-    const { data, error } = await supabase
-      .from('inventory_warehouses')
-      .select('*')
-      .eq('type', 'spectrum')
-      .order('id', { ascending: true })
-      .limit(1)
-      .maybeSingle();
-    throwIf(error, 'Could not read warehouses.');
-    if (!data) throw new Error('Add a Spectrum warehouse first.');
-    return data;
+    const wh = require('./inventory-warehouses');
+    const { data, error } = await supabase.from('inventory_warehouses').select('*').order('id', { ascending: true });
+    throwIf(error, 'Could not read locations.');
+    const rows = data || [];
+    const tracked = rows.filter(function (row) { return !wh.rowUntracked(row); });
+    const prefer = tracked.filter(function (row) { return wh.locationKind(row.type) === 'warehouse'; });
+    const row = prefer[0] || tracked[0] || rows[0];
+    if (!row) throw new Error('Add a tracked location first.');
+    return row;
+  }
+
+  async function countTrackedWarehouses(exceptId) {
+    const wh = require('./inventory-warehouses');
+    const { data, error } = await supabase.from('inventory_warehouses').select('*');
+    throwIf(error, 'Could not read locations.');
+    return (data || []).filter(function (row) {
+      if (exceptId != null && String(row.id) === String(exceptId)) return false;
+      return !wh.rowUntracked(row);
+    }).length;
   }
 
   async function resolveWarehouse(warehouseId, opts) {
-    const spectrumOnly = !!(opts && opts.spectrumOnly);
+    const wh = require('./inventory-warehouses');
+    const trackedOnly = !!(opts && (opts.spectrumOnly || opts.trackedOnly));
     if (warehouseId) {
       const { data, error } = await supabase.from('inventory_warehouses').select('*').eq('id', warehouseId).maybeSingle();
-      throwIf(error, 'Could not read warehouse.');
-      if (!data) throw new Error('Warehouse not found.');
-      if (spectrumOnly && data.type !== 'spectrum') return defaultSpectrumWarehouse();
+      throwIf(error, 'Could not read location.');
+      if (!data) throw new Error('Location not found.');
+      if (trackedOnly && wh.rowUntracked(data)) return defaultSpectrumWarehouse();
       return data;
     }
     return defaultSpectrumWarehouse();
@@ -613,7 +624,8 @@ function createSupabaseStore() {
     if (data && data.length) return;
     await supabase.from('inventory_warehouses').insert({
       name: wh.DEFAULT_SPECTRUM_NAME,
-      type: 'spectrum',
+      type: 'warehouse',
+      untracked: false,
       notes: ''
     });
   }
@@ -760,11 +772,14 @@ function createSupabaseStore() {
     ready: seedIfEmpty(),
     async getCatalogStock() {
       const inv = require('./inventory');
-      const { data: items, error: iErr } = await supabase.from('inventory_items').select('*');
-      if (iErr) return {};
-      const { data: maps, error: mErr } = await supabase.from('product_inventory_map').select('*');
-      if (mErr) return {};
-      return inv.catalogStock(maps || [], items || []);
+      try {
+        const items = await this.listInventory();
+        const { data: maps, error: mErr } = await supabase.from('product_inventory_map').select('*');
+        if (mErr) return {};
+        return inv.catalogStock(maps || [], items || []);
+      } catch (e) {
+        return {};
+      }
     },
     async getCatalog() {
       const { data: brands, error: bErr } = await supabase.from('brands').select('id, name, tagline').order('name');
@@ -1272,7 +1287,7 @@ function createSupabaseStore() {
       const stamp = new Date().toISOString();
       const warehouse = await resolveWarehouse(input.warehouseId);
       const locQty = Math.max(0, Number(input.qty) || 0);
-      const itemQty = warehouse.type === 'spectrum' ? locQty : 0;
+      const itemQty = require('./inventory-warehouses').rowUntracked(warehouse) ? 0 : locQty;
       const fields = Object.assign(inv.dbFieldsFromInput(input), {
         qty: itemQty,
         created_at: stamp,
@@ -2021,14 +2036,8 @@ function createSupabaseStore() {
       throwIf(cErr, 'Could not read warehouse.');
       if (!current) return null;
       const input = wh.normalizeWarehouse(payload);
-      if (current.type === 'spectrum' && input.type !== 'spectrum') {
-        const { count, error } = await supabase
-          .from('inventory_warehouses')
-          .select('id', { count: 'exact', head: true })
-          .eq('type', 'spectrum')
-          .neq('id', id);
-        throwIf(error, 'Could not read warehouses.');
-        if (!count) throw new Error('Keep at least one Spectrum warehouse.');
+      if (!wh.rowUntracked(current) && input.untracked && !(await countTrackedWarehouses(id))) {
+        throw new Error('Keep at least one tracked location.');
       }
       if (input.vendorId) {
         const { data: vendor, error } = await supabase.from('inventory_vendors').select('id').eq('id', input.vendorId).maybeSingle();
@@ -2038,33 +2047,81 @@ function createSupabaseStore() {
       const fields = wh.forSupabase(wh.dbFields(input));
       fields.updated_at = new Date().toISOString();
       const { error } = await supabase.from('inventory_warehouses').update(fields).eq('id', id);
-      throwIf(error, 'Could not save warehouse.');
+      throwIf(error, 'Could not save location.');
       const { data: locRows } = await supabase.from('inventory_item_locations').select('item_id').eq('warehouse_id', id);
       const ids = Array.from(new Set((locRows || []).map(function (row) { return row.item_id; })));
       for (let i = 0; i < ids.length; i++) await syncItemSpectrumQty(ids[i]);
       return this.getWarehouse(id);
     },
     async deleteWarehouse(id) {
+      const wh = require('./inventory-warehouses');
       const { data: current, error: cErr } = await supabase.from('inventory_warehouses').select('*').eq('id', id).maybeSingle();
-      throwIf(cErr, 'Could not read warehouse.');
+      throwIf(cErr, 'Could not read location.');
       if (!current) return false;
-      if (current.type === 'spectrum') {
-        const { count, error } = await supabase
-          .from('inventory_warehouses')
-          .select('id', { count: 'exact', head: true })
-          .eq('type', 'spectrum')
-          .neq('id', id);
-        throwIf(error, 'Could not read warehouses.');
-        if (!count) throw new Error('Keep at least one Spectrum warehouse.');
+      if (!wh.rowUntracked(current) && !(await countTrackedWarehouses(id))) {
+        throw new Error('Keep at least one tracked location.');
       }
       const { data: locRows, error: lErr } = await supabase.from('inventory_item_locations').select('qty').eq('warehouse_id', id);
       throwIf(lErr, 'Could not read locations.');
       const stock = (locRows || []).reduce(function (sum, row) { return sum + Math.max(0, Number(row.qty) || 0); }, 0);
-      if (stock > 0) throw new Error('Move or count this warehouse to zero before deleting it.');
+      if (stock > 0) throw new Error('Transfer or count this location to zero before deleting it.');
       await supabase.from('inventory_item_locations').delete().eq('warehouse_id', id);
       const { data, error } = await supabase.from('inventory_warehouses').delete().eq('id', id).select('id');
-      throwIf(error, 'Could not delete warehouse.');
+      throwIf(error, 'Could not delete location.');
       return !!(data && data.length);
+    },
+    async transferWarehouseStock(fromId, payload, adminEmail) {
+      const { data: from, error: fErr } = await supabase.from('inventory_warehouses').select('*').eq('id', fromId).maybeSingle();
+      throwIf(fErr, 'Could not read location.');
+      if (!from) return null;
+      const toId = payload && (payload.toLocationId != null ? payload.toLocationId : payload.toWarehouseId);
+      if (!toId || String(toId) === String(fromId)) throw new Error('Pick a different location.');
+      const { data: to, error: tErr } = await supabase.from('inventory_warehouses').select('*').eq('id', toId).maybeSingle();
+      throwIf(tErr, 'Could not read location.');
+      if (!to) throw new Error('Destination location not found.');
+      const itemId = payload && (payload.itemId != null ? payload.itemId : payload.item_id);
+      if (!itemId) throw new Error('Pick an item.');
+      const qty = Math.round(Number(payload && payload.qty));
+      if (!isFinite(qty) || qty <= 0) throw new Error('Quantity must be a whole number greater than 0.');
+      const { data: src } = await supabase
+        .from('inventory_item_locations')
+        .select('*')
+        .eq('item_id', itemId)
+        .eq('warehouse_id', fromId)
+        .maybeSingle();
+      const have = src ? Math.max(0, Number(src.qty) || 0) : 0;
+      if (have < qty) throw new Error('Only ' + have + ' at this location.');
+      const { data: dest } = await supabase
+        .from('inventory_item_locations')
+        .select('*')
+        .eq('item_id', itemId)
+        .eq('warehouse_id', toId)
+        .maybeSingle();
+      const destQty = dest ? Math.max(0, Number(dest.qty) || 0) : 0;
+      const email = String(adminEmail || '').trim().slice(0, 120);
+      await upsertItemLocation(itemId, fromId, src ? src.bin : '', have - qty);
+      await upsertItemLocation(itemId, toId, dest ? dest.bin : '', destQty + qty);
+      await syncItemSpectrumQty(itemId);
+      const { error: mErr } = await supabase.from('inventory_item_moves').insert([
+        {
+          item_id: Number(itemId),
+          kind: 'transfer',
+          qty_delta: -qty,
+          qty_after: have - qty,
+          note: 'To ' + to.name,
+          admin_email: email
+        },
+        {
+          item_id: Number(itemId),
+          kind: 'transfer',
+          qty_delta: qty,
+          qty_after: destQty + qty,
+          note: 'From ' + from.name,
+          admin_email: email
+        }
+      ]);
+      throwIf(mErr, 'Could not save transfer history.');
+      return this.getWarehouse(fromId);
     },
     async getCompanyProfile() {
       const ca = require('./company-accounts');

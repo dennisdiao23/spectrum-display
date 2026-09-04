@@ -2,47 +2,70 @@ function trim(value, max) {
   return String(value == null ? '' : value).trim().slice(0, max || 240);
 }
 
-const TYPES = ['spectrum', 'partner'];
-const DEFAULT_SPECTRUM_NAME = 'Spectrum Warehouse';
-
-function warehouseType(value) {
-  const t = String(value || '').trim().toLowerCase();
-  return t === 'partner' ? 'partner' : 'spectrum';
+function bool(value) {
+  return value === true || value === 1 || value === '1' || value === 'true';
 }
 
-function typeLabel(type) {
-  return warehouseType(type) === 'partner' ? 'Partner Warehouse' : 'Spectrum Warehouse';
+const KINDS = ['bin', 'warehouse', 'custom'];
+const DEFAULT_NAME = 'Spectrum Warehouse';
+
+function locationKind(value) {
+  const t = String(value || '').trim().toLowerCase();
+  if (t === 'bin') return 'bin';
+  if (t === 'custom') return 'custom';
+  return 'warehouse';
+}
+
+function kindLabel(kind) {
+  const k = locationKind(kind);
+  if (k === 'bin') return 'Bin';
+  if (k === 'custom') return 'Custom';
+  return 'Warehouse';
+}
+
+function rowUntracked(row) {
+  if (!row) return false;
+  if (bool(row.untracked)) return true;
+  return String(row.type || row.kind || '').toLowerCase() === 'partner';
 }
 
 function normalizeWarehouse(input) {
   const src = input || {};
   const name = trim(src.name, 160);
-  if (!name) throw new Error('Name the warehouse.');
-  const type = warehouseType(src.type);
+  if (!name) throw new Error('Name the location.');
+  const kind = locationKind(src.kind || src.type);
   const vendorId = src.vendorId != null ? src.vendorId : src.vendor_id;
-  const vendor = vendorId ? String(vendorId).trim() : '';
-  if (type === 'partner' && !vendor) {
-    throw new Error('Pick a vendor for a partner warehouse.');
+  const vendor = kind === 'warehouse' ? String(vendorId || '').trim() : '';
+  let untracked = false;
+  if (kind === 'warehouse' && vendor) {
+    untracked = bool(src.untracked != null ? src.untracked : src.doNotTrack);
   }
   return {
     name: name,
-    type: type,
-    vendorId: type === 'partner' ? vendor : '',
+    type: kind,
+    kind: kind,
+    vendorId: vendor,
+    untracked: untracked,
     notes: trim(src.notes, 2000)
   };
 }
 
 function formatWarehouse(row, extra) {
   if (!row) return null;
-  const type = warehouseType(row.type);
   const extraBits = extra || {};
+  const kind = locationKind(row.type || row.kind);
+  const vendorId = kind === 'warehouse' ? (row.vendor_id || extraBits.vendorId || '') : '';
+  const untracked = kind === 'warehouse' && vendorId ? rowUntracked(row) : false;
   return {
     id: row.id,
     name: row.name || '',
-    type: type,
-    typeLabel: typeLabel(type),
-    vendorId: type === 'partner' ? (row.vendor_id || extraBits.vendorId || '') : '',
-    vendorName: type === 'partner' ? (extraBits.vendorName || row.vendor_name || '') : '',
+    type: kind,
+    kind: kind,
+    typeLabel: kindLabel(kind),
+    vendorId: vendorId,
+    vendorName: vendorId ? (extraBits.vendorName || row.vendor_name || '') : '',
+    untracked: untracked,
+    tracked: !untracked,
     notes: row.notes || '',
     itemCount: extraBits.itemCount != null ? Number(extraBits.itemCount) || 0 : 0,
     qty: extraBits.qty != null ? Math.max(0, Number(extraBits.qty) || 0) : 0,
@@ -56,6 +79,7 @@ function dbFields(input) {
     name: input.name,
     type: input.type,
     vendor_id: input.vendorId ? input.vendorId : null,
+    untracked: input.untracked ? 1 : 0,
     notes: input.notes
   };
 }
@@ -64,14 +88,20 @@ function forSupabase(fields) {
   const out = Object.assign({}, fields);
   if (out.vendor_id != null && out.vendor_id !== '') out.vendor_id = Number(out.vendor_id);
   else out.vendor_id = null;
+  out.untracked = !!fields.untracked;
   return out;
 }
 
 module.exports = {
-  TYPES,
-  DEFAULT_SPECTRUM_NAME,
-  warehouseType,
-  typeLabel,
+  TYPES: KINDS,
+  KINDS,
+  DEFAULT_SPECTRUM_NAME: DEFAULT_NAME,
+  DEFAULT_NAME,
+  locationKind,
+  kindLabel,
+  warehouseType: locationKind,
+  typeLabel: kindLabel,
+  rowUntracked,
   normalizeWarehouse,
   formatWarehouse,
   dbFields,

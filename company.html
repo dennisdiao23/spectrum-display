@@ -76,9 +76,9 @@
             <svg class="dash-nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 10 12 4.5 21 10v9.5a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V10z"/><path d="M9 20.5V12h6v8.5"/></svg>
             <span>Inventory</span>
           </a>
-          <a href="/company/inventory/warehouses" id="tab-warehouses" class="dash-sub-link">
+          <a href="/company/inventory/locations" id="tab-warehouses" class="dash-sub-link">
             <svg class="dash-nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 21V8l9-5 9 5v13"/><path d="M9 21v-8h6v8"/></svg>
-            <span>Warehouses</span>
+            <span>Location</span>
           </a>
           <a href="/company/inventory/receipt-shipments" id="tab-receipt-shipments" class="dash-sub-link">
             <svg class="dash-nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 7h16l-1.5 12H5.5L4 7z"/><path d="M9 7V5a3 3 0 0 1 6 0v2"/><path d="M9 14h6M9 18h4"/></svg>
@@ -594,7 +594,7 @@
                       <th class="py-3 px-4 font-medium" data-col="pitch">Pitch <span class="dash-col-caret">▾</span><span class="dash-col-grip" aria-hidden="true"></span></th>
                       <th class="py-3 px-4 font-medium" data-col="brand">Brand <span class="dash-col-caret">▾</span><span class="dash-col-grip" aria-hidden="true"></span></th>
                       <th class="py-3 px-4 font-medium" data-col="qty">On hand <span class="dash-col-caret">▾</span><span class="dash-col-grip" aria-hidden="true"></span></th>
-                      <th class="py-3 px-4 font-medium" data-col="warehouse">Warehouse <span class="dash-col-caret">▾</span><span class="dash-col-grip" aria-hidden="true"></span></th>
+                      <th class="py-3 px-4 font-medium" data-col="warehouse">Location <span class="dash-col-caret">▾</span><span class="dash-col-grip" aria-hidden="true"></span></th>
                       <th class="py-3 px-4 font-medium" data-col="bin">Bin # <span class="dash-col-caret">▾</span><span class="dash-col-grip" aria-hidden="true"></span></th>
                       <th class="py-3 px-4 font-medium" data-col="cost">Cost <span class="dash-col-caret">▾</span><span class="dash-col-grip" aria-hidden="true"></span></th>
                       <th class="py-3 px-4 font-medium" data-col="price">Sell price <span class="dash-col-caret">▾</span><span class="dash-col-grip" aria-hidden="true"></span></th>
@@ -723,26 +723,26 @@
           <div class="page-kpis page-kpis-3 cc-list-kpis" id="wh-overview">
             <button type="button" class="dash-kpi is-on" data-filter="all" aria-pressed="true">
               <span class="dash-kpi-icon dash-kpi-icon-inventory" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M3 21V8l9-5 9 5v13"/><path d="M9 21v-8h6v8"/></svg></span>
-              <span class="dash-kpi-label">Warehouses</span>
+              <span class="dash-kpi-label">Locations</span>
               <strong class="dash-kpi-value" id="wh-stat-all">—</strong>
               <span class="dash-kpi-hint">All locations</span>
             </button>
-            <button type="button" class="dash-kpi" data-filter="spectrum" aria-pressed="false">
+            <button type="button" class="dash-kpi" data-filter="tracked" aria-pressed="false">
               <span class="dash-kpi-icon dash-kpi-icon-website" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M3 10 12 4.5 21 10v9.5a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V10z"/><path d="M9 20.5V12h6v8.5"/></svg></span>
-              <span class="dash-kpi-label">Spectrum</span>
-              <strong class="dash-kpi-value" id="wh-stat-spectrum">—</strong>
+              <span class="dash-kpi-label">Tracked</span>
+              <strong class="dash-kpi-value" id="wh-stat-tracked">—</strong>
               <span class="dash-kpi-hint">Our inventory</span>
             </button>
-            <button type="button" class="dash-kpi" data-filter="partner" aria-pressed="false">
+            <button type="button" class="dash-kpi" data-filter="untracked" aria-pressed="false">
               <span class="dash-kpi-icon dash-kpi-icon-customers" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="3.25"/><path d="M5 19.2c.9-3.1 3.5-4.7 7-4.7s6.1 1.6 7 4.7"/></svg></span>
-              <span class="dash-kpi-label">Partner</span>
-              <strong class="dash-kpi-value" id="wh-stat-partner">—</strong>
-              <span class="dash-kpi-hint">Vendor hands</span>
+              <span class="dash-kpi-label">Untracked</span>
+              <strong class="dash-kpi-value" id="wh-stat-untracked">—</strong>
+              <span class="dash-kpi-hint">Not our on-hand</span>
             </button>
           </div>
           <div class="cc-list-toolbar cc-list-tools">
-            <input id="wh-search" type="search" placeholder="Search warehouse, vendor" class="cc-list-search bg-slate-800 border border-slate-700 rounded-full px-3 py-1.5 text-sm">
-            <button id="wh-new-btn" type="button" class="cc-list-add-btn px-4 py-2 rounded-full bg-sky-500 hover:bg-sky-400 text-white text-sm font-semibold">Add warehouse</button>
+            <input id="wh-search" type="search" placeholder="Search location, vendor" class="cc-list-search bg-slate-800 border border-slate-700 rounded-full px-3 py-1.5 text-sm">
+            <button id="wh-new-btn" type="button" class="cc-list-add-btn px-4 py-2 rounded-full bg-sky-500 hover:bg-sky-400 text-white text-sm font-semibold">Add location</button>
           </div>
           <p id="wh-error" class="hidden text-sm text-red-400 mb-3"></p>
           <div id="wh-split" class="dash-split wh-split">
@@ -752,9 +752,10 @@
                 <table class="w-full text-sm dash-cols" data-cols="warehouses">
                   <thead class="text-left text-slate-400 border-b border-slate-800">
                     <tr>
-                      <th class="py-3 px-4 font-medium" data-col="name">Warehouse <span class="dash-col-caret">▾</span><span class="dash-col-grip" aria-hidden="true"></span></th>
+                      <th class="py-3 px-4 font-medium" data-col="name">Location <span class="dash-col-caret">▾</span><span class="dash-col-grip" aria-hidden="true"></span></th>
                       <th class="py-3 px-4 font-medium" data-col="type">Type <span class="dash-col-caret">▾</span><span class="dash-col-grip" aria-hidden="true"></span></th>
                       <th class="py-3 px-4 font-medium" data-col="vendor">Vendor <span class="dash-col-caret">▾</span><span class="dash-col-grip" aria-hidden="true"></span></th>
+                      <th class="py-3 px-4 font-medium" data-col="tracked">Tracked <span class="dash-col-caret">▾</span><span class="dash-col-grip" aria-hidden="true"></span></th>
                       <th class="py-3 px-4 font-medium" data-col="qty">Qty <span class="dash-col-caret">▾</span><span class="dash-col-grip" aria-hidden="true"></span></th>
                       <th class="py-3 px-4 font-medium" data-col="skus">SKUs <span class="dash-col-caret">▾</span><span class="dash-col-grip" aria-hidden="true"></span></th>
                       <th class="py-3 px-4 font-medium" data-col="notes">Notes <span class="dash-col-caret">▾</span><span class="dash-col-grip" aria-hidden="true"></span></th>
@@ -765,37 +766,88 @@
                 </div>
               </div>
             </div>
-            <div id="wh-split-resizer" class="dash-split-resizer" role="separator" aria-orientation="vertical" aria-label="Resize warehouse panels" tabindex="0"></div>
+            <div id="wh-split-resizer" class="dash-split-resizer" role="separator" aria-orientation="vertical" aria-label="Resize location panels" tabindex="0"></div>
             <div id="wh-split-right" class="dash-split-right">
               <div id="wh-tab-bar" class="inv-tab-bar">
-                <div id="wh-tab-strip" class="inv-tab-strip" role="tablist" aria-label="Open warehouses"></div>
+                <div id="wh-tab-strip" class="inv-tab-strip" role="tablist" aria-label="Open locations"></div>
               </div>
               <div id="wh-overview-panel" class="inv-right-panel">
                 <div class="inv-overview-summary">
-                  <p class="inv-overview-lead">Spectrum warehouses count as our on-hand. Partner warehouses are vendor stock — they do not add to Low/Out, website stock, or sales on-hand.</p>
+                  <p class="inv-overview-lead">Locations are Bin, Warehouse, or Custom. A warehouse can be assigned to a vendor. If you mark it do-not-track, qty is not our on-hand — it still shows on the item and can count as website stock. POs for that vendor show this location’s qty.</p>
                 </div>
               </div>
               <div id="wh-item-panel" class="inv-right-panel hidden" aria-hidden="true">
-                <form id="wh-form" class="rounded-2xl border border-slate-800 bg-slate-900/50 p-5 grid sm:grid-cols-2 gap-4">
+                <div id="wh-view-panel">
+                  <div class="cc-detail-hero">
+                    <div class="cc-detail-hero-main">
+                      <div class="cc-detail-hero-copy">
+                        <h2 id="wh-detail-name">Location</h2>
+                        <p id="wh-detail-subname" class="cc-detail-subname"></p>
+                      </div>
+                      <div class="cc-detail-toolbar-actions inv-detail-hero-actions">
+                        <button type="button" id="wh-transfer-btn" class="cc-detail-btn">Transfer</button>
+                        <button type="button" id="wh-edit-btn" class="cc-detail-btn">Edit</button>
+                      </div>
+                    </div>
+                    <div class="cc-detail-hero-grid">
+                      <div class="cc-detail-block">
+                        <h3>Location</h3>
+                        <dl class="cc-detail-dl">
+                          <div><dt>Type</dt><dd id="wh-detail-type">—</dd></div>
+                          <div><dt>Vendor</dt><dd id="wh-detail-vendor">—</dd></div>
+                          <div><dt>Tracked</dt><dd id="wh-detail-tracked">—</dd></div>
+                          <div><dt>Qty</dt><dd id="wh-detail-qty">—</dd></div>
+                        </dl>
+                      </div>
+                      <div class="cc-detail-block">
+                        <h3>Notes</h3>
+                        <p id="wh-detail-notes" class="text-sm text-slate-300">—</p>
+                      </div>
+                    </div>
+                  </div>
+                  <div id="wh-items-card" class="mt-4 rounded-2xl border border-slate-800 bg-slate-900/50 p-5">
+                    <h3 class="font-semibold mb-3">Items here</h3>
+                    <div class="cc-table-wrap overflow-x-auto">
+                      <table class="w-full text-sm">
+                        <thead class="text-left text-slate-400 border-b border-slate-800">
+                          <tr>
+                            <th class="py-2 px-3 font-medium">SKU</th>
+                            <th class="py-2 px-3 font-medium">Item</th>
+                            <th class="py-2 px-3 font-medium">Qty</th>
+                          </tr>
+                        </thead>
+                        <tbody id="wh-items-body" class="text-slate-200"></tbody>
+                      </table>
+                    </div>
+                  </div>
+                </div>
+                <form id="wh-form" class="hidden rounded-2xl border border-slate-800 bg-slate-900/50 p-5 grid sm:grid-cols-2 gap-4">
                   <input type="hidden" id="wh-id">
                   <div class="sm:col-span-2">
-                    <h2 id="wh-form-title" class="font-semibold text-lg">Warehouse</h2>
+                    <h2 id="wh-form-title" class="font-semibold text-lg">Location</h2>
                   </div>
                   <div>
                     <label class="block text-xs text-slate-400 mb-1">Name</label>
-                    <input id="wh-name" required type="text" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm" placeholder="Spectrum Warehouse">
+                    <input id="wh-name" required type="text" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm" placeholder="Main warehouse">
                   </div>
                   <div>
                     <label class="block text-xs text-slate-400 mb-1">Type</label>
                     <select id="wh-type" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm">
-                      <option value="spectrum">Spectrum Warehouse</option>
-                      <option value="partner">Partner Warehouse</option>
+                      <option value="warehouse">Warehouse</option>
+                      <option value="bin">Bin</option>
+                      <option value="custom">Custom</option>
                     </select>
                   </div>
                   <div id="wh-vendor-wrap" class="hidden">
                     <label class="block text-xs text-slate-400 mb-1">Vendor</label>
                     <select id="wh-vendor" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm"></select>
-                    <p class="text-[11px] text-slate-500 mt-1">PO lines for this vendor show qty here as Vendor hands.</p>
+                    <p class="text-[11px] text-slate-500 mt-1">Optional. POs for this vendor show stock at this location.</p>
+                  </div>
+                  <div id="wh-untracked-wrap" class="hidden sm:col-span-2">
+                    <label class="flex items-start gap-2 text-sm text-slate-200">
+                      <input id="wh-untracked" type="checkbox" class="mt-1">
+                      <span>Do not track this location as our inventory. Qty still shows on the item and can count as website stock.</span>
+                    </label>
                   </div>
                   <div class="sm:col-span-2">
                     <label class="block text-xs text-slate-400 mb-1">Notes</label>
@@ -803,26 +855,35 @@
                   </div>
                   <p id="wh-form-msg" class="sm:col-span-2 hidden text-sm"></p>
                   <div class="sm:col-span-2 flex flex-wrap gap-2">
-                    <button type="submit" class="px-5 py-2 rounded-full bg-sky-500 hover:bg-sky-400 text-white text-sm font-semibold">Save warehouse</button>
+                    <button type="submit" class="px-5 py-2 rounded-full bg-sky-500 hover:bg-sky-400 text-white text-sm font-semibold">Save location</button>
+                    <button type="button" id="wh-edit-cancel" class="px-5 py-2 rounded-full border border-slate-700 text-slate-300 hover:border-slate-500 text-sm">Cancel</button>
                     <button type="button" id="wh-delete-btn" class="hidden px-5 py-2 rounded-full border border-slate-700 text-red-400 hover:border-red-500 text-sm">Delete</button>
                   </div>
                 </form>
-                <div id="wh-items-card" class="mt-4 rounded-2xl border border-slate-800 bg-slate-900/50 p-5">
-                  <h3 class="font-semibold mb-3">Items here</h3>
-                  <div class="cc-table-wrap overflow-x-auto">
-                    <table class="w-full text-sm">
-                      <thead class="text-left text-slate-400 border-b border-slate-800">
-                        <tr>
-                          <th class="py-2 px-3 font-medium">SKU</th>
-                          <th class="py-2 px-3 font-medium">Item</th>
-                          <th class="py-2 px-3 font-medium">Bin #</th>
-                          <th class="py-2 px-3 font-medium">Qty</th>
-                        </tr>
-                      </thead>
-                      <tbody id="wh-items-body" class="text-slate-200"></tbody>
-                    </table>
+                <form id="wh-transfer-form" class="hidden rounded-2xl border border-slate-800 bg-slate-900/50 p-5 grid sm:grid-cols-2 gap-4">
+                  <div class="sm:col-span-2">
+                    <h2 class="font-semibold text-lg">Transfer stock</h2>
+                    <p class="text-xs text-slate-500 mt-1">Move qty from this location to another.</p>
                   </div>
-                </div>
+                  <div>
+                    <label class="block text-xs text-slate-400 mb-1">Item</label>
+                    <select id="wh-transfer-item" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm"></select>
+                  </div>
+                  <div>
+                    <label class="block text-xs text-slate-400 mb-1">To location</label>
+                    <select id="wh-transfer-to" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm"></select>
+                  </div>
+                  <div>
+                    <label class="block text-xs text-slate-400 mb-1">Quantity</label>
+                    <input id="wh-transfer-qty" type="number" min="1" step="1" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm">
+                    <p id="wh-transfer-avail" class="text-[11px] text-slate-500 mt-1"></p>
+                  </div>
+                  <p id="wh-transfer-msg" class="sm:col-span-2 hidden text-sm"></p>
+                  <div class="sm:col-span-2 flex flex-wrap gap-2">
+                    <button type="submit" class="px-5 py-2 rounded-full bg-sky-500 hover:bg-sky-400 text-white text-sm font-semibold">Transfer</button>
+                    <button type="button" id="wh-transfer-cancel" class="px-5 py-2 rounded-full border border-slate-700 text-slate-300 hover:border-slate-500 text-sm">Cancel</button>
+                  </div>
+                </form>
               </div>
             </div>
           </div>
@@ -1155,7 +1216,7 @@
                       <th class="py-2 px-3 font-medium" data-col="description">Description <span class="dash-col-caret">▾</span><span class="dash-col-grip" aria-hidden="true"></span></th>
                       <th class="py-2 px-3 font-medium" data-col="qty">Quantity <span class="dash-col-caret">▾</span><span class="dash-col-grip" aria-hidden="true"></span></th>
                       <th class="py-2 px-3 font-medium" data-col="ourHands">Our hands <span class="dash-col-caret">▾</span><span class="dash-col-grip" aria-hidden="true"></span></th>
-                      <th class="py-2 px-3 font-medium" data-col="vendorHands">Vendor hands <span class="dash-col-caret">▾</span><span class="dash-col-grip" aria-hidden="true"></span></th>
+                      <th class="py-2 px-3 font-medium" data-col="vendorHands">Vendor stock <span class="dash-col-caret">▾</span><span class="dash-col-grip" aria-hidden="true"></span></th>
                       <th class="py-2 px-3 font-medium" data-col="rate">Rate <span class="dash-col-caret">▾</span><span class="dash-col-grip" aria-hidden="true"></span></th>
                       <th class="py-2 px-3 font-medium" data-col="amount">Amount <span class="dash-col-caret">▾</span><span class="dash-col-grip" aria-hidden="true"></span></th>
                       <th class="py-2 px-3 font-medium w-10"></th>
@@ -2092,7 +2153,7 @@
           <button type="button" class="cc-sec-btn"><span class="cc-sec-label"><svg class="cc-sec-ico" viewBox="0 0 24 24"><path d="M3 10 12 4.5 21 10v9.5a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V10z"/><path d="M9 20.5V12h6v8.5"/></svg> Inventory info</span> <span class="cc-sec-chevron">▾</span></button>
           <div class="cc-sec-body">
             <div class="cc-field" id="inv-qty-init-wrap"><label>Initial quantity on hand</label><input id="inv-qty-init" type="number" min="0" step="1" value="0"></div>
-            <div class="cc-field"><label>Warehouse</label><select id="inv-warehouse"></select></div>
+            <div class="cc-field"><label>Location</label><select id="inv-warehouse"></select></div>
             <div class="cc-field"><label>Bin #</label><input id="inv-bin" type="text" maxlength="80" placeholder="A-12"></div>
             <div class="cc-field"><label>Low-stock at</label><input id="inv-item-low" type="number" min="0" step="1"></div>
             <div class="cc-field"><label>Panel weight (kg)</label><input id="inv-weight" type="number" min="0" step="0.01"></div>
@@ -2136,7 +2197,7 @@
                   <option value="count">Count (set qty)</option>
                 </select>
               </div>
-              <div class="cc-field"><label>Warehouse</label><select id="inv-adjust-warehouse"></select></div>
+              <div class="cc-field"><label>Location</label><select id="inv-adjust-warehouse"></select></div>
               <div class="cc-field"><label id="inv-qty-label">Quantity</label><input id="inv-qty" required type="number" min="0" step="1"></div>
               <div class="cc-field wide"><label>Note</label><input id="inv-note" type="text" maxlength="240" placeholder="PO, job name, count date…"></div>
               <p id="inv-msg" class="wide hidden text-sm"></p>
@@ -2495,7 +2556,7 @@
       const hash = String(location.hash || '').replace(/^#\/?/, '');
       if (hash === 'inventory/vendors' || hash === 'vendors') return 'vendors';
       if (hash === 'inventory/purchase-orders' || hash === 'purchase-orders') return 'purchase-orders';
-      if (hash === 'inventory/warehouses' || hash === 'warehouses') return 'warehouses';
+      if (hash === 'inventory/warehouses' || hash === 'warehouses' || hash === 'inventory/locations' || hash === 'locations') return 'warehouses';
       if (hash === 'inventory/receipt-shipments' || hash === 'receipt-shipments') return 'receipt-shipments';
       if (hash === 'inventory') return 'inventory';
       if (hash === 'settings/company' || hash === 'company') return 'company';
@@ -2523,8 +2584,8 @@
       if (p === '/company/sales' || p === '/company/sales/quotes') return 'quotes';
       if (p === '/company/inventory/vendors') return 'vendors';
       if (/^\/company\/inventory\/vendors\/\d+$/.test(p)) return 'vendors';
-      if (p === '/company/inventory/warehouses') return 'warehouses';
-      if (/^\/company\/inventory\/warehouses\/\d+$/.test(p)) return 'warehouses';
+      if (p === '/company/inventory/warehouses' || p === '/company/inventory/locations') return 'warehouses';
+      if (/^\/company\/inventory\/(warehouses|locations)\/\d+$/.test(p)) return 'warehouses';
       if (/^\/company\/inventory\/\d+$/.test(p)) return 'inventory';
       if (p === '/company/inventory/purchase-orders') return 'purchase-orders';
       if (p === '/company/inventory/receipt-shipments') return 'receipt-shipments';
@@ -2539,7 +2600,7 @@
     function pathForTab(name) {
       if (name === 'dashboard') return '/company';
       if (name === 'inventory') return '/company/inventory';
-      if (name === 'warehouses') return '/company/inventory/warehouses';
+      if (name === 'warehouses') return '/company/inventory/locations';
       if (name === 'vendors') return '/company/inventory/vendors';
       if (name === 'purchase-orders') return '/company/inventory/purchase-orders';
       if (name === 'receipt-shipments') return '/company/inventory/receipt-shipments';
@@ -2569,11 +2630,11 @@
       return id ? '/company/inventory/' + id : '/company/inventory';
     }
     function warehouseIdFromPath() {
-      const m = companyPath().match(/^\/company\/inventory\/warehouses\/(\d+)$/);
+      const m = companyPath().match(/^\/company\/inventory\/(?:warehouses|locations)\/(\d+)$/);
       return m ? m[1] : '';
     }
     function pathForWarehouse(id) {
-      return id ? '/company/inventory/warehouses/' + id : '/company/inventory/warehouses';
+      return id ? '/company/inventory/locations/' + id : '/company/inventory/locations';
     }
     function vendorIdFromPath() {
       const m = companyPath().match(/^\/company\/inventory\/vendors\/(\d+)$/);
@@ -2648,8 +2709,8 @@
         if (p === '/company/sales' || p === '/company/sales/quotes') return 'quotes';
         if (p === '/company/inventory/vendors') return 'vendors';
         if (/^\/company\/inventory\/vendors\/\d+$/.test(p)) return 'vendors';
-        if (p === '/company/inventory/warehouses') return 'warehouses';
-        if (/^\/company\/inventory\/warehouses\/\d+$/.test(p)) return 'warehouses';
+        if (p === '/company/inventory/warehouses' || p === '/company/inventory/locations') return 'warehouses';
+        if (/^\/company\/inventory\/(warehouses|locations)\/\d+$/.test(p)) return 'warehouses';
         if (/^\/company\/inventory\/\d+$/.test(p)) return 'inventory';
         if (p === '/company/inventory/purchase-orders') return 'purchase-orders';
         if (p === '/company/inventory/receipt-shipments') return 'receipt-shipments';
@@ -2724,7 +2785,7 @@
       products: 'Website',
       accounts: 'Accounts',
       inventory: 'Inventory',
-      warehouses: 'Warehouses',
+      warehouses: 'Location',
       'receipt-shipments': 'Receipt Shipment',
       vendor: 'Vendor',
       vendors: 'Vendor',
@@ -2777,7 +2838,7 @@
       products: '/company/website',
       accounts: '/company/website/accounts',
       inventory: '/company/inventory',
-      warehouses: '/company/inventory/warehouses',
+      warehouses: '/company/inventory/locations',
       'receipt-shipments': '/company/inventory/receipt-shipments',
       vendors: '/company/inventory/vendors',
       'purchase-orders': '/company/inventory/purchase-orders',
@@ -3954,7 +4015,7 @@
 
     const LIST_PAGE_HELPERS = {
       inventory: '<span id="inv-total">0</span> warehouse SKUs — stock, cost, and website mapping. Unmapped items stay off the public site.',
-      warehouses: '<span id="wh-total">0</span> warehouses. Spectrum qty is ours. Partner qty is vendor hands only.',
+      warehouses: '<span id="wh-total">0</span> locations. Tracked qty is our on-hand. Untracked still shows on the item and can count as website stock.',
       vendors: '<span id="vn-total">0</span> vendors for purchase orders.',
       'purchase-orders': '<span id="po-total">0</span> purchase orders.',
       'receipt-shipments': '<span id="rs-total">0</span> receipt shipments.',
@@ -4115,7 +4176,7 @@
         products: ['Website', 'Product pages'],
         accounts: ['Website', 'Website accounts'],
         inventory: ['Inventory', ''],
-        warehouses: ['Inventory', 'Warehouses'],
+        warehouses: ['Inventory', 'Location'],
         vendors: ['Vendor', ''],
         'purchase-orders': ['Vendor', 'Purchase Order'],
         'receipt-shipments': ['Inventory', 'Receipt Shipment'],
@@ -4196,6 +4257,7 @@
     let inventoryWarehouses = [];
     let warehouseFilter = 'all';
     let whDetailId = '';
+    let whCurrentDetail = null;
     const WH_TAB_MAX = 7;
     let whOpenTabs = [];
     let whActiveTab = 'overview';
@@ -4264,7 +4326,7 @@
         { id: 'pitch', label: 'Pitch' },
         { id: 'brand', label: 'Brand' },
         { id: 'qty', label: 'On hand' },
-        { id: 'warehouse', label: 'Warehouse' },
+        { id: 'warehouse', label: 'Location' },
         { id: 'bin', label: 'Bin #' },
         { id: 'cost', label: 'Cost' },
         { id: 'price', label: 'Sell price' },
@@ -4318,7 +4380,7 @@
         { id: 'description', label: 'Description' },
         { id: 'qty', label: 'Quantity' },
         { id: 'ourHands', label: 'Our hands' },
-        { id: 'vendorHands', label: 'Vendor hands' },
+        { id: 'vendorHands', label: 'Vendor stock' },
         { id: 'rate', label: 'Rate' },
         { id: 'amount', label: 'Amount' }
       ],
@@ -4341,9 +4403,10 @@
         { id: 'memo', label: 'Memo' }
       ],
       warehouses: [
-        { id: 'name', label: 'Warehouse' },
+        { id: 'name', label: 'Location' },
         { id: 'type', label: 'Type' },
         { id: 'vendor', label: 'Vendor' },
+        { id: 'tracked', label: 'Tracked' },
         { id: 'qty', label: 'Qty' },
         { id: 'skus', label: 'SKUs' },
         { id: 'notes', label: 'Notes' }
@@ -4403,7 +4466,7 @@
 
     const DASH_COL_DEFAULTS = {
       inventory: ['sku', 'name', 'qty', 'warehouse', 'bin', 'cost', 'price'],
-      warehouses: ['name', 'type', 'vendor', 'qty', 'skus'],
+      warehouses: ['name', 'type', 'vendor', 'tracked', 'qty', 'skus'],
       customers: ['company', 'contact', 'email', 'phone', 'balance'],
       sales: ['number', 'customer', 'date', 'status', 'total'],
       'so-lines': ['item', 'description', 'qty', 'price', 'amount'],
@@ -4514,7 +4577,7 @@
         sortDir: '',
         widths: fallbackWidths,
         splitLeftPx: keptSplit,
-        schema: (dashColKey(table) === 'inventory' || dashColKey(table) === 'po-lines') ? 1 : 0
+        schema: (dashColKey(table) === 'inventory' || dashColKey(table) === 'po-lines' || dashColKey(table) === 'warehouses') ? 1 : 0
       };
       if (!saved) {
         return applyMobileColState(table, fallback);
@@ -4560,6 +4623,16 @@
             const drop = hidden.indexOf(id);
             if (drop !== -1) hidden.splice(drop, 1);
           });
+        }
+        schema = 1;
+      }
+      if (dashColKey(table) === 'warehouses' && schema < 1) {
+        if (order.indexOf('tracked') === -1) {
+          const vendorAt = order.indexOf('vendor');
+          const at = vendorAt === -1 ? order.length : vendorAt + 1;
+          order.splice(at, 0, 'tracked');
+          const drop = hidden.indexOf('tracked');
+          if (drop !== -1) hidden.splice(drop, 1);
         }
         schema = 1;
       }
@@ -5350,8 +5423,9 @@
     }, true);
 
     function fillInvWarehouseSelects(selected, adjustSelected) {
-      const options = '<option value="">Spectrum default</option>' + (inventoryWarehouses || []).map(function (wh) {
-        const label = (wh.name || 'Warehouse') + (wh.type === 'partner' ? ' · Partner' : '');
+      const options = '<option value="">Default tracked location</option>' + (inventoryWarehouses || []).map(function (wh) {
+        const extra = wh.untracked || wh.tracked === false ? ' · Untracked' : '';
+        const label = (wh.name || 'Location') + extra;
         return '<option value="' + esc(wh.id) + '">' + esc(label) + '</option>';
       }).join('');
       const sel = document.getElementById('inv-warehouse');
@@ -5368,7 +5442,7 @@
       }
     }
     function defaultSpectrumWarehouseId() {
-      const found = (inventoryWarehouses || []).find(function (wh) { return wh.type === 'spectrum'; });
+      const found = (inventoryWarehouses || []).find(function (wh) { return wh.tracked !== false && !wh.untracked; });
       return found ? String(found.id) : '';
     }
     function invVendorHands(item, vendorId) {
@@ -5381,10 +5455,9 @@
       const locs = (item && item.locations) || [];
       if (!locs.length) return 'No locations yet.';
       return locs.map(function (loc) {
-        const kind = loc.warehouseType === 'partner' ? 'Partner' : 'Ours';
+        const kind = loc.untracked || loc.tracked === false ? 'Untracked' : 'Tracked';
         const vendor = loc.vendorName ? (' · ' + loc.vendorName) : '';
-        const bin = loc.bin ? (' · Bin ' + loc.bin) : '';
-        return loc.warehouseName + ' (' + kind + vendor + ') · ' + Number(loc.qty || 0).toLocaleString() + bin;
+        return (loc.warehouseName || loc.locationName || 'Location') + ' (' + kind + vendor + ') · ' + Number(loc.qty || 0).toLocaleString();
       }).join('\n');
     }
 
@@ -6373,9 +6446,8 @@
         ['Cost', item.cost != null ? moneyText(item.cost) : '—'],
         ['Sell price', item.price != null ? moneyText(item.price) : '—'],
         ['Dealer net', item.dealerNet != null ? moneyText(item.dealerNet) : '—'],
-        ['Warehouse', item.warehouse || '—'],
-        ['Bin #', item.bin || '—'],
-        ['Partner qty', item.partnerQty ? String(item.partnerQty) : '0']
+        ['Location', item.warehouse || '—'],
+        ['Untracked qty', item.untrackedQty != null ? String(item.untrackedQty) : (item.partnerQty ? String(item.partnerQty) : '0')]
       ];
       wrap.innerHTML = rows.map(function (pair) {
         return '<div><dt>' + esc(pair[0]) + '</dt><dd>' + esc(pair[1]) + '</dd></div>';
@@ -6537,22 +6609,55 @@
     function fillWhVendorSelect(selected) {
       const sel = document.getElementById('wh-vendor');
       if (!sel) return;
-      sel.innerHTML = '<option value="">Choose a vendor</option>' + (inventoryVendors || []).map(function (v) {
+      sel.innerHTML = '<option value="">None</option>' + (inventoryVendors || []).map(function (v) {
         return '<option value="' + esc(v.id) + '"' + (String(v.id) === String(selected) ? ' selected' : '') + '>' +
           esc(v.displayName || v.companyName || 'Vendor') + '</option>';
       }).join('');
     }
     function syncWhVendorWrap() {
-      const type = document.getElementById('wh-type').value;
-      document.getElementById('wh-vendor-wrap').classList.toggle('hidden', type !== 'partner');
+      const typeEl = document.getElementById('wh-type');
+      if (!typeEl) return;
+      const type = typeEl.value;
+      const vendorWrap = document.getElementById('wh-vendor-wrap');
+      const untrackedWrap = document.getElementById('wh-untracked-wrap');
+      if (vendorWrap) vendorWrap.classList.toggle('hidden', type !== 'warehouse');
+      const vendorId = (document.getElementById('wh-vendor') || {}).value || '';
+      if (untrackedWrap) untrackedWrap.classList.toggle('hidden', type !== 'warehouse' || !vendorId);
+      if (type !== 'warehouse' || !vendorId) {
+        const box = document.getElementById('wh-untracked');
+        if (box) box.checked = false;
+      }
+    }
+    function showWhPanels(mode) {
+      const view = document.getElementById('wh-view-panel');
+      const form = document.getElementById('wh-form');
+      const transfer = document.getElementById('wh-transfer-form');
+      const id = (document.getElementById('wh-id') || {}).value || '';
+      if (mode === 'edit' || mode === 'new') {
+        view.classList.add('hidden');
+        form.classList.remove('hidden');
+        transfer.classList.add('hidden');
+      } else if (mode === 'transfer') {
+        view.classList.add('hidden');
+        form.classList.add('hidden');
+        transfer.classList.remove('hidden');
+      } else if (!id) {
+        view.classList.add('hidden');
+        form.classList.remove('hidden');
+        transfer.classList.add('hidden');
+      } else {
+        view.classList.remove('hidden');
+        form.classList.add('hidden');
+        transfer.classList.add('hidden');
+      }
     }
     function fillWhOverview() {
       const all = inventoryWarehouses || [];
-      const spectrum = all.filter(function (w) { return w.type === 'spectrum'; }).length;
-      const partner = all.filter(function (w) { return w.type === 'partner'; }).length;
+      const tracked = all.filter(function (w) { return w.tracked !== false && !w.untracked; }).length;
+      const untracked = all.length - tracked;
       setText('wh-stat-all', all.length);
-      setText('wh-stat-spectrum', spectrum);
-      setText('wh-stat-partner', partner);
+      setText('wh-stat-tracked', tracked);
+      setText('wh-stat-untracked', untracked);
       markPageKpis('wh-overview', warehouseFilter);
       const total = document.getElementById('wh-total');
       if (total) total.textContent = String(all.length);
@@ -6560,8 +6665,8 @@
     function renderWhTable() {
       const q = (document.getElementById('wh-search').value || '').trim().toLowerCase();
       const rows = (inventoryWarehouses || []).filter(function (wh) {
-        if (warehouseFilter === 'spectrum' && wh.type !== 'spectrum') return false;
-        if (warehouseFilter === 'partner' && wh.type !== 'partner') return false;
+        if (warehouseFilter === 'tracked' && (wh.untracked || wh.tracked === false)) return false;
+        if (warehouseFilter === 'untracked' && !(wh.untracked || wh.tracked === false)) return false;
         if (q) {
           const blob = ((wh.name || '') + ' ' + (wh.typeLabel || '') + ' ' + (wh.vendorName || '') + ' ' + (wh.notes || '')).toLowerCase();
           if (blob.indexOf(q) === -1) return false;
@@ -6574,16 +6679,19 @@
         if (col === 'name') return wh.name || '';
         if (col === 'type') return wh.typeLabel || wh.type || '';
         if (col === 'vendor') return wh.vendorName || '';
+        if (col === 'tracked') return wh.untracked || wh.tracked === false ? 0 : 1;
         if (col === 'qty') return Number(wh.qty) || 0;
         if (col === 'skus') return Number(wh.itemCount) || 0;
         if (col === 'notes') return wh.notes || '';
         return '';
       });
       tb.innerHTML = sorted.map(function (wh) {
+        const tracked = !(wh.untracked || wh.tracked === false);
         const cells = {
           name: '<td class="py-3 px-4 font-medium">' + esc(wh.name || '') + '</td>',
           type: '<td class="py-3 px-4 text-slate-400">' + esc(wh.typeLabel || wh.type || '') + '</td>',
           vendor: '<td class="py-3 px-4 text-slate-400">' + esc(wh.vendorName || '—') + '</td>',
+          tracked: '<td class="py-3 px-4 text-slate-400">' + (tracked ? 'Yes' : 'No') + '</td>',
           qty: '<td class="py-3 px-4">' + Number(wh.qty || 0).toLocaleString() + '</td>',
           skus: '<td class="py-3 px-4">' + Number(wh.itemCount || 0).toLocaleString() + '</td>',
           notes: '<td class="py-3 px-4 text-slate-400">' + esc(wh.notes || '—') + '</td>'
@@ -6592,7 +6700,7 @@
         return '<tr class="border-b border-slate-800 hover:bg-slate-900/80 cursor-pointer' +
           (selected ? ' is-selected' : '') +
           '" data-id="' + esc(wh.id) + '">' + dashOrderedCells(table, cells) + '</tr>';
-      }).join('') || '<tr><td class="py-6 px-4 text-slate-500" colspan="' + dashColSpan(table) + '">No warehouses yet.</td></tr>';
+      }).join('') || '<tr><td class="py-6 px-4 text-slate-500" colspan="' + dashColSpan(table) + '">No locations yet.</td></tr>';
       applyColOrder(table);
       fillWhOverview();
     }
@@ -6616,7 +6724,7 @@
         '<span class="inv-browser-tab-label">Overview</span></button>';
       whOpenTabs.forEach(function (id) {
         const wh = (inventoryWarehouses || []).find(function (row) { return String(row.id) === String(id); });
-        const label = id === 'new' ? 'New warehouse' : ((wh && wh.name) || 'Warehouse');
+        const label = id === 'new' ? 'New location' : ((wh && wh.name) || 'Location');
         html += '<button type="button" class="inv-browser-tab' +
           (String(whActiveTab) === String(id) ? ' is-active' : '') +
           '" data-wh-tab-id="' + esc(id) + '" role="tab" aria-selected="' + (String(whActiveTab) === String(id) ? 'true' : 'false') + '">' +
@@ -6636,30 +6744,76 @@
       panel.setAttribute('aria-hidden', 'true');
       renderWhTabBar();
       renderWhTable();
-      if (opts.push !== false) history.pushState({ tab: 'warehouses' }, '', '/company/inventory/warehouses');
+      if (opts.push !== false) history.pushState({ tab: 'warehouses' }, '', pathForWarehouse());
+    }
+    function fillWhDetailView(wh) {
+      document.getElementById('wh-detail-name').textContent = (wh && wh.name) || 'Location';
+      const kind = (wh && (wh.typeLabel || wh.kind || wh.type)) || '';
+      document.getElementById('wh-detail-subname').textContent = kind;
+      document.getElementById('wh-detail-type').textContent = kind || '—';
+      document.getElementById('wh-detail-vendor').textContent = (wh && wh.vendorName) || '—';
+      const tracked = !(wh && (wh.untracked || wh.tracked === false));
+      document.getElementById('wh-detail-tracked').textContent = tracked ? 'Yes' : 'No';
+      document.getElementById('wh-detail-qty').textContent = Number((wh && wh.qty) || 0).toLocaleString();
+      document.getElementById('wh-detail-notes').textContent = (wh && wh.notes) || '—';
+      const canChange = canEdit('inventory');
+      document.getElementById('wh-edit-btn').classList.toggle('hidden', !canChange);
+      document.getElementById('wh-transfer-btn').classList.toggle('hidden', !canChange);
+      const items = (wh && wh.items) || [];
+      const body = document.getElementById('wh-items-body');
+      body.innerHTML = items.length
+        ? items.map(function (item) {
+          return '<tr class="border-b border-slate-800"><td class="py-2 px-3 font-mono text-xs text-sky-300">' + esc(item.sku || '') +
+            '</td><td class="py-2 px-3">' + esc(item.name || '') +
+            '</td><td class="py-2 px-3">' + Number(item.qty || 0).toLocaleString() + '</td></tr>';
+        }).join('')
+        : '<tr><td class="py-4 px-3 text-slate-500" colspan="3">No items in this location yet.</td></tr>';
+    }
+    function updateWhTransferAvail() {
+      const itemId = document.getElementById('wh-transfer-item').value;
+      const items = (whCurrentDetail && whCurrentDetail.items) || [];
+      const item = items.find(function (row) { return String(row.id) === String(itemId); });
+      const have = item ? Math.max(0, Number(item.qty) || 0) : 0;
+      document.getElementById('wh-transfer-avail').textContent = have ? (have.toLocaleString() + ' available here') : '';
+      const qty = document.getElementById('wh-transfer-qty');
+      if (have) qty.max = String(have);
+    }
+    function fillWhTransferForm(wh) {
+      const itemSel = document.getElementById('wh-transfer-item');
+      const toSel = document.getElementById('wh-transfer-to');
+      const msg = document.getElementById('wh-transfer-msg');
+      if (msg) msg.classList.add('hidden');
+      const items = ((wh && wh.items) || []).filter(function (item) { return Number(item.qty) > 0; });
+      itemSel.innerHTML = items.length
+        ? items.map(function (item) {
+          return '<option value="' + esc(item.id) + '">' + esc((item.sku || '') + (item.sku && item.name ? ' · ' : '') + (item.name || '')) +
+            ' (' + Number(item.qty || 0).toLocaleString() + ')</option>';
+        }).join('')
+        : '<option value="">No stock at this location</option>';
+      const dests = (inventoryWarehouses || []).filter(function (row) {
+        return String(row.id) !== String(wh && wh.id);
+      });
+      toSel.innerHTML = dests.length
+        ? dests.map(function (row) {
+          return '<option value="' + esc(row.id) + '">' + esc(row.name || 'Location') + '</option>';
+        }).join('')
+        : '<option value="">No other locations</option>';
+      document.getElementById('wh-transfer-qty').value = '';
+      updateWhTransferAvail();
     }
     function fillWhForm(wh) {
       document.getElementById('wh-id').value = wh && wh.id ? wh.id : '';
-      document.getElementById('wh-form-title').textContent = (wh && wh.name) || 'New warehouse';
+      document.getElementById('wh-form-title').textContent = (wh && wh.id) ? ('Edit ' + (wh.name || 'location')) : 'New location';
       document.getElementById('wh-name').value = (wh && wh.name) || '';
-      document.getElementById('wh-type').value = (wh && wh.type) || 'spectrum';
+      const kind = (wh && (wh.kind || wh.type)) || 'warehouse';
+      document.getElementById('wh-type').value = (kind === 'bin' || kind === 'custom' || kind === 'warehouse') ? kind : 'warehouse';
       fillWhVendorSelect(wh && wh.vendorId);
+      document.getElementById('wh-untracked').checked = !!(wh && wh.untracked);
       document.getElementById('wh-notes').value = (wh && wh.notes) || '';
       document.getElementById('wh-form-msg').classList.add('hidden');
       const del = document.getElementById('wh-delete-btn');
       del.classList.toggle('hidden', !(wh && wh.id) || !canEdit('inventory'));
       syncWhVendorWrap();
-      const body = document.getElementById('wh-items-body');
-      const items = (wh && wh.items) || [];
-      body.innerHTML = items.length
-        ? items.map(function (item) {
-          return '<tr class="border-b border-slate-800"><td class="py-2 px-3 font-mono text-xs text-sky-300">' + esc(item.sku || '') +
-            '</td><td class="py-2 px-3">' + esc(item.name || '') +
-            '</td><td class="py-2 px-3 text-slate-400">' + esc(item.bin || '—') +
-            '</td><td class="py-2 px-3">' + Number(item.qty || 0).toLocaleString() + '</td></tr>';
-        }).join('')
-        : '<tr><td class="py-4 px-3 text-slate-500" colspan="4">No items in this warehouse yet.</td></tr>';
-      document.getElementById('wh-items-card').classList.toggle('hidden', !(wh && wh.id));
     }
     async function openWhTab(id, opts) {
       opts = opts || {};
@@ -6675,10 +6829,16 @@
       panel.classList.remove('hidden');
       panel.setAttribute('aria-hidden', 'false');
       if (!id || id === 'new') {
+        whCurrentDetail = null;
         fillWhForm(null);
+        showWhPanels('new');
       } else {
         const data = await api('/api/admin/inventory-warehouses/' + encodeURIComponent(id));
-        fillWhForm(data.warehouse);
+        whCurrentDetail = data.warehouse || data.location || null;
+        fillWhForm(whCurrentDetail);
+        fillWhDetailView(whCurrentDetail);
+        fillWhTransferForm(whCurrentDetail);
+        showWhPanels(opts.mode || 'view');
       }
       renderWhTabBar();
       renderWhTable();
@@ -6714,7 +6874,7 @@
           showWhOverview({ push: false });
         }
       } catch (err) {
-        errEl.textContent = err.message || 'Could not load warehouses.';
+        errEl.textContent = err.message || 'Could not load locations.';
         errEl.classList.remove('hidden');
       }
     }
@@ -12605,7 +12765,7 @@
       ]},
       { label: 'Inventory', children: [
         { key: 'inventory', label: 'Inventory' },
-        { key: 'warehouses', label: 'Warehouses' },
+        { key: 'warehouses', label: 'Location' },
         { key: 'receipt-shipments', label: 'Receipt Shipment' }
       ]},
       { label: 'Vendor', children: [
@@ -13051,6 +13211,57 @@
     });
     document.getElementById('wh-search').addEventListener('input', renderWhTable);
     document.getElementById('wh-type').addEventListener('change', syncWhVendorWrap);
+    document.getElementById('wh-vendor').addEventListener('change', syncWhVendorWrap);
+    document.getElementById('wh-edit-btn').addEventListener('click', function () {
+      if (!canEdit('inventory')) return;
+      showWhPanels('edit');
+    });
+    document.getElementById('wh-edit-cancel').addEventListener('click', function () {
+      const id = document.getElementById('wh-id').value;
+      if (!id) {
+        closeWhTab('new');
+        return;
+      }
+      fillWhForm(whCurrentDetail);
+      showWhPanels('view');
+    });
+    document.getElementById('wh-transfer-btn').addEventListener('click', function () {
+      if (!canEdit('inventory')) return;
+      fillWhTransferForm(whCurrentDetail);
+      showWhPanels('transfer');
+    });
+    document.getElementById('wh-transfer-cancel').addEventListener('click', function () {
+      showWhPanels('view');
+    });
+    document.getElementById('wh-transfer-item').addEventListener('change', updateWhTransferAvail);
+    document.getElementById('wh-transfer-form').addEventListener('submit', async function (e) {
+      e.preventDefault();
+      const fromId = document.getElementById('wh-id').value || (whCurrentDetail && whCurrentDetail.id);
+      const msg = document.getElementById('wh-transfer-msg');
+      if (!fromId) return;
+      try {
+        await api('/api/admin/inventory-warehouses/' + encodeURIComponent(fromId) + '/transfer', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            itemId: document.getElementById('wh-transfer-item').value,
+            toLocationId: document.getElementById('wh-transfer-to').value,
+            qty: document.getElementById('wh-transfer-qty').value
+          })
+        });
+        const list = await api('/api/admin/inventory-warehouses');
+        inventoryWarehouses = list.warehouses || list.locations || inventoryWarehouses;
+        fillInvWarehouseSelects();
+        await openWhTab(fromId, { push: false, mode: 'transfer' });
+        msg.textContent = 'Transferred.';
+        msg.className = 'sm:col-span-2 text-sm text-sky-400';
+        msg.classList.remove('hidden');
+      } catch (err) {
+        msg.textContent = err.message || 'Could not transfer.';
+        msg.className = 'sm:col-span-2 text-sm text-red-400';
+        msg.classList.remove('hidden');
+      }
+    });
     document.getElementById('wh-overview').addEventListener('click', function (e) {
       const btn = e.target.closest('.dash-kpi[data-filter]');
       if (!btn) return;
@@ -13084,6 +13295,7 @@
         name: document.getElementById('wh-name').value,
         type: document.getElementById('wh-type').value,
         vendorId: document.getElementById('wh-vendor').value,
+        untracked: document.getElementById('wh-untracked').checked,
         notes: document.getElementById('wh-notes').value
       };
       try {
@@ -13098,14 +13310,15 @@
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(payload)
           });
+        const saved = data.warehouse || data.location;
         inventoryWarehouses = (inventoryWarehouses || []).filter(function (row) {
-          return String(row.id) !== String(data.warehouse.id);
-        }).concat([data.warehouse]);
+          return String(row.id) !== String(saved.id);
+        }).concat([saved]);
         if (id === '' || whOpenTabs.indexOf('new') !== -1) {
           whOpenTabs = whOpenTabs.filter(function (tabId) { return tabId !== 'new'; });
         }
         fillInvWarehouseSelects();
-        await openWhTab(data.warehouse.id);
+        await openWhTab(saved.id, { mode: 'view' });
         msg.textContent = 'Saved.';
         msg.className = 'sm:col-span-2 text-sm text-sky-400';
         msg.classList.remove('hidden');
@@ -13118,7 +13331,7 @@
     document.getElementById('wh-delete-btn').addEventListener('click', async function () {
       const id = document.getElementById('wh-id').value;
       if (!id) return;
-      if (!confirm('Delete this warehouse?')) return;
+      if (!confirm('Delete this location? Transfer stock out first if qty is not zero.')) return;
       try {
         await api('/api/admin/inventory-warehouses/' + encodeURIComponent(id), { method: 'DELETE' });
         inventoryWarehouses = (inventoryWarehouses || []).filter(function (row) {

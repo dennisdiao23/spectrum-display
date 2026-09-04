@@ -24,7 +24,7 @@ const MENU_GROUPS = [
     label: 'Inventory',
     children: [
       { key: 'inventory', label: 'Inventory' },
-      { key: 'warehouses', label: 'Warehouses' },
+      { key: 'warehouses', label: 'Location' },
       { key: 'receipt-shipments', label: 'Receipt Shipment' }
     ]
   },

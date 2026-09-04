@@ -798,8 +798,9 @@ grant all on public.admin_column_prefs to service_role;
 create table if not exists public.inventory_warehouses (
   id bigint generated always as identity primary key,
   name text not null,
-  type text not null default 'spectrum',
+  type text not null default 'warehouse',
   vendor_id bigint references public.inventory_vendors(id) on delete set null,
+  untracked boolean not null default false,
   notes text not null default '',
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now()
@@ -829,13 +830,13 @@ for all using (public.is_spectrum_admin()) with check (public.is_spectrum_admin(
 grant all on public.inventory_item_locations to service_role;
 
 insert into public.inventory_warehouses (name, type, notes)
-select 'Spectrum Warehouse', 'spectrum', ''
+select 'Spectrum Warehouse', 'warehouse', ''
 where not exists (select 1 from public.inventory_warehouses);
 
 insert into public.inventory_item_locations (item_id, warehouse_id, bin, qty, created_at, updated_at)
 select
   i.id,
-  (select w.id from public.inventory_warehouses w where w.type = 'spectrum' order by w.id limit 1),
+  (select w.id from public.inventory_warehouses w where coalesce(w.untracked, false) = false order by w.id limit 1),
   '',
   coalesce(i.qty, 0),
   coalesce(i.created_at, now()),
@@ -844,4 +845,4 @@ from public.inventory_items i
 where not exists (
   select 1 from public.inventory_item_locations l where l.item_id = i.id
 )
-and exists (select 1 from public.inventory_warehouses w where w.type = 'spectrum');
+and exists (select 1 from public.inventory_warehouses w where coalesce(w.untracked, false) = false);

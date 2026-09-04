@@ -191,8 +191,12 @@ function normalizeItemInput(body, opts) {
   if (!patch || src.notes != null) {
     out.notes = String(src.notes || '').trim().slice(0, 500);
   }
-  if (!patch || src.warehouseId != null || src.warehouse_id != null) {
-    out.warehouseId = String(src.warehouseId != null ? src.warehouseId : (src.warehouse_id || '')).trim();
+  if (!patch || src.warehouseId != null || src.warehouse_id != null || src.locationId != null || src.location_id != null) {
+    out.warehouseId = String(
+      src.locationId != null ? src.locationId
+        : (src.location_id != null ? src.location_id
+          : (src.warehouseId != null ? src.warehouseId : (src.warehouse_id || '')))
+    ).trim();
   }
   if (!patch || src.bin != null) {
     out.bin = String(src.bin || '').trim().slice(0, 80);
@@ -265,17 +269,36 @@ function dbFieldsFromInput(input) {
   return row;
 }
 
+function locUntracked(loc) {
+  if (!loc) return false;
+  if (loc.untracked === true || loc.untracked === 1 || loc.untracked === '1') return true;
+  const type = String(loc.warehouseType || loc.warehouse_type || loc.kind || loc.type || '').toLowerCase();
+  return type === 'partner';
+}
+
 function formatLocation(row) {
   if (!row) return null;
-  const type = String(row.warehouse_type || row.warehouseType || 'spectrum').toLowerCase() === 'partner'
-    ? 'partner'
-    : 'spectrum';
+  const wh = require('./inventory-warehouses');
+  const kind = wh.locationKind(row.warehouse_type || row.warehouseType || row.kind || row.type);
+  const untracked = locUntracked({
+    untracked: row.untracked,
+    warehouseType: row.warehouse_type || row.warehouseType,
+    type: row.warehouse_type || row.type
+  });
+  const name = row.warehouse_name || row.warehouseName || row.locationName || '';
+  const id = row.warehouse_id != null ? row.warehouse_id : (row.warehouseId != null ? row.warehouseId : row.locationId);
   return {
     id: row.id,
     itemId: row.item_id != null ? row.item_id : row.itemId,
-    warehouseId: row.warehouse_id != null ? row.warehouse_id : row.warehouseId,
-    warehouseName: row.warehouse_name || row.warehouseName || '',
-    warehouseType: type,
+    warehouseId: id,
+    locationId: id,
+    warehouseName: name,
+    locationName: name,
+    warehouseType: kind,
+    kind: kind,
+    kindLabel: wh.kindLabel(kind),
+    untracked: untracked,
+    tracked: !untracked,
     vendorId: row.vendor_id != null ? row.vendor_id : (row.vendorId || ''),
     vendorName: row.vendor_name || row.vendorName || '',
     bin: row.bin || '',
@@ -283,20 +306,32 @@ function formatLocation(row) {
   };
 }
 
-function spectrumQtyFromLocations(locations) {
+function trackedQtyFromLocations(locations) {
   return (locations || []).reduce(function (sum, loc) {
-    const type = loc.warehouseType || loc.warehouse_type;
-    if (type === 'partner') return sum;
+    if (locUntracked(loc)) return sum;
     return sum + Math.max(0, Number(loc.qty) || 0);
   }, 0);
 }
 
-function partnerQtyFromLocations(locations) {
+function untrackedQtyFromLocations(locations) {
   return (locations || []).reduce(function (sum, loc) {
-    const type = loc.warehouseType || loc.warehouse_type;
-    if (type !== 'partner') return sum;
+    if (!locUntracked(loc)) return sum;
     return sum + Math.max(0, Number(loc.qty) || 0);
   }, 0);
+}
+
+function websiteQtyFromLocations(locations) {
+  return (locations || []).reduce(function (sum, loc) {
+    return sum + Math.max(0, Number(loc.qty) || 0);
+  }, 0);
+}
+
+function spectrumQtyFromLocations(locations) {
+  return trackedQtyFromLocations(locations);
+}
+
+function partnerQtyFromLocations(locations) {
+  return untrackedQtyFromLocations(locations);
 }
 
 function vendorHandsFromLocations(locations, vendorId) {
@@ -311,7 +346,7 @@ function vendorHandsFromLocations(locations, vendorId) {
 function pickPrimaryLocation(locations) {
   const list = locations || [];
   for (let i = 0; i < list.length; i++) {
-    if (list[i].warehouseType !== 'partner') return list[i];
+    if (!locUntracked(list[i])) return list[i];
   }
   return list[0] || null;
 }
@@ -319,15 +354,22 @@ function pickPrimaryLocation(locations) {
 function applyLocations(item, locations) {
   if (!item) return item;
   const locs = (locations || []).map(function (row) {
-    return row && row.warehouseType ? row : formatLocation(row);
+    return row && (row.kind || row.warehouseType || row.locationName) ? (
+      row.kind ? row : formatLocation(row)
+    ) : formatLocation(row);
   }).filter(Boolean);
   item.locations = locs;
-  item.partnerQty = partnerQtyFromLocations(locs);
+  item.untrackedQty = untrackedQtyFromLocations(locs);
+  item.partnerQty = item.untrackedQty;
+  item.websiteQty = websiteQtyFromLocations(locs);
   const primary = pickPrimaryLocation(locs);
   item.warehouseId = primary ? primary.warehouseId : '';
+  item.locationId = item.warehouseId;
   item.warehouse = primary ? primary.warehouseName : '';
+  item.location = item.warehouse;
   item.bin = primary ? primary.bin : '';
-  item.warehouseType = primary ? primary.warehouseType : '';
+  item.warehouseType = primary ? primary.kind : '';
+  item.locationKind = item.warehouseType;
   return item;
 }
 
@@ -361,10 +403,15 @@ function formatItem(row, brandName, maps, locations) {
     maps: maps || [],
     locations: [],
     partnerQty: 0,
+    untrackedQty: 0,
+    websiteQty: qty,
     warehouseId: '',
+    locationId: '',
     warehouse: '',
+    location: '',
     bin: '',
-    warehouseType: ''
+    warehouseType: '',
+    locationKind: ''
   };
   return applyLocations(item, locations);
 }
@@ -381,11 +428,13 @@ function publicLink(item) {
 function stockLink(item) {
   if (!item) return null;
   const unit = unitOf(item.unit);
-  const qty = Math.max(0, Number(item.qty) || 0);
+  const qty = item.websiteQty != null
+    ? Math.max(0, Number(item.websiteQty) || 0)
+    : Math.max(0, Number(item.qty) || 0);
   const lowAt = item.low_at != null ? Number(item.low_at) : (item.lowAt != null ? Number(item.lowAt) : defaultLowAt(unit));
   return {
     qty: qty,
-    status: binStatus(qty, lowAt),
+    status: binStatus(Math.max(0, Number(item.qty) || 0), lowAt),
     unit: unit
   };
 }
@@ -479,9 +528,9 @@ function attachMapsToProducts(products, maps) {
 
 function assertCanDelete(item, moves) {
   const qty = Math.max(0, Number(item && (item.qty != null ? item.qty : item)) || 0);
-  const partner = Math.max(0, Number(item && item.partnerQty) || 0);
+  const extra = Math.max(0, Number(item && (item.untrackedQty != null ? item.untrackedQty : item.partnerQty)) || 0);
   const history = Array.isArray(moves) ? moves.length : (Number(moves) || 0);
-  if (qty > 0 || partner > 0 || history > 0) {
+  if (qty > 0 || extra > 0 || history > 0) {
     throw new Error('Cannot delete this SKU after stock has been received. Deleting would erase stock history.');
   }
 }
@@ -522,6 +571,10 @@ module.exports = {
   formatItem,
   formatLocation,
   applyLocations,
+  locUntracked,
+  trackedQtyFromLocations,
+  untrackedQtyFromLocations,
+  websiteQtyFromLocations,
   spectrumQtyFromLocations,
   partnerQtyFromLocations,
   vendorHandsFromLocations,

@@ -490,8 +490,9 @@ function ensureInventoryWarehouses(db) {
     CREATE TABLE IF NOT EXISTS inventory_warehouses (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       name TEXT NOT NULL,
-      type TEXT NOT NULL DEFAULT 'spectrum',
+      type TEXT NOT NULL DEFAULT 'warehouse',
       vendor_id INTEGER,
+      untracked INTEGER NOT NULL DEFAULT 0,
       notes TEXT NOT NULL DEFAULT '',
       created_at TEXT NOT NULL,
       updated_at TEXT NOT NULL,
@@ -512,17 +513,25 @@ function ensureInventoryWarehouses(db) {
     );
     CREATE INDEX IF NOT EXISTS inventory_item_locations_wh_idx ON inventory_item_locations (warehouse_id);
   `);
+  try { db.exec('ALTER TABLE inventory_warehouses ADD COLUMN untracked INTEGER NOT NULL DEFAULT 0'); } catch (e) { /* already present */ }
+  try {
+    db.prepare("UPDATE inventory_warehouses SET untracked = 1, type = 'warehouse' WHERE type = 'partner'").run();
+    db.prepare("UPDATE inventory_warehouses SET type = 'warehouse' WHERE type = 'spectrum' OR type = '' OR type IS NULL").run();
+  } catch (e) { /* ignore */ }
   const stamp = nowIso();
   const count = db.prepare('SELECT COUNT(*) AS n FROM inventory_warehouses').get();
   if (!count || !count.n) {
     db.prepare(
-      'INSERT INTO inventory_warehouses (name, type, vendor_id, notes, created_at, updated_at) VALUES (?, ?, NULL, ?, ?, ?)'
-    ).run(wh.DEFAULT_SPECTRUM_NAME, 'spectrum', '', stamp, stamp);
+      'INSERT INTO inventory_warehouses (name, type, vendor_id, untracked, notes, created_at, updated_at) VALUES (?, ?, NULL, 0, ?, ?, ?)'
+    ).run(wh.DEFAULT_SPECTRUM_NAME, 'warehouse', '', stamp, stamp);
   }
-  const spectrum = db.prepare(
-    "SELECT id FROM inventory_warehouses WHERE type = 'spectrum' ORDER BY id LIMIT 1"
-  ).get();
-  if (!spectrum) return;
+  const home = db.prepare(`
+    SELECT id FROM inventory_warehouses
+    WHERE COALESCE(untracked, 0) = 0 AND type != 'partner'
+    ORDER BY CASE type WHEN 'warehouse' THEN 0 WHEN 'spectrum' THEN 0 ELSE 1 END, id
+    LIMIT 1
+  `).get();
+  if (!home) return;
   const items = db.prepare(`
     SELECT i.id, i.qty
     FROM inventory_items i
@@ -536,7 +545,7 @@ function ensureInventoryWarehouses(db) {
   db.exec('BEGIN');
   try {
     items.forEach(function (item) {
-      insert.run(item.id, spectrum.id, Math.max(0, Number(item.qty) || 0), stamp, stamp);
+      insert.run(item.id, home.id, Math.max(0, Number(item.qty) || 0), stamp, stamp);
     });
     db.exec('COMMIT');
   } catch (err) {
