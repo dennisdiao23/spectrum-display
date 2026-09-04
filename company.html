@@ -9239,7 +9239,11 @@
       }
       const docTab = parseDocMasterTab(dashActiveGroup);
       if (docTab && docTab.kind !== 'po') {
-        setMasterTabCaption(dashActiveGroup, n || ('New ' + (type === 'invoice' ? 'invoice' : type === 'order' ? 'order' : 'quote')));
+        if (docTab.id === 'new' || !(document.getElementById('so-id') || {}).value) {
+          setMasterTabCaption(dashActiveGroup, '');
+          return;
+        }
+        setMasterTabCaption(dashActiveGroup, n);
         return;
       }
       setMasterTabCaption(soMasterPage(type), n);
