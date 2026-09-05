@@ -568,6 +568,8 @@ module.exports = {
   priceFromProduct,
   normalizeItemInput,
   dbFieldsFromInput,
+  defaultLowAt,
+  binStatus,
   formatItem,
   formatLocation,
   applyLocations,

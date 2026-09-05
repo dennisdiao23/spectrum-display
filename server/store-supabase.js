@@ -631,24 +631,36 @@ function createSupabaseStore() {
   }
 
   async function warehouseStatsMap() {
-    const { data, error } = await supabase.from('inventory_item_locations').select('warehouse_id, qty');
+    const inv = require('./inventory');
+    const [{ data, error }, itemsRes] = await Promise.all([
+      supabase.from('inventory_item_locations').select('warehouse_id, item_id, qty'),
+      supabase.from('inventory_items').select('id, low_at, unit')
+    ]);
     if (error) return {};
+    const lowById = {};
+    (itemsRes.data || []).forEach(function (item) {
+      lowById[String(item.id)] = item.low_at != null ? Number(item.low_at) : inv.defaultLowAt(item.unit);
+    });
     const out = {};
     (data || []).forEach(function (row) {
       const key = String(row.warehouse_id);
-      if (!out[key]) out[key] = { itemCount: 0, qty: 0 };
+      if (!out[key]) out[key] = { itemCount: 0, qty: 0, hasLow: false };
+      const qty = Math.max(0, Number(row.qty) || 0);
       out[key].itemCount += 1;
-      out[key].qty += Math.max(0, Number(row.qty) || 0);
+      out[key].qty += qty;
+      const lowAt = lowById[String(row.item_id)];
+      if (qty > 0 && lowAt != null && qty <= lowAt) out[key].hasLow = true;
     });
     return out;
   }
 
   function formatWarehouseRow(row, stats, vendorNames) {
     const wh = require('./inventory-warehouses');
-    const extra = (stats || {})[String(row.id)] || { itemCount: 0, qty: 0 };
+    const extra = (stats || {})[String(row.id)] || { itemCount: 0, qty: 0, hasLow: false };
     return wh.formatWarehouse(row, {
       itemCount: extra.itemCount,
       qty: extra.qty,
+      hasLow: extra.hasLow,
       vendorName: row.vendor_id ? ((vendorNames || {})[String(row.vendor_id)] || '') : ''
     });
   }

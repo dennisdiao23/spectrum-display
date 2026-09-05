@@ -752,7 +752,7 @@
                 <table class="w-full text-sm dash-cols" data-cols="warehouses">
                   <thead class="text-left text-slate-400 border-b border-slate-800">
                     <tr>
-                      <th class="py-3 px-4 font-medium" data-col="name">Location <span class="dash-col-caret">▾</span><span class="dash-col-grip" aria-hidden="true"></span></th>
+                      <th class="py-3 px-4 font-medium" data-col="name" data-lock="start">Location <span class="dash-col-caret">▾</span><span class="dash-col-grip" aria-hidden="true"></span></th>
                       <th class="py-3 px-4 font-medium" data-col="type">Type <span class="dash-col-caret">▾</span><span class="dash-col-grip" aria-hidden="true"></span></th>
                       <th class="py-3 px-4 font-medium" data-col="vendor">Vendor <span class="dash-col-caret">▾</span><span class="dash-col-grip" aria-hidden="true"></span></th>
                       <th class="py-3 px-4 font-medium" data-col="tracked">Tracked <span class="dash-col-caret">▾</span><span class="dash-col-grip" aria-hidden="true"></span></th>
@@ -4288,6 +4288,28 @@
       return 'bg-emerald-500/15 text-emerald-300';
     }
 
+    function locStatusOf(wh) {
+      return (wh && wh.status) || 'empty';
+    }
+    function locStatusLabel(status) {
+      if (status === 'low') return 'Low';
+      if (status === 'untracked') return 'Untracked';
+      if (status === 'ok') return 'In stock';
+      return 'Empty';
+    }
+    function locStatusDotClass(status) {
+      if (status === 'low') return 'is-low';
+      if (status === 'untracked') return 'is-untracked';
+      if (status === 'ok') return 'is-in';
+      return 'is-empty';
+    }
+    function locStatusIconHtml(wh, title, className) {
+      const status = locStatusOf(wh);
+      const label = (wh && wh.statusLabel) || locStatusLabel(status);
+      return '<span class="' + (className || 'inv-browser-tab-status') + ' ' + locStatusDotClass(status) + '" aria-hidden="true" title="' +
+        esc(title || label) + '"></span>';
+    }
+
     function dashColKey(table) {
       return table.getAttribute('data-cols') || 'table';
     }
@@ -4560,6 +4582,31 @@
       return out;
     }
 
+    function dashLockedStartColIds(table) {
+      return Array.prototype.map.call(
+        table.querySelectorAll('thead th[data-lock="start"][data-col]'),
+        function (th) { return th.getAttribute('data-col'); }
+      ).filter(Boolean);
+    }
+
+    function colIsLockedStart(table, id) {
+      if (!table || !id) return false;
+      const th = table.querySelector('thead th[data-col="' + id + '"]');
+      return !!(th && th.getAttribute('data-lock') === 'start');
+    }
+
+    function pinStartLockedInState(table, order, hidden) {
+      const locked = dashLockedStartColIds(table);
+      for (let i = locked.length - 1; i >= 0; i--) {
+        const id = locked[i];
+        const hi = hidden.indexOf(id);
+        if (hi !== -1) hidden.splice(hi, 1);
+        const oi = order.indexOf(id);
+        if (oi !== -1) order.splice(oi, 1);
+        order.unshift(id);
+      }
+    }
+
     function mergeColState(table, saved) {
       const known = defaultColOrder(table);
       const startOrder = defaultVisibleOrder(table).filter(function (id) { return known.indexOf(id) !== -1; });
@@ -4577,8 +4624,9 @@
         sortDir: '',
         widths: fallbackWidths,
         splitLeftPx: keptSplit,
-        schema: (dashColKey(table) === 'inventory' || dashColKey(table) === 'po-lines' || dashColKey(table) === 'warehouses') ? 1 : 0
+        schema: dashColKey(table) === 'warehouses' ? 3 : ((dashColKey(table) === 'inventory' || dashColKey(table) === 'po-lines') ? 1 : 0)
       };
+      pinStartLockedInState(table, fallback.order, fallback.hidden);
       if (!saved) {
         return applyMobileColState(table, fallback);
       }
@@ -4636,11 +4684,30 @@
         }
         schema = 1;
       }
+      if (dashColKey(table) === 'warehouses' && schema < 2) {
+        schema = 2;
+      }
+      let sortCol = saved.sortCol || '';
+      let sortDir = saved.sortDir || '';
+      if (dashColKey(table) === 'warehouses' && schema < 3) {
+        const dropStatus = function (list) {
+          const i = list.indexOf('status');
+          if (i !== -1) list.splice(i, 1);
+        };
+        dropStatus(order);
+        dropStatus(hidden);
+        if (sortCol === 'status') {
+          sortCol = '';
+          sortDir = '';
+        }
+        schema = 3;
+      }
+      pinStartLockedInState(table, order, hidden);
       const merged = {
         order: order,
         hidden: hidden,
-        sortCol: saved.sortCol || '',
-        sortDir: saved.sortDir || '',
+        sortCol: sortCol,
+        sortDir: sortDir,
         widths: saved.widths && typeof saved.widths === 'object' ? saved.widths : {},
         schema: schema,
         splitLeftPx: saved.splitLeftPx ? parseInt(saved.splitLeftPx, 10) || 0 : 0
@@ -4841,19 +4908,26 @@
       const endLocked = Array.prototype.filter.call(row.children, function (th) {
         return !th.getAttribute('data-col') && th.getAttribute('data-lock') !== 'start';
       });
-      startLocked.forEach(function (th) { row.appendChild(th); });
+      const lockedIds = {};
+      startLocked.forEach(function (th) {
+        row.appendChild(th);
+        const id = th.getAttribute('data-col');
+        if (id) lockedIds[id] = true;
+      });
       state.order.forEach(function (id) {
+        if (lockedIds[id]) return;
         const th = row.querySelector('th[data-col="' + id + '"]');
         if (th) row.appendChild(th);
       });
       state.hidden.forEach(function (id) {
+        if (lockedIds[id]) return;
         const th = row.querySelector('th[data-col="' + id + '"]');
         if (th) row.appendChild(th);
       });
       endLocked.forEach(function (th) { row.appendChild(th); });
       Array.prototype.forEach.call(row.querySelectorAll('th[data-col]'), function (th) {
         const col = th.getAttribute('data-col');
-        th.hidden = state.hidden.indexOf(col) !== -1;
+        th.hidden = th.getAttribute('data-lock') === 'start' ? false : state.hidden.indexOf(col) !== -1;
         const w = state.widths[col];
         if (w) th.style.width = w;
         const caret = th.querySelector('.dash-col-caret');
@@ -5172,7 +5246,10 @@
     }
 
     function dashOrderedCells(table, cells, lockedHtml, leadHtml) {
-      return (leadHtml || '') + loadColState(table).order.map(function (id) { return cells[id] || ''; }).join('') + (lockedHtml || '');
+      const locked = dashLockedStartColIds(table);
+      const extra = locked.map(function (id) { return cells[id] || ''; }).join('');
+      const rest = loadColState(table).order.filter(function (id) { return locked.indexOf(id) === -1; });
+      return extra + (leadHtml || '') + rest.map(function (id) { return cells[id] || ''; }).join('') + (lockedHtml || '');
     }
 
     function dashColSpan(table) {
@@ -5265,9 +5342,10 @@
       const col = th.getAttribute('data-col');
       const state = loadColState(table);
       const i = state.order.indexOf(col);
-      menu.querySelector('[data-col-act="left"]').disabled = i <= 0;
-      menu.querySelector('[data-col-act="right"]').disabled = i === -1 || i >= state.order.length - 1;
-      menu.querySelector('[data-col-act="hide"]').disabled = state.order.length <= 1;
+      const lockedStart = th.getAttribute('data-lock') === 'start';
+      menu.querySelector('[data-col-act="left"]').disabled = lockedStart || i <= 0 || colIsLockedStart(table, state.order[i - 1]);
+      menu.querySelector('[data-col-act="right"]').disabled = lockedStart || i === -1 || i >= state.order.length - 1;
+      menu.querySelector('[data-col-act="hide"]').disabled = lockedStart || state.order.length <= 1;
       menu.querySelector('[data-col-act="add"]').disabled = !dashColCatalog(table).length;
       menu._table = table;
       menu._col = col;
@@ -5370,13 +5448,14 @@
           const i = state.order.indexOf(col);
           const j = act === 'left' ? i - 1 : i + 1;
           if (i < 0 || j < 0 || j >= state.order.length) return;
+          if (colIsLockedStart(table, col) || colIsLockedStart(table, state.order[j])) return;
           const next = state.order.slice();
           const swap = next[i];
           next[i] = next[j];
           next[j] = swap;
           state.order = next;
         } else         if (act === 'hide') {
-          if (state.order.length <= 1) return;
+          if (colIsLockedStart(table, col) || state.order.length <= 1) return;
           state.order = state.order.filter(function (id) { return id !== col; });
           if (state.hidden.indexOf(col) === -1) state.hidden.push(col);
         }
@@ -5397,7 +5476,9 @@
         const i = state.order.indexOf(at);
         state.hidden = state.hidden.filter(function (id) { return id !== addId; });
         if (state.order.indexOf(addId) === -1) {
-          state.order.splice(i < 0 ? state.order.length : i, 0, addId);
+          const afterLocked = colIsLockedStart(table, at);
+          if (i < 0) state.order.push(addId);
+          else state.order.splice(afterLocked ? i + 1 : i, 0, addId);
         }
         saveColState(table, state);
         closeColMenu();
@@ -6676,6 +6757,7 @@
       const table = document.querySelector('table.dash-cols[data-cols="warehouses"]');
       const tb = document.getElementById('wh-table');
       const sorted = sortColRows(rows, table, function (wh, col) {
+        if (col === 'status') return locStatusOf(wh);
         if (col === 'name') return wh.name || '';
         if (col === 'type') return wh.typeLabel || wh.type || '';
         if (col === 'vendor') return wh.vendorName || '';
@@ -6688,7 +6770,9 @@
       tb.innerHTML = sorted.map(function (wh) {
         const tracked = !(wh.untracked || wh.tracked === false);
         const cells = {
-          name: '<td class="py-3 px-4 font-medium">' + esc(wh.name || '') + '</td>',
+          name: '<td class="py-3 px-4 font-medium"><span class="cc-acct-cell">' +
+            locStatusIconHtml(wh, null, 'cc-acct-status') +
+            '<span class="cc-acct-name">' + esc(wh.name || '') + '</span></span></td>',
           type: '<td class="py-3 px-4 text-slate-400">' + esc(wh.typeLabel || wh.type || '') + '</td>',
           vendor: '<td class="py-3 px-4 text-slate-400">' + esc(wh.vendorName || '—') + '</td>',
           tracked: '<td class="py-3 px-4 text-slate-400">' + (tracked ? 'Yes' : 'No') + '</td>',
@@ -6728,6 +6812,7 @@
         html += '<button type="button" class="inv-browser-tab' +
           (String(whActiveTab) === String(id) ? ' is-active' : '') +
           '" data-wh-tab-id="' + esc(id) + '" role="tab" aria-selected="' + (String(whActiveTab) === String(id) ? 'true' : 'false') + '">' +
+          (id === 'new' ? '' : locStatusIconHtml(wh, (wh && wh.statusLabel) || locStatusLabel(locStatusOf(wh)))) +
           '<span class="inv-browser-tab-label">' + esc(label) + '</span>' +
           '<span class="inv-browser-tab-close" data-wh-tab-close="' + esc(id) + '" aria-label="Close">×</span></button>';
       });
@@ -6747,7 +6832,8 @@
       if (opts.push !== false) history.pushState({ tab: 'warehouses' }, '', pathForWarehouse());
     }
     function fillWhDetailView(wh) {
-      document.getElementById('wh-detail-name').textContent = (wh && wh.name) || 'Location';
+      document.getElementById('wh-detail-name').innerHTML = locStatusIconHtml(wh) +
+        '<span>' + esc((wh && wh.name) || 'Location') + '</span>';
       const kind = (wh && (wh.typeLabel || wh.kind || wh.type)) || '';
       document.getElementById('wh-detail-subname').textContent = kind;
       document.getElementById('wh-detail-type').textContent = kind || '—';
