@@ -282,12 +282,32 @@ body.dash-master-on .dash-menu-btn {
   text-overflow: clip;
 }
 #dash-tab-strip .inv-browser-tab {
+  position: relative;
   font-size: 1.05rem;
   font-weight: 700;
   min-height: 2.4rem;
   padding: 0.7rem 0.75rem 0.7rem 0.85rem;
   letter-spacing: -0.01em;
   gap: 0.45rem;
+}
+#dash-tab-strip .inv-browser-tab.is-work::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  border-radius: inherit;
+  border-bottom-left-radius: 0;
+  border-bottom-right-radius: 0;
+  background: #22c55e;
+  pointer-events: none;
+}
+#dash-tab-strip .inv-browser-tab.is-work-idle::before {
+  background: #eab308;
+}
+#dash-tab-strip .inv-browser-tab.is-work-stale::before {
+  background: #ef4444;
 }
 #dash-tab-strip .dash-master-tab-icon {
   width: 1.15rem;
@@ -1014,6 +1034,13 @@ html.dash-scroll-lock body.company-app {
   color: #fff;
 }
 .cc-leave-yes:hover { background: #38bdf8; }
+.dash-tab-stale-lead {
+  margin: -0.65rem 0 1.15rem;
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: var(--dash-muted);
+  line-height: 1.4;
+}
 .cc-mini-row {
   display: flex;
   flex-wrap: wrap;
