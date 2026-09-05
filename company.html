@@ -2155,7 +2155,7 @@
             <div class="cc-field" id="inv-qty-init-wrap"><label>Initial quantity on hand</label><input id="inv-qty-init" type="number" min="0" step="1" value="0"></div>
             <div class="cc-field"><label>Location</label><select id="inv-warehouse"></select></div>
             <div class="cc-field"><label>Bin #</label><input id="inv-bin" type="text" maxlength="80" placeholder="A-12"></div>
-            <div class="cc-field"><label>Low-stock at</label><input id="inv-item-low" type="number" min="0" step="1"></div>
+            <div class="cc-field"><label>Low-stock at</label><input id="inv-item-low" type="number" min="0" step="1" value="0"><p class="cc-note">0 = special order. Not counted as out of stock when qty is 0.</p></div>
             <div class="cc-field"><label>Panel weight (kg)</label><input id="inv-weight" type="number" min="0" step="0.01"></div>
             <div class="cc-field wide"><label>Panel size W × H (mm)</label>
               <div class="grid grid-cols-2 gap-2">
@@ -4279,12 +4279,16 @@
     function stockStatusLabel(status) {
       if (status === 'out') return 'Out';
       if (status === 'low') return 'Low';
+      if (status === 'untracked') return 'Vendor';
+      if (status === 'special') return 'Special order';
       return 'In stock';
     }
 
     function stockStatusClass(status) {
       if (status === 'out') return 'bg-red-500/15 text-red-300';
       if (status === 'low') return 'bg-amber-500/15 text-amber-300';
+      if (status === 'untracked') return 'bg-sky-500/15 text-sky-300';
+      if (status === 'special') return 'bg-slate-500/15 text-slate-400';
       return 'bg-emerald-500/15 text-emerald-300';
     }
 
@@ -5665,6 +5669,8 @@
     function invTabStatusClass(status) {
       if (status === 'out') return 'is-out';
       if (status === 'low') return 'is-low';
+      if (status === 'untracked') return 'is-untracked';
+      if (status === 'special') return 'is-empty';
       return 'is-in';
     }
 
@@ -7145,7 +7151,7 @@
         preview.removeAttribute('src');
         preview.classList.add('hidden');
       }
-      document.getElementById('inv-item-low').value = item && item.lowAt != null ? item.lowAt : '';
+      document.getElementById('inv-item-low').value = item && item.lowAt != null ? item.lowAt : 0;
       document.getElementById('inv-item-notes').value = (item && item.notes) || '';
       fillInvWarehouseSelects(item && item.warehouseId, item && item.warehouseId);
       document.getElementById('inv-bin').value = (item && item.bin) || '';

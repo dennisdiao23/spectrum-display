@@ -132,7 +132,7 @@ function openDb() {
       product_id INTEGER NOT NULL,
       pitch TEXT NOT NULL DEFAULT '',
       qty INTEGER NOT NULL DEFAULT 0,
-      low_at INTEGER NOT NULL DEFAULT 8,
+      low_at INTEGER NOT NULL DEFAULT 0,
       updated_at TEXT NOT NULL,
       UNIQUE (product_id, pitch),
       FOREIGN KEY (product_id) REFERENCES products(id) ON DELETE CASCADE
@@ -158,7 +158,7 @@ function openDb() {
       pitch TEXT NOT NULL DEFAULT '',
       unit TEXT NOT NULL DEFAULT 'panels',
       qty INTEGER NOT NULL DEFAULT 0,
-      low_at INTEGER NOT NULL DEFAULT 8,
+      low_at INTEGER NOT NULL DEFAULT 0,
       price REAL NOT NULL DEFAULT 0,
       notes TEXT NOT NULL DEFAULT '',
       created_at TEXT NOT NULL,
@@ -202,7 +202,25 @@ function openDb() {
   });
   ensureInventoryWarehouses(db);
   migrateLegacyInventory(db);
+  applySchemaPatches(db);
   return db;
+}
+
+function applySchemaPatches(db) {
+  db.exec(`
+    CREATE TABLE IF NOT EXISTS schema_patches (
+      id TEXT PRIMARY KEY,
+      applied_at TEXT NOT NULL
+    )
+  `);
+  const done = db.prepare('SELECT 1 AS n FROM schema_patches WHERE id = ?').get('inventory_low_at_zero');
+  if (done) return;
+  try {
+    db.prepare('UPDATE inventory_items SET low_at = 0').run();
+    db.prepare('INSERT INTO schema_patches (id, applied_at) VALUES (?, ?)').run('inventory_low_at_zero', nowIso());
+  } catch (e) {
+    console.error('Could not reset inventory low_at:', e.message || e);
+  }
 }
 
 function migrateLegacyInventory(db) {
