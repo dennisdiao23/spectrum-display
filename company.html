@@ -588,8 +588,8 @@
                 <table class="w-full text-sm dash-cols" data-cols="inventory">
                   <thead class="text-left text-slate-400 border-b border-slate-800">
                     <tr>
+                      <th class="py-3 px-4 font-medium" data-col="name" data-lock="start">Item <span class="dash-col-caret">▾</span><span class="dash-col-grip" aria-hidden="true"></span></th>
                       <th class="py-3 px-4 font-medium" data-col="sku">SKU <span class="dash-col-caret">▾</span><span class="dash-col-grip" aria-hidden="true"></span></th>
-                      <th class="py-3 px-4 font-medium" data-col="name">Item <span class="dash-col-caret">▾</span><span class="dash-col-grip" aria-hidden="true"></span></th>
                       <th class="py-3 px-4 font-medium" data-col="description">Description <span class="dash-col-caret">▾</span><span class="dash-col-grip" aria-hidden="true"></span></th>
                       <th class="py-3 px-4 font-medium" data-col="pitch">Pitch <span class="dash-col-caret">▾</span><span class="dash-col-grip" aria-hidden="true"></span></th>
                       <th class="py-3 px-4 font-medium" data-col="brand">Brand <span class="dash-col-caret">▾</span><span class="dash-col-grip" aria-hidden="true"></span></th>
@@ -601,7 +601,6 @@
                       <th class="py-3 px-4 font-medium" data-col="dealer">Dealer net <span class="dash-col-caret">▾</span><span class="dash-col-grip" aria-hidden="true"></span></th>
                       <th class="py-3 px-4 font-medium" data-col="photo">Photo <span class="dash-col-caret">▾</span><span class="dash-col-grip" aria-hidden="true"></span></th>
                       <th class="py-3 px-4 font-medium" data-col="website">Website <span class="dash-col-caret">▾</span></th>
-                      <th class="py-3 px-4 font-medium" data-col="status">Status <span class="dash-col-caret">▾</span><span class="dash-col-grip" aria-hidden="true"></span></th>
                     </tr>
                   </thead>
                   <tbody id="inventory-table" class="text-slate-200"></tbody>
@@ -4322,7 +4321,7 @@
       return window.matchMedia('(max-width: 900px)').matches;
     }
 
-    const INVENTORY_MOBILE_COLS = ['sku', 'price', 'qty'];
+    const INVENTORY_MOBILE_COLS = ['name', 'sku', 'price', 'qty'];
 
     function invQtyDisplay(item) {
       if (!item || item.qty == null) return '—';
@@ -4333,9 +4332,11 @@
       if (!isMobileDash() || dashColKey(table) !== 'inventory') return state;
       const known = defaultColOrder(table);
       const order = INVENTORY_MOBILE_COLS.filter(function (id) { return known.indexOf(id) !== -1; });
+      const hidden = known.filter(function (id) { return order.indexOf(id) === -1; });
+      pinStartLockedInState(table, order, hidden);
       return {
         order: order,
-        hidden: known.filter(function (id) { return order.indexOf(id) === -1; }),
+        hidden: hidden,
         sortCol: state.sortCol,
         sortDir: state.sortDir,
         widths: {},
@@ -4346,8 +4347,8 @@
 
     const DASH_COL_CATALOGS = {
       inventory: [
-        { id: 'sku', label: 'SKU' },
         { id: 'name', label: 'Item' },
+        { id: 'sku', label: 'SKU' },
         { id: 'description', label: 'Description' },
         { id: 'pitch', label: 'Pitch' },
         { id: 'brand', label: 'Brand' },
@@ -4357,7 +4358,6 @@
         { id: 'cost', label: 'Cost' },
         { id: 'price', label: 'Sell price' },
         { id: 'dealer', label: 'Dealer net' },
-        { id: 'status', label: 'Status' },
         { id: 'photo', label: 'Photo' },
         { id: 'website', label: 'Website' }
       ],
@@ -4491,7 +4491,7 @@
     };
 
     const DASH_COL_DEFAULTS = {
-      inventory: ['sku', 'name', 'qty', 'warehouse', 'bin', 'cost', 'price'],
+      inventory: ['name', 'sku', 'qty', 'warehouse', 'bin', 'cost', 'price'],
       warehouses: ['name', 'type', 'vendor', 'tracked', 'qty', 'skus'],
       customers: ['company', 'contact', 'email', 'phone', 'balance'],
       sales: ['number', 'customer', 'date', 'status', 'total'],
@@ -4628,7 +4628,7 @@
         sortDir: '',
         widths: fallbackWidths,
         splitLeftPx: keptSplit,
-        schema: dashColKey(table) === 'warehouses' ? 3 : ((dashColKey(table) === 'inventory' || dashColKey(table) === 'po-lines') ? 1 : 0)
+        schema: dashColKey(table) === 'warehouses' ? 3 : (dashColKey(table) === 'inventory' ? 2 : (dashColKey(table) === 'po-lines' ? 1 : 0))
       };
       pinStartLockedInState(table, fallback.order, fallback.hidden);
       if (!saved) {
@@ -4693,6 +4693,19 @@
       }
       let sortCol = saved.sortCol || '';
       let sortDir = saved.sortDir || '';
+      if (dashColKey(table) === 'inventory' && schema < 2) {
+        const dropStatus = function (list) {
+          const i = list.indexOf('status');
+          if (i !== -1) list.splice(i, 1);
+        };
+        dropStatus(order);
+        dropStatus(hidden);
+        if (sortCol === 'status') {
+          sortCol = '';
+          sortDir = '';
+        }
+        schema = 2;
+      }
       if (dashColKey(table) === 'warehouses' && schema < 3) {
         const dropStatus = function (list) {
           const i = list.indexOf('status');
@@ -5603,7 +5616,9 @@
           : '<span class="text-slate-400">—</span>';
         const cells = {
           sku: '<td class="py-3 px-4 font-mono text-xs text-sky-300">' + esc(item.sku || '—') + '</td>',
-          name: '<td class="py-3 px-4 font-medium">' + esc(item.name || '') + '</td>',
+          name: '<td class="py-3 px-4 font-medium"><span class="cc-acct-cell">' +
+            '<span class="cc-acct-status ' + invTabStatusClass(item.status) + '" title="' + esc(stockStatusLabel(item.status)) + '" aria-hidden="true"></span>' +
+            '<span class="cc-acct-name">' + esc(item.name || '') + '</span></span></td>',
           description: '<td class="py-3 px-4 text-slate-400">' + esc(item.description || '—') + '</td>',
           brand: '<td class="py-3 px-4 text-sky-400">' + esc(item.brandName || '—') + '</td>',
           pitch: '<td class="py-3 px-4 text-slate-400">' + esc(item.pitchLabel || '—') + '</td>',
@@ -5614,9 +5629,7 @@
           price: '<td class="py-3 px-4">' + money(item.price) + '</td>',
           dealer: '<td class="py-3 px-4">' + money(item.dealerNet) + '</td>',
           website: '<td class="py-3 px-4 text-slate-400">' + site + '</td>',
-          photo: '<td class="py-3 px-4">' + photo + '</td>',
-          status: '<td class="py-3 px-4"><span class="text-xs px-2 py-0.5 rounded-full ' + stockStatusClass(item.status) + '">' +
-            esc(stockStatusLabel(item.status)) + '</span></td>'
+          photo: '<td class="py-3 px-4">' + photo + '</td>'
         };
         const selected = String(item.id) === String(invDetailId);
         return '<tr class="border-b border-slate-800 hover:bg-slate-900/80 cursor-pointer' +
