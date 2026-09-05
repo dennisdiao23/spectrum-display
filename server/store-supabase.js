@@ -1343,6 +1343,8 @@ function createSupabaseStore() {
       if (input.brandId != null) patch.brand_id = input.brandId;
       if (input.pitch != null) patch.pitch = input.pitch;
       if (input.unit != null) patch.unit = input.unit;
+      if (input.panelType != null) patch.panel_type = input.panelType;
+      if (input.packagingType != null) patch.packaging_type = input.packagingType;
       if (input.lowAt != null) patch.low_at = input.lowAt;
       if (input.price != null) patch.price = input.price;
       if (input.cost != null) patch.cost = input.cost;
@@ -1408,6 +1410,19 @@ function createSupabaseStore() {
       const { data, error } = await supabase.from('inventory_items').delete().eq('id', id).select('id');
       throwIf(error, 'Could not delete inventory item.');
       return !!(data && data.length);
+    },
+    async setInventoryInactive(id, inactive) {
+      const inv = require('./inventory');
+      const detail = await getInventoryItemDetail(id);
+      if (!detail) return null;
+      const on = !(inactive === false || inactive === 0 || inactive === '0' || inactive === 'false');
+      if (on) inv.assertCanInactivate(detail.item);
+      const { error } = await supabase.from('inventory_items').update({
+        inactive: on,
+        updated_at: new Date().toISOString()
+      }).eq('id', id);
+      throwIf(error, 'Could not update inventory item.');
+      return getInventoryItemDetail(id);
     },
     async adjustInventory(id, payload, adminEmail) {
       const ok = await applyLocationChange(id, payload || {}, adminEmail);

@@ -33,7 +33,22 @@ function locIsVendorWarehouse(loc) {
   return vid != null && String(vid).trim() !== '';
 }
 
+function itemIsInactive(item) {
+  if (!item) return false;
+  const v = item.inactive != null ? item.inactive : item.inactive_flag;
+  return v === true || v === 1 || v === '1' || v === 'true' || v === 't';
+}
+
+function itemHasAvailableStock(item) {
+  if (!item) return false;
+  if ((Number(item.qty) || 0) > 0) return true;
+  if ((Number(item.untrackedQty) || 0) > 0) return true;
+  if ((Number(item.partnerQty) || 0) > 0) return true;
+  return false;
+}
+
 function itemStatus(item) {
+  if (itemIsInactive(item)) return 'inactive';
   const lowAt = item && item.lowAt != null ? Number(item.lowAt) : defaultLowAt(item && item.unit);
   const locs = (item && item.locations) || [];
   let ours = 0;
@@ -171,6 +186,22 @@ function nonNegNumber(value, label) {
   return n;
 }
 
+function panelTypeOf(value) {
+  const raw = String(value || '').trim().toLowerCase().replace(/[\s_]+/g, '-');
+  if (!raw) return '';
+  if (raw === 'indoor-fixed' || raw === 'outdoor-fixed' || raw === 'indoor-rental' || raw === 'outdoor-rental') {
+    return raw;
+  }
+  throw new Error('Panel type must be Indoor Fixed, Outdoor Fixed, Indoor Rental, or Outdoor Rental.');
+}
+
+function packagingTypeOf(value) {
+  const raw = String(value || '').trim().toLowerCase();
+  if (!raw) return '';
+  if (raw === 'cob' || raw === 'mip' || raw === 'gob' || raw === 'smd') return raw;
+  throw new Error('Packaging type must be COB, MIP, GOB, or SMD.');
+}
+
 function normalizeItemInput(body, opts) {
   const patch = !!(opts && opts.patch);
   const src = body || {};
@@ -182,12 +213,19 @@ function normalizeItemInput(body, opts) {
   }
   if (!patch || src.sku != null) {
     out.sku = normalizeSku(src.sku);
+    if (src.sku != null && !out.sku) throw new Error('SKU is required.');
   }
   if (!patch || src.brandId != null || src.brand_id != null) {
     out.brandId = String(src.brandId != null ? src.brandId : (src.brand_id || '')).trim().slice(0, 80);
   }
   if (!patch || src.unit != null) {
     out.unit = unitOf(src.unit);
+  }
+  if (!patch || src.panelType != null || src.panel_type != null) {
+    out.panelType = panelTypeOf(src.panelType != null ? src.panelType : src.panel_type);
+  }
+  if (!patch || src.packagingType != null || src.packaging_type != null) {
+    out.packagingType = packagingTypeOf(src.packagingType != null ? src.packagingType : src.packaging_type);
   }
   if (!patch || src.pitch != null) {
     out.pitch = pitchKey(src.pitch);
@@ -264,6 +302,8 @@ function normalizeItemInput(body, opts) {
   if (!patch && out.brandId == null) out.brandId = '';
   if (!patch && out.pitch == null) out.pitch = '';
   if (!patch && out.unit == null) out.unit = 'panels';
+  if (!patch && out.panelType == null) out.panelType = '';
+  if (!patch && out.packagingType == null) out.packagingType = '';
   if (!patch && !out.sku) {
     out.sku = suggestedSku({
       brandId: out.brandId,
@@ -283,6 +323,8 @@ function dbFieldsFromInput(input) {
   if (input.brandId != null) row.brand_id = input.brandId;
   if (input.pitch != null) row.pitch = input.pitch;
   if (input.unit != null) row.unit = input.unit;
+  if (input.panelType != null) row.panel_type = input.panelType;
+  if (input.packagingType != null) row.packaging_type = input.packagingType;
   if (input.qty != null) row.qty = input.qty;
   if (input.lowAt != null) row.low_at = input.lowAt;
   if (input.price != null) row.price = input.price;
@@ -416,6 +458,9 @@ function formatItem(row, brandName, maps, locations) {
     pitch: pitch,
     pitchLabel: pitch ? ('P' + pitch) : (unit === 'each' ? 'Each' : '—'),
     unit: unit,
+    panelType: (row && row.panel_type) || '',
+    packagingType: (row && row.packaging_type) || '',
+    inactive: itemIsInactive(row),
     qty: qty,
     lowAt: lowAt,
     price: Number(row && row.price) || 0,
@@ -488,7 +533,7 @@ function applyToCatalog(catalog, maps, items) {
       (maps || []).forEach(function (m) {
         if (String(m.product_id) !== String(series.dbId)) return;
         const item = byId[String(m.item_id)];
-        if (!item) return;
+        if (!item || itemIsInactive(item)) return;
         inv[pitchKey(m.pitch)] = publicLink(item);
       });
       series.pitchInventory = inv;
@@ -510,6 +555,7 @@ function catalogStock(maps, items) {
   const out = {};
   (maps || []).forEach(function (m) {
     const item = byId[String(m.item_id)];
+    if (!item || itemIsInactive(item)) return;
     const link = stockLink(item);
     if (!link) return;
     const pid = String(m.product_id);
@@ -554,6 +600,12 @@ function attachMapsToProducts(products, maps) {
   return products;
 }
 
+function assertCanInactivate(item) {
+  if (itemHasAvailableStock(item)) {
+    throw new Error('Cannot mark this SKU inactive while stock is on hand.');
+  }
+}
+
 function assertCanDelete(item, moves) {
   const qty = Math.max(0, Number(item && (item.qty != null ? item.qty : item)) || 0);
   const extra = Math.max(0, Number(item && (item.untrackedQty != null ? item.untrackedQty : item.partnerQty)) || 0);
@@ -586,6 +638,8 @@ module.exports = {
   defaultLowAt,
   binStatus,
   itemStatus,
+  itemIsInactive,
+  itemHasAvailableStock,
   locIsVendorWarehouse,
   applyKind,
   skuNameFromProduct,
@@ -620,5 +674,6 @@ module.exports = {
   mapsByItem,
   attachMapsToProducts,
   normalizeMaps,
-  assertCanDelete
+  assertCanDelete,
+  assertCanInactivate
 };

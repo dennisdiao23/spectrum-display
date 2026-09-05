@@ -1232,6 +1232,14 @@ async function main() {
     } catch (err) { next(err); }
   });
 
+  app.post('/api/admin/inventory/:id/inactive', requireAdmin, requirePerm('inventory', 'edit'), async function (req, res, next) {
+    try {
+      const data = await store.setInventoryInactive(req.params.id, req.body && req.body.inactive);
+      if (!data) return res.status(404).json({ ok: false, error: 'Inventory item not found.' });
+      res.json({ ok: true, item: data.item, moves: data.moves || [] });
+    } catch (err) { next(err); }
+  });
+
   app.post('/api/admin/inventory/:id/adjust', requireAdmin, requirePerm('inventory', 'edit'), async function (req, res, next) {
     try {
       const data = await store.adjustInventory(req.params.id, req.body || {}, req.admin && req.admin.email);
