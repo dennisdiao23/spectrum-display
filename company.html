@@ -4326,9 +4326,9 @@
       const idAttr = opts.idAttr;
       const setOrder = opts.setOrder;
       const onSelect = opts.onSelect;
-      const HOLD_MS = 180;
-      const MOVE_PX = 10;
+      const MOVE_PX = 4;
       const SLIDE_MS = 180;
+      const KEEP_SPACER = {};
       let press = null;
 
       function itemTabEls() {
@@ -4399,16 +4399,29 @@
         return ids;
       }
 
-      function desiredBefore(centerX) {
+      function desiredBefore() {
+        if (!press || !press.tab) return KEEP_SPACER;
+        const drag = press.tab.getBoundingClientRect();
         const tabs = [];
         Array.prototype.forEach.call(strip.children, function (el) {
           if (isSlotTab(el)) tabs.push(el);
         });
+        let best = null;
+        let bestRatio = 0;
         for (let i = 0; i < tabs.length; i++) {
           const rect = tabs[i].getBoundingClientRect();
-          if (centerX < rect.left + rect.width / 2) return tabs[i];
+          const overlap = Math.max(0, Math.min(drag.right, rect.right) - Math.max(drag.left, rect.left));
+          const ratio = rect.width ? overlap / rect.width : 0;
+          if (ratio >= 0.5 && ratio > bestRatio) {
+            bestRatio = ratio;
+            best = { el: tabs[i], i: i, rect: rect };
+          }
         }
-        return null;
+        if (!best) return KEEP_SPACER;
+        const dragMid = drag.left + drag.width / 2;
+        const tabMid = best.rect.left + best.rect.width / 2;
+        if (dragMid < tabMid) return best.el;
+        return tabs[best.i + 1] || null;
       }
 
       function spacerIsBefore(next) {
@@ -4480,21 +4493,18 @@
         if (left < minLeft) left = minLeft;
         if (left > maxLeft) left = maxLeft;
         tab.style.left = left + 'px';
-        moveSpacer(desiredBefore(clientX));
+        const next = desiredBefore();
+        if (next !== KEEP_SPACER) moveSpacer(next);
       }
 
-      function lift() {
+      function lift(clientX) {
         if (!press || press.lifted) return;
-        const tab = press.tab;
-        const id = tab.getAttribute(idAttr);
-        press.lifted = true;
-        markActive(id);
-        if (typeof onSelect === 'function') {
-          try { onSelect(id); } catch (err) {}
-        }
         if (itemTabEls().length < 2) return;
+        const tab = press.tab;
+        press.lifted = true;
+        const x = clientX == null ? press.x : clientX;
         const rect = tab.getBoundingClientRect();
-        press.grabX = press.x - rect.left;
+        press.grabX = x - rect.left;
         press.width = rect.width;
         press.height = rect.height;
         const spacer = document.createElement('span');
@@ -4522,7 +4532,7 @@
         tab.style.minWidth = rect.width + 'px';
         tab.style.flex = 'none';
         tab.style.transformOrigin = (rect.width ? ((press.grabX / rect.width) * 100) : 50) + '% 100%';
-        follow(press.x);
+        follow(x);
       }
 
       function stopPress(stopOpts) {
@@ -4553,10 +4563,10 @@
         if (!press || e.pointerId !== press.pointerId) return;
         const dist = Math.hypot(e.clientX - press.x, e.clientY - press.y);
         if (!press.lifted) {
-          if (dist > MOVE_PX) stopPress();
+          if (dist > MOVE_PX) lift(e.clientX);
           return;
         }
-        if (dist > 4) press.moved = true;
+        press.moved = true;
         e.preventDefault();
         follow(e.clientX);
       }
@@ -4572,7 +4582,7 @@
           strip.scrollLeft = scroll;
           return;
         }
-        stopPress();
+        stopPress({ eatClick: true });
       }
 
       strip.addEventListener('pointerdown', function (e) {
@@ -4584,6 +4594,11 @@
         if (!tab) return;
         if (tab.getAttribute(idAttr) === 'overview') return;
         stopPress();
+        const id = tab.getAttribute(idAttr);
+        markActive(id);
+        if (typeof onSelect === 'function') {
+          try { onSelect(id); } catch (err) {}
+        }
         press = {
           tab: tab,
           pointerId: e.pointerId,
@@ -4596,8 +4611,7 @@
           moved: false,
           captured: false,
           spacer: null,
-          orderBefore: itemTabEls().map(function (el) { return el.getAttribute(idAttr); }).join('\0'),
-          timer: setTimeout(lift, HOLD_MS)
+          orderBefore: itemTabEls().map(function (el) { return el.getAttribute(idAttr); }).join('\0')
         };
         document.addEventListener('pointermove', onMove, true);
         document.addEventListener('pointerup', onUp, true);
