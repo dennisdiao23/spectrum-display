@@ -2818,6 +2818,23 @@ body.po-split-lock #po-detail:not(.hidden) {
   align-self: flex-start;
   padding-top: 0.15rem;
 }
+#wh-item-panel .cc-detail-hero {
+  padding: 0.75rem 1rem 0.55rem;
+}
+#wh-item-panel .cc-detail-hero-main {
+  align-items: center;
+  margin-bottom: 0.65rem;
+}
+#wh-item-panel .cc-detail-hero-copy {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+#wh-item-panel .inv-detail-hero-actions {
+  margin-left: auto;
+  flex-shrink: 0;
+  align-self: flex-start;
+  padding-top: 0.15rem;
+}
 #inv-item-panel .cc-detail-hero-grid {
   gap: 0.45rem;
 }
