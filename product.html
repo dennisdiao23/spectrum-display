@@ -444,6 +444,7 @@
     }
 
     function stockStatusLabel(status) {
+      if (status === 'special') return 'Special Order';
       if (status === 'out') return 'Out of stock';
       if (status === 'low') return 'Low stock';
       return 'In stock';
@@ -458,12 +459,18 @@
       if (!el) return;
       const inv = canSeeStock() ? linkedInv() : null;
       const hasQty = !!(inv && inv.status);
-      el.textContent = hasQty
-        ? (stockStatusLabel(inv.status) + ' · ' + (Number(inv.qty) || 0).toLocaleString() + ' ' + (inv.unit === 'each' ? 'each' : 'panels'))
-        : '';
-      el.className = hasQty
-        ? ('text-sm mt-2 ' + (inv.status === 'out' ? 'text-red-400' : inv.status === 'low' ? 'text-amber-300' : 'text-emerald-400'))
-        : 'text-sm mt-2 hidden';
+      if (!hasQty) {
+        el.textContent = '';
+        el.className = 'text-sm mt-2 hidden';
+        return;
+      }
+      if (inv.status === 'special') {
+        el.textContent = 'Special Order';
+        el.className = 'text-sm mt-2 text-slate-400';
+        return;
+      }
+      el.textContent = stockStatusLabel(inv.status) + ' · ' + (Number(inv.qty) || 0).toLocaleString() + ' ' + (inv.unit === 'each' ? 'each' : 'panels');
+      el.className = 'text-sm mt-2 ' + (inv.status === 'out' ? 'text-red-400' : inv.status === 'low' ? 'text-amber-300' : 'text-emerald-400');
     }
 
     function esc(s) {

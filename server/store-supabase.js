@@ -264,7 +264,7 @@ function createSupabaseStore() {
         pitch: pitch,
         unit: unit,
         qty: Math.max(0, Number(row.qty) || 0),
-        low_at: row.low_at != null ? Number(row.low_at) : inv.defaultLowAt(unit),
+        low_at: row.low_at != null ? Number(row.low_at) : 0,
         price: inv.priceFromProduct(product),
         notes: '',
         updated_at: row.updated_at || new Date().toISOString()
@@ -631,7 +631,6 @@ function createSupabaseStore() {
   }
 
   async function warehouseStatsMap() {
-    const inv = require('./inventory');
     const [{ data, error }, itemsRes] = await Promise.all([
       supabase.from('inventory_item_locations').select('warehouse_id, item_id, qty'),
       supabase.from('inventory_items').select('id, low_at, unit')
@@ -639,7 +638,7 @@ function createSupabaseStore() {
     if (error) return {};
     const lowById = {};
     (itemsRes.data || []).forEach(function (item) {
-      lowById[String(item.id)] = item.low_at != null ? Number(item.low_at) : inv.defaultLowAt(item.unit);
+      lowById[String(item.id)] = item.low_at != null ? Number(item.low_at) : 0;
     });
     const out = {};
     (data || []).forEach(function (row) {
@@ -649,7 +648,7 @@ function createSupabaseStore() {
       out[key].itemCount += 1;
       out[key].qty += qty;
       const lowAt = lowById[String(row.item_id)];
-      if (qty > 0 && lowAt != null && qty <= lowAt) out[key].hasLow = true;
+      if (qty > 0 && lowAt > 0 && qty <= lowAt) out[key].hasLow = true;
     });
     return out;
   }

@@ -2106,6 +2106,9 @@ html.dash-scroll-lock body.company-app {
 .cc-acct-status.is-empty {
   background: #94a3b8;
 }
+.cc-acct-status.is-out {
+  background: #ef4444;
+}
 .inv-browser-tab > .cc-acct-status {
   width: 0.5rem;
   height: 0.5rem;

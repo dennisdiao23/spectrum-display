@@ -14,15 +14,43 @@ function unitOf(value) {
   return String(value || '').toLowerCase() === 'each' ? 'each' : 'panels';
 }
 
-function defaultLowAt(unit) {
-  return unitOf(unit) === 'each' ? 2 : 8;
+function defaultLowAt() {
+  return 0;
 }
 
 function binStatus(qty, lowAt) {
   const q = Math.max(0, Number(qty) || 0);
   const low = Math.max(0, Number(lowAt) || 0);
-  if (q <= 0) return 'out';
-  if (q <= low) return 'low';
+  if (q <= 0) return low <= 0 ? 'special' : 'out';
+  if (low > 0 && q <= low) return 'low';
+  return 'ok';
+}
+
+function locIsVendorWarehouse(loc) {
+  if (!loc) return false;
+  if (locUntracked(loc)) return true;
+  const vid = loc.vendorId != null ? loc.vendorId : loc.vendor_id;
+  return vid != null && String(vid).trim() !== '';
+}
+
+function itemStatus(item) {
+  const lowAt = item && item.lowAt != null ? Number(item.lowAt) : defaultLowAt(item && item.unit);
+  const locs = (item && item.locations) || [];
+  let ours = 0;
+  let vendor = 0;
+  if (locs.length) {
+    locs.forEach(function (loc) {
+      const q = Math.max(0, Number(loc.qty) || 0);
+      if (locIsVendorWarehouse(loc)) vendor += q;
+      else ours += q;
+    });
+  } else {
+    ours = Math.max(0, Number(item && item.qty) || 0);
+    vendor = Math.max(0, Number(item && (item.untrackedQty != null ? item.untrackedQty : item.partnerQty)) || 0);
+  }
+  if (ours <= 0 && vendor > 0) return 'untracked';
+  if (ours <= 0) return (Number(lowAt) || 0) <= 0 ? 'special' : 'out';
+  if ((Number(lowAt) || 0) > 0 && ours <= lowAt) return 'low';
   return 'ok';
 }
 
@@ -370,6 +398,7 @@ function applyLocations(item, locations) {
   item.bin = primary ? primary.bin : '';
   item.warehouseType = primary ? primary.kind : '';
   item.locationKind = item.warehouseType;
+  item.status = itemStatus(item);
   return item;
 }
 
@@ -431,10 +460,9 @@ function stockLink(item) {
   const qty = item.websiteQty != null
     ? Math.max(0, Number(item.websiteQty) || 0)
     : Math.max(0, Number(item.qty) || 0);
-  const lowAt = item.low_at != null ? Number(item.low_at) : (item.lowAt != null ? Number(item.lowAt) : defaultLowAt(unit));
   return {
     qty: qty,
-    status: binStatus(Math.max(0, Number(item.qty) || 0), lowAt),
+    status: itemStatus(item),
     unit: unit
   };
 }
@@ -557,6 +585,8 @@ module.exports = {
   unitOf,
   defaultLowAt,
   binStatus,
+  itemStatus,
+  locIsVendorWarehouse,
   applyKind,
   skuNameFromProduct,
   skuToken,

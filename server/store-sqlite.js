@@ -200,10 +200,7 @@ function warehouseStats(db) {
       COALESCE(SUM(l.qty), 0) AS qty,
       COALESCE(SUM(
         CASE
-          WHEN l.qty > 0 AND l.qty <= COALESCE(
-            i.low_at,
-            CASE WHEN lower(COALESCE(i.unit, '')) = 'each' THEN 2 ELSE 8 END
-          ) THEN 1 ELSE 0
+          WHEN l.qty > 0 AND COALESCE(i.low_at, 0) > 0 AND l.qty <= i.low_at THEN 1 ELSE 0
         END
       ), 0) AS low_count
     FROM inventory_item_locations l

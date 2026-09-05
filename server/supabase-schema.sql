@@ -340,7 +340,7 @@ create table if not exists public.inventory_stock (
   product_id bigint not null references public.products(id) on delete cascade,
   pitch text not null default '',
   qty integer not null default 0,
-  low_at integer not null default 8,
+  low_at integer not null default 0,
   updated_at timestamptz not null default now(),
   unique (product_id, pitch)
 );
@@ -383,7 +383,7 @@ create table if not exists public.inventory_items (
   pitch text not null default '',
   unit text not null default 'panels',
   qty integer not null default 0,
-  low_at integer not null default 8,
+  low_at integer not null default 0,
   price double precision not null default 0,
   notes text not null default '',
   created_at timestamptz not null default now(),
