@@ -33,7 +33,22 @@ function locIsVendorWarehouse(loc) {
   return vid != null && String(vid).trim() !== '';
 }
 
+function itemIsInactive(item) {
+  if (!item) return false;
+  const v = item.inactive != null ? item.inactive : item.inactive_flag;
+  return v === true || v === 1 || v === '1' || v === 'true' || v === 't';
+}
+
+function itemHasAvailableStock(item) {
+  if (!item) return false;
+  if ((Number(item.qty) || 0) > 0) return true;
+  if ((Number(item.untrackedQty) || 0) > 0) return true;
+  if ((Number(item.partnerQty) || 0) > 0) return true;
+  return false;
+}
+
 function itemStatus(item) {
+  if (itemIsInactive(item)) return 'inactive';
   const lowAt = item && item.lowAt != null ? Number(item.lowAt) : defaultLowAt(item && item.unit);
   const locs = (item && item.locations) || [];
   let ours = 0;
@@ -445,6 +460,7 @@ function formatItem(row, brandName, maps, locations) {
     unit: unit,
     panelType: (row && row.panel_type) || '',
     packagingType: (row && row.packaging_type) || '',
+    inactive: itemIsInactive(row),
     qty: qty,
     lowAt: lowAt,
     price: Number(row && row.price) || 0,
@@ -517,7 +533,7 @@ function applyToCatalog(catalog, maps, items) {
       (maps || []).forEach(function (m) {
         if (String(m.product_id) !== String(series.dbId)) return;
         const item = byId[String(m.item_id)];
-        if (!item) return;
+        if (!item || itemIsInactive(item)) return;
         inv[pitchKey(m.pitch)] = publicLink(item);
       });
       series.pitchInventory = inv;
@@ -539,6 +555,7 @@ function catalogStock(maps, items) {
   const out = {};
   (maps || []).forEach(function (m) {
     const item = byId[String(m.item_id)];
+    if (!item || itemIsInactive(item)) return;
     const link = stockLink(item);
     if (!link) return;
     const pid = String(m.product_id);
@@ -583,6 +600,12 @@ function attachMapsToProducts(products, maps) {
   return products;
 }
 
+function assertCanInactivate(item) {
+  if (itemHasAvailableStock(item)) {
+    throw new Error('Cannot mark this SKU inactive while stock is on hand.');
+  }
+}
+
 function assertCanDelete(item, moves) {
   const qty = Math.max(0, Number(item && (item.qty != null ? item.qty : item)) || 0);
   const extra = Math.max(0, Number(item && (item.untrackedQty != null ? item.untrackedQty : item.partnerQty)) || 0);
@@ -615,6 +638,8 @@ module.exports = {
   defaultLowAt,
   binStatus,
   itemStatus,
+  itemIsInactive,
+  itemHasAvailableStock,
   locIsVendorWarehouse,
   applyKind,
   skuNameFromProduct,
@@ -649,5 +674,6 @@ module.exports = {
   mapsByItem,
   attachMapsToProducts,
   normalizeMaps,
-  assertCanDelete
+  assertCanDelete,
+  assertCanInactivate
 };

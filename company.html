@@ -2241,6 +2241,7 @@
       </div>
     </div>
     <div class="cc-drawer-foot">
+      <button id="inv-inactive-btn" type="button" class="hidden px-5 py-2 rounded-full border border-slate-200 text-red-500 hover:border-red-400 text-sm">Inactive</button>
       <button id="inv-delete-btn" type="button" class="hidden px-5 py-2 rounded-full border border-slate-200 text-red-500 hover:border-red-400 text-sm">Delete</button>
       <button type="submit" form="inv-item-form" id="inv-save" class="px-5 py-2 rounded-full bg-sky-500 hover:bg-sky-400 text-white text-sm font-semibold">Save item</button>
     </div>
@@ -4562,6 +4563,7 @@
       if (status === 'low') return 'Low';
       if (status === 'untracked') return 'Vendor';
       if (status === 'special') return 'Special order';
+      if (status === 'inactive') return 'Inactive';
       return 'In stock';
     }
 
@@ -4585,6 +4587,7 @@
       if (status === 'low') return 'bg-amber-500/15 text-amber-300';
       if (status === 'untracked') return 'bg-sky-500/15 text-sky-300';
       if (status === 'special') return 'bg-slate-500/15 text-slate-400';
+      if (status === 'inactive') return 'bg-red-500/15 text-red-300';
       return 'bg-emerald-500/15 text-emerald-300';
     }
 
@@ -6244,6 +6247,7 @@
         const selected = String(item.id) === String(invDetailId);
         return '<tr class="border-b border-slate-800 hover:bg-slate-900/80 cursor-pointer' +
           (selected ? ' is-selected' : '') +
+          (item.inactive ? ' opacity-50' : '') +
           '" data-id="' + esc(item.id) + '">' +
           dashOrderedCells(table, cells) +
           '</tr>';
@@ -6294,6 +6298,7 @@
       if (status === 'low') return 'is-low';
       if (status === 'untracked') return 'is-untracked';
       if (status === 'special') return 'is-empty';
+      if (status === 'inactive') return 'is-out';
       return 'is-in';
     }
 
@@ -7152,6 +7157,7 @@
         ['Unit', item.unit || '—'],
         ['Panel type', panelTypeLabel(item.panelType)],
         ['Packaging type', packagingTypeLabel(item.packagingType)],
+        ['Inactive', item.inactive ? 'Yes' : 'No'],
         ['Weight', item.weight != null ? String(item.weight) : '—'],
         ['Panel size', item.panelW && item.panelH ? (item.panelW + ' × ' + item.panelH) : '—'],
         ['Cost', item.cost != null ? moneyText(item.cost) : '—'],
@@ -7788,12 +7794,21 @@
       document.getElementById('inv-qty-init-wrap').classList.toggle('hidden', hasId);
       document.getElementById('inv-onhand-block').classList.toggle('hidden', !hasId);
       const locked = hasId && ((Number(item.qty) || 0) > 0 || (inventoryDetail && (inventoryDetail.moves || []).length > 0));
+      const hasStock = hasId && ((Number(item.qty) || 0) > 0 || (Number(item.untrackedQty) || 0) > 0 || (Number(item.partnerQty) || 0) > 0);
+      const isInactive = !!(item && item.inactive);
       const delBtn = document.getElementById('inv-delete-btn');
       delBtn.classList.toggle('hidden', !hasId);
       delBtn.disabled = locked;
       delBtn.classList.toggle('opacity-40', locked);
       delBtn.classList.toggle('cursor-not-allowed', locked);
       delBtn.title = locked ? 'Cannot delete this SKU after stock has been received.' : '';
+      const inactBtn = document.getElementById('inv-inactive-btn');
+      inactBtn.classList.toggle('hidden', !hasId);
+      inactBtn.textContent = isInactive ? 'Activate' : 'Inactive';
+      inactBtn.disabled = !isInactive && hasStock;
+      inactBtn.classList.toggle('opacity-40', !isInactive && hasStock);
+      inactBtn.classList.toggle('cursor-not-allowed', !isInactive && hasStock);
+      inactBtn.title = (!isInactive && hasStock) ? 'Cannot mark this SKU inactive while stock is on hand.' : '';
       document.getElementById('inv-delete-note').classList.toggle('hidden', !locked);
       document.getElementById('inv-item-msg').classList.add('hidden');
     }
@@ -7866,6 +7881,17 @@
         (item.name || 'Item') +
         (item.pitchLabel && item.pitchLabel !== '—' ? (' · ' + item.pitchLabel) : '') +
         ' · ' + invQtyDisplay(item);
+    }
+
+    function invIsInactive(item) {
+      return !!(item && item.inactive);
+    }
+
+    function invPickableItems(selectedId) {
+      return (inventoryItems || []).filter(function (item) {
+        if (!invIsInactive(item)) return true;
+        return selectedId != null && selectedId !== '' && String(item.id) === String(selectedId);
+      });
     }
 
     function currentMapSelection() {
@@ -7941,7 +7967,7 @@
       rows.innerHTML = slots.map(function (pitch) {
         const label = pitch ? ('P' + pitch) : (isControlType(product.type, product.brandId) ? 'This product' : 'Stock');
         const selected = maps[pitch] || '';
-        const options = ['<option value="">Not linked</option>'].concat(inventoryItems.map(function (item) {
+        const options = ['<option value="">Not linked</option>'].concat(invPickableItems(selected).map(function (item) {
           return '<option value="' + esc(item.id) + '"' + (String(item.id) === String(selected) ? ' selected' : '') + '>' +
             esc(skuOptionLabel(item)) + '</option>';
         }));
@@ -10552,7 +10578,7 @@
     function poProductOptions(selected) {
       return '<option value="">Select</option>' +
         '<option value="__new__">+ Add new</option>' +
-        (inventoryItems || []).map(function (item) {
+        invPickableItems(selected).map(function (item) {
           return '<option value="' + esc(item.id) + '"' + (String(item.id) === String(selected) ? ' selected' : '') + '>' +
             esc(item.name || item.sku || 'Item') +
             '</option>';
@@ -11347,7 +11373,7 @@
     function refreshRsSkuList() {
       const list = document.getElementById('rs-sku-list');
       if (!list) return;
-      list.innerHTML = (inventoryItems || []).map(function (item) {
+      list.innerHTML = invPickableItems().map(function (item) {
         return '<option value="' + esc(item.sku || '') + '">' + esc(item.name || '') + '</option>';
       }).join('');
     }
@@ -11851,7 +11877,7 @@
       }
       return '<option value="">Select</option>' +
         '<option value="__new__">+ Add new</option>' +
-        (inventoryItems || []).map(function (item) {
+        invPickableItems(sel).map(function (item) {
           return '<option value="' + esc(item.id) + '"' + (String(item.id) === String(sel) ? ' selected' : '') + '>' +
             esc(item.name || item.sku || 'Item') +
             '</option>';
@@ -12020,7 +12046,7 @@
 
     function soInvSearchMatches(q) {
       const needle = String(q || '').trim().toLowerCase();
-      return (inventoryItems || []).filter(function (item) {
+      return invPickableItems().filter(function (item) {
         if (!needle) return true;
         const blob = ((item.sku || '') + ' ' + (item.name || '') + ' ' + (item.brandName || '') + ' ' + (item.pitchLabel || '') + ' ' + (item.description || '')).toLowerCase();
         return blob.indexOf(needle) !== -1;
@@ -14282,6 +14308,37 @@
         msg.textContent = err.message || 'Could not save.';
         msg.className = 'text-sm px-5 pt-3 text-red-500';
         msg.classList.remove('hidden');
+      }
+    });
+    document.getElementById('inv-inactive-btn').addEventListener('click', async function () {
+      const id = document.getElementById('inv-item-id').value;
+      if (!id || this.disabled) return;
+      const item = inventoryDetail && inventoryDetail.item;
+      const turningOff = !(item && item.inactive);
+      if (turningOff && ((Number(item && item.qty) || 0) > 0 || (Number(item && item.untrackedQty) || 0) > 0 || (Number(item && item.partnerQty) || 0) > 0)) {
+        alert('Cannot mark this SKU inactive while stock is on hand.');
+        return;
+      }
+      if (turningOff) {
+        if (!confirm('Mark this SKU inactive? It will stay in inventory but will not be used on new quotes or the website.')) return;
+      } else if (!confirm('Make this SKU active again?')) {
+        return;
+      }
+      try {
+        const data = await api('/api/admin/inventory/' + encodeURIComponent(id) + '/inactive', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ inactive: turningOff })
+        });
+        renderInventoryDetail(data);
+        markInvClean();
+        await loadInventory();
+        if (String(invDetailId) === String(id)) {
+          invDetailData = data;
+          renderInventoryDetailView();
+        }
+      } catch (err) {
+        alert(err.message || 'Could not update this SKU.');
       }
     });
     document.getElementById('inv-delete-btn').addEventListener('click', async function () {

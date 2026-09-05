@@ -716,6 +716,16 @@ function createSqliteStore() {
       const info = db.prepare('DELETE FROM inventory_items WHERE id = ?').run(id);
       return info.changes > 0;
     },
+    async setInventoryInactive(id, inactive) {
+      const inv = require('./inventory');
+      const detail = getInventoryItemDetail(db, id);
+      if (!detail) return null;
+      const on = !(inactive === false || inactive === 0 || inactive === '0' || inactive === 'false');
+      if (on) inv.assertCanInactivate(detail.item);
+      db.prepare('UPDATE inventory_items SET inactive = ?, updated_at = ? WHERE id = ?')
+        .run(on ? 1 : 0, dbUtil.nowIso(), id);
+      return getInventoryItemDetail(db, id);
+    },
     async adjustInventory(id, payload, adminEmail) {
       db.exec('BEGIN');
       try {

@@ -1411,6 +1411,19 @@ function createSupabaseStore() {
       throwIf(error, 'Could not delete inventory item.');
       return !!(data && data.length);
     },
+    async setInventoryInactive(id, inactive) {
+      const inv = require('./inventory');
+      const detail = await getInventoryItemDetail(id);
+      if (!detail) return null;
+      const on = !(inactive === false || inactive === 0 || inactive === '0' || inactive === 'false');
+      if (on) inv.assertCanInactivate(detail.item);
+      const { error } = await supabase.from('inventory_items').update({
+        inactive: on,
+        updated_at: new Date().toISOString()
+      }).eq('id', id);
+      throwIf(error, 'Could not update inventory item.');
+      return getInventoryItemDetail(id);
+    },
     async adjustInventory(id, payload, adminEmail) {
       const ok = await applyLocationChange(id, payload || {}, adminEmail);
       if (!ok) return null;

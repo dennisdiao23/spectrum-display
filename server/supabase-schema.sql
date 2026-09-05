@@ -400,6 +400,7 @@ alter table public.inventory_items add column if not exists panel_h double preci
 alter table public.inventory_items add column if not exists image text not null default '';
 alter table public.inventory_items add column if not exists panel_type text not null default '';
 alter table public.inventory_items add column if not exists packaging_type text not null default '';
+alter table public.inventory_items add column if not exists inactive boolean not null default false;
 create unique index if not exists inventory_items_sku_uidx on public.inventory_items (sku);
 
 create table if not exists public.inventory_item_moves (
