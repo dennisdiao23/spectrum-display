@@ -2740,39 +2740,41 @@
         }
         rememberMasterTab(name);
         showAdminTab(name);
-        renderDashTabBar();
+        if (!opts.skipTabBar) renderDashTabBar();
         const view = viewTabForMaster(name);
         const salesTab = view === 'quotes' || view === 'orders' || view === 'invoices' || view === 'sales' || !!parseDocMasterTab(name);
         const poTab = view === 'purchase-orders' || (parseDocMasterTab(name) || {}).kind === 'po';
         if (opts.reload || masterRouteNeedsLoad(name) || salesTab || poTab) openRoutedSection(name);
       };
-      if (typeof ccDrawerNeedsLeave === 'function' && ccDrawerNeedsLeave()) {
-        ccAskLeave(go);
-        return;
-      }
-      if (typeof invDrawerNeedsLeave === 'function' && invDrawerNeedsLeave()) {
-        invAskLeave(go);
-        return;
-      }
-      if (typeof vnDrawerNeedsLeave === 'function' && vnDrawerNeedsLeave()) {
-        vnAskLeave(go);
-        return;
-      }
-      if (typeof caDrawerNeedsLeave === 'function' && caDrawerNeedsLeave()) {
-        caAskLeave(go);
-        return;
-      }
-      if (typeof ciDrawerNeedsLeave === 'function' && ciDrawerNeedsLeave()) {
-        ciAskLeave(go);
-        return;
-      }
-      if (typeof stDrawerNeedsLeave === 'function' && stDrawerNeedsLeave()) {
-        stAskLeave(go);
-        return;
-      }
-      if (typeof rlDrawerNeedsLeave === 'function' && rlDrawerNeedsLeave()) {
-        rlAskLeave(go);
-        return;
+      if (!opts.skipTabBar) {
+        if (typeof ccDrawerNeedsLeave === 'function' && ccDrawerNeedsLeave()) {
+          ccAskLeave(go);
+          return;
+        }
+        if (typeof invDrawerNeedsLeave === 'function' && invDrawerNeedsLeave()) {
+          invAskLeave(go);
+          return;
+        }
+        if (typeof vnDrawerNeedsLeave === 'function' && vnDrawerNeedsLeave()) {
+          vnAskLeave(go);
+          return;
+        }
+        if (typeof caDrawerNeedsLeave === 'function' && caDrawerNeedsLeave()) {
+          caAskLeave(go);
+          return;
+        }
+        if (typeof ciDrawerNeedsLeave === 'function' && ciDrawerNeedsLeave()) {
+          ciAskLeave(go);
+          return;
+        }
+        if (typeof stDrawerNeedsLeave === 'function' && stDrawerNeedsLeave()) {
+          stAskLeave(go);
+          return;
+        }
+        if (typeof rlDrawerNeedsLeave === 'function' && rlDrawerNeedsLeave()) {
+          rlAskLeave(go);
+          return;
+        }
       }
       go();
     }
@@ -3131,10 +3133,14 @@
       renderDashTabBar();
     }
 
-    function activateMasterTab(name) {
+    function activateMasterTab(name, opts) {
+      opts = opts || {};
       name = canonicalMasterTab(name);
       if (!name) return;
-      openCompanyTab(name, true, { restorePath: dashTabPath[name] });
+      openCompanyTab(name, opts.push !== false, {
+        restorePath: dashTabPath[name],
+        skipTabBar: opts.skipTabBar
+      });
     }
     (function sendOldCompanyUrlToCleanPath() {
       const p = companyPath();
@@ -4326,6 +4332,7 @@
       const idAttr = opts.idAttr;
       const setOrder = opts.setOrder;
       const onSelect = opts.onSelect;
+      const pinnedId = opts.pinnedId || 'overview';
       const MOVE_PX = 4;
       const SLIDE_MS = 180;
       const KEEP_SPACER = {};
@@ -4333,13 +4340,13 @@
 
       function itemTabEls() {
         return Array.prototype.filter.call(strip.querySelectorAll('.inv-browser-tab[' + idAttr + ']'), function (tab) {
-          return tab.getAttribute(idAttr) !== 'overview';
+          return tab.getAttribute(idAttr) !== pinnedId;
         });
       }
 
       function isSlotTab(el) {
         return el && el.classList && el.classList.contains('inv-browser-tab') &&
-          el.getAttribute(idAttr) && el.getAttribute(idAttr) !== 'overview' &&
+          el.getAttribute(idAttr) && el.getAttribute(idAttr) !== pinnedId &&
           (!press || el !== press.tab);
       }
 
@@ -4393,7 +4400,7 @@
           if (press && el === press.tab) return;
           if (!isSlotTab(el) && !(el && el.classList && el.classList.contains('inv-browser-tab'))) return;
           const id = el.getAttribute(idAttr);
-          if (!id || id === 'overview') return;
+          if (!id || id === pinnedId) return;
           ids.push(id);
         });
         return ids;
@@ -4484,13 +4491,13 @@
             Array.prototype.forEach.call(strip.children, function (el) {
               if (isSlotTab(el)) tabs.push(el);
             });
-            const last = tabs[tabs.length - 1] || strip.querySelector('.inv-browser-tab[' + idAttr + '="overview"]');
+            const last = tabs[tabs.length - 1] || strip.querySelector('.inv-browser-tab[' + idAttr + '="' + pinnedId + '"]');
             if (last && last.nextSibling) strip.insertBefore(press.spacer, last.nextSibling);
             else strip.appendChild(press.spacer);
           }
-          const overview = strip.querySelector('.inv-browser-tab[' + idAttr + '="overview"]');
-          if (overview && (press.spacer.compareDocumentPosition(overview) & Node.DOCUMENT_POSITION_FOLLOWING)) {
-            strip.insertBefore(press.spacer, overview.nextSibling);
+          const pinned = strip.querySelector('.inv-browser-tab[' + idAttr + '="' + pinnedId + '"]');
+          if (pinned && (press.spacer.compareDocumentPosition(pinned) & Node.DOCUMENT_POSITION_FOLLOWING)) {
+            strip.insertBefore(press.spacer, pinned.nextSibling);
           }
         });
       }
@@ -4604,7 +4611,7 @@
         if (e.target.closest('.inv-browser-tab-close')) return;
         const tab = e.target.closest('.inv-browser-tab[' + idAttr + ']');
         if (!tab) return;
-        if (tab.getAttribute(idAttr) === 'overview') return;
+        if (tab.getAttribute(idAttr) === pinnedId) return;
         stopPress();
         const id = tab.getAttribute(idAttr);
         markActive(id);
@@ -14662,6 +14669,14 @@
     (function bindAllItemTabReorders() {
       const specs = [
         {
+          id: 'dash-tab-strip', idAttr: 'data-dash-tab', pinnedId: 'dashboard',
+          tabs: function () { return dashOpenTabs; }, render: renderDashTabBar,
+          onSelect: function (id) {
+            if (String(dashActiveGroup) === String(id)) return;
+            activateMasterTab(id, { skipTabBar: true });
+          }
+        },
+        {
           id: 'inv-tab-strip', idAttr: 'data-inv-tab-id', tabs: function () { return invOpenTabs; }, render: renderInvTabBar,
           onSelect: function (id) {
             if (String(invActiveTab) === String(id)) return;
@@ -14721,6 +14736,7 @@
       specs.forEach(function (spec) {
         bindItemTabReorder(document.getElementById(spec.id), {
           idAttr: spec.idAttr,
+          pinnedId: spec.pinnedId,
           onSelect: spec.onSelect,
           setOrder: function (ids) {
             const arr = spec.tabs();
