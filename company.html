@@ -752,6 +752,7 @@
                 <table class="w-full text-sm dash-cols" data-cols="warehouses">
                   <thead class="text-left text-slate-400 border-b border-slate-800">
                     <tr>
+                      <th class="py-3 px-4 font-medium" data-col="status">Status <span class="dash-col-caret">▾</span><span class="dash-col-grip" aria-hidden="true"></span></th>
                       <th class="py-3 px-4 font-medium" data-col="name">Location <span class="dash-col-caret">▾</span><span class="dash-col-grip" aria-hidden="true"></span></th>
                       <th class="py-3 px-4 font-medium" data-col="type">Type <span class="dash-col-caret">▾</span><span class="dash-col-grip" aria-hidden="true"></span></th>
                       <th class="py-3 px-4 font-medium" data-col="vendor">Vendor <span class="dash-col-caret">▾</span><span class="dash-col-grip" aria-hidden="true"></span></th>
@@ -4288,6 +4289,34 @@
       return 'bg-emerald-500/15 text-emerald-300';
     }
 
+    function locStatusOf(wh) {
+      return (wh && wh.status) || 'empty';
+    }
+    function locStatusLabel(status) {
+      if (status === 'low') return 'Low';
+      if (status === 'untracked') return 'Untracked';
+      if (status === 'ok') return 'In stock';
+      return 'Empty';
+    }
+    function locStatusPillClass(status) {
+      if (status === 'low') return 'bg-amber-500/15 text-amber-300';
+      if (status === 'untracked') return 'bg-sky-500/15 text-sky-300';
+      if (status === 'ok') return 'bg-emerald-500/15 text-emerald-300';
+      return 'bg-slate-500/15 text-slate-400';
+    }
+    function locStatusDotClass(status) {
+      if (status === 'low') return 'is-low';
+      if (status === 'untracked') return 'is-untracked';
+      if (status === 'ok') return 'is-in';
+      return 'is-empty';
+    }
+    function locStatusIconHtml(wh, title) {
+      const status = locStatusOf(wh);
+      const label = (wh && wh.statusLabel) || locStatusLabel(status);
+      return '<span class="inv-browser-tab-status ' + locStatusDotClass(status) + '" aria-hidden="true" title="' +
+        esc(title || label) + '"></span>';
+    }
+
     function dashColKey(table) {
       return table.getAttribute('data-cols') || 'table';
     }
@@ -4403,6 +4432,7 @@
         { id: 'memo', label: 'Memo' }
       ],
       warehouses: [
+        { id: 'status', label: 'Status' },
         { id: 'name', label: 'Location' },
         { id: 'type', label: 'Type' },
         { id: 'vendor', label: 'Vendor' },
@@ -4466,7 +4496,7 @@
 
     const DASH_COL_DEFAULTS = {
       inventory: ['sku', 'name', 'qty', 'warehouse', 'bin', 'cost', 'price'],
-      warehouses: ['name', 'type', 'vendor', 'tracked', 'qty', 'skus'],
+      warehouses: ['status', 'name', 'type', 'vendor', 'tracked', 'qty', 'skus'],
       customers: ['company', 'contact', 'email', 'phone', 'balance'],
       sales: ['number', 'customer', 'date', 'status', 'total'],
       'so-lines': ['item', 'description', 'qty', 'price', 'amount'],
@@ -4577,7 +4607,7 @@
         sortDir: '',
         widths: fallbackWidths,
         splitLeftPx: keptSplit,
-        schema: (dashColKey(table) === 'inventory' || dashColKey(table) === 'po-lines' || dashColKey(table) === 'warehouses') ? 1 : 0
+        schema: dashColKey(table) === 'warehouses' ? 2 : ((dashColKey(table) === 'inventory' || dashColKey(table) === 'po-lines') ? 1 : 0)
       };
       if (!saved) {
         return applyMobileColState(table, fallback);
@@ -4635,6 +4665,14 @@
           if (drop !== -1) hidden.splice(drop, 1);
         }
         schema = 1;
+      }
+      if (dashColKey(table) === 'warehouses' && schema < 2) {
+        if (order.indexOf('status') === -1) {
+          order.unshift('status');
+          const drop = hidden.indexOf('status');
+          if (drop !== -1) hidden.splice(drop, 1);
+        }
+        schema = 2;
       }
       const merged = {
         order: order,
@@ -6676,6 +6714,7 @@
       const table = document.querySelector('table.dash-cols[data-cols="warehouses"]');
       const tb = document.getElementById('wh-table');
       const sorted = sortColRows(rows, table, function (wh, col) {
+        if (col === 'status') return locStatusOf(wh);
         if (col === 'name') return wh.name || '';
         if (col === 'type') return wh.typeLabel || wh.type || '';
         if (col === 'vendor') return wh.vendorName || '';
@@ -6687,8 +6726,14 @@
       });
       tb.innerHTML = sorted.map(function (wh) {
         const tracked = !(wh.untracked || wh.tracked === false);
+        const status = locStatusOf(wh);
+        const statusLabel = wh.statusLabel || locStatusLabel(status);
         const cells = {
-          name: '<td class="py-3 px-4 font-medium">' + esc(wh.name || '') + '</td>',
+          status: '<td class="py-3 px-4"><span class="wh-status-cell">' + locStatusIconHtml(wh) +
+            '<span class="text-xs px-2 py-0.5 rounded-full ' + locStatusPillClass(status) + '">' +
+            esc(statusLabel) + '</span></span></td>',
+          name: '<td class="py-3 px-4 font-medium"><span class="wh-name-cell">' + locStatusIconHtml(wh) +
+            esc(wh.name || '') + '</span></td>',
           type: '<td class="py-3 px-4 text-slate-400">' + esc(wh.typeLabel || wh.type || '') + '</td>',
           vendor: '<td class="py-3 px-4 text-slate-400">' + esc(wh.vendorName || '—') + '</td>',
           tracked: '<td class="py-3 px-4 text-slate-400">' + (tracked ? 'Yes' : 'No') + '</td>',
@@ -6728,6 +6773,7 @@
         html += '<button type="button" class="inv-browser-tab' +
           (String(whActiveTab) === String(id) ? ' is-active' : '') +
           '" data-wh-tab-id="' + esc(id) + '" role="tab" aria-selected="' + (String(whActiveTab) === String(id) ? 'true' : 'false') + '">' +
+          (id === 'new' ? '' : locStatusIconHtml(wh, (wh && wh.statusLabel) || locStatusLabel(locStatusOf(wh)))) +
           '<span class="inv-browser-tab-label">' + esc(label) + '</span>' +
           '<span class="inv-browser-tab-close" data-wh-tab-close="' + esc(id) + '" aria-label="Close">×</span></button>';
       });
@@ -6747,7 +6793,8 @@
       if (opts.push !== false) history.pushState({ tab: 'warehouses' }, '', pathForWarehouse());
     }
     function fillWhDetailView(wh) {
-      document.getElementById('wh-detail-name').textContent = (wh && wh.name) || 'Location';
+      document.getElementById('wh-detail-name').innerHTML = locStatusIconHtml(wh) +
+        '<span>' + esc((wh && wh.name) || 'Location') + '</span>';
       const kind = (wh && (wh.typeLabel || wh.kind || wh.type)) || '';
       document.getElementById('wh-detail-subname').textContent = kind;
       document.getElementById('wh-detail-type').textContent = kind || '—';

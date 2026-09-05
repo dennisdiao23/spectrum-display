@@ -2978,6 +2978,23 @@ body.po-split-lock #po-detail:not(.hidden) {
 .inv-browser-tab-status.is-out {
   background: #ef4444;
 }
+.inv-browser-tab-status.is-untracked {
+  background: #38bdf8;
+}
+.inv-browser-tab-status.is-empty {
+  background: #94a3b8;
+}
+.wh-status-cell,
+.wh-name-cell {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+}
+#wh-detail-name {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
 .inv-browser-tab-label {
   overflow: hidden;
   text-overflow: ellipsis;
