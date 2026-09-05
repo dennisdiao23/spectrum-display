@@ -2094,6 +2094,18 @@ html.dash-scroll-lock body.company-app {
 .cc-acct-status.is-none {
   background: #94a3b8;
 }
+.cc-acct-status.is-in {
+  background: #22c55e;
+}
+.cc-acct-status.is-low {
+  background: #eab308;
+}
+.cc-acct-status.is-untracked {
+  background: #38bdf8;
+}
+.cc-acct-status.is-empty {
+  background: #94a3b8;
+}
 .inv-browser-tab > .cc-acct-status {
   width: 0.5rem;
   height: 0.5rem;
@@ -3000,15 +3012,6 @@ body.po-split-lock #po-detail:not(.hidden) {
 }
 .inv-browser-tab-status.is-empty {
   background: #94a3b8;
-}
-.wh-status-td {
-  width: 2.25rem;
-  text-align: center;
-  vertical-align: middle;
-}
-.wh-status-td .inv-browser-tab-status {
-  display: inline-block;
-  vertical-align: middle;
 }
 #wh-detail-name {
   display: flex;
