@@ -180,6 +180,13 @@ function panelTypeOf(value) {
   throw new Error('Panel type must be Indoor Fixed, Outdoor Fixed, Indoor Rental, or Outdoor Rental.');
 }
 
+function packagingTypeOf(value) {
+  const raw = String(value || '').trim().toLowerCase();
+  if (!raw) return '';
+  if (raw === 'cob' || raw === 'mip' || raw === 'gob' || raw === 'smd') return raw;
+  throw new Error('Packaging type must be COB, MIP, GOB, or SMD.');
+}
+
 function normalizeItemInput(body, opts) {
   const patch = !!(opts && opts.patch);
   const src = body || {};
@@ -201,6 +208,9 @@ function normalizeItemInput(body, opts) {
   }
   if (!patch || src.panelType != null || src.panel_type != null) {
     out.panelType = panelTypeOf(src.panelType != null ? src.panelType : src.panel_type);
+  }
+  if (!patch || src.packagingType != null || src.packaging_type != null) {
+    out.packagingType = packagingTypeOf(src.packagingType != null ? src.packagingType : src.packaging_type);
   }
   if (!patch || src.pitch != null) {
     out.pitch = pitchKey(src.pitch);
@@ -278,6 +288,7 @@ function normalizeItemInput(body, opts) {
   if (!patch && out.pitch == null) out.pitch = '';
   if (!patch && out.unit == null) out.unit = 'panels';
   if (!patch && out.panelType == null) out.panelType = '';
+  if (!patch && out.packagingType == null) out.packagingType = '';
   if (!patch && !out.sku) {
     out.sku = suggestedSku({
       brandId: out.brandId,
@@ -298,6 +309,7 @@ function dbFieldsFromInput(input) {
   if (input.pitch != null) row.pitch = input.pitch;
   if (input.unit != null) row.unit = input.unit;
   if (input.panelType != null) row.panel_type = input.panelType;
+  if (input.packagingType != null) row.packaging_type = input.packagingType;
   if (input.qty != null) row.qty = input.qty;
   if (input.lowAt != null) row.low_at = input.lowAt;
   if (input.price != null) row.price = input.price;
@@ -432,6 +444,7 @@ function formatItem(row, brandName, maps, locations) {
     pitchLabel: pitch ? ('P' + pitch) : (unit === 'each' ? 'Each' : '—'),
     unit: unit,
     panelType: (row && row.panel_type) || '',
+    packagingType: (row && row.packaging_type) || '',
     qty: qty,
     lowAt: lowAt,
     price: Number(row && row.price) || 0,

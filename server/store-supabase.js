@@ -1344,6 +1344,7 @@ function createSupabaseStore() {
       if (input.pitch != null) patch.pitch = input.pitch;
       if (input.unit != null) patch.unit = input.unit;
       if (input.panelType != null) patch.panel_type = input.panelType;
+      if (input.packagingType != null) patch.packaging_type = input.packagingType;
       if (input.lowAt != null) patch.low_at = input.lowAt;
       if (input.price != null) patch.price = input.price;
       if (input.cost != null) patch.cost = input.cost;

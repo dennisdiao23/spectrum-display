@@ -2156,6 +2156,15 @@
                 <option value="outdoor-rental">Outdoor Rental</option>
               </select>
             </div>
+            <div class="cc-field"><label>Packaging type</label>
+              <select id="inv-packaging-type">
+                <option value="">Select type</option>
+                <option value="cob">COB</option>
+                <option value="mip">MIP</option>
+                <option value="gob">GOB</option>
+                <option value="smd">SMD</option>
+              </select>
+            </div>
             <div class="cc-field"><label>Pitch (mm)</label><input id="inv-item-pitch" type="text" placeholder="Leave blank for each"></div>
             <div class="cc-field">
               <label>Photo</label>
@@ -4564,6 +4573,11 @@
         'outdoor-rental': 'Outdoor Rental'
       };
       return map[value] || value || '—';
+    }
+
+    function packagingTypeLabel(value) {
+      const map = { cob: 'COB', mip: 'MIP', gob: 'GOB', smd: 'SMD' };
+      return map[value] || (value ? String(value).toUpperCase() : '—');
     }
 
     function stockStatusClass(status) {
@@ -7137,6 +7151,7 @@
         ['Pitch', item.pitchLabel || item.pitch || '—'],
         ['Unit', item.unit || '—'],
         ['Panel type', panelTypeLabel(item.panelType)],
+        ['Packaging type', packagingTypeLabel(item.packagingType)],
         ['Weight', item.weight != null ? String(item.weight) : '—'],
         ['Panel size', item.panelW && item.panelH ? (item.panelW + ' × ' + item.panelH) : '—'],
         ['Cost', item.cost != null ? moneyText(item.cost) : '—'],
@@ -7622,7 +7637,7 @@
     }
 
     function invFormSnapshot() {
-      const ids = ['inv-name', 'inv-sku', 'inv-brand', 'inv-unit', 'inv-panel-type', 'inv-item-pitch', 'inv-qty-init', 'inv-item-low', 'inv-weight', 'inv-panel-w', 'inv-panel-h', 'inv-item-notes', 'inv-description', 'inv-price', 'inv-dealer-net', 'inv-cost'];
+      const ids = ['inv-name', 'inv-sku', 'inv-brand', 'inv-unit', 'inv-panel-type', 'inv-packaging-type', 'inv-item-pitch', 'inv-qty-init', 'inv-item-low', 'inv-weight', 'inv-panel-w', 'inv-panel-h', 'inv-item-notes', 'inv-description', 'inv-price', 'inv-dealer-net', 'inv-cost'];
       const vals = ids.map(function (id) {
         const el = document.getElementById(id);
         return el ? String(el.value || '') : '';
@@ -7750,6 +7765,7 @@
       document.getElementById('inv-item-pitch').value = (item && item.pitch) || '';
       document.getElementById('inv-unit').value = (item && item.unit) || 'panels';
       document.getElementById('inv-panel-type').value = (item && item.panelType) || '';
+      document.getElementById('inv-packaging-type').value = (item && item.packagingType) || '';
       document.getElementById('inv-price').value = item && item.price != null ? item.price : '';
       document.getElementById('inv-weight').value = item && item.weight != null ? item.weight : '';
       document.getElementById('inv-panel-w').value = item && item.panelW ? item.panelW : '';
@@ -14219,6 +14235,7 @@
       fd.append('pitch', document.getElementById('inv-item-pitch').value);
       fd.append('unit', document.getElementById('inv-unit').value);
       fd.append('panelType', document.getElementById('inv-panel-type').value);
+      fd.append('packagingType', document.getElementById('inv-packaging-type').value);
       fd.append('price', document.getElementById('inv-price').value);
       fd.append('weight', document.getElementById('inv-weight').value);
       fd.append('panelW', document.getElementById('inv-panel-w').value);
