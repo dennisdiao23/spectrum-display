@@ -767,7 +767,7 @@ function createSupabaseStore() {
     };
   }
 
-  return {
+  const api = {
     name: 'supabase',
     ready: seedIfEmpty(),
     async getCatalogStock() {
@@ -2239,6 +2239,8 @@ function createSupabaseStore() {
       return data.publicUrl;
     }
   };
+  Object.assign(api, require('./walls').supabaseApi(supabase));
+  return api;
 }
 
 module.exports = { createSupabaseStore };

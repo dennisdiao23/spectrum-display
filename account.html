@@ -89,6 +89,7 @@
                 <p id="hdr-user-role"></p>
                 <div class="site-drop-list">
                   <a href="account.html" data-i18n="nav.myAccount">My Account</a>
+                  <a href="/wall" data-wall-link="1" data-i18n="nav.wall">Wall</a>
                   <button type="button" id="hdr-logout" data-i18n="nav.signout">Sign out</button>
                 </div>
               </div>
@@ -166,6 +167,7 @@
             <p class="text-slate-400 text-sm mt-1">Welcome back, <span id="dash-name" class="text-slate-200 font-medium">—</span>
               <span id="dash-role-badge" class="ml-2 text-xs px-2 py-0.5 rounded-full bg-sky-500/20 text-sky-300"></span>
             </p>
+            <p class="text-sm mt-2"><a href="/wall" class="text-sky-400 hover:text-sky-300 font-medium">Open Wall →</a></p>
           </div>
           <button type="button" id="logout-btn" class="self-start px-4 py-2 rounded-full border border-slate-600 text-sm text-slate-300 hover:border-sky-500 hover:text-white transition" data-i18n="account.signout">Sign out</button>
         </div>
@@ -510,6 +512,10 @@
         window.location.href = '/led-wall-calculator?brand=custom';
         return;
       }
+      if (next === '/wall' || next === '/led-wall-calculator' || /^\/wall(\?[-a-zA-Z0-9._=&%]*)?$/.test(next)) {
+        window.location.href = next;
+        return;
+      }
       if (/^[a-z0-9._-]+\.html(\?[-a-zA-Z0-9._=&%]*)?$/.test(next)) {
         window.location.href = next;
         return;
@@ -543,7 +549,7 @@
       if (next) sessionStorage.setItem('spectrumAuthNext', next);
       if (Auth.isLoggedIn()) {
         const pending = next || sessionStorage.getItem('spectrumAuthNext') || '';
-        if (pending === 'designer-custom' || /^[a-z0-9._-]+\.html(\?[-a-zA-Z0-9._=&%]*)?$/.test(pending)) {
+        if (pending === 'designer-custom' || pending === '/wall' || pending === '/led-wall-calculator' || /^\/wall(\?[-a-zA-Z0-9._=&%]*)?$/.test(pending) || /^[a-z0-9._-]+\.html(\?[-a-zA-Z0-9._=&%]*)?$/.test(pending)) {
           afterAuthSuccess();
           return;
         }

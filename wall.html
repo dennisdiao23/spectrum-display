@@ -1,0 +1,426 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link rel="icon" href="/favicon.ico" sizes="48x48" />
+  <link rel="icon" type="image/png" href="/assets/favicon-32.png" sizes="32x32" />
+  <link rel="apple-touch-icon" href="/assets/apple-touch-icon.png" />
+  <script src="js/i18n-boot.js"></script>
+  <link rel="stylesheet" href="css/site-header.css" />
+  <title>Wall | Spectrum Display</title>
+  <meta name="robots" content="noindex, nofollow" />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    body { font-family: 'Inter', system-ui, sans-serif; }
+    :root {
+      --nav-h: var(--site-header-h, 4rem);
+      --designer-bar-h: 3.75rem;
+      --content-gap: 1.5rem;
+    }
+    body.designer-app { padding-top: var(--nav-h); }
+    .designer-layout { display: grid; gap: 2rem; }
+    .designer-toolbar {
+      z-index: 40;
+      height: var(--designer-bar-h);
+      overflow: hidden;
+      background: rgba(2, 6, 23, 0.9);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border-bottom: 1px solid #1e293b;
+      position: sticky;
+      top: var(--nav-h);
+    }
+    @media (min-width: 1024px) {
+      html { overflow: hidden; height: 100%; }
+      body.designer-app {
+        height: 100vh;
+        height: 100dvh;
+        overflow: hidden;
+        display: flex;
+        flex-direction: column;
+        box-sizing: border-box;
+        padding-top: calc(var(--nav-h) + var(--designer-bar-h));
+      }
+      .designer-toolbar { position: fixed; top: var(--nav-h); left: 0; right: 0; }
+      .designer-main { flex: 1 1 auto; min-height: 0; overflow: hidden; padding: 0 !important; }
+      .designer-main > .site-wrap { height: 100%; overflow: hidden; }
+      .designer-controls-pane {
+        display: flex; flex-direction: column; min-height: 0; max-height: 100%;
+        overflow: hidden; padding-top: var(--content-gap); padding-bottom: var(--content-gap); box-sizing: border-box;
+      }
+      .designer-controls {
+        flex: 1 1 auto; overflow-y: auto; min-height: 0; max-height: 100%;
+        overscroll-behavior: contain; scrollbar-width: none;
+      }
+      .designer-controls::-webkit-scrollbar { display: none; }
+      .designer-layout {
+        grid-template-columns: minmax(18rem, 26rem) minmax(0, 1fr);
+        align-items: stretch; height: 100%; overflow: hidden;
+      }
+      .preview-pane { min-height: 0; padding-top: var(--content-gap); padding-bottom: var(--content-gap); }
+    }
+    .preview-frame {
+      background: #020617;
+      border: 1px solid #1e293b;
+      border-radius: 1rem;
+      padding: 1rem;
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+      min-height: 22rem;
+    }
+    .preview-viewport {
+      position: relative;
+      flex: 1 1 auto;
+      min-height: 16rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+    }
+    .wall-stage { position: relative; width: min(100%, 52rem); }
+    .cabinet-grid {
+      display: grid;
+      gap: 1.5px;
+      background: #020617;
+      width: 100%;
+      max-height: 62vh;
+    }
+    .cabinet {
+      position: relative;
+      background: #0c4a6e;
+      overflow: hidden;
+      min-height: 0.75rem;
+    }
+    .cabinet::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background-image:
+        linear-gradient(rgba(14,165,233,0.15) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(14,165,233,0.15) 1px, transparent 1px);
+      background-size: 4px 4px;
+      opacity: 0.6;
+      pointer-events: none;
+    }
+    .cabinet-grid.is-black .cabinet { background: #020617; }
+    .cabinet-grid.is-black .cabinet::before { opacity: 0.08; }
+    .cabinet-grid.is-freeze { filter: grayscale(0.35) contrast(1.1); }
+    .cabinet-label {
+      position: absolute; inset: 0;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 9px; font-weight: 700; color: rgba(255,255,255,0.85);
+      text-shadow: 0 1px 3px rgba(0,0,0,0.8); pointer-events: none;
+    }
+    .cabinet-grid.labels-off .cabinet-label { display: none; }
+    .wall-dim {
+      position: absolute;
+      display: flex;
+      align-items: center;
+      gap: 0.35rem;
+      pointer-events: none;
+    }
+    .wall-dim-w { left: 0; right: 0; bottom: -1.6rem; justify-content: center; }
+    .wall-dim-h { top: 0; bottom: 0; right: -2.4rem; flex-direction: column; justify-content: center; }
+    .wall-dim-label {
+      background: #22d3ee;
+      color: #082f49;
+      font-size: 11px;
+      font-weight: 800;
+      padding: 0.15rem 0.45rem;
+      border-radius: 999px;
+      white-space: nowrap;
+    }
+    .wall-dim-line { background: #22d3ee; opacity: 0.7; }
+    .wall-dim-w .wall-dim-line { height: 1px; flex: 1; }
+    .wall-dim-h .wall-dim-line { width: 1px; flex: 1; }
+    .online-dot {
+      width: 0.5rem; height: 0.5rem; border-radius: 999px;
+      background: #64748b; display: inline-block;
+    }
+    .online-dot.is-on { background: #34d399; box-shadow: 0 0 8px #34d399; }
+    .wall-status-overlay {
+      position: absolute; inset: 0;
+      background: rgba(2, 6, 23, 0.72);
+      display: flex; align-items: center; justify-content: center;
+      z-index: 8; border-radius: 0.5rem;
+    }
+    .wall-split-line {
+      position: absolute; top: 0; bottom: 0; left: 50%;
+      width: 2px; background: rgba(34, 211, 238, 0.85);
+      z-index: 6; pointer-events: none;
+    }
+    .wall-freeze-badge {
+      position: absolute; top: 0.5rem; left: 0.5rem;
+      z-index: 7; font-size: 10px; font-weight: 800;
+      letter-spacing: 0.08em; color: #e2e8f0;
+      background: rgba(15, 23, 42, 0.75);
+      border: 1px solid #334155;
+      padding: 0.2rem 0.45rem; border-radius: 999px;
+    }
+  </style>
+</head>
+<body class="designer-app bg-slate-950 text-slate-100 antialiased">
+  <header class="site-header" id="site-header">
+    <div class="site-header-inner">
+      <div class="site-header-top">
+        <a href="/" class="site-brand">
+          <img src="assets/spectrum-logo.png" alt="Spectrum" class="site-brand-logo" />
+        </a>
+        <nav class="site-nav" id="site-nav">
+          <div class="site-nav-item" data-mega="products">
+            <button type="button" class="site-nav-link" aria-expanded="false" aria-haspopup="true">
+              <span data-i18n="nav.products">Products</span>
+              <svg class="site-nav-chevron" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M6 9l6 6 6-6"/></svg>
+            </button>
+          </div>
+          <div class="site-nav-item" data-mega="solutions">
+            <button type="button" class="site-nav-link" aria-expanded="false" aria-haspopup="true">
+              <span data-i18n="nav.solutions">Solutions</span>
+              <svg class="site-nav-chevron" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M6 9l6 6 6-6"/></svg>
+            </button>
+          </div>
+          <a class="site-nav-link" href="/led-wall-calculator" data-i18n="nav.designer">LED Wall Calculator</a>
+          <a class="site-nav-link" href="dealer.html" data-i18n="nav.dealer">Dealer</a>
+        </nav>
+        <div class="site-utils">
+          <div class="site-drop" id="hdr-search-drop">
+            <button type="button" class="site-util site-icon-btn" aria-label="Search" aria-haspopup="true">
+              <svg fill="none" stroke="currentColor" stroke-width="1.7" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z"/></svg>
+            </button>
+            <div class="site-drop-panel site-search-panel">
+              <form id="hdr-search-form" action="products.html" method="get">
+                <input id="hdr-search-input" name="q" type="search" autocomplete="off" placeholder="Search products" data-i18n-placeholder="nav.searchPlaceholder" />
+              </form>
+              <div class="site-search-results" id="hdr-search-results"></div>
+            </div>
+          </div>
+          <div class="site-drop" id="hdr-lang-drop">
+            <button type="button" class="site-util site-icon-btn" aria-label="Language" aria-haspopup="true">
+              <svg fill="none" stroke="currentColor" stroke-width="1.7" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 21a9 9 0 100-18 9 9 0 000 18zM3.6 9h16.8M3.6 15h16.8M12 3c2.5 3.2 2.5 14.8 0 18M12 3c-2.5 3.2-2.5 14.8 0 18"/></svg>
+            </button>
+            <div class="site-drop-panel site-lang-panel">
+              <button type="button" data-set-lang="en">English</button>
+              <button type="button" data-set-lang="es">Español</button>
+              <button type="button" data-set-lang="fr">Français</button>
+              <button type="button" data-set-lang="ko">한국어</button>
+              <button type="button" data-set-lang="ja">日本語</button>
+              <button type="button" data-set-lang="zh">中文</button>
+            </div>
+          </div>
+          <div class="site-drop" id="hdr-signin-drop">
+            <button type="button" class="site-util" aria-haspopup="true">
+              <svg fill="none" stroke="currentColor" stroke-width="1.7" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 7.5a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.5 19.5a7.5 7.5 0 0115 0"/></svg>
+              <span class="site-util-label site-util-guest" data-i18n="nav.signin">Sign in</span>
+              <span class="site-util-label site-util-user" id="hdr-user-name"></span>
+            </button>
+            <div class="site-drop-panel">
+              <div class="site-guest">
+                <h3 data-i18n="nav.myAccount">My Account</h3>
+                <ul class="site-account-roles">
+                  <li data-i18n="nav.benefitOrders">Place orders quickly and easily</li>
+                  <li data-i18n="nav.benefitTrack">View orders and track your shipping status</li>
+                  <li data-i18n="nav.benefitList">Create and access a list of your products</li>
+                  <li data-i18n="nav.benefitProjects">View Saved Projects</li>
+                </ul>
+                <div class="site-drop-actions">
+                  <a href="account.html" class="site-btn-primary" data-i18n="nav.signin">Sign in</a>
+                  <a href="account.html?mode=register" class="site-btn-ghost" data-i18n="nav.createAccount">Create account</a>
+                </div>
+              </div>
+              <div class="site-logged">
+                <h3 id="hdr-user-name-panel"></h3>
+                <p id="hdr-user-role"></p>
+                <div class="site-drop-list">
+                  <a href="account.html" data-i18n="nav.myAccount">My Account</a>
+                  <a href="/wall" data-wall-link="1" data-i18n="nav.wall">Wall</a>
+                  <button type="button" id="hdr-logout" data-i18n="nav.signout">Sign out</button>
+                </div>
+              </div>
+            </div>
+          </div>
+          <a href="support.html" class="site-util site-support-link"><span data-i18n="nav.support">Support</span></a>
+          <a href="contact.html" class="site-cta" data-i18n="nav.contactSales">Contact Sales</a>
+          <a href="contact.html" class="site-util site-contact-icon" aria-label="Contact Sales">
+            <svg fill="none" stroke="currentColor" stroke-width="1.7" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M21.75 6.75v10.5a2.25 2.25 0 01-2.25 2.25h-15a2.25 2.25 0 01-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0019.5 4.5h-15a2.25 2.25 0 00-2.25 2.25m19.5 0v.243a2.25 2.25 0 01-1.07 1.916l-7.5 4.615a2.25 2.25 0 01-2.36 0L3.32 8.91a2.25 2.25 0 01-1.07-1.916V6.75"/></svg>
+          </a>
+          <a href="cart.html" class="site-util site-cart site-icon-btn" aria-label="Cart">
+            <svg fill="none" stroke="currentColor" stroke-width="1.7" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"/></svg>
+            <span class="site-cart-count" id="cart-count">0</span>
+          </a>
+          <button type="button" class="site-util site-menu-btn" id="hdr-menu-btn" aria-label="Menu">
+            <svg fill="none" stroke="currentColor" stroke-width="1.7" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h16"/></svg>
+          </button>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <header class="designer-toolbar">
+    <div class="site-wrap h-[var(--designer-bar-h)] flex items-center justify-between gap-3">
+      <div class="min-w-0">
+        <h1 class="text-base sm:text-lg font-bold leading-tight truncate">Wall</h1>
+        <p class="hidden md:block text-xs leading-tight text-slate-400 truncate">Run the wall. The calculator still sizes it.</p>
+      </div>
+    </div>
+  </header>
+
+  <section class="designer-main">
+    <div class="site-wrap designer-layout">
+      <div class="designer-controls-pane min-w-0">
+        <div class="designer-controls space-y-5">
+          <p id="wall-msg" class="hidden text-sm"></p>
+
+          <div id="wall-empty" class="p-5 rounded-2xl border border-dashed border-slate-800 bg-slate-900/40 text-sm text-slate-400">
+            No wall on this account yet.
+            <button type="button" id="add-wall-link" class="block mt-2 text-sky-400 hover:text-sky-300">Add / edit wall</button>
+          </div>
+
+          <div id="wall-controls" class="hidden space-y-5">
+            <div id="wall-picker-wrap" class="hidden">
+              <label class="block text-xs text-slate-400 mb-1">Wall</label>
+              <select id="wall-picker" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm"></select>
+            </div>
+
+            <div class="p-5 rounded-2xl border border-slate-800 bg-slate-900/60 space-y-2.5">
+              <h2 class="font-semibold text-base">1. Wall</h2>
+              <div class="flex items-center justify-between gap-2">
+                <span id="wall-name" class="font-medium">—</span>
+                <span class="inline-flex items-center gap-1.5 text-xs text-slate-400">
+                  <span id="wall-online" class="online-dot"></span>
+                  <span id="wall-online-label">Offline</span>
+                </span>
+              </div>
+              <div class="flex justify-between text-sm"><span class="text-slate-400">Model</span><span id="wall-model">—</span></div>
+              <div class="flex justify-between text-sm"><span class="text-slate-400">Resolution</span><span id="wall-res">—</span></div>
+              <div class="flex justify-between text-sm"><span class="text-slate-400">Count</span><span id="wall-count">—</span></div>
+              <div class="flex justify-between text-sm"><span class="text-slate-400">Pitch</span><span id="wall-pitch">—</span></div>
+            </div>
+
+            <div class="p-5 rounded-2xl border border-slate-800 bg-slate-900/60 space-y-3">
+              <h2 class="font-semibold text-base">2. Layout</h2>
+              <div>
+                <label class="block text-xs text-slate-400 mb-1">Layout</label>
+                <select id="layout-select" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-sky-500"></select>
+              </div>
+              <div>
+                <span class="block text-xs text-slate-400 mb-1">Display</span>
+                <div class="flex flex-wrap gap-1.5 text-xs font-medium">
+                  <button type="button" class="display-btn px-2.5 py-1 rounded-full border border-sky-500 bg-sky-500/20 text-sky-300" data-display="on">On</button>
+                  <button type="button" class="display-btn px-2.5 py-1 rounded-full border border-slate-700 text-slate-400 hover:text-white hover:border-sky-500" data-display="black">Black</button>
+                  <button type="button" class="display-btn px-2.5 py-1 rounded-full border border-slate-700 text-slate-400 hover:text-white hover:border-sky-500" data-display="freeze">Freeze</button>
+                </div>
+              </div>
+            </div>
+
+            <div class="p-5 rounded-2xl border border-slate-800 bg-slate-900/60 space-y-3">
+              <h2 class="font-semibold text-base">3. Sources</h2>
+              <div id="source-fields" class="space-y-3"></div>
+            </div>
+
+            <div class="p-5 rounded-2xl border border-slate-800 bg-slate-900/60 space-y-3">
+              <h2 class="font-semibold text-base">4. Brightness</h2>
+              <div class="flex items-center gap-3">
+                <input id="bright-slider" type="range" min="0" max="100" value="80" class="flex-1" />
+                <span id="bright-value" class="text-sm w-12 text-right">80%</span>
+              </div>
+            </div>
+
+            <button type="button" id="edit-wall-link" class="text-sm text-slate-500 hover:text-sky-400">Add / edit wall</button>
+          </div>
+
+          <div id="wall-form-wrap" class="hidden p-5 rounded-2xl border border-slate-800 bg-slate-900/60 space-y-4">
+            <h2 id="form-title" class="font-semibold text-base">Add wall</h2>
+            <form id="wall-form" class="space-y-3">
+              <div>
+                <label class="block text-xs text-slate-400 mb-1">Name</label>
+                <input id="form-name" required class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm" />
+              </div>
+              <div>
+                <label class="block text-xs text-slate-400 mb-1">Processor</label>
+                <select id="form-processor" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm"></select>
+              </div>
+              <div>
+                <label class="block text-xs text-slate-400 mb-1">Model</label>
+                <input id="form-model" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm" placeholder="Series / cabinet" />
+              </div>
+              <div class="grid grid-cols-3 gap-2">
+                <div>
+                  <label class="block text-xs text-slate-400 mb-1">Pitch</label>
+                  <input id="form-pitch" type="number" step="0.1" min="0.1" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm" />
+                </div>
+                <div>
+                  <label class="block text-xs text-slate-400 mb-1">Cols</label>
+                  <input id="form-cols" type="number" min="1" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm" />
+                </div>
+                <div>
+                  <label class="block text-xs text-slate-400 mb-1">Rows</label>
+                  <input id="form-rows" type="number" min="1" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm" />
+                </div>
+              </div>
+              <div>
+                <div class="flex items-center justify-between mb-1">
+                  <label class="text-xs text-slate-400">Inputs</label>
+                  <button type="button" id="add-input-btn" class="text-xs text-sky-400">Add input</button>
+                </div>
+                <div id="input-rows" class="space-y-2"></div>
+              </div>
+              <div id="bridge-token-box" class="hidden rounded-lg border border-amber-500/40 bg-amber-500/10 p-3 space-y-2">
+                <p class="text-xs text-amber-200">Rack bridge token — copy now. It will not be shown again.</p>
+                <div class="flex gap-2">
+                  <input id="bridge-token-value" readonly class="flex-1 bg-slate-950 border border-slate-700 rounded-lg px-3 py-2 text-xs font-mono" />
+                  <button type="button" id="copy-token" class="px-3 py-2 rounded-lg border border-slate-600 text-xs">Copy</button>
+                </div>
+                <button type="button" id="rotate-token" class="text-xs text-slate-400 hover:text-white">Make a new token</button>
+              </div>
+              <div class="flex flex-wrap gap-2 pt-1">
+                <button type="submit" class="px-4 py-2 rounded-full bg-sky-500 hover:bg-sky-400 text-white text-sm font-semibold">Save wall</button>
+                <button type="button" id="form-cancel" class="px-4 py-2 rounded-full border border-slate-600 text-sm">Cancel</button>
+                <button type="button" id="form-delete" class="hidden ml-auto px-4 py-2 rounded-full border border-slate-700 text-sm text-red-400">Remove</button>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+
+      <div class="preview-pane min-w-0">
+        <div class="preview-frame">
+          <div class="flex items-center justify-between gap-3 shrink-0 mb-3">
+            <h2 class="font-semibold text-base hidden lg:block">Live Wall Preview</h2>
+            <div class="text-sm text-slate-400 min-w-0">
+              <span id="preview-size">—</span>
+              · <span id="preview-resolution">—</span>
+              (<span id="preview-grid">—</span>)
+            </div>
+            <div class="flex items-center gap-1.5 text-xs font-medium shrink-0">
+              <span class="text-slate-500 mr-1">Labels</span>
+              <button type="button" id="label-off" class="px-2.5 py-1 rounded-full border border-sky-500 bg-sky-500/20 text-sky-300 text-xs">Off</button>
+              <button type="button" id="label-a1" class="px-2.5 py-1 rounded-full border border-slate-700 text-slate-400 hover:text-white hover:border-sky-500 text-xs">A1</button>
+            </div>
+          </div>
+          <div class="preview-viewport">
+            <div class="wall-stage">
+              <div id="wall-preview" class="cabinet-grid labels-off"></div>
+              <div id="wall-split-line" class="wall-split-line hidden"></div>
+              <div id="wall-freeze-badge" class="wall-freeze-badge hidden">FREEZE</div>
+              <div class="wall-dim wall-dim-w"><span class="wall-dim-line"></span><span class="wall-dim-label" id="dim-width">—</span><span class="wall-dim-line"></span></div>
+              <div class="wall-dim wall-dim-h"><span class="wall-dim-line"></span><span class="wall-dim-label" id="dim-height">—</span><span class="wall-dim-line"></span></div>
+              <div id="wall-status-overlay" class="wall-status-overlay"><span class="text-sm text-slate-200">Wall offline.</span></div>
+            </div>
+          </div>
+          <p class="preview-foot text-xs text-slate-500 mt-8 text-center">© 2026 Spectrum Display Inc. • spectrumdisplay.com</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="js/supabase-client.js"></script>
+  <script src="js/auth.js"></script>
+  <script src="js/site-header.js"></script>
+  <script src="js/i18n.js"></script>
+  <script src="js/wall.js"></script>
+</body>
+</html>

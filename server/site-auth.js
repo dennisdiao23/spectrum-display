@@ -7,41 +7,62 @@ function bearerToken(req) {
   return auth.slice(7).trim();
 }
 
-async function roleFromBearer(req) {
+function supabaseAuthConfig() {
+  return {
+    url: String(process.env.SUPABASE_URL || FALLBACK_URL).replace(/\/$/, ''),
+    key: process.env.SUPABASE_ANON_KEY || FALLBACK_ANON
+  };
+}
+
+async function userFromBearer(req) {
   const token = bearerToken(req);
-  if (!token) return null;
-  const url = String(process.env.SUPABASE_URL || FALLBACK_URL).replace(/\/$/, '');
-  const key = process.env.SUPABASE_ANON_KEY || FALLBACK_ANON;
+  if (!token || token.indexOf('wrb_') === 0) return null;
+  const cfg = supabaseAuthConfig();
   try {
-    const userRes = await fetch(url + '/auth/v1/user', {
-      headers: { Authorization: 'Bearer ' + token, apikey: key }
+    const userRes = await fetch(cfg.url + '/auth/v1/user', {
+      headers: { Authorization: 'Bearer ' + token, apikey: cfg.key }
     });
     if (!userRes.ok) return null;
     const user = await userRes.json();
     const uid = user && user.id;
     if (!uid) return null;
+    let role = 'customer';
+    let name = (user.user_metadata && user.user_metadata.name) || '';
+    let email = user.email || '';
     const profRes = await fetch(
-      url + '/rest/v1/profiles?id=eq.' + encodeURIComponent(uid) + '&select=role',
+      cfg.url + '/rest/v1/profiles?id=eq.' + encodeURIComponent(uid) + '&select=role,name,email',
       {
         headers: {
           Authorization: 'Bearer ' + token,
-          apikey: key,
+          apikey: cfg.key,
           Accept: 'application/json'
         }
       }
     );
-    if (!profRes.ok) return null;
-    const rows = await profRes.json();
-    const role = rows && rows[0] && rows[0].role;
-    if (role === 'dealer' || role === 'sales') return role;
-    return null;
+    if (profRes.ok) {
+      const rows = await profRes.json();
+      const row = rows && rows[0];
+      if (row) {
+        if (row.role === 'dealer' || row.role === 'sales' || row.role === 'customer') role = row.role;
+        if (row.name) name = row.name;
+        if (row.email) email = row.email;
+      }
+    }
+    return { id: uid, email: email, name: name, role: role };
   } catch {
     return null;
   }
+}
+
+async function roleFromBearer(req) {
+  const user = await userFromBearer(req);
+  if (!user) return null;
+  if (user.role === 'dealer' || user.role === 'sales') return user.role;
+  return null;
 }
 
 function canSeeStock(role) {
   return role === 'dealer' || role === 'sales';
 }
 
-module.exports = { bearerToken, roleFromBearer, canSeeStock };
+module.exports = { bearerToken, userFromBearer, roleFromBearer, canSeeStock };

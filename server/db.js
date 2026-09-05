@@ -125,6 +125,7 @@ function openDb() {
   ensureReceiptShipments(db);
   ensureCompanyAccounts(db);
   ensureColumnPrefs(db);
+  ensureWalls(db);
   db.exec(`
     CREATE TABLE IF NOT EXISTS inventory_stock (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -725,6 +726,72 @@ function ensureCompanyAccounts(db) {
   }
 }
 
+function ensureWalls(db) {
+  db.exec(`
+    CREATE TABLE IF NOT EXISTS walls (
+      id TEXT PRIMARY KEY,
+      user_id TEXT NOT NULL,
+      name TEXT NOT NULL DEFAULT '',
+      processor TEXT NOT NULL DEFAULT 'MX20',
+      model TEXT NOT NULL DEFAULT '',
+      pitch REAL NOT NULL DEFAULT 1.2,
+      cols INTEGER NOT NULL DEFAULT 10,
+      rows INTEGER NOT NULL DEFAULT 6,
+      cabinet_w_mm REAL NOT NULL DEFAULT 500,
+      cabinet_h_mm REAL NOT NULL DEFAULT 500,
+      pixel_w INTEGER NOT NULL DEFAULT 0,
+      pixel_h INTEGER NOT NULL DEFAULT 0,
+      brightness INTEGER NOT NULL DEFAULT 80,
+      display_mode TEXT NOT NULL DEFAULT 'on',
+      active_preset_id TEXT NOT NULL DEFAULT '',
+      last_seen_at TEXT NOT NULL DEFAULT '',
+      bridge_token_hash TEXT NOT NULL DEFAULT '',
+      created_at TEXT NOT NULL,
+      updated_at TEXT NOT NULL
+    );
+    CREATE INDEX IF NOT EXISTS walls_user_idx ON walls (user_id, name);
+    CREATE INDEX IF NOT EXISTS walls_bridge_idx ON walls (bridge_token_hash);
+    CREATE TABLE IF NOT EXISTS wall_inputs (
+      id TEXT PRIMARY KEY,
+      wall_id TEXT NOT NULL,
+      name TEXT NOT NULL,
+      connector TEXT NOT NULL DEFAULT '',
+      sort_order INTEGER NOT NULL DEFAULT 0,
+      FOREIGN KEY (wall_id) REFERENCES walls(id) ON DELETE CASCADE
+    );
+    CREATE INDEX IF NOT EXISTS wall_inputs_wall_idx ON wall_inputs (wall_id, sort_order);
+    CREATE TABLE IF NOT EXISTS wall_presets (
+      id TEXT PRIMARY KEY,
+      wall_id TEXT NOT NULL,
+      name TEXT NOT NULL,
+      layout TEXT NOT NULL DEFAULT 'full',
+      novastar_index INTEGER NOT NULL DEFAULT 0,
+      sort_order INTEGER NOT NULL DEFAULT 0,
+      FOREIGN KEY (wall_id) REFERENCES walls(id) ON DELETE CASCADE
+    );
+    CREATE INDEX IF NOT EXISTS wall_presets_wall_idx ON wall_presets (wall_id, sort_order);
+    CREATE TABLE IF NOT EXISTS wall_preset_panes (
+      id TEXT PRIMARY KEY,
+      preset_id TEXT NOT NULL,
+      pane TEXT NOT NULL,
+      input_id TEXT NOT NULL DEFAULT '',
+      FOREIGN KEY (preset_id) REFERENCES wall_presets(id) ON DELETE CASCADE
+    );
+    CREATE INDEX IF NOT EXISTS wall_preset_panes_preset_idx ON wall_preset_panes (preset_id);
+    CREATE TABLE IF NOT EXISTS wall_commands (
+      id TEXT PRIMARY KEY,
+      wall_id TEXT NOT NULL,
+      type TEXT NOT NULL,
+      payload TEXT NOT NULL DEFAULT '{}',
+      status TEXT NOT NULL DEFAULT 'pending',
+      created_at TEXT NOT NULL,
+      acked_at TEXT NOT NULL DEFAULT '',
+      FOREIGN KEY (wall_id) REFERENCES walls(id) ON DELETE CASCADE
+    );
+    CREATE INDEX IF NOT EXISTS wall_commands_wall_idx ON wall_commands (wall_id, status, created_at);
+  `);
+}
+
 function ensureColumnPrefs(db) {
   db.exec(`
     CREATE TABLE IF NOT EXISTS admin_column_prefs (
@@ -1066,5 +1133,6 @@ module.exports = {
   ensurePurchaseOrders,
   ensureReceiptShipments,
   ensureCompanyAccounts,
-  ensureColumnPrefs
+  ensureColumnPrefs,
+  ensureWalls
 };

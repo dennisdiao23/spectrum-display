@@ -334,7 +334,7 @@ function createSqliteStore() {
   dbUtil.ensureCatalogSkus(db);
   dbUtil.ensureInventoryWarehouses(db);
 
-  return {
+  const api = {
     name: 'sqlite',
     async getCatalog() {
       const catalog = dbUtil.getCatalog(db);
@@ -1434,6 +1434,8 @@ function createSqliteStore() {
       return '/uploads/products/' + name;
     }
   };
+  Object.assign(api, require('./walls').sqliteApi(db));
+  return api;
 }
 
 module.exports = { createSqliteStore };

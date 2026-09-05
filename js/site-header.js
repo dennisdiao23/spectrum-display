@@ -705,6 +705,21 @@
       }
     });
 
+    function injectWallLink() {
+      $all('.site-drop-list').forEach(function (list) {
+        if (list.querySelector('[data-wall-link]')) return;
+        var account = list.querySelector('a[href*="account"]');
+        var a = document.createElement('a');
+        a.href = '/wall';
+        a.setAttribute('data-wall-link', '1');
+        a.setAttribute('data-i18n', 'nav.wall');
+        a.textContent = 'Wall';
+        if (account && account.nextSibling) list.insertBefore(a, account.nextSibling);
+        else if (account) account.after(a);
+        else list.insertBefore(a, list.firstChild);
+      });
+    }
+    injectWallLink();
     applyAuth();
     applyLangLabel();
     window.addEventListener('spectrum:auth', applyAuth);

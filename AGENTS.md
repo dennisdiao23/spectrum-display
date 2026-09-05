@@ -6,7 +6,7 @@ Dennis wants a plan before any implementation — even when he did not ask for o
 
 - Before coding, editing files, or diving into a long investigation, reply with a short plan: what will change, where, and the intended user-facing result.
 - Do this on every task, including follow-ups and “just do it” requests.
-- Present the plan, then start. Do not wait for approval unless the plan is ambiguous or conflicts with a prior instruction.
+- Present the plan, then wait for Dennis to say **Go**. Do not start coding until he says Go.
 - Keep the plan concrete (screens, clicks, files). Do not estimate calendar time.
 
 ## Cursor Cloud specific instructions

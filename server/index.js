@@ -9,6 +9,7 @@ const bcrypt = require('bcryptjs');
 const multer = require('multer');
 const { getStore, hasSupabase } = require('./store');
 const siteAuth = require('./site-auth');
+const wallsLib = require('./walls');
 const { sendContactEmail, sendDealerInquiryEmail, mailConfigured } = require('./mail');
 const img = require('./image');
 const { publicAdmin, hasPerm, isOwnerAdmin, isOwnerRole, OWNER_ROLE_SLUG, roleInputFromBody } = require('./admin-roles');
@@ -81,7 +82,7 @@ async function main() {
   app.use(function (req, res, next) {
     const host = String(req.hostname || '').toLowerCase();
     const file = String(req.path || '').toLowerCase();
-    const privatePage = file === '/admin.html' || file === '/company.html' || file === '/cart.html' || file === '/account.html' || file === '/company' || file.indexOf('/company/') === 0;
+    const privatePage = file === '/admin.html' || file === '/company.html' || file === '/cart.html' || file === '/account.html' || file === '/wall' || file === '/wall.html' || file === '/company' || file.indexOf('/company/') === 0;
     if (host.endsWith('.up.railway.app') || privatePage) {
       res.set('X-Robots-Tag', 'noindex, nofollow');
     }
@@ -149,7 +150,8 @@ async function main() {
     ['/events-xr', 'events-xr.html'],
     ['/outdoor', 'outdoor.html'],
     ['/home-theater', 'home-theater.html'],
-    ['/led-wall-calculator', 'designer.html']
+    ['/led-wall-calculator', 'designer.html'],
+    ['/wall', 'wall.html']
   ];
   JOB_PAGES.forEach(function (pair) {
     const route = pair[0];
@@ -582,6 +584,128 @@ async function main() {
       const product = await store.getProductByBrandSeries(req.params.brand, req.params.series);
       if (!product || product.hidden) return res.status(404).json({ ok: false, error: 'Product not found.' });
       res.json({ ok: true, product: product, brandName: product.brandName });
+    } catch (err) { next(err); }
+  });
+
+  async function requireCustomer(req, res, next) {
+    try {
+      const user = await siteAuth.userFromBearer(req);
+      if (!user) return res.status(401).json({ ok: false, error: 'Sign in to control your wall.' });
+      req.customer = user;
+      next();
+    } catch (err) { next(err); }
+  }
+
+  async function requireWallActor(req, res, next) {
+    try {
+      const token = siteAuth.bearerToken(req);
+      const user = await siteAuth.userFromBearer(req);
+      const id = req.params.id;
+      if (user) {
+        const wall = await store.getWallForOwner(id, user.id);
+        if (!wall) return res.status(404).json({ ok: false, error: 'Wall not found.' });
+        req.customer = user;
+        req.wall = wall;
+        req.wallActor = 'owner';
+        return next();
+      }
+      if (wallsLib.isBridgeToken(token)) {
+        const wall = await store.getWallByBridgeToken(token);
+        if (!wall || wall.id !== id) {
+          return res.status(401).json({ ok: false, error: 'Invalid bridge token.' });
+        }
+        req.wall = wall;
+        req.wallActor = 'bridge';
+        return next();
+      }
+      return res.status(401).json({ ok: false, error: 'Sign in to control your wall.' });
+    } catch (err) { next(err); }
+  }
+
+  app.get('/api/walls', requireCustomer, async function (req, res, next) {
+    try {
+      const walls = await store.listWalls(req.customer.id);
+      res.json({
+        ok: true,
+        walls: walls,
+        processors: wallsLib.PROCESSOR_MODELS,
+        offlineAfterMs: wallsLib.OFFLINE_MS
+      });
+    } catch (err) { next(err); }
+  });
+
+  app.post('/api/walls', requireCustomer, async function (req, res, next) {
+    try {
+      const result = await store.createWall(req.customer.id, req.body || {});
+      res.json({ ok: true, wall: result.wall, bridgeToken: result.bridgeToken });
+    } catch (err) {
+      res.status(400).json({ ok: false, error: err.message || 'Could not save wall.' });
+    }
+  });
+
+  app.get('/api/walls/:id', requireWallActor, async function (req, res) {
+    res.json({ ok: true, wall: req.wall, processors: wallsLib.PROCESSOR_MODELS, actor: req.wallActor });
+  });
+
+  app.put('/api/walls/:id', requireCustomer, async function (req, res, next) {
+    try {
+      const wall = await store.updateWall(req.customer.id, req.params.id, req.body || {});
+      if (!wall) return res.status(404).json({ ok: false, error: 'Wall not found.' });
+      res.json({ ok: true, wall: wall });
+    } catch (err) {
+      res.status(400).json({ ok: false, error: err.message || 'Could not save wall.' });
+    }
+  });
+
+  app.delete('/api/walls/:id', requireCustomer, async function (req, res, next) {
+    try {
+      const ok = await store.deleteWall(req.customer.id, req.params.id);
+      if (!ok) return res.status(404).json({ ok: false, error: 'Wall not found.' });
+      res.json({ ok: true });
+    } catch (err) { next(err); }
+  });
+
+  app.post('/api/walls/:id/bridge-token', requireCustomer, async function (req, res, next) {
+    try {
+      const result = await store.rotateBridgeToken(req.customer.id, req.params.id);
+      if (!result) return res.status(404).json({ ok: false, error: 'Wall not found.' });
+      res.json({ ok: true, wall: result.wall, bridgeToken: result.bridgeToken });
+    } catch (err) { next(err); }
+  });
+
+  app.post('/api/walls/:id/command', requireCustomer, async function (req, res, next) {
+    try {
+      const result = await store.enqueueCommand(req.customer.id, req.params.id, req.body || {});
+      if (!result) return res.status(404).json({ ok: false, error: 'Wall not found.' });
+      res.json({ ok: true, wall: result.wall, command: result.command });
+    } catch (err) {
+      res.status(400).json({ ok: false, error: err.message || 'Could not send command.' });
+    }
+  });
+
+  app.get('/api/walls/:id/commands', requireWallActor, async function (req, res, next) {
+    try {
+      if (req.wallActor !== 'bridge' && req.wallActor !== 'owner') {
+        return res.status(403).json({ ok: false, error: 'Not allowed.' });
+      }
+      const commands = await store.listPendingCommands(req.params.id);
+      res.json({
+        ok: true,
+        wall: req.wall,
+        commands: commands,
+        online: req.wall.online
+      });
+    } catch (err) { next(err); }
+  });
+
+  app.post('/api/walls/:id/heartbeat', requireWallActor, async function (req, res, next) {
+    try {
+      if (req.wallActor !== 'bridge') {
+        return res.status(403).json({ ok: false, error: 'Bridge token required.' });
+      }
+      const wall = await store.heartbeat(req.params.id, req.body || {});
+      const commands = await store.listPendingCommands(req.params.id);
+      res.json({ ok: true, wall: wall, commands: commands });
     } catch (err) { next(err); }
   });
 
