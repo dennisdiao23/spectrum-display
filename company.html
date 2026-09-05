@@ -4505,10 +4505,11 @@
       function follow(clientX) {
         if (!press || !press.tab || !press.lifted) return;
         const tab = press.tab;
-        const stripRect = strip.getBoundingClientRect();
+        const rail = strip.closest('.inv-tab-bar, .dash-master-tabs') || strip;
+        const railRect = rail.getBoundingClientRect();
         let left = clientX - press.grabX;
-        const minLeft = stripRect.left - press.width * 0.4;
-        const maxLeft = stripRect.right - press.width * 0.6;
+        const minLeft = railRect.left;
+        const maxLeft = Math.max(minLeft, railRect.right - press.width);
         if (left < minLeft) left = minLeft;
         if (left > maxLeft) left = maxLeft;
         tab.style.left = left + 'px';
