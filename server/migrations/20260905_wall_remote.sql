@@ -17,6 +17,7 @@ create table if not exists public.walls (
   active_preset_id uuid,
   last_seen_at timestamptz,
   bridge_token_hash text not null default '',
+  test_mode boolean not null default false,
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now()
 );

@@ -160,6 +160,18 @@
       border: 1px solid #334155;
       padding: 0.2rem 0.45rem; border-radius: 999px;
     }
+    .wall-test-badge {
+      position: absolute; top: 0.5rem; right: 0.5rem;
+      z-index: 7; font-size: 10px; font-weight: 800;
+      letter-spacing: 0.08em; color: #082f49;
+      background: #22d3ee;
+      padding: 0.2rem 0.45rem; border-radius: 999px;
+    }
+    #test-mode-btn.is-on {
+      border-color: #22d3ee;
+      background: rgba(34, 211, 238, 0.16);
+      color: #67e8f9;
+    }
   </style>
 </head>
 <body class="designer-app bg-slate-950 text-slate-100 antialiased">
@@ -226,8 +238,8 @@
                   <li data-i18n="nav.benefitProjects">View Saved Projects</li>
                 </ul>
                 <div class="site-drop-actions">
-                  <a href="account.html" class="site-btn-primary" data-i18n="nav.signin">Sign in</a>
-                  <a href="account.html?mode=register" class="site-btn-ghost" data-i18n="nav.createAccount">Create account</a>
+                  <a href="account.html?next=/wall" class="site-btn-primary" data-i18n="nav.signin">Sign in</a>
+                  <a href="account.html?mode=register&next=/wall" class="site-btn-ghost" data-i18n="nav.createAccount">Create account</a>
                 </div>
               </div>
               <div class="site-logged">
@@ -273,7 +285,12 @@
         <div class="designer-controls space-y-5">
           <p id="wall-msg" class="hidden text-sm"></p>
 
-          <div id="wall-empty" class="p-5 rounded-2xl border border-dashed border-slate-800 bg-slate-900/40 text-sm text-slate-400">
+          <div id="wall-guest" class="hidden p-5 rounded-2xl border border-slate-800 bg-slate-900/60 text-sm text-slate-300 space-y-3">
+            <p>Sign in with your Spectrum account to run this wall.</p>
+            <a href="/account.html?next=/wall" class="inline-flex px-4 py-2 rounded-full bg-sky-500 hover:bg-sky-400 text-white text-sm font-semibold">Sign in</a>
+          </div>
+
+          <div id="wall-empty" class="hidden p-5 rounded-2xl border border-dashed border-slate-800 bg-slate-900/40 text-sm text-slate-400">
             No wall on this account yet.
             <button type="button" id="add-wall-link" class="block mt-2 text-sky-400 hover:text-sky-300">Add / edit wall</button>
           </div>
@@ -293,6 +310,7 @@
                   <span id="wall-online-label">Offline</span>
                 </span>
               </div>
+              <button type="button" id="test-mode-btn" class="text-xs px-2.5 py-1 rounded-full border border-slate-700 text-slate-400 hover:text-white hover:border-sky-500">Testing mode</button>
               <div class="flex justify-between text-sm"><span class="text-slate-400">Model</span><span id="wall-model">—</span></div>
               <div class="flex justify-between text-sm"><span class="text-slate-400">Resolution</span><span id="wall-res">—</span></div>
               <div class="flex justify-between text-sm"><span class="text-slate-400">Count</span><span id="wall-count">—</span></div>
@@ -405,6 +423,7 @@
               <div id="wall-preview" class="cabinet-grid labels-off"></div>
               <div id="wall-split-line" class="wall-split-line hidden"></div>
               <div id="wall-freeze-badge" class="wall-freeze-badge hidden">FREEZE</div>
+              <div id="wall-test-badge" class="wall-test-badge hidden">TESTING</div>
               <div class="wall-dim wall-dim-w"><span class="wall-dim-line"></span><span class="wall-dim-label" id="dim-width">—</span><span class="wall-dim-line"></span></div>
               <div class="wall-dim wall-dim-h"><span class="wall-dim-line"></span><span class="wall-dim-label" id="dim-height">—</span><span class="wall-dim-line"></span></div>
               <div id="wall-status-overlay" class="wall-status-overlay"><span class="text-sm text-slate-200">Wall offline.</span></div>

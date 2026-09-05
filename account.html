@@ -509,15 +509,15 @@
       const next = params.get('next') || sessionStorage.getItem('spectrumAuthNext') || '';
       sessionStorage.removeItem('spectrumAuthNext');
       if (next === 'designer-custom') {
-        window.location.href = '/led-wall-calculator?brand=custom';
+        window.location.replace('/led-wall-calculator?brand=custom');
         return;
       }
       if (next === '/wall' || next === '/led-wall-calculator' || /^\/wall(\?[-a-zA-Z0-9._=&%]*)?$/.test(next)) {
-        window.location.href = next;
+        window.location.replace(next);
         return;
       }
       if (/^[a-z0-9._-]+\.html(\?[-a-zA-Z0-9._=&%]*)?$/.test(next)) {
-        window.location.href = next;
+        window.location.replace(next);
         return;
       }
       showDash();

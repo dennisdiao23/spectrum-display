@@ -31,7 +31,8 @@
     }, opts || {}));
     const data = await res.json().catch(function () { return {}; });
     if (res.status === 401) {
-      location.href = '/account.html?next=/wall';
+      if (Auth && Auth.logout) await Auth.logout();
+      showGuest();
       throw new Error('Sign in required.');
     }
     if (!res.ok || data.ok === false) {
@@ -71,6 +72,31 @@
     return ft(wM) + ' × ' + ft(hM);
   }
 
+  function isLive(wall) {
+    return !!(wall && (wall.online || wall.testing));
+  }
+
+  function showGuest() {
+    current = null;
+    if (pollTimer) {
+      clearInterval(pollTimer);
+      pollTimer = null;
+    }
+    if ($('wall-guest')) $('wall-guest').classList.remove('hidden');
+    if ($('wall-empty')) $('wall-empty').classList.add('hidden');
+    if ($('wall-controls')) $('wall-controls').classList.add('hidden');
+    if ($('wall-form-wrap')) $('wall-form-wrap').classList.add('hidden');
+    renderPreview(null);
+    if ($('wall-status-overlay')) {
+      $('wall-status-overlay').classList.remove('hidden');
+      $('wall-status-overlay').querySelector('span').textContent = 'Sign in to run this wall.';
+    }
+  }
+
+  function hideGuest() {
+    if ($('wall-guest')) $('wall-guest').classList.add('hidden');
+  }
+
   function setMsg(text, isErr) {
     const el = $('wall-msg');
     if (!el) return;
@@ -104,7 +130,9 @@
     if (!wall) {
       grid.innerHTML = '';
       if (overlay) overlay.classList.remove('hidden');
-      if (overlay) overlay.querySelector('span').textContent = 'Add a wall to get started.';
+      if (overlay) overlay.querySelector('span').textContent = $('wall-guest') && !$('wall-guest').classList.contains('hidden')
+        ? 'Sign in to run this wall.'
+        : 'Add a wall to get started.';
       return;
     }
     const cols = Math.max(1, wall.cols || 1);
@@ -114,6 +142,9 @@
     grid.classList.toggle('labels-off', !showA1);
     grid.classList.toggle('is-black', wall.displayMode === 'black');
     grid.classList.toggle('is-freeze', wall.displayMode === 'freeze');
+    const live = isLive(wall);
+    const bright = Math.max(0.28, Math.min(1, (Number(wall.brightness) || 80) / 100));
+    grid.style.filter = (live && wall.displayMode === 'on') ? 'brightness(' + bright + ')' : '';
     const letters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
     let html = '';
     for (let r = 0; r < rows; r++) {
@@ -125,8 +156,10 @@
     grid.innerHTML = html;
     if (split) split.classList.toggle('hidden', !(activePreset(wall) && activePreset(wall).layout === 'split'));
     if (freeze) freeze.classList.toggle('hidden', wall.displayMode !== 'freeze');
+    const testBadge = $('wall-test-badge');
+    if (testBadge) testBadge.classList.toggle('hidden', !wall.testing);
     if (overlay) {
-      overlay.classList.toggle('hidden', !!wall.online);
+      overlay.classList.toggle('hidden', live);
       overlay.querySelector('span').textContent = 'Wall offline.';
     }
     $('preview-size').textContent = fmtSize(wall);
@@ -163,6 +196,7 @@
   }
 
   function renderControls(wall) {
+    hideGuest();
     const empty = $('wall-empty');
     const controls = $('wall-controls');
     if (!wall) {
@@ -175,8 +209,13 @@
     controls.classList.remove('hidden');
     $('wall-name').textContent = wall.name || 'Wall';
     $('wall-model').textContent = (wall.model ? wall.model + ' · ' : '') + wall.processor;
-    $('wall-online').classList.toggle('is-on', !!wall.online);
-    $('wall-online-label').textContent = wall.online ? 'Online' : 'Offline';
+    $('wall-online').classList.toggle('is-on', isLive(wall));
+    $('wall-online-label').textContent = wall.testing ? 'Online · testing' : (wall.online ? 'Online' : 'Offline');
+    const testBtn = $('test-mode-btn');
+    if (testBtn) {
+      testBtn.classList.toggle('is-on', !!wall.testing);
+      testBtn.textContent = wall.testing ? 'Testing mode on' : 'Testing mode';
+    }
     $('wall-res').textContent = fmtRes(wall);
     $('wall-count').textContent = wall.cols + '×' + wall.rows;
     $('wall-pitch').textContent = wall.pitch + ' mm';
@@ -247,7 +286,7 @@
       current = data.wall;
       walls = walls.map(function (w) { return w.id === current.id ? current : w; });
       renderControls(current);
-      setMsg(current.online ? '' : 'Saved. Wall offline — the rack bridge will pick this up when it reconnects.', false);
+      setMsg(isLive(current) ? (current.testing ? 'Testing mode — not a live rack bridge.' : '') : 'Saved. Wall offline — the rack bridge will pick this up when it reconnects.', false);
     } catch (err) {
       setMsg(err.message, true);
     }
@@ -305,6 +344,23 @@
       current = walls.find(function (w) { return w.id === $('wall-picker').value; }) || current;
       renderControls(current);
     };
+    if ($('test-mode-btn')) {
+      $('test-mode-btn').onclick = async function () {
+        if (!current) return;
+        try {
+          const data = await api('/api/walls/' + current.id + '/testing', {
+            method: 'POST',
+            body: JSON.stringify({ enabled: !current.testing })
+          });
+          current = data.wall;
+          walls = walls.map(function (w) { return w.id === current.id ? current : w; });
+          renderControls(current);
+          setMsg(current.testing ? 'Testing mode on — preview only, no rack bridge.' : 'Testing mode off.', false);
+        } catch (err) {
+          setMsg(err.message, true);
+        }
+      };
+    }
     $('wall-form').onsubmit = async function (e) {
       e.preventDefault();
       const id = $('wall-form').dataset.id;
@@ -372,9 +428,10 @@
     bind();
     if (Auth && Auth.ready) await Auth.ready;
     if (!Auth || !Auth.isLoggedIn()) {
-      location.href = '/account.html?next=/wall';
+      showGuest();
       return;
     }
+    hideGuest();
     try {
       await loadWalls();
     } catch (err) {

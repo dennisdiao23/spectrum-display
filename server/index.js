@@ -709,6 +709,15 @@ async function main() {
     } catch (err) { next(err); }
   });
 
+  app.post('/api/walls/:id/testing', requireCustomer, async function (req, res, next) {
+    try {
+      const enabled = !!(req.body && req.body.enabled);
+      const wall = await store.setWallTesting(req.customer.id, req.params.id, enabled);
+      if (!wall) return res.status(404).json({ ok: false, error: 'Wall not found.' });
+      res.json({ ok: true, wall: wall, testing: wall.testing });
+    } catch (err) { next(err); }
+  });
+
   app.get('/api/admin/me', async function (req, res, next) {
     try {
       const admin = await currentAdmin(req);

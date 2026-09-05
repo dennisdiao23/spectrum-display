@@ -176,8 +176,13 @@ function normalizeWall(payload) {
   };
 }
 
+function isTesting(row) {
+  return row && (row.test_mode === true || row.test_mode === 1 || row.test_mode === '1');
+}
+
 function publicWall(row, extras) {
   extras = extras || {};
+  const testing = isTesting(row);
   return {
     id: String(row.id),
     userId: String(row.user_id),
@@ -195,7 +200,8 @@ function publicWall(row, extras) {
     displayMode: displayOf(row.display_mode),
     activePresetId: row.active_preset_id || '',
     lastSeenAt: row.last_seen_at || '',
-    online: isOnline(row.last_seen_at),
+    testing: testing,
+    online: testing || isOnline(row.last_seen_at),
     inputs: extras.inputs || [],
     presets: extras.presets || [],
     createdAt: row.created_at || '',
@@ -426,6 +432,19 @@ function sqliteApi(db) {
         .run(hashBridgeToken(token), nowIso(), id);
       return { wall: await this.getWall(id), bridgeToken: token };
     },
+    async setWallTesting(userId, id, enabled) {
+      const current = await this.getWallForOwner(id, userId);
+      if (!current) return null;
+      const on = !!enabled;
+      const stamp = nowIso();
+      db.prepare('UPDATE walls SET test_mode = ?, last_seen_at = ?, updated_at = ? WHERE id = ? AND user_id = ?')
+        .run(on ? 1 : 0, on ? stamp : '', stamp, id, String(userId));
+      if (on) {
+        const pending = await this.listPendingCommands(id);
+        if (pending.length) await this.heartbeat(id, { ackedIds: pending.map(function (c) { return c.id; }) });
+      }
+      return this.getWall(id);
+    },
     async enqueueCommand(userId, id, body) {
       const wall = await this.getWallForOwner(id, userId);
       if (!wall) return null;
@@ -452,7 +471,13 @@ function sqliteApi(db) {
         INSERT INTO wall_commands (id, wall_id, type, payload, status, created_at, acked_at)
         VALUES (?, ?, ?, ?, ?, ?, ?)
       `).run(row.id, row.wall_id, row.type, row.payload, row.status, row.created_at, row.acked_at);
-      return { wall: await this.getWall(id), command: publicCommand(row) };
+      let wallAfter = await this.getWall(id);
+      if (wallAfter && wallAfter.testing) {
+        wallAfter = await this.heartbeat(id, { ackedIds: [row.id] });
+        row.status = 'acked';
+        row.acked_at = wallAfter.lastSeenAt || nowIso();
+      }
+      return { wall: wallAfter, command: publicCommand(row) };
     },
     async listPendingCommands(wallId) {
       return db.prepare(
@@ -704,6 +729,23 @@ function supabaseApi(supabase) {
       if (error) throw new Error(error.message);
       return { wall: await this.getWall(id), bridgeToken: token };
     },
+    async setWallTesting(userId, id, enabled) {
+      const current = await this.getWallForOwner(id, userId);
+      if (!current) return null;
+      const on = !!enabled;
+      const stamp = nowIso();
+      const { error } = await supabase.from('walls').update({
+        test_mode: on,
+        last_seen_at: on ? stamp : null,
+        updated_at: stamp
+      }).eq('id', id).eq('user_id', userId);
+      if (error) throw new Error(error.message);
+      if (on) {
+        const pending = await this.listPendingCommands(id);
+        if (pending.length) await this.heartbeat(id, { ackedIds: pending.map(function (c) { return c.id; }) });
+      }
+      return this.getWall(id);
+    },
     async enqueueCommand(userId, id, body) {
       const wall = await this.getWallForOwner(id, userId);
       if (!wall) return null;
@@ -724,7 +766,13 @@ function supabaseApi(supabase) {
       };
       const { error } = await supabase.from('wall_commands').insert(row);
       if (error) throw new Error(error.message);
-      return { wall: await this.getWall(id), command: publicCommand(row) };
+      let wallAfter = await this.getWall(id);
+      if (wallAfter && wallAfter.testing) {
+        wallAfter = await this.heartbeat(id, { ackedIds: [row.id] });
+        row.status = 'acked';
+        row.acked_at = wallAfter.lastSeenAt || nowIso();
+      }
+      return { wall: wallAfter, command: publicCommand(row) };
     },
     async listPendingCommands(wallId) {
       const { data, error } = await supabase.from('wall_commands')

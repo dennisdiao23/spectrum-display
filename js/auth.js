@@ -336,9 +336,17 @@
     loginWithGoogle: async function () {
       const client = sb();
       if (!client) return { ok: false, error: 'Sign-in is unavailable.' };
+      const next = (function () {
+        try {
+          return new URLSearchParams(global.location.search).get('next')
+            || sessionStorage.getItem('spectrumAuthNext')
+            || '';
+        } catch (e) { return ''; }
+      })();
+      const redirectTo = global.location.origin + '/account.html' + (next ? ('?next=' + encodeURIComponent(next)) : '');
       const { error } = await client.auth.signInWithOAuth({
         provider: 'google',
-        options: { redirectTo: global.location.origin + '/account.html' }
+        options: { redirectTo: redirectTo }
       });
       if (error) {
         return { ok: false, error: 'Google sign-in is not connected yet. Use email for now.' };
