@@ -2105,6 +2105,16 @@
       </div>
     </div>
   </div>
+  <div id="dash-tab-stale" class="cc-leave" hidden>
+    <div class="cc-leave-card" role="dialog" aria-modal="true" aria-labelledby="dash-tab-stale-title">
+      <p id="dash-tab-stale-title" class="cc-leave-title">Save changes on this tab.</p>
+      <p class="dash-tab-stale-lead">This tab has been unsaved for an hour.</p>
+      <div class="cc-leave-actions">
+        <button type="button" id="dash-tab-stale-ok" class="cc-leave-no">OK</button>
+        <button type="button" id="dash-tab-stale-open" class="cc-leave-yes">Open tab</button>
+      </div>
+    </div>
+  </div>
   <div id="inv-drawer-scrim" class="cc-drawer-scrim"></div>
   <aside id="inv-drawer" class="cc-drawer" aria-hidden="true">
     <div class="cc-drawer-head">
@@ -2854,6 +2864,14 @@
     let dashTabCaption = {};
     let soMasterCache = {};
     let poMasterCache = {};
+    let dashTabDirty = {};
+    let dashTabDirtyAt = {};
+    let dashTabStaleWarned = {};
+    let dashTabStaleName = '';
+    let dashTabWorkWatch = false;
+    let dashTabWorkApplying = false;
+    const MASTER_TAB_IDLE_MS = 30 * 60 * 1000;
+    const MASTER_TAB_STALE_MS = 60 * 60 * 1000;
 
     function masterGroupFor(name) {
       const doc = parseDocMasterTab(name);
@@ -2961,6 +2979,24 @@
         dashTabCaption[to] = dashTabCaption[from];
         delete dashTabCaption[from];
       }
+      if (dashTabDirty[from]) {
+        dashTabDirty[to] = dashTabDirty[from];
+        delete dashTabDirty[from];
+      } else {
+        delete dashTabDirty[to];
+      }
+      if (dashTabDirtyAt[from]) {
+        dashTabDirtyAt[to] = dashTabDirtyAt[from];
+        delete dashTabDirtyAt[from];
+      } else {
+        delete dashTabDirtyAt[to];
+      }
+      if (dashTabStaleWarned[from]) {
+        dashTabStaleWarned[to] = dashTabStaleWarned[from];
+        delete dashTabStaleWarned[from];
+      } else {
+        delete dashTabStaleWarned[to];
+      }
       if (soMasterCache[from]) {
         soMasterCache[to] = soMasterCache[from];
         delete soMasterCache[from];
@@ -3044,6 +3080,226 @@
       });
     }
 
+    function hiddenFieldValue(id) {
+      const el = document.getElementById(id);
+      return el ? String(el.value || '').trim() : '';
+    }
+
+    function panelIsVisible(id) {
+      const el = document.getElementById(id);
+      return !!(el && !el.classList.contains('hidden') && !el.hidden);
+    }
+
+    function masterTabWorkMode(name) {
+      name = canonicalMasterTab(name);
+      if (!name || name === 'dashboard') return '';
+      const doc = parseDocMasterTab(name);
+      if (doc) return doc.id === 'new' ? 'create' : 'edit';
+      if (name === 'inventory') {
+        if (!document.body.classList.contains('inv-drawer-open')) return '';
+        return hiddenFieldValue('inv-item-id') ? 'edit' : 'create';
+      }
+      if (name === 'customers') {
+        if (!document.body.classList.contains('cc-drawer-open')) return '';
+        return hiddenFieldValue('cc-id') ? 'edit' : 'create';
+      }
+      if (name === 'vendors') {
+        if (!document.body.classList.contains('vn-drawer-open')) return '';
+        return hiddenFieldValue('vn-id') ? 'edit' : 'create';
+      }
+      if (name === 'warehouses') {
+        if (typeof whActiveTab !== 'undefined' && whActiveTab === 'new') return 'create';
+        if (panelIsVisible('wh-form')) return hiddenFieldValue('wh-id') ? 'edit' : 'create';
+        if (panelIsVisible('wh-transfer-form')) return 'edit';
+        return '';
+      }
+      if (name === 'receipt-shipments') {
+        if (!panelIsVisible('rs-detail')) return '';
+        if (typeof rsReadOnly !== 'undefined' && rsReadOnly) return '';
+        return hiddenFieldValue('rs-id') ? 'edit' : 'create';
+      }
+      if (name === 'products') {
+        if (typeof wpActiveTab === 'undefined' || !wpActiveTab || wpActiveTab === 'overview') return '';
+        if (wpActiveTab === 'new' || !hiddenFieldValue('product-id')) return 'create';
+        return 'edit';
+      }
+      if (name === 'accounts') {
+        if (!document.body.classList.contains('ca-drawer-open')) return '';
+        return hiddenFieldValue('ca-id') ? 'edit' : 'create';
+      }
+      if (name === 'company') {
+        return document.body.classList.contains('ci-drawer-open') ? 'edit' : '';
+      }
+      if (name === 'staff') {
+        if (document.body.classList.contains('st-drawer-open')) {
+          return (typeof editingStaffId !== 'undefined' && editingStaffId) || hiddenFieldValue('staff-id') ? 'edit' : 'create';
+        }
+        if (document.body.classList.contains('rl-drawer-open')) {
+          return (typeof editingRoleId !== 'undefined' && editingRoleId) ? 'edit' : 'create';
+        }
+        return '';
+      }
+      return '';
+    }
+
+    function masterTabIsDirty(name) {
+      name = canonicalMasterTab(name);
+      if (!masterTabWorkMode(name)) return false;
+      if (name === 'inventory') return typeof invDrawerNeedsLeave === 'function' && invDrawerNeedsLeave();
+      if (name === 'customers') return typeof ccDrawerNeedsLeave === 'function' && ccDrawerNeedsLeave();
+      if (name === 'vendors') return typeof vnDrawerNeedsLeave === 'function' && vnDrawerNeedsLeave();
+      if (name === 'accounts') return typeof caDrawerNeedsLeave === 'function' && caDrawerNeedsLeave();
+      if (name === 'company') return typeof ciDrawerNeedsLeave === 'function' && ciDrawerNeedsLeave();
+      if (name === 'staff') {
+        return (typeof stDrawerNeedsLeave === 'function' && stDrawerNeedsLeave()) ||
+          (typeof rlDrawerNeedsLeave === 'function' && rlDrawerNeedsLeave());
+      }
+      return !!dashTabDirty[name];
+    }
+
+    function masterTabDirtyAge(name) {
+      name = canonicalMasterTab(name);
+      if (!masterTabIsDirty(name)) return 0;
+      if (!dashTabDirtyAt[name]) dashTabDirtyAt[name] = Date.now();
+      return Date.now() - dashTabDirtyAt[name];
+    }
+
+    function masterTabIsIdle(name) {
+      return masterTabDirtyAge(name) >= MASTER_TAB_IDLE_MS;
+    }
+
+    function masterTabIsStale(name) {
+      return masterTabDirtyAge(name) >= MASTER_TAB_STALE_MS;
+    }
+
+    function masterTabWorkClass(name) {
+      if (!masterTabWorkMode(name)) return '';
+      if (masterTabIsStale(name)) return ' is-work is-work-stale';
+      if (masterTabIsIdle(name)) return ' is-work is-work-idle';
+      return ' is-work';
+    }
+
+    function hideMasterTabStaleDialog() {
+      const box = document.getElementById('dash-tab-stale');
+      if (!box) return;
+      box.classList.remove('is-open');
+      box.hidden = true;
+      dashTabStaleName = '';
+    }
+
+    function showMasterTabStaleDialog(name) {
+      name = canonicalMasterTab(name);
+      const box = document.getElementById('dash-tab-stale');
+      const title = document.getElementById('dash-tab-stale-title');
+      if (!box || !name) return;
+      const label = masterTabCaption(name) || name;
+      dashTabStaleName = name;
+      dashTabStaleWarned[name] = true;
+      if (title) title.textContent = 'Save changes on ' + label + '.';
+      box.hidden = false;
+      box.classList.add('is-open');
+      const ok = document.getElementById('dash-tab-stale-ok');
+      if (ok) ok.focus();
+    }
+
+    function otherDashDialogOpen() {
+      const leave = document.getElementById('cc-leave');
+      const max = document.getElementById('dash-tab-max');
+      const stale = document.getElementById('dash-tab-stale');
+      return (leave && leave.classList.contains('is-open')) ||
+        (max && max.classList.contains('is-open')) ||
+        (stale && stale.classList.contains('is-open'));
+    }
+
+    function maybeWarnStaleMasterTabs() {
+      if (otherDashDialogOpen()) return;
+      const names = dashOpenTabs.filter(function (name) {
+        return masterTabIsStale(name) && !dashTabStaleWarned[name];
+      });
+      if (!names.length) return;
+      showMasterTabStaleDialog(names[0]);
+    }
+
+    function applyMasterTabWorkMarks() {
+      if (dashTabWorkApplying) return;
+      const strip = document.getElementById('dash-tab-strip');
+      if (!strip) return;
+      dashTabWorkApplying = true;
+      try {
+      strip.querySelectorAll('.inv-browser-tab[data-dash-tab]').forEach(function (tab) {
+        const name = tab.getAttribute('data-dash-tab');
+        const mode = masterTabWorkMode(name);
+        const stale = !!(mode && masterTabIsStale(name));
+        const idle = !!(mode && !stale && masterTabIsIdle(name));
+        tab.classList.toggle('is-work', !!mode);
+        tab.classList.toggle('is-work-idle', idle);
+        tab.classList.toggle('is-work-stale', stale);
+        if (!mode) tab.removeAttribute('title');
+        else if (stale) tab.title = 'Unsaved for an hour — save changes on this tab';
+        else if (idle) tab.title = 'Unsaved changes — save and close, or come back to it';
+        else tab.title = 'Edit or create — close this tab if you are done';
+      });
+      if (dashTabStaleName && !masterTabIsStale(dashTabStaleName)) hideMasterTabStaleDialog();
+      maybeWarnStaleMasterTabs();
+      } finally {
+        dashTabWorkApplying = false;
+      }
+    }
+
+    function setMasterTabDirty(name, dirty) {
+      name = canonicalMasterTab(name);
+      if (!name) return;
+      if (dirty) {
+        dashTabDirty[name] = true;
+        dashTabDirtyAt[name] = Date.now();
+        delete dashTabStaleWarned[name];
+      } else {
+        delete dashTabDirty[name];
+        delete dashTabDirtyAt[name];
+        delete dashTabStaleWarned[name];
+      }
+      applyMasterTabWorkMarks();
+    }
+
+    function onMasterTabWorkInput(e) {
+      const name = canonicalMasterTab(dashActiveGroup);
+      if (!name || !masterTabWorkMode(name)) return;
+      const t = e.target;
+      if (!t || !t.closest) return;
+      if (e.type === 'click') {
+        if (!t.closest('[data-remove-line], #so-add-line, #po-add-line, #rs-add-line, #rs-clear-lines, #so-add, #po-add')) return;
+      } else if (!t.closest('#inv-drawer, #cc-drawer, #vn-drawer, #ca-drawer, #ci-drawer, #st-drawer, #rl-drawer, #so-detail, #po-detail, #rs-detail, #wh-form, #wh-transfer-form, #product-form, #form-wrap')) {
+        return;
+      }
+      setMasterTabDirty(name, true);
+    }
+
+    function startMasterTabWorkWatch() {
+      if (dashTabWorkWatch) return;
+      dashTabWorkWatch = true;
+      setInterval(applyMasterTabWorkMarks, 15000);
+      if (window.MutationObserver) {
+        new MutationObserver(function () { applyMasterTabWorkMarks(); })
+          .observe(document.body, { attributes: true, attributeFilter: ['class'] });
+      }
+      const panel = document.getElementById('dash-panel');
+      if (panel) {
+        panel.addEventListener('input', onMasterTabWorkInput, true);
+        panel.addEventListener('change', onMasterTabWorkInput, true);
+        panel.addEventListener('click', onMasterTabWorkInput, true);
+      }
+      window.__dashMarkTabDirtyAgo = function (name, ms) {
+        name = canonicalMasterTab(name);
+        dashTabDirty[name] = true;
+        dashTabDirtyAt[name] = Date.now() - (Number(ms) || 0);
+        delete dashTabStaleWarned[name];
+        applyMasterTabWorkMarks();
+      };
+      window.__dashMarkTabClean = function (name) {
+        setMasterTabDirty(name, false);
+      };
+    }
+
     function masterTabCaption(name) {
       name = canonicalMasterTab(name);
       return dashTabCaption[name] || MASTER_TAB_LABEL[name] || name;
@@ -3073,6 +3329,7 @@
     function masterTabButton(name, active, closable) {
       const icon = masterTabIcon(name);
       return '<button type="button" class="inv-browser-tab' + (active ? ' is-active' : '') +
+        masterTabWorkClass(name) +
         '" data-dash-tab="' + esc(name) + '" role="tab" aria-selected="' + (active ? 'true' : 'false') + '">' +
         icon +
         '<span class="inv-browser-tab-label">' + esc(masterTabCaption(name)) + '</span>' +
@@ -3095,6 +3352,7 @@
       });
       strip.innerHTML = html;
       fitDashTabWidths();
+      applyMasterTabWorkMarks();
       const activeTab = strip.querySelector('.inv-browser-tab.is-active');
       if (activeTab && typeof activeTab.scrollIntoView === 'function') {
         try { activeTab.scrollIntoView({ inline: 'nearest', block: 'nearest' }); } catch (err) {}
@@ -3113,6 +3371,9 @@
       delete dashTabCaption[name];
       delete soMasterCache[name];
       delete poMasterCache[name];
+      delete dashTabDirty[name];
+      delete dashTabDirtyAt[name];
+      delete dashTabStaleWarned[name];
       dashTabPath[name] = pathForTab(name);
       if (doc && wasActive) {
         if (doc.kind === 'po') applyPoWindowChrome(false);
@@ -3293,6 +3554,7 @@
       rememberMasterTab(next || 'dashboard');
       showAdminTab(next || 'dashboard');
       renderDashTabBar();
+      startMasterTabWorkWatch();
       return true;
     }
 
@@ -3355,6 +3617,7 @@
         const list = document.getElementById('products-list-wrap');
         if (list) list.classList.remove('hidden');
       }
+      if (typeof applyMasterTabWorkMarks === 'function') applyMasterTabWorkMarks();
     }
     function wpTabLabel(id) {
       if (id === 'new') return wpTabLabels.new || 'New product';
@@ -3567,6 +3830,7 @@
       showWpRightPanel('item');
       renderWpTabBar();
       renderProducts(websiteProducts);
+      setMasterTabDirty('products', false);
     }
 
     function closeProductForm() {
@@ -7069,6 +7333,7 @@
         form.classList.add('hidden');
         transfer.classList.add('hidden');
       }
+      if (typeof applyMasterTabWorkMarks === 'function') applyMasterTabWorkMarks();
     }
     function fillWhOverview() {
       const all = inventoryWarehouses || [];
@@ -7356,6 +7621,7 @@
 
     function markInvClean() {
       invSavedSnapshot = invFormSnapshot();
+      if (typeof applyMasterTabWorkMarks === 'function') applyMasterTabWorkMarks();
     }
 
     function dashDrawerIsOpen() {
@@ -8946,6 +9212,7 @@
 
     function markCcClean() {
       ccSavedSnapshot = ccFormSnapshot();
+      if (typeof applyMasterTabWorkMarks === 'function') applyMasterTabWorkMarks();
     }
 
     function ccDrawerNeedsLeave() {
@@ -9157,6 +9424,7 @@
 
     function markVnClean() {
       vnSavedSnapshot = vnFormSnapshot();
+      if (typeof applyMasterTabWorkMarks === 'function') applyMasterTabWorkMarks();
     }
 
     function vnDrawerNeedsLeave() {
@@ -9952,8 +10220,8 @@
         return String(el.value || '');
       }).join('|');
     }
-    function markCaClean() { caSavedSnapshot = caFormSnapshot(); }
-    function markCiClean() { ciSavedSnapshot = ciFormSnapshot(); }
+    function markCaClean() { caSavedSnapshot = caFormSnapshot(); if (typeof applyMasterTabWorkMarks === 'function') applyMasterTabWorkMarks(); }
+    function markCiClean() { ciSavedSnapshot = ciFormSnapshot(); if (typeof applyMasterTabWorkMarks === 'function') applyMasterTabWorkMarks(); }
     function caDrawerNeedsLeave() {
       return document.body.classList.contains('ca-drawer-open') && caFormSnapshot() !== caSavedSnapshot;
     }
@@ -11091,6 +11359,7 @@
         } else if (data.receipt) {
           fillRsForm(data.receipt);
         }
+        setMasterTabDirty('receipt-shipments', false);
       } catch (err) {
         showRsMsg(err.message || 'Could not save receipt.', false);
       }
@@ -11198,6 +11467,10 @@
       if (dashActiveGroup === nextName) return;
       if (cur.kind === 'po') stashPoMasterForm();
       else stashSalesMasterForm();
+      if (masterTabIsDirty(dashActiveGroup)) {
+        dashTabDirty[dashActiveGroup] = true;
+        if (!dashTabDirtyAt[dashActiveGroup]) dashTabDirtyAt[dashActiveGroup] = Date.now();
+      }
     }
 
     function salesKindFromType(type) {
@@ -11300,6 +11573,7 @@
       if (kind === 'po') poMasterCache[next] = saved;
       else soMasterCache[next] = saved;
       history.replaceState({ tab: next }, '', dest);
+      setMasterTabDirty(next, false);
     }
 
     async function openInvoiceWindow(id, opts) {
@@ -12512,6 +12786,15 @@
     document.getElementById('dash-tab-max').addEventListener('click', function (e) {
       if (e.target.id === 'dash-tab-max') hideMasterTabMaxDialog();
     });
+    document.getElementById('dash-tab-stale-ok').addEventListener('click', hideMasterTabStaleDialog);
+    document.getElementById('dash-tab-stale-open').addEventListener('click', function () {
+      const name = dashTabStaleName;
+      hideMasterTabStaleDialog();
+      if (name) activateMasterTab(name);
+    });
+    document.getElementById('dash-tab-stale').addEventListener('click', function (e) {
+      if (e.target.id === 'dash-tab-stale') hideMasterTabStaleDialog();
+    });
     document.getElementById('cc-leave').addEventListener('click', function (e) {
       if (e.target === this) {
         ccLeaveThen = null;
@@ -12996,6 +13279,7 @@
       if (!soSavedSnapshot) return;
       try { fillSoForm(JSON.parse(soSavedSnapshot)); }
       catch (err) {}
+      setMasterTabDirty(dashActiveGroup, false);
     });
     document.getElementById('so-form').addEventListener('submit', async function (e) {
       e.preventDefault();
@@ -13020,6 +13304,7 @@
         fillSoForm(data.doc);
         document.getElementById('so-title').textContent = (data.doc.number || salesTypeLabel(data.doc.type)) + ' · ' + (data.doc.customerName || '');
         showSoMsg((data.doc.number || 'Document') + ' saved.', true);
+        setMasterTabDirty(dashActiveGroup, false);
         if (data.doc && data.doc.id) {
           soTabCache[String(data.doc.id)] = data.doc;
           promoteDocMasterAfterSave(data.doc.type || 'quote', data.doc);
@@ -13120,8 +13405,8 @@
         return String(el.value || '');
       }).join('|');
     }
-    function markStClean() { stSavedSnapshot = stFormSnapshot(); }
-    function markRlClean() { rlSavedSnapshot = rlFormSnapshot(); }
+    function markStClean() { stSavedSnapshot = stFormSnapshot(); if (typeof applyMasterTabWorkMarks === 'function') applyMasterTabWorkMarks(); }
+    function markRlClean() { rlSavedSnapshot = rlFormSnapshot(); if (typeof applyMasterTabWorkMarks === 'function') applyMasterTabWorkMarks(); }
     function stDrawerNeedsLeave() {
       return document.body.classList.contains('st-drawer-open') && stFormSnapshot() !== stSavedSnapshot;
     }
@@ -14819,6 +15104,7 @@
           });
         fillPoForm(data.order);
         showPoMsg('Saved.', true);
+        setMasterTabDirty(dashActiveGroup, false);
         if (data.order) {
           poTabCache[String(data.order.id)] = data.order;
           promoteDocMasterAfterSave('po', data.order);
