@@ -3485,7 +3485,7 @@
         if (wpTabCache.new && wpTabCache.new.form) applyWpFormValues(wpTabCache.new.form);
         else fillProductForm(null);
         showWpRightPanel('item');
-        renderWpTabBar();
+        if (!opts.skipTabBar) renderWpTabBar();
         renderProducts(websiteProducts);
         return;
       }
@@ -3500,7 +3500,7 @@
       fillProductForm(product);
       if (wpTabCache[sid].form) applyWpFormValues(wpTabCache[sid].form);
       showWpRightPanel('item');
-      renderWpTabBar();
+      if (!opts.skipTabBar) renderWpTabBar();
       renderProducts(websiteProducts);
     }
     async function openWpTab(id, opts) {
@@ -4325,8 +4325,10 @@
       if (!strip) return;
       const idAttr = opts.idAttr;
       const setOrder = opts.setOrder;
+      const onSelect = opts.onSelect;
       const HOLD_MS = 180;
       const MOVE_PX = 10;
+      const SLIDE_MS = 180;
       let press = null;
 
       function itemTabEls() {
@@ -4335,22 +4337,206 @@
         });
       }
 
+      function isSlotTab(el) {
+        return el && el.classList && el.classList.contains('inv-browser-tab') &&
+          el.getAttribute(idAttr) && el.getAttribute(idAttr) !== 'overview' &&
+          (!press || el !== press.tab);
+      }
+
       function unbindDoc() {
         document.removeEventListener('pointermove', onMove, true);
         document.removeEventListener('pointerup', onUp, true);
         document.removeEventListener('pointercancel', onUp, true);
       }
 
+      function markActive(id) {
+        Array.prototype.forEach.call(strip.querySelectorAll('.inv-browser-tab[' + idAttr + ']'), function (el) {
+          const on = el.getAttribute(idAttr) === String(id);
+          el.classList.toggle('is-active', on);
+          el.setAttribute('aria-selected', on ? 'true' : 'false');
+        });
+      }
+
+      function clearTabDragStyles(tab) {
+        if (!tab) return;
+        tab.classList.remove('is-dragging');
+        tab.style.position = '';
+        tab.style.left = '';
+        tab.style.top = '';
+        tab.style.width = '';
+        tab.style.height = '';
+        tab.style.zIndex = '';
+        tab.style.margin = '';
+        tab.style.maxWidth = '';
+        tab.style.minWidth = '';
+        tab.style.flex = '';
+        tab.style.transform = '';
+        tab.style.transformOrigin = '';
+        tab.style.transition = '';
+      }
+
+      function clearNeighborMotion() {
+        Array.prototype.forEach.call(strip.querySelectorAll('.inv-browser-tab'), function (el) {
+          el.style.transform = '';
+          el.style.transition = '';
+        });
+      }
+
+      function orderFromDom() {
+        const ids = [];
+        Array.prototype.forEach.call(strip.children, function (el) {
+          if (press && el === press.spacer) {
+            const id = press.tab && press.tab.getAttribute(idAttr);
+            if (id) ids.push(id);
+            return;
+          }
+          if (press && el === press.tab) return;
+          if (!isSlotTab(el) && !(el && el.classList && el.classList.contains('inv-browser-tab'))) return;
+          const id = el.getAttribute(idAttr);
+          if (!id || id === 'overview') return;
+          ids.push(id);
+        });
+        return ids;
+      }
+
+      function desiredBefore(centerX) {
+        const tabs = [];
+        Array.prototype.forEach.call(strip.children, function (el) {
+          if (isSlotTab(el)) tabs.push(el);
+        });
+        for (let i = 0; i < tabs.length; i++) {
+          const rect = tabs[i].getBoundingClientRect();
+          if (centerX < rect.left + rect.width / 2) return tabs[i];
+        }
+        return null;
+      }
+
+      function spacerIsBefore(next) {
+        if (!press || !press.spacer) return false;
+        if (next) {
+          let el = press.spacer.nextElementSibling;
+          while (el && (el === press.tab || el === press.spacer)) el = el.nextElementSibling;
+          return el === next;
+        }
+        let el = press.spacer.nextElementSibling;
+        while (el) {
+          if (isSlotTab(el)) return false;
+          el = el.nextElementSibling;
+        }
+        return true;
+      }
+
+      function slideNeighbors(apply) {
+        const movers = [];
+        Array.prototype.forEach.call(strip.querySelectorAll('.inv-browser-tab[' + idAttr + ']'), function (el) {
+          if (press && el === press.tab) return;
+          movers.push({ el: el, x: el.getBoundingClientRect().left });
+        });
+        apply();
+        movers.forEach(function (m) {
+          m.el.style.transition = 'none';
+          m.el.style.transform = 'none';
+          const dx = m.x - m.el.getBoundingClientRect().left;
+          if (Math.abs(dx) < 1) {
+            m.el.style.transition = '';
+            m.el.style.transform = '';
+            return;
+          }
+          m.el.style.transform = 'translateX(' + dx + 'px)';
+          void m.el.offsetWidth;
+          m.el.style.transition = 'transform ' + SLIDE_MS + 'ms cubic-bezier(0.2, 0.8, 0.2, 1)';
+          m.el.style.transform = '';
+        });
+      }
+
+      function moveSpacer(next) {
+        if (!press || !press.spacer || spacerIsBefore(next)) return;
+        slideNeighbors(function () {
+          if (next) {
+            strip.insertBefore(press.spacer, next);
+          } else {
+            const tabs = [];
+            Array.prototype.forEach.call(strip.children, function (el) {
+              if (isSlotTab(el)) tabs.push(el);
+            });
+            const last = tabs[tabs.length - 1] || strip.querySelector('.inv-browser-tab[' + idAttr + '="overview"]');
+            if (last && last.nextSibling) strip.insertBefore(press.spacer, last.nextSibling);
+            else strip.appendChild(press.spacer);
+          }
+          const overview = strip.querySelector('.inv-browser-tab[' + idAttr + '="overview"]');
+          if (overview && (press.spacer.compareDocumentPosition(overview) & Node.DOCUMENT_POSITION_FOLLOWING)) {
+            strip.insertBefore(press.spacer, overview.nextSibling);
+          }
+        });
+      }
+
+      function follow(clientX) {
+        if (!press || !press.tab || !press.lifted) return;
+        const tab = press.tab;
+        const overview = strip.querySelector('.inv-browser-tab[' + idAttr + '="overview"]');
+        const stripRect = strip.getBoundingClientRect();
+        let left = clientX - press.grabX;
+        const minLeft = overview ? overview.getBoundingClientRect().right - 6 : stripRect.left;
+        const maxLeft = stripRect.right - press.width;
+        if (left < minLeft) left = minLeft;
+        if (left > maxLeft) left = maxLeft;
+        tab.style.left = left + 'px';
+        const center = tab.getBoundingClientRect().left + tab.getBoundingClientRect().width / 2;
+        moveSpacer(desiredBefore(center));
+      }
+
+      function lift() {
+        if (!press || press.lifted) return;
+        const tab = press.tab;
+        const id = tab.getAttribute(idAttr);
+        press.lifted = true;
+        markActive(id);
+        if (typeof onSelect === 'function') {
+          try { onSelect(id); } catch (err) {}
+        }
+        if (itemTabEls().length < 2) return;
+        const rect = tab.getBoundingClientRect();
+        press.grabX = press.x - rect.left;
+        press.width = rect.width;
+        press.height = rect.height;
+        const spacer = document.createElement('span');
+        spacer.className = 'inv-tab-drag-spacer';
+        spacer.setAttribute('aria-hidden', 'true');
+        spacer.style.width = rect.width + 'px';
+        spacer.style.minWidth = rect.width + 'px';
+        spacer.style.flex = '0 0 ' + rect.width + 'px';
+        strip.insertBefore(spacer, tab);
+        press.spacer = spacer;
+        document.body.classList.add('dash-tab-reordering');
+        try {
+          tab.setPointerCapture(press.pointerId);
+          press.captured = true;
+        } catch (err) {}
+        tab.classList.add('is-dragging');
+        tab.style.position = 'fixed';
+        tab.style.left = rect.left + 'px';
+        tab.style.top = rect.top + 'px';
+        tab.style.width = rect.width + 'px';
+        tab.style.height = rect.height + 'px';
+        tab.style.zIndex = '40';
+        tab.style.margin = '0';
+        tab.style.maxWidth = 'none';
+        tab.style.minWidth = rect.width + 'px';
+        tab.style.flex = 'none';
+        tab.style.transformOrigin = (rect.width ? ((press.grabX / rect.width) * 100) : 50) + '% 100%';
+        follow(press.x);
+      }
+
       function stopPress(stopOpts) {
         stopOpts = stopOpts || {};
         if (!press) return;
         if (press.timer) clearTimeout(press.timer);
-        if (press.tab) {
-          press.tab.classList.remove('is-dragging');
-          if (press.captured) {
-            try { press.tab.releasePointerCapture(press.pointerId); } catch (err) {}
-          }
+        if (press.tab && press.captured) {
+          try { press.tab.releasePointerCapture(press.pointerId); } catch (err) {}
         }
+        clearTabDragStyles(press.tab);
+        clearNeighborMotion();
+        if (press.spacer && press.spacer.parentNode) press.spacer.parentNode.removeChild(press.spacer);
         document.body.classList.remove('dash-tab-reordering');
         const eatClick = !!stopOpts.eatClick;
         press = null;
@@ -4365,33 +4551,6 @@
         setTimeout(function () { strip.removeEventListener('click', eat, true); }, 500);
       }
 
-      function placeTab(clientX) {
-        if (!press || !press.tab) return;
-        const tab = press.tab;
-        const others = itemTabEls().filter(function (el) { return el !== tab; });
-        let next = null;
-        for (let i = 0; i < others.length; i++) {
-          const rect = others[i].getBoundingClientRect();
-          if (clientX < rect.left + rect.width / 2) {
-            next = others[i];
-            break;
-          }
-        }
-        if (next) {
-          if (tab.nextElementSibling !== next) strip.insertBefore(tab, next);
-        } else if (others.length) {
-          const last = others[others.length - 1];
-          if (last.nextElementSibling !== tab) {
-            if (last.nextSibling) strip.insertBefore(tab, last.nextSibling);
-            else strip.appendChild(tab);
-          }
-        }
-        const overview = strip.querySelector('.inv-browser-tab[' + idAttr + '="overview"]');
-        if (overview && (tab.compareDocumentPosition(overview) & Node.DOCUMENT_POSITION_FOLLOWING)) {
-          strip.insertBefore(tab, overview.nextSibling);
-        }
-      }
-
       function onMove(e) {
         if (!press || e.pointerId !== press.pointerId) return;
         const dist = Math.hypot(e.clientX - press.x, e.clientY - press.y);
@@ -4401,17 +4560,16 @@
         }
         if (dist > 4) press.moved = true;
         e.preventDefault();
-        placeTab(e.clientX);
+        follow(e.clientX);
       }
 
       function onUp(e) {
         if (!press || e.pointerId !== press.pointerId) return;
         if (press.lifted) {
-          const ids = itemTabEls().map(function (tab) { return tab.getAttribute(idAttr); }).filter(Boolean);
+          const ids = orderFromDom();
           const changed = ids.join('\0') !== press.orderBefore;
           const scroll = strip.scrollLeft;
-          const eatClick = !!press.moved;
-          stopPress({ eatClick: eatClick });
+          stopPress({ eatClick: true });
           if (changed && ids.length) setOrder(ids);
           strip.scrollLeft = scroll;
           return;
@@ -4427,27 +4585,21 @@
         const tab = e.target.closest('.inv-browser-tab[' + idAttr + ']');
         if (!tab) return;
         if (tab.getAttribute(idAttr) === 'overview') return;
-        if (itemTabEls().length < 2) return;
         stopPress();
         press = {
           tab: tab,
           pointerId: e.pointerId,
           x: e.clientX,
           y: e.clientY,
+          grabX: 0,
+          width: 0,
+          height: 0,
           lifted: false,
           moved: false,
           captured: false,
+          spacer: null,
           orderBefore: itemTabEls().map(function (el) { return el.getAttribute(idAttr); }).join('\0'),
-          timer: setTimeout(function () {
-            if (!press || press.lifted) return;
-            press.lifted = true;
-            press.tab.classList.add('is-dragging');
-            document.body.classList.add('dash-tab-reordering');
-            try {
-              press.tab.setPointerCapture(press.pointerId);
-              press.captured = true;
-            } catch (err) {}
-          }, HOLD_MS)
+          timer: setTimeout(lift, HOLD_MS)
         };
         document.addEventListener('pointermove', onMove, true);
         document.addEventListener('pointerup', onUp, true);
@@ -5931,7 +6083,7 @@
       invDetailTab = invTabDetailTab[sid] || 'moves';
       showInvRightPanel('item');
       renderInventoryDetailView();
-      renderInvTabBar();
+      if (!opts.skipTabBar) renderInvTabBar();
       renderInventoryTable();
       if (opts.push !== false) {
         history.pushState({ tab: 'inventory', itemId: sid }, '', pathForInventory(sid));
@@ -7079,7 +7231,7 @@
         fillWhTransferForm(whCurrentDetail);
         showWhPanels(opts.mode || 'view');
       }
-      renderWhTabBar();
+      if (!opts.skipTabBar) renderWhTabBar();
       renderWhTable();
       if (opts.push !== false) history.pushState({ tab: 'warehouses' }, '', pathForWarehouse(id === 'new' ? '' : id));
     }
@@ -7680,7 +7832,8 @@
       document.getElementById('acct-msg').classList.add('hidden');
       renderAccountLists(account);
     }
-    async function activateWaTab(id) {
+    async function activateWaTab(id, opts) {
+      opts = opts || {};
       const sid = String(id);
       waActiveTab = sid;
       waDetailId = sid;
@@ -7698,7 +7851,7 @@
         fillAccountDetail(account);
         if (waTabCache[sid].form) applyWaFormValues(waTabCache[sid].form);
         showWaRightPanel('item');
-        renderWaTabBar();
+        if (!opts.skipTabBar) renderWaTabBar();
         renderAccountsTable(websiteAccounts);
       } catch (err) {
         errEl.textContent = err.message || 'Could not open this account.';
@@ -8696,7 +8849,7 @@
     async function openCustomerDetail(id, opts) {
       opts = opts || {};
       if (!id) return;
-      if (ccDrawerNeedsLeave()) {
+      if (!opts.skipTabBar && ccDrawerNeedsLeave()) {
         ccAskLeave(function () { openCustomerDetail(id, opts); });
         return;
       }
@@ -8720,7 +8873,7 @@
           history.pushState({ tab: 'customers', customerId: id }, '', pathForCustomer(id));
         }
         renderCustomerDetail();
-        renderCcTabBar();
+        if (!opts.skipTabBar) renderCcTabBar();
         renderCcTable(companyCustomers);
       } catch (err) {
         showError('cc-error', err.message || 'Could not open this customer.');
@@ -9564,7 +9717,7 @@
     async function openVendorDetail(id, opts) {
       opts = opts || {};
       if (!id) return;
-      if (vnDrawerNeedsLeave()) {
+      if (!opts.skipTabBar && vnDrawerNeedsLeave()) {
         vnAskLeave(function () { openVendorDetail(id, opts); });
         return;
       }
@@ -9606,7 +9759,7 @@
           history.pushState({ tab: 'vendors', vendorId: id }, '', pathForVendor(id));
         }
         renderVendorDetail();
-        renderVnTabBar();
+        if (!opts.skipTabBar) renderVnTabBar();
         renderVnTable(inventoryVendors);
       } catch (err) {
         showError('vn-error', err.message || 'Could not open this vendor.');
@@ -10476,7 +10629,7 @@
           return;
         }
       }
-      renderPoTabBar();
+      if (!opts.skipTabBar) renderPoTabBar();
       renderPoTable(purchaseOrders);
       if (opts.push !== false) {
         history.pushState({ tab: 'purchase-orders', poId: sid }, '', pathForPo(sid));
@@ -11885,7 +12038,7 @@
         }
       }
       syncSoSplitTypeState();
-      renderSoTabBar();
+      if (!opts.skipTabBar) renderSoTabBar();
       renderSoTable(salesDocs, currentSoType());
       if (opts.push !== false) {
         const kind = salesKindFromType(currentSoType());
@@ -14483,18 +14636,67 @@
     });
     (function bindAllItemTabReorders() {
       const specs = [
-        { id: 'inv-tab-strip', idAttr: 'data-inv-tab-id', tabs: function () { return invOpenTabs; }, render: renderInvTabBar },
-        { id: 'wh-tab-strip', idAttr: 'data-wh-tab-id', tabs: function () { return whOpenTabs; }, render: renderWhTabBar },
-        { id: 'cc-tab-strip', idAttr: 'data-cc-tab-id', tabs: function () { return ccOpenTabs; }, render: renderCcTabBar },
-        { id: 'vn-tab-strip', idAttr: 'data-vn-tab-id', tabs: function () { return vnOpenTabs; }, render: renderVnTabBar },
-        { id: 'po-tab-strip', idAttr: 'data-po-tab-id', tabs: function () { return poOpenTabs; }, render: renderPoTabBar },
-        { id: 'so-tab-strip', idAttr: 'data-so-tab-id', tabs: function () { return soOpenTabs; }, render: renderSoTabBar },
-        { id: 'wp-tab-strip', idAttr: 'data-wp-tab-id', tabs: function () { return wpOpenTabs; }, render: renderWpTabBar },
-        { id: 'wa-tab-strip', idAttr: 'data-wa-tab-id', tabs: function () { return waOpenTabs; }, render: renderWaTabBar }
+        {
+          id: 'inv-tab-strip', idAttr: 'data-inv-tab-id', tabs: function () { return invOpenTabs; }, render: renderInvTabBar,
+          onSelect: function (id) {
+            if (String(invActiveTab) === String(id)) return;
+            activateInvTab(id, { push: true, skipTabBar: true });
+          }
+        },
+        {
+          id: 'wh-tab-strip', idAttr: 'data-wh-tab-id', tabs: function () { return whOpenTabs; }, render: renderWhTabBar,
+          onSelect: function (id) {
+            if (String(whActiveTab) === String(id)) return;
+            openWhTab(id, { push: true, skipTabBar: true });
+          }
+        },
+        {
+          id: 'cc-tab-strip', idAttr: 'data-cc-tab-id', tabs: function () { return ccOpenTabs; }, render: renderCcTabBar,
+          onSelect: function (id) {
+            if (String(ccActiveTab) === String(id)) return;
+            activateCcTab(id, { push: true, skipTabBar: true });
+          }
+        },
+        {
+          id: 'vn-tab-strip', idAttr: 'data-vn-tab-id', tabs: function () { return vnOpenTabs; }, render: renderVnTabBar,
+          onSelect: function (id) {
+            if (String(vnActiveTab) === String(id)) return;
+            activateVnTab(id, { push: true, skipTabBar: true });
+          }
+        },
+        {
+          id: 'po-tab-strip', idAttr: 'data-po-tab-id', tabs: function () { return poOpenTabs; }, render: renderPoTabBar,
+          onSelect: function (id) {
+            if (String(poActiveTab) === String(id)) return;
+            activatePoTab(id, { push: true, skipTabBar: true });
+          }
+        },
+        {
+          id: 'so-tab-strip', idAttr: 'data-so-tab-id', tabs: function () { return soOpenTabs; }, render: renderSoTabBar,
+          onSelect: function (id) {
+            if (String(soActiveTab) === String(id)) return;
+            activateSoTab(id, { push: true, skipTabBar: true });
+          }
+        },
+        {
+          id: 'wp-tab-strip', idAttr: 'data-wp-tab-id', tabs: function () { return wpOpenTabs; }, render: renderWpTabBar,
+          onSelect: function (id) {
+            if (String(wpActiveTab) === String(id)) return;
+            activateWpTab(id, { skipTabBar: true });
+          }
+        },
+        {
+          id: 'wa-tab-strip', idAttr: 'data-wa-tab-id', tabs: function () { return waOpenTabs; }, render: renderWaTabBar,
+          onSelect: function (id) {
+            if (String(waActiveTab) === String(id)) return;
+            activateWaTab(id, { skipTabBar: true });
+          }
+        }
       ];
       specs.forEach(function (spec) {
         bindItemTabReorder(document.getElementById(spec.id), {
           idAttr: spec.idAttr,
+          onSelect: spec.onSelect,
           setOrder: function (ids) {
             const arr = spec.tabs();
             arr.splice(0, arr.length);

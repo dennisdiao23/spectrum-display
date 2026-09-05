@@ -2998,27 +2998,52 @@ body.po-split-lock #po-detail:not(.hidden) {
 .inv-browser-tab.is-dragging:hover,
 .inv-browser-tab.is-active.is-dragging,
 .inv-browser-tab.is-active.is-dragging:hover {
-  position: relative;
-  z-index: 6;
+  position: fixed;
+  z-index: 40;
   cursor: grabbing;
   touch-action: none;
   background: #fff;
+  color: #102047;
   border-color: #b7c8e8;
-  box-shadow: 0 14px 32px rgba(16, 32, 71, 0.18);
-  transform: translateY(-3px) scale(1.02);
-  opacity: 0.96;
+  box-shadow: 0 16px 40px rgba(16, 32, 71, 0.24);
+  transform: scale(1.12);
+  opacity: 1;
   transition: none;
+  margin-bottom: 0;
+  padding-bottom: 0.625rem;
+  pointer-events: none;
 }
 body.dash-tab-reordering {
   cursor: grabbing;
   user-select: none;
   -webkit-user-select: none;
 }
-body.dash-tab-reordering .inv-tab-strip .inv-browser-tab {
-  transition: none;
+body.dash-tab-reordering .inv-tab-strip .inv-browser-tab:not(.is-dragging) {
+  will-change: transform;
+}
+body.dash-tab-reordering .inv-browser-tab:not(.is-dragging):hover,
+body.dash-tab-reordering .inv-browser-tab:not(.is-dragging):focus-visible {
+  box-shadow: none;
+}
+body.dash-tab-reordering .inv-browser-tab:not(.is-active):not(.is-dragging):hover,
+body.dash-tab-reordering .inv-browser-tab:not(.is-active):not(.is-dragging):focus-visible {
+  transform: none;
+  background: #e3e9f3;
+  border-color: transparent;
+}
+body.dash-tab-reordering .inv-browser-tab.is-active:not(.is-dragging):hover,
+body.dash-tab-reordering .inv-browser-tab.is-active:not(.is-dragging):focus-visible {
+  transform: translateY(1px);
 }
 body.dash-tab-reordering .inv-browser-tab-close {
   pointer-events: none;
+}
+.inv-tab-drag-spacer {
+  display: block;
+  flex: 0 0 auto;
+  align-self: stretch;
+  pointer-events: none;
+  visibility: hidden;
 }
 .inv-browser-tab-status {
   width: 0.5rem;
