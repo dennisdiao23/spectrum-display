@@ -4473,16 +4473,14 @@
       function follow(clientX) {
         if (!press || !press.tab || !press.lifted) return;
         const tab = press.tab;
-        const overview = strip.querySelector('.inv-browser-tab[' + idAttr + '="overview"]');
         const stripRect = strip.getBoundingClientRect();
         let left = clientX - press.grabX;
-        const minLeft = overview ? overview.getBoundingClientRect().right - 6 : stripRect.left;
-        const maxLeft = stripRect.right - press.width;
+        const minLeft = stripRect.left - press.width * 0.4;
+        const maxLeft = stripRect.right - press.width * 0.6;
         if (left < minLeft) left = minLeft;
         if (left > maxLeft) left = maxLeft;
         tab.style.left = left + 'px';
-        const center = tab.getBoundingClientRect().left + tab.getBoundingClientRect().width / 2;
-        moveSpacer(desiredBefore(center));
+        moveSpacer(desiredBefore(clientX));
       }
 
       function lift() {
