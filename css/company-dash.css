@@ -295,6 +295,16 @@ body.dash-master-on .dash-menu-btn {
   flex-shrink: 0;
   display: block;
 }
+#dash-tab-strip .inv-browser-tab.is-dragging,
+#dash-tab-strip .inv-browser-tab.is-active.is-dragging {
+  padding-bottom: 0.7rem;
+  z-index: 80;
+}
+body.dash-tab-reordering .dash-master-tabs,
+body.dash-tab-reordering .dash-topbar,
+body.dash-tab-reordering #dash-tab-strip {
+  overflow: visible;
+}
 .dash-top-user {
   display: flex;
   align-items: center;
