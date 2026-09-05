@@ -171,6 +171,15 @@ function nonNegNumber(value, label) {
   return n;
 }
 
+function panelTypeOf(value) {
+  const raw = String(value || '').trim().toLowerCase().replace(/[\s_]+/g, '-');
+  if (!raw) return '';
+  if (raw === 'indoor-fixed' || raw === 'outdoor-fixed' || raw === 'indoor-rental' || raw === 'outdoor-rental') {
+    return raw;
+  }
+  throw new Error('Panel type must be Indoor Fixed, Outdoor Fixed, Indoor Rental, or Outdoor Rental.');
+}
+
 function normalizeItemInput(body, opts) {
   const patch = !!(opts && opts.patch);
   const src = body || {};
@@ -182,12 +191,16 @@ function normalizeItemInput(body, opts) {
   }
   if (!patch || src.sku != null) {
     out.sku = normalizeSku(src.sku);
+    if (src.sku != null && !out.sku) throw new Error('SKU is required.');
   }
   if (!patch || src.brandId != null || src.brand_id != null) {
     out.brandId = String(src.brandId != null ? src.brandId : (src.brand_id || '')).trim().slice(0, 80);
   }
   if (!patch || src.unit != null) {
     out.unit = unitOf(src.unit);
+  }
+  if (!patch || src.panelType != null || src.panel_type != null) {
+    out.panelType = panelTypeOf(src.panelType != null ? src.panelType : src.panel_type);
   }
   if (!patch || src.pitch != null) {
     out.pitch = pitchKey(src.pitch);
@@ -264,6 +277,7 @@ function normalizeItemInput(body, opts) {
   if (!patch && out.brandId == null) out.brandId = '';
   if (!patch && out.pitch == null) out.pitch = '';
   if (!patch && out.unit == null) out.unit = 'panels';
+  if (!patch && out.panelType == null) out.panelType = '';
   if (!patch && !out.sku) {
     out.sku = suggestedSku({
       brandId: out.brandId,
@@ -283,6 +297,7 @@ function dbFieldsFromInput(input) {
   if (input.brandId != null) row.brand_id = input.brandId;
   if (input.pitch != null) row.pitch = input.pitch;
   if (input.unit != null) row.unit = input.unit;
+  if (input.panelType != null) row.panel_type = input.panelType;
   if (input.qty != null) row.qty = input.qty;
   if (input.lowAt != null) row.low_at = input.lowAt;
   if (input.price != null) row.price = input.price;
@@ -416,6 +431,7 @@ function formatItem(row, brandName, maps, locations) {
     pitch: pitch,
     pitchLabel: pitch ? ('P' + pitch) : (unit === 'each' ? 'Each' : '—'),
     unit: unit,
+    panelType: (row && row.panel_type) || '',
     qty: qty,
     lowAt: lowAt,
     price: Number(row && row.price) || 0,

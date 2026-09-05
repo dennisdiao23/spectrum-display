@@ -622,11 +622,11 @@ function createSqliteStore() {
       const itemQty = require('./inventory-warehouses').rowUntracked(warehouse) ? 0 : locQty;
       const info = db.prepare(`
         INSERT INTO inventory_items (
-          sku, name, brand_id, pitch, unit, qty, low_at, price, cost, dealer_net,
+          sku, name, brand_id, pitch, unit, panel_type, qty, low_at, price, cost, dealer_net,
           weight, panel_w, panel_h, description, image, notes, created_at, updated_at
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
       `).run(
-        fields.sku, fields.name, fields.brand_id, fields.pitch, fields.unit, itemQty,
+        fields.sku, fields.name, fields.brand_id, fields.pitch, fields.unit, fields.panel_type || '', itemQty,
         fields.low_at, fields.price, fields.cost, fields.dealer_net, fields.weight,
         fields.panel_w, fields.panel_h, fields.description, fields.image, fields.notes,
         stamp, stamp
@@ -652,6 +652,7 @@ function createSqliteStore() {
         brandId: input.brandId != null ? input.brandId : (current.brand_id || ''),
         pitch: input.pitch != null ? input.pitch : inv.pitchKey(current.pitch),
         unit: input.unit != null ? input.unit : inv.unitOf(current.unit),
+        panelType: input.panelType != null ? input.panelType : (current.panel_type || ''),
         lowAt: input.lowAt != null ? input.lowAt : Number(current.low_at),
         price: input.price != null ? input.price : Number(current.price) || 0,
         cost: input.cost != null ? input.cost : Number(current.cost) || 0,
@@ -663,19 +664,17 @@ function createSqliteStore() {
         image: input.image != null ? input.image : (current.image || ''),
         notes: input.notes != null ? input.notes : (current.notes || '')
       };
-      if (!next.sku) {
-        next.sku = inv.suggestedSku({ brandId: next.brandId, name: next.name, pitch: next.pitch });
-      }
+      if (!next.sku) throw new Error('SKU is required.');
       const clash = db.prepare('SELECT id FROM inventory_items WHERE sku = ? AND id != ?').get(next.sku, id);
       if (clash) throw new Error('That SKU is already in use.');
       db.prepare(`
         UPDATE inventory_items SET
-          sku = ?, name = ?, brand_id = ?, pitch = ?, unit = ?, low_at = ?, price = ?,
+          sku = ?, name = ?, brand_id = ?, pitch = ?, unit = ?, panel_type = ?, low_at = ?, price = ?,
           cost = ?, dealer_net = ?, weight = ?, panel_w = ?, panel_h = ?,
           description = ?, image = ?, notes = ?, updated_at = ?
         WHERE id = ?
       `).run(
-        next.sku, next.name, next.brandId, next.pitch, next.unit, next.lowAt, next.price,
+        next.sku, next.name, next.brandId, next.pitch, next.unit, next.panelType, next.lowAt, next.price,
         next.cost, next.dealerNet, next.weight, next.panelW, next.panelH,
         next.description, next.image, next.notes, dbUtil.nowIso(), id
       );

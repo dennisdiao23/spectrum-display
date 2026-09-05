@@ -196,7 +196,8 @@ function openDb() {
     "ALTER TABLE inventory_items ADD COLUMN weight REAL NOT NULL DEFAULT 0",
     "ALTER TABLE inventory_items ADD COLUMN panel_w REAL NOT NULL DEFAULT 0",
     "ALTER TABLE inventory_items ADD COLUMN panel_h REAL NOT NULL DEFAULT 0",
-    "ALTER TABLE inventory_items ADD COLUMN image TEXT NOT NULL DEFAULT ''"
+    "ALTER TABLE inventory_items ADD COLUMN image TEXT NOT NULL DEFAULT ''",
+    "ALTER TABLE inventory_items ADD COLUMN panel_type TEXT NOT NULL DEFAULT ''"
   ].forEach(function (sql) {
     try { db.exec(sql); } catch (e) { /* already present */ }
   });

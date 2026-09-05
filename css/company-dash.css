@@ -924,6 +924,11 @@ html.dash-scroll-lock body.company-app {
 }
 .cc-sec.is-open .cc-sec-body { display: grid; }
 .cc-sec-body .wide { grid-column: 1 / -1; }
+#inv-onhand-block {
+  padding-top: 0.85rem;
+  margin-top: 0.15rem;
+  border-top: 1px solid rgba(148, 163, 184, 0.22);
+}
 .role-menu-access {
   display: flex;
   flex-direction: column;
