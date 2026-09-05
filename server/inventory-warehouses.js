@@ -50,12 +50,31 @@ function normalizeWarehouse(input) {
   };
 }
 
+function locationStockStatus(untracked, extraBits) {
+  const itemCount = extraBits.itemCount != null ? Number(extraBits.itemCount) || 0 : 0;
+  const qty = extraBits.qty != null ? Math.max(0, Number(extraBits.qty) || 0) : 0;
+  const hasLow = !!extraBits.hasLow;
+  if (untracked && itemCount > 0) {
+    return { status: 'untracked', statusLabel: 'Untracked' };
+  }
+  if (hasLow) {
+    return { status: 'low', statusLabel: 'Low' };
+  }
+  if (qty > 0) {
+    return { status: 'ok', statusLabel: 'In stock' };
+  }
+  return { status: 'empty', statusLabel: 'Empty' };
+}
+
 function formatWarehouse(row, extra) {
   if (!row) return null;
   const extraBits = extra || {};
   const kind = locationKind(row.type || row.kind);
   const vendorId = kind === 'warehouse' ? (row.vendor_id || extraBits.vendorId || '') : '';
   const untracked = kind === 'warehouse' && vendorId ? rowUntracked(row) : false;
+  const itemCount = extraBits.itemCount != null ? Number(extraBits.itemCount) || 0 : 0;
+  const qty = extraBits.qty != null ? Math.max(0, Number(extraBits.qty) || 0) : 0;
+  const stock = locationStockStatus(untracked, extraBits);
   return {
     id: row.id,
     name: row.name || '',
@@ -67,8 +86,11 @@ function formatWarehouse(row, extra) {
     untracked: untracked,
     tracked: !untracked,
     notes: row.notes || '',
-    itemCount: extraBits.itemCount != null ? Number(extraBits.itemCount) || 0 : 0,
-    qty: extraBits.qty != null ? Math.max(0, Number(extraBits.qty) || 0) : 0,
+    itemCount: itemCount,
+    qty: qty,
+    hasLow: !!extraBits.hasLow,
+    status: stock.status,
+    statusLabel: stock.statusLabel,
     createdAt: row.created_at || '',
     updatedAt: row.updated_at || ''
   };

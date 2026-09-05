@@ -194,13 +194,29 @@ function applyLocationChange(db, itemId, payload, adminEmail) {
 
 function warehouseStats(db) {
   const rows = db.prepare(`
-    SELECT warehouse_id, COUNT(*) AS item_count, COALESCE(SUM(qty), 0) AS qty
-    FROM inventory_item_locations
-    GROUP BY warehouse_id
+    SELECT
+      l.warehouse_id,
+      COUNT(*) AS item_count,
+      COALESCE(SUM(l.qty), 0) AS qty,
+      COALESCE(SUM(
+        CASE
+          WHEN l.qty > 0 AND l.qty <= COALESCE(
+            i.low_at,
+            CASE WHEN lower(COALESCE(i.unit, '')) = 'each' THEN 2 ELSE 8 END
+          ) THEN 1 ELSE 0
+        END
+      ), 0) AS low_count
+    FROM inventory_item_locations l
+    JOIN inventory_items i ON i.id = l.item_id
+    GROUP BY l.warehouse_id
   `).all();
   const out = {};
   rows.forEach(function (row) {
-    out[String(row.warehouse_id)] = { itemCount: row.item_count, qty: row.qty };
+    out[String(row.warehouse_id)] = {
+      itemCount: row.item_count,
+      qty: row.qty,
+      hasLow: Number(row.low_count) > 0
+    };
   });
   return out;
 }
@@ -208,7 +224,7 @@ function warehouseStats(db) {
 function formatWarehouseRow(db, row) {
   const wh = require('./inventory-warehouses');
   if (!row) return null;
-  const stats = warehouseStats(db)[String(row.id)] || { itemCount: 0, qty: 0 };
+  const stats = warehouseStats(db)[String(row.id)] || { itemCount: 0, qty: 0, hasLow: false };
   let vendorName = '';
   if (row.vendor_id) {
     const vendor = db.prepare('SELECT display_name, company_name FROM inventory_vendors WHERE id = ?').get(row.vendor_id);
@@ -217,6 +233,7 @@ function formatWarehouseRow(db, row) {
   return wh.formatWarehouse(row, {
     itemCount: stats.itemCount,
     qty: stats.qty,
+    hasLow: stats.hasLow,
     vendorName: vendorName
   });
 }
