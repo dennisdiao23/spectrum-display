@@ -4298,12 +4298,6 @@
       if (status === 'ok') return 'In stock';
       return 'Empty';
     }
-    function locStatusPillClass(status) {
-      if (status === 'low') return 'bg-amber-500/15 text-amber-300';
-      if (status === 'untracked') return 'bg-sky-500/15 text-sky-300';
-      if (status === 'ok') return 'bg-emerald-500/15 text-emerald-300';
-      return 'bg-slate-500/15 text-slate-400';
-    }
     function locStatusDotClass(status) {
       if (status === 'low') return 'is-low';
       if (status === 'untracked') return 'is-untracked';
@@ -6726,14 +6720,9 @@
       });
       tb.innerHTML = sorted.map(function (wh) {
         const tracked = !(wh.untracked || wh.tracked === false);
-        const status = locStatusOf(wh);
-        const statusLabel = wh.statusLabel || locStatusLabel(status);
         const cells = {
-          status: '<td class="py-3 px-4"><span class="wh-status-cell">' + locStatusIconHtml(wh) +
-            '<span class="text-xs px-2 py-0.5 rounded-full ' + locStatusPillClass(status) + '">' +
-            esc(statusLabel) + '</span></span></td>',
-          name: '<td class="py-3 px-4 font-medium"><span class="wh-name-cell">' + locStatusIconHtml(wh) +
-            esc(wh.name || '') + '</span></td>',
+          status: '<td class="py-3 px-4 wh-status-td">' + locStatusIconHtml(wh) + '</td>',
+          name: '<td class="py-3 px-4 font-medium">' + esc(wh.name || '') + '</td>',
           type: '<td class="py-3 px-4 text-slate-400">' + esc(wh.typeLabel || wh.type || '') + '</td>',
           vendor: '<td class="py-3 px-4 text-slate-400">' + esc(wh.vendorName || '—') + '</td>',
           tracked: '<td class="py-3 px-4 text-slate-400">' + (tracked ? 'Yes' : 'No') + '</td>',

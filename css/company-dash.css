@@ -2984,11 +2984,14 @@ body.po-split-lock #po-detail:not(.hidden) {
 .inv-browser-tab-status.is-empty {
   background: #94a3b8;
 }
-.wh-status-cell,
-.wh-name-cell {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.45rem;
+.wh-status-td {
+  width: 2.25rem;
+  text-align: center;
+  vertical-align: middle;
+}
+.wh-status-td .inv-browser-tab-status {
+  display: inline-block;
+  vertical-align: middle;
 }
 #wh-detail-name {
   display: flex;
