@@ -4400,8 +4400,21 @@
       }
 
       function desiredBefore() {
-        if (!press || !press.tab) return KEEP_SPACER;
+        if (!press || !press.tab || !press.spacer) return KEEP_SPACER;
         const drag = press.tab.getBoundingClientRect();
+
+        function overlapRatio(el) {
+          const rect = el.getBoundingClientRect();
+          if (!rect.width) return 0;
+          const overlap = Math.max(0, Math.min(drag.right, rect.right) - Math.max(drag.left, rect.left));
+          return overlap / rect.width;
+        }
+
+        if (press.coverLock && press.coverLock.isConnected && overlapRatio(press.coverLock) >= 0.5) {
+          return KEEP_SPACER;
+        }
+        press.coverLock = null;
+
         const tabs = [];
         Array.prototype.forEach.call(strip.children, function (el) {
           if (isSlotTab(el)) tabs.push(el);
@@ -4409,19 +4422,18 @@
         let best = null;
         let bestRatio = 0;
         for (let i = 0; i < tabs.length; i++) {
-          const rect = tabs[i].getBoundingClientRect();
-          const overlap = Math.max(0, Math.min(drag.right, rect.right) - Math.max(drag.left, rect.left));
-          const ratio = rect.width ? overlap / rect.width : 0;
+          const ratio = overlapRatio(tabs[i]);
           if (ratio >= 0.5 && ratio > bestRatio) {
             bestRatio = ratio;
-            best = { el: tabs[i], i: i, rect: rect };
+            best = { el: tabs[i], i: i };
           }
         }
         if (!best) return KEEP_SPACER;
-        const dragMid = drag.left + drag.width / 2;
-        const tabMid = best.rect.left + best.rect.width / 2;
-        if (dragMid < tabMid) return best.el;
-        return tabs[best.i + 1] || null;
+        press.coverLock = best.el;
+        const pos = press.spacer.compareDocumentPosition(best.el);
+        if (pos & Node.DOCUMENT_POSITION_PRECEDING) return best.el;
+        if (pos & Node.DOCUMENT_POSITION_FOLLOWING) return tabs[best.i + 1] || null;
+        return KEEP_SPACER;
       }
 
       function spacerIsBefore(next) {
@@ -4611,6 +4623,7 @@
           moved: false,
           captured: false,
           spacer: null,
+          coverLock: null,
           orderBefore: itemTabEls().map(function (el) { return el.getAttribute(idAttr); }).join('\0')
         };
         document.addEventListener('pointermove', onMove, true);
