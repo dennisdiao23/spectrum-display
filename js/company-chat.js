@@ -292,12 +292,22 @@
     } catch (e) { /* ignore */ }
   }
 
+  function setPickerOpen(open) {
+    var picker = $('co-chat-picker');
+    if (!picker) return;
+    picker.hidden = !open;
+    picker.classList.toggle('is-open', !!open);
+    if (!open) picker.setAttribute('aria-hidden', 'true');
+    else picker.removeAttribute('aria-hidden');
+  }
+
   async function openPicker() {
     var data = await S.api('/api/admin/chat/users');
     S.users = data.users || [];
-    $('co-chat-picker').hidden = false;
+    setPickerOpen(true);
     $('co-chat-picker-search').value = '';
     renderPicker();
+    if ($('co-chat-picker-search')) $('co-chat-picker-search').focus();
   }
 
   function renderPicker() {
@@ -320,7 +330,7 @@
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ userId: Number(userId) })
     });
-    $('co-chat-picker').hidden = true;
+    setPickerOpen(false);
     setTab('direct');
     await loadRooms();
     if (data.room) await openRoom(data.room.id);
@@ -463,13 +473,13 @@
     $('co-chat-new').addEventListener('click', function () {
       openPicker().catch(function (err) { alert(err.message || 'Could not load users.'); });
     });
-    $('co-chat-picker-close').addEventListener('click', function () { $('co-chat-picker').hidden = true; });
+    $('co-chat-picker-close').addEventListener('click', function () { setPickerOpen(false); });
     $('co-chat-picker').addEventListener('click', function (ev) {
-      if (ev.target === $('co-chat-picker')) $('co-chat-picker').hidden = true;
+      if (ev.target === $('co-chat-picker')) setPickerOpen(false);
     });
     document.addEventListener('keydown', function (ev) {
-      if (ev.key === 'Escape' && $('co-chat-picker') && !$('co-chat-picker').hidden) {
-        $('co-chat-picker').hidden = true;
+      if (ev.key === 'Escape' && $('co-chat-picker') && $('co-chat-picker').classList.contains('is-open')) {
+        setPickerOpen(false);
       }
     });
     $('co-chat-picker-search').addEventListener('input', renderPicker);
@@ -536,7 +546,7 @@
       return;
     }
     root.hidden = false;
-    if ($('co-chat-picker')) $('co-chat-picker').hidden = true;
+    setPickerOpen(false);
     S.booted = true;
     bindMain();
     await refreshUnread();

@@ -4362,15 +4362,21 @@ body.so-invoice-float .so-doc-side {
   color: rgb(148 163 184);
 }
 .co-chat-picker {
+  display: none;
   position: fixed;
   inset: 0;
   background: rgb(2 6 23 / 0.65);
-  display: grid;
   place-items: center;
   z-index: 80;
+  pointer-events: none;
+}
+.co-chat-picker.is-open {
+  display: grid;
+  pointer-events: auto;
 }
 .co-chat-picker[hidden] {
   display: none !important;
+  pointer-events: none !important;
 }
 .co-chat-picker-card {
   width: min(420px, calc(100vw - 2rem));
