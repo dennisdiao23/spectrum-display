@@ -5,7 +5,6 @@ const path = require('path');
 const crypto = require('crypto');
 const {
   hasPerm,
-  publicAdmin,
   parseMenuAccess,
   serializeMenuAccess,
   defaultMenuAccess,
