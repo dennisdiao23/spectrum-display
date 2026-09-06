@@ -847,6 +847,468 @@
       ]
     },
     {
+      "type": "control",
+      "replacementOnly": false,
+      "pitches": [],
+      "pricePerM2": 0,
+      "priceEach": 0,
+      "cabinetW": 0,
+      "cabinetH": 0,
+      "weightPerM2": 0,
+      "powerAvg": 0,
+      "powerMax": 0,
+      "badge": null,
+      "latency": "0-frame latency",
+      "hdr": "HDR10 / HLG",
+      "sourceUrl": "https://www.novastar.tech",
+      "id": "mx2000-pro",
+      "name": "NovaStar MX2000 Pro",
+      "model": "MX2000 Pro",
+      "family": "COEX",
+      "subtype": "all-in-one",
+      "description": "COEX modular 8K controller in 2U. Two input and two output card slots, 35.38 million pixel load, 12-bit / 480 Hz / HDR — pair 10G fiber cards with CVT10.",
+      "maxPixels": 35380000,
+      "outputs": "2× output cards · 4×10G or 1×40G fiber",
+      "inputs": "2× input cards · HDMI 2.0 / DP / 12G-SDI / 8K / ST 2110",
+      "bestFor": "XR / VP · large rental · 8K walls",
+      "bestWith": [
+        "creative",
+        "indoor-rental",
+        "cob"
+      ],
+      "chips": [
+        "35.38M px",
+        "2U modular",
+        "10G / 40G fiber"
+      ],
+      "specTable": [
+        [
+          "Parameter",
+          "Value"
+        ],
+        [
+          "Family",
+          "COEX modular"
+        ],
+        [
+          "Chassis",
+          "2U"
+        ],
+        [
+          "Loading capacity",
+          "35.38 million pixels"
+        ],
+        [
+          "Input slots",
+          "2 (4K, 8K, or ST 2110 cards)"
+        ],
+        [
+          "Output slots",
+          "2 (4×10G fiber or 1×40G fiber)"
+        ],
+        [
+          "Fiber conversion",
+          "4×10G cards work with CVT10 (1G); 40G cards with CVT8-5G"
+        ],
+        [
+          "Color / frame rate",
+          "Up to 12-bit · 480 Hz"
+        ],
+        [
+          "HDR",
+          "HDR10 / HLG"
+        ],
+        [
+          "Control software",
+          "VMP"
+        ]
+      ],
+      "features": [
+        {
+          "title": "35.38 million pixel load",
+          "text": "Published 2U COEX capacity with two modular output cards — 8× 4K@60 Hz or 4× 8K@30 Hz inputs depending on cards fitted."
+        },
+        {
+          "title": "10G fiber to CVT10",
+          "text": "4×10G fiber output cards convert to 1G Ethernet at the wall with CVT10. 40G cards pair with CVT8-5G for 5G runs."
+        },
+        {
+          "title": "Premium image path",
+          "text": "12-bit processing, 0-frame latency, HDR, and up to 480 Hz for XR, broadcast, and large rental walls."
+        }
+      ],
+      "downloadVersion": "V1.5.0",
+      "downloads": [
+        {
+          "label": "Specifications",
+          "url": "https://oss.novastar.tech/uploads/2025/09/MX2000-Pro-LED-Display-Controller-Specifications-V1.5.0.pdf"
+        },
+        {
+          "label": "User Manual",
+          "url": "https://oss.novastar.tech/uploads/2025/09/MX2000-Pro-LED-Display-Controller-User-Manual-V1.5.0.pdf"
+        },
+        {
+          "label": "VMP Software (Windows)",
+          "url": "https://en-website001.oss-us-east-1.aliyuncs.com/Coex%20VMP%20V1.5.0__Windows.zip"
+        },
+        {
+          "label": "VMP Software (Mac)",
+          "url": "https://en-website001.oss-us-east-1.aliyuncs.com/Coex%20VMP%20V1.5.0__Mac.zip"
+        }
+      ],
+      "cats": [
+        "control",
+        "all-in-one"
+      ],
+      "image": "assets/products/novastar/mx2000-pro.svg",
+      "lead": "COEX modular 8K controller in 2U. Two input and two output card slots, 35.38 million pixel load, 12-bit / 480 Hz / HDR — pair 10G fiber cards with CVT10."
+    },
+    {
+      "type": "control",
+      "replacementOnly": false,
+      "pitches": [],
+      "pricePerM2": 0,
+      "priceEach": 0,
+      "cabinetW": 0,
+      "cabinetH": 0,
+      "weightPerM2": 0,
+      "powerAvg": 0,
+      "powerMax": 0,
+      "badge": null,
+      "latency": "0-frame latency",
+      "hdr": "HDR10 / HLG",
+      "sourceUrl": "https://www.novastar.tech",
+      "id": "mx6000-pro",
+      "name": "NovaStar MX6000 Pro",
+      "model": "MX6000 Pro",
+      "family": "COEX",
+      "subtype": "all-in-one",
+      "description": "COEX modular 8K flagship in 6U. Eight input and eight output card slots, 141 million pixel load — the large-event / studio chassis that feeds CVT10 or CVT8-5G at the wall.",
+      "maxPixels": 141000000,
+      "outputs": "8× output cards · 4×10G or 1×40G fiber",
+      "inputs": "8× input cards · HDMI 2.0 / DP / 12G-SDI / 8K / ST 2110",
+      "bestFor": "Stadium · XR volume · mega walls",
+      "bestWith": [
+        "creative",
+        "indoor-rental",
+        "outdoor-rental"
+      ],
+      "chips": [
+        "141M px",
+        "6U modular",
+        "10G / 40G fiber"
+      ],
+      "specTable": [
+        [
+          "Parameter",
+          "Value"
+        ],
+        [
+          "Family",
+          "COEX modular"
+        ],
+        [
+          "Chassis",
+          "6U"
+        ],
+        [
+          "Loading capacity",
+          "141 million pixels"
+        ],
+        [
+          "Input slots",
+          "8 (4K, 8K, or ST 2110 cards)"
+        ],
+        [
+          "Output slots",
+          "8 (4×10G fiber or 1×40G fiber)"
+        ],
+        [
+          "Fiber conversion",
+          "4×10G cards work with CVT10 (1G); 40G cards with CVT8-5G"
+        ],
+        [
+          "Layers",
+          "Up to 4 per output card · 32× 4K layers on the chassis"
+        ],
+        [
+          "Color / frame rate",
+          "Up to 12-bit · 480 Hz"
+        ],
+        [
+          "HDR",
+          "HDR10 / HLG"
+        ],
+        [
+          "Control software",
+          "VMP"
+        ]
+      ],
+      "features": [
+        {
+          "title": "141 million pixel load",
+          "text": "Published 6U COEX capacity with eight output cards — up to 32× 4K@60 Hz, 16× 8K@30 Hz, or 8× 8K@60 Hz inputs depending on cards fitted."
+        },
+        {
+          "title": "Same fiber cards as MX2000 Pro",
+          "text": "4×10G fiber output cards land on CVT10 (1G Ethernet). 40G cards land on CVT8-5G for 5G Ethernet at the cabinets."
+        },
+        {
+          "title": "Studio and stadium class",
+          "text": "12-bit, HDR, 0-frame latency, and 480 Hz for XR volumes, TV, e-sports, and large fixed or rental walls."
+        }
+      ],
+      "downloadVersion": "V1.5.0",
+      "downloads": [
+        {
+          "label": "Specifications",
+          "url": "https://oss.novastar.tech/uploads/2025/09/MX6000-Pro-LED-Display-Controller-Specifications-V1.5.0.pdf"
+        },
+        {
+          "label": "User Manual",
+          "url": "https://oss.novastar.tech/uploads/2025/09/MX6000-Pro-LED-Display-Controller-User-Manual-V1.5.0.pdf"
+        },
+        {
+          "label": "VMP Software (Windows)",
+          "url": "https://en-website001.oss-us-east-1.aliyuncs.com/Coex%20VMP%20V1.5.0__Windows.zip"
+        },
+        {
+          "label": "VMP Software (Mac)",
+          "url": "https://en-website001.oss-us-east-1.aliyuncs.com/Coex%20VMP%20V1.5.0__Mac.zip"
+        }
+      ],
+      "cats": [
+        "control",
+        "all-in-one"
+      ],
+      "image": "assets/products/novastar/mx6000-pro.svg",
+      "lead": "COEX modular 8K flagship in 6U. Eight input and eight output card slots, 141 million pixel load — the large-event / studio chassis that feeds CVT10 or CVT8-5G at the wall."
+    },
+    {
+      "type": "control",
+      "replacementOnly": false,
+      "pitches": [],
+      "pricePerM2": 0,
+      "priceEach": 0,
+      "cabinetW": 0,
+      "cabinetH": 0,
+      "weightPerM2": 0,
+      "powerAvg": 0,
+      "powerMax": 0,
+      "badge": null,
+      "latency": "",
+      "hdr": "HDR10",
+      "sourceUrl": "https://www.novastar.tech",
+      "id": "h2",
+      "name": "NovaStar H2",
+      "model": "H2",
+      "family": "H Series",
+      "subtype": "all-in-one",
+      "description": "H Series 2U video wall splicer. Four input and two output card slots — HDMI, DP, SDI, IP, and LED sending cards so one chassis can process and drive the wall.",
+      "maxPixels": 26000000,
+      "outputs": "2× output cards · HDMI / SDI / DVI or LED sending",
+      "inputs": "4× input cards · HDMI · DP · SDI · IP · DVI · VGA",
+      "bestFor": "Control room · command center · fine pitch",
+      "bestWith": [
+        "fixed-indoor",
+        "cob"
+      ],
+      "chips": [
+        "26M px",
+        "2U splicer",
+        "4 in · 2 out"
+      ],
+      "specTable": [
+        [
+          "Parameter",
+          "Value"
+        ],
+        [
+          "Family",
+          "H Series splicer"
+        ],
+        [
+          "Chassis",
+          "2U"
+        ],
+        [
+          "Input slots / channels",
+          "4 cards · 16 channels"
+        ],
+        [
+          "Output slots / channels",
+          "2 cards · 8 channels"
+        ],
+        [
+          "Loading (H_20×RJ45 sending)",
+          "26 million pixels"
+        ],
+        [
+          "Loading (H_16×RJ45+2×fiber)",
+          "20.8 million pixels"
+        ],
+        [
+          "Loading (H_4×fiber enhanced)",
+          "52 million pixels"
+        ],
+        [
+          "Max layers",
+          "32"
+        ],
+        [
+          "Inputs",
+          "HDMI, DP, DVI, VGA, CVBS, 12G/3G-SDI, IP, NDI, ST 2110"
+        ],
+        [
+          "Control",
+          "Web (B/S) · no app install"
+        ]
+      ],
+      "features": [
+        {
+          "title": "Splicer + LED controller",
+          "text": "Run as a pure splicer or fit LED sending cards (16/20× RJ45 or 4× fiber) and drive panels from the same 2U chassis."
+        },
+        {
+          "title": "26 million pixel Ethernet load",
+          "text": "Published H_20×RJ45 sending-card capacity 26 million pixels. Fiber sending cards reach 41.6–52 million pixels with a converter such as CVT10."
+        },
+        {
+          "title": "Hot-swap cards, web control",
+          "text": "Four input slots for HDMI 2.0, DP 1.2, 12G-SDI, IP and more. Browser-based multi-user control — no desktop app required."
+        }
+      ],
+      "downloadVersion": "V1.15.0",
+      "downloads": [
+        {
+          "label": "Specifications",
+          "url": "https://oss.novastar.tech/uploads/2025/06/H2-Video-Wall-Splicer-Specifications-V1.15.0.pdf"
+        },
+        {
+          "label": "H Series Quick Start",
+          "url": "https://oss.novastar.tech/uploads/2020/10/H-Series-Quick-Start-Guide.pdf"
+        }
+      ],
+      "cats": [
+        "control",
+        "all-in-one"
+      ],
+      "image": "assets/products/novastar/h2.svg",
+      "lead": "H Series 2U video wall splicer. Four input and two output card slots — HDMI, DP, SDI, IP, and LED sending cards so one chassis can process and drive the wall."
+    },
+    {
+      "type": "control",
+      "replacementOnly": false,
+      "pitches": [],
+      "pricePerM2": 0,
+      "priceEach": 0,
+      "cabinetW": 0,
+      "cabinetH": 0,
+      "weightPerM2": 0,
+      "powerAvg": 0,
+      "powerMax": 0,
+      "badge": null,
+      "latency": "",
+      "hdr": "HDR10",
+      "sourceUrl": "https://www.novastar.tech",
+      "id": "h5",
+      "name": "NovaStar H5",
+      "model": "H5",
+      "family": "H Series",
+      "subtype": "all-in-one",
+      "description": "H Series 5U video wall splicer. Ten input and three output card slots, up to 39 million pixels on Ethernet sending cards — the larger H2-class chassis for command rooms and fine-pitch halls.",
+      "maxPixels": 39000000,
+      "outputs": "3× output cards · HDMI / SDI / DVI or LED sending",
+      "inputs": "10× input cards · HDMI · DP · SDI · IP · DVI · VGA",
+      "bestFor": "Large control room · 8K splice · fine pitch",
+      "bestWith": [
+        "fixed-indoor",
+        "cob"
+      ],
+      "chips": [
+        "39M px",
+        "5U splicer",
+        "10 in · 3 out"
+      ],
+      "specTable": [
+        [
+          "Parameter",
+          "Value"
+        ],
+        [
+          "Family",
+          "H Series splicer"
+        ],
+        [
+          "Chassis",
+          "5U"
+        ],
+        [
+          "Input slots / channels",
+          "10 cards · 40 channels"
+        ],
+        [
+          "Output slots / channels",
+          "3 cards · 12 channels"
+        ],
+        [
+          "Loading (H_20×RJ45 sending)",
+          "39 million pixels"
+        ],
+        [
+          "Loading (H_16×RJ45+2×fiber)",
+          "31.2 million pixels"
+        ],
+        [
+          "Loading (H_4×fiber sending)",
+          "62.4 million pixels"
+        ],
+        [
+          "Max layers",
+          "48"
+        ],
+        [
+          "Inputs",
+          "HDMI 2.1/2.0, DP 1.4/1.2, 12G/3G-SDI, IP, NDI, ST 2110"
+        ],
+        [
+          "Control",
+          "Web (B/S) · no app install"
+        ]
+      ],
+      "features": [
+        {
+          "title": "Larger H Series chassis",
+          "text": "Ten input slots (40 channels) and three output slots versus H2’s four and two — same modular cards, more load and layers."
+        },
+        {
+          "title": "39 million pixel Ethernet load",
+          "text": "Published H_20×RJ45 sending-card capacity 39 million pixels. Fiber sending cards reach 62.4 million pixels."
+        },
+        {
+          "title": "Splicer or all-in-one",
+          "text": "Use HDMI/SDI/DVI output cards as a pure splicer, or LED sending cards to drive the wall directly. Browser control for multi-user setup."
+        }
+      ],
+      "downloadVersion": "V1.14.0",
+      "downloads": [
+        {
+          "label": "Specifications",
+          "url": "https://oss.novastar.tech/uploads/2024/09/H5-Video-Wall-Splicer-Specifications-V1.14.0.pdf"
+        },
+        {
+          "label": "H Series Quick Start",
+          "url": "https://oss.novastar.tech/uploads/2020/10/H-Series-Quick-Start-Guide.pdf"
+        }
+      ],
+      "cats": [
+        "control",
+        "all-in-one"
+      ],
+      "image": "assets/products/novastar/h5.svg",
+      "lead": "H Series 5U video wall splicer. Ten input and three output card slots, up to 39 million pixels on Ethernet sending cards — the larger H2-class chassis for command rooms and fine-pitch halls."
+    },
+    {
       "id": "msd300",
       "name": "NovaStar MSD300",
       "model": "MSD300",
@@ -1753,6 +2215,111 @@
           "url": "https://en-website001.oss-us-east-1.aliyuncs.com/Specification/T30T50TB30TB40TB50TB60.txt"
         }
       ]
+    },
+    {
+      "type": "control",
+      "replacementOnly": false,
+      "pitches": [],
+      "pricePerM2": 0,
+      "priceEach": 0,
+      "cabinetW": 0,
+      "cabinetH": 0,
+      "weightPerM2": 0,
+      "powerAvg": 0,
+      "powerMax": 0,
+      "badge": null,
+      "latency": "",
+      "hdr": "",
+      "sourceUrl": "https://www.novastar.tech",
+      "id": "cvt10",
+      "name": "NovaStar CVT10",
+      "model": "CVT10",
+      "family": "CVT",
+      "subtype": "accessories",
+      "description": "10G fiber converter between MX / H fiber cards and the wall. Two 10G SFP+ ports and ten Gigabit Ethernet ports — CVT10-S to 10 km, CVT10-M to 300 m.",
+      "maxPixels": 0,
+      "outputs": "10× RJ45 · 2× 10G OPT",
+      "inputs": "2× 10G SFP+ (or 10× RJ45 reverse)",
+      "bestFor": "Long fiber runs · MX2000/MX6000 · H fiber cards",
+      "bestWith": [
+        "indoor-rental",
+        "cob",
+        "fixed-indoor"
+      ],
+      "chips": [
+        "10G fiber",
+        "10× RJ45",
+        "S / M"
+      ],
+      "specTable": [
+        [
+          "Parameter",
+          "Value"
+        ],
+        [
+          "Family",
+          "Fiber converter"
+        ],
+        [
+          "Models",
+          "CVT10-S (single-mode) · CVT10-M (multi-mode)"
+        ],
+        [
+          "Optical ports",
+          "2× 10G SFP+ (hot-swap, factory fitted)"
+        ],
+        [
+          "Ethernet ports",
+          "10× Gigabit RJ45"
+        ],
+        [
+          "Distance",
+          "CVT10-S up to 10 km · CVT10-M up to 300 m"
+        ],
+        [
+          "Direction",
+          "Fiber in / Ethernet out, or Ethernet in / fiber out"
+        ],
+        [
+          "Control",
+          "USB Type-B"
+        ],
+        [
+          "Power",
+          "100–240 V · 18 W typical"
+        ],
+        [
+          "Size / weight",
+          "254.3 × 50.6 × 290.0 mm · 2.1 kg"
+        ]
+      ],
+      "features": [
+        {
+          "title": "Pairs with MX and H fiber cards",
+          "text": "MX2000 Pro and MX6000 Pro 4×10G output cards, and H Series 4×fiber sending cards, land on CVT10 for 1G Ethernet at the cabinets (650,000 pixels per port)."
+        },
+        {
+          "title": "10 km or 300 m",
+          "text": "CVT10-S single-mode to 10 km (1310 nm). CVT10-M multi-mode to 300 m (850 nm). Dual 10G SFP+ with modules installed."
+        },
+        {
+          "title": "Ten Gigabit ports",
+          "text": "Full-duplex optical ↔ electrical conversion. USB control. Rack, truss, or desktop mount."
+        }
+      ],
+      "downloadVersion": "V1.3.3",
+      "downloads": [
+        {
+          "label": "Specifications",
+          "url": "https://oss.novastar.tech/uploads/2025/03/CVT10-Fiber-Converter-Specifications-V1.3.3.pdf"
+        }
+      ],
+      "cats": [
+        "control",
+        "accessories"
+      ],
+      "image": "assets/products/novastar/cvt10.svg",
+      "lead": "10G fiber converter between MX / H fiber cards and the wall. Two 10G SFP+ ports and ten Gigabit Ethernet ports — CVT10-S to 10 km, CVT10-M to 300 m."
     },
     {
       "id": "a5s-plus",

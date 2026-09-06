@@ -20,10 +20,11 @@
   ];
 
   var CHOOSER = [
-    { sub: 'all-in-one', title: 'I have HDMI sources and a fixed wall', text: 'VX / COEX all-in-one' },
+    { sub: 'all-in-one', title: 'I have HDMI sources and a fixed wall', text: 'VX / COEX / H Series' },
     { sub: 'sending', title: 'I already have a processor and only need output', text: 'MCTRL / MSD' },
     { sub: 'playback', title: 'I need standalone playback / no media player', text: 'TU / TB' },
-    { sub: 'receiving-card', title: 'I need a spare card for an existing wall', text: 'Receiving card replacements' }
+    { sub: 'receiving-card', title: 'I need a spare card for an existing wall', text: 'Receiving card replacements' },
+    { sub: 'accessories', title: 'I need fiber conversion for a long run', text: 'CVT10' }
   ];
 
   function isControlProduct(p) {
@@ -116,8 +117,8 @@
     function has(id) { return cats.indexOf(id) !== -1; }
     var ids;
     if (has('posters')) ids = ['ku20', 'vx400-pro', 'tb60', 'tu15-pro'];
-    else if (has('indoor-rental') || has('outdoor-rental') || has('creative')) ids = ['vx1000-pro', 'vx2000-pro', 'mctrl4k'];
-    else if (has('cob') || has('fixed-indoor')) ids = ['vx1000-pro', 'mx40-pro'];
+    else if (has('indoor-rental') || has('outdoor-rental') || has('creative')) ids = ['vx1000-pro', 'vx2000-pro', 'mx2000-pro', 'mctrl4k'];
+    else if (has('cob') || has('fixed-indoor')) ids = ['vx1000-pro', 'mx40-pro', 'h2'];
     else if (has('outdoor-fixed')) ids = ['vx600-pro', 'mx30', 'tb60'];
     else ids = ['vx600-pro', 'mx30'];
     var out = [];
