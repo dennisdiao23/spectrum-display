@@ -36,8 +36,10 @@
     resizing: false,
     moving: false,
     splitting: false,
-    listW: 260,
+    listW: 168,
     rect: null,
+    saveChatPrefs: null,
+    getChatPrefs: null,
     timers: {}
   };
 
@@ -57,9 +59,7 @@
     try {
       localStorage.setItem(persistKey(), JSON.stringify({
         tab: S.tab || 'lobby',
-        roomId: S.roomId || null,
-        rect: S.rect || null,
-        listW: S.listW || 260
+        roomId: S.roomId || null
       }));
     } catch (e) { /* ignore */ }
   }
@@ -69,14 +69,38 @@
       var d = JSON.parse(localStorage.getItem(persistKey()) || '{}');
       if (d.tab === 'lobby' || d.tab === 'direct' || d.tab === 'orders') S.tab = d.tab;
       if (d.roomId) S.roomId = Number(d.roomId);
-      if (d.rect && d.rect.width && d.rect.height) S.rect = d.rect;
-      if (d.listW) S.listW = Number(d.listW);
     } catch (e) { /* ignore */ }
+    applySavedWindowPrefs();
+  }
+
+  function applySavedWindowPrefs() {
+    var p = null;
+    try { p = S.getChatPrefs && S.getChatPrefs(); } catch (e) { p = null; }
+    if (!p || !p.width || !p.height) return;
+    S.rect = {
+      left: Number(p.left),
+      top: Number(p.top),
+      width: Number(p.width),
+      height: Number(p.height)
+    };
+    if (p.listW) S.listW = Number(p.listW);
+  }
+
+  function saveWindowPrefs() {
+    if (!S.rect) return;
+    var payload = {
+      left: Math.round(S.rect.left),
+      top: Math.round(S.rect.top),
+      width: Math.round(S.rect.width),
+      height: Math.round(S.rect.height),
+      listW: Math.round(S.listW || 168)
+    };
+    try { if (S.saveChatPrefs) S.saveChatPrefs(payload); } catch (e) { /* ignore */ }
   }
 
   function defaultRect() {
-    var width = Math.min(832, Math.max(360, window.innerWidth - 32));
-    var height = Math.min(544, Math.max(280, window.innerHeight - 88));
+    var width = Math.min(384, Math.max(300, window.innerWidth - 32));
+    var height = Math.min(424, Math.max(280, window.innerHeight - 88));
     return {
       left: 16,
       top: Math.max(8, window.innerHeight - height - 20),
@@ -86,8 +110,8 @@
   }
 
   function clampRect(r) {
-    var minW = 360;
-    var minH = 280;
+    var minW = 300;
+    var minH = 260;
     var pad = 8;
     var maxW = Math.max(minW, window.innerWidth - pad * 2);
     var maxH = Math.max(minH, window.innerHeight - pad * 2);
@@ -119,9 +143,9 @@
   var LIST_MAX_W = 360;
 
   function clampListW(px) {
-    var winW = (S.rect && S.rect.width) || 832;
+    var winW = (S.rect && S.rect.width) || 384;
     var max = Math.min(LIST_MAX_W, Math.max(LIST_MIN_W, Math.floor(winW * 0.55) - 16));
-    return Math.max(LIST_MIN_W, Math.min(Number(px) || 260, max));
+    return Math.max(LIST_MIN_W, Math.min(Number(px) || 168, max));
   }
 
   function applyListW(px) {
@@ -142,7 +166,7 @@
       if (ev.button !== 0) return;
       ev.preventDefault();
       ev.stopPropagation();
-      drag = { x: ev.clientX, w: S.listW || 260 };
+      drag = { x: ev.clientX, w: S.listW || 168 };
       S.splitting = true;
       S.hover = true;
       S.seeThrough = false;
@@ -160,7 +184,7 @@
       S.splitting = false;
       root.classList.remove('is-resizing');
       document.body.classList.remove('chat-splitting');
-      saveLast();
+      saveWindowPrefs();
       syncIdle();
     });
   }
@@ -238,7 +262,7 @@
       S.moving = false;
       root.classList.remove('is-resizing', 'is-moving');
       document.body.classList.remove('chat-resizing');
-      saveLast();
+      saveWindowPrefs();
       syncIdle();
     }
     document.addEventListener('mouseup', endDrag);
@@ -951,6 +975,8 @@
     S.admin = opts.admin;
     S.canUse = opts.canUse;
     S.openSalesDoc = opts.openSalesDoc || null;
+    S.getChatPrefs = typeof opts.getChatPrefs === 'function' ? opts.getChatPrefs : null;
+    S.saveChatPrefs = typeof opts.saveChatPrefs === 'function' ? opts.saveChatPrefs : null;
     if (typeof opts.esc === 'function') S.esc = opts.esc;
     var root = $('co-chat');
     var nav = $('header-chat');

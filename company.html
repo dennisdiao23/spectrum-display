@@ -5430,6 +5430,50 @@
       } catch (err) {}
     }
 
+    function getChatWindowPrefs() {
+      const p = dashColMine && dashColMine.chat;
+      if (!p || typeof p !== 'object') return null;
+      const width = parseInt(p.width, 10);
+      const height = parseInt(p.height, 10);
+      if (!width || !height) return null;
+      return {
+        left: parseInt(p.left, 10) || 0,
+        top: parseInt(p.top, 10) || 0,
+        width: width,
+        height: height,
+        listW: parseInt(p.listW, 10) || 0
+      };
+    }
+
+    function saveChatWindowPrefs(chat) {
+      if (!chat || typeof chat !== 'object') return;
+      const width = parseInt(chat.width, 10);
+      const height = parseInt(chat.height, 10);
+      if (!width || !height) return;
+      dashColMine.chat = {
+        left: parseInt(chat.left, 10) || 0,
+        top: parseInt(chat.top, 10) || 0,
+        width: width,
+        height: height,
+        listW: parseInt(chat.listW, 10) || 168
+      };
+      cacheColPrefs();
+      scheduleColPrefsSave();
+    }
+
+    function bootSpectrumChat(admin) {
+      if (!window.SpectrumChat || !admin) return;
+      SpectrumChat.boot({
+        api: api,
+        admin: admin,
+        canUse: canUse,
+        openSalesDoc: typeof openSalesDoc === 'function' ? openSalesDoc : null,
+        esc: typeof esc === 'function' ? esc : function (s) { return String(s == null ? '' : s); },
+        getChatPrefs: getChatWindowPrefs,
+        saveChatPrefs: saveChatWindowPrefs
+      });
+    }
+
     function saveColState(table, state) {
       const name = dashColKey(table);
       const prev = dashColMine[name] || {};
@@ -5465,6 +5509,7 @@
           next[name] = Object.assign({}, next[name], { splitLeftPx: oldPx });
         }
       });
+      if (prev.chat && prev.chat.width && !(next.chat && next.chat.width)) next.chat = prev.chat;
       return next;
     }
 
@@ -14548,6 +14593,7 @@
         await loadColumnPrefs();
         await loadDash();
         await openRoutedSection(tabFromPath());
+        bootSpectrumChat(data.admin);
       } catch (err) {
         showError('login-error', err.message);
       }
@@ -15393,15 +15439,7 @@
         return loadColumnPrefs().then(function () {
           return loadDash().then(function () {
             return openRoutedSection(tabFromPath()).then(function () {
-              if (window.SpectrumChat) {
-                SpectrumChat.boot({
-                  api: api,
-                  admin: data.admin,
-                  canUse: canUse,
-                  openSalesDoc: typeof openSalesDoc === 'function' ? openSalesDoc : null,
-                  esc: typeof esc === 'function' ? esc : function (s) { return String(s == null ? '' : s); }
-                });
-              }
+              if (window.SpectrumChat) bootSpectrumChat(data.admin);
             });
           });
         });

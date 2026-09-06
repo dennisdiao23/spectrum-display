@@ -29,11 +29,36 @@ function sanitizeColState(state) {
   return out;
 }
 
+function clampInt(value, min, max, fallback) {
+  const n = parseInt(value, 10);
+  if (!Number.isFinite(n)) return fallback;
+  return Math.max(min, Math.min(max, n));
+}
+
+function sanitizeChatState(state) {
+  if (!state || typeof state !== 'object') return null;
+  const width = clampInt(state.width, 280, 8000, 0);
+  const height = clampInt(state.height, 220, 8000, 0);
+  if (!width || !height) return null;
+  return {
+    left: clampInt(state.left, 0, 8000, 16),
+    top: clampInt(state.top, 0, 8000, 8),
+    width: width,
+    height: height,
+    listW: clampInt(state.listW, 56, 400, 168)
+  };
+}
+
 function sanitizeColPrefs(input) {
   const out = {};
   if (!input || typeof input !== 'object' || Array.isArray(input)) return out;
   Object.keys(input).slice(0, 40).forEach(function (key) {
     if (!/^[a-z0-9-]{1,40}$/.test(key)) return;
+    if (key === 'chat') {
+      const chat = sanitizeChatState(input[key]);
+      if (chat) out[key] = chat;
+      return;
+    }
     const state = sanitizeColState(input[key]);
     if (state) out[key] = state;
   });
@@ -52,6 +77,7 @@ function parseColPrefs(value) {
 
 module.exports = {
   sanitizeColState,
+  sanitizeChatState,
   sanitizeColPrefs,
   parseColPrefs
 };
