@@ -15415,18 +15415,16 @@
 
   <section class="co-chat is-window" id="co-chat" hidden>
     <div class="co-chat-head">
-      <div>
-        <h3>Chat <span class="co-chat-unread-badge" id="co-chat-unread-badge" hidden></span></h3>
+      <div class="co-chat-tabs" role="tablist">
+        <button type="button" class="co-chat-tab is-on" data-chat-tab="lobby" role="tab">Lobby <span data-chat-tab-count="lobby" hidden></span></button>
+        <button type="button" class="co-chat-tab" data-chat-tab="direct" role="tab">Direct <span data-chat-tab-count="direct" hidden></span></button>
+        <button type="button" class="co-chat-tab" data-chat-tab="orders" role="tab">Orders <span data-chat-tab-count="orders" hidden></span></button>
       </div>
       <div class="co-chat-head-actions">
+        <span class="co-chat-unread-badge" id="co-chat-unread-badge" hidden></span>
         <button type="button" class="co-chat-btn" id="co-chat-new">New message</button>
         <button type="button" class="co-chat-close" id="co-chat-close" aria-label="Close chat">×</button>
       </div>
-    </div>
-    <div class="co-chat-tabs" role="tablist">
-      <button type="button" class="co-chat-tab is-on" data-chat-tab="lobby" role="tab">Lobby <span data-chat-tab-count="lobby" hidden></span></button>
-      <button type="button" class="co-chat-tab" data-chat-tab="direct" role="tab">Direct <span data-chat-tab-count="direct" hidden></span></button>
-      <button type="button" class="co-chat-tab" data-chat-tab="orders" role="tab">Orders <span data-chat-tab-count="orders" hidden></span></button>
     </div>
     <div class="co-chat-shell">
       <aside class="co-chat-list" id="co-chat-list">
