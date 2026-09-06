@@ -140,7 +140,7 @@ function formatRoom(row, extras) {
   const kind = row.kind;
   let title = row.title || '';
   if (kind === 'lobby') {
-    title = 'Chat';
+    title = 'Lobby';
   } else if (kind === 'dm') {
     const other = extra.otherUser;
     title = other ? (other.name || other.email || 'Direct message') : 'Direct message';
@@ -397,7 +397,7 @@ function ensureCompanyChat(db) {
   const lobby = db.prepare("SELECT id FROM chat_rooms WHERE kind = 'lobby' LIMIT 1").get();
   if (!lobby) {
     db.prepare(
-      "INSERT INTO chat_rooms (kind, title, created_at) VALUES ('lobby', 'Chat', ?)"
+      "INSERT INTO chat_rooms (kind, title, created_at) VALUES ('lobby', 'Lobby', ?)"
     ).run(stamp);
   }
 
@@ -896,7 +896,7 @@ function supabaseApi(supabase) {
       if (!lobby || !lobby.length) {
         await supabase.from('chat_rooms').insert({
           kind: 'lobby',
-          title: 'Chat',
+          title: 'Lobby',
           customer_name: '',
           order_status: '',
           last_message_preview: '',

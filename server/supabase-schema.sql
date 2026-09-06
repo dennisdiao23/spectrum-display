@@ -1054,7 +1054,7 @@ grant all on public.chat_presence to service_role;
 grant usage, select on all sequences in schema public to service_role;
 
 insert into public.chat_rooms (kind, title)
-select 'lobby', 'Chat'
+select 'lobby', 'Lobby'
 where not exists (select 1 from public.chat_rooms where kind = 'lobby');
 
 insert into public.chat_rooms (kind, sales_order_id, title, customer_name, order_status)

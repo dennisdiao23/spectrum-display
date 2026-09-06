@@ -414,7 +414,7 @@
     if (room.kind === 'dm' && room.otherUser) {
       return room.otherUser.name || room.otherUser.email || 'Direct message';
     }
-    return room.title || 'Chat';
+    return room.title || 'Lobby';
   }
 
   function roomSub(room) {
@@ -463,7 +463,7 @@
     var label = '';
     if (room.kind === 'lobby') {
       cls += ' is-lobby';
-      label = 'C';
+      label = 'L';
     } else if (room.kind === 'order') {
       cls += ' is-order';
       label = String(title || 'SO').replace(/^[A-Za-z]+-/, '').slice(-2) || 'SO';
@@ -580,8 +580,14 @@
     }
   }
 
+  function setWindowTitle(name) {
+    var title = name || 'Lobby';
+    if ($('co-chat-head-title')) $('co-chat-head-title').textContent = title;
+    if ($('co-chat-main-title')) $('co-chat-main-title').textContent = title;
+  }
+
   function renderEmptyMain() {
-    $('co-chat-main-title').textContent = 'Chat';
+    setWindowTitle('Lobby');
     if ($('co-chat-main-sub')) $('co-chat-main-sub').textContent = '';
     $('co-chat-messages').innerHTML = '<p class="co-chat-empty">No messages yet.</p>';
     $('co-chat-open-order').hidden = true;
@@ -594,8 +600,8 @@
     S.room = data.room;
     S.messages = data.messages || [];
     S.lastMsgId = S.messages.reduce(function (m, x) { return Math.max(m, Number(x.id) || 0); }, 0);
-    $('co-chat-main-title').textContent = roomTitle(S.room);
-    $('co-chat-main-sub').textContent = roomSub(S.room);
+    setWindowTitle(roomTitle(S.room));
+    if ($('co-chat-main-sub')) $('co-chat-main-sub').textContent = roomSub(S.room);
     $('co-chat-input').placeholder = composerPlaceholder(S.room);
     var openBtn = $('co-chat-open-order');
     if (S.room.kind === 'order' && S.room.salesOrderId) {

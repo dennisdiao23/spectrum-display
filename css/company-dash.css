@@ -4186,9 +4186,16 @@ body.so-invoice-float .so-doc-side {
   user-select: none;
   flex-shrink: 0;
 }
-.co-chat-head-drag {
+.co-chat-head-title {
   flex: 1;
-  min-width: 1.5rem;
+  min-width: 0;
+  font-size: 0.85rem;
+  font-weight: 800;
+  color: var(--dash-text);
+  padding: 0.55rem 0.45rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
   cursor: grab;
 }
 .co-chat-head-actions {
@@ -4527,6 +4534,10 @@ body.chat-splitting * {
   display: none;
 }
 .co-chat.is-window .co-chat-main-head {
+  display: none;
+}
+.co-chat.is-window .co-chat-main-head:has(#co-chat-open-order:not([hidden])) {
+  display: flex;
   padding: 0.55rem 0.75rem;
 }
 .co-chat-presence {
