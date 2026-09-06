@@ -4160,7 +4160,6 @@ body.so-invoice-float .so-doc-side {
 }
 .co-chat.is-window.is-moving {
   transition: none;
-  opacity: 0.5;
 }
 .co-chat.is-window[hidden] {
   display: none !important;

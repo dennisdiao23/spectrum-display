@@ -32,6 +32,7 @@
     booted: false,
     windowOpen: false,
     hover: false,
+    seeThrough: false,
     resizing: false,
     moving: false,
     rect: null,
@@ -129,10 +130,10 @@
       S.resizing = dir !== 'move';
       S.moving = dir === 'move';
       S.hover = true;
+      S.seeThrough = false;
       root.classList.toggle('is-resizing', S.resizing);
       root.classList.toggle('is-moving', S.moving);
-      if (S.moving) root.classList.add('is-idle');
-      else root.classList.remove('is-idle');
+      root.classList.remove('is-idle');
       document.body.classList.add('chat-resizing');
     }
     var head = root.querySelector('.co-chat-head');
@@ -201,19 +202,21 @@
     return !!(picker && picker.classList.contains('is-open') && !picker.hidden);
   }
 
+  function pointOverChat(ev) {
+    var root = $('co-chat');
+    if (!root || !S.windowOpen) return false;
+    var r = root.getBoundingClientRect();
+    return ev.clientX >= r.left && ev.clientX <= r.right && ev.clientY >= r.top && ev.clientY <= r.bottom;
+  }
+
   function syncIdle() {
     var root = $('co-chat');
     if (!root || !S.windowOpen) return;
-    if (S.moving) {
-      root.classList.add('is-idle');
-      return;
-    }
-    if (S.resizing) {
+    if (S.moving || S.resizing || isTyping() || pickerOpen()) {
       root.classList.remove('is-idle');
       return;
     }
-    var idle = !S.hover && !isTyping() && !pickerOpen();
-    root.classList.toggle('is-idle', idle);
+    root.classList.toggle('is-idle', !!S.seeThrough && !S.hover);
   }
 
   function syncNavOpen() {
@@ -235,6 +238,7 @@
     applyRect(S.rect || defaultRect());
     S.windowOpen = true;
     S.hover = true;
+    S.seeThrough = false;
     syncIdle();
     syncNavOpen();
     setPickerOpen(false);
@@ -246,6 +250,7 @@
     saveLast();
     S.windowOpen = false;
     S.hover = false;
+    S.seeThrough = false;
     if (root) {
       root.hidden = true;
       root.classList.remove('is-open', 'is-idle');
@@ -702,13 +707,27 @@
       if (ev.target === $('co-chat-picker')) setPickerOpen(false);
     });
     document.addEventListener('keydown', function (ev) {
-      if (ev.key !== 'Escape') return;
-      if ($('co-chat-picker') && $('co-chat-picker').classList.contains('is-open')) {
-        setPickerOpen(false);
-        syncIdle();
+      if (ev.key === 'Escape') {
+        if ($('co-chat-picker') && $('co-chat-picker').classList.contains('is-open')) {
+          setPickerOpen(false);
+          syncIdle();
+          return;
+        }
+        if (S.windowOpen) closeChatWindow();
         return;
       }
-      if (S.windowOpen) closeChatWindow();
+      if (ev.key !== 'Enter' || ev.shiftKey || ev.altKey || ev.metaKey || ev.ctrlKey) return;
+      if (!S.windowOpen || pickerOpen()) return;
+      var el = document.activeElement;
+      if (el && (el.id === 'co-chat-input' || el.id === 'so-chat-input' || el.id === 'co-chat-search' || el.id === 'co-chat-picker-search')) return;
+      var tag = el && el.tagName;
+      if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT' || (el && el.isContentEditable)) return;
+      ev.preventDefault();
+      S.seeThrough = false;
+      S.hover = true;
+      var input = $('co-chat-input');
+      if (input) input.focus();
+      syncIdle();
     });
     $('co-chat-picker-search').addEventListener('input', renderPicker);
     $('co-chat-picker-list').addEventListener('click', function (ev) {
@@ -768,6 +787,7 @@
       ev.stopPropagation();
       if (S.windowOpen) {
         S.hover = true;
+        S.seeThrough = false;
         syncIdle();
         var input = $('co-chat-input');
         if (input) input.focus();
@@ -784,18 +804,35 @@
     }
     document.addEventListener('mousemove', function (ev) {
       var root = $('co-chat');
-      if (!root || !S.windowOpen) return;
-      var r = root.getBoundingClientRect();
-      var over = ev.clientX >= r.left && ev.clientX <= r.right && ev.clientY >= r.top && ev.clientY <= r.bottom;
-      if (over !== S.hover) {
-        S.hover = over;
+      if (!root || !S.windowOpen || S.moving || S.resizing) return;
+      var over = pointOverChat(ev);
+      S.hover = over;
+      if (over && S.seeThrough) {
+        S.seeThrough = false;
         syncIdle();
       }
     });
+    function pageInteract(ev) {
+      if (!S.windowOpen || S.moving || S.resizing) return;
+      var root = $('co-chat');
+      if (!root) return;
+      if (ev.target && root.contains(ev.target)) return;
+      if (isTyping() || pickerOpen()) return;
+      S.seeThrough = true;
+      S.hover = false;
+      syncIdle();
+    }
+    document.addEventListener('mousedown', pageInteract, true);
+    document.addEventListener('wheel', pageInteract, { capture: true, passive: true });
+    document.addEventListener('scroll', pageInteract, true);
     ['co-chat-input', 'co-chat-search', 'co-chat-picker-search'].forEach(function (id) {
       var el = $(id);
       if (!el) return;
-      el.addEventListener('focus', syncIdle);
+      el.addEventListener('focus', function () {
+        S.seeThrough = false;
+        S.hover = true;
+        syncIdle();
+      });
       el.addEventListener('blur', function () { setTimeout(syncIdle, 0); });
     });
   }
