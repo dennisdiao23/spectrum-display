@@ -5474,6 +5474,22 @@
     }
 
     function getChatShareContext() {
+      try {
+        return readChatShareContext();
+      } catch (err) {
+        try {
+          const tabName = canonicalMasterTab(dashActiveGroup || 'dashboard');
+          return {
+            item: null,
+            tab: chatSharePack('Tab', masterTabCaption(tabName), pathForTab(tabName) || '/company')
+          };
+        } catch (e) {
+          return { item: null, tab: { kind: 'Tab', label: 'Dashboard', path: '/company' } };
+        }
+      }
+    }
+
+    function readChatShareContext() {
       const tabName = canonicalMasterTab(dashActiveGroup || 'dashboard');
       const tabPath = (dashTabPath[tabName] || pathForTab(tabName) || '/company').split('#')[0];
       const tab = chatSharePack('Tab', masterTabCaption(tabName), tabPath);

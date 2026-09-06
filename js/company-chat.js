@@ -384,7 +384,7 @@
 
   function linkify(text) {
     var s = esc(text);
-    s = s.replace(/\[share\|([^|\]]+)\|([^|\]]+)\|(\/company[^|\]]+)\]/g, function (_, kind, label, path) {
+    s = s.replace(/\[share\|([^|\]]+)\|([^|\]]+)\|(\/company[^|\]]*)\]/g, function (_, kind, label, path) {
       return '<button type="button" class="co-chat-share-card" data-chat-path="' + path + '">' +
         '<span class="co-chat-share-kind">' + kind + '</span>' +
         '<span class="co-chat-share-label">' + label + '</span></button>';
@@ -891,17 +891,12 @@
   async function sendScreenshot() {
     var root = $('co-chat');
     var h2c = await loadHtml2Canvas();
+    var target = document.getElementById('dash-panel') || document.body;
     if (root) root.style.visibility = 'hidden';
     await new Promise(function (r) { requestAnimationFrame(function () { requestAnimationFrame(r); }); });
     try {
-      var canvas = await h2c(document.body, {
-        x: 0,
-        y: 0,
-        width: window.innerWidth,
-        height: window.innerHeight,
-        windowWidth: window.innerWidth,
-        windowHeight: window.innerHeight,
-        scale: 1,
+      var canvas = await h2c(target, {
+        scale: 0.6,
         logging: false,
         useCORS: true,
         backgroundColor: '#eef1f6',
@@ -925,6 +920,7 @@
       ev.stopPropagation();
       setPlusMenuOpen(!plusMenuOpen());
     });
+    menu.addEventListener('mousedown', function (ev) { ev.stopPropagation(); });
     menu.addEventListener('click', function (ev) {
       var item = ev.target.closest('[data-chat-plus]');
       if (!item || item.disabled) return;
