@@ -1897,6 +1897,53 @@
       </div>
 
       <div id="staff-section" class="space-y-8">
+        <div id="chat-ai-section" class="hidden space-y-4">
+          <div>
+            <h2 class="text-base font-semibold text-slate-800">Chat / AI</h2>
+            <p class="text-slate-400 text-sm mt-1">Spectrum AI replies in Lobby and order chats when staff type @Spectrum AI. The key stays on the server.</p>
+          </div>
+          <div class="chat-ai-card">
+            <div class="chat-ai-row">
+              <span class="chat-ai-label">Bot</span>
+              <div class="chat-ai-switch" role="group" aria-label="Bot">
+                <button type="button" data-chat-ai-switch="enabled" data-on="1">on</button>
+                <button type="button" data-chat-ai-switch="enabled" data-on="0" class="is-on" aria-pressed="true">off</button>
+              </div>
+            </div>
+            <div class="chat-ai-row">
+              <span class="chat-ai-label">Allow AI in DMs</span>
+              <div class="chat-ai-switch" role="group" aria-label="Allow AI in DMs">
+                <button type="button" data-chat-ai-switch="allowInDms" data-on="1">on</button>
+                <button type="button" data-chat-ai-switch="allowInDms" data-on="0" class="is-on" aria-pressed="true">off</button>
+              </div>
+            </div>
+            <div class="chat-ai-row">
+              <label class="chat-ai-label" for="chat-ai-provider">Provider</label>
+              <select id="chat-ai-provider" class="chat-ai-select">
+                <option value="anthropic">Anthropic</option>
+                <option value="openai">OpenAI</option>
+                <option value="google">Google</option>
+              </select>
+            </div>
+            <div class="chat-ai-row">
+              <label class="chat-ai-label" for="chat-ai-model">Model</label>
+              <select id="chat-ai-model" class="chat-ai-select"></select>
+            </div>
+            <div class="chat-ai-row chat-ai-row-key">
+              <label class="chat-ai-label" for="chat-ai-key">API key</label>
+              <div class="chat-ai-key-wrap">
+                <p id="chat-ai-key-status" class="chat-ai-key-status">No key on file.</p>
+                <input id="chat-ai-key" type="password" autocomplete="new-password" placeholder="sk-ant-…">
+              </div>
+            </div>
+            <div class="chat-ai-actions">
+              <button type="button" id="chat-ai-save" class="px-4 py-2 rounded-full bg-sky-500 hover:bg-sky-400 text-white text-sm font-semibold">Save key</button>
+              <button type="button" id="chat-ai-test" class="px-4 py-2 rounded-full border border-slate-200 text-slate-600 hover:border-sky-400 text-sm font-semibold">Test key</button>
+              <button type="button" id="chat-ai-remove" class="px-4 py-2 rounded-full border border-slate-200 text-red-500 hover:border-red-400 text-sm font-semibold hidden">Remove key</button>
+            </div>
+            <p id="chat-ai-msg" class="hidden text-sm"></p>
+          </div>
+        </div>
         <div class="space-y-6">
           <div class="flex items-start justify-between gap-4">
             <div>
@@ -3479,6 +3526,11 @@
       if (mod === 'inventory') return canUse('inventory') && (adminPerms().menu || {}).inventory === 'edit';
       return adminPerms()[mod] === 'edit';
     }
+    function canManageChatAi() {
+      if (!currentAdminUser) return false;
+      if (currentAdminUser.role === 'owner') return true;
+      return canEdit('settings');
+    }
     const SECTION_MENU_KEY = {
       dashboard: 'dashboard',
       chat: 'chat',
@@ -3584,6 +3636,8 @@
       document.getElementById('tabbar-vendor').classList.toggle('hidden', !canUseVendorNav());
       document.getElementById('tabbar-customer').classList.toggle('hidden', !canUseCustomerNav());
       document.getElementById('tabbar-settings').classList.toggle('hidden', !canUse('settings'));
+      const chatAiSec = document.getElementById('chat-ai-section');
+      if (chatAiSec) chatAiSec.classList.toggle('hidden', !canManageChatAi());
       const tabbar = document.getElementById('dash-tabbar');
       tabbar.hidden = false;
       document.body.classList.add('dash-tabbar-on');
@@ -4310,6 +4364,7 @@
       if (canUse('staff')) {
         await loadStaff();
         await loadRoles();
+        await loadChatAiSettings();
       }
     }
 
@@ -4532,6 +4587,7 @@
       if (staffNew) staffNew.classList.toggle('hidden', !canEdit('settings'));
       const roleNew = document.getElementById('role-new-btn');
       if (roleNew) roleNew.classList.toggle('hidden', !canEdit('settings'));
+      if ((view === 'staff' || view === 'roles') && canManageChatAi()) loadChatAiSettings();
     }
 
     let inventoryItems = [];
@@ -14136,6 +14192,123 @@
       applyColOrder(table);
     }
 
+    let chatAiState = {
+      enabled: false,
+      allowInDms: false,
+      provider: 'anthropic',
+      model: 'claude-sonnet-4-6',
+      hasKey: false,
+      last4: '',
+      models: {
+        anthropic: [{ id: 'claude-sonnet-4-6', label: 'Claude Sonnet 4.6' }, { id: 'claude-opus-4-6', label: 'Claude Opus 4.6' }],
+        openai: [{ id: 'gpt-5.2', label: 'GPT-5.2' }, { id: 'gpt-5.2-mini', label: 'GPT-5.2 Mini' }],
+        google: [{ id: 'gemini-3-flash', label: 'Gemini 3 Flash' }, { id: 'gemini-3.1-pro', label: 'Gemini 3.1 Pro' }]
+      },
+      placeholder: { anthropic: 'sk-ant-…', openai: 'sk-…', google: 'AIza…' }
+    };
+
+    function chatAiPlaceholder(provider) {
+      const map = chatAiState.placeholder || {};
+      return map[provider] || (provider === 'google' ? 'AIza…' : provider === 'openai' ? 'sk-…' : 'sk-ant-…');
+    }
+
+    function setChatAiSwitch(name, on) {
+      document.querySelectorAll('[data-chat-ai-switch="' + name + '"]').forEach(function (btn) {
+        const isOn = btn.getAttribute('data-on') === '1';
+        const active = on ? isOn : !isOn;
+        btn.classList.toggle('is-on', active);
+        btn.setAttribute('aria-pressed', active ? 'true' : 'false');
+      });
+    }
+
+    function showChatAiMsg(text, kind) {
+      const el = document.getElementById('chat-ai-msg');
+      if (!el) return;
+      el.textContent = text || '';
+      el.classList.toggle('hidden', !text);
+      el.classList.toggle('is-ok', kind === 'ok');
+      el.classList.toggle('is-bad', kind === 'bad');
+    }
+
+    function fillChatAiModels(provider, selected) {
+      const sel = document.getElementById('chat-ai-model');
+      if (!sel) return;
+      const list = (chatAiState.models && chatAiState.models[provider]) || [];
+      const value = selected || (list[0] && list[0].id) || '';
+      sel.innerHTML = list.map(function (m) {
+        return '<option value="' + esc(m.id) + '"' + (m.id === value ? ' selected' : '') + '>' + esc(m.label || m.id) + '</option>';
+      }).join('');
+      if (value) sel.value = value;
+    }
+
+    function applyChatAiSettings(settings) {
+      if (!settings) return;
+      chatAiState = Object.assign(chatAiState, settings);
+      if (settings.models) chatAiState.models = settings.models;
+      setChatAiSwitch('enabled', !!settings.enabled);
+      setChatAiSwitch('allowInDms', !!settings.allowInDms);
+      const provider = settings.provider || 'anthropic';
+      const providerSel = document.getElementById('chat-ai-provider');
+      if (providerSel) providerSel.value = provider;
+      fillChatAiModels(provider, settings.model);
+      const keyInput = document.getElementById('chat-ai-key');
+      if (keyInput) {
+        keyInput.value = '';
+        keyInput.placeholder = settings.placeholder || chatAiPlaceholder(provider);
+      }
+      const status = document.getElementById('chat-ai-key-status');
+      if (status) {
+        status.textContent = settings.hasKey && settings.last4
+          ? ('Key on file · ••••' + settings.last4)
+          : 'No key on file.';
+      }
+      const removeBtn = document.getElementById('chat-ai-remove');
+      if (removeBtn) removeBtn.classList.toggle('hidden', !settings.hasKey);
+    }
+
+    function readChatAiForm(includeKey) {
+      const provider = document.getElementById('chat-ai-provider').value || 'anthropic';
+      const body = {
+        enabled: document.querySelector('[data-chat-ai-switch="enabled"][data-on="1"]').classList.contains('is-on'),
+        allowInDms: document.querySelector('[data-chat-ai-switch="allowInDms"][data-on="1"]').classList.contains('is-on'),
+        provider: provider,
+        model: document.getElementById('chat-ai-model').value
+      };
+      if (includeKey) {
+        const key = String(document.getElementById('chat-ai-key').value || '').trim();
+        if (key) body.apiKey = key;
+      }
+      return body;
+    }
+
+    async function loadChatAiSettings() {
+      const section = document.getElementById('chat-ai-section');
+      if (!section) return;
+      if (!canManageChatAi()) {
+        section.classList.add('hidden');
+        return;
+      }
+      section.classList.remove('hidden');
+      try {
+        const data = await api('/api/admin/chat/ai-settings');
+        applyChatAiSettings(data.settings || {});
+      } catch (err) {
+        showChatAiMsg(err.message || 'Could not load Chat / AI settings.', 'bad');
+      }
+    }
+
+    async function saveChatAiSettings(includeKey, quiet) {
+      const body = readChatAiForm(includeKey);
+      const data = await api('/api/admin/chat/ai-settings', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body)
+      });
+      applyChatAiSettings(data.settings || {});
+      if (!quiet) showChatAiMsg(includeKey && body.apiKey ? 'Key on file · ••••' + ((data.settings && data.settings.last4) || '') : 'Saved.', 'ok');
+      return data.settings;
+    }
+
     async function loadStaff() {
       if (!canUse('staff')) return;
       showError('staff-error', '');
@@ -14162,6 +14335,66 @@
 
     document.getElementById('staff-new-btn').addEventListener('click', openNewStaff);
     document.getElementById('role-new-btn').addEventListener('click', openNewRole);
+    document.getElementById('chat-ai-section').addEventListener('click', function (e) {
+      const sw = e.target.closest('[data-chat-ai-switch]');
+      if (!sw) return;
+      const name = sw.getAttribute('data-chat-ai-switch');
+      const on = sw.getAttribute('data-on') === '1';
+      setChatAiSwitch(name, on);
+      saveChatAiSettings(false, true).then(function () {
+        showChatAiMsg('', '');
+      }).catch(function (err) {
+        setChatAiSwitch(name, !on);
+        showChatAiMsg(err.message || 'Could not save.', 'bad');
+      });
+    });
+    document.getElementById('chat-ai-provider').addEventListener('change', function () {
+      const provider = this.value;
+      fillChatAiModels(provider);
+      document.getElementById('chat-ai-key').placeholder = chatAiPlaceholder(provider);
+      saveChatAiSettings(false, true).catch(function (err) {
+        showChatAiMsg(err.message || 'Could not save.', 'bad');
+      });
+    });
+    document.getElementById('chat-ai-model').addEventListener('change', function () {
+      saveChatAiSettings(false, true).catch(function (err) {
+        showChatAiMsg(err.message || 'Could not save.', 'bad');
+      });
+    });
+    document.getElementById('chat-ai-save').addEventListener('click', function () {
+      const key = String(document.getElementById('chat-ai-key').value || '').trim();
+      if (!key && !chatAiState.hasKey) {
+        showChatAiMsg('Add an API key in Settings → Chat / AI.', 'bad');
+        return;
+      }
+      saveChatAiSettings(true, false).catch(function (err) {
+        showChatAiMsg(err.message || 'Could not save.', 'bad');
+      });
+    });
+    document.getElementById('chat-ai-test').addEventListener('click', async function () {
+      showChatAiMsg('', '');
+      try {
+        const body = readChatAiForm(true);
+        const data = await api('/api/admin/chat/ai-settings/test', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(body)
+        });
+        showChatAiMsg(data.message || (data.success ? 'Key works.' : 'Key was rejected.'), data.success ? 'ok' : 'bad');
+      } catch (err) {
+        showChatAiMsg('Key was rejected.', 'bad');
+      }
+    });
+    document.getElementById('chat-ai-remove').addEventListener('click', async function () {
+      showChatAiMsg('', '');
+      try {
+        const data = await api('/api/admin/chat/ai-settings/remove-key', { method: 'POST' });
+        applyChatAiSettings(data.settings || {});
+        showChatAiMsg('', '');
+      } catch (err) {
+        showChatAiMsg(err.message || 'Could not remove key.', 'bad');
+      }
+    });
     document.getElementById('st-drawer-close').addEventListener('click', function () { closeStaffDrawer(); });
     document.getElementById('st-drawer-scrim').addEventListener('click', function () { closeStaffDrawer(); });
     document.getElementById('rl-drawer-close').addEventListener('click', function () { closeRoleDrawer(); });

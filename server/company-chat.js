@@ -12,6 +12,7 @@ const {
   canAccess,
   isOwnerAdmin
 } = require('./admin-roles');
+const chatAi = require('./chat-ai');
 
 const BODY_MAX = 4000;
 const PREVIEW_MAX = 140;
@@ -431,7 +432,26 @@ function ensureCompanyChat(db) {
       created_at TEXT NOT NULL
     );
     CREATE INDEX IF NOT EXISTS copilot_audit_user_idx ON copilot_audit (user_id, created_at);
+
+    CREATE TABLE IF NOT EXISTS chat_ai_settings (
+      id INTEGER PRIMARY KEY CHECK (id = 1),
+      enabled INTEGER NOT NULL DEFAULT 0,
+      allow_in_dms INTEGER NOT NULL DEFAULT 0,
+      provider TEXT NOT NULL DEFAULT 'anthropic',
+      model TEXT NOT NULL DEFAULT 'claude-sonnet-4-6',
+      api_key_ciphertext TEXT,
+      api_key_last4 TEXT,
+      updated_by_user_id INTEGER,
+      updated_at TEXT NOT NULL
+    );
   `);
+  const aiRow = db.prepare('SELECT id FROM chat_ai_settings WHERE id = 1').get();
+  if (!aiRow) {
+    db.prepare(`
+      INSERT INTO chat_ai_settings (id, enabled, allow_in_dms, provider, model, updated_at)
+      VALUES (1, 0, 0, 'anthropic', 'claude-sonnet-4-6', ?)
+    `).run(nowIso());
+  }
 
   const stamp = nowIso();
   const lobby = db.prepare("SELECT id FROM chat_rooms WHERE kind = 'lobby' LIMIT 1").get();
@@ -1044,6 +1064,61 @@ function sqliteApi(db) {
         'INSERT INTO copilot_audit (user_id, room_id, action, detail, created_at) VALUES (?, ?, ?, ?, ?)'
       ).run(admin && admin.id || null, roomId || null, String(action || ''), JSON.stringify(detail || {}), nowIso());
       return true;
+    },
+
+    async getChatAiSettings(_admin) {
+      ensureCompanyChat(db);
+      const row = db.prepare('SELECT * FROM chat_ai_settings WHERE id = 1').get();
+      return chatAi.assertNoSecretLeak(chatAi.publicSettings(row));
+    },
+
+    async saveChatAiSettings(admin, body) {
+      ensureCompanyChat(db);
+      const row = db.prepare('SELECT * FROM chat_ai_settings WHERE id = 1').get();
+      const patch = chatAi.settingsPatchFromBody(body, row);
+      const stamp = nowIso();
+      let ciphertext = row && row.api_key_ciphertext || null;
+      let last4 = row && row.api_key_last4 || null;
+      if (patch.apiKey) {
+        ciphertext = chatAi.encryptApiKey(patch.apiKey);
+        last4 = chatAi.last4Of(patch.apiKey);
+      }
+      db.prepare(`
+        UPDATE chat_ai_settings
+        SET enabled = ?, allow_in_dms = ?, provider = ?, model = ?,
+            api_key_ciphertext = ?, api_key_last4 = ?,
+            updated_by_user_id = ?, updated_at = ?
+        WHERE id = 1
+      `).run(
+        patch.enabled ? 1 : 0,
+        patch.allowInDms ? 1 : 0,
+        patch.provider,
+        patch.model,
+        ciphertext,
+        last4,
+        admin && admin.id || null,
+        stamp
+      );
+      const next = db.prepare('SELECT * FROM chat_ai_settings WHERE id = 1').get();
+      return chatAi.assertNoSecretLeak(chatAi.publicSettings(next));
+    },
+
+    async removeChatAiKey(admin) {
+      ensureCompanyChat(db);
+      db.prepare(`
+        UPDATE chat_ai_settings
+        SET api_key_ciphertext = NULL, api_key_last4 = NULL, enabled = 0,
+            updated_by_user_id = ?, updated_at = ?
+        WHERE id = 1
+      `).run(admin && admin.id || null, nowIso());
+      const next = db.prepare('SELECT * FROM chat_ai_settings WHERE id = 1').get();
+      return chatAi.assertNoSecretLeak(chatAi.publicSettings(next));
+    },
+
+    async testChatAiKey(admin, body) {
+      ensureCompanyChat(db);
+      const row = db.prepare('SELECT * FROM chat_ai_settings WHERE id = 1').get();
+      return chatAi.testSavedOrPasted(row, body || {});
     }
   };
 }
@@ -1136,7 +1211,24 @@ function supabaseApi(supabase) {
         }
       }
     } catch (e) { /* ignore */ }
+    try {
+      const { data: ai } = await supabase.from('chat_ai_settings').select('id').eq('id', 1).maybeSingle();
+      if (!ai) {
+        await supabase.from('chat_ai_settings').insert({
+          id: 1,
+          enabled: false,
+          allow_in_dms: false,
+          provider: 'anthropic',
+          model: 'claude-sonnet-4-6'
+        });
+      }
+    } catch (e) { /* table may not exist until migration is applied */ }
     seeded = true;
+  }
+
+  async function getChatAiRow() {
+    const { data } = await supabase.from('chat_ai_settings').select('*').eq('id', 1).maybeSingle();
+    return data || null;
   }
 
   async function getAdminRow(id) {
@@ -1832,6 +1924,62 @@ function supabaseApi(supabase) {
         });
       } catch (e) { /* audit table may not exist yet */ }
       return true;
+    },
+
+    async getChatAiSettings(_admin) {
+      await ensureReady();
+      try {
+        const row = await getChatAiRow();
+        return chatAi.assertNoSecretLeak(chatAi.publicSettings(row));
+      } catch (e) {
+        return chatAi.assertNoSecretLeak(chatAi.publicSettings(null));
+      }
+    },
+
+    async saveChatAiSettings(admin, body) {
+      await ensureReady();
+      const row = await getChatAiRow();
+      const patch = chatAi.settingsPatchFromBody(body, row);
+      let ciphertext = row && row.api_key_ciphertext || null;
+      let last4 = row && row.api_key_last4 || null;
+      if (patch.apiKey) {
+        ciphertext = chatAi.encryptApiKey(patch.apiKey);
+        last4 = chatAi.last4Of(patch.apiKey);
+      }
+      const { error } = await supabase.from('chat_ai_settings').upsert({
+        id: 1,
+        enabled: !!patch.enabled,
+        allow_in_dms: !!patch.allowInDms,
+        provider: patch.provider,
+        model: patch.model,
+        api_key_ciphertext: ciphertext,
+        api_key_last4: last4,
+        updated_by_user_id: admin && admin.id || null,
+        updated_at: nowIso()
+      }, { onConflict: 'id' });
+      if (error) throw error;
+      const next = await getChatAiRow();
+      return chatAi.assertNoSecretLeak(chatAi.publicSettings(next));
+    },
+
+    async removeChatAiKey(admin) {
+      await ensureReady();
+      const { error } = await supabase.from('chat_ai_settings').update({
+        enabled: false,
+        api_key_ciphertext: null,
+        api_key_last4: null,
+        updated_by_user_id: admin && admin.id || null,
+        updated_at: nowIso()
+      }).eq('id', 1);
+      if (error) throw error;
+      const next = await getChatAiRow();
+      return chatAi.assertNoSecretLeak(chatAi.publicSettings(next));
+    },
+
+    async testChatAiKey(_admin, body) {
+      await ensureReady();
+      const row = await getChatAiRow();
+      return chatAi.testSavedOrPasted(row, body || {});
     }
   };
 }
