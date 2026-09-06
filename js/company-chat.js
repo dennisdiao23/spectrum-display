@@ -1159,7 +1159,9 @@
     close: closeChatWindow,
     refreshContacts: function () {
       if (!S.booted || !hasChat()) return;
-      loadRooms().catch(function () {});
+      loadRooms().then(function () {
+        if (S.roomId) return openRoom(S.roomId);
+      }).catch(function () {});
     }
   };
 })(window);
