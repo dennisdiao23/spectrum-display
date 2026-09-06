@@ -129,6 +129,11 @@
       </div>
     </nav>
     <div class="dash-sidebar-foot hidden" id="admin-utils">
+      <button type="button" id="header-chat" class="dash-nav-link hidden" aria-pressed="false">
+        <svg class="dash-nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 15a2 2 0 0 1-2 2H8l-4 4V5a2 2 0 0 1 2-2h13a2 2 0 0 1 2 2z"/></svg>
+        <span>Chat</span>
+        <span class="dash-nav-unread" id="nav-chat-unread" hidden></span>
+      </button>
       <div class="dash-nav-group">
         <a href="/company/settings" id="header-settings" class="dash-nav-link">
           <svg class="dash-nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
@@ -273,54 +278,6 @@
               </div>
             </section>
           </div>
-
-          <section class="co-chat" id="co-chat" hidden>
-            <div class="co-chat-head">
-              <div>
-                <h3>Chat <span class="co-chat-unread-badge" id="co-chat-unread-badge" hidden></span></h3>
-                <p>Lobby, direct messages, and sales order threads.</p>
-              </div>
-              <button type="button" class="co-chat-btn" id="co-chat-new">New message</button>
-            </div>
-            <div class="co-chat-tabs" role="tablist">
-              <button type="button" class="co-chat-tab is-on" data-chat-tab="lobby" role="tab">Lobby <span data-chat-tab-count="lobby" hidden></span></button>
-              <button type="button" class="co-chat-tab" data-chat-tab="direct" role="tab">Direct <span data-chat-tab-count="direct" hidden></span></button>
-              <button type="button" class="co-chat-tab" data-chat-tab="orders" role="tab">Orders <span data-chat-tab-count="orders" hidden></span></button>
-            </div>
-            <div class="co-chat-shell">
-              <aside class="co-chat-list">
-                <input type="search" id="co-chat-search" class="co-chat-search" placeholder="Search…" autocomplete="off">
-                <div class="co-chat-room-list" id="co-chat-room-list"></div>
-              </aside>
-              <div class="co-chat-main">
-                <div class="co-chat-main-head">
-                  <div>
-                    <strong id="co-chat-main-title">Lobby</strong>
-                    <p id="co-chat-main-sub">Everyone at Spectrum can see this.</p>
-                  </div>
-                  <button type="button" class="co-chat-link-btn" id="co-chat-open-order" hidden>Open order →</button>
-                </div>
-                <div class="co-chat-messages" id="co-chat-messages"></div>
-                <form class="co-chat-composer" id="co-chat-composer">
-                  <input type="file" id="co-chat-file" class="co-chat-file" accept=".jpg,.jpeg,.png,.webp,.gif,.pdf,.csv,.txt,.xlsx,.docx,image/*,application/pdf,text/plain,text/csv">
-                  <button type="button" class="co-chat-attach" id="co-chat-attach" title="Attach">Attach</button>
-                  <textarea id="co-chat-input" rows="1" placeholder="Message the team…"></textarea>
-                  <button type="submit" class="co-chat-send">Send</button>
-                </form>
-                <p class="co-chat-attach-name" id="co-chat-attach-name" hidden></p>
-              </div>
-            </div>
-            <div class="co-chat-picker" id="co-chat-picker" hidden>
-              <div class="co-chat-picker-card">
-                <div class="co-chat-picker-head">
-                  <strong>New message</strong>
-                  <button type="button" id="co-chat-picker-close" aria-label="Close">×</button>
-                </div>
-                <input type="search" id="co-chat-picker-search" class="co-chat-search" placeholder="Search name or email…" autocomplete="off">
-                <div id="co-chat-picker-list" class="co-chat-picker-list"></div>
-              </div>
-            </div>
-          </section>
         </div>
       </div>
       <div id="website-pane" class="hidden">
@@ -2582,6 +2539,11 @@
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="8" r="3.25"/><path d="M5 19.2c.9-3.1 3.5-4.7 7-4.7s6.1 1.6 7 4.7"/></svg>
       <span>Customer</span>
     </a>
+    <a href="#" id="tabbar-chat" class="hidden">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 15a2 2 0 0 1-2 2H8l-4 4V5a2 2 0 0 1 2-2h13a2 2 0 0 1 2 2z"/></svg>
+      <span>Chat</span>
+      <span class="dash-nav-unread dash-tabbar-unread" id="tabbar-chat-unread" hidden></span>
+    </a>
     <a href="/company/settings" id="tabbar-settings" data-tabbar-group="settings" class="hidden">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
       <span>Settings</span>
@@ -3613,6 +3575,8 @@
       document.getElementById('tab-warehouses').classList.toggle('hidden', !canUse('warehouses') && !canUse('inventory'));
       document.getElementById('tab-customers').classList.toggle('hidden', !canUse('customers'));
       document.getElementById('tab-customer').classList.toggle('hidden', !canUseCustomerNav());
+      document.getElementById('header-chat').classList.toggle('hidden', !canUse('chat'));
+      document.getElementById('tabbar-chat').classList.toggle('hidden', !canUse('chat'));
       document.getElementById('header-settings').classList.toggle('hidden', !canUse('settings'));
       document.getElementById('tabbar-dashboard').classList.toggle('hidden', !canUse('dashboard'));
       document.getElementById('tabbar-website').classList.toggle('hidden', !canUse('website'));
@@ -8475,6 +8439,11 @@
       if (e.metaKey || e.ctrlKey || e.shiftKey || e.altKey || e.button !== 0) return;
       const a = e.target.closest('#dash-tabbar > a[href]');
       if (!a || a.classList.contains('hidden')) return;
+      if (a.id === 'tabbar-chat') {
+        e.preventDefault();
+        if (window.SpectrumChat && SpectrumChat.open) SpectrumChat.open();
+        return;
+      }
       const group = a.getAttribute('data-tabbar-group');
       if (group) {
         e.preventDefault();
@@ -15443,5 +15412,55 @@
     });
     if (window.SpectrumPlaces) SpectrumPlaces.bootFromConfig(bindCompanyAddressPlaces);
   </script>
+
+  <section class="co-chat is-window" id="co-chat" hidden>
+    <div class="co-chat-head">
+      <div>
+        <h3>Chat <span class="co-chat-unread-badge" id="co-chat-unread-badge" hidden></span></h3>
+      </div>
+      <div class="co-chat-head-actions">
+        <button type="button" class="co-chat-btn" id="co-chat-new">New message</button>
+        <button type="button" class="co-chat-close" id="co-chat-close" aria-label="Close chat">×</button>
+      </div>
+    </div>
+    <div class="co-chat-tabs" role="tablist">
+      <button type="button" class="co-chat-tab is-on" data-chat-tab="lobby" role="tab">Lobby <span data-chat-tab-count="lobby" hidden></span></button>
+      <button type="button" class="co-chat-tab" data-chat-tab="direct" role="tab">Direct <span data-chat-tab-count="direct" hidden></span></button>
+      <button type="button" class="co-chat-tab" data-chat-tab="orders" role="tab">Orders <span data-chat-tab-count="orders" hidden></span></button>
+    </div>
+    <div class="co-chat-shell">
+      <aside class="co-chat-list">
+        <input type="search" id="co-chat-search" class="co-chat-search" placeholder="Search…" autocomplete="off">
+        <div class="co-chat-room-list" id="co-chat-room-list"></div>
+      </aside>
+      <div class="co-chat-main">
+        <div class="co-chat-main-head">
+          <div>
+            <strong id="co-chat-main-title">Lobby</strong>
+            <p id="co-chat-main-sub">Everyone at Spectrum can see this.</p>
+          </div>
+          <button type="button" class="co-chat-link-btn" id="co-chat-open-order" hidden>Open order →</button>
+        </div>
+        <div class="co-chat-messages" id="co-chat-messages"></div>
+        <form class="co-chat-composer" id="co-chat-composer">
+          <input type="file" id="co-chat-file" class="co-chat-file" accept=".jpg,.jpeg,.png,.webp,.gif,.pdf,.csv,.txt,.xlsx,.docx,image/*,application/pdf,text/plain,text/csv">
+          <button type="button" class="co-chat-attach" id="co-chat-attach" title="Attach">Attach</button>
+          <textarea id="co-chat-input" rows="1" placeholder="Message the team…"></textarea>
+          <button type="submit" class="co-chat-send">Send</button>
+        </form>
+        <p class="co-chat-attach-name" id="co-chat-attach-name" hidden></p>
+      </div>
+    </div>
+    <div class="co-chat-picker" id="co-chat-picker" hidden>
+      <div class="co-chat-picker-card">
+        <div class="co-chat-picker-head">
+          <strong>New message</strong>
+          <button type="button" id="co-chat-picker-close" aria-label="Close">×</button>
+        </div>
+        <input type="search" id="co-chat-picker-search" class="co-chat-search" placeholder="Search name or email…" autocomplete="off">
+        <div id="co-chat-picker-list" class="co-chat-picker-list"></div>
+      </div>
+    </div>
+  </section>
 </body>
 </html>

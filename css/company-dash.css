@@ -167,6 +167,40 @@ body.company-app {
   margin-top: auto;
   padding-top: 0.85rem;
   border-top: 1px solid rgba(255, 255, 255, 0.08);
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+.dash-nav-unread {
+  margin-left: auto;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 1.15rem;
+  height: 1.15rem;
+  padding: 0 0.3rem;
+  border-radius: 999px;
+  background: #fff;
+  color: var(--dash-navy);
+  font-size: 0.68rem;
+  font-weight: 800;
+  line-height: 1;
+}
+#header-chat {
+  width: 100%;
+  text-align: left;
+}
+.dash-nav-link.is-chat-open {
+  color: #fff;
+  background: rgba(255, 255, 255, 0.08);
+}
+.dash-tabbar-unread {
+  position: absolute;
+  top: 0.2rem;
+  right: calc(50% - 1.55rem);
+  min-width: 0.95rem;
+  height: 0.95rem;
+  font-size: 0.6rem;
 }
 
 .dash-shell {
@@ -1657,6 +1691,7 @@ html.dash-scroll-lock body.company-app {
     gap: 0.18rem;
     min-height: 0;
     padding: 0.1rem 0.15rem 0;
+    position: relative;
     color: #7f8db3;
     text-decoration: none;
     font-size: 0.625rem;
@@ -4092,6 +4127,7 @@ body.so-invoice-float .so-doc-side {
 /* —— Company Chat —— */
 /* Light company dashboard palette — no sky/LED blue accents */
 .co-chat {
+  position: relative;
   margin-top: 1.25rem;
   border: 1px solid var(--dash-line);
   border-radius: 1rem;
@@ -4100,12 +4136,60 @@ body.so-invoice-float .so-doc-side {
   overflow: hidden;
   color: var(--dash-text);
 }
+.co-chat.is-window {
+  position: fixed;
+  z-index: 75;
+  left: 1rem;
+  bottom: 1.25rem;
+  width: min(52rem, calc(100vw - 2rem));
+  height: min(34rem, calc(100vh - 5.5rem));
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 18px 50px rgba(16, 32, 71, 0.18);
+  transition: opacity 0.18s ease;
+}
+.co-chat.is-window[hidden] {
+  display: none !important;
+}
+.co-chat.is-window.is-idle {
+  opacity: 0.5;
+  pointer-events: none;
+}
+.co-chat.is-window .co-chat-shell {
+  flex: 1;
+  min-height: 0;
+  max-height: none;
+}
 .co-chat-head {
   display: flex;
-  align-items: flex-start;
+  align-items: center;
   justify-content: space-between;
   gap: 1rem;
-  padding: 1rem 1.15rem 0.75rem;
+  padding: 0.85rem 1rem 0.7rem;
+  background: var(--dash-card);
+}
+.co-chat-head-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  flex-shrink: 0;
+}
+.co-chat-close {
+  width: 2rem;
+  height: 2rem;
+  border: 1px solid #c9d3e4;
+  border-radius: 0.55rem;
+  background: #fff;
+  color: var(--dash-muted);
+  font-size: 1.25rem;
+  line-height: 1;
+  cursor: pointer;
+}
+.co-chat-close:hover {
+  color: var(--dash-text);
+  background: #f4f6fb;
+  border-color: #b7c8e8;
 }
 .co-chat-head h3 {
   margin: 0;
@@ -4411,11 +4495,11 @@ body.so-invoice-float .so-doc-side {
 }
 .co-chat-picker {
   display: none;
-  position: fixed;
+  position: absolute;
   inset: 0;
   background: rgba(7, 21, 58, 0.45);
   place-items: center;
-  z-index: 80;
+  z-index: 8;
   pointer-events: none;
 }
 .co-chat-picker.is-open {
@@ -4543,6 +4627,14 @@ body.so-invoice-float .so-doc-side {
     border-bottom: 1px solid var(--dash-line);
     max-height: 220px;
   }
+  .co-chat.is-window {
+    left: 0.5rem;
+    right: 0.5rem;
+    width: auto;
+    height: min(70vh, 34rem);
+    bottom: calc(var(--dash-tabbar-h, 0px) + 0.75rem);
+  }
+  .co-chat.is-window .co-chat-list { max-height: 140px; }
 }
 
 .so-chat-pane[hidden], [data-so-pane-panel][hidden] { display: none !important; }

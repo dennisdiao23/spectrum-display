@@ -30,6 +30,8 @@
     soMessages: [],
     baseTitle: document.title || 'Company | Spectrum Display',
     booted: false,
+    windowOpen: false,
+    hover: false,
     timers: {}
   };
 
@@ -38,6 +40,88 @@
 
   function hasChat() {
     try { return !!(S.canUse && S.canUse('chat')); } catch (e) { return false; }
+  }
+
+  function persistKey() {
+    var id = S.admin && S.admin.id;
+    return 'dash-chat-last-' + (id || '0');
+  }
+
+  function saveLast() {
+    try {
+      localStorage.setItem(persistKey(), JSON.stringify({
+        tab: S.tab || 'lobby',
+        roomId: S.roomId || null
+      }));
+    } catch (e) { /* ignore */ }
+  }
+
+  function loadLast() {
+    try {
+      var d = JSON.parse(localStorage.getItem(persistKey()) || '{}');
+      if (d.tab === 'lobby' || d.tab === 'direct' || d.tab === 'orders') S.tab = d.tab;
+      if (d.roomId) S.roomId = Number(d.roomId);
+    } catch (e) { /* ignore */ }
+  }
+
+  function isTyping() {
+    var el = document.activeElement;
+    if (!el) return false;
+    return el.id === 'co-chat-input' || el.id === 'co-chat-search' || el.id === 'co-chat-picker-search';
+  }
+
+  function pickerOpen() {
+    var picker = $('co-chat-picker');
+    return !!(picker && picker.classList.contains('is-open') && !picker.hidden);
+  }
+
+  function syncIdle() {
+    var root = $('co-chat');
+    if (!root || !S.windowOpen) return;
+    var idle = !S.hover && !isTyping() && !pickerOpen();
+    root.classList.toggle('is-idle', idle);
+  }
+
+  function syncNavOpen() {
+    var on = !!S.windowOpen;
+    ['header-chat', 'tabbar-chat'].forEach(function (id) {
+      var el = $(id);
+      if (!el) return;
+      el.classList.toggle('is-chat-open', on);
+      el.setAttribute('aria-pressed', on ? 'true' : 'false');
+    });
+  }
+
+  async function openChatWindow() {
+    if (!hasChat()) return;
+    var root = $('co-chat');
+    if (!root) return;
+    root.hidden = false;
+    root.classList.add('is-window', 'is-open');
+    S.windowOpen = true;
+    S.hover = true;
+    syncIdle();
+    syncNavOpen();
+    setPickerOpen(false);
+    await loadRooms();
+  }
+
+  function closeChatWindow() {
+    var root = $('co-chat');
+    saveLast();
+    S.windowOpen = false;
+    S.hover = false;
+    if (root) {
+      root.hidden = true;
+      root.classList.remove('is-open', 'is-idle');
+    }
+    setPickerOpen(false);
+    syncNavOpen();
+  }
+
+  function toggleChatWindow() {
+    if (S.windowOpen) closeChatWindow();
+    else openChatWindow().catch(function () {});
   }
 
   function fmtTime(iso) {
@@ -119,6 +203,8 @@
       var data = await S.api('/api/admin/chat/unread');
       S.unread = data.unread || { total: 0, lobby: 0, direct: 0, orders: 0 };
       setBadge($('co-chat-unread-badge'), S.unread.total);
+      setBadge($('nav-chat-unread'), S.unread.total);
+      setBadge($('tabbar-chat-unread'), S.unread.total);
       setBadge(document.querySelector('[data-chat-tab-count="lobby"]'), S.unread.lobby);
       setBadge(document.querySelector('[data-chat-tab-count="direct"]'), S.unread.direct);
       setBadge(document.querySelector('[data-chat-tab-count="orders"]'), S.unread.orders);
@@ -251,6 +337,7 @@
     renderRoomList();
     try { await S.api('/api/admin/chat/rooms/' + S.roomId + '/read', { method: 'POST' }); } catch (e) { /* ignore */ }
     refreshUnread();
+    saveLast();
   }
 
   function clearFile() {
@@ -278,7 +365,7 @@
   }
 
   async function pollOpenRoom() {
-    if (document.hidden || !S.roomId || !hasChat()) return;
+    if (document.hidden || !S.roomId || !hasChat() || !S.windowOpen) return;
     try {
       var data = await S.api('/api/admin/chat/rooms/' + S.roomId + '/messages?afterId=' + S.lastMsgId + '&limit=50');
       var msgs = data.messages || [];
@@ -299,6 +386,7 @@
     picker.classList.toggle('is-open', !!open);
     if (!open) picker.setAttribute('aria-hidden', 'true');
     else picker.removeAttribute('aria-hidden');
+    syncIdle();
   }
 
   async function openPicker() {
@@ -338,17 +426,17 @@
 
   function setTab(tab) {
     S.tab = tab;
-    document.querySelectorAll('.co-chat-tab').forEach(function (btn) {
+    document.querySelectorAll('#co-chat .co-chat-tab').forEach(function (btn) {
       btn.classList.toggle('is-on', btn.getAttribute('data-chat-tab') === tab);
     });
+    saveLast();
   }
 
   async function handleDeepLink() {
     var params = new URLSearchParams(location.search);
     var chat = params.get('chat') || (location.hash === '#chat' ? 'lobby' : '');
     if (!chat) return;
-    var root = $('co-chat');
-    if (root) root.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    await openChatWindow();
     if (chat === 'dm' && params.get('user_id')) {
       await startDm(params.get('user_id'));
     } else if (chat === 'order' && params.get('order_id')) {
@@ -437,11 +525,12 @@
   }
 
   function bindMain() {
-    document.querySelectorAll('.co-chat-tab').forEach(function (btn) {
+    document.querySelectorAll('#co-chat .co-chat-tab').forEach(function (btn) {
       btn.addEventListener('click', async function () {
         setTab(btn.getAttribute('data-chat-tab'));
         S.roomId = null;
         await loadRooms();
+        saveLast();
       });
     });
     $('co-chat-room-list').addEventListener('click', function (ev) {
@@ -478,9 +567,13 @@
       if (ev.target === $('co-chat-picker')) setPickerOpen(false);
     });
     document.addEventListener('keydown', function (ev) {
-      if (ev.key === 'Escape' && $('co-chat-picker') && $('co-chat-picker').classList.contains('is-open')) {
+      if (ev.key !== 'Escape') return;
+      if ($('co-chat-picker') && $('co-chat-picker').classList.contains('is-open')) {
         setPickerOpen(false);
+        syncIdle();
+        return;
       }
+      if (S.windowOpen) closeChatWindow();
     });
     $('co-chat-picker-search').addEventListener('input', renderPicker);
     $('co-chat-picker-list').addEventListener('click', function (ev) {
@@ -530,6 +623,45 @@
       });
     }
     bindSoTabs();
+    bindWindow();
+  }
+
+  function bindWindow() {
+    function onToggle(ev) {
+      ev.preventDefault();
+      ev.stopPropagation();
+      if (S.windowOpen) {
+        S.hover = true;
+        syncIdle();
+        var input = $('co-chat-input');
+        if (input) input.focus();
+        return;
+      }
+      openChatWindow().catch(function (err) { alert(err.message || 'Could not open chat.'); });
+    }
+    ['header-chat', 'tabbar-chat'].forEach(function (id) {
+      var el = $(id);
+      if (el) el.addEventListener('click', onToggle);
+    });
+    if ($('co-chat-close')) {
+      $('co-chat-close').addEventListener('click', function () { closeChatWindow(); });
+    }
+    document.addEventListener('mousemove', function (ev) {
+      var root = $('co-chat');
+      if (!root || !S.windowOpen) return;
+      var r = root.getBoundingClientRect();
+      var over = ev.clientX >= r.left && ev.clientX <= r.right && ev.clientY >= r.top && ev.clientY <= r.bottom;
+      if (over !== S.hover) {
+        S.hover = over;
+        syncIdle();
+      }
+    });
+    ['co-chat-input', 'co-chat-search', 'co-chat-picker-search'].forEach(function (id) {
+      var el = $(id);
+      if (!el) return;
+      el.addEventListener('focus', syncIdle);
+      el.addEventListener('blur', function () { setTimeout(syncIdle, 0); });
+    });
   }
 
   async function boot(opts) {
@@ -540,23 +672,32 @@
     S.openSalesDoc = opts.openSalesDoc || null;
     if (typeof opts.esc === 'function') S.esc = opts.esc;
     var root = $('co-chat');
-    if (!root) return;
+    var nav = $('header-chat');
+    var tabbar = $('tabbar-chat');
     if (!hasChat()) {
-      root.hidden = true;
+      if (root) root.hidden = true;
+      if (nav) nav.classList.add('hidden');
+      if (tabbar) tabbar.classList.add('hidden');
       return;
     }
-    root.hidden = false;
+    if (nav) nav.classList.remove('hidden');
+    if (tabbar) tabbar.classList.remove('hidden');
+    if (root) {
+      root.hidden = true;
+      root.classList.add('is-window');
+    }
+    loadLast();
+    setTab(S.tab || 'lobby');
     setPickerOpen(false);
     S.booted = true;
     bindMain();
     await refreshUnread();
-    await loadRooms();
     await handleDeepLink();
     S.timers.poll = setInterval(pollOpenRoom, 3000);
     S.timers.unread = setInterval(function () {
       if (!document.hidden) {
         refreshUnread();
-        loadRooms();
+        if (S.windowOpen) loadRooms();
       }
     }, 10000);
     S.timers.presence = setInterval(function () {
@@ -603,6 +744,8 @@
   global.SpectrumChat = {
     boot: boot,
     onSalesDocOpened: onSalesDocOpened,
-    openOrderChat: openOrderChat
+    openOrderChat: openOrderChat,
+    open: openChatWindow,
+    close: closeChatWindow
   };
 })(window);
