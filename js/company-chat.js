@@ -35,6 +35,8 @@
     seeThrough: false,
     resizing: false,
     moving: false,
+    splitting: false,
+    listW: 260,
     rect: null,
     timers: {}
   };
@@ -56,7 +58,8 @@
       localStorage.setItem(persistKey(), JSON.stringify({
         tab: S.tab || 'lobby',
         roomId: S.roomId || null,
-        rect: S.rect || null
+        rect: S.rect || null,
+        listW: S.listW || 260
       }));
     } catch (e) { /* ignore */ }
   }
@@ -67,6 +70,7 @@
       if (d.tab === 'lobby' || d.tab === 'direct' || d.tab === 'orders') S.tab = d.tab;
       if (d.roomId) S.roomId = Number(d.roomId);
       if (d.rect && d.rect.width && d.rect.height) S.rect = d.rect;
+      if (d.listW) S.listW = Number(d.listW);
     } catch (e) { /* ignore */ }
   }
 
@@ -107,6 +111,58 @@
     root.style.width = S.rect.width + 'px';
     root.style.height = S.rect.height + 'px';
     root.classList.add('is-placed');
+    applyListW(S.listW);
+  }
+
+  var LIST_ICON_W = 92;
+  var LIST_MIN_W = 56;
+  var LIST_MAX_W = 360;
+
+  function clampListW(px) {
+    var winW = (S.rect && S.rect.width) || 832;
+    var max = Math.min(LIST_MAX_W, Math.max(LIST_MIN_W, Math.floor(winW * 0.55) - 16));
+    return Math.max(LIST_MIN_W, Math.min(Number(px) || 260, max));
+  }
+
+  function applyListW(px) {
+    var root = $('co-chat');
+    if (!root) return;
+    S.listW = clampListW(px);
+    var shell = root.querySelector('.co-chat-shell');
+    if (shell) shell.style.setProperty('--co-chat-list-w', S.listW + 'px');
+    root.classList.toggle('is-icons', S.listW <= LIST_ICON_W);
+  }
+
+  function bindSplit() {
+    var handle = $('co-chat-split');
+    var root = $('co-chat');
+    if (!handle || !root) return;
+    var drag = null;
+    handle.addEventListener('mousedown', function (ev) {
+      if (ev.button !== 0) return;
+      ev.preventDefault();
+      ev.stopPropagation();
+      drag = { x: ev.clientX, w: S.listW || 260 };
+      S.splitting = true;
+      S.hover = true;
+      S.seeThrough = false;
+      root.classList.add('is-resizing');
+      root.classList.remove('is-idle');
+      document.body.classList.add('chat-splitting');
+    });
+    document.addEventListener('mousemove', function (ev) {
+      if (!drag) return;
+      applyListW(drag.w + (ev.clientX - drag.x));
+    });
+    document.addEventListener('mouseup', function () {
+      if (!drag) return;
+      drag = null;
+      S.splitting = false;
+      root.classList.remove('is-resizing');
+      document.body.classList.remove('chat-splitting');
+      saveLast();
+      syncIdle();
+    });
   }
 
   function bindResize() {
@@ -236,7 +292,7 @@
       root.classList.add('is-idle');
       return;
     }
-    if (S.resizing || isTyping() || pickerOpen()) {
+    if (S.resizing || S.splitting || isTyping() || pickerOpen()) {
       root.classList.remove('is-idle');
       return;
     }
@@ -260,6 +316,7 @@
     root.hidden = false;
     root.classList.add('is-window', 'is-open');
     applyRect(S.rect || defaultRect());
+    applyListW(S.listW);
     S.windowOpen = true;
     S.hover = true;
     S.seeThrough = false;
@@ -377,6 +434,25 @@
     } catch (e) { /* ignore */ }
   }
 
+  function roomIcon(room) {
+    var title = roomTitle(room);
+    var cls = 'co-chat-avatar';
+    var label = '';
+    if (room.kind === 'lobby') {
+      cls += ' is-lobby';
+      label = 'L';
+    } else if (room.kind === 'order') {
+      cls += ' is-order';
+      label = String(title || 'SO').replace(/^[A-Za-z]+-/, '').slice(-2) || 'SO';
+    } else {
+      var parts = String(title || '?').trim().split(/\s+/);
+      label = (parts[0] || '?').charAt(0);
+      if (parts[1]) label += parts[1].charAt(0);
+      label = label.toUpperCase();
+    }
+    return '<span class="' + cls + '" aria-hidden="true">' + esc(label) + '</span>';
+  }
+
   function renderRoomList() {
     var host = $('co-chat-room-list');
     if (!host) return;
@@ -400,11 +476,16 @@
         if (Date.now() - seen < 70000) presence = '<span class="co-chat-presence" title="Online"></span>';
       }
       var preview = room.lastMessagePreview || 'No messages yet';
-      return '<button type="button" class="co-chat-room' + on + '" data-room-id="' + room.id + '">' +
-        '<span class="co-chat-room-top"><span class="co-chat-room-title">' + presence + esc(roomTitle(room)) +
+      var title = roomTitle(room);
+      return '<button type="button" class="co-chat-room' + on + '" data-room-id="' + room.id + '" title="' + esc(title) + '">' +
+        roomIcon(room) +
+        '<span class="co-chat-room-copy">' +
+        '<span class="co-chat-room-top"><span class="co-chat-room-title">' + presence + esc(title) +
         '</span>' + unread + '</span>' +
         '<span class="co-chat-room-preview">' + esc(preview) + '</span>' +
         '<span class="co-chat-room-time">' + esc(fmtTime(room.lastMessageAt)) + '</span>' +
+        '</span>' +
+        (unread ? '<span class="co-chat-icon-pip">' + (room.unreadCount > 99 ? '99+' : room.unreadCount) + '</span>' : '') +
         '</button>';
     }).join('');
   }
@@ -803,6 +884,7 @@
     bindSoTabs();
     bindWindow();
     bindResize();
+    bindSplit();
   }
 
   function bindWindow() {
@@ -828,7 +910,7 @@
     }
     document.addEventListener('mousemove', function (ev) {
       var root = $('co-chat');
-      if (!root || !S.windowOpen || S.moving || S.resizing) return;
+      if (!S.windowOpen || S.moving || S.resizing || S.splitting) return;
       var over = pointOverChat(ev);
       S.hover = over;
       if (over && S.seeThrough) {
@@ -837,7 +919,7 @@
       }
     });
     function pageInteract(ev) {
-      if (!S.windowOpen || S.moving || S.resizing) return;
+      if (!S.windowOpen || S.moving || S.resizing || S.splitting) return;
       var root = $('co-chat');
       if (!root) return;
       if (ev.target && root.contains(ev.target)) return;
