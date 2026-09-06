@@ -4998,3 +4998,7 @@ body.chat-splitting * {
     gap: 0.35rem;
   }
 }
+
+#settings-pane .hidden {
+  display: none !important;
+}
