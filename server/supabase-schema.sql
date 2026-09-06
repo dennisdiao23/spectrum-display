@@ -1053,6 +1053,26 @@ grant all on public.chat_room_reads to service_role;
 grant all on public.chat_presence to service_role;
 grant usage, select on all sequences in schema public to service_role;
 
+create table if not exists public.chat_ai_settings (
+  id integer primary key check (id = 1),
+  enabled boolean not null default false,
+  allow_in_dms boolean not null default false,
+  provider text not null default 'anthropic',
+  model text not null default 'claude-sonnet-4-6',
+  api_key_ciphertext text,
+  api_key_last4 text,
+  updated_by_user_id bigint references public.admins(id) on delete set null,
+  updated_at timestamptz not null default now()
+);
+alter table public.chat_ai_settings enable row level security;
+drop policy if exists chat_ai_settings_admin_all on public.chat_ai_settings;
+create policy chat_ai_settings_admin_all on public.chat_ai_settings
+  for all using (public.is_spectrum_admin()) with check (public.is_spectrum_admin());
+grant all on public.chat_ai_settings to service_role;
+insert into public.chat_ai_settings (id, enabled, allow_in_dms, provider, model)
+values (1, false, false, 'anthropic', 'claude-sonnet-4-6')
+on conflict (id) do nothing;
+
 insert into public.chat_rooms (kind, title)
 select 'lobby', 'Lobby'
 where not exists (select 1 from public.chat_rooms where kind = 'lobby');

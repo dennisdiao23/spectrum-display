@@ -948,6 +948,42 @@ async function main() {
     return res.status(403).json({ ok: false, error: 'You do not have Chat access.' });
   }
 
+  function requireChatAiAdmin(req, res, next) {
+    const chatAi = require('./chat-ai');
+    if (chatAi.canManage(req.admin)) return next();
+    return res.status(403).json({ ok: false, error: 'You do not have access to this.' });
+  }
+
+  app.get('/api/admin/chat/ai-settings', requireAdmin, requireChatAiAdmin, async function (req, res, next) {
+    try {
+      const settings = require('./chat-ai').assertNoSecretLeak(await store.getChatAiSettings(req.admin));
+      res.json({ ok: true, settings: settings });
+    } catch (err) { next(err); }
+  });
+
+  app.put('/api/admin/chat/ai-settings', requireAdmin, requireChatAiAdmin, async function (req, res, next) {
+    try {
+      const settings = require('./chat-ai').assertNoSecretLeak(
+        await store.saveChatAiSettings(req.admin, req.body || {})
+      );
+      res.json({ ok: true, settings: settings });
+    } catch (err) { next(err); }
+  });
+
+  app.post('/api/admin/chat/ai-settings/test', requireAdmin, requireChatAiAdmin, async function (req, res, next) {
+    try {
+      const result = await store.testChatAiKey(req.admin, req.body || {});
+      res.json({ ok: true, success: !!result.ok, message: result.message });
+    } catch (err) { next(err); }
+  });
+
+  app.post('/api/admin/chat/ai-settings/remove-key', requireAdmin, requireChatAiAdmin, async function (req, res, next) {
+    try {
+      const settings = require('./chat-ai').assertNoSecretLeak(await store.removeChatAiKey(req.admin));
+      res.json({ ok: true, settings: settings });
+    } catch (err) { next(err); }
+  });
+
   app.get('/api/admin/chat/rooms', requireAdmin, requireChat, async function (req, res, next) {
     try {
       const tab = String(req.query.tab || 'lobby');
