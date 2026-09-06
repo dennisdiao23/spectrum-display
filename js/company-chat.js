@@ -36,7 +36,7 @@
     resizing: false,
     moving: false,
     splitting: false,
-    listW: 168,
+    listW: 100,
     rect: null,
     saveChatPrefs: null,
     getChatPrefs: null,
@@ -58,7 +58,6 @@
   function saveLast() {
     try {
       localStorage.setItem(persistKey(), JSON.stringify({
-        tab: S.tab || 'lobby',
         roomId: S.roomId || null
       }));
     } catch (e) { /* ignore */ }
@@ -67,7 +66,6 @@
   function loadLast() {
     try {
       var d = JSON.parse(localStorage.getItem(persistKey()) || '{}');
-      if (d.tab === 'lobby' || d.tab === 'direct' || d.tab === 'orders') S.tab = d.tab;
       if (d.roomId) S.roomId = Number(d.roomId);
     } catch (e) { /* ignore */ }
     applySavedWindowPrefs();
@@ -93,14 +91,14 @@
       top: Math.round(S.rect.top),
       width: Math.round(S.rect.width),
       height: Math.round(S.rect.height),
-      listW: Math.round(S.listW || 168)
+      listW: Math.round(S.listW || 100)
     };
     try { if (S.saveChatPrefs) S.saveChatPrefs(payload); } catch (e) { /* ignore */ }
   }
 
   function defaultRect() {
-    var width = Math.min(461, Math.max(300, window.innerWidth - 32));
-    var height = Math.min(424, Math.max(280, window.innerHeight - 88));
+    var width = Math.min(450, Math.max(300, window.innerWidth - 32));
+    var height = Math.min(350, Math.max(260, window.innerHeight - 88));
     return {
       left: 16,
       top: Math.max(8, window.innerHeight - height - 20),
@@ -143,9 +141,9 @@
   var LIST_MAX_W = 360;
 
   function clampListW(px) {
-    var winW = (S.rect && S.rect.width) || 461;
+    var winW = (S.rect && S.rect.width) || 450;
     var max = Math.min(LIST_MAX_W, Math.max(LIST_MIN_W, Math.floor(winW * 0.55) - 16));
-    return Math.max(LIST_MIN_W, Math.min(Number(px) || 168, max));
+    return Math.max(LIST_MIN_W, Math.min(Number(px) || 100, max));
   }
 
   function applyListW(px) {
@@ -155,6 +153,7 @@
     var shell = root.querySelector('.co-chat-shell');
     if (shell) shell.style.setProperty('--co-chat-list-w', S.listW + 'px');
     root.classList.toggle('is-icons', S.listW <= LIST_ICON_W);
+    root.classList.toggle('is-compact', S.listW <= 128);
   }
 
   function bindSplit() {
@@ -166,7 +165,7 @@
       if (ev.button !== 0) return;
       ev.preventDefault();
       ev.stopPropagation();
-      drag = { x: ev.clientX, w: S.listW || 168 };
+      drag = { x: ev.clientX, w: S.listW || 100 };
       S.splitting = true;
       S.hover = true;
       S.seeThrough = false;
@@ -274,12 +273,11 @@
   function isTyping() {
     var el = document.activeElement;
     if (!el) return false;
-    return el.id === 'co-chat-input' || el.id === 'co-chat-search' || el.id === 'co-chat-picker-search';
+    return el.id === 'co-chat-input' || el.id === 'co-chat-search';
   }
 
   function pickerOpen() {
-    var picker = $('co-chat-picker');
-    return !!(picker && picker.classList.contains('is-open') && !picker.hidden);
+    return false;
   }
 
   function pageIsEditing() {
@@ -346,7 +344,6 @@
     S.seeThrough = false;
     syncIdle();
     syncNavOpen();
-    setPickerOpen(false);
     await loadRooms();
   }
 
@@ -360,7 +357,6 @@
       root.hidden = true;
       root.classList.remove('is-open', 'is-idle');
     }
-    setPickerOpen(false);
     setPlusMenuOpen(false);
     syncNavOpen();
   }
@@ -456,9 +452,6 @@
       setBadge($('co-chat-unread-badge'), S.unread.total);
       setBadge($('nav-chat-unread'), S.unread.total);
       setBadge($('tabbar-chat-unread'), S.unread.total);
-      setBadge(document.querySelector('[data-chat-tab-count="lobby"]'), S.unread.lobby);
-      setBadge(document.querySelector('[data-chat-tab-count="direct"]'), S.unread.direct);
-      setBadge(document.querySelector('[data-chat-tab-count="orders"]'), S.unread.orders);
       var n = Number(S.unread.total || 0);
       document.title = n > 0 ? '(' + n + ') ' + S.baseTitle : S.baseTitle;
     } catch (e) { /* ignore */ }
@@ -470,7 +463,7 @@
     var label = '';
     if (room.kind === 'lobby') {
       cls += ' is-lobby';
-      label = 'L';
+      label = 'C';
     } else if (room.kind === 'order') {
       cls += ' is-order';
       label = String(title || 'SO').replace(/^[A-Za-z]+-/, '').slice(-2) || 'SO';
@@ -487,32 +480,32 @@
     var host = $('co-chat-room-list');
     if (!host) return;
     if (!S.rooms.length) {
-      var empty = S.tab === 'direct'
-        ? 'No direct messages yet. Click New message.'
-        : (S.tab === 'orders'
-          ? 'Order chats appear when a sales order is created.'
-          : 'No conversations.');
-      host.innerHTML = '<p class="co-chat-empty">' + esc(empty) + '</p>';
+      host.innerHTML = '<p class="co-chat-empty">No contacts.</p>';
       return;
     }
     host.innerHTML = S.rooms.map(function (room) {
-      var on = Number(room.id) === Number(S.roomId) ? ' is-on' : '';
+      var on = room.id && Number(room.id) === Number(S.roomId) ? ' is-on' : '';
+      if (room.pinned) on += ' is-pin';
       var unread = room.unreadCount > 0
         ? '<span class="co-chat-pip">' + (room.unreadCount > 99 ? '99+' : room.unreadCount) + '</span>'
         : '';
       var presence = '';
-      if (room.kind === 'dm' && room.otherUser && S.presence[room.otherUser.id]) {
-        var seen = new Date(S.presence[room.otherUser.id]).getTime();
+      var other = room.otherUser;
+      if (room.kind === 'dm' && other && S.presence[other.id]) {
+        var seen = new Date(S.presence[other.id]).getTime();
         if (Date.now() - seen < 70000) presence = '<span class="co-chat-presence" title="Online"></span>';
       }
-      var preview = room.lastMessagePreview || 'No messages yet';
+      var preview = room.lastMessagePreview || '';
       var title = roomTitle(room);
-      return '<button type="button" class="co-chat-room' + on + '" data-room-id="' + room.id + '" title="' + esc(title) + '">' +
+      var key = room.id
+        ? 'data-room-id="' + room.id + '"'
+        : 'data-user-id="' + ((room.contactUserId || (other && other.id)) || '') + '"';
+      return '<button type="button" class="co-chat-room' + on + '" ' + key + ' title="' + esc(title) + '">' +
         roomIcon(room) +
         '<span class="co-chat-room-copy">' +
         '<span class="co-chat-room-top"><span class="co-chat-room-title">' + presence + esc(title) +
         '</span>' + unread + '</span>' +
-        '<span class="co-chat-room-preview">' + esc(preview) + '</span>' +
+        (preview ? '<span class="co-chat-room-preview">' + esc(preview) + '</span>' : '') +
         '<span class="co-chat-room-time">' + esc(fmtTime(room.lastMessageAt)) + '</span>' +
         '</span>' +
         (unread ? '<span class="co-chat-icon-pip">' + (room.unreadCount > 99 ? '99+' : room.unreadCount) + '</span>' : '') +
@@ -561,20 +554,26 @@
 
   async function loadRooms() {
     var q = ($('co-chat-search') && $('co-chat-search').value) || '';
-    var data = await S.api('/api/admin/chat/rooms?tab=' + encodeURIComponent(S.tab) +
+    var data = await S.api('/api/admin/chat/rooms?tab=contacts' +
       '&q=' + encodeURIComponent(q));
     S.rooms = data.rooms || [];
     renderRoomList();
     if (!S.roomId && S.rooms.length) {
-      await openRoom(S.rooms[0].id);
+      var first = S.rooms[0];
+      if (first && first.id) await openRoom(first.id);
     } else if (S.roomId) {
-      var still = S.rooms.some(function (r) { return Number(r.id) === Number(S.roomId); });
-      if (!still && S.tab === 'lobby' && S.rooms[0]) await openRoom(S.rooms[0].id);
-      else if (!still) {
-        S.roomId = null;
-        S.room = null;
-        S.messages = [];
-        renderEmptyMain();
+      var still = S.rooms.some(function (r) { return r.id && Number(r.id) === Number(S.roomId); });
+      if (!still) {
+        try {
+          await openRoom(S.roomId);
+        } catch (e) {
+          S.roomId = null;
+          S.room = null;
+          S.messages = [];
+          var fallback = S.rooms[0];
+          if (fallback && fallback.id) await openRoom(fallback.id);
+          else renderEmptyMain();
+        }
       } else renderRoomList();
     } else {
       renderEmptyMain();
@@ -582,10 +581,8 @@
   }
 
   function renderEmptyMain() {
-    $('co-chat-main-title').textContent = S.tab === 'direct' ? 'Direct' : (S.tab === 'orders' ? 'Orders' : 'Lobby');
-    $('co-chat-main-sub').textContent = S.tab === 'direct'
-      ? 'Pick a teammate to start a private conversation.'
-      : (S.tab === 'orders' ? 'Select an order thread.' : 'Everyone at Spectrum can see this.');
+    $('co-chat-main-title').textContent = 'Chat';
+    if ($('co-chat-main-sub')) $('co-chat-main-sub').textContent = '';
     $('co-chat-messages').innerHTML = '<p class="co-chat-empty">No messages yet.</p>';
     $('co-chat-open-order').hidden = true;
     $('co-chat-input').placeholder = 'Message…';
@@ -664,57 +661,14 @@
     } catch (e) { /* ignore */ }
   }
 
-  function setPickerOpen(open) {
-    var picker = $('co-chat-picker');
-    if (!picker) return;
-    picker.hidden = !open;
-    picker.classList.toggle('is-open', !!open);
-    if (!open) picker.setAttribute('aria-hidden', 'true');
-    else picker.removeAttribute('aria-hidden');
-    syncIdle();
-  }
-
-  async function openPicker() {
-    var data = await S.api('/api/admin/chat/users');
-    S.users = data.users || [];
-    setPickerOpen(true);
-    $('co-chat-picker-search').value = '';
-    renderPicker();
-    if ($('co-chat-picker-search')) $('co-chat-picker-search').focus();
-  }
-
-  function renderPicker() {
-    var q = String(($('co-chat-picker-search') && $('co-chat-picker-search').value) || '').toLowerCase();
-    var list = S.users.filter(function (u) {
-      if (!q) return true;
-      return (u.name + ' ' + u.email).toLowerCase().indexOf(q) !== -1;
-    });
-    var host = $('co-chat-picker-list');
-    host.innerHTML = list.length ? list.map(function (u) {
-      return '<button type="button" class="co-chat-picker-row" data-user-id="' + u.id + '">' +
-        '<strong>' + esc(u.name || u.email) + '</strong>' +
-        '<span>' + esc(u.email) + (u.roleName ? ' · ' + esc(u.roleName) : '') + '</span></button>';
-    }).join('') : '<p class="co-chat-empty">No teammates found.</p>';
-  }
-
   async function startDm(userId) {
     var data = await S.api('/api/admin/chat/dm', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ userId: Number(userId) })
     });
-    setPickerOpen(false);
-    setTab('direct');
     await loadRooms();
     if (data.room) await openRoom(data.room.id);
-  }
-
-  function setTab(tab) {
-    S.tab = tab;
-    document.querySelectorAll('#co-chat .co-chat-tab').forEach(function (btn) {
-      btn.classList.toggle('is-on', btn.getAttribute('data-chat-tab') === tab);
-    });
-    saveLast();
   }
 
   async function handleDeepLink() {
@@ -725,12 +679,10 @@
     if (chat === 'dm' && params.get('user_id')) {
       await startDm(params.get('user_id'));
     } else if (chat === 'order' && params.get('order_id')) {
-      setTab('orders');
       var data = await S.api('/api/admin/chat/rooms/order/' + params.get('order_id'));
       await loadRooms();
       if (data.room) await openRoom(data.room.id);
     } else {
-      setTab('lobby');
       await loadRooms();
     }
   }
@@ -946,17 +898,18 @@
   }
 
   function bindMain() {
-    document.querySelectorAll('#co-chat .co-chat-tab').forEach(function (btn) {
-      btn.addEventListener('click', async function () {
-        setTab(btn.getAttribute('data-chat-tab'));
-        S.roomId = null;
-        await loadRooms();
-        saveLast();
-      });
-    });
     $('co-chat-room-list').addEventListener('click', function (ev) {
-      var btn = ev.target.closest('[data-room-id]');
-      if (btn) openRoom(btn.getAttribute('data-room-id'));
+      var roomBtn = ev.target.closest('[data-room-id]');
+      if (roomBtn) {
+        openRoom(roomBtn.getAttribute('data-room-id'));
+        return;
+      }
+      var userBtn = ev.target.closest('[data-user-id]');
+      if (userBtn) {
+        startDm(userBtn.getAttribute('data-user-id')).catch(function (err) {
+          alert(err.message || 'Could not start chat.');
+        });
+      }
     });
     var searchTimer;
     $('co-chat-search').addEventListener('input', function () {
@@ -980,31 +933,19 @@
         $('co-chat-attach-name').textContent = S.file.name;
       } else clearFile();
     });
-    $('co-chat-new').addEventListener('click', function () {
-      openPicker().catch(function (err) { alert(err.message || 'Could not load users.'); });
-    });
-    $('co-chat-picker-close').addEventListener('click', function () { setPickerOpen(false); });
-    $('co-chat-picker').addEventListener('click', function (ev) {
-      if (ev.target === $('co-chat-picker')) setPickerOpen(false);
-    });
     document.addEventListener('keydown', function (ev) {
       if (ev.key === 'Escape') {
         if (plusMenuOpen()) {
           setPlusMenuOpen(false);
           return;
         }
-        if ($('co-chat-picker') && $('co-chat-picker').classList.contains('is-open')) {
-          setPickerOpen(false);
-          syncIdle();
-          return;
-        }
         if (S.windowOpen) closeChatWindow();
         return;
       }
       if (ev.key !== 'Enter' || ev.shiftKey || ev.altKey || ev.metaKey || ev.ctrlKey) return;
-      if (!S.windowOpen || pickerOpen() || pageIsEditing()) return;
+      if (!S.windowOpen || pageIsEditing()) return;
       var el = document.activeElement;
-      if (el && (el.id === 'co-chat-input' || el.id === 'so-chat-input' || el.id === 'co-chat-search' || el.id === 'co-chat-picker-search')) return;
+      if (el && (el.id === 'co-chat-input' || el.id === 'so-chat-input' || el.id === 'co-chat-search')) return;
       var tag = el && el.tagName;
       if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT' || (el && el.isContentEditable)) return;
       ev.preventDefault();
@@ -1013,13 +954,6 @@
       var input = $('co-chat-input');
       if (input) input.focus();
       syncIdle();
-    });
-    $('co-chat-picker-search').addEventListener('input', renderPicker);
-    $('co-chat-picker-list').addEventListener('click', function (ev) {
-      var row = ev.target.closest('[data-user-id]');
-      if (row) startDm(row.getAttribute('data-user-id')).catch(function (err) {
-        alert(err.message || 'Could not start chat.');
-      });
     });
     $('co-chat-messages').addEventListener('click', function (ev) {
       var del = ev.target.closest('[data-chat-del]');
@@ -1034,11 +968,7 @@
         return;
       }
       var find = ev.target.closest('[data-chat-find-order]');
-      if (find) {
-        setTab('orders');
-        $('co-chat-search').value = find.getAttribute('data-chat-find-order');
-        loadRooms();
-      }
+      if (find && S.openSalesDoc) S.openSalesDoc(find.getAttribute('data-chat-find-order'));
     });
     $('co-chat-open-order').addEventListener('click', function () {
       var id = $('co-chat-open-order').dataset.orderId;
@@ -1124,7 +1054,7 @@
     document.addEventListener('mousedown', pageInteract, true);
     document.addEventListener('wheel', pageInteract, { capture: true, passive: true });
     document.addEventListener('scroll', pageInteract, true);
-    ['co-chat-input', 'co-chat-search', 'co-chat-picker-search'].forEach(function (id) {
+    ['co-chat-input', 'co-chat-search'].forEach(function (id) {
       var el = $(id);
       if (!el) return;
       el.addEventListener('focus', function () {
@@ -1163,8 +1093,6 @@
       root.classList.add('is-window');
     }
     loadLast();
-    setTab(S.tab || 'lobby');
-    setPickerOpen(false);
     S.booted = true;
     bindMain();
     await refreshUnread();

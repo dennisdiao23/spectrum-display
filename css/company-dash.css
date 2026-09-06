@@ -4142,8 +4142,8 @@ body.so-invoice-float .so-doc-side {
   z-index: 75;
   left: 1rem;
   bottom: 1.25rem;
-  width: min(28.8rem, calc(100vw - 2rem));
-  height: min(26.5rem, calc(100vh - 5.5rem));
+  width: min(450px, calc(100vw - 2rem));
+  height: min(350px, calc(100vh - 5.5rem));
   margin: 0;
   display: flex;
   flex-direction: column;
@@ -4186,6 +4186,11 @@ body.so-invoice-float .so-doc-side {
   user-select: none;
   flex-shrink: 0;
 }
+.co-chat-head-drag {
+  flex: 1;
+  min-width: 1.5rem;
+  cursor: grab;
+}
 .co-chat-head-actions {
   display: flex;
   align-items: center;
@@ -4196,11 +4201,6 @@ body.so-invoice-float .so-doc-side {
 }
 .co-chat-head-actions button {
   cursor: pointer;
-}
-.co-chat-head #co-chat-new {
-  padding: 0.38rem 0.7rem;
-  font-size: 0.75rem;
-  white-space: nowrap;
 }
 .co-chat-close {
   width: 2rem;
@@ -4345,7 +4345,7 @@ body.chat-resizing * {
 }
 .co-chat-shell {
   display: grid;
-  grid-template-columns: var(--co-chat-list-w, 168px) 1fr;
+  grid-template-columns: var(--co-chat-list-w, 100px) 1fr;
   min-height: 420px;
   max-height: 560px;
   background: #fff;
@@ -4498,6 +4498,36 @@ body.chat-splitting * {
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+}
+.co-chat.is-compact .co-chat-search {
+  margin: 0.45rem 0.35rem;
+  padding: 0.35rem 0.4rem;
+  font-size: 0.72rem;
+}
+.co-chat.is-compact .co-chat-room {
+  padding: 0.4rem 0.3rem;
+  gap: 0.3rem;
+}
+.co-chat.is-compact .co-chat-avatar {
+  width: 1.55rem;
+  height: 1.55rem;
+  font-size: 0.62rem;
+}
+.co-chat.is-compact .co-chat-room-preview,
+.co-chat.is-compact .co-chat-room-time {
+  display: none;
+}
+.co-chat.is-compact .co-chat-room-title {
+  font-size: 0.72rem;
+}
+.co-chat-room.is-pin .co-chat-avatar.is-lobby {
+  background: #dbe7ff;
+}
+.co-chat.is-window #co-chat-main-sub {
+  display: none;
+}
+.co-chat.is-window .co-chat-main-head {
+  padding: 0.55rem 0.75rem;
 }
 .co-chat-presence {
   width: 0.5rem;
@@ -4875,7 +4905,7 @@ body.chat-splitting * {
     left: 0.5rem;
     right: 0.5rem;
     width: auto;
-    height: min(62vh, 26.5rem);
+    height: min(62vh, 350px);
     bottom: calc(var(--dash-tabbar-h, 0px) + 0.75rem);
   }
   .co-chat.is-window .co-chat-list { max-height: 140px; }

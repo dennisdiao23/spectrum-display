@@ -45,7 +45,7 @@ function sanitizeChatState(state) {
     top: clampInt(state.top, 0, 8000, 8),
     width: width,
     height: height,
-    listW: clampInt(state.listW, 56, 400, 168)
+    listW: clampInt(state.listW, 56, 400, 100)
   };
 }
 

@@ -5455,7 +5455,7 @@
         top: parseInt(chat.top, 10) || 0,
         width: width,
         height: height,
-        listW: parseInt(chat.listW, 10) || 168
+        listW: parseInt(chat.listW, 10) || 100
       };
       cacheColPrefs();
       scheduleColPrefsSave();
@@ -15586,14 +15586,9 @@
 
   <section class="co-chat is-window" id="co-chat" hidden>
     <div class="co-chat-head">
-      <div class="co-chat-tabs" role="tablist">
-        <button type="button" class="co-chat-tab is-on" data-chat-tab="lobby" role="tab">Lobby <span data-chat-tab-count="lobby" hidden></span></button>
-        <button type="button" class="co-chat-tab" data-chat-tab="direct" role="tab">Direct <span data-chat-tab-count="direct" hidden></span></button>
-        <button type="button" class="co-chat-tab" data-chat-tab="orders" role="tab">Orders <span data-chat-tab-count="orders" hidden></span></button>
-      </div>
+      <div class="co-chat-head-drag" aria-hidden="true"></div>
       <div class="co-chat-head-actions">
         <span class="co-chat-unread-badge" id="co-chat-unread-badge" hidden></span>
-        <button type="button" class="co-chat-btn" id="co-chat-new">New message</button>
         <button type="button" class="co-chat-close" id="co-chat-close" aria-label="Close chat">×</button>
       </div>
     </div>
@@ -15606,8 +15601,8 @@
       <div class="co-chat-main">
         <div class="co-chat-main-head">
           <div>
-            <strong id="co-chat-main-title">Lobby</strong>
-            <p id="co-chat-main-sub">Everyone at Spectrum can see this.</p>
+            <strong id="co-chat-main-title">Chat</strong>
+            <p id="co-chat-main-sub" hidden></p>
           </div>
           <button type="button" class="co-chat-link-btn" id="co-chat-open-order" hidden>Open order →</button>
         </div>
@@ -15637,16 +15632,6 @@
     <span class="co-chat-resize" data-resize="nw"></span>
     <span class="co-chat-resize" data-resize="se"></span>
     <span class="co-chat-resize" data-resize="sw"></span>
-    <div class="co-chat-picker" id="co-chat-picker" hidden>
-      <div class="co-chat-picker-card">
-        <div class="co-chat-picker-head">
-          <strong>New message</strong>
-          <button type="button" id="co-chat-picker-close" aria-label="Close">×</button>
-        </div>
-        <input type="search" id="co-chat-picker-search" class="co-chat-search" placeholder="Search name or email…" autocomplete="off">
-        <div id="co-chat-picker-list" class="co-chat-picker-list"></div>
-      </div>
-    </div>
   </section>
 </body>
 </html>
