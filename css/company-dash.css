@@ -4158,6 +4158,10 @@ body.so-invoice-float .so-doc-side {
   transition: none;
   opacity: 1;
 }
+.co-chat.is-window.is-moving {
+  transition: none;
+  opacity: 0.5;
+}
 .co-chat.is-window[hidden] {
   display: none !important;
 }
@@ -4177,7 +4181,7 @@ body.so-invoice-float .so-doc-side {
   gap: 1rem;
   padding: 0.85rem 1rem 0.7rem;
   background: var(--dash-card);
-  cursor: move;
+  cursor: pointer;
   user-select: none;
 }
 .co-chat-head-actions {

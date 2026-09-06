@@ -33,6 +33,7 @@
     windowOpen: false,
     hover: false,
     resizing: false,
+    moving: false,
     rect: null,
     timers: {}
   };
@@ -111,7 +112,7 @@
     var root = $('co-chat');
     if (!root) return;
     var drag = null;
-    function beginDrag(ev, dir, cursor) {
+    function beginDrag(ev, dir) {
       if (ev.button !== 0) return;
       ev.preventDefault();
       ev.stopPropagation();
@@ -125,23 +126,25 @@
         width: start.width,
         height: start.height
       };
-      S.resizing = true;
+      S.resizing = dir !== 'move';
+      S.moving = dir === 'move';
       S.hover = true;
-      root.classList.add('is-resizing');
-      root.classList.remove('is-idle');
+      root.classList.toggle('is-resizing', S.resizing);
+      root.classList.toggle('is-moving', S.moving);
+      if (S.moving) root.classList.add('is-idle');
+      else root.classList.remove('is-idle');
       document.body.classList.add('chat-resizing');
-      document.body.style.cursor = cursor || (dir === 'move' ? 'move' : 'default');
     }
     var head = root.querySelector('.co-chat-head');
     if (head) {
       head.addEventListener('mousedown', function (ev) {
         if (ev.target.closest('button, a, input, textarea, select')) return;
-        beginDrag(ev, 'move', 'grabbing');
+        beginDrag(ev, 'move');
       });
     }
     root.querySelectorAll('.co-chat-resize').forEach(function (handle) {
       handle.addEventListener('mousedown', function (ev) {
-        beginDrag(ev, handle.getAttribute('data-resize') || 'se', window.getComputedStyle(handle).cursor);
+        beginDrag(ev, handle.getAttribute('data-resize') || 'se');
       });
     });
     document.addEventListener('mousemove', function (ev) {
@@ -175,9 +178,9 @@
       if (!drag) return;
       drag = null;
       S.resizing = false;
-      root.classList.remove('is-resizing');
+      S.moving = false;
+      root.classList.remove('is-resizing', 'is-moving');
       document.body.classList.remove('chat-resizing');
-      document.body.style.cursor = '';
       saveLast();
       syncIdle();
     }
@@ -201,6 +204,10 @@
   function syncIdle() {
     var root = $('co-chat');
     if (!root || !S.windowOpen) return;
+    if (S.moving) {
+      root.classList.add('is-idle');
+      return;
+    }
     if (S.resizing) {
       root.classList.remove('is-idle');
       return;
