@@ -1514,6 +1514,9 @@ async function main() {
         }
       }
       const staff = await store.createAdmin(input);
+      if (typeof store.enrollChatUser === 'function') {
+        try { await store.enrollChatUser(staff, { announce: true }); } catch (e) { console.error('chat enroll', e); }
+      }
       res.json({ ok: true, staff: staff });
     } catch (err) {
       const msg = err.message || 'Could not add staff.';

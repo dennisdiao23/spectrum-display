@@ -282,6 +282,7 @@ function roleLabel(role) {
 function roleInputFromBody(body, currentRow) {
   const fallback = currentRow ? menuAccessFromRow(currentRow) : defaultMenuAccess('none');
   const menu = normalizeMenuInput(body && body.menu, fallback);
+  if (!currentRow && !canAccess(menu.chat, 'view')) menu.chat = 'edit';
   if (body && body.website != null && body.menu == null) {
     const w = accessLevel(body.website);
     menu.website = w;

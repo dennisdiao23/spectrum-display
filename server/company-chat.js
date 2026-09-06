@@ -9,6 +9,8 @@ const {
   parseMenuAccess,
   serializeMenuAccess,
   defaultMenuAccess,
+  menuFromLegacy,
+  canAccess,
   isOwnerAdmin
 } = require('./admin-roles');
 
@@ -328,13 +330,11 @@ function grantChatOnRoles(db) {
       update.run(roles.serializeMenuAccess(roles.defaultMenuAccess('edit')), row.id);
       return;
     }
-    const raw = String(row.menu_access || '').trim();
-    const hadChatKey = /"chat"\s*:/.test(raw);
     let menu = roles.parseMenuAccess(row.menu_access);
     if (!menu) {
       menu = roles.menuFromLegacy(row.website_access, row.inventory_access, false);
     }
-    if (!hadChatKey) menu.chat = 'edit';
+    if (!roles.canAccess(menu.chat, 'view')) menu.chat = 'edit';
     update.run(roles.serializeMenuAccess(menu), row.id);
   });
 }
@@ -425,6 +425,16 @@ function ensureCompanyChat(db) {
   });
 
   grantChatOnRoles(db);
+
+  const lobbyRow = db.prepare("SELECT id FROM chat_rooms WHERE kind = 'lobby' LIMIT 1").get();
+  if (lobbyRow) {
+    const enroll = db.prepare(
+      'INSERT OR IGNORE INTO chat_room_reads (user_id, room_id, last_read_at, muted) VALUES (?, ?, ?, 0)'
+    );
+    db.prepare('SELECT id FROM admins').all().forEach(function (row) {
+      enroll.run(row.id, lobbyRow.id, stamp);
+    });
+  }
 }
 
 function unreadCountSql() {
@@ -655,9 +665,6 @@ function sqliteApi(db) {
       if (!other) {
         throw httpError(404, 'That person was not found.');
       }
-      if (!hasPerm(publicAdmin(other), 'chat', 'view')) {
-        throw httpError(400, 'That person does not have Chat.');
-      }
 
       const pair = dmPair(admin.id, otherId);
       let row = db.prepare(`
@@ -832,9 +839,21 @@ function sqliteApi(db) {
         ORDER BY a.name COLLATE NOCASE, a.email
       `).all();
       return rows.filter(function (row) {
-        if (Number(row.id) === Number(admin.id)) return false;
-        return hasPerm(publicAdmin(row), 'chat', 'view');
+        return Number(row.id) !== Number(admin.id);
       }).map(formatUser);
+    },
+
+    async enrollChatUser(user, opts) {
+      ensureCompanyChat(db);
+      if (!user || !user.id) return null;
+      const lobby = db.prepare("SELECT id FROM chat_rooms WHERE kind = 'lobby' LIMIT 1").get();
+      if (!lobby) return null;
+      ensureReadRow(user.id, lobby.id);
+      if (opts && opts.announce) {
+        const name = user.name || user.email || 'Staff';
+        insertMessage(lobby.id, null, name + ' joined Lobby', null, nowIso());
+      }
+      return true;
     },
 
     async touchChatPresence(admin) {
@@ -938,6 +957,42 @@ function supabaseApi(supabase) {
     } catch (e) {
       /* ignore backfill errors */
     }
+    try {
+      const { data: roles } = await supabase.from('admin_roles').select('*');
+      for (let i = 0; i < (roles || []).length; i++) {
+        const row = roles[i];
+        if (row.locked || row.slug === 'owner') {
+          await supabase.from('admin_roles').update({
+            menu_access: serializeMenuAccess(defaultMenuAccess('edit'))
+          }).eq('id', row.id);
+          continue;
+        }
+        let menu = parseMenuAccess(row.menu_access);
+        if (!menu) menu = menuFromLegacy(row.website_access, row.inventory_access, false);
+        if (!canAccess(menu.chat, 'view')) {
+          menu.chat = 'edit';
+          await supabase.from('admin_roles').update({
+            menu_access: serializeMenuAccess(menu)
+          }).eq('id', row.id);
+        }
+      }
+    } catch (e) { /* ignore */ }
+    try {
+      const { data: lobbyRows } = await supabase.from('chat_rooms').select('id').eq('kind', 'lobby').limit(1);
+      const lobbyId = lobbyRows && lobbyRows[0] && lobbyRows[0].id;
+      if (lobbyId) {
+        const { data: admins } = await supabase.from('admins').select('id');
+        const stamp = nowIso();
+        for (let j = 0; j < (admins || []).length; j++) {
+          await supabase.from('chat_room_reads').upsert({
+            user_id: admins[j].id,
+            room_id: lobbyId,
+            last_read_at: stamp,
+            muted: 0
+          }, { onConflict: 'user_id,room_id', ignoreDuplicates: true });
+        }
+      }
+    } catch (e) { /* ignore */ }
     seeded = true;
   }
 
@@ -1224,9 +1279,6 @@ function supabaseApi(supabase) {
       if (!other) {
         throw httpError(404, 'That person was not found.');
       }
-      if (!hasPerm(publicAdmin(other), 'chat', 'view')) {
-        throw httpError(400, 'That person does not have Chat.');
-      }
 
       const pair = dmPair(admin.id, otherId);
       let { data: row } = await supabase
@@ -1454,12 +1506,26 @@ function supabaseApi(supabase) {
       for (let i = 0; i < (data || []).length; i++) {
         const row = await getAdminRow(data[i].id);
         if (!row || Number(row.id) === Number(admin.id)) continue;
-        if (hasPerm(publicAdmin(row), 'chat', 'view')) out.push(formatUser(row));
+        out.push(formatUser(row));
       }
       out.sort(function (a, b) {
         return String(a.name).localeCompare(String(b.name));
       });
       return out;
+    },
+
+    async enrollChatUser(user, opts) {
+      await ensureReady();
+      if (!user || !user.id) return null;
+      const { data: lobbyRows } = await supabase.from('chat_rooms').select('id').eq('kind', 'lobby').limit(1);
+      const lobbyId = lobbyRows && lobbyRows[0] && lobbyRows[0].id;
+      if (!lobbyId) return null;
+      await ensureReadRow(user.id, lobbyId);
+      if (opts && opts.announce) {
+        const name = user.name || user.email || 'Staff';
+        await insertMessage(lobbyId, null, name + ' joined Lobby', null, nowIso());
+      }
+      return true;
     },
 
     async touchChatPresence(admin) {

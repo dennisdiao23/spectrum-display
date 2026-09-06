@@ -14130,6 +14130,11 @@
         markStClean();
         closeStaffDrawer(true);
         await loadStaff();
+        try {
+          if (window.SpectrumChat && typeof SpectrumChat.refreshContacts === 'function') {
+            SpectrumChat.refreshContacts();
+          }
+        } catch (e) {}
       } catch (err) {
         showStaffMsg(err.message || 'Could not save user.');
       }

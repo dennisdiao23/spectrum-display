@@ -1156,6 +1156,10 @@
     onSalesDocOpened: onSalesDocOpened,
     openOrderChat: openOrderChat,
     open: openChatWindow,
-    close: closeChatWindow
+    close: closeChatWindow,
+    refreshContacts: function () {
+      if (!S.booted || !hasChat()) return;
+      loadRooms().catch(function () {});
+    }
   };
 })(window);
