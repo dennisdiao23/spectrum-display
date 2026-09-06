@@ -713,7 +713,7 @@
         a.href = '/wall';
         a.setAttribute('data-wall-link', '1');
         a.setAttribute('data-i18n', 'nav.wall');
-        a.textContent = 'Wall';
+        a.textContent = 'LED Wall Controller';
         if (account && account.nextSibling) list.insertBefore(a, account.nextSibling);
         else if (account) account.after(a);
         else list.insertBefore(a, list.firstChild);
