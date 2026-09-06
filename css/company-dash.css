@@ -4177,12 +4177,18 @@ body.so-invoice-float .so-doc-side {
   gap: 1rem;
   padding: 0.85rem 1rem 0.7rem;
   background: var(--dash-card);
+  cursor: move;
+  user-select: none;
 }
 .co-chat-head-actions {
   display: flex;
   align-items: center;
   gap: 0.45rem;
   flex-shrink: 0;
+  cursor: default;
+}
+.co-chat-head-actions button {
+  cursor: pointer;
 }
 .co-chat-close {
   width: 2rem;

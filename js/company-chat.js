@@ -111,33 +111,52 @@
     var root = $('co-chat');
     if (!root) return;
     var drag = null;
+    function beginDrag(ev, dir, cursor) {
+      if (ev.button !== 0) return;
+      ev.preventDefault();
+      ev.stopPropagation();
+      var start = S.rect || defaultRect();
+      drag = {
+        dir: dir,
+        x: ev.clientX,
+        y: ev.clientY,
+        left: start.left,
+        top: start.top,
+        width: start.width,
+        height: start.height
+      };
+      S.resizing = true;
+      S.hover = true;
+      root.classList.add('is-resizing');
+      root.classList.remove('is-idle');
+      document.body.classList.add('chat-resizing');
+      document.body.style.cursor = cursor || (dir === 'move' ? 'move' : 'default');
+    }
+    var head = root.querySelector('.co-chat-head');
+    if (head) {
+      head.addEventListener('mousedown', function (ev) {
+        if (ev.target.closest('button, a, input, textarea, select')) return;
+        beginDrag(ev, 'move', 'grabbing');
+      });
+    }
     root.querySelectorAll('.co-chat-resize').forEach(function (handle) {
       handle.addEventListener('mousedown', function (ev) {
-        if (ev.button !== 0) return;
-        ev.preventDefault();
-        ev.stopPropagation();
-        var start = S.rect || defaultRect();
-        drag = {
-          dir: handle.getAttribute('data-resize') || 'se',
-          x: ev.clientX,
-          y: ev.clientY,
-          left: start.left,
-          top: start.top,
-          width: start.width,
-          height: start.height
-        };
-        S.resizing = true;
-        S.hover = true;
-        root.classList.add('is-resizing');
-        root.classList.remove('is-idle');
-        document.body.classList.add('chat-resizing');
-        document.body.style.cursor = window.getComputedStyle(handle).cursor;
+        beginDrag(ev, handle.getAttribute('data-resize') || 'se', window.getComputedStyle(handle).cursor);
       });
     });
     document.addEventListener('mousemove', function (ev) {
       if (!drag) return;
       var dx = ev.clientX - drag.x;
       var dy = ev.clientY - drag.y;
+      if (drag.dir === 'move') {
+        applyRect({
+          left: drag.left + dx,
+          top: drag.top + dy,
+          width: drag.width,
+          height: drag.height
+        });
+        return;
+      }
       var next = { left: drag.left, top: drag.top, width: drag.width, height: drag.height };
       var right = drag.left + drag.width;
       var bottom = drag.top + drag.height;
