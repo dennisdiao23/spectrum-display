@@ -464,6 +464,14 @@
       openPicker().catch(function (err) { alert(err.message || 'Could not load users.'); });
     });
     $('co-chat-picker-close').addEventListener('click', function () { $('co-chat-picker').hidden = true; });
+    $('co-chat-picker').addEventListener('click', function (ev) {
+      if (ev.target === $('co-chat-picker')) $('co-chat-picker').hidden = true;
+    });
+    document.addEventListener('keydown', function (ev) {
+      if (ev.key === 'Escape' && $('co-chat-picker') && !$('co-chat-picker').hidden) {
+        $('co-chat-picker').hidden = true;
+      }
+    });
     $('co-chat-picker-search').addEventListener('input', renderPicker);
     $('co-chat-picker-list').addEventListener('click', function (ev) {
       var row = ev.target.closest('[data-user-id]');
@@ -528,6 +536,7 @@
       return;
     }
     root.hidden = false;
+    if ($('co-chat-picker')) $('co-chat-picker').hidden = true;
     S.booted = true;
     bindMain();
     await refreshUnread();

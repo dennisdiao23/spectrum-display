@@ -4369,6 +4369,9 @@ body.so-invoice-float .so-doc-side {
   place-items: center;
   z-index: 80;
 }
+.co-chat-picker[hidden] {
+  display: none !important;
+}
 .co-chat-picker-card {
   width: min(420px, calc(100vw - 2rem));
   max-height: min(520px, calc(100vh - 2rem));
@@ -4463,3 +4466,5 @@ body.so-invoice-float .so-doc-side {
   .co-chat-shell { grid-template-columns: 1fr; max-height: none; }
   .co-chat-list { border-right: 0; border-bottom: 1px solid rgb(30 41 59); max-height: 220px; }
 }
+
+.so-chat-pane[hidden], [data-so-pane-panel][hidden] { display: none !important; }
