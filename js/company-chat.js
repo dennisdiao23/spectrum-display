@@ -99,7 +99,7 @@
   }
 
   function defaultRect() {
-    var width = Math.min(384, Math.max(300, window.innerWidth - 32));
+    var width = Math.min(461, Math.max(300, window.innerWidth - 32));
     var height = Math.min(424, Math.max(280, window.innerHeight - 88));
     return {
       left: 16,
@@ -143,7 +143,7 @@
   var LIST_MAX_W = 360;
 
   function clampListW(px) {
-    var winW = (S.rect && S.rect.width) || 384;
+    var winW = (S.rect && S.rect.width) || 461;
     var max = Math.min(LIST_MAX_W, Math.max(LIST_MIN_W, Math.floor(winW * 0.55) - 16));
     return Math.max(LIST_MIN_W, Math.min(Number(px) || 168, max));
   }
