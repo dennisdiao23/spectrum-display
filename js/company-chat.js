@@ -133,7 +133,7 @@
       S.seeThrough = false;
       root.classList.toggle('is-resizing', S.resizing);
       root.classList.toggle('is-moving', S.moving);
-      root.classList.remove('is-idle');
+      root.classList.toggle('is-idle', S.moving);
       document.body.classList.add('chat-resizing');
     }
     var head = root.querySelector('.co-chat-head');
@@ -210,6 +210,11 @@
     if (body.classList.contains('so-invoice-float') || body.classList.contains('po-doc-float')) return true;
     if (document.querySelector('.cc-workspace.cc-detail-open')) return true;
     if (document.querySelector('.so-doc-open, .po-doc-open, .wp-form-open')) return true;
+    var shown = ['rs-detail', 'wh-form', 'wh-transfer-form', 'form-wrap'];
+    for (var i = 0; i < shown.length; i++) {
+      var n = document.getElementById(shown[i]);
+      if (n && !n.hidden && !n.classList.contains('hidden')) return true;
+    }
     var el = document.activeElement;
     if (el && el.closest && el.closest('#inv-drawer, #cc-drawer, #vn-drawer, #ca-drawer, #ci-drawer, #st-drawer, #rl-drawer, #so-detail, #po-detail, #rs-detail, #wh-form, #wh-transfer-form, #product-form, #form-wrap')) {
       return true;
@@ -227,7 +232,11 @@
   function syncIdle() {
     var root = $('co-chat');
     if (!root || !S.windowOpen) return;
-    if (S.moving || S.resizing || isTyping() || pickerOpen()) {
+    if (S.moving) {
+      root.classList.add('is-idle');
+      return;
+    }
+    if (S.resizing || isTyping() || pickerOpen()) {
       root.classList.remove('is-idle');
       return;
     }
@@ -832,9 +841,11 @@
       var root = $('co-chat');
       if (!root) return;
       if (ev.target && root.contains(ev.target)) return;
-      if (isTyping() || pickerOpen()) return;
+      if (pickerOpen()) return;
       S.seeThrough = true;
       S.hover = false;
+      var focused = document.activeElement;
+      if (focused && root.contains(focused) && focused.blur) focused.blur();
       syncIdle();
     }
     document.addEventListener('mousedown', pageInteract, true);
