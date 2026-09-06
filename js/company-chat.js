@@ -202,6 +202,21 @@
     return !!(picker && picker.classList.contains('is-open') && !picker.hidden);
   }
 
+  function pageIsEditing() {
+    var body = document.body;
+    if (!body) return false;
+    if (/\b(inv|cc|vn|ca|ci|st|rl)-drawer-open\b/.test(body.className)) return true;
+    if (body.classList.contains('dash-detail-open')) return true;
+    if (body.classList.contains('so-invoice-float') || body.classList.contains('po-doc-float')) return true;
+    if (document.querySelector('.cc-workspace.cc-detail-open')) return true;
+    if (document.querySelector('.so-doc-open, .po-doc-open, .wp-form-open')) return true;
+    var el = document.activeElement;
+    if (el && el.closest && el.closest('#inv-drawer, #cc-drawer, #vn-drawer, #ca-drawer, #ci-drawer, #st-drawer, #rl-drawer, #so-detail, #po-detail, #rs-detail, #wh-form, #wh-transfer-form, #product-form, #form-wrap')) {
+      return true;
+    }
+    return false;
+  }
+
   function pointOverChat(ev) {
     var root = $('co-chat');
     if (!root || !S.windowOpen) return false;
@@ -717,7 +732,7 @@
         return;
       }
       if (ev.key !== 'Enter' || ev.shiftKey || ev.altKey || ev.metaKey || ev.ctrlKey) return;
-      if (!S.windowOpen || pickerOpen()) return;
+      if (!S.windowOpen || pickerOpen() || pageIsEditing()) return;
       var el = document.activeElement;
       if (el && (el.id === 'co-chat-input' || el.id === 'so-chat-input' || el.id === 'co-chat-search' || el.id === 'co-chat-picker-search')) return;
       var tag = el && el.tagName;
