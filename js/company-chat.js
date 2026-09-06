@@ -32,6 +32,10 @@
     booted: false,
     windowOpen: false,
     hover: false,
+    seeThrough: false,
+    resizing: false,
+    moving: false,
+    rect: null,
     timers: {}
   };
 
@@ -51,7 +55,8 @@
     try {
       localStorage.setItem(persistKey(), JSON.stringify({
         tab: S.tab || 'lobby',
-        roomId: S.roomId || null
+        roomId: S.roomId || null,
+        rect: S.rect || null
       }));
     } catch (e) { /* ignore */ }
   }
@@ -61,7 +66,129 @@
       var d = JSON.parse(localStorage.getItem(persistKey()) || '{}');
       if (d.tab === 'lobby' || d.tab === 'direct' || d.tab === 'orders') S.tab = d.tab;
       if (d.roomId) S.roomId = Number(d.roomId);
+      if (d.rect && d.rect.width && d.rect.height) S.rect = d.rect;
     } catch (e) { /* ignore */ }
+  }
+
+  function defaultRect() {
+    var width = Math.min(832, Math.max(360, window.innerWidth - 32));
+    var height = Math.min(544, Math.max(280, window.innerHeight - 88));
+    return {
+      left: 16,
+      top: Math.max(8, window.innerHeight - height - 20),
+      width: width,
+      height: height
+    };
+  }
+
+  function clampRect(r) {
+    var minW = 360;
+    var minH = 280;
+    var pad = 8;
+    var maxW = Math.max(minW, window.innerWidth - pad * 2);
+    var maxH = Math.max(minH, window.innerHeight - pad * 2);
+    var width = Math.max(minW, Math.min(Number(r && r.width) || minW, maxW));
+    var height = Math.max(minH, Math.min(Number(r && r.height) || minH, maxH));
+    var left = Number(r && r.left);
+    var top = Number(r && r.top);
+    if (!isFinite(left)) left = 16;
+    if (!isFinite(top)) top = Math.max(pad, window.innerHeight - height - 20);
+    left = Math.max(pad, Math.min(left, window.innerWidth - width - pad));
+    top = Math.max(pad, Math.min(top, window.innerHeight - height - pad));
+    return { left: left, top: top, width: width, height: height };
+  }
+
+  function applyRect(r) {
+    var root = $('co-chat');
+    if (!root) return;
+    S.rect = clampRect(r || S.rect || defaultRect());
+    root.style.left = S.rect.left + 'px';
+    root.style.top = S.rect.top + 'px';
+    root.style.width = S.rect.width + 'px';
+    root.style.height = S.rect.height + 'px';
+    root.classList.add('is-placed');
+  }
+
+  function bindResize() {
+    var root = $('co-chat');
+    if (!root) return;
+    var drag = null;
+    function beginDrag(ev, dir) {
+      if (ev.button !== 0) return;
+      ev.preventDefault();
+      ev.stopPropagation();
+      var start = S.rect || defaultRect();
+      drag = {
+        dir: dir,
+        x: ev.clientX,
+        y: ev.clientY,
+        left: start.left,
+        top: start.top,
+        width: start.width,
+        height: start.height
+      };
+      S.resizing = dir !== 'move';
+      S.moving = dir === 'move';
+      S.hover = true;
+      S.seeThrough = false;
+      root.classList.toggle('is-resizing', S.resizing);
+      root.classList.toggle('is-moving', S.moving);
+      root.classList.toggle('is-idle', S.moving);
+      document.body.classList.add('chat-resizing');
+    }
+    var head = root.querySelector('.co-chat-head');
+    if (head) {
+      head.addEventListener('mousedown', function (ev) {
+        if (ev.target.closest('button, a, input, textarea, select')) return;
+        beginDrag(ev, 'move');
+      });
+    }
+    root.querySelectorAll('.co-chat-resize').forEach(function (handle) {
+      handle.addEventListener('mousedown', function (ev) {
+        beginDrag(ev, handle.getAttribute('data-resize') || 'se');
+      });
+    });
+    document.addEventListener('mousemove', function (ev) {
+      if (!drag) return;
+      var dx = ev.clientX - drag.x;
+      var dy = ev.clientY - drag.y;
+      if (drag.dir === 'move') {
+        applyRect({
+          left: drag.left + dx,
+          top: drag.top + dy,
+          width: drag.width,
+          height: drag.height
+        });
+        return;
+      }
+      var next = { left: drag.left, top: drag.top, width: drag.width, height: drag.height };
+      var right = drag.left + drag.width;
+      var bottom = drag.top + drag.height;
+      if (drag.dir.indexOf('e') !== -1) next.width = drag.width + dx;
+      if (drag.dir.indexOf('s') !== -1) next.height = drag.height + dy;
+      if (drag.dir.indexOf('w') !== -1) next.width = drag.width - dx;
+      if (drag.dir.indexOf('n') !== -1) next.height = drag.height - dy;
+      next = clampRect(next);
+      if (drag.dir.indexOf('w') !== -1) next.left = Math.max(8, right - next.width);
+      else next.left = drag.left;
+      if (drag.dir.indexOf('n') !== -1) next.top = Math.max(8, bottom - next.height);
+      else next.top = drag.top;
+      applyRect(next);
+    });
+    function endDrag() {
+      if (!drag) return;
+      drag = null;
+      S.resizing = false;
+      S.moving = false;
+      root.classList.remove('is-resizing', 'is-moving');
+      document.body.classList.remove('chat-resizing');
+      saveLast();
+      syncIdle();
+    }
+    document.addEventListener('mouseup', endDrag);
+    window.addEventListener('resize', function () {
+      if (S.windowOpen) applyRect(S.rect || defaultRect());
+    });
   }
 
   function isTyping() {
@@ -75,11 +202,45 @@
     return !!(picker && picker.classList.contains('is-open') && !picker.hidden);
   }
 
+  function pageIsEditing() {
+    var body = document.body;
+    if (!body) return false;
+    if (/\b(inv|cc|vn|ca|ci|st|rl)-drawer-open\b/.test(body.className)) return true;
+    if (body.classList.contains('dash-detail-open')) return true;
+    if (body.classList.contains('so-invoice-float') || body.classList.contains('po-doc-float')) return true;
+    if (document.querySelector('.cc-workspace.cc-detail-open')) return true;
+    if (document.querySelector('.so-doc-open, .po-doc-open, .wp-form-open')) return true;
+    var shown = ['rs-detail', 'wh-form', 'wh-transfer-form', 'form-wrap'];
+    for (var i = 0; i < shown.length; i++) {
+      var n = document.getElementById(shown[i]);
+      if (n && !n.hidden && !n.classList.contains('hidden')) return true;
+    }
+    var el = document.activeElement;
+    if (el && el.closest && el.closest('#inv-drawer, #cc-drawer, #vn-drawer, #ca-drawer, #ci-drawer, #st-drawer, #rl-drawer, #so-detail, #po-detail, #rs-detail, #wh-form, #wh-transfer-form, #product-form, #form-wrap')) {
+      return true;
+    }
+    return false;
+  }
+
+  function pointOverChat(ev) {
+    var root = $('co-chat');
+    if (!root || !S.windowOpen) return false;
+    var r = root.getBoundingClientRect();
+    return ev.clientX >= r.left && ev.clientX <= r.right && ev.clientY >= r.top && ev.clientY <= r.bottom;
+  }
+
   function syncIdle() {
     var root = $('co-chat');
     if (!root || !S.windowOpen) return;
-    var idle = !S.hover && !isTyping() && !pickerOpen();
-    root.classList.toggle('is-idle', idle);
+    if (S.moving) {
+      root.classList.add('is-idle');
+      return;
+    }
+    if (S.resizing || isTyping() || pickerOpen()) {
+      root.classList.remove('is-idle');
+      return;
+    }
+    root.classList.toggle('is-idle', !!S.seeThrough && !S.hover);
   }
 
   function syncNavOpen() {
@@ -98,8 +259,10 @@
     if (!root) return;
     root.hidden = false;
     root.classList.add('is-window', 'is-open');
+    applyRect(S.rect || defaultRect());
     S.windowOpen = true;
     S.hover = true;
+    S.seeThrough = false;
     syncIdle();
     syncNavOpen();
     setPickerOpen(false);
@@ -111,6 +274,7 @@
     saveLast();
     S.windowOpen = false;
     S.hover = false;
+    S.seeThrough = false;
     if (root) {
       root.hidden = true;
       root.classList.remove('is-open', 'is-idle');
@@ -567,13 +731,27 @@
       if (ev.target === $('co-chat-picker')) setPickerOpen(false);
     });
     document.addEventListener('keydown', function (ev) {
-      if (ev.key !== 'Escape') return;
-      if ($('co-chat-picker') && $('co-chat-picker').classList.contains('is-open')) {
-        setPickerOpen(false);
-        syncIdle();
+      if (ev.key === 'Escape') {
+        if ($('co-chat-picker') && $('co-chat-picker').classList.contains('is-open')) {
+          setPickerOpen(false);
+          syncIdle();
+          return;
+        }
+        if (S.windowOpen) closeChatWindow();
         return;
       }
-      if (S.windowOpen) closeChatWindow();
+      if (ev.key !== 'Enter' || ev.shiftKey || ev.altKey || ev.metaKey || ev.ctrlKey) return;
+      if (!S.windowOpen || pickerOpen() || pageIsEditing()) return;
+      var el = document.activeElement;
+      if (el && (el.id === 'co-chat-input' || el.id === 'so-chat-input' || el.id === 'co-chat-search' || el.id === 'co-chat-picker-search')) return;
+      var tag = el && el.tagName;
+      if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT' || (el && el.isContentEditable)) return;
+      ev.preventDefault();
+      S.seeThrough = false;
+      S.hover = true;
+      var input = $('co-chat-input');
+      if (input) input.focus();
+      syncIdle();
     });
     $('co-chat-picker-search').addEventListener('input', renderPicker);
     $('co-chat-picker-list').addEventListener('click', function (ev) {
@@ -624,6 +802,7 @@
     }
     bindSoTabs();
     bindWindow();
+    bindResize();
   }
 
   function bindWindow() {
@@ -632,6 +811,7 @@
       ev.stopPropagation();
       if (S.windowOpen) {
         S.hover = true;
+        S.seeThrough = false;
         syncIdle();
         var input = $('co-chat-input');
         if (input) input.focus();
@@ -648,18 +828,37 @@
     }
     document.addEventListener('mousemove', function (ev) {
       var root = $('co-chat');
-      if (!root || !S.windowOpen) return;
-      var r = root.getBoundingClientRect();
-      var over = ev.clientX >= r.left && ev.clientX <= r.right && ev.clientY >= r.top && ev.clientY <= r.bottom;
-      if (over !== S.hover) {
-        S.hover = over;
+      if (!root || !S.windowOpen || S.moving || S.resizing) return;
+      var over = pointOverChat(ev);
+      S.hover = over;
+      if (over && S.seeThrough) {
+        S.seeThrough = false;
         syncIdle();
       }
     });
+    function pageInteract(ev) {
+      if (!S.windowOpen || S.moving || S.resizing) return;
+      var root = $('co-chat');
+      if (!root) return;
+      if (ev.target && root.contains(ev.target)) return;
+      if (pickerOpen()) return;
+      S.seeThrough = true;
+      S.hover = false;
+      var focused = document.activeElement;
+      if (focused && root.contains(focused) && focused.blur) focused.blur();
+      syncIdle();
+    }
+    document.addEventListener('mousedown', pageInteract, true);
+    document.addEventListener('wheel', pageInteract, { capture: true, passive: true });
+    document.addEventListener('scroll', pageInteract, true);
     ['co-chat-input', 'co-chat-search', 'co-chat-picker-search'].forEach(function (id) {
       var el = $(id);
       if (!el) return;
-      el.addEventListener('focus', syncIdle);
+      el.addEventListener('focus', function () {
+        S.seeThrough = false;
+        S.hover = true;
+        syncIdle();
+      });
       el.addEventListener('blur', function () { setTimeout(syncIdle, 0); });
     });
   }
