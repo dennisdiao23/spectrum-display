@@ -20,6 +20,7 @@
     messages: [],
     lastMsgId: 0,
     file: null,
+    copilotPending: false,
     users: [],
     unread: { total: 0, lobby: 0, direct: 0, orders: 0 },
     presence: {},
@@ -380,6 +381,15 @@
 
   function linkify(text) {
     var s = esc(text);
+    s = s.replace(/\[copilot-draft\|([^|\]]+)\|([^|\]]+)\|([^|\]]*)\|(\/company[^|\]]*)\]/g, function (_, token, kind, label, path) {
+      return '<div class="co-chat-draft-card" data-copilot-token="' + token + '">' +
+        '<span class="co-chat-share-kind">' + kind + ' · review</span>' +
+        '<span class="co-chat-share-label">' + label + '</span>' +
+        '<span class="co-chat-draft-actions">' +
+        '<button type="button" class="co-chat-draft-open" data-chat-path="' + path + '">Open to review</button>' +
+        '<button type="button" class="co-chat-draft-discard" data-copilot-discard="' + token + '">Discard</button>' +
+        '</span></div>';
+    });
     s = s.replace(/\[share\|([^|\]]+)\|([^|\]]+)\|(\/company[^|\]]*)\]/g, function (_, kind, label, path) {
       return '<button type="button" class="co-chat-share-card" data-chat-path="' + path + '">' +
         '<span class="co-chat-share-kind">' + kind + '</span>' +
@@ -419,6 +429,7 @@
 
   function roomSub(room) {
     if (!room) return '';
+    if (room.kind === 'copilot') return 'I draft. You review and save.';
     if (room.kind === 'lobby') return 'Everyone at Spectrum can see this.';
     if (room.kind === 'dm' && room.otherUser) {
       return 'Only you and ' + (room.otherUser.name || 'them') + ' can see this.';
@@ -435,6 +446,7 @@
 
   function composerPlaceholder(room) {
     if (!room) return 'Message…';
+    if (room.kind === 'copilot') return 'Ask Copilot to draft something…';
     if (room.kind === 'lobby') return 'Message the team…';
     if (room.kind === 'dm' && room.otherUser) {
       var first = String(room.otherUser.name || 'them').split(/\s+/)[0];
@@ -464,6 +476,9 @@
     if (room.kind === 'lobby') {
       cls += ' is-lobby';
       label = 'L';
+    } else if (room.kind === 'copilot') {
+      cls += ' is-copilot';
+      label = 'C';
     } else if (room.kind === 'order') {
       cls += ' is-order';
       label = String(title || 'SO').replace(/^[A-Za-z]+-/, '').slice(-2) || 'SO';
@@ -516,7 +531,7 @@
   function renderMessages(hostId, messages) {
     var host = $(hostId);
     if (!host) return;
-    if (!messages.length) {
+    if (!messages.length && !(hostId === 'co-chat-messages' && S.copilotPending)) {
       host.innerHTML = '<p class="co-chat-empty">No messages yet.</p>';
       return;
     }
@@ -527,6 +542,13 @@
       }
       if (msg.isSystem) {
         return '<div class="co-chat-msg is-system" data-msg-id="' + msg.id + '">' + linkify(msg.body || '') + '</div>';
+      }
+      if (msg.isCopilot) {
+        return '<div class="co-chat-msg is-copilot" data-msg-id="' + msg.id + '">' +
+          '<div class="co-chat-msg-meta"><strong>Copilot</strong><span>' +
+          esc(fmtTime(msg.createdAt)) + '</span></div>' +
+          (msg.body ? '<div class="co-chat-msg-body">' + linkify(msg.body) + '</div>' : '') +
+          '</div>';
       }
       var mine = Number(msg.userId) === Number(selfId);
       var name = (msg.user && msg.user.name) || 'Staff';
@@ -548,8 +570,14 @@
         esc(fmtTime(msg.createdAt)) + (msg.editedAt ? ' · edited' : '') + '</span>' + actions + '</div>' +
         (msg.body ? '<div class="co-chat-msg-body">' + linkify(msg.body) + '</div>' : '') +
         attach + '</div>';
-    }).join('');
+    }).join('') + (hostId === 'co-chat-messages' ? pendingHtml() : '');
     host.scrollTop = host.scrollHeight;
+  }
+
+  function pendingHtml() {
+    if (!S.copilotPending) return '';
+    return '<div class="co-chat-msg is-copilot is-pending"><div class="co-chat-msg-meta"><strong>Copilot</strong></div>' +
+      '<div class="co-chat-msg-body">Working on a draft…</div></div>';
   }
 
   async function loadRooms() {
@@ -600,6 +628,14 @@
     S.room = data.room;
     S.messages = data.messages || [];
     S.lastMsgId = S.messages.reduce(function (m, x) { return Math.max(m, Number(x.id) || 0); }, 0);
+    if (S.room && S.room.kind === 'copilot') {
+      var hasCopilot = S.messages.some(function (m) {
+        return m.isCopilot && Number(m.id) === S.lastMsgId;
+      });
+      if (hasCopilot) S.copilotPending = false;
+    } else {
+      S.copilotPending = false;
+    }
     setWindowTitle(roomTitle(S.room));
     if ($('co-chat-main-sub')) $('co-chat-main-sub').textContent = roomSub(S.room);
     $('co-chat-input').placeholder = composerPlaceholder(S.room);
@@ -641,6 +677,7 @@
     await S.api('/api/admin/chat/rooms/' + S.roomId + '/messages', { method: 'POST', body: fd });
     if ($('co-chat-input')) $('co-chat-input').value = '';
     clearFile();
+    if (S.room && S.room.kind === 'copilot') S.copilotPending = true;
     await openRoom(S.roomId);
     await loadRooms();
   }
@@ -660,6 +697,9 @@
       if (!msgs.length) return;
       S.messages = S.messages.concat(msgs);
       S.lastMsgId = S.messages.reduce(function (m, x) { return Math.max(m, Number(x.id) || 0); }, S.lastMsgId);
+      if (S.room && S.room.kind === 'copilot' && msgs.some(function (m) { return m.isCopilot; })) {
+        S.copilotPending = false;
+      }
       renderMessages('co-chat-messages', S.messages);
       await S.api('/api/admin/chat/rooms/' + S.roomId + '/read', { method: 'POST' });
       loadRooms();
@@ -688,6 +728,10 @@
       var data = await S.api('/api/admin/chat/rooms/order/' + params.get('order_id'));
       await loadRooms();
       if (data.room) await openRoom(data.room.id);
+    } else if (chat === 'copilot') {
+      await loadRooms();
+      var copilot = S.rooms.find(function (r) { return r.kind === 'copilot'; });
+      if (copilot && copilot.id) await openRoom(copilot.id);
     } else {
       await loadRooms();
     }
@@ -975,6 +1019,18 @@
       }
       var find = ev.target.closest('[data-chat-find-order]');
       if (find && S.openSalesDoc) S.openSalesDoc(find.getAttribute('data-chat-find-order'));
+      var discard = ev.target.closest('[data-copilot-discard]');
+      if (discard) {
+        var token = discard.getAttribute('data-copilot-discard');
+        S.api('/api/admin/chat/copilot/drafts/' + encodeURIComponent(token) + '/discard', { method: 'POST' })
+          .then(function () {
+            discard.closest('.co-chat-draft-card').classList.add('is-discarded');
+            discard.disabled = true;
+            var openBtn = discard.parentNode && discard.parentNode.querySelector('.co-chat-draft-open');
+            if (openBtn) openBtn.disabled = true;
+          })
+          .catch(function (err) { alert(err.message || 'Could not discard.'); });
+      }
     });
     $('co-chat-open-order').addEventListener('click', function () {
       var id = $('co-chat-open-order').dataset.orderId;

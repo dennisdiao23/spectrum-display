@@ -997,6 +997,7 @@ create table if not exists public.chat_rooms (
   created_at timestamptz not null default now()
 );
 create unique index if not exists chat_rooms_lobby_uidx on public.chat_rooms (kind) where kind = 'lobby';
+create unique index if not exists chat_rooms_copilot_uidx on public.chat_rooms (dm_user_low_id) where kind = 'copilot';
 create unique index if not exists chat_rooms_order_uidx on public.chat_rooms (sales_order_id) where kind = 'order';
 create unique index if not exists chat_rooms_dm_uidx on public.chat_rooms (dm_user_low_id, dm_user_high_id) where kind = 'dm';
 create index if not exists chat_rooms_kind_last_idx on public.chat_rooms (kind, last_message_at desc nulls last);

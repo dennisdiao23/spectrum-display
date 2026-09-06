@@ -1007,6 +1007,32 @@ async function main() {
         body: req.body && req.body.body
       }, req.file || null);
       res.json({ ok: true, message: msg });
+      try {
+        const room = await store.getChatRoom(req.admin, req.params.id);
+        if (room && room.kind === 'copilot') {
+          const copilot = require('./copilot');
+          copilot.replyToChat(store, req.admin, room, msg).catch(function (err) {
+            console.error('copilot reply', err);
+          });
+        }
+      } catch (e) {
+        console.error('copilot dispatch', e);
+      }
+    } catch (err) { next(err); }
+  });
+
+  app.get('/api/admin/chat/copilot/drafts/:token', requireAdmin, requireChat, async function (req, res, next) {
+    try {
+      const copilot = require('./copilot');
+      const draft = await copilot.getDraft(store, req.admin, req.params.token);
+      res.json({ ok: true, draft: draft });
+    } catch (err) { next(err); }
+  });
+
+  app.post('/api/admin/chat/copilot/drafts/:token/discard', requireAdmin, requireChat, async function (req, res, next) {
+    try {
+      const copilot = require('./copilot');
+      res.json(await copilot.discardDraft(store, req.admin, req.params.token));
     } catch (err) { next(err); }
   });
 

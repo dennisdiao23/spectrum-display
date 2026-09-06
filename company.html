@@ -5580,9 +5580,110 @@
       return { item: item, tab: tab };
     }
 
+    function copilotTokenFromHref(href) {
+      try {
+        return new URL(href || location.href, location.origin).searchParams.get('copilot') || '';
+      } catch (err) {
+        return '';
+      }
+    }
+
+    async function applyCopilotDraft(token) {
+      if (!token) return;
+      const data = await api('/api/admin/chat/copilot/drafts/' + encodeURIComponent(token));
+      const draft = data && data.draft;
+      if (!draft || !draft.payload) throw new Error('That draft is no longer available.');
+      if (draft.status === 'discarded') throw new Error('That draft was discarded.');
+      const kind = String(draft.kind || '');
+      const payload = draft.payload || {};
+      if (kind === 'po' || kind === 'po_patch') {
+        try { await loadPurchaseOrders(); } catch (err) {}
+        try { await loadInventory(); } catch (err) {}
+        if (payload.id) {
+          await openDocMasterTab('po', payload.id);
+          fillPoForm(Object.assign({}, poDocById(payload.id) || {}, payload));
+        } else {
+          await openDocMasterTab('po', 'new');
+          fillPoForm(Object.assign({
+            status: 'open',
+            issueDate: new Date().toISOString().slice(0, 10),
+            lines: [{ qty: 1, rate: 0 }]
+          }, payload, { id: '' }));
+        }
+        return;
+      }
+      if (kind === 'quote' || kind === 'order' || kind === 'invoice' ||
+          kind === 'quote_patch' || kind === 'order_patch' || kind === 'invoice_patch') {
+        const type = kind.replace('_patch', '');
+        try { await loadSalesDocs(type); } catch (err) {}
+        if (payload.id) {
+          await openDocMasterTab(type, payload.id);
+          const cur = soDocById ? soDocById(payload.id) : {};
+          fillSoForm(Object.assign({ type: type }, cur || {}, payload, { type: type }));
+        } else {
+          await openDocMasterTab(type, 'new');
+          fillSoForm(Object.assign({
+            type: type,
+            status: 'draft',
+            issueDate: new Date().toISOString().slice(0, 10),
+            lines: []
+          }, payload, { id: '', type: type, status: payload.status || 'draft' }));
+        }
+        return;
+      }
+      if (kind === 'inventory' || kind === 'inventory_patch') {
+        try { await loadInventory(); } catch (err) {}
+        if (payload.id) {
+          await openInventory(payload.id);
+          fillInventoryForm(Object.assign({}, inventoryDetail && inventoryDetail.item || {}, payload));
+        } else {
+          openNewInventory('list');
+          fillInventoryForm(payload);
+        }
+        return;
+      }
+      if (kind === 'customer' || kind === 'customer_patch') {
+        if (payload.id && typeof openCcTab === 'function') {
+          await openCcTab(payload.id);
+          if (typeof fillCcForm === 'function') fillCcForm(Object.assign({}, payload));
+        } else if (typeof openNewCustomer === 'function') {
+          openNewCustomer();
+          if (typeof fillCcForm === 'function') fillCcForm(payload);
+        }
+        return;
+      }
+      if (kind === 'vendor' || kind === 'vendor_patch') {
+        if (payload.id && typeof openVnTab === 'function') {
+          await openVnTab(payload.id);
+          if (typeof fillVnForm === 'function') fillVnForm(Object.assign({}, payload));
+        } else if (typeof openNewVendor === 'function') {
+          openNewVendor('list');
+          if (typeof fillVnForm === 'function') fillVnForm(payload);
+        }
+        return;
+      }
+      if (kind === 'warehouse' || kind === 'warehouse_patch') {
+        if (typeof openWhTab === 'function') {
+          await openWhTab(payload.id || 'new');
+          if (typeof fillWhForm === 'function') fillWhForm(payload);
+        }
+        return;
+      }
+      if (kind === 'receipt' && typeof openCompanyTab === 'function') {
+        openCompanyTab('receipt-shipments', true);
+      }
+    }
+
     function openChatSharePath(path) {
       const href = String(path || '').split('#')[0];
       if (href.indexOf('/company') !== 0) return;
+      const token = copilotTokenFromHref(href);
+      if (token) {
+        applyCopilotDraft(token).catch(function (err) {
+          alert(err.message || 'Could not open that draft.');
+        });
+        return;
+      }
       let tab = tabFromHref(href);
       if (!tab) return;
       tab = canonicalMasterTab(tab);
@@ -14732,6 +14833,8 @@
         await loadDash();
         await openRoutedSection(tabFromPath());
         bootSpectrumChat(data.admin);
+        var loginDraft = copilotTokenFromHref(location.href);
+        if (loginDraft) await applyCopilotDraft(loginDraft).catch(function () {});
       } catch (err) {
         showError('login-error', err.message);
       }
@@ -15578,6 +15681,8 @@
           return loadDash().then(function () {
             return openRoutedSection(tabFromPath()).then(function () {
               if (window.SpectrumChat) bootSpectrumChat(data.admin);
+              var bootDraft = copilotTokenFromHref(location.href);
+              if (bootDraft) return applyCopilotDraft(bootDraft).catch(function () {});
             });
           });
         });

@@ -140,7 +140,9 @@ function formatRoom(row, extras) {
   const extra = extras || {};
   const kind = row.kind;
   let title = row.title || '';
-  if (kind === 'lobby') {
+  if (kind === 'copilot') {
+    title = 'Copilot';
+  } else if (kind === 'lobby') {
     title = 'Lobby';
   } else if (kind === 'dm') {
     const other = extra.otherUser;
@@ -150,6 +152,7 @@ function formatRoom(row, extras) {
       title = title + ' (cancelled)';
     }
   }
+  const pinRank = kind === 'copilot' ? 0 : (kind === 'lobby' ? 1 : 9);
   return {
     id: row.id,
     kind: kind,
@@ -164,19 +167,21 @@ function formatRoom(row, extras) {
     muted: !!extra.muted,
     otherUser: kind === 'dm' ? (extra.otherUser || null) : null,
     createdAt: row.created_at || null,
-    pinned: kind === 'lobby'
+    pinned: pinRank < 9,
+    pinRank: pinRank
   };
 }
 
-function formatMessage(row, usersById) {
+function formatMessage(row, usersById, extras) {
   if (!row) return null;
   const deleted = !!row.deleted_at;
+  const isCopilot = !!(extras && extras.copilot) && !row.user_id;
   const user = row.user_id ? ((usersById && usersById[row.user_id]) || null) : null;
   return {
     id: row.id,
     roomId: row.room_id,
     userId: row.user_id || null,
-    user: user,
+    user: isCopilot ? { id: null, name: 'Copilot', email: '', role: '' } : user,
     body: deleted ? '' : (row.body || ''),
     attachmentUrl: deleted ? null : (row.attachment_url || null),
     attachmentName: deleted ? null : (row.attachment_name || null),
@@ -185,7 +190,8 @@ function formatMessage(row, usersById) {
     editedAt: row.edited_at || null,
     deletedAt: row.deleted_at || null,
     deletedByUserId: row.deleted_by_user_id || null,
-    isSystem: !row.user_id,
+    isSystem: !row.user_id && !isCopilot,
+    isCopilot: isCopilot,
     isDeleted: deleted
   };
 }
@@ -234,6 +240,7 @@ function matchesContactQuery(room, q) {
   const hay = [
     room.title || '',
     room.kind === 'lobby' ? 'chat lobby' : '',
+    room.kind === 'copilot' ? 'copilot assistant ai' : '',
     room.otherUser && room.otherUser.name,
     room.otherUser && room.otherUser.email
   ].join(' ').toLowerCase();
@@ -242,7 +249,9 @@ function matchesContactQuery(room, q) {
 
 function sortContacts(rooms) {
   rooms.sort(function (a, b) {
-    if (!!a.pinned !== !!b.pinned) return a.pinned ? -1 : 1;
+    const ar = a.pinRank != null ? a.pinRank : (a.pinned ? 1 : 9);
+    const br = b.pinRank != null ? b.pinRank : (b.pinned ? 1 : 9);
+    if (ar !== br) return ar - br;
     const at = a.lastMessageAt || '';
     const bt = b.lastMessageAt || '';
     if (at !== bt) {
@@ -258,7 +267,7 @@ function sortContacts(rooms) {
   return rooms;
 }
 
-function buildContactList(lobbyRoom, dmRooms, users, query) {
+function buildContactList(copilotRoom, lobbyRoom, dmRooms, users, query) {
   const q = String(query || '').trim().toLowerCase();
   const dms = dmRooms || [];
   const dmsByUser = {};
@@ -269,6 +278,7 @@ function buildContactList(lobbyRoom, dmRooms, users, query) {
   });
   const seen = {};
   const out = [];
+  if (copilotRoom) out.push(copilotRoom);
   if (lobbyRoom) out.push(lobbyRoom);
   (users || []).forEach(function (user) {
     const id = Number(user.id);
@@ -288,6 +298,11 @@ function buildContactList(lobbyRoom, dmRooms, users, query) {
 function assertRoomAccess(room, admin) {
   if (!room) {
     throw httpError(404, 'Chat room not found.');
+  }
+  if (room.kind === 'copilot') {
+    if (Number(room.dm_user_low_id) !== Number(admin.id)) {
+      throw httpError(403, 'You do not have access to this conversation.');
+    }
   }
   if (room.kind === 'dm') {
     const uid = Number(admin.id);
@@ -356,6 +371,8 @@ function ensureCompanyChat(db) {
     );
     CREATE UNIQUE INDEX IF NOT EXISTS chat_rooms_lobby_uidx
       ON chat_rooms (kind) WHERE kind = 'lobby';
+    CREATE UNIQUE INDEX IF NOT EXISTS chat_rooms_copilot_uidx
+      ON chat_rooms (dm_user_low_id) WHERE kind = 'copilot';
     CREATE UNIQUE INDEX IF NOT EXISTS chat_rooms_order_uidx
       ON chat_rooms (sales_order_id) WHERE kind = 'order';
     CREATE UNIQUE INDEX IF NOT EXISTS chat_rooms_dm_uidx
@@ -390,6 +407,30 @@ function ensureCompanyChat(db) {
       user_id INTEGER PRIMARY KEY,
       last_seen_at TEXT NOT NULL
     );
+
+    CREATE TABLE IF NOT EXISTS copilot_drafts (
+      token TEXT PRIMARY KEY,
+      user_id INTEGER NOT NULL,
+      room_id INTEGER NOT NULL,
+      kind TEXT NOT NULL,
+      summary TEXT NOT NULL DEFAULT '',
+      payload TEXT NOT NULL DEFAULT '{}',
+      status TEXT NOT NULL DEFAULT 'pending',
+      result_id TEXT,
+      created_at TEXT NOT NULL,
+      resolved_at TEXT
+    );
+    CREATE INDEX IF NOT EXISTS copilot_drafts_user_idx ON copilot_drafts (user_id, created_at);
+
+    CREATE TABLE IF NOT EXISTS copilot_audit (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      user_id INTEGER,
+      room_id INTEGER,
+      action TEXT NOT NULL,
+      detail TEXT NOT NULL DEFAULT '{}',
+      created_at TEXT NOT NULL
+    );
+    CREATE INDEX IF NOT EXISTS copilot_audit_user_idx ON copilot_audit (user_id, created_at);
   `);
 
   const stamp = nowIso();
@@ -575,6 +616,45 @@ function sqliteApi(db) {
     );
   }
 
+  function ensureCopilotRoomRow(userId) {
+    let row = db.prepare(
+      "SELECT * FROM chat_rooms WHERE kind = 'copilot' AND dm_user_low_id = ? LIMIT 1"
+    ).get(userId);
+    if (row) {
+      ensureReadRow(userId, row.id);
+      return row;
+    }
+    const stamp = nowIso();
+    const info = db.prepare(`
+      INSERT INTO chat_rooms (
+        kind, dm_user_low_id, title, created_at
+      ) VALUES ('copilot', ?, 'Copilot', ?)
+    `).run(userId, stamp);
+    row = getRoomRow(info.lastInsertRowid);
+    ensureReadRow(userId, row.id);
+    const welcome = require('./copilot').WELCOME;
+    insertMessage(row.id, null, welcome, null, stamp);
+    return row;
+  }
+
+  function formatDraftRow(row) {
+    if (!row) return null;
+    let payload = {};
+    try { payload = JSON.parse(row.payload || '{}'); } catch (e) { payload = {}; }
+    return {
+      token: row.token,
+      userId: row.user_id,
+      roomId: row.room_id,
+      kind: row.kind,
+      summary: row.summary || '',
+      payload: payload,
+      status: row.status || 'pending',
+      resultId: row.result_id || null,
+      createdAt: row.created_at,
+      resolvedAt: row.resolved_at || null
+    };
+  }
+
   return {
     async listChatRooms(admin, tab, query) {
       ensureCompanyChat(db);
@@ -595,15 +675,17 @@ function sqliteApi(db) {
         }));
       }
 
+      const copilotRow = ensureCopilotRoomRow(viewerId);
       const lobbyRow = db.prepare("SELECT * FROM chat_rooms WHERE kind = 'lobby' LIMIT 1").get();
       const dmRows = db.prepare(`
         SELECT * FROM chat_rooms
         WHERE kind = 'dm' AND (dm_user_low_id = ? OR dm_user_high_id = ?)
       `).all(viewerId, viewerId);
+      const copilot = copilotRow ? enrichRoom(copilotRow, viewerId) : null;
       const lobby = lobbyRow ? enrichRoom(lobbyRow, viewerId) : null;
       const dms = dmRows.map(function (row) { return enrichRoom(row, viewerId); });
       const users = await this.listChatUsers(admin);
-      return buildContactList(lobby, dms, users, q);
+      return buildContactList(copilot, lobby, dms, users, q);
     },
 
     async getChatRoom(admin, roomId) {
@@ -707,9 +789,10 @@ function sqliteApi(db) {
         `).all(room.id, limit).reverse();
       }
       const map = usersMap(rows.map(function (r) { return r.user_id; }));
+      const extras = room.kind === 'copilot' ? { copilot: true } : null;
       return {
         room: enrichRoom(room, admin.id),
-        messages: rows.map(function (r) { return formatMessage(r, map); })
+        messages: rows.map(function (r) { return formatMessage(r, map, extras); })
       };
     },
 
@@ -776,6 +859,8 @@ function sqliteApi(db) {
         if (!isAuthor) {
           throw httpError(403, 'Only the author can remove a direct message.');
         }
+      } else if (room.kind === 'copilot') {
+        /* room owner may remove Copilot replies or their own messages */
       } else if (!isAuthor && !canModerateLobbyOrOrder(admin)) {
         throw httpError(403, 'You cannot remove this message.');
       }
@@ -811,20 +896,26 @@ function sqliteApi(db) {
         SELECT id FROM chat_rooms
         WHERE kind = 'dm' AND (dm_user_low_id = ? OR dm_user_high_id = ?)
       `).all(viewerId, viewerId);
+      const copilot = db.prepare(
+        "SELECT id FROM chat_rooms WHERE kind = 'copilot' AND dm_user_low_id = ? LIMIT 1"
+      ).get(viewerId);
       const orders = db.prepare("SELECT id FROM chat_rooms WHERE kind = 'order'").all();
 
       let lobbyCount = 0;
       let dmCount = 0;
       let orderCount = 0;
+      let copilotCount = 0;
       if (lobby) lobbyCount = roomUnread(viewerId, lobby.id);
+      if (copilot) copilotCount = roomUnread(viewerId, copilot.id);
       dms.forEach(function (r) { dmCount += roomUnread(viewerId, r.id); });
       orders.forEach(function (r) { orderCount += roomUnread(viewerId, r.id); });
 
       return {
-        total: lobbyCount + dmCount + orderCount,
+        total: lobbyCount + dmCount + orderCount + copilotCount,
         lobby: lobbyCount,
         direct: dmCount,
-        orders: orderCount
+        orders: orderCount,
+        copilot: copilotCount
       };
     },
 
@@ -848,6 +939,7 @@ function sqliteApi(db) {
       const lobby = db.prepare("SELECT id FROM chat_rooms WHERE kind = 'lobby' LIMIT 1").get();
       if (!lobby) return null;
       ensureReadRow(user.id, lobby.id);
+      ensureCopilotRoomRow(user.id);
       if (opts && opts.announce) {
         const name = user.name || user.email || 'Staff';
         insertMessage(lobby.id, null, name + ' joined Lobby', null, nowIso());
@@ -899,6 +991,58 @@ function sqliteApi(db) {
         orderCustomerName(doc) || room.customer_name || '',
         room.id
       );
+      return true;
+    },
+
+    async appendCopilotMessage(admin, roomId, body) {
+      ensureCompanyChat(db);
+      const room = assertRoomAccess(getRoomRow(roomId), admin);
+      if (room.kind !== 'copilot') {
+        throw httpError(400, 'Copilot can only reply in Copilot chat.');
+      }
+      const stamp = nowIso();
+      const row = insertMessage(room.id, null, String(body || '').slice(0, 8000), null, stamp);
+      return formatMessage(row, {}, { copilot: true });
+    },
+
+    async saveCopilotDraft(admin, roomId, kind, payload, summary) {
+      ensureCompanyChat(db);
+      const token = crypto.randomBytes(16).toString('hex');
+      db.prepare(`
+        INSERT INTO copilot_drafts (
+          token, user_id, room_id, kind, summary, payload, status, created_at
+        ) VALUES (?, ?, ?, ?, ?, ?, 'pending', ?)
+      `).run(
+        token,
+        admin.id,
+        roomId || null,
+        String(kind || 'draft'),
+        trim(summary, 400),
+        JSON.stringify(payload || {}),
+        nowIso()
+      );
+      return token;
+    },
+
+    async getCopilotDraft(admin, token) {
+      ensureCompanyChat(db);
+      const row = db.prepare('SELECT * FROM copilot_drafts WHERE token = ?').get(token);
+      return formatDraftRow(row);
+    },
+
+    async resolveCopilotDraft(admin, token, status, resultId) {
+      ensureCompanyChat(db);
+      db.prepare(
+        'UPDATE copilot_drafts SET status = ?, result_id = ?, resolved_at = ? WHERE token = ? AND user_id = ?'
+      ).run(status || 'discarded', resultId || null, nowIso(), token, admin.id);
+      return formatDraftRow(db.prepare('SELECT * FROM copilot_drafts WHERE token = ?').get(token));
+    },
+
+    async logCopilotAudit(admin, roomId, action, detail) {
+      ensureCompanyChat(db);
+      db.prepare(
+        'INSERT INTO copilot_audit (user_id, room_id, action, detail, created_at) VALUES (?, ?, ?, ?, ?)'
+      ).run(admin && admin.id || null, roomId || null, String(action || ''), JSON.stringify(detail || {}), nowIso());
       return true;
     }
   };
@@ -1167,6 +1311,56 @@ function supabaseApi(supabase) {
     );
   }
 
+  async function ensureCopilotRoomRow(userId) {
+    const { data: existing } = await supabase
+      .from('chat_rooms')
+      .select('*')
+      .eq('kind', 'copilot')
+      .eq('dm_user_low_id', userId)
+      .maybeSingle();
+    if (existing) {
+      await ensureReadRow(userId, existing.id);
+      return existing;
+    }
+    const stamp = nowIso();
+    const inserted = await supabase.from('chat_rooms').insert({
+      kind: 'copilot',
+      dm_user_low_id: userId,
+      title: 'Copilot',
+      customer_name: '',
+      order_status: '',
+      last_message_preview: '',
+      created_at: stamp
+    }).select('*').single();
+    if (inserted.error) throw inserted.error;
+    const row = inserted.data;
+    await ensureReadRow(userId, row.id);
+    const welcome = require('./copilot').WELCOME;
+    await insertMessage(row.id, null, welcome, null, stamp);
+    return row;
+  }
+
+  function formatDraftRow(row) {
+    if (!row) return null;
+    let payload = {};
+    try { payload = JSON.parse(row.payload || '{}'); } catch (e) { payload = {}; }
+    if (payload && typeof row.payload === 'object' && !Array.isArray(row.payload)) {
+      payload = row.payload;
+    }
+    return {
+      token: row.token,
+      userId: row.user_id,
+      roomId: row.room_id,
+      kind: row.kind,
+      summary: row.summary || '',
+      payload: payload,
+      status: row.status || 'pending',
+      resultId: row.result_id || null,
+      createdAt: row.created_at,
+      resolvedAt: row.resolved_at || null
+    };
+  }
+
   return {
     async listChatRooms(admin, tab, query) {
       await ensureReady();
@@ -1191,16 +1385,18 @@ function supabaseApi(supabase) {
         return sortRoomsUnreadFirst(rooms);
       }
 
+      const copilotRow = await ensureCopilotRoomRow(viewerId);
       const { data: lobbyRows } = await supabase.from('chat_rooms').select('*').eq('kind', 'lobby').limit(1);
       const { data: dmData } = await supabase.from('chat_rooms').select('*').eq('kind', 'dm')
         .or('dm_user_low_id.eq.' + viewerId + ',dm_user_high_id.eq.' + viewerId);
+      const copilot = copilotRow ? await enrichRoom(copilotRow, viewerId) : null;
       const lobby = lobbyRows && lobbyRows[0] ? await enrichRoom(lobbyRows[0], viewerId) : null;
       const dms = [];
       for (let i = 0; i < (dmData || []).length; i++) {
         dms.push(await enrichRoom(dmData[i], viewerId));
       }
       const users = await this.listChatUsers(admin);
-      return buildContactList(lobby, dms, users, q);
+      return buildContactList(copilot, lobby, dms, users, q);
     },
 
     async getChatRoom(admin, roomId) {
@@ -1337,9 +1533,10 @@ function supabaseApi(supabase) {
       let rows = data || [];
       if (!afterId) rows = rows.slice().reverse();
       const map = await usersMap(rows.map(function (r) { return r.user_id; }));
+      const extras = room.kind === 'copilot' ? { copilot: true } : null;
       return {
         room: await enrichRoom(room, admin.id),
-        messages: rows.map(function (r) { return formatMessage(r, map); })
+        messages: rows.map(function (r) { return formatMessage(r, map, extras); })
       };
     },
 
@@ -1427,6 +1624,8 @@ function supabaseApi(supabase) {
         if (!isAuthor) {
           throw httpError(403, 'Only the author can remove a direct message.');
         }
+      } else if (room.kind === 'copilot') {
+        /* room owner may remove Copilot replies or their own messages */
       } else if (!isAuthor && !canModerateLobbyOrOrder(admin)) {
         throw httpError(403, 'You cannot remove this message.');
       }
@@ -1475,6 +1674,12 @@ function supabaseApi(supabase) {
         .select('id')
         .eq('kind', 'dm')
         .or('dm_user_low_id.eq.' + viewerId + ',dm_user_high_id.eq.' + viewerId);
+      const { data: copilotRows } = await supabase
+        .from('chat_rooms')
+        .select('id')
+        .eq('kind', 'copilot')
+        .eq('dm_user_low_id', viewerId)
+        .limit(1);
       const { data: orderRows } = await supabase
         .from('chat_rooms')
         .select('id')
@@ -1483,7 +1688,9 @@ function supabaseApi(supabase) {
       let lobbyCount = 0;
       let dmCount = 0;
       let orderCount = 0;
+      let copilotCount = 0;
       if (lobbyRows && lobbyRows[0]) lobbyCount = await roomUnread(viewerId, lobbyRows[0].id);
+      if (copilotRows && copilotRows[0]) copilotCount = await roomUnread(viewerId, copilotRows[0].id);
       for (let i = 0; i < (dmRows || []).length; i++) {
         dmCount += await roomUnread(viewerId, dmRows[i].id);
       }
@@ -1491,10 +1698,11 @@ function supabaseApi(supabase) {
         orderCount += await roomUnread(viewerId, orderRows[j].id);
       }
       return {
-        total: lobbyCount + dmCount + orderCount,
+        total: lobbyCount + dmCount + orderCount + copilotCount,
         lobby: lobbyCount,
         direct: dmCount,
-        orders: orderCount
+        orders: orderCount,
+        copilot: copilotCount
       };
     },
 
@@ -1520,6 +1728,7 @@ function supabaseApi(supabase) {
       const lobbyId = lobbyRows && lobbyRows[0] && lobbyRows[0].id;
       if (!lobbyId) return null;
       await ensureReadRow(user.id, lobbyId);
+      try { await ensureCopilotRoomRow(user.id); } catch (e) { /* copilot tables may be pending */ }
       if (opts && opts.announce) {
         const name = user.name || user.email || 'Staff';
         await insertMessage(lobbyId, null, name + ' joined Lobby', null, nowIso());
@@ -1563,6 +1772,65 @@ function supabaseApi(supabase) {
         title: orderRoomTitle(doc) || room.title,
         customer_name: orderCustomerName(doc) || room.customer_name || ''
       }).eq('id', room.id);
+      return true;
+    },
+
+    async appendCopilotMessage(admin, roomId, body) {
+      await ensureReady();
+      const room = assertRoomAccess(await getRoomRow(roomId), admin);
+      if (room.kind !== 'copilot') {
+        throw httpError(400, 'Copilot can only reply in Copilot chat.');
+      }
+      const stamp = nowIso();
+      const row = await insertMessage(room.id, null, String(body || '').slice(0, 8000), null, stamp);
+      return formatMessage(row, {}, { copilot: true });
+    },
+
+    async saveCopilotDraft(admin, roomId, kind, payload, summary) {
+      await ensureReady();
+      const token = crypto.randomBytes(16).toString('hex');
+      const { error } = await supabase.from('copilot_drafts').insert({
+        token: token,
+        user_id: admin.id,
+        room_id: roomId || null,
+        kind: String(kind || 'draft'),
+        summary: trim(summary, 400),
+        payload: payload || {},
+        status: 'pending',
+        created_at: nowIso()
+      });
+      if (error) throw error;
+      return token;
+    },
+
+    async getCopilotDraft(admin, token) {
+      await ensureReady();
+      const { data } = await supabase.from('copilot_drafts').select('*').eq('token', token).maybeSingle();
+      return formatDraftRow(data);
+    },
+
+    async resolveCopilotDraft(admin, token, status, resultId) {
+      await ensureReady();
+      await supabase.from('copilot_drafts').update({
+        status: status || 'discarded',
+        result_id: resultId || null,
+        resolved_at: nowIso()
+      }).eq('token', token).eq('user_id', admin.id);
+      const { data } = await supabase.from('copilot_drafts').select('*').eq('token', token).maybeSingle();
+      return formatDraftRow(data);
+    },
+
+    async logCopilotAudit(admin, roomId, action, detail) {
+      await ensureReady();
+      try {
+        await supabase.from('copilot_audit').insert({
+          user_id: admin && admin.id || null,
+          room_id: roomId || null,
+          action: String(action || ''),
+          detail: detail || {},
+          created_at: nowIso()
+        });
+      } catch (e) { /* audit table may not exist yet */ }
       return true;
     }
   };
