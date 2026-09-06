@@ -455,7 +455,7 @@ function createSqliteStore() {
     async getSession(token) {
       return db.prepare(`
         SELECT a.id, a.email, a.name, a.role, s.expires_at,
-          r.name AS role_name, r.website_access, r.inventory_access, r.locked AS role_locked
+          r.name AS role_name, r.website_access, r.inventory_access, r.menu_access, r.locked AS role_locked
         FROM sessions s
         JOIN admins a ON a.id = s.admin_id
         LEFT JOIN admin_roles r ON r.slug = a.role
@@ -468,7 +468,7 @@ function createSqliteStore() {
     adminWithRole(id) {
       return db.prepare(`
         SELECT a.id, a.email, a.name, a.role, a.created_at,
-          r.name AS role_name, r.website_access, r.inventory_access, r.locked AS role_locked
+          r.name AS role_name, r.website_access, r.inventory_access, r.menu_access, r.locked AS role_locked
         FROM admins a LEFT JOIN admin_roles r ON r.slug = a.role
         WHERE a.id = ?
       `).get(id) || null;
@@ -477,7 +477,7 @@ function createSqliteStore() {
       const { publicAdmin } = require('./admin-roles');
       return db.prepare(`
         SELECT a.id, a.email, a.name, a.role, a.created_at,
-          r.name AS role_name, r.website_access, r.inventory_access, r.locked AS role_locked
+          r.name AS role_name, r.website_access, r.inventory_access, r.menu_access, r.locked AS role_locked
         FROM admins a LEFT JOIN admin_roles r ON r.slug = a.role
         ORDER BY a.name COLLATE NOCASE, a.email
       `).all().map(publicAdmin);
@@ -924,7 +924,11 @@ function createSqliteStore() {
       input.lines.forEach(function (line, i) {
         insertLine.run(info.lastInsertRowid, line.sku, line.description, line.qty, line.unitPrice, i);
       });
-      return this.getSalesDoc(info.lastInsertRowid);
+      const created = await this.getSalesDoc(info.lastInsertRowid);
+      if (created && created.type === 'order') {
+        try { await this.ensureOrderChatRoom(created); } catch (e) { console.error('chat order room', e); }
+      }
+      return created;
     },
     async updateSalesDoc(id, payload) {
       const sales = require('./company-sales');
@@ -956,7 +960,11 @@ function createSqliteStore() {
       input.lines.forEach(function (line, i) {
         insertLine.run(id, line.sku, line.description, line.qty, line.unitPrice, i);
       });
-      return this.getSalesDoc(id);
+      const updated = await this.getSalesDoc(id);
+      if (updated && updated.type === 'order') {
+        try { await this.ensureOrderChatRoom(updated); } catch (e) { console.error('chat order room', e); }
+      }
+      return updated;
     },
     async deleteSalesDoc(id) {
       db.prepare('DELETE FROM company_sales_lines WHERE doc_id = ?').run(id);
@@ -1462,6 +1470,7 @@ function createSqliteStore() {
     }
   };
   Object.assign(api, require('./walls').sqliteApi(db));
+  Object.assign(api, require('./company-chat').sqliteApi(db));
   return api;
 }
 

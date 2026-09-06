@@ -10,6 +10,7 @@
   <meta name="robots" content="noindex, nofollow" />
   <link rel="stylesheet" href="/css/company-dash.css" />
   <script src="/js/address-autocomplete.js"></script>
+  <script src="/js/company-chat.js"></script>
   <script>
     (function () {
       try {
@@ -267,10 +268,59 @@
                   <h4>Company users</h4>
                   <a href="/company/settings">View users →</a>
                 </div>
+
                 <ol class="dash-activity" id="dash-company-activity"></ol>
               </div>
             </section>
           </div>
+
+          <section class="co-chat" id="co-chat" hidden>
+            <div class="co-chat-head">
+              <div>
+                <h3>Chat <span class="co-chat-unread-badge" id="co-chat-unread-badge" hidden></span></h3>
+                <p>Lobby, direct messages, and sales order threads.</p>
+              </div>
+              <button type="button" class="co-chat-btn" id="co-chat-new">New message</button>
+            </div>
+            <div class="co-chat-tabs" role="tablist">
+              <button type="button" class="co-chat-tab is-on" data-chat-tab="lobby" role="tab">Lobby <span data-chat-tab-count="lobby" hidden></span></button>
+              <button type="button" class="co-chat-tab" data-chat-tab="direct" role="tab">Direct <span data-chat-tab-count="direct" hidden></span></button>
+              <button type="button" class="co-chat-tab" data-chat-tab="orders" role="tab">Orders <span data-chat-tab-count="orders" hidden></span></button>
+            </div>
+            <div class="co-chat-shell">
+              <aside class="co-chat-list">
+                <input type="search" id="co-chat-search" class="co-chat-search" placeholder="Search…" autocomplete="off">
+                <div class="co-chat-room-list" id="co-chat-room-list"></div>
+              </aside>
+              <div class="co-chat-main">
+                <div class="co-chat-main-head">
+                  <div>
+                    <strong id="co-chat-main-title">Lobby</strong>
+                    <p id="co-chat-main-sub">Everyone at Spectrum can see this.</p>
+                  </div>
+                  <button type="button" class="co-chat-link-btn" id="co-chat-open-order" hidden>Open order →</button>
+                </div>
+                <div class="co-chat-messages" id="co-chat-messages"></div>
+                <form class="co-chat-composer" id="co-chat-composer">
+                  <input type="file" id="co-chat-file" class="co-chat-file" accept=".jpg,.jpeg,.png,.webp,.gif,.pdf,.csv,.txt,.xlsx,.docx,image/*,application/pdf,text/plain,text/csv">
+                  <button type="button" class="co-chat-attach" id="co-chat-attach" title="Attach">Attach</button>
+                  <textarea id="co-chat-input" rows="1" placeholder="Message the team…"></textarea>
+                  <button type="submit" class="co-chat-send">Send</button>
+                </form>
+                <p class="co-chat-attach-name" id="co-chat-attach-name" hidden></p>
+              </div>
+            </div>
+            <div class="co-chat-picker" id="co-chat-picker" hidden>
+              <div class="co-chat-picker-card">
+                <div class="co-chat-picker-head">
+                  <strong>New message</strong>
+                  <button type="button" id="co-chat-picker-close" aria-label="Close">×</button>
+                </div>
+                <input type="search" id="co-chat-picker-search" class="co-chat-search" placeholder="Search name or email…" autocomplete="off">
+                <div id="co-chat-picker-list" class="co-chat-picker-list"></div>
+              </div>
+            </div>
+          </section>
         </div>
       </div>
       <div id="website-pane" class="hidden">
@@ -1662,8 +1712,12 @@
               </div>
               <button type="button" id="so-caption-close" class="so-doc-close" aria-label="Close">×</button>
             </div>
+            <div class="so-doc-tabs" id="so-doc-tabs">
+              <button type="button" class="so-doc-tab is-on" data-so-pane="doc">Document</button>
+              <button type="button" class="so-doc-tab" data-so-pane="chat" id="so-chat-tab">Chat</button>
+            </div>
             <div class="so-doc-workspace">
-              <form id="so-form" class="so-doc-main">
+              <form id="so-form" class="so-doc-main" data-so-pane-panel="doc">
                 <input type="hidden" id="so-id">
                 <input type="hidden" id="so-type" value="quote">
                 <div class="so-doc-scroll">
@@ -1805,6 +1859,24 @@
                   <div id="so-side-tx-list" class="so-side-tx-list"></div>
                 </div>
               </aside>
+              <div class="so-chat-pane" id="so-chat-pane" data-so-pane-panel="chat" hidden>
+                <div class="co-chat-main so-chat-embed">
+                  <div class="co-chat-main-head">
+                    <div>
+                      <strong id="so-chat-title">Order chat</strong>
+                      <p id="so-chat-sub">Staff only · customer cannot see this.</p>
+                    </div>
+                  </div>
+                  <div class="co-chat-messages" id="so-chat-messages"></div>
+                  <form class="co-chat-composer" id="so-chat-composer">
+                    <input type="file" id="so-chat-file" class="co-chat-file" accept=".jpg,.jpeg,.png,.webp,.gif,.pdf,.csv,.txt,.xlsx,.docx,image/*,application/pdf,text/plain,text/csv">
+                    <button type="button" class="co-chat-attach" id="so-chat-attach" title="Attach">Attach</button>
+                    <textarea id="so-chat-input" rows="1" placeholder="Message about this order…"></textarea>
+                    <button type="submit" class="co-chat-send">Send</button>
+                  </form>
+                  <p class="co-chat-attach-name" id="so-chat-attach-name" hidden></p>
+                </div>
+              </div>
             </div>
           </div>
         </div>
@@ -3447,6 +3519,7 @@
     }
     const SECTION_MENU_KEY = {
       dashboard: 'dashboard',
+      chat: 'chat',
       website: 'website',
       products: 'products',
       accounts: 'accounts',
@@ -12679,6 +12752,7 @@
         document.getElementById('so-title').textContent = (doc.number || salesTypeLabel(doc.type)) + ' · ' + (doc.customerName || '');
         fillSoForm(doc);
         document.getElementById('so-detail').classList.remove('hidden');
+        if (window.SpectrumChat) SpectrumChat.onSalesDocOpened(doc);
         if (isSalesSplitOn() && !isInvoiceDocWindow()) {
           document.getElementById('sales-section').classList.remove('so-doc-open');
         } else {
@@ -13524,6 +13598,7 @@
 
     const ROLE_MENU_TREE = [
       { key: 'dashboard', label: 'Dashboard' },
+      { key: 'chat', label: 'Chat' },
       { label: 'Website', children: [
         { key: 'website', label: 'Website' },
         { key: 'products', label: 'Products' },
@@ -15348,7 +15423,17 @@
         if (!showDash(data.admin)) return;
         return loadColumnPrefs().then(function () {
           return loadDash().then(function () {
-            return openRoutedSection(tabFromPath());
+            return openRoutedSection(tabFromPath()).then(function () {
+              if (window.SpectrumChat) {
+                SpectrumChat.boot({
+                  api: api,
+                  admin: data.admin,
+                  canUse: canUse,
+                  openSalesDoc: typeof openSalesDoc === 'function' ? openSalesDoc : null,
+                  esc: typeof esc === 'function' ? esc : function (s) { return String(s == null ? '' : s); }
+                });
+              }
+            });
           });
         });
       }

@@ -936,6 +936,7 @@ function createSupabaseStore() {
         role_name: data.name,
         website_access: data.website_access,
         inventory_access: data.inventory_access,
+        menu_access: data.menu_access,
         role_locked: data.locked
       });
     },
@@ -1639,7 +1640,11 @@ function createSupabaseStore() {
         }));
         throwIf(lErr, 'Could not save line items.');
       }
-      return this.getSalesDoc(data.id);
+      const created = await this.getSalesDoc(data.id);
+      if (created && created.type === 'order') {
+        try { await this.ensureOrderChatRoom(created); } catch (e) { console.error('chat order room', e); }
+      }
+      return created;
     },
     async updateSalesDoc(id, payload) {
       const sales = require('./company-sales');
@@ -1670,7 +1675,11 @@ function createSupabaseStore() {
         }));
         throwIf(lErr, 'Could not save line items.');
       }
-      return this.getSalesDoc(id);
+      const updated = await this.getSalesDoc(id);
+      if (updated && updated.type === 'order') {
+        try { await this.ensureOrderChatRoom(updated); } catch (e) { console.error('chat order room', e); }
+      }
+      return updated;
     },
     async deleteSalesDoc(id) {
       await supabase.from('company_sales_lines').delete().eq('doc_id', id);
@@ -2266,6 +2275,7 @@ function createSupabaseStore() {
     }
   };
   Object.assign(api, require('./walls').supabaseApi(supabase));
+  Object.assign(api, require('./company-chat').supabaseApi(supabase));
   return api;
 }
 

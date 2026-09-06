@@ -2,7 +2,7 @@ const ACCESS = ['none', 'view', 'edit'];
 const OWNER_ROLE_SLUG = 'owner';
 
 const MENU_KEYS = [
-  'dashboard',
+  'dashboard', 'chat',
   'website', 'products', 'accounts',
   'inventory', 'warehouses', 'vendors', 'purchase-orders', 'receipt-shipments',
   'customers',
@@ -12,6 +12,7 @@ const MENU_KEYS = [
 
 const MENU_GROUPS = [
   { key: 'dashboard', label: 'Dashboard' },
+  { key: 'chat', label: 'Chat' },
   {
     label: 'Website',
     children: [
@@ -105,6 +106,7 @@ function menuFromLegacy(website, inventory, settings) {
   const open = 'edit';
   const menu = {
     dashboard: open,
+    chat: open,
     website: w,
     products: w,
     accounts: w,
