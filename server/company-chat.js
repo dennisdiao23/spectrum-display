@@ -139,7 +139,9 @@ function formatRoom(row, extras) {
   const extra = extras || {};
   const kind = row.kind;
   let title = row.title || '';
-  if (kind === 'dm') {
+  if (kind === 'lobby') {
+    title = 'Chat';
+  } else if (kind === 'dm') {
     const other = extra.otherUser;
     title = other ? (other.name || other.email || 'Direct message') : 'Direct message';
   } else if (kind === 'order' && String(row.order_status || '') === 'cancelled') {
@@ -160,7 +162,8 @@ function formatRoom(row, extras) {
     unreadCount: Number(extra.unreadCount || 0),
     muted: !!extra.muted,
     otherUser: kind === 'dm' ? (extra.otherUser || null) : null,
-    createdAt: row.created_at || null
+    createdAt: row.created_at || null,
+    pinned: kind === 'lobby'
   };
 }
 
@@ -203,6 +206,82 @@ function sortRoomsUnreadFirst(rooms) {
     return bt > at ? 1 : -1;
   });
   return rooms;
+}
+
+function contactStub(user) {
+  return {
+    id: null,
+    kind: 'dm',
+    title: (user && (user.name || user.email)) || 'Staff',
+    salesOrderId: null,
+    customerName: '',
+    orderStatus: '',
+    lastMessageAt: null,
+    lastMessagePreview: '',
+    lastMessageUserId: null,
+    unreadCount: 0,
+    muted: false,
+    otherUser: user || null,
+    createdAt: null,
+    pinned: false,
+    contactUserId: user && user.id ? user.id : null
+  };
+}
+
+function matchesContactQuery(room, q) {
+  if (!q) return true;
+  const hay = [
+    room.title || '',
+    room.kind === 'lobby' ? 'chat lobby' : '',
+    room.otherUser && room.otherUser.name,
+    room.otherUser && room.otherUser.email
+  ].join(' ').toLowerCase();
+  return hay.indexOf(q) !== -1;
+}
+
+function sortContacts(rooms) {
+  rooms.sort(function (a, b) {
+    if (!!a.pinned !== !!b.pinned) return a.pinned ? -1 : 1;
+    const at = a.lastMessageAt || '';
+    const bt = b.lastMessageAt || '';
+    if (at !== bt) {
+      if (!at) return 1;
+      if (!bt) return -1;
+      return bt > at ? 1 : -1;
+    }
+    const an = String(a.title || '').toLowerCase();
+    const bn = String(b.title || '').toLowerCase();
+    if (an !== bn) return an < bn ? -1 : 1;
+    return Number(b.id || 0) - Number(a.id || 0);
+  });
+  return rooms;
+}
+
+function buildContactList(lobbyRoom, dmRooms, users, query) {
+  const q = String(query || '').trim().toLowerCase();
+  const dms = dmRooms || [];
+  const dmsByUser = {};
+  dms.forEach(function (room) {
+    if (room.otherUser && room.otherUser.id) {
+      dmsByUser[Number(room.otherUser.id)] = room;
+    }
+  });
+  const seen = {};
+  const out = [];
+  if (lobbyRoom) out.push(lobbyRoom);
+  (users || []).forEach(function (user) {
+    const id = Number(user.id);
+    seen[id] = true;
+    out.push(dmsByUser[id] || contactStub(user));
+  });
+  dms.forEach(function (room) {
+    const oid = room.otherUser && Number(room.otherUser.id);
+    if (oid && !seen[oid]) out.push(room);
+  });
+  const filtered = q ? out.filter(function (room) {
+    return matchesContactQuery(room, q);
+  }) : out;
+  return sortContacts(filtered);
 }
 
 function assertRoomAccess(room, admin) {
@@ -318,7 +397,7 @@ function ensureCompanyChat(db) {
   const lobby = db.prepare("SELECT id FROM chat_rooms WHERE kind = 'lobby' LIMIT 1").get();
   if (!lobby) {
     db.prepare(
-      "INSERT INTO chat_rooms (kind, title, created_at) VALUES ('lobby', 'Lobby', ?)"
+      "INSERT INTO chat_rooms (kind, title, created_at) VALUES ('lobby', 'Chat', ?)"
     ).run(stamp);
   }
 
@@ -494,22 +573,7 @@ function sqliteApi(db) {
       const q = trim(query, 80).toLowerCase();
       let rows = [];
 
-      if (tab === 'direct') {
-        rows = db.prepare(`
-          SELECT * FROM chat_rooms
-          WHERE kind = 'dm' AND (dm_user_low_id = ? OR dm_user_high_id = ?)
-        `).all(viewerId, viewerId);
-        if (q) {
-          rows = rows.filter(function (row) {
-            const otherId = Number(row.dm_user_low_id) === Number(viewerId)
-              ? row.dm_user_high_id
-              : row.dm_user_low_id;
-            const other = getAdminRow(otherId);
-            const hay = ((other && other.name) || '') + ' ' + ((other && other.email) || '');
-            return hay.toLowerCase().indexOf(q) !== -1;
-          });
-        }
-      } else if (tab === 'orders') {
+      if (tab === 'orders') {
         rows = db.prepare("SELECT * FROM chat_rooms WHERE kind = 'order'").all();
         if (q) {
           rows = rows.filter(function (row) {
@@ -517,13 +581,20 @@ function sqliteApi(db) {
             return hay.toLowerCase().indexOf(q) !== -1;
           });
         }
-      } else {
-        rows = db.prepare("SELECT * FROM chat_rooms WHERE kind = 'lobby' LIMIT 1").all();
+        return sortRoomsUnreadFirst(rows.map(function (row) {
+          return enrichRoom(row, viewerId);
+        }));
       }
 
-      return sortRoomsUnreadFirst(rows.map(function (row) {
-        return enrichRoom(row, viewerId);
-      }));
+      const lobbyRow = db.prepare("SELECT * FROM chat_rooms WHERE kind = 'lobby' LIMIT 1").get();
+      const dmRows = db.prepare(`
+        SELECT * FROM chat_rooms
+        WHERE kind = 'dm' AND (dm_user_low_id = ? OR dm_user_high_id = ?)
+      `).all(viewerId, viewerId);
+      const lobby = lobbyRow ? enrichRoom(lobbyRow, viewerId) : null;
+      const dms = dmRows.map(function (row) { return enrichRoom(row, viewerId); });
+      const users = await this.listChatUsers(admin);
+      return buildContactList(lobby, dms, users, q);
     },
 
     async getChatRoom(admin, roomId) {
@@ -825,7 +896,7 @@ function supabaseApi(supabase) {
       if (!lobby || !lobby.length) {
         await supabase.from('chat_rooms').insert({
           kind: 'lobby',
-          title: 'Lobby',
+          title: 'Chat',
           customer_name: '',
           order_status: '',
           last_message_preview: '',
@@ -1049,24 +1120,7 @@ function supabaseApi(supabase) {
       const q = trim(query, 80).toLowerCase();
       let rows = [];
 
-      if (tab === 'direct') {
-        const { data } = await supabase.from('chat_rooms').select('*').eq('kind', 'dm')
-          .or('dm_user_low_id.eq.' + viewerId + ',dm_user_high_id.eq.' + viewerId);
-        rows = data || [];
-        if (q) {
-          const filtered = [];
-          for (let i = 0; i < rows.length; i++) {
-            const row = rows[i];
-            const otherId = Number(row.dm_user_low_id) === Number(viewerId)
-              ? row.dm_user_high_id
-              : row.dm_user_low_id;
-            const other = await getAdminRow(otherId);
-            const hay = ((other && other.name) || '') + ' ' + ((other && other.email) || '');
-            if (hay.toLowerCase().indexOf(q) !== -1) filtered.push(row);
-          }
-          rows = filtered;
-        }
-      } else if (tab === 'orders') {
+      if (tab === 'orders') {
         const { data } = await supabase.from('chat_rooms').select('*').eq('kind', 'order');
         rows = data || [];
         if (q) {
@@ -1076,16 +1130,23 @@ function supabaseApi(supabase) {
               .indexOf(q) !== -1;
           });
         }
-      } else {
-        const { data } = await supabase.from('chat_rooms').select('*').eq('kind', 'lobby').limit(1);
-        rows = data || [];
+        const rooms = [];
+        for (let i = 0; i < rows.length; i++) {
+          rooms.push(await enrichRoom(rows[i], viewerId));
+        }
+        return sortRoomsUnreadFirst(rooms);
       }
 
-      const rooms = [];
-      for (let i = 0; i < rows.length; i++) {
-        rooms.push(await enrichRoom(rows[i], viewerId));
+      const { data: lobbyRows } = await supabase.from('chat_rooms').select('*').eq('kind', 'lobby').limit(1);
+      const { data: dmData } = await supabase.from('chat_rooms').select('*').eq('kind', 'dm')
+        .or('dm_user_low_id.eq.' + viewerId + ',dm_user_high_id.eq.' + viewerId);
+      const lobby = lobbyRows && lobbyRows[0] ? await enrichRoom(lobbyRows[0], viewerId) : null;
+      const dms = [];
+      for (let i = 0; i < (dmData || []).length; i++) {
+        dms.push(await enrichRoom(dmData[i], viewerId));
       }
-      return sortRoomsUnreadFirst(rooms);
+      const users = await this.listChatUsers(admin);
+      return buildContactList(lobby, dms, users, q);
     },
 
     async getChatRoom(admin, roomId) {
