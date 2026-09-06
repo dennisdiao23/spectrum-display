@@ -5461,6 +5461,121 @@
       scheduleColPrefsSave();
     }
 
+    function chatShareField(id) {
+      const el = document.getElementById(id);
+      return el ? String(el.value || '').trim() : '';
+    }
+
+    function chatSharePack(kind, label, path) {
+      const nextLabel = String(label || '').trim();
+      const nextPath = String(path || '').trim();
+      if (!nextPath) return null;
+      return { kind: kind || '', label: nextLabel || kind || 'Item', path: nextPath };
+    }
+
+    function getChatShareContext() {
+      const tabName = canonicalMasterTab(dashActiveGroup || 'dashboard');
+      const tabPath = (dashTabPath[tabName] || pathForTab(tabName) || '/company').split('#')[0];
+      const tab = chatSharePack('Tab', masterTabCaption(tabName), tabPath);
+      let item = null;
+      const doc = parseDocMasterTab(tabName);
+      if (doc) {
+        const kind = doc.kind === 'po' ? 'Purchase order'
+          : doc.kind === 'invoice' ? 'Invoice'
+            : doc.kind === 'order' ? 'Sales order'
+              : 'Sales quote';
+        item = chatSharePack(kind, masterTabCaption(tabName), pathForDocMaster(doc.kind, doc.id));
+      } else if (tabName === 'inventory') {
+        let id = '';
+        if (typeof invActiveTab !== 'undefined' && invActiveTab && invActiveTab !== 'overview') id = invActiveTab;
+        else if (document.body.classList.contains('inv-drawer-open')) id = chatShareField('inv-item-id');
+        if (id && id !== 'overview') {
+          const row = typeof invTabItem === 'function' ? invTabItem(id) : null;
+          const bits = [];
+          if (row && row.sku) bits.push(row.sku);
+          if (row && row.name) bits.push(row.name);
+          item = chatSharePack('Inventory', bits.join(' · ') || invTabLabel(id), pathForInventory(id === 'new' ? '' : id));
+        }
+      } else if (tabName === 'customers') {
+        let id = '';
+        if (typeof ccActiveTab !== 'undefined' && ccActiveTab && ccActiveTab !== 'overview') id = ccActiveTab;
+        else if (document.body.classList.contains('cc-drawer-open')) id = chatShareField('cc-id');
+        if (id && id !== 'overview') {
+          item = chatSharePack('Customer', ccTabLabel(id), pathForCustomer(id));
+        }
+      } else if (tabName === 'vendors') {
+        let id = '';
+        if (typeof vnActiveTab !== 'undefined' && vnActiveTab && vnActiveTab !== 'overview') id = vnActiveTab;
+        else if (document.body.classList.contains('vn-drawer-open')) id = chatShareField('vn-id');
+        if (id && id !== 'overview') {
+          item = chatSharePack('Vendor', vnTabLabel(id), pathForVendor(id));
+        }
+      } else if (tabName === 'warehouses') {
+        const id = (typeof whActiveTab !== 'undefined' && whActiveTab && whActiveTab !== 'overview')
+          ? whActiveTab
+          : chatShareField('wh-id');
+        if (id && id !== 'overview') {
+          const wh = (typeof inventoryWarehouses !== 'undefined' ? inventoryWarehouses : []).find(function (row) {
+            return String(row.id) === String(id);
+          });
+          const label = id === 'new' ? 'New location' : ((wh && wh.name) || 'Location');
+          item = chatSharePack('Location', label, pathForWarehouse(id === 'new' ? '' : id));
+        }
+      } else if (tabName === 'products') {
+        const id = (typeof wpActiveTab !== 'undefined' && wpActiveTab && wpActiveTab !== 'overview')
+          ? wpActiveTab
+          : chatShareField('product-id');
+        if (id && id !== 'overview') {
+          item = chatSharePack('Website product', wpTabLabel(id), '/company/website');
+        }
+      } else if (tabName === 'accounts') {
+        const id = (typeof waActiveTab !== 'undefined' && waActiveTab && waActiveTab !== 'overview')
+          ? waActiveTab
+          : chatShareField('ca-id');
+        if (id && id !== 'overview') {
+          item = chatSharePack('Website account', typeof waTabLabel === 'function' ? waTabLabel(id) : 'Account', '/company/website/accounts');
+        }
+      } else if (tabName === 'receipt-shipments' && panelIsVisible('rs-detail')) {
+        const number = chatShareField('rs-number') || 'Receipt shipment';
+        item = chatSharePack('Receipt shipment', number, '/company/inventory/receipt-shipments');
+      } else if (tabName === 'quotes' || tabName === 'orders' || tabName === 'invoices' || tabName === 'sales') {
+        const id = chatShareField('so-id');
+        if (id && panelIsVisible('so-detail')) {
+          const type = salesTypeFromTab(tabName);
+          const kind = type === 'invoice' ? 'Invoice' : type === 'order' ? 'Sales order' : 'Sales quote';
+          item = chatSharePack(kind, chatShareField('so-number') || kind, pathForDocMaster(type, id));
+        }
+      } else if (tabName === 'purchase-orders') {
+        const id = chatShareField('po-id');
+        if (id && panelIsVisible('po-detail')) {
+          item = chatSharePack('Purchase order', chatShareField('po-number') || 'Purchase order', pathForPo(id));
+        }
+      } else if (tabName === 'staff') {
+        if (document.body.classList.contains('st-drawer-open')) {
+          const id = chatShareField('staff-id');
+          const nameEl = document.getElementById('staff-name') || document.getElementById('st-name');
+          item = chatSharePack('Staff', (nameEl && nameEl.value) || 'User', '/company/settings');
+          if (!id && item) item.label = 'New user';
+        } else if (document.body.classList.contains('rl-drawer-open')) {
+          item = chatSharePack('Role', 'Role', '/company/settings');
+        }
+      }
+      if (item && item.path === '/company/inventory') item = null;
+      return { item: item, tab: tab };
+    }
+
+    function openChatSharePath(path) {
+      const href = String(path || '').split('#')[0];
+      if (href.indexOf('/company') !== 0) return;
+      let tab = tabFromHref(href);
+      if (!tab) return;
+      tab = canonicalMasterTab(tab);
+      if (tab !== 'dashboard' && !ensureMasterTab(tab, href)) return;
+      dashTabPath[tab] = href;
+      if (companyPath() !== href) history.pushState({ tab: tab }, '', href);
+      openCompanyTab(tab, false, { restorePath: href, reload: true });
+    }
+
     function bootSpectrumChat(admin) {
       if (!window.SpectrumChat || !admin) return;
       SpectrumChat.boot({
@@ -5470,7 +5585,9 @@
         openSalesDoc: typeof openSalesDoc === 'function' ? openSalesDoc : null,
         esc: typeof esc === 'function' ? esc : function (s) { return String(s == null ? '' : s); },
         getChatPrefs: getChatWindowPrefs,
-        saveChatPrefs: saveChatWindowPrefs
+        saveChatPrefs: saveChatWindowPrefs,
+        getShareContext: getChatShareContext,
+        openSharePath: openChatSharePath
       });
     }
 
@@ -15481,7 +15598,15 @@
         <div class="co-chat-messages" id="co-chat-messages"></div>
         <form class="co-chat-composer" id="co-chat-composer">
           <input type="file" id="co-chat-file" class="co-chat-file" accept=".jpg,.jpeg,.png,.webp,.gif,.pdf,.csv,.txt,.xlsx,.docx,image/*,application/pdf,text/plain,text/csv">
-          <button type="button" class="co-chat-attach" id="co-chat-attach" title="Attach">Attach</button>
+          <div class="co-chat-plus-wrap">
+            <button type="button" class="co-chat-plus" id="co-chat-plus" title="Add" aria-haspopup="menu" aria-expanded="false" aria-controls="co-chat-plus-menu">+</button>
+            <div class="co-chat-plus-menu" id="co-chat-plus-menu" hidden role="menu">
+              <button type="button" role="menuitem" data-chat-plus="attach">Attach</button>
+              <button type="button" role="menuitem" data-chat-plus="item" id="co-chat-plus-item">Link current item</button>
+              <button type="button" role="menuitem" data-chat-plus="tab" id="co-chat-plus-tab">Link current tab</button>
+              <button type="button" role="menuitem" data-chat-plus="shot">Screenshot</button>
+            </div>
+          </div>
           <textarea id="co-chat-input" rows="1" placeholder="Message the team…"></textarea>
           <button type="submit" class="co-chat-send">Send</button>
         </form>

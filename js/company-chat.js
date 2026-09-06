@@ -361,6 +361,7 @@
       root.classList.remove('is-open', 'is-idle');
     }
     setPickerOpen(false);
+    setPlusMenuOpen(false);
     syncNavOpen();
   }
 
@@ -383,6 +384,11 @@
 
   function linkify(text) {
     var s = esc(text);
+    s = s.replace(/\[share\|([^|\]]+)\|([^|\]]+)\|(\/company[^|\]]+)\]/g, function (_, kind, label, path) {
+      return '<button type="button" class="co-chat-share-card" data-chat-path="' + path + '">' +
+        '<span class="co-chat-share-kind">' + kind + '</span>' +
+        '<span class="co-chat-share-label">' + label + '</span></button>';
+    });
     s = s.replace(/(https?:\/\/[^\s<]+)/g, function (url) {
       return '<a href="' + url + '" target="_blank" rel="noopener noreferrer">' + url + '</a>';
     });
@@ -618,19 +624,29 @@
     }
   }
 
-  async function sendMain(ev) {
-    ev.preventDefault();
-    if (!S.roomId) return;
-    var body = String(($('co-chat-input') && $('co-chat-input').value) || '').trim();
-    if (!body && !S.file) return;
+  async function sendPayload(body, file) {
+    if (!S.roomId) {
+      await loadRooms();
+      if (S.rooms[0]) await openRoom(S.rooms[0].id);
+    }
+    if (!S.roomId) throw new Error('Open a chat first.');
+    body = String(body || '').trim();
+    if (!body && !file) return;
     var fd = new FormData();
     fd.append('body', body);
-    if (S.file) fd.append('file', S.file);
+    if (file) fd.append('file', file);
     await S.api('/api/admin/chat/rooms/' + S.roomId + '/messages', { method: 'POST', body: fd });
-    $('co-chat-input').value = '';
+    if ($('co-chat-input')) $('co-chat-input').value = '';
     clearFile();
     await openRoom(S.roomId);
     await loadRooms();
+  }
+
+  async function sendMain(ev) {
+    ev.preventDefault();
+    var body = String(($('co-chat-input') && $('co-chat-input').value) || '').trim();
+    if (!body && !S.file) return;
+    await sendPayload(body, S.file);
   }
 
   async function pollOpenRoom() {
@@ -793,6 +809,146 @@
     await openOrderChat(S.soOrderId);
   }
 
+  function plusMenu() { return $('co-chat-plus-menu'); }
+
+  function plusMenuOpen() {
+    var menu = plusMenu();
+    return !!(menu && !menu.hidden);
+  }
+
+  function setPlusMenuOpen(open) {
+    var menu = plusMenu();
+    var btn = $('co-chat-plus');
+    if (!menu || !btn) return;
+    menu.hidden = !open;
+    btn.setAttribute('aria-expanded', open ? 'true' : 'false');
+    if (open) fillPlusMenu();
+  }
+
+  function fillPlusMenu() {
+    var ctx = { item: null, tab: null };
+    try { ctx = (S.getShareContext && S.getShareContext()) || ctx; } catch (e) {}
+    var itemBtn = $('co-chat-plus-item');
+    var tabBtn = $('co-chat-plus-tab');
+    function label(title, hint) {
+      return title + (hint ? '<span class="co-chat-plus-hint">' + esc(hint) + '</span>' : '');
+    }
+    if (itemBtn) {
+      itemBtn.disabled = !ctx.item;
+      itemBtn.innerHTML = label('Link current item', ctx.item ? (ctx.item.kind + ' · ' + ctx.item.label) : 'Nothing in focus');
+    }
+    if (tabBtn) {
+      tabBtn.disabled = !ctx.tab;
+      tabBtn.innerHTML = label('Link current tab', ctx.tab ? ctx.tab.label : '');
+    }
+  }
+
+  function shareToken(share) {
+    if (!share || !share.path) return '';
+    var kind = String(share.kind || 'Link').replace(/\|/g, '/');
+    var label = String(share.label || share.path).replace(/\|/g, '/');
+    return '[share|' + kind + '|' + label + '|' + share.path + ']';
+  }
+
+  async function sendShare(which) {
+    var ctx = { item: null, tab: null };
+    try { ctx = (S.getShareContext && S.getShareContext()) || ctx; } catch (e) {}
+    var share = which === 'tab' ? ctx.tab : ctx.item;
+    if (!share) throw new Error(which === 'tab' ? 'No tab to link.' : 'Nothing in focus to link.');
+    await sendPayload(shareToken(share), null);
+  }
+
+  function loadHtml2Canvas() {
+    if (global.html2canvas) return Promise.resolve(global.html2canvas);
+    return new Promise(function (resolve, reject) {
+      var s = document.createElement('script');
+      s.src = 'https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js';
+      s.onload = function () {
+        if (global.html2canvas) resolve(global.html2canvas);
+        else reject(new Error('Could not load screenshot tool.'));
+      };
+      s.onerror = function () { reject(new Error('Could not load screenshot tool.')); };
+      document.head.appendChild(s);
+    });
+  }
+
+  function canvasToPngFile(canvas) {
+    return new Promise(function (resolve, reject) {
+      canvas.toBlob(function (blob) {
+        if (!blob) {
+          reject(new Error('Could not capture screenshot.'));
+          return;
+        }
+        var stamp = new Date();
+        var name = 'Screenshot-' + stamp.getFullYear() +
+          '-' + String(stamp.getMonth() + 1).padStart(2, '0') +
+          '-' + String(stamp.getDate()).padStart(2, '0') + '.png';
+        resolve(new File([blob], name, { type: 'image/png' }));
+      }, 'image/png');
+    });
+  }
+
+  async function sendScreenshot() {
+    var root = $('co-chat');
+    var h2c = await loadHtml2Canvas();
+    if (root) root.style.visibility = 'hidden';
+    await new Promise(function (r) { requestAnimationFrame(function () { requestAnimationFrame(r); }); });
+    try {
+      var canvas = await h2c(document.body, {
+        x: 0,
+        y: 0,
+        width: window.innerWidth,
+        height: window.innerHeight,
+        windowWidth: window.innerWidth,
+        windowHeight: window.innerHeight,
+        scale: 1,
+        logging: false,
+        useCORS: true,
+        backgroundColor: '#eef1f6',
+        ignoreElements: function (el) {
+          return !!(el && (el.id === 'co-chat' || (el.closest && el.closest('#co-chat'))));
+        }
+      });
+      var file = await canvasToPngFile(canvas);
+      await sendPayload('', file);
+    } finally {
+      if (root) root.style.visibility = '';
+    }
+  }
+
+  function bindPlusMenu() {
+    var btn = $('co-chat-plus');
+    var menu = plusMenu();
+    if (!btn || !menu) return;
+    btn.addEventListener('click', function (ev) {
+      ev.preventDefault();
+      ev.stopPropagation();
+      setPlusMenuOpen(!plusMenuOpen());
+    });
+    menu.addEventListener('click', function (ev) {
+      var item = ev.target.closest('[data-chat-plus]');
+      if (!item || item.disabled) return;
+      var action = item.getAttribute('data-chat-plus');
+      setPlusMenuOpen(false);
+      if (action === 'attach') {
+        $('co-chat-file').click();
+        return;
+      }
+      if (action === 'item' || action === 'tab') {
+        sendShare(action).catch(function (err) { alert(err.message || 'Could not link.'); });
+        return;
+      }
+      if (action === 'shot') {
+        sendScreenshot().catch(function (err) { alert(err.message || 'Could not capture screenshot.'); });
+      }
+    });
+    document.addEventListener('mousedown', function (ev) {
+      if (!plusMenuOpen()) return;
+      if (ev.target.closest('#co-chat-plus-menu, #co-chat-plus')) return;
+      setPlusMenuOpen(false);
+    });
+  }
+
   function bindMain() {
     document.querySelectorAll('#co-chat .co-chat-tab').forEach(function (btn) {
       btn.addEventListener('click', async function () {
@@ -811,6 +967,7 @@
       clearTimeout(searchTimer);
       searchTimer = setTimeout(function () { loadRooms(); }, 200);
     });
+    bindPlusMenu();
     $('co-chat-composer').addEventListener('submit', function (ev) {
       sendMain(ev).catch(function (err) { alert(err.message || 'Could not send.'); });
     });
@@ -820,7 +977,6 @@
         $('co-chat-composer').requestSubmit();
       }
     });
-    $('co-chat-attach').addEventListener('click', function () { $('co-chat-file').click(); });
     $('co-chat-file').addEventListener('change', function () {
       S.file = $('co-chat-file').files && $('co-chat-file').files[0];
       if (S.file) {
@@ -837,6 +993,10 @@
     });
     document.addEventListener('keydown', function (ev) {
       if (ev.key === 'Escape') {
+        if (plusMenuOpen()) {
+          setPlusMenuOpen(false);
+          return;
+        }
         if ($('co-chat-picker') && $('co-chat-picker').classList.contains('is-open')) {
           setPickerOpen(false);
           syncIdle();
@@ -872,6 +1032,11 @@
           .then(function () { return openRoom(S.roomId); })
           .catch(function (err) { alert(err.message || 'Could not remove.'); });
       }
+      var share = ev.target.closest('[data-chat-path]');
+      if (share) {
+        if (S.openSharePath) S.openSharePath(share.getAttribute('data-chat-path'));
+        return;
+      }
       var find = ev.target.closest('[data-chat-find-order]');
       if (find) {
         setTab('orders');
@@ -903,6 +1068,12 @@
           ev.preventDefault();
           $('so-chat-composer').requestSubmit();
         }
+      });
+    }
+    if ($('so-chat-messages')) {
+      $('so-chat-messages').addEventListener('click', function (ev) {
+        var share = ev.target.closest('[data-chat-path]');
+        if (share && S.openSharePath) S.openSharePath(share.getAttribute('data-chat-path'));
       });
     }
     bindSoTabs();
@@ -977,6 +1148,8 @@
     S.openSalesDoc = opts.openSalesDoc || null;
     S.getChatPrefs = typeof opts.getChatPrefs === 'function' ? opts.getChatPrefs : null;
     S.saveChatPrefs = typeof opts.saveChatPrefs === 'function' ? opts.saveChatPrefs : null;
+    S.getShareContext = typeof opts.getShareContext === 'function' ? opts.getShareContext : null;
+    S.openSharePath = typeof opts.openSharePath === 'function' ? opts.openSharePath : null;
     if (typeof opts.esc === 'function') S.esc = opts.esc;
     var root = $('co-chat');
     var nav = $('header-chat');
