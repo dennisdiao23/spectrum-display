@@ -28,6 +28,18 @@ const upload = multer({
   }
 });
 
+const chatUpload = multer({
+  storage: multer.memoryStorage(),
+  limits: { fileSize: 12 * 1024 * 1024, files: 1 },
+  fileFilter: function (_req, file, cb) {
+    const mime = String(file.mimetype || '').toLowerCase();
+    const name = String(file.originalname || '').toLowerCase();
+    const okMime = /^(image\/(jpeg|jpg|png|webp|gif)|application\/pdf|text\/(plain|csv)|application\/vnd\.openxmlformats-officedocument\.(spreadsheetml\.sheet|wordprocessingml\.document))$/i.test(mime);
+    const okExt = /\.(jpe?g|png|webp|gif|pdf|csv|txt|xlsx|docx)$/i.test(name);
+    cb((okMime || okExt) ? null : new Error('That file type is not allowed.'), okMime || okExt);
+  }
+});
+
 const dealerInquiryUpload = multer({
   storage: multer.memoryStorage(),
   limits: { fileSize: 10 * 1024 * 1024, files: 1 },
@@ -918,11 +930,119 @@ async function main() {
 
   app.put('/api/admin/sales-docs/:id', requireAdmin, async function (req, res, next) {
     try {
+      const before = await store.getSalesDoc(req.params.id);
       const doc = await store.updateSalesDoc(req.params.id, req.body || {});
       if (!doc) return res.status(404).json({ ok: false, error: 'Document not found.' });
+      if (doc.type === 'order' && before && String(before.status || '') !== String(doc.status || '')) {
+        try {
+          await store.appendOrderChatSystem(doc, req.admin.name || req.admin.email, 'status', doc.status);
+        } catch (e) { console.error('chat status system', e); }
+      }
       res.json({ ok: true, doc: doc });
     } catch (err) { next(err); }
   });
+
+
+  function requireChat(req, res, next) {
+    if (hasPerm(req.admin, 'chat', 'view')) return next();
+    return res.status(403).json({ ok: false, error: 'You do not have Chat access.' });
+  }
+
+  app.get('/api/admin/chat/rooms', requireAdmin, requireChat, async function (req, res, next) {
+    try {
+      const tab = String(req.query.tab || 'lobby');
+      const q = String(req.query.q || '');
+      res.json({ ok: true, rooms: await store.listChatRooms(req.admin, tab, q) });
+    } catch (err) { next(err); }
+  });
+
+  app.get('/api/admin/chat/unread', requireAdmin, requireChat, async function (req, res, next) {
+    try {
+      res.json({ ok: true, unread: await store.chatUnreadSummary(req.admin) });
+    } catch (err) { next(err); }
+  });
+
+  app.get('/api/admin/chat/users', requireAdmin, requireChat, async function (req, res, next) {
+    try {
+      res.json({ ok: true, users: await store.listChatUsers(req.admin) });
+    } catch (err) { next(err); }
+  });
+
+  app.post('/api/admin/chat/dm', requireAdmin, requireChat, async function (req, res, next) {
+    try {
+      const room = await store.findOrCreateDm(req.admin, req.body && (req.body.userId || req.body.user_id));
+      res.json({ ok: true, room: room });
+    } catch (err) { next(err); }
+  });
+
+  app.get('/api/admin/chat/rooms/order/:orderId', requireAdmin, requireChat, async function (req, res, next) {
+    try {
+      const room = await store.getChatRoomByOrder(req.admin, req.params.orderId);
+      if (!room) return res.status(404).json({ ok: false, error: 'Order chat not found.' });
+      res.json({ ok: true, room: room });
+    } catch (err) { next(err); }
+  });
+
+  app.get('/api/admin/chat/rooms/:id', requireAdmin, requireChat, async function (req, res, next) {
+    try {
+      const room = await store.getChatRoom(req.admin, req.params.id);
+      if (!room) return res.status(404).json({ ok: false, error: 'Chat room not found.' });
+      res.json({ ok: true, room: room });
+    } catch (err) { next(err); }
+  });
+
+  app.get('/api/admin/chat/rooms/:id/messages', requireAdmin, requireChat, async function (req, res, next) {
+    try {
+      const data = await store.listChatMessages(req.admin, req.params.id, {
+        afterId: req.query.afterId || req.query.after_id,
+        limit: req.query.limit
+      });
+      res.json({ ok: true, room: data.room, messages: data.messages });
+    } catch (err) { next(err); }
+  });
+
+  app.post('/api/admin/chat/rooms/:id/messages', requireAdmin, requireChat, chatUpload.single('file'), async function (req, res, next) {
+    try {
+      const msg = await store.sendChatMessage(req.admin, req.params.id, {
+        body: req.body && req.body.body
+      }, req.file || null);
+      res.json({ ok: true, message: msg });
+    } catch (err) { next(err); }
+  });
+
+  app.post('/api/admin/chat/rooms/:id/read', requireAdmin, requireChat, async function (req, res, next) {
+    try {
+      res.json(Object.assign({ ok: true }, await store.markChatRoomRead(req.admin, req.params.id)));
+    } catch (err) { next(err); }
+  });
+
+  app.patch('/api/admin/chat/messages/:id', requireAdmin, requireChat, async function (req, res, next) {
+    try {
+      const msg = await store.editChatMessage(req.admin, req.params.id, req.body && req.body.body);
+      res.json({ ok: true, message: msg });
+    } catch (err) { next(err); }
+  });
+
+  app.delete('/api/admin/chat/messages/:id', requireAdmin, requireChat, async function (req, res, next) {
+    try {
+      const msg = await store.deleteChatMessage(req.admin, req.params.id);
+      res.json({ ok: true, message: msg });
+    } catch (err) { next(err); }
+  });
+
+  app.post('/api/admin/chat/presence', requireAdmin, requireChat, async function (req, res, next) {
+    try {
+      res.json(Object.assign({ ok: true }, await store.touchChatPresence(req.admin)));
+    } catch (err) { next(err); }
+  });
+
+  app.get('/api/admin/chat/presence', requireAdmin, requireChat, async function (req, res, next) {
+    try {
+      const ids = String(req.query.ids || '').split(',').map(function (x) { return Number(x); }).filter(Boolean);
+      res.json({ ok: true, presence: await store.listChatPresence(req.admin, ids) });
+    } catch (err) { next(err); }
+  });
+
 
   app.get('/api/admin/inventory-warehouses', requireAdmin, requirePerm('inventory', 'view'), async function (_req, res, next) {
     try {
@@ -1495,7 +1615,8 @@ async function main() {
   app.use(express.static(ROOT));
 
   app.use(function (err, _req, res, _next) {
-    res.status(400).json({ ok: false, error: err.message || 'Upload failed.' });
+    const status = Number(err && err.status) || 400;
+    res.status(status).json({ ok: false, error: (err && err.message) || 'Request failed.' });
   });
 
   function listenOn(host, extra) {

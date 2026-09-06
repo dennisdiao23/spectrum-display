@@ -239,21 +239,24 @@ function systemMessageBody(kind, detail, actorName, doc) {
 }
 
 function grantChatOnRoles(db) {
-  const rows = db.prepare('SELECT id, slug, menu_access, locked FROM admin_roles').all();
+  const roles = require('./admin-roles');
+  const rows = db.prepare(
+    'SELECT id, slug, website_access, inventory_access, menu_access, locked FROM admin_roles'
+  ).all();
   const update = db.prepare('UPDATE admin_roles SET menu_access = ? WHERE id = ?');
   rows.forEach(function (row) {
     if (row.locked || row.slug === 'owner') {
-      update.run(serializeMenuAccess(defaultMenuAccess('edit')), row.id);
+      update.run(roles.serializeMenuAccess(roles.defaultMenuAccess('edit')), row.id);
       return;
     }
     const raw = String(row.menu_access || '').trim();
     const hadChatKey = /"chat"\s*:/.test(raw);
-    let menu = parseMenuAccess(row.menu_access);
-    if (!menu) menu = defaultMenuAccess('edit');
-    if (!hadChatKey) {
-      menu.chat = 'edit';
+    let menu = roles.parseMenuAccess(row.menu_access);
+    if (!menu) {
+      menu = roles.menuFromLegacy(row.website_access, row.inventory_access, false);
     }
-    update.run(serializeMenuAccess(menu), row.id);
+    if (!hadChatKey) menu.chat = 'edit';
+    update.run(roles.serializeMenuAccess(menu), row.id);
   });
 }
 
