@@ -267,7 +267,7 @@ const SPECTRUM_SYSTEM = [
   'You are talking to Spectrum staff, not customers. Do not claim you saved, sent, or deleted a record.'
 ].join(' ');
 const NO_KEY_HINT = 'Add an API key in Settings → Chat / AI.';
-const BOT_OFF_HINT = 'Spectrum AI is off. Turn Bot on in Settings → Chat / AI.';
+const BOT_OFF_HINT = 'Lobby AI is off. Turn it on in Settings → Chat / AI.';
 const lobbyQueues = new Map();
 
 function mentionedIn(text) {
