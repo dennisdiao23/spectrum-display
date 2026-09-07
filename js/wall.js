@@ -106,11 +106,11 @@
     }
     if (layout === 'five') {
       return [
-        { pane: 'main', l: 0, t: 0, w: 58, h: 100 },
-        { pane: 'p1', l: 58, t: 0, w: 42, h: 25 },
-        { pane: 'p2', l: 58, t: 25, w: 42, h: 25 },
-        { pane: 'p3', l: 58, t: 50, w: 42, h: 25 },
-        { pane: 'p4', l: 58, t: 75, w: 42, h: 25 }
+        { pane: 'main', l: 0, t: 0, w: 57, h: 100 },
+        { pane: 'p1', l: 58, t: 0, w: 42, h: 24 },
+        { pane: 'p2', l: 58, t: 25.33, w: 42, h: 24 },
+        { pane: 'p3', l: 58, t: 50.66, w: 42, h: 24 },
+        { pane: 'p4', l: 58, t: 76, w: 42, h: 24 }
       ];
     }
     if (layout === 'cinema235' || layout === 'wide32x9') {
