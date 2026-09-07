@@ -9,6 +9,16 @@ Dennis wants a plan before any implementation — even when he did not ask for o
 - Present the plan, then wait for Dennis to say **Go**. Do not start coding until he says Go.
 - Keep the plan concrete (screens, clicks, files). Do not estimate calendar time.
 
+## Bug reports
+
+When Dennis reports a bug (screenshot, “nothing show up”, broken UI, or similar):
+
+- Do not start coding yet.
+- First tell him **why** it is happening: the actual cause from the live page, API, or code (for example the layout collapsed, a request failed, or JS never ran). Not a guess after a fix.
+- Then give a short plan: what will change, where, and what he should see after.
+- Wait for **Go**.
+- A short investigation to find the why is allowed. Editing files to fix it is not, until he says Go.
+
 ## Cursor Cloud specific instructions
 
 Spectrum Display is a static HTML/CSS/JS marketing + catalog website (`index.html`, `products.html`,
