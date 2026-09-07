@@ -3637,8 +3637,8 @@
       document.getElementById('header-chat').classList.toggle('hidden', !canUse('chat'));
       document.getElementById('tabbar-chat').classList.toggle('hidden', !canUse('chat'));
       document.getElementById('header-settings').classList.toggle('hidden', !canUse('settings'));
-      document.getElementById('tabbar-dashboard').classList.toggle('hidden', !canUse('dashboard'));
-      // Website + Settings stay in the desktop sidebar only — hide from the mobile bottom bar.
+      // Dashboard, Website, and Settings stay in the desktop sidebar only.
+      document.getElementById('tabbar-dashboard').classList.add('hidden');
       document.getElementById('tabbar-website').classList.add('hidden');
       document.getElementById('tabbar-inventory').classList.toggle('hidden', !canUseInventoryNav());
       document.getElementById('tabbar-vendor').classList.toggle('hidden', !canUseVendorNav());
