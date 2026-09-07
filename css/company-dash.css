@@ -4945,6 +4945,7 @@ body.chat-splitting * {
   border-top: 1px solid var(--dash-line);
   align-items: end;
   background: #fff;
+  position: relative;
 }
 .co-chat-plus-wrap { position: relative; }
 .co-chat-plus {
@@ -4993,8 +4994,8 @@ body.chat-splitting * {
   cursor: default;
 }
 .co-chat-mention-menu {
-  position: fixed;
-  z-index: 200;
+  position: absolute;
+  z-index: 12;
   min-width: 12rem;
   max-height: 14rem;
   overflow: auto;

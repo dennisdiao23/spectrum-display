@@ -1508,14 +1508,15 @@
         '</button>';
     }).join('');
     menu.hidden = false;
-    var rect = textarea.getBoundingClientRect();
-    var width = Math.max(12 * 16, Math.min(18 * 16, rect.width));
-    menu.style.width = width + 'px';
-    menu.style.left = Math.max(8, Math.min(rect.left, window.innerWidth - width - 8)) + 'px';
+    var wrap = textarea.closest('.co-chat-composer');
+    if (wrap && menu.parentNode !== wrap) wrap.appendChild(menu);
+    menu.style.position = 'absolute';
+    menu.style.left = '0.7rem';
+    menu.style.right = '0.7rem';
+    menu.style.width = 'auto';
     menu.style.top = 'auto';
-    var gap = 6;
-    menu.style.bottom = Math.max(8, window.innerHeight - rect.top + gap) + 'px';
-    menu.style.zIndex = '200';
+    menu.style.bottom = 'calc(100% + 6px)';
+    menu.style.zIndex = '12';
   }
 
   function showMentionMenu(textarea) {
