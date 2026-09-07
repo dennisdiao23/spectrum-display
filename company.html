@@ -4007,6 +4007,7 @@
 
     let dashOverview = 'website';
     let dashProducts = [];
+    let dashInventory = [];
     let dashAccounts = [];
     let dashAccountSource = '';
     let dashStaff = [];
@@ -4015,6 +4016,12 @@
     let dashVendors = [];
     let dashPos = [];
     let dashReceipts = [];
+    let dashCounts = {
+      products: 0, productsShown: 0, accounts: 0,
+      inventory: 0, inventoryLow: 0, inventoryOut: 0, receipts: 0,
+      vendors: 0, vendorsWithEmail: 0, pos: 0, openPos: 0,
+      customers: 0, quotes: 0, orders: 0, invoices: 0, sales: 0
+    };
 
     function canUseSalesDocs() {
       return canUse('sales') || canUse('quotes') || canUse('orders') || canUse('invoices');
@@ -4081,14 +4088,14 @@
     }
 
     function renderDashKpis() {
-      const websiteN = dashProducts.length;
-      const accountsN = dashAccounts.length;
-      const invN = inventoryItems.length;
-      const custN = dashCustomers.length;
-      const salesN = dashSales.length;
-      const vendorN = dashVendors.length;
-      const openPoN = dashPos.filter(function (o) { return String(o.status || '').toLowerCase() === 'open'; }).length;
-      const receiptN = dashReceipts.length;
+      const websiteN = dashCounts.products;
+      const accountsN = dashCounts.accounts;
+      const invN = dashCounts.inventory;
+      const custN = dashCounts.customers;
+      const salesN = dashCounts.sales;
+      const vendorN = dashCounts.vendors;
+      const openPoN = dashCounts.openPos;
+      const receiptN = dashCounts.receipts;
       const webEl = document.getElementById('dash-stat-website');
       const invEl = document.getElementById('dash-stat-inventory');
       const vendorEl = document.getElementById('dash-stat-vendor');
@@ -4123,9 +4130,9 @@
       }
       const custHint = document.getElementById('dash-hint-customer');
       if (custHint) {
-        const quotes = dashSales.filter(function (d) { return d.type === 'quote'; }).length;
-        const orders = dashSales.filter(function (d) { return d.type === 'order'; }).length;
-        const invoices = dashSales.filter(function (d) { return d.type === 'invoice'; }).length;
+        const quotes = dashCounts.quotes;
+        const orders = dashCounts.orders;
+        const invoices = dashCounts.invoices;
         const bits = [];
         if (canUse('customers') && custN) bits.push(custN + ' records');
         if (canUseSalesDocs()) {
@@ -4175,10 +4182,9 @@
       open.textContent = 'Open ' + info.title + ' →';
 
       if (name === 'website') {
-        const shown = dashProducts.filter(function (p) { return !p.hidden; }).length;
-        stats.innerHTML = dashChip(dashProducts.length, 'Product pages') +
-          dashChip(shown, 'Shown') +
-          dashChip(dashAccounts.length, 'Website users');
+        stats.innerHTML = dashChip(dashCounts.products, 'Product pages') +
+          dashChip(dashCounts.productsShown, 'Shown') +
+          dashChip(dashCounts.accounts, 'Website users');
         const rows = dashProducts.slice(0, 8).map(function (p) {
           return dashRow(p.name || 'Untitled', [p.brandName, p.type, p.pitchLabel].filter(Boolean).join(' · '), p.hidden ? 'Hidden' : 'Shown');
         }).join('');
@@ -4186,13 +4192,11 @@
         return;
       }
       if (name === 'inventory') {
-        const low = inventoryItems.filter(function (i) { return i.status === 'low'; }).length;
-        const out = inventoryItems.filter(function (i) { return i.status === 'out'; }).length;
-        stats.innerHTML = dashChip(inventoryItems.length, 'SKUs') +
-          dashChip(low, 'Low') +
-          dashChip(out, 'Out') +
-          (canUse('receipt-shipments') ? dashChip(dashReceipts.length, 'Receipt shipments') : '');
-        const rows = inventoryItems.slice(0, 8).map(function (item) {
+        stats.innerHTML = dashChip(dashCounts.inventory, 'SKUs') +
+          dashChip(dashCounts.inventoryLow, 'Low') +
+          dashChip(dashCounts.inventoryOut, 'Out') +
+          (canUse('receipt-shipments') ? dashChip(dashCounts.receipts, 'Receipt shipments') : '');
+        const rows = dashInventory.slice(0, 8).map(function (item) {
           return dashRow(
             item.sku || item.name || 'Item',
             [item.name, item.brandName, item.pitchLabel].filter(Boolean).join(' · '),
@@ -4203,24 +4207,19 @@
         return;
       }
       if (name === 'vendor') {
-        const openPos = dashPos.filter(function (o) { return String(o.status || '').toLowerCase() === 'open'; }).length;
-        const withEmail = dashVendors.filter(function (v) { return v.email; }).length;
-        stats.innerHTML = dashChip(dashVendors.length, 'Vendors') +
-          dashChip(openPos, 'Open POs') +
-          dashChip(dashPos.length, 'Purchase orders') +
-          dashChip(withEmail, 'With email');
+        stats.innerHTML = dashChip(dashCounts.vendors, 'Vendors') +
+          dashChip(dashCounts.openPos, 'Open POs') +
+          dashChip(dashCounts.pos, 'Purchase orders') +
+          dashChip(dashCounts.vendorsWithEmail, 'With email');
         const rows = dashPos.slice(0, 8).map(function (o) {
           return dashRow(o.number || 'PO', [o.vendorName, o.status].filter(Boolean).join(' · '), o.orderDate || '');
         }).join('');
         list.innerHTML = rows || '<p class="dash-activity-empty">No purchase orders yet.</p>';
         return;
       }
-      const quotes = dashSales.filter(function (d) { return d.type === 'quote'; }).length;
-      const orders = dashSales.filter(function (d) { return d.type === 'order'; }).length;
-      const invoices = dashSales.filter(function (d) { return d.type === 'invoice'; }).length;
       stats.innerHTML =
-        (canUse('customers') ? dashChip(dashCustomers.length, 'Customers') : '') +
-        (canUseSalesDocs() ? dashChip(quotes, 'Quotes') + dashChip(orders, 'Orders') + dashChip(invoices, 'Invoices') : '');
+        (canUse('customers') ? dashChip(dashCounts.customers, 'Customers') : '') +
+        (canUseSalesDocs() ? dashChip(dashCounts.quotes, 'Quotes') + dashChip(dashCounts.orders, 'Orders') + dashChip(dashCounts.invoices, 'Invoices') : '');
       const docRows = dashSales.slice(0, 5).map(function (d) {
         const kind = d.type === 'order' ? 'Sales Order' : d.type === 'invoice' ? 'Invoice' : 'Sales Quote';
         return dashRow(d.number || kind, [kind, d.customerName, d.status].filter(Boolean).join(' · '), moneyText(d.total));
@@ -4293,51 +4292,31 @@
       document.querySelectorAll('#dash-home .dash-kpi').forEach(function (el) {
         el.classList.toggle('hidden', !canDashOverview(el.getAttribute('data-home')));
       });
-      const tasks = [];
-      if (canUse('website')) {
-        tasks.push(api('/api/admin/products').then(function (data) {
-          dashProducts = data.products || [];
-        }).catch(function () { dashProducts = []; }));
-        tasks.push(api('/api/admin/accounts').then(function (data) {
-          dashAccounts = data.accounts || [];
-          dashAccountSource = data.source || '';
-        }).catch(function () {
-          dashAccounts = [];
-          dashAccountSource = '';
-        }));
+      try {
+        const data = await api('/api/admin/dashboard');
+        dashCounts = Object.assign({}, dashCounts, data.counts || {});
+        dashProducts = data.products || [];
+        dashInventory = data.inventory || [];
+        dashAccounts = data.accounts || [];
+        dashAccountSource = data.source || '';
+        dashStaff = data.staff || [];
+        dashCustomers = data.customers || [];
+        dashSales = data.sales || [];
+        dashVendors = data.vendors || [];
+        dashPos = data.purchaseOrders || [];
+        dashReceipts = data.receipts || [];
+      } catch (err) {
+        dashProducts = [];
+        dashInventory = [];
+        dashAccounts = [];
+        dashAccountSource = '';
+        dashStaff = [];
+        dashCustomers = [];
+        dashSales = [];
+        dashVendors = [];
+        dashPos = [];
+        dashReceipts = [];
       }
-      if (canUse('inventory')) {
-        tasks.push((inventoryItems.length ? Promise.resolve() : loadInventory()).catch(function () {}));
-      }
-      if (canUse('receipt-shipments')) {
-        tasks.push(api('/api/admin/receipt-shipments').then(function (data) {
-          dashReceipts = data.receipts || [];
-        }).catch(function () { dashReceipts = []; }));
-      }
-      if (canUse('vendors')) {
-        tasks.push(api('/api/admin/inventory-vendors').then(function (data) {
-          dashVendors = data.vendors || [];
-        }).catch(function () { dashVendors = []; }));
-      }
-      if (canUse('purchase-orders')) {
-        tasks.push(api('/api/admin/purchase-orders').then(function (data) {
-          dashPos = data.orders || data.purchaseOrders || [];
-        }).catch(function () { dashPos = []; }));
-      }
-      if (canUse('customers')) {
-        tasks.push(api('/api/admin/company-customers').then(function (data) {
-          dashCustomers = data.customers || [];
-        }).catch(function () { dashCustomers = []; }));
-      }
-      if (canUseSalesDocs()) {
-        tasks.push(api('/api/admin/sales-docs').then(function (data) {
-          dashSales = data.docs || [];
-        }).catch(function () { dashSales = []; }));
-      }
-      tasks.push(api('/api/admin/company-users').then(function (data) {
-        dashStaff = data.users || data.staff || [];
-      }).catch(function () { dashStaff = []; }));
-      await Promise.all(tasks);
       if (!canDashOverview(dashOverview)) dashOverview = firstDashOverview();
       const webLink = document.querySelector('#dash-home .dash-activity-label a[href="/company/website/accounts"]');
       if (webLink) webLink.classList.toggle('hidden', !canUse('website'));
@@ -4348,24 +4327,19 @@
       renderDashActivity();
     }
 
+    async function loadWebsiteCatalog() {
+      if (!canUse('products') && !canUse('website')) return;
+      const [brandData, productData] = await Promise.all([
+        api('/api/admin/brands'),
+        api('/api/admin/products')
+      ]);
+      brands = brandData.brands || [];
+      fillBrands(brands[0] && brands[0].id);
+      renderProducts(productData.products || []);
+    }
+
     async function loadDash() {
-      if (canUse('products')) {
-        const [brandData, productData] = await Promise.all([
-          api('/api/admin/brands'),
-          api('/api/admin/products')
-        ]);
-        brands = brandData.brands || [];
-        fillBrands(brands[0] && brands[0].id);
-        renderProducts(productData.products || []);
-      }
-      if (canUse('inventory') || canUse('products')) {
-        await loadInventory();
-      }
-      if (canUse('staff')) {
-        await loadStaff();
-        await loadRoles();
-        await loadChatAiSettings();
-      }
+      await loadWebsiteCatalog();
     }
 
     function roleLabel(role) {
@@ -13076,6 +13050,7 @@
         return;
       }
       if (name === 'products') {
+        await loadWebsiteCatalog();
         if (isWpSplitOn()) {
           initWpSplitResize();
           if (wpActiveTab && wpActiveTab !== 'overview' && wpOpenTabs.indexOf(String(wpActiveTab)) !== -1) {
@@ -15062,10 +15037,9 @@
           })
         });
         if (!showDash(data.admin)) return;
-        await loadColumnPrefs();
-        await loadDash();
-        await openRoutedSection(tabFromPath());
         bootSpectrumChat(data.admin);
+        await loadColumnPrefs();
+        await openRoutedSection(tabFromPath());
         var loginDraft = copilotTokenFromHref(location.href);
         if (loginDraft) await applyCopilotDraft(loginDraft).catch(function () {});
       } catch (err) {
@@ -15910,13 +15884,11 @@
     api('/api/admin/me').then(function (data) {
       if (data.ok && data.admin) {
         if (!showDash(data.admin)) return;
+        if (window.SpectrumChat) bootSpectrumChat(data.admin);
         return loadColumnPrefs().then(function () {
-          return loadDash().then(function () {
-            return openRoutedSection(tabFromPath()).then(function () {
-              if (window.SpectrumChat) bootSpectrumChat(data.admin);
-              var bootDraft = copilotTokenFromHref(location.href);
-              if (bootDraft) return applyCopilotDraft(bootDraft).catch(function () {});
-            });
+          return openRoutedSection(tabFromPath()).then(function () {
+            var bootDraft = copilotTokenFromHref(location.href);
+            if (bootDraft) return applyCopilotDraft(bootDraft).catch(function () {});
           });
         });
       }

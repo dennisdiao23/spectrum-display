@@ -1467,6 +1467,9 @@ function createSqliteStore() {
       const name = Date.now().toString(36) + '-' + crypto.randomBytes(4).toString('hex') + prepared.ext;
       fs.writeFileSync(path.join(UPLOAD_DIR, name), prepared.buffer);
       return '/uploads/products/' + name;
+    },
+    async getDashboardHome(admin) {
+      return require('./dashboard-home').getSqliteDashboardHome(db, admin);
     }
   };
   Object.assign(api, require('./walls').sqliteApi(db));

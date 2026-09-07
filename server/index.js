@@ -4,6 +4,7 @@ const path = require('path');
 const http = require('http');
 const crypto = require('crypto');
 const express = require('express');
+const compression = require('compression');
 const cookieParser = require('cookie-parser');
 const bcrypt = require('bcryptjs');
 const multer = require('multer');
@@ -88,6 +89,7 @@ async function main() {
 
   const app = express();
   app.set('trust proxy', 1);
+  app.use(compression());
   app.use(express.json({ limit: '2mb' }));
   app.use(express.urlencoded({ extended: true }));
   app.use(cookieParser());
@@ -107,6 +109,7 @@ async function main() {
 
   function sendCompany(_req, res) {
     res.set('X-Robots-Tag', 'noindex, nofollow');
+    res.set('Cache-Control', 'private, no-store');
     res.sendFile(path.join(ROOT, 'company.html'));
   }
   const COMPANY_PAGES = [
@@ -206,6 +209,10 @@ async function main() {
     res.sendFile(path.join(ROOT, 'solutions.html'));
   });
   app.use('/uploads', express.static(path.join(ROOT, 'uploads')));
+  const staticLong = { maxAge: '7d', etag: true, lastModified: true };
+  app.use('/css', express.static(path.join(ROOT, 'css'), staticLong));
+  app.use('/js', express.static(path.join(ROOT, 'js'), staticLong));
+  app.use('/assets', express.static(path.join(ROOT, 'assets'), staticLong));
 
   const SITE = 'https://www.spectrumdisplay.com';
 
@@ -735,6 +742,13 @@ async function main() {
       const admin = await currentAdmin(req);
       if (!admin) return res.json({ ok: false, admin: null });
       res.json({ ok: true, admin: publicAdmin(admin) });
+    } catch (err) { next(err); }
+  });
+
+  app.get('/api/admin/dashboard', requireAdmin, async function (req, res, next) {
+    try {
+      const home = await store.getDashboardHome(req.admin);
+      res.json(Object.assign({ ok: true }, home));
     } catch (err) { next(err); }
   });
 

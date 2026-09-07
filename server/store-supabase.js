@@ -2272,6 +2272,9 @@ function createSupabaseStore() {
       throwIf(error, 'Could not upload image to Supabase Storage.');
       const { data } = supabase.storage.from(BUCKET).getPublicUrl(objectPath);
       return data.publicUrl;
+    },
+    async getDashboardHome(admin) {
+      return require('./dashboard-home').getSupabaseDashboardHome(supabase, admin);
     }
   };
   Object.assign(api, require('./walls').supabaseApi(supabase));
