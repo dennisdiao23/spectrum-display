@@ -510,7 +510,6 @@
         var seen = new Date(S.presence[other.id]).getTime();
         if (Date.now() - seen < 70000) presence = '<span class="co-chat-presence" title="Online"></span>';
       }
-      var preview = room.lastMessagePreview || '';
       var title = roomTitle(room);
       var key = room.id
         ? 'data-room-id="' + room.id + '"'
@@ -520,7 +519,6 @@
         '<span class="co-chat-room-copy">' +
         '<span class="co-chat-room-top"><span class="co-chat-room-title">' + presence + esc(title) +
         '</span>' + unread + '</span>' +
-        (preview ? '<span class="co-chat-room-preview">' + esc(preview) + '</span>' : '') +
         '<span class="co-chat-room-time">' + esc(fmtTime(room.lastMessageAt)) + '</span>' +
         '</span>' +
         (unread ? '<span class="co-chat-icon-pip">' + (room.unreadCount > 99 ? '99+' : room.unreadCount) + '</span>' : '') +

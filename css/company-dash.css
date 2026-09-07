@@ -4499,7 +4499,9 @@ body.chat-splitting * {
   align-items: center;
   gap: 0.35rem;
 }
-.co-chat-room-preview,
+.co-chat-room-preview {
+  display: none;
+}
 .co-chat-room-time {
   font-size: 0.72rem;
   color: var(--dash-muted);
