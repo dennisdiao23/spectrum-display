@@ -5794,13 +5794,15 @@
         hadLocal = !!(cached && typeof cached === 'object' && Object.keys(cached).length);
       } catch (err) {}
       applyColumnPrefsFromLocal();
-      applyChatWindowFromPrefs();
       if (hadLocal) {
-        void syncColumnPrefsFromServer(true);
+        if (!(dashColMine.chat && dashColMine.chat.width)) {
+          await syncColumnPrefsFromServer(true);
+        } else {
+          void syncColumnPrefsFromServer(true);
+        }
         return;
       }
       await syncColumnPrefsFromServer(false);
-      applyChatWindowFromPrefs();
     }
 
     function applyColOrder(table) {
