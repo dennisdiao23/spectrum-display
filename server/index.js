@@ -1064,9 +1064,13 @@ async function main() {
           copilot.replyToChat(store, req.admin, room, msg).catch(function (err) {
             console.error('copilot reply', err);
           });
+        } else if (room && room.kind === 'lobby') {
+          require('./chat-ai').replyToLobbyMention(store, req.admin, room, msg).catch(function (err) {
+            console.error('spectrum ai reply', err);
+          });
         }
       } catch (e) {
-        console.error('copilot dispatch', e);
+        console.error('chat ai dispatch', e);
       }
     } catch (err) { next(err); }
   });

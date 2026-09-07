@@ -21,6 +21,7 @@
     lastMsgId: 0,
     file: null,
     copilotPending: false,
+    spectrumPending: false,
     users: [],
     unread: { total: 0, lobby: 0, direct: 0, orders: 0 },
     presence: {},
@@ -430,7 +431,7 @@
   function roomSub(room) {
     if (!room) return '';
     if (room.kind === 'copilot') return 'I draft. You review and save.';
-    if (room.kind === 'lobby') return 'Everyone at Spectrum can see this.';
+    if (room.kind === 'lobby') return 'Everyone at Spectrum can see this. Type @Spectrum AI to ask the bot.';
     if (room.kind === 'dm' && room.otherUser) {
       return 'Only you and ' + (room.otherUser.name || 'them') + ' can see this.';
     }
@@ -447,7 +448,7 @@
   function composerPlaceholder(room) {
     if (!room) return 'Message…';
     if (room.kind === 'copilot') return 'Ask Copilot to draft something…';
-    if (room.kind === 'lobby') return 'Message the team…';
+    if (room.kind === 'lobby') return 'Message the team… @Spectrum AI';
     if (room.kind === 'dm' && room.otherUser) {
       var first = String(room.otherUser.name || 'them').split(/\s+/)[0];
       return 'Message ' + first + '…';
@@ -537,7 +538,7 @@
   function renderMessages(hostId, messages) {
     var host = $(hostId);
     if (!host) return;
-    if (!messages.length && !(hostId === 'co-chat-messages' && S.copilotPending)) {
+    if (!messages.length && !(hostId === 'co-chat-messages' && (S.copilotPending || S.spectrumPending))) {
       host.innerHTML = '<p class="co-chat-empty">No messages yet.</p>';
       return;
     }
@@ -548,6 +549,13 @@
       }
       if (msg.isSystem) {
         return '<div class="co-chat-msg is-system" data-msg-id="' + msg.id + '">' + linkify(msg.body || '') + '</div>';
+      }
+      if (msg.isSpectrumAi) {
+        return '<div class="co-chat-msg is-spectrum-ai" data-msg-id="' + msg.id + '">' +
+          '<div class="co-chat-msg-meta"><strong>Spectrum AI</strong><span>' +
+          esc(fmtTime(msg.createdAt)) + '</span></div>' +
+          (msg.body ? '<div class="co-chat-msg-body">' + linkify(msg.body) + '</div>' : '') +
+          '</div>';
       }
       if (msg.isCopilot) {
         return '<div class="co-chat-msg is-copilot" data-msg-id="' + msg.id + '">' +
@@ -581,9 +589,15 @@
   }
 
   function pendingHtml() {
-    if (!S.copilotPending) return '';
-    return '<div class="co-chat-msg is-copilot is-pending"><div class="co-chat-msg-meta"><strong>Copilot</strong></div>' +
-      '<div class="co-chat-msg-body">Working on a draft…</div></div>';
+    if (S.copilotPending) {
+      return '<div class="co-chat-msg is-copilot is-pending"><div class="co-chat-msg-meta"><strong>Copilot</strong></div>' +
+        '<div class="co-chat-msg-body">Working on a draft…</div></div>';
+    }
+    if (S.spectrumPending) {
+      return '<div class="co-chat-msg is-spectrum-ai is-pending"><div class="co-chat-msg-meta"><strong>Spectrum AI</strong></div>' +
+        '<div class="co-chat-msg-body">Thinking…</div></div>';
+    }
+    return '';
   }
 
   async function loadRooms() {
@@ -642,6 +656,14 @@
     } else {
       S.copilotPending = false;
     }
+    if (S.room && S.room.kind === 'lobby') {
+      var hasAi = S.messages.some(function (m) {
+        return m.isSpectrumAi && Number(m.id) === S.lastMsgId;
+      });
+      if (hasAi) S.spectrumPending = false;
+    } else {
+      S.spectrumPending = false;
+    }
     setWindowTitle(roomTitle(S.room));
     if ($('co-chat-main-sub')) $('co-chat-main-sub').textContent = roomSub(S.room);
     $('co-chat-input').placeholder = composerPlaceholder(S.room);
@@ -684,6 +706,7 @@
     if ($('co-chat-input')) $('co-chat-input').value = '';
     clearFile();
     if (S.room && S.room.kind === 'copilot') S.copilotPending = true;
+    if (S.room && S.room.kind === 'lobby' && /@spectrum\s*ai\b/i.test(body)) S.spectrumPending = true;
     await openRoom(S.roomId);
     await loadRooms();
   }
@@ -705,6 +728,9 @@
       S.lastMsgId = S.messages.reduce(function (m, x) { return Math.max(m, Number(x.id) || 0); }, S.lastMsgId);
       if (S.room && S.room.kind === 'copilot' && msgs.some(function (m) { return m.isCopilot; })) {
         S.copilotPending = false;
+      }
+      if (S.room && S.room.kind === 'lobby' && msgs.some(function (m) { return m.isSpectrumAi; })) {
+        S.spectrumPending = false;
       }
       renderMessages('co-chat-messages', S.messages);
       await S.api('/api/admin/chat/rooms/' + S.roomId + '/read', { method: 'POST' });

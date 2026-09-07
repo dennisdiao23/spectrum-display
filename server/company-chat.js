@@ -176,23 +176,30 @@ function formatRoom(row, extras) {
 function formatMessage(row, usersById, extras) {
   if (!row) return null;
   const deleted = !!row.deleted_at;
-  const isCopilot = !!(extras && extras.copilot) && !row.user_id;
+  const extra = extras || {};
+  const att = String(row.attachment_type || '');
+  const isSpectrumAi = !row.user_id && (att === 'spectrum-ai' || !!extra.spectrumAi);
+  const isCopilot = !row.user_id && !isSpectrumAi && (!!extra.copilot || att === 'copilot');
   const user = row.user_id ? ((usersById && usersById[row.user_id]) || null) : null;
+  let who = user;
+  if (isCopilot) who = { id: null, name: 'Copilot', email: '', role: '' };
+  else if (isSpectrumAi) who = { id: null, name: 'Spectrum AI', email: '', role: '' };
   return {
     id: row.id,
     roomId: row.room_id,
     userId: row.user_id || null,
-    user: isCopilot ? { id: null, name: 'Copilot', email: '', role: '' } : user,
+    user: who,
     body: deleted ? '' : (row.body || ''),
     attachmentUrl: deleted ? null : (row.attachment_url || null),
     attachmentName: deleted ? null : (row.attachment_name || null),
-    attachmentType: deleted ? 'none' : (row.attachment_type || 'none'),
+    attachmentType: deleted ? 'none' : (isSpectrumAi || isCopilot ? 'none' : (row.attachment_type || 'none')),
     createdAt: row.created_at,
     editedAt: row.edited_at || null,
     deletedAt: row.deleted_at || null,
     deletedByUserId: row.deleted_by_user_id || null,
-    isSystem: !row.user_id && !isCopilot,
+    isSystem: !row.user_id && !isCopilot && !isSpectrumAi,
     isCopilot: isCopilot,
+    isSpectrumAi: isSpectrumAi,
     isDeleted: deleted
   };
 }
@@ -1021,8 +1028,25 @@ function sqliteApi(db) {
         throw httpError(400, 'Copilot can only reply in Copilot chat.');
       }
       const stamp = nowIso();
-      const row = insertMessage(room.id, null, String(body || '').slice(0, 8000), null, stamp);
+      const row = insertMessage(room.id, null, String(body || '').slice(0, 8000), { type: 'copilot' }, stamp);
       return formatMessage(row, {}, { copilot: true });
+    },
+
+    async appendSpectrumAiMessage(admin, roomId, body) {
+      ensureCompanyChat(db);
+      const room = assertRoomAccess(getRoomRow(roomId), admin);
+      if (room.kind !== 'lobby') {
+        throw httpError(400, 'Spectrum AI can only reply in Lobby.');
+      }
+      const stamp = nowIso();
+      const row = insertMessage(
+        room.id,
+        null,
+        String(body || '').slice(0, 4000),
+        { type: 'spectrum-ai' },
+        stamp
+      );
+      return formatMessage(row, {}, { spectrumAi: true });
     },
 
     async saveCopilotDraft(admin, roomId, kind, payload, summary) {
@@ -1070,6 +1094,11 @@ function sqliteApi(db) {
       ensureCompanyChat(db);
       const row = db.prepare('SELECT * FROM chat_ai_settings WHERE id = 1').get();
       return chatAi.assertNoSecretLeak(chatAi.publicSettings(row));
+    },
+
+    async peekChatAiSettings() {
+      ensureCompanyChat(db);
+      return db.prepare('SELECT * FROM chat_ai_settings WHERE id = 1').get() || null;
     },
 
     async saveChatAiSettings(admin, body) {
@@ -1874,8 +1903,25 @@ function supabaseApi(supabase) {
         throw httpError(400, 'Copilot can only reply in Copilot chat.');
       }
       const stamp = nowIso();
-      const row = await insertMessage(room.id, null, String(body || '').slice(0, 8000), null, stamp);
+      const row = await insertMessage(room.id, null, String(body || '').slice(0, 8000), { type: 'copilot' }, stamp);
       return formatMessage(row, {}, { copilot: true });
+    },
+
+    async appendSpectrumAiMessage(admin, roomId, body) {
+      await ensureReady();
+      const room = assertRoomAccess(await getRoomRow(roomId), admin);
+      if (room.kind !== 'lobby') {
+        throw httpError(400, 'Spectrum AI can only reply in Lobby.');
+      }
+      const stamp = nowIso();
+      const row = await insertMessage(
+        room.id,
+        null,
+        String(body || '').slice(0, 4000),
+        { type: 'spectrum-ai' },
+        stamp
+      );
+      return formatMessage(row, {}, { spectrumAi: true });
     },
 
     async saveCopilotDraft(admin, roomId, kind, payload, summary) {
@@ -1933,6 +1979,15 @@ function supabaseApi(supabase) {
         return chatAi.assertNoSecretLeak(chatAi.publicSettings(row));
       } catch (e) {
         return chatAi.assertNoSecretLeak(chatAi.publicSettings(null));
+      }
+    },
+
+    async peekChatAiSettings() {
+      await ensureReady();
+      try {
+        return await getChatAiRow();
+      } catch (e) {
+        return null;
       }
     },
 

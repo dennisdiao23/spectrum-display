@@ -146,7 +146,7 @@ function publicSettings(row) {
   }
   return {
     enabled: asBool(data.enabled) && hasKey,
-    allowInDms: asBool(data.allow_in_dms),
+    allowInDms: false,
     provider: provider,
     model: normalizeModel(provider, data.model),
     hasKey: hasKey,
@@ -186,10 +186,6 @@ function settingsPatchFromBody(body, row) {
     : normalizeModel(provider, current.model);
   let enabled = current.enabled;
   if (body && body.enabled != null) enabled = asBool(body.enabled);
-  let allowInDms = current.allowInDms;
-  if (body && (body.allowInDms != null || body.allow_in_dms != null)) {
-    allowInDms = asBool(body.allowInDms != null ? body.allowInDms : body.allow_in_dms);
-  }
   const hasKey = current.hasKey || !!nextKey;
   if (enabled && !hasKey) {
     throw httpError(400, 'Add an API key in Settings → Chat / AI.');
@@ -199,7 +195,7 @@ function settingsPatchFromBody(body, row) {
   }
   return {
     enabled: enabled && hasKey,
-    allowInDms: allowInDms,
+    allowInDms: false,
     provider: provider,
     model: model,
     apiKey: nextKey
@@ -264,6 +260,302 @@ async function testSavedOrPasted(row, body) {
     : { ok: false, message: 'Key was rejected.' };
 }
 
+const MENTION_RE = /@spectrum\s*ai\b/i;
+const SPECTRUM_SYSTEM = [
+  'You are Spectrum AI in Spectrum Display’s company Lobby chat.',
+  'Staff mention you with @Spectrum AI. Keep replies short and helpful.',
+  'You are talking to Spectrum staff, not customers. Do not claim you saved, sent, or deleted a record.'
+].join(' ');
+const NO_KEY_HINT = 'Add an API key in Settings → Chat / AI.';
+const BOT_OFF_HINT = 'Spectrum AI is off. Turn Bot on in Settings → Chat / AI.';
+const lobbyQueues = new Map();
+
+function mentionedIn(text) {
+  return MENTION_RE.test(String(text || ''));
+}
+
+function envProviderKeys() {
+  return {
+    anthropic: String(process.env.ANTHROPIC_API_KEY || '').trim(),
+    openai: String(process.env.OPENAI_API_KEY || '').trim(),
+    google: String(process.env.GEMINI_API_KEY || process.env.GOOGLE_API_KEY || '').trim()
+  };
+}
+
+function fallbackEnvRuntime(preferred) {
+  const env = envProviderKeys();
+  const order = [preferred, 'anthropic', 'openai', 'google'].filter(function (id, i, arr) {
+    return PROVIDERS.indexOf(id) >= 0 && arr.indexOf(id) === i;
+  });
+  for (let i = 0; i < order.length; i++) {
+    const provider = order[i];
+    if (env[provider]) {
+      return {
+        provider: provider,
+        model: defaultModel(provider),
+        apiKey: env[provider],
+        keySource: 'env'
+      };
+    }
+  }
+  return null;
+}
+
+async function peekRow(store) {
+  if (!store || typeof store.peekChatAiSettings !== 'function') return null;
+  try {
+    return await store.peekChatAiSettings();
+  } catch (e) {
+    return null;
+  }
+}
+
+async function resolveRuntime(store, purpose) {
+  const row = await peekRow(store);
+  const provider = normalizeProvider(row && row.provider);
+  const model = normalizeModel(provider, row && row.model);
+  const botEnabled = asBool(row && row.enabled);
+  let apiKey = storedPlainKey(row);
+  let keySource = apiKey ? 'settings' : null;
+  if (!apiKey) {
+    const fromChatEnv = envOverrideKey();
+    if (fromChatEnv) {
+      apiKey = fromChatEnv;
+      keySource = 'env';
+    }
+  }
+  let resolvedProvider = provider;
+  let resolvedModel = model;
+  if (!apiKey) {
+    const env = envProviderKeys();
+    if (env[provider]) {
+      apiKey = env[provider];
+      keySource = 'env';
+    } else {
+      const fallback = fallbackEnvRuntime(provider);
+      if (fallback) {
+        apiKey = fallback.apiKey;
+        resolvedProvider = fallback.provider;
+        resolvedModel = fallback.model;
+        keySource = 'env';
+      }
+    }
+  }
+  const hasKey = !!apiKey;
+  return {
+    ok: purpose === 'spectrum' ? (botEnabled && hasKey) : hasKey,
+    botEnabled: botEnabled,
+    hasKey: hasKey,
+    provider: resolvedProvider,
+    model: resolvedModel,
+    apiKey: apiKey,
+    keySource: keySource
+  };
+}
+
+function trimReply(text, max) {
+  const s = String(text == null ? '' : text).trim();
+  const cap = max || 4000;
+  if (s.length <= cap) return s;
+  return s.slice(0, cap - 1) + '…';
+}
+
+function collapseMessages(messages) {
+  const out = [];
+  (messages || []).forEach(function (m) {
+    if (!m || (m.role !== 'user' && m.role !== 'assistant')) return;
+    const content = String(m.content || '').trim();
+    if (!content) return;
+    const last = out[out.length - 1];
+    if (last && last.role === m.role) {
+      last.content += '\n\n' + content;
+    } else {
+      out.push({ role: m.role, content: content });
+    }
+  });
+  if (out.length && out[0].role !== 'user') {
+    out.unshift({ role: 'user', content: '(continue)' });
+  }
+  return out;
+}
+
+async function completeAnthropic(apiKey, model, system, messages, signal) {
+  const res = await fetch('https://api.anthropic.com/v1/messages', {
+    method: 'POST',
+    headers: {
+      'x-api-key': apiKey,
+      'anthropic-version': '2023-06-01',
+      'content-type': 'application/json'
+    },
+    body: JSON.stringify({
+      model: model,
+      max_tokens: 1024,
+      temperature: 0.3,
+      system: system || undefined,
+      messages: collapseMessages(messages)
+    }),
+    signal: signal
+  });
+  if (!res.ok) {
+    const err = await res.text();
+    throw httpError(502, 'Spectrum AI error: ' + String(err || '').slice(0, 180));
+  }
+  const data = await res.json();
+  const parts = (data.content || []).map(function (p) {
+    return p && p.type === 'text' ? String(p.text || '') : '';
+  });
+  return trimReply(parts.join('\n'));
+}
+
+async function completeOpenAi(apiKey, model, system, messages, signal) {
+  const payload = [];
+  if (system) payload.push({ role: 'system', content: system });
+  collapseMessages(messages).forEach(function (m) { payload.push(m); });
+  const res = await fetch('https://api.openai.com/v1/chat/completions', {
+    method: 'POST',
+    headers: {
+      Authorization: 'Bearer ' + apiKey,
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({
+      model: model,
+      messages: payload,
+      temperature: 0.3
+    }),
+    signal: signal
+  });
+  if (!res.ok) {
+    const err = await res.text();
+    throw httpError(502, 'Spectrum AI error: ' + String(err || '').slice(0, 180));
+  }
+  const data = await res.json();
+  const choice = data && data.choices && data.choices[0] && data.choices[0].message;
+  return trimReply(choice && choice.content);
+}
+
+async function completeGoogle(apiKey, model, system, messages, signal) {
+  const contents = collapseMessages(messages).map(function (m) {
+    return {
+      role: m.role === 'assistant' ? 'model' : 'user',
+      parts: [{ text: m.content }]
+    };
+  });
+  const body = {
+    contents: contents,
+    generationConfig: { temperature: 0.3 }
+  };
+  if (system) body.systemInstruction = { parts: [{ text: system }] };
+  const res = await fetch(
+    'https://generativelanguage.googleapis.com/v1beta/models/' +
+      encodeURIComponent(model) +
+      ':generateContent?key=' + encodeURIComponent(apiKey),
+    {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(body),
+      signal: signal
+    }
+  );
+  if (!res.ok) {
+    const err = await res.text();
+    throw httpError(502, 'Spectrum AI error: ' + String(err || '').slice(0, 180));
+  }
+  const data = await res.json();
+  const cand = data && data.candidates && data.candidates[0];
+  const parts = cand && cand.content && cand.content.parts || [];
+  return trimReply(parts.map(function (p) { return p && p.text ? p.text : ''; }).join('\n'));
+}
+
+async function complete(opts) {
+  const provider = normalizeProvider(opts && opts.provider);
+  const model = normalizeModel(provider, opts && opts.model);
+  const apiKey = String((opts && opts.apiKey) || '').trim();
+  const system = String((opts && opts.system) || '').trim();
+  const messages = Array.isArray(opts && opts.messages) ? opts.messages : [];
+  if (!apiKey) throw httpError(400, NO_KEY_HINT);
+  const ctrl = new AbortController();
+  const timer = setTimeout(function () { ctrl.abort(); }, 25000);
+  try {
+    if (provider === 'anthropic') {
+      return await completeAnthropic(apiKey, model, system, messages, ctrl.signal);
+    }
+    if (provider === 'openai') {
+      return await completeOpenAi(apiKey, model, system, messages, ctrl.signal);
+    }
+    return await completeGoogle(apiKey, model, system, messages, ctrl.signal);
+  } catch (e) {
+    if (e && e.name === 'AbortError') throw httpError(504, 'The model timed out.');
+    throw e;
+  } finally {
+    clearTimeout(timer);
+  }
+}
+
+function historyToLlmMessages(history) {
+  const messages = [];
+  (history || []).forEach(function (m) {
+    if (!m || m.isDeleted || m.isSystem) return;
+    const content = String(m.body || '').trim().slice(0, 1500);
+    if (!content) return;
+    if (m.isSpectrumAi) messages.push({ role: 'assistant', content: content });
+    else if (m.userId) {
+      const who = (m.user && m.user.name) ? m.user.name + ': ' : '';
+      messages.push({ role: 'user', content: who + content });
+    }
+  });
+  return collapseMessages(messages);
+}
+
+async function replyOnce(store, admin, room, userMessage) {
+  const text = String((userMessage && userMessage.body) || '');
+  if (!room || room.kind !== 'lobby' || !mentionedIn(text)) return null;
+  const runtime = await resolveRuntime(store, 'spectrum');
+  let body = '';
+  if (!runtime.hasKey) {
+    body = NO_KEY_HINT;
+  } else if (!runtime.botEnabled) {
+    body = BOT_OFF_HINT;
+  } else {
+    try {
+      const packed = await store.listChatMessages(admin, room.id, { limit: 20 });
+      const messages = historyToLlmMessages((packed && packed.messages) || []);
+      if (!messages.length) {
+        messages.push({ role: 'user', content: text });
+      }
+      body = await complete({
+        provider: runtime.provider,
+        model: runtime.model,
+        apiKey: runtime.apiKey,
+        system: SPECTRUM_SYSTEM,
+        messages: messages
+      });
+    } catch (e) {
+      body = 'I could not reply: ' + (e.message || 'something went wrong') + '.';
+    }
+  }
+  if (!body) body = 'I did not have a reply.';
+  return store.appendSpectrumAiMessage(admin, room.id, body);
+}
+
+async function replyToLobbyMention(store, admin, room, userMessage) {
+  if (!room || room.kind !== 'lobby') return null;
+  if (!mentionedIn((userMessage && userMessage.body) || '')) return null;
+  const key = String(room.id);
+  const prev = lobbyQueues.get(key) || Promise.resolve();
+  const next = prev.then(function () {
+    return replyOnce(store, admin, room, userMessage);
+  }).catch(function (err) {
+    console.error('spectrum ai reply', err);
+    return store.appendSpectrumAiMessage(
+      admin,
+      room.id,
+      'I could not reply: ' + (err.message || 'something went wrong') + '.'
+    );
+  });
+  lobbyQueues.set(key, next);
+  return next;
+}
+
 module.exports = {
   PROVIDERS,
   MODELS,
@@ -287,5 +579,11 @@ module.exports = {
   removeKeyPatch,
   pingProvider,
   testSavedOrPasted,
+  mentionedIn,
+  resolveRuntime,
+  complete,
+  replyToLobbyMention,
+  NO_KEY_HINT,
+  BOT_OFF_HINT,
   httpError
 };

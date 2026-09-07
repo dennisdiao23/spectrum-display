@@ -1900,7 +1900,7 @@
         <div id="chat-ai-section" class="hidden space-y-4">
           <div>
             <h2 class="text-base font-semibold text-slate-800">Chat / AI</h2>
-            <p class="text-slate-400 text-sm mt-1">Spectrum AI replies in Lobby and order chats when staff type @Spectrum AI. The key stays on the server.</p>
+            <p class="text-slate-400 text-sm mt-1">Spectrum AI replies in Lobby when staff type @Spectrum AI. Copilot uses the same key. The key stays on the server.</p>
           </div>
           <div class="chat-ai-card">
             <div class="chat-ai-row">
@@ -1908,13 +1908,6 @@
               <div class="chat-ai-switch" role="group" aria-label="Bot">
                 <button type="button" data-chat-ai-switch="enabled" data-on="1">on</button>
                 <button type="button" data-chat-ai-switch="enabled" data-on="0" class="is-on" aria-pressed="true">off</button>
-              </div>
-            </div>
-            <div class="chat-ai-row">
-              <span class="chat-ai-label">Allow AI in DMs</span>
-              <div class="chat-ai-switch" role="group" aria-label="Allow AI in DMs">
-                <button type="button" data-chat-ai-switch="allowInDms" data-on="1">on</button>
-                <button type="button" data-chat-ai-switch="allowInDms" data-on="0" class="is-on" aria-pressed="true">off</button>
               </div>
             </div>
             <div class="chat-ai-row">
@@ -14169,7 +14162,6 @@
 
     let chatAiState = {
       enabled: false,
-      allowInDms: false,
       provider: 'anthropic',
       model: 'claude-sonnet-4-6',
       hasKey: false,
@@ -14221,7 +14213,6 @@
       chatAiState = Object.assign(chatAiState, settings);
       if (settings.models) chatAiState.models = settings.models;
       setChatAiSwitch('enabled', !!settings.enabled);
-      setChatAiSwitch('allowInDms', !!settings.allowInDms);
       const provider = settings.provider || 'anthropic';
       const providerSel = document.getElementById('chat-ai-provider');
       if (providerSel) providerSel.value = provider;
@@ -14245,7 +14236,6 @@
       const provider = document.getElementById('chat-ai-provider').value || 'anthropic';
       const body = {
         enabled: document.querySelector('[data-chat-ai-switch="enabled"][data-on="1"]').classList.contains('is-on'),
-        allowInDms: document.querySelector('[data-chat-ai-switch="allowInDms"][data-on="1"]').classList.contains('is-on'),
         provider: provider,
         model: document.getElementById('chat-ai-model').value
       };

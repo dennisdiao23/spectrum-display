@@ -4654,6 +4654,10 @@ body.chat-splitting * {
   background: #f6f3ff;
   border-color: #ddd6fe;
 }
+.co-chat-msg.is-spectrum-ai .co-chat-msg-body {
+  background: #eef4ff;
+  border-color: #c9d8ff;
+}
 .co-chat-msg.is-pending .co-chat-msg-body {
   color: var(--dash-muted);
   font-style: italic;

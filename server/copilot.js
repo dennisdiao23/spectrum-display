@@ -4,6 +4,8 @@ const fs = require('fs');
 const path = require('path');
 const { hasPerm } = require('./admin-roles');
 
+const chatAi = require('./chat-ai');
+
 const ROOT = path.join(__dirname, '..');
 const HISTORY = 20;
 const BODY_MAX = 8000;
@@ -11,6 +13,11 @@ const queues = new Map();
 
 const WELCOME =
   'Hi — I\'m Copilot. I can search and draft anything you can do here: inventory, vendors, purchase orders, quotes, orders, invoices, and customers. I never save the final record. I prepare a draft, send it here for review, and you open it and save. Try: “Make a PO for [vendor] from low stock.”';
+
+const NO_KEY_COPY =
+  'I can draft a PO from low stock without an AI key — try “Make a PO for [vendor] from low stock.” ' +
+  'Attach a CSV to draft an invoice or PO. For everything else, add an API key in Settings → Chat / AI. ' +
+  'I still will not save the final record; you review and save.';
 
 function nowIso() {
   return new Date().toISOString();
@@ -32,7 +39,17 @@ function httpError(status, message) {
 }
 
 function llmConfigured() {
-  return !!(process.env.OPENAI_API_KEY || process.env.GEMINI_API_KEY);
+  return !!(
+    process.env.OPENAI_API_KEY ||
+    process.env.GEMINI_API_KEY ||
+    process.env.ANTHROPIC_API_KEY ||
+    process.env.SPECTRUM_CHAT_AI_KEY
+  );
+}
+
+async function llmReady(store) {
+  const runtime = await chatAi.resolveRuntime(store, 'copilot');
+  return !!(runtime && runtime.ok);
 }
 
 function canReadInventory(admin) {
@@ -354,6 +371,17 @@ const TOOLS = [
     }
   }
 ];
+
+function anthropicTools() {
+  return TOOLS.map(function (t) {
+    const fn = t.function;
+    return {
+      name: fn.name,
+      description: fn.description,
+      input_schema: fn.parameters || { type: 'object', properties: {} }
+    };
+  });
+}
 
 function openaiTools() {
   return TOOLS;
@@ -787,10 +815,33 @@ function toOpenAiMessages(admin, history, userText, fileNote) {
   return msgs;
 }
 
-async function callOpenAi(messages, tools) {
-  const key = process.env.OPENAI_API_KEY;
+function toAnthropicMessages(history, userText, fileNote) {
+  const raw = [];
+  (history || []).forEach(function (m) {
+    if (!m || m.isDeleted) return;
+    const content = trim(m.body, 1500);
+    if (!content) return;
+    if (m.isCopilot) raw.push({ role: 'assistant', content: content });
+    else if (m.userId) raw.push({ role: 'user', content: content });
+  });
+  let latest = userText || '';
+  if (fileNote) latest += '\n\n' + fileNote;
+  raw.push({ role: 'user', content: latest || '(see attachment)' });
+  const out = [];
+  raw.forEach(function (m) {
+    const last = out[out.length - 1];
+    if (last && last.role === m.role) last.content += '\n\n' + m.content;
+    else out.push({ role: m.role, content: m.content });
+  });
+  if (out.length && out[0].role !== 'user') {
+    out.unshift({ role: 'user', content: '(continue)' });
+  }
+  return out;
+}
+
+async function callOpenAi(apiKey, model, messages, tools) {
+  const key = String(apiKey || '').trim();
   if (!key) return null;
-  const model = process.env.COPILOT_MODEL || 'gpt-4o-mini';
   const res = await fetch('https://api.openai.com/v1/chat/completions', {
     method: 'POST',
     headers: {
@@ -798,7 +849,7 @@ async function callOpenAi(messages, tools) {
       'Content-Type': 'application/json'
     },
     body: JSON.stringify({
-      model: model,
+      model: model || 'gpt-4o-mini',
       messages: messages,
       tools: tools,
       tool_choice: 'auto',
@@ -812,10 +863,35 @@ async function callOpenAi(messages, tools) {
   return res.json();
 }
 
-async function callGemini(messages, file) {
-  const key = process.env.GEMINI_API_KEY;
+async function callAnthropic(apiKey, model, system, messages) {
+  const key = String(apiKey || '').trim();
   if (!key) return null;
-  const model = process.env.COPILOT_GEMINI_MODEL || 'gemini-2.0-flash';
+  const res = await fetch('https://api.anthropic.com/v1/messages', {
+    method: 'POST',
+    headers: {
+      'x-api-key': key,
+      'anthropic-version': '2023-06-01',
+      'content-type': 'application/json'
+    },
+    body: JSON.stringify({
+      model: model,
+      max_tokens: 2048,
+      temperature: 0.2,
+      system: system,
+      tools: anthropicTools(),
+      messages: messages
+    })
+  });
+  if (!res.ok) {
+    const err = await res.text();
+    throw new Error('Copilot model error: ' + trim(err, 200));
+  }
+  return res.json();
+}
+
+async function callGemini(apiKey, model, messages, file) {
+  const key = String(apiKey || '').trim();
+  if (!key) return null;
   const contents = [];
   messages.forEach(function (m) {
     if (m.role === 'system') return;
@@ -840,7 +916,9 @@ async function callGemini(messages, file) {
     });
   }
   const res = await fetch(
-    'https://generativelanguage.googleapis.com/v1beta/models/' + model + ':generateContent?key=' + encodeURIComponent(key),
+    'https://generativelanguage.googleapis.com/v1beta/models/' +
+      encodeURIComponent(model || 'gemini-2.0-flash') +
+      ':generateContent?key=' + encodeURIComponent(key),
     {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -876,15 +954,73 @@ function geminiText(data) {
   return { text: texts.join('\n').trim(), calls: calls };
 }
 
-async function runLlmTurn(store, admin, roomId, history, userText, file) {
+async function runLlmTurn(store, admin, roomId, history, userText, file, runtime) {
   const fileNote = file
     ? ('Attached file: ' + (file.name || 'file') + (file.type === 'image' || /\.(png|jpe?g|webp|gif)$/.test(file.name || '') ? ' (image)' : ''))
     : '';
-  let messages = toOpenAiMessages(admin, history, userText, fileNote);
   const extraBodies = [];
-  if (process.env.OPENAI_API_KEY) {
+  const provider = runtime && runtime.provider;
+  const apiKey = runtime && runtime.apiKey;
+  const model = runtime && runtime.model;
+  if (!apiKey) return '';
+
+  if (provider === 'anthropic') {
+    let messages = toAnthropicMessages(history, userText, fileNote);
+    const system = systemPrompt(admin);
     for (let i = 0; i < 5; i++) {
-      const data = await callOpenAi(messages, openaiTools());
+      const data = await callAnthropic(apiKey, model, system, messages);
+      const content = (data && data.content) || [];
+      const texts = [];
+      const calls = [];
+      content.forEach(function (p) {
+        if (p && p.type === 'text' && p.text) texts.push(p.text);
+        if (p && p.type === 'tool_use') calls.push(p);
+      });
+      if (!calls.length) {
+        extraBodies.push(texts.join('\n'));
+        break;
+      }
+      messages.push({ role: 'assistant', content: content });
+      const results = [];
+      for (let c = 0; c < calls.length; c++) {
+        const call = calls[c];
+        const result = await runTool(store, admin, roomId, call.name, call.input || {});
+        if (result && result.body) extraBodies.push(result.body);
+        results.push({
+          type: 'tool_result',
+          tool_use_id: call.id,
+          content: JSON.stringify(result && result.body
+            ? { ok: result.ok, summary: result.summary, error: result.error }
+            : result)
+        });
+      }
+      messages.push({ role: 'user', content: results });
+    }
+  } else if (provider === 'google') {
+    let messages = toOpenAiMessages(admin, history, userText, fileNote);
+    const data = await callGemini(apiKey, model, messages, file);
+    const parsed = geminiText(data);
+    for (let i = 0; i < (parsed.calls || []).length && i < 5; i++) {
+      const call = parsed.calls[i];
+      const result = await runTool(store, admin, roomId, call.name, call.args);
+      if (result && result.body) extraBodies.push(result.body);
+      messages.push({
+        role: 'tool',
+        name: call.name,
+        content: JSON.stringify(result && result.body ? { ok: result.ok, summary: result.summary, error: result.error } : result)
+      });
+    }
+    if (parsed.calls && parsed.calls.length) {
+      const data2 = await callGemini(apiKey, model, messages, null);
+      const parsed2 = geminiText(data2);
+      extraBodies.push(parsed2.text || '');
+    } else {
+      extraBodies.push(parsed.text || '');
+    }
+  } else {
+    let messages = toOpenAiMessages(admin, history, userText, fileNote);
+    for (let i = 0; i < 5; i++) {
+      const data = await callOpenAi(apiKey, model, messages, openaiTools());
       const choice = data && data.choices && data.choices[0] && data.choices[0].message;
       if (!choice) break;
       const calls = choice.tool_calls || [];
@@ -907,26 +1043,6 @@ async function runLlmTurn(store, admin, roomId, history, userText, file) {
           content: JSON.stringify(result && result.body ? { ok: result.ok, summary: result.summary, error: result.error } : result)
         });
       }
-    }
-  } else if (process.env.GEMINI_API_KEY) {
-    const data = await callGemini(messages, file);
-    const parsed = geminiText(data);
-    for (let i = 0; i < (parsed.calls || []).length && i < 5; i++) {
-      const call = parsed.calls[i];
-      const result = await runTool(store, admin, roomId, call.name, call.args);
-      if (result && result.body) extraBodies.push(result.body);
-      messages.push({
-        role: 'tool',
-        name: call.name,
-        content: JSON.stringify(result && result.body ? { ok: result.ok, summary: result.summary, error: result.error } : result)
-      });
-    }
-    if (parsed.calls && parsed.calls.length) {
-      const data2 = await callGemini(messages, null);
-      const parsed2 = geminiText(data2);
-      extraBodies.push(parsed2.text || '');
-    } else {
-      extraBodies.push(parsed.text || '');
     }
   }
   const seen = {};
@@ -981,22 +1097,17 @@ async function replyOnce(store, admin, room, userMessage) {
     return;
   }
 
-  if (!llmConfigured()) {
+  if (!(await llmReady(store))) {
     if (parsed) return;
-    await store.appendCopilotMessage(
-      admin,
-      roomId,
-      'I can draft a PO from low stock without an AI key — try “Make a PO for [vendor] from low stock.” ' +
-        'Attach a CSV to draft an invoice or PO. For everything else, add OPENAI_API_KEY or GEMINI_API_KEY on the server. ' +
-        'I still will not save the final record; you review and save.'
-    );
+    await store.appendCopilotMessage(admin, roomId, NO_KEY_COPY);
     return;
   }
 
   const packed = await store.listChatMessages(admin, roomId, { limit: HISTORY });
   const history = (packed && packed.messages) || [];
   const file = await readAttachment(userMessage);
-  let reply = await runLlmTurn(store, admin, roomId, history, text, file);
+  const runtime = await chatAi.resolveRuntime(store, 'copilot');
+  let reply = await runLlmTurn(store, admin, roomId, history, text, file, runtime);
   if (!reply) {
     reply = 'I did not have a draft to send. Ask me to look something up, or to prepare a PO, invoice, or inventory item for review.';
   }
@@ -1023,6 +1134,7 @@ async function getDraft(store, admin, token) {
 module.exports = {
   WELCOME,
   llmConfigured,
+  llmReady,
   replyToChat,
   discardDraft,
   getDraft,
