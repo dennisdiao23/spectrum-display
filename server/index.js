@@ -648,6 +648,7 @@ async function main() {
         ok: true,
         walls: walls,
         processors: wallsLib.PROCESSOR_MODELS,
+        templates: wallsLib.TEMPLATES,
         offlineAfterMs: wallsLib.OFFLINE_MS
       });
     } catch (err) { next(err); }
@@ -663,7 +664,7 @@ async function main() {
   });
 
   app.get('/api/walls/:id', requireWallActor, async function (req, res) {
-    res.json({ ok: true, wall: req.wall, processors: wallsLib.PROCESSOR_MODELS, actor: req.wallActor });
+    res.json({ ok: true, wall: req.wall, processors: wallsLib.PROCESSOR_MODELS, templates: wallsLib.TEMPLATES, actor: req.wallActor });
   });
 
   app.put('/api/walls/:id', requireCustomer, async function (req, res, next) {

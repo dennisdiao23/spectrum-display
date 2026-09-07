@@ -769,6 +769,8 @@ function ensureWalls(db) {
       last_seen_at TEXT NOT NULL DEFAULT '',
       bridge_token_hash TEXT NOT NULL DEFAULT '',
       test_mode INTEGER NOT NULL DEFAULT 0,
+      audio_enabled INTEGER NOT NULL DEFAULT 0,
+      audio_pane TEXT NOT NULL DEFAULT '',
       created_at TEXT NOT NULL,
       updated_at TEXT NOT NULL
     );
@@ -814,6 +816,8 @@ function ensureWalls(db) {
     CREATE INDEX IF NOT EXISTS wall_commands_wall_idx ON wall_commands (wall_id, status, created_at);
   `);
   try { db.exec('ALTER TABLE walls ADD COLUMN test_mode INTEGER NOT NULL DEFAULT 0'); } catch (e) { /* already present */ }
+  try { db.exec('ALTER TABLE walls ADD COLUMN audio_enabled INTEGER NOT NULL DEFAULT 0'); } catch (e) { /* already present */ }
+  try { db.exec('ALTER TABLE walls ADD COLUMN audio_pane TEXT NOT NULL DEFAULT \'\''); } catch (e) { /* already present */ }
 }
 
 function ensureColumnPrefs(db) {

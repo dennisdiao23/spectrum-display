@@ -13,10 +13,35 @@ const PROCESSOR_MODELS = [
 ];
 
 const DISPLAY_MODES = ['on', 'black', 'freeze'];
-const LAYOUTS = ['full', 'split'];
-const COMMAND_TYPES = ['recall_preset', 'set_source', 'set_brightness', 'set_display'];
+const LAYOUTS = ['full', 'split', 'quad', 'five', 'cinema235', 'wide32x9'];
+const COMMAND_TYPES = ['recall_preset', 'set_source', 'set_brightness', 'set_display', 'set_audio', 'save_layout'];
 const OFFLINE_MS = 60 * 1000;
 const BRIDGE_PREFIX = 'wrb_';
+const SAVE_LAYOUT_PROCESSORS = ['H2', 'H5'];
+const TEMPLATES = [
+  { layout: 'full', name: 'Full', panes: ['full'] },
+  { layout: 'split', name: 'Split 50/50', panes: ['left', 'right'] },
+  { layout: 'quad', name: 'Quad', panes: ['tl', 'tr', 'bl', 'br'] },
+  { layout: 'five', name: '5-up', panes: ['main', 'p1', 'p2', 'p3', 'p4'] },
+  { layout: 'cinema235', name: 'Cinema 2.35', panes: ['cinema'] },
+  { layout: 'wide32x9', name: 'Wide 32:9', panes: ['wide'] }
+];
+const LAYOUT_ALIASES = {
+  split50: 'split',
+  split_50: 'split',
+  '50/50': 'split',
+  five_up: 'five',
+  fiveup: 'five',
+  '5-up': 'five',
+  '5up': 'five',
+  cinema: 'cinema235',
+  cinema_235: 'cinema235',
+  '2.35': 'cinema235',
+  wide: 'wide32x9',
+  wide32: 'wide32x9',
+  '32:9': 'wide32x9',
+  '32x9': 'wide32x9'
+};
 
 function nowIso() {
   return new Date().toISOString();
@@ -69,8 +94,26 @@ function displayOf(value) {
 }
 
 function layoutOf(value) {
-  const raw = String(value || '').toLowerCase();
+  const raw = String(value || '').toLowerCase().trim();
+  if (LAYOUT_ALIASES[raw]) return LAYOUT_ALIASES[raw];
   return LAYOUTS.indexOf(raw) >= 0 ? raw : 'full';
+}
+
+function templateOf(layout) {
+  const key = layoutOf(layout);
+  return TEMPLATES.find(function (t) { return t.layout === key; }) || TEMPLATES[0];
+}
+
+function canSaveLayout(processor) {
+  return SAVE_LAYOUT_PROCESSORS.indexOf(processorOf(processor)) >= 0;
+}
+
+function wallCapabilities(processor, audioEnabled) {
+  return {
+    saveLayout: canSaveLayout(processor),
+    freeMove: false,
+    audio: !!audioEnabled
+  };
 }
 
 function pixelsFor(pitch, mm) {
@@ -97,7 +140,7 @@ function defaultInputs() {
 function defaultPresets() {
   return [
     { name: 'Full', layout: 'full', novastarIndex: 0 },
-    { name: 'Split', layout: 'split', novastarIndex: 1 }
+    { name: 'Split 50/50', layout: 'split', novastarIndex: 1 }
   ];
 }
 
@@ -116,29 +159,29 @@ function normalizeInputs(list) {
 
 function panesForPreset(preset, inputs) {
   const first = inputs[0] ? inputs[0].id : '';
-  const second = inputs[1] ? inputs[1].id : first;
   const given = Array.isArray(preset && preset.panes) ? preset.panes : [];
-  function paneInput(pane, fallback) {
+  const ids = (templateOf(preset && preset.layout).panes);
+  return ids.map(function (pane, i) {
+    const fallback = inputs[Math.min(i, Math.max(0, inputs.length - 1))] ;
     const hit = given.find(function (p) { return String(p.pane) === pane; });
-    if (hit && hit.inputId) return String(hit.inputId);
-    return fallback;
-  }
-  if (preset.layout === 'split') {
-    return [
-      { id: newId(), pane: 'left', inputId: paneInput('left', first) },
-      { id: newId(), pane: 'right', inputId: paneInput('right', second) }
-    ];
-  }
-  return [{ id: newId(), pane: 'full', inputId: paneInput('full', first) }];
+    const inputId = (hit && (hit.inputId || hit.input_id)) || (fallback && fallback.id) || first;
+    return {
+      id: str(hit && hit.id, '') || newId(),
+      pane: pane,
+      inputId: String(inputId || '')
+    };
+  });
 }
 
 function normalizePresets(list, inputs) {
   const src = Array.isArray(list) && list.length ? list : defaultPresets();
   return src.slice(0, 16).map(function (item, i) {
+    const layout = layoutOf(item && item.layout);
+    const tmpl = templateOf(layout);
     const preset = {
       id: str(item && item.id, '') || newId(),
-      name: str(item && item.name, i === 0 ? 'Full' : 'Preset ' + (i + 1)).slice(0, 48),
-      layout: layoutOf(item && item.layout),
+      name: str(item && item.name, tmpl.name).slice(0, 48),
+      layout: layout,
       novastarIndex: clampInt(item && (item.novastarIndex != null ? item.novastarIndex : item.novastar_index), 0, 128, i),
       sortOrder: i
     };
@@ -157,6 +200,10 @@ function normalizeWall(payload) {
   const presets = normalizePresets(payload && payload.presets, inputs);
   const activePresetId = str(payload && (payload.activePresetId || payload.active_preset_id), '');
   const active = presets.find(function (p) { return p.id === activePresetId; }) || presets[0];
+  const audioEnabled = !!(payload && (payload.audioEnabled || payload.audio_enabled));
+  let audioPane = audioEnabled ? str(payload && (payload.audioPane || payload.audio_pane), '') : '';
+  const paneIds = ((active && active.panes) || []).map(function (p) { return p.pane; });
+  if (audioPane && paneIds.indexOf(audioPane) < 0) audioPane = '';
   return {
     name: str(payload && payload.name, 'Main Wall').slice(0, 80),
     processor: processorOf(payload && payload.processor),
@@ -171,6 +218,8 @@ function normalizeWall(payload) {
     brightness: clampInt(payload && payload.brightness, 0, 100, 80),
     displayMode: displayOf(payload && (payload.displayMode || payload.display_mode)),
     activePresetId: active ? active.id : '',
+    audioEnabled: audioEnabled,
+    audioPane: audioPane,
     inputs: inputs,
     presets: presets
   };
@@ -199,6 +248,9 @@ function publicWall(row, extras) {
     brightness: clampInt(row.brightness, 0, 100, 80),
     displayMode: displayOf(row.display_mode),
     activePresetId: row.active_preset_id || '',
+    audioEnabled: !!(row.audio_enabled === true || row.audio_enabled === 1 || row.audio_enabled === '1'),
+    audioPane: row.audio_pane || '',
+    capabilities: wallCapabilities(row.processor, row.audio_enabled),
     lastSeenAt: row.last_seen_at || '',
     testing: testing,
     online: testing || isOnline(row.last_seen_at),
@@ -271,6 +323,13 @@ function normalizeCommand(body) {
   }
   if (type === 'set_display') {
     payload.display = displayOf(body.display || body.displayMode || body.display_mode);
+  }
+  if (type === 'set_audio') {
+    const pane = String(body.pane || body.audioPane || body.audio_pane || '').trim();
+    payload.pane = (!pane || pane === 'off') ? '' : pane;
+  }
+  if (type === 'save_layout') {
+    payload.presetId = str(body.presetId || body.preset_id, '');
   }
   return { type: type, payload: payload };
 }
@@ -372,13 +431,13 @@ function sqliteApi(db) {
           INSERT INTO walls (
             id, user_id, name, processor, model, pitch, cols, rows,
             cabinet_w_mm, cabinet_h_mm, pixel_w, pixel_h, brightness, display_mode,
-            active_preset_id, last_seen_at, bridge_token_hash, created_at, updated_at
-          ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, '', ?, ?, ?)
+            active_preset_id, last_seen_at, bridge_token_hash, audio_enabled, audio_pane, created_at, updated_at
+          ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, '', ?, ?, ?, ?, ?)
         `).run(
           id, String(userId), data.name, data.processor, data.model, data.pitch,
           data.cols, data.rows, data.cabinetWmm, data.cabinetHmm, data.pixelW, data.pixelH,
           data.brightness, data.displayMode, data.activePresetId, hashBridgeToken(token),
-          stamp, stamp
+          data.audioEnabled ? 1 : 0, data.audioPane, stamp, stamp
         );
         replaceChildren(id, data);
         db.exec('COMMIT');
@@ -402,12 +461,13 @@ function sqliteApi(db) {
           UPDATE walls SET
             name = ?, processor = ?, model = ?, pitch = ?, cols = ?, rows = ?,
             cabinet_w_mm = ?, cabinet_h_mm = ?, pixel_w = ?, pixel_h = ?,
-            brightness = ?, display_mode = ?, active_preset_id = ?, updated_at = ?
+            brightness = ?, display_mode = ?, active_preset_id = ?, audio_enabled = ?, audio_pane = ?, updated_at = ?
           WHERE id = ? AND user_id = ?
         `).run(
           merged.name, merged.processor, merged.model, merged.pitch, merged.cols, merged.rows,
           merged.cabinetWmm, merged.cabinetHmm, merged.pixelW, merged.pixelH,
-          merged.brightness, merged.displayMode, merged.activePresetId, stamp,
+          merged.brightness, merged.displayMode, merged.activePresetId,
+          merged.audioEnabled ? 1 : 0, merged.audioPane, stamp,
           id, String(userId)
         );
         if (payload && (payload.inputs || payload.presets)) {
@@ -449,11 +509,14 @@ function sqliteApi(db) {
       const wall = await this.getWallForOwner(id, userId);
       if (!wall) return null;
       const cmd = normalizeCommand(body);
+      if (cmd.type === 'save_layout' && !canSaveLayout(wall.processor)) {
+        throw new Error('This processor cannot save layouts from the website.');
+      }
       applyDesired(db, wall, cmd);
-      const coalesce = cmd.type === 'set_source'
+      const coalesce = (cmd.type === 'set_source' || cmd.type === 'set_audio')
         ? db.prepare("UPDATE wall_commands SET status = 'replaced' WHERE wall_id = ? AND type = ? AND status = 'pending' AND payload LIKE ?")
         : db.prepare("UPDATE wall_commands SET status = 'replaced' WHERE wall_id = ? AND type = ? AND status = 'pending'");
-      if (cmd.type === 'set_source') {
+      if (cmd.type === 'set_source' || cmd.type === 'set_audio') {
         coalesce.run(id, cmd.type, '%"pane":"' + String(cmd.payload.pane).replace(/"/g, '') + '"%');
       } else {
         coalesce.run(id, cmd.type);
@@ -507,8 +570,10 @@ function applyDesired(db, wall, cmd) {
   if (cmd.type === 'recall_preset') {
     const preset = (wall.presets || []).find(function (p) { return p.id === cmd.payload.presetId; });
     if (!preset) throw new Error('Preset not found.');
-    db.prepare('UPDATE walls SET active_preset_id = ?, updated_at = ? WHERE id = ?')
-      .run(preset.id, stamp, wall.id);
+    const paneIds = (preset.panes || []).map(function (p) { return p.pane; });
+    const audioPane = (wall.audioPane && paneIds.indexOf(wall.audioPane) >= 0) ? wall.audioPane : '';
+    db.prepare('UPDATE walls SET active_preset_id = ?, audio_pane = ?, updated_at = ? WHERE id = ?')
+      .run(preset.id, audioPane, stamp, wall.id);
   }
   if (cmd.type === 'set_brightness') {
     db.prepare('UPDATE walls SET brightness = ?, updated_at = ? WHERE id = ?')
@@ -526,6 +591,20 @@ function applyDesired(db, wall, cmd) {
     const input = (wall.inputs || []).find(function (i) { return i.id === cmd.payload.inputId; });
     if (!input) throw new Error('Source not found.');
     db.prepare('UPDATE wall_preset_panes SET input_id = ? WHERE id = ?').run(input.id, pane.id);
+    db.prepare('UPDATE walls SET updated_at = ? WHERE id = ?').run(stamp, wall.id);
+  }
+  if (cmd.type === 'set_audio') {
+    if (!wall.audioEnabled) throw new Error('This wall has no audio path.');
+    const pane = cmd.payload.pane;
+    if (pane) {
+      const active = (wall.presets || []).find(function (p) { return p.id === wall.activePresetId; }) || wall.presets[0];
+      if (!active || !(active.panes || []).some(function (p) { return p.pane === pane; })) {
+        throw new Error('Pane not found.');
+      }
+    }
+    db.prepare('UPDATE walls SET audio_pane = ?, updated_at = ? WHERE id = ?').run(pane, stamp, wall.id);
+  }
+  if (cmd.type === 'save_layout') {
     db.prepare('UPDATE walls SET updated_at = ? WHERE id = ?').run(stamp, wall.id);
   }
 }
@@ -604,7 +683,13 @@ function supabaseApi(supabase) {
     if (cmd.type === 'recall_preset') {
       const preset = (wall.presets || []).find(function (p) { return p.id === cmd.payload.presetId; });
       if (!preset) throw new Error('Preset not found.');
-      const { error } = await supabase.from('walls').update({ active_preset_id: preset.id, updated_at: stamp }).eq('id', wall.id);
+      const paneIds = (preset.panes || []).map(function (p) { return p.pane; });
+      const audioPane = (wall.audioPane && paneIds.indexOf(wall.audioPane) >= 0) ? wall.audioPane : '';
+      const { error } = await supabase.from('walls').update({
+        active_preset_id: preset.id,
+        audio_pane: audioPane || null,
+        updated_at: stamp
+      }).eq('id', wall.id);
       if (error) throw new Error(error.message);
     }
     if (cmd.type === 'set_brightness') {
@@ -625,6 +710,22 @@ function supabaseApi(supabase) {
       const { error } = await supabase.from('wall_preset_panes').update({ input_id: input.id }).eq('id', pane.id);
       if (error) throw new Error(error.message);
       await supabase.from('walls').update({ updated_at: stamp }).eq('id', wall.id);
+    }
+    if (cmd.type === 'set_audio') {
+      if (!wall.audioEnabled) throw new Error('This wall has no audio path.');
+      const pane = cmd.payload.pane;
+      if (pane) {
+        const active = (wall.presets || []).find(function (p) { return p.id === wall.activePresetId; }) || wall.presets[0];
+        if (!active || !(active.panes || []).some(function (p) { return p.pane === pane; })) {
+          throw new Error('Pane not found.');
+        }
+      }
+      const { error } = await supabase.from('walls').update({ audio_pane: pane || null, updated_at: stamp }).eq('id', wall.id);
+      if (error) throw new Error(error.message);
+    }
+    if (cmd.type === 'save_layout') {
+      const { error } = await supabase.from('walls').update({ updated_at: stamp }).eq('id', wall.id);
+      if (error) throw new Error(error.message);
     }
   }
 
@@ -677,6 +778,8 @@ function supabaseApi(supabase) {
         active_preset_id: data.activePresetId || null,
         last_seen_at: null,
         bridge_token_hash: hashBridgeToken(token),
+        audio_enabled: data.audioEnabled,
+        audio_pane: data.audioPane || null,
         created_at: stamp,
         updated_at: stamp
       });
@@ -705,6 +808,8 @@ function supabaseApi(supabase) {
         brightness: merged.brightness,
         display_mode: merged.displayMode,
         active_preset_id: merged.activePresetId || null,
+        audio_enabled: merged.audioEnabled,
+        audio_pane: merged.audioPane || null,
         updated_at: nowIso()
       }).eq('id', id).eq('user_id', userId);
       if (error) throw new Error(error.message);
@@ -750,6 +855,9 @@ function supabaseApi(supabase) {
       const wall = await this.getWallForOwner(id, userId);
       if (!wall) return null;
       const cmd = normalizeCommand(body);
+      if (cmd.type === 'save_layout' && !canSaveLayout(wall.processor)) {
+        throw new Error('This processor cannot save layouts from the website.');
+      }
       await applyDesiredSb(wall, cmd);
       let pendingQ = supabase.from('wall_commands').update({ status: 'replaced' })
         .eq('wall_id', id).eq('type', cmd.type).eq('status', 'pending');
@@ -803,13 +911,17 @@ function supabaseApi(supabase) {
 
 module.exports = {
   PROCESSOR_MODELS,
+  TEMPLATES,
+  LAYOUTS,
   DISPLAY_MODES,
   COMMAND_TYPES,
+  SAVE_LAYOUT_PROCESSORS,
   OFFLINE_MS,
   BRIDGE_PREFIX,
   isBridgeToken,
   hashBridgeToken,
   isOnline,
+  canSaveLayout,
   sqliteApi,
   supabaseApi
 };

@@ -1,11 +1,37 @@
 /**
- * Spectrum Display — signed-in Wall Remote. Talks to /api/walls*.
+ * Spectrum Display — signed-in LED Wall Controller. Talks to /api/walls*.
  */
 (function () {
   const Auth = window.SpectrumAuth;
+  const DEFAULT_TEMPLATES = [
+    { layout: 'full', name: 'Full', panes: ['full'] },
+    { layout: 'split', name: 'Split 50/50', panes: ['left', 'right'] },
+    { layout: 'quad', name: 'Quad', panes: ['tl', 'tr', 'bl', 'br'] },
+    { layout: 'five', name: '5-up', panes: ['main', 'p1', 'p2', 'p3', 'p4'] },
+    { layout: 'cinema235', name: 'Cinema 2.35', panes: ['cinema'] },
+    { layout: 'wide32x9', name: 'Wide 32:9', panes: ['wide'] }
+  ];
+  const PANE_LABELS = {
+    full: 'Full',
+    left: 'Left',
+    right: 'Right',
+    tl: 'Top left',
+    tr: 'Top right',
+    bl: 'Bottom left',
+    br: 'Bottom right',
+    main: 'Main',
+    p1: '1',
+    p2: '2',
+    p3: '3',
+    p4: '4',
+    cinema: 'Cinema',
+    wide: 'Wide'
+  };
   let walls = [];
   let processors = [];
+  let templates = DEFAULT_TEMPLATES.slice();
   let current = null;
+  let selectedPane = '';
   let showA1 = false;
   let lastToken = '';
   let pollTimer = null;
@@ -54,6 +80,57 @@
     return (wall.inputs || []).find(function (i) { return i.id === hit.inputId; }) || null;
   }
 
+  function paneLabel(pane) {
+    return PANE_LABELS[pane] || pane || 'Pane';
+  }
+
+  function canSave(wall) {
+    return !!(wall && wall.capabilities && wall.capabilities.saveLayout);
+  }
+
+  function paneRects(layout, wall) {
+    const aspect = ((wall.cols || 1) * (wall.cabinetWmm || 500)) / ((wall.rows || 1) * (wall.cabinetHmm || 500));
+    if (layout === 'split') {
+      return [
+        { pane: 'left', l: 0, t: 0, w: 50, h: 100 },
+        { pane: 'right', l: 50, t: 0, w: 50, h: 100 }
+      ];
+    }
+    if (layout === 'quad') {
+      return [
+        { pane: 'tl', l: 0, t: 0, w: 50, h: 50 },
+        { pane: 'tr', l: 50, t: 0, w: 50, h: 50 },
+        { pane: 'bl', l: 0, t: 50, w: 50, h: 50 },
+        { pane: 'br', l: 50, t: 50, w: 50, h: 50 }
+      ];
+    }
+    if (layout === 'five') {
+      return [
+        { pane: 'main', l: 0, t: 0, w: 58, h: 100 },
+        { pane: 'p1', l: 58, t: 0, w: 42, h: 25 },
+        { pane: 'p2', l: 58, t: 25, w: 42, h: 25 },
+        { pane: 'p3', l: 58, t: 50, w: 42, h: 25 },
+        { pane: 'p4', l: 58, t: 75, w: 42, h: 25 }
+      ];
+    }
+    if (layout === 'cinema235' || layout === 'wide32x9') {
+      const ratio = layout === 'cinema235' ? 2.35 : (32 / 9);
+      const h = Math.min(100, (aspect / ratio) * 100);
+      return [{ pane: layout === 'cinema235' ? 'cinema' : 'wide', l: 0, t: (100 - h) / 2, w: 100, h: h }];
+    }
+    return [{ pane: 'full', l: 0, t: 0, w: 100, h: 100 }];
+  }
+
+  function syncSelectedPane(wall) {
+    const preset = activePreset(wall);
+    const ids = ((preset && preset.panes) || []).map(function (p) { return p.pane; });
+    if (!ids.length) {
+      selectedPane = '';
+      return;
+    }
+    if (ids.indexOf(selectedPane) < 0) selectedPane = ids[0];
+  }
+
   function fmtRes(wall) {
     if (!wall) return '—';
     return Number(wall.pixelW).toLocaleString() + ' × ' + Number(wall.pixelH).toLocaleString();
@@ -78,6 +155,7 @@
 
   function showGuest() {
     current = null;
+    selectedPane = '';
     if (pollTimer) {
       clearInterval(pollTimer);
       pollTimer = null;
@@ -121,14 +199,45 @@
     }).join('');
   }
 
+  function renderPanes(wall) {
+    const wrap = $('wall-panes');
+    if (!wrap) return;
+    if (!wall) {
+      wrap.innerHTML = '';
+      return;
+    }
+    const preset = activePreset(wall);
+    const rects = paneRects(preset && preset.layout, wall);
+    wrap.innerHTML = rects.map(function (rect) {
+      const src = paneSource(wall, rect.pane);
+      const label = (src && src.name) || paneLabel(rect.pane);
+      const selected = rect.pane === selectedPane;
+      const audio = !!(wall.audioEnabled && wall.audioPane === rect.pane);
+      return '<button type="button" class="wall-pane' + (selected ? ' is-selected' : '') + '" data-pane="' +
+        escapeHtml(rect.pane) + '" style="left:' + rect.l + '%;top:' + rect.t + '%;width:' + rect.w + '%;height:' + rect.h + '%">' +
+        '<span class="wall-pane-src">' + escapeHtml(label) + '</span>' +
+        (audio ? '<span class="wall-pane-audio">AUDIO</span>' : '') +
+        '</button>';
+    }).join('');
+    wrap.querySelectorAll('.wall-pane').forEach(function (btn) {
+      btn.onclick = function () {
+        selectedPane = btn.getAttribute('data-pane') || '';
+        renderSelectedPane(current);
+        renderPanes(current);
+      };
+    });
+  }
+
   function renderPreview(wall) {
     const grid = $('wall-preview');
     const overlay = $('wall-status-overlay');
     const freeze = $('wall-freeze-badge');
-    const split = $('wall-split-line');
+    const offline = $('wall-offline-badge');
     if (!grid) return;
     if (!wall) {
       grid.innerHTML = '';
+      renderPanes(null);
+      if (offline) offline.classList.add('hidden');
       if (overlay) overlay.classList.remove('hidden');
       if (overlay) overlay.querySelector('span').textContent = $('wall-guest') && !$('wall-guest').classList.contains('hidden')
         ? 'Sign in to run this wall.'
@@ -154,14 +263,12 @@
       }
     }
     grid.innerHTML = html;
-    if (split) split.classList.toggle('hidden', !(activePreset(wall) && activePreset(wall).layout === 'split'));
+    renderPanes(wall);
     if (freeze) freeze.classList.toggle('hidden', wall.displayMode !== 'freeze');
     const testBadge = $('wall-test-badge');
     if (testBadge) testBadge.classList.toggle('hidden', !wall.testing);
-    if (overlay) {
-      overlay.classList.toggle('hidden', live);
-      overlay.querySelector('span').textContent = 'Wall offline.';
-    }
+    if (offline) offline.classList.toggle('hidden', live);
+    if (overlay) overlay.classList.add('hidden');
     $('preview-size').textContent = fmtSize(wall);
     $('preview-resolution').textContent = fmtRes(wall);
     $('preview-grid').textContent = cols + '×' + rows;
@@ -169,30 +276,50 @@
     $('dim-height').textContent = fmtSize(wall).split(' × ')[1];
   }
 
-  function renderSources(wall) {
-    const wrap = $('source-fields');
-    if (!wrap) return;
-    const preset = activePreset(wall);
-    if (!wall || !preset) {
-      wrap.innerHTML = '<p class="text-xs text-slate-500">Add a wall to choose sources.</p>';
+  function renderSelectedPane(wall) {
+    const nameEl = $('selected-pane-name');
+    const sel = $('source-select');
+    const audioWrap = $('audio-wrap');
+    if (!nameEl || !sel) return;
+    if (!wall) {
+      nameEl.textContent = '—';
+      sel.innerHTML = '';
+      if (audioWrap) audioWrap.classList.add('hidden');
       return;
     }
-    const panes = preset.layout === 'split' ? ['left', 'right'] : ['full'];
-    const labels = { full: 'Source', left: 'Left pane', right: 'Right pane' };
-    wrap.innerHTML = panes.map(function (pane) {
-      const cur = paneSource(wall, pane);
-      const opts = (wall.inputs || []).map(function (input) {
-        return '<option value="' + escapeHtml(input.id) + '"' + (cur && cur.id === input.id ? ' selected' : '') + '>' + escapeHtml(input.name) + '</option>';
-      }).join('');
-      return '<div><label class="block text-xs text-slate-400 mb-1">' + labels[pane] + '</label>' +
-        '<select data-pane="' + pane + '" class="source-select w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-sky-500">' +
-        opts + '</select></div>';
-    }).join('');
-    wrap.querySelectorAll('.source-select').forEach(function (sel) {
-      sel.onchange = function () {
-        sendCommand({ type: 'set_source', pane: sel.getAttribute('data-pane'), inputId: sel.value });
-      };
-    });
+    syncSelectedPane(wall);
+    nameEl.textContent = paneLabel(selectedPane);
+    const cur = paneSource(wall, selectedPane);
+    fillSelect(sel, wall.inputs || [], cur ? cur.id : '', function (input) { return input.name; });
+    const hasAudio = !!(wall.audioEnabled || (wall.capabilities && wall.capabilities.audio));
+    if (audioWrap) audioWrap.classList.toggle('hidden', !hasAudio);
+    const off = $('audio-off');
+    const on = $('audio-this');
+    const thisOn = hasAudio && wall.audioPane === selectedPane;
+    if (off) {
+      off.classList.toggle('is-on', hasAudio && !wall.audioPane);
+      off.classList.toggle('border-sky-500', hasAudio && !wall.audioPane);
+      off.classList.toggle('bg-sky-500/20', hasAudio && !wall.audioPane);
+      off.classList.toggle('text-sky-300', hasAudio && !wall.audioPane);
+    }
+    if (on) {
+      on.classList.toggle('is-on', thisOn);
+      on.classList.toggle('border-sky-500', thisOn);
+      on.classList.toggle('bg-sky-500/20', thisOn);
+      on.classList.toggle('text-sky-300', thisOn);
+    }
+  }
+
+  function renderSave(wall) {
+    const btn = $('save-layout-btn');
+    const note = $('save-layout-note');
+    if (!btn) return;
+    const ok = canSave(wall);
+    btn.disabled = !ok;
+    if (note) {
+      note.classList.toggle('hidden', ok);
+      note.textContent = ok ? '' : 'This processor recalls templates only. Save is for H2 / H5.';
+    }
   }
 
   function renderControls(wall) {
@@ -230,7 +357,9 @@
       btn.classList.toggle('border-slate-700', !on);
       btn.classList.toggle('text-slate-400', !on);
     });
-    renderSources(wall);
+    syncSelectedPane(wall);
+    renderSelectedPane(wall);
+    renderSave(wall);
     renderPreview(wall);
     fillSelect($('wall-picker'), walls, wall.id, function (w) { return w.name; });
     $('wall-picker-wrap').classList.toggle('hidden', walls.length < 2);
@@ -254,6 +383,43 @@
     wrap.appendChild(row);
   }
 
+  function renderTemplateRows(wall) {
+    const wrap = $('template-rows');
+    if (!wrap) return;
+    const existing = (wall && wall.presets) || [];
+    wrap.innerHTML = templates.map(function (tmpl, i) {
+      const hit = existing.find(function (p) { return p.layout === tmpl.layout; });
+      const on = wall ? !!hit : (tmpl.layout === 'full' || tmpl.layout === 'split');
+      const slot = hit ? hit.novastarIndex : i;
+      return '<label class="template-row text-sm text-slate-300">' +
+        '<input type="checkbox" class="template-on rounded border-slate-600 bg-slate-800" data-layout="' + escapeHtml(tmpl.layout) + '"' + (on ? ' checked' : '') + ' />' +
+        '<span class="flex-1">' + escapeHtml(tmpl.name) + '</span>' +
+        '<input type="number" min="0" max="128" class="template-slot bg-slate-800 border border-slate-700 rounded-lg px-2 py-1 text-xs" data-layout="' + escapeHtml(tmpl.layout) + '" value="' + slot + '" />' +
+        '</label>';
+    }).join('');
+  }
+
+  function formPresets(wall) {
+    const rows = Array.prototype.slice.call(document.querySelectorAll('#template-rows .template-on'));
+    const picked = [];
+    rows.forEach(function (box) {
+      if (!box.checked) return;
+      const layout = box.getAttribute('data-layout');
+      const tmpl = templates.find(function (t) { return t.layout === layout; });
+      if (!tmpl) return;
+      const slotEl = document.querySelector('#template-rows .template-slot[data-layout="' + layout + '"]');
+      const prev = ((wall && wall.presets) || []).find(function (p) { return p.layout === layout; });
+      picked.push({
+        id: prev && prev.id,
+        name: tmpl.name,
+        layout: layout,
+        novastarIndex: slotEl ? Number(slotEl.value) : picked.length,
+        panes: prev && prev.panes
+      });
+    });
+    return picked;
+  }
+
   function openForm(wall) {
     $('wall-form-wrap').classList.remove('hidden');
     $('form-title').textContent = wall ? 'Edit wall' : 'Add wall';
@@ -263,6 +429,8 @@
     $('form-pitch').value = wall ? wall.pitch : 1.2;
     $('form-cols').value = wall ? wall.cols : 10;
     $('form-rows').value = wall ? wall.rows : 6;
+    if ($('form-audio')) $('form-audio').checked = !!(wall && wall.audioEnabled);
+    renderTemplateRows(wall);
     $('input-rows').innerHTML = '';
     (wall && wall.inputs && wall.inputs.length ? wall.inputs : [{ name: 'HDMI 1' }, { name: 'HDMI 2' }, { name: 'DP 1' }]).forEach(function (input) {
       addInputRow(input.name);
@@ -286,6 +454,10 @@
       current = data.wall;
       walls = walls.map(function (w) { return w.id === current.id ? current : w; });
       renderControls(current);
+      if (body.type === 'save_layout') {
+        setMsg(isLive(current) ? 'Layout saved to the NovaStar slot.' : 'Saved. Wall offline — the rack bridge will write the slot when it reconnects.', false);
+        return;
+      }
       setMsg(isLive(current) ? (current.testing ? 'Testing mode — not a live rack bridge.' : '') : 'Saved. Wall offline — the rack bridge will pick this up when it reconnects.', false);
     } catch (err) {
       setMsg(err.message, true);
@@ -296,6 +468,7 @@
     const data = await api('/api/walls');
     walls = data.walls || [];
     processors = data.processors || [];
+    if (data.templates && data.templates.length) templates = data.templates;
     const id = preferId || (current && current.id) || (new URLSearchParams(location.search).get('id') || '');
     current = walls.find(function (w) { return w.id === id; }) || walls[0] || null;
     renderControls(current);
@@ -310,6 +483,28 @@
         sendCommand({ type: 'set_display', display: btn.getAttribute('data-display') });
       };
     });
+    if ($('source-select')) {
+      $('source-select').onchange = function () {
+        if (!selectedPane) return;
+        sendCommand({ type: 'set_source', pane: selectedPane, inputId: $('source-select').value });
+      };
+    }
+    if ($('audio-off')) {
+      $('audio-off').onclick = function () {
+        sendCommand({ type: 'set_audio', pane: '' });
+      };
+    }
+    if ($('audio-this')) {
+      $('audio-this').onclick = function () {
+        sendCommand({ type: 'set_audio', pane: selectedPane });
+      };
+    }
+    if ($('save-layout-btn')) {
+      $('save-layout-btn').onclick = function () {
+        if (!current || !canSave(current)) return;
+        sendCommand({ type: 'save_layout', presetId: current.activePresetId });
+      };
+    }
     let brightTimer = null;
     $('bright-slider').oninput = function () {
       $('bright-value').textContent = $('bright-slider').value + '%';
@@ -342,6 +537,7 @@
     };
     $('wall-picker').onchange = function () {
       current = walls.find(function (w) { return w.id === $('wall-picker').value; }) || current;
+      selectedPane = '';
       renderControls(current);
     };
     if ($('test-mode-btn')) {
@@ -364,6 +560,7 @@
     $('wall-form').onsubmit = async function (e) {
       e.preventDefault();
       const id = $('wall-form').dataset.id;
+      const wall = id ? walls.find(function (w) { return w.id === id; }) : current;
       const payload = {
         name: $('form-name').value,
         processor: $('form-processor').value,
@@ -371,7 +568,9 @@
         pitch: Number($('form-pitch').value),
         cols: Number($('form-cols').value),
         rows: Number($('form-rows').value),
-        inputs: formInputs()
+        audioEnabled: !!( $('form-audio') && $('form-audio').checked ),
+        inputs: formInputs(),
+        presets: formPresets(wall)
       };
       try {
         let data;

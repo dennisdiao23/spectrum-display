@@ -870,12 +870,16 @@ create table if not exists public.walls (
   last_seen_at timestamptz,
   bridge_token_hash text not null default '',
   test_mode boolean not null default false,
+  audio_enabled boolean not null default false,
+  audio_pane text not null default '',
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now()
 );
 create index if not exists walls_user_idx on public.walls (user_id, name);
 create index if not exists walls_bridge_idx on public.walls (bridge_token_hash);
 alter table public.walls add column if not exists test_mode boolean not null default false;
+alter table public.walls add column if not exists audio_enabled boolean not null default false;
+alter table public.walls add column if not exists audio_pane text not null default '';
 
 create table if not exists public.wall_inputs (
   id uuid primary key default gen_random_uuid(),
