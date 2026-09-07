@@ -226,6 +226,21 @@
     return msg;
   }
 
+  function signupBlockReason(email) {
+    if (typeof global.blockedSignupReason === 'function') {
+      return global.blockedSignupReason(email);
+    }
+    const e = String(email || '').trim().toLowerCase();
+    const at = e.lastIndexOf('@');
+    const local = at > 0 ? e.slice(0, at) : '';
+    const domain = at > 0 ? e.slice(at + 1) : '';
+    if (/^wallv2(\.|$)/.test(local)) return 'Use a real email address to create an account.';
+    if (domain === 'spectrumdisplay.com' && e !== 'dennisdiao@spectrumdisplay.com') {
+      return 'Use your own work email to create an account. @spectrumdisplay.com is not for customer signup.';
+    }
+    return '';
+  }
+
   function normalizeRole(role) {
     if (role === 'dealer' || role === 'sales') return role;
     return 'customer';
@@ -359,6 +374,21 @@
       email = (email || '').trim().toLowerCase();
       if (!email || !password || password.length < 6) {
         return { ok: false, error: 'Email and password (min 6 characters) required.' };
+      }
+      const blocked = signupBlockReason(email);
+      if (blocked) return { ok: false, error: blocked };
+      try {
+        const checkRes = await fetch('/api/auth/signup-check', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email: email })
+        });
+        const checkBody = await checkRes.json();
+        if (checkBody && checkBody.ok === false) {
+          return { ok: false, error: checkBody.error || 'This email cannot be used to create an account.' };
+        }
+      } catch (_err) {
+        /* local check already ran */
       }
       const client = sb();
       if (!client) return { ok: false, error: 'Sign-in is unavailable. Start the site with npm start.' };

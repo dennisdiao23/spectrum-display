@@ -12,6 +12,7 @@ const { getStore, hasSupabase } = require('./store');
 const siteAuth = require('./site-auth');
 const wallsLib = require('./walls');
 const { sendContactEmail, sendDealerInquiryEmail, mailConfigured } = require('./mail');
+const { blockedSignupReason } = require('../js/signup-guard');
 const img = require('./image');
 const { publicAdmin, hasPerm, isOwnerAdmin, isOwnerRole, OWNER_ROLE_SLUG, roleInputFromBody } = require('./admin-roles');
 
@@ -559,6 +560,13 @@ async function main() {
       supabaseAnonKey: process.env.SUPABASE_ANON_KEY || '',
       googleMapsApiKey: process.env.GOOGLE_MAPS_API_KEY || ''
     });
+  });
+
+  app.post('/api/auth/signup-check', function (req, res) {
+    const email = String((req.body && req.body.email) || '').trim().toLowerCase();
+    const reason = blockedSignupReason(email);
+    if (reason) return res.status(400).json({ ok: false, error: reason });
+    res.json({ ok: true });
   });
 
   app.get('/api/img', async function (req, res) {
