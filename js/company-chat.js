@@ -30,7 +30,9 @@
       lastMsgId: 0,
       users: [],
       file: null,
-      loaded: false
+      loaded: false,
+      fetchGen: 0,
+      userKey: ''
     },
     soOrderId: null,
     soRoomId: null,
@@ -1222,7 +1224,7 @@
         (self ? ' aria-haspopup="menu"' : '') + '>' +
         '<span class="dash-lobby-avatar">' + esc(initials(user.name, user.email)) +
         '<span class="dash-lobby-dot is-' + state + '" title="' + esc(statusLabel(state)) + '"></span></span>' +
-        '<span class="dash-lobby-user-copy"><strong>' + esc(self ? name + ' (you)' : name) + '</strong>' +
+        '<span class="dash-lobby-user-copy"><strong>' + esc(self ? 'You' : name) + '</strong>' +
         '<em>' + esc([role, statusLabel(state)].filter(Boolean).join(' · ')) + '</em></span></button>';
     }).join('');
   }
@@ -1240,9 +1242,11 @@
   async function loadDashLobby(full) {
     var root = $('dash-lobby');
     if (!root || !S.api) return;
+    var gen = (S.dash.fetchGen = (S.dash.fetchGen || 0) + 1);
     var url = '/api/admin/chat/lobby?limit=100';
     if (!full && S.dash.lastMsgId) url += '&afterId=' + S.dash.lastMsgId;
     var data = await S.api(url);
+    if (gen !== S.dash.fetchGen) return;
     S.dash.roomId = data.room && data.room.id;
     S.dash.users = data.users || [];
     var msgs = data.messages || [];
@@ -1304,6 +1308,14 @@
   }
 
   async function setMyStatus(status) {
+    S.dash.fetchGen = (S.dash.fetchGen || 0) + 1;
+    (S.dash.users || []).forEach(function (user) {
+      if (!user.isSelf) return;
+      user.state = status;
+      user.presence = Object.assign({}, user.presence || {}, { status: status, lastSeenAt: new Date().toISOString(), lastActiveAt: new Date().toISOString() });
+    });
+    S.dash.userKey = '';
+    renderDashUsers();
     await S.api('/api/admin/chat/presence', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
