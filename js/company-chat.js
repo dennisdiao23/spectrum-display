@@ -469,6 +469,12 @@
     } catch (e) { /* ignore */ }
   }
 
+  function unreadLabel(n) {
+    n = Number(n) || 0;
+    if (n <= 0) return '';
+    return n > 99 ? '99+' : String(n);
+  }
+
   function roomIcon(room) {
     var title = roomTitle(room);
     var cls = 'co-chat-avatar';
@@ -488,7 +494,13 @@
       if (parts[1]) label += parts[1].charAt(0);
       label = label.toUpperCase();
     }
-    return '<span class="' + cls + '" aria-hidden="true">' + esc(label) + '</span>';
+    var count = unreadLabel(room.unreadCount);
+    var badge = count
+      ? '<span class="co-chat-unread-count" aria-label="' + count + ' new messages">' + count + '</span>'
+      : '';
+    return '<span class="co-chat-avatar-wrap">' +
+      '<span class="' + cls + '" aria-hidden="true">' + esc(label) + '</span>' +
+      badge + '</span>';
   }
 
   function renderRoomList() {
@@ -501,16 +513,13 @@
     host.innerHTML = S.rooms.map(function (room) {
       var on = room.id && Number(room.id) === Number(S.roomId) ? ' is-on' : '';
       if (room.pinned) on += ' is-pin';
-      var unread = room.unreadCount > 0
-        ? '<span class="co-chat-pip">' + (room.unreadCount > 99 ? '99+' : room.unreadCount) + '</span>'
-        : '';
+      if (Number(room.unreadCount) > 0) on += ' is-unread';
       var presence = '';
       var other = room.otherUser;
       if (room.kind === 'dm' && other && S.presence[other.id]) {
         var seen = new Date(S.presence[other.id]).getTime();
         if (Date.now() - seen < 70000) presence = '<span class="co-chat-presence" title="Online"></span>';
       }
-      var preview = room.lastMessagePreview || '';
       var title = roomTitle(room);
       var key = room.id
         ? 'data-room-id="' + room.id + '"'
@@ -519,12 +528,9 @@
         roomIcon(room) +
         '<span class="co-chat-room-copy">' +
         '<span class="co-chat-room-top"><span class="co-chat-room-title">' + presence + esc(title) +
-        '</span>' + unread + '</span>' +
-        (preview ? '<span class="co-chat-room-preview">' + esc(preview) + '</span>' : '') +
+        '</span></span>' +
         '<span class="co-chat-room-time">' + esc(fmtTime(room.lastMessageAt)) + '</span>' +
-        '</span>' +
-        (unread ? '<span class="co-chat-icon-pip">' + (room.unreadCount > 99 ? '99+' : room.unreadCount) + '</span>' : '') +
-        '</button>';
+        '</span></button>';
     }).join('');
   }
 

@@ -153,7 +153,7 @@ function formatRoom(row, extras) {
       title = title + ' (cancelled)';
     }
   }
-  const pinRank = kind === 'copilot' ? 0 : (kind === 'lobby' ? 1 : 9);
+  const pinRank = kind === 'lobby' ? 0 : (kind === 'copilot' ? 1 : 9);
   return {
     id: row.id,
     kind: kind,
@@ -279,8 +279,8 @@ function buildContactList(copilotRoom, lobbyRoom, dmRooms, users, query) {
   });
   const seen = {};
   const out = [];
-  if (copilotRoom) out.push(copilotRoom);
   if (lobbyRoom) out.push(lobbyRoom);
+  if (copilotRoom) out.push(copilotRoom);
   (users || []).forEach(function (user) {
     const id = Number(user.id);
     seen[id] = true;
