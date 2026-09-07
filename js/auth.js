@@ -1,11 +1,14 @@
 /**
  * Spectrum Display — customer auth via Supabase.
- * Projects and custom panels are stored online. Orders stay in this browser for now.
+ * Projects are stored online. Custom panels save to this browser when signed out,
+ * and to the account when signed in. Orders stay in this browser for now.
  */
 (function (global) {
   const PROJECTS_KEY = 'spectrumProjects';
   const ORDERS_KEY = 'spectrumOrders';
   const CUSTOM_PANELS_KEY = 'spectrumCustomPanels';
+  const GUEST_PANELS_KEY = 'spectrumGuestCustomPanels';
+  const GUEST_PANEL_LIMIT = 40;
 
   let cached = null;
   let projectsCache = [];
@@ -66,6 +69,63 @@
       pavg: row.pavg,
       pmax: row.pmax
     };
+  }
+  function guestPanelId() {
+    return 'local-' + Date.now().toString(36) + '-' + Math.random().toString(36).slice(2, 8);
+  }
+  function readGuestPanels() {
+    const raw = read(GUEST_PANELS_KEY, []);
+    return Array.isArray(raw) ? raw : [];
+  }
+  function writeGuestPanels(list) {
+    write(GUEST_PANELS_KEY, list);
+  }
+  function panelFieldsFrom(panel) {
+    const name = String((panel && panel.name) || '').trim() || 'Custom Panel';
+    return {
+      name: name,
+      w: numOrNull(panel && panel.w),
+      h: numOrNull(panel && panel.h),
+      pitch: numOrNull(panel && panel.pitch),
+      type: (panel && panel.type) || 'Custom',
+      weight: numOrNull(panel && panel.weight),
+      price: numOrNull(panel && panel.price),
+      pavg: numOrNull(panel && panel.pavg),
+      pmax: numOrNull(panel && panel.pmax)
+    };
+  }
+  function saveGuestPanel(panel) {
+    const fields = panelFieldsFrom(panel);
+    const list = readGuestPanels();
+    const nameKey = fields.name.toLowerCase();
+    const existing = list.find(function (p) {
+      return (p.name || '').trim().toLowerCase() === nameKey;
+    });
+    const item = Object.assign({}, fields, {
+      id: existing ? existing.id : guestPanelId(),
+      savedAt: new Date().toISOString()
+    });
+    const next = [item].concat(list.filter(function (p) { return p.id !== item.id; }));
+    writeGuestPanels(next.slice(0, GUEST_PANEL_LIMIT));
+    return { ok: true, panel: item };
+  }
+  async function migrateGuestPanels(userId) {
+    const client = sb();
+    const guest = readGuestPanels();
+    if (!client || !userId || !guest.length) return;
+    let failed = false;
+    for (let i = 0; i < guest.length; i++) {
+      const panel = guest[i];
+      const fields = panelFieldsFrom(panel);
+      const row = Object.assign({ user_id: userId }, fields);
+      const { error } = await client.from('custom_panels').insert(row);
+      if (error && /duplicate|unique/i.test(error.message || '')) {
+        await client.from('custom_panels').update(row).eq('user_id', userId).filter('name', 'ilike', fields.name.replace(/[%_]/g, ''));
+      } else if (error) {
+        failed = true;
+      }
+    }
+    if (!failed) writeGuestPanels([]);
   }
   function mapOrder(row) {
     return {
@@ -237,6 +297,7 @@
     const profile = await loadProfile(user);
     cached = sessionFrom(user, profile);
     await migrateLocalSaves(user.id);
+    await migrateGuestPanels(user.id);
     await refreshUserLists(user.id);
     await refreshPricing();
   }
@@ -414,26 +475,18 @@
       projectsCache = projectsCache.filter(function (p) { return p.id !== projectId; });
       return { ok: true };
     },
-    listCustomPanels: function () { return panelsCache.slice(); },
+    listCustomPanels: function () {
+      if (this.getSession()) return panelsCache.slice();
+      return readGuestPanels().slice();
+    },
     saveCustomPanel: async function (panel) {
       const session = this.getSession();
-      if (!session) return { ok: false, error: 'Please sign in to save custom panels.' };
+      if (!session) return saveGuestPanel(panel);
       const client = sb();
       if (!client) return { ok: false, error: 'Sign-in is unavailable.' };
-      const name = String((panel && panel.name) || '').trim() || 'Custom Panel';
-      const row = {
-        user_id: session.id,
-        name: name,
-        w: numOrNull(panel.w),
-        h: numOrNull(panel.h),
-        pitch: numOrNull(panel.pitch),
-        type: panel.type || 'Custom',
-        weight: numOrNull(panel.weight),
-        price: numOrNull(panel.price),
-        pavg: numOrNull(panel.pavg),
-        pmax: numOrNull(panel.pmax)
-      };
-      const nameKey = name.toLowerCase();
+      const fields = panelFieldsFrom(panel);
+      const row = Object.assign({ user_id: session.id }, fields);
+      const nameKey = fields.name.toLowerCase();
       const existing = panelsCache.find(function (p) {
         return (p.name || '').trim().toLowerCase() === nameKey;
       });
@@ -460,7 +513,10 @@
     },
     deleteCustomPanel: async function (panelId) {
       const session = this.getSession();
-      if (!session) return { ok: false };
+      if (!session) {
+        writeGuestPanels(readGuestPanels().filter(function (p) { return p.id !== panelId; }));
+        return { ok: true };
+      }
       const client = sb();
       if (!client) return { ok: false };
       const { error } = await client.from('custom_panels').delete().eq('id', panelId);
