@@ -29,11 +29,13 @@ const KEY_PLACEHOLDER = {
   openai: 'sk-…',
   google: 'AIza…'
 };
+const DEFAULT_AI_NAME = 'Claude';
 const EMPTY_ROW = {
   enabled: 0,
   allow_in_dms: 0,
   provider: DEFAULT_PROVIDER,
   model: MODELS.anthropic[0].id,
+  ai_name: DEFAULT_AI_NAME,
   api_key_ciphertext: null,
   api_key_last4: null
 };
@@ -117,6 +119,42 @@ function normalizeModel(provider, value) {
   return list[0].id;
 }
 
+function normalizeAiName(value) {
+  let s = String(value == null ? '' : value).replace(/\s+/g, ' ').trim();
+  s = s.replace(/[^a-zA-Z0-9 .'-]/g, '').slice(0, 40).trim();
+  return s || DEFAULT_AI_NAME;
+}
+
+function aiNameFromRow(row) {
+  return normalizeAiName(row && (row.ai_name || row.aiName));
+}
+
+function mentionRegex(name) {
+  const names = [normalizeAiName(name), 'Spectrum AI', 'Copilot'];
+  const seen = {};
+  const parts = [];
+  names.forEach(function (n) {
+    const key = n.toLowerCase();
+    if (seen[key]) return;
+    seen[key] = true;
+    parts.push(n.replace(/[.*+?^${}()|[\]\\]/g, '\\$&').replace(/\s+/g, '\\s+'));
+  });
+  return new RegExp('(?:^|\\s)@(?:' + parts.join('|') + ')\\b', 'i');
+}
+
+function mentionedIn(text, name) {
+  return mentionRegex(name).test(' ' + String(text || ''));
+}
+
+function lobbySystemPrompt(name) {
+  const bot = normalizeAiName(name);
+  return [
+    'You are ' + bot + ' in Spectrum Display’s company Lobby chat.',
+    'Staff mention you with @' + bot + '. Keep replies short and helpful.',
+    'You are talking to Spectrum staff, not customers. Do not claim you saved, sent, or deleted a record.'
+  ].join(' ');
+}
+
 function storedPlainKey(row) {
   if (!row || !row.api_key_ciphertext) return '';
   return decryptApiKey(row.api_key_ciphertext);
@@ -149,6 +187,7 @@ function publicSettings(row) {
     allowInDms: false,
     provider: provider,
     model: normalizeModel(provider, data.model),
+    aiName: aiNameFromRow(data),
     hasKey: hasKey,
     last4: last4,
     keySource: keySource,
@@ -193,11 +232,16 @@ function settingsPatchFromBody(body, row) {
   if (nextKey && nextKey.length > 512) {
     throw httpError(400, 'That API key is too long.');
   }
+  let aiName = current.aiName;
+  if (body && (body.aiName != null || body.ai_name != null)) {
+    aiName = normalizeAiName(body.aiName != null ? body.aiName : body.ai_name);
+  }
   return {
     enabled: enabled && hasKey,
     allowInDms: false,
     provider: provider,
     model: model,
+    aiName: aiName,
     apiKey: nextKey
   };
 }
@@ -260,19 +304,9 @@ async function testSavedOrPasted(row, body) {
     : { ok: false, message: 'Key was rejected.' };
 }
 
-const MENTION_RE = /@spectrum\s*ai\b/i;
-const SPECTRUM_SYSTEM = [
-  'You are Spectrum AI in Spectrum Display’s company Lobby chat.',
-  'Staff mention you with @Spectrum AI. Keep replies short and helpful.',
-  'You are talking to Spectrum staff, not customers. Do not claim you saved, sent, or deleted a record.'
-].join(' ');
 const NO_KEY_HINT = 'Add an API key in Settings → Chat / AI.';
 const BOT_OFF_HINT = 'Lobby AI is off. Turn it on in Settings → Chat / AI.';
 const lobbyQueues = new Map();
-
-function mentionedIn(text) {
-  return MENTION_RE.test(String(text || ''));
-}
 
 function envProviderKeys() {
   return {
@@ -398,7 +432,7 @@ async function completeAnthropic(apiKey, model, system, messages, signal) {
   });
   if (!res.ok) {
     const err = await res.text();
-    throw httpError(502, 'Spectrum AI error: ' + String(err || '').slice(0, 180));
+    throw httpError(502, 'AI error: ' + String(err || '').slice(0, 180));
   }
   const data = await res.json();
   const parts = (data.content || []).map(function (p) {
@@ -426,7 +460,7 @@ async function completeOpenAi(apiKey, model, system, messages, signal) {
   });
   if (!res.ok) {
     const err = await res.text();
-    throw httpError(502, 'Spectrum AI error: ' + String(err || '').slice(0, 180));
+    throw httpError(502, 'AI error: ' + String(err || '').slice(0, 180));
   }
   const data = await res.json();
   const choice = data && data.choices && data.choices[0] && data.choices[0].message;
@@ -458,7 +492,7 @@ async function completeGoogle(apiKey, model, system, messages, signal) {
   );
   if (!res.ok) {
     const err = await res.text();
-    throw httpError(502, 'Spectrum AI error: ' + String(err || '').slice(0, 180));
+    throw httpError(502, 'AI error: ' + String(err || '').slice(0, 180));
   }
   const data = await res.json();
   const cand = data && data.candidates && data.candidates[0];
@@ -508,7 +542,9 @@ function historyToLlmMessages(history) {
 
 async function replyOnce(store, admin, room, userMessage) {
   const text = String((userMessage && userMessage.body) || '');
-  if (!room || room.kind !== 'lobby' || !mentionedIn(text)) return null;
+  const row = await peekRow(store);
+  const name = aiNameFromRow(row);
+  if (!room || room.kind !== 'lobby' || !mentionedIn(text, name)) return null;
   const runtime = await resolveRuntime(store, 'spectrum');
   let body = '';
   if (!runtime.hasKey) {
@@ -526,7 +562,7 @@ async function replyOnce(store, admin, room, userMessage) {
         provider: runtime.provider,
         model: runtime.model,
         apiKey: runtime.apiKey,
-        system: SPECTRUM_SYSTEM,
+        system: lobbySystemPrompt(name),
         messages: messages
       });
     } catch (e) {
@@ -539,13 +575,15 @@ async function replyOnce(store, admin, room, userMessage) {
 
 async function replyToLobbyMention(store, admin, room, userMessage) {
   if (!room || room.kind !== 'lobby') return null;
-  if (!mentionedIn((userMessage && userMessage.body) || '')) return null;
+  const row = await peekRow(store);
+  const name = aiNameFromRow(row);
+  if (!mentionedIn((userMessage && userMessage.body) || '', name)) return null;
   const key = String(room.id);
   const prev = lobbyQueues.get(key) || Promise.resolve();
   const next = prev.then(function () {
     return replyOnce(store, admin, room, userMessage);
   }).catch(function (err) {
-    console.error('spectrum ai reply', err);
+    console.error('lobby ai reply', err);
     return store.appendSpectrumAiMessage(
       admin,
       room.id,
@@ -560,8 +598,12 @@ module.exports = {
   PROVIDERS,
   MODELS,
   DEFAULT_PROVIDER,
+  DEFAULT_AI_NAME,
   KEY_PLACEHOLDER,
   EMPTY_ROW,
+  normalizeAiName,
+  aiNameFromRow,
+  lobbySystemPrompt,
   canManage,
   envOverrideKey,
   last4Of,

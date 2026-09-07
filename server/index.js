@@ -978,6 +978,18 @@ async function main() {
     return res.status(403).json({ ok: false, error: 'You do not have access to this.' });
   }
 
+  app.get('/api/admin/chat/ai', requireAdmin, async function (req, res, next) {
+    try {
+      const chatAi = require('./chat-ai');
+      const row = await store.peekChatAiSettings();
+      res.json({
+        ok: true,
+        aiName: chatAi.aiNameFromRow(row),
+        enabled: !!(row && (row.enabled === true || row.enabled === 1 || row.enabled === '1'))
+      });
+    } catch (err) { next(err); }
+  });
+
   app.get('/api/admin/chat/ai-settings', requireAdmin, requireChatAiAdmin, async function (req, res, next) {
     try {
       const settings = require('./chat-ai').assertNoSecretLeak(await store.getChatAiSettings(req.admin));

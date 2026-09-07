@@ -51,6 +51,22 @@ const EXT_OK = {
   '.docx': 'file'
 };
 
+let cachedAiName = chatAi.DEFAULT_AI_NAME;
+
+function rememberAiName(rowOrName) {
+  if (typeof rowOrName === 'string') cachedAiName = chatAi.normalizeAiName(rowOrName);
+  else cachedAiName = chatAi.aiNameFromRow(rowOrName);
+  return cachedAiName;
+}
+
+function currentAiName() {
+  return cachedAiName || chatAi.DEFAULT_AI_NAME;
+}
+
+function peekAiName() {
+  return currentAiName();
+}
+
 const rateBuckets = new Map();
 
 function nowIso() {
@@ -197,7 +213,7 @@ function formatRoom(row, extras) {
   const kind = row.kind;
   let title = row.title || '';
   if (kind === 'copilot') {
-    title = 'Copilot';
+    title = currentAiName();
   } else if (kind === 'lobby') {
     title = 'Lobby';
   } else if (kind === 'dm') {
@@ -237,8 +253,8 @@ function formatMessage(row, usersById, extras) {
   const isCopilot = !row.user_id && !isSpectrumAi && (!!extra.copilot || att === 'copilot');
   const user = row.user_id ? ((usersById && usersById[row.user_id]) || null) : null;
   let who = user;
-  if (isCopilot) who = { id: null, name: 'Copilot', email: '', role: '' };
-  else if (isSpectrumAi) who = { id: null, name: 'Spectrum AI', email: '', role: '' };
+  const botName = currentAiName();
+  if (isCopilot || isSpectrumAi) who = { id: null, name: botName, email: '', role: '' };
   return {
     id: row.id,
     roomId: row.room_id,
@@ -505,6 +521,7 @@ function ensureCompanyChat(db) {
       model TEXT NOT NULL DEFAULT 'claude-sonnet-4-6',
       api_key_ciphertext TEXT,
       api_key_last4 TEXT,
+      ai_name TEXT NOT NULL DEFAULT 'Claude',
       updated_by_user_id INTEGER,
       updated_at TEXT NOT NULL
     );
@@ -512,12 +529,17 @@ function ensureCompanyChat(db) {
   try { db.exec("ALTER TABLE chat_presence ADD COLUMN last_active_at TEXT"); } catch (e) { /* already present */ }
   try { db.exec("ALTER TABLE chat_presence ADD COLUMN status TEXT NOT NULL DEFAULT 'online'"); } catch (e) { /* already present */ }
 
-  const aiRow = db.prepare('SELECT id FROM chat_ai_settings WHERE id = 1').get();
+  try { db.exec("ALTER TABLE chat_ai_settings ADD COLUMN ai_name TEXT NOT NULL DEFAULT 'Claude'"); } catch (e) { /* already present */ }
+
+  const aiRow = db.prepare('SELECT * FROM chat_ai_settings WHERE id = 1').get();
   if (!aiRow) {
     db.prepare(`
-      INSERT INTO chat_ai_settings (id, enabled, allow_in_dms, provider, model, updated_at)
-      VALUES (1, 0, 0, 'anthropic', 'claude-sonnet-4-6', ?)
+      INSERT INTO chat_ai_settings (id, enabled, allow_in_dms, provider, model, ai_name, updated_at)
+      VALUES (1, 0, 0, 'anthropic', 'claude-sonnet-4-6', 'Claude', ?)
     `).run(nowIso());
+    rememberAiName(chatAi.DEFAULT_AI_NAME);
+  } else {
+    rememberAiName(aiRow);
   }
 
   const stamp = nowIso();
@@ -712,15 +734,15 @@ function sqliteApi(db) {
       return row;
     }
     const stamp = nowIso();
+    const botName = peekAiName();
     const info = db.prepare(`
       INSERT INTO chat_rooms (
         kind, dm_user_low_id, title, created_at
-      ) VALUES ('copilot', ?, 'Copilot', ?)
-    `).run(userId, stamp);
+      ) VALUES ('copilot', ?, ?, ?)
+    `).run(userId, botName, stamp);
     row = getRoomRow(info.lastInsertRowid);
     ensureReadRow(userId, row.id);
-    const welcome = require('./copilot').WELCOME;
-    insertMessage(row.id, null, welcome, null, stamp);
+    insertMessage(row.id, null, require('./copilot').welcomeMessage(botName), { type: 'copilot' }, stamp);
     return row;
   }
 
@@ -1063,7 +1085,7 @@ function sqliteApi(db) {
       try {
         users = await this.listLobbyUsers(admin);
       } catch (e) { console.error('lobby users', e); }
-      return { room: data.room, messages: data.messages || [], users: users };
+      return { room: data.room, messages: data.messages || [], users: users, aiName: peekAiName() };
     },
 
     async listLobbyUsers(admin) {
@@ -1152,7 +1174,7 @@ function sqliteApi(db) {
       ensureCompanyChat(db);
       const room = assertRoomAccess(getRoomRow(roomId), admin);
       if (room.kind !== 'copilot') {
-        throw httpError(400, 'Copilot can only reply in Copilot chat.');
+        throw httpError(400, currentAiName() + ' can only reply in Chat.');
       }
       const stamp = nowIso();
       const row = insertMessage(room.id, null, String(body || '').slice(0, 8000), { type: 'copilot' }, stamp);
@@ -1163,7 +1185,7 @@ function sqliteApi(db) {
       ensureCompanyChat(db);
       const room = assertRoomAccess(getRoomRow(roomId), admin);
       if (room.kind !== 'lobby') {
-        throw httpError(400, 'Spectrum AI can only reply in Lobby.');
+        throw httpError(400, currentAiName() + ' can only reply in Lobby.');
       }
       const stamp = nowIso();
       const row = insertMessage(
@@ -1220,12 +1242,15 @@ function sqliteApi(db) {
     async getChatAiSettings(_admin) {
       ensureCompanyChat(db);
       const row = db.prepare('SELECT * FROM chat_ai_settings WHERE id = 1').get();
+      rememberAiName(row);
       return chatAi.assertNoSecretLeak(chatAi.publicSettings(row));
     },
 
     async peekChatAiSettings() {
       ensureCompanyChat(db);
-      return db.prepare('SELECT * FROM chat_ai_settings WHERE id = 1').get() || null;
+      const row = db.prepare('SELECT * FROM chat_ai_settings WHERE id = 1').get() || null;
+      if (row) rememberAiName(row);
+      return row;
     },
 
     async saveChatAiSettings(admin, body) {
@@ -1241,7 +1266,7 @@ function sqliteApi(db) {
       }
       db.prepare(`
         UPDATE chat_ai_settings
-        SET enabled = ?, allow_in_dms = ?, provider = ?, model = ?,
+        SET enabled = ?, allow_in_dms = ?, provider = ?, model = ?, ai_name = ?,
             api_key_ciphertext = ?, api_key_last4 = ?,
             updated_by_user_id = ?, updated_at = ?
         WHERE id = 1
@@ -1250,12 +1275,14 @@ function sqliteApi(db) {
         patch.allowInDms ? 1 : 0,
         patch.provider,
         patch.model,
+        patch.aiName || chatAi.DEFAULT_AI_NAME,
         ciphertext,
         last4,
         admin && admin.id || null,
         stamp
       );
       const next = db.prepare('SELECT * FROM chat_ai_settings WHERE id = 1').get();
+      rememberAiName(next);
       return chatAi.assertNoSecretLeak(chatAi.publicSettings(next));
     },
 
@@ -1375,7 +1402,8 @@ function supabaseApi(supabase) {
           enabled: false,
           allow_in_dms: false,
           provider: 'anthropic',
-          model: 'claude-sonnet-4-6'
+          model: 'claude-sonnet-4-6',
+          ai_name: 'Claude'
         });
       }
     } catch (e) { /* table may not exist until migration is applied */ }
@@ -1384,6 +1412,7 @@ function supabaseApi(supabase) {
 
   async function getChatAiRow() {
     const { data } = await supabase.from('chat_ai_settings').select('*').eq('id', 1).maybeSingle();
+    if (data) rememberAiName(data);
     return data || null;
   }
 
@@ -1571,10 +1600,11 @@ function supabaseApi(supabase) {
       return existing;
     }
     const stamp = nowIso();
+    const botName = peekAiName();
     const inserted = await supabase.from('chat_rooms').insert({
       kind: 'copilot',
       dm_user_low_id: userId,
-      title: 'Copilot',
+      title: botName,
       customer_name: '',
       order_status: '',
       last_message_preview: '',
@@ -1583,8 +1613,7 @@ function supabaseApi(supabase) {
     if (inserted.error) throw inserted.error;
     const row = inserted.data;
     await ensureReadRow(userId, row.id);
-    const welcome = require('./copilot').WELCOME;
-    await insertMessage(row.id, null, welcome, null, stamp);
+    await insertMessage(row.id, null, require('./copilot').welcomeMessage(botName), { type: 'copilot' }, stamp);
     return row;
   }
 
@@ -2007,6 +2036,7 @@ function supabaseApi(supabase) {
 
     async getLobbyChat(admin, opts) {
       await ensureReady();
+      try { await getChatAiRow(); } catch (e) { /* ignore */ }
       const { data: lobbyRows } = await supabase.from('chat_rooms').select('*').eq('kind', 'lobby').limit(1);
       const lobbyRow = lobbyRows && lobbyRows[0];
       if (!lobbyRow) return { room: null, messages: [], users: [] };
@@ -2019,7 +2049,7 @@ function supabaseApi(supabase) {
       try {
         users = await this.listLobbyUsers(admin);
       } catch (e) { console.error('lobby users', e); }
-      return { room: data.room, messages: data.messages || [], users: users };
+      return { room: data.room, messages: data.messages || [], users: users, aiName: peekAiName() };
     },
 
     async listLobbyUsers(admin) {
@@ -2113,7 +2143,7 @@ function supabaseApi(supabase) {
       await ensureReady();
       const room = assertRoomAccess(await getRoomRow(roomId), admin);
       if (room.kind !== 'copilot') {
-        throw httpError(400, 'Copilot can only reply in Copilot chat.');
+        throw httpError(400, currentAiName() + ' can only reply in Chat.');
       }
       const stamp = nowIso();
       const row = await insertMessage(room.id, null, String(body || '').slice(0, 8000), { type: 'copilot' }, stamp);
@@ -2124,7 +2154,7 @@ function supabaseApi(supabase) {
       await ensureReady();
       const room = assertRoomAccess(await getRoomRow(roomId), admin);
       if (room.kind !== 'lobby') {
-        throw httpError(400, 'Spectrum AI can only reply in Lobby.');
+        throw httpError(400, currentAiName() + ' can only reply in Lobby.');
       }
       const stamp = nowIso();
       const row = await insertMessage(
@@ -2220,6 +2250,7 @@ function supabaseApi(supabase) {
         allow_in_dms: !!patch.allowInDms,
         provider: patch.provider,
         model: patch.model,
+        ai_name: patch.aiName || chatAi.DEFAULT_AI_NAME,
         api_key_ciphertext: ciphertext,
         api_key_last4: last4,
         updated_by_user_id: admin && admin.id || null,

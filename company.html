@@ -8,9 +8,9 @@
   <link rel="apple-touch-icon" href="/assets/apple-touch-icon.png" />
   <title>Company | Spectrum Display</title>
   <meta name="robots" content="noindex, nofollow" />
-  <link rel="stylesheet" href="/css/company-dash.css?v=lobby2" />
+  <link rel="stylesheet" href="/css/company-dash.css?v=claude2" />
   <script src="/js/address-autocomplete.js"></script>
-  <script src="/js/company-chat.js?v=chatwin1"></script>
+  <script src="/js/company-chat.js?v=claude2"></script>
   <script>
     (function () {
       try {
@@ -1910,7 +1910,7 @@
         <div id="chat-ai-section" class="hidden space-y-4">
           <div>
             <h2 class="text-base font-semibold text-slate-800">Chat / AI</h2>
-            <p class="text-slate-400 text-sm mt-1">Spectrum AI replies in Lobby when staff type @Spectrum AI. Copilot uses the same key. The key stays on the server.</p>
+            <p class="text-slate-400 text-sm mt-1">Claude replies in Lobby when staff type @Claude, and Chat uses the same name. Change the AI name below. The key stays on the server.</p>
           </div>
           <div class="chat-ai-card">
             <div class="chat-ai-row">
@@ -1919,6 +1919,10 @@
                 <button type="button" data-chat-ai-switch="enabled" data-on="1">on</button>
                 <button type="button" data-chat-ai-switch="enabled" data-on="0" class="is-on" aria-pressed="true">off</button>
               </div>
+            </div>
+            <div class="chat-ai-row">
+              <label class="chat-ai-label" for="chat-ai-name">AI name</label>
+              <input id="chat-ai-name" class="chat-ai-select" type="text" maxlength="40" placeholder="Claude" autocomplete="off">
             </div>
             <div class="chat-ai-row">
               <label class="chat-ai-label" for="chat-ai-provider">Provider</label>
@@ -2600,7 +2604,7 @@
     </a>
   </nav>
 
-  <link rel="stylesheet" href="/css/company-dash.css?v=lobby2" />
+  <link rel="stylesheet" href="/css/company-dash.css?v=claude2" />
 
   <script>
     const loginPanel = document.getElementById('login-panel');
@@ -14154,6 +14158,9 @@
       const providerSel = document.getElementById('chat-ai-provider');
       if (providerSel) providerSel.value = provider;
       fillChatAiModels(provider, settings.model);
+      const nameInput = document.getElementById('chat-ai-name');
+      if (nameInput) nameInput.value = settings.aiName || 'Claude';
+      if (window.SpectrumChat && SpectrumChat.setAiName) SpectrumChat.setAiName(settings.aiName || 'Claude');
       const keyInput = document.getElementById('chat-ai-key');
       if (keyInput) {
         keyInput.value = '';
@@ -14174,7 +14181,8 @@
       const body = {
         enabled: document.querySelector('[data-chat-ai-switch="enabled"][data-on="1"]').classList.contains('is-on'),
         provider: provider,
-        model: document.getElementById('chat-ai-model').value
+        model: document.getElementById('chat-ai-model').value,
+        aiName: String((document.getElementById('chat-ai-name') && document.getElementById('chat-ai-name').value) || 'Claude')
       };
       if (includeKey) {
         const key = String(document.getElementById('chat-ai-key').value || '').trim();
@@ -14259,6 +14267,11 @@
       });
     });
     document.getElementById('chat-ai-model').addEventListener('change', function () {
+      saveChatAiSettings(false, true).catch(function (err) {
+        showChatAiMsg(err.message || 'Could not save.', 'bad');
+      });
+    });
+    document.getElementById('chat-ai-name').addEventListener('change', function () {
       saveChatAiSettings(false, true).catch(function (err) {
         showChatAiMsg(err.message || 'Could not save.', 'bad');
       });
@@ -15875,5 +15888,6 @@
     <span class="co-chat-resize" data-resize="se"></span>
     <span class="co-chat-resize" data-resize="sw"></span>
   </section>
+  <div id="chat-mention-menu" class="co-chat-mention-menu" hidden role="listbox" aria-label="Mention"></div>
 </body>
 </html>

@@ -22,6 +22,7 @@
     file: null,
     copilotPending: false,
     spectrumPending: false,
+    aiName: 'Claude',
     users: [],
     unread: { total: 0, lobby: 0, direct: 0, orders: 0 },
     presence: {},
@@ -364,7 +365,7 @@
   }
 
   function pickerOpen() {
-    return false;
+    return mentionOpen();
   }
 
   function pageIsEditing() {
@@ -505,6 +506,34 @@
     }
   }
 
+  function aiName() {
+    return S.aiName || 'Claude';
+  }
+
+  function setAiName(name) {
+    var next = String(name == null ? '' : name).replace(/\s+/g, ' ').trim() || 'Claude';
+    next = next.slice(0, 40);
+    if (S.aiName === next) return;
+    S.aiName = next;
+    if (S.room) {
+      if ($('co-chat-main-sub')) $('co-chat-main-sub').textContent = roomSub(S.room);
+      if ($('co-chat-input')) $('co-chat-input').placeholder = composerPlaceholder(S.room);
+      if (S.room.kind === 'copilot') setWindowTitle(aiName());
+    }
+    renderRoomList();
+    syncDashComposer();
+    renderDashMessages();
+  }
+
+  function escapeRe(value) {
+    return String(value || '').replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  }
+
+  function mentionsAi(text) {
+    var name = escapeRe(aiName()).replace(/\\s+/g, '\\s+');
+    return new RegExp('(?:^|\\s)@(?:' + name + '|spectrum\\s+ai|copilot)\\b', 'i').test(' ' + String(text || ''));
+  }
+
   function roomTitle(room) {
     if (!room) return '';
     if (room.kind === 'dm' && room.otherUser) {
@@ -516,7 +545,7 @@
   function roomSub(room) {
     if (!room) return '';
     if (room.kind === 'copilot') return 'I draft. You review and save.';
-    if (room.kind === 'lobby') return 'Everyone at Spectrum can see this. Type @Spectrum AI to ask the bot.';
+    if (room.kind === 'lobby') return 'Everyone at Spectrum can see this. Type @' + aiName() + ' to ask.';
     if (room.kind === 'dm' && room.otherUser) {
       return 'Only you and ' + (room.otherUser.name || 'them') + ' can see this.';
     }
@@ -532,8 +561,8 @@
 
   function composerPlaceholder(room) {
     if (!room) return 'Message…';
-    if (room.kind === 'copilot') return 'Ask Copilot to draft something…';
-    if (room.kind === 'lobby') return 'Message the team… @Spectrum AI';
+    if (room.kind === 'copilot') return 'Ask ' + aiName() + ' to draft something…';
+    if (room.kind === 'lobby') return 'Message the team… @' + aiName();
     if (room.kind === 'dm' && room.otherUser) {
       var first = String(room.otherUser.name || 'them').split(/\s+/)[0];
       return 'Message ' + first + '…';
@@ -570,7 +599,7 @@
       label = 'L';
     } else if (room.kind === 'copilot') {
       cls += ' is-copilot';
-      label = 'C';
+      label = (aiName() || 'C').charAt(0).toUpperCase();
     } else if (room.kind === 'order') {
       cls += ' is-order';
       label = String(title || 'SO').replace(/^[A-Za-z]+-/, '').slice(-2) || 'SO';
@@ -635,16 +664,11 @@
       if (msg.isSystem) {
         return '<div class="co-chat-msg is-system" data-msg-id="' + msg.id + '">' + linkify(msg.body || '') + '</div>';
       }
-      if (msg.isSpectrumAi) {
-        return '<div class="co-chat-msg is-spectrum-ai" data-msg-id="' + msg.id + '">' +
-          '<div class="co-chat-msg-meta"><strong>Spectrum AI</strong><span>' +
-          esc(fmtTime(msg.createdAt)) + '</span></div>' +
-          (msg.body ? '<div class="co-chat-msg-body">' + linkify(msg.body) + '</div>' : '') +
-          '</div>';
-      }
-      if (msg.isCopilot) {
-        return '<div class="co-chat-msg is-copilot" data-msg-id="' + msg.id + '">' +
-          '<div class="co-chat-msg-meta"><strong>Copilot</strong><span>' +
+      if (msg.isSpectrumAi || msg.isCopilot) {
+        var bot = (msg.user && msg.user.name) || aiName();
+        var cls = msg.isCopilot ? 'is-copilot' : 'is-spectrum-ai';
+        return '<div class="co-chat-msg ' + cls + '" data-msg-id="' + msg.id + '">' +
+          '<div class="co-chat-msg-meta"><strong>' + esc(bot) + '</strong><span>' +
           esc(fmtTime(msg.createdAt)) + '</span></div>' +
           (msg.body ? '<div class="co-chat-msg-body">' + linkify(msg.body) + '</div>' : '') +
           '</div>';
@@ -675,11 +699,11 @@
 
   function pendingHtml() {
     if (S.copilotPending) {
-      return '<div class="co-chat-msg is-copilot is-pending"><div class="co-chat-msg-meta"><strong>Copilot</strong></div>' +
+      return '<div class="co-chat-msg is-copilot is-pending"><div class="co-chat-msg-meta"><strong>' + esc(aiName()) + '</strong></div>' +
         '<div class="co-chat-msg-body">Working on a draft…</div></div>';
     }
     if (S.spectrumPending) {
-      return '<div class="co-chat-msg is-spectrum-ai is-pending"><div class="co-chat-msg-meta"><strong>Spectrum AI</strong></div>' +
+      return '<div class="co-chat-msg is-spectrum-ai is-pending"><div class="co-chat-msg-meta"><strong>' + esc(aiName()) + '</strong></div>' +
         '<div class="co-chat-msg-body">Thinking…</div></div>';
     }
     return '';
@@ -791,7 +815,7 @@
     if ($('co-chat-input')) $('co-chat-input').value = '';
     clearFile();
     if (S.room && S.room.kind === 'copilot') S.copilotPending = true;
-    if (S.room && S.room.kind === 'lobby' && /@spectrum\s*ai\b/i.test(body)) S.spectrumPending = true;
+    if (S.room && S.room.kind === 'lobby' && mentionsAi(body)) S.spectrumPending = true;
     await openRoom(S.roomId);
     await loadRooms();
     if (Number(S.roomId) === Number(S.dash.roomId)) {
@@ -1091,11 +1115,13 @@
       sendMain(ev).catch(function (err) { alert(err.message || 'Could not send.'); });
     });
     $('co-chat-input').addEventListener('keydown', function (ev) {
+      if (mentionOpen()) return;
       if (ev.key === 'Enter' && !ev.shiftKey) {
         ev.preventDefault();
         $('co-chat-composer').requestSubmit();
       }
     });
+    bindMentionComposer($('co-chat-input'));
     $('co-chat-file').addEventListener('change', function () {
       S.file = $('co-chat-file').files && $('co-chat-file').files[0];
       if (S.file) {
@@ -1105,6 +1131,10 @@
     });
     document.addEventListener('keydown', function (ev) {
       if (ev.key === 'Escape') {
+        if (mentionOpen()) {
+          hideMentionMenu();
+          return;
+        }
         if (plusMenuOpen()) {
           setPlusMenuOpen(false);
           return;
@@ -1256,6 +1286,8 @@
     if (form) form.hidden = !canSend;
     if (attachName && !canSend) attachName.hidden = true;
     if (note) note.hidden = canSend;
+    var input = $('dash-lobby-input');
+    if (input) input.placeholder = canSend ? ('Message the team… @' + aiName()) : input.placeholder;
   }
 
   function showDashLobbyError(msg) {
@@ -1316,6 +1348,7 @@
     if (gen !== S.dash.fetchGen) return;
     S.dash.roomId = data.room && data.room.id;
     S.dash.users = data.users || [];
+    if (data.aiName) setAiName(data.aiName);
     var msgs = data.messages || [];
     if (full || !S.dash.lastMsgId) {
       S.dash.messages = msgs;
@@ -1368,6 +1401,7 @@
     await S.api('/api/admin/chat/rooms/' + S.dash.roomId + '/messages', { method: 'POST', body: fd });
     if ($('dash-lobby-input')) $('dash-lobby-input').value = '';
     clearDashFile();
+    if (mentionsAi(body)) S.spectrumPending = true;
     await loadDashLobby(true);
     if (S.windowOpen && Number(S.roomId) === Number(S.dash.roomId)) {
       await openRoom(S.roomId);
@@ -1402,6 +1436,160 @@
     }).catch(function () {});
   }
 
+  var mentionState = { textarea: null, start: 0, items: [], index: 0 };
+
+  function mentionMenuEl() {
+    return $('chat-mention-menu');
+  }
+
+  function hideMentionMenu() {
+    var menu = mentionMenuEl();
+    if (menu) {
+      menu.hidden = true;
+      menu.innerHTML = '';
+    }
+    mentionState.textarea = null;
+    mentionState.items = [];
+    mentionState.index = 0;
+  }
+
+  function mentionOpen() {
+    var menu = mentionMenuEl();
+    return !!(menu && !menu.hidden && mentionState.items.length);
+  }
+
+  function mentionQueryAt(textarea) {
+    if (!textarea) return null;
+    var pos = textarea.selectionStart;
+    var text = String(textarea.value || '').slice(0, pos);
+    var at = text.lastIndexOf('@');
+    if (at < 0) return null;
+    if (at > 0 && !/\s/.test(text.charAt(at - 1))) return null;
+    var q = text.slice(at + 1);
+    if (/[\n@]/.test(q) || q.length > 40) return null;
+    return { start: at, query: q };
+  }
+
+  function mentionCandidates(query) {
+    var q = String(query || '').toLowerCase();
+    var items = [{ kind: 'ai', name: aiName(), hint: 'AI' }];
+    var seen = {};
+    seen[aiName().toLowerCase()] = true;
+    (S.dash.users || []).forEach(function (user) {
+      var name = user.name || user.email || '';
+      if (!name || seen[name.toLowerCase()]) return;
+      seen[name.toLowerCase()] = true;
+      items.push({
+        kind: 'user',
+        name: name,
+        hint: user.isSelf ? 'You' : (user.roleName || user.role || '')
+      });
+    });
+    return items.filter(function (item) {
+      return !q || item.name.toLowerCase().indexOf(q) >= 0;
+    }).slice(0, 8);
+  }
+
+  function renderMentionMenu() {
+    var menu = mentionMenuEl();
+    var textarea = mentionState.textarea;
+    if (!menu || !textarea) return;
+    if (!mentionState.items.length) {
+      hideMentionMenu();
+      return;
+    }
+    if (mentionState.index < 0) mentionState.index = 0;
+    if (mentionState.index >= mentionState.items.length) mentionState.index = mentionState.items.length - 1;
+    menu.innerHTML = mentionState.items.map(function (item, i) {
+      return '<button type="button" role="option" class="co-chat-mention-item' +
+        (i === mentionState.index ? ' is-on' : '') + '" data-mention-i="' + i + '">' +
+        '<strong>' + esc(item.name) + '</strong>' +
+        (item.hint ? '<em>' + esc(item.hint) + '</em>' : '') +
+        '</button>';
+    }).join('');
+    menu.hidden = false;
+    var rect = textarea.getBoundingClientRect();
+    var width = Math.max(12 * 16, Math.min(18 * 16, rect.width));
+    menu.style.width = width + 'px';
+    menu.style.left = Math.max(8, rect.left) + 'px';
+    var top = rect.top - 8;
+    menu.style.top = 'auto';
+    menu.style.bottom = (window.innerHeight - top) + 'px';
+  }
+
+  function showMentionMenu(textarea) {
+    var found = mentionQueryAt(textarea);
+    if (!found) {
+      hideMentionMenu();
+      return;
+    }
+    mentionState.textarea = textarea;
+    mentionState.start = found.start;
+    mentionState.items = mentionCandidates(found.query);
+    if (!mentionState.items.length) {
+      hideMentionMenu();
+      return;
+    }
+    if (mentionState.index >= mentionState.items.length) mentionState.index = 0;
+    renderMentionMenu();
+  }
+
+  function insertMention(item) {
+    var textarea = mentionState.textarea;
+    if (!textarea || !item) return;
+    var start = mentionState.start;
+    var pos = textarea.selectionStart;
+    var value = textarea.value;
+    var before = value.slice(0, start);
+    var after = value.slice(pos);
+    var insert = '@' + item.name + ' ';
+    textarea.value = before + insert + after;
+    var caret = before.length + insert.length;
+    textarea.setSelectionRange(caret, caret);
+    hideMentionMenu();
+    textarea.focus();
+  }
+
+  function bindMentionComposer(textarea) {
+    if (!textarea || textarea.dataset.mentionBound) return;
+    textarea.dataset.mentionBound = '1';
+    textarea.addEventListener('input', function () { showMentionMenu(textarea); });
+    textarea.addEventListener('click', function () { showMentionMenu(textarea); });
+    textarea.addEventListener('keyup', function (ev) {
+      if (ev.key === 'Escape' || ev.key === 'ArrowUp' || ev.key === 'ArrowDown') return;
+      showMentionMenu(textarea);
+    });
+    textarea.addEventListener('keydown', function (ev) {
+      if (!mentionOpen()) return;
+      if (ev.key === 'ArrowDown') {
+        ev.preventDefault();
+        mentionState.index = (mentionState.index + 1) % mentionState.items.length;
+        renderMentionMenu();
+        return;
+      }
+      if (ev.key === 'ArrowUp') {
+        ev.preventDefault();
+        mentionState.index = (mentionState.index - 1 + mentionState.items.length) % mentionState.items.length;
+        renderMentionMenu();
+        return;
+      }
+      if (ev.key === 'Enter' || ev.key === 'Tab') {
+        ev.preventDefault();
+        insertMention(mentionState.items[mentionState.index]);
+        return;
+      }
+      if (ev.key === 'Escape') {
+        ev.preventDefault();
+        hideMentionMenu();
+      }
+    });
+    textarea.addEventListener('blur', function () {
+      setTimeout(function () {
+        if (mentionState.textarea === textarea) hideMentionMenu();
+      }, 150);
+    });
+  }
+
   function bindDashLobby() {
     var form = $('dash-lobby-composer');
     if (!form) return;
@@ -1411,11 +1599,13 @@
     var input = $('dash-lobby-input');
     if (input) {
       input.addEventListener('keydown', function (ev) {
+        if (mentionOpen()) return;
         if (ev.key === 'Enter' && !ev.shiftKey) {
           ev.preventDefault();
           form.requestSubmit();
         }
       });
+      bindMentionComposer(input);
     }
     var attach = $('dash-lobby-attach');
     var file = $('dash-lobby-file');
@@ -1495,11 +1685,25 @@
     S.openSharePath = typeof opts.openSharePath === 'function' ? opts.openSharePath : null;
     if (typeof opts.esc === 'function') S.esc = opts.esc;
     bindDashLobby();
+    bindMentionComposer($('co-chat-input'));
+    var mentionMenu = mentionMenuEl();
+    if (mentionMenu) {
+      mentionMenu.addEventListener('mousedown', function (ev) {
+        var btn = ev.target.closest('[data-mention-i]');
+        if (!btn) return;
+        ev.preventDefault();
+        var i = Number(btn.getAttribute('data-mention-i'));
+        insertMention(mentionState.items[i]);
+      });
+    }
     var root = $('co-chat');
     var nav = $('header-chat');
     var tabbar = $('tabbar-chat');
     S.booted = true;
     touchPresence(true);
+    S.api('/api/admin/chat/ai').then(function (data) {
+      if (data && data.aiName) setAiName(data.aiName);
+    }).catch(function () {});
     loadDashLobby(true).catch(function (err) {
       showDashLobbyError((err && err.message) || 'Could not load Lobby.');
     });
@@ -1590,6 +1794,8 @@
     refreshLobby: function () {
       if (!S.booted) return;
       loadDashLobby(true).catch(function () {});
-    }
+    },
+    setAiName: setAiName,
+    aiName: aiName
   };
 })(window);

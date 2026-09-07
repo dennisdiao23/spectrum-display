@@ -7,6 +7,7 @@ create table if not exists public.chat_ai_settings (
   model text not null default 'claude-sonnet-4-6',
   api_key_ciphertext text,
   api_key_last4 text,
+  ai_name text not null default 'Claude',
   updated_by_user_id bigint references public.admins(id) on delete set null,
   updated_at timestamptz not null default now()
 );

@@ -11,8 +11,20 @@ const HISTORY = 20;
 const BODY_MAX = 8000;
 const queues = new Map();
 
-const WELCOME =
-  'Hi — I\'m Copilot. I can search and draft anything you can do here: inventory, vendors, purchase orders, quotes, orders, invoices, and customers. I never save the final record. I prepare a draft, send it here for review, and you open it and save. Try: “Make a PO for [vendor] from low stock.”';
+async function currentAiName(store) {
+  try {
+    return chatAi.aiNameFromRow(await store.peekChatAiSettings());
+  } catch (e) {
+    return chatAi.DEFAULT_AI_NAME;
+  }
+}
+
+function welcomeMessage(name) {
+  const bot = chatAi.normalizeAiName(name);
+  return 'Hi — I\'m ' + bot + '. I can search and draft anything you can do here: inventory, vendors, purchase orders, quotes, orders, invoices, and customers. I never save the final record. I prepare a draft, send it here for review, and you open it and save. Try: “Make a PO for [vendor] from low stock.”';
+}
+
+const WELCOME = welcomeMessage(chatAi.DEFAULT_AI_NAME);
 
 const NO_KEY_COPY =
   'I can draft a PO from low stock without an AI key — try “Make a PO for [vendor] from low stock.” ' +
@@ -570,7 +582,7 @@ async function draftLowStockPo(store, admin, roomId, vendorHint) {
     mailingAddress: snap.mailingAddress || '',
     status: 'open',
     issueDate: nowIso().slice(0, 10),
-    notes: 'Prepared by Copilot from low stock for ' + (vendor.displayName || vendor.companyName) +
+    notes: 'Prepared by ' + (await currentAiName(store)) + ' from low stock for ' + (vendor.displayName || vendor.companyName) +
       '. Review qty and cost before saving.',
     lines: lines
   };
@@ -736,7 +748,7 @@ async function maybeParseAttachment(store, admin, roomId, message, userText) {
       vendorName: vendor ? (vendor.displayName || vendor.companyName) : vendorHint,
       status: 'open',
       issueDate: nowIso().slice(0, 10),
-      notes: 'Prepared by Copilot from ' + (message.attachmentName || 'spreadsheet') + '. Review before saving.',
+      notes: 'Prepared by ' + (await currentAiName(store)) + ' from ' + (message.attachmentName || 'spreadsheet') + '. Review before saving.',
       lines: lines
     };
     if (!payload.vendorId && !payload.vendorName) {
@@ -755,7 +767,7 @@ async function maybeParseAttachment(store, admin, roomId, message, userText) {
     customerName: customerHint,
     status: 'draft',
     issueDate: nowIso().slice(0, 10),
-    notes: 'Prepared by Copilot from ' + (message.attachmentName || 'spreadsheet') + '. Review before saving.',
+    notes: 'Prepared by ' + (await currentAiName(store)) + ' from ' + (message.attachmentName || 'spreadsheet') + '. Review before saving.',
     lines: lines.map(function (line) {
       return { sku: line.sku, description: line.description || line.product, qty: line.qty, unitPrice: line.unitPrice };
     })
@@ -786,10 +798,11 @@ function vendorHintFromText(text) {
   return m[1].replace(/\b(all of the|all the|the|low[ -]?stock.*|out of stock.*)/gi, '').trim();
 }
 
-function systemPrompt(admin) {
+function systemPrompt(admin, name) {
   const who = (admin && (admin.name || admin.email)) || 'Staff';
+  const bot = chatAi.normalizeAiName(name);
   return [
-    'You are Copilot inside Spectrum Display’s company admin chat.',
+    'You are ' + bot + ' inside Spectrum Display’s company admin chat.',
     'You help ' + who + ' with inventory, vendors, purchase orders, customers, quotes, orders, and invoices.',
     'You can do anything they can do in this app, but you MUST NOT save, send, email, delete, or finalize any record.',
     'Prepare a draft and send it to chat for review. They open it and save it themselves.',
@@ -800,8 +813,8 @@ function systemPrompt(admin) {
   ].join(' ');
 }
 
-function toOpenAiMessages(admin, history, userText, fileNote) {
-  const msgs = [{ role: 'system', content: systemPrompt(admin) }];
+function toOpenAiMessages(admin, history, userText, fileNote, name) {
+  const msgs = [{ role: 'system', content: systemPrompt(admin, name) }];
   (history || []).forEach(function (m) {
     if (!m || m.isDeleted) return;
     const content = trim(m.body, 1500);
@@ -963,10 +976,11 @@ async function runLlmTurn(store, admin, roomId, history, userText, file, runtime
   const apiKey = runtime && runtime.apiKey;
   const model = runtime && runtime.model;
   if (!apiKey) return '';
+  const name = await currentAiName(store);
 
   if (provider === 'anthropic') {
     let messages = toAnthropicMessages(history, userText, fileNote);
-    const system = systemPrompt(admin);
+    const system = systemPrompt(admin, name);
     for (let i = 0; i < 5; i++) {
       const data = await callAnthropic(apiKey, model, system, messages);
       const content = (data && data.content) || [];
@@ -997,7 +1011,7 @@ async function runLlmTurn(store, admin, roomId, history, userText, file, runtime
       messages.push({ role: 'user', content: results });
     }
   } else if (provider === 'google') {
-    let messages = toOpenAiMessages(admin, history, userText, fileNote);
+    let messages = toOpenAiMessages(admin, history, userText, fileNote, name);
     const data = await callGemini(apiKey, model, messages, file);
     const parsed = geminiText(data);
     for (let i = 0; i < (parsed.calls || []).length && i < 5; i++) {
@@ -1018,7 +1032,7 @@ async function runLlmTurn(store, admin, roomId, history, userText, file, runtime
       extraBodies.push(parsed.text || '');
     }
   } else {
-    let messages = toOpenAiMessages(admin, history, userText, fileNote);
+    let messages = toOpenAiMessages(admin, history, userText, fileNote, name);
     for (let i = 0; i < 5; i++) {
       const data = await callOpenAi(apiKey, model, messages, openaiTools());
       const choice = data && data.choices && data.choices[0] && data.choices[0].message;
@@ -1133,6 +1147,7 @@ async function getDraft(store, admin, token) {
 
 module.exports = {
   WELCOME,
+  welcomeMessage,
   llmConfigured,
   llmReady,
   replyToChat,
