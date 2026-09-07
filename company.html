@@ -8,9 +8,9 @@
   <link rel="apple-touch-icon" href="/assets/apple-touch-icon.png" />
   <title>Company | Spectrum Display</title>
   <meta name="robots" content="noindex, nofollow" />
-  <link rel="stylesheet" href="/css/company-dash.css" />
+  <link rel="stylesheet" href="/css/company-dash.css?v=lobby2" />
   <script src="/js/address-autocomplete.js"></script>
-  <script src="/js/company-chat.js"></script>
+  <script src="/js/company-chat.js?v=lobby2"></script>
   <script>
     (function () {
       try {
@@ -263,10 +263,14 @@
               <div class="dash-lobby-window">
                 <aside class="dash-lobby-users" aria-label="Company users">
                   <div class="dash-lobby-users-head">Company users</div>
-                  <div class="dash-lobby-user-list" id="dash-lobby-users"></div>
+                  <div class="dash-lobby-user-list" id="dash-lobby-users">
+                    <p class="dash-lobby-empty">Loading company users…</p>
+                  </div>
                 </aside>
                 <div class="dash-lobby-main">
-                  <div class="co-chat-messages dash-lobby-messages" id="dash-lobby-messages"></div>
+                  <div class="co-chat-messages dash-lobby-messages" id="dash-lobby-messages">
+                    <p class="co-chat-empty">Loading Lobby…</p>
+                  </div>
                   <form class="co-chat-composer dash-lobby-composer" id="dash-lobby-composer">
                     <input type="file" id="dash-lobby-file" class="co-chat-file" accept=".jpg,.jpeg,.png,.webp,.gif,.pdf,.csv,.txt,.xlsx,.docx,image/*,application/pdf,text/plain,text/csv">
                     <button type="button" class="co-chat-attach" id="dash-lobby-attach" title="Attach">Attach</button>
@@ -2596,7 +2600,7 @@
     </a>
   </nav>
 
-  <link rel="stylesheet" href="/css/company-dash.css" />
+  <link rel="stylesheet" href="/css/company-dash.css?v=lobby2" />
 
   <script>
     const loginPanel = document.getElementById('login-panel');
@@ -4234,6 +4238,7 @@
       if (!canDashOverview(dashOverview)) dashOverview = firstDashOverview();
       renderDashKpis();
       selectDashOverview(dashOverview);
+      if (window.SpectrumChat && SpectrumChat.refreshLobby) SpectrumChat.refreshLobby();
     }
 
     async function loadWebsiteCatalog() {

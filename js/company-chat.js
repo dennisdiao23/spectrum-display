@@ -1238,6 +1238,14 @@
     if (note) note.hidden = canSend;
   }
 
+  function showDashLobbyError(msg) {
+    var text = msg || 'Could not load Lobby.';
+    var users = $('dash-lobby-users');
+    var msgs = $('dash-lobby-messages');
+    if (users) users.innerHTML = '<p class="dash-lobby-empty">' + esc(text) + '</p>';
+    if (msgs) msgs.innerHTML = '<p class="co-chat-empty">' + esc(text) + '</p>';
+  }
+
   function renderDashUsers() {
     var host = $('dash-lobby-users');
     if (!host) return;
@@ -1277,7 +1285,14 @@
     var gen = (S.dash.fetchGen = (S.dash.fetchGen || 0) + 1);
     var url = '/api/admin/chat/lobby?limit=100';
     if (!full && S.dash.lastMsgId) url += '&afterId=' + S.dash.lastMsgId;
-    var data = await S.api(url);
+    var data;
+    try {
+      data = await S.api(url);
+    } catch (err) {
+      if (gen !== S.dash.fetchGen) return;
+      if (full || !S.dash.loaded) showDashLobbyError((err && err.message) || 'Could not load Lobby.');
+      throw err;
+    }
     if (gen !== S.dash.fetchGen) return;
     S.dash.roomId = data.room && data.room.id;
     S.dash.users = data.users || [];
@@ -1465,10 +1480,8 @@
     var tabbar = $('tabbar-chat');
     S.booted = true;
     touchPresence(true);
-    loadDashLobby(true).catch(function () {
-      if ($('dash-lobby-messages')) {
-        $('dash-lobby-messages').innerHTML = '<p class="co-chat-empty">Could not load Lobby.</p>';
-      }
+    loadDashLobby(true).catch(function (err) {
+      showDashLobbyError((err && err.message) || 'Could not load Lobby.');
     });
     S.timers.dashPoll = setInterval(pollDashLobby, 3000);
     S.timers.presence = setInterval(function () {

@@ -1054,10 +1054,16 @@ function sqliteApi(db) {
       ensureCompanyChat(db);
       const lobbyRow = db.prepare("SELECT * FROM chat_rooms WHERE kind = 'lobby' LIMIT 1").get();
       if (!lobbyRow) return { room: null, messages: [], users: [] };
-      ensureReadRow(admin.id, lobbyRow.id);
-      const data = await this.listChatMessages(admin, lobbyRow.id, opts);
-      const users = await this.listLobbyUsers(admin);
-      return { room: data.room, messages: data.messages, users: users };
+      try { ensureReadRow(admin.id, lobbyRow.id); } catch (e) { /* ignore */ }
+      let data = { room: null, messages: [] };
+      let users = [];
+      try {
+        data = await this.listChatMessages(admin, lobbyRow.id, opts);
+      } catch (e) { console.error('lobby messages', e); }
+      try {
+        users = await this.listLobbyUsers(admin);
+      } catch (e) { console.error('lobby users', e); }
+      return { room: data.room, messages: data.messages || [], users: users };
     },
 
     async listLobbyUsers(admin) {
@@ -1068,7 +1074,10 @@ function sqliteApi(db) {
         LEFT JOIN admin_roles r ON r.slug = a.role
         ORDER BY a.name COLLATE NOCASE, a.email
       `).all();
-      const presence = await this.listChatPresence(admin, rows.map(function (r) { return r.id; }));
+      let presence = {};
+      try {
+        presence = await this.listChatPresence(admin, rows.map(function (r) { return r.id; }));
+      } catch (e) { console.error('lobby presence', e); }
       return rows.map(function (row) {
         const rec = presence[row.id] || presence[String(row.id)] || null;
         return Object.assign({}, formatUser(row), {
@@ -2001,10 +2010,16 @@ function supabaseApi(supabase) {
       const { data: lobbyRows } = await supabase.from('chat_rooms').select('*').eq('kind', 'lobby').limit(1);
       const lobbyRow = lobbyRows && lobbyRows[0];
       if (!lobbyRow) return { room: null, messages: [], users: [] };
-      await ensureReadRow(admin.id, lobbyRow.id);
-      const data = await this.listChatMessages(admin, lobbyRow.id, opts);
-      const users = await this.listLobbyUsers(admin);
-      return { room: data.room, messages: data.messages, users: users };
+      try { await ensureReadRow(admin.id, lobbyRow.id); } catch (e) { /* ignore */ }
+      let data = { room: null, messages: [] };
+      let users = [];
+      try {
+        data = await this.listChatMessages(admin, lobbyRow.id, opts);
+      } catch (e) { console.error('lobby messages', e); }
+      try {
+        users = await this.listLobbyUsers(admin);
+      } catch (e) { console.error('lobby users', e); }
+      return { room: data.room, messages: data.messages || [], users: users };
     },
 
     async listLobbyUsers(admin) {
@@ -2015,7 +2030,10 @@ function supabaseApi(supabase) {
         const row = await getAdminRow(data[i].id);
         if (row) rows.push(row);
       }
-      const presence = await this.listChatPresence(admin, rows.map(function (r) { return r.id; }));
+      let presence = {};
+      try {
+        presence = await this.listChatPresence(admin, rows.map(function (r) { return r.id; }));
+      } catch (e) { console.error('lobby presence', e); }
       return rows.map(function (row) {
         const rec = presence[row.id] || presence[String(row.id)] || null;
         return Object.assign({}, formatUser(row), {
@@ -2063,7 +2081,11 @@ function supabaseApi(supabase) {
       if (userIds && userIds.length) {
         q = q.in('user_id', userIds.map(Number));
       }
-      const { data } = await q;
+      const { data, error } = await q;
+      if (error) {
+        console.error('lobby presence', error);
+        return {};
+      }
       const out = {};
       (data || []).forEach(function (r) {
         out[r.user_id] = formatPresenceRow(r);

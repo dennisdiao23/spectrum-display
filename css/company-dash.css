@@ -1555,7 +1555,8 @@ html.dash-scroll-lock body.company-app {
 .dash-home-lobby {
   padding: 0;
   overflow: hidden;
-  min-height: 26rem;
+  height: 28rem;
+  min-height: 28rem;
   display: flex;
   flex-direction: column;
   position: relative;
@@ -1571,10 +1572,12 @@ html.dash-scroll-lock body.company-app {
   flex-shrink: 0;
 }
 .dash-lobby-window {
-  flex: 1;
+  flex: 1 1 auto;
   display: grid;
   grid-template-columns: 12.5rem minmax(0, 1fr);
+  grid-template-rows: minmax(22rem, 1fr);
   min-height: 22rem;
+  height: 22.5rem;
   border-top: 1px solid var(--dash-line);
 }
 .dash-lobby-users {
@@ -1675,15 +1678,17 @@ html.dash-scroll-lock body.company-app {
   text-overflow: ellipsis;
 }
 .dash-lobby-main {
-  display: flex;
-  flex-direction: column;
+  display: grid;
+  grid-template-rows: minmax(14rem, 1fr) auto auto;
   min-width: 0;
-  min-height: 0;
+  min-height: 22rem;
   background: #fff;
 }
 .dash-lobby-messages {
-  flex: 1;
-  min-height: 0;
+  flex: 1 1 auto;
+  min-height: 14rem;
+  height: auto;
+  overflow: auto;
 }
 .dash-lobby-composer { flex-shrink: 0; }
 .dash-lobby-nochat {
@@ -1733,7 +1738,8 @@ html.dash-scroll-lock body.company-app {
 .dash-lobby-status-menu button[data-lobby-status="away"]::before { background: #eab308; }
 .dash-lobby-status-menu button[data-lobby-status="busy"]::before { background: #ef4444; }
 .dash-lobby-empty {
-  margin: 1rem 0;
+  margin: 1rem 0.5rem;
+  padding: 0.35rem;
   font-size: 0.85rem;
   color: var(--dash-muted);
   text-align: center;
