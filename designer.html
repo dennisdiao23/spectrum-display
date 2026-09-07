@@ -852,13 +852,13 @@
             <p class="text-xs text-slate-500">Not a catalog product. Size, resolution, power, and price use the values you enter.</p>
             <div class="pt-3 border-t border-slate-800 space-y-2">
               <div class="flex items-center justify-between gap-2">
-                <label class="text-xs text-slate-400">Saved for this account</label>
+                <label class="text-xs text-slate-400" data-i18n="designer.savedAcct">Saved panels</label>
                 <span id="custom-save-toast" class="hidden text-xs text-sky-400">Saved</span>
               </div>
               <div id="custom-saved-list" class="space-y-1.5 max-h-44 overflow-y-auto"></div>
-              <p id="custom-saved-empty" class="text-xs text-slate-500">Sign in to save panels to your account. They only appear for that account.</p>
-              <button type="button" id="save-custom-panel-btn" class="w-full inline-flex items-center justify-center gap-2 px-4 py-2 rounded-full border border-sky-600/60 bg-sky-500/10 hover:bg-sky-500/20 text-sky-300 text-sm font-medium transition">
-                Save panel to account
+              <p id="custom-saved-empty" class="text-xs text-slate-500">Saved in this browser. Sign in to keep them on your account.</p>
+              <button type="button" id="save-custom-panel-btn" class="w-full inline-flex items-center justify-center gap-2 px-4 py-2 rounded-full border border-sky-600/60 bg-sky-500/10 hover:bg-sky-500/20 text-sky-300 text-sm font-medium transition" data-i18n="designer.savePanel">
+                Add panel
               </button>
             </div>
           </div>
@@ -1780,20 +1780,14 @@
     function renderSavedCustomPanels() {
       const list = document.getElementById('custom-saved-list');
       const empty = document.getElementById('custom-saved-empty');
-      const btn = document.getElementById('save-custom-panel-btn');
       if (!list || !empty) return;
       const loggedIn = window.SpectrumAuth && SpectrumAuth.isLoggedIn();
-      if (btn) btn.textContent = loggedIn ? 'Save panel to account' : 'Sign in to save panel';
-      if (!loggedIn) {
-        list.innerHTML = '';
-        empty.textContent = 'Sign in to save panels to your account. They only appear for that account.';
-        empty.classList.remove('hidden');
-        return;
-      }
-      const panels = SpectrumAuth.listCustomPanels();
+      const panels = window.SpectrumAuth ? SpectrumAuth.listCustomPanels() : [];
       if (!panels.length) {
         list.innerHTML = '';
-        empty.textContent = 'No saved panels on this account yet.';
+        empty.textContent = loggedIn
+          ? 'No saved panels on this account yet.'
+          : 'Saved in this browser. Sign in to keep them on your account.';
         empty.classList.remove('hidden');
         return;
       }
@@ -1830,17 +1824,14 @@
     }
     async function saveCustomPanelToAccount() {
       const payload = getCustomPanelPayload();
-      if (!window.SpectrumAuth || !SpectrumAuth.isLoggedIn()) {
-        if (confirm('Sign in to save this custom panel to your account. Go to Account page?')) {
-          sessionStorage.setItem('spectrumPendingCustomPanel', JSON.stringify(payload));
-          sessionStorage.setItem('spectrumAuthNext', 'designer-custom');
-          window.location.href = 'account.html?next=designer-custom';
-        }
+      if (!window.SpectrumAuth) {
+        alert('Could not save panel');
         return;
       }
+      const loggedIn = SpectrumAuth.isLoggedIn();
       const result = await SpectrumAuth.saveCustomPanel(payload);
       if (result.ok) {
-        flashCustomSaveToast('Saved to your account');
+        flashCustomSaveToast(loggedIn ? 'Saved to your account' : 'Saved');
         renderSavedCustomPanels();
       } else {
         alert(result.error || 'Could not save panel');
