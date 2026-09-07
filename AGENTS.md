@@ -58,6 +58,9 @@ catalog API and a cookie-session company login used by `/company`, `/company/web
   so Railway deploys production. Hosting is Railway-only; merge to `main` triggers deploy.
 - If the PR cannot merge (conflicts, failing checks), resolve or report the blocker — do not stop at
   push-only when the user asked to push.
+- After a **push**, wait until Railway production is **online** (deploy SUCCESS and the live site is
+  serving the new commit). Then send a message **in this chat** so Dennis knows it is live. Include
+  https://www.spectrumdisplay.com and the PR number. Do not stop at “merged — Railway will deploy.”
 
 ### Company list tables
 
