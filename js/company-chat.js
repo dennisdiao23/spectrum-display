@@ -57,7 +57,8 @@
     rect: null,
     saveChatPrefs: null,
     getChatPrefs: null,
-    timers: {}
+    timers: {},
+    roomFetchGen: 0
   };
 
   function $(id) { return document.getElementById(id); }
@@ -436,6 +437,12 @@
     S.seeThrough = false;
     syncIdle();
     syncNavOpen();
+    if (S.rooms.length) renderRoomList();
+    if (S.messages.length) renderMessages('co-chat-messages', S.messages);
+    if (S.rooms.length && S.messages.length) {
+      loadRooms().catch(function () {});
+      return;
+    }
     await loadRooms();
   }
 
@@ -863,6 +870,12 @@
     return '';
   }
 
+  function clearLocalUnread(roomId) {
+    (S.rooms || []).forEach(function (room) {
+      if (Number(room.id) === Number(roomId)) room.unreadCount = 0;
+    });
+  }
+
   async function loadRooms() {
     var q = ($('co-chat-search') && $('co-chat-search').value) || '';
     var data = await S.api('/api/admin/chat/rooms?tab=contacts' +
@@ -872,22 +885,29 @@
     if (!S.roomId && S.rooms.length) {
       var first = S.rooms[0];
       if (first && first.id) await openRoom(first.id);
-    } else if (S.roomId) {
-      var still = S.rooms.some(function (r) { return r.id && Number(r.id) === Number(S.roomId); });
-      if (!still) {
-        try {
-          await openRoom(S.roomId);
-        } catch (e) {
-          S.roomId = null;
-          S.room = null;
-          S.messages = [];
-          var fallback = S.rooms[0];
-          if (fallback && fallback.id) await openRoom(fallback.id);
-          else renderEmptyMain();
-        }
-      } else renderRoomList();
-    } else {
+      return;
+    }
+    if (!S.roomId) {
       renderEmptyMain();
+      return;
+    }
+    var still = S.rooms.some(function (r) { return r.id && Number(r.id) === Number(S.roomId); });
+    var haveThread = S.room && Number(S.room.id) === Number(S.roomId) && S.messages.length;
+    if (!still) {
+      try {
+        await openRoom(S.roomId);
+      } catch (e) {
+        S.roomId = null;
+        S.room = null;
+        S.messages = [];
+        var fallback = S.rooms[0];
+        if (fallback && fallback.id) await openRoom(fallback.id);
+        else renderEmptyMain();
+      }
+    } else if (!haveThread) {
+      await openRoom(S.roomId);
+    } else {
+      renderRoomList();
     }
   }
 
@@ -906,10 +926,16 @@
   }
 
   async function openRoom(roomId) {
+    var gen = (S.roomFetchGen = (S.roomFetchGen || 0) + 1);
     S.roomId = Number(roomId);
+    saveLast();
+    renderRoomList();
     var data = await S.api('/api/admin/chat/rooms/' + S.roomId + '/messages?limit=100');
+    if (gen !== S.roomFetchGen) return;
     S.room = data.room;
-    S.messages = data.messages || [];
+    S.messages = mergeMessages(data.messages || [], (S.messages || []).filter(function (m) {
+      return isTempId(m.id);
+    }));
     S.lastMsgId = maxMsgId(S.messages, 0);
     if (S.room && S.room.kind === 'copilot') {
       var hasCopilot = S.messages.some(function (m) {
@@ -939,10 +965,11 @@
       delete openBtn.dataset.orderId;
     }
     renderMessages('co-chat-messages', S.messages);
+    clearLocalUnread(S.roomId);
     renderRoomList();
-    try { await S.api('/api/admin/chat/rooms/' + S.roomId + '/read', { method: 'POST' }); } catch (e) { /* ignore */ }
-    refreshUnread();
-    saveLast();
+    S.api('/api/admin/chat/rooms/' + S.roomId + '/read', { method: 'POST' })
+      .then(function () { refreshUnread(); })
+      .catch(function () {});
   }
 
   function clearFile() {
@@ -1017,7 +1044,9 @@
         S.spectrumPending = false;
       }
       renderMessages('co-chat-messages', S.messages);
-      await S.api('/api/admin/chat/rooms/' + S.roomId + '/read', { method: 'POST' });
+      S.api('/api/admin/chat/rooms/' + S.roomId + '/read', { method: 'POST' }).catch(function () {});
+      clearLocalUnread(S.roomId);
+      renderRoomList();
       refreshUnread();
     } catch (e) { /* ignore */ }
   }
@@ -1931,6 +1960,7 @@
       if (!hasChat()) return;
       var ids = S.rooms.filter(function (r) { return r.kind === 'dm' && r.otherUser; })
         .map(function (r) { return r.otherUser.id; });
+      if (S.windowOpen) loadRooms().catch(function () {});
       if (!ids.length) return;
       S.api('/api/admin/chat/presence?ids=' + ids.join(',')).then(function (data) {
         S.presence = data.presence || {};
@@ -1955,10 +1985,7 @@
     await handleDeepLink();
     S.timers.poll = setInterval(pollOpenRoom, 3000);
     S.timers.unread = setInterval(function () {
-      if (!document.hidden) {
-        refreshUnread();
-        if (S.windowOpen) loadRooms();
-      }
+      if (!document.hidden) refreshUnread();
     }, 10000);
     document.addEventListener('visibilitychange', function () {
       if (!document.hidden) {

@@ -353,6 +353,84 @@ function sortContacts(rooms) {
   return rooms;
 }
 
+function readMapFromRows(rows) {
+  const map = {};
+  (rows || []).forEach(function (row) {
+    if (!row || row.room_id == null) return;
+    map[row.room_id] = row;
+    map[String(row.room_id)] = row;
+  });
+  return map;
+}
+
+function unreadMapFromRows(rows) {
+  const map = {};
+  (rows || []).forEach(function (row) {
+    if (!row) return;
+    const id = row.room_id != null ? row.room_id : row.id;
+    if (id == null) return;
+    const n = Number(row.n) || 0;
+    map[id] = n;
+    map[String(id)] = n;
+  });
+  return map;
+}
+
+function unreadTotalsFromRows(rows) {
+  const out = { total: 0, lobby: 0, direct: 0, orders: 0, copilot: 0 };
+  (rows || []).forEach(function (row) {
+    const n = Number(row.n) || 0;
+    const kind = row.kind;
+    if (kind === 'lobby') out.lobby += n;
+    else if (kind === 'dm') out.direct += n;
+    else if (kind === 'order') out.orders += n;
+    else if (kind === 'copilot') out.copilot += n;
+    out.total += n;
+  });
+  return out;
+}
+
+function userMapFromRows(rows) {
+  const map = {};
+  (rows || []).forEach(function (row) {
+    const user = formatUser(row);
+    if (!user || user.id == null) return;
+    map[user.id] = user;
+    map[String(user.id)] = user;
+  });
+  return map;
+}
+
+function packChatRoom(row, viewerId, unreadMap, readMap, userMap) {
+  if (!row) return null;
+  const read = readMap && (readMap[row.id] || readMap[String(row.id)]);
+  const extras = {
+    unreadCount: Number((unreadMap && (unreadMap[row.id] || unreadMap[String(row.id)])) || 0),
+    muted: !!(read && (read.muted === true || read.muted === 1 || read.muted === '1'))
+  };
+  if (row.kind === 'dm') {
+    const otherId = Number(row.dm_user_low_id) === Number(viewerId)
+      ? row.dm_user_high_id
+      : row.dm_user_low_id;
+    extras.otherUser = (userMap && (userMap[otherId] || userMap[String(otherId)])) || null;
+  }
+  return formatRoom(row, extras);
+}
+
+function roomsNeedUnreadCount(rooms, readMap) {
+  const need = [];
+  (rooms || []).forEach(function (row) {
+    if (!row || !row.id) return;
+    const last = row.last_message_at || row.lastMessageAt;
+    if (!last) return;
+    const read = readMap && (readMap[row.id] || readMap[String(row.id)]);
+    const since = read && (read.last_read_at || read.lastReadAt);
+    if (since && String(last) <= String(since)) return;
+    need.push(row);
+  });
+  return need;
+}
+
 function buildContactList(copilotRoom, lobbyRoom, dmRooms, users, query) {
   const q = String(query || '').trim().toLowerCase();
   const dms = dmRooms || [];
@@ -644,6 +722,42 @@ function sqliteApi(db) {
     ).get(userId, roomId) || null;
   }
 
+  function loadReadsMap(viewerId) {
+    return readMapFromRows(
+      db.prepare('SELECT room_id, last_read_at, muted FROM chat_room_reads WHERE user_id = ?').all(viewerId)
+    );
+  }
+
+  function loadUnreadMap(viewerId, roomIds) {
+    const ids = (roomIds || []).map(Number).filter(Boolean);
+    if (!ids.length) return {};
+    const placeholders = ids.map(function () { return '?'; }).join(',');
+    return unreadMapFromRows(db.prepare(`
+      SELECT m.room_id AS room_id, COUNT(*) AS n
+      FROM chat_messages m
+      LEFT JOIN chat_room_reads rd ON rd.room_id = m.room_id AND rd.user_id = ?
+      WHERE m.room_id IN (${placeholders})
+        AND m.deleted_at IS NULL
+        AND (m.user_id IS NULL OR m.user_id != ?)
+        AND m.created_at > COALESCE(rd.last_read_at, '1970-01-01')
+      GROUP BY m.room_id
+    `).all.apply(null, [viewerId].concat(ids, [viewerId])));
+  }
+
+  function loadStaffUserMap() {
+    return userMapFromRows(db.prepare(`
+      SELECT a.id, a.email, a.name, a.role, r.name AS role_name
+      FROM admins a
+      LEFT JOIN admin_roles r ON r.slug = a.role
+    `).all());
+  }
+
+  function packRooms(rows, viewerId, unreadMap, readMap, userMap) {
+    return (rows || []).map(function (row) {
+      return packChatRoom(row, viewerId, unreadMap, readMap, userMap);
+    }).filter(Boolean);
+  }
+
   function ensureReadRow(userId, roomId) {
     const existing = getRead(userId, roomId);
     if (existing) return existing;
@@ -776,19 +890,19 @@ function sqliteApi(db) {
       ensureCompanyChat(db);
       const viewerId = admin.id;
       const q = trim(query, 80).toLowerCase();
-      let rows = [];
+      const userMap = loadStaffUserMap();
+      const readMap = loadReadsMap(viewerId);
 
       if (tab === 'orders') {
-        rows = db.prepare("SELECT * FROM chat_rooms WHERE kind = 'order'").all();
+        let rows = db.prepare("SELECT * FROM chat_rooms WHERE kind = 'order'").all();
         if (q) {
           rows = rows.filter(function (row) {
             const hay = (row.title || '') + ' ' + (row.customer_name || '');
             return hay.toLowerCase().indexOf(q) !== -1;
           });
         }
-        return sortRoomsUnreadFirst(rows.map(function (row) {
-          return enrichRoom(row, viewerId);
-        }));
+        const unreadMap = loadUnreadMap(viewerId, rows.map(function (row) { return row.id; }));
+        return sortRoomsUnreadFirst(packRooms(rows, viewerId, unreadMap, readMap, userMap));
       }
 
       const copilotRow = ensureCopilotRoomRow(viewerId);
@@ -797,10 +911,17 @@ function sqliteApi(db) {
         SELECT * FROM chat_rooms
         WHERE kind = 'dm' AND (dm_user_low_id = ? OR dm_user_high_id = ?)
       `).all(viewerId, viewerId);
-      const copilot = copilotRow ? enrichRoom(copilotRow, viewerId) : null;
-      const lobby = lobbyRow ? enrichRoom(lobbyRow, viewerId) : null;
-      const dms = dmRows.map(function (row) { return enrichRoom(row, viewerId); });
-      const users = await this.listChatUsers(admin);
+      const raw = [copilotRow, lobbyRow].concat(dmRows).filter(Boolean);
+      const unreadMap = loadUnreadMap(viewerId, raw.map(function (row) { return row.id; }));
+      const copilot = copilotRow ? packChatRoom(copilotRow, viewerId, unreadMap, readMap, userMap) : null;
+      const lobby = lobbyRow ? packChatRoom(lobbyRow, viewerId, unreadMap, readMap, userMap) : null;
+      const dms = packRooms(dmRows, viewerId, unreadMap, readMap, userMap);
+      const users = Object.keys(userMap).map(function (key) {
+        return userMap[key];
+      }).filter(function (user, i, arr) {
+        return user && Number(user.id) !== Number(viewerId) &&
+          arr.findIndex(function (u) { return Number(u.id) === Number(user.id); }) === i;
+      });
       return buildContactList(copilot, lobby, dms, users, q);
     },
 
@@ -906,8 +1027,14 @@ function sqliteApi(db) {
       }
       const map = usersMap(rows.map(function (r) { return r.user_id; }));
       const extras = room.kind === 'copilot' ? { copilot: true } : null;
+      let packedRoom;
+      if (afterId) {
+        packedRoom = formatRoom(room, extras);
+      } else {
+        packedRoom = enrichRoom(room, admin.id);
+      }
       return {
-        room: enrichRoom(room, admin.id),
+        room: packedRoom,
         messages: rows.map(function (r) { return formatMessage(r, map, extras); })
       };
     },
@@ -1007,32 +1134,21 @@ function sqliteApi(db) {
     async chatUnreadSummary(admin) {
       ensureCompanyChat(db);
       const viewerId = admin.id;
-      const lobby = db.prepare("SELECT id FROM chat_rooms WHERE kind = 'lobby' LIMIT 1").get();
-      const dms = db.prepare(`
-        SELECT id FROM chat_rooms
-        WHERE kind = 'dm' AND (dm_user_low_id = ? OR dm_user_high_id = ?)
-      `).all(viewerId, viewerId);
-      const copilot = db.prepare(
-        "SELECT id FROM chat_rooms WHERE kind = 'copilot' AND dm_user_low_id = ? LIMIT 1"
-      ).get(viewerId);
-      const orders = db.prepare("SELECT id FROM chat_rooms WHERE kind = 'order'").all();
-
-      let lobbyCount = 0;
-      let dmCount = 0;
-      let orderCount = 0;
-      let copilotCount = 0;
-      if (lobby) lobbyCount = roomUnread(viewerId, lobby.id);
-      if (copilot) copilotCount = roomUnread(viewerId, copilot.id);
-      dms.forEach(function (r) { dmCount += roomUnread(viewerId, r.id); });
-      orders.forEach(function (r) { orderCount += roomUnread(viewerId, r.id); });
-
-      return {
-        total: lobbyCount + dmCount + orderCount + copilotCount,
-        lobby: lobbyCount,
-        direct: dmCount,
-        orders: orderCount,
-        copilot: copilotCount
-      };
+      const rows = db.prepare(`
+        SELECT r.kind, COUNT(m.id) AS n
+        FROM chat_rooms r
+        LEFT JOIN chat_room_reads rd ON rd.room_id = r.id AND rd.user_id = ?
+        LEFT JOIN chat_messages m ON m.room_id = r.id
+          AND m.deleted_at IS NULL
+          AND (m.user_id IS NULL OR m.user_id != ?)
+          AND m.created_at > COALESCE(rd.last_read_at, '1970-01-01')
+        WHERE r.kind = 'lobby'
+           OR (r.kind = 'dm' AND (r.dm_user_low_id = ? OR r.dm_user_high_id = ?))
+           OR (r.kind = 'copilot' AND r.dm_user_low_id = ?)
+           OR r.kind = 'order'
+        GROUP BY r.kind
+      `).all(viewerId, viewerId, viewerId, viewerId, viewerId);
+      return unreadTotalsFromRows(rows);
     },
 
     async listChatUsers(admin) {
@@ -1453,9 +1569,66 @@ function supabaseApi(supabase) {
   async function usersMap(ids) {
     const map = {};
     const uniq = Array.from(new Set((ids || []).filter(Boolean).map(Number)));
-    for (let i = 0; i < uniq.length; i++) {
-      map[uniq[i]] = formatUser(await getAdminRow(uniq[i]));
+    if (!uniq.length) return map;
+    const { data } = await supabase.from('admins').select('id, email, name, role').in('id', uniq);
+    const slugs = Array.from(new Set((data || []).map(function (row) { return row.role; }).filter(Boolean)));
+    let roles = [];
+    if (slugs.length) {
+      const res = await supabase.from('admin_roles').select('slug, name').in('slug', slugs);
+      roles = res.data || [];
     }
+    const roleName = {};
+    roles.forEach(function (row) { roleName[row.slug] = row.name; });
+    (data || []).forEach(function (row) {
+      const user = formatUser(Object.assign({}, row, { role_name: roleName[row.role] }));
+      map[row.id] = user;
+      map[String(row.id)] = user;
+    });
+    return map;
+  }
+
+  async function loadStaffUserMap() {
+    const { data } = await supabase.from('admins').select('id, email, name, role');
+    const { data: roles } = await supabase.from('admin_roles').select('slug, name');
+    const roleName = {};
+    (roles || []).forEach(function (row) { roleName[row.slug] = row.name; });
+    return userMapFromRows((data || []).map(function (row) {
+      return Object.assign({}, row, { role_name: roleName[row.role] });
+    }));
+  }
+
+  async function loadReadsMap(viewerId) {
+    const { data } = await supabase
+      .from('chat_room_reads')
+      .select('room_id, last_read_at, muted')
+      .eq('user_id', viewerId);
+    return readMapFromRows(data);
+  }
+
+  async function loadUnreadMap(viewerId, rooms, readMap) {
+    const map = {};
+    const need = roomsNeedUnreadCount(rooms, readMap);
+    if (!need.length) return map;
+    const ids = need.map(function (row) { return row.id; });
+    try {
+      const { data, error } = await supabase.rpc('chat_unread_counts', { viewer: viewerId });
+      if (!error && data) {
+        const wanted = {};
+        ids.forEach(function (id) { wanted[id] = true; wanted[String(id)] = true; });
+        (data || []).forEach(function (row) {
+          const id = row.room_id;
+          if (!wanted[id] && !wanted[String(id)]) return;
+          map[id] = Number(row.n) || 0;
+          map[String(id)] = map[id];
+        });
+        return map;
+      }
+    } catch (e) { /* function may not exist yet */ }
+    await Promise.all(ids.map(async function (id) {
+      const n = await roomUnread(viewerId, id);
+      map[id] = n;
+      map[String(id)] = n;
+    }));
     return map;
   }
 
@@ -1656,11 +1829,12 @@ function supabaseApi(supabase) {
       await ensureReady();
       const viewerId = admin.id;
       const q = trim(query, 80).toLowerCase();
-      let rows = [];
+      const userMap = await loadStaffUserMap();
+      const readMap = await loadReadsMap(viewerId);
 
       if (tab === 'orders') {
         const { data } = await supabase.from('chat_rooms').select('*').eq('kind', 'order');
-        rows = data || [];
+        let rows = data || [];
         if (q) {
           rows = rows.filter(function (row) {
             return ((row.title || '') + ' ' + (row.customer_name || ''))
@@ -1668,24 +1842,33 @@ function supabaseApi(supabase) {
               .indexOf(q) !== -1;
           });
         }
-        const rooms = [];
-        for (let i = 0; i < rows.length; i++) {
-          rooms.push(await enrichRoom(rows[i], viewerId));
-        }
-        return sortRoomsUnreadFirst(rooms);
+        const unreadMap = await loadUnreadMap(viewerId, rows, readMap);
+        return sortRoomsUnreadFirst(rows.map(function (row) {
+          return packChatRoom(row, viewerId, unreadMap, readMap, userMap);
+        }).filter(Boolean));
       }
 
       const copilotRow = await ensureCopilotRoomRow(viewerId);
       const { data: lobbyRows } = await supabase.from('chat_rooms').select('*').eq('kind', 'lobby').limit(1);
       const { data: dmData } = await supabase.from('chat_rooms').select('*').eq('kind', 'dm')
         .or('dm_user_low_id.eq.' + viewerId + ',dm_user_high_id.eq.' + viewerId);
-      const copilot = copilotRow ? await enrichRoom(copilotRow, viewerId) : null;
-      const lobby = lobbyRows && lobbyRows[0] ? await enrichRoom(lobbyRows[0], viewerId) : null;
-      const dms = [];
-      for (let i = 0; i < (dmData || []).length; i++) {
-        dms.push(await enrichRoom(dmData[i], viewerId));
-      }
-      const users = await this.listChatUsers(admin);
+      const lobbyRow = lobbyRows && lobbyRows[0];
+      const raw = [copilotRow, lobbyRow].concat(dmData || []).filter(Boolean);
+      const unreadMap = await loadUnreadMap(viewerId, raw, readMap);
+      const copilot = copilotRow ? packChatRoom(copilotRow, viewerId, unreadMap, readMap, userMap) : null;
+      const lobby = lobbyRow ? packChatRoom(lobbyRow, viewerId, unreadMap, readMap, userMap) : null;
+      const dms = (dmData || []).map(function (row) {
+        return packChatRoom(row, viewerId, unreadMap, readMap, userMap);
+      }).filter(Boolean);
+      const users = [];
+      const seen = {};
+      Object.keys(userMap).forEach(function (key) {
+        const user = userMap[key];
+        if (!user || user.id == null || seen[user.id]) return;
+        if (Number(user.id) === Number(viewerId)) return;
+        seen[user.id] = true;
+        users.push(user);
+      });
       return buildContactList(copilot, lobby, dms, users, q);
     },
 
@@ -1825,7 +2008,7 @@ function supabaseApi(supabase) {
       const map = await usersMap(rows.map(function (r) { return r.user_id; }));
       const extras = room.kind === 'copilot' ? { copilot: true } : null;
       return {
-        room: await enrichRoom(room, admin.id),
+        room: afterId ? formatRoom(room, extras) : await enrichRoom(room, admin.id),
         messages: rows.map(function (r) { return formatMessage(r, map, extras); })
       };
     },
@@ -1954,57 +2137,51 @@ function supabaseApi(supabase) {
     async chatUnreadSummary(admin) {
       await ensureReady();
       const viewerId = admin.id;
+      try {
+        const { data, error } = await supabase.rpc('chat_unread_counts', { viewer: viewerId });
+        if (!error && data) return unreadTotalsFromRows(data);
+      } catch (e) { /* function may not exist yet */ }
       const { data: lobbyRows } = await supabase
         .from('chat_rooms')
-        .select('id')
+        .select('id, kind, last_message_at')
         .eq('kind', 'lobby')
         .limit(1);
       const { data: dmRows } = await supabase
         .from('chat_rooms')
-        .select('id')
+        .select('id, kind, last_message_at')
         .eq('kind', 'dm')
         .or('dm_user_low_id.eq.' + viewerId + ',dm_user_high_id.eq.' + viewerId);
       const { data: copilotRows } = await supabase
         .from('chat_rooms')
-        .select('id')
+        .select('id, kind, last_message_at')
         .eq('kind', 'copilot')
         .eq('dm_user_low_id', viewerId)
         .limit(1);
       const { data: orderRows } = await supabase
         .from('chat_rooms')
-        .select('id')
+        .select('id, kind, last_message_at')
         .eq('kind', 'order');
-
-      let lobbyCount = 0;
-      let dmCount = 0;
-      let orderCount = 0;
-      let copilotCount = 0;
-      if (lobbyRows && lobbyRows[0]) lobbyCount = await roomUnread(viewerId, lobbyRows[0].id);
-      if (copilotRows && copilotRows[0]) copilotCount = await roomUnread(viewerId, copilotRows[0].id);
-      for (let i = 0; i < (dmRows || []).length; i++) {
-        dmCount += await roomUnread(viewerId, dmRows[i].id);
-      }
-      for (let j = 0; j < (orderRows || []).length; j++) {
-        orderCount += await roomUnread(viewerId, orderRows[j].id);
-      }
-      return {
-        total: lobbyCount + dmCount + orderCount + copilotCount,
-        lobby: lobbyCount,
-        direct: dmCount,
-        orders: orderCount,
-        copilot: copilotCount
-      };
+      const rooms = [].concat(lobbyRows || [], dmRows || [], copilotRows || [], orderRows || []);
+      const readMap = await loadReadsMap(viewerId);
+      const unreadMap = await loadUnreadMap(viewerId, rooms, readMap);
+      const counted = rooms.map(function (row) {
+        return { kind: row.kind, n: unreadMap[row.id] || unreadMap[String(row.id)] || 0 };
+      });
+      return unreadTotalsFromRows(counted);
     },
 
     async listChatUsers(admin) {
       await ensureReady();
-      const { data } = await supabase.from('admins').select('id, email, name, role');
+      const userMap = await loadStaffUserMap();
       const out = [];
-      for (let i = 0; i < (data || []).length; i++) {
-        const row = await getAdminRow(data[i].id);
-        if (!row || Number(row.id) === Number(admin.id)) continue;
-        out.push(formatUser(row));
-      }
+      const seen = {};
+      Object.keys(userMap).forEach(function (key) {
+        const user = userMap[key];
+        if (!user || user.id == null || seen[user.id]) return;
+        if (Number(user.id) === Number(admin.id)) return;
+        seen[user.id] = true;
+        out.push(user);
+      });
       out.sort(function (a, b) {
         return String(a.name).localeCompare(String(b.name));
       });
@@ -2074,11 +2251,12 @@ function supabaseApi(supabase) {
     async listLobbyUsers(admin) {
       await ensureReady();
       const { data } = await supabase.from('admins').select('id, email, name, role');
-      const rows = [];
-      for (let i = 0; i < (data || []).length; i++) {
-        const row = await getAdminRow(data[i].id);
-        if (row) rows.push(row);
-      }
+      const { data: roles } = await supabase.from('admin_roles').select('slug, name');
+      const roleName = {};
+      (roles || []).forEach(function (row) { roleName[row.slug] = row.name; });
+      const rows = (data || []).map(function (row) {
+        return Object.assign({}, row, { role_name: roleName[row.role] });
+      });
       let presence = {};
       try {
         presence = await this.listChatPresence(admin, rows.map(function (r) { return r.id; }));
