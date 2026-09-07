@@ -253,28 +253,34 @@
               <div class="dash-detail-stats" id="dash-detail-stats"></div>
               <div class="dash-detail-list" id="dash-detail-list"></div>
             </section>
-            <section class="dash-home-panel dash-home-activity">
+            <section class="dash-home-panel dash-home-lobby" id="dash-lobby">
               <div class="dash-home-panel-head">
                 <div>
-                  <h3>Recent Activities</h3>
-                  <p>Website Sign in accounts, then company staff.</p>
+                  <h3>Lobby</h3>
+                  <p>Company chat and staff activity</p>
                 </div>
               </div>
-              <div class="dash-activity-block">
-                <div class="dash-activity-label">
-                  <h4>Website users</h4>
-                  <a href="/company/website/accounts" data-home="website">View users →</a>
+              <div class="dash-lobby-window">
+                <aside class="dash-lobby-users" aria-label="Company users">
+                  <div class="dash-lobby-users-head">Company users</div>
+                  <div class="dash-lobby-user-list" id="dash-lobby-users"></div>
+                </aside>
+                <div class="dash-lobby-main">
+                  <div class="co-chat-messages dash-lobby-messages" id="dash-lobby-messages"></div>
+                  <form class="co-chat-composer dash-lobby-composer" id="dash-lobby-composer">
+                    <input type="file" id="dash-lobby-file" class="co-chat-file" accept=".jpg,.jpeg,.png,.webp,.gif,.pdf,.csv,.txt,.xlsx,.docx,image/*,application/pdf,text/plain,text/csv">
+                    <button type="button" class="co-chat-attach" id="dash-lobby-attach" title="Attach">Attach</button>
+                    <textarea id="dash-lobby-input" rows="1" placeholder="Message the team…"></textarea>
+                    <button type="submit" class="co-chat-send">Send</button>
+                  </form>
+                  <p class="co-chat-attach-name" id="dash-lobby-attach-name" hidden></p>
+                  <p class="dash-lobby-nochat" id="dash-lobby-nochat" hidden>Chat access is needed to send messages.</p>
                 </div>
-                <p id="dash-activity-note" class="dash-home-note hidden"></p>
-                <ol class="dash-activity" id="dash-activity"></ol>
               </div>
-              <div class="dash-activity-block">
-                <div class="dash-activity-label">
-                  <h4>Company users</h4>
-                  <a href="/company/settings">View users →</a>
-                </div>
-
-                <ol class="dash-activity" id="dash-company-activity"></ol>
+              <div class="dash-lobby-status-menu" id="dash-lobby-status-menu" hidden role="menu">
+                <button type="button" role="menuitem" data-lobby-status="online">Online</button>
+                <button type="button" role="menuitem" data-lobby-status="away">Away</button>
+                <button type="button" role="menuitem" data-lobby-status="busy">Busy</button>
               </div>
             </section>
           </div>
@@ -4008,9 +4014,6 @@
     let dashOverview = 'website';
     let dashProducts = [];
     let dashInventory = [];
-    let dashAccounts = [];
-    let dashAccountSource = '';
-    let dashStaff = [];
     let dashCustomers = [];
     let dashSales = [];
     let dashVendors = [];
@@ -4036,27 +4039,6 @@
 
     function dashCount(n) {
       return n == null ? '—' : Number(n).toLocaleString();
-    }
-
-    function dashWhen(value) {
-      if (!value) return '';
-      const d = new Date(value);
-      if (isNaN(d.getTime())) return '';
-      const diff = Date.now() - d.getTime();
-      const mins = Math.floor(diff / 60000);
-      if (mins < 1) return 'Just now';
-      if (mins < 60) return mins + ' min ago';
-      const hours = Math.floor(mins / 60);
-      if (hours < 24) return hours + (hours === 1 ? ' hour ago' : ' hours ago');
-      const days = Math.floor(hours / 24);
-      if (days < 14) return days + (days === 1 ? ' day ago' : ' days ago');
-      return d.toLocaleDateString();
-    }
-
-    function dashInitials(name, email) {
-      const bits = String(name || email || '?').trim().split(/\s+/);
-      const letters = (bits[0] || '?').charAt(0) + (bits[1] ? bits[1].charAt(0) : '');
-      return letters.toUpperCase();
     }
 
     function dashChip(value, label) {
@@ -4233,61 +4215,6 @@
       list.innerHTML = (docRows + custRows) || '<p class="dash-activity-empty">No customers or sales documents yet.</p>';
     }
 
-    function renderDashActivity() {
-      const note = document.getElementById('dash-activity-note');
-      const list = document.getElementById('dash-activity');
-      const companyList = document.getElementById('dash-company-activity');
-      if (list) {
-        if (!canUse('website')) {
-          if (note) note.classList.add('hidden');
-          list.innerHTML = '<p class="dash-activity-empty">Website access is needed to see website user activity.</p>';
-        } else {
-          if (dashAccountSource === 'sqlite') {
-            note.textContent = 'Website user activity lives on the live site database. Add SUPABASE_URL to list website Sign in accounts here.';
-            note.classList.remove('hidden');
-          } else if (note) {
-            note.classList.add('hidden');
-          }
-          const rows = dashAccounts.slice().sort(function (a, b) {
-            return String(b.updated_at || b.created_at || '').localeCompare(String(a.updated_at || a.created_at || ''));
-          }).slice(0, 8);
-          list.innerHTML = rows.length
-            ? rows.map(function (a) {
-              const who = a.name || a.email || 'A user';
-              const updated = a.updated_at && a.created_at && a.updated_at !== a.created_at;
-              const action = updated
-                ? 'updated their ' + roleLabel(a.role) + ' account'
-                : 'joined as ' + roleLabel(a.role);
-              const when = dashWhen(a.updated_at || a.created_at);
-              return '<li class="dash-activity-item">' +
-                '<span class="dash-activity-avatar">' + esc(dashInitials(a.name, a.email)) + '</span>' +
-                '<div class="dash-activity-copy"><p><strong>' + esc(who) + '</strong> ' + esc(action) + '</p>' +
-                (a.company ? '<span>' + esc(a.company) + '</span>' : '') + '</div>' +
-                '<span class="dash-activity-when">' + esc(when) + '</span></li>';
-            }).join('')
-            : '<p class="dash-activity-empty">No website users yet.</p>';
-        }
-      }
-      if (companyList) {
-        const rows = dashStaff.slice().sort(function (a, b) {
-          return String(b.created_at || '').localeCompare(String(a.created_at || ''));
-        }).slice(0, 8);
-        companyList.innerHTML = rows.length
-          ? rows.map(function (p) {
-            const who = p.name || p.email || 'Staff';
-            const role = p.roleName || staffRoleLabel(p.role);
-            const mine = currentAdminUser && String(p.id) === String(currentAdminUser.id);
-            const action = mine ? 'signed in as ' + role : 'joined as ' + role;
-            return '<li class="dash-activity-item">' +
-              '<span class="dash-activity-avatar dash-activity-avatar-company">' + esc(dashInitials(p.name, p.email)) + '</span>' +
-              '<div class="dash-activity-copy"><p><strong>' + esc(who) + '</strong> ' + esc(action) + '</p>' +
-              (p.email ? '<span>' + esc(p.email) + '</span>' : '') + '</div>' +
-              '<span class="dash-activity-when">' + esc(mine ? 'Now' : dashWhen(p.created_at)) + '</span></li>';
-          }).join('')
-          : '<p class="dash-activity-empty">No company users yet.</p>';
-      }
-    }
-
     async function loadDashboardHome() {
       document.querySelectorAll('#dash-home .dash-kpi').forEach(function (el) {
         el.classList.toggle('hidden', !canDashOverview(el.getAttribute('data-home')));
@@ -4297,9 +4224,6 @@
         dashCounts = Object.assign({}, dashCounts, data.counts || {});
         dashProducts = data.products || [];
         dashInventory = data.inventory || [];
-        dashAccounts = data.accounts || [];
-        dashAccountSource = data.source || '';
-        dashStaff = data.staff || [];
         dashCustomers = data.customers || [];
         dashSales = data.sales || [];
         dashVendors = data.vendors || [];
@@ -4308,9 +4232,6 @@
       } catch (err) {
         dashProducts = [];
         dashInventory = [];
-        dashAccounts = [];
-        dashAccountSource = '';
-        dashStaff = [];
         dashCustomers = [];
         dashSales = [];
         dashVendors = [];
@@ -4318,13 +4239,8 @@
         dashReceipts = [];
       }
       if (!canDashOverview(dashOverview)) dashOverview = firstDashOverview();
-      const webLink = document.querySelector('#dash-home .dash-activity-label a[href="/company/website/accounts"]');
-      if (webLink) webLink.classList.toggle('hidden', !canUse('website'));
-      const staffLink = document.querySelector('#dash-home .dash-activity-label a[href="/company/settings"]');
-      if (staffLink) staffLink.classList.toggle('hidden', !canUse('settings'));
       renderDashKpis();
       selectDashOverview(dashOverview);
-      renderDashActivity();
     }
 
     async function loadWebsiteCatalog() {
