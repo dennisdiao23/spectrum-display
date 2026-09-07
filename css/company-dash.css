@@ -4516,6 +4516,12 @@ body.chat-resizing * {
 .co-chat-send:hover {
   background: #2458d6;
 }
+.co-chat-send:disabled,
+.co-chat-composer.is-sending .co-chat-send {
+  opacity: 0.55;
+  cursor: default;
+  background: var(--dash-blue);
+}
 .co-chat-attach,
 .co-chat-link-btn {
   border: 1px solid #c9d3e4;
@@ -4872,6 +4878,9 @@ body.chat-splitting * {
 .co-chat-msg.is-pending .co-chat-msg-body {
   color: var(--dash-muted);
   font-style: italic;
+}
+.co-chat-msg.is-sending-msg {
+  opacity: 0.72;
 }
 .co-chat-draft-card {
   display: flex;

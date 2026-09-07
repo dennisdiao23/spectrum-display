@@ -22,6 +22,8 @@
     file: null,
     copilotPending: false,
     spectrumPending: false,
+    sending: false,
+    tempSeq: 0,
     aiName: 'Claude',
     users: [],
     unread: { total: 0, lobby: 0, direct: 0, orders: 0 },
@@ -34,13 +36,15 @@
       file: null,
       loaded: false,
       fetchGen: 0,
-      userKey: ''
+      userKey: '',
+      sending: false
     },
     soOrderId: null,
     soRoomId: null,
     soLastMsgId: 0,
     soFile: null,
     soMessages: [],
+    soSending: false,
     baseTitle: document.title || 'Company | Spectrum Display',
     booted: false,
     windowOpen: false,
@@ -534,6 +538,147 @@
     return new RegExp('(?:^|\\s)@(?:' + name + '|spectrum\\s+ai|copilot)\\b', 'i').test(' ' + String(text || ''));
   }
 
+  function isTempId(id) {
+    return String(id || '').indexOf('tmp-') === 0;
+  }
+
+  function maxMsgId(messages, fallback) {
+    return (messages || []).reduce(function (acc, x) {
+      var n = Number(x && x.id);
+      if (!isFinite(n) || n <= 0) return acc;
+      return n > acc ? n : acc;
+    }, fallback || 0);
+  }
+
+  function mergeMessages(existing, incoming) {
+    var out = [];
+    var seen = {};
+    function push(msg) {
+      if (!msg || msg.id == null || msg.id === '') return;
+      var key = String(msg.id);
+      if (seen[key] != null) {
+        var i = seen[key];
+        if (!isTempId(msg.id) || isTempId(out[i].id)) out[i] = msg;
+        return;
+      }
+      seen[key] = out.length;
+      out.push(msg);
+    }
+    (existing || []).forEach(push);
+    (incoming || []).forEach(push);
+    return out.filter(function (msg) {
+      if (!isTempId(msg.id)) return true;
+      return !out.some(function (other) {
+        return other !== msg && !isTempId(other.id) &&
+          String(other.body || '') === String(msg.body || '') &&
+          Number(other.userId) === Number(msg.userId);
+      });
+    });
+  }
+
+  function replaceTemp(list, tempId, real) {
+    var found = false;
+    var next = (list || []).map(function (m) {
+      if (String(m.id) === String(tempId)) {
+        found = true;
+        return real || m;
+      }
+      return m;
+    });
+    if (real && !found) next.push(real);
+    return mergeMessages(next, []);
+  }
+
+  function dropTemp(list, tempId) {
+    return (list || []).filter(function (m) { return String(m.id) !== String(tempId); });
+  }
+
+  function selfUser() {
+    var a = S.admin || {};
+    return {
+      id: a.id || null,
+      name: a.name || a.email || 'You',
+      email: a.email || '',
+      role: a.role || ''
+    };
+  }
+
+  function optimisticMessage(body, file, roomId) {
+    S.tempSeq = (S.tempSeq || 0) + 1;
+    var image = !!(file && file.type && String(file.type).indexOf('image/') === 0);
+    return {
+      id: 'tmp-' + Date.now() + '-' + S.tempSeq,
+      roomId: roomId,
+      userId: S.admin && S.admin.id,
+      user: selfUser(),
+      body: body,
+      attachmentUrl: null,
+      attachmentName: file ? (file.name || 'Attachment') : null,
+      attachmentType: file ? (image ? 'image' : 'file') : 'none',
+      createdAt: new Date().toISOString(),
+      editedAt: null,
+      isSystem: false,
+      isCopilot: false,
+      isSpectrumAi: false,
+      isDeleted: false,
+      isPending: true
+    };
+  }
+
+  function setComposerBusy(formId, busy) {
+    var form = $(formId);
+    if (!form) return;
+    form.classList.toggle('is-sending', !!busy);
+    var btn = form.querySelector('.co-chat-send');
+    if (btn) btn.disabled = !!busy;
+  }
+
+  function postChatMessage(roomId, body, file) {
+    var fd = new FormData();
+    fd.append('body', body);
+    if (file) fd.append('file', file);
+    return S.api('/api/admin/chat/rooms/' + roomId + '/messages', { method: 'POST', body: fd });
+  }
+
+  function appendOptimistic(temp, roomId) {
+    if (Number(S.roomId) === Number(roomId)) {
+      S.messages = mergeMessages(S.messages, [temp]);
+      if (S.windowOpen) renderMessages('co-chat-messages', S.messages);
+    }
+    if (Number(S.dash.roomId) === Number(roomId)) {
+      S.dash.messages = mergeMessages(S.dash.messages, [temp]);
+      renderDashMessages();
+    }
+    if (Number(S.soRoomId) === Number(roomId)) {
+      S.soMessages = mergeMessages(S.soMessages, [temp]);
+      renderMessages('so-chat-messages', S.soMessages);
+    }
+  }
+
+  function finishOptimistic(tempId, real, roomId) {
+    if (Number(S.roomId) === Number(roomId)) {
+      S.messages = real ? replaceTemp(S.messages, tempId, real) : dropTemp(S.messages, tempId);
+      S.lastMsgId = maxMsgId(S.messages, S.lastMsgId);
+      if (S.windowOpen) renderMessages('co-chat-messages', S.messages);
+    }
+    if (Number(S.dash.roomId) === Number(roomId)) {
+      S.dash.messages = real ? replaceTemp(S.dash.messages, tempId, real) : dropTemp(S.dash.messages, tempId);
+      S.dash.lastMsgId = maxMsgId(S.dash.messages, S.dash.lastMsgId);
+      renderDashMessages();
+    }
+    if (Number(S.soRoomId) === Number(roomId)) {
+      S.soMessages = real ? replaceTemp(S.soMessages, tempId, real) : dropTemp(S.soMessages, tempId);
+      S.soLastMsgId = maxMsgId(S.soMessages, S.soLastMsgId);
+      renderMessages('so-chat-messages', S.soMessages);
+    }
+  }
+
+  function restoreComposer(inputId, body) {
+    var el = $(inputId);
+    if (!el || el.value) return;
+    el.value = body || '';
+  }
+
   function roomTitle(room) {
     if (!room) return '';
     if (room.kind === 'dm' && room.otherUser) {
@@ -649,10 +794,16 @@
     }).join('');
   }
 
+  function hostWantsPending(hostId) {
+    if (hostId === 'co-chat-messages') return !!(S.copilotPending || S.spectrumPending);
+    if (hostId === 'dash-lobby-messages') return !!S.spectrumPending;
+    return false;
+  }
+
   function renderMessages(hostId, messages) {
     var host = $(hostId);
     if (!host) return;
-    if (!messages.length && !(hostId === 'co-chat-messages' && (S.copilotPending || S.spectrumPending))) {
+    if (!messages.length && !hostWantsPending(hostId)) {
       host.innerHTML = '<p class="co-chat-empty">No messages yet.</p>';
       return;
     }
@@ -684,25 +835,28 @@
           attach = '<div class="co-chat-attach-file"><a href="' + esc(msg.attachmentUrl) +
             '" target="_blank" rel="noopener">' + esc(msg.attachmentName || 'Attachment') + '</a></div>';
         }
+      } else if (msg.attachmentName) {
+        attach = '<div class="co-chat-attach-file">' + esc(msg.attachmentName) + '</div>';
       }
-      var actions = mine
+      var actions = mine && !msg.isPending
         ? '<span class="co-chat-msg-actions"><button type="button" data-chat-del="' + msg.id + '">Remove</button></span>'
         : '';
-      return '<div class="co-chat-msg' + (mine ? ' is-mine' : '') + '" data-msg-id="' + msg.id + '">' +
+      return '<div class="co-chat-msg' + (mine ? ' is-mine' : '') + (msg.isPending ? ' is-sending-msg' : '') +
+        '" data-msg-id="' + msg.id + '">' +
         '<div class="co-chat-msg-meta"><strong>' + esc(name) + '</strong><span>' +
         esc(fmtTime(msg.createdAt)) + (msg.editedAt ? ' · edited' : '') + '</span>' + actions + '</div>' +
         (msg.body ? '<div class="co-chat-msg-body">' + linkify(msg.body) + '</div>' : '') +
         attach + '</div>';
-    }).join('') + (hostId === 'co-chat-messages' ? pendingHtml() : '');
+    }).join('') + pendingHtml(hostId);
     host.scrollTop = host.scrollHeight;
   }
 
-  function pendingHtml() {
-    if (S.copilotPending) {
+  function pendingHtml(hostId) {
+    if (hostId === 'co-chat-messages' && S.copilotPending) {
       return '<div class="co-chat-msg is-copilot is-pending"><div class="co-chat-msg-meta"><strong>' + esc(aiName()) + '</strong></div>' +
         '<div class="co-chat-msg-body">Working on a draft…</div></div>';
     }
-    if (S.spectrumPending) {
+    if ((hostId === 'co-chat-messages' || hostId === 'dash-lobby-messages') && S.spectrumPending) {
       return '<div class="co-chat-msg is-spectrum-ai is-pending"><div class="co-chat-msg-meta"><strong>' + esc(aiName()) + '</strong></div>' +
         '<div class="co-chat-msg-body">Thinking…</div></div>';
     }
@@ -756,7 +910,7 @@
     var data = await S.api('/api/admin/chat/rooms/' + S.roomId + '/messages?limit=100');
     S.room = data.room;
     S.messages = data.messages || [];
-    S.lastMsgId = S.messages.reduce(function (m, x) { return Math.max(m, Number(x.id) || 0); }, 0);
+    S.lastMsgId = maxMsgId(S.messages, 0);
     if (S.room && S.room.kind === 'copilot') {
       var hasCopilot = S.messages.some(function (m) {
         return m.isCopilot && Number(m.id) === S.lastMsgId;
@@ -801,6 +955,7 @@
   }
 
   async function sendPayload(body, file) {
+    if (S.sending) return;
     if (!S.roomId) {
       await loadRooms();
       if (S.rooms[0]) await openRoom(S.rooms[0].id);
@@ -808,23 +963,35 @@
     if (!S.roomId) throw new Error('Open a chat first.');
     body = String(body || '').trim();
     if (!body && !file) return;
-    var fd = new FormData();
-    fd.append('body', body);
-    if (file) fd.append('file', file);
-    await S.api('/api/admin/chat/rooms/' + S.roomId + '/messages', { method: 'POST', body: fd });
+    S.sending = true;
+    setComposerBusy('co-chat-composer', true);
+    var roomId = S.roomId;
+    var kind = S.room && S.room.kind;
+    var temp = optimisticMessage(body, file, roomId);
+    var heldFile = file;
     if ($('co-chat-input')) $('co-chat-input').value = '';
     clearFile();
-    if (S.room && S.room.kind === 'copilot') S.copilotPending = true;
-    if (S.room && S.room.kind === 'lobby' && mentionsAi(body)) S.spectrumPending = true;
-    await openRoom(S.roomId);
-    await loadRooms();
-    if (Number(S.roomId) === Number(S.dash.roomId)) {
-      await loadDashLobby(true);
+    if (kind === 'copilot') S.copilotPending = true;
+    if (kind === 'lobby' && mentionsAi(body)) S.spectrumPending = true;
+    appendOptimistic(temp, roomId);
+    try {
+      var data = await postChatMessage(roomId, body, heldFile);
+      finishOptimistic(temp.id, data && data.message, roomId);
+    } catch (err) {
+      finishOptimistic(temp.id, null, roomId);
+      if (kind === 'copilot') S.copilotPending = false;
+      if (kind === 'lobby') S.spectrumPending = false;
+      restoreComposer('co-chat-input', body);
+      throw err;
+    } finally {
+      S.sending = false;
+      setComposerBusy('co-chat-composer', false);
     }
   }
 
   async function sendMain(ev) {
     ev.preventDefault();
+    if (S.sending) return;
     var body = String(($('co-chat-input') && $('co-chat-input').value) || '').trim();
     if (!body && !S.file) return;
     await sendPayload(body, S.file);
@@ -836,8 +1003,13 @@
       var data = await S.api('/api/admin/chat/rooms/' + S.roomId + '/messages?afterId=' + S.lastMsgId + '&limit=50');
       var msgs = data.messages || [];
       if (!msgs.length) return;
-      S.messages = S.messages.concat(msgs);
-      S.lastMsgId = S.messages.reduce(function (m, x) { return Math.max(m, Number(x.id) || 0); }, S.lastMsgId);
+      S.messages = mergeMessages(S.messages, msgs);
+      S.lastMsgId = maxMsgId(S.messages, S.lastMsgId);
+      if (Number(S.dash.roomId) === Number(S.roomId)) {
+        S.dash.messages = mergeMessages(S.dash.messages, msgs);
+        S.dash.lastMsgId = maxMsgId(S.dash.messages, S.dash.lastMsgId);
+        renderDashMessages();
+      }
       if (S.room && S.room.kind === 'copilot' && msgs.some(function (m) { return m.isCopilot; })) {
         S.copilotPending = false;
       }
@@ -846,7 +1018,6 @@
       }
       renderMessages('co-chat-messages', S.messages);
       await S.api('/api/admin/chat/rooms/' + S.roomId + '/read', { method: 'POST' });
-      loadRooms();
       refreshUnread();
     } catch (e) { /* ignore */ }
   }
@@ -912,7 +1083,7 @@
     $('so-chat-sub').textContent = roomSub(data.room);
     var msgs = await S.api('/api/admin/chat/rooms/' + S.soRoomId + '/messages?limit=100');
     S.soMessages = msgs.messages || [];
-    S.soLastMsgId = S.soMessages.reduce(function (m, x) { return Math.max(m, Number(x.id) || 0); }, 0);
+    S.soLastMsgId = maxMsgId(S.soMessages, 0);
     renderMessages('so-chat-messages', S.soMessages);
     try { await S.api('/api/admin/chat/rooms/' + S.soRoomId + '/read', { method: 'POST' }); } catch (e) { /* ignore */ }
     var tab = $('so-chat-tab');
@@ -928,8 +1099,8 @@
         var data = await S.api('/api/admin/chat/rooms/' + S.soRoomId + '/messages?afterId=' + S.soLastMsgId + '&limit=50');
         var msgs = data.messages || [];
         if (!msgs.length) return;
-        S.soMessages = S.soMessages.concat(msgs);
-        S.soLastMsgId = S.soMessages.reduce(function (m, x) { return Math.max(m, Number(x.id) || 0); }, S.soLastMsgId);
+        S.soMessages = mergeMessages(S.soMessages, msgs);
+        S.soLastMsgId = maxMsgId(S.soMessages, S.soLastMsgId);
         renderMessages('so-chat-messages', S.soMessages);
         await S.api('/api/admin/chat/rooms/' + S.soRoomId + '/read', { method: 'POST' });
       } catch (e) { /* ignore */ }
@@ -938,21 +1109,33 @@
 
   async function sendSo(ev) {
     ev.preventDefault();
-    if (!S.soRoomId) return;
+    if (S.soSending || !S.soRoomId) return;
     var body = String(($('so-chat-input') && $('so-chat-input').value) || '').trim();
     if (!body && !S.soFile) return;
-    var fd = new FormData();
-    fd.append('body', body);
-    if (S.soFile) fd.append('file', S.soFile);
-    await S.api('/api/admin/chat/rooms/' + S.soRoomId + '/messages', { method: 'POST', body: fd });
-    $('so-chat-input').value = '';
+    S.soSending = true;
+    setComposerBusy('so-chat-composer', true);
+    var roomId = S.soRoomId;
+    var heldFile = S.soFile;
+    var temp = optimisticMessage(body, heldFile, roomId);
+    if ($('so-chat-input')) $('so-chat-input').value = '';
     S.soFile = null;
     if ($('so-chat-file')) $('so-chat-file').value = '';
     if ($('so-chat-attach-name')) {
       $('so-chat-attach-name').hidden = true;
       $('so-chat-attach-name').textContent = '';
     }
-    await openOrderChat(S.soOrderId);
+    appendOptimistic(temp, roomId);
+    try {
+      var data = await postChatMessage(roomId, body, heldFile);
+      finishOptimistic(temp.id, data && data.message, roomId);
+    } catch (err) {
+      finishOptimistic(temp.id, null, roomId);
+      restoreComposer('so-chat-input', body);
+      throw err;
+    } finally {
+      S.soSending = false;
+      setComposerBusy('so-chat-composer', false);
+    }
   }
 
   function plusMenu() { return $('co-chat-plus-menu'); }
@@ -1118,6 +1301,7 @@
       if (mentionOpen()) return;
       if (ev.key === 'Enter' && !ev.shiftKey) {
         ev.preventDefault();
+        if (S.sending) return;
         $('co-chat-composer').requestSubmit();
       }
     });
@@ -1204,6 +1388,7 @@
       $('so-chat-input').addEventListener('keydown', function (ev) {
         if (ev.key === 'Enter' && !ev.shiftKey) {
           ev.preventDefault();
+          if (S.soSending) return;
           $('so-chat-composer').requestSubmit();
         }
       });
@@ -1324,19 +1509,22 @@
   function renderDashMessages() {
     var host = $('dash-lobby-messages');
     if (!host) return;
-    if (!S.dash.messages.length) {
+    if (!S.dash.messages.length && !S.spectrumPending) {
       host.innerHTML = '<p class="co-chat-empty">No messages yet. Team chat and staff sign-ins show up here.</p>';
       return;
     }
     renderMessages('dash-lobby-messages', S.dash.messages);
   }
 
-  async function loadDashLobby(full) {
+  async function loadDashLobby(full, extra) {
     var root = $('dash-lobby');
     if (!root || !S.api) return;
+    extra = extra || {};
     var gen = (S.dash.fetchGen = (S.dash.fetchGen || 0) + 1);
     var url = '/api/admin/chat/lobby?limit=100';
     if (!full && S.dash.lastMsgId) url += '&afterId=' + S.dash.lastMsgId;
+    if (full || extra.users) url += '&users=1';
+    else url += '&users=0';
     var data;
     try {
       data = await S.api(url);
@@ -1347,27 +1535,36 @@
     }
     if (gen !== S.dash.fetchGen) return;
     S.dash.roomId = data.room && data.room.id;
-    S.dash.users = data.users || [];
+    if (Array.isArray(data.users)) S.dash.users = data.users;
     if (data.aiName) setAiName(data.aiName);
     var msgs = data.messages || [];
+    var temps = (S.dash.messages || []).filter(function (m) { return isTempId(m.id); });
     if (full || !S.dash.lastMsgId) {
-      S.dash.messages = msgs;
+      S.dash.messages = mergeMessages(msgs, temps);
     } else if (msgs.length) {
-      S.dash.messages = S.dash.messages.concat(msgs);
+      S.dash.messages = mergeMessages(S.dash.messages, msgs);
     }
-    S.dash.lastMsgId = S.dash.messages.reduce(function (m, x) {
-      return Math.max(m, Number(x.id) || 0);
-    }, S.dash.lastMsgId || 0);
+    S.dash.lastMsgId = maxMsgId(S.dash.messages, S.dash.lastMsgId || 0);
+    if (S.spectrumPending && (S.dash.messages || []).some(function (m) { return m.isSpectrumAi; })) {
+      S.spectrumPending = false;
+    }
     S.dash.loaded = true;
-    var userKey = JSON.stringify((S.dash.users || []).map(function (u) {
-      return [u.id, u.state, u.name, u.roleName];
-    }));
-    if (full || S.dash.userKey !== userKey) {
-      S.dash.userKey = userKey;
-      var menu = $('dash-lobby-status-menu');
-      if (!menu || menu.hidden) renderDashUsers();
+    if (S.windowOpen && Number(S.roomId) === Number(S.dash.roomId) && msgs.length) {
+      S.messages = mergeMessages(S.messages, msgs);
+      S.lastMsgId = maxMsgId(S.messages, S.lastMsgId);
+      renderMessages('co-chat-messages', S.messages);
     }
-    if (full || msgs.length || !S.dash.messages.length) renderDashMessages();
+    if (Array.isArray(data.users)) {
+      var userKey = JSON.stringify((S.dash.users || []).map(function (u) {
+        return [u.id, u.state, u.name, u.roleName];
+      }));
+      if (full || extra.users || S.dash.userKey !== userKey) {
+        S.dash.userKey = userKey;
+        var menu = $('dash-lobby-status-menu');
+        if (!menu || menu.hidden) renderDashUsers();
+      }
+    }
+    if (full || msgs.length || !S.dash.messages.length || S.spectrumPending) renderDashMessages();
     syncDashComposer();
     if (hasChat() && S.dash.roomId && (full || msgs.length)) {
       try { await S.api('/api/admin/chat/rooms/' + S.dash.roomId + '/read', { method: 'POST' }); } catch (e) { /* ignore */ }
@@ -1390,21 +1587,31 @@
 
   async function sendDashLobby(ev) {
     ev.preventDefault();
-    if (!hasChat()) return;
+    if (!hasChat() || S.dash.sending) return;
     if (!S.dash.roomId) await loadDashLobby(true);
     if (!S.dash.roomId) throw new Error('Lobby is not ready yet.');
     var body = String(($('dash-lobby-input') && $('dash-lobby-input').value) || '').trim();
     if (!body && !S.dash.file) return;
-    var fd = new FormData();
-    fd.append('body', body);
-    if (S.dash.file) fd.append('file', S.dash.file);
-    await S.api('/api/admin/chat/rooms/' + S.dash.roomId + '/messages', { method: 'POST', body: fd });
+    S.dash.sending = true;
+    setComposerBusy('dash-lobby-composer', true);
+    var roomId = S.dash.roomId;
+    var heldFile = S.dash.file;
+    var temp = optimisticMessage(body, heldFile, roomId);
     if ($('dash-lobby-input')) $('dash-lobby-input').value = '';
     clearDashFile();
     if (mentionsAi(body)) S.spectrumPending = true;
-    await loadDashLobby(true);
-    if (S.windowOpen && Number(S.roomId) === Number(S.dash.roomId)) {
-      await openRoom(S.roomId);
+    appendOptimistic(temp, roomId);
+    try {
+      var data = await postChatMessage(roomId, body, heldFile);
+      finishOptimistic(temp.id, data && data.message, roomId);
+    } catch (err) {
+      finishOptimistic(temp.id, null, roomId);
+      S.spectrumPending = false;
+      restoreComposer('dash-lobby-input', body);
+      throw err;
+    } finally {
+      S.dash.sending = false;
+      setComposerBusy('dash-lobby-composer', false);
     }
   }
 
@@ -1423,7 +1630,7 @@
       body: JSON.stringify({ status: status, active: true })
     });
     setStatusMenuOpen(false);
-    await loadDashLobby(false);
+    await loadDashLobby(false, { users: true });
   }
 
   function touchPresence(active) {
@@ -1568,23 +1775,27 @@
       if (!mentionOpen()) return;
       if (ev.key === 'ArrowDown') {
         ev.preventDefault();
+        ev.stopImmediatePropagation();
         mentionState.index = (mentionState.index + 1) % mentionState.items.length;
         renderMentionMenu();
         return;
       }
       if (ev.key === 'ArrowUp') {
         ev.preventDefault();
+        ev.stopImmediatePropagation();
         mentionState.index = (mentionState.index - 1 + mentionState.items.length) % mentionState.items.length;
         renderMentionMenu();
         return;
       }
       if (ev.key === 'Enter' || ev.key === 'Tab') {
         ev.preventDefault();
+        ev.stopImmediatePropagation();
         insertMention(mentionState.items[mentionState.index]);
         return;
       }
       if (ev.key === 'Escape') {
         ev.preventDefault();
+        ev.stopImmediatePropagation();
         hideMentionMenu();
       }
     });
@@ -1607,6 +1818,7 @@
         if (mentionOpen()) return;
         if (ev.key === 'Enter' && !ev.shiftKey) {
           ev.preventDefault();
+          if (S.dash.sending) return;
           form.requestSubmit();
         }
       });
@@ -1690,7 +1902,6 @@
     S.openSharePath = typeof opts.openSharePath === 'function' ? opts.openSharePath : null;
     if (typeof opts.esc === 'function') S.esc = opts.esc;
     bindDashLobby();
-    bindMentionComposer($('co-chat-input'));
     var mentionMenu = mentionMenuEl();
     if (mentionMenu) {
       mentionMenu.addEventListener('mousedown', function (ev) {
@@ -1716,7 +1927,7 @@
     S.timers.presence = setInterval(function () {
       if (document.hidden) return;
       touchPresence(false);
-      pollDashLobby();
+      loadDashLobby(false, { users: true }).catch(function () {});
       if (!hasChat()) return;
       var ids = S.rooms.filter(function (r) { return r.kind === 'dm' && r.otherUser; })
         .map(function (r) { return r.otherUser.id; });

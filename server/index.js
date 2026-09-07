@@ -1136,7 +1136,8 @@ async function main() {
     try {
       const data = await store.getLobbyChat(req.admin, {
         afterId: req.query.afterId || req.query.after_id,
-        limit: req.query.limit
+        limit: req.query.limit,
+        users: req.query.users
       });
       res.json(Object.assign({ ok: true }, data));
     } catch (err) { next(err); }

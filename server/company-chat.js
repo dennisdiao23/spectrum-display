@@ -207,6 +207,13 @@ function recentlyAnnounced(createdAt) {
   return isFinite(t) && Date.now() - t < LOBBY_ANNOUNCE_MS;
 }
 
+function includeLobbyUsers(opts) {
+  const flag = opts && opts.users;
+  if (flag === false || flag === '0' || flag === 0) return false;
+  if (flag === true || flag === '1' || flag === 1) return true;
+  return true;
+}
+
 function formatRoom(row, extras) {
   if (!row) return null;
   const extra = extras || {};
@@ -1078,14 +1085,20 @@ function sqliteApi(db) {
       if (!lobbyRow) return { room: null, messages: [], users: [] };
       try { ensureReadRow(admin.id, lobbyRow.id); } catch (e) { /* ignore */ }
       let data = { room: null, messages: [] };
-      let users = [];
       try {
         data = await this.listChatMessages(admin, lobbyRow.id, opts);
       } catch (e) { console.error('lobby messages', e); }
-      try {
-        users = await this.listLobbyUsers(admin);
-      } catch (e) { console.error('lobby users', e); }
-      return { room: data.room, messages: data.messages || [], users: users, aiName: peekAiName() };
+      const out = {
+        room: data.room,
+        messages: data.messages || [],
+        aiName: peekAiName()
+      };
+      if (includeLobbyUsers(opts)) {
+        try {
+          out.users = await this.listLobbyUsers(admin);
+        } catch (e) { console.error('lobby users', e); }
+      }
+      return out;
     },
 
     async listLobbyUsers(admin) {
@@ -2042,14 +2055,20 @@ function supabaseApi(supabase) {
       if (!lobbyRow) return { room: null, messages: [], users: [] };
       try { await ensureReadRow(admin.id, lobbyRow.id); } catch (e) { /* ignore */ }
       let data = { room: null, messages: [] };
-      let users = [];
       try {
         data = await this.listChatMessages(admin, lobbyRow.id, opts);
       } catch (e) { console.error('lobby messages', e); }
-      try {
-        users = await this.listLobbyUsers(admin);
-      } catch (e) { console.error('lobby users', e); }
-      return { room: data.room, messages: data.messages || [], users: users, aiName: peekAiName() };
+      const out = {
+        room: data.room,
+        messages: data.messages || [],
+        aiName: peekAiName()
+      };
+      if (includeLobbyUsers(opts)) {
+        try {
+          out.users = await this.listLobbyUsers(admin);
+        } catch (e) { console.error('lobby users', e); }
+      }
+      return out;
     },
 
     async listLobbyUsers(admin) {
