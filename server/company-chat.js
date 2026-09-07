@@ -732,7 +732,7 @@ function sqliteApi(db) {
     const ids = (roomIds || []).map(Number).filter(Boolean);
     if (!ids.length) return {};
     const placeholders = ids.map(function () { return '?'; }).join(',');
-    return unreadMapFromRows(db.prepare(`
+    const sql = `
       SELECT m.room_id AS room_id, COUNT(*) AS n
       FROM chat_messages m
       LEFT JOIN chat_room_reads rd ON rd.room_id = m.room_id AND rd.user_id = ?
@@ -741,7 +741,9 @@ function sqliteApi(db) {
         AND (m.user_id IS NULL OR m.user_id != ?)
         AND m.created_at > COALESCE(rd.last_read_at, '1970-01-01')
       GROUP BY m.room_id
-    `).all.apply(null, [viewerId].concat(ids, [viewerId])));
+    `;
+    const args = [viewerId].concat(ids, [viewerId]);
+    return unreadMapFromRows(db.prepare(sql).all(...args));
   }
 
   function loadStaffUserMap() {
