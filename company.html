@@ -593,7 +593,7 @@
               <button type="button" data-inv-filter="all" class="inv-filter px-3 py-1.5 rounded-full text-xs font-medium bg-sky-500/20 text-sky-300">All</button>
               <button type="button" data-inv-filter="low" class="inv-filter px-3 py-1.5 rounded-full text-xs font-medium text-slate-400 hover:text-white">Low</button>
               <button type="button" data-inv-filter="out" class="inv-filter px-3 py-1.5 rounded-full text-xs font-medium text-slate-400 hover:text-white">Out</button>
-              <button type="button" data-inv-filter="unmapped" class="inv-filter px-3 py-1.5 rounded-full text-xs font-medium text-slate-400 hover:text-white">Not on website</button>
+              <button type="button" data-inv-filter="inactive" class="inv-filter px-3 py-1.5 rounded-full text-xs font-medium text-slate-400 hover:text-white">Inactive</button>
             </div>
             <button id="inv-new-btn" type="button" class="cc-list-add-btn px-4 py-2 rounded-full bg-sky-500 hover:bg-sky-400 text-white text-sm font-semibold">Add inventory item</button>
           </div>
@@ -6463,9 +6463,13 @@
     function renderInventoryTable() {
       const q = (document.getElementById('inv-search').value || '').trim().toLowerCase();
       const rows = inventoryItems.filter(function (item) {
+        if (inventoryFilter === 'inactive') {
+          if (!invIsInactive(item)) return false;
+        } else if (invIsInactive(item)) {
+          return false;
+        }
         if (inventoryFilter === 'low' && item.status !== 'low') return false;
         if (inventoryFilter === 'out' && item.status !== 'out') return false;
-        if (inventoryFilter === 'unmapped' && item.maps && item.maps.length) return false;
         if (q) {
           const blob = ((item.sku || '') + ' ' + (item.name || '') + ' ' + (item.brandName || '') + ' ' + (item.pitchLabel || '') + ' ' + (item.description || '') + ' ' + (item.warehouse || '') + ' ' + (item.bin || '')).toLowerCase();
           if (blob.indexOf(q) === -1) return false;
@@ -7556,10 +7560,11 @@
     }
 
     function fillInvOverview() {
-      const low = inventoryItems.filter(function (i) { return i.status === 'low'; }).length;
-      const out = inventoryItems.filter(function (i) { return i.status === 'out'; }).length;
+      const active = inventoryItems.filter(function (i) { return !invIsInactive(i); });
+      const low = active.filter(function (i) { return i.status === 'low'; }).length;
+      const out = active.filter(function (i) { return i.status === 'out'; }).length;
       const poOpen = (purchaseOrders || []).filter(function (d) { return (d.status || 'open') === 'open'; }).length;
-      setText('inv-stat-skus', inventoryItems.length);
+      setText('inv-stat-skus', active.length);
       setText('inv-stat-low', low);
       setText('inv-stat-out', out);
       setText('inv-stat-po', poOpen);
