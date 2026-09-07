@@ -25,6 +25,16 @@
     users: [],
     unread: { total: 0, lobby: 0, direct: 0, orders: 0 },
     presence: {},
+    dash: {
+      roomId: null,
+      messages: [],
+      lastMsgId: 0,
+      users: [],
+      file: null,
+      loaded: false,
+      fetchGen: 0,
+      userKey: ''
+    },
     soOrderId: null,
     soRoomId: null,
     soLastMsgId: 0,
@@ -47,6 +57,61 @@
 
   function $(id) { return document.getElementById(id); }
   function esc(v) { return S.esc(v); }
+
+  function asPresence(raw) {
+    if (!raw) return null;
+    if (typeof raw === 'string') {
+      return { lastSeenAt: raw, lastActiveAt: raw, status: 'online' };
+    }
+    return {
+      lastSeenAt: raw.lastSeenAt || raw.last_seen_at || null,
+      lastActiveAt: raw.lastActiveAt || raw.last_active_at || raw.lastSeenAt || raw.last_seen_at || null,
+      status: raw.status || 'online'
+    };
+  }
+
+  function presenceState(raw) {
+    var p = asPresence(raw);
+    if (!p || !p.lastSeenAt) return 'offline';
+    var seen = new Date(p.lastSeenAt).getTime();
+    if (!isFinite(seen) || Date.now() - seen >= 70000) return 'offline';
+    if (p.status === 'busy') return 'busy';
+    if (p.status === 'away') return 'away';
+    var active = new Date(p.lastActiveAt || p.lastSeenAt).getTime();
+    if (isFinite(active) && Date.now() - active >= 5 * 60 * 1000) return 'away';
+    return 'online';
+  }
+
+  function statusLabel(state) {
+    if (state === 'online') return 'Online';
+    if (state === 'away') return 'Away';
+    if (state === 'busy') return 'Busy';
+    return 'Offline';
+  }
+
+  function initials(name, email) {
+    var bits = String(name || email || '?').trim().split(/\s+/);
+    var letters = (bits[0] || '?').charAt(0) + (bits[1] ? bits[1].charAt(0) : '');
+    return letters.toUpperCase();
+  }
+
+  function setStatusMenuOpen(open, anchor) {
+    var menu = $('dash-lobby-status-menu');
+    var panel = $('dash-lobby');
+    if (!menu || !panel) return;
+    menu.hidden = !open;
+    panel.querySelectorAll('.dash-lobby-user.is-open').forEach(function (el) {
+      el.classList.remove('is-open');
+    });
+    if (!open || !anchor) return;
+    anchor.classList.add('is-open');
+    var panelBox = panel.getBoundingClientRect();
+    var box = anchor.getBoundingClientRect();
+    var top = box.bottom - panelBox.top + 4;
+    var left = box.left - panelBox.left;
+    menu.style.top = top + 'px';
+    menu.style.left = Math.max(8, Math.min(left, panelBox.width - 150)) + 'px';
+  }
 
   function hasChat() {
     try { return !!(S.canUse && S.canUse('chat')); } catch (e) { return false; }
@@ -517,9 +582,9 @@
       if (Number(room.unreadCount) > 0) on += ' is-unread';
       var presence = '';
       var other = room.otherUser;
-      if (room.kind === 'dm' && other && S.presence[other.id]) {
-        var seen = new Date(S.presence[other.id]).getTime();
-        if (Date.now() - seen < 70000) presence = '<span class="co-chat-presence" title="Online"></span>';
+      if (room.kind === 'dm' && other) {
+        var state = presenceState(S.presence[other.id]);
+        presence = '<span class="co-chat-presence is-' + state + '" title="' + esc(statusLabel(state)) + '"></span>';
       }
       var title = roomTitle(room);
       var key = room.id
@@ -709,6 +774,9 @@
     if (S.room && S.room.kind === 'lobby' && /@spectrum\s*ai\b/i.test(body)) S.spectrumPending = true;
     await openRoom(S.roomId);
     await loadRooms();
+    if (Number(S.roomId) === Number(S.dash.roomId)) {
+      await loadDashLobby(true);
+    }
   }
 
   async function sendMain(ev) {
@@ -1160,6 +1228,226 @@
     });
   }
 
+  function syncDashComposer() {
+    var form = $('dash-lobby-composer');
+    var note = $('dash-lobby-nochat');
+    var attachName = $('dash-lobby-attach-name');
+    var canSend = hasChat();
+    if (form) form.hidden = !canSend;
+    if (attachName && !canSend) attachName.hidden = true;
+    if (note) note.hidden = canSend;
+  }
+
+  function renderDashUsers() {
+    var host = $('dash-lobby-users');
+    if (!host) return;
+    var users = S.dash.users || [];
+    if (!users.length) {
+      host.innerHTML = '<p class="dash-lobby-empty">No company users yet.</p>';
+      return;
+    }
+    host.innerHTML = users.map(function (user) {
+      var state = user.state || presenceState(user.presence);
+      var name = user.name || user.email || 'Staff';
+      var role = user.roleName || user.role || '';
+      var self = !!user.isSelf;
+      var cls = 'dash-lobby-user' + (self ? ' is-self' : '');
+      return '<button type="button" class="' + cls + '" data-lobby-user="' + esc(user.id) + '"' +
+        (self ? ' aria-haspopup="menu"' : '') + '>' +
+        '<span class="dash-lobby-avatar">' + esc(initials(user.name, user.email)) +
+        '<span class="dash-lobby-dot is-' + state + '" title="' + esc(statusLabel(state)) + '"></span></span>' +
+        '<span class="dash-lobby-user-copy"><strong>' + esc(self ? 'You' : name) + '</strong>' +
+        '<em>' + esc([role, statusLabel(state)].filter(Boolean).join(' · ')) + '</em></span></button>';
+    }).join('');
+  }
+
+  function renderDashMessages() {
+    var host = $('dash-lobby-messages');
+    if (!host) return;
+    if (!S.dash.messages.length) {
+      host.innerHTML = '<p class="co-chat-empty">No messages yet. Team chat and staff sign-ins show up here.</p>';
+      return;
+    }
+    renderMessages('dash-lobby-messages', S.dash.messages);
+  }
+
+  async function loadDashLobby(full) {
+    var root = $('dash-lobby');
+    if (!root || !S.api) return;
+    var gen = (S.dash.fetchGen = (S.dash.fetchGen || 0) + 1);
+    var url = '/api/admin/chat/lobby?limit=100';
+    if (!full && S.dash.lastMsgId) url += '&afterId=' + S.dash.lastMsgId;
+    var data = await S.api(url);
+    if (gen !== S.dash.fetchGen) return;
+    S.dash.roomId = data.room && data.room.id;
+    S.dash.users = data.users || [];
+    var msgs = data.messages || [];
+    if (full || !S.dash.lastMsgId) {
+      S.dash.messages = msgs;
+    } else if (msgs.length) {
+      S.dash.messages = S.dash.messages.concat(msgs);
+    }
+    S.dash.lastMsgId = S.dash.messages.reduce(function (m, x) {
+      return Math.max(m, Number(x.id) || 0);
+    }, S.dash.lastMsgId || 0);
+    S.dash.loaded = true;
+    var userKey = JSON.stringify((S.dash.users || []).map(function (u) {
+      return [u.id, u.state, u.name, u.roleName];
+    }));
+    if (full || S.dash.userKey !== userKey) {
+      S.dash.userKey = userKey;
+      var menu = $('dash-lobby-status-menu');
+      if (!menu || menu.hidden) renderDashUsers();
+    }
+    if (full || msgs.length || !S.dash.messages.length) renderDashMessages();
+    syncDashComposer();
+    if (hasChat() && S.dash.roomId && (full || msgs.length)) {
+      try { await S.api('/api/admin/chat/rooms/' + S.dash.roomId + '/read', { method: 'POST' }); } catch (e) { /* ignore */ }
+    }
+  }
+
+  async function pollDashLobby() {
+    if (document.hidden || !S.dash.loaded) return;
+    try { await loadDashLobby(false); } catch (e) { /* ignore */ }
+  }
+
+  function clearDashFile() {
+    S.dash.file = null;
+    if ($('dash-lobby-file')) $('dash-lobby-file').value = '';
+    if ($('dash-lobby-attach-name')) {
+      $('dash-lobby-attach-name').hidden = true;
+      $('dash-lobby-attach-name').textContent = '';
+    }
+  }
+
+  async function sendDashLobby(ev) {
+    ev.preventDefault();
+    if (!hasChat()) return;
+    if (!S.dash.roomId) await loadDashLobby(true);
+    if (!S.dash.roomId) throw new Error('Lobby is not ready yet.');
+    var body = String(($('dash-lobby-input') && $('dash-lobby-input').value) || '').trim();
+    if (!body && !S.dash.file) return;
+    var fd = new FormData();
+    fd.append('body', body);
+    if (S.dash.file) fd.append('file', S.dash.file);
+    await S.api('/api/admin/chat/rooms/' + S.dash.roomId + '/messages', { method: 'POST', body: fd });
+    if ($('dash-lobby-input')) $('dash-lobby-input').value = '';
+    clearDashFile();
+    await loadDashLobby(true);
+    if (S.windowOpen && Number(S.roomId) === Number(S.dash.roomId)) {
+      await openRoom(S.roomId);
+    }
+  }
+
+  async function setMyStatus(status) {
+    S.dash.fetchGen = (S.dash.fetchGen || 0) + 1;
+    (S.dash.users || []).forEach(function (user) {
+      if (!user.isSelf) return;
+      user.state = status;
+      user.presence = Object.assign({}, user.presence || {}, { status: status, lastSeenAt: new Date().toISOString(), lastActiveAt: new Date().toISOString() });
+    });
+    S.dash.userKey = '';
+    renderDashUsers();
+    await S.api('/api/admin/chat/presence', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ status: status, active: true })
+    });
+    setStatusMenuOpen(false);
+    await loadDashLobby(false);
+  }
+
+  function touchPresence(active) {
+    if (!S.api || !S.admin) return;
+    var payload = active ? { active: true } : {};
+    S.api('/api/admin/chat/presence', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    }).catch(function () {});
+  }
+
+  function bindDashLobby() {
+    var form = $('dash-lobby-composer');
+    if (!form) return;
+    form.addEventListener('submit', function (ev) {
+      sendDashLobby(ev).catch(function (err) { alert(err.message || 'Could not send.'); });
+    });
+    var input = $('dash-lobby-input');
+    if (input) {
+      input.addEventListener('keydown', function (ev) {
+        if (ev.key === 'Enter' && !ev.shiftKey) {
+          ev.preventDefault();
+          form.requestSubmit();
+        }
+      });
+    }
+    var attach = $('dash-lobby-attach');
+    var file = $('dash-lobby-file');
+    if (attach && file) {
+      attach.addEventListener('click', function () { file.click(); });
+      file.addEventListener('change', function () {
+        S.dash.file = file.files && file.files[0];
+        if (S.dash.file) {
+          $('dash-lobby-attach-name').hidden = false;
+          $('dash-lobby-attach-name').textContent = S.dash.file.name;
+        } else clearDashFile();
+      });
+    }
+    var users = $('dash-lobby-users');
+    if (users) {
+      users.addEventListener('click', function (ev) {
+        var btn = ev.target.closest('[data-lobby-user]');
+        if (!btn) return;
+        var id = btn.getAttribute('data-lobby-user');
+        var user = (S.dash.users || []).find(function (u) { return String(u.id) === String(id); });
+        if (!user || !user.isSelf) return;
+        var menu = $('dash-lobby-status-menu');
+        var open = menu && menu.hidden;
+        setStatusMenuOpen(open, btn);
+      });
+    }
+    var menu = $('dash-lobby-status-menu');
+    if (menu) {
+      menu.addEventListener('click', function (ev) {
+        var item = ev.target.closest('[data-lobby-status]');
+        if (!item) return;
+        setMyStatus(item.getAttribute('data-lobby-status')).catch(function (err) {
+          alert(err.message || 'Could not update status.');
+        });
+      });
+    }
+    var msgs = $('dash-lobby-messages');
+    if (msgs) {
+      msgs.addEventListener('click', function (ev) {
+        var del = ev.target.closest('[data-chat-del]');
+        if (del) {
+          S.api('/api/admin/chat/messages/' + del.getAttribute('data-chat-del'), { method: 'DELETE' })
+            .then(function () { return loadDashLobby(true); })
+            .catch(function (err) { alert(err.message || 'Could not remove.'); });
+          return;
+        }
+        var share = ev.target.closest('[data-chat-path]');
+        if (share && S.openSharePath) S.openSharePath(share.getAttribute('data-chat-path'));
+      });
+    }
+    document.addEventListener('mousedown', function (ev) {
+      if (ev.target.closest('#dash-lobby-status-menu, .dash-lobby-user.is-self')) return;
+      setStatusMenuOpen(false);
+    });
+    var activeAt = 0;
+    function markActive() {
+      var now = Date.now();
+      if (now - activeAt < 15000) return;
+      activeAt = now;
+      touchPresence(true);
+    }
+    document.addEventListener('mousemove', markActive, { passive: true });
+    document.addEventListener('keydown', markActive);
+    document.addEventListener('click', markActive);
+    syncDashComposer();
+  }
+
   async function boot(opts) {
     if (S.booted) return;
     S.api = opts.api;
@@ -1171,9 +1459,31 @@
     S.getShareContext = typeof opts.getShareContext === 'function' ? opts.getShareContext : null;
     S.openSharePath = typeof opts.openSharePath === 'function' ? opts.openSharePath : null;
     if (typeof opts.esc === 'function') S.esc = opts.esc;
+    bindDashLobby();
     var root = $('co-chat');
     var nav = $('header-chat');
     var tabbar = $('tabbar-chat');
+    S.booted = true;
+    touchPresence(true);
+    loadDashLobby(true).catch(function () {
+      if ($('dash-lobby-messages')) {
+        $('dash-lobby-messages').innerHTML = '<p class="co-chat-empty">Could not load Lobby.</p>';
+      }
+    });
+    S.timers.dashPoll = setInterval(pollDashLobby, 3000);
+    S.timers.presence = setInterval(function () {
+      if (document.hidden) return;
+      touchPresence(false);
+      pollDashLobby();
+      if (!hasChat()) return;
+      var ids = S.rooms.filter(function (r) { return r.kind === 'dm' && r.otherUser; })
+        .map(function (r) { return r.otherUser.id; });
+      if (!ids.length) return;
+      S.api('/api/admin/chat/presence?ids=' + ids.join(',')).then(function (data) {
+        S.presence = data.presence || {};
+        renderRoomList();
+      }).catch(function () {});
+    }, 30000);
     if (!hasChat()) {
       if (root) root.hidden = true;
       if (nav) nav.classList.add('hidden');
@@ -1187,7 +1497,6 @@
       root.classList.add('is-window');
     }
     loadLast();
-    S.booted = true;
     bindMain();
     await refreshUnread();
     await handleDeepLink();
@@ -1198,21 +1507,14 @@
         if (S.windowOpen) loadRooms();
       }
     }, 10000);
-    S.timers.presence = setInterval(function () {
-      if (document.hidden || !hasChat()) return;
-      S.api('/api/admin/chat/presence', { method: 'POST' }).catch(function () {});
-      var ids = S.rooms.filter(function (r) { return r.kind === 'dm' && r.otherUser; })
-        .map(function (r) { return r.otherUser.id; });
-      if (!ids.length) return;
-      S.api('/api/admin/chat/presence?ids=' + ids.join(',')).then(function (data) {
-        S.presence = data.presence || {};
-        renderRoomList();
-      }).catch(function () {});
-    }, 30000);
     document.addEventListener('visibilitychange', function () {
       if (!document.hidden) {
-        refreshUnread();
-        if (S.roomId) pollOpenRoom();
+        touchPresence(true);
+        pollDashLobby();
+        if (hasChat()) {
+          refreshUnread();
+          if (S.roomId) pollOpenRoom();
+        }
       }
     });
   }
@@ -1250,6 +1552,10 @@
       loadRooms().then(function () {
         if (S.roomId) return openRoom(S.roomId);
       }).catch(function () {});
+    },
+    refreshLobby: function () {
+      if (!S.booted) return;
+      loadDashLobby(true).catch(function () {});
     }
   };
 })(window);

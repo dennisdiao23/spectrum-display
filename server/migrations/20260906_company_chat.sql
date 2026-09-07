@@ -43,7 +43,9 @@ create table if not exists public.chat_room_reads (
 
 create table if not exists public.chat_presence (
   user_id bigint primary key references public.admins(id) on delete cascade,
-  last_seen_at timestamptz not null default now()
+  last_seen_at timestamptz not null default now(),
+  last_active_at timestamptz,
+  status text not null default 'online'
 );
 
 alter table public.chat_rooms enable row level security;

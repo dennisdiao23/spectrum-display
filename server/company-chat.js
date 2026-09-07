@@ -136,6 +136,61 @@ function formatUser(row) {
   };
 }
 
+const PRESENCE_OK = { online: 1, away: 1, busy: 1 };
+const PRESENCE_ONLINE_MS = 70 * 1000;
+const PRESENCE_AWAY_MS = 5 * 60 * 1000;
+const LOBBY_ANNOUNCE_MS = 30 * 60 * 1000;
+
+function normalizePresenceStatus(value) {
+  const s = String(value || '').toLowerCase().trim();
+  return PRESENCE_OK[s] ? s : 'online';
+}
+
+function formatPresenceRow(row) {
+  if (!row) return null;
+  const lastSeenAt = row.last_seen_at || row.lastSeenAt || null;
+  return {
+    lastSeenAt: lastSeenAt,
+    lastActiveAt: row.last_active_at || row.lastActiveAt || lastSeenAt,
+    status: normalizePresenceStatus(row.status)
+  };
+}
+
+function resolvePresenceState(record, now) {
+  const at = now || Date.now();
+  if (!record || !record.lastSeenAt) return 'offline';
+  const seen = new Date(record.lastSeenAt).getTime();
+  if (!isFinite(seen) || at - seen >= PRESENCE_ONLINE_MS) return 'offline';
+  const status = normalizePresenceStatus(record.status);
+  if (status === 'busy') return 'busy';
+  if (status === 'away') return 'away';
+  const active = new Date(record.lastActiveAt || record.lastSeenAt).getTime();
+  if (isFinite(active) && at - active >= PRESENCE_AWAY_MS) return 'away';
+  return 'online';
+}
+
+function lobbyActivityBody(user, kind) {
+  const name = (user && (user.name || user.email)) || 'Staff';
+  const role = (user && (user.roleName || user.role_name || user.role)) || 'Staff';
+  if (kind === 'signed_in') return name + ' signed in as ' + role;
+  return name + ' joined as ' + role;
+}
+
+function lobbyUserSort(a, b) {
+  const rank = { online: 0, away: 1, busy: 2, offline: 3 };
+  const ar = rank[a && a.state] != null ? rank[a.state] : 3;
+  const br = rank[b && b.state] != null ? rank[b.state] : 3;
+  if (ar !== br) return ar - br;
+  if (!!a.isSelf !== !!b.isSelf) return a.isSelf ? -1 : 1;
+  return String((a && a.name) || '').localeCompare(String((b && b.name) || ''));
+}
+
+function recentlyAnnounced(createdAt) {
+  if (!createdAt) return false;
+  const t = new Date(createdAt).getTime();
+  return isFinite(t) && Date.now() - t < LOBBY_ANNOUNCE_MS;
+}
+
 function formatRoom(row, extras) {
   if (!row) return null;
   const extra = extras || {};
@@ -413,7 +468,9 @@ function ensureCompanyChat(db) {
 
     CREATE TABLE IF NOT EXISTS chat_presence (
       user_id INTEGER PRIMARY KEY,
-      last_seen_at TEXT NOT NULL
+      last_seen_at TEXT NOT NULL,
+      last_active_at TEXT,
+      status TEXT NOT NULL DEFAULT 'online'
     );
 
     CREATE TABLE IF NOT EXISTS copilot_drafts (
@@ -452,6 +509,9 @@ function ensureCompanyChat(db) {
       updated_at TEXT NOT NULL
     );
   `);
+  try { db.exec("ALTER TABLE chat_presence ADD COLUMN last_active_at TEXT"); } catch (e) { /* already present */ }
+  try { db.exec("ALTER TABLE chat_presence ADD COLUMN status TEXT NOT NULL DEFAULT 'online'"); } catch (e) { /* already present */ }
+
   const aiRow = db.prepare('SELECT id FROM chat_ai_settings WHERE id = 1').get();
   if (!aiRow) {
     db.prepare(`
@@ -968,20 +1028,76 @@ function sqliteApi(db) {
       ensureReadRow(user.id, lobby.id);
       ensureCopilotRoomRow(user.id);
       if (opts && opts.announce) {
-        const name = user.name || user.email || 'Staff';
-        insertMessage(lobby.id, null, name + ' joined Lobby', null, nowIso());
+        await this.announceLobbyActivity(user, 'joined');
       }
       return true;
     },
 
-    async touchChatPresence(admin) {
+    async announceLobbyActivity(user, kind) {
+      ensureCompanyChat(db);
+      if (!user || !user.id) return null;
+      const row = getAdminRow(user.id) || user;
+      const body = lobbyActivityBody(row, kind);
+      const lobbyRow = db.prepare("SELECT id FROM chat_rooms WHERE kind = 'lobby' LIMIT 1").get();
+      if (!lobbyRow) return null;
+      const prev = db.prepare(`
+        SELECT created_at FROM chat_messages
+        WHERE room_id = ? AND user_id IS NULL AND deleted_at IS NULL AND body = ?
+        ORDER BY id DESC LIMIT 1
+      `).get(lobbyRow.id, body);
+      if (recentlyAnnounced(prev && prev.created_at)) return false;
+      insertMessage(lobbyRow.id, null, body, null, nowIso());
+      return true;
+    },
+
+    async getLobbyChat(admin, opts) {
+      ensureCompanyChat(db);
+      const lobbyRow = db.prepare("SELECT * FROM chat_rooms WHERE kind = 'lobby' LIMIT 1").get();
+      if (!lobbyRow) return { room: null, messages: [], users: [] };
+      ensureReadRow(admin.id, lobbyRow.id);
+      const data = await this.listChatMessages(admin, lobbyRow.id, opts);
+      const users = await this.listLobbyUsers(admin);
+      return { room: data.room, messages: data.messages, users: users };
+    },
+
+    async listLobbyUsers(admin) {
+      ensureCompanyChat(db);
+      const rows = db.prepare(`
+        SELECT a.id, a.email, a.name, a.role, r.name AS role_name
+        FROM admins a
+        LEFT JOIN admin_roles r ON r.slug = a.role
+        ORDER BY a.name COLLATE NOCASE, a.email
+      `).all();
+      const presence = await this.listChatPresence(admin, rows.map(function (r) { return r.id; }));
+      return rows.map(function (row) {
+        const rec = presence[row.id] || presence[String(row.id)] || null;
+        return Object.assign({}, formatUser(row), {
+          isSelf: Number(row.id) === Number(admin.id),
+          presence: rec,
+          state: resolvePresenceState(rec)
+        });
+      }).sort(lobbyUserSort);
+    },
+
+    async touchChatPresence(admin, opts) {
       ensureCompanyChat(db);
       const stamp = nowIso();
+      const incoming = opts || {};
+      const statusIn = incoming.status ? normalizePresenceStatus(incoming.status) : '';
+      const active = !!(incoming.active || statusIn);
+      const existing = db.prepare('SELECT * FROM chat_presence WHERE user_id = ?').get(admin.id);
+      const nextStatus = statusIn || (existing && existing.status) || 'online';
+      const nextActive = active ? stamp : ((existing && existing.last_active_at) || stamp);
       db.prepare(`
-        INSERT INTO chat_presence (user_id, last_seen_at) VALUES (?, ?)
-        ON CONFLICT(user_id) DO UPDATE SET last_seen_at = excluded.last_seen_at
-      `).run(admin.id, stamp);
-      return { lastSeenAt: stamp };
+        INSERT INTO chat_presence (user_id, last_seen_at, last_active_at, status)
+        VALUES (?, ?, ?, ?)
+        ON CONFLICT(user_id) DO UPDATE SET
+          last_seen_at = excluded.last_seen_at,
+          last_active_at = excluded.last_active_at,
+          status = excluded.status
+      `).run(admin.id, stamp, nextActive, nextStatus);
+      const rec = { lastSeenAt: stamp, lastActiveAt: nextActive, status: nextStatus };
+      return Object.assign({}, rec, { state: resolvePresenceState(rec) });
     },
 
     async listChatPresence(_admin, userIds) {
@@ -997,7 +1113,9 @@ function sqliteApi(db) {
         ).all(...ids);
       }
       const out = {};
-      rows.forEach(function (r) { out[r.user_id] = r.last_seen_at; });
+      rows.forEach(function (r) {
+        out[r.user_id] = formatPresenceRow(r);
+      });
       return out;
     },
 
@@ -1851,19 +1969,92 @@ function supabaseApi(supabase) {
       await ensureReadRow(user.id, lobbyId);
       try { await ensureCopilotRoomRow(user.id); } catch (e) { /* copilot tables may be pending */ }
       if (opts && opts.announce) {
-        const name = user.name || user.email || 'Staff';
-        await insertMessage(lobbyId, null, name + ' joined Lobby', null, nowIso());
+        await this.announceLobbyActivity(user, 'joined');
       }
       return true;
     },
 
-    async touchChatPresence(admin) {
+    async announceLobbyActivity(user, kind) {
+      await ensureReady();
+      if (!user || !user.id) return null;
+      const row = await getAdminRow(user.id) || user;
+      const body = lobbyActivityBody(row, kind);
+      const { data: lobbyRows } = await supabase.from('chat_rooms').select('id').eq('kind', 'lobby').limit(1);
+      const lobbyId = lobbyRows && lobbyRows[0] && lobbyRows[0].id;
+      if (!lobbyId) return null;
+      const { data: prevRows } = await supabase
+        .from('chat_messages')
+        .select('created_at')
+        .eq('room_id', lobbyId)
+        .is('user_id', null)
+        .is('deleted_at', null)
+        .eq('body', body)
+        .order('id', { ascending: false })
+        .limit(1);
+      if (recentlyAnnounced(prevRows && prevRows[0] && prevRows[0].created_at)) return false;
+      await insertMessage(lobbyId, null, body, null, nowIso());
+      return true;
+    },
+
+    async getLobbyChat(admin, opts) {
+      await ensureReady();
+      const { data: lobbyRows } = await supabase.from('chat_rooms').select('*').eq('kind', 'lobby').limit(1);
+      const lobbyRow = lobbyRows && lobbyRows[0];
+      if (!lobbyRow) return { room: null, messages: [], users: [] };
+      await ensureReadRow(admin.id, lobbyRow.id);
+      const data = await this.listChatMessages(admin, lobbyRow.id, opts);
+      const users = await this.listLobbyUsers(admin);
+      return { room: data.room, messages: data.messages, users: users };
+    },
+
+    async listLobbyUsers(admin) {
+      await ensureReady();
+      const { data } = await supabase.from('admins').select('id, email, name, role');
+      const rows = [];
+      for (let i = 0; i < (data || []).length; i++) {
+        const row = await getAdminRow(data[i].id);
+        if (row) rows.push(row);
+      }
+      const presence = await this.listChatPresence(admin, rows.map(function (r) { return r.id; }));
+      return rows.map(function (row) {
+        const rec = presence[row.id] || presence[String(row.id)] || null;
+        return Object.assign({}, formatUser(row), {
+          isSelf: Number(row.id) === Number(admin.id),
+          presence: rec,
+          state: resolvePresenceState(rec)
+        });
+      }).sort(lobbyUserSort);
+    },
+
+    async touchChatPresence(admin, opts) {
       await ensureReady();
       const stamp = nowIso();
-      await supabase
+      const incoming = opts || {};
+      const statusIn = incoming.status ? normalizePresenceStatus(incoming.status) : '';
+      const active = !!(incoming.active || statusIn);
+      const { data: existingRows } = await supabase
         .from('chat_presence')
-        .upsert({ user_id: admin.id, last_seen_at: stamp }, { onConflict: 'user_id' });
-      return { lastSeenAt: stamp };
+        .select('*')
+        .eq('user_id', admin.id)
+        .limit(1);
+      const existing = existingRows && existingRows[0];
+      const nextStatus = statusIn || (existing && existing.status) || 'online';
+      const nextActive = active ? stamp : ((existing && (existing.last_active_at || existing.lastActiveAt)) || stamp);
+      const payload = {
+        user_id: admin.id,
+        last_seen_at: stamp,
+        last_active_at: nextActive,
+        status: nextStatus
+      };
+      const { error } = await supabase.from('chat_presence').upsert(payload, { onConflict: 'user_id' });
+      if (error) {
+        await supabase.from('chat_presence').upsert(
+          { user_id: admin.id, last_seen_at: stamp },
+          { onConflict: 'user_id' }
+        );
+      }
+      const rec = { lastSeenAt: stamp, lastActiveAt: nextActive, status: nextStatus };
+      return Object.assign({}, rec, { state: resolvePresenceState(rec) });
     },
 
     async listChatPresence(_admin, userIds) {
@@ -1875,7 +2066,7 @@ function supabaseApi(supabase) {
       const { data } = await q;
       const out = {};
       (data || []).forEach(function (r) {
-        out[r.user_id] = r.last_seen_at;
+        out[r.user_id] = formatPresenceRow(r);
       });
       return out;
     },

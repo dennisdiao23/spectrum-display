@@ -769,6 +769,16 @@ async function main() {
         secure: process.env.NODE_ENV === 'production',
         maxAge: SESSION_DAYS * 86400000
       });
+      try {
+        if (typeof store.announceLobbyActivity === 'function') {
+          await store.announceLobbyActivity(admin, 'signed_in');
+        }
+        if (typeof store.touchChatPresence === 'function') {
+          await store.touchChatPresence(admin, { active: true, status: 'online' });
+        }
+      } catch (e) {
+        console.error('lobby announce', e);
+      }
       res.json({ ok: true, admin: publicAdmin(admin) });
     } catch (err) { next(err); }
   });
@@ -1110,13 +1120,23 @@ async function main() {
     } catch (err) { next(err); }
   });
 
-  app.post('/api/admin/chat/presence', requireAdmin, requireChat, async function (req, res, next) {
+  app.get('/api/admin/chat/lobby', requireAdmin, async function (req, res, next) {
     try {
-      res.json(Object.assign({ ok: true }, await store.touchChatPresence(req.admin)));
+      const data = await store.getLobbyChat(req.admin, {
+        afterId: req.query.afterId || req.query.after_id,
+        limit: req.query.limit
+      });
+      res.json(Object.assign({ ok: true }, data));
     } catch (err) { next(err); }
   });
 
-  app.get('/api/admin/chat/presence', requireAdmin, requireChat, async function (req, res, next) {
+  app.post('/api/admin/chat/presence', requireAdmin, async function (req, res, next) {
+    try {
+      res.json(Object.assign({ ok: true }, await store.touchChatPresence(req.admin, req.body || {})));
+    } catch (err) { next(err); }
+  });
+
+  app.get('/api/admin/chat/presence', requireAdmin, async function (req, res, next) {
     try {
       const ids = String(req.query.ids || '').split(',').map(function (x) { return Number(x); }).filter(Boolean);
       res.json({ ok: true, presence: await store.listChatPresence(req.admin, ids) });
