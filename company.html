@@ -10,7 +10,7 @@
   <meta name="robots" content="noindex, nofollow" />
   <link rel="stylesheet" href="/css/company-dash.css?v=lobby2" />
   <script src="/js/address-autocomplete.js"></script>
-  <script src="/js/company-chat.js?v=lobby2"></script>
+  <script src="/js/company-chat.js?v=chatwin1"></script>
   <script>
     (function () {
       try {
@@ -5676,6 +5676,14 @@
       dashColSaveTimer = setTimeout(pushColPrefs, 350);
     }
 
+    function applyChatWindowFromPrefs() {
+      try {
+        if (window.SpectrumChat && typeof SpectrumChat.applyWindowPrefs === 'function') {
+          SpectrumChat.applyWindowPrefs();
+        }
+      } catch (err) {}
+    }
+
     function mergeRemoteColPrefs(remote) {
       const prev = dashColMine || {};
       const next = remote && typeof remote === 'object' ? Object.assign({}, remote) : {};
@@ -5754,7 +5762,11 @@
           dashColMine = remote;
           cacheColPrefs();
           applyColumnPrefsFromLocal();
+        } else if (localFirst && remote.chat && remote.chat.width && !(dashColMine.chat && dashColMine.chat.width)) {
+          dashColMine.chat = remote.chat;
+          cacheColPrefs();
         }
+        applyChatWindowFromPrefs();
         if (!Object.keys(dashColMine).length) {
           const legacy = readLegacyLocalCols();
           if (Object.keys(legacy).length) {
@@ -5782,11 +5794,13 @@
         hadLocal = !!(cached && typeof cached === 'object' && Object.keys(cached).length);
       } catch (err) {}
       applyColumnPrefsFromLocal();
+      applyChatWindowFromPrefs();
       if (hadLocal) {
         void syncColumnPrefsFromServer(true);
         return;
       }
       await syncColumnPrefsFromServer(false);
+      applyChatWindowFromPrefs();
     }
 
     function applyColOrder(table) {
@@ -14948,8 +14962,8 @@
           })
         });
         if (!showDash(data.admin)) return;
-        bootSpectrumChat(data.admin);
         await loadColumnPrefs();
+        bootSpectrumChat(data.admin);
         await openRoutedSection(tabFromPath());
         var loginDraft = copilotTokenFromHref(location.href);
         if (loginDraft) await applyCopilotDraft(loginDraft).catch(function () {});
@@ -15795,8 +15809,8 @@
     api('/api/admin/me').then(function (data) {
       if (data.ok && data.admin) {
         if (!showDash(data.admin)) return;
-        if (window.SpectrumChat) bootSpectrumChat(data.admin);
         return loadColumnPrefs().then(function () {
+          if (window.SpectrumChat) bootSpectrumChat(data.admin);
           return openRoutedSection(tabFromPath()).then(function () {
             var bootDraft = copilotTokenFromHref(location.href);
             if (bootDraft) return applyCopilotDraft(bootDraft).catch(function () {});

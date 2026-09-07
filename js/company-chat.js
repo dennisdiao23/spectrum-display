@@ -122,6 +122,19 @@
     return 'dash-chat-last-' + (id || '0');
   }
 
+  function windowPrefsKey() {
+    var id = S.admin && S.admin.id;
+    return 'dash-chat-window-' + (id || '0');
+  }
+
+  function readLocalWindowPrefs() {
+    try {
+      var p = JSON.parse(localStorage.getItem(windowPrefsKey()) || 'null');
+      if (p && p.width && p.height) return p;
+    } catch (e) { /* ignore */ }
+    return null;
+  }
+
   function saveLast() {
     try {
       localStorage.setItem(persistKey(), JSON.stringify({
@@ -141,6 +154,7 @@
   function applySavedWindowPrefs() {
     var p = null;
     try { p = S.getChatPrefs && S.getChatPrefs(); } catch (e) { p = null; }
+    if (!p || !p.width || !p.height) p = readLocalWindowPrefs();
     if (!p || !p.width || !p.height) return;
     S.rect = {
       left: Number(p.left),
@@ -149,6 +163,11 @@
       height: Number(p.height)
     };
     if (p.listW) S.listW = Number(p.listW);
+  }
+
+  function restoreWindowPrefs() {
+    applySavedWindowPrefs();
+    if (S.windowOpen) applyRect(S.rect || defaultRect());
   }
 
   function saveWindowPrefs() {
@@ -160,6 +179,7 @@
       height: Math.round(S.rect.height),
       listW: Math.round(S.listW || 100)
     };
+    try { localStorage.setItem(windowPrefsKey(), JSON.stringify(payload)); } catch (e) { /* ignore */ }
     try { if (S.saveChatPrefs) S.saveChatPrefs(payload); } catch (e) { /* ignore */ }
   }
 
@@ -1560,6 +1580,7 @@
     openOrderChat: openOrderChat,
     open: openChatWindow,
     close: closeChatWindow,
+    applyWindowPrefs: restoreWindowPrefs,
     refreshContacts: function () {
       if (!S.booted || !hasChat()) return;
       loadRooms().then(function () {
