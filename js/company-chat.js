@@ -562,7 +562,7 @@
   function composerPlaceholder(room) {
     if (!room) return 'Message…';
     if (room.kind === 'copilot') return 'Ask ' + aiName() + ' to draft something…';
-    if (room.kind === 'lobby') return 'Message the team… @' + aiName();
+    if (room.kind === 'lobby') return 'Message the team…';
     if (room.kind === 'dm' && room.otherUser) {
       var first = String(room.otherUser.name || 'them').split(/\s+/)[0];
       return 'Message ' + first + '…';
@@ -1287,7 +1287,7 @@
     if (attachName && !canSend) attachName.hidden = true;
     if (note) note.hidden = canSend;
     var input = $('dash-lobby-input');
-    if (input) input.placeholder = canSend ? ('Message the team… @' + aiName()) : input.placeholder;
+    if (input) input.placeholder = canSend ? 'Message the team…' : input.placeholder;
   }
 
   function showDashLobbyError(msg) {
@@ -1511,10 +1511,11 @@
     var rect = textarea.getBoundingClientRect();
     var width = Math.max(12 * 16, Math.min(18 * 16, rect.width));
     menu.style.width = width + 'px';
-    menu.style.left = Math.max(8, rect.left) + 'px';
-    var top = rect.top - 8;
+    menu.style.left = Math.max(8, Math.min(rect.left, window.innerWidth - width - 8)) + 'px';
     menu.style.top = 'auto';
-    menu.style.bottom = (window.innerHeight - top) + 'px';
+    var gap = 6;
+    menu.style.bottom = Math.max(8, window.innerHeight - rect.top + gap) + 'px';
+    menu.style.zIndex = '200';
   }
 
   function showMentionMenu(textarea) {
@@ -1560,6 +1561,9 @@
       showMentionMenu(textarea);
     });
     textarea.addEventListener('keydown', function (ev) {
+      if (ev.key === '@') {
+        setTimeout(function () { showMentionMenu(textarea); }, 0);
+      }
       if (!mentionOpen()) return;
       if (ev.key === 'ArrowDown') {
         ev.preventDefault();
