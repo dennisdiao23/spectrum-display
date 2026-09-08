@@ -594,15 +594,26 @@
       background: #38bdf8;
     }
     .wiring-swatch-p {
-      width: 0.45rem;
-      height: 0.45rem;
-      border-radius: 999px;
-      background: #fbbf24;
+      width: 0.9rem;
+      height: 0.2rem;
+      border-radius: 1px;
+      background: #ef4444;
     }
     .wiring-swatch-cvt {
       width: 0.7rem;
       height: 0.7rem;
       border-radius: 2px;
+    }
+    .wiring-check {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.35rem;
+      cursor: pointer;
+      color: #cbd5e1;
+      user-select: none;
+    }
+    .wiring-check input {
+      accent-color: #38bdf8;
     }
     .control-port-warning {
       margin-top: 0.4rem;
@@ -1190,7 +1201,14 @@
 
             <div class="flex flex-wrap gap-4 text-xs text-slate-500">
               <div class="flex items-center gap-2"><span class="w-3 h-3 rounded-sm bg-sky-600 border border-sky-400/40"></span> Individual LED panels</div>
-              <div id="wiring-legend" class="wiring-legend"></div>
+              <div id="wiring-legend-wrap" class="wiring-legend">
+                <div class="wiring-legend-row">
+                  <label class="wiring-check"><input type="checkbox" id="wiring-show-data" checked> Data</label>
+                  <label class="wiring-check"><input type="checkbox" id="wiring-show-power" checked> Power</label>
+                  <label class="wiring-check"><input type="checkbox" id="wiring-power-off-edge"> Start power off the wall edge</label>
+                </div>
+                <div id="wiring-legend"></div>
+              </div>
               <div>Slider = zoom · Reset centers the wall</div>
             </div>
           </div>
@@ -1269,6 +1287,8 @@
     let voltage = 120;
     const CIRCUIT_AMPS = 20;
     const CIRCUIT_DERATE = 0.8;
+    const CIRCUIT_USABLE_AMPS = CIRCUIT_AMPS * CIRCUIT_DERATE;
+    const POWER_COLOR = '#ef4444';
     const NOVASTAR_1G_PORT_PX = 659722;
     const NOVASTAR_1G_PORT_MAX_SIDE = 4096;
     /** NovaStar 1G RJ45: whole cabinets only. 8-bit/60 Hz load 659,722 px; typically 4096 on a side. */
@@ -1285,6 +1305,46 @@
       const count = Math.max(1, Math.round(Number(panels) || 1));
       return Math.max(1, Math.ceil(count / cabinetsPerDataPort(cabWpx, cabHpx)));
     }
+    function peakWattsPerCabinet(series) {
+      if (!series) return 0;
+      const area = Math.max(0, (Number(series.cabinetW) || 0) * (Number(series.cabinetH) || 0));
+      const perM2 = Number(series.powerMax) || (Number(series.powerAvg) || 0) * 2.5;
+      return area * perM2;
+    }
+    function cabinetsPerPowerCircuit(series, volt) {
+      const cap = Number(series && series.maxCabinetsPerPowerCable);
+      if (Number.isFinite(cap) && cap >= 1) return Math.max(1, Math.floor(cap));
+      const peak = peakWattsPerCabinet(series);
+      const circW = Math.max(1, (Number(volt) || 120) * CIRCUIT_USABLE_AMPS);
+      if (!(peak > 0)) return 1;
+      return Math.max(1, Math.floor(circW / peak));
+    }
+    function powerCircuitCount(series, volt, cabinetCount) {
+      const n = Math.max(1, Math.round(Number(cabinetCount) || 1));
+      return Math.max(1, Math.ceil(n / cabinetsPerPowerCircuit(series, volt)));
+    }
+    function isEdgeCabinet(c, r, cols, rows) {
+      return c === 0 || r === 0 || c === cols - 1 || r === rows - 1;
+    }
+    function powerCabinetOrder(cols, rows, offEdge) {
+      const all = columnDownOrder(cols, rows);
+      if (!offEdge || cols < 3 || rows < 3) return all;
+      const interior = [];
+      const edge = [];
+      all.forEach(function (cab) {
+        if (isEdgeCabinet(cab.c, cab.r, cols, rows)) edge.push(cab);
+        else interior.push(cab);
+      });
+      return interior.concat(edge);
+    }
+    function readWiringToggles() {
+      const d = document.getElementById('wiring-show-data');
+      const p = document.getElementById('wiring-show-power');
+      const e = document.getElementById('wiring-power-off-edge');
+      if (d) wiringShowData = !!d.checked;
+      if (p) wiringShowPower = !!p.checked;
+      if (e) wiringPowerOffEdge = !!e.checked;
+    }
     const UHD_PIXELS = 3840 * 2160;
     const MOUNT_LABELS = { wall: 'Wall', stack: 'Ground stack', truss: 'Truss hang', legs: 'Legs' };
     const PERSON_HEIGHT_M = 1.75;
@@ -1296,6 +1356,9 @@
     let figureMode = 'person';
     let labelMode = 'off';
     let viewMode = 'front';
+    let wiringShowData = true;
+    let wiringShowPower = true;
+    let wiringPowerOffEdge = false;
     const DATA_COLORS = ['#38bdf8', '#22d3ee', '#818cf8', '#2dd4bf', '#60a5fa'];
 
     function setChoiceButtons(selector, attr, value) {
@@ -1401,7 +1464,7 @@
       }
       return bands;
     }
-    function drawWiringOverlay(svg, cols, rows, cellW, cellH, dataPorts, circuits, cabWpx, cabHpx, processor) {
+    function drawWiringOverlay(svg, cols, rows, cellW, cellH, dataPorts, circuits, cabWpx, cabHpx, processor, opts) {
       const gap = 1.5;
       const W = cols * cellW + (cols - 1) * gap;
       const H = rows * cellH + (rows - 1) * gap;
@@ -1413,11 +1476,15 @@
       while (svg.firstChild) svg.removeChild(svg.firstChild);
 
       const ns = 'http://www.w3.org/2000/svg';
+      const showData = !opts || opts.showData !== false;
+      const showPower = !opts || opts.showPower !== false;
       const perPort = cabinetsPerDataPort(cabWpx, cabHpx);
       const order = columnDownOrder(cols, rows);
       const dataChunks = chunkBySize(order, perPort);
+      const cabsPerPower = Math.max(1, Number(opts && opts.cabinetsPerCircuit) || 1);
+      const powerChunks = chunkBySize(powerCabinetOrder(cols, rows, !!(opts && opts.powerOffEdge)), cabsPerPower);
       const stroke = Math.max(1.2, Math.min(2.5, cellW * 0.08));
-      const bandKind = wiringBandKind(processor);
+      const bandKind = showData ? wiringBandKind(processor) : 'none';
       const bands = wiringOutputBands(bandKind, dataChunks.length);
       const bandSize = bandKind === 'hcard'
         ? (window.SpectrumControl ? SpectrumControl.hSendingCardPorts() : 20)
@@ -1439,6 +1506,19 @@
         marker.appendChild(tip);
         defs.appendChild(marker);
       });
+      const powerMarker = document.createElementNS(ns, 'marker');
+      powerMarker.setAttribute('id', 'power-arrow');
+      powerMarker.setAttribute('viewBox', '0 0 10 10');
+      powerMarker.setAttribute('refX', '8');
+      powerMarker.setAttribute('refY', '5');
+      powerMarker.setAttribute('markerWidth', '6');
+      powerMarker.setAttribute('markerHeight', '6');
+      powerMarker.setAttribute('orient', 'auto');
+      const powerTip = document.createElementNS(ns, 'path');
+      powerTip.setAttribute('d', 'M 0 0 L 10 5 L 0 10 z');
+      powerTip.setAttribute('fill', POWER_COLOR);
+      powerMarker.appendChild(powerTip);
+      defs.appendChild(powerMarker);
       svg.appendChild(defs);
 
       function polyline(pts, color, width, markerId) {
@@ -1480,29 +1560,19 @@
         t.textContent = label;
         svg.appendChild(t);
       }
-      function powerMark(cab) {
+      function powerChainLabel(cab, label) {
+        if (!cab) return;
         const o = cellOrigin(cab.c, cab.r, cellW, cellH, gap);
-        const cx = o.x + cellW * 0.78;
-        const cy = o.y + cellH * 0.78;
-        const c = document.createElementNS(ns, 'circle');
-        c.setAttribute('cx', String(cx));
-        c.setAttribute('cy', String(cy));
-        c.setAttribute('r', String(Math.max(2.4, Math.min(5.5, cellW * 0.1))));
-        c.setAttribute('fill', '#fbbf24');
-        svg.appendChild(c);
-        if (cellW >= 18) {
-          const t = document.createElementNS(ns, 'text');
-          t.setAttribute('x', String(cx));
-          t.setAttribute('y', String(cy + 1));
-          t.setAttribute('text-anchor', 'middle');
-          t.setAttribute('dominant-baseline', 'middle');
-          t.setAttribute('fill', '#1e293b');
-          t.setAttribute('font-size', String(Math.max(6, Math.min(9, cellW * 0.16))));
-          t.setAttribute('font-family', 'Inter, system-ui, sans-serif');
-          t.setAttribute('font-weight', '800');
-          t.textContent = 'P';
-          svg.appendChild(t);
-        }
+        const t = document.createElementNS(ns, 'text');
+        t.setAttribute('x', String(o.x + Math.max(6, cellW * 0.18)));
+        t.setAttribute('y', String(o.y + Math.max(9, cellH * 0.22)));
+        t.setAttribute('text-anchor', 'start');
+        t.setAttribute('fill', POWER_COLOR);
+        t.setAttribute('font-size', String(Math.max(8, Math.min(15, cellW * 0.26))));
+        t.setAttribute('font-family', 'Inter, system-ui, sans-serif');
+        t.setAttribute('font-weight', '800');
+        t.textContent = label;
+        svg.appendChild(t);
       }
       function bandLabel(chunk, text, color) {
         if (!chunk || !chunk[0] || !text) return;
@@ -1531,29 +1601,55 @@
         }
       });
 
-      order.forEach(powerMark);
+      if (showPower) {
+        powerChunks.forEach(function (chunk, i) {
+          const pts = chunk.map(function (p) { return cellCenter(p.c, p.r, cellW, cellH, gap); });
+          polyline(pts, POWER_COLOR, Math.max(stroke, stroke * 1.15), 'power-arrow');
+          if (chunk[0]) powerChainLabel(chunk[0], 'P' + (i + 1));
+        });
+      }
 
-      dataChunks.forEach(function (chunk, i) {
-        const color = DATA_COLORS[i % DATA_COLORS.length];
-        const pts = chunk.map(function (p) { return cellCenter(p.c, p.r, cellW, cellH, gap); });
-        polyline(pts, color, stroke, 'data-arrow-' + (i % DATA_COLORS.length));
-        if (chunk[0]) portLabel(chunk[0], color, 'D' + (i + 1));
+      if (showData) {
+        dataChunks.forEach(function (chunk, i) {
+          const color = DATA_COLORS[i % DATA_COLORS.length];
+          const pts = chunk.map(function (p) { return cellCenter(p.c, p.r, cellW, cellH, gap); });
+          polyline(pts, color, stroke, 'data-arrow-' + (i % DATA_COLORS.length));
+          if (chunk[0]) portLabel(chunk[0], color, 'D' + (i + 1));
+        });
+      }
+
+      renderWiringLegend(perPort, bands, {
+        showData: showData,
+        showPower: showPower,
+        cabinetsPerCircuit: cabsPerPower,
+        circuitCount: powerChunks.length
       });
-
-      renderWiringLegend(perPort, bands);
     }
-    function renderWiringLegend(perPort, bands) {
+    function renderWiringLegend(perPort, bands, layers) {
       const el = document.getElementById('wiring-legend');
       if (!el) return;
       const rows = [];
-      rows.push('<div class="wiring-legend-row"><span class="wiring-swatch"></span> Data chain — colored line, ' + perPort + ' cabinet' + (perPort === 1 ? '' : 's') + ' / port</div>');
-      rows.push('<div class="wiring-legend-row"><span class="wiring-swatch wiring-swatch-p"></span> Power — separate dots</div>');
-      (bands || []).forEach(function (band, b) {
-        rows.push(
-          '<div class="wiring-legend-row"><span class="wiring-swatch wiring-swatch-cvt" style="background:' + CVT_BAND_EDGE[b % CVT_BAND_EDGE.length] + '"></span>'
-          + band.legend + '</div>'
-        );
-      });
+      if (!layers || layers.showData) {
+        rows.push('<div class="wiring-legend-row"><span class="wiring-swatch"></span> Data — colored line, ' + perPort + ' cabinet' + (perPort === 1 ? '' : 's') + ' / port</div>');
+      }
+      if (!layers || layers.showPower) {
+        const n = layers && layers.cabinetsPerCircuit;
+        const circ = layers && layers.circuitCount;
+        let powerTxt = 'Power — red chain + P-numbers';
+        if (n) {
+          powerTxt += ', ' + n + ' cabinet' + (n === 1 ? '' : 's') + ' / circuit';
+          if (circ) powerTxt += ' · ' + circ + ' circuit' + (circ === 1 ? '' : 's');
+        }
+        rows.push('<div class="wiring-legend-row"><span class="wiring-swatch wiring-swatch-p"></span> ' + powerTxt + '</div>');
+      }
+      if (!layers || layers.showData) {
+        (bands || []).forEach(function (band, b) {
+          rows.push(
+            '<div class="wiring-legend-row"><span class="wiring-swatch wiring-swatch-cvt" style="background:' + CVT_BAND_EDGE[b % CVT_BAND_EDGE.length] + '"></span>'
+            + band.legend + '</div>'
+          );
+        });
+      }
       el.innerHTML = rows.join('');
     }
     function rowLetter(n) {
@@ -1838,6 +1934,14 @@
     });
     document.querySelectorAll('.view-btn').forEach(btn => {
       btn.addEventListener('click', () => setViewMode(btn.dataset.view));
+    });
+    ['wiring-show-data', 'wiring-show-power', 'wiring-power-off-edge'].forEach(function (id) {
+      const el = document.getElementById(id);
+      if (!el) return;
+      el.addEventListener('change', function () {
+        readWiringToggles();
+        updateDesign();
+      });
     });
     const preview = document.getElementById('wall-preview');
     const contentLayer = document.getElementById('content-layer');
@@ -2299,8 +2403,8 @@
         : Math.round(weightKg * 2.20462262);
       const power = Math.round(actualArea * series.powerAvg);
       const powerPeak = Math.round(actualArea * (series.powerMax || series.powerAvg * 2.5));
-      const wattsPerCircuit = voltage * CIRCUIT_AMPS * CIRCUIT_DERATE;
-      const circuits = Math.max(1, Math.ceil(powerPeak / wattsPerCircuit));
+      const cabsPerPower = cabinetsPerPowerCircuit(series, voltage);
+      const circuits = powerCircuitCount(series, voltage, panels);
       const totalPx = pxW * pxH;
       const dataPorts = ethernetPortsNeeded(ppcW, ppcH, panels);
       let controlSel = { processor: null, qty: 0, playback: null, cvt10: 0, warning: '' };
@@ -2449,8 +2553,8 @@
       const screenOverlay = document.getElementById('screen-overlay');
       if (screenOverlay) screenOverlay.classList.toggle('wiring-hidden', wiringOn);
       const wiringSvg = document.getElementById('wiring-overlay');
-      const wiringLegend = document.getElementById('wiring-legend');
-      if (wiringLegend) wiringLegend.classList.toggle('is-on', wiringOn);
+      const wiringLegendWrap = document.getElementById('wiring-legend-wrap');
+      if (wiringLegendWrap) wiringLegendWrap.classList.toggle('is-on', wiringOn);
 
       const shortSide = Math.min(cellW, cellH);
       const labelSize = Math.max(10, Math.min(48, Math.round(shortSide * 0.42)));
@@ -2475,7 +2579,13 @@
         overlay.setAttribute('class', 'wiring-overlay');
         overlay.setAttribute('aria-hidden', 'true');
         preview.appendChild(overlay);
-        drawWiringOverlay(overlay, maxDisplayCols, maxDisplayRows, cellW, cellH, dataPorts, circuits, ppcW, ppcH, controlSel.processor);
+        readWiringToggles();
+        drawWiringOverlay(overlay, maxDisplayCols, maxDisplayRows, cellW, cellH, dataPorts, circuits, ppcW, ppcH, controlSel.processor, {
+          showData: wiringShowData,
+          showPower: wiringShowPower,
+          powerOffEdge: wiringPowerOffEdge,
+          cabinetsPerCircuit: cabsPerPower
+        });
       }
       if (wiringSvg) wiringSvg.hidden = true;
 
