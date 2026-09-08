@@ -260,6 +260,10 @@
     S.listW = clampListW(px);
     var shell = root.querySelector('.co-chat-shell');
     if (shell) shell.style.setProperty('--co-chat-list-w', S.listW + 'px');
+    if (S.pageMode) {
+      root.classList.remove('is-icons', 'is-compact');
+      return;
+    }
     root.classList.toggle('is-icons', S.listW <= LIST_ICON_W);
     root.classList.toggle('is-compact', S.listW <= 128);
   }

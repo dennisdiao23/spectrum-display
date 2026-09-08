@@ -5338,6 +5338,29 @@ body.chat-page-on #co-chat .co-chat-list {
   min-height: 0;
   background: #fbfcfe;
 }
+body.chat-page-on #co-chat .co-chat-search {
+  margin: 0.85rem 0.85rem 0.45rem;
+  padding: 0.75rem 0.9rem;
+  font-size: 1.05rem;
+}
+body.chat-page-on #co-chat .co-chat-room {
+  padding: 0.9rem 0.85rem;
+  gap: 0.8rem;
+}
+body.chat-page-on #co-chat .co-chat-avatar {
+  width: 2.75rem;
+  height: 2.75rem;
+  font-size: 0.95rem;
+}
+body.chat-page-on #co-chat .co-chat-room-title {
+  font-size: 1.125rem;
+}
+body.chat-page-on #co-chat .co-chat-room-time {
+  font-size: 0.95rem;
+}
+body.chat-page-on #co-chat .co-chat-head-title {
+  font-size: 1.05rem;
+}
 body.chat-page-on #co-chat .co-chat-main {
   display: none;
   grid-column: auto;
