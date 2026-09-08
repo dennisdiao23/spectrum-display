@@ -1226,14 +1226,11 @@
     let voltage = 120;
     const CIRCUIT_AMPS = 20;
     const CIRCUIT_DERATE = 0.8;
-    const PIXELS_PER_PORT = 650000;
-    /** NovaStar gigabit RJ45 ~650k px. Each panel uses one data cable; a port may daisy-chain whole panels only (never a fraction). 230,400 px panels → 2 per port, not 3. */
-    function ethernetPortsNeeded(panelPx, panels) {
-      const load = Math.max(1, Math.round(Number(panelPx) || 1));
+    const PANELS_PER_DATA_PORT = 2;
+    /** Each panel uses one data cable. One sending port daisy-chains 2 panels, not 3. */
+    function ethernetPortsNeeded(panels) {
       const count = Math.max(1, Math.round(Number(panels) || 1));
-      if (load >= PIXELS_PER_PORT) return count;
-      const panelsPerPort = Math.max(1, Math.floor(PIXELS_PER_PORT / load));
-      return Math.max(1, Math.ceil(count / panelsPerPort));
+      return Math.max(1, Math.ceil(count / PANELS_PER_DATA_PORT));
     }
     const UHD_PIXELS = 3840 * 2160;
     const MOUNT_LABELS = { wall: 'Wall', stack: 'Ground stack', truss: 'Truss hang', legs: 'Legs' };
@@ -2079,8 +2076,7 @@
       const wattsPerCircuit = voltage * CIRCUIT_AMPS * CIRCUIT_DERATE;
       const circuits = Math.max(1, Math.ceil(powerPeak / wattsPerCircuit));
       const totalPx = pxW * pxH;
-      const panelPx = ppcW * ppcH;
-      const dataPorts = ethernetPortsNeeded(panelPx, panels);
+      const dataPorts = ethernetPortsNeeded(panels);
       const controlSel = resolveControlSelection(totalPx);
       const processorText = controlSel.processor
         ? ((controlSel.qty > 1 ? controlSel.qty + ' × ' : '') + controlSel.processor.name)
