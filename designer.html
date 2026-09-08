@@ -971,7 +971,7 @@
           <div>
             <label class="block text-xs text-slate-400 mb-1">Processor / sender</label>
             <select id="control-processor" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-sky-500">
-              <option value="">Recommended</option>
+              <option value="auto">Recommended (auto)</option>
             </select>
           </div>
           <div>
@@ -1939,6 +1939,21 @@
       return { processor: processor, qty: qty, playback: playback };
     }
 
+    function labelForAutoProcessor(totalPixels) {
+      let label = 'Recommended (auto)';
+      if (!window.SpectrumControl) return label;
+      const rec = SpectrumControl.recommendProcessor(totalPixels, { subtype: 'all-in-one' });
+      if (!rec || !rec.product) return label;
+      const qty = rec.qty || 1;
+      return label + ' · ' + (qty > 1 ? qty + ' × ' : '') + rec.product.name;
+    }
+
+    function syncAutoProcessorOption(totalPixels) {
+      if (!controlProcessorEl) return;
+      const autoOpt = controlProcessorEl.querySelector('option[value="auto"]');
+      if (autoOpt) autoOpt.textContent = labelForAutoProcessor(totalPixels);
+    }
+
     function controlUnitPrice(p) {
       if (!p) return 0;
       const n = Number(p.priceEach) || 0;
@@ -2073,6 +2088,7 @@
       const totalPx = pxW * pxH;
       const dataPorts = Math.max(1, Math.ceil(totalPx / PIXELS_PER_PORT));
       const controlSel = resolveControlSelection(totalPx);
+      syncAutoProcessorOption(totalPx);
       const processorText = controlSel.processor
         ? ((controlSel.qty > 1 ? controlSel.qty + ' × ' : '') + controlSel.processor.name)
         : 'None';
