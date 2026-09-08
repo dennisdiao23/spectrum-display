@@ -72,18 +72,124 @@
     return shoppableControl().filter(function (p) { return p.subtype === 'playback'; });
   }
 
+  function productId(p) {
+    return String((p && p.id) || '').toLowerCase();
+  }
+
+  function usesCvt10(p) {
+    var id = productId(p);
+    return id === 'mx2000-pro' || id === 'mx6000-pro' || id === 'mx2000' || id === 'mx6000';
+  }
+
+  function isHSeries(p) {
+    var fam = String((p && p.family) || '').toLowerCase();
+    var id = productId(p);
+    return fam.indexOf('h series') !== -1 || /^(h2|h5|h9|h15)$/.test(id);
+  }
+
+  function copperRj45OnBox(p) {
+    if (!p) return 0;
+    if (usesCvt10(p)) return 0;
+    var id = productId(p);
+    if (id === 'h2') return 20;
+    if (id === 'h5') return 40;
+    if (id === 'h9') return 60;
+    if (id === 'h15') return 80;
+    var m = String(p.outputs || '').match(/(\d+)\s*[×x]\s*(?:EtherCON|RJ45)/i);
+    return m ? Number(m[1]) : 0;
+  }
+
+  function cvt10Count(dataPorts) {
+    var n = Math.max(0, Number(dataPorts) || 0);
+    return n ? Math.ceil(n / 10) : 0;
+  }
+
+  function canDrivePorts(p, dataPorts) {
+    var ports = Math.max(0, Number(dataPorts) || 0);
+    if (!p) return false;
+    if (!ports) return true;
+    if (usesCvt10(p)) return true;
+    var copper = copperRj45OnBox(p);
+    if (copper > 0) return copper >= ports;
+    return true;
+  }
+
+  function hSendingCardPorts() {
+    return 20;
+  }
+
+  function processorKitLabel(p, qty, cvt10, opts) {
+    if (!p) return 'None';
+    var short = !!(opts && opts.short);
+    var name = short ? (p.model || p.name) : (p.name || p.model);
+    if ((Number(qty) || 0) > 1) name = qty + ' × ' + name;
+    var n = Number(cvt10) || 0;
+    if (n > 0) name += short ? (' + ' + n + '× CVT10') : (' + ' + n + ' × CVT10');
+    return name;
+  }
+
+  function undersizedPortWarning(p, dataPorts) {
+    if (!p || usesCvt10(p)) return '';
+    var copper = copperRj45OnBox(p);
+    var ports = Math.max(0, Number(dataPorts) || 0);
+    if (!copper || !ports || copper >= ports) return '';
+    var cvt = cvt10Count(ports);
+    if (productId(p) === 'h2') {
+      return 'H2 has at most 20 copper ports. This wall needs ' + ports +
+        '. Use H5 + two sending cards, or MX2000 Pro + ' + cvt + '× CVT10.';
+    }
+    return (p.model || p.name) + ' has at most ' + copper + ' copper ports. This wall needs ' +
+      ports + '. Use H5 with enough sending cards, or MX2000 Pro + ' + cvt + '× CVT10.';
+  }
+
   /**
    * Smallest processor/sender whose published load is ≥ totalPixels with ~20% headroom.
-   * Never returns a receiving card.
+   * Never returns a receiving card. Skips H2 when the wall needs more than 20 copper ports.
+   * Prefers MX2000 Pro + CVT10 when data ports ≥ 21.
    */
   function recommendProcessor(totalPixels, opts) {
     var total = Math.max(0, Number(totalPixels) || 0);
     var need = Math.ceil(total * 1.2);
+    var dataPorts = opts && opts.dataPorts != null ? Number(opts.dataPorts) : 0;
     var subtype = (opts && opts.subtype) || 'all-in-one';
+
+    if (dataPorts > 20) {
+      var mx2000 = byId('mx2000-pro');
+      var mx6000 = byId('mx6000-pro');
+      var mx = mx2000;
+      if (mx2000 && (mx2000.maxPixels || 0) < need && mx6000) mx = mx6000;
+      if (!mx) mx = mx6000;
+      if (mx && !isReceivingCard(mx)) {
+        return {
+          product: mx,
+          qty: 1,
+          totalPixels: total,
+          need: need,
+          headroom: 0.2,
+          cvt10: cvt10Count(dataPorts)
+        };
+      }
+      var biggerH = byId('h5') || byId('h9') || byId('h15');
+      if (biggerH && canDrivePorts(biggerH, dataPorts)) {
+        return {
+          product: biggerH,
+          qty: 1,
+          totalPixels: total,
+          need: need,
+          headroom: 0.2,
+          cvt10: 0
+        };
+      }
+    }
+
     var pool = processorsForCalculator().filter(function (p) {
       return subtype === 'any' ? true : p.subtype === subtype;
     });
     if (!pool.length) pool = processorsForCalculator();
+    pool = pool.filter(function (p) {
+      if (productId(p) === 'h2' && dataPorts > 20) return false;
+      return canDrivePorts(p, dataPorts);
+    });
     pool = pool.slice().sort(function (a, b) {
       return (a.maxPixels || 0) - (b.maxPixels || 0);
     });
@@ -104,7 +210,8 @@
       qty: qty,
       totalPixels: total,
       need: need,
-      headroom: 0.2
+      headroom: 0.2,
+      cvt10: usesCvt10(pick) ? cvt10Count(dataPorts) : 0
     };
   }
 
@@ -188,6 +295,13 @@
     shoppableControl: shoppableControl,
     processorsForCalculator: processorsForCalculator,
     playbackBoxes: playbackBoxes,
+    usesCvt10: usesCvt10,
+    isHSeries: isHSeries,
+    copperRj45OnBox: copperRj45OnBox,
+    cvt10Count: cvt10Count,
+    hSendingCardPorts: hSendingCardPorts,
+    processorKitLabel: processorKitLabel,
+    undersizedPortWarning: undersizedPortWarning,
     recommendProcessor: recommendProcessor,
     recommendedControlForCabinet: recommendedControlForCabinet,
     shouldShowReceiving: shouldShowReceiving,

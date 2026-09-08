@@ -604,6 +604,15 @@
       height: 0.7rem;
       border-radius: 2px;
     }
+    .control-port-warning {
+      margin-top: 0.4rem;
+      font-size: 0.75rem;
+      line-height: 1.4;
+      color: #fbbf24;
+    }
+    .control-port-warning.hidden {
+      display: none;
+    }
     .rear-ports {
       position: absolute;
       left: 50%;
@@ -1009,6 +1018,7 @@
             <select id="control-processor" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-sky-500">
               <option value="">Recommended</option>
             </select>
+            <p id="control-port-warning" class="control-port-warning hidden" role="status"></p>
           </div>
           <div>
             <label class="block text-xs text-slate-400 mb-1" data-i18n="designer.controlPlayback">Add playback box (optional)</label>
@@ -1356,7 +1366,42 @@
     const CVT_BAND_EDGE = ['#fb923c', '#38bdf8', '#4ade80'];
     const CVT_PORTS_PER_BOX = 10;
 
-    function drawWiringOverlay(svg, cols, rows, cellW, cellH, dataPorts, circuits, cabWpx, cabHpx) {
+    function wiringBandKind(processor) {
+      if (!processor || !window.SpectrumControl) return 'none';
+      if (SpectrumControl.usesCvt10(processor)) return 'cvt10';
+      if (SpectrumControl.isHSeries(processor)) return 'hcard';
+      return 'none';
+    }
+    function wiringOutputBands(kind, portCount) {
+      const ports = Math.max(0, Number(portCount) || 0);
+      if (!ports || kind === 'none') return [];
+      const size = kind === 'cvt10'
+        ? CVT_PORTS_PER_BOX
+        : (window.SpectrumControl ? SpectrumControl.hSendingCardPorts() : 20);
+      const count = Math.ceil(ports / size);
+      const bands = [];
+      for (let b = 0; b < count; b++) {
+        const from = b * size + 1;
+        const to = Math.min((b + 1) * size, ports);
+        if (kind === 'cvt10') {
+          bands.push({
+            from: from,
+            to: to,
+            overlay: 'CVT10-' + (b + 1) + ' / OPT' + (b + 1),
+            legend: 'CVT10-' + (b + 1) + ' &nbsp; OPT' + (b + 1) + ' &nbsp; ports D' + from + '–D' + to
+          });
+        } else {
+          bands.push({
+            from: from,
+            to: to,
+            overlay: 'Sending card ' + (b + 1),
+            legend: 'Sending card ' + (b + 1) + ' · D' + from + '–D' + to
+          });
+        }
+      }
+      return bands;
+    }
+    function drawWiringOverlay(svg, cols, rows, cellW, cellH, dataPorts, circuits, cabWpx, cabHpx, processor) {
       const gap = 1.5;
       const W = cols * cellW + (cols - 1) * gap;
       const H = rows * cellH + (rows - 1) * gap;
@@ -1372,9 +1417,11 @@
       const order = columnDownOrder(cols, rows);
       const dataChunks = chunkBySize(order, perPort);
       const stroke = Math.max(1.2, Math.min(2.5, cellW * 0.08));
-      const cvtCount = dataChunks.length > CVT_PORTS_PER_BOX
-        ? Math.ceil(dataChunks.length / CVT_PORTS_PER_BOX)
-        : 0;
+      const bandKind = wiringBandKind(processor);
+      const bands = wiringOutputBands(bandKind, dataChunks.length);
+      const bandSize = bandKind === 'hcard'
+        ? (window.SpectrumControl ? SpectrumControl.hSendingCardPorts() : 20)
+        : CVT_PORTS_PER_BOX;
 
       const defs = document.createElementNS(ns, 'defs');
       DATA_COLORS.forEach(function (color, i) {
@@ -1457,8 +1504,8 @@
           svg.appendChild(t);
         }
       }
-      function bandLabel(chunk, bandIdx, color) {
-        if (!chunk || !chunk[0]) return;
+      function bandLabel(chunk, text, color) {
+        if (!chunk || !chunk[0] || !text) return;
         const o = cellOrigin(chunk[0].c, chunk[0].r, cellW, cellH, gap);
         const t = document.createElementNS(ns, 'text');
         t.setAttribute('x', String(o.x + 4));
@@ -1467,22 +1514,22 @@
         t.setAttribute('font-size', String(Math.max(7, Math.min(11, cellW * 0.18))));
         t.setAttribute('font-family', 'Inter, system-ui, sans-serif');
         t.setAttribute('font-weight', '700');
-        t.textContent = 'CVT10-' + (bandIdx + 1) + ' / OPT' + (bandIdx + 1);
+        t.textContent = text;
         svg.appendChild(t);
       }
 
-      if (cvtCount) {
-        for (let b = 0; b < cvtCount; b++) {
-          const start = b * CVT_PORTS_PER_BOX;
-          const bandChunks = dataChunks.slice(start, start + CVT_PORTS_PER_BOX);
-          bandChunks.forEach(function (chunk) {
-            chunk.forEach(function (cab) {
-              cabinetFill(cab, CVT_BAND_FILL[b % CVT_BAND_FILL.length], CVT_BAND_EDGE[b % CVT_BAND_EDGE.length]);
-            });
+      bands.forEach(function (band, b) {
+        const start = b * bandSize;
+        const bandChunks = dataChunks.slice(start, start + bandSize);
+        bandChunks.forEach(function (chunk) {
+          chunk.forEach(function (cab) {
+            cabinetFill(cab, CVT_BAND_FILL[b % CVT_BAND_FILL.length], CVT_BAND_EDGE[b % CVT_BAND_EDGE.length]);
           });
-          if (bandChunks[0] && bandChunks[0][0]) bandLabel(bandChunks[0], b, CVT_BAND_EDGE[b % CVT_BAND_EDGE.length]);
+        });
+        if (bandChunks[0] && bandChunks[0][0]) {
+          bandLabel(bandChunks[0], band.overlay, CVT_BAND_EDGE[b % CVT_BAND_EDGE.length]);
         }
-      }
+      });
 
       order.forEach(powerMark);
 
@@ -1493,24 +1540,20 @@
         if (chunk[0]) portLabel(chunk[0], color, 'D' + (i + 1));
       });
 
-      renderWiringLegend(perPort, dataChunks.length, cvtCount);
+      renderWiringLegend(perPort, bands);
     }
-    function renderWiringLegend(perPort, portCount, cvtCount) {
+    function renderWiringLegend(perPort, bands) {
       const el = document.getElementById('wiring-legend');
       if (!el) return;
       const rows = [];
       rows.push('<div class="wiring-legend-row"><span class="wiring-swatch"></span> Data chain — colored line, ' + perPort + ' cabinet' + (perPort === 1 ? '' : 's') + ' / port</div>');
       rows.push('<div class="wiring-legend-row"><span class="wiring-swatch wiring-swatch-p"></span> Power — separate dots</div>');
-      if (cvtCount) {
-        for (let b = 0; b < cvtCount; b++) {
-          const from = b * CVT_PORTS_PER_BOX + 1;
-          const to = Math.min((b + 1) * CVT_PORTS_PER_BOX, portCount);
-          rows.push(
-            '<div class="wiring-legend-row"><span class="wiring-swatch wiring-swatch-cvt" style="background:' + CVT_BAND_EDGE[b % CVT_BAND_EDGE.length] + '"></span>'
-            + 'CVT10-' + (b + 1) + ' &nbsp; OPT' + (b + 1) + ' &nbsp; ports D' + from + '–D' + to + '</div>'
-          );
-        }
-      }
+      (bands || []).forEach(function (band, b) {
+        rows.push(
+          '<div class="wiring-legend-row"><span class="wiring-swatch wiring-swatch-cvt" style="background:' + CVT_BAND_EDGE[b % CVT_BAND_EDGE.length] + '"></span>'
+          + band.legend + '</div>'
+        );
+      });
       el.innerHTML = rows.join('');
     }
     function rowLetter(n) {
@@ -2056,13 +2099,14 @@
       }
     }
 
-    function resolveControlSelection(totalPixels) {
+    function resolveControlSelection(totalPixels, dataPorts) {
       lastControlPick = null;
       lastPlaybackPick = null;
-      if (!window.SpectrumControl) return { processor: null, qty: 0, playback: null };
+      if (!window.SpectrumControl) return { processor: null, qty: 0, playback: null, cvt10: 0, warning: '' };
       const mode = (controlProcessorEl && controlProcessorEl.value) || 'auto';
       let processor = null;
       let qty = 0;
+      let cvt10 = 0;
       if (mode === 'none') {
         processor = null;
       } else if (mode && mode !== 'auto') {
@@ -2071,18 +2115,42 @@
         if (processor) {
           const need = Math.ceil(totalPixels * 1.2);
           qty = processor.maxPixels ? Math.max(1, Math.ceil(need / processor.maxPixels)) : 1;
+          cvt10 = SpectrumControl.usesCvt10(processor) ? SpectrumControl.cvt10Count(dataPorts) : 0;
         }
       } else {
-        const rec = SpectrumControl.recommendProcessor(totalPixels, { subtype: 'all-in-one' });
+        const rec = SpectrumControl.recommendProcessor(totalPixels, {
+          subtype: 'all-in-one',
+          dataPorts: dataPorts
+        });
         processor = rec.product;
         qty = rec.qty || (processor ? 1 : 0);
+        cvt10 = rec.cvt10 || 0;
+        if (processor && !SpectrumControl.usesCvt10(processor)) cvt10 = 0;
       }
       const playId = controlPlaybackEl && controlPlaybackEl.value;
       let playback = playId ? SpectrumControl.byId(playId) : null;
       if (playback && SpectrumControl.isReceivingCard(playback)) playback = null;
       lastControlPick = processor;
       lastPlaybackPick = playback;
-      return { processor: processor, qty: qty, playback: playback };
+      return {
+        processor: processor,
+        qty: qty,
+        playback: playback,
+        cvt10: cvt10,
+        warning: SpectrumControl.undersizedPortWarning(processor, dataPorts) || ''
+      };
+    }
+    function updateAutoProcessorOption(label) {
+      if (!controlProcessorEl) return;
+      const opt = controlProcessorEl.querySelector('option[value="auto"]');
+      if (!opt) return;
+      opt.textContent = label ? ('Recommended (auto) · ' + label) : 'Recommended (auto)';
+    }
+    function setControlPortWarning(text) {
+      const el = document.getElementById('control-port-warning');
+      if (!el) return;
+      el.textContent = text || '';
+      el.classList.toggle('hidden', !text);
     }
 
     function controlUnitPrice(p) {
@@ -2218,16 +2286,26 @@
       const circuits = Math.max(1, Math.ceil(powerPeak / wattsPerCircuit));
       const totalPx = pxW * pxH;
       const dataPorts = ethernetPortsNeeded(ppcW, ppcH, panels);
-      const controlSel = resolveControlSelection(totalPx);
-      const processorText = controlSel.processor
-        ? ((controlSel.qty > 1 ? controlSel.qty + ' × ' : '') + controlSel.processor.name)
-        : 'None';
+      const controlSel = resolveControlSelection(totalPx, dataPorts);
+      const processorText = window.SpectrumControl
+        ? SpectrumControl.processorKitLabel(controlSel.processor, controlSel.qty, controlSel.cvt10)
+        : (controlSel.processor
+          ? ((controlSel.qty > 1 ? controlSel.qty + ' × ' : '') + controlSel.processor.name)
+          : 'None');
       const playbackText = controlSel.playback ? controlSel.playback.name : 'None';
+      const autoMode = !controlProcessorEl || controlProcessorEl.value === 'auto';
+      updateAutoProcessorOption(autoMode && controlSel.processor
+        ? SpectrumControl.processorKitLabel(controlSel.processor, controlSel.qty, controlSel.cvt10, { short: true })
+        : '');
+      setControlPortWarning(controlSel.warning);
       const loadEl = document.getElementById('control-pixel-load');
       if (loadEl) {
         const need = Math.ceil(totalPx * 1.2);
+        const kit = controlSel.cvt10
+          ? ('  ·  ' + controlSel.cvt10 + ' × CVT10')
+          : '';
         loadEl.textContent = 'Wall load: ' + totalPx.toLocaleString() + ' px  ·  size with ~20% headroom: ' + need.toLocaleString() + ' px' +
-          (controlSel.processor ? '  ·  ' + (window.SpectrumControl ? SpectrumControl.formatPixels(controlSel.processor.maxPixels) : '') + ' capacity' : '');
+          (controlSel.processor ? '  ·  ' + (window.SpectrumControl ? SpectrumControl.formatPixels(controlSel.processor.maxPixels) : '') + ' capacity' + kit : '');
       }
       const basePrice = Math.round(actualArea * series.pricePerM2);
       const controlPrice = controlUnitPrice(controlSel.processor) * (controlSel.qty || 0)
@@ -2379,7 +2457,7 @@
         overlay.setAttribute('class', 'wiring-overlay');
         overlay.setAttribute('aria-hidden', 'true');
         preview.appendChild(overlay);
-        drawWiringOverlay(overlay, maxDisplayCols, maxDisplayRows, cellW, cellH, dataPorts, circuits, ppcW, ppcH);
+        drawWiringOverlay(overlay, maxDisplayCols, maxDisplayRows, cellW, cellH, dataPorts, circuits, ppcW, ppcH, controlSel.processor);
       }
       if (wiringSvg) wiringSvg.hidden = true;
 
@@ -2435,7 +2513,7 @@
       // Quote / save CTA
       const brandName = getBrandName();
       let q = `?product=${encodeURIComponent(brandName + ' ' + series.name)}&pitch=${pitch}mm&size=${w}x${h}m&area=${actualArea.toFixed(2)}&cabinets=${panels}&mount=${mountType}&volt=${voltage}&peak=${powerPeak}W&circuits=${circuits}&ports=${dataPorts}`;
-      if (controlSel.processor) q += `&control=${encodeURIComponent(controlSel.processor.name)}&controlQty=${controlSel.qty || 1}`;
+      if (controlSel.processor) q += `&control=${encodeURIComponent(processorText)}&controlQty=${controlSel.qty || 1}`;
       if (controlSel.playback) q += `&playback=${encodeURIComponent(controlSel.playback.name)}`;
       syncSummaryCta('contact.html' + q);
 
