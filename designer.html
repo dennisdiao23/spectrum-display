@@ -547,6 +547,9 @@
       letter-spacing: 0.04em;
       white-space: nowrap;
     }
+    .cabinet-grid {
+      position: relative;
+    }
     .cabinet-grid.labels-off .cabinet-label {
       display: none;
     }
@@ -624,12 +627,10 @@
       position: absolute;
       left: 0;
       top: 0;
-      z-index: 4;
+      z-index: 8;
       pointer-events: none;
       overflow: visible;
-    }
-    .wiring-overlay[hidden] {
-      display: none;
+      display: block;
     }
     .content-layer.wiring-hidden,
     .screen-overlay.wiring-hidden {
@@ -2372,12 +2373,15 @@
         preview.appendChild(div);
       }
 
-      if (wiringSvg) {
-        wiringSvg.hidden = !wiringOn;
-        if (wiringOn) {
-          drawWiringOverlay(wiringSvg, maxDisplayCols, maxDisplayRows, cellW, cellH, dataPorts, circuits, ppcW, ppcH);
-        }
+      if (wiringOn) {
+        const ns = 'http://www.w3.org/2000/svg';
+        const overlay = document.createElementNS(ns, 'svg');
+        overlay.setAttribute('class', 'wiring-overlay');
+        overlay.setAttribute('aria-hidden', 'true');
+        preview.appendChild(overlay);
+        drawWiringOverlay(overlay, maxDisplayCols, maxDisplayRows, cellW, cellH, dataPorts, circuits, ppcW, ppcH);
       }
+      if (wiringSvg) wiringSvg.hidden = true;
 
       const figEl = document.getElementById('scale-figure');
       const figureOn = figureMode === 'person' && viewMode !== 'wiring';
