@@ -4180,7 +4180,7 @@
           return dashRow(
             item.sku || item.name || 'Item',
             [item.name, item.brandName, item.pitchLabel].filter(Boolean).join(' · '),
-            (item.qty == null ? '—' : String(item.qty)) + ' on hand'
+            invQtyDisplay(item) + ' on hand'
           );
         }).join('');
         list.innerHTML = rows || '<p class="dash-activity-empty">No inventory SKUs yet.</p>';
@@ -4918,9 +4918,19 @@
 
     const INVENTORY_MOBILE_COLS = ['name', 'sku', 'price', 'qty'];
 
+    function invVendorQty(item) {
+      if (!item) return 0;
+      if (item.untrackedQty != null) return Math.max(0, Number(item.untrackedQty) || 0);
+      return Math.max(0, Number(item.partnerQty) || 0);
+    }
+    function invOnHandQty(item) {
+      const ours = Math.max(0, Number(item && item.qty) || 0);
+      if (ours > 0) return ours;
+      return invVendorQty(item);
+    }
     function invQtyDisplay(item) {
-      if (!item || item.qty == null) return '—';
-      return Number(item.qty).toLocaleString();
+      if (!item || (item.qty == null && item.untrackedQty == null && item.partnerQty == null)) return '—';
+      return invOnHandQty(item).toLocaleString();
     }
 
     function applyMobileColState(table, state) {
@@ -6480,7 +6490,7 @@
         if (col === 'description') return item.description || '';
         if (col === 'brand') return item.brandName || '';
         if (col === 'pitch') return item.pitchLabel || '';
-        if (col === 'qty') return Number(item.qty) || 0;
+        if (col === 'qty') return invOnHandQty(item);
         if (col === 'warehouse') return item.warehouse || '';
         if (col === 'bin') return item.bin || '';
         if (col === 'cost') return Number(item.cost) || 0;
