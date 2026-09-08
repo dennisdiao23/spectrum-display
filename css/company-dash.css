@@ -1950,25 +1950,19 @@ html.dash-scroll-lock body.company-app {
   .dash-menu-btn { display: inline-flex !important; align-items: center; justify-content: center; }
   .company-main, .dash-topbar { padding-left: 1rem; padding-right: 1rem; }
   .dash-topbar h1 { font-size: 1.15rem; }
-  body.dash-master-on #admin-name { display: none; }
-  body.dash-master-on .dash-topbar {
-    padding-left: 0.55rem;
-    padding-right: 0.45rem;
-  }
+  #admin-name { display: none; }
+  .dash-master-tabs,
   body.dash-master-on .dash-master-tabs {
-    overflow-x: auto;
-    overflow-y: hidden;
-    -webkit-overflow-scrolling: touch;
-    touch-action: pan-x;
-    scrollbar-width: none;
+    display: none !important;
   }
-  body.dash-master-on .dash-master-tabs::-webkit-scrollbar {
+  body.dash-master-on #dash-title-row {
+    display: flex;
+  }
+  body.dash-master-on #admin-page-sub {
+    display: block;
+  }
+  body.dash-master-on #admin-page-sub[hidden] {
     display: none;
-  }
-  body.dash-master-on .dash-master-tabs .inv-tab-strip {
-    overflow: visible;
-    flex: 0 0 auto;
-    min-width: max-content;
   }
 
   /* Admin tables: readable columns + horizontal scroll on mobile */
