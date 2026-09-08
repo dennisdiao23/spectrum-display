@@ -1564,11 +1564,14 @@
         if (!cab) return;
         const o = cellOrigin(cab.c, cab.r, cellW, cellH, gap);
         const t = document.createElementNS(ns, 'text');
-        t.setAttribute('x', String(o.x + Math.max(6, cellW * 0.18)));
-        t.setAttribute('y', String(o.y + Math.max(9, cellH * 0.22)));
-        t.setAttribute('text-anchor', 'start');
+        t.setAttribute('x', String(o.x + cellW - 4));
+        t.setAttribute('y', String(o.y + cellH - 5));
+        t.setAttribute('text-anchor', 'end');
         t.setAttribute('fill', POWER_COLOR);
-        t.setAttribute('font-size', String(Math.max(8, Math.min(15, cellW * 0.26))));
+        t.setAttribute('stroke', '#0f172a');
+        t.setAttribute('stroke-width', '2.5');
+        t.setAttribute('paint-order', 'stroke');
+        t.setAttribute('font-size', String(Math.max(9, Math.min(16, cellW * 0.3))));
         t.setAttribute('font-family', 'Inter, system-ui, sans-serif');
         t.setAttribute('font-weight', '800');
         t.textContent = label;
@@ -1601,20 +1604,24 @@
         }
       });
 
-      if (showPower) {
-        powerChunks.forEach(function (chunk, i) {
-          const pts = chunk.map(function (p) { return cellCenter(p.c, p.r, cellW, cellH, gap); });
-          polyline(pts, POWER_COLOR, Math.max(stroke, stroke * 1.15), 'power-arrow');
-          if (chunk[0]) powerChainLabel(chunk[0], 'P' + (i + 1));
-        });
-      }
-
       if (showData) {
         dataChunks.forEach(function (chunk, i) {
           const color = DATA_COLORS[i % DATA_COLORS.length];
           const pts = chunk.map(function (p) { return cellCenter(p.c, p.r, cellW, cellH, gap); });
           polyline(pts, color, stroke, 'data-arrow-' + (i % DATA_COLORS.length));
           if (chunk[0]) portLabel(chunk[0], color, 'D' + (i + 1));
+        });
+      }
+
+      if (showPower) {
+        const powerOff = Math.min(5, cellW * 0.12);
+        powerChunks.forEach(function (chunk, i) {
+          const pts = chunk.map(function (p) {
+            const c = cellCenter(p.c, p.r, cellW, cellH, gap);
+            return { x: c.x + powerOff, y: c.y };
+          });
+          polyline(pts, POWER_COLOR, Math.max(1.8, stroke * 1.25), 'power-arrow');
+          if (chunk[0]) powerChainLabel(chunk[0], 'P' + (i + 1));
         });
       }
 
