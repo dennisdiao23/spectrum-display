@@ -8,9 +8,9 @@
   <link rel="apple-touch-icon" href="/assets/apple-touch-icon.png" />
   <title>Company | Spectrum Display</title>
   <meta name="robots" content="noindex, nofollow" />
-  <link rel="stylesheet" href="/css/company-dash.css?v=send1" />
+  <link rel="stylesheet" href="/css/company-dash.css?v=chatpage3" />
   <script src="/js/address-autocomplete.js"></script>
-  <script src="/js/company-chat.js?v=win1"></script>
+  <script src="/js/company-chat.js?v=chatpage3"></script>
   <script>
     (function () {
       try {
@@ -1997,7 +1997,7 @@
           </div>
         </div>
       </div>
-      </div>
+      <div id="chat-section" class="hidden"></div>
     </section>
   </main>
   </div>
@@ -2589,7 +2589,7 @@
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="8" r="3.25"/><path d="M5 19.2c.9-3.1 3.5-4.7 7-4.7s6.1 1.6 7 4.7"/></svg>
       <span>Customer</span>
     </a>
-    <a href="#" id="tabbar-chat" class="hidden">
+    <a href="/company/chat" id="tabbar-chat" class="hidden">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 15a2 2 0 0 1-2 2H8l-4 4V5a2 2 0 0 1 2-2h13a2 2 0 0 1 2 2z"/></svg>
       <span>Chat</span>
       <span class="dash-nav-unread dash-tabbar-unread" id="tabbar-chat-unread" hidden></span>
@@ -2600,7 +2600,7 @@
     </a>
   </nav>
 
-  <link rel="stylesheet" href="/css/company-dash.css?v=send1" />
+  <link rel="stylesheet" href="/css/company-dash.css?v=chatpage3" />
 
   <script>
     const loginPanel = document.getElementById('login-panel');
@@ -2674,8 +2674,10 @@
       if (hash === 'sales' || hash === 'quotes' || hash === 'sales/quotes') return 'quotes';
       if (hash === 'orders' || hash === 'sales/orders') return 'orders';
       if (hash === 'invoices' || hash === 'sales/invoices') return 'invoices';
+      if (hash === 'chat') return 'chat';
       if (hash === 'dashboard') return 'dashboard';
       const p = companyPath();
+      if (p === '/company/chat') return 'chat';
       if (p === '/company' || p === '/company/dashboard') return 'dashboard';
       if (p === '/company/customers') return 'customers';
       if (/^\/company\/customers\/\d+$/.test(p)) return 'customers';
@@ -2705,6 +2707,7 @@
     }
     function pathForTab(name) {
       if (name === 'dashboard') return '/company';
+      if (name === 'chat') return '/company/chat';
       if (name === 'inventory') return '/company/inventory';
       if (name === 'warehouses') return '/company/inventory/locations';
       if (name === 'vendors') return '/company/inventory/vendors';
@@ -2825,6 +2828,7 @@
         if (p === '/company/settings/roles' || p === '/company/settings') return 'staff';
         if (p === '/company/website/accounts') return 'accounts';
         if (p === '/company/website') return 'products';
+        if (p === '/company/chat') return 'chat';
         if (p === '/company' || p === '/company/dashboard') return 'dashboard';
       } catch (err) {}
       return '';
@@ -2889,6 +2893,7 @@
     const MASTER_TAB_MAX = 15;
     const MASTER_TAB_LABEL = {
       dashboard: 'Dashboard',
+      chat: 'Chat',
       website: 'Website',
       products: 'Website',
       accounts: 'Accounts',
@@ -2915,6 +2920,7 @@
     };
     const MASTER_TAB_ICON = {
       dashboard: '<svg class="dash-master-tab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="8" height="8" rx="1.5"/><rect x="13" y="3" width="8" height="8" rx="1.5"/><rect x="3" y="13" width="8" height="8" rx="1.5"/><rect x="13" y="13" width="8" height="8" rx="1.5"/></svg>',
+      chat: '<svg class="dash-master-tab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 15a2 2 0 0 1-2 2H8l-4 4V5a2 2 0 0 1 2-2h13a2 2 0 0 1 2 2z"/></svg>',
       website: '<svg class="dash-master-tab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M3 8h18"/><path d="M8 12h5M8 16h8"/></svg>',
       inventory: '<svg class="dash-master-tab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 10 12 4.5 21 10v9.5a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V10z"/><path d="M9 20.5V12h6v8.5"/></svg>',
       warehouses: '<svg class="dash-master-tab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 21V8l9-5 9 5v13"/><path d="M9 21v-8h6v8"/></svg>',
@@ -2974,6 +2980,7 @@
       const doc = parseDocMasterTab(name);
       if (doc) return doc.kind === 'po' ? 'vendor' : 'customer';
       if (name === 'dashboard') return 'dashboard';
+      if (name === 'chat') return 'chat';
       if (name === 'products' || name === 'accounts' || name === 'website') return 'website';
       if (name === 'inventory' || name === 'warehouses' || name === 'receipt-shipments') return 'inventory';
       if (name === 'vendors' || name === 'purchase-orders') return 'vendor';
@@ -2983,6 +2990,7 @@
     }
 
     function masterDefaultInner(group) {
+      if (group === 'chat') return 'chat';
       if (group === 'website') return 'products';
       if (group === 'inventory') return 'inventory';
       if (group === 'vendor') return 'vendors';
@@ -2992,6 +3000,7 @@
     }
 
     function masterInnersFor(group) {
+      if (group === 'chat') return ['chat'];
       if (group === 'website') return ['products', 'accounts'];
       if (group === 'inventory') return ['inventory', 'warehouses', 'receipt-shipments'];
       if (group === 'vendor') return ['vendors', 'purchase-orders'];
@@ -4368,6 +4377,16 @@
       if (onSales && !doc && typeof refreshSalesListView === 'function') refreshSalesListView(view);
       if (typeof syncDocWindowChrome === 'function') syncDocWindowChrome(name);
       document.getElementById('dashboard-section').classList.toggle('hidden', view !== 'dashboard');
+      const chatSec = document.getElementById('chat-section');
+      if (chatSec) chatSec.classList.toggle('hidden', view !== 'chat');
+      document.body.classList.toggle('chat-page-on', view === 'chat' && isMobileDash());
+      if (view === 'chat') {
+        if (isMobileDash() && window.SpectrumChat && typeof SpectrumChat.openPage === 'function') {
+          SpectrumChat.openPage();
+        }
+      } else if (window.SpectrumChat && typeof SpectrumChat.closePage === 'function') {
+        SpectrumChat.closePage();
+      }
       document.getElementById('tab-dashboard').className = navLinkClass(view === 'dashboard', !canUse('dashboard'));
       document.getElementById('website-pane').classList.toggle('hidden', !onWebsite);
       document.getElementById('settings-pane').classList.toggle('hidden', !onSettings);
@@ -4436,6 +4455,7 @@
       document.body.classList.remove('dash-tabbar-hidden');
       const titles = {
         dashboard: ['Dashboard', ''],
+        chat: ['Chat', ''],
         products: ['Website', 'Product pages'],
         accounts: ['Website', 'Website accounts'],
         inventory: ['Inventory', ''],
@@ -5659,7 +5679,13 @@
         getChatPrefs: getChatWindowPrefs,
         saveChatPrefs: saveChatWindowPrefs,
         getShareContext: getChatShareContext,
-        openSharePath: openChatSharePath
+        openSharePath: openChatSharePath,
+        onOpenPage: function () {
+          if (typeof openCompanyTab === 'function') openCompanyTab('chat', true);
+        },
+        onPageClose: function () {
+          if (typeof closeMasterTab === 'function') closeMasterTab('chat');
+        }
       });
     }
 
@@ -8554,6 +8580,7 @@
         'tabbar-inventory': onInventory,
         'tabbar-vendor': onVendorNav,
         'tabbar-customer': onCustomerNav,
+        'tabbar-chat': name === 'chat',
         'tabbar-settings': onSettings
       };
       Object.keys(map).forEach(function (id) {
@@ -8696,7 +8723,8 @@
       if (!a || a.classList.contains('hidden')) return;
       if (a.id === 'tabbar-chat') {
         e.preventDefault();
-        if (window.SpectrumChat && SpectrumChat.open) SpectrumChat.open();
+        if (isMobileDash()) openCompanyTab('chat', true);
+        else if (window.SpectrumChat && SpectrumChat.open) SpectrumChat.open();
         return;
       }
       const group = a.getAttribute('data-tabbar-group');
@@ -13002,6 +13030,13 @@
         loaded = true;
         return;
       }
+      if (name === 'chat') {
+        if (isMobileDash() && window.SpectrumChat && typeof SpectrumChat.openPage === 'function') {
+          await SpectrumChat.openPage();
+        }
+        loaded = true;
+        return;
+      }
       if (name === 'products') {
         await loadWebsiteCatalog();
         if (isWpSplitOn()) {
@@ -15860,6 +15895,7 @@
 
   <section class="co-chat is-window" id="co-chat" hidden>
     <div class="co-chat-head">
+      <button type="button" class="co-chat-back" id="co-chat-back" hidden aria-label="Back to contacts">←</button>
       <strong id="co-chat-head-title" class="co-chat-head-title">Lobby</strong>
       <div class="co-chat-head-actions">
         <span class="co-chat-unread-badge" id="co-chat-unread-badge" hidden></span>

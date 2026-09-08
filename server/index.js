@@ -129,7 +129,8 @@ async function main() {
     '/company/sales/orders',
     '/company/sales/invoices',
     '/company/settings',
-    '/company/settings/company'
+    '/company/settings/company',
+    '/company/chat'
   ];
   COMPANY_PAGES.forEach(function (route) {
     app.get([route, route + '/'], sendCompany);
