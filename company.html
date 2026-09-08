@@ -8,7 +8,7 @@
   <link rel="apple-touch-icon" href="/assets/apple-touch-icon.png" />
   <title>Company | Spectrum Display</title>
   <meta name="robots" content="noindex, nofollow" />
-  <link rel="stylesheet" href="/css/company-dash.css?v=chatpage3" />
+  <link rel="stylesheet" href="/css/company-dash.css?v=nomaster1" />
   <script src="/js/address-autocomplete.js"></script>
   <script src="/js/company-chat.js?v=chatpage3"></script>
   <script>
@@ -2635,7 +2635,7 @@
     </a>
   </nav>
 
-  <link rel="stylesheet" href="/css/company-dash.css?v=chatpage3" />
+  <link rel="stylesheet" href="/css/company-dash.css?v=nomaster1" />
 
   <script>
     const loginPanel = document.getElementById('login-panel');
@@ -3484,6 +3484,12 @@
       const bar = document.getElementById('dash-tab-bar');
       const strip = document.getElementById('dash-tab-strip');
       if (!bar || !strip || !currentAdminUser) return;
+      if (isMobileDash()) {
+        bar.hidden = true;
+        strip.innerHTML = '';
+        document.body.classList.remove('dash-master-on');
+        return;
+      }
       bar.hidden = false;
       document.body.classList.add('dash-master-on');
       let html = '';
@@ -15922,6 +15928,7 @@
         if (mobile === lastMobile) return;
         lastMobile = mobile;
         syncSplitLayoutLock();
+        if (currentAdminUser) renderDashTabBar();
         const inv = document.getElementById('inventory-section');
         if (currentAdminUser && inv && !inv.classList.contains('hidden')) {
           renderInventoryTable();
