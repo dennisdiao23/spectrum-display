@@ -1699,6 +1699,39 @@ function createSupabaseStore() {
       throwIf(error, 'Could not delete sales document.');
       return !!(data && data.length);
     },
+    async listPrintForms() {
+      const pf = require('./print-forms');
+      const { data, error } = await supabase.from('company_print_forms').select('type, template_json');
+      throwIf(error, 'Could not load print forms.');
+      const byType = {};
+      (data || []).forEach(function (row) {
+        byType[row.type] = pf.parseStored(row.type, row.template_json);
+      });
+      const forms = {};
+      pf.TYPES.forEach(function (type) {
+        forms[type] = byType[type] || pf.defaultTemplate(type);
+      });
+      return forms;
+    },
+    async getPrintForm(type) {
+      const pf = require('./print-forms');
+      const t = pf.normalizeType(type);
+      const { data, error } = await supabase.from('company_print_forms').select('template_json').eq('type', t).maybeSingle();
+      throwIf(error, 'Could not load print form.');
+      return pf.parseStored(t, data && data.template_json);
+    },
+    async savePrintForm(type, template) {
+      const pf = require('./print-forms');
+      const t = pf.normalizeType(type);
+      const clean = pf.normalizeTemplate(t, template);
+      const { error } = await supabase.from('company_print_forms').upsert({
+        type: t,
+        template_json: clean,
+        updated_at: new Date().toISOString()
+      }, { onConflict: 'type' });
+      throwIf(error, 'Could not save print form.');
+      return clean;
+    },
     async listVendors() {
       const vn = require('./inventory-vendors');
       const { data, error } = await supabase
@@ -2248,6 +2281,9 @@ function createSupabaseStore() {
         status: 'draft',
         id: undefined
       });
+      if (type === 'invoice' && current.type === 'order' && !next.soNumber) {
+        next.soNumber = current.number;
+      }
       return this.createSalesDoc(next);
     },
     async getColumnPrefs(adminId) {

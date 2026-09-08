@@ -916,14 +916,16 @@ function createSqliteStore() {
       const stamp = dbUtil.nowIso();
       const info = db.prepare(`
         INSERT INTO company_sales_docs (
-          type, number, customer_id, customer_name, customer_email, po_number, issue_date, due_date,
-          payment_terms, status, tax_rate, discount, notes,
+          type, number, customer_id, customer_name, customer_email, po_number, so_number,
+          rep, account_no, ship_date, ship_via, tracking,
+          issue_date, due_date, payment_terms, status, tax_rate, discount, notes,
           bill_street, bill_city, bill_state, bill_zip, bill_country,
           ship_street, ship_city, ship_state, ship_zip, ship_country, created_at, updated_at
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
       `).run(
         fields.type, fields.number, fields.customer_id, fields.customer_name, fields.customer_email,
-        fields.po_number, fields.issue_date, fields.due_date, fields.payment_terms, fields.status,
+        fields.po_number, fields.so_number, fields.rep, fields.account_no, fields.ship_date, fields.ship_via, fields.tracking,
+        fields.issue_date, fields.due_date, fields.payment_terms, fields.status,
         fields.tax_rate, fields.discount, fields.notes,
         fields.bill_street, fields.bill_city, fields.bill_state, fields.bill_zip, fields.bill_country,
         fields.ship_street, fields.ship_city, fields.ship_state, fields.ship_zip, fields.ship_country,
@@ -952,13 +954,15 @@ function createSqliteStore() {
       db.prepare(`
         UPDATE company_sales_docs SET
           type = ?, number = ?, customer_id = ?, customer_name = ?, customer_email = ?, po_number = ?,
+          so_number = ?, rep = ?, account_no = ?, ship_date = ?, ship_via = ?, tracking = ?,
           issue_date = ?, due_date = ?, payment_terms = ?, status = ?, tax_rate = ?, discount = ?, notes = ?,
           bill_street = ?, bill_city = ?, bill_state = ?, bill_zip = ?, bill_country = ?,
           ship_street = ?, ship_city = ?, ship_state = ?, ship_zip = ?, ship_country = ?, updated_at = ?
         WHERE id = ?
       `).run(
         fields.type, fields.number, fields.customer_id, fields.customer_name, fields.customer_email,
-        fields.po_number, fields.issue_date, fields.due_date, fields.payment_terms, fields.status,
+        fields.po_number, fields.so_number, fields.rep, fields.account_no, fields.ship_date, fields.ship_via, fields.tracking,
+        fields.issue_date, fields.due_date, fields.payment_terms, fields.status,
         fields.tax_rate, fields.discount, fields.notes,
         fields.bill_street, fields.bill_city, fields.bill_state, fields.bill_zip, fields.bill_country,
         fields.ship_street, fields.ship_city, fields.ship_state, fields.ship_zip, fields.ship_country,
@@ -981,6 +985,36 @@ function createSqliteStore() {
       db.prepare('DELETE FROM company_sales_lines WHERE doc_id = ?').run(id);
       const info = db.prepare('DELETE FROM company_sales_docs WHERE id = ?').run(id);
       return info.changes > 0;
+    },
+    async listPrintForms() {
+      const pf = require('./print-forms');
+      const rows = db.prepare('SELECT type, template_json FROM company_print_forms').all();
+      const byType = {};
+      rows.forEach(function (row) {
+        byType[row.type] = pf.parseStored(row.type, row.template_json);
+      });
+      const forms = {};
+      pf.TYPES.forEach(function (type) {
+        forms[type] = byType[type] || pf.defaultTemplate(type);
+      });
+      return forms;
+    },
+    async getPrintForm(type) {
+      const pf = require('./print-forms');
+      const t = pf.normalizeType(type);
+      const row = db.prepare('SELECT template_json FROM company_print_forms WHERE type = ?').get(t);
+      return pf.parseStored(t, row && row.template_json);
+    },
+    async savePrintForm(type, template) {
+      const pf = require('./print-forms');
+      const t = pf.normalizeType(type);
+      const clean = pf.normalizeTemplate(t, template);
+      db.prepare(`
+        INSERT INTO company_print_forms (type, template_json, updated_at)
+        VALUES (?, ?, ?)
+        ON CONFLICT(type) DO UPDATE SET template_json = excluded.template_json, updated_at = excluded.updated_at
+      `).run(t, JSON.stringify(clean), dbUtil.nowIso());
+      return clean;
     },
     async listVendors() {
       const vn = require('./inventory-vendors');
@@ -1459,6 +1493,9 @@ function createSqliteStore() {
         status: 'draft',
         id: undefined
       });
+      if (type === 'invoice' && current.type === 'order' && !next.soNumber) {
+        next.soNumber = current.number;
+      }
       return this.createSalesDoc(next);
     },
     async getColumnPrefs(adminId) {

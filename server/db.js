@@ -119,6 +119,7 @@ function openDb() {
   seedAdminRoles(db);
   ensureCompanyCustomers(db);
   ensureCompanySales(db);
+  ensurePrintForms(db);
   ensureInventoryVendors(db);
   ensurePartyContacts(db);
   ensurePurchaseOrders(db);
@@ -504,6 +505,19 @@ function ensureCompanySales(db) {
       FOREIGN KEY (doc_id) REFERENCES company_sales_docs(id) ON DELETE CASCADE
     );
     CREATE INDEX IF NOT EXISTS company_sales_lines_doc_idx ON company_sales_lines (doc_id, sort_order);
+  `);
+  ['rep', 'account_no', 'ship_date', 'ship_via', 'tracking', 'so_number'].forEach(function (col) {
+    try { db.exec("ALTER TABLE company_sales_docs ADD COLUMN " + col + " TEXT NOT NULL DEFAULT ''"); } catch (e) { /* already present */ }
+  });
+}
+
+function ensurePrintForms(db) {
+  db.exec(`
+    CREATE TABLE IF NOT EXISTS company_print_forms (
+      type TEXT PRIMARY KEY,
+      template_json TEXT NOT NULL DEFAULT '{}',
+      updated_at TEXT NOT NULL
+    );
   `);
 }
 
@@ -1167,6 +1181,7 @@ module.exports = {
   ensureCatalogSkus,
   ensureCompanyCustomers,
   ensureCompanySales,
+  ensurePrintForms,
   ensureInventoryVendors,
   ensureInventoryWarehouses,
   ensurePartyContacts,

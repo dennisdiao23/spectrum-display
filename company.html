@@ -8,9 +8,10 @@
   <link rel="apple-touch-icon" href="/assets/apple-touch-icon.png" />
   <title>Company | Spectrum Display</title>
   <meta name="robots" content="noindex, nofollow" />
-  <link rel="stylesheet" href="/css/company-dash.css?v=nomaster1" />
+  <link rel="stylesheet" href="/css/company-dash.css?v=forms1" />
   <script src="/js/address-autocomplete.js"></script>
   <script src="/js/company-chat.js?v=chatpage3"></script>
+  <script src="/js/print-form.js?v=forms1"></script>
   <script>
     (function () {
       try {
@@ -143,6 +144,10 @@
           <a href="/company/settings/company" id="tab-company" class="dash-sub-link">
             <svg class="dash-nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 20V9l8-5 8 5v11"/><path d="M9 20v-6h6v6"/><path d="M9 10h.01M15 10h.01"/></svg>
             <span>Company</span>
+          </a>
+          <a href="/company/settings/forms" id="tab-forms" class="dash-sub-link">
+            <svg class="dash-nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="5" y="3" width="14" height="18" rx="1.5"/><path d="M8 8h8M8 12h8M8 16h5"/></svg>
+            <span>Forms</span>
           </a>
           <a href="/company/settings" id="tab-staff" class="dash-sub-link">
             <svg class="dash-nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="9" cy="8" r="3"/><path d="M3 19c.7-3 2.8-4.5 6-4.5s5.3 1.5 6 4.5"/><circle cx="17" cy="8.5" r="2.3"/><path d="M16.2 14.6c2.2.4 3.8 1.6 4.3 4.4"/></svg>
@@ -1290,6 +1295,7 @@
             <div class="po-foot">
               <button type="button" id="po-cancel" class="px-4 py-2 rounded-full border border-slate-700 text-sm">Cancel</button>
               <button type="button" id="po-delete-btn" class="hidden px-4 py-2 rounded-full border border-slate-700 text-red-400 text-sm">Delete</button>
+              <button type="button" id="po-print" class="px-4 py-2 rounded-full border border-slate-700 text-sm">Print</button>
               <button type="submit" class="px-5 py-2 rounded-full bg-sky-500 hover:bg-sky-400 text-white text-sm font-semibold">Save</button>
             </div>
           </form>
@@ -1765,6 +1771,24 @@
                         <label class="so-field so-f-status"><span>Status</span>
                           <select id="so-status"></select>
                         </label>
+                        <label class="so-field so-f-so"><span>S.O. No.</span>
+                          <input id="so-so-number" type="text">
+                        </label>
+                        <label class="so-field so-f-rep"><span>Rep</span>
+                          <input id="so-rep" type="text">
+                        </label>
+                        <label class="so-field so-f-account"><span>Account #</span>
+                          <input id="so-account" type="text">
+                        </label>
+                        <label class="so-field so-f-ship-date"><span>Ship date</span>
+                          <input id="so-ship-date" type="date">
+                        </label>
+                        <label class="so-field so-f-ship-via"><span>Ship via</span>
+                          <input id="so-ship-via" type="text">
+                        </label>
+                        <label class="so-field so-f-tracking"><span>Tracking</span>
+                          <input id="so-tracking" type="text">
+                        </label>
                       </div>
                     </div>
                     <label class="so-field so-field-name"><span>Customer name</span>
@@ -1937,6 +1961,60 @@
             </thead>
             <tbody id="ca-table" class="text-slate-200"></tbody>
           </table>
+          </div>
+        </div>
+      </div>
+
+      <div id="forms-section" class="hidden pf-page">
+        <div class="pf-page-head">
+          <div>
+            <h2>Forms</h2>
+            <p>Print for quotes, orders, invoices, and POs uses this letter layout. Customer-facing columns only unless you turn extras on.</p>
+          </div>
+          <div class="pf-page-actions">
+            <button type="button" id="pf-save" class="px-5 py-2 rounded-full bg-sky-500 hover:bg-sky-400 text-white text-sm font-semibold">Save</button>
+            <p id="pf-msg" class="hidden text-sm"></p>
+          </div>
+        </div>
+        <div class="pf-type-tabs" id="pf-type-tabs" role="tablist">
+          <button type="button" class="is-on" data-pf-type="invoice">Invoice</button>
+          <button type="button" data-pf-type="quote">Sales Quote</button>
+          <button type="button" data-pf-type="order">Sales Order</button>
+          <button type="button" data-pf-type="po">Purchase Order</button>
+        </div>
+        <div class="pf-editor">
+          <div class="pf-controls">
+            <label class="so-field"><span>Title</span>
+              <input id="pf-title" type="text" maxlength="80">
+            </label>
+            <label class="so-field"><span>Logo</span>
+              <select id="pf-logo"></select>
+            </label>
+            <div>
+              <p class="pf-label">Show on the page</p>
+              <div class="pf-blocks" id="pf-blocks"></div>
+            </div>
+            <div>
+              <p class="pf-label">Header fields on the gray grid</p>
+              <p class="pf-hint">Drag to reorder. Drag into Hidden to leave off the print.</p>
+              <div class="pf-chips" id="pf-header-on" data-pf-list="on"></div>
+              <p class="pf-label">Hidden</p>
+              <div class="pf-chips is-off" id="pf-header-off" data-pf-list="off"></div>
+            </div>
+            <div>
+              <p class="pf-label">Line columns</p>
+              <p class="pf-hint">Drag to reorder. Click a chip to turn extras on or off.</p>
+              <div class="pf-chips" id="pf-cols" data-pf-list="cols"></div>
+            </div>
+            <label class="so-field"><span>Payment terms copy</span>
+              <textarea id="pf-terms" rows="6"></textarea>
+            </label>
+          </div>
+          <div class="pf-preview-wrap">
+            <p class="pf-label">Live preview</p>
+            <div class="pf-preview-frame">
+              <div id="pf-preview" class="pf-preview"></div>
+            </div>
           </div>
         </div>
       </div>
@@ -2635,7 +2713,7 @@
     </a>
   </nav>
 
-  <link rel="stylesheet" href="/css/company-dash.css?v=nomaster1" />
+  <link rel="stylesheet" href="/css/company-dash.css?v=forms1" />
 
   <script>
     const loginPanel = document.getElementById('login-panel');
@@ -2701,6 +2779,7 @@
       if (hash === 'inventory/receipt-shipments' || hash === 'receipt-shipments') return 'receipt-shipments';
       if (hash === 'inventory') return 'inventory';
       if (hash === 'settings/company' || hash === 'company') return 'company';
+      if (hash === 'settings/forms' || hash === 'forms') return 'forms';
       if (hash === 'settings/roles' || hash === 'roles') return 'staff';
       if (hash === 'settings' || hash === 'settings/staff') return 'staff';
       if (hash === 'website/accounts' || hash === 'accounts') return 'accounts';
@@ -2734,6 +2813,7 @@
       if (p === '/company/inventory/receipt-shipments') return 'receipt-shipments';
       if (p === '/company/inventory') return 'inventory';
       if (p === '/company/settings/company') return 'company';
+      if (p === '/company/settings/forms') return 'forms';
       if (p === '/company/settings/roles') return 'staff';
       if (p === '/company/settings') return 'staff';
       if (p === '/company/website/accounts') return 'accounts';
@@ -2756,6 +2836,7 @@
       if (doc) return pathForDocMaster(doc.kind, doc.id);
       if (name === 'accounts') return '/company/website/accounts';
       if (name === 'company') return '/company/settings/company';
+      if (name === 'forms') return '/company/settings/forms';
       if (name === 'staff' || name === 'roles') return '/company/settings';
       return '/company/website';
     }
@@ -2860,6 +2941,7 @@
         if (p === '/company/inventory/receipt-shipments') return 'receipt-shipments';
         if (p === '/company/inventory') return 'inventory';
         if (p === '/company/settings/company') return 'company';
+        if (p === '/company/settings/forms') return 'forms';
         if (p === '/company/settings/roles' || p === '/company/settings') return 'staff';
         if (p === '/company/website/accounts') return 'accounts';
         if (p === '/company/website') return 'products';
@@ -2950,6 +3032,7 @@
       'po-new': 'New PO',
       settings: 'Settings',
       company: 'Company',
+      forms: 'Forms',
       staff: 'Manage users',
       roles: 'Manage users'
     };
@@ -2973,6 +3056,7 @@
     MASTER_TAB_ICON.vendors = MASTER_TAB_ICON.vendor;
     MASTER_TAB_ICON.customers = MASTER_TAB_ICON.customer;
     MASTER_TAB_ICON.company = MASTER_TAB_ICON.settings;
+    MASTER_TAB_ICON.forms = MASTER_TAB_ICON.settings;
     MASTER_TAB_ICON.staff = MASTER_TAB_ICON.settings;
     MASTER_TAB_ICON.roles = MASTER_TAB_ICON.settings;
     MASTER_TAB_ICON.sales = MASTER_TAB_ICON.quotes;
@@ -2996,6 +3080,7 @@
       orders: '/company/sales/orders',
       invoices: '/company/sales/invoices',
       company: '/company/settings/company',
+      forms: '/company/settings/forms',
       staff: '/company/settings'
     };
     let dashLoadedInner = {};
@@ -3020,7 +3105,7 @@
       if (name === 'inventory' || name === 'warehouses' || name === 'receipt-shipments') return 'inventory';
       if (name === 'vendors' || name === 'purchase-orders') return 'vendor';
       if (name === 'customers' || name === 'quotes' || name === 'orders' || name === 'invoices' || name === 'sales') return 'customer';
-      if (name === 'staff' || name === 'roles' || name === 'company') return 'settings';
+      if (name === 'staff' || name === 'roles' || name === 'company' || name === 'forms') return 'settings';
       return '';
     }
 
@@ -3040,7 +3125,7 @@
       if (group === 'inventory') return ['inventory', 'warehouses', 'receipt-shipments'];
       if (group === 'vendor') return ['vendors', 'purchase-orders'];
       if (group === 'customer') return ['customers', 'quotes', 'orders', 'invoices', 'sales'];
-      if (group === 'settings') return ['staff', 'roles', 'company'];
+      if (group === 'settings') return ['staff', 'roles', 'company', 'forms'];
       return ['dashboard'];
     }
 
@@ -3566,7 +3651,7 @@
     }
     function canView(mod) {
       if (adminPerms().settings) return true;
-      if (mod === 'settings') return canUse('settings') || canUse('company') || canUse('staff');
+      if (mod === 'settings') return canUse('settings') || canUse('company') || canUse('staff') || canUse('forms');
       if (mod === 'website') return canUse('website') || canUse('products') || canUse('accounts');
       if (mod === 'inventory') return canUse('inventory') || canUse('warehouses') || canUse('vendors') || canUse('purchase-orders') || canUse('receipt-shipments');
       const v = adminPerms()[mod];
@@ -3602,6 +3687,7 @@
       invoices: 'invoices',
       settings: 'settings',
       company: 'company',
+      forms: 'company',
       staff: 'staff',
       roles: 'staff'
     };
@@ -3702,7 +3788,7 @@
         if (goCompany(next ? pathForTab(next) : '/company')) return false;
       }
       websiteSubTab = next === 'accounts' ? 'accounts' : 'products';
-      settingsSubTab = next === 'company' ? 'company' : 'staff';
+      settingsSubTab = next === 'company' ? 'company' : next === 'forms' ? 'forms' : 'staff';
       if (next === 'quotes' || next === 'orders' || next === 'invoices') salesSubTab = next;
       const bootDoc = parseDocMasterTab(next);
       if (bootDoc) {
@@ -4336,7 +4422,8 @@
       quotes: '<span id="so-total">0</span> <span id="so-list-label">sales documents</span>. Pick a company customer, add line items, then save. Website Sign in accounts stay under Website → Accounts.',
       orders: '<span id="so-total">0</span> <span id="so-list-label">sales documents</span>. Pick a company customer, add line items, then save. Website Sign in accounts stay under Website → Accounts.',
       invoices: '<span id="so-total">0</span> <span id="so-list-label">sales documents</span>. Pick a company customer, add line items, then save. Website Sign in accounts stay under Website → Accounts.',
-      company: '<span id="ca-total">0</span> company accounts — logins and passwords.'
+      company: '<span id="ca-total">0</span> company accounts — logins and passwords.',
+      forms: 'Letter print for Quote, Sales Order, Invoice, and PO. Save a template per type. Print uses that layout, not the editor.'
     };
 
     function syncDetailOpenBodyClass() {
@@ -4395,7 +4482,7 @@
       const doc = parseDocMasterTab(name);
       const view = viewTabForMaster(name);
       const onWebsite = view === 'products' || view === 'accounts';
-      const onSettings = view === 'staff' || view === 'roles' || view === 'company';
+      const onSettings = view === 'staff' || view === 'roles' || view === 'company' || view === 'forms';
       const onCustomerNav = view === 'quotes' || view === 'orders' || view === 'invoices' || view === 'sales' || view === 'customers';
       const onSales = view === 'quotes' || view === 'orders' || view === 'invoices' || view === 'sales';
       const onInventory = view === 'inventory' || view === 'warehouses' || view === 'receipt-shipments';
@@ -4466,6 +4553,7 @@
       if (soInvKpis) soInvKpis.classList.toggle('hidden', view !== 'invoices');
       document.getElementById('accounts-section').classList.toggle('hidden', view !== 'accounts');
       document.getElementById('company-section').classList.toggle('hidden', view !== 'company');
+      document.getElementById('forms-section').classList.toggle('hidden', view !== 'forms');
       document.getElementById('staff-section').classList.toggle('hidden', view !== 'staff' && view !== 'roles');
       document.getElementById('website-subnav').classList.toggle('hidden', !onWebsite);
       document.getElementById('settings-subnav').classList.toggle('hidden', !onSettings);
@@ -4488,6 +4576,7 @@
       document.getElementById('tab-orders').className = navLinkClass(view === 'orders', !canUse('orders'), 'sub');
       document.getElementById('tab-invoices').className = navLinkClass(view === 'invoices', !canUse('invoices'), 'sub');
       document.getElementById('tab-company').className = navLinkClass(view === 'company', !canUse('company'), 'sub');
+      document.getElementById('tab-forms').className = navLinkClass(view === 'forms', !canUse('company'), 'sub');
       document.getElementById('tab-staff').className = navLinkClass(view === 'staff' || view === 'roles', !canUse('staff'), 'sub');
       document.getElementById('header-settings').className = navLinkClass(onSettings, !canUse('settings'));
       syncTabbarActive(view);
@@ -4509,6 +4598,7 @@
         orders: ['Customer', 'Sales Order'],
         invoices: ['Customer', 'Invoice'],
         company: ['Settings', 'Company accounts'],
+        forms: ['Settings', 'Forms'],
         staff: ['Settings', 'Manage users'],
         roles: ['Settings', 'Manage users']
       };
@@ -8627,7 +8717,7 @@
       const onInventory = name === 'inventory' || name === 'warehouses' || name === 'receipt-shipments';
       const onVendorNav = name === 'vendors' || name === 'purchase-orders';
       const onCustomerNav = name === 'sales' || name === 'quotes' || name === 'orders' || name === 'invoices' || name === 'customers';
-      const onSettings = name === 'staff' || name === 'roles' || name === 'company';
+      const onSettings = name === 'staff' || name === 'roles' || name === 'company' || name === 'forms';
       const map = {
         'tabbar-dashboard': name === 'dashboard',
         'tabbar-website': onWebsite,
@@ -12958,6 +13048,12 @@
       syncSoPageName(type, document.getElementById('so-number').value);
       document.getElementById('so-customer-email').value = doc.customerEmail || '';
       document.getElementById('so-po').value = doc.poNumber || '';
+      document.getElementById('so-so-number').value = doc.soNumber || '';
+      document.getElementById('so-rep').value = doc.rep || '';
+      document.getElementById('so-account').value = doc.accountNo || doc.account || '';
+      document.getElementById('so-ship-date').value = doc.shipDate || '';
+      document.getElementById('so-ship-via').value = doc.shipVia || '';
+      document.getElementById('so-tracking').value = doc.tracking || '';
       document.getElementById('so-issue').value = doc.issueDate || new Date().toISOString().slice(0, 10);
       document.getElementById('so-due').value = doc.dueDate || '';
       document.getElementById('so-terms').value = doc.paymentTerms || 'Net 30';
@@ -12994,6 +13090,12 @@
         customerName: document.getElementById('so-customer-name').value.trim(),
         customerEmail: document.getElementById('so-customer-email').value.trim(),
         poNumber: document.getElementById('so-po').value.trim(),
+        soNumber: document.getElementById('so-so-number').value.trim(),
+        rep: document.getElementById('so-rep').value.trim(),
+        accountNo: document.getElementById('so-account').value.trim(),
+        shipDate: document.getElementById('so-ship-date').value,
+        shipVia: document.getElementById('so-ship-via').value.trim(),
+        tracking: document.getElementById('so-tracking').value.trim(),
         issueDate: document.getElementById('so-issue').value,
         dueDate: document.getElementById('so-due').value,
         paymentTerms: document.getElementById('so-terms').value,
@@ -13185,6 +13287,7 @@
         }
       }
       if (name === 'company') await loadCompanyAccounts();
+      if (name === 'forms') await loadPrintFormsEditor();
       if (name === 'staff' || name === 'roles') {
         await loadStaff();
         await loadRoles();
@@ -13716,9 +13819,350 @@
     document.getElementById('so-ribbon-delete').addEventListener('click', function () {
       document.getElementById('so-delete-btn').click();
     });
+
+    let printFormsCache = null;
+    let printCompanyCache = null;
+    let printFormsMeta = null;
+    let pfDraft = null;
+    let pfType = 'invoice';
+    let pfDragId = '';
+
+    async function loadPrintBundle(force) {
+      if (!force && printFormsCache) {
+        return { forms: printFormsCache, company: printCompanyCache, meta: printFormsMeta };
+      }
+      const data = await api('/api/admin/print-forms');
+      printFormsCache = data.forms || {};
+      printCompanyCache = data.company || {};
+      printFormsMeta = data.meta || {};
+      return { forms: printFormsCache, company: printCompanyCache, meta: printFormsMeta };
+    }
+
+    function soPrintLines() {
+      return readSoLines().filter(soLineHasContent).map(function (line) {
+        const inv = typeof soInvForLine === 'function' ? soInvForLine(line) : null;
+        return {
+          sku: line.sku,
+          description: line.description,
+          qty: line.qty,
+          unitPrice: line.unitPrice,
+          amount: money(line.qty) * money(line.unitPrice),
+          onHand: inv && inv.qty != null ? (typeof invQtyDisplay === 'function' ? invQtyDisplay(inv) : inv.qty) : '',
+          cost: inv && inv.cost != null ? inv.cost : ''
+        };
+      });
+    }
+
+    function soPrintDoc() {
+      const form = readSoForm();
+      const bill = String((document.getElementById('so-bill-to') || {}).textContent || '').replace(/^—$/, '');
+      const ship = String((document.getElementById('so-ship-to') || {}).textContent || '').replace(/^—$/, '');
+      const lines = soPrintLines();
+      const subtotal = money(lines.reduce(function (sum, line) { return sum + money(line.amount); }, 0));
+      const discount = money(form.discount);
+      const tax = money(Math.max(0, subtotal - discount) * (money(form.taxRate) / 100));
+      const total = Math.max(0, subtotal - discount) + tax;
+      const paid = form.status === 'paid' ? total : 0;
+      return {
+        type: form.type,
+        number: form.number,
+        customerName: form.customerName,
+        billToText: bill,
+        shipToText: ship,
+        issueDate: form.issueDate,
+        dueDate: form.dueDate,
+        paymentTerms: form.paymentTerms,
+        poNumber: form.poNumber,
+        soNumber: form.soNumber || (form.type === 'order' ? form.number : ''),
+        tracking: form.tracking,
+        rep: form.rep,
+        account: form.accountNo,
+        accountNo: form.accountNo,
+        shipDate: form.shipDate,
+        shipVia: form.shipVia,
+        total: total,
+        paymentsApplied: paid,
+        balanceDue: Math.max(0, total - paid),
+        lines: lines
+      };
+    }
+
+    function poPrintDoc() {
+      const form = readPoForm();
+      const lines = (form.lines || []).filter(function (line) {
+        return line.sku || line.description || line.product || line.qty || line.rate;
+      }).map(function (line) {
+        return {
+          sku: line.sku,
+          product: line.product,
+          description: line.description || line.product,
+          qty: line.qty,
+          unitPrice: line.rate,
+          rate: line.rate,
+          amount: money(line.qty) * money(line.rate)
+        };
+      });
+      const total = money(lines.reduce(function (sum, line) { return sum + line.amount; }, 0));
+      return {
+        type: 'po',
+        kind: 'po',
+        number: form.number,
+        vendorName: form.vendorName,
+        mailingAddress: form.mailingAddress,
+        shippingAddress: form.shippingAddress,
+        billToText: form.mailingAddress || form.vendorName,
+        shipToText: form.shippingAddress,
+        issueDate: form.issueDate,
+        dueDate: form.dueDate,
+        shipVia: form.shipVia,
+        permitNo: form.permitNo,
+        total: total,
+        lines: lines
+      };
+    }
+
+    async function openLetterPrint(type, doc) {
+      if (!window.SpectrumPrintForm) return;
+      try {
+        const pack = await loadPrintBundle();
+        const template = (pack.forms && pack.forms[type]) || null;
+        const opened = SpectrumPrintForm.openPrint(template, { company: pack.company, doc: doc });
+        if (!opened) showSoMsg('Allow pop-ups to print.');
+      } catch (err) {
+        if (type === 'po') showPoMsg(err.message || 'Could not print.');
+        else showSoMsg(err.message || 'Could not print.');
+      }
+    }
+
+    function printSalesLetter() {
+      openLetterPrint(document.getElementById('so-type').value || 'invoice', soPrintDoc());
+    }
+
+    function printPoLetter() {
+      openLetterPrint('po', poPrintDoc());
+    }
+
+    function pfClone(value) {
+      return JSON.parse(JSON.stringify(value || {}));
+    }
+
+    function pfShowMsg(text, ok) {
+      const el = document.getElementById('pf-msg');
+      if (!el) return;
+      el.textContent = text || '';
+      el.className = 'text-sm ' + (ok ? 'text-sky-400' : 'text-red-400');
+      el.classList.toggle('hidden', !text);
+    }
+
+    function pfChipHtml(row, kind) {
+      const on = kind === 'cols' ? !!row.print : true;
+      return '<button type="button" class="pf-chip' + (on ? '' : ' is-muted') + '" draggable="true" data-id="' +
+        esc(row.id) + '" data-print="' + (row.print ? '1' : '0') + '">' + esc(row.title || row.id) + '</button>';
+    }
+
+    function pfRenderLists() {
+      if (!pfDraft) return;
+      const on = document.getElementById('pf-header-on');
+      const off = document.getElementById('pf-header-off');
+      const cols = document.getElementById('pf-cols');
+      const headers = (pfDraft.headerFields || []).slice().sort(function (a, b) { return (a.order || 0) - (b.order || 0); });
+      on.innerHTML = headers.filter(function (row) { return row.print; }).map(function (row) { return pfChipHtml(row, 'on'); }).join('') ||
+        '<span class="pf-empty">Drag fields here</span>';
+      off.innerHTML = headers.filter(function (row) { return !row.print; }).map(function (row) { return pfChipHtml(row, 'off'); }).join('') ||
+        '<span class="pf-empty">Nothing hidden</span>';
+      cols.innerHTML = (pfDraft.columns || []).slice().sort(function (a, b) { return (a.order || 0) - (b.order || 0); })
+        .map(function (row) { return pfChipHtml(row, 'cols'); }).join('');
+    }
+
+    function pfRenderBlocks() {
+      const wrap = document.getElementById('pf-blocks');
+      const blocks = (printFormsMeta && printFormsMeta.blocks) || [
+        { id: 'logo', label: 'Logo' },
+        { id: 'company', label: 'Company address' },
+        { id: 'billTo', label: 'Bill To' },
+        { id: 'shipTo', label: 'Ship To' },
+        { id: 'lines', label: 'Line table' },
+        { id: 'totals', label: 'Totals' },
+        { id: 'paymentTerms', label: 'Payment terms' },
+        { id: 'contact', label: 'Phone / email' }
+      ];
+      wrap.innerHTML = blocks.map(function (b) {
+        const on = pfDraft && pfDraft.blocks && pfDraft.blocks[b.id] !== false;
+        return '<label class="pf-check"><input type="checkbox" data-pf-block="' + esc(b.id) + '"' +
+          (on ? ' checked' : '') + '> ' + esc(b.label) + '</label>';
+      }).join('');
+    }
+
+    function pfFillFields() {
+      if (!pfDraft) return;
+      document.getElementById('pf-title').value = pfDraft.title || '';
+      document.getElementById('pf-terms').value = pfDraft.paymentTermsText || '';
+      const logos = (printFormsMeta && printFormsMeta.logos) || [
+        { id: '/assets/spectrum-logo.png', label: 'Spectrum logo' },
+        { id: '/assets/spectrum-logo-company.png', label: 'Company wordmark' },
+        { id: '/assets/spectrum-logo-print.jpg', label: 'Print logo' },
+        { id: '', label: 'None' }
+      ];
+      const sel = document.getElementById('pf-logo');
+      sel.innerHTML = logos.map(function (logo) {
+        return '<option value="' + esc(logo.id) + '">' + esc(logo.label) + '</option>';
+      }).join('');
+      sel.value = pfDraft.logo || '';
+      pfRenderBlocks();
+      pfRenderLists();
+      pfRenderPreview();
+    }
+
+    function pfReadDraft() {
+      if (!pfDraft) return null;
+      pfDraft.title = document.getElementById('pf-title').value.trim();
+      pfDraft.logo = document.getElementById('pf-logo').value;
+      pfDraft.paymentTermsText = document.getElementById('pf-terms').value;
+      pfDraft.blocks = pfDraft.blocks || {};
+      document.querySelectorAll('#pf-blocks [data-pf-block]').forEach(function (input) {
+        pfDraft.blocks[input.getAttribute('data-pf-block')] = input.checked;
+      });
+      return pfDraft;
+    }
+
+    function pfRenderPreview() {
+      const host = document.getElementById('pf-preview');
+      if (!host || !window.SpectrumPrintForm) return;
+      pfReadDraft();
+      const sample = SpectrumPrintForm.sampleDoc(pfType);
+      let iframe = host.querySelector('iframe');
+      if (!iframe) {
+        iframe = document.createElement('iframe');
+        iframe.title = 'Form preview';
+        iframe.className = 'pf-preview-iframe';
+        host.innerHTML = '';
+        host.appendChild(iframe);
+      }
+      iframe.srcdoc = '<!doctype html><html><head><meta charset="utf-8"><style>' +
+        SpectrumPrintForm.printCss() +
+        'html,body{background:#fff}</style></head><body>' +
+        SpectrumPrintForm.sheetHtml(pfDraft, { company: printCompanyCache, doc: sample }) +
+        '</body></html>';
+    }
+
+    function pfSetType(type) {
+      pfType = type || 'invoice';
+      document.querySelectorAll('#pf-type-tabs [data-pf-type]').forEach(function (btn) {
+        btn.classList.toggle('is-on', btn.getAttribute('data-pf-type') === pfType);
+      });
+      const src = (printFormsCache && printFormsCache[pfType]) || {};
+      pfDraft = pfClone(src);
+      pfFillFields();
+    }
+
+    function pfReorder(list, id, beforeId, printOn) {
+      const rows = (list || []).slice().sort(function (a, b) { return (a.order || 0) - (b.order || 0); });
+      const moving = rows.find(function (row) { return row.id === id; });
+      if (!moving) return list;
+      const rest = rows.filter(function (row) { return row.id !== id; });
+      let idx = rest.findIndex(function (row) { return row.id === beforeId; });
+      if (idx < 0) idx = rest.length;
+      rest.splice(idx, 0, moving);
+      return rest.map(function (row, i) {
+        row.order = i + 1;
+        if (row.id === id && printOn != null) row.print = printOn;
+        return row;
+      });
+    }
+
+    function pfBindDrag(el, kind) {
+      el.addEventListener('dragstart', function (e) {
+        const chip = e.target.closest('.pf-chip');
+        if (!chip) return;
+        pfDragId = chip.getAttribute('data-id');
+        e.dataTransfer.setData('text/plain', pfDragId);
+        e.dataTransfer.effectAllowed = 'move';
+      });
+      el.addEventListener('dragover', function (e) {
+        e.preventDefault();
+        e.dataTransfer.dropEffect = 'move';
+      });
+      el.addEventListener('drop', function (e) {
+        e.preventDefault();
+        const id = pfDragId || e.dataTransfer.getData('text/plain');
+        if (!id || !pfDraft) return;
+        const over = e.target.closest('.pf-chip');
+        const beforeId = over && over.getAttribute('data-id') !== id ? over.getAttribute('data-id') : '';
+        if (kind === 'cols') {
+          pfDraft.columns = pfReorder(pfDraft.columns, id, beforeId, null);
+        } else {
+          const printOn = kind === 'on';
+          pfDraft.headerFields = pfReorder(pfDraft.headerFields, id, beforeId, printOn);
+        }
+        pfRenderLists();
+        pfRenderPreview();
+      });
+    }
+
+    async function loadPrintFormsEditor() {
+      try {
+        pfShowMsg('');
+        await loadPrintBundle(true);
+        pfSetType(pfType || 'invoice');
+      } catch (err) {
+        pfShowMsg(err.message || 'Could not load forms.');
+      }
+    }
+
     document.getElementById('so-ribbon-print').addEventListener('click', function () {
-      window.print();
+      printSalesLetter();
     });
+    (function bindPrintFormsEditor() {
+      const tabs = document.getElementById('pf-type-tabs');
+      if (!tabs) return;
+      tabs.addEventListener('click', function (e) {
+        const btn = e.target.closest('[data-pf-type]');
+        if (!btn) return;
+        pfReadDraft();
+        if (printFormsCache && pfDraft) printFormsCache[pfType] = pfClone(pfDraft);
+        pfSetType(btn.getAttribute('data-pf-type'));
+      });
+      ['pf-title', 'pf-logo', 'pf-terms'].forEach(function (id) {
+        const el = document.getElementById(id);
+        if (!el) return;
+        el.addEventListener('input', pfRenderPreview);
+        el.addEventListener('change', pfRenderPreview);
+      });
+      document.getElementById('pf-blocks').addEventListener('change', function () {
+        pfRenderPreview();
+      });
+      document.getElementById('pf-cols').addEventListener('click', function (e) {
+        const chip = e.target.closest('.pf-chip');
+        if (!chip || !pfDraft) return;
+        const id = chip.getAttribute('data-id');
+        (pfDraft.columns || []).forEach(function (row) {
+          if (row.id === id) row.print = !row.print;
+        });
+        pfRenderLists();
+        pfRenderPreview();
+      });
+      pfBindDrag(document.getElementById('pf-header-on'), 'on');
+      pfBindDrag(document.getElementById('pf-header-off'), 'off');
+      pfBindDrag(document.getElementById('pf-cols'), 'cols');
+      document.getElementById('pf-save').addEventListener('click', async function () {
+        pfReadDraft();
+        pfShowMsg('');
+        try {
+          const data = await api('/api/admin/print-forms/' + encodeURIComponent(pfType), {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(pfDraft || {})
+          });
+          if (!printFormsCache) printFormsCache = {};
+          printFormsCache[pfType] = data.template || pfClone(pfDraft);
+          pfDraft = pfClone(printFormsCache[pfType]);
+          pfFillFields();
+          pfShowMsg('Saved. Print uses this template.', true);
+        } catch (err) {
+          pfShowMsg(err.message || 'Could not save form.');
+        }
+      });
+    })();
     document.getElementById('so-ribbon-email').addEventListener('click', function () {
       const email = (document.getElementById('so-customer-email').value || '').trim();
       const number = (document.getElementById('so-number').value || '').trim();
@@ -15602,6 +16046,9 @@
       }
       showPoList();
       loadPurchaseOrders();
+    });
+    document.getElementById('po-print').addEventListener('click', function () {
+      printPoLetter();
     });
     document.getElementById('po-search').addEventListener('input', function () {
       renderPoTable(purchaseOrders);

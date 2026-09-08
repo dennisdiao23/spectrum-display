@@ -130,6 +130,7 @@ async function main() {
     '/company/sales/invoices',
     '/company/settings',
     '/company/settings/company',
+    '/company/settings/forms',
     '/company/chat'
   ];
   COMPANY_PAGES.forEach(function (route) {
@@ -1576,6 +1577,51 @@ async function main() {
     try {
       res.json({ ok: true, profile: await store.getCompanyProfile() });
     } catch (err) { next(err); }
+  });
+
+  app.get('/api/admin/print-forms', requireAdmin, async function (_req, res, next) {
+    try {
+      const pf = require('./print-forms');
+      const forms = await store.listPrintForms();
+      let company = {};
+      try { company = await store.getCompanyProfile(); } catch (e) { company = {}; }
+      res.json({
+        ok: true,
+        forms: forms,
+        company: company,
+        meta: {
+          types: pf.TYPES,
+          headerFields: pf.HEADER_FIELDS,
+          columns: pf.COLUMNS,
+          blocks: pf.BLOCKS,
+          logos: pf.LOGOS
+        }
+      });
+    } catch (err) { next(err); }
+  });
+
+  app.get('/api/admin/print-forms/:type', requireAdmin, async function (req, res, next) {
+    try {
+      const pf = require('./print-forms');
+      const type = pf.normalizeType(req.params.type);
+      const template = await store.getPrintForm(type);
+      let company = {};
+      try { company = await store.getCompanyProfile(); } catch (e) { company = {}; }
+      res.json({ ok: true, type: type, template: template, company: company });
+    } catch (err) {
+      res.status(400).json({ ok: false, error: err.message || 'Could not load form.' });
+    }
+  });
+
+  app.put('/api/admin/print-forms/:type', requireAdmin, requirePerm('settings', 'edit'), async function (req, res, next) {
+    try {
+      const pf = require('./print-forms');
+      const type = pf.normalizeType(req.params.type);
+      const template = await store.savePrintForm(type, req.body || {});
+      res.json({ ok: true, template: template });
+    } catch (err) {
+      res.status(400).json({ ok: false, error: err.message || 'Could not save form.' });
+    }
   });
 
   app.put('/api/admin/company-profile', requireAdmin, requirePerm('settings', 'edit'), async function (req, res, next) {

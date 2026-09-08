@@ -558,6 +558,12 @@ create table if not exists public.company_sales_docs (
   ship_state text not null default '',
   ship_zip text not null default '',
   ship_country text not null default 'United States',
+  rep text not null default '',
+  account_no text not null default '',
+  ship_date text not null default '',
+  ship_via text not null default '',
+  tracking text not null default '',
+  so_number text not null default '',
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now()
 );
@@ -583,6 +589,17 @@ drop policy if exists company_sales_lines_admin_all on public.company_sales_line
 create policy company_sales_lines_admin_all on public.company_sales_lines
 for all using (public.is_spectrum_admin()) with check (public.is_spectrum_admin());
 grant all on public.company_sales_lines to service_role;
+
+create table if not exists public.company_print_forms (
+  type text primary key,
+  template_json jsonb not null default '{}'::jsonb,
+  updated_at timestamptz not null default now()
+);
+alter table public.company_print_forms enable row level security;
+drop policy if exists company_print_forms_admin_all on public.company_print_forms;
+create policy company_print_forms_admin_all on public.company_print_forms
+for all using (public.is_spectrum_admin()) with check (public.is_spectrum_admin());
+grant all on public.company_print_forms to service_role;
 
 create table if not exists public.inventory_vendors (
   id bigint generated always as identity primary key,
