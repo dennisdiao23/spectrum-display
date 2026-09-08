@@ -14057,9 +14057,10 @@
       if (!host || !sheet) return;
       sheet.style.transform = 'none';
       const frame = host.closest('.pf-preview-frame') || host;
-      const avail = Math.max(240, frame.clientWidth - 12);
-      const natural = sheet.offsetWidth || 1;
-      const scale = Math.min(1, avail / natural);
+      const availW = Math.max(240, frame.clientWidth - 12);
+      const frameTop = frame.getBoundingClientRect().top;
+      const availH = Math.max(360, window.innerHeight - frameTop - 24);
+      const scale = Math.min(1, availW / (sheet.offsetWidth || 1), availH / (sheet.offsetHeight || 1));
       sheet.style.transformOrigin = 'top left';
       sheet.style.transform = 'scale(' + scale + ')';
       host.style.width = (sheet.offsetWidth * scale) + 'px';
