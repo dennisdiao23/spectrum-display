@@ -6,6 +6,32 @@ function bool(value) {
   return value === true || value === 1 || value === '1' || value === 'true';
 }
 
+function hasContactIdentity(input) {
+  const src = input || {};
+  return !!(src.firstName || src.lastName || src.email || src.phone || src.mobile);
+}
+
+function primaryPayloadFromCustomer(input, existing) {
+  const src = input || {};
+  const prev = existing || {};
+  return {
+    title: prev.title || '',
+    firstName: src.contactFirst || src.contact_first || '',
+    middleName: src.contactMiddle || src.contact_middle || '',
+    lastName: src.contactLast || src.contact_last || '',
+    suffix: prev.suffix || '',
+    jobTitle: src.jobTitle || src.job_title || '',
+    role: src.contactRole || src.contact_role || prev.role || 'Primary',
+    email: src.email || '',
+    phone: src.phone || '',
+    mobile: src.mobile || '',
+    fax: src.fax || prev.fax || '',
+    isPrimary: true,
+    notes: prev.notes || '',
+    sortOrder: prev.sortOrder || prev.sort_order || 0
+  };
+}
+
 function contactName(row) {
   return [row.first_name || row.firstName, row.middle_name || row.middleName, row.last_name || row.lastName]
     .filter(Boolean).join(' ').trim();
@@ -139,5 +165,7 @@ module.exports = {
   dbFields,
   forSupabase,
   contactFromCustomerRow,
-  contactFromVendorRow
+  contactFromVendorRow,
+  hasContactIdentity,
+  primaryPayloadFromCustomer
 };

@@ -779,6 +779,15 @@ function createSqliteStore() {
       customer.contacts = await this.listCustomerContacts(id);
       return customer;
     },
+    async _upsertCustomerPrimaryContact(customerId, customerInput) {
+      const pc = require('./party-contacts');
+      const contacts = await this.listCustomerContacts(customerId);
+      const existing = contacts.find(function (c) { return c.isPrimary; }) || contacts[0] || null;
+      const payload = pc.primaryPayloadFromCustomer(customerInput, existing);
+      if (!pc.hasContactIdentity(payload)) return;
+      if (existing) await this.updateCustomerContact(customerId, existing.id, payload);
+      else await this.createCustomerContact(customerId, payload);
+    },
     async createCompanyCustomer(payload) {
       const cc = require('./company-customers');
       const input = cc.normalizeCustomer(payload);
@@ -789,6 +798,7 @@ function createSqliteStore() {
         'INSERT INTO company_customers (' + keys.join(', ') + ', created_at, updated_at) VALUES (' +
         keys.map(function () { return '?'; }).join(', ') + ', ?, ?)'
       ).run(...keys.map(function (k) { return fields[k]; }).concat([stamp, stamp]));
+      await this._upsertCustomerPrimaryContact(info.lastInsertRowid, input);
       return this.getCompanyCustomer(info.lastInsertRowid);
     },
     async updateCompanyCustomer(id, payload) {
@@ -801,6 +811,7 @@ function createSqliteStore() {
       db.prepare(
         'UPDATE company_customers SET ' + keys.map(function (k) { return k + ' = ?'; }).join(', ') + ', updated_at = ? WHERE id = ?'
       ).run(...keys.map(function (k) { return fields[k]; }).concat([dbUtil.nowIso(), id]));
+      await this._upsertCustomerPrimaryContact(id, input);
       return this.getCompanyCustomer(id);
     },
     async deleteCompanyCustomer(id) {

@@ -1464,6 +1464,15 @@ function createSupabaseStore() {
       customer.contacts = await this.listCustomerContacts(id);
       return customer;
     },
+    async _upsertCustomerPrimaryContact(customerId, customerInput) {
+      const pc = require('./party-contacts');
+      const contacts = await this.listCustomerContacts(customerId);
+      const existing = contacts.find(function (c) { return c.isPrimary; }) || contacts[0] || null;
+      const payload = pc.primaryPayloadFromCustomer(customerInput, existing);
+      if (!pc.hasContactIdentity(payload)) return;
+      if (existing) await this.updateCustomerContact(customerId, existing.id, payload);
+      else await this.createCustomerContact(customerId, payload);
+    },
     async createCompanyCustomer(payload) {
       const cc = require('./company-customers');
       const input = cc.normalizeCustomer(payload);
@@ -1473,7 +1482,8 @@ function createSupabaseStore() {
       fields.updated_at = stamp;
       const { data, error } = await supabase.from('company_customers').insert(fields).select('*').single();
       throwIf(error, 'Could not add customer.');
-      return cc.formatCustomer(data);
+      await this._upsertCustomerPrimaryContact(data.id, input);
+      return this.getCompanyCustomer(data.id);
     },
     async updateCompanyCustomer(id, payload) {
       const cc = require('./company-customers');
@@ -1482,7 +1492,9 @@ function createSupabaseStore() {
       fields.updated_at = new Date().toISOString();
       const { data, error } = await supabase.from('company_customers').update(fields).eq('id', id).select('*').maybeSingle();
       throwIf(error, 'Could not save customer.');
-      return cc.formatCustomer(data);
+      if (!data) return null;
+      await this._upsertCustomerPrimaryContact(id, input);
+      return this.getCompanyCustomer(id);
     },
     async deleteCompanyCustomer(id) {
       const { data, error } = await supabase.from('company_customers').delete().eq('id', id).select('id');

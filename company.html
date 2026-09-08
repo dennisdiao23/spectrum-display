@@ -2006,11 +2006,11 @@
     <div class="cc-drawer-head">
       <h2 id="cc-title">Customer</h2>
       <div class="cc-drawer-tools">
-        <button type="button" class="cc-ico-btn" data-jump="cc-sec-contact" title="Name and contact" aria-label="Name and contact">
-          <svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="3.25"/><path d="M5 19.2c.9-3.1 3.5-4.7 7-4.7s6.1 1.6 7 4.7"/></svg>
+        <button type="button" class="cc-ico-btn" data-jump="cc-sec-company" title="Company information" aria-label="Company information">
+          <svg viewBox="0 0 24 24"><path d="M3 20V9l9-5 9 5v11"/><path d="M9 20v-7h6v7"/></svg>
         </button>
-        <button type="button" class="cc-ico-btn" data-jump="cc-sec-comm" title="Communication permissions" aria-label="Communication permissions">
-          <svg viewBox="0 0 24 24"><path d="M5 6h10a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2H9l-4 3v-3H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2z"/><path d="M17 9h2a2 2 0 0 1 2 2v4a2 2 0 0 1-2 2h-1v2.5L14.5 17"/></svg>
+        <button type="button" class="cc-ico-btn" data-jump="cc-sec-contact" title="Primary contact" aria-label="Primary contact">
+          <svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="3.25"/><path d="M5 19.2c.9-3.1 3.5-4.7 7-4.7s6.1 1.6 7 4.7"/></svg>
         </button>
         <button type="button" class="cc-ico-btn" data-jump="cc-sec-address" title="Addresses" aria-label="Addresses">
           <svg viewBox="0 0 24 24"><path d="M12 21s7-6.2 7-11a7 7 0 1 0-14 0c0 4.8 7 11 7 11z"/><circle cx="12" cy="10" r="2.2"/></svg>
@@ -2032,33 +2032,31 @@
     </div>
     <form id="cc-form" class="cc-drawer-body">
       <input type="hidden" id="cc-id">
-      <section class="cc-sec is-open" id="cc-sec-contact">
-        <button type="button" class="cc-sec-btn"><span class="cc-sec-label"><svg class="cc-sec-ico" viewBox="0 0 24 24"><circle cx="12" cy="8" r="3.25"/><path d="M5 19.2c.9-3.1 3.5-4.7 7-4.7s6.1 1.6 7 4.7"/></svg> Name and contact</span> <span class="cc-sec-chevron">▾</span></button>
+      <section class="cc-sec is-open" id="cc-sec-company">
+        <button type="button" class="cc-sec-btn"><span class="cc-sec-label"><svg class="cc-sec-ico" viewBox="0 0 24 24"><path d="M3 20V9l9-5 9 5v11"/><path d="M9 20v-7h6v7"/></svg> Company information</span> <span class="cc-sec-chevron">▾</span></button>
         <div class="cc-sec-body">
-          <div class="cc-field"><label>Title</label><input id="cc-honorific" type="text" placeholder="Mr / Ms"></div>
-          <div class="cc-field"><label>First name</label><input id="cc-first" type="text"></div>
-          <div class="cc-field"><label>Middle name</label><input id="cc-middle" type="text"></div>
-          <div class="cc-field"><label>Last name</label><input id="cc-last" type="text"></div>
-          <div class="cc-field"><label>Suffix</label><input id="cc-suffix" type="text"></div>
           <div class="cc-field"><label>Company name</label><input id="cc-company" type="text" placeholder="Type to search"></div>
           <div class="cc-field wide"><label>Customer display name *</label><input id="cc-display" type="text"></div>
-          <div class="cc-field"><label>Email</label><input id="cc-email" type="email"></div>
-          <div class="cc-field"><label>Phone number</label><input id="cc-phone" type="text"></div>
-          <div class="cc-field"><label>Cc</label><input id="cc-cc" type="email"></div>
-          <div class="cc-field"><label>Bcc</label><input id="cc-bcc" type="email"></div>
-          <div class="cc-field"><label>Mobile number</label><input id="cc-mobile" type="text"></div>
+          <div class="cc-field"><label>Website</label><input id="cc-website" type="text" placeholder="https://"></div>
           <div class="cc-field"><label>Fax</label><input id="cc-fax" type="text"></div>
           <div class="cc-field"><label>Other</label><input id="cc-other" type="text"></div>
-          <div class="cc-field"><label>Website</label><input id="cc-website" type="text" placeholder="https://"></div>
+          <div class="cc-field"><label>Cc</label><input id="cc-cc" type="email"></div>
+          <div class="cc-field"><label>Bcc</label><input id="cc-bcc" type="email"></div>
           <div class="cc-field wide"><label>Name to print on checks</label><input id="cc-check" type="text"></div>
           <label class="cc-check wide"><input id="cc-sub" type="checkbox"> Is a sub-customer</label>
         </div>
       </section>
-      <section class="cc-sec is-open" id="cc-sec-comm">
-        <button type="button" class="cc-sec-btn"><span class="cc-sec-label"><svg class="cc-sec-ico" viewBox="0 0 24 24"><path d="M5 6h10a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2H9l-4 3v-3H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2z"/></svg> Communication permissions</span> <span class="cc-sec-chevron">▾</span></button>
+      <section class="cc-sec is-open" id="cc-sec-contact">
+        <button type="button" class="cc-sec-btn"><span class="cc-sec-label"><svg class="cc-sec-ico" viewBox="0 0 24 24"><circle cx="12" cy="8" r="3.25"/><path d="M5 19.2c.9-3.1 3.5-4.7 7-4.7s6.1 1.6 7 4.7"/></svg> Primary contact</span> <span class="cc-sec-chevron">▾</span></button>
         <div class="cc-sec-body">
-          <p class="cc-note">If the customer has opted in to email, record it here once you have added an email.</p>
-          <label class="cc-check wide"><input id="cc-consent" type="checkbox"> Customer consented to email</label>
+          <div class="cc-field"><label>First name</label><input id="cc-first" type="text"></div>
+          <div class="cc-field"><label>Middle name</label><input id="cc-middle" type="text"></div>
+          <div class="cc-field"><label>Last name</label><input id="cc-last" type="text"></div>
+          <div class="cc-field"><label>Job title</label><input id="cc-job" type="text"></div>
+          <div class="cc-field"><label>Role</label><input id="cc-role" type="text"></div>
+          <div class="cc-field"><label>Email</label><input id="cc-email" type="email"></div>
+          <div class="cc-field"><label>Phone number</label><input id="cc-phone" type="text"></div>
+          <div class="cc-field"><label>Mobile number</label><input id="cc-mobile" type="text"></div>
         </div>
       </section>
       <section class="cc-sec is-open" id="cc-sec-address">
@@ -2121,8 +2119,6 @@
         <div class="cc-sec-body">
           <div class="cc-field"><label>Sources</label><input id="cc-source" type="text"></div>
           <div class="cc-field"><label>Referred by</label><input id="cc-referred" type="text"></div>
-          <div class="cc-field"><label>Job title</label><input id="cc-job" type="text"></div>
-          <div class="cc-field"><label>Role</label><input id="cc-role" type="text"></div>
           <div class="cc-field"><label>Preferred contact method</label>
             <select id="cc-pref"><option value="">—</option><option>Email</option><option>Phone</option><option>Mobile</option></select>
           </div>
@@ -8791,24 +8787,22 @@
         if (el) el.checked = !!on;
       };
       set('cc-id', c.id || '');
-      set('cc-honorific', c.title || '');
-      set('cc-first', c.contactFirst || '');
-      set('cc-middle', c.contactMiddle || '');
-      set('cc-last', c.contactLast || '');
-      set('cc-suffix', c.suffix || '');
+      const primary = partyPrimaryContact(c.contacts);
+      set('cc-first', (primary && primary.firstName) || c.contactFirst || '');
+      set('cc-middle', (primary && primary.middleName) || c.contactMiddle || '');
+      set('cc-last', (primary && primary.lastName) || c.contactLast || '');
       set('cc-company', c.companyName || '');
       set('cc-display', c.displayName || '');
-      set('cc-email', c.email || '');
+      set('cc-email', (primary && primary.email) || c.email || '');
       set('cc-cc', c.emailCc || '');
       set('cc-bcc', c.emailBcc || '');
-      set('cc-phone', c.phone || '');
-      set('cc-mobile', c.mobile || '');
+      set('cc-phone', (primary && primary.phone) || c.phone || '');
+      set('cc-mobile', (primary && primary.mobile) || c.mobile || '');
       set('cc-fax', c.fax || '');
       set('cc-other', c.otherPhone || '');
       set('cc-website', c.website || '');
       set('cc-check', c.checkName || '');
       check('cc-sub', c.isSub);
-      check('cc-consent', c.emailConsent);
       set('cc-tax', c.taxId || '');
       check('cc-exempt', c.taxExempt);
       set('cc-tax-rate', c.taxRate || 0);
@@ -8833,8 +8827,8 @@
       set('cc-ship-country', c.shipCountry || '');
       set('cc-source', c.source || '');
       set('cc-referred', c.referredBy || '');
-      set('cc-job', c.jobTitle || '');
-      set('cc-role', c.contactRole || '');
+      set('cc-job', (primary && primary.jobTitle) || c.jobTitle || '');
+      set('cc-role', (primary && primary.role) || c.contactRole || '');
       set('cc-pref', c.preferredContact || '');
       set('cc-industry', c.industry || '');
       set('cc-social', c.social || '');
@@ -8852,11 +8846,11 @@
         return !!(el && el.checked);
       };
       return {
-        title: val('cc-honorific'),
+        title: '',
         contactFirst: val('cc-first'),
         contactMiddle: val('cc-middle'),
         contactLast: val('cc-last'),
-        suffix: val('cc-suffix'),
+        suffix: '',
         companyName: val('cc-company'),
         displayName: val('cc-display'),
         email: val('cc-email'),
@@ -8869,7 +8863,7 @@
         website: val('cc-website'),
         checkName: val('cc-check'),
         isSub: on('cc-sub'),
-        emailConsent: on('cc-consent'),
+        emailConsent: false,
         taxId: val('cc-tax'),
         taxExempt: on('cc-exempt'),
         taxRate: val('cc-tax-rate'),
@@ -9647,14 +9641,23 @@
       unlockDashPageScroll();
     }
 
-    function openCustomerDrawer(customer, source) {
+    async function openCustomerDrawer(customer, source) {
       ccDrawerSource = source || 'list';
       if (typeof closeVendorDrawer === 'function') closeVendorDrawer(true);
       showCcMsg('');
-      if (customer && customer.id) {
-        document.getElementById('cc-title').textContent = customer.displayName || customer.companyName || 'Customer';
+      let full = customer;
+      if (customer && customer.id && !Array.isArray(customer.contacts)) {
+        try {
+          const data = await api('/api/admin/company-customers/' + customer.id);
+          if (data && data.customer) full = data.customer;
+        } catch (err) {
+          full = customer;
+        }
+      }
+      if (full && full.id) {
+        document.getElementById('cc-title').textContent = full.displayName || full.companyName || 'Customer';
         document.getElementById('cc-delete-btn').classList.remove('hidden');
-        fillCcForm(customer);
+        fillCcForm(full);
       } else {
         document.getElementById('cc-title').textContent = 'Customer';
         document.getElementById('cc-delete-btn').classList.add('hidden');
@@ -9665,7 +9668,7 @@
           shipSame: true
         });
       }
-      document.getElementById('cc-display').dataset.touched = customer && customer.displayName ? '1' : '';
+      document.getElementById('cc-display').dataset.touched = full && full.displayName ? '1' : '';
       document.querySelectorAll('#cc-form .cc-sec').forEach(function (sec) {
         sec.classList.add('is-open');
       });
@@ -9677,7 +9680,7 @@
       hideCcLeave();
       ccLeaveThen = null;
       markCcClean();
-      document.getElementById('cc-first').focus();
+      document.getElementById('cc-company').focus();
     }
 
     function isOpenQuote(d) {
