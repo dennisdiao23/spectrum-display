@@ -547,6 +547,9 @@
       letter-spacing: 0.04em;
       white-space: nowrap;
     }
+    .cabinet-grid {
+      position: relative;
+    }
     .cabinet-grid.labels-off .cabinet-label {
       display: none;
     }
@@ -565,6 +568,41 @@
     .cabinet-grid.wiring-mode .cabinet-label {
       color: #94a3b8;
       text-shadow: none;
+    }
+    .wiring-legend {
+      display: none;
+      width: 100%;
+      flex-direction: column;
+      gap: 0.2rem;
+      font-size: 0.75rem;
+      color: #94a3b8;
+    }
+    .wiring-legend.is-on {
+      display: flex;
+    }
+    .wiring-legend-row {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 0.4rem 1rem;
+    }
+    .wiring-swatch {
+      display: inline-block;
+      width: 0.9rem;
+      height: 0.2rem;
+      border-radius: 1px;
+      background: #38bdf8;
+    }
+    .wiring-swatch-p {
+      width: 0.45rem;
+      height: 0.45rem;
+      border-radius: 999px;
+      background: #fbbf24;
+    }
+    .wiring-swatch-cvt {
+      width: 0.7rem;
+      height: 0.7rem;
+      border-radius: 2px;
     }
     .rear-ports {
       position: absolute;
@@ -589,12 +627,10 @@
       position: absolute;
       left: 0;
       top: 0;
-      z-index: 4;
+      z-index: 8;
       pointer-events: none;
       overflow: visible;
-    }
-    .wiring-overlay[hidden] {
-      display: none;
+      display: block;
     }
     .content-layer.wiring-hidden,
     .screen-overlay.wiring-hidden {
@@ -1144,10 +1180,7 @@
 
             <div class="flex flex-wrap gap-4 text-xs text-slate-500">
               <div class="flex items-center gap-2"><span class="w-3 h-3 rounded-sm bg-sky-600 border border-sky-400/40"></span> Individual LED panels</div>
-              <div id="wiring-legend" class="hidden items-center gap-4">
-                <span class="inline-flex items-center gap-1.5"><span class="w-4 h-0.5 bg-sky-400"></span> Data</span>
-                <span class="inline-flex items-center gap-1.5"><span class="w-4 h-0.5 bg-amber-400"></span> Power</span>
-              </div>
+              <div id="wiring-legend" class="wiring-legend"></div>
               <div>Slider = zoom · Reset centers the wall</div>
             </div>
           </div>
@@ -1254,7 +1287,6 @@
     let labelMode = 'off';
     let viewMode = 'front';
     const DATA_COLORS = ['#38bdf8', '#22d3ee', '#818cf8', '#2dd4bf', '#60a5fa'];
-    const POWER_COLORS = ['#fbbf24', '#fb923c', '#f59e0b', '#fcd34d'];
 
     function setChoiceButtons(selector, attr, value) {
       document.querySelectorAll(selector).forEach(b => {
@@ -1294,22 +1326,17 @@
       setChoiceButtons('.view-btn', 'data-view', viewMode);
       if (!opts || !opts.skipApply) updateDesign();
     }
-    function serpentineOrder(cols, rows) {
+    function columnDownOrder(cols, rows) {
       const order = [];
-      for (let r = 0; r < rows; r++) {
-        if (r % 2 === 0) {
-          for (let c = 0; c < cols; c++) order.push({ r: r, c: c });
-        } else {
-          for (let c = cols - 1; c >= 0; c--) order.push({ r: r, c: c });
-        }
+      for (let c = 0; c < cols; c++) {
+        for (let r = 0; r < rows; r++) order.push({ r: r, c: c });
       }
       return order;
     }
-    function chunkEven(list, n) {
-      const count = Math.max(1, Math.min(n, list.length));
-      const size = Math.ceil(list.length / count);
+    function chunkBySize(list, size) {
+      const n = Math.max(1, size);
       const chunks = [];
-      for (let i = 0; i < list.length; i += size) chunks.push(list.slice(i, i + size));
+      for (let i = 0; i < list.length; i += n) chunks.push(list.slice(i, i + n));
       return chunks;
     }
     function cellCenter(c, r, cellW, cellH, gap) {
@@ -1318,7 +1345,18 @@
         y: r * (cellH + gap) + cellH / 2
       };
     }
-    function drawWiringOverlay(svg, cols, rows, cellW, cellH, dataPorts, circuits) {
+    function cellOrigin(c, r, cellW, cellH, gap) {
+      return { x: c * (cellW + gap), y: r * (cellH + gap) };
+    }
+    const CVT_BAND_FILL = [
+      'rgba(249, 115, 22, 0.22)',
+      'rgba(56, 189, 248, 0.22)',
+      'rgba(34, 197, 94, 0.22)'
+    ];
+    const CVT_BAND_EDGE = ['#fb923c', '#38bdf8', '#4ade80'];
+    const CVT_PORTS_PER_BOX = 10;
+
+    function drawWiringOverlay(svg, cols, rows, cellW, cellH, dataPorts, circuits, cabWpx, cabHpx) {
       const gap = 1.5;
       const W = cols * cellW + (cols - 1) * gap;
       const H = rows * cellH + (rows - 1) * gap;
@@ -1330,57 +1368,150 @@
       while (svg.firstChild) svg.removeChild(svg.firstChild);
 
       const ns = 'http://www.w3.org/2000/svg';
-      const order = serpentineOrder(cols, rows);
-      const dataChunks = chunkEven(order, dataPorts);
-      const powerChunks = chunkEven(order, circuits);
+      const perPort = cabinetsPerDataPort(cabWpx, cabHpx);
+      const order = columnDownOrder(cols, rows);
+      const dataChunks = chunkBySize(order, perPort);
       const stroke = Math.max(1.2, Math.min(2.5, cellW * 0.08));
+      const cvtCount = dataChunks.length > CVT_PORTS_PER_BOX
+        ? Math.ceil(dataChunks.length / CVT_PORTS_PER_BOX)
+        : 0;
 
-      function polyline(pts, color, width, dash) {
+      const defs = document.createElementNS(ns, 'defs');
+      DATA_COLORS.forEach(function (color, i) {
+        const marker = document.createElementNS(ns, 'marker');
+        marker.setAttribute('id', 'data-arrow-' + i);
+        marker.setAttribute('viewBox', '0 0 10 10');
+        marker.setAttribute('refX', '8');
+        marker.setAttribute('refY', '5');
+        marker.setAttribute('markerWidth', '6');
+        marker.setAttribute('markerHeight', '6');
+        marker.setAttribute('orient', 'auto');
+        const tip = document.createElementNS(ns, 'path');
+        tip.setAttribute('d', 'M 0 0 L 10 5 L 0 10 z');
+        tip.setAttribute('fill', color);
+        marker.appendChild(tip);
+        defs.appendChild(marker);
+      });
+      svg.appendChild(defs);
+
+      function polyline(pts, color, width, markerId) {
         if (pts.length < 2) return;
         const el = document.createElementNS(ns, 'polyline');
-        el.setAttribute('points', pts.map(p => p.x + ',' + p.y).join(' '));
+        el.setAttribute('points', pts.map(function (p) { return p.x + ',' + p.y; }).join(' '));
         el.setAttribute('fill', 'none');
         el.setAttribute('stroke', color);
         el.setAttribute('stroke-width', String(width));
         el.setAttribute('stroke-linecap', 'round');
         el.setAttribute('stroke-linejoin', 'round');
-        el.setAttribute('opacity', '0.9');
-        if (dash) el.setAttribute('stroke-dasharray', dash);
+        el.setAttribute('opacity', '0.95');
+        if (markerId) el.setAttribute('marker-end', 'url(#' + markerId + ')');
         svg.appendChild(el);
       }
-      function startDot(pt, color, label) {
-        const g = document.createElementNS(ns, 'g');
+      function cabinetFill(cab, fill, edge) {
+        const o = cellOrigin(cab.c, cab.r, cellW, cellH, gap);
+        const rect = document.createElementNS(ns, 'rect');
+        rect.setAttribute('x', String(o.x + 0.5));
+        rect.setAttribute('y', String(o.y + 0.5));
+        rect.setAttribute('width', String(Math.max(1, cellW - 1)));
+        rect.setAttribute('height', String(Math.max(1, cellH - 1)));
+        rect.setAttribute('fill', fill);
+        rect.setAttribute('stroke', edge);
+        rect.setAttribute('stroke-width', '0.75');
+        rect.setAttribute('rx', '1.5');
+        svg.appendChild(rect);
+      }
+      function portLabel(cab, color, label) {
+        const o = cellOrigin(cab.c, cab.r, cellW, cellH, gap);
+        const t = document.createElementNS(ns, 'text');
+        t.setAttribute('x', String(o.x + cellW / 2));
+        t.setAttribute('y', String(o.y + Math.max(9, cellH * 0.22)));
+        t.setAttribute('text-anchor', 'middle');
+        t.setAttribute('fill', color);
+        t.setAttribute('font-size', String(Math.max(8, Math.min(16, cellW * 0.28))));
+        t.setAttribute('font-family', 'Inter, system-ui, sans-serif');
+        t.setAttribute('font-weight', '800');
+        t.textContent = label;
+        svg.appendChild(t);
+      }
+      function powerMark(cab) {
+        const o = cellOrigin(cab.c, cab.r, cellW, cellH, gap);
+        const cx = o.x + cellW * 0.78;
+        const cy = o.y + cellH * 0.78;
         const c = document.createElementNS(ns, 'circle');
-        c.setAttribute('cx', String(pt.x));
-        c.setAttribute('cy', String(pt.y));
-        c.setAttribute('r', String(Math.max(3, cellW * 0.14)));
-        c.setAttribute('fill', color);
-        g.appendChild(c);
-        if (cellW >= 16 && label) {
+        c.setAttribute('cx', String(cx));
+        c.setAttribute('cy', String(cy));
+        c.setAttribute('r', String(Math.max(2.4, Math.min(5.5, cellW * 0.1))));
+        c.setAttribute('fill', '#fbbf24');
+        svg.appendChild(c);
+        if (cellW >= 18) {
           const t = document.createElementNS(ns, 'text');
-          t.setAttribute('x', String(pt.x));
-          t.setAttribute('y', String(pt.y - Math.max(5, cellH * 0.22)));
+          t.setAttribute('x', String(cx));
+          t.setAttribute('y', String(cy + 1));
           t.setAttribute('text-anchor', 'middle');
-          t.setAttribute('fill', color);
-          t.setAttribute('font-size', String(Math.max(10, Math.min(22, cellW * 0.36))));
+          t.setAttribute('dominant-baseline', 'middle');
+          t.setAttribute('fill', '#1e293b');
+          t.setAttribute('font-size', String(Math.max(6, Math.min(9, cellW * 0.16))));
           t.setAttribute('font-family', 'Inter, system-ui, sans-serif');
           t.setAttribute('font-weight', '800');
-          t.textContent = label;
-          g.appendChild(t);
+          t.textContent = 'P';
+          svg.appendChild(t);
         }
-        svg.appendChild(g);
+      }
+      function bandLabel(chunk, bandIdx, color) {
+        if (!chunk || !chunk[0]) return;
+        const o = cellOrigin(chunk[0].c, chunk[0].r, cellW, cellH, gap);
+        const t = document.createElementNS(ns, 'text');
+        t.setAttribute('x', String(o.x + 4));
+        t.setAttribute('y', String(o.y + cellH - 5));
+        t.setAttribute('fill', color);
+        t.setAttribute('font-size', String(Math.max(7, Math.min(11, cellW * 0.18))));
+        t.setAttribute('font-family', 'Inter, system-ui, sans-serif');
+        t.setAttribute('font-weight', '700');
+        t.textContent = 'CVT10-' + (bandIdx + 1) + ' / OPT' + (bandIdx + 1);
+        svg.appendChild(t);
       }
 
-      powerChunks.forEach((chunk, i) => {
-        const pts = chunk.map(p => cellCenter(p.c, p.r, cellW, cellH, gap));
-        polyline(pts, POWER_COLORS[i % POWER_COLORS.length], stroke + 0.8, '5 4');
-        if (pts[0]) startDot(pts[0], POWER_COLORS[i % POWER_COLORS.length], 'P' + (i + 1));
+      if (cvtCount) {
+        for (let b = 0; b < cvtCount; b++) {
+          const start = b * CVT_PORTS_PER_BOX;
+          const bandChunks = dataChunks.slice(start, start + CVT_PORTS_PER_BOX);
+          bandChunks.forEach(function (chunk) {
+            chunk.forEach(function (cab) {
+              cabinetFill(cab, CVT_BAND_FILL[b % CVT_BAND_FILL.length], CVT_BAND_EDGE[b % CVT_BAND_EDGE.length]);
+            });
+          });
+          if (bandChunks[0] && bandChunks[0][0]) bandLabel(bandChunks[0], b, CVT_BAND_EDGE[b % CVT_BAND_EDGE.length]);
+        }
+      }
+
+      order.forEach(powerMark);
+
+      dataChunks.forEach(function (chunk, i) {
+        const color = DATA_COLORS[i % DATA_COLORS.length];
+        const pts = chunk.map(function (p) { return cellCenter(p.c, p.r, cellW, cellH, gap); });
+        polyline(pts, color, stroke, 'data-arrow-' + (i % DATA_COLORS.length));
+        if (chunk[0]) portLabel(chunk[0], color, 'D' + (i + 1));
       });
-      dataChunks.forEach((chunk, i) => {
-        const pts = chunk.map(p => cellCenter(p.c, p.r, cellW, cellH, gap));
-        polyline(pts, DATA_COLORS[i % DATA_COLORS.length], stroke);
-        if (pts[0]) startDot(pts[0], DATA_COLORS[i % DATA_COLORS.length], 'D' + (i + 1));
-      });
+
+      renderWiringLegend(perPort, dataChunks.length, cvtCount);
+    }
+    function renderWiringLegend(perPort, portCount, cvtCount) {
+      const el = document.getElementById('wiring-legend');
+      if (!el) return;
+      const rows = [];
+      rows.push('<div class="wiring-legend-row"><span class="wiring-swatch"></span> Data chain — colored line, ' + perPort + ' cabinet' + (perPort === 1 ? '' : 's') + ' / port</div>');
+      rows.push('<div class="wiring-legend-row"><span class="wiring-swatch wiring-swatch-p"></span> Power — separate dots</div>');
+      if (cvtCount) {
+        for (let b = 0; b < cvtCount; b++) {
+          const from = b * CVT_PORTS_PER_BOX + 1;
+          const to = Math.min((b + 1) * CVT_PORTS_PER_BOX, portCount);
+          rows.push(
+            '<div class="wiring-legend-row"><span class="wiring-swatch wiring-swatch-cvt" style="background:' + CVT_BAND_EDGE[b % CVT_BAND_EDGE.length] + '"></span>'
+            + 'CVT10-' + (b + 1) + ' &nbsp; OPT' + (b + 1) + ' &nbsp; ports D' + from + '–D' + to + '</div>'
+          );
+        }
+      }
+      el.innerHTML = rows.join('');
     }
     function rowLetter(n) {
       let s = '';
@@ -2223,14 +2354,10 @@
       if (screenOverlay) screenOverlay.classList.toggle('wiring-hidden', wiringOn);
       const wiringSvg = document.getElementById('wiring-overlay');
       const wiringLegend = document.getElementById('wiring-legend');
-      if (wiringLegend) {
-        wiringLegend.classList.toggle('hidden', !wiringOn);
-        wiringLegend.classList.toggle('inline-flex', wiringOn);
-      }
+      if (wiringLegend) wiringLegend.classList.toggle('is-on', wiringOn);
 
       const shortSide = Math.min(cellW, cellH);
       const labelSize = Math.max(10, Math.min(48, Math.round(shortSide * 0.42)));
-      const showPorts = wiringOn && cellW >= 10;
       for (let i = 0; i < maxDisplayCols * maxDisplayRows; i++) {
         const r = Math.floor(i / maxDisplayCols);
         const c = i % maxDisplayCols;
@@ -2243,21 +2370,18 @@
           span.textContent = labelMode === 'grid' ? (rowLetter(r) + (c + 1)) : String(i + 1);
           div.appendChild(span);
         }
-        if (showPorts) {
-          const ports = document.createElement('div');
-          ports.className = 'rear-ports';
-          ports.innerHTML = '<span class="d"></span><span class="p"></span>';
-          div.appendChild(ports);
-        }
         preview.appendChild(div);
       }
 
-      if (wiringSvg) {
-        wiringSvg.hidden = !wiringOn;
-        if (wiringOn) {
-          drawWiringOverlay(wiringSvg, maxDisplayCols, maxDisplayRows, cellW, cellH, dataPorts, circuits);
-        }
+      if (wiringOn) {
+        const ns = 'http://www.w3.org/2000/svg';
+        const overlay = document.createElementNS(ns, 'svg');
+        overlay.setAttribute('class', 'wiring-overlay');
+        overlay.setAttribute('aria-hidden', 'true');
+        preview.appendChild(overlay);
+        drawWiringOverlay(overlay, maxDisplayCols, maxDisplayRows, cellW, cellH, dataPorts, circuits, ppcW, ppcH);
       }
+      if (wiringSvg) wiringSvg.hidden = true;
 
       const figEl = document.getElementById('scale-figure');
       const figureOn = figureMode === 'person' && viewMode !== 'wiring';
@@ -2615,8 +2739,7 @@
         panY: panY,
         fig: figureMode
       };
-      if (viewMode === 'wiring') setViewMode('front', { skipApply: true });
-      // PDF: no human scale — also frees layout space for dimension labels
+      // Keep Wiring if selected so the PDF includes the planning drawing
       setFigureMode('off', { skipApply: true });
       zoom = 1;
       panX = 0;
