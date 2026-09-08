@@ -1226,11 +1226,21 @@
     let voltage = 120;
     const CIRCUIT_AMPS = 20;
     const CIRCUIT_DERATE = 0.8;
-    const PANELS_PER_DATA_PORT = 2;
-    /** Each panel uses one data cable. One sending port daisy-chains 2 panels, not 3. */
-    function ethernetPortsNeeded(panels) {
+    const NOVASTAR_1G_PORT_PX = 659722;
+    const NOVASTAR_1G_PORT_MAX_SIDE = 4096;
+    /** NovaStar 1G RJ45: whole cabinets only. 8-bit/60 Hz load 659,722 px; typically 4096 on a side. */
+    function cabinetsPerDataPort(cabWpx, cabHpx) {
+      const w = Math.max(1, Math.round(Number(cabWpx) || 1));
+      const h = Math.max(1, Math.round(Number(cabHpx) || 1));
+      const cabPx = w * h;
+      let n = Math.max(1, Math.floor(NOVASTAR_1G_PORT_PX / cabPx));
+      const alongW = Math.max(1, Math.floor(NOVASTAR_1G_PORT_MAX_SIDE / w));
+      const alongH = Math.max(1, Math.floor(NOVASTAR_1G_PORT_MAX_SIDE / h));
+      return Math.max(1, Math.min(n, Math.max(alongW, alongH)));
+    }
+    function ethernetPortsNeeded(cabWpx, cabHpx, panels) {
       const count = Math.max(1, Math.round(Number(panels) || 1));
-      return Math.max(1, Math.ceil(count / PANELS_PER_DATA_PORT));
+      return Math.max(1, Math.ceil(count / cabinetsPerDataPort(cabWpx, cabHpx)));
     }
     const UHD_PIXELS = 3840 * 2160;
     const MOUNT_LABELS = { wall: 'Wall', stack: 'Ground stack', truss: 'Truss hang', legs: 'Legs' };
@@ -2076,7 +2086,7 @@
       const wattsPerCircuit = voltage * CIRCUIT_AMPS * CIRCUIT_DERATE;
       const circuits = Math.max(1, Math.ceil(powerPeak / wattsPerCircuit));
       const totalPx = pxW * pxH;
-      const dataPorts = ethernetPortsNeeded(panels);
+      const dataPorts = ethernetPortsNeeded(ppcW, ppcH, panels);
       const controlSel = resolveControlSelection(totalPx);
       const processorText = controlSel.processor
         ? ((controlSel.qty > 1 ? controlSel.qty + ' × ' : '') + controlSel.processor.name)
