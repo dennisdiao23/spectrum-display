@@ -1327,7 +1327,7 @@
       return c === 0 || r === 0 || c === cols - 1 || r === rows - 1;
     }
     function powerCabinetOrder(cols, rows, offEdge) {
-      const all = columnDownOrder(cols, rows);
+      const all = snakeRightOrder(cols, rows);
       if (!offEdge || cols < 3 || rows < 3) return all;
       const interior = [];
       const edge = [];
@@ -1399,12 +1399,30 @@
       setChoiceButtons('.view-btn', 'data-view', viewMode);
       if (!opts || !opts.skipApply) updateDesign();
     }
-    function columnDownOrder(cols, rows) {
+    function snakeRightOrder(cols, rows) {
       const order = [];
-      for (let c = 0; c < cols; c++) {
-        for (let r = 0; r < rows; r++) order.push({ r: r, c: c });
+      for (let r = 0; r < rows; r++) {
+        for (let c = 0; c < cols; c++) order.push({ r: r, c: c });
       }
       return order;
+    }
+    function cabinetsAreAdjacent(a, b) {
+      if (!a || !b) return false;
+      return (a.r === b.r && Math.abs(a.c - b.c) === 1)
+        || (a.c === b.c && Math.abs(a.r - b.r) === 1);
+    }
+    function adjacentRuns(chunk) {
+      const runs = [];
+      let run = [];
+      (chunk || []).forEach(function (cab) {
+        if (run.length && !cabinetsAreAdjacent(run[run.length - 1], cab)) {
+          runs.push(run);
+          run = [];
+        }
+        run.push(cab);
+      });
+      if (run.length) runs.push(run);
+      return runs;
     }
     function chunkBySize(list, size) {
       const n = Math.max(1, size);
@@ -1479,7 +1497,7 @@
       const showData = !opts || opts.showData !== false;
       const showPower = !opts || opts.showPower !== false;
       const perPort = cabinetsPerDataPort(cabWpx, cabHpx);
-      const order = columnDownOrder(cols, rows);
+      const order = snakeRightOrder(cols, rows);
       const dataChunks = chunkBySize(order, perPort);
       const cabsPerPower = Math.max(1, Number(opts && opts.cabinetsPerCircuit) || 1);
       const powerChunks = chunkBySize(powerCabinetOrder(cols, rows, !!(opts && opts.powerOffEdge)), cabsPerPower);
@@ -1604,11 +1622,24 @@
         }
       });
 
+      function drawChain(chunk, color, width, markerId, offset) {
+        const dx = offset && offset.x ? offset.x : 0;
+        const dy = offset && offset.y ? offset.y : 0;
+        const runs = adjacentRuns(chunk);
+        runs.forEach(function (run, ri) {
+          const pts = run.map(function (p) {
+            const c = cellCenter(p.c, p.r, cellW, cellH, gap);
+            return { x: c.x + dx, y: c.y + dy };
+          });
+          const last = ri === runs.length - 1;
+          polyline(pts, color, width, last ? markerId : '');
+        });
+      }
+
       if (showData) {
         dataChunks.forEach(function (chunk, i) {
           const color = DATA_COLORS[i % DATA_COLORS.length];
-          const pts = chunk.map(function (p) { return cellCenter(p.c, p.r, cellW, cellH, gap); });
-          polyline(pts, color, stroke, 'data-arrow-' + (i % DATA_COLORS.length));
+          drawChain(chunk, color, stroke, 'data-arrow-' + (i % DATA_COLORS.length));
           if (chunk[0]) portLabel(chunk[0], color, 'D' + (i + 1));
         });
       }
@@ -1616,11 +1647,7 @@
       if (showPower) {
         const powerOff = Math.min(5, cellW * 0.12);
         powerChunks.forEach(function (chunk, i) {
-          const pts = chunk.map(function (p) {
-            const c = cellCenter(p.c, p.r, cellW, cellH, gap);
-            return { x: c.x + powerOff, y: c.y };
-          });
-          polyline(pts, POWER_COLOR, Math.max(1.8, stroke * 1.25), 'power-arrow');
+          drawChain(chunk, POWER_COLOR, Math.max(1.8, stroke * 1.25), 'power-arrow', { x: powerOff, y: 0 });
           if (chunk[0]) powerChainLabel(chunk[0], 'P' + (i + 1));
         });
       }
