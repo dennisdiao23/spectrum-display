@@ -3861,6 +3861,7 @@ body.so-invoice-float #so-payments-row,
 body.so-invoice-float #so-balance-row { display: flex; }
 body.so-invoice-float .so-doc-legacy-title,
 body.so-invoice-float #so-save,
+body.so-invoice-float #so-print-btn,
 body.so-invoice-float #so-to-order,
 body.so-invoice-float #so-to-invoice,
 body.so-invoice-float #so-delete-btn { display: none !important; }
@@ -5564,5 +5565,9 @@ body.so-invoice-float .so-f-tracking { min-width: 0; }
 }
 @media (max-width: 980px) {
   .pf-editor { grid-template-columns: 1fr; }
+}
+
+#settings-pane .hidden {
+  display: none !important;
 }
 

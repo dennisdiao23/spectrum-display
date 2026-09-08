@@ -1859,6 +1859,7 @@
                 </div>
                 <div class="so-doc-actions">
                   <button type="submit" id="so-save" class="so-doc-btn so-doc-btn-primary" data-so-after="stay">Save</button>
+                  <button type="button" id="so-print-btn" class="so-doc-btn">Print</button>
                   <button type="submit" id="so-save-close" class="so-doc-btn so-doc-btn-primary" data-so-after="close">Save &amp; Close</button>
                   <button type="submit" id="so-save-new" class="so-doc-btn" data-so-after="new">Save &amp; New</button>
                   <button type="button" id="so-revert" class="so-doc-btn">Revert</button>
@@ -14112,6 +14113,8 @@
     document.getElementById('so-ribbon-print').addEventListener('click', function () {
       printSalesLetter();
     });
+    const soPrintBtn = document.getElementById('so-print-btn');
+    if (soPrintBtn) soPrintBtn.addEventListener('click', function () { printSalesLetter(); });
     (function bindPrintFormsEditor() {
       const tabs = document.getElementById('pf-type-tabs');
       if (!tabs) return;
