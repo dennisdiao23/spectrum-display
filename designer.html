@@ -1430,12 +1430,6 @@
       for (let i = 0; i < list.length; i += n) chunks.push(list.slice(i, i + n));
       return chunks;
     }
-    function cellCenter(c, r, cellW, cellH, gap) {
-      return {
-        x: c * (cellW + gap) + cellW / 2,
-        y: r * (cellH + gap) + cellH / 2
-      };
-    }
     function cellOrigin(c, r, cellW, cellH, gap) {
       return { x: c * (cellW + gap), y: r * (cellH + gap) };
     }
@@ -1622,15 +1616,54 @@
         }
       });
 
-      function drawChain(chunk, color, width, markerId, offset) {
-        const dx = offset && offset.x ? offset.x : 0;
-        const dy = offset && offset.y ? offset.y : 0;
+      function oppositeSide(side) {
+        if (side === 'left') return 'right';
+        if (side === 'right') return 'left';
+        if (side === 'top') return 'bottom';
+        return 'top';
+      }
+      function sideFacing(from, to) {
+        if (to.c > from.c) return 'right';
+        if (to.c < from.c) return 'left';
+        if (to.r > from.r) return 'bottom';
+        if (to.r < from.r) return 'top';
+        return 'right';
+      }
+      function laneAttach(cab, side, kind) {
+        const o = cellOrigin(cab.c, cab.r, cellW, cellH, gap);
+        const power = kind === 'power';
+        if (side === 'left' || side === 'right') {
+          const insetX = cellW * (power ? 0.14 : 0.22);
+          return {
+            x: o.x + (side === 'left' ? insetX : cellW - insetX),
+            y: o.y + cellH * (power ? 0.68 : 0.32)
+          };
+        }
+        return {
+          x: o.x + cellW * (power ? 0.68 : 0.32),
+          y: o.y + (side === 'top'
+            ? cellH * (power ? 0.58 : 0.18)
+            : cellH * (power ? 0.82 : 0.42))
+        };
+      }
+      function chainPoints(run, kind) {
+        const pts = [];
+        run.forEach(function (cab, i) {
+          const prev = i > 0 ? run[i - 1] : null;
+          const next = i < run.length - 1 ? run[i + 1] : null;
+          let enter = prev ? sideFacing(cab, prev) : null;
+          let exit = next ? sideFacing(cab, next) : null;
+          if (!enter) enter = next ? oppositeSide(exit) : 'left';
+          if (!exit) exit = prev ? oppositeSide(enter) : 'right';
+          pts.push(laneAttach(cab, enter, kind));
+          pts.push(laneAttach(cab, exit, kind));
+        });
+        return pts;
+      }
+      function drawChain(chunk, color, width, markerId, kind) {
         const runs = adjacentRuns(chunk);
         runs.forEach(function (run, ri) {
-          const pts = run.map(function (p) {
-            const c = cellCenter(p.c, p.r, cellW, cellH, gap);
-            return { x: c.x + dx, y: c.y + dy };
-          });
+          const pts = chainPoints(run, kind);
           const last = ri === runs.length - 1;
           polyline(pts, color, width, last ? markerId : '');
         });
@@ -1639,15 +1672,14 @@
       if (showData) {
         dataChunks.forEach(function (chunk, i) {
           const color = DATA_COLORS[i % DATA_COLORS.length];
-          drawChain(chunk, color, stroke, 'data-arrow-' + (i % DATA_COLORS.length));
+          drawChain(chunk, color, stroke, 'data-arrow-' + (i % DATA_COLORS.length), 'data');
           if (chunk[0]) portLabel(chunk[0], color, 'D' + (i + 1));
         });
       }
 
       if (showPower) {
-        const powerOff = Math.min(5, cellW * 0.12);
         powerChunks.forEach(function (chunk, i) {
-          drawChain(chunk, POWER_COLOR, Math.max(1.8, stroke * 1.25), 'power-arrow', { x: powerOff, y: 0 });
+          drawChain(chunk, POWER_COLOR, Math.max(1.8, stroke * 1.25), 'power-arrow', 'power');
           if (chunk[0]) powerChainLabel(chunk[0], 'P' + (i + 1));
         });
       }
