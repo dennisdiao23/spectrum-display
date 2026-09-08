@@ -8,10 +8,10 @@
   <link rel="apple-touch-icon" href="/assets/apple-touch-icon.png" />
   <title>Company | Spectrum Display</title>
   <meta name="robots" content="noindex, nofollow" />
-  <link rel="stylesheet" href="/css/company-dash.css?v=forms1" />
+  <link rel="stylesheet" href="/css/company-dash.css?v=forms2" />
   <script src="/js/address-autocomplete.js"></script>
   <script src="/js/company-chat.js?v=chatpage3"></script>
-  <script src="/js/print-form.js?v=forms1"></script>
+  <script src="/js/print-form.js?v=forms2"></script>
   <script>
     (function () {
       try {
@@ -1970,7 +1970,7 @@
         <div class="pf-page-head">
           <div>
             <h2>Forms</h2>
-            <p>Print for quotes, orders, invoices, and POs uses this letter layout. Customer-facing columns only unless you turn extras on.</p>
+            <p>Print for quotes, orders, invoices, and POs uses this letter. Drag blocks on the page to place them. Customer-facing columns only unless you turn extras on.</p>
           </div>
           <div class="pf-page-actions">
             <button type="button" id="pf-save" class="px-5 py-2 rounded-full bg-sky-500 hover:bg-sky-400 text-white text-sm font-semibold">Save</button>
@@ -2012,7 +2012,13 @@
             </label>
           </div>
           <div class="pf-preview-wrap">
-            <p class="pf-label">Live preview</p>
+            <div class="pf-preview-head">
+              <div>
+                <p class="pf-label">Letter canvas</p>
+                <p class="pf-hint">Drag a block to move it. Drag the corner handle to resize. Save so Print uses this layout.</p>
+              </div>
+              <button type="button" id="pf-reset-layout" class="pf-reset">Reset layout</button>
+            </div>
             <div class="pf-preview-frame">
               <div id="pf-preview" class="pf-preview"></div>
             </div>
@@ -2714,7 +2720,7 @@
     </a>
   </nav>
 
-  <link rel="stylesheet" href="/css/company-dash.css?v=forms1" />
+  <link rel="stylesheet" href="/css/company-dash.css?v=forms2" />
 
   <script>
     const loginPanel = document.getElementById('login-panel');
@@ -13827,6 +13833,7 @@
     let pfDraft = null;
     let pfType = 'invoice';
     let pfDragId = '';
+    let pfLayoutDrag = null;
 
     async function loadPrintBundle(force) {
       if (!force && printFormsCache) {
@@ -14026,24 +14033,121 @@
       return pfDraft;
     }
 
+    function pfEnsureLayout() {
+      if (!pfDraft) return null;
+      if (!window.SpectrumPrintForm) return pfDraft.layout || {};
+      pfDraft.layout = SpectrumPrintForm.mergeLayout(pfDraft.layout);
+      return pfDraft.layout;
+    }
+
+    function pfEnsureEditorCss() {
+      if (!window.SpectrumPrintForm) return;
+      let el = document.getElementById('pf-print-css');
+      if (!el) {
+        el = document.createElement('style');
+        el.id = 'pf-print-css';
+        document.head.appendChild(el);
+      }
+      el.textContent = SpectrumPrintForm.editorCss();
+    }
+
+    function pfFitPreview() {
+      const host = document.getElementById('pf-preview');
+      const sheet = host && host.querySelector('.pf-sheet');
+      if (!host || !sheet) return;
+      sheet.style.transform = 'none';
+      const frame = host.closest('.pf-preview-frame') || host;
+      const avail = Math.max(240, frame.clientWidth - 12);
+      const natural = sheet.offsetWidth || 1;
+      const scale = Math.min(1, avail / natural);
+      sheet.style.transformOrigin = 'top left';
+      sheet.style.transform = 'scale(' + scale + ')';
+      host.style.width = (sheet.offsetWidth * scale) + 'px';
+      host.style.height = (sheet.offsetHeight * scale) + 'px';
+    }
+
+    function pfApplyBoxStyle(el, box) {
+      el.style.left = box.x + '%';
+      el.style.top = box.y + '%';
+      el.style.width = box.w + '%';
+      el.style.height = box.h + '%';
+    }
+
     function pfRenderPreview() {
       const host = document.getElementById('pf-preview');
-      if (!host || !window.SpectrumPrintForm) return;
+      if (!host || !window.SpectrumPrintForm || pfLayoutDrag) return;
       pfReadDraft();
+      pfEnsureLayout();
+      pfEnsureEditorCss();
       const sample = SpectrumPrintForm.sampleDoc(pfType);
-      let iframe = host.querySelector('iframe');
-      if (!iframe) {
-        iframe = document.createElement('iframe');
-        iframe.title = 'Form preview';
-        iframe.className = 'pf-preview-iframe';
-        host.innerHTML = '';
-        host.appendChild(iframe);
+      host.innerHTML = SpectrumPrintForm.sheetHtml(pfDraft, { company: printCompanyCache, doc: sample }, { edit: true });
+      pfFitPreview();
+    }
+
+    function pfOnLayoutDown(e) {
+      if (e.button && e.button !== 0) return;
+      const host = document.getElementById('pf-preview');
+      if (!host || !pfDraft) return;
+      const handle = e.target.closest('.pf-resize');
+      const box = e.target.closest('#pf-preview .pf-abs');
+      if (!box || !host.contains(box)) return;
+      e.preventDefault();
+      const id = box.getAttribute('data-pf-block');
+      const layout = pfEnsureLayout();
+      const sheet = host.querySelector('.pf-sheet');
+      if (!sheet || !id || !layout[id]) return;
+      const rect = sheet.getBoundingClientRect();
+      host.querySelectorAll('.pf-abs.is-on').forEach(function (el) { el.classList.remove('is-on'); });
+      box.classList.add('is-on');
+      pfLayoutDrag = {
+        id: id,
+        mode: handle ? 'resize' : 'move',
+        startX: e.clientX,
+        startY: e.clientY,
+        orig: Object.assign({}, layout[id]),
+        sheetW: rect.width,
+        sheetH: rect.height,
+        el: box,
+        pointerId: e.pointerId
+      };
+      document.body.classList.add('is-pf-dragging');
+      try { box.setPointerCapture(e.pointerId); } catch (err) {}
+    }
+
+    function pfLiveBox(orig, dx, dy, mode) {
+      const next = { x: orig.x, y: orig.y, w: orig.w, h: orig.h };
+      if (mode === 'resize') {
+        next.w = Math.min(100 - orig.x, Math.max(8, orig.w + dx));
+        next.h = Math.min(100 - orig.y, Math.max(5, orig.h + dy));
+      } else {
+        next.x = Math.min(100 - orig.w, Math.max(0, orig.x + dx));
+        next.y = Math.min(100 - orig.h, Math.max(0, orig.y + dy));
       }
-      iframe.srcdoc = '<!doctype html><html><head><meta charset="utf-8"><style>' +
-        SpectrumPrintForm.printCss() +
-        'html,body{background:#fff}</style></head><body>' +
-        SpectrumPrintForm.sheetHtml(pfDraft, { company: printCompanyCache, doc: sample }) +
-        '</body></html>';
+      return next;
+    }
+
+    function pfOnLayoutMove(e) {
+      if (!pfLayoutDrag || !pfDraft) return;
+      const d = pfLayoutDrag;
+      if (!d.sheetW || !d.sheetH) return;
+      const dx = ((e.clientX - d.startX) / d.sheetW) * 100;
+      const dy = ((e.clientY - d.startY) / d.sheetH) * 100;
+      const next = pfLiveBox(d.orig, dx, dy, d.mode);
+      pfDraft.layout[d.id] = next;
+      pfApplyBoxStyle(d.el, next);
+    }
+
+    function pfOnLayoutUp() {
+      if (!pfLayoutDrag || !pfDraft) return;
+      const d = pfLayoutDrag;
+      pfLayoutDrag = null;
+      document.body.classList.remove('is-pf-dragging');
+      try { d.el.releasePointerCapture(d.pointerId); } catch (err) {}
+      const packed = {};
+      packed[d.id] = pfDraft.layout[d.id];
+      const snapped = SpectrumPrintForm.mergeLayout(Object.assign({}, pfDraft.layout, packed))[d.id];
+      pfDraft.layout[d.id] = snapped;
+      pfApplyBoxStyle(d.el, snapped);
     }
 
     function pfSetType(type) {
@@ -14147,6 +14251,27 @@
       pfBindDrag(document.getElementById('pf-header-on'), 'on');
       pfBindDrag(document.getElementById('pf-header-off'), 'off');
       pfBindDrag(document.getElementById('pf-cols'), 'cols');
+      const preview = document.getElementById('pf-preview');
+      preview.addEventListener('pointerdown', pfOnLayoutDown);
+      preview.addEventListener('pointermove', pfOnLayoutMove);
+      preview.addEventListener('pointerup', pfOnLayoutUp);
+      preview.addEventListener('pointercancel', pfOnLayoutUp);
+      document.addEventListener('pointermove', pfOnLayoutMove);
+      document.addEventListener('pointerup', pfOnLayoutUp);
+      document.addEventListener('pointercancel', pfOnLayoutUp);
+      window.addEventListener('resize', function () {
+        if (document.getElementById('forms-section') && !document.getElementById('forms-section').classList.contains('hidden')) {
+          pfFitPreview();
+        }
+      });
+      const resetBtn = document.getElementById('pf-reset-layout');
+      if (resetBtn) {
+        resetBtn.addEventListener('click', function () {
+          if (!pfDraft || !window.SpectrumPrintForm) return;
+          pfDraft.layout = SpectrumPrintForm.defaultLayout();
+          pfRenderPreview();
+        });
+      }
       document.getElementById('pf-save').addEventListener('click', async function () {
         pfReadDraft();
         pfShowMsg('');

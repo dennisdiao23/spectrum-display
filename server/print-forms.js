@@ -105,6 +105,60 @@ function columnDefaults() {
   ];
 }
 
+const LAYOUT_IDS = [
+  'company', 'title', 'logo', 'billTo', 'shipTo', 'header', 'lines', 'paymentTerms', 'totals', 'contact'
+];
+
+const MIN_BOX_W = 8;
+const MIN_BOX_H = 5;
+
+function defaultLayout() {
+  return {
+    company: { x: 0, y: 0, w: 36, h: 10 },
+    title: { x: 36, y: 0.5, w: 28, h: 8 },
+    logo: { x: 64, y: 0, w: 36, h: 10 },
+    billTo: { x: 0, y: 12, w: 48, h: 14 },
+    shipTo: { x: 52, y: 12, w: 48, h: 14 },
+    header: { x: 0, y: 28, w: 100, h: 9 },
+    lines: { x: 0, y: 39, w: 100, h: 36 },
+    paymentTerms: { x: 0, y: 77, w: 58, h: 16 },
+    totals: { x: 62, y: 77, w: 38, h: 14 },
+    contact: { x: 0, y: 94, w: 100, h: 5 }
+  };
+}
+
+function snapPct(n) {
+  const v = Number(n);
+  if (!Number.isFinite(v)) return 0;
+  return Math.round(v * 2) / 2;
+}
+
+function clampPct(n, min, max) {
+  return Math.min(max, Math.max(min, snapPct(n)));
+}
+
+function sanitizeBox(box, fallback) {
+  const src = box && typeof box === 'object' ? box : fallback;
+  const fb = fallback || { x: 0, y: 0, w: 20, h: 10 };
+  let w = clampPct(src.w != null ? src.w : fb.w, MIN_BOX_W, 100);
+  let h = clampPct(src.h != null ? src.h : fb.h, MIN_BOX_H, 100);
+  let x = clampPct(src.x != null ? src.x : fb.x, 0, 100 - MIN_BOX_W);
+  let y = clampPct(src.y != null ? src.y : fb.y, 0, 100 - MIN_BOX_H);
+  if (x + w > 100) w = Math.max(MIN_BOX_W, snapPct(100 - x));
+  if (y + h > 100) h = Math.max(MIN_BOX_H, snapPct(100 - y));
+  return { x: x, y: y, w: w, h: h };
+}
+
+function sanitizeLayout(input) {
+  const defs = defaultLayout();
+  const src = input && typeof input === 'object' ? input : {};
+  const out = {};
+  LAYOUT_IDS.forEach(function (id) {
+    out[id] = sanitizeBox(src[id], defs[id]);
+  });
+  return out;
+}
+
 function defaultTemplate(type) {
   const t = TYPES.indexOf(type) !== -1 ? type : 'invoice';
   return {
@@ -123,7 +177,8 @@ function defaultTemplate(type) {
       contact: true
     },
     headerFields: headerDefaults(t),
-    columns: columnDefaults()
+    columns: columnDefaults(),
+    layout: defaultLayout()
   };
 }
 
@@ -176,7 +231,8 @@ function normalizeTemplate(type, input) {
     columns: mergeList(COLUMNS.map(function (c) {
       const hit = (base.columns || []).find(function (row) { return row.id === c.id; });
       return { id: c.id, label: hit ? hit.title : c.label, print: hit ? hit.print : false };
-    }), src.columns)
+    }), src.columns),
+    layout: sanitizeLayout(src.layout)
   };
 }
 
@@ -195,10 +251,13 @@ module.exports = {
   HEADER_FIELDS,
   COLUMNS,
   BLOCKS,
+  LAYOUT_IDS,
   LOGOS,
   DEFAULT_PAYMENT,
   typeTitle,
   normalizeType,
+  defaultLayout,
+  sanitizeLayout,
   defaultTemplate,
   normalizeTemplate,
   parseStored
