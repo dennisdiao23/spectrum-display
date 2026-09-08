@@ -495,6 +495,8 @@ create table if not exists public.company_customers (
   preferred_contact text not null default '',
   industry text not null default '',
   social text not null default '',
+  customer_type text not null default '',
+  sales_rep text not null default '',
   notes text not null default '',
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now()

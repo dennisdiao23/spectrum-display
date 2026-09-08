@@ -2035,8 +2035,18 @@
       <section class="cc-sec is-open" id="cc-sec-company">
         <button type="button" class="cc-sec-btn"><span class="cc-sec-label"><svg class="cc-sec-ico" viewBox="0 0 24 24"><path d="M3 20V9l9-5 9 5v11"/><path d="M9 20v-7h6v7"/></svg> Company information</span> <span class="cc-sec-chevron">▾</span></button>
         <div class="cc-sec-body">
-          <div class="cc-field"><label>Company name</label><input id="cc-company" type="text" placeholder="Type to search"></div>
+          <div class="cc-field"><label>Company name</label><input id="cc-company" type="text"></div>
           <div class="cc-field wide"><label>Customer display name *</label><input id="cc-display" type="text"></div>
+          <div class="cc-field"><label>Customer type</label>
+            <select id="cc-type">
+              <option value="">—</option>
+              <option>Retail/Commercial</option>
+              <option>Residential</option>
+              <option>AV Integrator</option>
+              <option>Dealer</option>
+            </select>
+          </div>
+          <div class="cc-field"><label>Phone number</label><input id="cc-company-phone" type="text"></div>
           <div class="cc-field"><label>Website</label><input id="cc-website" type="text" placeholder="https://"></div>
           <div class="cc-field"><label>Fax</label><input id="cc-fax" type="text"></div>
           <div class="cc-field"><label>Other</label><input id="cc-other" type="text"></div>
@@ -2117,7 +2127,18 @@
       <section class="cc-sec is-open" id="cc-sec-rel">
         <button type="button" class="cc-sec-btn"><span class="cc-sec-label"><svg class="cc-sec-ico" viewBox="0 0 24 24"><circle cx="9" cy="8" r="2.6"/><path d="M3.8 19c.6-2.8 2.6-4.2 5.2-4.2s4.6 1.4 5.2 4.2"/><circle cx="17" cy="8.3" r="2.1"/><path d="M16.2 14.7c2 .4 3.5 1.6 4 3.8"/></svg> Relationships &amp; Sales</span> <span class="cc-sec-chevron">▾</span></button>
         <div class="cc-sec-body">
-          <div class="cc-field"><label>Sources</label><input id="cc-source" type="text"></div>
+          <div class="cc-field"><label>Sources</label>
+            <select id="cc-source">
+              <option value="">—</option>
+              <option>Infocomm</option>
+              <option>Trade show</option>
+              <option>Online</option>
+              <option>Other</option>
+            </select>
+          </div>
+          <div class="cc-field"><label>Sales Rep</label>
+            <select id="cc-rep"><option value="">—</option></select>
+          </div>
           <div class="cc-field"><label>Referred by</label><input id="cc-referred" type="text"></div>
           <div class="cc-field"><label>Preferred contact method</label>
             <select id="cc-pref"><option value="">—</option><option>Email</option><option>Phone</option><option>Mobile</option></select>
@@ -8777,6 +8798,52 @@
       });
     }
 
+    let ccRepStaff = null;
+
+    async function ensureCcRepStaff() {
+      if (ccRepStaff) return ccRepStaff;
+      try {
+        const data = await api('/api/admin/company-users');
+        ccRepStaff = data.users || [];
+      } catch (err) {
+        ccRepStaff = staffList.slice();
+      }
+      return ccRepStaff;
+    }
+
+    function setSelectKeep(id, value) {
+      const el = document.getElementById(id);
+      if (!el) return;
+      const v = value == null ? '' : String(value);
+      if (v) {
+        const found = Array.prototype.some.call(el.options, function (o) { return o.value === v; });
+        if (!found) {
+          const opt = document.createElement('option');
+          opt.value = v;
+          opt.textContent = v;
+          el.appendChild(opt);
+        }
+      }
+      el.value = v;
+    }
+
+    function fillCcRepSelect(selected) {
+      const sel = document.getElementById('cc-rep');
+      if (!sel) return;
+      const names = [];
+      (ccRepStaff || []).forEach(function (p) {
+        const n = String((p && p.name) || '').trim();
+        if (n && names.indexOf(n) === -1) names.push(n);
+      });
+      names.sort(function (a, b) { return a.localeCompare(b); });
+      let html = '<option value="">—</option>';
+      names.forEach(function (n) {
+        html += '<option value="' + esc(n) + '">' + esc(n) + '</option>';
+      });
+      sel.innerHTML = html;
+      setSelectKeep('cc-rep', selected || '');
+    }
+
     function fillCcForm(c) {
       const set = function (id, value) {
         const el = document.getElementById(id);
@@ -8793,10 +8860,12 @@
       set('cc-last', (primary && primary.lastName) || c.contactLast || '');
       set('cc-company', c.companyName || '');
       set('cc-display', c.displayName || '');
+      setSelectKeep('cc-type', c.customerType || '');
+      set('cc-company-phone', c.phone || '');
       set('cc-email', (primary && primary.email) || c.email || '');
       set('cc-cc', c.emailCc || '');
       set('cc-bcc', c.emailBcc || '');
-      set('cc-phone', (primary && primary.phone) || c.phone || '');
+      set('cc-phone', (primary && primary.phone) || '');
       set('cc-mobile', (primary && primary.mobile) || c.mobile || '');
       set('cc-fax', c.fax || '');
       set('cc-other', c.otherPhone || '');
@@ -8825,7 +8894,8 @@
       set('cc-ship-state', c.shipState || '');
       set('cc-ship-zip', c.shipZip || '');
       set('cc-ship-country', c.shipCountry || '');
-      set('cc-source', c.source || '');
+      fillCcRepSelect(c.salesRep || '');
+      setSelectKeep('cc-source', c.source || '');
       set('cc-referred', c.referredBy || '');
       set('cc-job', (primary && primary.jobTitle) || c.jobTitle || '');
       set('cc-role', (primary && primary.role) || c.contactRole || '');
@@ -8853,10 +8923,12 @@
         suffix: '',
         companyName: val('cc-company'),
         displayName: val('cc-display'),
+        customerType: val('cc-type'),
         email: val('cc-email'),
         emailCc: val('cc-cc'),
         emailBcc: val('cc-bcc'),
-        phone: val('cc-phone'),
+        phone: val('cc-company-phone'),
+        contactPhone: val('cc-phone'),
         mobile: val('cc-mobile'),
         fax: val('cc-fax'),
         otherPhone: val('cc-other'),
@@ -8887,6 +8959,7 @@
         shipZip: val('cc-ship-zip'),
         shipCountry: val('cc-ship-country'),
         source: val('cc-source'),
+        salesRep: val('cc-rep'),
         referredBy: val('cc-referred'),
         jobTitle: val('cc-job'),
         contactRole: val('cc-role'),
@@ -9654,6 +9727,7 @@
           full = customer;
         }
       }
+      await ensureCcRepStaff();
       if (full && full.id) {
         document.getElementById('cc-title').textContent = full.displayName || full.companyName || 'Customer';
         document.getElementById('cc-delete-btn').classList.remove('hidden');
