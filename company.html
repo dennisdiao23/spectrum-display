@@ -815,6 +815,10 @@
                           <div><dt>Qty</dt><dd id="wh-detail-qty">—</dd></div>
                         </dl>
                       </div>
+                      <div id="wh-detail-address-wrap" class="cc-detail-block hidden">
+                        <h3>Address</h3>
+                        <p id="wh-detail-address" class="text-sm text-slate-300 whitespace-pre-line">—</p>
+                      </div>
                       <div class="cc-detail-block">
                         <h3>Notes</h3>
                         <p id="wh-detail-notes" class="text-sm text-slate-300">—</p>
@@ -864,6 +868,37 @@
                       <input id="wh-untracked" type="checkbox" class="mt-1">
                       <span>Do not track this location as our inventory. Qty still shows on the item and can count as website stock.</span>
                     </label>
+                  </div>
+                  <div id="wh-address-wrap" class="hidden sm:col-span-2">
+                    <div class="grid sm:grid-cols-2 gap-4">
+                    <div class="sm:col-span-2">
+                      <h3 class="text-sm font-semibold text-slate-200">Address</h3>
+                    </div>
+                    <div class="sm:col-span-2">
+                      <label class="block text-xs text-slate-400 mb-1">Street address 1</label>
+                      <input id="wh-street" type="text" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm" placeholder="Start typing an address" autocomplete="off" data-places-fields="wh-street,wh-street2,wh-city,wh-state,wh-zip,wh-country">
+                    </div>
+                    <div class="sm:col-span-2">
+                      <label class="block text-xs text-slate-400 mb-1">Street address 2</label>
+                      <input id="wh-street2" type="text" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm">
+                    </div>
+                    <div>
+                      <label class="block text-xs text-slate-400 mb-1">City</label>
+                      <input id="wh-city" type="text" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm">
+                    </div>
+                    <div>
+                      <label class="block text-xs text-slate-400 mb-1">State</label>
+                      <input id="wh-state" type="text" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm">
+                    </div>
+                    <div>
+                      <label class="block text-xs text-slate-400 mb-1">ZIP code</label>
+                      <input id="wh-zip" type="text" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm">
+                    </div>
+                    <div>
+                      <label class="block text-xs text-slate-400 mb-1">Country</label>
+                      <input id="wh-country" type="text" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm" value="United States">
+                    </div>
+                    </div>
                   </div>
                   <div class="sm:col-span-2">
                     <label class="block text-xs text-slate-400 mb-1">Notes</label>
@@ -7655,7 +7690,9 @@
       const type = typeEl.value;
       const vendorWrap = document.getElementById('wh-vendor-wrap');
       const untrackedWrap = document.getElementById('wh-untracked-wrap');
+      const addressWrap = document.getElementById('wh-address-wrap');
       if (vendorWrap) vendorWrap.classList.toggle('hidden', type !== 'warehouse');
+      if (addressWrap) addressWrap.classList.toggle('hidden', type !== 'warehouse');
       const vendorId = (document.getElementById('wh-vendor') || {}).value || '';
       if (untrackedWrap) untrackedWrap.classList.toggle('hidden', type !== 'warehouse' || !vendorId);
       if (type !== 'warehouse' || !vendorId) {
@@ -7704,7 +7741,7 @@
         if (warehouseFilter === 'tracked' && (wh.untracked || wh.tracked === false)) return false;
         if (warehouseFilter === 'untracked' && !(wh.untracked || wh.tracked === false)) return false;
         if (q) {
-          const blob = ((wh.name || '') + ' ' + (wh.typeLabel || '') + ' ' + (wh.vendorName || '') + ' ' + (wh.notes || '')).toLowerCase();
+          const blob = ((wh.name || '') + ' ' + (wh.typeLabel || '') + ' ' + (wh.vendorName || '') + ' ' + (wh.notes || '') + ' ' + (wh.street || '') + ' ' + (wh.city || '') + ' ' + (wh.state || '') + ' ' + (wh.zip || '')).toLowerCase();
           if (blob.indexOf(q) === -1) return false;
         }
         return true;
@@ -7796,6 +7833,11 @@
       const tracked = !(wh && (wh.untracked || wh.tracked === false));
       document.getElementById('wh-detail-tracked').textContent = tracked ? 'Yes' : 'No';
       document.getElementById('wh-detail-qty').textContent = Number((wh && wh.qty) || 0).toLocaleString();
+      const addrWrap = document.getElementById('wh-detail-address-wrap');
+      const addrEl = document.getElementById('wh-detail-address');
+      const isWarehouse = String((wh && (wh.kind || wh.type)) || '') === 'warehouse';
+      if (addrWrap) addrWrap.classList.toggle('hidden', !isWarehouse);
+      if (addrEl) addrEl.textContent = (wh && wh.address) || '—';
       document.getElementById('wh-detail-notes').textContent = (wh && wh.notes) || '—';
       const canChange = canEdit('inventory');
       document.getElementById('wh-edit-btn').classList.toggle('hidden', !canChange);
@@ -7850,6 +7892,12 @@
       document.getElementById('wh-type').value = (kind === 'bin' || kind === 'custom' || kind === 'warehouse') ? kind : 'warehouse';
       fillWhVendorSelect(wh && wh.vendorId);
       document.getElementById('wh-untracked').checked = !!(wh && wh.untracked);
+      document.getElementById('wh-street').value = (wh && wh.street) || '';
+      document.getElementById('wh-street2').value = (wh && wh.street2) || '';
+      document.getElementById('wh-city').value = (wh && wh.city) || '';
+      document.getElementById('wh-state').value = (wh && wh.state) || '';
+      document.getElementById('wh-zip').value = (wh && wh.zip) || '';
+      document.getElementById('wh-country').value = (wh && wh.country) || 'United States';
       document.getElementById('wh-notes').value = (wh && wh.notes) || '';
       document.getElementById('wh-form-msg').classList.add('hidden');
       const del = document.getElementById('wh-delete-btn');
@@ -14592,7 +14640,13 @@
         type: document.getElementById('wh-type').value,
         vendorId: document.getElementById('wh-vendor').value,
         untracked: document.getElementById('wh-untracked').checked,
-        notes: document.getElementById('wh-notes').value
+        notes: document.getElementById('wh-notes').value,
+        street: document.getElementById('wh-street').value,
+        street2: document.getElementById('wh-street2').value,
+        city: document.getElementById('wh-city').value,
+        state: document.getElementById('wh-state').value,
+        zip: document.getElementById('wh-zip').value,
+        country: document.getElementById('wh-country').value
       };
       try {
         const data = id

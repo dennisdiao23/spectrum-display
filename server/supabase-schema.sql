@@ -805,6 +805,12 @@ create table if not exists public.inventory_warehouses (
   vendor_id bigint references public.inventory_vendors(id) on delete set null,
   untracked boolean not null default false,
   notes text not null default '',
+  street text not null default '',
+  street2 text not null default '',
+  city text not null default '',
+  state text not null default '',
+  zip text not null default '',
+  country text not null default '',
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now()
 );
