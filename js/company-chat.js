@@ -49,6 +49,7 @@
     booted: false,
     windowOpen: false,
     pageMode: false,
+    pageView: 'list',
     hover: false,
     seeThrough: false,
     resizing: false,
@@ -443,6 +444,29 @@
     });
   }
 
+  function skipAutoOpenRoom() {
+    return S.pageMode && S.pageView !== 'thread';
+  }
+
+  function syncPageView() {
+    var root = $('co-chat');
+    var back = $('co-chat-back');
+    var thread = !!S.pageMode && S.pageView === 'thread';
+    if (root) root.classList.toggle('is-thread', thread);
+    if (back) back.hidden = !thread;
+    if (S.pageMode && !thread) setWindowTitle('Messages');
+  }
+
+  function showChatList() {
+    S.pageView = 'list';
+    syncPageView();
+  }
+
+  function showChatThread() {
+    S.pageView = 'thread';
+    syncPageView();
+  }
+
   async function openChatWindow() {
     if (!hasChat()) return;
     if (isMobileChat() && typeof S.onOpenPage === 'function' && !S.pageMode) {
@@ -452,10 +476,12 @@
     var root = $('co-chat');
     if (!root) return;
     S.pageMode = false;
+    S.pageView = 'list';
     document.body.classList.remove('chat-page-on');
     root.hidden = false;
     root.classList.add('is-window', 'is-open');
-    root.classList.remove('is-page');
+    root.classList.remove('is-page', 'is-thread');
+    if ($('co-chat-back')) $('co-chat-back').hidden = true;
     applyRect(S.rect || defaultRect());
     applyListW(S.listW);
     S.windowOpen = true;
@@ -477,6 +503,7 @@
     var root = $('co-chat');
     if (!root) return;
     S.pageMode = true;
+    S.pageView = 'list';
     document.body.classList.add('chat-page-on');
     root.hidden = false;
     root.classList.add('is-window', 'is-open', 'is-page');
@@ -486,11 +513,11 @@
     S.windowOpen = true;
     S.hover = true;
     S.seeThrough = false;
+    syncPageView();
     syncIdle();
     syncNavOpen();
     if (S.rooms.length) renderRoomList();
-    if (S.messages.length) renderMessages('co-chat-messages', S.messages);
-    if (S.rooms.length && S.messages.length) {
+    if (S.rooms.length) {
       loadRooms().catch(function () {});
       return;
     }
@@ -509,11 +536,13 @@
     S.hover = false;
     S.seeThrough = false;
     S.pageMode = false;
+    S.pageView = 'list';
     document.body.classList.remove('chat-page-on');
     if (root) {
       root.hidden = true;
-      root.classList.remove('is-open', 'is-idle', 'is-page');
+      root.classList.remove('is-open', 'is-idle', 'is-page', 'is-thread');
     }
+    if ($('co-chat-back')) $('co-chat-back').hidden = true;
     setPlusMenuOpen(false);
     syncNavOpen();
   }
@@ -941,6 +970,7 @@
     S.rooms = data.rooms || [];
     renderRoomList();
     if (!S.roomId && S.rooms.length) {
+      if (skipAutoOpenRoom()) return;
       var first = S.rooms[0];
       if (first && first.id) await openRoom(first.id);
       return;
@@ -953,16 +983,24 @@
     var haveThread = S.room && Number(S.room.id) === Number(S.roomId) && S.messages.length;
     if (!still) {
       try {
+        if (skipAutoOpenRoom()) {
+          S.roomId = null;
+          S.room = null;
+          S.messages = [];
+          renderEmptyMain();
+          return;
+        }
         await openRoom(S.roomId);
       } catch (e) {
         S.roomId = null;
         S.room = null;
         S.messages = [];
         var fallback = S.rooms[0];
-        if (fallback && fallback.id) await openRoom(fallback.id);
+        if (fallback && fallback.id && !skipAutoOpenRoom()) await openRoom(fallback.id);
         else renderEmptyMain();
       }
     } else if (!haveThread) {
+      if (skipAutoOpenRoom()) return;
       await openRoom(S.roomId);
     } else {
       renderRoomList();
@@ -990,6 +1028,7 @@
     renderRoomList();
     var data = await S.api('/api/admin/chat/rooms/' + S.roomId + '/messages?limit=100');
     if (gen !== S.roomFetchGen) return;
+    if (S.pageMode) showChatThread();
     S.room = data.room;
     S.messages = mergeMessages(data.messages || [], (S.messages || []).filter(function (m) {
       return isTempId(m.id);
@@ -1412,6 +1451,10 @@
         }
         if (S.windowOpen) {
           if (S.pageMode) {
+            if (S.pageView === 'thread') {
+              showChatList();
+              return;
+            }
             if (typeof S.onPageClose === 'function') S.onPageClose();
           } else {
             closeChatWindow();
@@ -1520,6 +1563,11 @@
       var el = $(id);
       if (el) el.addEventListener('click', onToggle);
     });
+    if ($('co-chat-back')) {
+      $('co-chat-back').addEventListener('click', function () {
+        showChatList();
+      });
+    }
     if ($('co-chat-close')) {
       $('co-chat-close').addEventListener('click', function () {
         if (S.pageMode && typeof S.onPageClose === 'function') S.onPageClose();
@@ -2063,10 +2111,13 @@
       }
       if (!mobile && S.pageMode) {
         S.pageMode = false;
+        S.pageView = 'list';
         document.body.classList.remove('chat-page-on');
         var chatRoot = $('co-chat');
-        if (chatRoot) chatRoot.classList.remove('is-page');
+        if (chatRoot) chatRoot.classList.remove('is-page', 'is-thread');
+        if ($('co-chat-back')) $('co-chat-back').hidden = true;
         applyRect(S.rect || defaultRect());
+        if (S.room) setWindowTitle(roomTitle(S.room));
         syncIdle();
       }
     });
@@ -2122,6 +2173,7 @@
     refreshContacts: function () {
       if (!S.booted || !hasChat()) return;
       loadRooms().then(function () {
+        if (S.pageMode && S.pageView !== 'thread') return;
         if (S.roomId) return openRoom(S.roomId);
       }).catch(function () {});
     },
