@@ -212,7 +212,15 @@ async function main() {
   app.use('/uploads', express.static(path.join(ROOT, 'uploads')));
   const staticLong = { maxAge: '7d', etag: true, lastModified: true };
   app.use('/css', express.static(path.join(ROOT, 'css'), staticLong));
-  app.use('/js', express.static(path.join(ROOT, 'js'), staticLong));
+  // JS must revalidate with HTML. A 7-day /js cache left calculator pages calling
+  // helpers the browser still had from the previous deploy (blank preview/summary).
+  app.use('/js', express.static(path.join(ROOT, 'js'), {
+    etag: true,
+    lastModified: true,
+    setHeaders: function (res) {
+      res.set('Cache-Control', 'public, max-age=0, must-revalidate');
+    }
+  }));
   app.use('/assets', express.static(path.join(ROOT, 'assets'), staticLong));
 
   const SITE = 'https://www.spectrumdisplay.com';
