@@ -72,6 +72,13 @@ catalog API and a cookie-session company login used by `/company`, `/company/web
   serving the new commit). Then send a message **in this chat** so Dennis knows it is live. Include
   https://www.spectrumdisplay.com and the PR number. Do not stop at “merged — Railway will deploy.”
 
+### Live production accounts
+
+- Do not create customer accounts on https://www.spectrumdisplay.com with fake or generated emails.
+- Never use `@spectrumdisplay.com` for website **Create account** (company staff login is `/company`).
+- Never use `wallv2.*` or other synthetic addresses. Those bounce Supabase Auth confirmation mail and
+  can suspend sending. Test signup on localhost (`npm start`) or a mailbox you control.
+
 ### Company list tables
 
 - Every company list table keeps its column header row pinned while the body scrolls (Inventory, Location,
