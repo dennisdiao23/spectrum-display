@@ -1211,7 +1211,7 @@
     <iframe id="spec-frame" title="Project spec sheet"></iframe>
   </div>
 
-  <script src="js/control-systems.js"></script>
+  <script src="js/control-systems.js?v=20260908-h2cvt"></script>
   <script src="js/catalog-api.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="js/supabase-client.js"></script>
@@ -1368,8 +1368,8 @@
 
     function wiringBandKind(processor) {
       if (!processor || !window.SpectrumControl) return 'none';
-      if (SpectrumControl.usesCvt10(processor)) return 'cvt10';
-      if (SpectrumControl.isHSeries(processor)) return 'hcard';
+      if (typeof SpectrumControl.usesCvt10 === 'function' && SpectrumControl.usesCvt10(processor)) return 'cvt10';
+      if (typeof SpectrumControl.isHSeries === 'function' && SpectrumControl.isHSeries(processor)) return 'hcard';
       return 'none';
     }
     function wiringOutputBands(kind, portCount) {
@@ -1859,7 +1859,13 @@
     }
     function getPitch() {
       if (isCustomPanel()) return clampNum(customPitchEl.value, 0.4, 20, 2.5);
-      return parseFloat(pitchEl.value);
+      const n = parseFloat(pitchEl.value);
+      if (Number.isFinite(n) && n > 0) return n;
+      const brand = products && products[brandEl.value];
+      const list = (brand && brand.series) || [];
+      const series = list.find(function (s) { return s.id === seriesEl.value; }) || list[0];
+      const fallback = parseFloat(series && series.pitches && series.pitches[0]);
+      return Number.isFinite(fallback) && fallback > 0 ? fallback : 2.5;
     }
     function defaultPanelLbs(w, h) {
       const wNum = parseFloat(w);
@@ -2115,7 +2121,9 @@
         if (processor) {
           const need = Math.ceil(totalPixels * 1.2);
           qty = processor.maxPixels ? Math.max(1, Math.ceil(need / processor.maxPixels)) : 1;
-          cvt10 = SpectrumControl.usesCvt10(processor) ? SpectrumControl.cvt10Count(dataPorts) : 0;
+          cvt10 = (typeof SpectrumControl.usesCvt10 === 'function' && SpectrumControl.usesCvt10(processor) && typeof SpectrumControl.cvt10Count === 'function')
+            ? SpectrumControl.cvt10Count(dataPorts)
+            : 0;
         }
       } else {
         const rec = SpectrumControl.recommendProcessor(totalPixels, {
@@ -2125,7 +2133,7 @@
         processor = rec.product;
         qty = rec.qty || (processor ? 1 : 0);
         cvt10 = rec.cvt10 || 0;
-        if (processor && !SpectrumControl.usesCvt10(processor)) cvt10 = 0;
+        if (processor && typeof SpectrumControl.usesCvt10 === 'function' && !SpectrumControl.usesCvt10(processor)) cvt10 = 0;
       }
       const playId = controlPlaybackEl && controlPlaybackEl.value;
       let playback = playId ? SpectrumControl.byId(playId) : null;
@@ -2137,8 +2145,17 @@
         qty: qty,
         playback: playback,
         cvt10: cvt10,
-        warning: SpectrumControl.undersizedPortWarning(processor, dataPorts) || ''
+        warning: (typeof SpectrumControl.undersizedPortWarning === 'function'
+          ? SpectrumControl.undersizedPortWarning(processor, dataPorts)
+          : '') || ''
       };
+    }
+    function controlKitLabel(processor, qty, cvt10, opts) {
+      if (window.SpectrumControl && typeof SpectrumControl.processorKitLabel === 'function') {
+        return SpectrumControl.processorKitLabel(processor, qty, cvt10, opts);
+      }
+      if (!processor) return 'None';
+      return ((qty > 1 ? qty + ' × ' : '') + (processor.name || processor.model || 'Processor'));
     }
     function updateAutoProcessorOption(label) {
       if (!controlProcessorEl) return;
@@ -2286,16 +2303,17 @@
       const circuits = Math.max(1, Math.ceil(powerPeak / wattsPerCircuit));
       const totalPx = pxW * pxH;
       const dataPorts = ethernetPortsNeeded(ppcW, ppcH, panels);
-      const controlSel = resolveControlSelection(totalPx, dataPorts);
-      const processorText = window.SpectrumControl
-        ? SpectrumControl.processorKitLabel(controlSel.processor, controlSel.qty, controlSel.cvt10)
-        : (controlSel.processor
-          ? ((controlSel.qty > 1 ? controlSel.qty + ' × ' : '') + controlSel.processor.name)
-          : 'None');
+      let controlSel = { processor: null, qty: 0, playback: null, cvt10: 0, warning: '' };
+      try {
+        controlSel = resolveControlSelection(totalPx, dataPorts);
+      } catch (err) {
+        console.error(err);
+      }
+      const processorText = controlKitLabel(controlSel.processor, controlSel.qty, controlSel.cvt10);
       const playbackText = controlSel.playback ? controlSel.playback.name : 'None';
       const autoMode = !controlProcessorEl || controlProcessorEl.value === 'auto';
       updateAutoProcessorOption(autoMode && controlSel.processor
-        ? SpectrumControl.processorKitLabel(controlSel.processor, controlSel.qty, controlSel.cvt10, { short: true })
+        ? controlKitLabel(controlSel.processor, controlSel.qty, controlSel.cvt10, { short: true })
         : '');
       setControlPortWarning(controlSel.warning);
       const loadEl = document.getElementById('control-pixel-load');
@@ -2621,10 +2639,16 @@
 
     function updateShareUrl() {
       if (!shareUrlReady) return;
+      const series = getCurrentSeries();
+      if (!series) return;
+      const pitch = getPitch();
+      if (!Number.isFinite(pitch)) return;
+      const seriesId = isCustomPanel() ? 'custom' : (seriesEl.value || series.id || '');
+      if (!seriesId) return;
       const params = new URLSearchParams({
         brand: brandEl.value,
-        series: isCustomPanel() ? 'custom' : seriesEl.value,
-        pitch: String(getPitch()),
+        series: seriesId,
+        pitch: String(pitch),
         w: widthEl.value,
         h: heightEl.value,
         unit: typeof sizeUnit !== 'undefined' ? sizeUnit : 'ft',
@@ -2662,20 +2686,22 @@
         if (state.pitch != null && state.pitch !== '') {
           const p = String(state.pitch);
           const target = parseFloat(p);
-          let matched = false;
-          Array.from(pitchEl.options).forEach(o => {
-            if (o.value === p || parseFloat(o.value) === target) {
-              pitchEl.value = o.value;
-              matched = true;
-            }
-          });
-          if (!matched && pitchEl.options.length) {
-            let best = pitchEl.options[0].value, bestDiff = Infinity;
+          if (Number.isFinite(target) && target > 0) {
+            let matched = false;
             Array.from(pitchEl.options).forEach(o => {
-              const d = Math.abs(parseFloat(o.value) - target);
-              if (d < bestDiff) { bestDiff = d; best = o.value; }
+              if (o.value === p || parseFloat(o.value) === target) {
+                pitchEl.value = o.value;
+                matched = true;
+              }
             });
-            pitchEl.value = best;
+            if (!matched && pitchEl.options.length) {
+              let best = pitchEl.options[0].value, bestDiff = Infinity;
+              Array.from(pitchEl.options).forEach(o => {
+                const d = Math.abs(parseFloat(o.value) - target);
+                if (Number.isFinite(d) && d < bestDiff) { bestDiff = d; best = o.value; }
+              });
+              pitchEl.value = best;
+            }
           }
         }
       }
