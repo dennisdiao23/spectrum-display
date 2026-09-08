@@ -48,6 +48,7 @@
     baseTitle: document.title || 'Company | Spectrum Display',
     booted: false,
     windowOpen: false,
+    pageMode: false,
     hover: false,
     seeThrough: false,
     resizing: false,
@@ -217,9 +218,22 @@
     return { left: left, top: top, width: width, height: height };
   }
 
+  function isMobileChat() {
+    return window.matchMedia('(max-width: 900px)').matches;
+  }
+
+  function clearPageRect(root) {
+    if (!root) return;
+    root.style.left = '';
+    root.style.top = '';
+    root.style.width = '';
+    root.style.height = '';
+    root.classList.remove('is-placed');
+  }
+
   function applyRect(r) {
     var root = $('co-chat');
-    if (!root) return;
+    if (!root || S.pageMode) return;
     S.rect = clampRect(r || S.rect || defaultRect());
     root.style.left = S.rect.left + 'px';
     root.style.top = S.rect.top + 'px';
@@ -286,6 +300,7 @@
     if (!root) return;
     var drag = null;
     function beginDrag(ev, dir) {
+      if (S.pageMode) return;
       if (ev.button !== 0) return;
       ev.preventDefault();
       ev.stopPropagation();
@@ -403,6 +418,10 @@
   function syncIdle() {
     var root = $('co-chat');
     if (!root || !S.windowOpen) return;
+    if (S.pageMode) {
+      root.classList.remove('is-idle');
+      return;
+    }
     if (S.moving) {
       root.classList.add('is-idle');
       return;
@@ -426,10 +445,17 @@
 
   async function openChatWindow() {
     if (!hasChat()) return;
+    if (isMobileChat() && typeof S.onOpenPage === 'function' && !S.pageMode) {
+      S.onOpenPage();
+      return;
+    }
     var root = $('co-chat');
     if (!root) return;
+    S.pageMode = false;
+    document.body.classList.remove('chat-page-on');
     root.hidden = false;
     root.classList.add('is-window', 'is-open');
+    root.classList.remove('is-page');
     applyRect(S.rect || defaultRect());
     applyListW(S.listW);
     S.windowOpen = true;
@@ -446,15 +472,47 @@
     await loadRooms();
   }
 
+  async function openChatPage() {
+    if (!hasChat()) return;
+    var root = $('co-chat');
+    if (!root) return;
+    S.pageMode = true;
+    document.body.classList.add('chat-page-on');
+    root.hidden = false;
+    root.classList.add('is-window', 'is-open', 'is-page');
+    root.classList.remove('is-idle');
+    clearPageRect(root);
+    applyListW(S.listW);
+    S.windowOpen = true;
+    S.hover = true;
+    S.seeThrough = false;
+    syncIdle();
+    syncNavOpen();
+    if (S.rooms.length) renderRoomList();
+    if (S.messages.length) renderMessages('co-chat-messages', S.messages);
+    if (S.rooms.length && S.messages.length) {
+      loadRooms().catch(function () {});
+      return;
+    }
+    await loadRooms();
+  }
+
+  function closeChatPage() {
+    if (!S.pageMode) return;
+    closeChatWindow();
+  }
+
   function closeChatWindow() {
     var root = $('co-chat');
     saveLast();
     S.windowOpen = false;
     S.hover = false;
     S.seeThrough = false;
+    S.pageMode = false;
+    document.body.classList.remove('chat-page-on');
     if (root) {
       root.hidden = true;
-      root.classList.remove('is-open', 'is-idle');
+      root.classList.remove('is-open', 'is-idle', 'is-page');
     }
     setPlusMenuOpen(false);
     syncNavOpen();
@@ -1352,7 +1410,13 @@
           setPlusMenuOpen(false);
           return;
         }
-        if (S.windowOpen) closeChatWindow();
+        if (S.windowOpen) {
+          if (S.pageMode) {
+            if (typeof S.onPageClose === 'function') S.onPageClose();
+          } else {
+            closeChatWindow();
+          }
+        }
         return;
       }
       if (ev.key !== 'Enter' || ev.shiftKey || ev.altKey || ev.metaKey || ev.ctrlKey) return;
@@ -1438,6 +1502,10 @@
     function onToggle(ev) {
       ev.preventDefault();
       ev.stopPropagation();
+      if (isMobileChat()) {
+        if (S.onOpenPage) S.onOpenPage();
+        return;
+      }
       if (S.windowOpen) {
         S.hover = true;
         S.seeThrough = false;
@@ -1453,11 +1521,14 @@
       if (el) el.addEventListener('click', onToggle);
     });
     if ($('co-chat-close')) {
-      $('co-chat-close').addEventListener('click', function () { closeChatWindow(); });
+      $('co-chat-close').addEventListener('click', function () {
+        if (S.pageMode && typeof S.onPageClose === 'function') S.onPageClose();
+        else closeChatWindow();
+      });
     }
     document.addEventListener('mousemove', function (ev) {
       var root = $('co-chat');
-      if (!S.windowOpen || S.moving || S.resizing || S.splitting) return;
+      if (!S.windowOpen || S.pageMode || S.moving || S.resizing || S.splitting) return;
       var over = pointOverChat(ev);
       S.hover = over;
       if (over && S.seeThrough) {
@@ -1466,7 +1537,7 @@
       }
     });
     function pageInteract(ev) {
-      if (!S.windowOpen || S.moving || S.resizing || S.splitting) return;
+      if (!S.windowOpen || S.pageMode || S.moving || S.resizing || S.splitting) return;
       var root = $('co-chat');
       if (!root) return;
       if (ev.target && root.contains(ev.target)) return;
@@ -1929,6 +2000,8 @@
     S.saveChatPrefs = typeof opts.saveChatPrefs === 'function' ? opts.saveChatPrefs : null;
     S.getShareContext = typeof opts.getShareContext === 'function' ? opts.getShareContext : null;
     S.openSharePath = typeof opts.openSharePath === 'function' ? opts.openSharePath : null;
+    S.onOpenPage = typeof opts.onOpenPage === 'function' ? opts.onOpenPage : null;
+    S.onPageClose = typeof opts.onPageClose === 'function' ? opts.onPageClose : null;
     if (typeof opts.esc === 'function') S.esc = opts.esc;
     bindDashLobby();
     var mentionMenu = mentionMenuEl();
@@ -1981,6 +2054,22 @@
     }
     loadLast();
     bindMain();
+    window.addEventListener('resize', function () {
+      if (!S.windowOpen) return;
+      var mobile = isMobileChat();
+      if (mobile && !S.pageMode && typeof S.onOpenPage === 'function') {
+        S.onOpenPage();
+        return;
+      }
+      if (!mobile && S.pageMode) {
+        S.pageMode = false;
+        document.body.classList.remove('chat-page-on');
+        var chatRoot = $('co-chat');
+        if (chatRoot) chatRoot.classList.remove('is-page');
+        applyRect(S.rect || defaultRect());
+        syncIdle();
+      }
+    });
     await refreshUnread();
     await handleDeepLink();
     S.timers.poll = setInterval(pollOpenRoom, 3000);
@@ -2026,6 +2115,8 @@
     onSalesDocOpened: onSalesDocOpened,
     openOrderChat: openOrderChat,
     open: openChatWindow,
+    openPage: openChatPage,
+    closePage: closeChatPage,
     close: closeChatWindow,
     applyWindowPrefs: restoreWindowPrefs,
     refreshContacts: function () {
