@@ -517,6 +517,12 @@ function ensureInventoryWarehouses(db) {
       vendor_id INTEGER,
       untracked INTEGER NOT NULL DEFAULT 0,
       notes TEXT NOT NULL DEFAULT '',
+      street TEXT NOT NULL DEFAULT '',
+      street2 TEXT NOT NULL DEFAULT '',
+      city TEXT NOT NULL DEFAULT '',
+      state TEXT NOT NULL DEFAULT '',
+      zip TEXT NOT NULL DEFAULT '',
+      country TEXT NOT NULL DEFAULT '',
       created_at TEXT NOT NULL,
       updated_at TEXT NOT NULL,
       FOREIGN KEY (vendor_id) REFERENCES inventory_vendors(id) ON DELETE SET NULL
@@ -537,6 +543,12 @@ function ensureInventoryWarehouses(db) {
     CREATE INDEX IF NOT EXISTS inventory_item_locations_wh_idx ON inventory_item_locations (warehouse_id);
   `);
   try { db.exec('ALTER TABLE inventory_warehouses ADD COLUMN untracked INTEGER NOT NULL DEFAULT 0'); } catch (e) { /* already present */ }
+  try { db.exec("ALTER TABLE inventory_warehouses ADD COLUMN street TEXT NOT NULL DEFAULT ''"); } catch (e) { /* already present */ }
+  try { db.exec("ALTER TABLE inventory_warehouses ADD COLUMN street2 TEXT NOT NULL DEFAULT ''"); } catch (e) { /* already present */ }
+  try { db.exec("ALTER TABLE inventory_warehouses ADD COLUMN city TEXT NOT NULL DEFAULT ''"); } catch (e) { /* already present */ }
+  try { db.exec("ALTER TABLE inventory_warehouses ADD COLUMN state TEXT NOT NULL DEFAULT ''"); } catch (e) { /* already present */ }
+  try { db.exec("ALTER TABLE inventory_warehouses ADD COLUMN zip TEXT NOT NULL DEFAULT ''"); } catch (e) { /* already present */ }
+  try { db.exec("ALTER TABLE inventory_warehouses ADD COLUMN country TEXT NOT NULL DEFAULT ''"); } catch (e) { /* already present */ }
   try {
     db.prepare("UPDATE inventory_warehouses SET untracked = 1, type = 'warehouse' WHERE type = 'partner'").run();
     db.prepare("UPDATE inventory_warehouses SET type = 'warehouse' WHERE type = 'spectrum' OR type = '' OR type IS NULL").run();

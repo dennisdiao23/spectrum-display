@@ -1283,9 +1283,13 @@ function createSqliteStore() {
       const fields = wh.dbFields(input);
       const stamp = dbUtil.nowIso();
       const info = db.prepare(`
-        INSERT INTO inventory_warehouses (name, type, vendor_id, untracked, notes, created_at, updated_at)
-        VALUES (?, ?, ?, ?, ?, ?, ?)
-      `).run(fields.name, fields.type, fields.vendor_id, fields.untracked, fields.notes, stamp, stamp);
+        INSERT INTO inventory_warehouses (name, type, vendor_id, untracked, notes, street, street2, city, state, zip, country, created_at, updated_at)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+      `).run(
+        fields.name, fields.type, fields.vendor_id, fields.untracked, fields.notes,
+        fields.street, fields.street2, fields.city, fields.state, fields.zip, fields.country,
+        stamp, stamp
+      );
       return this.getWarehouse(info.lastInsertRowid);
     },
     async updateWarehouse(id, payload) {
@@ -1302,8 +1306,12 @@ function createSqliteStore() {
       }
       const fields = wh.dbFields(input);
       db.prepare(
-        'UPDATE inventory_warehouses SET name = ?, type = ?, vendor_id = ?, untracked = ?, notes = ?, updated_at = ? WHERE id = ?'
-      ).run(fields.name, fields.type, fields.vendor_id, fields.untracked, fields.notes, dbUtil.nowIso(), id);
+        'UPDATE inventory_warehouses SET name = ?, type = ?, vendor_id = ?, untracked = ?, notes = ?, street = ?, street2 = ?, city = ?, state = ?, zip = ?, country = ?, updated_at = ? WHERE id = ?'
+      ).run(
+        fields.name, fields.type, fields.vendor_id, fields.untracked, fields.notes,
+        fields.street, fields.street2, fields.city, fields.state, fields.zip, fields.country,
+        dbUtil.nowIso(), id
+      );
       const items = db.prepare('SELECT DISTINCT item_id FROM inventory_item_locations WHERE warehouse_id = ?').all(id);
       const stamp = dbUtil.nowIso();
       items.forEach(function (row) { syncItemSpectrumQty(db, row.item_id, stamp); });
