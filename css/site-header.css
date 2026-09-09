@@ -528,6 +528,12 @@ html.is-logged-in .guest-pricing {
   object-fit: cover;
   display: block;
 }
+.site-mega-card-media.is-contain {
+  background: #0f172a;
+}
+.site-mega-card-media.is-contain img {
+  object-fit: contain;
+}
 .site-mega-card-meta {
   display: flex;
   align-items: center;

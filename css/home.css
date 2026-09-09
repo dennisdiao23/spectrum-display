@@ -503,6 +503,9 @@ a.home-control-line:hover { color: #fff; }
   display: block;
   background: #0f172a;
 }
+.home-cat img.home-cat-contain {
+  object-fit: contain;
+}
 .home-cat div { padding: 1rem 1.05rem 1.15rem; }
 .home-cat h3 {
   font-size: 1rem;

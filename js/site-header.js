@@ -285,7 +285,8 @@
           name: p.name,
           href: 'product.html?brand=' + encodeURIComponent(p.brandId) + '&series=' + encodeURIComponent(p.id),
           tag: 'NVS',
-          image: window.spectrumDisplayImage ? spectrumDisplayImage(p.image, 'thumb') : p.image
+          image: window.spectrumDisplayImage ? spectrumDisplayImage(p.image, 'thumb') : p.image,
+          contain: true
         };
       });
       items.push({ name: 'All control systems', href: 'products.html?cat=control', tag: 'NVS' });
@@ -320,7 +321,7 @@
     var cards = featured.map(function (item) {
       var img = absUrl(item.image || imageForHref(item.href));
       return '<a class="site-mega-card" href="' + absUrl(item.href) + '">' +
-        (img ? '<span class="site-mega-card-media"><img src="' + img + '" alt=""></span>' : '') +
+        (img ? '<span class="site-mega-card-media' + (item.contain ? ' is-contain' : '') + '"><img src="' + img + '" alt=""></span>' : '') +
         '<span class="site-mega-card-meta">' +
           (item.tag ? '<span class="site-mega-dot">' + item.tag + '</span>' : '') +
           '<span class="site-mega-card-name">' + item.name + '</span>' +

@@ -525,7 +525,7 @@
       if (label) label.textContent = productName;
       const waiting = fallback && fallback.querySelector('.text-slate-500');
       if (waiting) waiting.textContent = (seriesData && photos[0]) ? '' : 'Loading product…';
-      if (hero && brandId === 'gloshine') {
+      if (hero && (brandId === 'gloshine' || isControl)) {
         hero.classList.remove('object-cover');
         hero.classList.add('object-contain', 'bg-black');
       } else if (hero) {
