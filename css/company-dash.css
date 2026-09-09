@@ -1053,6 +1053,10 @@ html.dash-scroll-lock body.company-app {
   justify-content: center;
   padding: 1.5rem;
 }
+#so-saved,
+#so-delete-confirm {
+  z-index: 200;
+}
 .cc-leave.is-open {
   display: flex;
 }
