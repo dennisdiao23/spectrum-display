@@ -27,7 +27,7 @@
       lead: cfg.lead || cfg.description,
       badge: cfg.badge || null,
       cats: cats,
-      image: 'assets/products/novastar/' + cfg.id + '.svg',
+      image: 'assets/products/novastar/' + cfg.id + (cfg.id === 'tu4k-pro' || subtype === 'receiving-card' ? '.svg' : '.webp'),
       maxPixels: cfg.maxPixels || 0,
       outputs: cfg.outputs || '',
       inputs: cfg.inputs || '',

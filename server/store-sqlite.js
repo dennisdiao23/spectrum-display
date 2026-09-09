@@ -344,6 +344,7 @@ function createSqliteStore() {
   dbUtil.seedAdmin(db);
   dbUtil.seedCatalog(db);
   dbUtil.fillMissingProductDetails(db);
+  dbUtil.refreshSeedProductMedia(db);
   dbUtil.rewriteExistingCabinetCopy(db);
   dbUtil.ensureCatalogSkus(db);
   dbUtil.ensureInventoryWarehouses(db);
