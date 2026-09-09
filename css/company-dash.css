@@ -3138,7 +3138,77 @@ body.so-split-lock #so-detail .so-doc-frame {
   min-height: 0;
   display: flex;
   flex-direction: column;
+  overflow: hidden;
+}
+body.so-split-lock #so-detail .so-doc-tabs {
+  flex-shrink: 0;
+}
+body.so-split-lock #so-detail .so-doc-workspace {
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow: hidden;
+}
+body.so-split-lock #so-form.so-doc-main {
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow: hidden;
+  gap: 0.55rem;
+}
+body.so-split-lock #so-detail .so-doc-scroll {
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 0;
+  min-height: 0;
+  overflow: hidden;
+  gap: 0.55rem;
+}
+body.so-split-lock #so-detail .so-doc-legacy-title {
+  flex: 0 0 auto;
+}
+body.so-split-lock #so-detail .so-doc-headblock {
+  display: block;
+  flex: 0 1 auto;
+  min-width: 0;
+  min-height: 0;
+}
+body.so-split-lock #so-detail .so-doc-top {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+body.so-split-lock #so-detail .so-doc-head-right,
+body.so-split-lock #so-detail .so-doc-meta,
+body.so-split-lock #so-detail .so-doc-idline {
+  display: contents;
+}
+body.so-split-lock #so-detail .so-doc-lines {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  grid-template-rows: auto minmax(0, 1fr);
+  align-items: stretch;
+  flex: 1 1 0;
+  min-height: 8rem;
+  overflow: hidden;
+}
+body.so-split-lock #so-detail .so-doc-lines-wrap {
+  grid-column: 1 / -1;
+  grid-row: 2;
+  min-width: 0;
+  min-height: 0;
   overflow: auto;
+}
+body.so-split-lock #so-detail .so-doc-lines th {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  background: #fff;
+}
+body.so-split-lock #so-detail .so-doc-foot,
+body.so-split-lock #so-detail .so-doc-actions {
+  flex: 0 0 auto;
 }
 body.so-split-lock #so-table tr.is-active,
 body.po-split-lock #po-table tr.is-active {
@@ -4041,6 +4111,7 @@ body.so-invoice-float .so-doc-legacy-title,
 body.so-invoice-float #so-save,
 body.so-invoice-float #so-print-btn,
 body.so-invoice-float #so-pdf-btn,
+body.so-invoice-float #so-email-btn,
 body.so-invoice-float #so-to-order,
 body.so-invoice-float #so-to-invoice,
 body.so-invoice-float #so-delete-btn { display: none !important; }
@@ -4135,6 +4206,7 @@ body.so-invoice-float .so-doc-workspace {
   min-height: 0;
   display: grid;
   grid-template-columns: minmax(0, 1fr) 17.5rem;
+  grid-template-rows: minmax(0, 1fr);
 }
 body.so-invoice-float .so-doc-tabs {
   flex-shrink: 0;
@@ -4144,6 +4216,8 @@ body.so-invoice-float .so-doc-main {
   flex-direction: column;
   gap: 0;
   min-height: 0;
+  height: 100%;
+  max-height: 100%;
   overflow: hidden;
   border: 0;
   border-radius: 0;
@@ -4153,7 +4227,7 @@ body.so-invoice-float .so-doc-main {
 body.so-invoice-float .so-doc-scroll {
   display: flex;
   flex-direction: column;
-  flex: 1;
+  flex: 1 1 0;
   min-height: 0;
   overflow: hidden;
   gap: 0.55rem;
@@ -4166,7 +4240,8 @@ body.so-invoice-float .so-doc-headblock {
   row-gap: 0.35rem;
   width: 100%;
   padding: 0;
-  flex: 0 0 auto;
+  flex: 0 1 auto;
+  min-height: 0;
 }
 body.so-invoice-float .so-doc-top {
   display: contents;
@@ -4365,7 +4440,7 @@ body.so-invoice-float .so-doc-lines {
   grid-template-rows: auto minmax(0, 1fr);
   align-items: stretch;
   flex: 1 1 0;
-  min-height: 0;
+  min-height: 8rem;
   overflow: hidden;
   padding: 0;
   margin-top: 0;
@@ -4404,6 +4479,7 @@ body.so-invoice-float .so-doc-lines-wrap {
   border: 0;
   border-radius: 0;
   overflow: auto;
+  overflow-y: auto;
 }
 body.so-invoice-float .so-doc-lines .dash-cols {
   width: 100%;
@@ -4501,6 +4577,7 @@ body.so-invoice-float .so-doc-side {
   background: #fff;
   border-left: 1px solid var(--dash-line);
   overflow: auto;
+  min-height: 0;
 }
 .so-doc-side h3 {
   margin: 0;

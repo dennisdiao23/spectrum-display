@@ -8,7 +8,7 @@
   <link rel="apple-touch-icon" href="/assets/apple-touch-icon.png" />
   <title>Company | Spectrum Display</title>
   <meta name="robots" content="noindex, nofollow" />
-  <link rel="stylesheet" href="/css/company-dash.css?v=store11" />
+  <link rel="stylesheet" href="/css/company-dash.css?v=store12" />
   <script src="/js/address-autocomplete.js"></script>
   <script src="/js/company-chat.js?v=chatmove2"></script>
   <script src="/js/print-form.js?v=forms18"></script>
@@ -1916,6 +1916,7 @@
                     <button type="button" id="so-edit-btn" class="so-doc-btn so-doc-btn-primary hidden">Edit</button>
                     <button type="button" id="so-print-btn" class="so-doc-btn">Print</button>
                     <button type="button" id="so-pdf-btn" class="so-doc-btn">PDF</button>
+                    <button type="button" id="so-email-btn" class="so-doc-btn">Email</button>
                   </div>
                 </div>
                 <div class="so-doc-headblock">
@@ -2957,7 +2958,7 @@
     </a>
   </nav>
 
-  <link rel="stylesheet" href="/css/company-dash.css?v=store7" />
+  <link rel="stylesheet" href="/css/company-dash.css?v=store12" />
 
   <script>
     const loginPanel = document.getElementById('login-panel');
@@ -3210,7 +3211,9 @@
             return;
           }
         }
-        const dest = opts.restorePath || pathForTab(name);
+        const dest = (name === 'quotes' || name === 'orders' || name === 'invoices' || name === 'sales' || name === 'purchase-orders')
+          ? pathForTab(name)
+          : (opts.restorePath || pathForTab(name));
         if (push && (companyPath() !== dest || location.hash)) {
           history.pushState({ tab: name }, '', dest);
         }
@@ -3493,7 +3496,11 @@
       if (!name) return false;
       if (name !== 'dashboard' && !masterGroupFor(name)) return false;
       dashActiveGroup = name;
-      dashTabPath[name] = companyPath() + (location.search || '');
+      if (name === 'quotes' || name === 'orders' || name === 'invoices' || name === 'sales' || name === 'purchase-orders') {
+        dashTabPath[name] = pathForTab(name);
+      } else {
+        dashTabPath[name] = companyPath() + (location.search || '');
+      }
       if (name === 'dashboard') return true;
       if (dashOpenTabs.indexOf(name) !== -1) return true;
       if (!canAddMasterTabs(1)) {
@@ -13009,7 +13016,7 @@
         return;
       }
       document.getElementById('so-customer-name').value = c.displayName || c.companyName || [c.contactFirst, c.contactLast].filter(Boolean).join(' ') || '';
-      document.getElementById('so-customer-email').value = c.email || '';
+      document.getElementById('so-customer-email').value = soCustomerEmail(c);
       if (c.paymentTerms) document.getElementById('so-terms').value = c.paymentTerms;
       fillSoDocSide(c);
     }
@@ -13049,7 +13056,7 @@
       }
       if (nameEl) nameEl.textContent = ccCustomerLabel(c);
       if (phoneEl) phoneEl.textContent = c.phone || c.mobile || '—';
-      if (emailEl) emailEl.textContent = c.email || '—';
+      if (emailEl) emailEl.textContent = soCustomerEmail(c) || '—';
       if (balEl) {
         const fin = ccCustomerFinance(c.id);
         balEl.textContent = fin.openBalance > 0 ? moneyText(fin.openBalance) : '$0.00';
@@ -13831,7 +13838,7 @@
       document.getElementById('so-number').value = doc.number || nextSoNumber(type);
       document.getElementById('so-customer-name').value = doc.customerName || '';
       syncSoPageName(type, document.getElementById('so-number').value);
-      document.getElementById('so-customer-email').value = doc.customerEmail || '';
+      document.getElementById('so-customer-email').value = doc.customerEmail || soCustomerEmail(soCustomerById(doc.customerId)) || '';
       document.getElementById('so-po').value = doc.poNumber || '';
       document.getElementById('so-so-number').value = doc.soNumber || '';
       document.getElementById('so-rep').value = doc.rep || '';
@@ -15381,6 +15388,8 @@
     if (soPrintBtn) soPrintBtn.addEventListener('click', function () { printSalesLetter(); });
     const soPdfBtn = document.getElementById('so-pdf-btn');
     if (soPdfBtn) soPdfBtn.addEventListener('click', function () { downloadSalesPdf(); });
+    const soEmailBtn = document.getElementById('so-email-btn');
+    if (soEmailBtn) soEmailBtn.addEventListener('click', emailSalesDoc);
     (function bindPrintFormsEditor() {
       const tabs = document.getElementById('pf-type-tabs');
       if (!tabs) return;
@@ -15473,13 +15482,39 @@
         pfSaveForm();
       });
     })();
-    document.getElementById('so-ribbon-email').addEventListener('click', function () {
-      const email = (document.getElementById('so-customer-email').value || '').trim();
+    function soCustomerEmail(c) {
+      if (!c) return '';
+      const primary = typeof partyPrimaryContact === 'function' ? partyPrimaryContact(c.contacts) : null;
+      return String((primary && primary.email) || c.email || '').trim();
+    }
+    function salesDocEmailAddress() {
+      const field = document.getElementById('so-customer-email');
+      const typed = (field && field.value || '').trim();
+      if (typed) return typed;
+      const side = ((document.getElementById('so-side-email') || {}).textContent || '').trim();
+      if (side && side !== '—') return side;
+      return soCustomerEmail(soCustomerById((document.getElementById('so-customer') || {}).value));
+    }
+    function emailSalesDoc() {
+      const email = salesDocEmailAddress();
       const number = (document.getElementById('so-number').value || '').trim();
-      if (!email) return;
-      location.href = 'mailto:' + encodeURIComponent(email) +
-        (number ? '?subject=' + encodeURIComponent(number) : '');
-    });
+      const type = (document.getElementById('so-type') || {}).value || 'quote';
+      const field = document.getElementById('so-customer-email');
+      if (!email) {
+        showSoMsg('Add a customer email first.');
+        return;
+      }
+      if (field && !field.value.trim()) field.value = email;
+      const subject = [salesTypeLabel(type), number].filter(Boolean).join(' ');
+      const href = 'mailto:' + email + (subject ? '?subject=' + encodeURIComponent(subject) : '');
+      const a = document.createElement('a');
+      a.href = href;
+      a.rel = 'noopener';
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+    }
+    document.getElementById('so-ribbon-email').addEventListener('click', emailSalesDoc);
     document.getElementById('so-revert').addEventListener('click', function () {
       if (!soSavedSnapshot) return;
       try { fillSoForm(JSON.parse(soSavedSnapshot)); }
