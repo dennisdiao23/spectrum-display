@@ -1335,12 +1335,14 @@ html.dash-scroll-lock body.company-app {
 }
 .dash-home-grid {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(22rem, 1.2fr);
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
   gap: 1rem;
   align-items: stretch;
 }
 .dash-home-detail {
   min-height: 26rem;
+  display: flex;
+  flex-direction: column;
 }
 .dash-detail-stats {
   display: flex;
@@ -1554,9 +1556,7 @@ html.dash-scroll-lock body.company-app {
 
 .dash-home-lobby {
   padding: 0;
-  overflow: hidden;
-  height: 28rem;
-  min-height: 28rem;
+  min-height: 26rem;
   display: flex;
   flex-direction: column;
   position: relative;
@@ -1572,13 +1572,14 @@ html.dash-scroll-lock body.company-app {
   flex-shrink: 0;
 }
 .dash-lobby-window {
-  flex: 1 1 auto;
+  flex: 1 1 0%;
   display: grid;
   grid-template-columns: 12.5rem minmax(0, 1fr);
-  grid-template-rows: minmax(22rem, 1fr);
-  min-height: 22rem;
-  height: 22.5rem;
+  grid-template-rows: minmax(0, 1fr);
+  min-height: 0;
+  overflow: hidden;
   border-top: 1px solid var(--dash-line);
+  border-radius: 0 0 1rem 1rem;
 }
 .dash-lobby-users {
   display: flex;
@@ -1679,14 +1680,14 @@ html.dash-scroll-lock body.company-app {
 }
 .dash-lobby-main {
   display: grid;
-  grid-template-rows: minmax(14rem, 1fr) auto auto;
+  grid-template-rows: minmax(0, 1fr) auto auto;
   min-width: 0;
-  min-height: 22rem;
+  min-height: 0;
   background: #fff;
 }
 .dash-lobby-messages {
   flex: 1 1 auto;
-  min-height: 14rem;
+  min-height: 0;
   height: auto;
   overflow: auto;
 }
