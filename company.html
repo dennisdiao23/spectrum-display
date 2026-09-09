@@ -8,10 +8,10 @@
   <link rel="apple-touch-icon" href="/assets/apple-touch-icon.png" />
   <title>Company | Spectrum Display</title>
   <meta name="robots" content="noindex, nofollow" />
-  <link rel="stylesheet" href="/css/company-dash.css?v=forms7" />
+  <link rel="stylesheet" href="/css/company-dash.css?v=forms9" />
   <script src="/js/address-autocomplete.js"></script>
   <script src="/js/company-chat.js?v=cache1"></script>
-  <script src="/js/print-form.js?v=forms8"></script>
+  <script src="/js/print-form.js?v=forms9"></script>
   <script>
     (function () {
       try {
@@ -1970,7 +1970,7 @@
         <div class="pf-page-head">
           <div>
             <h2>Forms</h2>
-            <p>Print for quotes, orders, invoices, and POs uses this letter. Drag blocks on the page to place them. Customer-facing columns only unless you turn extras on.</p>
+            <p>Print for quotes, orders, invoices, and POs uses this letter. The canvas starts as a preview. Turn Edit on to drag blocks. Customer-facing columns only unless you turn extras on.</p>
           </div>
           <div class="pf-page-actions">
             <button type="button" id="pf-save" class="px-5 py-2 rounded-full bg-sky-500 hover:bg-sky-400 text-white text-sm font-semibold">Save</button>
@@ -2013,9 +2013,10 @@
             <div class="pf-preview-head">
               <div>
                 <p class="pf-label">Letter canvas</p>
-                <p class="pf-hint">Drag a block to move it. Drag the corner handle to resize. Turn Grid on to snap boxes into line.</p>
+                <p class="pf-hint" id="pf-canvas-hint">Preview only. Turn Edit on to move and resize boxes.</p>
               </div>
               <div class="pf-preview-actions">
+                <button type="button" id="pf-edit" class="pf-reset" aria-pressed="false">Edit</button>
                 <button type="button" id="pf-grid" class="pf-reset" aria-pressed="false">Grid</button>
                 <button type="button" id="pf-reset-layout" class="pf-reset">Reset layout</button>
               </div>
@@ -2742,7 +2743,7 @@
     </a>
   </nav>
 
-  <link rel="stylesheet" href="/css/company-dash.css?v=forms7" />
+  <link rel="stylesheet" href="/css/company-dash.css?v=forms9" />
 
   <script>
     const loginPanel = document.getElementById('login-panel');
@@ -13910,6 +13911,14 @@
     let pfDragId = '';
     let pfLayoutDrag = null;
     let pfGridOn = false;
+    let pfEditOn = false;
+    const PF_TYPES = ['invoice', 'quote', 'order', 'po'];
+    const PF_TYPE_LABEL = {
+      invoice: 'Invoice',
+      quote: 'Sales Quote',
+      order: 'Sales Order',
+      po: 'Purchase Order'
+    };
 
     async function loadPrintBundle(force) {
       if (!force && printFormsCache) {
@@ -14109,6 +14118,14 @@
       return pfGridOn && window.SpectrumPrintForm ? SpectrumPrintForm.GRID_STEP : 0.5;
     }
 
+    function pfStoredType() {
+      try {
+        const t = localStorage.getItem('spectrum-pf-type');
+        if (PF_TYPES.indexOf(t) !== -1) return t;
+      } catch (e) {}
+      return 'invoice';
+    }
+
     function pfSyncGridButton() {
       const btn = document.getElementById('pf-grid');
       if (!btn) return;
@@ -14116,12 +14133,65 @@
       btn.setAttribute('aria-pressed', pfGridOn ? 'true' : 'false');
     }
 
+    function pfSyncEditButton() {
+      const btn = document.getElementById('pf-edit');
+      if (btn) {
+        btn.textContent = pfEditOn ? 'Save' : 'Edit';
+        btn.classList.toggle('is-on', pfEditOn);
+        btn.setAttribute('aria-pressed', pfEditOn ? 'true' : 'false');
+      }
+      const hint = document.getElementById('pf-canvas-hint');
+      if (hint) {
+        hint.textContent = pfEditOn
+          ? 'Drag a block to move it. Drag the corner handle to resize. Save keeps this layout.'
+          : 'Preview only. Turn Edit on to move and resize boxes.';
+      }
+      const resetBtn = document.getElementById('pf-reset-layout');
+      if (resetBtn) resetBtn.disabled = !pfEditOn;
+      const host = document.getElementById('pf-preview');
+      if (host) host.classList.toggle('is-editing', pfEditOn);
+    }
+
     function pfSetGrid(on) {
       pfGridOn = !!on;
       try { localStorage.setItem('spectrum-pf-grid', pfGridOn ? '1' : '0'); } catch (e) {}
       pfSyncGridButton();
+      if (!window.SpectrumPrintForm) return;
       const sheet = document.querySelector('#pf-preview .pf-sheet');
-      if (sheet) sheet.classList.toggle('is-grid', pfGridOn);
+      if (sheet && pfEditOn) sheet.classList.toggle('is-grid', pfGridOn);
+      else if (sheet) sheet.classList.remove('is-grid');
+    }
+
+    function pfSetEdit(on) {
+      pfEditOn = !!on;
+      if (!pfEditOn) {
+        pfLayoutDrag = null;
+        document.body.classList.remove('is-pf-dragging');
+      }
+      pfSyncEditButton();
+      pfRenderPreview();
+    }
+
+    async function pfSaveForm() {
+      pfReadDraft();
+      pfShowMsg('');
+      try {
+        const data = await api('/api/admin/print-forms/' + encodeURIComponent(pfType), {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(pfDraft || {})
+        });
+        if (!printFormsCache) printFormsCache = {};
+        printFormsCache[pfType] = data.template || pfClone(pfDraft);
+        pfDraft = pfClone(printFormsCache[pfType]);
+        if (pfEditOn) pfSetEdit(false);
+        else pfFillFields();
+        pfShowMsg('Saved ' + (PF_TYPE_LABEL[pfType] || pfType) + '. Print uses this template.', true);
+        return true;
+      } catch (err) {
+        pfShowMsg(err.message || 'Could not save form.');
+        return false;
+      }
     }
 
     function pfEnsureLayout() {
@@ -14172,11 +14242,13 @@
       pfEnsureLayout();
       pfEnsureEditorCss();
       const sample = SpectrumPrintForm.sampleDoc(pfType);
-      host.innerHTML = SpectrumPrintForm.sheetHtml(pfDraft, { company: printCompanyCache, doc: sample }, { edit: true, grid: pfGridOn });
+      host.innerHTML = SpectrumPrintForm.sheetHtml(pfDraft, { company: printCompanyCache, doc: sample }, { edit: pfEditOn, grid: pfGridOn });
+      pfSyncEditButton();
       pfFitPreview();
     }
 
     function pfOnLayoutDown(e) {
+      if (!pfEditOn) return;
       if (e.button && e.button !== 0) return;
       const host = document.getElementById('pf-preview');
       if (!host || !pfDraft) return;
@@ -14220,7 +14292,7 @@
     }
 
     function pfOnLayoutMove(e) {
-      if (!pfLayoutDrag || !pfDraft) return;
+      if (!pfEditOn || !pfLayoutDrag || !pfDraft) return;
       const d = pfLayoutDrag;
       if (!d.sheetW || !d.sheetH) return;
       const dx = ((e.clientX - d.startX) / d.sheetW) * 100;
@@ -14247,7 +14319,8 @@
     }
 
     function pfSetType(type) {
-      pfType = type || 'invoice';
+      pfType = PF_TYPES.indexOf(type) !== -1 ? type : 'invoice';
+      try { localStorage.setItem('spectrum-pf-type', pfType); } catch (e) {}
       document.querySelectorAll('#pf-type-tabs [data-pf-type]').forEach(function (btn) {
         btn.classList.toggle('is-on', btn.getAttribute('data-pf-type') === pfType);
       });
@@ -14303,7 +14376,7 @@
       try {
         pfShowMsg('');
         await loadPrintBundle(true);
-        pfSetType(pfType || 'invoice');
+        pfSetType(pfStoredType());
       } catch (err) {
         pfShowMsg(err.message || 'Could not load forms.');
       }
@@ -14371,36 +14444,34 @@
       const resetBtn = document.getElementById('pf-reset-layout');
       if (resetBtn) {
         resetBtn.addEventListener('click', function () {
-          if (!pfDraft || !window.SpectrumPrintForm) return;
+          if (!pfEditOn || !pfDraft || !window.SpectrumPrintForm) return;
           pfDraft.layout = SpectrumPrintForm.defaultLayout();
           pfRenderPreview();
         });
       }
       try { pfGridOn = localStorage.getItem('spectrum-pf-grid') === '1'; } catch (e) { pfGridOn = false; }
+      pfEditOn = false;
       pfSyncGridButton();
+      pfSyncEditButton();
+      const editBtn = document.getElementById('pf-edit');
+      if (editBtn) {
+        editBtn.addEventListener('click', async function () {
+          if (pfEditOn) {
+            editBtn.disabled = true;
+            try { await pfSaveForm(); } finally { editBtn.disabled = false; }
+          } else {
+            pfSetEdit(true);
+          }
+        });
+      }
       const gridBtn = document.getElementById('pf-grid');
       if (gridBtn) {
         gridBtn.addEventListener('click', function () {
           pfSetGrid(!pfGridOn);
         });
       }
-      document.getElementById('pf-save').addEventListener('click', async function () {
-        pfReadDraft();
-        pfShowMsg('');
-        try {
-          const data = await api('/api/admin/print-forms/' + encodeURIComponent(pfType), {
-            method: 'PUT',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(pfDraft || {})
-          });
-          if (!printFormsCache) printFormsCache = {};
-          printFormsCache[pfType] = data.template || pfClone(pfDraft);
-          pfDraft = pfClone(printFormsCache[pfType]);
-          pfFillFields();
-          pfShowMsg('Saved. Print uses this template.', true);
-        } catch (err) {
-          pfShowMsg(err.message || 'Could not save form.');
-        }
+      document.getElementById('pf-save').addEventListener('click', function () {
+        pfSaveForm();
       });
     })();
     document.getElementById('so-ribbon-email').addEventListener('click', function () {
