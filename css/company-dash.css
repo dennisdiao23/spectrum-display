@@ -5830,6 +5830,10 @@ body.is-pf-dragging * {
   cursor: grabbing !important;
   user-select: none !important;
 }
+body.is-pf-dragging.is-pf-col-dragging,
+body.is-pf-dragging.is-pf-col-dragging * {
+  cursor: col-resize !important;
+}
 @media (max-width: 980px) {
   .pf-editor { grid-template-columns: 1fr; }
 }

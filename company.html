@@ -8,10 +8,10 @@
   <link rel="apple-touch-icon" href="/assets/apple-touch-icon.png" />
   <title>Company | Spectrum Display</title>
   <meta name="robots" content="noindex, nofollow" />
-  <link rel="stylesheet" href="/css/company-dash.css?v=store8" />
+  <link rel="stylesheet" href="/css/company-dash.css?v=store9" />
   <script src="/js/address-autocomplete.js"></script>
   <script src="/js/company-chat.js?v=chatmove2"></script>
-  <script src="/js/print-form.js?v=forms17"></script>
+  <script src="/js/print-form.js?v=forms18"></script>
   <script>
     (function () {
       try {
@@ -2200,7 +2200,7 @@
             </div>
             <div>
               <p class="pf-label">Line columns</p>
-              <p class="pf-hint">Drag to reorder. Click a chip to turn extras on or off.</p>
+              <p class="pf-hint">Drag to reorder. Click a chip to turn extras on or off. With Edit on, drag a column edge on the letter to change width.</p>
               <div class="pf-chips" id="pf-cols" data-pf-list="cols"></div>
             </div>
             <label class="so-field"><span>Payment terms copy</span>
@@ -14937,7 +14937,7 @@
       const hint = document.getElementById('pf-canvas-hint');
       if (hint) {
         hint.textContent = pfEditOn
-          ? 'Boxes snap to the grid from the top-left. Drag to move. Drag the corner to resize.'
+          ? 'Boxes snap to the grid from the top-left. Drag to move. Drag the corner to resize. Drag a line-table column edge to change width.'
           : 'US Letter (8.5 × 11 in). Click a box to change Font, Size, and Style for that item.';
       }
       const resetBtn = document.getElementById('pf-reset-layout');
@@ -14950,7 +14950,7 @@
       pfEditOn = !!on;
       if (!pfEditOn) {
         pfLayoutDrag = null;
-        document.body.classList.remove('is-pf-dragging');
+        document.body.classList.remove('is-pf-dragging', 'is-pf-col-dragging');
       }
       pfSyncEditButton();
       pfRenderPreview();
@@ -15037,10 +15037,50 @@
       pfFitPreview();
     }
 
+    function pfApplyLineColWidths(root, columns) {
+      if (!window.SpectrumPrintForm || !root) return;
+      const widths = SpectrumPrintForm.visibleColumnWidths(columns);
+      widths.forEach(function (w) {
+        const col = root.querySelector('col[data-pf-col="' + w.id + '"]');
+        if (col) col.style.width = w.width + '%';
+      });
+      let left = 0;
+      widths.forEach(function (w, i) {
+        left += w.width;
+        if (i === widths.length - 1) return;
+        const el = root.querySelector('.pf-col-resize[data-pf-col="' + w.id + '"]');
+        if (el) el.style.left = left + '%';
+      });
+    }
+
     function pfOnLayoutDown(e) {
       if (e.button && e.button !== 0) return;
       const host = document.getElementById('pf-preview');
       if (!host || !pfDraft) return;
+      const colHandle = e.target.closest('.pf-col-resize');
+      if (colHandle && pfEditOn) {
+        e.preventDefault();
+        e.stopPropagation();
+        pfSelectBlock('lines');
+        const tableBox = colHandle.closest('.pf-lines-box');
+        const tableEl = tableBox && tableBox.querySelector('.pf-lines');
+        if (!tableEl) return;
+        const rect = tableEl.getBoundingClientRect();
+        pfLayoutDrag = {
+          mode: 'col',
+          leftId: colHandle.getAttribute('data-pf-col'),
+          startX: e.clientX,
+          tableW: rect.width,
+          origColumns: pfClone(pfDraft.columns || []),
+          handle: colHandle,
+          box: tableBox,
+          pointerId: e.pointerId
+        };
+        colHandle.classList.add('is-on');
+        document.body.classList.add('is-pf-dragging', 'is-pf-col-dragging');
+        try { colHandle.setPointerCapture(e.pointerId); } catch (err) {}
+        return;
+      }
       const box = e.target.closest('#pf-preview .pf-abs');
       if (!box || !host.contains(box)) {
         if (host.contains(e.target)) pfSelectBlock('');
@@ -15087,6 +15127,13 @@
     function pfOnLayoutMove(e) {
       if (!pfEditOn || !pfLayoutDrag || !pfDraft) return;
       const d = pfLayoutDrag;
+      if (d.mode === 'col') {
+        if (!d.tableW || !window.SpectrumPrintForm) return;
+        const dx = ((e.clientX - d.startX) / d.tableW) * 100;
+        pfDraft.columns = SpectrumPrintForm.applyColumnResize(d.origColumns, d.leftId, dx);
+        pfApplyLineColWidths(d.box, pfDraft.columns);
+        return;
+      }
       if (!d.sheetW || !d.sheetH) return;
       const dx = ((e.clientX - d.startX) / d.sheetW) * 100;
       const dy = ((e.clientY - d.startY) / d.sheetH) * 100;
@@ -15099,8 +15146,16 @@
       if (!pfLayoutDrag || !pfDraft) return;
       const d = pfLayoutDrag;
       pfLayoutDrag = null;
-      document.body.classList.remove('is-pf-dragging');
-      try { d.el.releasePointerCapture(d.pointerId); } catch (err) {}
+      document.body.classList.remove('is-pf-dragging', 'is-pf-col-dragging');
+      try {
+        if (d.handle) d.handle.releasePointerCapture(d.pointerId);
+        else if (d.el) d.el.releasePointerCapture(d.pointerId);
+      } catch (err) {}
+      if (d.handle) d.handle.classList.remove('is-on');
+      if (d.mode === 'col') {
+        pfRenderPreview();
+        return;
+      }
       const packed = {};
       packed[d.id] = pfDraft.layout[d.id];
       let snapped = SpectrumPrintForm.mergeLayout(Object.assign({}, pfDraft.layout, packed), pfDraft.layoutVersion)[d.id];
@@ -15253,6 +15308,10 @@
           if (!pfEditOn || !pfDraft || !window.SpectrumPrintForm) return;
           pfDraft.layout = SpectrumPrintForm.defaultLayout();
           pfDraft.layoutVersion = SpectrumPrintForm.LAYOUT_VERSION || 2;
+          const defs = SpectrumPrintForm.COL_WIDTH_DEFAULTS || {};
+          (pfDraft.columns || []).forEach(function (col) {
+            col.width = defs[col.id] || 12;
+          });
           pfRenderPreview();
         });
       }
