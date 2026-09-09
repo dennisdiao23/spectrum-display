@@ -404,6 +404,28 @@ body.dash-tab-reordering #dash-tab-strip {
   width: 100%;
 }
 
+.company-main:has(#dashboard-section:not(.hidden)) {
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  padding-bottom: 1.35rem;
+}
+.company-main:has(#dashboard-section:not(.hidden)) #dash-panel {
+  flex: 1 1 auto;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+#dashboard-section:not(.hidden) {
+  flex: 1 1 auto;
+  min-height: 0;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
 .dash-login {
   max-width: 26rem;
   margin: 3rem auto 0;
@@ -1226,6 +1248,13 @@ html.dash-scroll-lock body.company-app {
   display: flex;
   flex-direction: column;
   gap: 1.25rem;
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow: hidden;
+}
+.dash-home-head,
+.dash-home-kpis {
+  flex-shrink: 0;
 }
 .dash-home-head h2 {
   margin: 0;
@@ -1342,11 +1371,17 @@ html.dash-scroll-lock body.company-app {
 .dash-home-grid {
   display: grid;
   grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  grid-template-rows: minmax(0, 1fr);
   gap: 1rem;
   align-items: stretch;
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow: hidden;
 }
 .dash-home-detail {
-  min-height: 26rem;
+  min-height: 0;
+  height: 100%;
+  overflow: hidden;
   display: flex;
   flex-direction: column;
 }
@@ -1355,6 +1390,7 @@ html.dash-scroll-lock body.company-app {
   flex-wrap: wrap;
   gap: 0.55rem;
   margin-bottom: 1rem;
+  flex-shrink: 0;
 }
 .dash-detail-chip {
   min-width: 6.5rem;
@@ -1375,6 +1411,9 @@ html.dash-scroll-lock body.company-app {
 }
 .dash-detail-list {
   border-top: 1px solid var(--dash-line);
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow: auto;
 }
 .dash-detail-row {
   display: grid;
@@ -1424,6 +1463,7 @@ html.dash-scroll-lock body.company-app {
   justify-content: space-between;
   gap: 0.75rem;
   margin-bottom: 1rem;
+  flex-shrink: 0;
 }
 .dash-home-panel-head h3 {
   margin: 0;
@@ -1560,9 +1600,14 @@ html.dash-scroll-lock body.company-app {
   color: var(--dash-muted);
 }
 
+.dash-home-grid > .dash-home-panel:hover {
+  transform: none;
+}
 .dash-home-lobby {
   padding: 0;
-  min-height: 26rem;
+  min-height: 0;
+  height: 100%;
+  overflow: hidden;
   display: flex;
   flex-direction: column;
   position: relative;
@@ -1756,10 +1801,13 @@ html.dash-scroll-lock body.company-app {
   .dash-home-kpis,
   .page-kpis,
   .page-kpis-3 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-  .dash-home-grid { grid-template-columns: 1fr; }
+  .dash-home-grid {
+    grid-template-columns: 1fr;
+    grid-template-rows: minmax(0, 1fr) minmax(0, 1fr);
+  }
   .dash-lobby-window {
     grid-template-columns: 1fr;
-    grid-template-rows: 7.25rem minmax(16rem, 1fr);
+    grid-template-rows: 7.25rem minmax(0, 1fr);
   }
   .dash-lobby-users {
     border-right: 0;
