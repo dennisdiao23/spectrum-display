@@ -2796,6 +2796,7 @@ body.dash-split-lock #vendors-section:not(.hidden),
 body.dash-split-lock #warehouses-section:not(.hidden),
 body.dash-split-lock #website-pane:not(.hidden),
 body.dash-split-lock #products-section:not(.hidden),
+body.dash-split-lock #store-section:not(.hidden),
 body.dash-split-lock #accounts-section:not(.hidden),
 body.so-split-lock #sales-section:not(.hidden),
 body.po-split-lock #po-section:not(.hidden) {
@@ -2818,6 +2819,7 @@ body.dash-split-lock #warehouses-section .cc-list-kpis,
 body.dash-split-lock #warehouses-section .cc-list-toolbar,
 body.dash-split-lock #warehouses-section #wh-error,
 body.dash-split-lock #products-section .wp-list-head,
+body.dash-split-lock #store-section .ws-list-head,
 body.dash-split-lock #accounts-section .wa-list-head,
 body.so-split-lock #sales-section .page-kpis,
 body.so-split-lock #sales-section .cc-list-toolbar,
@@ -2834,6 +2836,7 @@ body.po-split-lock #po-section #po-error {
 #wh-workspace,
 #warehouses-list-wrap,
 #products-list-wrap,
+#store-list-wrap,
 #accounts-list-wrap {
   display: flex;
   flex-direction: column;
@@ -2850,6 +2853,7 @@ body.po-split-lock #po-section #po-error {
 #sales-list-wrap,
 #po-list-wrap,
 #products-list-wrap,
+#store-list-wrap,
 #accounts-list-wrap,
 #vendors-list-wrap {
   display: flex;
@@ -3586,6 +3590,7 @@ body.inv-split-dragging {
   body.company-app:not(.dash-split-lock) #wh-workspace,
   body.company-app:not(.dash-split-lock) #warehouses-list-wrap,
   body.company-app:not(.dash-split-lock) #products-list-wrap,
+  body.company-app:not(.dash-split-lock) #store-list-wrap,
   body.company-app:not(.dash-split-lock) #accounts-list-wrap {
     flex: none;
     min-height: auto;
