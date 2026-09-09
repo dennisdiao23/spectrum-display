@@ -4562,6 +4562,7 @@ body.chat-page-on #co-chat .co-chat-move {
 .co-chat-resize {
   position: absolute;
   z-index: 6;
+  touch-action: none;
 }
 .co-chat-resize[data-resize="n"],
 .co-chat-resize[data-resize="s"] {
