@@ -23,7 +23,7 @@ function primaryPayloadFromCustomer(input, existing) {
     jobTitle: src.jobTitle || src.job_title || '',
     role: src.contactRole || src.contact_role || prev.role || 'Primary',
     email: src.email || '',
-    phone: src.phone || '',
+    phone: src.contactPhone || src.contact_phone || '',
     mobile: src.mobile || '',
     fax: src.fax || prev.fax || '',
     isPrimary: true,

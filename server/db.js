@@ -456,7 +456,9 @@ function ensureCompanyCustomers(db) {
     ['contact_role', "TEXT NOT NULL DEFAULT ''"],
     ['preferred_contact', "TEXT NOT NULL DEFAULT ''"],
     ['industry', "TEXT NOT NULL DEFAULT ''"],
-    ['social', "TEXT NOT NULL DEFAULT ''"]
+    ['social', "TEXT NOT NULL DEFAULT ''"],
+    ['customer_type', "TEXT NOT NULL DEFAULT ''"],
+    ['sales_rep', "TEXT NOT NULL DEFAULT ''"]
   ];
   extra.forEach(function (col) {
     try { db.exec('ALTER TABLE company_customers ADD COLUMN ' + col[0] + ' ' + col[1]); } catch (e) { /* already present */ }
