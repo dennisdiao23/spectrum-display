@@ -2838,7 +2838,7 @@ body.po-split-lock #po-section #po-error {
   grid-template-columns: var(--wp-left-w, var(--wp-split-left-boot, 400px)) 14px minmax(0, 1fr);
 }
 #ws-split {
-  grid-template-columns: var(--ws-left-w, var(--ws-split-left-boot, 400px)) 14px minmax(0, 1fr);
+  grid-template-columns: var(--ws-left-w, var(--ws-split-left-boot, 520px)) 14px minmax(0, 1fr);
 }
 #wa-split {
   grid-template-columns: var(--wa-left-w, var(--wa-split-left-boot, 400px)) 14px minmax(0, 1fr);

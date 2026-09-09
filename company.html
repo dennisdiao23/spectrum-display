@@ -4623,6 +4623,12 @@
       await loadWebsiteCatalog();
     }
 
+    function mediaSrc(src) {
+      const s = String(src || '');
+      if (!s) return '';
+      if (/^(https?:|data:|\/)/i.test(s)) return s;
+      return '/' + s;
+    }
     function isWsSplitOn() {
       return !isMobileDash();
     }
@@ -4718,7 +4724,7 @@
         : '';
       const img = document.getElementById('ws-image-preview');
       if (item && item.image) {
-        img.src = item.image;
+        img.src = mediaSrc(item.image);
         img.classList.remove('hidden');
       } else {
         img.removeAttribute('src');
@@ -4846,7 +4852,7 @@
       });
       tbody.innerHTML = sorted.map(function (p) {
         const img = p.image
-          ? '<img src="' + esc(p.image) + '" alt="" class="h-11 w-11 rounded-md object-contain bg-white border border-slate-800">'
+          ? '<img src="' + esc(mediaSrc(p.image)) + '" alt="" class="h-11 w-11 rounded-md object-contain bg-white border border-slate-800">'
           : '<div class="h-11 w-11 rounded-md bg-slate-900 border border-slate-800 flex items-center justify-center text-[10px] text-slate-500">No photo</div>';
         const cells = {
           photo: '<td class="py-2.5 px-4">' + img + '</td>',
