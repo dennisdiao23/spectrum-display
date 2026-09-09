@@ -132,11 +132,12 @@ function headerDefaults(type) {
   }
   const numberTitle = type === 'quote' ? 'Quote No.' : type === 'order' ? 'S.O. No.' : 'Invoice No.';
   const dateTitle = type === 'invoice' ? 'Inv. Date' : 'Date';
+  const dueTitle = type === 'invoice' ? 'Due Date' : 'Valid until';
   return [
     { id: 'number', title: numberTitle, print: true, order: 1 },
     { id: 'date', title: dateTitle, print: true, order: 2 },
     { id: 'terms', title: 'Terms', print: true, order: 3 },
-    { id: 'dueDate', title: 'Due Date', print: true, order: 4 },
+    { id: 'dueDate', title: dueTitle, print: true, order: 4 },
     { id: 'poNumber', title: 'P.O. No.', print: true, order: 5 },
     { id: 'soNumber', title: 'S.O. No.', print: type !== 'order', order: 6 },
     { id: 'tracking', title: 'Tracking No.', print: true, order: 7 },
@@ -386,6 +387,16 @@ function bool(value, fallback) {
   return value === true || value === 1 || value === '1' || value === 'true';
 }
 
+function applyValidUntilTitle(type, list) {
+  if (type !== 'quote' && type !== 'order') return list;
+  (list || []).forEach(function (row) {
+    if (row && row.id === 'dueDate' && (!row.title || /^due date$/i.test(String(row.title).trim()))) {
+      row.title = 'Valid until';
+    }
+  });
+  return list;
+}
+
 function mergeList(defs, incoming, extraKeys) {
   const byId = {};
   (incoming || []).forEach(function (row) {
@@ -457,10 +468,10 @@ function normalizeTemplate(type, input) {
     logo: logo,
     paymentTermsText: trim(src.paymentTermsText || src.payment_terms_text, 4000) || base.paymentTermsText,
     blocks: blocks,
-    headerFields: mergeList(HEADER_FIELDS.map(function (f) {
+    headerFields: applyValidUntilTitle(t, mergeList(HEADER_FIELDS.map(function (f) {
       const hit = (base.headerFields || []).find(function (row) { return row.id === f.id; });
       return { id: f.id, label: hit ? hit.title : f.label, print: hit ? hit.print : false };
-    }), src.headerFields || src.header_fields),
+    }), src.headerFields || src.header_fields)),
     columns: sanitizeColumns(src.columns, base.columns),
     layout: sanitizeLayout(src.layout, src.layoutVersion),
     layoutVersion: LAYOUT_VERSION,
