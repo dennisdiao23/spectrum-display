@@ -14302,19 +14302,7 @@
         closeColMenu();
         return;
       }
-      if (isInvoiceDocWindow()) {
-        closeInvoiceWindow();
-        return;
-      }
-      if (document.body.classList.contains('po-doc-float')) {
-        const poTab = parseDocMasterTab(dashActiveGroup);
-        if (poTab && poTab.kind === 'po') closeMasterTab(dashActiveGroup);
-        else {
-          applyPoWindowChrome(false);
-          showPoList();
-        }
-        return;
-      }
+      if (isInvoiceDocWindow() || document.body.classList.contains('po-doc-float')) return;
       if (document.getElementById('cc-leave').classList.contains('is-open')) {
         ccLeaveThen = null;
         hideCcLeave();
@@ -14336,14 +14324,8 @@
         showInvOverview({ push: true });
         return;
       }
-      if (!document.getElementById('sales-section').classList.contains('hidden') && isSalesSplitOn() && soActiveTab !== 'overview') {
-        showSoOverviewPane();
-        return;
-      }
-      if (!document.getElementById('po-section').classList.contains('hidden') && isPoSplitOn() && poActiveTab !== 'overview') {
-        showPoOverviewPane();
-        return;
-      }
+      if (!document.getElementById('sales-section').classList.contains('hidden') && isSalesSplitOn() && soActiveTab !== 'overview') return;
+      if (!document.getElementById('po-section').classList.contains('hidden') && isPoSplitOn() && poActiveTab !== 'overview') return;
       if (!document.getElementById('vendors-section').classList.contains('hidden') && vnActiveTab !== 'overview') {
         showVnOverview({ push: true });
         return;
