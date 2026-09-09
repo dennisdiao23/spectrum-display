@@ -3211,7 +3211,9 @@
             return;
           }
         }
-        const dest = opts.restorePath || pathForTab(name);
+        const dest = (name === 'quotes' || name === 'orders' || name === 'invoices' || name === 'sales' || name === 'purchase-orders')
+          ? pathForTab(name)
+          : (opts.restorePath || pathForTab(name));
         if (push && (companyPath() !== dest || location.hash)) {
           history.pushState({ tab: name }, '', dest);
         }
@@ -3494,7 +3496,11 @@
       if (!name) return false;
       if (name !== 'dashboard' && !masterGroupFor(name)) return false;
       dashActiveGroup = name;
-      dashTabPath[name] = companyPath() + (location.search || '');
+      if (name === 'quotes' || name === 'orders' || name === 'invoices' || name === 'sales' || name === 'purchase-orders') {
+        dashTabPath[name] = pathForTab(name);
+      } else {
+        dashTabPath[name] = companyPath() + (location.search || '');
+      }
       if (name === 'dashboard') return true;
       if (dashOpenTabs.indexOf(name) !== -1) return true;
       if (!canAddMasterTabs(1)) {
@@ -13010,7 +13016,7 @@
         return;
       }
       document.getElementById('so-customer-name').value = c.displayName || c.companyName || [c.contactFirst, c.contactLast].filter(Boolean).join(' ') || '';
-      document.getElementById('so-customer-email').value = c.email || '';
+      document.getElementById('so-customer-email').value = soCustomerEmail(c);
       if (c.paymentTerms) document.getElementById('so-terms').value = c.paymentTerms;
       fillSoDocSide(c);
     }
@@ -13050,7 +13056,7 @@
       }
       if (nameEl) nameEl.textContent = ccCustomerLabel(c);
       if (phoneEl) phoneEl.textContent = c.phone || c.mobile || '—';
-      if (emailEl) emailEl.textContent = c.email || '—';
+      if (emailEl) emailEl.textContent = soCustomerEmail(c) || '—';
       if (balEl) {
         const fin = ccCustomerFinance(c.id);
         balEl.textContent = fin.openBalance > 0 ? moneyText(fin.openBalance) : '$0.00';
@@ -13832,7 +13838,7 @@
       document.getElementById('so-number').value = doc.number || nextSoNumber(type);
       document.getElementById('so-customer-name').value = doc.customerName || '';
       syncSoPageName(type, document.getElementById('so-number').value);
-      document.getElementById('so-customer-email').value = doc.customerEmail || '';
+      document.getElementById('so-customer-email').value = doc.customerEmail || soCustomerEmail(soCustomerById(doc.customerId)) || '';
       document.getElementById('so-po').value = doc.poNumber || '';
       document.getElementById('so-so-number').value = doc.soNumber || '';
       document.getElementById('so-rep').value = doc.rep || '';
@@ -15476,12 +15482,37 @@
         pfSaveForm();
       });
     })();
+    function soCustomerEmail(c) {
+      if (!c) return '';
+      const primary = typeof partyPrimaryContact === 'function' ? partyPrimaryContact(c.contacts) : null;
+      return String((primary && primary.email) || c.email || '').trim();
+    }
+    function salesDocEmailAddress() {
+      const field = document.getElementById('so-customer-email');
+      const typed = (field && field.value || '').trim();
+      if (typed) return typed;
+      const side = ((document.getElementById('so-side-email') || {}).textContent || '').trim();
+      if (side && side !== '—') return side;
+      return soCustomerEmail(soCustomerById((document.getElementById('so-customer') || {}).value));
+    }
     function emailSalesDoc() {
-      const email = (document.getElementById('so-customer-email').value || '').trim();
+      const email = salesDocEmailAddress();
       const number = (document.getElementById('so-number').value || '').trim();
-      if (!email) return;
-      location.href = 'mailto:' + encodeURIComponent(email) +
-        (number ? '?subject=' + encodeURIComponent(number) : '');
+      const type = (document.getElementById('so-type') || {}).value || 'quote';
+      const field = document.getElementById('so-customer-email');
+      if (!email) {
+        showSoMsg('Add a customer email first.');
+        return;
+      }
+      if (field && !field.value.trim()) field.value = email;
+      const subject = [salesTypeLabel(type), number].filter(Boolean).join(' ');
+      const href = 'mailto:' + email + (subject ? '?subject=' + encodeURIComponent(subject) : '');
+      const a = document.createElement('a');
+      a.href = href;
+      a.rel = 'noopener';
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
     }
     document.getElementById('so-ribbon-email').addEventListener('click', emailSalesDoc);
     document.getElementById('so-revert').addEventListener('click', function () {
