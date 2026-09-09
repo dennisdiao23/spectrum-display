@@ -8,10 +8,10 @@
   <link rel="apple-touch-icon" href="/assets/apple-touch-icon.png" />
   <title>Company | Spectrum Display</title>
   <meta name="robots" content="noindex, nofollow" />
-  <link rel="stylesheet" href="/css/company-dash.css?v=store1" />
+  <link rel="stylesheet" href="/css/company-dash.css?v=store2" />
   <script src="/js/address-autocomplete.js"></script>
   <script src="/js/company-chat.js?v=cache1"></script>
-  <script src="/js/print-form.js?v=forms15"></script>
+  <script src="/js/print-form.js?v=forms16"></script>
   <script>
     (function () {
       try {
@@ -1364,7 +1364,7 @@
               </div>
               <div id="po-overview-panel" class="inv-right-panel">
                 <div class="inv-overview-summary">
-                  <p class="inv-overview-lead">Select a purchase order to view or edit it here. New PO opens in its own tab.</p>
+                  <p class="inv-overview-lead">Select a purchase order to view it here. Edit opens it in a full window.</p>
                 </div>
               </div>
         <div id="po-detail" class="hidden">
@@ -1461,10 +1461,11 @@
             </div>
             <p id="po-msg" class="hidden text-sm"></p>
             <div class="po-foot">
+              <button type="button" id="po-edit-btn" class="hidden px-5 py-2 rounded-full bg-sky-500 hover:bg-sky-400 text-white text-sm font-semibold">Edit</button>
               <button type="button" id="po-cancel" class="px-4 py-2 rounded-full border border-slate-700 text-sm">Cancel</button>
               <button type="button" id="po-delete-btn" class="hidden px-4 py-2 rounded-full border border-slate-700 text-red-400 text-sm">Delete</button>
               <button type="button" id="po-print" class="px-4 py-2 rounded-full border border-slate-700 text-sm">Print</button>
-              <button type="submit" class="px-5 py-2 rounded-full bg-sky-500 hover:bg-sky-400 text-white text-sm font-semibold">Save</button>
+              <button type="submit" id="po-save" class="px-5 py-2 rounded-full bg-sky-500 hover:bg-sky-400 text-white text-sm font-semibold">Save</button>
             </div>
           </form>
         </div>
@@ -1850,7 +1851,7 @@
               </div>
               <div id="so-overview-panel" class="inv-right-panel">
                 <div class="inv-overview-summary">
-                  <p class="inv-overview-lead" id="so-overview-lead">Select an invoice to view or edit it here. New invoice opens in its own tab.</p>
+                  <p class="inv-overview-lead" id="so-overview-lead">Select an invoice to view it here. Edit opens it in a full window.</p>
                 </div>
               </div>
         <div id="so-detail" class="hidden so-doc">
@@ -2026,6 +2027,7 @@
                 </div>
                 </div>
                 <div class="so-doc-actions">
+                  <button type="button" id="so-edit-btn" class="so-doc-btn so-doc-btn-primary hidden">Edit</button>
                   <button type="submit" id="so-save" class="so-doc-btn so-doc-btn-primary" data-so-after="stay">Save</button>
                   <button type="button" id="so-print-btn" class="so-doc-btn">Print</button>
                   <button type="submit" id="so-save-close" class="so-doc-btn so-doc-btn-primary" data-so-after="close">Save &amp; Close</button>
@@ -2922,7 +2924,7 @@
     </a>
   </nav>
 
-  <link rel="stylesheet" href="/css/company-dash.css?v=store1" />
+  <link rel="stylesheet" href="/css/company-dash.css?v=store2" />
 
   <script>
     const loginPanel = document.getElementById('login-panel');
@@ -5181,6 +5183,7 @@
     let soOpenTabs = [];
     let soActiveTab = 'overview';
     let soTabCache = {};
+    let soReadOnly = false;
     const soSplitByType = {
       quote: { open: [], active: 'overview' },
       order: { open: [], active: 'overview' },
@@ -5190,6 +5193,7 @@
     let poOpenTabs = [];
     let poActiveTab = 'overview';
     let poTabCache = {};
+    let poReadOnly = false;
     let invSavedSnapshot = '';
     let invDrawerSource = '';
     let invPoLineRow = null;
@@ -7539,12 +7543,11 @@
         return;
       }
       if (ref.type === 'sale') {
-        if (ref.tab === 'invoices') {
-          await openInvoiceWindow(ref.id, { type: 'invoice' });
-          return;
-        }
-        const kind = ref.tab === 'orders' ? 'order' : 'quote';
-        openCompanyTab(ref.tab || 'quotes', true, { restorePath: pathForDocMaster(kind, ref.id) });
+        const kind = ref.tab === 'invoices' ? 'invoice' : ref.tab === 'orders' ? 'order' : 'quote';
+        openCompanyTab(ref.tab || 'quotes', true);
+        await loadSalesDocs(kind);
+        if (isSalesSplitOn()) openSoTab(ref.id);
+        else await openSalesDoc(ref.id, { inline: true, type: kind });
       }
     }
 
@@ -10326,13 +10329,15 @@
     }
 
     async function openCustomerTransaction(docId, type) {
-      if (type === 'invoice') {
-        await openInvoiceWindow(docId, { type: 'invoice' });
+      const kind = type === 'invoice' ? 'invoice' : type === 'order' ? 'order' : 'quote';
+      const tab = kind === 'invoice' ? 'invoices' : kind === 'order' ? 'orders' : 'quotes';
+      openCompanyTab(tab, true);
+      await loadSalesDocs(kind);
+      if (isSalesSplitOn()) {
+        openSoTab(docId);
         return;
       }
-      const tab = type === 'order' ? 'orders' : 'quotes';
-      openCompanyTab(tab, true);
-      await openSalesDoc(docId, { inline: true, type: type });
+      await openSalesDoc(docId, { inline: true, type: kind });
     }
 
     async function openNewCustomerTransaction(type) {
@@ -11638,10 +11643,38 @@
       }
     }
 
+    function applyPoFormReadOnly() {
+      const form = document.getElementById('po-form');
+      if (!form) return;
+      form.classList.toggle('is-readonly', poReadOnly);
+      form.querySelectorAll('input, select, textarea').forEach(function (el) {
+        if (el.type === 'hidden') return;
+        el.disabled = poReadOnly;
+      });
+      const id = (document.getElementById('po-id') || {}).value;
+      const editBtn = document.getElementById('po-edit-btn');
+      if (editBtn) editBtn.classList.toggle('hidden', !poReadOnly || !id || !canEdit('inventory'));
+      ['po-add-line', 'po-clear-lines', 'po-save', 'po-cancel', 'po-cc-toggle'].forEach(function (nid) {
+        const el = document.getElementById(nid);
+        if (el) el.classList.toggle('hidden', poReadOnly);
+      });
+      const del = document.getElementById('po-delete-btn');
+      if (del && poReadOnly) del.classList.add('hidden');
+      form.querySelectorAll('[data-remove-line]').forEach(function (el) {
+        el.classList.toggle('hidden', poReadOnly);
+      });
+    }
+
+    function editCurrentPo() {
+      const id = (document.getElementById('po-id') || {}).value;
+      if (!id || !canEdit('inventory')) return;
+      void openDocMasterTab('po', id);
+    }
+
     function fillPoVendors(selected) {
       const sel = document.getElementById('po-vendor');
       sel.innerHTML = '<option value="">Choose a vendor</option>' +
-        '<option value="__new__">+ Add new</option>' +
+        (poReadOnly ? '' : '<option value="__new__">+ Add new</option>') +
         (inventoryVendors || []).map(function (v) {
           return '<option value="' + esc(v.id) + '"' + (String(v.id) === String(selected) ? ' selected' : '') + '>' +
             esc(v.displayName || v.companyName || v.email || 'Vendor') +
@@ -11677,7 +11710,7 @@
 
     function poProductOptions(selected) {
       return '<option value="">Select</option>' +
-        '<option value="__new__">+ Add new</option>' +
+        (poReadOnly ? '' : '<option value="__new__">+ Add new</option>') +
         invPickableItems(selected).map(function (item) {
           return '<option value="' + esc(item.id) + '"' + (String(item.id) === String(selected) ? ' selected' : '') + '>' +
             esc(item.name || item.sku || 'Item') +
@@ -11773,6 +11806,7 @@
       tb.innerHTML = sorted.map(function (line, i) { return poLineRow(line, i); }).join('');
       applyColOrder(table);
       refreshPoTotals();
+      if (typeof applyPoFormReadOnly === 'function') applyPoFormReadOnly();
     }
 
     function refreshPoTotals() {
@@ -11900,6 +11934,7 @@
 
     function fillPoForm(doc) {
       const src = doc || {};
+      poReadOnly = !isPoDocWindow();
       document.getElementById('po-id').value = src.id || '';
       document.getElementById('po-number').value = src.number || '';
       fillPoVendors(src.vendorId || '');
@@ -11915,9 +11950,10 @@
       document.getElementById('po-via').value = src.shipVia || '';
       document.getElementById('po-permit').value = src.permitNo || '';
       document.getElementById('po-notes').value = src.notes || '';
-      document.getElementById('po-delete-btn').classList.toggle('hidden', !src.id);
+      document.getElementById('po-delete-btn').classList.toggle('hidden', !src.id || poReadOnly);
       renderPoLines(src.lines && src.lines.length ? src.lines : [{ qty: 1, rate: 0 }]);
       showPoMsg('');
+      applyPoFormReadOnly();
     }
 
     function readPoForm() {
@@ -12553,8 +12589,14 @@
       if (on) {
         document.body.classList.remove('so-split-lock');
         document.body.classList.remove('po-doc-float');
-      } else if (document.getElementById('sales-section').classList.contains('so-split-on') && !isMobileDash()) {
-        document.body.classList.add('so-split-lock');
+        soReadOnly = false;
+        if (typeof applySoFormReadOnly === 'function') applySoFormReadOnly();
+      } else {
+        soReadOnly = true;
+        if (typeof applySoFormReadOnly === 'function') applySoFormReadOnly();
+        if (document.getElementById('sales-section').classList.contains('so-split-on') && !isMobileDash()) {
+          document.body.classList.add('so-split-lock');
+        }
       }
       const back = document.getElementById('so-back');
       if (back) back.textContent = on ? 'Close' : ('← All ' + (salesSubTab === 'quotes' ? 'quotes' : salesSubTab === 'orders' ? 'orders' : 'invoices'));
@@ -12571,9 +12613,13 @@
       if (on) {
         document.body.classList.remove('so-invoice-float');
         document.body.classList.remove('po-split-lock');
+        poReadOnly = false;
+        if (typeof applyPoFormReadOnly === 'function') applyPoFormReadOnly();
         const detail = document.getElementById('po-detail');
         if (detail) detail.classList.remove('hidden');
       } else {
+        poReadOnly = true;
+        if (typeof applyPoFormReadOnly === 'function') applyPoFormReadOnly();
         const poSec = document.getElementById('po-section');
         if (poSec && poSec.classList.contains('po-split-on') && !isMobileDash()) {
           document.body.classList.add('po-split-lock');
@@ -12734,24 +12780,8 @@
 
     async function openInvoiceWindow(id, opts) {
       opts = opts || {};
-      if (opts.inline) return false;
       if (!id || id === 'new') return openDocMasterTab('invoice', 'new', opts);
-      const existingTab = 'invoice-' + id;
-      if (masterTabIsOpen(existingTab)) {
-        activateMasterTab(existingTab);
-        return true;
-      }
-      if (typeof stashSoActiveTab === 'function') stashSoActiveTab();
-      if (!ensureMasterTab('invoices', pathForTab('invoices'))) return false;
-      rememberMasterTab('invoices');
-      showAdminTab('invoices');
-      renderDashTabBar();
-      applyInvoiceWindowChrome(true);
-      try { await loadSalesDocs('invoice'); }
-      catch (err) {}
-      await openSalesDoc(id, { inline: true, type: 'invoice' });
-      document.getElementById('so-detail').classList.remove('hidden');
-      return true;
+      return openDocMasterTab('invoice', id, opts);
     }
 
     function closeInvoiceWindow() {
@@ -12803,11 +12833,51 @@
       return Object.keys(byId).map(function (k) { return byId[k]; });
     }
 
+    function salesCanEditType(type) {
+      if (type === 'invoice') return canEdit('invoices');
+      if (type === 'order') return canEdit('orders');
+      return canEdit('quotes');
+    }
+
+    function applySoFormReadOnly() {
+      const form = document.getElementById('so-form');
+      if (!form) return;
+      form.classList.toggle('is-readonly', soReadOnly);
+      form.querySelectorAll('input, select, textarea').forEach(function (el) {
+        if (el.type === 'hidden') return;
+        el.disabled = soReadOnly;
+      });
+      const type = (document.getElementById('so-type') || {}).value || 'quote';
+      const id = (document.getElementById('so-id') || {}).value;
+      const editBtn = document.getElementById('so-edit-btn');
+      if (editBtn) editBtn.classList.toggle('hidden', !soReadOnly || !id || !salesCanEditType(type));
+      ['so-add-line', 'so-save', 'so-save-close', 'so-save-new', 'so-revert'].forEach(function (nid) {
+        const el = document.getElementById(nid);
+        if (el) el.classList.toggle('hidden', soReadOnly);
+      });
+      if (soReadOnly) {
+        ['so-to-order', 'so-to-invoice', 'so-delete-btn'].forEach(function (nid) {
+          const el = document.getElementById(nid);
+          if (el) el.classList.add('hidden');
+        });
+      }
+      form.querySelectorAll('[data-remove-line]').forEach(function (el) {
+        el.classList.toggle('hidden', soReadOnly);
+      });
+    }
+
+    function editCurrentSalesDoc() {
+      const id = (document.getElementById('so-id') || {}).value;
+      const type = (document.getElementById('so-type') || {}).value || salesTypeFromTab(salesSubTab);
+      if (!id || !salesCanEditType(type)) return;
+      void openDocMasterTab(type, id);
+    }
+
     function fillSoCustomers(selected) {
       const sel = document.getElementById('so-customer');
       const list = soCustomerList();
       sel.innerHTML = '<option value="">Select a customer</option>' +
-        '<option value="__new__">+ Add new</option>' +
+        (soReadOnly ? '' : '<option value="__new__">+ Add new</option>') +
         list.map(function (c) {
           return '<option value="' + esc(c.id) + '"' + (String(c.id) === String(selected) ? ' selected' : '') + '>' +
             esc(c.displayName || c.companyName || [c.contactFirst, c.contactLast].filter(Boolean).join(' ') || c.email) +
@@ -12976,7 +13046,7 @@
         if (found) sel = String(found.id);
       }
       return '<option value="">Select</option>' +
-        '<option value="__new__">+ Add new</option>' +
+        (soReadOnly ? '' : '<option value="__new__">+ Add new</option>') +
         invPickableItems(sel).map(function (item) {
           return '<option value="' + esc(item.id) + '"' + (String(item.id) === String(sel) ? ' selected' : '') + '>' +
             esc(item.name || item.sku || 'Item') +
@@ -13006,6 +13076,7 @@
 
     function padSoLines(lines) {
       const content = (lines || []).filter(soLineHasContent);
+      if (soReadOnly) return content;
       const out = content.length ? content.slice() : [];
       const target = soVisibleRowCount();
       while (out.length < target) out.push(soBlankLine());
@@ -13080,9 +13151,11 @@
       if (table) applyColOrder(table);
       closeSoSkuMenu();
       refreshSoTotals();
+      applySoFormReadOnly();
     }
 
     function ensureSoSpareLines() {
+      if (soReadOnly) return;
       const rows = document.querySelectorAll('#so-lines .so-line');
       if (!rows.length) {
         renderSoLines([]);
@@ -13288,10 +13361,10 @@
       const lead = document.getElementById('so-overview-lead');
       if (lead) {
         lead.textContent = type === 'quote'
-          ? 'Select a quote to view or edit it here. New quote opens in its own tab.'
+          ? 'Select a quote to view it here. Edit opens it in a full window.'
           : type === 'order'
-            ? 'Select an order to view or edit it here. New order opens in its own tab.'
-            : 'Select an invoice to view or edit it here. New invoice opens in its own tab.';
+            ? 'Select an order to view it here. Edit opens it in a full window.'
+            : 'Select an invoice to view it here. Edit opens it in a full window.';
       }
     }
 
@@ -13663,6 +13736,7 @@
 
     function fillSoForm(doc) {
       const type = doc.type || 'quote';
+      soReadOnly = !isInvoiceDocWindow();
       setSoTypeUi(type);
       document.getElementById('so-id').value = doc.id || '';
       fillSoCustomers(doc.customerId || '');
@@ -13690,11 +13764,11 @@
       if (!inventoryItems.length) {
         loadInventory().then(function () { renderSoLines(readSoLines(true)); }).catch(function () {});
       }
-      document.getElementById('so-delete-btn').classList.toggle('hidden', !doc.id);
-      document.getElementById('so-to-order').classList.toggle('hidden', !doc.id || type === 'order');
-      document.getElementById('so-to-invoice').classList.toggle('hidden', !doc.id || type === 'invoice');
+      document.getElementById('so-delete-btn').classList.toggle('hidden', soReadOnly || !doc.id);
+      document.getElementById('so-to-order').classList.toggle('hidden', soReadOnly || !doc.id || type === 'order');
+      document.getElementById('so-to-invoice').classList.toggle('hidden', soReadOnly || !doc.id || type === 'invoice');
       const ribbonDel = document.getElementById('so-ribbon-delete');
-      if (ribbonDel) ribbonDel.disabled = !doc.id;
+      if (ribbonDel) ribbonDel.disabled = soReadOnly || !doc.id;
       refreshSoTotals();
       fillSoStatusBadge(doc.status || 'draft');
       fillSoDocSide(soCustomerById(doc.customerId) || (doc.customerName ? {
@@ -13704,6 +13778,7 @@
         id: doc.customerId
       } : null));
       markSoClean();
+      applySoFormReadOnly();
     }
 
     function readSoForm() {
@@ -13774,9 +13849,10 @@
 
     async function openSalesDoc(id, opts) {
       opts = opts || {};
-      if (!opts.inline && shouldOpenInvoiceInWindow(opts.type)) {
-        await openInvoiceWindow(id, opts);
-        return;
+      if (!opts.inline) {
+        if (isSalesSplitOn()) {
+          return openSoTab(id, opts);
+        }
       }
       showSoMsg('');
       showError('so-error', '');
@@ -13784,18 +13860,16 @@
         const data = await api('/api/admin/sales-docs/' + id);
         const doc = data.doc;
         if (!doc) return;
-        if (!opts.inline && doc.type === 'invoice') {
-          await openInvoiceWindow(id, { type: 'invoice' });
-          return;
-        }
         document.getElementById('so-title').textContent = (doc.number || salesTypeLabel(doc.type)) + ' · ' + (doc.customerName || '');
         fillSoForm(doc);
         document.getElementById('so-detail').classList.remove('hidden');
         if (window.SpectrumChat) SpectrumChat.onSalesDocOpened(doc);
         if (isSalesSplitOn() && !isInvoiceDocWindow()) {
           document.getElementById('sales-section').classList.remove('so-doc-open');
-        } else {
+        } else if (!isInvoiceDocWindow()) {
           document.getElementById('sales-section').classList.add('so-doc-open');
+        } else {
+          document.getElementById('sales-section').classList.remove('so-doc-open');
         }
       } catch (err) {
         showError('so-error', err.message || 'Could not open this document.');
@@ -14278,6 +14352,9 @@
     document.getElementById('so-new-btn').addEventListener('click', function () {
       openNewSale(salesTypeFromTab(salesSubTab));
     });
+    document.getElementById('so-edit-btn').addEventListener('click', function () {
+      editCurrentSalesDoc();
+    });
     document.getElementById('so-back').addEventListener('click', function () {
       if (isInvoiceDocWindow()) {
         closeInvoiceWindow();
@@ -14303,7 +14380,7 @@
         openSoTab(id);
         return;
       }
-      openSalesDoc(id, { type: type });
+      openSalesDoc(id, { inline: true, type: type });
     });
     document.getElementById('so-tab-strip').addEventListener('click', function (e) {
       const closeBtn = e.target.closest('[data-so-tab-close]');
@@ -14324,6 +14401,7 @@
       activateSoTab(tabId, { push: true });
     });
     document.getElementById('so-add-line').addEventListener('click', function () {
+      if (soReadOnly) return;
       const tb = document.getElementById('so-lines');
       const n = tb.querySelectorAll('.so-line').length;
       tb.insertAdjacentHTML('beforeend', soLineRow(soBlankLine(), n) + soLineRow(soBlankLine(), n + 1) + soLineRow(soBlankLine(), n + 2));
@@ -14334,6 +14412,7 @@
       scrollSoLinesEnd();
     });
     document.getElementById('so-lines').addEventListener('change', function (e) {
+      if (soReadOnly) return;
       const sel = e.target.closest('[data-line="itemId"]');
       if (sel) {
         const row = sel.closest('tr');
@@ -14349,6 +14428,7 @@
       if (e.target.closest('[data-line="sku"]')) lookupSoSku(e.target.closest('tr'));
     });
     document.getElementById('so-lines').addEventListener('focusin', function (e) {
+      if (soReadOnly) return;
       const sku = e.target.closest('[data-line="sku"]');
       if (!sku) return;
       const open = function () { openSoSkuMenu(sku); };
@@ -14408,7 +14488,7 @@
     window.addEventListener('resize', closeSoSkuMenu);
     document.getElementById('so-lines').addEventListener('click', function (e) {
       const btn = e.target.closest('[data-remove-line]');
-      if (!btn) return;
+      if (!btn || soReadOnly) return;
       btn.closest('tr').remove();
       soLineState = readSoLines(true);
       renderSoLines(soLineState);
@@ -14420,6 +14500,7 @@
     });
     document.getElementById('so-tax-rate').addEventListener('input', refreshSoTotals);
     document.getElementById('so-customer').addEventListener('change', function () {
+      if (soReadOnly) return;
       const id = this.value;
       if (id === '__new__') {
         openCustomerDrawer(null, 'sales');
@@ -15159,6 +15240,7 @@
     });
     document.getElementById('so-form').addEventListener('submit', async function (e) {
       e.preventDefault();
+      if (soReadOnly) return;
       showSoMsg('');
       const afterBtn = e.submitter && e.submitter.getAttribute('data-so-after');
       const after = afterBtn || soAfterSave || 'stay';
@@ -15213,6 +15295,7 @@
       }
     });
     document.getElementById('so-delete-btn').addEventListener('click', async function () {
+      if (soReadOnly) return;
       const id = document.getElementById('so-id').value;
       if (!id || !confirm('Delete this document?')) return;
       try {
@@ -15229,6 +15312,7 @@
       }
     });
     async function convertCurrentSale(type) {
+      if (soReadOnly) return;
       const id = document.getElementById('so-id').value;
       if (!id) return;
       showSoMsg('');
@@ -15239,12 +15323,11 @@
           body: JSON.stringify({ type: type })
         });
         if (type === 'invoice' && data.doc && data.doc.id) {
-          await openInvoiceWindow(data.doc.id, { type: 'invoice' });
+          await openDocMasterTab('invoice', data.doc.id);
           showSoMsg('Created ' + (data.doc.number || 'invoice') + '.', true);
           return;
         }
-        salesSubTab = 'orders';
-        openCompanyTab('orders', true, { restorePath: pathForDocMaster('order', data.doc.id) });
+        await openDocMasterTab(type === 'order' ? 'order' : 'quote', data.doc.id);
         showSoMsg('Created ' + (data.doc.number || salesTypeLabel(type)) + '.', true);
       } catch (err) {
         showSoMsg(err.message || 'Could not convert document.');
@@ -17103,6 +17186,9 @@
     document.getElementById('po-print').addEventListener('click', function () {
       printPoLetter();
     });
+    document.getElementById('po-edit-btn').addEventListener('click', function () {
+      editCurrentPo();
+    });
     document.getElementById('po-search').addEventListener('input', function () {
       renderPoTable(purchaseOrders);
     });
@@ -17215,10 +17301,12 @@
       });
     })();
     document.getElementById('po-cc-toggle').addEventListener('click', function () {
+      if (poReadOnly) return;
       document.getElementById('po-cc-field').classList.toggle('hidden');
       document.getElementById('po-bcc-field').classList.toggle('hidden');
     });
     document.getElementById('po-vendor').addEventListener('change', function () {
+      if (poReadOnly) return;
       const id = this.value;
       if (id === '__new__') {
         openNewVendor('po');
@@ -17229,19 +17317,23 @@
       renderPoLines();
     });
     document.getElementById('po-ship-to').addEventListener('change', function () {
+      if (poReadOnly) return;
       const id = this.value;
       const c = (poCustomers || []).find(function (row) { return String(row.id) === String(id); });
       document.getElementById('po-ship').value = formatCustomerShip(c);
     });
     document.getElementById('po-add-line').addEventListener('click', function () {
+      if (poReadOnly) return;
       const lines = readPoLines();
       lines.push({ qty: 1, rate: 0 });
       renderPoLines(lines);
     });
     document.getElementById('po-clear-lines').addEventListener('click', function () {
+      if (poReadOnly) return;
       renderPoLines([{ qty: 1, rate: 0 }]);
     });
     document.getElementById('po-lines').addEventListener('change', function (e) {
+      if (poReadOnly) return;
       const sel = e.target.closest('[data-line="itemId"]');
       if (!sel) return;
       const row = sel.closest('tr');
@@ -17257,7 +17349,7 @@
     });
     document.getElementById('po-lines').addEventListener('click', function (e) {
       const btn = e.target.closest('[data-remove-line]');
-      if (!btn) return;
+      if (!btn || poReadOnly) return;
       const row = btn.closest('tr');
       const rows = Array.prototype.slice.call(document.querySelectorAll('#po-lines .po-line'));
       const idx = rows.indexOf(row);
@@ -17268,6 +17360,7 @@
     });
     document.getElementById('po-form').addEventListener('submit', async function (e) {
       e.preventDefault();
+      if (poReadOnly) return;
       showPoMsg('');
       const id = document.getElementById('po-id').value;
       try {
@@ -17309,6 +17402,7 @@
       }
     });
     document.getElementById('po-delete-btn').addEventListener('click', async function () {
+      if (poReadOnly) return;
       const id = document.getElementById('po-id').value;
       if (!id || !confirm('Delete this purchase order?')) return;
       try {
