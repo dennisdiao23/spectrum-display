@@ -14136,13 +14136,14 @@
     function pfSyncEditButton() {
       const btn = document.getElementById('pf-edit');
       if (btn) {
+        btn.textContent = pfEditOn ? 'Save' : 'Edit';
         btn.classList.toggle('is-on', pfEditOn);
         btn.setAttribute('aria-pressed', pfEditOn ? 'true' : 'false');
       }
       const hint = document.getElementById('pf-canvas-hint');
       if (hint) {
         hint.textContent = pfEditOn
-          ? 'Drag a block to move it. Drag the corner handle to resize. Turn Grid on to snap boxes into line.'
+          ? 'Drag a block to move it. Drag the corner handle to resize. Save keeps this layout.'
           : 'Preview only. Turn Edit on to move and resize boxes.';
       }
       const resetBtn = document.getElementById('pf-reset-layout');
@@ -14169,6 +14170,28 @@
       }
       pfSyncEditButton();
       pfRenderPreview();
+    }
+
+    async function pfSaveForm() {
+      pfReadDraft();
+      pfShowMsg('');
+      try {
+        const data = await api('/api/admin/print-forms/' + encodeURIComponent(pfType), {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(pfDraft || {})
+        });
+        if (!printFormsCache) printFormsCache = {};
+        printFormsCache[pfType] = data.template || pfClone(pfDraft);
+        pfDraft = pfClone(printFormsCache[pfType]);
+        if (pfEditOn) pfSetEdit(false);
+        else pfFillFields();
+        pfShowMsg('Saved ' + (PF_TYPE_LABEL[pfType] || pfType) + '. Print uses this template.', true);
+        return true;
+      } catch (err) {
+        pfShowMsg(err.message || 'Could not save form.');
+        return false;
+      }
     }
 
     function pfEnsureLayout() {
@@ -14432,8 +14455,13 @@
       pfSyncEditButton();
       const editBtn = document.getElementById('pf-edit');
       if (editBtn) {
-        editBtn.addEventListener('click', function () {
-          pfSetEdit(!pfEditOn);
+        editBtn.addEventListener('click', async function () {
+          if (pfEditOn) {
+            editBtn.disabled = true;
+            try { await pfSaveForm(); } finally { editBtn.disabled = false; }
+          } else {
+            pfSetEdit(true);
+          }
         });
       }
       const gridBtn = document.getElementById('pf-grid');
@@ -14442,23 +14470,8 @@
           pfSetGrid(!pfGridOn);
         });
       }
-      document.getElementById('pf-save').addEventListener('click', async function () {
-        pfReadDraft();
-        pfShowMsg('');
-        try {
-          const data = await api('/api/admin/print-forms/' + encodeURIComponent(pfType), {
-            method: 'PUT',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(pfDraft || {})
-          });
-          if (!printFormsCache) printFormsCache = {};
-          printFormsCache[pfType] = data.template || pfClone(pfDraft);
-          pfDraft = pfClone(printFormsCache[pfType]);
-          pfFillFields();
-          pfShowMsg('Saved ' + (PF_TYPE_LABEL[pfType] || pfType) + '. Print uses this template.', true);
-        } catch (err) {
-          pfShowMsg(err.message || 'Could not save form.');
-        }
+      document.getElementById('pf-save').addEventListener('click', function () {
+        pfSaveForm();
       });
     })();
     document.getElementById('so-ribbon-email').addEventListener('click', function () {
