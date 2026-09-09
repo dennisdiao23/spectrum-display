@@ -5,10 +5,11 @@
 
 const COLLECTIONS = [
   { id: 'fine_pitch', slug: 'fine-pitch', label: 'Fine pitch', mode: 'configure' },
+  { id: 'poster', slug: 'poster', label: 'Poster', mode: 'configure' },
   { id: 'fixed', slug: 'fixed', label: 'Fixed', mode: 'configure' },
-  { id: 'rental', slug: 'rental', label: 'Rental', mode: 'configure' },
+  { id: 'rental', slug: 'rental', label: 'Rental Panel', mode: 'configure' },
   { id: 'outdoor', slug: 'outdoor', label: 'Outdoor', mode: 'configure' },
-  { id: 'control', slug: 'control', label: 'Control', mode: 'buy' },
+  { id: 'control', slug: 'control', label: 'Controller', mode: 'buy' },
   { id: 'spares', slug: 'spares', label: 'Spares', mode: 'buy' },
   { id: 'accessories', slug: 'accessories', label: 'Accessories', mode: 'buy' }
 ];
@@ -102,9 +103,10 @@ function inferCollection(product) {
   if (/cable|flight case|mount|clamp|connector/.test(blob)) return 'accessories';
   if (type === 'rental') return 'rental';
   if (type === 'outdoor') return 'outdoor';
+  const cats = (product.cats || []).join(' ').toLowerCase();
+  if (type === 'poster' || /\bposter/.test(cats + ' ' + blob)) return 'poster';
   const pitches = Array.isArray(product.pitches) ? product.pitches.map(Number).filter(function (n) { return n > 0; }) : [];
   const minPitch = pitches.length ? Math.min.apply(null, pitches) : 99;
-  const cats = (product.cats || []).join(' ').toLowerCase();
   if (minPitch <= 1.56 || /\bcob\b|fine.?pitch/.test(cats + ' ' + blob)) return 'fine_pitch';
   return 'fixed';
 }

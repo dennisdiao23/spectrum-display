@@ -75,33 +75,22 @@
     return (state.catalog && state.catalog.shop) || '';
   }
 
-  function iconSvg(name) {
-    var icons = {
-      new: '<rect x="4" y="6" width="16" height="12" rx="2"/><path d="M8 10h8M8 14h5"/>',
-      pitch: '<rect x="5" y="5" width="14" height="14" rx="2"/><path d="M9 9h6v6H9z"/>',
-      fixed: '<path d="M4 7h16v12H4z"/><path d="M8 7V5h8v2"/>',
-      rental: '<rect x="5" y="8" width="14" height="10" rx="1.5"/><path d="M8 8V6h8v2M9 18v2M15 18v2"/>',
-      outdoor: '<path d="M4 16h16M6 16l4-8 3 5 2-3 3 6"/>',
-      control: '<rect x="4" y="5" width="16" height="14" rx="2"/><circle cx="9" cy="12" r="1.4"/><path d="M13 10h5M13 14h4"/>',
-      spares: '<rect x="5" y="6" width="14" height="12" rx="1.5"/><path d="M9 10h6M9 14h4"/>',
-      accessories: '<path d="M7 8h10v10H7z"/><path d="M10 8V5h4v3"/>',
-      design: '<path d="M5 19l9-9 3 3-9 9H5z"/><path d="M14 7l3 3"/>'
-    };
-    return '<svg class="shop-rail-icon" fill="none" stroke="currentColor" stroke-width="1.6" viewBox="0 0 24 24" aria-hidden="true">' +
-      (icons[name] || icons.pitch) + '</svg>';
+  function railIcon(item) {
+    if (item.img) {
+      return '<img class="shop-rail-icon" src="' + esc(item.img) + '" alt="" width="80" height="80">';
+    }
+    return '';
   }
 
   function railItems() {
     return [
-      { label: 'What’s New', href: href('/#whats-new'), icon: 'new', key: 'new' },
-      { label: 'Fine pitch', href: href('/collections/fine-pitch'), icon: 'pitch', key: 'fine-pitch' },
-      { label: 'Fixed', href: href('/collections/fixed'), icon: 'fixed', key: 'fixed' },
-      { label: 'Rental', href: href('/collections/rental'), icon: 'rental', key: 'rental' },
-      { label: 'Outdoor', href: href('/collections/outdoor'), icon: 'outdoor', key: 'outdoor' },
-      { label: 'Control', href: href('/collections/control'), icon: 'control', key: 'control' },
-      { label: 'Spares', href: href('/collections/spares'), icon: 'spares', key: 'spares' },
-      { label: 'Accessories', href: href('/collections/accessories'), icon: 'accessories', key: 'accessories' },
-      { label: 'Design a wall', href: www('/led-wall-calculator'), icon: 'design', key: 'design', ext: true }
+      { label: 'What’s New', href: href('/#whats-new'), img: '/assets/store/whats-new.webp', key: 'new' },
+      { label: 'Fine pitch', href: href('/collections/fine-pitch'), img: '/assets/store/fine-pitch.webp', key: 'fine-pitch' },
+      { label: 'Poster', href: href('/collections/poster'), img: '/assets/store/poster.webp', key: 'poster' },
+      { label: 'Rental Panel', href: href('/collections/rental'), img: '/assets/store/rental-panel.webp', key: 'rental' },
+      { label: 'Controller', href: href('/collections/control'), img: '/assets/store/controller.webp', key: 'control' },
+      { label: 'Spares', href: href('/collections/spares'), img: '/assets/store/spares.webp', key: 'spares' },
+      { label: 'Accessories', href: href('/collections/accessories'), img: '/assets/store/accessories.webp', key: 'accessories' }
     ];
   }
 
@@ -155,7 +144,7 @@
       rail.innerHTML = railItems().map(function (item) {
         var on = (route.name === 'home' && item.key === 'new') || (route.slug === item.key);
         return '<a class="shop-rail-item' + (on ? ' is-on' : '') + '" href="' + esc(item.href) + '"' +
-          (item.ext ? '' : ' data-shop-link') + '>' + iconSvg(item.icon) + '<span>' + esc(item.label) + '</span></a>';
+          (item.ext ? '' : ' data-shop-link') + '>' + railIcon(item) + '<span>' + esc(item.label) + '</span></a>';
       }).join('');
     }
     var sub = $('#shop-subnav-row');
