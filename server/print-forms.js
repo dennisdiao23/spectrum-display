@@ -118,7 +118,7 @@ const LAYOUT_IDS = [
 
 const MIN_BOX_W = 5;
 const MIN_BOX_H = 5;
-const GRID_COUNT = 180;
+const GRID_COUNT = 90;
 const GRID_STEP = 100 / GRID_COUNT;
 
 function defaultHeaderLayout() {
