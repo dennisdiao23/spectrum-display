@@ -282,6 +282,7 @@
           <dl id="spec-summary" hidden></dl>
           <p id="product-lead" class="text-slate-400 mb-6">Configure LED video wall panels, pixel pitch, and project details from Spectrum Display.</p>
           <div id="replacement-banner" class="hidden mb-6 rounded-2xl border border-amber-500/30 bg-amber-500/5 p-4 text-sm text-amber-100/90"></div>
+          <a id="store-buy-now" href="/store" class="hidden mb-6 inline-flex px-5 py-2.5 rounded-full bg-sky-500 hover:bg-sky-400 text-white text-sm font-semibold">Buy now on US Store →</a>
 
           <!-- Key specs pills -->
           <div id="product-pills" class="flex flex-wrap gap-2 mb-8"></div>
@@ -731,6 +732,21 @@
             '</p>';
         } else {
           recvBanner.classList.add('hidden');
+        }
+      }
+
+      var storeBuy = document.getElementById('store-buy-now');
+      if (storeBuy) {
+        var sell = !!(seriesData && (seriesData.shopify_sell || (seriesData.details && seriesData.details.shopify_sell)));
+        var handle = (seriesData && (seriesData.shopify_handle || seriesData.id)) || '';
+        if (sell && handle) {
+          var storeRoot = (location.hostname === 'localhost' || location.hostname === '127.0.0.1')
+            ? '/store'
+            : 'https://store.spectrumdisplay.com';
+          storeBuy.classList.remove('hidden');
+          storeBuy.href = storeRoot + '/products/' + encodeURIComponent(handle);
+        } else {
+          storeBuy.classList.add('hidden');
         }
       }
 

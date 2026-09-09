@@ -12,6 +12,10 @@ const CONTROL_DETAIL_KEYS = [
   'subtype', 'replacementOnly', 'family', 'model', 'maxPixels', 'outputs', 'inputs',
   'bestFor', 'bestWith', 'priceEach', 'latency', 'hdr', 'chips', 'downloads', 'downloadVersion'
 ];
+const STORE_DETAIL_KEYS = [
+  'shopify_sell', 'shopify_product_id', 'shopify_variant_id', 'shopify_handle',
+  'shopify_variants', 'store_collection', 'store_lead', 'store_featured', 'store_icon'
+];
 
 function loadSeedBrands() {
   const brands = JSON.parse(fs.readFileSync(SEED_PATH, 'utf8'));
@@ -45,7 +49,7 @@ function rewriteCabinetCopy(value) {
 function detailsFromSeries(s) {
   const details = {};
   if (!s || typeof s !== 'object') return details;
-  ['cats', 'specTable', 'lead', 'sourceUrl', 'features'].concat(CONTROL_DETAIL_KEYS).forEach(function (k) {
+  ['cats', 'specTable', 'lead', 'sourceUrl', 'features'].concat(CONTROL_DETAIL_KEYS, STORE_DETAIL_KEYS).forEach(function (k) {
     if (s[k] != null) details[k] = s[k];
   });
   if (s.type === 'control' || s.subtype) {
@@ -1113,7 +1117,7 @@ function rowToProduct(row, brand) {
     priceLabel: unitPrice ? 'From $' + Number(unitPrice).toLocaleString() : 'Request quote'
   };
   if (control) product.priceEach = unitPrice;
-  ['specTable', 'lead', 'sourceUrl', 'features'].concat(CONTROL_DETAIL_KEYS).forEach(function (k) {
+  ['specTable', 'lead', 'sourceUrl', 'features'].concat(CONTROL_DETAIL_KEYS, STORE_DETAIL_KEYS).forEach(function (k) {
     if (details[k] != null) product[k] = details[k];
   });
   return product;

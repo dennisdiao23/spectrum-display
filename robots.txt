@@ -9,3 +9,4 @@ Disallow: /account.html
 Disallow: /api/
 
 Sitemap: https://www.spectrumdisplay.com/sitemap.xml
+Sitemap: https://store.spectrumdisplay.com/

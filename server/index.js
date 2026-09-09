@@ -15,6 +15,7 @@ const { sendContactEmail, sendDealerInquiryEmail, mailConfigured } = require('./
 const { blockedSignupReason } = require('../js/signup-guard');
 const img = require('./image');
 const { publicAdmin, hasPerm, isOwnerAdmin, isOwnerRole, OWNER_ROLE_SLUG, roleInputFromBody } = require('./admin-roles');
+const shopStore = require('./shop-store');
 
 const ROOT = path.join(__dirname, '..');
 const COOKIE = 'spectrum_admin';
@@ -287,6 +288,19 @@ async function main() {
     } catch (err) {
       console.error('Could not add products to sitemap:', err.message || err);
     }
+    try {
+      const storeCat = await shopStore.buildCatalog(store);
+      const STORE = 'https://store.spectrumdisplay.com';
+      xml += sitemapUrl(STORE + '/', 'weekly', '0.9', today);
+      (storeCat.collections || []).forEach(function (col) {
+        xml += sitemapUrl(STORE + '/collections/' + col.slug, 'weekly', '0.8', today);
+      });
+      (storeCat.products || []).forEach(function (product) {
+        xml += sitemapUrl(STORE + '/products/' + encodeURIComponent(product.handle), 'weekly', '0.7', today);
+      });
+    } catch (err) {
+      console.error('Could not add store URLs to sitemap:', err.message || err);
+    }
     xml += '</urlset>\n';
     res.set('Content-Type', 'application/xml; charset=utf-8');
     res.set('Cache-Control', 'public, max-age=3600');
@@ -383,6 +397,7 @@ async function main() {
         if (subtype === 'receiving-card') details.cats.push('receiving-cards');
       }
     }
+    shopStore.applyStoreFlags(details, body);
     return {
       brandId: resolvedBrand,
       seriesId,
@@ -568,8 +583,18 @@ async function main() {
       ok: true,
       supabaseUrl: process.env.SUPABASE_URL || '',
       supabaseAnonKey: process.env.SUPABASE_ANON_KEY || '',
-      googleMapsApiKey: process.env.GOOGLE_MAPS_API_KEY || ''
+      googleMapsApiKey: process.env.GOOGLE_MAPS_API_KEY || '',
+      shopifyShop: shopStore.shopHostname(),
+      wwwOrigin: shopStore.wwwOrigin(),
+      storeOrigin: shopStore.storeOrigin()
     });
+  });
+
+  app.get('/api/store/catalog', async function (_req, res, next) {
+    try {
+      const catalog = await shopStore.buildCatalog(store);
+      res.json(Object.assign({ ok: true }, catalog));
+    } catch (err) { next(err); }
   });
 
   app.post('/api/auth/signup-check', function (req, res) {
@@ -1792,6 +1817,47 @@ async function main() {
     } catch (err) { next(err); }
   });
 
+  function sendStorePage(_req, res) {
+    res.sendFile(path.join(ROOT, 'store.html'));
+  }
+
+  app.get(['/store', '/store/'], sendStorePage);
+  app.get('/store.html', function (req, res) {
+    const qs = req.url.includes('?') ? req.url.slice(req.url.indexOf('?')) : '';
+    res.redirect(301, (shopStore.isStoreHost(req) ? '/' : '/store') + qs);
+  });
+  app.get(['/store/cart', '/store/cart/'], sendStorePage);
+  app.get(['/store/collections/:slug', '/store/collections/:slug/'], sendStorePage);
+  app.get(['/store/products/:handle', '/store/products/:handle/'], sendStorePage);
+  app.get(['/store/pages/:slug', '/store/pages/:slug/'], sendStorePage);
+
+  app.use(function (req, res, next) {
+    if (!shopStore.isStoreHost(req)) return next();
+    const file = String(req.path || '').toLowerCase();
+    if (file.indexOf('/api/') === 0 || file.indexOf('/uploads/') === 0 || file.indexOf('/assets/') === 0) return next();
+    if (file.indexOf('/company') === 0 || file === '/admin.html' || file === '/admin' || file.indexOf('/admin/') === 0) {
+      return res.redirect(302, shopStore.wwwOrigin() + (req.originalUrl || '/company'));
+    }
+    next();
+  });
+
+  app.get(['/', '/cart', '/cart/'], function (req, res, next) {
+    if (!shopStore.isStoreHost(req)) return next();
+    sendStorePage(req, res);
+  });
+  app.get(['/collections/:slug', '/collections/:slug/'], function (req, res, next) {
+    if (!shopStore.isStoreHost(req)) return next();
+    sendStorePage(req, res);
+  });
+  app.get(['/products/:handle', '/products/:handle/'], function (req, res, next) {
+    if (!shopStore.isStoreHost(req)) return next();
+    sendStorePage(req, res);
+  });
+  app.get(['/pages/:slug', '/pages/:slug/'], function (req, res, next) {
+    if (!shopStore.isStoreHost(req)) return next();
+    sendStorePage(req, res);
+  });
+
   app.use(express.static(ROOT));
 
   app.use(function (err, _req, res, _next) {
@@ -1824,6 +1890,7 @@ async function main() {
     }
     console.log('Spectrum Display');
     console.log('Site:    http://localhost:' + PORT + '/');
+    console.log('Store:   http://localhost:' + PORT + '/store');
     console.log('Company: http://localhost:' + PORT + '/company');
     console.log('Customer: http://localhost:' + PORT + '/company/customers');
     console.log('Sales:    http://localhost:' + PORT + '/company/sales');

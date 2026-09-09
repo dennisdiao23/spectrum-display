@@ -316,6 +316,7 @@
               <th class="py-3 px-4 font-medium" data-col="pitch">Pitch <span class="dash-col-caret">▾</span><span class="dash-col-grip" aria-hidden="true"></span></th>
               <th class="py-3 px-4 font-medium" data-col="price">Price <span class="dash-col-caret">▾</span><span class="dash-col-grip" aria-hidden="true"></span></th>
               <th class="py-3 px-4 font-medium" data-col="website">Website <span class="dash-col-caret">▾</span><span class="dash-col-grip" aria-hidden="true"></span></th>
+              <th class="py-3 px-4 font-medium" data-col="store">Store <span class="dash-col-caret">▾</span><span class="dash-col-grip" aria-hidden="true"></span></th>
             </tr>
           </thead>
           <tbody id="product-table" class="text-slate-200"></tbody>
@@ -425,6 +426,56 @@
           <div>
             <label class="block text-xs text-slate-400 mb-1">More photos</label>
             <input id="gallery" type="file" accept="image/jpeg,image/png,image/webp,image/gif" multiple class="w-full text-sm text-slate-400">
+          </div>
+          <div class="sm:col-span-2 rounded-xl border border-slate-800 bg-slate-950/50 p-4 space-y-3">
+            <h3 class="text-sm font-semibold text-slate-200">US Store (store.spectrumdisplay.com)</h3>
+            <p class="text-[11px] text-slate-500">Shopify Checkout only. Cabinets stay Configure wall — never add m² walls to the cart. Paste the Shopify variant ID after you create the product in Shopify admin.</p>
+            <label class="flex items-center gap-2 text-sm text-slate-200">
+              <input id="shopify-sell" type="checkbox" class="rounded border-slate-600">
+              Buy now on the US Store (requires variant ID)
+            </label>
+            <label class="flex items-center gap-2 text-sm text-slate-200">
+              <input id="store-featured" type="checkbox" class="rounded border-slate-600">
+              Featured on What’s New
+            </label>
+            <div class="grid sm:grid-cols-2 gap-3">
+              <div>
+                <label class="block text-xs text-slate-400 mb-1">Store collection</label>
+                <select id="store-collection" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm">
+                  <option value="">Auto from type</option>
+                  <option value="fine_pitch">Fine pitch</option>
+                  <option value="fixed">Fixed</option>
+                  <option value="rental">Rental</option>
+                  <option value="outdoor">Outdoor</option>
+                  <option value="control">Control</option>
+                  <option value="spares">Spares</option>
+                  <option value="accessories">Accessories</option>
+                  <option value="hidden">Hidden from store</option>
+                </select>
+              </div>
+              <div>
+                <label class="block text-xs text-slate-400 mb-1">Lead time label</label>
+                <select id="store-lead" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm">
+                  <option value="">Default</option>
+                  <option value="ships_azusa">Ships from Azusa</option>
+                  <option value="incoming">Incoming</option>
+                  <option value="built_to_order">Built to order</option>
+                  <option value="quote">Request quote</option>
+                </select>
+              </div>
+              <div>
+                <label class="block text-xs text-slate-400 mb-1">Shopify variant ID</label>
+                <input id="shopify-variant-id" type="text" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm" placeholder="3957…">
+              </div>
+              <div>
+                <label class="block text-xs text-slate-400 mb-1">Shopify product ID</label>
+                <input id="shopify-product-id" type="text" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm">
+              </div>
+              <div class="sm:col-span-2">
+                <label class="block text-xs text-slate-400 mb-1">Shopify handle</label>
+                <input id="shopify-handle" type="text" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm" placeholder="vx400-pro">
+              </div>
+            </div>
           </div>
           <p id="form-error" class="sm:col-span-2 hidden text-sm text-red-400"></p>
           <div class="sm:col-span-2 flex flex-wrap gap-2">
@@ -4010,6 +4061,13 @@
       document.getElementById('power-max').value = product.powerMax;
       document.getElementById('cab-w').value = metersToMm(product.cabinetW);
       document.getElementById('cab-h').value = metersToMm(product.cabinetH);
+      document.getElementById('shopify-sell').checked = !!(product.shopify_sell);
+      document.getElementById('store-featured').checked = !!(product.store_featured);
+      document.getElementById('store-collection').value = product.store_collection || '';
+      document.getElementById('store-lead').value = product.store_lead || '';
+      document.getElementById('shopify-variant-id').value = product.shopify_variant_id || '';
+      document.getElementById('shopify-product-id').value = product.shopify_product_id || '';
+      document.getElementById('shopify-handle').value = product.shopify_handle || '';
       syncControlFields();
       if (product.image) {
         const img = document.getElementById('image-preview');
@@ -4143,6 +4201,7 @@
         if (col === 'pitch') return p.pitchLabel || '';
         if (col === 'price') return p.priceLabel || '';
         if (col === 'website') return p.hidden ? 'Hidden' : 'Shown';
+        if (col === 'store') return p.shopify_sell ? 'Buy now' : (p.store_collection || 'Configure');
         return p.image || '';
       });
       table.innerHTML = sorted.map(function (p) {
@@ -4161,7 +4220,8 @@
           type: '<td class="py-2.5 px-4 text-slate-400">' + esc(p.type || '') + '</td>',
           pitch: '<td class="py-2.5 px-4 text-slate-400">' + esc(p.pitchLabel || '') + '</td>',
           price: '<td class="py-2.5 px-4">' + esc(p.priceLabel || '') + '</td>',
-          website: '<td class="py-2.5 px-4" data-website-cell>' + vis + '</td>'
+          website: '<td class="py-2.5 px-4" data-website-cell>' + vis + '</td>',
+          store: '<td class="py-2.5 px-4 text-slate-400">' + esc(p.shopify_sell ? 'Buy now' : (p.store_collection || 'Auto')) + '</td>'
         };
         return '<tr class="border-b border-slate-800 hover:bg-slate-900/80 cursor-pointer' +
           (String(p.dbId) === String(wpActiveTab) ? ' is-selected' : '') +
@@ -5263,7 +5323,8 @@
         { id: 'type', label: 'Type' },
         { id: 'pitch', label: 'Pitch' },
         { id: 'price', label: 'Price' },
-        { id: 'website', label: 'Website' }
+        { id: 'website', label: 'Website' },
+        { id: 'store', label: 'Store' }
       ],
       'website-accounts': [
         { id: 'name', label: 'Name' },
@@ -5288,7 +5349,7 @@
       accounts: ['name', 'login', 'category', 'monthly', 'yearly'],
       staff: ['name', 'email', 'role'],
       roles: ['name', 'website', 'inventory', 'users'],
-      'website-products': ['photo', 'product', 'brand', 'type', 'pitch', 'price', 'website'],
+      'website-products': ['photo', 'product', 'brand', 'type', 'pitch', 'price', 'website', 'store'],
       'website-accounts': ['name', 'email', 'type', 'markup', 'company', 'created']
     };
 
@@ -15880,6 +15941,13 @@
       fd.append('powerMax', document.getElementById('power-max').value);
       fd.append('cabinetWmm', document.getElementById('cab-w').value);
       fd.append('cabinetHmm', document.getElementById('cab-h').value);
+      fd.append('shopify_sell', document.getElementById('shopify-sell').checked ? '1' : '0');
+      fd.append('store_featured', document.getElementById('store-featured').checked ? '1' : '0');
+      fd.append('store_collection', document.getElementById('store-collection').value);
+      fd.append('store_lead', document.getElementById('store-lead').value);
+      fd.append('shopify_variant_id', document.getElementById('shopify-variant-id').value);
+      fd.append('shopify_product_id', document.getElementById('shopify-product-id').value);
+      fd.append('shopify_handle', document.getElementById('shopify-handle').value);
       const image = document.getElementById('image').files[0];
       if (image) fd.append('image', image);
       Array.from(document.getElementById('gallery').files).forEach(function (f) { fd.append('gallery', f); });

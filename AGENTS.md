@@ -23,7 +23,8 @@ When Dennis reports a bug (screenshot, “nothing show up”, broken UI, or simi
 
 Spectrum Display is a static HTML/CSS/JS marketing + catalog website (`index.html`, `products.html`,
 `product.html`, `brands.html`, `cart.html`, `contact.html`, `account.html`, `designer.html`
-at `/led-wall-calculator`, `company.html` at `/company`) served by a small Express backend in `server/`. The backend exposes a product/brand
+at `/led-wall-calculator`, `company.html` at `/company`, `store.html` at `/store` and
+`store.spectrumdisplay.com`) served by a small Express backend in `server/`. The backend exposes a product/brand
 catalog API and a cookie-session company login used by `/company`, `/company/website`, and `/company/inventory`.
 
 ### Running the app (single service)
@@ -32,6 +33,8 @@ catalog API and a cookie-session company login used by `/company`, `/company/web
   and serves both the static site and the `/api/*` endpoints. There is no separate frontend build/dev
   server — the HTML files are served as-is.
 - Visit `http://localhost:3000`. Company UI is at `/company` (`/company/website`, `/company/inventory`).
+- Local US Store preview: `http://localhost:3000/store`. Production hostname is `https://store.spectrumdisplay.com`
+  (same Express app; add the custom domain on Railway and CNAME `store` to the same Railway target as `www`).
 
 ### Database: Supabase vs local SQLite fallback
 

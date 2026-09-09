@@ -22,6 +22,12 @@
     return file === 'designer.html' || file === 'led-wall-calculator' || p === '/led-wall-calculator';
   }
 
+  function storeHref() {
+    var host = (location.hostname || '').toLowerCase();
+    if (host === 'localhost' || host === '127.0.0.1') return '/store';
+    return 'https://store.spectrumdisplay.com';
+  }
+
   function onSolutionsPath() {
     var p = (location.pathname || '').toLowerCase().replace(/\/$/, '') || '/';
     if (
@@ -442,6 +448,7 @@
         '</button>' +
       '</div>' +
       '<a class="site-nav-link' + (onCalculatorPath() ? ' is-active' : '') + '" href="/led-wall-calculator" data-i18n="nav.designer">LED Wall Calculator</a>' +
+      '<a class="site-nav-link" href="' + storeHref() + '" data-i18n="nav.store">Store</a>' +
       '<a class="site-nav-link' + (file === 'dealer.html' ? ' is-active' : '') + '" href="/dealer.html" data-i18n="nav.dealer">Dealer</a>';
 
     var header = $('.site-header');
