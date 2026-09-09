@@ -320,23 +320,34 @@
     return mapped;
   }
 
-  function snapBox(box, step) {
+  function snapBox(box, step, mode) {
     const s = Number(step) > 0 ? Number(step) : 0.5;
-    const next = {
-      x: snapTo(box.x, s),
-      y: snapTo(box.y, s),
-      w: snapTo(box.w, s),
-      h: snapTo(box.h, s)
-    };
-    if (next.w < 5) next.w = s >= 5 ? 5 : 5;
-    if (next.h < 5) next.h = 5;
-    if (next.x < 0) next.x = 0;
-    if (next.y < 0) next.y = 0;
-    if (next.x + next.w > 100) next.x = Math.max(0, snapTo(100 - next.w, s));
-    if (next.y + next.h > 100) next.y = Math.max(0, snapTo(100 - next.h, s));
-    if (next.x + next.w > 100) next.w = Math.max(5, 100 - next.x);
-    if (next.y + next.h > 100) next.h = Math.max(5, 100 - next.y);
-    return next;
+    const move = mode === 'move';
+    let x = snapTo(box.x, s);
+    let y = snapTo(box.y, s);
+    let w = Number(box.w);
+    let h = Number(box.h);
+    if (!isFinite(w)) w = 5;
+    if (!isFinite(h)) h = 5;
+    if (!move) {
+      w = snapTo(w, s);
+      h = snapTo(h, s);
+    }
+    if (w < 5) w = 5;
+    if (h < 5) h = 5;
+    if (x < 0) x = 0;
+    if (y < 0) y = 0;
+    if (x + w > 100) x = Math.max(0, snapTo(100 - w, s));
+    if (y + h > 100) y = Math.max(0, snapTo(100 - h, s));
+    if (x + w > 100) {
+      if (move) x = Math.max(0, 100 - w);
+      else w = Math.max(5, 100 - x);
+    }
+    if (y + h > 100) {
+      if (move) y = Math.max(0, 100 - h);
+      else h = Math.max(5, 100 - y);
+    }
+    return { x: x, y: y, w: w, h: h };
   }
 
   function boxStyle(layout, id) {

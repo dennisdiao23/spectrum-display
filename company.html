@@ -8,10 +8,10 @@
   <link rel="apple-touch-icon" href="/assets/apple-touch-icon.png" />
   <title>Company | Spectrum Display</title>
   <meta name="robots" content="noindex, nofollow" />
-  <link rel="stylesheet" href="/css/company-dash.css?v=forms12" />
+  <link rel="stylesheet" href="/css/company-dash.css?v=forms13" />
   <script src="/js/address-autocomplete.js"></script>
   <script src="/js/company-chat.js?v=cache1"></script>
-  <script src="/js/print-form.js?v=forms12"></script>
+  <script src="/js/print-form.js?v=forms13"></script>
   <script>
     (function () {
       try {
@@ -2755,7 +2755,7 @@
     </a>
   </nav>
 
-  <link rel="stylesheet" href="/css/company-dash.css?v=forms12" />
+  <link rel="stylesheet" href="/css/company-dash.css?v=forms13" />
 
   <script>
     const loginPanel = document.getElementById('login-panel');
@@ -14430,7 +14430,9 @@
         next.x = Math.min(100 - orig.w, Math.max(0, orig.x + dx));
         next.y = Math.min(100 - orig.h, Math.max(0, orig.y + dy));
       }
-      if (pfGridOn && window.SpectrumPrintForm) return SpectrumPrintForm.snapBox(next, pfGridStep());
+      if (pfGridOn && window.SpectrumPrintForm) {
+        return SpectrumPrintForm.snapBox(next, pfGridStep(), mode === 'resize' ? 'resize' : 'move');
+      }
       return next;
     }
 
@@ -14455,7 +14457,7 @@
       packed[d.id] = pfDraft.layout[d.id];
       let snapped = SpectrumPrintForm.mergeLayout(Object.assign({}, pfDraft.layout, packed), pfDraft.layoutVersion)[d.id];
       if (window.SpectrumPrintForm && SpectrumPrintForm.snapBox) {
-        snapped = SpectrumPrintForm.snapBox(snapped, pfGridStep());
+        snapped = SpectrumPrintForm.snapBox(snapped, pfGridStep(), d.mode === 'resize' ? 'resize' : 'move');
       }
       pfDraft.layout[d.id] = snapped;
       pfApplyBoxStyle(d.el, snapped);
