@@ -8,10 +8,10 @@
   <link rel="apple-touch-icon" href="/assets/apple-touch-icon.png" />
   <title>Company | Spectrum Display</title>
   <meta name="robots" content="noindex, nofollow" />
-  <link rel="stylesheet" href="/css/company-dash.css?v=forms13" />
+  <link rel="stylesheet" href="/css/company-dash.css?v=forms14" />
   <script src="/js/address-autocomplete.js"></script>
   <script src="/js/company-chat.js?v=cache1"></script>
-  <script src="/js/print-form.js?v=forms13"></script>
+  <script src="/js/print-form.js?v=forms14"></script>
   <script>
     (function () {
       try {
@@ -2029,7 +2029,6 @@
               </div>
               <div class="pf-preview-actions">
                 <button type="button" id="pf-edit" class="pf-reset" aria-pressed="false">Edit</button>
-                <button type="button" id="pf-grid" class="pf-reset" aria-pressed="false">Grid</button>
                 <button type="button" id="pf-reset-layout" class="pf-reset">Reset layout</button>
               </div>
             </div>
@@ -2755,7 +2754,7 @@
     </a>
   </nav>
 
-  <link rel="stylesheet" href="/css/company-dash.css?v=forms13" />
+  <link rel="stylesheet" href="/css/company-dash.css?v=forms14" />
 
   <script>
     const loginPanel = document.getElementById('login-panel');
@@ -13922,7 +13921,6 @@
     let pfType = 'invoice';
     let pfDragId = '';
     let pfLayoutDrag = null;
-    let pfGridOn = false;
     let pfEditOn = false;
     let pfSelectedId = '';
     const PF_TYPES = ['invoice', 'quote', 'order', 'po'];
@@ -14249,23 +14247,12 @@
       pfDraft.fontStyle = spec.fontStyle;
     }
 
-    function pfGridStep() {
-      return pfGridOn && window.SpectrumPrintForm ? SpectrumPrintForm.GRID_STEP : 0.5;
-    }
-
     function pfStoredType() {
       try {
         const t = localStorage.getItem('spectrum-pf-type');
         if (PF_TYPES.indexOf(t) !== -1) return t;
       } catch (e) {}
       return 'invoice';
-    }
-
-    function pfSyncGridButton() {
-      const btn = document.getElementById('pf-grid');
-      if (!btn) return;
-      btn.classList.toggle('is-on', pfGridOn);
-      btn.setAttribute('aria-pressed', pfGridOn ? 'true' : 'false');
     }
 
     function pfSyncEditButton() {
@@ -14278,23 +14265,13 @@
       const hint = document.getElementById('pf-canvas-hint');
       if (hint) {
         hint.textContent = pfEditOn
-          ? 'Click a box to style it. Drag to move. Drag the corner to resize.'
+          ? 'Boxes snap to the grid from the top-left. Drag to move. Drag the corner to resize.'
           : 'US Letter (8.5 × 11 in). Click a box to change Font, Size, and Style for that item.';
       }
       const resetBtn = document.getElementById('pf-reset-layout');
       if (resetBtn) resetBtn.disabled = !pfEditOn;
       const host = document.getElementById('pf-preview');
       if (host) host.classList.toggle('is-editing', pfEditOn);
-    }
-
-    function pfSetGrid(on) {
-      pfGridOn = !!on;
-      try { localStorage.setItem('spectrum-pf-grid', pfGridOn ? '1' : '0'); } catch (e) {}
-      pfSyncGridButton();
-      if (!window.SpectrumPrintForm) return;
-      const sheet = document.querySelector('#pf-preview .pf-sheet');
-      if (sheet && pfEditOn) sheet.classList.toggle('is-grid', pfGridOn);
-      else if (sheet) sheet.classList.remove('is-grid');
     }
 
     function pfSetEdit(on) {
@@ -14378,7 +14355,7 @@
       pfEnsureLayout();
       pfEnsureEditorCss();
       const sample = SpectrumPrintForm.sampleDoc(pfType);
-      host.innerHTML = SpectrumPrintForm.sheetHtml(pfDraft, { company: printCompanyCache, doc: sample }, { edit: pfEditOn, grid: pfGridOn, safe: true });
+      host.innerHTML = SpectrumPrintForm.sheetHtml(pfDraft, { company: printCompanyCache, doc: sample }, { edit: pfEditOn, safe: true });
       pfSyncEditButton();
       if (pfSelectedId) {
         const sel = host.querySelector('[data-pf-block="' + pfSelectedId + '"]');
@@ -14422,18 +14399,17 @@
     }
 
     function pfLiveBox(orig, dx, dy, mode) {
+      const min = window.SpectrumPrintForm && SpectrumPrintForm.GRID_MIN ? SpectrumPrintForm.GRID_MIN : 5;
       const next = { x: orig.x, y: orig.y, w: orig.w, h: orig.h };
       if (mode === 'resize') {
-        next.w = Math.min(100 - orig.x, Math.max(5, orig.w + dx));
-        next.h = Math.min(100 - orig.y, Math.max(5, orig.h + dy));
+        next.w = Math.min(100 - orig.x, Math.max(min, orig.w + dx));
+        next.h = Math.min(100 - orig.y, Math.max(min, orig.h + dy));
       } else {
         next.x = Math.min(100 - orig.w, Math.max(0, orig.x + dx));
         next.y = Math.min(100 - orig.h, Math.max(0, orig.y + dy));
       }
-      if (pfGridOn && window.SpectrumPrintForm) {
-        return SpectrumPrintForm.snapBox(next, pfGridStep(), mode === 'resize' ? 'resize' : 'move');
-      }
-      return next;
+      if (!window.SpectrumPrintForm) return next;
+      return SpectrumPrintForm.snapBox(next, SpectrumPrintForm.GRID_STEP, mode === 'resize' ? 'resize' : 'move');
     }
 
     function pfOnLayoutMove(e) {
@@ -14457,7 +14433,7 @@
       packed[d.id] = pfDraft.layout[d.id];
       let snapped = SpectrumPrintForm.mergeLayout(Object.assign({}, pfDraft.layout, packed), pfDraft.layoutVersion)[d.id];
       if (window.SpectrumPrintForm && SpectrumPrintForm.snapBox) {
-        snapped = SpectrumPrintForm.snapBox(snapped, pfGridStep(), d.mode === 'resize' ? 'resize' : 'move');
+        snapped = SpectrumPrintForm.snapBox(snapped, SpectrumPrintForm.GRID_STEP, d.mode === 'resize' ? 'resize' : 'move');
       }
       pfDraft.layout[d.id] = snapped;
       pfApplyBoxStyle(d.el, snapped);
@@ -14604,9 +14580,7 @@
           pfRenderPreview();
         });
       }
-      try { pfGridOn = localStorage.getItem('spectrum-pf-grid') === '1'; } catch (e) { pfGridOn = false; }
       pfEditOn = false;
-      pfSyncGridButton();
       pfSyncEditButton();
       const editBtn = document.getElementById('pf-edit');
       if (editBtn) {
@@ -14617,12 +14591,6 @@
           } else {
             pfSetEdit(true);
           }
-        });
-      }
-      const gridBtn = document.getElementById('pf-grid');
-      if (gridBtn) {
-        gridBtn.addEventListener('click', function () {
-          pfSetGrid(!pfGridOn);
         });
       }
       document.getElementById('pf-save').addEventListener('click', function () {

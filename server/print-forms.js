@@ -169,10 +169,11 @@ const LAYOUT_IDS = [
   'company', 'title', 'logo', 'watermark', 'billTo', 'shipTo', 'lines', 'paymentTerms', 'totals', 'contact'
 ].concat(HEADER_LAYOUT_IDS);
 
-const MIN_BOX_W = 5;
-const MIN_BOX_H = 5;
 const GRID_COUNT = 90;
 const GRID_STEP = 100 / GRID_COUNT;
+const GRID_MIN = GRID_STEP * 5;
+const MIN_BOX_W = GRID_MIN;
+const MIN_BOX_H = GRID_MIN;
 
 const LAYOUT_VERSION = 2;
 const LIVE_INSET_X = (0.5 / 8.5) * 100;
@@ -228,7 +229,12 @@ function mapLayoutFromV1(layout) {
 }
 
 function defaultLayout() {
-  return mapLayoutFromV1(defaultLayoutV1());
+  const mapped = mapLayoutFromV1(defaultLayoutV1());
+  const out = {};
+  LAYOUT_IDS.forEach(function (id) {
+    out[id] = snapBox(mapped[id], GRID_STEP);
+  });
+  return out;
 }
 
 function layoutIsLetter(layout, version) {
@@ -241,26 +247,49 @@ function layoutIsLetter(layout, version) {
   return false;
 }
 
-function snapPct(n) {
+function snapTo(n, step) {
+  const s = Number(step) > 0 ? Number(step) : GRID_STEP;
   const v = Number(n);
   if (!Number.isFinite(v)) return 0;
-  return Math.round(v * 2) / 2;
+  return Math.round(v / s) * s;
 }
 
-function clampPct(n, min, max) {
-  return Math.min(max, Math.max(min, snapPct(n)));
+function snapBox(box, step, mode) {
+  const s = Number(step) > 0 ? Number(step) : GRID_STEP;
+  const move = mode === 'move';
+  const min = GRID_MIN;
+  let x = snapTo(box.x, s);
+  let y = snapTo(box.y, s);
+  let w = snapTo(box.w, s);
+  let h = snapTo(box.h, s);
+  if (!Number.isFinite(w)) w = min;
+  if (!Number.isFinite(h)) h = min;
+  if (w < min) w = min;
+  if (h < min) h = min;
+  if (x < 0) x = 0;
+  if (y < 0) y = 0;
+  if (x + w > 100) x = Math.max(0, snapTo(100 - w, s));
+  if (y + h > 100) y = Math.max(0, snapTo(100 - h, s));
+  if (x + w > 100) {
+    if (move) x = Math.max(0, 100 - w);
+    else w = Math.max(min, snapTo(100 - x, s));
+  }
+  if (y + h > 100) {
+    if (move) y = Math.max(0, 100 - h);
+    else h = Math.max(min, snapTo(100 - y, s));
+  }
+  return { x: x, y: y, w: w, h: h };
 }
 
 function sanitizeBox(box, fallback) {
   const src = box && typeof box === 'object' ? box : fallback;
   const fb = fallback || { x: 0, y: 0, w: 20, h: 10 };
-  let w = clampPct(src.w != null ? src.w : fb.w, MIN_BOX_W, 100);
-  let h = clampPct(src.h != null ? src.h : fb.h, MIN_BOX_H, 100);
-  let x = clampPct(src.x != null ? src.x : fb.x, 0, 100 - MIN_BOX_W);
-  let y = clampPct(src.y != null ? src.y : fb.y, 0, 100 - MIN_BOX_H);
-  if (x + w > 100) w = Math.max(MIN_BOX_W, snapPct(100 - x));
-  if (y + h > 100) h = Math.max(MIN_BOX_H, snapPct(100 - y));
-  return { x: x, y: y, w: w, h: h };
+  return snapBox({
+    x: src.x != null ? src.x : fb.x,
+    y: src.y != null ? src.y : fb.y,
+    w: src.w != null ? src.w : fb.w,
+    h: src.h != null ? src.h : fb.h
+  }, GRID_STEP);
 }
 
 function splitHeaderBand(band) {

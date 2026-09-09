@@ -104,6 +104,7 @@
 
   const GRID_COUNT = 90;
   const GRID_STEP = 100 / GRID_COUNT;
+  const GRID_MIN = GRID_STEP * 5;
 
   const FONTS = [
     { id: 'arial', label: 'Arial', css: 'Arial, Helvetica, sans-serif' },
@@ -244,7 +245,12 @@
   }
 
   function defaultLayout() {
-    return mapLayoutFromV1(defaultLayoutV1());
+    const mapped = mapLayoutFromV1(defaultLayoutV1());
+    const out = {};
+    LAYOUT_IDS.forEach(function (id) {
+      out[id] = snapBox(mapped[id], GRID_STEP);
+    });
+    return out;
   }
 
   function layoutIsLetter(layout, version) {
@@ -257,33 +263,22 @@
     return false;
   }
 
-  function snapPct(n) {
-    const v = Number(n);
-    if (!isFinite(v)) return 0;
-    return Math.round(v * 2) / 2;
-  }
-
   function snapTo(n, step) {
-    const s = Number(step) > 0 ? Number(step) : 0.5;
+    const s = Number(step) > 0 ? Number(step) : GRID_STEP;
     const v = Number(n);
     if (!isFinite(v)) return 0;
     return Math.round(v / s) * s;
   }
 
-  function clampPct(n, min, max) {
-    return Math.min(max, Math.max(min, snapPct(n)));
-  }
-
   function sanitizeBox(box, fallback) {
     const src = box && typeof box === 'object' ? box : fallback;
     const fb = fallback || { x: 0, y: 0, w: 20, h: 10 };
-    let w = clampPct(src.w != null ? src.w : fb.w, 5, 100);
-    let h = clampPct(src.h != null ? src.h : fb.h, 5, 100);
-    let x = clampPct(src.x != null ? src.x : fb.x, 0, 95);
-    let y = clampPct(src.y != null ? src.y : fb.y, 0, 95);
-    if (x + w > 100) w = Math.max(5, snapPct(100 - x));
-    if (y + h > 100) h = Math.max(5, snapPct(100 - y));
-    return { x: x, y: y, w: w, h: h };
+    return snapBox({
+      x: src.x != null ? src.x : fb.x,
+      y: src.y != null ? src.y : fb.y,
+      w: src.w != null ? src.w : fb.w,
+      h: src.h != null ? src.h : fb.h
+    }, GRID_STEP);
   }
 
   function splitHeaderBand(band) {
@@ -321,31 +316,28 @@
   }
 
   function snapBox(box, step, mode) {
-    const s = Number(step) > 0 ? Number(step) : 0.5;
+    const s = Number(step) > 0 ? Number(step) : GRID_STEP;
     const move = mode === 'move';
+    const min = GRID_MIN;
     let x = snapTo(box.x, s);
     let y = snapTo(box.y, s);
-    let w = Number(box.w);
-    let h = Number(box.h);
-    if (!isFinite(w)) w = 5;
-    if (!isFinite(h)) h = 5;
-    if (!move) {
-      w = snapTo(w, s);
-      h = snapTo(h, s);
-    }
-    if (w < 5) w = 5;
-    if (h < 5) h = 5;
+    let w = snapTo(box.w, s);
+    let h = snapTo(box.h, s);
+    if (!isFinite(w)) w = min;
+    if (!isFinite(h)) h = min;
+    if (w < min) w = min;
+    if (h < min) h = min;
     if (x < 0) x = 0;
     if (y < 0) y = 0;
     if (x + w > 100) x = Math.max(0, snapTo(100 - w, s));
     if (y + h > 100) y = Math.max(0, snapTo(100 - h, s));
     if (x + w > 100) {
       if (move) x = Math.max(0, 100 - w);
-      else w = Math.max(5, 100 - x);
+      else w = Math.max(min, snapTo(100 - x, s));
     }
     if (y + h > 100) {
       if (move) y = Math.max(0, 100 - h);
-      else h = Math.max(5, 100 - y);
+      else h = Math.max(min, snapTo(100 - y, s));
     }
     return { x: x, y: y, w: w, h: h };
   }
@@ -498,7 +490,7 @@
       contactInner = ph('Phone / email');
     }
 
-    return '<div class="pf-sheet is-abs' + (edit ? ' is-edit' : '') + (edit && opts && opts.grid ? ' is-grid' : '') +
+    return '<div class="pf-sheet is-abs' + (edit ? ' is-edit is-grid' : '') +
       '" style="' + esc(sheetFontStyle(tpl)) + '">' +
       wrapAbs('watermark', watermarkInner, layout, edit, blocks.watermark === false, 'is-watermark', fonts) +
       wrapAbs('company', companyInner, layout, edit, blocks.company === false, '', fonts) +
@@ -556,7 +548,7 @@
     return sheetCss() + [
       '.pf-sheet.is-abs{box-shadow:0 10px 32px rgba(16,32,71,.16)}',
       '.pf-safe{position:absolute;left:0.5in;top:0.5in;width:7.5in;height:10in;border:1px dotted rgba(15,23,42,.5);pointer-events:none;z-index:3;box-sizing:border-box}',
-      '.pf-sheet.is-edit.is-grid{background-image:linear-gradient(to right,rgba(14,165,233,.16) 1px,transparent 1px),linear-gradient(to bottom,rgba(14,165,233,.16) 1px,transparent 1px);background-size:calc(100%/90) calc(100%/90)}',
+      '.pf-sheet.is-edit{background-image:linear-gradient(to right,rgba(14,165,233,.16) 1px,transparent 1px),linear-gradient(to bottom,rgba(14,165,233,.16) 1px,transparent 1px);background-size:calc(100%/90) calc(100%/90)}',
       '.pf-sheet.is-edit .pf-abs{overflow:visible;outline:1px dashed rgba(14,165,233,.55);cursor:move;user-select:none;touch-action:none}',
       '.pf-sheet.is-edit .pf-abs.is-off{outline-style:dotted;opacity:.42}',
       '.pf-sheet .pf-abs.is-on{outline:2px solid #0ea5e9;z-index:4}',
@@ -650,6 +642,7 @@
     LAYOUT_IDS: LAYOUT_IDS,
     GRID_STEP: GRID_STEP,
     GRID_COUNT: GRID_COUNT,
+    GRID_MIN: GRID_MIN,
     FONTS: FONTS,
     FONT_SIZES: FONT_SIZES,
     FONT_STYLES: FONT_STYLES,
