@@ -14620,8 +14620,9 @@
       soLineDrag = { row: row, startY: e.clientY, pointerId: e.pointerId, moved: false };
       try { handle.setPointerCapture(e.pointerId); } catch (err) {}
     });
-    document.getElementById('so-lines').addEventListener('pointermove', function (e) {
-      if (!soLineDrag || soLineDrag.pointerId !== e.pointerId) return;
+    function moveSoLineDrag(e) {
+      if (!soLineDrag) return;
+      if (e.pointerId != null && soLineDrag.pointerId != null && soLineDrag.pointerId !== e.pointerId) return;
       if (!soLineDrag.moved && Math.abs(e.clientY - soLineDrag.startY) < 5) return;
       soLineDrag.moved = true;
       soLineDrag.row.classList.add('is-dragging');
@@ -14636,17 +14637,19 @@
       if (from < 0 || to < 0 || from === to) return;
       if (from < to) tb.insertBefore(soLineDrag.row, over.nextSibling);
       else tb.insertBefore(soLineDrag.row, over);
-    });
+    }
     function endSoLineDrag(e) {
-      if (!soLineDrag || (e && soLineDrag.pointerId !== e.pointerId)) return;
+      if (!soLineDrag) return;
+      if (e && e.pointerId != null && soLineDrag.pointerId != null && soLineDrag.pointerId !== e.pointerId) return;
       const moved = soLineDrag.moved;
       soLineDrag.row.classList.remove('is-dragging');
       document.body.classList.remove('so-line-reordering');
       soLineDrag = null;
       if (moved) syncSoLineOrder();
     }
-    document.getElementById('so-lines').addEventListener('pointerup', endSoLineDrag);
-    document.getElementById('so-lines').addEventListener('pointercancel', endSoLineDrag);
+    document.addEventListener('pointermove', moveSoLineDrag);
+    document.addEventListener('pointerup', endSoLineDrag);
+    document.addEventListener('pointercancel', endSoLineDrag);
     document.getElementById('so-discount').addEventListener('input', refreshSoTotals);
     document.getElementById('so-number').addEventListener('input', function () {
       const type = document.getElementById('so-type').value || 'quote';
