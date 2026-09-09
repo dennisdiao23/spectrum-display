@@ -3849,6 +3849,28 @@ body.po-doc-float #po-detail {
   border-color: #2f6bff;
   color: #fff;
 }
+body.so-invoice-float #so-edit-btn { display: none !important; }
+body.po-doc-float #po-edit-btn { display: none !important; }
+
+#so-form.is-readonly input:not([type="hidden"]),
+#so-form.is-readonly select,
+#so-form.is-readonly textarea,
+#po-form.is-readonly input:not([type="hidden"]),
+#po-form.is-readonly select,
+#po-form.is-readonly textarea {
+  background: #f7f9fc;
+  color: var(--dash-text);
+  cursor: default;
+  pointer-events: none;
+}
+#so-form.is-readonly #so-add-line,
+#so-form.is-readonly [data-remove-line],
+#po-form.is-readonly #po-add-line,
+#po-form.is-readonly #po-clear-lines,
+#po-form.is-readonly #po-cc-toggle,
+#po-form.is-readonly [data-remove-line] {
+  display: none !important;
+}
 
 body.so-invoice-float .so-doc-caption,
 body.so-invoice-float .so-doc-ribbon,
