@@ -99,7 +99,7 @@
   ];
 
   const LAYOUT_IDS = [
-    'company', 'title', 'logo', 'billTo', 'shipTo', 'lines', 'paymentTerms', 'totals', 'contact'
+    'company', 'title', 'logo', 'watermark', 'billTo', 'shipTo', 'lines', 'paymentTerms', 'totals', 'contact'
   ].concat(HEADER_FIELD_IDS.map(function (id) { return 'hdr-' + id; }));
 
   const GRID_COUNT = 180;
@@ -128,6 +128,7 @@
       company: { x: 0, y: 0, w: 35, h: 10 },
       title: { x: 35, y: 0, w: 30, h: 10 },
       logo: { x: 65, y: 0, w: 35, h: 10 },
+      watermark: { x: 10, y: 40, w: 80, h: 20 },
       billTo: { x: 0, y: 10, w: 50, h: 15 },
       shipTo: { x: 50, y: 10, w: 50, h: 15 },
       lines: { x: 0, y: 45, w: 100, h: 30 },
@@ -218,10 +219,11 @@
     return 'left:' + b.x + '%;top:' + b.y + '%;width:' + b.w + '%;height:' + b.h + '%';
   }
 
-  function wrapAbs(id, inner, layout, edit, off) {
+  function wrapAbs(id, inner, layout, edit, off, extraClass) {
     if (!edit && off) return '';
     const cls = ['pf-abs'];
     if (off) cls.push('is-off');
+    if (extraClass) cls.push(extraClass);
     return '<div class="' + cls.join(' ') + '" data-pf-block="' + id + '" style="' + boxStyle(layout, id) + '">' +
       inner +
       (edit ? '<span class="pf-resize" aria-hidden="true"></span>' : '') +
@@ -266,6 +268,13 @@
       logoInner = '<div class="pf-logo"><img src="' + esc(logo) + '" alt="" draggable="false"></div>';
     } else {
       logoInner = ph('Logo');
+    }
+
+    let watermarkInner = '';
+    if (blocks.watermark !== false) {
+      watermarkInner = '<div class="pf-watermark"><img src="/assets/spectrum-watermark.png" alt="" draggable="false"></div>';
+    } else {
+      watermarkInner = ph('Watermark');
     }
 
     let billInner = '';
@@ -347,6 +356,7 @@
     }
 
     return '<div class="pf-sheet is-abs' + (edit ? ' is-edit' : '') + (edit && opts && opts.grid ? ' is-grid' : '') + '">' +
+      wrapAbs('watermark', watermarkInner, layout, edit, blocks.watermark === false, 'is-watermark') +
       wrapAbs('company', companyInner, layout, edit, blocks.company === false) +
       wrapAbs('title', '<div class="pf-title">' + esc(title) + '</div>', layout, edit, false) +
       wrapAbs('logo', logoInner, layout, edit, blocks.logo === false || !logo) +
@@ -363,8 +373,11 @@
   function sheetCss() {
     return [
       '.pf-sheet.is-abs{position:relative;width:7.5in;height:10in;max-width:none;margin:0 auto;box-sizing:border-box;background:#fff;color:#111;font:12px/1.35 Arial,Helvetica,sans-serif}',
-      '.pf-abs{position:absolute;box-sizing:border-box;overflow:hidden}',
-      '.pf-abs .pf-co,.pf-abs .pf-title,.pf-abs .pf-logo,.pf-abs .pf-box,.pf-abs .pf-hfield,.pf-abs .pf-lines,.pf-abs .pf-terms,.pf-abs .pf-totals,.pf-abs .pf-contact,.pf-abs .pf-ph{width:100%;height:100%;margin:0}',
+      '.pf-abs{position:absolute;box-sizing:border-box;overflow:hidden;z-index:1}',
+      '.pf-abs.is-watermark{z-index:0}',
+      '.pf-abs .pf-co,.pf-abs .pf-title,.pf-abs .pf-logo,.pf-abs .pf-box,.pf-abs .pf-hfield,.pf-abs .pf-lines,.pf-abs .pf-terms,.pf-abs .pf-totals,.pf-abs .pf-contact,.pf-abs .pf-ph,.pf-abs .pf-watermark{width:100%;height:100%;margin:0}',
+      '.pf-watermark{display:flex;align-items:center;justify-content:center}',
+      '.pf-watermark img{max-width:100%;max-height:100%;width:auto;height:auto;object-fit:contain;opacity:.2}',
       '.pf-co{font-size:12px}',
       '.pf-co-name{font-size:18px;font-weight:800;letter-spacing:.04em;margin-bottom:4px}',
       '.pf-title{display:flex;align-items:center;justify-content:center;font-size:28px;font-weight:700;text-align:center;padding:0}',
@@ -399,7 +412,7 @@
       '.pf-sheet.is-edit .pf-abs.is-on{outline:2px solid #0ea5e9;z-index:4}',
       '.pf-resize{position:absolute;right:-1px;bottom:-1px;width:14px;height:14px;background:#0ea5e9;border:2px solid #fff;border-radius:2px;cursor:se-resize;box-shadow:0 0 0 1px rgba(14,165,233,.4);z-index:6;pointer-events:auto}',
       '.pf-resize:after{content:"";position:absolute;right:-6px;bottom:-6px;width:24px;height:24px}',
-      '.pf-sheet.is-edit .pf-abs .pf-box,.pf-sheet.is-edit .pf-abs .pf-hfield,.pf-sheet.is-edit .pf-abs .pf-lines,.pf-sheet.is-edit .pf-abs .pf-terms,.pf-sheet.is-edit .pf-abs .pf-totals,.pf-sheet.is-edit .pf-abs .pf-contact,.pf-sheet.is-edit .pf-abs .pf-co,.pf-sheet.is-edit .pf-abs .pf-title,.pf-sheet.is-edit .pf-abs .pf-logo,.pf-sheet.is-edit .pf-abs .pf-ph{pointer-events:none}'
+      '.pf-sheet.is-edit .pf-abs .pf-box,.pf-sheet.is-edit .pf-abs .pf-hfield,.pf-sheet.is-edit .pf-abs .pf-lines,.pf-sheet.is-edit .pf-abs .pf-terms,.pf-sheet.is-edit .pf-abs .pf-totals,.pf-sheet.is-edit .pf-abs .pf-contact,.pf-sheet.is-edit .pf-abs .pf-co,.pf-sheet.is-edit .pf-abs .pf-title,.pf-sheet.is-edit .pf-abs .pf-logo,.pf-sheet.is-edit .pf-abs .pf-ph,.pf-sheet.is-edit .pf-abs .pf-watermark{pointer-events:none}'
     ].join('');
   }
 

@@ -32,6 +32,7 @@ const COLUMNS = [
 
 const BLOCKS = [
   { id: 'logo', label: 'Logo' },
+  { id: 'watermark', label: 'Watermark' },
   { id: 'company', label: 'Company address' },
   { id: 'billTo', label: 'Bill To' },
   { id: 'shipTo', label: 'Ship To' },
@@ -112,7 +113,7 @@ function headerLayoutId(id) {
 const HEADER_LAYOUT_IDS = HEADER_FIELDS.map(function (f) { return headerLayoutId(f.id); });
 
 const LAYOUT_IDS = [
-  'company', 'title', 'logo', 'billTo', 'shipTo', 'lines', 'paymentTerms', 'totals', 'contact'
+  'company', 'title', 'logo', 'watermark', 'billTo', 'shipTo', 'lines', 'paymentTerms', 'totals', 'contact'
 ].concat(HEADER_LAYOUT_IDS);
 
 const MIN_BOX_W = 5;
@@ -139,6 +140,7 @@ function defaultLayout() {
     company: { x: 0, y: 0, w: 35, h: 10 },
     title: { x: 35, y: 0, w: 30, h: 10 },
     logo: { x: 65, y: 0, w: 35, h: 10 },
+    watermark: { x: 10, y: 40, w: 80, h: 20 },
     billTo: { x: 0, y: 10, w: 50, h: 15 },
     shipTo: { x: 50, y: 10, w: 50, h: 15 },
     lines: { x: 0, y: 45, w: 100, h: 30 },
@@ -207,6 +209,7 @@ function defaultTemplate(type) {
     paymentTermsText: DEFAULT_PAYMENT,
     blocks: {
       logo: true,
+      watermark: true,
       company: true,
       billTo: true,
       shipTo: true,
