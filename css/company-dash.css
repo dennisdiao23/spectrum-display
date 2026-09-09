@@ -5568,6 +5568,11 @@ body.so-invoice-float .so-f-tracking { min-width: 0; }
   cursor: pointer;
 }
 .pf-reset:hover { background: #f4f6f9; }
+.pf-reset:disabled {
+  opacity: 0.45;
+  cursor: default;
+  pointer-events: none;
+}
 .pf-reset.is-on {
   background: #0ea5e9;
   border-color: #0ea5e9;
