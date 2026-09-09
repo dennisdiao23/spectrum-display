@@ -42,9 +42,9 @@ const BLOCKS = [
 ];
 
 const LOGOS = [
+  { id: '/assets/spectrum-logo-print.jpg', label: 'Print logo' },
   { id: '/assets/spectrum-logo.png', label: 'Spectrum logo' },
   { id: '/assets/spectrum-logo-company.png', label: 'Company wordmark' },
-  { id: '/assets/spectrum-logo-print.jpg', label: 'Print logo' },
   { id: '', label: 'None' }
 ];
 
@@ -203,7 +203,7 @@ function defaultTemplate(type) {
   return {
     type: t,
     title: typeTitle(t),
-    logo: '/assets/spectrum-logo.png',
+    logo: '/assets/spectrum-logo-print.jpg',
     paymentTermsText: DEFAULT_PAYMENT,
     blocks: {
       logo: true,

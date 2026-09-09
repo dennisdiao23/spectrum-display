@@ -8,10 +8,10 @@
   <link rel="apple-touch-icon" href="/assets/apple-touch-icon.png" />
   <title>Company | Spectrum Display</title>
   <meta name="robots" content="noindex, nofollow" />
-  <link rel="stylesheet" href="/css/company-dash.css?v=forms4" />
+  <link rel="stylesheet" href="/css/company-dash.css?v=forms5" />
   <script src="/js/address-autocomplete.js"></script>
   <script src="/js/company-chat.js?v=chatpage3"></script>
-  <script src="/js/print-form.js?v=forms4"></script>
+  <script src="/js/print-form.js?v=forms5"></script>
   <script>
     (function () {
       try {
@@ -1997,10 +1997,8 @@
             </div>
             <div>
               <p class="pf-label">Header fields</p>
-              <p class="pf-hint">Each field is its own box on the letter. Drag a chip into Hidden to leave it off Print.</p>
-              <div class="pf-chips" id="pf-header-on" data-pf-list="on"></div>
-              <p class="pf-label">Hidden</p>
-              <div class="pf-chips is-off" id="pf-header-off" data-pf-list="off"></div>
+              <p class="pf-hint">Click a chip to turn it on or off. Drag to reorder. Each field is its own box on the letter.</p>
+              <div class="pf-chips" id="pf-headers" data-pf-list="headers"></div>
             </div>
             <div>
               <p class="pf-label">Line columns</p>
@@ -2723,7 +2721,7 @@
     </a>
   </nav>
 
-  <link rel="stylesheet" href="/css/company-dash.css?v=forms4" />
+  <link rel="stylesheet" href="/css/company-dash.css?v=forms5" />
 
   <script>
     const loginPanel = document.getElementById('login-panel');
@@ -13966,24 +13964,19 @@
       el.classList.toggle('hidden', !text);
     }
 
-    function pfChipHtml(row, kind) {
-      const on = kind === 'cols' ? !!row.print : true;
-      return '<button type="button" class="pf-chip' + (on ? '' : ' is-muted') + '" draggable="true" data-id="' +
+    function pfChipHtml(row) {
+      return '<button type="button" class="pf-chip' + (row.print ? '' : ' is-muted') + '" draggable="true" data-id="' +
         esc(row.id) + '" data-print="' + (row.print ? '1' : '0') + '">' + esc(row.title || row.id) + '</button>';
     }
 
     function pfRenderLists() {
       if (!pfDraft) return;
-      const on = document.getElementById('pf-header-on');
-      const off = document.getElementById('pf-header-off');
+      const headersEl = document.getElementById('pf-headers');
       const cols = document.getElementById('pf-cols');
-      const headers = (pfDraft.headerFields || []).slice().sort(function (a, b) { return (a.order || 0) - (b.order || 0); });
-      on.innerHTML = headers.filter(function (row) { return row.print; }).map(function (row) { return pfChipHtml(row, 'on'); }).join('') ||
-        '<span class="pf-empty">Drag fields here</span>';
-      off.innerHTML = headers.filter(function (row) { return !row.print; }).map(function (row) { return pfChipHtml(row, 'off'); }).join('') ||
-        '<span class="pf-empty">Nothing hidden</span>';
+      headersEl.innerHTML = (pfDraft.headerFields || []).slice().sort(function (a, b) { return (a.order || 0) - (b.order || 0); })
+        .map(function (row) { return pfChipHtml(row); }).join('');
       cols.innerHTML = (pfDraft.columns || []).slice().sort(function (a, b) { return (a.order || 0) - (b.order || 0); })
-        .map(function (row) { return pfChipHtml(row, 'cols'); }).join('');
+        .map(function (row) { return pfChipHtml(row); }).join('');
     }
 
     function pfRenderBlocks() {
@@ -14010,9 +14003,9 @@
       document.getElementById('pf-title').value = pfDraft.title || '';
       document.getElementById('pf-terms').value = pfDraft.paymentTermsText || '';
       const logos = (printFormsMeta && printFormsMeta.logos) || [
+        { id: '/assets/spectrum-logo-print.jpg', label: 'Print logo' },
         { id: '/assets/spectrum-logo.png', label: 'Spectrum logo' },
         { id: '/assets/spectrum-logo-company.png', label: 'Company wordmark' },
-        { id: '/assets/spectrum-logo-print.jpg', label: 'Print logo' },
         { id: '', label: 'None' }
       ];
       const sel = document.getElementById('pf-logo');
@@ -14224,8 +14217,7 @@
         if (kind === 'cols') {
           pfDraft.columns = pfReorder(pfDraft.columns, id, beforeId, null);
         } else {
-          const printOn = kind === 'on';
-          pfDraft.headerFields = pfReorder(pfDraft.headerFields, id, beforeId, printOn);
+          pfDraft.headerFields = pfReorder(pfDraft.headerFields, id, beforeId, null);
         }
         pfRenderLists();
         pfRenderPreview();
@@ -14276,8 +14268,17 @@
         pfRenderLists();
         pfRenderPreview();
       });
-      pfBindDrag(document.getElementById('pf-header-on'), 'on');
-      pfBindDrag(document.getElementById('pf-header-off'), 'off');
+      document.getElementById('pf-headers').addEventListener('click', function (e) {
+        const chip = e.target.closest('.pf-chip');
+        if (!chip || !pfDraft) return;
+        const id = chip.getAttribute('data-id');
+        (pfDraft.headerFields || []).forEach(function (row) {
+          if (row.id === id) row.print = !row.print;
+        });
+        pfRenderLists();
+        pfRenderPreview();
+      });
+      pfBindDrag(document.getElementById('pf-headers'), 'headers');
       pfBindDrag(document.getElementById('pf-cols'), 'cols');
       const preview = document.getElementById('pf-preview');
       preview.addEventListener('pointerdown', pfOnLayoutDown);
