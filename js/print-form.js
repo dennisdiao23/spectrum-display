@@ -116,13 +116,28 @@
     { id: 'garamond', label: 'Garamond', css: 'Garamond, "Times New Roman", serif' },
     { id: 'courier', label: 'Courier New', css: '"Courier New", Courier, monospace' }
   ];
-  const FONT_SIZES = [8, 9, 10, 11, 12, 14, 16, 18];
+  const FONT_SIZES = [8, 9, 10, 11, 12, 14, 16, 18, 20, 22, 24, 28, 32, 36];
   const FONT_STYLES = [
     { id: 'regular', label: 'Regular', weight: 400, italic: false },
     { id: 'italic', label: 'Italic', weight: 400, italic: true },
     { id: 'bold', label: 'Bold', weight: 700, italic: false },
     { id: 'bold-italic', label: 'Bold italic', weight: 700, italic: true }
   ];
+  const BLOCK_FONT_PRESET = {
+    title: { fontSize: 28, fontStyle: 'bold' },
+    company: { fontSize: 18, fontStyle: 'bold' }
+  };
+  const NO_TYPE_BLOCKS = { logo: true, watermark: true };
+
+  function canTypeBlock(id) {
+    return !!id && !NO_TYPE_BLOCKS[id];
+  }
+
+  function fontOverride(fonts, id) {
+    if (!canTypeBlock(id) || !fonts || typeof fonts !== 'object') return null;
+    const ov = fonts[id];
+    return ov && typeof ov === 'object' ? ov : null;
+  }
 
   function pick(list, id, fallback) {
     const key = String(id || '').toLowerCase();
@@ -154,6 +169,18 @@
       ';--pf-size:' + f.size + 'pt' +
       ';--pf-weight:' + f.weight +
       ';--pf-style:' + (f.italic ? 'italic' : 'normal');
+  }
+
+  function effectiveFont(tpl, id) {
+    const base = fontSpec(tpl || {});
+    const ov = fontOverride(tpl && tpl.blockFonts, id);
+    if (ov) return fontSpec(ov);
+    const preset = (id && BLOCK_FONT_PRESET[id]) || {};
+    return fontSpec({
+      fontFamily: base.familyId,
+      fontSize: preset.fontSize || base.size,
+      fontStyle: preset.fontStyle || base.styleId
+    });
   }
 
   function headerLayoutId(id) {
@@ -317,12 +344,16 @@
     return 'left:' + b.x + '%;top:' + b.y + '%;width:' + b.w + '%;height:' + b.h + '%';
   }
 
-  function wrapAbs(id, inner, layout, edit, off, extraClass) {
+  function wrapAbs(id, inner, layout, edit, off, extraClass, fonts) {
     if (!edit && off) return '';
     const cls = ['pf-abs'];
     if (off) cls.push('is-off');
     if (extraClass) cls.push(extraClass);
-    return '<div class="' + cls.join(' ') + '" data-pf-block="' + id + '" style="' + boxStyle(layout, id) + '">' +
+    const ov = fontOverride(fonts, id);
+    if (ov && id !== 'company') cls.push('is-typed');
+    let style = boxStyle(layout, id);
+    if (ov && id !== 'company') style += ';' + sheetFontStyle(ov);
+    return '<div class="' + cls.join(' ') + '" data-pf-block="' + id + '" style="' + style + '">' +
       inner +
       (edit ? '<span class="pf-resize" aria-hidden="true"></span>' : '') +
       '</div>';
@@ -341,6 +372,7 @@
     const doc = (data && data.doc) || {};
     const cols = visible(tpl.columns);
     const lines = doc.lines && doc.lines.length ? doc.lines : [{}, {}, {}, {}];
+    const fonts = tpl.blockFonts || {};
     const title = tpl.title || 'Invoice';
     const logo = tpl.logo || '';
     const co = companyLines(company);
@@ -352,7 +384,9 @@
 
     let companyInner = '';
     if (blocks.company !== false) {
-      companyInner = '<div class="pf-co"><div class="pf-co-name">' + esc(co[0] || '') + '</div>';
+      const coOv = fontOverride(fonts, 'company');
+      companyInner = '<div class="pf-co"><div class="pf-co-name' + (coOv ? ' is-typed' : '') + '"' +
+        (coOv ? ' style="' + esc(sheetFontStyle(coOv)) + '"' : '') + '>' + esc(co[0] || '') + '</div>';
       co.slice(1).forEach(function (line) {
         companyInner += '<div>' + esc(line) + '</div>';
       });
@@ -401,7 +435,7 @@
       const off = !row.print;
       const inner = '<div class="pf-hfield"><div class="pf-hfield-h">' + esc(row.title || id) +
         '</div><div class="pf-hfield-v">' + esc(fieldValue(doc, id)) + '</div></div>';
-      headerHtml += wrapAbs(headerLayoutId(id), inner, layout, edit, off);
+      headerHtml += wrapAbs(headerLayoutId(id), inner, layout, edit, off, '', fonts);
     });
 
     let linesInner = '';
@@ -455,17 +489,17 @@
 
     return '<div class="pf-sheet is-abs' + (edit ? ' is-edit' : '') + (edit && opts && opts.grid ? ' is-grid' : '') +
       '" style="' + esc(sheetFontStyle(tpl)) + '">' +
-      wrapAbs('watermark', watermarkInner, layout, edit, blocks.watermark === false, 'is-watermark') +
-      wrapAbs('company', companyInner, layout, edit, blocks.company === false) +
-      wrapAbs('title', '<div class="pf-title">' + esc(title) + '</div>', layout, edit, false) +
-      wrapAbs('logo', logoInner, layout, edit, blocks.logo === false || !logo) +
-      wrapAbs('billTo', billInner, layout, edit, blocks.billTo === false) +
-      wrapAbs('shipTo', shipInner, layout, edit, blocks.shipTo === false) +
+      wrapAbs('watermark', watermarkInner, layout, edit, blocks.watermark === false, 'is-watermark', fonts) +
+      wrapAbs('company', companyInner, layout, edit, blocks.company === false, '', fonts) +
+      wrapAbs('title', '<div class="pf-title">' + esc(title) + '</div>', layout, edit, false, '', fonts) +
+      wrapAbs('logo', logoInner, layout, edit, blocks.logo === false || !logo, '', fonts) +
+      wrapAbs('billTo', billInner, layout, edit, blocks.billTo === false, '', fonts) +
+      wrapAbs('shipTo', shipInner, layout, edit, blocks.shipTo === false, '', fonts) +
       headerHtml +
-      wrapAbs('lines', linesInner, layout, edit, blocks.lines === false) +
-      wrapAbs('paymentTerms', termsInner, layout, edit, blocks.paymentTerms === false || !tpl.paymentTermsText) +
-      wrapAbs('totals', totalsInner, layout, edit, blocks.totals === false) +
-      wrapAbs('contact', contactInner, layout, edit, blocks.contact === false) +
+      wrapAbs('lines', linesInner, layout, edit, blocks.lines === false, '', fonts) +
+      wrapAbs('paymentTerms', termsInner, layout, edit, blocks.paymentTerms === false || !tpl.paymentTermsText, '', fonts) +
+      wrapAbs('totals', totalsInner, layout, edit, blocks.totals === false, '', fonts) +
+      wrapAbs('contact', contactInner, layout, edit, blocks.contact === false, '', fonts) +
       (opts && opts.safe ? '<div class="pf-safe" aria-hidden="true"></div>' : '') +
       '</div>';
   }
@@ -500,7 +534,10 @@
       '.pf-totals div{display:flex;justify-content:space-between;gap:12px;padding:3px 0}',
       '.pf-totals .is-due{font-size:1.33em;font-weight:800}',
       '.pf-contact{border-top:1px solid #222;padding-top:8px;font-size:1em}',
-      '.pf-ph{display:flex;align-items:center;justify-content:center;color:#888;font-size:.92em;border:1px dashed #bbb;background:#fafafa}'
+      '.pf-ph{display:flex;align-items:center;justify-content:center;color:#888;font-size:.92em;border:1px dashed #bbb;background:#fafafa}',
+      '.pf-abs.is-typed{font-family:var(--pf-family,inherit);font-size:var(--pf-size,inherit);font-weight:var(--pf-weight,inherit);font-style:var(--pf-style,inherit)}',
+      '.pf-abs.is-typed .pf-title,.pf-abs.is-typed .pf-co,.pf-abs.is-typed .pf-co-name,.pf-abs.is-typed .pf-box,.pf-abs.is-typed .pf-box-h,.pf-abs.is-typed .pf-box pre,.pf-abs.is-typed .pf-hfield,.pf-abs.is-typed .pf-hfield-h,.pf-abs.is-typed .pf-hfield-v,.pf-abs.is-typed .pf-lines,.pf-abs.is-typed .pf-lines th,.pf-abs.is-typed .pf-terms,.pf-abs.is-typed .pf-terms-h,.pf-abs.is-typed .pf-totals,.pf-abs.is-typed .pf-totals .is-due,.pf-abs.is-typed .pf-contact,.pf-abs.is-typed .pf-ph{font-family:inherit;font-size:1em;font-weight:inherit;font-style:inherit}',
+      '.pf-co-name.is-typed{font-family:var(--pf-family,inherit);font-size:var(--pf-size,inherit);font-weight:var(--pf-weight,inherit);font-style:var(--pf-style,inherit)}'
     ].join('');
   }
 
@@ -511,7 +548,7 @@
       '.pf-sheet.is-edit.is-grid{background-image:linear-gradient(to right,rgba(14,165,233,.16) 1px,transparent 1px),linear-gradient(to bottom,rgba(14,165,233,.16) 1px,transparent 1px);background-size:calc(100%/90) calc(100%/90)}',
       '.pf-sheet.is-edit .pf-abs{overflow:visible;outline:1px dashed rgba(14,165,233,.55);cursor:move;user-select:none;touch-action:none}',
       '.pf-sheet.is-edit .pf-abs.is-off{outline-style:dotted;opacity:.42}',
-      '.pf-sheet.is-edit .pf-abs.is-on{outline:2px solid #0ea5e9;z-index:4}',
+      '.pf-sheet .pf-abs.is-on{outline:2px solid #0ea5e9;z-index:4}',
       '.pf-resize{position:absolute;right:-1px;bottom:-1px;width:14px;height:14px;background:#0ea5e9;border:2px solid #fff;border-radius:2px;cursor:se-resize;box-shadow:0 0 0 1px rgba(14,165,233,.4);z-index:6;pointer-events:auto}',
       '.pf-resize:after{content:"";position:absolute;right:-6px;bottom:-6px;width:24px;height:24px}',
       '.pf-sheet.is-edit .pf-abs .pf-box,.pf-sheet.is-edit .pf-abs .pf-hfield,.pf-sheet.is-edit .pf-abs .pf-lines,.pf-sheet.is-edit .pf-abs .pf-terms,.pf-sheet.is-edit .pf-abs .pf-totals,.pf-sheet.is-edit .pf-abs .pf-contact,.pf-sheet.is-edit .pf-abs .pf-co,.pf-sheet.is-edit .pf-abs .pf-title,.pf-sheet.is-edit .pf-abs .pf-logo,.pf-sheet.is-edit .pf-abs .pf-ph,.pf-sheet.is-edit .pf-abs .pf-watermark{pointer-events:none}'
@@ -605,6 +642,8 @@
     FONTS: FONTS,
     FONT_SIZES: FONT_SIZES,
     FONT_STYLES: FONT_STYLES,
-    fontSpec: fontSpec
+    fontSpec: fontSpec,
+    effectiveFont: effectiveFont,
+    canTypeBlock: canTypeBlock
   };
 })(window);

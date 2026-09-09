@@ -5597,6 +5597,12 @@ body.so-invoice-float .so-f-tracking { min-width: 0; }
   margin: 0 auto;
 }
 .pf-preview:not(.is-editing) { cursor: default; }
+.pf-preview .pf-abs { cursor: pointer; }
+.pf-preview.is-editing .pf-abs { cursor: move; }
+.pf-type-row select:disabled {
+  opacity: 0.45;
+  cursor: default;
+}
 body.is-pf-dragging,
 body.is-pf-dragging * {
   cursor: grabbing !important;

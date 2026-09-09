@@ -60,7 +60,7 @@ const FONTS = [
   { id: 'garamond', label: 'Garamond' },
   { id: 'courier', label: 'Courier New' }
 ];
-const FONT_SIZES = [8, 9, 10, 11, 12, 14, 16, 18];
+const FONT_SIZES = [8, 9, 10, 11, 12, 14, 16, 18, 20, 22, 24, 28, 32, 36];
 const FONT_STYLES = [
   { id: 'regular', label: 'Regular' },
   { id: 'italic', label: 'Italic' },
@@ -84,6 +84,22 @@ function sanitizeFontStyle(value) {
   const id = String(value || '').trim().toLowerCase();
   if (FONT_STYLES.some(function (s) { return s.id === id; })) return id;
   return 'regular';
+}
+
+function sanitizeBlockFonts(input) {
+  const out = {};
+  if (!input || typeof input !== 'object') return out;
+  LAYOUT_IDS.forEach(function (id) {
+    if (id === 'logo' || id === 'watermark') return;
+    const src = input[id];
+    if (!src || typeof src !== 'object') return;
+    out[id] = {
+      fontFamily: sanitizeFontFamily(src.fontFamily != null ? src.fontFamily : src.font_family),
+      fontSize: sanitizeFontSize(src.fontSize != null ? src.fontSize : src.font_size),
+      fontStyle: sanitizeFontStyle(src.fontStyle != null ? src.fontStyle : src.font_style)
+    };
+  });
+  return out;
 }
 
 const DEFAULT_PAYMENT =
@@ -305,7 +321,8 @@ function defaultTemplate(type) {
     layoutVersion: LAYOUT_VERSION,
     fontFamily: 'arial',
     fontSize: 12,
-    fontStyle: 'regular'
+    fontStyle: 'regular',
+    blockFonts: {}
   };
 }
 
@@ -363,7 +380,8 @@ function normalizeTemplate(type, input) {
     layoutVersion: LAYOUT_VERSION,
     fontFamily: sanitizeFontFamily(src.fontFamily != null ? src.fontFamily : src.font_family),
     fontSize: sanitizeFontSize(src.fontSize != null ? src.fontSize : src.font_size),
-    fontStyle: sanitizeFontStyle(src.fontStyle != null ? src.fontStyle : src.font_style)
+    fontStyle: sanitizeFontStyle(src.fontStyle != null ? src.fontStyle : src.font_style),
+    blockFonts: sanitizeBlockFonts(src.blockFonts || src.block_fonts)
   };
 }
 
