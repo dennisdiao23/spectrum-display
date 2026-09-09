@@ -8,7 +8,7 @@
   <link rel="apple-touch-icon" href="/assets/apple-touch-icon.png" />
   <title>Company | Spectrum Display</title>
   <meta name="robots" content="noindex, nofollow" />
-  <link rel="stylesheet" href="/css/company-dash.css?v=lobby52" />
+  <link rel="stylesheet" href="/css/company-dash.css?v=lobby53" />
   <script src="/js/address-autocomplete.js"></script>
   <script src="/js/company-chat.js?v=cache1"></script>
   <script src="/js/print-form.js?v=forms16"></script>
@@ -1260,7 +1260,13 @@
                 <h2>Purchase Order</h2>
                 <label class="po-no">No. <input id="po-number" type="text" placeholder="PO-1001"></label>
               </div>
-              <div class="po-amount">AMOUNT <strong id="po-amount">$0.00</strong></div>
+              <div class="po-head-end">
+                <div class="doc-head-actions">
+                  <button type="button" id="po-edit-btn" class="hidden so-doc-btn so-doc-btn-primary">Edit</button>
+                  <button type="button" id="po-print" class="so-doc-btn">Print</button>
+                </div>
+                <div class="po-amount">AMOUNT <strong id="po-amount">$0.00</strong></div>
+              </div>
             </div>
             <div class="po-grid">
               <div class="po-field">
@@ -1345,10 +1351,8 @@
             </div>
             <p id="po-msg" class="hidden text-sm"></p>
             <div class="po-foot">
-              <button type="button" id="po-edit-btn" class="hidden px-5 py-2 rounded-full bg-sky-500 hover:bg-sky-400 text-white text-sm font-semibold">Edit</button>
               <button type="button" id="po-cancel" class="px-4 py-2 rounded-full border border-slate-700 text-sm">Cancel</button>
               <button type="button" id="po-delete-btn" class="hidden px-4 py-2 rounded-full border border-slate-700 text-red-400 text-sm">Delete</button>
-              <button type="button" id="po-print" class="px-4 py-2 rounded-full border border-slate-700 text-sm">Print</button>
               <button type="submit" id="po-save" class="px-5 py-2 rounded-full bg-sky-500 hover:bg-sky-400 text-white text-sm font-semibold">Save</button>
             </div>
           </form>
@@ -1783,8 +1787,14 @@
                 <input type="hidden" id="so-type" value="quote">
                 <div class="so-doc-scroll">
                 <div class="so-doc-legacy-title">
-                  <h2 id="so-title" class="font-semibold text-lg">New sales quote</h2>
-                  <p class="so-doc-note">Company customers only — not website Sign in accounts.</p>
+                  <div class="so-doc-legacy-copy">
+                    <h2 id="so-title" class="font-semibold text-lg">New sales quote</h2>
+                    <p class="so-doc-note">Company customers only — not website Sign in accounts.</p>
+                  </div>
+                  <div class="doc-head-actions">
+                    <button type="button" id="so-edit-btn" class="so-doc-btn so-doc-btn-primary hidden">Edit</button>
+                    <button type="button" id="so-print-btn" class="so-doc-btn">Print</button>
+                  </div>
                 </div>
                 <div class="so-doc-headblock">
                   <div class="so-doc-kind">
@@ -1911,9 +1921,7 @@
                 </div>
                 </div>
                 <div class="so-doc-actions">
-                  <button type="button" id="so-edit-btn" class="so-doc-btn so-doc-btn-primary hidden">Edit</button>
                   <button type="submit" id="so-save" class="so-doc-btn so-doc-btn-primary" data-so-after="stay">Save</button>
-                  <button type="button" id="so-print-btn" class="so-doc-btn">Print</button>
                   <button type="submit" id="so-save-close" class="so-doc-btn so-doc-btn-primary" data-so-after="close">Save &amp; Close</button>
                   <button type="submit" id="so-save-new" class="so-doc-btn" data-so-after="new">Save &amp; New</button>
                   <button type="button" id="so-revert" class="so-doc-btn">Revert</button>
@@ -2808,7 +2816,7 @@
     </a>
   </nav>
 
-  <link rel="stylesheet" href="/css/company-dash.css?v=lobby52" />
+  <link rel="stylesheet" href="/css/company-dash.css?v=lobby53" />
 
   <script>
     const loginPanel = document.getElementById('login-panel');
