@@ -2837,6 +2837,9 @@ body.po-split-lock #po-section #po-error {
 #wp-split {
   grid-template-columns: var(--wp-left-w, var(--wp-split-left-boot, 400px)) 14px minmax(0, 1fr);
 }
+#ws-split {
+  grid-template-columns: var(--ws-left-w, var(--ws-split-left-boot, 400px)) 14px minmax(0, 1fr);
+}
 #wa-split {
   grid-template-columns: var(--wa-left-w, var(--wa-split-left-boot, 400px)) 14px minmax(0, 1fr);
 }
@@ -3023,6 +3026,21 @@ body.inv-split-dragging .inv-split-resizer::after {
   display: none !important;
 }
 #products-section.wp-split-on #product-back {
+  display: none;
+}
+#store-section:not(.ws-split-on) #ws-split {
+  display: block;
+}
+#store-section:not(.ws-split-on) #ws-split-resizer,
+#store-section:not(.ws-split-on) #ws-tab-bar,
+#store-section:not(.ws-split-on) #ws-overview-panel {
+  display: none !important;
+}
+#store-section:not(.ws-split-on).ws-form-open .ws-list-head,
+#store-section:not(.ws-split-on).ws-form-open #ws-split-left {
+  display: none !important;
+}
+#store-section.ws-split-on #store-back {
   display: none;
 }
 #accounts-section:not(.wa-split-on) #wa-split {

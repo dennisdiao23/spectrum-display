@@ -278,6 +278,74 @@ async function buildCatalog(store) {
   };
 }
 
+function storeHandleOf(product) {
+  const details = detailsOf(product);
+  return String(details.shopify_handle || product.shopify_handle || product.id || '')
+    .trim()
+    .toLowerCase()
+    .replace(/[^a-z0-9-]+/g, '-')
+    .replace(/^-+|-+$/g, '') || String(product.id || product.dbId || '');
+}
+
+function toAdminStoreItem(product) {
+  if (!product) return null;
+  const details = detailsOf(product);
+  const storedCollection = String(details.store_collection || product.store_collection || '')
+    .trim()
+    .toLowerCase()
+    .replace(/-/g, '_');
+  const collection = inferCollection(product);
+  const blocked = blockedFromStore(product);
+  const websiteHidden = !!product.hidden;
+  const storeHidden = collection === 'hidden';
+  const col = COLLECTION_BY_ID[collection];
+  const featured = asBool(details.store_featured != null ? details.store_featured : product.store_featured);
+  const shopifySell = asBool(details.shopify_sell != null ? details.shopify_sell : product.shopify_sell);
+  const handle = storeHandleOf(product);
+  let visibility = 'shown';
+  let visibilityLabel = 'Shown';
+  if (blocked) {
+    visibility = 'blocked';
+    visibilityLabel = 'Blocked';
+  } else if (websiteHidden) {
+    visibility = 'website_hidden';
+    visibilityLabel = 'Website hidden';
+  } else if (storeHidden) {
+    visibility = 'hidden';
+    visibilityLabel = 'Hidden';
+  }
+  let collectionLabel = 'Auto';
+  if (storeHidden) collectionLabel = 'Hidden';
+  else if (col) collectionLabel = storedCollection ? col.label : col.label + ' (Auto)';
+  return {
+    dbId: product.dbId,
+    id: product.id,
+    name: product.name,
+    brandId: product.brandId,
+    brandName: product.brandName,
+    type: product.type,
+    image: product.image || '',
+    hidden: websiteHidden,
+    store_collection: storedCollection === 'hidden' || COLLECTION_BY_ID[storedCollection] ? storedCollection : '',
+    store_featured: featured,
+    store_lead: String(details.store_lead || product.store_lead || ''),
+    shopify_sell: shopifySell,
+    shopify_variant_id: String(details.shopify_variant_id || product.shopify_variant_id || ''),
+    shopify_product_id: String(details.shopify_product_id || product.shopify_product_id || ''),
+    shopify_handle: String(details.shopify_handle || product.shopify_handle || ''),
+    collection: collection,
+    collectionLabel: collectionLabel,
+    collectionMode: col ? col.mode : '',
+    storeBlocked: blocked,
+    storeShown: visibility === 'shown',
+    storeVisibility: visibility,
+    storeVisibilityLabel: visibilityLabel,
+    featured: featured,
+    handle: handle,
+    storePath: '/store/products/' + handle
+  };
+}
+
 function applyStoreFlags(details, body) {
   const next = details && typeof details === 'object' ? details : {};
   if (!body) return next;
@@ -296,6 +364,13 @@ function applyStoreFlags(details, body) {
   if (next.store_collection) {
     next.store_collection = next.store_collection.toLowerCase().replace(/-/g, '_');
     if (next.store_collection !== 'hidden' && !COLLECTION_BY_ID[next.store_collection]) next.store_collection = '';
+  }
+  if (Object.prototype.hasOwnProperty.call(body, 'store_hidden') || Object.prototype.hasOwnProperty.call(body, 'storeHidden')) {
+    if (asBool(body.store_hidden != null ? body.store_hidden : body.storeHidden)) {
+      next.store_collection = 'hidden';
+    } else if (String(next.store_collection || '') === 'hidden') {
+      next.store_collection = '';
+    }
   }
   if (next.store_lead && !LEAD_LABELS[next.store_lead]) next.store_lead = '';
   if (Object.prototype.hasOwnProperty.call(body, 'shopify_variants')) {
@@ -321,6 +396,7 @@ module.exports = {
   inferCollection,
   buildCatalog,
   applyStoreFlags,
+  toAdminStoreItem,
   asBool,
   variantNumericId
 };

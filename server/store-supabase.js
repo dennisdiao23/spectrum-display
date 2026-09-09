@@ -955,6 +955,16 @@ function createSupabaseStore() {
       if (!data || !data.length) return null;
       return this.getProduct(id);
     },
+    async updateProductDetails(id, details) {
+      const { data, error } = await supabase
+        .from('products')
+        .update({ details: details || {}, updated_at: new Date().toISOString() })
+        .eq('id', id)
+        .select('id');
+      throwIf(error);
+      if (!data || !data.length) return null;
+      return this.getProduct(id);
+    },
     async getRawProduct(id) {
       const { data, error } = await supabase.from('products').select('*').eq('id', id).maybeSingle();
       throwIf(error);

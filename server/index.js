@@ -16,6 +16,7 @@ const { blockedSignupReason } = require('../js/signup-guard');
 const img = require('./image');
 const { publicAdmin, hasPerm, isOwnerAdmin, isOwnerRole, OWNER_ROLE_SLUG, roleInputFromBody } = require('./admin-roles');
 const shopStore = require('./shop-store');
+const dbUtil = require('./db');
 
 const ROOT = path.join(__dirname, '..');
 const COOKIE = 'spectrum_admin';
@@ -118,6 +119,7 @@ async function main() {
     '/company',
     '/company/dashboard',
     '/company/website',
+    '/company/website/store',
     '/company/website/accounts',
     '/company/inventory',
     '/company/inventory/locations',
@@ -904,6 +906,29 @@ async function main() {
       if (!product) return res.status(404).json({ ok: false, error: 'Product not found.' });
       res.json({ ok: true, product: product });
     } catch (err) { next(err); }
+  });
+
+  app.get('/api/admin/store', requireAdmin, requireCatalogRead, async function (_req, res, next) {
+    try {
+      const products = await store.listProducts();
+      res.json({
+        ok: true,
+        products: products.map(function (p) { return shopStore.toAdminStoreItem(p); })
+      });
+    } catch (err) { next(err); }
+  });
+
+  app.put('/api/admin/products/:id/store', requireAdmin, requirePerm('website', 'edit'), async function (req, res, next) {
+    try {
+      const existing = await store.getRawProduct(req.params.id);
+      if (!existing) return res.status(404).json({ ok: false, error: 'Product not found.' });
+      const details = shopStore.applyStoreFlags(Object.assign({}, dbUtil.parseDetails(existing)), req.body || {});
+      const product = await store.updateProductDetails(req.params.id, details);
+      if (!product) return res.status(404).json({ ok: false, error: 'Product not found.' });
+      res.json({ ok: true, product: shopStore.toAdminStoreItem(product) });
+    } catch (err) {
+      res.status(400).json({ ok: false, error: err.message || 'Could not update store listing.' });
+    }
   });
 
   app.get('/api/admin/company-customers', requireAdmin, async function (_req, res, next) {
