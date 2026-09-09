@@ -8,10 +8,10 @@
   <link rel="apple-touch-icon" href="/assets/apple-touch-icon.png" />
   <title>Company | Spectrum Display</title>
   <meta name="robots" content="noindex, nofollow" />
-  <link rel="stylesheet" href="/css/company-dash.css?v=forms9" />
+  <link rel="stylesheet" href="/css/company-dash.css?v=forms10" />
   <script src="/js/address-autocomplete.js"></script>
   <script src="/js/company-chat.js?v=cache1"></script>
-  <script src="/js/print-form.js?v=forms9"></script>
+  <script src="/js/print-form.js?v=forms10"></script>
   <script>
     (function () {
       try {
@@ -2013,7 +2013,7 @@
             <div class="pf-preview-head">
               <div>
                 <p class="pf-label">Letter canvas</p>
-                <p class="pf-hint" id="pf-canvas-hint">Preview only. Turn Edit on to move and resize boxes.</p>
+                <p class="pf-hint" id="pf-canvas-hint">US Letter (8.5 × 11 in). Dotted line is the 0.5 in printer-safe area.</p>
               </div>
               <div class="pf-preview-actions">
                 <button type="button" id="pf-edit" class="pf-reset" aria-pressed="false">Edit</button>
@@ -2743,7 +2743,7 @@
     </a>
   </nav>
 
-  <link rel="stylesheet" href="/css/company-dash.css?v=forms9" />
+  <link rel="stylesheet" href="/css/company-dash.css?v=forms10" />
 
   <script>
     const loginPanel = document.getElementById('login-panel');
@@ -14143,8 +14143,8 @@
       const hint = document.getElementById('pf-canvas-hint');
       if (hint) {
         hint.textContent = pfEditOn
-          ? 'Drag a block to move it. Drag the corner handle to resize. Save keeps this layout.'
-          : 'Preview only. Turn Edit on to move and resize boxes.';
+          ? 'Stay inside the dotted 0.5 in safe zone. Drag a block to move it. Drag the corner to resize.'
+          : 'US Letter (8.5 × 11 in). Dotted line is the 0.5 in printer-safe area.';
       }
       const resetBtn = document.getElementById('pf-reset-layout');
       if (resetBtn) resetBtn.disabled = !pfEditOn;
@@ -14197,7 +14197,8 @@
     function pfEnsureLayout() {
       if (!pfDraft) return null;
       if (!window.SpectrumPrintForm) return pfDraft.layout || {};
-      pfDraft.layout = SpectrumPrintForm.mergeLayout(pfDraft.layout);
+      pfDraft.layout = SpectrumPrintForm.mergeLayout(pfDraft.layout, pfDraft.layoutVersion);
+      pfDraft.layoutVersion = SpectrumPrintForm.LAYOUT_VERSION || 2;
       return pfDraft.layout;
     }
 
@@ -14242,7 +14243,7 @@
       pfEnsureLayout();
       pfEnsureEditorCss();
       const sample = SpectrumPrintForm.sampleDoc(pfType);
-      host.innerHTML = SpectrumPrintForm.sheetHtml(pfDraft, { company: printCompanyCache, doc: sample }, { edit: pfEditOn, grid: pfGridOn });
+      host.innerHTML = SpectrumPrintForm.sheetHtml(pfDraft, { company: printCompanyCache, doc: sample }, { edit: pfEditOn, grid: pfGridOn, safe: true });
       pfSyncEditButton();
       pfFitPreview();
     }
@@ -14310,7 +14311,7 @@
       try { d.el.releasePointerCapture(d.pointerId); } catch (err) {}
       const packed = {};
       packed[d.id] = pfDraft.layout[d.id];
-      let snapped = SpectrumPrintForm.mergeLayout(Object.assign({}, pfDraft.layout, packed))[d.id];
+      let snapped = SpectrumPrintForm.mergeLayout(Object.assign({}, pfDraft.layout, packed), pfDraft.layoutVersion)[d.id];
       if (window.SpectrumPrintForm && SpectrumPrintForm.snapBox) {
         snapped = SpectrumPrintForm.snapBox(snapped, pfGridStep());
       }
@@ -14446,6 +14447,7 @@
         resetBtn.addEventListener('click', function () {
           if (!pfEditOn || !pfDraft || !window.SpectrumPrintForm) return;
           pfDraft.layout = SpectrumPrintForm.defaultLayout();
+          pfDraft.layoutVersion = SpectrumPrintForm.LAYOUT_VERSION || 2;
           pfRenderPreview();
         });
       }

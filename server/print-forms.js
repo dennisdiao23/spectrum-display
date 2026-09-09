@@ -121,6 +121,12 @@ const MIN_BOX_H = 5;
 const GRID_COUNT = 90;
 const GRID_STEP = 100 / GRID_COUNT;
 
+const LAYOUT_VERSION = 2;
+const LIVE_INSET_X = (0.5 / 8.5) * 100;
+const LIVE_INSET_Y = (0.5 / 11) * 100;
+const LIVE_W = (7.5 / 8.5) * 100;
+const LIVE_H = (10 / 11) * 100;
+
 function defaultHeaderLayout() {
   const out = {};
   const cols = 6;
@@ -135,7 +141,7 @@ function defaultHeaderLayout() {
   return out;
 }
 
-function defaultLayout() {
+function defaultLayoutV1() {
   return Object.assign({
     company: { x: 0, y: 0, w: 35, h: 10 },
     title: { x: 35, y: 0, w: 30, h: 10 },
@@ -148,6 +154,38 @@ function defaultLayout() {
     totals: { x: 60, y: 75, w: 40, h: 15 },
     contact: { x: 0, y: 95, w: 100, h: 5 }
   }, defaultHeaderLayout());
+}
+
+function liveFromOld(box) {
+  const b = box && typeof box === 'object' ? box : { x: 0, y: 0, w: 20, h: 8 };
+  return {
+    x: LIVE_INSET_X + (Number(b.x) / 100) * LIVE_W,
+    y: LIVE_INSET_Y + (Number(b.y) / 100) * LIVE_H,
+    w: (Number(b.w) / 100) * LIVE_W,
+    h: (Number(b.h) / 100) * LIVE_H
+  };
+}
+
+function mapLayoutFromV1(layout) {
+  const out = {};
+  LAYOUT_IDS.forEach(function (id) {
+    out[id] = liveFromOld(layout[id]);
+  });
+  return out;
+}
+
+function defaultLayout() {
+  return mapLayoutFromV1(defaultLayoutV1());
+}
+
+function layoutIsLetter(layout, version) {
+  if (Number(version) >= LAYOUT_VERSION) return true;
+  if (Number(version) === 1) return false;
+  const lines = layout && layout.lines;
+  if (lines && Number(lines.w) < 95) return true;
+  const company = layout && layout.company;
+  if (company && Number(company.x) > 2) return true;
+  return false;
 }
 
 function snapPct(n) {
@@ -185,9 +223,10 @@ function splitHeaderBand(band) {
   return out;
 }
 
-function sanitizeLayout(input) {
-  const defs = defaultLayout();
+function sanitizeLayout(input, version) {
   const src = input && typeof input === 'object' ? input : {};
+  const letter = layoutIsLetter(src, version);
+  const defs = letter ? defaultLayout() : defaultLayoutV1();
   const migrated = Object.assign({}, src);
   const hasHdr = HEADER_LAYOUT_IDS.some(function (id) { return src[id]; });
   if (!hasHdr && src.header) {
@@ -197,7 +236,12 @@ function sanitizeLayout(input) {
   LAYOUT_IDS.forEach(function (id) {
     out[id] = sanitizeBox(migrated[id], defs[id]);
   });
-  return out;
+  if (letter) return out;
+  const mapped = mapLayoutFromV1(out);
+  LAYOUT_IDS.forEach(function (id) {
+    mapped[id] = sanitizeBox(mapped[id], defaultLayout()[id]);
+  });
+  return mapped;
 }
 
 function defaultTemplate(type) {
@@ -220,7 +264,8 @@ function defaultTemplate(type) {
     },
     headerFields: headerDefaults(t),
     columns: columnDefaults(),
-    layout: defaultLayout()
+    layout: defaultLayout(),
+    layoutVersion: LAYOUT_VERSION
   };
 }
 
@@ -274,7 +319,8 @@ function normalizeTemplate(type, input) {
       const hit = (base.columns || []).find(function (row) { return row.id === c.id; });
       return { id: c.id, label: hit ? hit.title : c.label, print: hit ? hit.print : false };
     }), src.columns),
-    layout: sanitizeLayout(src.layout)
+    layout: sanitizeLayout(src.layout, src.layoutVersion),
+    layoutVersion: LAYOUT_VERSION
   };
 }
 
@@ -302,6 +348,7 @@ module.exports = {
   typeTitle,
   normalizeType,
   headerLayoutId,
+  LAYOUT_VERSION,
   defaultLayout,
   sanitizeLayout,
   defaultTemplate,
