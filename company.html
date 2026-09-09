@@ -8,7 +8,7 @@
   <link rel="apple-touch-icon" href="/assets/apple-touch-icon.png" />
   <title>Company | Spectrum Display</title>
   <meta name="robots" content="noindex, nofollow" />
-  <link rel="stylesheet" href="/css/company-dash.css?v=store11" />
+  <link rel="stylesheet" href="/css/company-dash.css?v=store12" />
   <script src="/js/address-autocomplete.js"></script>
   <script src="/js/company-chat.js?v=chatmove2"></script>
   <script src="/js/print-form.js?v=forms18"></script>
@@ -1916,6 +1916,7 @@
                     <button type="button" id="so-edit-btn" class="so-doc-btn so-doc-btn-primary hidden">Edit</button>
                     <button type="button" id="so-print-btn" class="so-doc-btn">Print</button>
                     <button type="button" id="so-pdf-btn" class="so-doc-btn">PDF</button>
+                    <button type="button" id="so-email-btn" class="so-doc-btn">Email</button>
                   </div>
                 </div>
                 <div class="so-doc-headblock">
@@ -2957,7 +2958,7 @@
     </a>
   </nav>
 
-  <link rel="stylesheet" href="/css/company-dash.css?v=store7" />
+  <link rel="stylesheet" href="/css/company-dash.css?v=store12" />
 
   <script>
     const loginPanel = document.getElementById('login-panel');
@@ -15381,6 +15382,8 @@
     if (soPrintBtn) soPrintBtn.addEventListener('click', function () { printSalesLetter(); });
     const soPdfBtn = document.getElementById('so-pdf-btn');
     if (soPdfBtn) soPdfBtn.addEventListener('click', function () { downloadSalesPdf(); });
+    const soEmailBtn = document.getElementById('so-email-btn');
+    if (soEmailBtn) soEmailBtn.addEventListener('click', emailSalesDoc);
     (function bindPrintFormsEditor() {
       const tabs = document.getElementById('pf-type-tabs');
       if (!tabs) return;
@@ -15473,13 +15476,14 @@
         pfSaveForm();
       });
     })();
-    document.getElementById('so-ribbon-email').addEventListener('click', function () {
+    function emailSalesDoc() {
       const email = (document.getElementById('so-customer-email').value || '').trim();
       const number = (document.getElementById('so-number').value || '').trim();
       if (!email) return;
       location.href = 'mailto:' + encodeURIComponent(email) +
         (number ? '?subject=' + encodeURIComponent(number) : '');
-    });
+    }
+    document.getElementById('so-ribbon-email').addEventListener('click', emailSalesDoc);
     document.getElementById('so-revert').addEventListener('click', function () {
       if (!soSavedSnapshot) return;
       try { fillSoForm(JSON.parse(soSavedSnapshot)); }
