@@ -117,7 +117,8 @@ const LAYOUT_IDS = [
 
 const MIN_BOX_W = 5;
 const MIN_BOX_H = 5;
-const GRID_STEP = 5;
+const GRID_COUNT = 180;
+const GRID_STEP = 100 / GRID_COUNT;
 
 function defaultHeaderLayout() {
   const out = {};
@@ -292,6 +293,7 @@ module.exports = {
   LAYOUT_IDS,
   HEADER_LAYOUT_IDS,
   GRID_STEP,
+  GRID_COUNT,
   LOGOS,
   DEFAULT_PAYMENT,
   typeTitle,

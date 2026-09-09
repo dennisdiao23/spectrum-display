@@ -102,7 +102,8 @@
     'company', 'title', 'logo', 'billTo', 'shipTo', 'lines', 'paymentTerms', 'totals', 'contact'
   ].concat(HEADER_FIELD_IDS.map(function (id) { return 'hdr-' + id; }));
 
-  const GRID_STEP = 5;
+  const GRID_COUNT = 180;
+  const GRID_STEP = 100 / GRID_COUNT;
 
   function headerLayoutId(id) {
     return 'hdr-' + id;
@@ -392,7 +393,7 @@
   function editorCss() {
     return sheetCss() + [
       '.pf-sheet.is-edit{box-shadow:0 10px 32px rgba(16,32,71,.16)}',
-      '.pf-sheet.is-edit.is-grid{background-image:linear-gradient(to right,rgba(14,165,233,.22) 1px,transparent 1px),linear-gradient(to bottom,rgba(14,165,233,.22) 1px,transparent 1px);background-size:5% 5%}',
+      '.pf-sheet.is-edit.is-grid{background-image:linear-gradient(to right,rgba(14,165,233,.16) 1px,transparent 1px),linear-gradient(to bottom,rgba(14,165,233,.16) 1px,transparent 1px);background-size:calc(100%/180) calc(100%/180)}',
       '.pf-sheet.is-edit .pf-abs{overflow:visible;outline:1px dashed rgba(14,165,233,.55);cursor:move;user-select:none;touch-action:none}',
       '.pf-sheet.is-edit .pf-abs.is-off{outline-style:dotted;opacity:.42}',
       '.pf-sheet.is-edit .pf-abs.is-on{outline:2px solid #0ea5e9;z-index:4}',
@@ -483,6 +484,7 @@
     snapBox: snapBox,
     headerLayoutId: headerLayoutId,
     LAYOUT_IDS: LAYOUT_IDS,
-    GRID_STEP: GRID_STEP
+    GRID_STEP: GRID_STEP,
+    GRID_COUNT: GRID_COUNT
   };
 })(window);
