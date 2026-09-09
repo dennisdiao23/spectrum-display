@@ -99,7 +99,8 @@
   ];
 
   const LAYOUT_IDS = [
-    'company', 'title', 'logo', 'watermark', 'billTo', 'shipTo', 'lines', 'paymentTerms', 'totals', 'contact'
+    'company', 'title', 'logo', 'watermark', 'billTo', 'shipTo', 'lines',
+    'customerMessage', 'paymentTerms', 'totals', 'contact'
   ].concat(HEADER_FIELD_IDS.map(function (id) { return 'hdr-' + id; }));
 
   const GRID_COUNT = 90;
@@ -219,9 +220,10 @@
       watermark: { x: 10, y: 40, w: 80, h: 20 },
       billTo: { x: 0, y: 10, w: 50, h: 15 },
       shipTo: { x: 50, y: 10, w: 50, h: 15 },
-      lines: { x: 0, y: 45, w: 100, h: 30 },
-      paymentTerms: { x: 0, y: 75, w: 60, h: 15 },
-      totals: { x: 60, y: 75, w: 40, h: 15 },
+      lines: { x: 0, y: 45, w: 100, h: 24 },
+      customerMessage: { x: 0, y: 69, w: 60, h: 7 },
+      paymentTerms: { x: 0, y: 76, w: 60, h: 14 },
+      totals: { x: 60, y: 69, w: 40, h: 21 },
       contact: { x: 0, y: 95, w: 100, h: 5 }
     }, defaultHeaderLayout());
   }
@@ -303,6 +305,28 @@
     if (!hasHdr && src.header) {
       Object.assign(migrated, splitHeaderBand(src.header));
     }
+    if (!src.customerMessage && migrated.paymentTerms) {
+      const pt = migrated.paymentTerms;
+      const h = Number(pt.h) || 15;
+      const memoH = Math.min(8, Math.max(5, h * 0.38));
+      migrated.customerMessage = { x: pt.x, y: pt.y, w: pt.w, h: memoH };
+      migrated.paymentTerms = {
+        x: pt.x,
+        y: Number(pt.y) + memoH,
+        w: pt.w,
+        h: Math.max(5, h - memoH)
+      };
+    }
+    if (!src.customerMessage && migrated.totals) {
+      const tot = migrated.totals;
+      const y = Number(tot.y) || 0;
+      const h = Number(tot.h) || 15;
+      const contactY = migrated.contact ? Number(migrated.contact.y) : 95;
+      const room = Math.max(h, contactY - y - 0.5);
+      if (room > h) {
+        migrated.totals = { x: tot.x, y: tot.y, w: tot.w, h: room };
+      }
+    }
     const out = {};
     LAYOUT_IDS.forEach(function (id) {
       out[id] = sanitizeBox(migrated[id], defs[id]);
@@ -374,16 +398,29 @@
     const company = (data && data.company) || {};
     const doc = (data && data.doc) || {};
     const cols = visible(tpl.columns);
-    const lines = doc.lines && doc.lines.length ? doc.lines : [{}, {}, {}, {}];
+    const liveLines = doc.lines && doc.lines.length ? doc.lines.slice() : [];
     const fonts = tpl.blockFonts || {};
     const title = tpl.title || 'Invoice';
     const logo = tpl.logo || '';
     const co = companyLines(company);
+    const subtotal = doc.subtotal != null ? Number(doc.subtotal) : Number(doc.total) || 0;
+    const discount = Number(doc.discount) || 0;
+    const tax = Number(doc.tax) || 0;
     const total = Number(doc.total) || 0;
     const paid = Number(doc.paymentsApplied) || 0;
     const balance = doc.balanceDue != null ? Number(doc.balanceDue) : (total - paid);
+    const notes = String(doc.notes || doc.customerMessage || doc.memo || '').trim();
     const phone = company.phone || '';
     const email = company.email || '';
+
+    function paddedLines() {
+      const rows = liveLines.slice();
+      const box = layout.lines || {};
+      const inches = ((Number(box.h) || 24) / 100) * 11;
+      const slots = Math.max(rows.length, Math.floor((inches - 0.36) / 0.22));
+      while (rows.length < slots) rows.push({});
+      return rows;
+    }
 
     let companyInner = '';
     if (blocks.company !== false) {
@@ -443,7 +480,8 @@
 
     let linesInner = '';
     if (blocks.lines !== false) {
-      linesInner = '<table class="pf-lines"><thead><tr>';
+      const lines = paddedLines();
+      linesInner = '<div class="pf-lines-box"><table class="pf-lines"><thead><tr>';
       cols.forEach(function (c) { linesInner += '<th>' + esc(c.title || c.id) + '</th>'; });
       linesInner += '</tr></thead><tbody>';
       lines.forEach(function (line, i) {
@@ -451,9 +489,17 @@
         cols.forEach(function (c) { linesInner += '<td>' + esc(lineCell(line, c.id)) + '</td>'; });
         linesInner += '</tr>';
       });
-      linesInner += '</tbody></table>';
+      linesInner += '</tbody></table></div>';
     } else {
       linesInner = ph('Line table');
+    }
+
+    let messageInner = '';
+    if (blocks.customerMessage !== false) {
+      messageInner = '<div class="pf-msg"><div class="pf-msg-h">Customer message</div><div class="pf-msg-b">' +
+        (notes ? esc(notes).replace(/\n/g, '<br>') : '&nbsp;') + '</div></div>';
+    } else {
+      messageInner = ph('Customer message');
     }
 
     let termsInner = '';
@@ -467,11 +513,12 @@
     let totalsInner = '';
     if (blocks.totals !== false) {
       totalsInner = '<div class="pf-totals">';
-      totalsInner += '<div><span>Total</span><b>' + money(total) + '</b></div>';
-      if (doc.type === 'invoice' || tpl.type === 'invoice') {
-        totalsInner += '<div><span>Payments/Credits</span><b>' + money(paid) + '</b></div>';
-        totalsInner += '<div class="is-due"><span>Balance Due</span><b>' + money(balance) + '</b></div>';
-      }
+      totalsInner += '<div><span>Subtotal</span><b>' + money(subtotal) + '</b></div>';
+      totalsInner += '<div><span>Discount</span><b>' + money(discount) + '</b></div>';
+      totalsInner += '<div><span>Tax</span><b>' + money(tax) + '</b></div>';
+      totalsInner += '<div class="is-total"><span>Total</span><b>' + money(total) + '</b></div>';
+      totalsInner += '<div><span>Payments applied</span><b>' + money(paid) + '</b></div>';
+      totalsInner += '<div class="is-due"><span>Balance due</span><b>' + money(balance) + '</b></div>';
       totalsInner += '</div>';
     } else {
       totalsInner = ph('Totals');
@@ -500,6 +547,7 @@
       wrapAbs('shipTo', shipInner, layout, edit, blocks.shipTo === false, '', fonts) +
       headerHtml +
       wrapAbs('lines', linesInner, layout, edit, blocks.lines === false, '', fonts) +
+      wrapAbs('customerMessage', messageInner, layout, edit, blocks.customerMessage === false, '', fonts) +
       wrapAbs('paymentTerms', termsInner, layout, edit, blocks.paymentTerms === false || !tpl.paymentTermsText, '', fonts) +
       wrapAbs('totals', totalsInner, layout, edit, blocks.totals === false, '', fonts) +
       wrapAbs('contact', contactInner, layout, edit, blocks.contact === false, '', fonts) +
@@ -513,7 +561,7 @@
       '.pf-sheet.is-abs{position:relative;width:8.5in;height:11in;max-width:none;margin:0 auto;box-sizing:border-box;background:#fff;color:#111;font-family:var(--pf-family,Arial);font-size:var(--pf-size,12pt);font-weight:var(--pf-weight,400);font-style:var(--pf-style,normal);line-height:1.35}',
       '.pf-abs{position:absolute;box-sizing:border-box;overflow:hidden;z-index:1}',
       '.pf-abs.is-watermark{z-index:0}',
-      '.pf-abs .pf-co,.pf-abs .pf-title,.pf-abs .pf-logo,.pf-abs .pf-box,.pf-abs .pf-hfield,.pf-abs .pf-lines,.pf-abs .pf-terms,.pf-abs .pf-totals,.pf-abs .pf-contact,.pf-abs .pf-ph,.pf-abs .pf-watermark{width:100%;height:100%;margin:0}',
+      '.pf-abs .pf-co,.pf-abs .pf-title,.pf-abs .pf-logo,.pf-abs .pf-box,.pf-abs .pf-hfield,.pf-abs .pf-lines-box,.pf-abs .pf-msg,.pf-abs .pf-terms,.pf-abs .pf-totals,.pf-abs .pf-contact,.pf-abs .pf-ph,.pf-abs .pf-watermark{width:100%;height:100%;margin:0}',
       '.pf-watermark{display:flex;align-items:center;justify-content:center}',
       '.pf-watermark img{max-width:100%;max-height:100%;width:auto;height:auto;object-fit:contain;opacity:.2}',
       '.pf-co{font-size:1em}',
@@ -527,19 +575,24 @@
       '.pf-hfield{border:1px solid #222;min-height:0;display:flex;flex-direction:column;overflow:hidden}',
       '.pf-hfield-h{background:#d9d9d9;border-bottom:1px solid #222;font-weight:700;padding:3px 6px;font-size:.92em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}',
       '.pf-hfield-v{padding:6px;flex:1;font-size:1em;overflow:hidden}',
-      '.pf-lines{width:100%;border-collapse:collapse}',
-      '.pf-lines th{background:#d9d9d9;border:1px solid #222;font-size:1em;font-weight:700;padding:5px 6px;text-align:left}',
-      '.pf-lines td{border-left:1px solid #222;border-right:1px solid #222;padding:5px 6px;vertical-align:top}',
+      '.pf-lines-box{overflow:hidden}',
+      '.pf-lines{width:100%;height:auto;border-collapse:collapse;table-layout:fixed}',
+      '.pf-lines th{background:#d9d9d9;border:1px solid #222;font-size:1em;font-weight:700;padding:4px 6px;text-align:left}',
+      '.pf-lines td{border:1px solid #222;padding:3px 6px;vertical-align:top;height:1.35em}',
+      '.pf-lines tbody tr{height:1.35em}',
       '.pf-lines tbody tr.is-alt td{background:#f4f4f4}',
-      '.pf-lines tbody tr:last-child td{border-bottom:1px solid #222}',
+      '.pf-msg{border:1px solid #222;display:flex;flex-direction:column;min-height:0;overflow:hidden}',
+      '.pf-msg-h{background:#d9d9d9;border-bottom:1px solid #222;font-weight:700;padding:3px 8px;font-size:1em}',
+      '.pf-msg-b{padding:6px 8px;flex:1;white-space:pre-wrap}',
       '.pf-terms-h{font-weight:800;margin-bottom:4px}',
-      '.pf-totals{border-top:1px solid #222;padding-top:6px}',
-      '.pf-totals div{display:flex;justify-content:space-between;gap:12px;padding:3px 0}',
-      '.pf-totals .is-due{font-size:1.33em;font-weight:800}',
+      '.pf-totals{border-top:1px solid #222;padding-top:4px}',
+      '.pf-totals div{display:flex;justify-content:space-between;gap:12px;padding:2px 0}',
+      '.pf-totals .is-total,.pf-totals .is-due{font-weight:800}',
+      '.pf-totals .is-due{font-size:1.15em}',
       '.pf-contact{border-top:1px solid #222;padding-top:8px;font-size:1em}',
       '.pf-ph{display:flex;align-items:center;justify-content:center;color:#888;font-size:.92em;border:1px dashed #bbb;background:#fafafa}',
       '.pf-abs.is-typed{font-family:var(--pf-family,inherit);font-size:var(--pf-size,inherit);font-weight:var(--pf-weight,inherit);font-style:var(--pf-style,inherit)}',
-      '.pf-abs.is-typed .pf-title,.pf-abs.is-typed .pf-co,.pf-abs.is-typed .pf-co-name,.pf-abs.is-typed .pf-box,.pf-abs.is-typed .pf-box-h,.pf-abs.is-typed .pf-box pre,.pf-abs.is-typed .pf-hfield,.pf-abs.is-typed .pf-hfield-h,.pf-abs.is-typed .pf-hfield-v,.pf-abs.is-typed .pf-lines,.pf-abs.is-typed .pf-lines th,.pf-abs.is-typed .pf-terms,.pf-abs.is-typed .pf-terms-h,.pf-abs.is-typed .pf-totals,.pf-abs.is-typed .pf-totals .is-due,.pf-abs.is-typed .pf-contact,.pf-abs.is-typed .pf-ph{font-family:inherit;font-size:1em;font-weight:inherit;font-style:inherit}',
+      '.pf-abs.is-typed .pf-title,.pf-abs.is-typed .pf-co,.pf-abs.is-typed .pf-co-name,.pf-abs.is-typed .pf-box,.pf-abs.is-typed .pf-box-h,.pf-abs.is-typed .pf-box pre,.pf-abs.is-typed .pf-hfield,.pf-abs.is-typed .pf-hfield-h,.pf-abs.is-typed .pf-hfield-v,.pf-abs.is-typed .pf-lines-box,.pf-abs.is-typed .pf-lines,.pf-abs.is-typed .pf-lines th,.pf-abs.is-typed .pf-lines td,.pf-abs.is-typed .pf-msg,.pf-abs.is-typed .pf-msg-h,.pf-abs.is-typed .pf-msg-b,.pf-abs.is-typed .pf-terms,.pf-abs.is-typed .pf-terms-h,.pf-abs.is-typed .pf-totals,.pf-abs.is-typed .pf-totals .is-total,.pf-abs.is-typed .pf-totals .is-due,.pf-abs.is-typed .pf-contact,.pf-abs.is-typed .pf-ph{font-family:inherit;font-size:1em;font-weight:inherit;font-style:inherit}',
       '.pf-co-name.is-typed{font-family:var(--pf-family,inherit);font-size:var(--pf-size,inherit);font-weight:var(--pf-weight,inherit);font-style:var(--pf-style,inherit)}'
     ].join('');
   }
@@ -554,7 +607,7 @@
       '.pf-sheet .pf-abs.is-on{outline:2px solid #0ea5e9;z-index:4}',
       '.pf-resize{position:absolute;right:-1px;bottom:-1px;width:14px;height:14px;background:#0ea5e9;border:2px solid #fff;border-radius:2px;cursor:se-resize;box-shadow:0 0 0 1px rgba(14,165,233,.4);z-index:6;pointer-events:auto}',
       '.pf-resize:after{content:"";position:absolute;right:-6px;bottom:-6px;width:24px;height:24px}',
-      '.pf-sheet.is-edit .pf-abs .pf-box,.pf-sheet.is-edit .pf-abs .pf-hfield,.pf-sheet.is-edit .pf-abs .pf-lines,.pf-sheet.is-edit .pf-abs .pf-terms,.pf-sheet.is-edit .pf-abs .pf-totals,.pf-sheet.is-edit .pf-abs .pf-contact,.pf-sheet.is-edit .pf-abs .pf-co,.pf-sheet.is-edit .pf-abs .pf-title,.pf-sheet.is-edit .pf-abs .pf-logo,.pf-sheet.is-edit .pf-abs .pf-ph,.pf-sheet.is-edit .pf-abs .pf-watermark{pointer-events:none}'
+      '.pf-sheet.is-edit .pf-abs .pf-box,.pf-sheet.is-edit .pf-abs .pf-hfield,.pf-sheet.is-edit .pf-abs .pf-lines-box,.pf-sheet.is-edit .pf-abs .pf-msg,.pf-sheet.is-edit .pf-abs .pf-terms,.pf-sheet.is-edit .pf-abs .pf-totals,.pf-sheet.is-edit .pf-abs .pf-contact,.pf-sheet.is-edit .pf-abs .pf-co,.pf-sheet.is-edit .pf-abs .pf-title,.pf-sheet.is-edit .pf-abs .pf-logo,.pf-sheet.is-edit .pf-abs .pf-ph,.pf-sheet.is-edit .pf-abs .pf-watermark{pointer-events:none}'
     ].join('');
   }
 
@@ -568,25 +621,73 @@
     ].join('');
   }
 
-  function documentHtml(template, data) {
-    return '<!doctype html><html><head><meta charset="utf-8"><title></title><style>' + printCss() +
-      '</style></head><body>' + sheetHtml(template, data) +
+  function pdfFilename(data, explicit) {
+    if (explicit) return String(explicit);
+    const doc = (data && data.doc) || {};
+    const raw = String(doc.number || 'document').trim() || 'document';
+    return raw.replace(/[\\/:*?"<>|]+/g, '-').replace(/\s+/g, ' ').slice(0, 80) + '.pdf';
+  }
+
+  function pageOrigin() {
+    try {
+      if (typeof location !== 'undefined' && location.origin) return location.origin + '/';
+    } catch (e) {}
+    return '/';
+  }
+
+  function pdfBootScript(filename) {
+    return '<script>(function(){' +
+      'var name=' + JSON.stringify(filename) + ';' +
+      'function fail(){try{window.print();}catch(e){}}' +
+      'function run(){' +
+        'try{' +
+          'var sheet=document.querySelector(".pf-sheet");' +
+          'if(!sheet||typeof html2pdf!=="function"){fail();return;}' +
+          'var job=html2pdf().set({margin:0,filename:name,image:{type:"jpeg",quality:.95},' +
+            'html2canvas:{scale:2,useCORS:true,logging:false},' +
+            'jsPDF:{unit:"in",format:"letter",orientation:"portrait"}})' +
+            '.from(sheet).save();' +
+          'if(job&&typeof job.catch==="function")job.catch(fail);' +
+        '}catch(e){fail();}' +
+      '}' +
+      'function load(){' +
+        'var s=document.createElement("script");' +
+        's.src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js";' +
+        's.onload=run;s.onerror=fail;document.head.appendChild(s);' +
+      '}' +
+      'function start(){setTimeout(load,200);}' +
+      'if(document.readyState==="complete")start();' +
+      'else window.addEventListener("load",start);' +
+      '})();</script>';
+  }
+
+  function documentHtml(template, data, opts) {
+    const download = !!(opts && opts.download);
+    const filename = pdfFilename(data, opts && opts.filename);
+    const title = ((data && data.doc && data.doc.number) || (template && template.title) || 'Document');
+    return '<!doctype html><html><head><meta charset="utf-8"><title>' + esc(title) + '</title>' +
+      '<base href="' + esc(pageOrigin()) + '">' +
+      '<style>' + printCss() + '</style></head><body>' + sheetHtml(template, data) +
       '<div class="pf-noprint">' +
-      '<button type="button" onclick="window.print()" style="font:13px Arial;padding:8px 16px;border:0;border-radius:999px;background:#0ea5e9;color:#fff;cursor:pointer">Print / Save as PDF</button></div>' +
+      '<button type="button" onclick="window.print()" style="font:13px Arial;padding:8px 16px;border:0;border-radius:999px;background:#0ea5e9;color:#fff;cursor:pointer">Print</button></div>' +
+      (download ? pdfBootScript(filename) : '') +
       '</body></html>';
   }
 
-  function openPrint(template, data) {
-    const html = documentHtml(template, data);
+  function openPrint(template, data, opts) {
+    const download = !!(opts && opts.download);
+    const html = documentHtml(template, data, opts);
     const w = window.open('', '_blank');
     if (!w) return false;
     w.document.open();
     w.document.write(html);
     w.document.close();
     w.focus();
-    setTimeout(function () {
-      try { w.print(); } catch (e) {}
-    }, 250);
+    if (!download) {
+      setTimeout(function () {
+        try { w.print(); } catch (e) {}
+      }, 250);
+    }
     return true;
   }
 
@@ -610,6 +711,10 @@
       account: '',
       shipDate: '2026-09-30',
       shipVia: 'WILL CALL',
+      notes: 'ETA 4-6 WEEKS',
+      subtotal: 109781.25,
+      discount: 0,
+      tax: 0,
       total: 109781.25,
       paymentsApplied: 0,
       balanceDue: 109781.25,

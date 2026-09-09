@@ -38,6 +38,7 @@ const BLOCKS = [
   { id: 'shipTo', label: 'Ship To' },
   { id: 'lines', label: 'Line table' },
   { id: 'totals', label: 'Totals' },
+  { id: 'customerMessage', label: 'Customer message' },
   { id: 'paymentTerms', label: 'Payment terms' },
   { id: 'contact', label: 'Phone / email' }
 ];
@@ -166,7 +167,8 @@ function headerLayoutId(id) {
 const HEADER_LAYOUT_IDS = HEADER_FIELDS.map(function (f) { return headerLayoutId(f.id); });
 
 const LAYOUT_IDS = [
-  'company', 'title', 'logo', 'watermark', 'billTo', 'shipTo', 'lines', 'paymentTerms', 'totals', 'contact'
+  'company', 'title', 'logo', 'watermark', 'billTo', 'shipTo', 'lines',
+  'customerMessage', 'paymentTerms', 'totals', 'contact'
 ].concat(HEADER_LAYOUT_IDS);
 
 const GRID_COUNT = 90;
@@ -203,9 +205,10 @@ function defaultLayoutV1() {
     watermark: { x: 10, y: 40, w: 80, h: 20 },
     billTo: { x: 0, y: 10, w: 50, h: 15 },
     shipTo: { x: 50, y: 10, w: 50, h: 15 },
-    lines: { x: 0, y: 45, w: 100, h: 30 },
-    paymentTerms: { x: 0, y: 75, w: 60, h: 15 },
-    totals: { x: 60, y: 75, w: 40, h: 15 },
+    lines: { x: 0, y: 45, w: 100, h: 24 },
+    customerMessage: { x: 0, y: 69, w: 60, h: 7 },
+    paymentTerms: { x: 0, y: 76, w: 60, h: 14 },
+    totals: { x: 60, y: 69, w: 40, h: 21 },
     contact: { x: 0, y: 95, w: 100, h: 5 }
   }, defaultHeaderLayout());
 }
@@ -314,6 +317,28 @@ function sanitizeLayout(input, version) {
   if (!hasHdr && src.header) {
     Object.assign(migrated, splitHeaderBand(src.header));
   }
+  if (!src.customerMessage && migrated.paymentTerms) {
+    const pt = migrated.paymentTerms;
+    const h = Number(pt.h) || 15;
+    const memoH = Math.min(8, Math.max(5, h * 0.38));
+    migrated.customerMessage = { x: pt.x, y: pt.y, w: pt.w, h: memoH };
+    migrated.paymentTerms = {
+      x: pt.x,
+      y: Number(pt.y) + memoH,
+      w: pt.w,
+      h: Math.max(5, h - memoH)
+    };
+  }
+  if (!src.customerMessage && migrated.totals) {
+    const tot = migrated.totals;
+    const y = Number(tot.y) || 0;
+    const h = Number(tot.h) || 15;
+    const contactY = migrated.contact ? Number(migrated.contact.y) : 95;
+    const room = Math.max(h, contactY - y - 0.5);
+    if (room > h) {
+      migrated.totals = { x: tot.x, y: tot.y, w: tot.w, h: room };
+    }
+  }
   const out = {};
   LAYOUT_IDS.forEach(function (id) {
     out[id] = sanitizeBox(migrated[id], defs[id]);
@@ -341,6 +366,7 @@ function defaultTemplate(type) {
       shipTo: true,
       lines: true,
       totals: true,
+      customerMessage: true,
       paymentTerms: t !== 'po',
       contact: true
     },

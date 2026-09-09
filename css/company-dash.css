@@ -3979,6 +3979,7 @@ body.so-invoice-float #so-balance-row { display: flex; }
 body.so-invoice-float .so-doc-legacy-title,
 body.so-invoice-float #so-save,
 body.so-invoice-float #so-print-btn,
+body.so-invoice-float #so-pdf-btn,
 body.so-invoice-float #so-to-order,
 body.so-invoice-float #so-to-invoice,
 body.so-invoice-float #so-delete-btn { display: none !important; }
