@@ -440,6 +440,14 @@ function createSqliteStore() {
       if (product) attachMapsToListedProducts(db, [product]);
       return product;
     },
+    async updateProductDetails(id, details) {
+      const info = db.prepare('UPDATE products SET details = ?, updated_at = ? WHERE id = ?')
+        .run(JSON.stringify(details || {}), dbUtil.nowIso(), id);
+      if (!info.changes) return null;
+      const product = dbUtil.getProduct(db, id);
+      if (product) attachMapsToListedProducts(db, [product]);
+      return product;
+    },
     async getRawProduct(id) {
       return db.prepare('SELECT * FROM products WHERE id = ?').get(id) || null;
     },
