@@ -93,29 +93,60 @@
       .sort(function (a, b) { return (a.order || 0) - (b.order || 0); });
   }
 
-  const LAYOUT_IDS = [
-    'company', 'title', 'logo', 'billTo', 'shipTo', 'header', 'lines', 'paymentTerms', 'totals', 'contact'
+  const HEADER_FIELD_IDS = [
+    'number', 'date', 'terms', 'dueDate', 'poNumber', 'soNumber', 'tracking',
+    'rep', 'account', 'shipDate', 'shipVia', 'permit'
   ];
 
+  const LAYOUT_IDS = [
+    'company', 'title', 'logo', 'billTo', 'shipTo', 'lines', 'paymentTerms', 'totals', 'contact'
+  ].concat(HEADER_FIELD_IDS.map(function (id) { return 'hdr-' + id; }));
+
+  const GRID_STEP = 5;
+
+  function headerLayoutId(id) {
+    return 'hdr-' + id;
+  }
+
+  function defaultHeaderLayout() {
+    const out = {};
+    const cols = 6;
+    const w = 15;
+    const h = 10;
+    const y0 = 25;
+    HEADER_FIELD_IDS.forEach(function (id, i) {
+      const col = i % cols;
+      const row = Math.floor(i / cols);
+      out[headerLayoutId(id)] = { x: col * w, y: y0 + row * h, w: w, h: h };
+    });
+    return out;
+  }
+
   function defaultLayout() {
-    return {
-      company: { x: 0, y: 0, w: 36, h: 10 },
-      title: { x: 36, y: 0.5, w: 28, h: 8 },
-      logo: { x: 64, y: 0, w: 36, h: 10 },
-      billTo: { x: 0, y: 12, w: 48, h: 14 },
-      shipTo: { x: 52, y: 12, w: 48, h: 14 },
-      header: { x: 0, y: 28, w: 100, h: 9 },
-      lines: { x: 0, y: 39, w: 100, h: 36 },
-      paymentTerms: { x: 0, y: 77, w: 58, h: 16 },
-      totals: { x: 62, y: 77, w: 38, h: 14 },
-      contact: { x: 0, y: 94, w: 100, h: 5 }
-    };
+    return Object.assign({
+      company: { x: 0, y: 0, w: 35, h: 10 },
+      title: { x: 35, y: 0, w: 30, h: 10 },
+      logo: { x: 65, y: 0, w: 35, h: 10 },
+      billTo: { x: 0, y: 10, w: 50, h: 15 },
+      shipTo: { x: 50, y: 10, w: 50, h: 15 },
+      lines: { x: 0, y: 45, w: 100, h: 30 },
+      paymentTerms: { x: 0, y: 75, w: 60, h: 15 },
+      totals: { x: 60, y: 75, w: 40, h: 15 },
+      contact: { x: 0, y: 95, w: 100, h: 5 }
+    }, defaultHeaderLayout());
   }
 
   function snapPct(n) {
     const v = Number(n);
     if (!isFinite(v)) return 0;
     return Math.round(v * 2) / 2;
+  }
+
+  function snapTo(n, step) {
+    const s = Number(step) > 0 ? Number(step) : 0.5;
+    const v = Number(n);
+    if (!isFinite(v)) return 0;
+    return Math.round(v / s) * s;
   }
 
   function clampPct(n, min, max) {
@@ -125,23 +156,60 @@
   function sanitizeBox(box, fallback) {
     const src = box && typeof box === 'object' ? box : fallback;
     const fb = fallback || { x: 0, y: 0, w: 20, h: 10 };
-    let w = clampPct(src.w != null ? src.w : fb.w, 8, 100);
+    let w = clampPct(src.w != null ? src.w : fb.w, 5, 100);
     let h = clampPct(src.h != null ? src.h : fb.h, 5, 100);
-    let x = clampPct(src.x != null ? src.x : fb.x, 0, 92);
+    let x = clampPct(src.x != null ? src.x : fb.x, 0, 95);
     let y = clampPct(src.y != null ? src.y : fb.y, 0, 95);
-    if (x + w > 100) w = Math.max(8, snapPct(100 - x));
+    if (x + w > 100) w = Math.max(5, snapPct(100 - x));
     if (y + h > 100) h = Math.max(5, snapPct(100 - y));
     return { x: x, y: y, w: w, h: h };
+  }
+
+  function splitHeaderBand(band) {
+    const n = HEADER_FIELD_IDS.length || 1;
+    const w = Math.max(5, (Number(band.w) || 100) / n);
+    const x0 = Number(band.x) || 0;
+    const y = Number(band.y) || 25;
+    const h = Number(band.h) || 10;
+    const out = {};
+    HEADER_FIELD_IDS.forEach(function (id, i) {
+      out[headerLayoutId(id)] = { x: x0 + i * w, y: y, w: w, h: h };
+    });
+    return out;
   }
 
   function mergeLayout(input) {
     const defs = defaultLayout();
     const src = input && typeof input === 'object' ? input : {};
+    const migrated = Object.assign({}, src);
+    const hasHdr = HEADER_FIELD_IDS.some(function (id) { return src[headerLayoutId(id)]; });
+    if (!hasHdr && src.header) {
+      Object.assign(migrated, splitHeaderBand(src.header));
+    }
     const out = {};
     LAYOUT_IDS.forEach(function (id) {
-      out[id] = sanitizeBox(src[id], defs[id]);
+      out[id] = sanitizeBox(migrated[id], defs[id]);
     });
     return out;
+  }
+
+  function snapBox(box, step) {
+    const s = Number(step) > 0 ? Number(step) : 0.5;
+    const next = {
+      x: snapTo(box.x, s),
+      y: snapTo(box.y, s),
+      w: snapTo(box.w, s),
+      h: snapTo(box.h, s)
+    };
+    if (next.w < 5) next.w = s >= 5 ? 5 : 5;
+    if (next.h < 5) next.h = 5;
+    if (next.x < 0) next.x = 0;
+    if (next.y < 0) next.y = 0;
+    if (next.x + next.w > 100) next.x = Math.max(0, snapTo(100 - next.w, s));
+    if (next.y + next.h > 100) next.y = Math.max(0, snapTo(100 - next.h, s));
+    if (next.x + next.w > 100) next.w = Math.max(5, 100 - next.x);
+    if (next.y + next.h > 100) next.h = Math.max(5, 100 - next.y);
+    return next;
   }
 
   function boxStyle(layout, id) {
@@ -170,7 +238,6 @@
     const layout = mergeLayout(tpl.layout);
     const company = (data && data.company) || {};
     const doc = (data && data.doc) || {};
-    const headers = visible(tpl.headerFields);
     const cols = visible(tpl.columns);
     const lines = doc.lines && doc.lines.length ? doc.lines : [{}, {}, {}, {}];
     const title = tpl.title || 'Invoice';
@@ -216,16 +283,18 @@
       shipInner = ph('Ship To');
     }
 
-    let headerInner = '';
-    if (headers.length) {
-      headerInner = '<table class="pf-meta"><thead><tr>';
-      headers.forEach(function (h) { headerInner += '<th>' + esc(h.title || h.id) + '</th>'; });
-      headerInner += '</tr></thead><tbody><tr>';
-      headers.forEach(function (h) { headerInner += '<td>' + esc(fieldValue(doc, h.id)) + '</td>'; });
-      headerInner += '</tr></tbody></table>';
-    } else {
-      headerInner = ph('Header fields');
-    }
+    let headerHtml = '';
+    const headerById = {};
+    (tpl.headerFields || []).forEach(function (row) {
+      if (row && row.id) headerById[row.id] = row;
+    });
+    HEADER_FIELD_IDS.forEach(function (id) {
+      const row = headerById[id] || { id: id, title: id, print: false };
+      const off = !row.print;
+      const inner = '<div class="pf-hfield"><div class="pf-hfield-h">' + esc(row.title || id) +
+        '</div><div class="pf-hfield-v">' + esc(fieldValue(doc, id)) + '</div></div>';
+      headerHtml += wrapAbs(headerLayoutId(id), inner, layout, edit, off);
+    });
 
     let linesInner = '';
     if (blocks.lines !== false) {
@@ -276,13 +345,13 @@
       contactInner = ph('Phone / email');
     }
 
-    return '<div class="pf-sheet is-abs' + (edit ? ' is-edit' : '') + '">' +
+    return '<div class="pf-sheet is-abs' + (edit ? ' is-edit' : '') + (edit && opts && opts.grid ? ' is-grid' : '') + '">' +
       wrapAbs('company', companyInner, layout, edit, blocks.company === false) +
       wrapAbs('title', '<div class="pf-title">' + esc(title) + '</div>', layout, edit, false) +
       wrapAbs('logo', logoInner, layout, edit, blocks.logo === false || !logo) +
       wrapAbs('billTo', billInner, layout, edit, blocks.billTo === false) +
       wrapAbs('shipTo', shipInner, layout, edit, blocks.shipTo === false) +
-      wrapAbs('header', headerInner, layout, edit, !headers.length) +
+      headerHtml +
       wrapAbs('lines', linesInner, layout, edit, blocks.lines === false) +
       wrapAbs('paymentTerms', termsInner, layout, edit, blocks.paymentTerms === false || !tpl.paymentTermsText) +
       wrapAbs('totals', totalsInner, layout, edit, blocks.totals === false) +
@@ -294,7 +363,7 @@
     return [
       '.pf-sheet.is-abs{position:relative;width:7.5in;height:10in;max-width:none;margin:0 auto;box-sizing:border-box;background:#fff;color:#111;font:12px/1.35 Arial,Helvetica,sans-serif}',
       '.pf-abs{position:absolute;box-sizing:border-box;overflow:hidden}',
-      '.pf-abs .pf-co,.pf-abs .pf-title,.pf-abs .pf-logo,.pf-abs .pf-box,.pf-abs .pf-meta,.pf-abs .pf-lines,.pf-abs .pf-terms,.pf-abs .pf-totals,.pf-abs .pf-contact,.pf-abs .pf-ph{width:100%;height:100%;margin:0}',
+      '.pf-abs .pf-co,.pf-abs .pf-title,.pf-abs .pf-logo,.pf-abs .pf-box,.pf-abs .pf-hfield,.pf-abs .pf-lines,.pf-abs .pf-terms,.pf-abs .pf-totals,.pf-abs .pf-contact,.pf-abs .pf-ph{width:100%;height:100%;margin:0}',
       '.pf-co{font-size:12px}',
       '.pf-co-name{font-size:18px;font-weight:800;letter-spacing:.04em;margin-bottom:4px}',
       '.pf-title{display:flex;align-items:center;justify-content:center;font-size:28px;font-weight:700;text-align:center;padding:0}',
@@ -303,9 +372,9 @@
       '.pf-box{border:1px solid #222;min-height:0;display:flex;flex-direction:column}',
       '.pf-box-h{background:#d9d9d9;border-bottom:1px solid #222;font-weight:700;padding:3px 8px;font-size:12px}',
       '.pf-box pre{margin:0;padding:8px;font:12px/1.4 Arial,Helvetica,sans-serif;white-space:pre-wrap;flex:1}',
-      '.pf-meta{width:100%;border-collapse:collapse;table-layout:fixed}',
-      '.pf-meta th{background:#d9d9d9;border:1px solid #222;font-size:11px;font-weight:700;padding:4px 6px;text-align:left}',
-      '.pf-meta td{border:1px solid #222;padding:6px;height:22px;vertical-align:top}',
+      '.pf-hfield{border:1px solid #222;min-height:0;display:flex;flex-direction:column;overflow:hidden}',
+      '.pf-hfield-h{background:#d9d9d9;border-bottom:1px solid #222;font-weight:700;padding:3px 6px;font-size:11px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}',
+      '.pf-hfield-v{padding:6px;flex:1;font-size:12px;overflow:hidden}',
       '.pf-lines{width:100%;border-collapse:collapse}',
       '.pf-lines th{background:#d9d9d9;border:1px solid #222;font-size:12px;font-weight:700;padding:5px 6px;text-align:left}',
       '.pf-lines td{border-left:1px solid #222;border-right:1px solid #222;padding:5px 6px;vertical-align:top}',
@@ -323,12 +392,13 @@
   function editorCss() {
     return sheetCss() + [
       '.pf-sheet.is-edit{box-shadow:0 10px 32px rgba(16,32,71,.16)}',
+      '.pf-sheet.is-edit.is-grid{background-image:linear-gradient(to right,rgba(14,165,233,.22) 1px,transparent 1px),linear-gradient(to bottom,rgba(14,165,233,.22) 1px,transparent 1px);background-size:5% 5%}',
       '.pf-sheet.is-edit .pf-abs{overflow:visible;outline:1px dashed rgba(14,165,233,.55);cursor:move;user-select:none;touch-action:none}',
       '.pf-sheet.is-edit .pf-abs.is-off{outline-style:dotted;opacity:.42}',
       '.pf-sheet.is-edit .pf-abs.is-on{outline:2px solid #0ea5e9;z-index:4}',
       '.pf-resize{position:absolute;right:-1px;bottom:-1px;width:14px;height:14px;background:#0ea5e9;border:2px solid #fff;border-radius:2px;cursor:se-resize;box-shadow:0 0 0 1px rgba(14,165,233,.4);z-index:6;pointer-events:auto}',
       '.pf-resize:after{content:"";position:absolute;right:-6px;bottom:-6px;width:24px;height:24px}',
-      '.pf-sheet.is-edit .pf-abs .pf-box,.pf-sheet.is-edit .pf-abs .pf-meta,.pf-sheet.is-edit .pf-abs .pf-lines,.pf-sheet.is-edit .pf-abs .pf-terms,.pf-sheet.is-edit .pf-abs .pf-totals,.pf-sheet.is-edit .pf-abs .pf-contact,.pf-sheet.is-edit .pf-abs .pf-co,.pf-sheet.is-edit .pf-abs .pf-title,.pf-sheet.is-edit .pf-abs .pf-logo,.pf-sheet.is-edit .pf-abs .pf-ph{pointer-events:none}'
+      '.pf-sheet.is-edit .pf-abs .pf-box,.pf-sheet.is-edit .pf-abs .pf-hfield,.pf-sheet.is-edit .pf-abs .pf-lines,.pf-sheet.is-edit .pf-abs .pf-terms,.pf-sheet.is-edit .pf-abs .pf-totals,.pf-sheet.is-edit .pf-abs .pf-contact,.pf-sheet.is-edit .pf-abs .pf-co,.pf-sheet.is-edit .pf-abs .pf-title,.pf-sheet.is-edit .pf-abs .pf-logo,.pf-sheet.is-edit .pf-abs .pf-ph{pointer-events:none}'
     ].join('');
   }
 
@@ -410,6 +480,9 @@
     companyLines: companyLines,
     defaultLayout: defaultLayout,
     mergeLayout: mergeLayout,
-    LAYOUT_IDS: LAYOUT_IDS
+    snapBox: snapBox,
+    headerLayoutId: headerLayoutId,
+    LAYOUT_IDS: LAYOUT_IDS,
+    GRID_STEP: GRID_STEP
   };
 })(window);

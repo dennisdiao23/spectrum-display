@@ -105,26 +105,46 @@ function columnDefaults() {
   ];
 }
 
-const LAYOUT_IDS = [
-  'company', 'title', 'logo', 'billTo', 'shipTo', 'header', 'lines', 'paymentTerms', 'totals', 'contact'
-];
+function headerLayoutId(id) {
+  return 'hdr-' + id;
+}
 
-const MIN_BOX_W = 8;
+const HEADER_LAYOUT_IDS = HEADER_FIELDS.map(function (f) { return headerLayoutId(f.id); });
+
+const LAYOUT_IDS = [
+  'company', 'title', 'logo', 'billTo', 'shipTo', 'lines', 'paymentTerms', 'totals', 'contact'
+].concat(HEADER_LAYOUT_IDS);
+
+const MIN_BOX_W = 5;
 const MIN_BOX_H = 5;
+const GRID_STEP = 5;
+
+function defaultHeaderLayout() {
+  const out = {};
+  const cols = 6;
+  const w = 15;
+  const h = 10;
+  const y0 = 25;
+  HEADER_FIELDS.forEach(function (f, i) {
+    const col = i % cols;
+    const row = Math.floor(i / cols);
+    out[headerLayoutId(f.id)] = { x: col * w, y: y0 + row * h, w: w, h: h };
+  });
+  return out;
+}
 
 function defaultLayout() {
-  return {
-    company: { x: 0, y: 0, w: 36, h: 10 },
-    title: { x: 36, y: 0.5, w: 28, h: 8 },
-    logo: { x: 64, y: 0, w: 36, h: 10 },
-    billTo: { x: 0, y: 12, w: 48, h: 14 },
-    shipTo: { x: 52, y: 12, w: 48, h: 14 },
-    header: { x: 0, y: 28, w: 100, h: 9 },
-    lines: { x: 0, y: 39, w: 100, h: 36 },
-    paymentTerms: { x: 0, y: 77, w: 58, h: 16 },
-    totals: { x: 62, y: 77, w: 38, h: 14 },
-    contact: { x: 0, y: 94, w: 100, h: 5 }
-  };
+  return Object.assign({
+    company: { x: 0, y: 0, w: 35, h: 10 },
+    title: { x: 35, y: 0, w: 30, h: 10 },
+    logo: { x: 65, y: 0, w: 35, h: 10 },
+    billTo: { x: 0, y: 10, w: 50, h: 15 },
+    shipTo: { x: 50, y: 10, w: 50, h: 15 },
+    lines: { x: 0, y: 45, w: 100, h: 30 },
+    paymentTerms: { x: 0, y: 75, w: 60, h: 15 },
+    totals: { x: 60, y: 75, w: 40, h: 15 },
+    contact: { x: 0, y: 95, w: 100, h: 5 }
+  }, defaultHeaderLayout());
 }
 
 function snapPct(n) {
@@ -149,12 +169,30 @@ function sanitizeBox(box, fallback) {
   return { x: x, y: y, w: w, h: h };
 }
 
+function splitHeaderBand(band) {
+  const n = HEADER_LAYOUT_IDS.length || 1;
+  const w = Math.max(MIN_BOX_W, (Number(band.w) || 100) / n);
+  const x0 = Number(band.x) || 0;
+  const y = Number(band.y) || 25;
+  const h = Number(band.h) || 10;
+  const out = {};
+  HEADER_LAYOUT_IDS.forEach(function (id, i) {
+    out[id] = { x: x0 + i * w, y: y, w: w, h: h };
+  });
+  return out;
+}
+
 function sanitizeLayout(input) {
   const defs = defaultLayout();
   const src = input && typeof input === 'object' ? input : {};
+  const migrated = Object.assign({}, src);
+  const hasHdr = HEADER_LAYOUT_IDS.some(function (id) { return src[id]; });
+  if (!hasHdr && src.header) {
+    Object.assign(migrated, splitHeaderBand(src.header));
+  }
   const out = {};
   LAYOUT_IDS.forEach(function (id) {
-    out[id] = sanitizeBox(src[id], defs[id]);
+    out[id] = sanitizeBox(migrated[id], defs[id]);
   });
   return out;
 }
@@ -252,10 +290,13 @@ module.exports = {
   COLUMNS,
   BLOCKS,
   LAYOUT_IDS,
+  HEADER_LAYOUT_IDS,
+  GRID_STEP,
   LOGOS,
   DEFAULT_PAYMENT,
   typeTitle,
   normalizeType,
+  headerLayoutId,
   defaultLayout,
   sanitizeLayout,
   defaultTemplate,

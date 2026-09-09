@@ -5555,6 +5555,7 @@ body.so-invoice-float .so-f-tracking { min-width: 0; }
 }
 .pf-preview-head .pf-label { margin-bottom: 0.2rem; }
 .pf-preview-head .pf-hint { margin: 0; max-width: 36rem; }
+.pf-preview-actions { display: flex; gap: 0.4rem; flex-shrink: 0; }
 .pf-reset {
   flex-shrink: 0;
   border: 1px solid var(--dash-line);
@@ -5567,6 +5568,11 @@ body.so-invoice-float .so-f-tracking { min-width: 0; }
   cursor: pointer;
 }
 .pf-reset:hover { background: #f4f6f9; }
+.pf-reset.is-on {
+  background: #0ea5e9;
+  border-color: #0ea5e9;
+  color: #fff;
+}
 .pf-preview-frame {
   overflow: auto;
   background: #ececec;
