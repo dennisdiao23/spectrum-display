@@ -27,7 +27,12 @@
         "control",
         "all-in-one"
       ],
-      "image": "assets/products/novastar/vx400-pro.svg",
+      "image": "assets/products/novastar/vx400-pro.webp",
+      "gallery": [
+        "assets/products/novastar/vx400-pro-2.webp",
+        "assets/products/novastar/vx400-pro-3.webp",
+        "assets/products/novastar/vx400-pro-4.webp"
+      ],
       "maxPixels": 2600000,
       "outputs": "4× RJ45 · 2× 10G OPT",
       "inputs": "HDMI 2.0 · HDMI 1.3 · 3G-SDI",
@@ -127,7 +132,12 @@
         "control",
         "all-in-one"
       ],
-      "image": "assets/products/novastar/vx600-pro.svg",
+      "image": "assets/products/novastar/vx600-pro.webp",
+      "gallery": [
+        "assets/products/novastar/vx600-pro-2.webp",
+        "assets/products/novastar/vx600-pro-3.webp",
+        "assets/products/novastar/vx600-pro-4.webp"
+      ],
       "maxPixels": 3900000,
       "outputs": "6× RJ45 · 2× 10G OPT",
       "inputs": "HDMI 2.0 · HDMI 1.3 · 3G-SDI",
@@ -231,7 +241,12 @@
         "control",
         "all-in-one"
       ],
-      "image": "assets/products/novastar/vx1000-pro.svg",
+      "image": "assets/products/novastar/vx1000-pro.webp",
+      "gallery": [
+        "assets/products/novastar/vx1000-pro-2.webp",
+        "assets/products/novastar/vx1000-pro-3.webp",
+        "assets/products/novastar/vx1000-pro-4.webp"
+      ],
       "maxPixels": 6500000,
       "outputs": "10× RJ45 · 2× 10G OPT",
       "inputs": "HDMI 2.0 · HDMI 1.3 · 3G-SDI",
@@ -340,7 +355,12 @@
         "control",
         "all-in-one"
       ],
-      "image": "assets/products/novastar/vx2000-pro.svg",
+      "image": "assets/products/novastar/vx2000-pro.webp",
+      "gallery": [
+        "assets/products/novastar/vx2000-pro-2.webp",
+        "assets/products/novastar/vx2000-pro-3.webp",
+        "assets/products/novastar/vx2000-pro-4.webp"
+      ],
       "maxPixels": 13000000,
       "outputs": "20× RJ45 · 4× OPT",
       "inputs": "12G-SDI · DP 1.2 · HDMI 2.0",
@@ -445,7 +465,12 @@
         "control",
         "all-in-one"
       ],
-      "image": "assets/products/novastar/ku20.svg",
+      "image": "assets/products/novastar/ku20.webp",
+      "gallery": [
+        "assets/products/novastar/ku20-2.webp",
+        "assets/products/novastar/ku20-3.webp",
+        "assets/products/novastar/ku20-4.webp"
+      ],
       "maxPixels": 3900000,
       "outputs": "6× RJ45 · 1× 10G OPT",
       "inputs": "HDMI 1.3",
@@ -549,7 +574,12 @@
         "control",
         "all-in-one"
       ],
-      "image": "assets/products/novastar/mx20.svg",
+      "image": "assets/products/novastar/mx20.webp",
+      "gallery": [
+        "assets/products/novastar/mx20-2.webp",
+        "assets/products/novastar/mx20-3.webp",
+        "assets/products/novastar/mx20-4.webp"
+      ],
       "maxPixels": 3900000,
       "outputs": "6× RJ45 · 2× 10G OPT",
       "inputs": "HDMI 1.3 · 3G-SDI",
@@ -653,7 +683,12 @@
         "control",
         "all-in-one"
       ],
-      "image": "assets/products/novastar/mx30.svg",
+      "image": "assets/products/novastar/mx30.webp",
+      "gallery": [
+        "assets/products/novastar/mx30-2.webp",
+        "assets/products/novastar/mx30-3.webp",
+        "assets/products/novastar/mx30-4.webp"
+      ],
       "maxPixels": 6500000,
       "outputs": "10× RJ45 · 2× 10G OPT",
       "inputs": "HDMI 2.0 · HDMI 1.4 · DP 1.1 · 3G-SDI",
@@ -761,7 +796,12 @@
         "control",
         "all-in-one"
       ],
-      "image": "assets/products/novastar/mx40-pro.svg",
+      "image": "assets/products/novastar/mx40-pro.webp",
+      "gallery": [
+        "assets/products/novastar/mx40-pro-2.webp",
+        "assets/products/novastar/mx40-pro-3.webp",
+        "assets/products/novastar/mx40-pro-4.webp"
+      ],
       "maxPixels": 9000000,
       "outputs": "20× RJ45 · 4× 10G OPT",
       "inputs": "HDMI 2.0 · DP 1.2 · 12G-SDI",
@@ -960,7 +1000,12 @@
         "control",
         "all-in-one"
       ],
-      "image": "assets/products/novastar/mx2000-pro.svg",
+      "image": "assets/products/novastar/mx2000-pro.webp",
+      "gallery": [
+        "assets/products/novastar/mx2000-pro-2.webp",
+        "assets/products/novastar/mx2000-pro-3.webp",
+        "assets/products/novastar/mx2000-pro-4.webp"
+      ],
       "lead": "COEX modular 8K controller in 2U. Two input and two output card slots, 35.38 million pixel load, 12-bit / 480 Hz / HDR — pair 10G fiber cards with CVT10."
     },
     {
@@ -1081,7 +1126,12 @@
         "control",
         "all-in-one"
       ],
-      "image": "assets/products/novastar/mx6000-pro.svg",
+      "image": "assets/products/novastar/mx6000-pro.webp",
+      "gallery": [
+        "assets/products/novastar/mx6000-pro-2.webp",
+        "assets/products/novastar/mx6000-pro-3.webp",
+        "assets/products/novastar/mx6000-pro-4.webp"
+      ],
       "lead": "COEX modular 8K flagship in 6U. Eight input and eight output card slots, 141 million pixel load — the large-event / studio chassis that feeds CVT10 or CVT8-5G at the wall."
     },
     {
@@ -1193,7 +1243,11 @@
         "control",
         "all-in-one"
       ],
-      "image": "assets/products/novastar/h2.svg",
+      "image": "assets/products/novastar/h2.webp",
+      "gallery": [
+        "assets/products/novastar/h2-2.webp",
+        "assets/products/novastar/h2-3.webp"
+      ],
       "lead": "H Series 2U video wall splicer. Four input and two output card slots — HDMI, DP, SDI, IP, and LED sending cards so one chassis can process and drive the wall."
     },
     {
@@ -1305,7 +1359,10 @@
         "control",
         "all-in-one"
       ],
-      "image": "assets/products/novastar/h5.svg",
+      "image": "assets/products/novastar/h5.webp",
+      "gallery": [
+        "assets/products/novastar/h5-2.webp"
+      ],
       "lead": "H Series 5U video wall splicer. Ten input and three output card slots, up to 39 million pixels on Ethernet sending cards — the larger H2-class chassis for command rooms and fine-pitch halls."
     },
     {
@@ -1331,7 +1388,8 @@
         "control",
         "sending"
       ],
-      "image": "assets/products/novastar/msd300.svg",
+      "image": "assets/products/novastar/msd300.webp",
+      "gallery": [],
       "maxPixels": 1300000,
       "outputs": "2× RJ45",
       "inputs": "DVI",
@@ -1411,7 +1469,8 @@
         "control",
         "sending"
       ],
-      "image": "assets/products/novastar/msd600.svg",
+      "image": "assets/products/novastar/msd600.webp",
+      "gallery": [],
       "maxPixels": 2300000,
       "outputs": "4× RJ45",
       "inputs": "DVI",
@@ -1486,7 +1545,12 @@
         "control",
         "sending"
       ],
-      "image": "assets/products/novastar/mctrl300.svg",
+      "image": "assets/products/novastar/mctrl300.webp",
+      "gallery": [
+        "assets/products/novastar/mctrl300-2.webp",
+        "assets/products/novastar/mctrl300-3.webp",
+        "assets/products/novastar/mctrl300-4.webp"
+      ],
       "maxPixels": 1300000,
       "outputs": "2× RJ45",
       "inputs": "DVI · audio",
@@ -1578,7 +1642,12 @@
         "control",
         "sending"
       ],
-      "image": "assets/products/novastar/mctrl600.svg",
+      "image": "assets/products/novastar/mctrl600.webp",
+      "gallery": [
+        "assets/products/novastar/mctrl600-2.webp",
+        "assets/products/novastar/mctrl600-3.webp",
+        "assets/products/novastar/mctrl600-4.webp"
+      ],
       "maxPixels": 2600000,
       "outputs": "4× RJ45",
       "inputs": "DVI · HDMI 1.3",
@@ -1670,7 +1739,12 @@
         "control",
         "sending"
       ],
-      "image": "assets/products/novastar/mctrl660-pro.svg",
+      "image": "assets/products/novastar/mctrl660-pro.webp",
+      "gallery": [
+        "assets/products/novastar/mctrl660-pro-2.webp",
+        "assets/products/novastar/mctrl660-pro-3.webp",
+        "assets/products/novastar/mctrl660-pro-4.webp"
+      ],
       "maxPixels": 2300000,
       "outputs": "6× RJ45 · 2× 10G OPT",
       "inputs": "HDMI · DVI · 3G-SDI",
@@ -1774,7 +1848,12 @@
         "control",
         "sending"
       ],
-      "image": "assets/products/novastar/mctrl4k.svg",
+      "image": "assets/products/novastar/mctrl4k.webp",
+      "gallery": [
+        "assets/products/novastar/mctrl4k-2.webp",
+        "assets/products/novastar/mctrl4k-3.webp",
+        "assets/products/novastar/mctrl4k-4.webp"
+      ],
       "maxPixels": 8800000,
       "outputs": "16× EtherCON · 4× 10G",
       "inputs": "DP · HDMI · DVI",
@@ -1867,7 +1946,12 @@
         "control",
         "playback"
       ],
-      "image": "assets/products/novastar/tu15-pro.svg",
+      "image": "assets/products/novastar/tu15-pro.webp",
+      "gallery": [
+        "assets/products/novastar/tu15-pro-2.webp",
+        "assets/products/novastar/tu15-pro-3.webp",
+        "assets/products/novastar/tu15-pro-4.webp"
+      ],
       "maxPixels": 2600000,
       "outputs": "4× RJ45",
       "inputs": "HDMI · USB · Android playback",
@@ -1963,7 +2047,12 @@
         "control",
         "playback"
       ],
-      "image": "assets/products/novastar/tu20-pro.svg",
+      "image": "assets/products/novastar/tu20-pro.webp",
+      "gallery": [
+        "assets/products/novastar/tu20-pro-2.webp",
+        "assets/products/novastar/tu20-pro-3.webp",
+        "assets/products/novastar/tu20-pro-4.webp"
+      ],
       "maxPixels": 3900000,
       "outputs": "6× RJ45",
       "inputs": "HDMI · USB · Android playback",
@@ -2151,7 +2240,12 @@
         "control",
         "playback"
       ],
-      "image": "assets/products/novastar/tb60.svg",
+      "image": "assets/products/novastar/tb60.webp",
+      "gallery": [
+        "assets/products/novastar/tb60-2.webp",
+        "assets/products/novastar/tb60-3.webp",
+        "assets/products/novastar/tb60-4.webp"
+      ],
       "maxPixels": 2300000,
       "outputs": "2× RJ45",
       "inputs": "HDMI · USB · Taurus playback",
@@ -2318,7 +2412,12 @@
         "control",
         "accessories"
       ],
-      "image": "assets/products/novastar/cvt10.svg",
+      "image": "assets/products/novastar/cvt10.webp",
+      "gallery": [
+        "assets/products/novastar/cvt10-2.webp",
+        "assets/products/novastar/cvt10-3.webp",
+        "assets/products/novastar/cvt10-4.webp"
+      ],
       "lead": "10G fiber converter between MX / H fiber cards and the wall. Two 10G SFP+ ports and ten Gigabit Ethernet ports — CVT10-S to 10 km, CVT10-M to 300 m."
     },
     {

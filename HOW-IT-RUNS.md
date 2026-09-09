@@ -72,6 +72,7 @@ flowchart TB
 | `CONTACT_FROM_EMAIL` | `Spectrum Display <hello@send.spectrumdisplay.com>` |
 | `RESEND_API_KEY` | Password for sending mail |
 | `GOOGLE_MAPS_API_KEY` | Optional. Enables US address autofill on `dealer.html` (Places API). Restrict to your domain in Google Cloud. |
+| `SHOPIFY_SHOP` | Store hostname for cart permalinks, default `n0eg5t-nw.myshopify.com`. Empty disables Check out (catalog still shows). |
 | `PORT` | Set by Railway (do not hardcode) |
 
 `ADMIN_PASSWORD` is **not** required on Railway (admin user already exists in Supabase).
@@ -223,6 +224,8 @@ Leave NS (`ns37` / `ns38`) and SOA alone.
 | Type | Name | Points at | Why |
 |---|---|---|---|
 | CNAME | `www` | `12f3f64q.up.railway.app` | Real website |
+| CNAME | `store` | same Railway target as `www` | Custom US Store page (not Shopify). Add the hostname on the Railway service first. |
+| CNAME | `checkout` | Shopify’s CNAME (from admin → Domains) | Shopify Checkout only. Do not point `store` at Shopify. |
 | TXT | `_railway-verify.www` | `railway-verify=…` | Railway ownership |
 | A | `@` | GoDaddy forwarding IPs | No-www → www (do not delete; they have a lock/info icon) |
 | TXT / MX | `send` / `resend._domainkey.send` | Resend values | Contact email |

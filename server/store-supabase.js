@@ -84,6 +84,12 @@ function createSupabaseStore() {
     }
 
     try {
+      await refreshSeedProductMedia();
+    } catch (e) {
+      console.error('Could not refresh product photos from seed:', e.message || e);
+    }
+
+    try {
       await rewriteExistingCabinetCopy();
     } catch (e) {
       console.error('Could not rename cabinet copy to panel:', e.message || e);
@@ -169,7 +175,7 @@ function createSupabaseStore() {
           description: s.description || '',
           badge: s.badge || '',
           image: s.image || '',
-          gallery: [],
+          gallery: Array.isArray(s.gallery) ? s.gallery : [],
           details: dbUtil.detailsFromSeries(s),
           sort_order: bi * 40 + si
         });
@@ -203,6 +209,32 @@ function createSupabaseStore() {
       const { error: upErr } = await supabase.from('products').update({ details: next }).eq('id', row.id);
       throwIf(upErr, 'Could not fill product details for ' + row.series_id);
     }
+  }
+
+  async function refreshSeedProductMedia() {
+    const byKey = {};
+    dbUtil.loadSeedBrands().forEach(function (brand) {
+      (brand.series || []).forEach(function (s) {
+        byKey[brand.id + '/' + s.id] = s;
+      });
+    });
+    const { data: products, error } = await supabase
+      .from('products')
+      .select('id, brand_id, series_id, image, gallery');
+    throwIf(error, 'Could not read products for photo refresh.');
+    let n = 0;
+    for (let i = 0; i < (products || []).length; i++) {
+      const row = products[i];
+      const patch = dbUtil.nextSeedMedia(row, byKey[row.brand_id + '/' + row.series_id]);
+      if (!patch) continue;
+      const { error: upErr } = await supabase
+        .from('products')
+        .update({ image: patch.image, gallery: patch.gallery })
+        .eq('id', row.id);
+      throwIf(upErr, 'Could not update product photo for ' + row.series_id);
+      n += 1;
+    }
+    if (n) console.log('Updated product photos from seed for ' + n + ' series');
   }
 
   async function rewriteExistingCabinetCopy() {

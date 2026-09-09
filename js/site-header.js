@@ -22,6 +22,12 @@
     return file === 'designer.html' || file === 'led-wall-calculator' || p === '/led-wall-calculator';
   }
 
+  function storeHref() {
+    var host = (location.hostname || '').toLowerCase();
+    if (host === 'localhost' || host === '127.0.0.1') return '/store';
+    return 'https://store.spectrumdisplay.com';
+  }
+
   function onSolutionsPath() {
     var p = (location.pathname || '').toLowerCase().replace(/\/$/, '') || '/';
     if (
@@ -207,29 +213,29 @@
     value: 'assets/products/diao-value.jpg',
     rental: 'assets/products/element-rental.jpg',
     creative: 'assets/products/element-creative.jpg',
-    'vx400-pro': 'assets/products/novastar/vx400-pro.svg',
-    'vx600-pro': 'assets/products/novastar/vx600-pro.svg',
-    'vx1000-pro': 'assets/products/novastar/vx1000-pro.svg',
-    'vx2000-pro': 'assets/products/novastar/vx2000-pro.svg',
-    ku20: 'assets/products/novastar/ku20.svg',
-    mx20: 'assets/products/novastar/mx20.svg',
-    mx30: 'assets/products/novastar/mx30.svg',
-    'mx40-pro': 'assets/products/novastar/mx40-pro.svg',
-    'mx2000-pro': 'assets/products/novastar/mx2000-pro.svg',
-    'mx6000-pro': 'assets/products/novastar/mx6000-pro.svg',
-    cvt10: 'assets/products/novastar/cvt10.svg',
-    h2: 'assets/products/novastar/h2.svg',
-    h5: 'assets/products/novastar/h5.svg',
-    msd300: 'assets/products/novastar/msd300.svg',
-    msd600: 'assets/products/novastar/msd600.svg',
-    mctrl300: 'assets/products/novastar/mctrl300.svg',
-    mctrl600: 'assets/products/novastar/mctrl600.svg',
-    'mctrl660-pro': 'assets/products/novastar/mctrl660-pro.svg',
-    mctrl4k: 'assets/products/novastar/mctrl4k.svg',
-    'tu15-pro': 'assets/products/novastar/tu15-pro.svg',
-    'tu20-pro': 'assets/products/novastar/tu20-pro.svg',
+    'vx400-pro': 'assets/products/novastar/vx400-pro.webp',
+    'vx600-pro': 'assets/products/novastar/vx600-pro.webp',
+    'vx1000-pro': 'assets/products/novastar/vx1000-pro.webp',
+    'vx2000-pro': 'assets/products/novastar/vx2000-pro.webp',
+    ku20: 'assets/products/novastar/ku20.webp',
+    mx20: 'assets/products/novastar/mx20.webp',
+    mx30: 'assets/products/novastar/mx30.webp',
+    'mx40-pro': 'assets/products/novastar/mx40-pro.webp',
+    'mx2000-pro': 'assets/products/novastar/mx2000-pro.webp',
+    'mx6000-pro': 'assets/products/novastar/mx6000-pro.webp',
+    cvt10: 'assets/products/novastar/cvt10.webp',
+    h2: 'assets/products/novastar/h2.webp',
+    h5: 'assets/products/novastar/h5.webp',
+    msd300: 'assets/products/novastar/msd300.webp',
+    msd600: 'assets/products/novastar/msd600.webp',
+    mctrl300: 'assets/products/novastar/mctrl300.webp',
+    mctrl600: 'assets/products/novastar/mctrl600.webp',
+    'mctrl660-pro': 'assets/products/novastar/mctrl660-pro.webp',
+    mctrl4k: 'assets/products/novastar/mctrl4k.webp',
+    'tu15-pro': 'assets/products/novastar/tu15-pro.webp',
+    'tu20-pro': 'assets/products/novastar/tu20-pro.webp',
     'tu4k-pro': 'assets/products/novastar/tu4k-pro.svg',
-    tb60: 'assets/products/novastar/tb60.svg'
+    tb60: 'assets/products/novastar/tb60.webp'
   };
 
   function imageForHref(href) {
@@ -279,7 +285,8 @@
           name: p.name,
           href: 'product.html?brand=' + encodeURIComponent(p.brandId) + '&series=' + encodeURIComponent(p.id),
           tag: 'NVS',
-          image: window.spectrumDisplayImage ? spectrumDisplayImage(p.image, 'thumb') : p.image
+          image: window.spectrumDisplayImage ? spectrumDisplayImage(p.image, 'thumb') : p.image,
+          contain: true
         };
       });
       items.push({ name: 'All control systems', href: 'products.html?cat=control', tag: 'NVS' });
@@ -314,7 +321,7 @@
     var cards = featured.map(function (item) {
       var img = absUrl(item.image || imageForHref(item.href));
       return '<a class="site-mega-card" href="' + absUrl(item.href) + '">' +
-        (img ? '<span class="site-mega-card-media"><img src="' + img + '" alt=""></span>' : '') +
+        (img ? '<span class="site-mega-card-media' + (item.contain ? ' is-contain' : '') + '"><img src="' + img + '" alt=""></span>' : '') +
         '<span class="site-mega-card-meta">' +
           (item.tag ? '<span class="site-mega-dot">' + item.tag + '</span>' : '') +
           '<span class="site-mega-card-name">' + item.name + '</span>' +
@@ -442,6 +449,7 @@
         '</button>' +
       '</div>' +
       '<a class="site-nav-link' + (onCalculatorPath() ? ' is-active' : '') + '" href="/led-wall-calculator" data-i18n="nav.designer">LED Wall Calculator</a>' +
+      '<a class="site-nav-link" href="' + storeHref() + '" data-i18n="nav.store">Store</a>' +
       '<a class="site-nav-link' + (file === 'dealer.html' ? ' is-active' : '') + '" href="/dealer.html" data-i18n="nav.dealer">Dealer</a>';
 
     var header = $('.site-header');

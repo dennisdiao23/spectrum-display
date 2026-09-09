@@ -12,6 +12,10 @@ const CONTROL_DETAIL_KEYS = [
   'subtype', 'replacementOnly', 'family', 'model', 'maxPixels', 'outputs', 'inputs',
   'bestFor', 'bestWith', 'priceEach', 'latency', 'hdr', 'chips', 'downloads', 'downloadVersion'
 ];
+const STORE_DETAIL_KEYS = [
+  'shopify_sell', 'shopify_product_id', 'shopify_variant_id', 'shopify_handle',
+  'shopify_variants', 'store_collection', 'store_lead', 'store_featured', 'store_icon'
+];
 
 function loadSeedBrands() {
   const brands = JSON.parse(fs.readFileSync(SEED_PATH, 'utf8'));
@@ -45,7 +49,7 @@ function rewriteCabinetCopy(value) {
 function detailsFromSeries(s) {
   const details = {};
   if (!s || typeof s !== 'object') return details;
-  ['cats', 'specTable', 'lead', 'sourceUrl', 'features'].concat(CONTROL_DETAIL_KEYS).forEach(function (k) {
+  ['cats', 'specTable', 'lead', 'sourceUrl', 'features'].concat(CONTROL_DETAIL_KEYS, STORE_DETAIL_KEYS).forEach(function (k) {
     if (s[k] != null) details[k] = s[k];
   });
   if (s.type === 'control' || s.subtype) {
@@ -954,7 +958,7 @@ function upsertMissingCatalog(db) {
       brand_id, series_id, name, pitches, price_per_m2, weight_per_m2,
       power_avg, power_max, cabinet_w, cabinet_h, type, description, badge,
       image, gallery, details, sort_order, created_at, updated_at
-    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, '[]', ?, ?, ?, ?)
+    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
   `);
   const stamp = nowIso();
   let added = 0;
@@ -980,6 +984,7 @@ function upsertMissingCatalog(db) {
           s.description || '',
           s.badge || '',
           s.image || '',
+          JSON.stringify(Array.isArray(s.gallery) ? s.gallery : []),
           JSON.stringify(detailsFromSeries(s)),
           bi * 40 + si,
           stamp,
@@ -1016,6 +1021,43 @@ function fillMissingProductDetails(db) {
       upd.run(JSON.stringify(next), row.id);
     }
   });
+}
+
+function isSeedManagedImage(image) {
+  const s = String(image || '').replace(/^\/+/, '');
+  if (!s) return true;
+  if (/\.svg(\?|#|$)/i.test(s)) return true;
+  return /^assets\/products\/novastar\//i.test(s);
+}
+
+function nextSeedMedia(row, series) {
+  if (!series || !series.image) return null;
+  if (!isSeedManagedImage(row && row.image)) return null;
+  const seedGallery = Array.isArray(series.gallery) ? series.gallery.slice() : [];
+  const currentGallery = Array.isArray(row.gallery) ? row.gallery : parseJson(row.gallery, []);
+  const nextImage = series.image;
+  const nextGallery = seedGallery.length ? seedGallery : currentGallery;
+  if (nextImage === row.image && JSON.stringify(nextGallery) === JSON.stringify(currentGallery)) return null;
+  return { image: nextImage, gallery: nextGallery };
+}
+
+function refreshSeedProductMedia(db) {
+  const byKey = {};
+  loadSeedBrands().forEach(function (brand) {
+    (brand.series || []).forEach(function (s) {
+      byKey[brand.id + '/' + s.id] = s;
+    });
+  });
+  const rows = db.prepare('SELECT id, brand_id, series_id, image, gallery FROM products').all();
+  const upd = db.prepare('UPDATE products SET image = ?, gallery = ?, updated_at = ? WHERE id = ?');
+  let n = 0;
+  rows.forEach(function (row) {
+    const patch = nextSeedMedia(row, byKey[row.brand_id + '/' + row.series_id]);
+    if (!patch) return;
+    upd.run(patch.image, JSON.stringify(patch.gallery), nowIso(), row.id);
+    n += 1;
+  });
+  if (n) console.log('Updated product photos from seed for ' + n + ' series');
 }
 
 function rewriteExistingCabinetCopy(db) {
@@ -1113,7 +1155,7 @@ function rowToProduct(row, brand) {
     priceLabel: unitPrice ? 'From $' + Number(unitPrice).toLocaleString() : 'Request quote'
   };
   if (control) product.priceEach = unitPrice;
-  ['specTable', 'lead', 'sourceUrl', 'features'].concat(CONTROL_DETAIL_KEYS).forEach(function (k) {
+  ['specTable', 'lead', 'sourceUrl', 'features'].concat(CONTROL_DETAIL_KEYS, STORE_DETAIL_KEYS).forEach(function (k) {
     if (details[k] != null) product[k] = details[k];
   });
   return product;
@@ -1169,6 +1211,8 @@ module.exports = {
   loadSeedBrands,
   detailsFromSeries,
   fillMissingProductDetails,
+  refreshSeedProductMedia,
+  nextSeedMedia,
   rewriteCabinetCopy,
   rewriteExistingCabinetCopy,
   getCatalog,
