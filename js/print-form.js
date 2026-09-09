@@ -105,9 +105,96 @@
   const GRID_COUNT = 90;
   const GRID_STEP = 100 / GRID_COUNT;
 
+  const FONTS = [
+    { id: 'arial', label: 'Arial', css: 'Arial, Helvetica, sans-serif' },
+    { id: 'helvetica', label: 'Helvetica', css: 'Helvetica, Arial, sans-serif' },
+    { id: 'calibri', label: 'Calibri', css: 'Calibri, Carlito, sans-serif' },
+    { id: 'verdana', label: 'Verdana', css: 'Verdana, Geneva, sans-serif' },
+    { id: 'tahoma', label: 'Tahoma', css: 'Tahoma, Geneva, sans-serif' },
+    { id: 'times', label: 'Times New Roman', css: '"Times New Roman", Times, serif' },
+    { id: 'georgia', label: 'Georgia', css: 'Georgia, serif' },
+    { id: 'garamond', label: 'Garamond', css: 'Garamond, "Times New Roman", serif' },
+    { id: 'courier', label: 'Courier New', css: '"Courier New", Courier, monospace' }
+  ];
+  const FONT_SIZES = [8, 9, 10, 11, 12, 14, 16, 18, 20, 22, 24, 28, 32, 36];
+  const FONT_STYLES = [
+    { id: 'regular', label: 'Regular', weight: 400, italic: false },
+    { id: 'italic', label: 'Italic', weight: 400, italic: true },
+    { id: 'bold', label: 'Bold', weight: 700, italic: false },
+    { id: 'bold-italic', label: 'Bold italic', weight: 700, italic: true }
+  ];
+  const BLOCK_FONT_PRESET = {
+    title: { fontSize: 28, fontStyle: 'bold' },
+    company: { fontSize: 18, fontStyle: 'bold' }
+  };
+  const NO_TYPE_BLOCKS = { logo: true, watermark: true };
+
+  function canTypeBlock(id) {
+    return !!id && !NO_TYPE_BLOCKS[id];
+  }
+
+  function fontOverride(fonts, id) {
+    if (!canTypeBlock(id) || !fonts || typeof fonts !== 'object') return null;
+    const ov = fonts[id];
+    return ov && typeof ov === 'object' ? ov : null;
+  }
+
+  function pick(list, id, fallback) {
+    const key = String(id || '').toLowerCase();
+    let i = 0;
+    for (i = 0; i < list.length; i++) {
+      if (list[i].id === key) return list[i];
+    }
+    return fallback || list[0];
+  }
+
+  function fontSpec(tpl) {
+    const fam = pick(FONTS, tpl && tpl.fontFamily);
+    const style = pick(FONT_STYLES, tpl && tpl.fontStyle);
+    let size = Number(tpl && tpl.fontSize);
+    if (FONT_SIZES.indexOf(size) === -1) size = 12;
+    return {
+      familyId: fam.id,
+      family: fam.css,
+      size: size,
+      styleId: style.id,
+      weight: style.weight,
+      italic: style.italic
+    };
+  }
+
+  function sheetFontStyle(tpl) {
+    const f = fontSpec(tpl);
+    return '--pf-family:' + f.family +
+      ';--pf-size:' + f.size + 'pt' +
+      ';--pf-weight:' + f.weight +
+      ';--pf-style:' + (f.italic ? 'italic' : 'normal');
+  }
+
+  function effectiveFont(tpl, id) {
+    const base = fontSpec(tpl || {});
+    const ov = fontOverride(tpl && tpl.blockFonts, id);
+    if (ov) return fontSpec(ov);
+    const preset = (id && BLOCK_FONT_PRESET[id]) || {};
+    return fontSpec({
+      fontFamily: base.familyId,
+      fontSize: preset.fontSize || base.size,
+      fontStyle: preset.fontStyle || base.styleId
+    });
+  }
+
   function headerLayoutId(id) {
     return 'hdr-' + id;
   }
+
+  /* v1 = % of the old 7.5×10 in live area. v2 = % of US Letter 8.5×11 in.
+     0.5 in inset is Microsoft Word Narrow, which covers HP laser Letter
+     (0.25 / 0.20 in) and Canon Letter (0.26 / 0.25 / 0.12 / 0.20 in). */
+  const LAYOUT_VERSION = 2;
+  const LIVE_INSET_X = (0.5 / 8.5) * 100;
+  const LIVE_INSET_Y = (0.5 / 11) * 100;
+  const LIVE_W = (7.5 / 8.5) * 100;
+  const LIVE_H = (10 / 11) * 100;
 
   function defaultHeaderLayout() {
     const out = {};
@@ -123,7 +210,7 @@
     return out;
   }
 
-  function defaultLayout() {
+  function defaultLayoutV1() {
     return Object.assign({
       company: { x: 0, y: 0, w: 35, h: 10 },
       title: { x: 35, y: 0, w: 30, h: 10 },
@@ -136,6 +223,38 @@
       totals: { x: 60, y: 75, w: 40, h: 15 },
       contact: { x: 0, y: 95, w: 100, h: 5 }
     }, defaultHeaderLayout());
+  }
+
+  function liveFromOld(box) {
+    const b = box && typeof box === 'object' ? box : { x: 0, y: 0, w: 20, h: 8 };
+    return {
+      x: LIVE_INSET_X + (Number(b.x) / 100) * LIVE_W,
+      y: LIVE_INSET_Y + (Number(b.y) / 100) * LIVE_H,
+      w: (Number(b.w) / 100) * LIVE_W,
+      h: (Number(b.h) / 100) * LIVE_H
+    };
+  }
+
+  function mapLayoutFromV1(layout) {
+    const out = {};
+    LAYOUT_IDS.forEach(function (id) {
+      out[id] = liveFromOld(layout[id]);
+    });
+    return out;
+  }
+
+  function defaultLayout() {
+    return mapLayoutFromV1(defaultLayoutV1());
+  }
+
+  function layoutIsLetter(layout, version) {
+    if (Number(version) >= LAYOUT_VERSION) return true;
+    if (Number(version) === 1) return false;
+    const lines = layout && layout.lines;
+    if (lines && Number(lines.w) < 95) return true;
+    const company = layout && layout.company;
+    if (company && Number(company.x) > 2) return true;
+    return false;
   }
 
   function snapPct(n) {
@@ -180,9 +299,10 @@
     return out;
   }
 
-  function mergeLayout(input) {
-    const defs = defaultLayout();
+  function mergeLayout(input, version) {
     const src = input && typeof input === 'object' ? input : {};
+    const letter = layoutIsLetter(src, version);
+    const defs = letter ? defaultLayout() : defaultLayoutV1();
     const migrated = Object.assign({}, src);
     const hasHdr = HEADER_FIELD_IDS.some(function (id) { return src[headerLayoutId(id)]; });
     if (!hasHdr && src.header) {
@@ -192,7 +312,12 @@
     LAYOUT_IDS.forEach(function (id) {
       out[id] = sanitizeBox(migrated[id], defs[id]);
     });
-    return out;
+    if (letter) return out;
+    const mapped = mapLayoutFromV1(out);
+    LAYOUT_IDS.forEach(function (id) {
+      mapped[id] = sanitizeBox(mapped[id], defaultLayout()[id]);
+    });
+    return mapped;
   }
 
   function snapBox(box, step) {
@@ -219,12 +344,16 @@
     return 'left:' + b.x + '%;top:' + b.y + '%;width:' + b.w + '%;height:' + b.h + '%';
   }
 
-  function wrapAbs(id, inner, layout, edit, off, extraClass) {
+  function wrapAbs(id, inner, layout, edit, off, extraClass, fonts) {
     if (!edit && off) return '';
     const cls = ['pf-abs'];
     if (off) cls.push('is-off');
     if (extraClass) cls.push(extraClass);
-    return '<div class="' + cls.join(' ') + '" data-pf-block="' + id + '" style="' + boxStyle(layout, id) + '">' +
+    const ov = fontOverride(fonts, id);
+    if (ov && id !== 'company') cls.push('is-typed');
+    let style = boxStyle(layout, id);
+    if (ov && id !== 'company') style += ';' + sheetFontStyle(ov);
+    return '<div class="' + cls.join(' ') + '" data-pf-block="' + id + '" style="' + style + '">' +
       inner +
       (edit ? '<span class="pf-resize" aria-hidden="true"></span>' : '') +
       '</div>';
@@ -238,11 +367,12 @@
     const tpl = template || {};
     const edit = !!(opts && opts.edit);
     const blocks = tpl.blocks || {};
-    const layout = mergeLayout(tpl.layout);
+    const layout = mergeLayout(tpl.layout, tpl.layoutVersion);
     const company = (data && data.company) || {};
     const doc = (data && data.doc) || {};
     const cols = visible(tpl.columns);
     const lines = doc.lines && doc.lines.length ? doc.lines : [{}, {}, {}, {}];
+    const fonts = tpl.blockFonts || {};
     const title = tpl.title || 'Invoice';
     const logo = tpl.logo || '';
     const co = companyLines(company);
@@ -254,7 +384,9 @@
 
     let companyInner = '';
     if (blocks.company !== false) {
-      companyInner = '<div class="pf-co"><div class="pf-co-name">' + esc(co[0] || '') + '</div>';
+      const coOv = fontOverride(fonts, 'company');
+      companyInner = '<div class="pf-co"><div class="pf-co-name' + (coOv ? ' is-typed' : '') + '"' +
+        (coOv ? ' style="' + esc(sheetFontStyle(coOv)) + '"' : '') + '>' + esc(co[0] || '') + '</div>';
       co.slice(1).forEach(function (line) {
         companyInner += '<div>' + esc(line) + '</div>';
       });
@@ -303,7 +435,7 @@
       const off = !row.print;
       const inner = '<div class="pf-hfield"><div class="pf-hfield-h">' + esc(row.title || id) +
         '</div><div class="pf-hfield-v">' + esc(fieldValue(doc, id)) + '</div></div>';
-      headerHtml += wrapAbs(headerLayoutId(id), inner, layout, edit, off);
+      headerHtml += wrapAbs(headerLayoutId(id), inner, layout, edit, off, '', fonts);
     });
 
     let linesInner = '';
@@ -355,62 +487,68 @@
       contactInner = ph('Phone / email');
     }
 
-    return '<div class="pf-sheet is-abs' + (edit ? ' is-edit' : '') + (edit && opts && opts.grid ? ' is-grid' : '') + '">' +
-      wrapAbs('watermark', watermarkInner, layout, edit, blocks.watermark === false, 'is-watermark') +
-      wrapAbs('company', companyInner, layout, edit, blocks.company === false) +
-      wrapAbs('title', '<div class="pf-title">' + esc(title) + '</div>', layout, edit, false) +
-      wrapAbs('logo', logoInner, layout, edit, blocks.logo === false || !logo) +
-      wrapAbs('billTo', billInner, layout, edit, blocks.billTo === false) +
-      wrapAbs('shipTo', shipInner, layout, edit, blocks.shipTo === false) +
+    return '<div class="pf-sheet is-abs' + (edit ? ' is-edit' : '') + (edit && opts && opts.grid ? ' is-grid' : '') +
+      '" style="' + esc(sheetFontStyle(tpl)) + '">' +
+      wrapAbs('watermark', watermarkInner, layout, edit, blocks.watermark === false, 'is-watermark', fonts) +
+      wrapAbs('company', companyInner, layout, edit, blocks.company === false, '', fonts) +
+      wrapAbs('title', '<div class="pf-title">' + esc(title) + '</div>', layout, edit, false, '', fonts) +
+      wrapAbs('logo', logoInner, layout, edit, blocks.logo === false || !logo, '', fonts) +
+      wrapAbs('billTo', billInner, layout, edit, blocks.billTo === false, '', fonts) +
+      wrapAbs('shipTo', shipInner, layout, edit, blocks.shipTo === false, '', fonts) +
       headerHtml +
-      wrapAbs('lines', linesInner, layout, edit, blocks.lines === false) +
-      wrapAbs('paymentTerms', termsInner, layout, edit, blocks.paymentTerms === false || !tpl.paymentTermsText) +
-      wrapAbs('totals', totalsInner, layout, edit, blocks.totals === false) +
-      wrapAbs('contact', contactInner, layout, edit, blocks.contact === false) +
+      wrapAbs('lines', linesInner, layout, edit, blocks.lines === false, '', fonts) +
+      wrapAbs('paymentTerms', termsInner, layout, edit, blocks.paymentTerms === false || !tpl.paymentTermsText, '', fonts) +
+      wrapAbs('totals', totalsInner, layout, edit, blocks.totals === false, '', fonts) +
+      wrapAbs('contact', contactInner, layout, edit, blocks.contact === false, '', fonts) +
+      (opts && opts.safe ? '<div class="pf-safe" aria-hidden="true"></div>' : '') +
       '</div>';
   }
 
   function sheetCss() {
     return [
       '.pf-sheet,.pf-sheet *{box-sizing:border-box}',
-      '.pf-sheet.is-abs{position:relative;width:7.5in;height:10in;max-width:none;margin:0 auto;box-sizing:border-box;background:#fff;color:#111;font:12px/1.35 Arial,Helvetica,sans-serif}',
+      '.pf-sheet.is-abs{position:relative;width:8.5in;height:11in;max-width:none;margin:0 auto;box-sizing:border-box;background:#fff;color:#111;font-family:var(--pf-family,Arial);font-size:var(--pf-size,12pt);font-weight:var(--pf-weight,400);font-style:var(--pf-style,normal);line-height:1.35}',
       '.pf-abs{position:absolute;box-sizing:border-box;overflow:hidden;z-index:1}',
       '.pf-abs.is-watermark{z-index:0}',
       '.pf-abs .pf-co,.pf-abs .pf-title,.pf-abs .pf-logo,.pf-abs .pf-box,.pf-abs .pf-hfield,.pf-abs .pf-lines,.pf-abs .pf-terms,.pf-abs .pf-totals,.pf-abs .pf-contact,.pf-abs .pf-ph,.pf-abs .pf-watermark{width:100%;height:100%;margin:0}',
       '.pf-watermark{display:flex;align-items:center;justify-content:center}',
       '.pf-watermark img{max-width:100%;max-height:100%;width:auto;height:auto;object-fit:contain;opacity:.2}',
-      '.pf-co{font-size:12px}',
-      '.pf-co-name{font-size:18px;font-weight:800;letter-spacing:.04em;margin-bottom:4px}',
-      '.pf-title{display:flex;align-items:center;justify-content:center;font-size:28px;font-weight:700;text-align:center;padding:0}',
+      '.pf-co{font-size:1em}',
+      '.pf-co-name{font-size:1.5em;font-weight:800;letter-spacing:.04em;margin-bottom:4px}',
+      '.pf-title{display:flex;align-items:center;justify-content:center;font-size:2.33em;font-weight:700;text-align:center;padding:0}',
       '.pf-logo{display:flex;align-items:center;justify-content:flex-end}',
       '.pf-logo img{max-height:100%;max-width:100%;object-fit:contain}',
       '.pf-box{border:1px solid #222;min-height:0;display:flex;flex-direction:column}',
-      '.pf-box-h{background:#d9d9d9;border-bottom:1px solid #222;font-weight:700;padding:3px 8px;font-size:12px}',
-      '.pf-box pre{margin:0;padding:8px;font:12px/1.4 Arial,Helvetica,sans-serif;white-space:pre-wrap;flex:1}',
+      '.pf-box-h{background:#d9d9d9;border-bottom:1px solid #222;font-weight:700;padding:3px 8px;font-size:1em}',
+      '.pf-box pre{margin:0;padding:8px;font:inherit;line-height:1.4;white-space:pre-wrap;flex:1}',
       '.pf-hfield{border:1px solid #222;min-height:0;display:flex;flex-direction:column;overflow:hidden}',
-      '.pf-hfield-h{background:#d9d9d9;border-bottom:1px solid #222;font-weight:700;padding:3px 6px;font-size:11px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}',
-      '.pf-hfield-v{padding:6px;flex:1;font-size:12px;overflow:hidden}',
+      '.pf-hfield-h{background:#d9d9d9;border-bottom:1px solid #222;font-weight:700;padding:3px 6px;font-size:.92em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}',
+      '.pf-hfield-v{padding:6px;flex:1;font-size:1em;overflow:hidden}',
       '.pf-lines{width:100%;border-collapse:collapse}',
-      '.pf-lines th{background:#d9d9d9;border:1px solid #222;font-size:12px;font-weight:700;padding:5px 6px;text-align:left}',
+      '.pf-lines th{background:#d9d9d9;border:1px solid #222;font-size:1em;font-weight:700;padding:5px 6px;text-align:left}',
       '.pf-lines td{border-left:1px solid #222;border-right:1px solid #222;padding:5px 6px;vertical-align:top}',
       '.pf-lines tbody tr.is-alt td{background:#f4f4f4}',
       '.pf-lines tbody tr:last-child td{border-bottom:1px solid #222}',
       '.pf-terms-h{font-weight:800;margin-bottom:4px}',
       '.pf-totals{border-top:1px solid #222;padding-top:6px}',
       '.pf-totals div{display:flex;justify-content:space-between;gap:12px;padding:3px 0}',
-      '.pf-totals .is-due{font-size:16px;font-weight:800}',
-      '.pf-contact{border-top:1px solid #222;padding-top:8px;font-size:12px}',
-      '.pf-ph{display:flex;align-items:center;justify-content:center;color:#888;font-size:11px;border:1px dashed #bbb;background:#fafafa}'
+      '.pf-totals .is-due{font-size:1.33em;font-weight:800}',
+      '.pf-contact{border-top:1px solid #222;padding-top:8px;font-size:1em}',
+      '.pf-ph{display:flex;align-items:center;justify-content:center;color:#888;font-size:.92em;border:1px dashed #bbb;background:#fafafa}',
+      '.pf-abs.is-typed{font-family:var(--pf-family,inherit);font-size:var(--pf-size,inherit);font-weight:var(--pf-weight,inherit);font-style:var(--pf-style,inherit)}',
+      '.pf-abs.is-typed .pf-title,.pf-abs.is-typed .pf-co,.pf-abs.is-typed .pf-co-name,.pf-abs.is-typed .pf-box,.pf-abs.is-typed .pf-box-h,.pf-abs.is-typed .pf-box pre,.pf-abs.is-typed .pf-hfield,.pf-abs.is-typed .pf-hfield-h,.pf-abs.is-typed .pf-hfield-v,.pf-abs.is-typed .pf-lines,.pf-abs.is-typed .pf-lines th,.pf-abs.is-typed .pf-terms,.pf-abs.is-typed .pf-terms-h,.pf-abs.is-typed .pf-totals,.pf-abs.is-typed .pf-totals .is-due,.pf-abs.is-typed .pf-contact,.pf-abs.is-typed .pf-ph{font-family:inherit;font-size:1em;font-weight:inherit;font-style:inherit}',
+      '.pf-co-name.is-typed{font-family:var(--pf-family,inherit);font-size:var(--pf-size,inherit);font-weight:var(--pf-weight,inherit);font-style:var(--pf-style,inherit)}'
     ].join('');
   }
 
   function editorCss() {
     return sheetCss() + [
-      '.pf-sheet.is-edit{box-shadow:0 10px 32px rgba(16,32,71,.16)}',
+      '.pf-sheet.is-abs{box-shadow:0 10px 32px rgba(16,32,71,.16)}',
+      '.pf-safe{position:absolute;left:0.5in;top:0.5in;width:7.5in;height:10in;border:1px dotted rgba(15,23,42,.5);pointer-events:none;z-index:3;box-sizing:border-box}',
       '.pf-sheet.is-edit.is-grid{background-image:linear-gradient(to right,rgba(14,165,233,.16) 1px,transparent 1px),linear-gradient(to bottom,rgba(14,165,233,.16) 1px,transparent 1px);background-size:calc(100%/90) calc(100%/90)}',
       '.pf-sheet.is-edit .pf-abs{overflow:visible;outline:1px dashed rgba(14,165,233,.55);cursor:move;user-select:none;touch-action:none}',
       '.pf-sheet.is-edit .pf-abs.is-off{outline-style:dotted;opacity:.42}',
-      '.pf-sheet.is-edit .pf-abs.is-on{outline:2px solid #0ea5e9;z-index:4}',
+      '.pf-sheet .pf-abs.is-on{outline:2px solid #0ea5e9;z-index:4}',
       '.pf-resize{position:absolute;right:-1px;bottom:-1px;width:14px;height:14px;background:#0ea5e9;border:2px solid #fff;border-radius:2px;cursor:se-resize;box-shadow:0 0 0 1px rgba(14,165,233,.4);z-index:6;pointer-events:auto}',
       '.pf-resize:after{content:"";position:absolute;right:-6px;bottom:-6px;width:24px;height:24px}',
       '.pf-sheet.is-edit .pf-abs .pf-box,.pf-sheet.is-edit .pf-abs .pf-hfield,.pf-sheet.is-edit .pf-abs .pf-lines,.pf-sheet.is-edit .pf-abs .pf-terms,.pf-sheet.is-edit .pf-abs .pf-totals,.pf-sheet.is-edit .pf-abs .pf-contact,.pf-sheet.is-edit .pf-abs .pf-co,.pf-sheet.is-edit .pf-abs .pf-title,.pf-sheet.is-edit .pf-abs .pf-logo,.pf-sheet.is-edit .pf-abs .pf-ph,.pf-sheet.is-edit .pf-abs .pf-watermark{pointer-events:none}'
@@ -423,7 +561,6 @@
       'html,body{margin:0;padding:0;background:#fff;color:#111;font:12px/1.35 Arial,Helvetica,sans-serif}',
       '.pf-noprint{position:fixed;right:16px;bottom:16px}',
       sheetCss(),
-      '.pf-sheet.is-abs{margin:0.45in auto 0}',
       '@media print{html,body{width:8.5in;height:11in;overflow:hidden;-webkit-print-color-adjust:exact;print-color-adjust:exact}.pf-abs{overflow:visible}.pf-noprint{display:none!important}}'
     ].join('');
   }
@@ -496,10 +633,17 @@
     companyLines: companyLines,
     defaultLayout: defaultLayout,
     mergeLayout: mergeLayout,
+    LAYOUT_VERSION: LAYOUT_VERSION,
     snapBox: snapBox,
     headerLayoutId: headerLayoutId,
     LAYOUT_IDS: LAYOUT_IDS,
     GRID_STEP: GRID_STEP,
-    GRID_COUNT: GRID_COUNT
+    GRID_COUNT: GRID_COUNT,
+    FONTS: FONTS,
+    FONT_SIZES: FONT_SIZES,
+    FONT_STYLES: FONT_STYLES,
+    fontSpec: fontSpec,
+    effectiveFont: effectiveFont,
+    canTypeBlock: canTypeBlock
   };
 })(window);

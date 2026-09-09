@@ -1594,7 +1594,10 @@ async function main() {
           headerFields: pf.HEADER_FIELDS,
           columns: pf.COLUMNS,
           blocks: pf.BLOCKS,
-          logos: pf.LOGOS
+          logos: pf.LOGOS,
+          fonts: pf.FONTS,
+          fontSizes: pf.FONT_SIZES,
+          fontStyles: pf.FONT_STYLES
         }
       });
     } catch (err) { next(err); }

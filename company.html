@@ -8,10 +8,10 @@
   <link rel="apple-touch-icon" href="/assets/apple-touch-icon.png" />
   <title>Company | Spectrum Display</title>
   <meta name="robots" content="noindex, nofollow" />
-  <link rel="stylesheet" href="/css/company-dash.css?v=forms9" />
+  <link rel="stylesheet" href="/css/company-dash.css?v=forms12" />
   <script src="/js/address-autocomplete.js"></script>
   <script src="/js/company-chat.js?v=cache1"></script>
-  <script src="/js/print-form.js?v=forms9"></script>
+  <script src="/js/print-form.js?v=forms12"></script>
   <script>
     (function () {
       try {
@@ -1991,6 +1991,18 @@
             <label class="so-field"><span>Logo</span>
               <select id="pf-logo"></select>
             </label>
+            <div class="pf-type-row">
+              <label class="so-field"><span>Font</span>
+                <select id="pf-font"></select>
+              </label>
+              <label class="so-field"><span>Size</span>
+                <select id="pf-font-size"></select>
+              </label>
+              <label class="so-field"><span>Style</span>
+                <select id="pf-font-style"></select>
+              </label>
+            </div>
+            <p class="pf-hint" id="pf-font-hint">Letter. Click a box on the canvas to style only that item.</p>
             <div>
               <p class="pf-label">Show on the page</p>
               <div class="pf-blocks" id="pf-blocks"></div>
@@ -2013,7 +2025,7 @@
             <div class="pf-preview-head">
               <div>
                 <p class="pf-label">Letter canvas</p>
-                <p class="pf-hint" id="pf-canvas-hint">Preview only. Turn Edit on to move and resize boxes.</p>
+                <p class="pf-hint" id="pf-canvas-hint">US Letter (8.5 × 11 in). Dotted line is the 0.5 in printer-safe area.</p>
               </div>
               <div class="pf-preview-actions">
                 <button type="button" id="pf-edit" class="pf-reset" aria-pressed="false">Edit</button>
@@ -2743,7 +2755,7 @@
     </a>
   </nav>
 
-  <link rel="stylesheet" href="/css/company-dash.css?v=forms9" />
+  <link rel="stylesheet" href="/css/company-dash.css?v=forms12" />
 
   <script>
     const loginPanel = document.getElementById('login-panel');
@@ -13912,6 +13924,7 @@
     let pfLayoutDrag = null;
     let pfGridOn = false;
     let pfEditOn = false;
+    let pfSelectedId = '';
     const PF_TYPES = ['invoice', 'quote', 'order', 'po'];
     const PF_TYPE_LABEL = {
       invoice: 'Invoice',
@@ -14082,6 +14095,106 @@
       }).join('');
     }
 
+    function pfBlockLabel(id) {
+      if (!id) return 'Letter';
+      if (id === 'company') return 'Company name';
+      if (id === 'title') return pfDraft && pfDraft.title ? pfDraft.title : 'Title';
+      if (id === 'logo') return 'Logo';
+      if (id === 'watermark') return 'Watermark';
+      if (id === 'billTo') return 'Bill To';
+      if (id === 'shipTo') return 'Ship To';
+      if (id === 'lines') return 'Line table';
+      if (id === 'paymentTerms') return 'Payment terms';
+      if (id === 'totals') return 'Totals';
+      if (id === 'contact') return 'Phone / email';
+      if (id.indexOf('hdr-') === 0) {
+        const hid = id.slice(4);
+        const row = ((pfDraft && pfDraft.headerFields) || []).find(function (f) { return f.id === hid; });
+        return (row && row.title) || hid;
+      }
+      return id;
+    }
+
+    function pfCanTypeSelected() {
+      if (!pfSelectedId) return true;
+      return !window.SpectrumPrintForm || SpectrumPrintForm.canTypeBlock(pfSelectedId);
+    }
+
+    function pfSyncFontHint() {
+      const hint = document.getElementById('pf-font-hint');
+      if (!hint) return;
+      if (!pfSelectedId) {
+        hint.textContent = 'Letter. Click a box on the canvas to style only that item.';
+        return;
+      }
+      if (!pfCanTypeSelected()) {
+        hint.textContent = pfBlockLabel(pfSelectedId) + ' is an image. Pick a text box to change type.';
+        return;
+      }
+      hint.textContent = pfBlockLabel(pfSelectedId) + ' — Font, Size, and Style apply only to this box.';
+    }
+
+    function pfSelectBlock(id) {
+      pfSelectedId = id || '';
+      const host = document.getElementById('pf-preview');
+      if (host) {
+        host.querySelectorAll('.pf-abs.is-on').forEach(function (el) { el.classList.remove('is-on'); });
+        if (pfSelectedId) {
+          const el = host.querySelector('[data-pf-block="' + pfSelectedId + '"]');
+          if (el) el.classList.add('is-on');
+          else pfSelectedId = '';
+        }
+      }
+      pfFillFontFields();
+      pfSyncFontHint();
+    }
+
+    function pfFillFontFields() {
+      const fonts = (printFormsMeta && printFormsMeta.fonts) ||
+        (window.SpectrumPrintForm && SpectrumPrintForm.FONTS) ||
+        [{ id: 'arial', label: 'Arial' }];
+      const sizes = (printFormsMeta && printFormsMeta.fontSizes) ||
+        (window.SpectrumPrintForm && SpectrumPrintForm.FONT_SIZES) ||
+        [8, 9, 10, 11, 12, 14, 16, 18, 20, 22, 24, 28, 32, 36];
+      const styles = (printFormsMeta && printFormsMeta.fontStyles) ||
+        (window.SpectrumPrintForm && SpectrumPrintForm.FONT_STYLES) ||
+        [{ id: 'regular', label: 'Regular' }];
+      const fontEl = document.getElementById('pf-font');
+      const sizeEl = document.getElementById('pf-font-size');
+      const styleEl = document.getElementById('pf-font-style');
+      const spec = (window.SpectrumPrintForm && SpectrumPrintForm.effectiveFont)
+        ? SpectrumPrintForm.effectiveFont(pfDraft || {}, pfCanTypeSelected() ? pfSelectedId : '')
+        : { familyId: 'arial', size: 12, styleId: 'regular' };
+      const canType = pfCanTypeSelected();
+      if (fontEl) {
+        fontEl.innerHTML = fonts.map(function (f) {
+          return '<option value="' + esc(f.id) + '">' + esc(f.label) + '</option>';
+        }).join('');
+        fontEl.value = spec.familyId || 'arial';
+        if (!fontEl.value) fontEl.value = 'arial';
+        fontEl.disabled = !canType;
+      }
+      if (sizeEl) {
+        sizeEl.innerHTML = sizes.map(function (n) {
+          return '<option value="' + n + '">' + n + ' pt</option>';
+        }).join('');
+        sizeEl.value = String(spec.size || 12);
+        if (!sizeEl.value) sizeEl.value = '12';
+        sizeEl.disabled = !canType;
+      }
+      if (styleEl) {
+        styleEl.innerHTML = styles.map(function (s) {
+          const id = s.id || s;
+          const label = s.label || (id === 'bold-italic' ? 'Bold italic' : String(id).charAt(0).toUpperCase() + String(id).slice(1));
+          return '<option value="' + esc(id) + '">' + esc(label) + '</option>';
+        }).join('');
+        styleEl.value = spec.styleId || 'regular';
+        if (!styleEl.value) styleEl.value = 'regular';
+        styleEl.disabled = !canType;
+      }
+      pfSyncFontHint();
+    }
+
     function pfFillFields() {
       if (!pfDraft) return;
       document.getElementById('pf-title').value = pfDraft.title || '';
@@ -14097,6 +14210,7 @@
         return '<option value="' + esc(logo.id) + '">' + esc(logo.label) + '</option>';
       }).join('');
       sel.value = pfDraft.logo || '';
+      pfFillFontFields();
       pfRenderBlocks();
       pfRenderLists();
       pfRenderPreview();
@@ -14112,6 +14226,27 @@
         pfDraft.blocks[input.getAttribute('data-pf-block')] = input.checked;
       });
       return pfDraft;
+    }
+
+    function pfApplyFontFromControls() {
+      if (!pfDraft) return;
+      const fontEl = document.getElementById('pf-font');
+      const sizeEl = document.getElementById('pf-font-size');
+      const styleEl = document.getElementById('pf-font-style');
+      const spec = {
+        fontFamily: fontEl ? fontEl.value : 'arial',
+        fontSize: sizeEl ? (Number(sizeEl.value) || 12) : 12,
+        fontStyle: styleEl ? styleEl.value : 'regular'
+      };
+      if (pfSelectedId && pfCanTypeSelected()) {
+        pfDraft.blockFonts = pfDraft.blockFonts || {};
+        pfDraft.blockFonts[pfSelectedId] = spec;
+        return;
+      }
+      if (pfSelectedId && !pfCanTypeSelected()) return;
+      pfDraft.fontFamily = spec.fontFamily;
+      pfDraft.fontSize = spec.fontSize;
+      pfDraft.fontStyle = spec.fontStyle;
     }
 
     function pfGridStep() {
@@ -14143,8 +14278,8 @@
       const hint = document.getElementById('pf-canvas-hint');
       if (hint) {
         hint.textContent = pfEditOn
-          ? 'Drag a block to move it. Drag the corner handle to resize. Save keeps this layout.'
-          : 'Preview only. Turn Edit on to move and resize boxes.';
+          ? 'Click a box to style it. Drag to move. Drag the corner to resize.'
+          : 'US Letter (8.5 × 11 in). Click a box to change Font, Size, and Style for that item.';
       }
       const resetBtn = document.getElementById('pf-reset-layout');
       if (resetBtn) resetBtn.disabled = !pfEditOn;
@@ -14197,7 +14332,8 @@
     function pfEnsureLayout() {
       if (!pfDraft) return null;
       if (!window.SpectrumPrintForm) return pfDraft.layout || {};
-      pfDraft.layout = SpectrumPrintForm.mergeLayout(pfDraft.layout);
+      pfDraft.layout = SpectrumPrintForm.mergeLayout(pfDraft.layout, pfDraft.layoutVersion);
+      pfDraft.layoutVersion = SpectrumPrintForm.LAYOUT_VERSION || 2;
       return pfDraft.layout;
     }
 
@@ -14242,27 +14378,34 @@
       pfEnsureLayout();
       pfEnsureEditorCss();
       const sample = SpectrumPrintForm.sampleDoc(pfType);
-      host.innerHTML = SpectrumPrintForm.sheetHtml(pfDraft, { company: printCompanyCache, doc: sample }, { edit: pfEditOn, grid: pfGridOn });
+      host.innerHTML = SpectrumPrintForm.sheetHtml(pfDraft, { company: printCompanyCache, doc: sample }, { edit: pfEditOn, grid: pfGridOn, safe: true });
       pfSyncEditButton();
+      if (pfSelectedId) {
+        const sel = host.querySelector('[data-pf-block="' + pfSelectedId + '"]');
+        if (sel) sel.classList.add('is-on');
+        else pfSelectedId = '';
+      }
       pfFitPreview();
     }
 
     function pfOnLayoutDown(e) {
-      if (!pfEditOn) return;
       if (e.button && e.button !== 0) return;
       const host = document.getElementById('pf-preview');
       if (!host || !pfDraft) return;
-      const handle = e.target.closest('.pf-resize');
       const box = e.target.closest('#pf-preview .pf-abs');
-      if (!box || !host.contains(box)) return;
-      e.preventDefault();
+      if (!box || !host.contains(box)) {
+        if (host.contains(e.target)) pfSelectBlock('');
+        return;
+      }
       const id = box.getAttribute('data-pf-block');
+      pfSelectBlock(id);
+      if (!pfEditOn) return;
+      const handle = e.target.closest('.pf-resize');
       const layout = pfEnsureLayout();
       const sheet = host.querySelector('.pf-sheet');
       if (!sheet || !id || !layout[id]) return;
+      e.preventDefault();
       const rect = sheet.getBoundingClientRect();
-      host.querySelectorAll('.pf-abs.is-on').forEach(function (el) { el.classList.remove('is-on'); });
-      box.classList.add('is-on');
       pfLayoutDrag = {
         id: id,
         mode: handle ? 'resize' : 'move',
@@ -14310,7 +14453,7 @@
       try { d.el.releasePointerCapture(d.pointerId); } catch (err) {}
       const packed = {};
       packed[d.id] = pfDraft.layout[d.id];
-      let snapped = SpectrumPrintForm.mergeLayout(Object.assign({}, pfDraft.layout, packed))[d.id];
+      let snapped = SpectrumPrintForm.mergeLayout(Object.assign({}, pfDraft.layout, packed), pfDraft.layoutVersion)[d.id];
       if (window.SpectrumPrintForm && SpectrumPrintForm.snapBox) {
         snapped = SpectrumPrintForm.snapBox(snapped, pfGridStep());
       }
@@ -14326,6 +14469,7 @@
       });
       const src = (printFormsCache && printFormsCache[pfType]) || {};
       pfDraft = pfClone(src);
+      pfSelectedId = '';
       pfFillFields();
     }
 
@@ -14403,6 +14547,14 @@
         el.addEventListener('input', pfRenderPreview);
         el.addEventListener('change', pfRenderPreview);
       });
+      ['pf-font', 'pf-font-size', 'pf-font-style'].forEach(function (id) {
+        const el = document.getElementById(id);
+        if (!el) return;
+        el.addEventListener('change', function () {
+          pfApplyFontFromControls();
+          pfRenderPreview();
+        });
+      });
       document.getElementById('pf-blocks').addEventListener('change', function () {
         pfRenderPreview();
       });
@@ -14446,6 +14598,7 @@
         resetBtn.addEventListener('click', function () {
           if (!pfEditOn || !pfDraft || !window.SpectrumPrintForm) return;
           pfDraft.layout = SpectrumPrintForm.defaultLayout();
+          pfDraft.layoutVersion = SpectrumPrintForm.LAYOUT_VERSION || 2;
           pfRenderPreview();
         });
       }
