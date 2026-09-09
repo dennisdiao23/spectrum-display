@@ -310,12 +310,14 @@
     var drag = null;
     function beginDrag(ev, dir) {
       if (S.pageMode) return;
-      if (ev.button !== 0) return;
+      if (ev.pointerType === 'mouse' && ev.button !== 0) return;
+      if (drag) return;
       ev.preventDefault();
       ev.stopPropagation();
       var start = S.rect || defaultRect();
       drag = {
         dir: dir,
+        pointerId: ev.pointerId,
         x: ev.clientX,
         y: ev.clientY,
         left: start.left,
@@ -331,21 +333,13 @@
       root.classList.toggle('is-moving', S.moving);
       root.classList.toggle('is-idle', S.moving);
       document.body.classList.add('chat-resizing');
+      if (ev.currentTarget && ev.currentTarget.setPointerCapture && ev.pointerId != null) {
+        try { ev.currentTarget.setPointerCapture(ev.pointerId); } catch (err) {}
+      }
     }
-    var head = root.querySelector('.co-chat-head');
-    if (head) {
-      head.addEventListener('mousedown', function (ev) {
-        if (ev.target.closest('button, a, input, textarea, select')) return;
-        beginDrag(ev, 'move');
-      });
-    }
-    root.querySelectorAll('.co-chat-resize').forEach(function (handle) {
-      handle.addEventListener('mousedown', function (ev) {
-        beginDrag(ev, handle.getAttribute('data-resize') || 'se');
-      });
-    });
-    document.addEventListener('mousemove', function (ev) {
+    function onPointerMove(ev) {
       if (!drag) return;
+      if (drag.pointerId != null && ev.pointerId !== drag.pointerId) return;
       var dx = ev.clientX - drag.x;
       var dy = ev.clientY - drag.y;
       if (drag.dir === 'move') {
@@ -370,9 +364,10 @@
       if (drag.dir.indexOf('n') !== -1) next.top = Math.max(8, bottom - next.height);
       else next.top = drag.top;
       applyRect(next);
-    });
-    function endDrag() {
+    }
+    function endDrag(ev) {
       if (!drag) return;
+      if (ev && drag.pointerId != null && ev.pointerId !== drag.pointerId) return;
       drag = null;
       S.resizing = false;
       S.moving = false;
@@ -381,7 +376,21 @@
       saveWindowPrefs();
       syncIdle();
     }
-    document.addEventListener('mouseup', endDrag);
+    var head = root.querySelector('.co-chat-head');
+    if (head) {
+      head.addEventListener('pointerdown', function (ev) {
+        if (ev.target.closest('#co-chat-close, #co-chat-back, a, input, textarea, select')) return;
+        beginDrag(ev, 'move');
+      });
+    }
+    root.querySelectorAll('.co-chat-resize').forEach(function (handle) {
+      handle.addEventListener('pointerdown', function (ev) {
+        beginDrag(ev, handle.getAttribute('data-resize') || 'se');
+      });
+    });
+    document.addEventListener('pointermove', onPointerMove);
+    document.addEventListener('pointerup', endDrag);
+    document.addEventListener('pointercancel', endDrag);
     window.addEventListener('resize', function () {
       if (S.windowOpen) applyRect(S.rect || defaultRect());
     });
