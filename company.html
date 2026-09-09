@@ -8,10 +8,10 @@
   <link rel="apple-touch-icon" href="/assets/apple-touch-icon.png" />
   <title>Company | Spectrum Display</title>
   <meta name="robots" content="noindex, nofollow" />
-  <link rel="stylesheet" href="/css/company-dash.css?v=store7" />
+  <link rel="stylesheet" href="/css/company-dash.css?v=store8" />
   <script src="/js/address-autocomplete.js"></script>
   <script src="/js/company-chat.js?v=chatmove2"></script>
-  <script src="/js/print-form.js?v=forms16"></script>
+  <script src="/js/print-form.js?v=forms17"></script>
   <script>
     (function () {
       try {
@@ -1380,6 +1380,7 @@
                 <div class="doc-head-actions">
                   <button type="button" id="po-edit-btn" class="hidden so-doc-btn so-doc-btn-primary">Edit</button>
                   <button type="button" id="po-print" class="so-doc-btn">Print</button>
+                  <button type="button" id="po-pdf" class="so-doc-btn">PDF</button>
                 </div>
                 <div class="po-amount">AMOUNT <strong id="po-amount">$0.00</strong></div>
               </div>
@@ -1886,6 +1887,10 @@
                   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M7 9V4h10v5"/><rect x="6" y="13" width="12" height="7"/><path d="M6 17H4V9h16v8h-2"/></svg>
                   <span>Print</span>
                 </button>
+                <button type="button" id="so-ribbon-pdf" class="so-doc-ribbon-btn" title="PDF">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M7 3h7l5 5v13H7z"/><path d="M14 3v5h5"/><path d="M9 14h6M9 17h4"/></svg>
+                  <span>PDF</span>
+                </button>
                 <button type="button" id="so-ribbon-email" class="so-doc-ribbon-btn" title="Email">
                   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="6" width="18" height="12" rx="1.5"/><path d="m3 8 9 6 9-6"/></svg>
                   <span>Email</span>
@@ -1910,6 +1915,7 @@
                   <div class="doc-head-actions">
                     <button type="button" id="so-edit-btn" class="so-doc-btn so-doc-btn-primary hidden">Edit</button>
                     <button type="button" id="so-print-btn" class="so-doc-btn">Print</button>
+                    <button type="button" id="so-pdf-btn" class="so-doc-btn">PDF</button>
                   </div>
                 </div>
                 <div class="so-doc-headblock">
@@ -14622,6 +14628,10 @@
         accountNo: form.accountNo,
         shipDate: form.shipDate,
         shipVia: form.shipVia,
+        notes: form.notes || '',
+        subtotal: subtotal,
+        discount: discount,
+        tax: tax,
         total: total,
         paymentsApplied: paid,
         balanceDue: Math.max(0, total - paid),
@@ -14658,17 +14668,23 @@
         dueDate: form.dueDate,
         shipVia: form.shipVia,
         permitNo: form.permitNo,
+        notes: form.notes || '',
+        subtotal: total,
+        discount: 0,
+        tax: 0,
         total: total,
+        paymentsApplied: 0,
+        balanceDue: total,
         lines: lines
       };
     }
 
-    async function openLetterPrint(type, doc) {
+    async function openLetterPrint(type, doc, opts) {
       if (!window.SpectrumPrintForm) return;
       try {
         const pack = await loadPrintBundle();
         const template = (pack.forms && pack.forms[type]) || null;
-        const opened = SpectrumPrintForm.openPrint(template, { company: pack.company, doc: doc });
+        const opened = SpectrumPrintForm.openPrint(template, { company: pack.company, doc: doc }, opts);
         if (!opened) showSoMsg('Allow pop-ups to print.');
       } catch (err) {
         if (type === 'po') showPoMsg(err.message || 'Could not print.');
@@ -14676,12 +14692,28 @@
       }
     }
 
+    function letterPdfOpts(doc) {
+      const raw = String((doc && doc.number) || 'document').trim() || 'document';
+      const name = raw.replace(/[\\/:*?"<>|]+/g, '-').replace(/\s+/g, ' ').slice(0, 80);
+      return { download: true, filename: name + '.pdf' };
+    }
+
     function printSalesLetter() {
       openLetterPrint(document.getElementById('so-type').value || 'invoice', soPrintDoc());
     }
 
+    function downloadSalesPdf() {
+      const doc = soPrintDoc();
+      openLetterPrint(document.getElementById('so-type').value || 'invoice', doc, letterPdfOpts(doc));
+    }
+
     function printPoLetter() {
       openLetterPrint('po', poPrintDoc());
+    }
+
+    function downloadPoPdf() {
+      const doc = poPrintDoc();
+      openLetterPrint('po', doc, letterPdfOpts(doc));
     }
 
     function pfClone(value) {
@@ -14721,6 +14753,7 @@
         { id: 'shipTo', label: 'Ship To' },
         { id: 'lines', label: 'Line table' },
         { id: 'totals', label: 'Totals' },
+        { id: 'customerMessage', label: 'Customer message' },
         { id: 'paymentTerms', label: 'Payment terms' },
         { id: 'contact', label: 'Phone / email' }
       ];
@@ -14740,6 +14773,7 @@
       if (id === 'billTo') return 'Bill To';
       if (id === 'shipTo') return 'Ship To';
       if (id === 'lines') return 'Line table';
+      if (id === 'customerMessage') return 'Customer message';
       if (id === 'paymentTerms') return 'Payment terms';
       if (id === 'totals') return 'Totals';
       if (id === 'contact') return 'Phone / email';
@@ -15145,8 +15179,12 @@
     document.getElementById('so-ribbon-print').addEventListener('click', function () {
       printSalesLetter();
     });
+    const soRibbonPdf = document.getElementById('so-ribbon-pdf');
+    if (soRibbonPdf) soRibbonPdf.addEventListener('click', function () { downloadSalesPdf(); });
     const soPrintBtn = document.getElementById('so-print-btn');
     if (soPrintBtn) soPrintBtn.addEventListener('click', function () { printSalesLetter(); });
+    const soPdfBtn = document.getElementById('so-pdf-btn');
+    if (soPdfBtn) soPdfBtn.addEventListener('click', function () { downloadSalesPdf(); });
     (function bindPrintFormsEditor() {
       const tabs = document.getElementById('pf-type-tabs');
       if (!tabs) return;
@@ -17196,6 +17234,8 @@
     document.getElementById('po-print').addEventListener('click', function () {
       printPoLetter();
     });
+    const poPdfBtn = document.getElementById('po-pdf');
+    if (poPdfBtn) poPdfBtn.addEventListener('click', function () { downloadPoPdf(); });
     document.getElementById('po-edit-btn').addEventListener('click', function () {
       editCurrentPo();
     });
