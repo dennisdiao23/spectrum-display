@@ -372,6 +372,7 @@
 
   function sheetCss() {
     return [
+      '.pf-sheet,.pf-sheet *{box-sizing:border-box}',
       '.pf-sheet.is-abs{position:relative;width:7.5in;height:10in;max-width:none;margin:0 auto;box-sizing:border-box;background:#fff;color:#111;font:12px/1.35 Arial,Helvetica,sans-serif}',
       '.pf-abs{position:absolute;box-sizing:border-box;overflow:hidden;z-index:1}',
       '.pf-abs.is-watermark{z-index:0}',
@@ -418,18 +419,19 @@
 
   function printCss() {
     return [
-      '@page{size:letter;margin:0.45in 0.5in}',
+      '@page{size:letter;margin:0}',
       'html,body{margin:0;padding:0;background:#fff;color:#111;font:12px/1.35 Arial,Helvetica,sans-serif}',
+      '.pf-noprint{position:fixed;right:16px;bottom:16px}',
       sheetCss(),
-      '@media print{body{-webkit-print-color-adjust:exact;print-color-adjust:exact}.pf-noprint{display:none!important}}'
+      '.pf-sheet.is-abs{margin:0.45in auto 0}',
+      '@media print{html,body{width:8.5in;height:11in;overflow:hidden;-webkit-print-color-adjust:exact;print-color-adjust:exact}.pf-abs{overflow:visible}.pf-noprint{display:none!important}}'
     ].join('');
   }
 
   function documentHtml(template, data) {
-    return '<!doctype html><html><head><meta charset="utf-8"><title>' +
-      esc((template && template.title) || 'Print') + '</title><style>' + printCss() +
+    return '<!doctype html><html><head><meta charset="utf-8"><title></title><style>' + printCss() +
       '</style></head><body>' + sheetHtml(template, data) +
-      '<div class="pf-noprint" style="text-align:right;margin:16px 0 0">' +
+      '<div class="pf-noprint">' +
       '<button type="button" onclick="window.print()" style="font:13px Arial;padding:8px 16px;border:0;border-radius:999px;background:#0ea5e9;color:#fff;cursor:pointer">Print / Save as PDF</button></div>' +
       '</body></html>';
   }
