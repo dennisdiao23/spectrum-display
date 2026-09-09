@@ -8,10 +8,10 @@
   <link rel="apple-touch-icon" href="/assets/apple-touch-icon.png" />
   <title>Company | Spectrum Display</title>
   <meta name="robots" content="noindex, nofollow" />
-  <link rel="stylesheet" href="/css/company-dash.css?v=forms14" />
+  <link rel="stylesheet" href="/css/company-dash.css?v=forms15" />
   <script src="/js/address-autocomplete.js"></script>
   <script src="/js/company-chat.js?v=cache1"></script>
-  <script src="/js/print-form.js?v=forms14"></script>
+  <script src="/js/print-form.js?v=forms15"></script>
   <script>
     (function () {
       try {
@@ -2754,7 +2754,7 @@
     </a>
   </nav>
 
-  <link rel="stylesheet" href="/css/company-dash.css?v=forms14" />
+  <link rel="stylesheet" href="/css/company-dash.css?v=forms15" />
 
   <script>
     const loginPanel = document.getElementById('login-panel');
@@ -14399,7 +14399,7 @@
     }
 
     function pfLiveBox(orig, dx, dy, mode) {
-      const min = window.SpectrumPrintForm && SpectrumPrintForm.GRID_MIN ? SpectrumPrintForm.GRID_MIN : 5;
+      const min = window.SpectrumPrintForm && SpectrumPrintForm.GRID_MIN ? SpectrumPrintForm.GRID_MIN : (100 / 90);
       const next = { x: orig.x, y: orig.y, w: orig.w, h: orig.h };
       if (mode === 'resize') {
         next.w = Math.min(100 - orig.x, Math.max(min, orig.w + dx));

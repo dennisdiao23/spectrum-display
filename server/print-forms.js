@@ -171,7 +171,7 @@ const LAYOUT_IDS = [
 
 const GRID_COUNT = 90;
 const GRID_STEP = 100 / GRID_COUNT;
-const GRID_MIN = GRID_STEP * 5;
+const GRID_MIN = GRID_STEP;
 const MIN_BOX_W = GRID_MIN;
 const MIN_BOX_H = GRID_MIN;
 

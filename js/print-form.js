@@ -104,7 +104,7 @@
 
   const GRID_COUNT = 90;
   const GRID_STEP = 100 / GRID_COUNT;
-  const GRID_MIN = GRID_STEP * 5;
+  const GRID_MIN = GRID_STEP;
 
   const FONTS = [
     { id: 'arial', label: 'Arial', css: 'Arial, Helvetica, sans-serif' },
