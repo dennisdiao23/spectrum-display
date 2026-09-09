@@ -8,10 +8,10 @@
   <link rel="apple-touch-icon" href="/assets/apple-touch-icon.png" />
   <title>Company | Spectrum Display</title>
   <meta name="robots" content="noindex, nofollow" />
-  <link rel="stylesheet" href="/css/company-dash.css?v=forms10" />
+  <link rel="stylesheet" href="/css/company-dash.css?v=forms11" />
   <script src="/js/address-autocomplete.js"></script>
   <script src="/js/company-chat.js?v=cache1"></script>
-  <script src="/js/print-form.js?v=forms10"></script>
+  <script src="/js/print-form.js?v=forms11"></script>
   <script>
     (function () {
       try {
@@ -1991,6 +1991,17 @@
             <label class="so-field"><span>Logo</span>
               <select id="pf-logo"></select>
             </label>
+            <div class="pf-type-row">
+              <label class="so-field"><span>Font</span>
+                <select id="pf-font"></select>
+              </label>
+              <label class="so-field"><span>Size</span>
+                <select id="pf-font-size"></select>
+              </label>
+              <label class="so-field"><span>Style</span>
+                <select id="pf-font-style"></select>
+              </label>
+            </div>
             <div>
               <p class="pf-label">Show on the page</p>
               <div class="pf-blocks" id="pf-blocks"></div>
@@ -2743,7 +2754,7 @@
     </a>
   </nav>
 
-  <link rel="stylesheet" href="/css/company-dash.css?v=forms10" />
+  <link rel="stylesheet" href="/css/company-dash.css?v=forms11" />
 
   <script>
     const loginPanel = document.getElementById('login-panel');
@@ -14082,6 +14093,44 @@
       }).join('');
     }
 
+    function pfFillFontFields() {
+      const fonts = (printFormsMeta && printFormsMeta.fonts) ||
+        (window.SpectrumPrintForm && SpectrumPrintForm.FONTS) ||
+        [{ id: 'arial', label: 'Arial' }];
+      const sizes = (printFormsMeta && printFormsMeta.fontSizes) ||
+        (window.SpectrumPrintForm && SpectrumPrintForm.FONT_SIZES) ||
+        [8, 9, 10, 11, 12, 14, 16, 18];
+      const styles = (printFormsMeta && printFormsMeta.fontStyles) ||
+        (window.SpectrumPrintForm && SpectrumPrintForm.FONT_STYLES) ||
+        [{ id: 'regular', label: 'Regular' }];
+      const fontEl = document.getElementById('pf-font');
+      const sizeEl = document.getElementById('pf-font-size');
+      const styleEl = document.getElementById('pf-font-style');
+      if (fontEl) {
+        fontEl.innerHTML = fonts.map(function (f) {
+          return '<option value="' + esc(f.id) + '">' + esc(f.label) + '</option>';
+        }).join('');
+        fontEl.value = pfDraft.fontFamily || 'arial';
+        if (!fontEl.value) fontEl.value = 'arial';
+      }
+      if (sizeEl) {
+        sizeEl.innerHTML = sizes.map(function (n) {
+          return '<option value="' + n + '">' + n + ' pt</option>';
+        }).join('');
+        sizeEl.value = String(pfDraft.fontSize || 12);
+        if (!sizeEl.value) sizeEl.value = '12';
+      }
+      if (styleEl) {
+        styleEl.innerHTML = styles.map(function (s) {
+          const id = s.id || s;
+          const label = s.label || (id === 'bold-italic' ? 'Bold italic' : String(id).charAt(0).toUpperCase() + String(id).slice(1));
+          return '<option value="' + esc(id) + '">' + esc(label) + '</option>';
+        }).join('');
+        styleEl.value = pfDraft.fontStyle || 'regular';
+        if (!styleEl.value) styleEl.value = 'regular';
+      }
+    }
+
     function pfFillFields() {
       if (!pfDraft) return;
       document.getElementById('pf-title').value = pfDraft.title || '';
@@ -14097,6 +14146,7 @@
         return '<option value="' + esc(logo.id) + '">' + esc(logo.label) + '</option>';
       }).join('');
       sel.value = pfDraft.logo || '';
+      pfFillFontFields();
       pfRenderBlocks();
       pfRenderLists();
       pfRenderPreview();
@@ -14106,6 +14156,12 @@
       if (!pfDraft) return null;
       pfDraft.title = document.getElementById('pf-title').value.trim();
       pfDraft.logo = document.getElementById('pf-logo').value;
+      const fontEl = document.getElementById('pf-font');
+      const sizeEl = document.getElementById('pf-font-size');
+      const styleEl = document.getElementById('pf-font-style');
+      if (fontEl) pfDraft.fontFamily = fontEl.value;
+      if (sizeEl) pfDraft.fontSize = Number(sizeEl.value) || 12;
+      if (styleEl) pfDraft.fontStyle = styleEl.value;
       pfDraft.paymentTermsText = document.getElementById('pf-terms').value;
       pfDraft.blocks = pfDraft.blocks || {};
       document.querySelectorAll('#pf-blocks [data-pf-block]').forEach(function (input) {
@@ -14398,7 +14454,7 @@
         if (printFormsCache && pfDraft) printFormsCache[pfType] = pfClone(pfDraft);
         pfSetType(btn.getAttribute('data-pf-type'));
       });
-      ['pf-title', 'pf-logo', 'pf-terms'].forEach(function (id) {
+      ['pf-title', 'pf-logo', 'pf-terms', 'pf-font', 'pf-font-size', 'pf-font-style'].forEach(function (id) {
         const el = document.getElementById(id);
         if (!el) return;
         el.addEventListener('input', pfRenderPreview);

@@ -5499,6 +5499,11 @@ body.so-invoice-float .so-f-tracking { min-width: 0; }
   gap: 1.25rem;
   align-items: start;
 }
+.pf-type-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1.35fr) minmax(4.4rem, 0.7fr) minmax(0, 1.05fr);
+  gap: 0.45rem;
+}
 .pf-controls {
   display: grid;
   gap: 0.9rem;

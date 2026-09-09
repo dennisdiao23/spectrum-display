@@ -49,6 +49,43 @@ const LOGOS = [
   { id: '', label: 'None' }
 ];
 
+const FONTS = [
+  { id: 'arial', label: 'Arial' },
+  { id: 'helvetica', label: 'Helvetica' },
+  { id: 'calibri', label: 'Calibri' },
+  { id: 'verdana', label: 'Verdana' },
+  { id: 'tahoma', label: 'Tahoma' },
+  { id: 'times', label: 'Times New Roman' },
+  { id: 'georgia', label: 'Georgia' },
+  { id: 'garamond', label: 'Garamond' },
+  { id: 'courier', label: 'Courier New' }
+];
+const FONT_SIZES = [8, 9, 10, 11, 12, 14, 16, 18];
+const FONT_STYLES = [
+  { id: 'regular', label: 'Regular' },
+  { id: 'italic', label: 'Italic' },
+  { id: 'bold', label: 'Bold' },
+  { id: 'bold-italic', label: 'Bold italic' }
+];
+
+function sanitizeFontFamily(value) {
+  const id = String(value || '').trim().toLowerCase();
+  if (FONTS.some(function (f) { return f.id === id; })) return id;
+  return 'arial';
+}
+
+function sanitizeFontSize(value) {
+  const n = Number(value);
+  if (FONT_SIZES.indexOf(n) !== -1) return n;
+  return 12;
+}
+
+function sanitizeFontStyle(value) {
+  const id = String(value || '').trim().toLowerCase();
+  if (FONT_STYLES.some(function (s) { return s.id === id; })) return id;
+  return 'regular';
+}
+
 const DEFAULT_PAYMENT =
   'Deposit of 30% is due upon receipt of this invoice. Balance due on shipment. Accepted methods: ACH / wire transfer or company check. Please include invoice number on the remittance. For payment instructions contact accounting at info@spectrumdisplay.com or 844-848-8899';
 
@@ -265,7 +302,10 @@ function defaultTemplate(type) {
     headerFields: headerDefaults(t),
     columns: columnDefaults(),
     layout: defaultLayout(),
-    layoutVersion: LAYOUT_VERSION
+    layoutVersion: LAYOUT_VERSION,
+    fontFamily: 'arial',
+    fontSize: 12,
+    fontStyle: 'regular'
   };
 }
 
@@ -320,7 +360,10 @@ function normalizeTemplate(type, input) {
       return { id: c.id, label: hit ? hit.title : c.label, print: hit ? hit.print : false };
     }), src.columns),
     layout: sanitizeLayout(src.layout, src.layoutVersion),
-    layoutVersion: LAYOUT_VERSION
+    layoutVersion: LAYOUT_VERSION,
+    fontFamily: sanitizeFontFamily(src.fontFamily != null ? src.fontFamily : src.font_family),
+    fontSize: sanitizeFontSize(src.fontSize != null ? src.fontSize : src.font_size),
+    fontStyle: sanitizeFontStyle(src.fontStyle != null ? src.fontStyle : src.font_style)
   };
 }
 
@@ -344,6 +387,9 @@ module.exports = {
   GRID_STEP,
   GRID_COUNT,
   LOGOS,
+  FONTS,
+  FONT_SIZES,
+  FONT_STYLES,
   DEFAULT_PAYMENT,
   typeTitle,
   normalizeType,
