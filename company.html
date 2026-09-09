@@ -13354,7 +13354,7 @@
 
     function setSoTypeUi(type) {
       document.getElementById('so-type').value = type;
-      document.getElementById('so-due-label').textContent = type === 'quote' ? 'Valid until' : 'Due date';
+      document.getElementById('so-due-label').textContent = type === 'invoice' ? 'Due date' : 'Valid until';
       document.getElementById('so-number-label').textContent = isInvoiceDocWindow() ? 'No.' : numberLabel(type);
       document.getElementById('so-number').placeholder = nextSoNumber(type);
       const newBtn = document.getElementById('so-new-btn');
