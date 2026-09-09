@@ -149,14 +149,14 @@ function headerDefaults(type) {
 
 function columnDefaults() {
   return [
-    { id: 'item', title: 'Item', print: true, order: 1 },
-    { id: 'description', title: 'Description', print: true, order: 2 },
-    { id: 'qty', title: 'Qty', print: true, order: 3 },
-    { id: 'rate', title: 'Rate', print: true, order: 4 },
-    { id: 'amount', title: 'Amount', print: true, order: 5 },
-    { id: 'sku', title: 'SKU', print: false, order: 6 },
-    { id: 'onHand', title: 'On hand', print: false, order: 7 },
-    { id: 'cost', title: 'Cost', print: false, order: 8 }
+    { id: 'item', title: 'Item', print: true, order: 1, width: 18 },
+    { id: 'description', title: 'Description', print: true, order: 2, width: 44 },
+    { id: 'qty', title: 'Qty', print: true, order: 3, width: 8 },
+    { id: 'rate', title: 'Rate', print: true, order: 4, width: 14 },
+    { id: 'amount', title: 'Amount', print: true, order: 5, width: 16 },
+    { id: 'sku', title: 'SKU', print: false, order: 6, width: 16 },
+    { id: 'onHand', title: 'On hand', print: false, order: 7, width: 10 },
+    { id: 'cost', title: 'Cost', print: false, order: 8, width: 12 }
   ];
 }
 
@@ -407,6 +407,40 @@ function mergeList(defs, incoming, extraKeys) {
     .map(function (row, i) { row.order = i + 1; return row; });
 }
 
+const COL_WIDTH_DEFAULTS = {
+  item: 18,
+  sku: 16,
+  description: 44,
+  qty: 8,
+  rate: 14,
+  amount: 16,
+  onHand: 10,
+  cost: 12
+};
+
+function sanitizeColWidth(value, fallback) {
+  const n = Number(value);
+  if (!Number.isFinite(n) || n < 4) return fallback;
+  return Math.min(80, Math.round(n * 10) / 10);
+}
+
+function sanitizeColumns(incoming, baseCols) {
+  const list = mergeList(COLUMNS.map(function (c) {
+    const hit = (baseCols || []).find(function (row) { return row.id === c.id; });
+    return { id: c.id, label: hit ? hit.title : c.label, print: hit ? hit.print : false };
+  }), incoming);
+  const byId = {};
+  (incoming || []).forEach(function (row) {
+    if (row && row.id) byId[String(row.id)] = row;
+  });
+  list.forEach(function (row) {
+    const src = byId[row.id] || {};
+    const fallback = COL_WIDTH_DEFAULTS[row.id] || 12;
+    row.width = sanitizeColWidth(src.width, fallback);
+  });
+  return list;
+}
+
 function normalizeTemplate(type, input) {
   const t = normalizeType(type);
   const src = input && typeof input === 'object' ? input : {};
@@ -427,10 +461,7 @@ function normalizeTemplate(type, input) {
       const hit = (base.headerFields || []).find(function (row) { return row.id === f.id; });
       return { id: f.id, label: hit ? hit.title : f.label, print: hit ? hit.print : false };
     }), src.headerFields || src.header_fields),
-    columns: mergeList(COLUMNS.map(function (c) {
-      const hit = (base.columns || []).find(function (row) { return row.id === c.id; });
-      return { id: c.id, label: hit ? hit.title : c.label, print: hit ? hit.print : false };
-    }), src.columns),
+    columns: sanitizeColumns(src.columns, base.columns),
     layout: sanitizeLayout(src.layout, src.layoutVersion),
     layoutVersion: LAYOUT_VERSION,
     fontFamily: sanitizeFontFamily(src.fontFamily != null ? src.fontFamily : src.font_family),

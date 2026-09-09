@@ -93,6 +93,61 @@
       .sort(function (a, b) { return (a.order || 0) - (b.order || 0); });
   }
 
+  const COL_MIN = 6;
+  const COL_WIDTH_DEFAULTS = {
+    item: 18,
+    sku: 16,
+    description: 44,
+    qty: 8,
+    rate: 14,
+    amount: 16,
+    onHand: 10,
+    cost: 12
+  };
+
+  function columnWidthDefault(id) {
+    return COL_WIDTH_DEFAULTS[id] || 12;
+  }
+
+  function visibleColumnWidths(columns) {
+    const cols = visible(columns);
+    if (!cols.length) return [];
+    const raw = cols.map(function (c) {
+      const w = Number(c && c.width);
+      return isFinite(w) && w >= COL_MIN ? w : columnWidthDefault(c.id);
+    });
+    const sum = raw.reduce(function (a, b) { return a + b; }, 0) || 1;
+    return cols.map(function (c, i) {
+      return { id: c.id, title: c.title || c.id, width: (raw[i] / sum) * 100 };
+    });
+  }
+
+  function applyColumnResize(columns, leftId, delta) {
+    const widths = visibleColumnWidths(columns);
+    const i = widths.findIndex(function (w) { return w.id === leftId; });
+    if (i < 0 || i >= widths.length - 1) return columns || [];
+    let nextLeft = widths[i].width + Number(delta || 0);
+    let nextRight = widths[i + 1].width - Number(delta || 0);
+    if (nextLeft < COL_MIN) {
+      nextRight += nextLeft - COL_MIN;
+      nextLeft = COL_MIN;
+    }
+    if (nextRight < COL_MIN) {
+      nextLeft += nextRight - COL_MIN;
+      nextRight = COL_MIN;
+    }
+    const byId = {};
+    widths.forEach(function (w) { byId[w.id] = w.width; });
+    byId[widths[i].id] = Math.round(nextLeft * 10) / 10;
+    byId[widths[i + 1].id] = Math.round(nextRight * 10) / 10;
+    return (columns || []).map(function (col) {
+      if (!col || byId[col.id] == null) return col;
+      const out = Object.assign({}, col);
+      out.width = byId[col.id];
+      return out;
+    });
+  }
+
   const HEADER_FIELD_IDS = [
     'number', 'date', 'terms', 'dueDate', 'poNumber', 'soNumber', 'tracking',
     'rep', 'account', 'shipDate', 'shipVia', 'permit'
@@ -481,15 +536,34 @@
     let linesInner = '';
     if (blocks.lines !== false) {
       const lines = paddedLines();
-      linesInner = '<div class="pf-lines-box"><table class="pf-lines"><thead><tr>';
-      cols.forEach(function (c) { linesInner += '<th>' + esc(c.title || c.id) + '</th>'; });
+      const colWidths = visibleColumnWidths(tpl.columns);
+      linesInner = '<div class="pf-lines-box"><table class="pf-lines"><colgroup>';
+      colWidths.forEach(function (w) {
+        linesInner += '<col data-pf-col="' + esc(w.id) + '" style="width:' + w.width + '%">';
+      });
+      linesInner += '</colgroup><thead><tr>';
+      cols.forEach(function (c) {
+        linesInner += '<th data-pf-col="' + esc(c.id) + '">' + esc(c.title || c.id) + '</th>';
+      });
       linesInner += '</tr></thead><tbody>';
       lines.forEach(function (line, i) {
         linesInner += '<tr class="' + (i % 2 ? 'is-alt' : '') + '">';
         cols.forEach(function (c) { linesInner += '<td>' + esc(lineCell(line, c.id)) + '</td>'; });
         linesInner += '</tr>';
       });
-      linesInner += '</tbody></table></div>';
+      linesInner += '</tbody></table>';
+      if (edit && colWidths.length > 1) {
+        let left = 0;
+        linesInner += '<div class="pf-col-resizers">';
+        colWidths.forEach(function (w, i) {
+          left += w.width;
+          if (i === colWidths.length - 1) return;
+          linesInner += '<span class="pf-col-resize" data-pf-col="' + esc(w.id) +
+            '" style="left:' + left + '%" title="Drag to resize column"></span>';
+        });
+        linesInner += '</div>';
+      }
+      linesInner += '</div>';
     } else {
       linesInner = ph('Line table');
     }
@@ -575,10 +649,10 @@
       '.pf-hfield{border:1px solid #222;min-height:0;display:flex;flex-direction:column;overflow:hidden}',
       '.pf-hfield-h{background:#d9d9d9;border-bottom:1px solid #222;font-weight:700;padding:3px 6px;font-size:.92em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}',
       '.pf-hfield-v{padding:6px;flex:1;font-size:1em;overflow:hidden}',
-      '.pf-lines-box{overflow:hidden}',
+      '.pf-lines-box{position:relative;overflow:hidden}',
       '.pf-lines{width:100%;height:auto;border-collapse:collapse;table-layout:fixed}',
-      '.pf-lines th{background:#d9d9d9;border:1px solid #222;font-size:1em;font-weight:700;padding:4px 6px;text-align:left}',
-      '.pf-lines td{border:1px solid #222;padding:3px 6px;vertical-align:top;height:1.35em}',
+      '.pf-lines th{background:#d9d9d9;border:1px solid #222;font-size:1em;font-weight:700;padding:4px 6px;text-align:left;overflow:hidden}',
+      '.pf-lines td{border:1px solid #222;padding:3px 6px;vertical-align:top;height:1.35em;overflow:hidden}',
       '.pf-lines tbody tr{height:1.35em}',
       '.pf-lines tbody tr.is-alt td{background:#f4f4f4}',
       '.pf-msg{border:1px solid #222;display:flex;flex-direction:column;min-height:0;overflow:hidden}',
@@ -607,7 +681,11 @@
       '.pf-sheet .pf-abs.is-on{outline:2px solid #0ea5e9;z-index:4}',
       '.pf-resize{position:absolute;right:-1px;bottom:-1px;width:14px;height:14px;background:#0ea5e9;border:2px solid #fff;border-radius:2px;cursor:se-resize;box-shadow:0 0 0 1px rgba(14,165,233,.4);z-index:6;pointer-events:auto}',
       '.pf-resize:after{content:"";position:absolute;right:-6px;bottom:-6px;width:24px;height:24px}',
-      '.pf-sheet.is-edit .pf-abs .pf-box,.pf-sheet.is-edit .pf-abs .pf-hfield,.pf-sheet.is-edit .pf-abs .pf-lines-box,.pf-sheet.is-edit .pf-abs .pf-msg,.pf-sheet.is-edit .pf-abs .pf-terms,.pf-sheet.is-edit .pf-abs .pf-totals,.pf-sheet.is-edit .pf-abs .pf-contact,.pf-sheet.is-edit .pf-abs .pf-co,.pf-sheet.is-edit .pf-abs .pf-title,.pf-sheet.is-edit .pf-abs .pf-logo,.pf-sheet.is-edit .pf-abs .pf-ph,.pf-sheet.is-edit .pf-abs .pf-watermark{pointer-events:none}'
+      '.pf-col-resizers{position:absolute;inset:0;pointer-events:none;z-index:8}',
+      '.pf-col-resize{position:absolute;top:0;bottom:0;width:10px;margin-left:-5px;cursor:col-resize;pointer-events:auto;z-index:8}',
+      '.pf-col-resize:hover,.pf-col-resize.is-on{background:rgba(14,165,233,.28)}',
+      '.pf-sheet.is-edit .pf-abs .pf-box,.pf-sheet.is-edit .pf-abs .pf-hfield,.pf-sheet.is-edit .pf-abs .pf-lines-box,.pf-sheet.is-edit .pf-abs .pf-msg,.pf-sheet.is-edit .pf-abs .pf-terms,.pf-sheet.is-edit .pf-abs .pf-totals,.pf-sheet.is-edit .pf-abs .pf-contact,.pf-sheet.is-edit .pf-abs .pf-co,.pf-sheet.is-edit .pf-abs .pf-title,.pf-sheet.is-edit .pf-abs .pf-logo,.pf-sheet.is-edit .pf-abs .pf-ph,.pf-sheet.is-edit .pf-abs .pf-watermark{pointer-events:none}',
+      '.pf-sheet.is-edit .pf-abs .pf-col-resize{pointer-events:auto}'
     ].join('');
   }
 
@@ -753,6 +831,10 @@
     FONT_STYLES: FONT_STYLES,
     fontSpec: fontSpec,
     effectiveFont: effectiveFont,
-    canTypeBlock: canTypeBlock
+    canTypeBlock: canTypeBlock,
+    visibleColumnWidths: visibleColumnWidths,
+    applyColumnResize: applyColumnResize,
+    COL_MIN: COL_MIN,
+    COL_WIDTH_DEFAULTS: COL_WIDTH_DEFAULTS
   };
 })(window);
