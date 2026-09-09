@@ -4031,7 +4031,7 @@ body.so-invoice-float .so-doc-main {
   overflow: hidden;
   border: 0;
   border-radius: 0;
-  padding: 1.15rem 1.35rem 0.35rem;
+  padding: 0.85rem 1.25rem 0.2rem;
   background: #fff;
 }
 body.so-invoice-float .so-doc-scroll {
@@ -4224,18 +4224,21 @@ body.so-invoice-float .so-doc-addresses pre {
   white-space: pre-wrap;
 }
 body.so-invoice-float .so-doc-lines {
-  display: flex;
-  flex-direction: column;
+  display: grid;
+  grid-template-columns: 1fr auto;
+  grid-template-rows: auto minmax(0, 1fr);
   align-items: stretch;
-  flex: 1 1 auto;
+  flex: 1 1 0;
   min-height: 0;
   overflow: hidden;
   padding: 0;
   margin-top: 0;
 }
 body.so-invoice-float .so-doc-lines-head {
+  grid-column: 1;
+  grid-row: 1;
   flex-shrink: 0;
-  margin-bottom: 0.4rem;
+  margin-bottom: 0.35rem;
 }
 body.so-invoice-float .so-doc-lines-head h3 {
   display: block;
@@ -4245,19 +4248,20 @@ body.so-invoice-float .so-doc-lines-head h3 {
 }
 body.so-invoice-float .so-doc-lines-head button,
 body.so-invoice-float #so-add-line {
-  grid-column: auto;
-  grid-row: auto;
-  justify-self: start;
-  align-self: start;
+  grid-column: 2;
+  grid-row: 1;
+  justify-self: end;
+  align-self: center;
   flex-shrink: 0;
-  margin: 0.45rem 0 0;
+  margin: 0 0 0.35rem;
   font-size: 0.85rem;
   font-weight: 650;
   color: #2f6bff;
 }
 body.so-invoice-float #so-add-line:hover { text-decoration: underline; }
 body.so-invoice-float .so-doc-lines-wrap {
-  flex: 1 1 auto;
+  grid-column: 1 / -1;
+  grid-row: 2;
   min-width: 0;
   min-height: 0;
   background: transparent;
@@ -4293,11 +4297,17 @@ body.so-invoice-float .so-doc-lines td input {
 body.so-invoice-float .so-doc-foot {
   display: grid;
   grid-template-columns: minmax(0, 1fr) 16rem;
-  gap: 1rem;
-  padding: 0;
+  gap: 0.75rem 1rem;
+  padding: 0.15rem 0 0;
   background: transparent;
   align-items: start;
   flex: 0 0 auto;
+}
+body.so-invoice-float #so-notes {
+  height: 2.6rem;
+  min-height: 2.6rem;
+  max-height: 7rem;
+  resize: vertical;
 }
 body.so-invoice-float .so-doc-total-row.is-grand {
   font-weight: 750;
@@ -4320,7 +4330,7 @@ body.so-invoice-float .so-doc-actions {
   flex-shrink: 0;
   justify-content: flex-end;
   gap: 0.5rem;
-  padding: 0.35rem 1.35rem 1.2rem;
+  padding: 0.3rem 1.25rem 0.6rem;
   background: #fff;
   border-top: 0;
 }
