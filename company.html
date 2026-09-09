@@ -9998,6 +9998,34 @@
       return ship || '—';
     }
 
+    function ccPartyContactName(c) {
+      if (!c) return '';
+      const primary = typeof partyPrimaryContact === 'function' ? partyPrimaryContact(c.contacts) : null;
+      if (primary) {
+        const n = partyContactLabel(primary);
+        return n && n !== 'Contact' ? n : '';
+      }
+      return [c.contactFirst, c.contactLast].filter(Boolean).join(' ');
+    }
+
+    function ccFormatDocAddress(c, kind) {
+      if (!c) return '—';
+      const company = String(c.companyName || c.displayName || '').trim();
+      let contact = ccPartyContactName(c).trim();
+      if (contact && company && contact.toLowerCase() === company.toLowerCase()) contact = '';
+      const billLines = [c.billStreet, c.billStreet2, [c.billCity, c.billState, c.billZip].filter(Boolean).join(', '), c.billCountry].filter(Boolean);
+      if (kind === 'bill') {
+        const lines = [company, contact].concat(billLines).filter(Boolean);
+        return lines.length ? lines.join('\n') : '—';
+      }
+      if (c.shipSame !== false && c.shipSame !== 0 && c.shipSame !== '0') {
+        return (company || contact || billLines.length) ? 'Same as billing' : '—';
+      }
+      const shipLines = [c.shipStreet, c.shipStreet2, [c.shipCity, c.shipState, c.shipZip].filter(Boolean).join(', '), c.shipCountry].filter(Boolean);
+      const lines = [company, contact].concat(shipLines).filter(Boolean);
+      return lines.length ? lines.join('\n') : '—';
+    }
+
     function renderCcSideList(filtered) {
       const wrap = document.getElementById('cc-side-list');
       if (!wrap) return;
@@ -13003,8 +13031,8 @@
         const fin = ccCustomerFinance(c.id);
         balEl.textContent = fin.openBalance > 0 ? moneyText(fin.openBalance) : '$0.00';
       }
-      if (bill) bill.textContent = ccFormatAddress(c, 'bill');
-      if (ship) ship.textContent = ccFormatAddress(c, 'ship');
+      if (bill) bill.textContent = ccFormatDocAddress(c, 'bill');
+      if (ship) ship.textContent = ccFormatDocAddress(c, 'ship');
       if (txList) {
         const docs = (typeof ccCustomerDocs === 'function' ? ccCustomerDocs(c.id) : []).slice(0, 6);
         txList.innerHTML = docs.length ? docs.map(function (d) {
