@@ -4450,6 +4450,54 @@ body.so-invoice-float .so-doc-side {
   cursor: pointer;
   user-select: none;
   flex-shrink: 0;
+  touch-action: none;
+  -webkit-touch-callout: none;
+}
+.co-chat-move {
+  flex-shrink: 0;
+  align-self: center;
+  width: 2.15rem;
+  height: 2rem;
+  margin: 0 0 0 0.05rem;
+  padding: 0;
+  border: 1px solid #c9d3e4;
+  border-radius: 0.55rem;
+  background: #fff;
+  color: var(--dash-muted);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: grab;
+  touch-action: none;
+  -webkit-touch-callout: none;
+}
+.co-chat-move svg {
+  width: 1.05rem;
+  height: 1.05rem;
+  display: block;
+  pointer-events: none;
+}
+.co-chat-move:hover,
+.co-chat-move:focus-visible {
+  color: var(--dash-text);
+  background: #eef2f8;
+}
+.co-chat.is-window.is-moving .co-chat-move,
+.co-chat.is-window.is-moving .co-chat-head-title {
+  cursor: grabbing;
+}
+@media (pointer: coarse) {
+  .co-chat-move {
+    width: 2.5rem;
+    height: 2.35rem;
+  }
+  .co-chat-move svg {
+    width: 1.2rem;
+    height: 1.2rem;
+  }
+}
+body.chat-page-on #co-chat .co-chat-move {
+  display: none !important;
 }
 .co-chat-head-title {
   flex: 1;
