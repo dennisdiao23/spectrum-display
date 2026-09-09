@@ -4020,10 +4020,14 @@ body.so-invoice-float .so-doc-workspace {
   display: grid;
   grid-template-columns: minmax(0, 1fr) 17.5rem;
 }
+body.so-invoice-float .so-doc-tabs {
+  flex-shrink: 0;
+}
 body.so-invoice-float .so-doc-main {
   display: flex;
   flex-direction: column;
   gap: 0;
+  min-height: 0;
   overflow: hidden;
   border: 0;
   border-radius: 0;
@@ -4035,17 +4039,18 @@ body.so-invoice-float .so-doc-scroll {
   flex-direction: column;
   flex: 1;
   min-height: 0;
-  overflow: auto;
-  gap: 0.75rem;
+  overflow: hidden;
+  gap: 0.55rem;
 }
 body.so-invoice-float .so-doc-headblock {
   display: grid;
-  grid-template-columns: minmax(16rem, 22rem) minmax(1.5rem, 1fr) minmax(22rem, 38rem);
+  grid-template-columns: minmax(16rem, 22rem) minmax(22rem, 1fr);
   align-items: start;
-  column-gap: 0;
-  row-gap: 0.4rem;
+  column-gap: 1.25rem;
+  row-gap: 0.35rem;
   width: 100%;
   padding: 0;
+  flex: 0 0 auto;
 }
 body.so-invoice-float .so-doc-top {
   display: contents;
@@ -4072,8 +4077,8 @@ body.so-invoice-float .so-doc-head-right {
   flex-direction: column;
   align-items: stretch;
   gap: 0.4rem;
-  grid-column: 3;
-  grid-row: 1 / 4;
+  grid-column: 2;
+  grid-row: 1 / 5;
   min-width: 0;
 }
 body.so-invoice-float .so-doc-amount {
@@ -4187,10 +4192,16 @@ body.so-invoice-float .so-field textarea {
 }
 body.so-invoice-float .so-doc-addresses {
   display: grid;
-  grid-template-columns: repeat(2, minmax(10.5rem, 14.5rem));
+  grid-template-columns: 1fr 1fr;
   gap: 0.4rem 0.75rem;
   padding: 0;
-  justify-content: start;
+  grid-column: 1;
+  grid-row: 4;
+  align-self: start;
+  min-width: 0;
+}
+body.so-invoice-float .so-doc-addresses pre {
+  min-height: 4rem;
 }
 .so-doc-addresses h3 {
   margin: 0 0 0.3rem;
@@ -4216,14 +4227,15 @@ body.so-invoice-float .so-doc-lines {
   display: flex;
   flex-direction: column;
   align-items: stretch;
-  flex: 0 0 auto;
-  min-height: 10rem;
-  overflow: visible;
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow: hidden;
   padding: 0;
-  margin-top: 0.3rem;
+  margin-top: 0;
 }
 body.so-invoice-float .so-doc-lines-head {
-  margin-bottom: 0.65rem;
+  flex-shrink: 0;
+  margin-bottom: 0.4rem;
 }
 body.so-invoice-float .so-doc-lines-head h3 {
   display: block;
@@ -4238,21 +4250,20 @@ body.so-invoice-float #so-add-line {
   justify-self: start;
   align-self: start;
   flex-shrink: 0;
-  margin: 0.75rem 0 0;
+  margin: 0.45rem 0 0;
   font-size: 0.85rem;
   font-weight: 650;
   color: #2f6bff;
 }
 body.so-invoice-float #so-add-line:hover { text-decoration: underline; }
 body.so-invoice-float .so-doc-lines-wrap {
-  flex: 0 0 auto;
+  flex: 1 1 auto;
   min-width: 0;
   min-height: 0;
   background: transparent;
   border: 0;
   border-radius: 0;
-  overflow: visible;
-  height: auto;
+  overflow: auto;
 }
 body.so-invoice-float .so-doc-lines .dash-cols {
   width: 100%;
@@ -4268,6 +4279,7 @@ body.so-invoice-float .so-doc-lines th {
   text-transform: none;
   position: sticky;
   top: 0;
+  z-index: 1;
   border-bottom: 1px solid var(--dash-line);
 }
 body.so-invoice-float .so-doc-lines tbody tr:nth-child(even) { background: transparent; }
@@ -4285,6 +4297,7 @@ body.so-invoice-float .so-doc-foot {
   padding: 0;
   background: transparent;
   align-items: start;
+  flex: 0 0 auto;
 }
 body.so-invoice-float .so-doc-total-row.is-grand {
   font-weight: 750;
@@ -4381,11 +4394,13 @@ body.so-invoice-float .so-doc-side {
   body.so-invoice-float .so-doc-kind,
   body.so-invoice-float .so-f-number,
   body.so-invoice-float .so-f-customer,
+  body.so-invoice-float .so-doc-addresses,
   body.so-invoice-float .so-doc-head-right { grid-column: 1; }
   body.so-invoice-float .so-doc-kind { grid-row: 1; }
   body.so-invoice-float .so-f-number { grid-row: 2; }
   body.so-invoice-float .so-f-customer { grid-row: 3; }
   body.so-invoice-float .so-doc-head-right { grid-row: 4; }
+  body.so-invoice-float .so-doc-addresses { grid-row: 5; }
   body.so-invoice-float .so-doc-meta { grid-template-columns: 1fr 1fr; }
   body.so-invoice-float .so-doc-foot { grid-template-columns: 1fr; }
 }
