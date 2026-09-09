@@ -8,7 +8,7 @@
   <link rel="apple-touch-icon" href="/assets/apple-touch-icon.png" />
   <title>Company | Spectrum Display</title>
   <meta name="robots" content="noindex, nofollow" />
-  <link rel="stylesheet" href="/css/company-dash.css?v=store9" />
+  <link rel="stylesheet" href="/css/company-dash.css?v=store10" />
   <script src="/js/address-autocomplete.js"></script>
   <script src="/js/company-chat.js?v=chatmove2"></script>
   <script src="/js/print-form.js?v=forms18"></script>
@@ -2531,6 +2531,23 @@
       <div class="cc-leave-actions">
         <button type="button" id="dash-tab-stale-ok" class="cc-leave-no">OK</button>
         <button type="button" id="dash-tab-stale-open" class="cc-leave-yes">Open tab</button>
+      </div>
+    </div>
+  </div>
+  <div id="so-saved" class="cc-leave" hidden>
+    <div class="cc-leave-card" role="dialog" aria-modal="true" aria-labelledby="so-saved-title">
+      <p id="so-saved-title" class="cc-leave-title">SAVED</p>
+      <div class="cc-leave-actions">
+        <button type="button" id="so-saved-ok" class="cc-leave-yes">OK</button>
+      </div>
+    </div>
+  </div>
+  <div id="so-delete-confirm" class="cc-leave" hidden>
+    <div class="cc-leave-card" role="dialog" aria-modal="true" aria-labelledby="so-delete-title">
+      <p id="so-delete-title" class="cc-leave-title">Confirm</p>
+      <div class="cc-leave-actions">
+        <button type="button" id="so-delete-no" class="cc-leave-no">No</button>
+        <button type="button" id="so-delete-yes" class="cc-leave-yes">Yes</button>
       </div>
     </div>
   </div>
@@ -13829,6 +13846,38 @@
       el.classList.toggle('hidden', !text);
     }
 
+    function openSoPop(id, focusId) {
+      const box = document.getElementById(id);
+      if (!box) return;
+      box.hidden = false;
+      box.classList.add('is-open');
+      const focus = focusId && document.getElementById(focusId);
+      if (focus) focus.focus();
+    }
+
+    function closeSoPop(id) {
+      const box = document.getElementById(id);
+      if (!box) return;
+      box.classList.remove('is-open');
+      box.hidden = true;
+    }
+
+    function showSoSavedPop() {
+      openSoPop('so-saved', 'so-saved-ok');
+    }
+
+    function hideSoSavedPop() {
+      closeSoPop('so-saved');
+    }
+
+    function showSoDeletePop() {
+      openSoPop('so-delete-confirm', 'so-delete-no');
+    }
+
+    function hideSoDeletePop() {
+      closeSoPop('so-delete-confirm');
+    }
+
     function openNewSale(type, opts) {
       opts = opts || {};
       const t = type || salesTypeFromTab(salesSubTab);
@@ -14082,6 +14131,18 @@
         hideCcLeave();
       }
     });
+    document.getElementById('so-saved-ok').addEventListener('click', hideSoSavedPop);
+    document.getElementById('so-saved').addEventListener('click', function (e) {
+      if (e.target.id === 'so-saved') hideSoSavedPop();
+    });
+    document.getElementById('so-delete-no').addEventListener('click', hideSoDeletePop);
+    document.getElementById('so-delete-confirm').addEventListener('click', function (e) {
+      if (e.target.id === 'so-delete-confirm') hideSoDeletePop();
+    });
+    document.getElementById('so-delete-yes').addEventListener('click', function () {
+      hideSoDeletePop();
+      deleteCurrentSale();
+    });
     document.getElementById('cc-search').addEventListener('input', function () {
       renderCcTable(companyCustomers);
     });
@@ -14292,6 +14353,16 @@
     });
     document.addEventListener('keydown', function (e) {
       if (e.key !== 'Escape') return;
+      const soSaved = document.getElementById('so-saved');
+      if (soSaved && soSaved.classList.contains('is-open')) {
+        hideSoSavedPop();
+        return;
+      }
+      const soDel = document.getElementById('so-delete-confirm');
+      if (soDel && soDel.classList.contains('is-open')) {
+        hideSoDeletePop();
+        return;
+      }
       const tabMax = document.getElementById('dash-tab-max');
       if (tabMax && tabMax.classList.contains('is-open')) {
         hideMasterTabMaxDialog();
@@ -15375,18 +15446,19 @@
           if (isInvoiceDocWindow()) closeInvoiceWindow();
           else if (isSalesSplitOn()) closeSoTab(data.doc.id);
           else showSoList();
-        }
-        if (after === 'new') {
+        } else if (after === 'new') {
           openNewSale(data.doc.type || 'quote');
+        } else {
+          showSoSavedPop();
         }
       } catch (err) {
         showSoMsg(err.message || 'Could not save document.');
       }
     });
-    document.getElementById('so-delete-btn').addEventListener('click', async function () {
+    async function deleteCurrentSale() {
       if (soReadOnly) return;
       const id = document.getElementById('so-id').value;
-      if (!id || !confirm('Delete this document?')) return;
+      if (!id) return;
       try {
         await api('/api/admin/sales-docs/' + id, { method: 'DELETE' });
         if (isInvoiceDocWindow()) {
@@ -15399,6 +15471,12 @@
       } catch (err) {
         showSoMsg(err.message || 'Could not delete document.');
       }
+    }
+    document.getElementById('so-delete-btn').addEventListener('click', function () {
+      if (soReadOnly) return;
+      const id = document.getElementById('so-id').value;
+      if (!id) return;
+      showSoDeletePop();
     });
     async function convertCurrentSale(type) {
       if (soReadOnly) return;
