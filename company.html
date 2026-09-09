@@ -8,7 +8,7 @@
   <link rel="apple-touch-icon" href="/assets/apple-touch-icon.png" />
   <title>Company | Spectrum Display</title>
   <meta name="robots" content="noindex, nofollow" />
-  <link rel="stylesheet" href="/css/company-dash.css?v=store10" />
+  <link rel="stylesheet" href="/css/company-dash.css?v=store11" />
   <script src="/js/address-autocomplete.js"></script>
   <script src="/js/company-chat.js?v=chatmove2"></script>
   <script src="/js/print-form.js?v=forms18"></script>
@@ -2004,7 +2004,7 @@
                     <table class="w-full text-sm dash-cols" data-cols="so-lines">
                       <thead>
                         <tr>
-                          <th class="py-2 px-3 font-medium w-10" data-lock="start">#</th>
+                          <th class="py-2 px-1 font-medium so-line-num-h" data-lock="start">#</th>
                           <th class="py-2 px-3 font-medium" data-col="item">Item <span class="dash-col-caret">▾</span><span class="dash-col-grip" aria-hidden="true"></span></th>
                           <th class="py-2 px-3 font-medium" data-col="sku">SKU <span class="dash-col-caret">▾</span><span class="dash-col-grip" aria-hidden="true"></span></th>
                           <th class="py-2 px-3 font-medium" data-col="description">Description <span class="dash-col-caret">▾</span><span class="dash-col-grip" aria-hidden="true"></span></th>
@@ -2014,7 +2014,7 @@
                           <th class="py-2 px-3 font-medium" data-col="dealer">Dealer Price <span class="dash-col-caret">▾</span><span class="dash-col-grip" aria-hidden="true"></span></th>
                           <th class="py-2 px-3 font-medium" data-col="price">Price <span class="dash-col-caret">▾</span><span class="dash-col-grip" aria-hidden="true"></span></th>
                           <th class="py-2 px-3 font-medium" data-col="amount">Amount <span class="dash-col-caret">▾</span><span class="dash-col-grip" aria-hidden="true"></span></th>
-                          <th class="py-2 px-3 font-medium w-10"></th>
+                          <th class="py-2 px-1 font-medium so-line-acts-h"></th>
                         </tr>
                       </thead>
                       <tbody id="so-lines"></tbody>
@@ -3748,7 +3748,7 @@
       const t = e.target;
       if (!t || !t.closest) return;
       if (e.type === 'click') {
-        if (!t.closest('[data-remove-line], #so-add-line, #po-add-line, #rs-add-line, #rs-clear-lines, #so-add, #po-add')) return;
+        if (!t.closest('[data-remove-line], [data-insert-line], #so-add-line, #po-add-line, #rs-add-line, #rs-clear-lines, #so-add, #po-add')) return;
       } else if (!t.closest('#inv-drawer, #cc-drawer, #vn-drawer, #ca-drawer, #ci-drawer, #st-drawer, #rl-drawer, #so-detail, #po-detail, #rs-detail, #wh-form, #wh-transfer-form, #product-form, #form-wrap')) {
         return;
       }
@@ -5823,7 +5823,7 @@
       warehouses: ['name', 'type', 'vendor', 'tracked', 'qty', 'skus'],
       customers: ['company', 'contact', 'email', 'phone', 'balance'],
       sales: ['number', 'customer', 'date', 'status', 'total'],
-      'so-lines': ['item', 'description', 'qty', 'price', 'amount'],
+      'so-lines': ['sku', 'description', 'qty', 'price', 'amount'],
       'po-lines': ['product', 'sku', 'description', 'qty', 'ourHands', 'vendorHands', 'rate', 'amount'],
       'purchase-orders': ['number', 'vendor', 'date', 'status', 'total'],
       'receipt-shipments': ['number', 'vendor', 'po', 'date', 'qty'],
@@ -5965,7 +5965,7 @@
         sortDir: '',
         widths: fallbackWidths,
         splitLeftPx: keptSplit,
-        schema: dashColKey(table) === 'warehouses' ? 3 : (dashColKey(table) === 'inventory' ? 2 : (dashColKey(table) === 'po-lines' ? 1 : 0))
+        schema: dashColKey(table) === 'warehouses' ? 3 : (dashColKey(table) === 'inventory' ? 2 : (dashColKey(table) === 'po-lines' || dashColKey(table) === 'so-lines' ? 1 : 0))
       };
       pinStartLockedInState(table, fallback.order, fallback.hidden);
       if (!saved) {
@@ -5980,17 +5980,23 @@
         if (order.indexOf(id) !== -1 || hidden.indexOf(id) !== -1) return;
         hidden.push(id);
       });
-      if (dashColKey(table) === 'so-lines' && order.indexOf('item') === -1 && sameColList(order, ['sku', 'description', 'qty', 'price', 'amount'])) {
-        order.unshift('item');
-        const dropItem = hidden.indexOf('item');
-        if (dropItem !== -1) hidden.splice(dropItem, 1);
-      }
       if (!order.length && known.length) {
         order.push(known[0]);
         const drop = hidden.indexOf(known[0]);
         if (drop !== -1) hidden.splice(drop, 1);
       }
       let schema = Number(saved.schema) || 0;
+      if (dashColKey(table) === 'so-lines' && schema < 1) {
+        const itemAt = order.indexOf('item');
+        if (itemAt !== -1) order.splice(itemAt, 1);
+        if (hidden.indexOf('item') === -1) hidden.push('item');
+        if (order.indexOf('sku') === -1) {
+          order.unshift('sku');
+          const dropSku = hidden.indexOf('sku');
+          if (dropSku !== -1) hidden.splice(dropSku, 1);
+        }
+        schema = 1;
+      }
       if (dashColKey(table) === 'inventory' && schema < 1) {
         if (order.indexOf('warehouse') === -1) {
           const qtyAt = order.indexOf('qty');
@@ -12922,7 +12928,7 @@
           if (el) el.classList.add('hidden');
         });
       }
-      form.querySelectorAll('[data-remove-line]').forEach(function (el) {
+      form.querySelectorAll('[data-remove-line], [data-insert-line], [data-line-drag]').forEach(function (el) {
         el.classList.toggle('hidden', soReadOnly);
       });
     }
@@ -13100,21 +13106,6 @@
       return soInvById(line && line.itemId) || soInvBySku(line && line.sku);
     }
 
-    function soProductOptions(selected, sku) {
-      let sel = selected || '';
-      if (!sel && sku) {
-        const found = soInvBySku(sku);
-        if (found) sel = String(found.id);
-      }
-      return '<option value="">Select</option>' +
-        (soReadOnly ? '' : '<option value="__new__">+ Add new</option>') +
-        invPickableItems(sel).map(function (item) {
-          return '<option value="' + esc(item.id) + '"' + (String(item.id) === String(sel) ? ' selected' : '') + '>' +
-            esc(item.name || item.sku || 'Item') +
-            '</option>';
-        }).join('');
-    }
-
     function soInvCell(value) {
       return value == null || value === '' ? '—' : value;
     }
@@ -13152,8 +13143,10 @@
       const qty = item.qty == null || item.qty === '' ? '' : item.qty;
       const price = item.unitPrice == null || item.unitPrice === '' ? '' : item.unitPrice;
       const amt = money(qty) * money(price);
+      const itemId = item.itemId || (inv && inv.id) || '';
+      const itemName = (inv && (inv.name || inv.sku)) || '';
       const cells = {
-        item: '<td class="py-2 px-2"><select data-line="itemId">' + soProductOptions(item.itemId, item.sku) + '</select></td>',
+        item: '<td class="py-2 px-2 so-inv-read" data-line-item-name>' + esc(itemName) + '</td>',
         sku: '<td class="py-2 px-2"><div class="so-sku-search"><svg class="so-sku-search-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><circle cx="11" cy="11" r="6"/><path d="m20 20-3.5-3.5"/></svg><input data-line="sku" type="search" autocomplete="off" placeholder="Search SKU, name, brand" value="' + esc(item.sku || (inv && inv.sku) || '') + '"></div></td>',
         description: '<td class="py-2 px-2"><input data-line="description" value="' + esc(item.description || '') + '"></td>',
         qty: '<td class="py-2 px-2"><input data-line="qty" type="number" step="0.01" value="' + esc(qty) + '"></td>',
@@ -13167,8 +13160,15 @@
         dashOrderedCells(
           table,
           cells,
-          '<td class="py-2 px-2"><button type="button" data-remove-line class="text-slate-400 hover:text-red-500 text-xs">✕</button></td>',
-          '<td class="py-2 px-3 so-line-num text-slate-400">' + (index + 1) + '</td>'
+          '<td class="py-2 px-1 so-line-acts">' +
+            '<button type="button" data-insert-line class="so-line-act" title="Insert row" aria-label="Insert row">+</button>' +
+            '<button type="button" data-remove-line class="so-line-act so-line-act-del" title="Remove row" aria-label="Remove row">✕</button>' +
+            '</td>',
+          '<td class="py-2 px-1 so-line-lead">' +
+            '<input type="hidden" data-line="itemId" value="' + esc(itemId) + '">' +
+            '<button type="button" class="so-line-drag" data-line-drag title="Drag to reorder" aria-label="Drag to reorder">' +
+            '<svg viewBox="0 0 16 16" aria-hidden="true"><path fill="currentColor" d="M5 3.2h2.2v2.2H5zM8.8 3.2H11v2.2H8.8zM5 6.9h2.2v2.2H5zM8.8 6.9H11v2.2H8.8zM5 10.6h2.2V12.8H5zM8.8 10.6H11v2.2H8.8z"/></svg>' +
+            '<span class="so-line-num">' + (index + 1) + '</span></button></td>'
         ) +
         '</tr>';
     }
@@ -13182,9 +13182,9 @@
       };
       const qtyRaw = val('qty', prev.qty);
       const priceRaw = val('unitPrice', prev.unitPrice);
-      const sel = row.querySelector('[data-line="itemId"]');
-      const itemId = sel
-        ? (sel.value && sel.value !== '__new__' ? sel.value : '')
+      const itemEl = row.querySelector('[data-line="itemId"]');
+      const itemId = itemEl
+        ? (itemEl.value && itemEl.value !== '__new__' ? itemEl.value : '')
         : (prev.itemId || '');
       return {
         itemId: itemId,
@@ -13215,6 +13215,28 @@
       applySoFormReadOnly();
     }
 
+    function renumberSoLines() {
+      document.querySelectorAll('#so-lines .so-line .so-line-num').forEach(function (el, i) {
+        el.textContent = String(i + 1);
+      });
+    }
+
+    function syncSoLineOrder() {
+      soLineState = readSoLines(true);
+      renumberSoLines();
+      refreshSoTotals();
+      if (typeof setMasterTabDirty === 'function' && dashActiveGroup) setMasterTabDirty(dashActiveGroup, true);
+    }
+
+    function insertSoLineAfter(row) {
+      if (soReadOnly || !row) return;
+      row.insertAdjacentHTML('afterend', soLineRow(soBlankLine(), 0));
+      const table = soLinesTable();
+      if (table) applyColOrder(table);
+      applySoFormReadOnly();
+      syncSoLineOrder();
+    }
+
     function ensureSoSpareLines() {
       if (soReadOnly) return;
       const rows = document.querySelectorAll('#so-lines .so-line');
@@ -13229,6 +13251,7 @@
       soLineState = readSoLines(true);
       const table = soLinesTable();
       if (table) applyColOrder(table);
+      renumberSoLines();
       scrollSoLinesEnd();
     }
 
@@ -13242,8 +13265,10 @@
 
     function applySoItemToLine(row, item) {
       if (!row || !item) return;
-      const sel = row.querySelector('[data-line="itemId"]');
-      if (sel) sel.innerHTML = soProductOptions(item.id, item.sku);
+      const itemIdEl = row.querySelector('[data-line="itemId"]');
+      if (itemIdEl) itemIdEl.value = item.id || '';
+      const nameEl = row.querySelector('[data-line-item-name]');
+      if (nameEl) nameEl.textContent = item.name || item.sku || '';
       const sku = row.querySelector('[data-line="sku"]');
       const desc = row.querySelector('[data-line="description"]');
       const price = row.querySelector('[data-line="unitPrice"]');
@@ -13277,6 +13302,7 @@
     }
 
     let soSkuActive = -1;
+    let soLineDrag = null;
 
     function soInvSearchMatches(q) {
       const needle = String(q || '').trim().toLowerCase();
@@ -14510,18 +14536,6 @@
     });
     document.getElementById('so-lines').addEventListener('change', function (e) {
       if (soReadOnly) return;
-      const sel = e.target.closest('[data-line="itemId"]');
-      if (sel) {
-        const row = sel.closest('tr');
-        if (sel.value === '__new__') {
-          if (typeof openNewInventory === 'function') openNewInventory('sales', row);
-          else sel.value = '';
-          return;
-        }
-        const item = soInvById(sel.value);
-        if (item) applySoItemToLine(row, item);
-        return;
-      }
       if (e.target.closest('[data-line="sku"]')) lookupSoSku(e.target.closest('tr'));
     });
     document.getElementById('so-lines').addEventListener('focusin', function (e) {
@@ -14584,12 +14598,55 @@
     });
     window.addEventListener('resize', closeSoSkuMenu);
     document.getElementById('so-lines').addEventListener('click', function (e) {
+      if (soReadOnly) return;
+      const insertBtn = e.target.closest('[data-insert-line]');
+      if (insertBtn) {
+        insertSoLineAfter(insertBtn.closest('tr'));
+        return;
+      }
       const btn = e.target.closest('[data-remove-line]');
-      if (!btn || soReadOnly) return;
+      if (!btn) return;
       btn.closest('tr').remove();
       soLineState = readSoLines(true);
       renderSoLines(soLineState);
     });
+    document.getElementById('so-lines').addEventListener('pointerdown', function (e) {
+      if (soReadOnly || e.button) return;
+      const handle = e.target.closest('[data-line-drag]');
+      if (!handle) return;
+      const row = handle.closest('.so-line');
+      if (!row) return;
+      e.preventDefault();
+      soLineDrag = { row: row, startY: e.clientY, pointerId: e.pointerId, moved: false };
+      try { handle.setPointerCapture(e.pointerId); } catch (err) {}
+    });
+    document.getElementById('so-lines').addEventListener('pointermove', function (e) {
+      if (!soLineDrag || soLineDrag.pointerId !== e.pointerId) return;
+      if (!soLineDrag.moved && Math.abs(e.clientY - soLineDrag.startY) < 5) return;
+      soLineDrag.moved = true;
+      soLineDrag.row.classList.add('is-dragging');
+      document.body.classList.add('so-line-reordering');
+      const el = document.elementFromPoint(e.clientX, e.clientY);
+      const over = el && el.closest ? el.closest('#so-lines .so-line') : null;
+      if (!over || over === soLineDrag.row) return;
+      const tb = soLineDrag.row.parentNode;
+      const rows = Array.prototype.slice.call(tb.querySelectorAll('.so-line'));
+      const from = rows.indexOf(soLineDrag.row);
+      const to = rows.indexOf(over);
+      if (from < 0 || to < 0 || from === to) return;
+      if (from < to) tb.insertBefore(soLineDrag.row, over.nextSibling);
+      else tb.insertBefore(soLineDrag.row, over);
+    });
+    function endSoLineDrag(e) {
+      if (!soLineDrag || (e && soLineDrag.pointerId !== e.pointerId)) return;
+      const moved = soLineDrag.moved;
+      soLineDrag.row.classList.remove('is-dragging');
+      document.body.classList.remove('so-line-reordering');
+      soLineDrag = null;
+      if (moved) syncSoLineOrder();
+    }
+    document.getElementById('so-lines').addEventListener('pointerup', endSoLineDrag);
+    document.getElementById('so-lines').addEventListener('pointercancel', endSoLineDrag);
     document.getElementById('so-discount').addEventListener('input', refreshSoTotals);
     document.getElementById('so-number').addEventListener('input', function () {
       const type = document.getElementById('so-type').value || 'quote';
