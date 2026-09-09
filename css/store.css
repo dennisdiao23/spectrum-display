@@ -185,11 +185,11 @@ button, input, select { font-family: inherit; }
   white-space: nowrap;
 }
 .shop-rail-icon {
-  width: 4.15rem;
-  height: 4.15rem;
-  border-radius: 0.7rem;
-  object-fit: cover;
-  background: #000;
+  width: 4.35rem;
+  height: 4.35rem;
+  border-radius: 0.95rem;
+  object-fit: contain;
+  background: transparent;
   flex-shrink: 0;
   max-width: none;
   display: block;

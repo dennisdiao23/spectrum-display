@@ -85,10 +85,9 @@
   function railItems() {
     return [
       { label: 'What’s New', href: href('/#whats-new'), img: '/assets/store/whats-new.webp', key: 'new' },
-      { label: 'Fine pitch', href: href('/collections/fine-pitch'), img: '/assets/store/fine-pitch.webp', key: 'fine-pitch' },
-      { label: 'Poster', href: href('/collections/poster'), img: '/assets/store/poster.webp', key: 'poster' },
-      { label: 'Rental Panel', href: href('/collections/rental'), img: '/assets/store/rental-panel.webp', key: 'rental' },
       { label: 'Controller', href: href('/collections/control'), img: '/assets/store/controller.webp', key: 'control' },
+      { label: 'Rental Panel', href: href('/collections/rental'), img: '/assets/store/rental-panel.webp', key: 'rental' },
+      { label: 'Poster', href: href('/collections/poster'), img: '/assets/store/poster.webp', key: 'poster' },
       { label: 'Spares', href: href('/collections/spares'), img: '/assets/store/spares.webp', key: 'spares' },
       { label: 'Accessories', href: href('/collections/accessories'), img: '/assets/store/accessories.webp', key: 'accessories' }
     ];
