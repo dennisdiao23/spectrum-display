@@ -1556,9 +1556,7 @@ html.dash-scroll-lock body.company-app {
 
 .dash-home-lobby {
   padding: 0;
-  overflow: hidden;
   min-height: 26rem;
-  height: auto;
   display: flex;
   flex-direction: column;
   position: relative;
@@ -1574,13 +1572,14 @@ html.dash-scroll-lock body.company-app {
   flex-shrink: 0;
 }
 .dash-lobby-window {
-  flex: 1 1 auto;
+  flex: 1 1 0%;
   display: grid;
   grid-template-columns: 12.5rem minmax(0, 1fr);
   grid-template-rows: minmax(0, 1fr);
   min-height: 0;
-  height: auto;
+  overflow: hidden;
   border-top: 1px solid var(--dash-line);
+  border-radius: 0 0 1rem 1rem;
 }
 .dash-lobby-users {
   display: flex;
