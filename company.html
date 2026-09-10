@@ -10172,6 +10172,20 @@
       renderDealerApplicationsTable(dealerApplications);
     }
 
+    function setDealerAppFilter(next) {
+      dealerAppFilter = next || 'pending';
+      document.querySelectorAll('#da-filters [data-da-filter]').forEach(function (el) {
+        const on = (el.getAttribute('data-da-filter') || '') === dealerAppFilter;
+        el.classList.toggle('is-on', on);
+        el.classList.toggle('bg-sky-500/20', on);
+        el.classList.toggle('text-sky-300', on);
+        el.classList.toggle('border', !on);
+        el.classList.toggle('border-slate-700', !on);
+        el.classList.toggle('text-slate-400', !on);
+        el.setAttribute('aria-pressed', on ? 'true' : 'false');
+      });
+    }
+
     async function reviewDealerApplication(id, action) {
       const msg = document.getElementById('da-detail-msg');
       try {
@@ -10181,6 +10195,9 @@
           body: '{}'
         });
         const app = data.application;
+        if (app && (app.status === 'approved' || app.status === 'rejected' || app.status === 'pending')) {
+          setDealerAppFilter(app.status);
+        }
         await loadDealerApplications();
         const next = dealerApplications.find(function (row) { return String(row.id) === String(app.id); }) || app;
         renderDealerAppDetail(next);
@@ -10240,17 +10257,7 @@
     document.getElementById('da-filters').addEventListener('click', function (e) {
       const btn = e.target.closest('[data-da-filter]');
       if (!btn) return;
-      dealerAppFilter = btn.getAttribute('data-da-filter') || 'pending';
-      document.querySelectorAll('#da-filters [data-da-filter]').forEach(function (el) {
-        const on = el === btn;
-        el.classList.toggle('is-on', on);
-        el.classList.toggle('bg-sky-500/20', on);
-        el.classList.toggle('text-sky-300', on);
-        el.classList.toggle('border', !on);
-        el.classList.toggle('border-slate-700', !on);
-        el.classList.toggle('text-slate-400', !on);
-        el.setAttribute('aria-pressed', on ? 'true' : 'false');
-      });
+      setDealerAppFilter(btn.getAttribute('data-da-filter') || 'pending');
       loadDealerApplications();
     });
     document.getElementById('dealers-table').addEventListener('click', function (e) {
