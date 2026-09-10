@@ -14,9 +14,10 @@
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
   <title>Company | Spectrum Display</title>
   <meta name="robots" content="noindex, nofollow" />
-  <link rel="stylesheet" href="/css/company-dash.css?v=mail3" />
+  <link rel="stylesheet" href="/css/company-dash.css?v=crm8" />
   <script src="/js/address-autocomplete.js"></script>
   <script src="/js/company-chat.js?v=chatmove2"></script>
+  <script src="/js/company-crm.js?v=crm8"></script>
   <script src="/js/print-form.js?v=forms19"></script>
   <script>
     if ('serviceWorker' in navigator && location.pathname.indexOf('/company') === 0) {
@@ -56,6 +57,38 @@
   </script>
   <script src="https://cdn.tailwindcss.com"></script>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <style id="crm-detail-overrides">
+    #crm-lead-detail .crm-detail-facts,
+    #crm-pipe-detail .crm-detail-facts {
+      display: flex;
+      flex-direction: column;
+      gap: 0.65rem;
+    }
+    #crm-lead-section .crm-detail-facts .cc-detail-dl > div,
+    #crm-pipe-section .crm-detail-facts .cc-detail-dl > div {
+      display: flex;
+      flex-direction: row;
+      align-items: baseline;
+      gap: 0.75rem;
+      margin-bottom: 0.35rem;
+    }
+    #crm-lead-section .crm-detail-facts .cc-detail-dl dt,
+    #crm-pipe-section .crm-detail-facts .cc-detail-dl dt {
+      width: auto;
+      flex: 0 0 6.5rem;
+    }
+    #crm-lead-section .crm-detail-facts .cc-detail-dl dd,
+    #crm-pipe-section .crm-detail-facts .cc-detail-dl dd {
+      margin: 0;
+      min-width: 0;
+      max-width: 100%;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      word-break: normal;
+      overflow-wrap: normal;
+    }
+  </style>
 </head>
 <body class="company-app antialiased">
   <div class="dash-scrim" id="dash-scrim"></div>
@@ -131,6 +164,26 @@
           <a href="/company/inventory/purchase-orders" id="tab-purchase-orders" class="dash-sub-link">
             <svg class="dash-nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 3h8l4 4v14a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1z"/><path d="M15 3v5h5"/><path d="M9 13h6M9 17h4"/></svg>
             <span>Purchase Order</span>
+          </a>
+        </div>
+      </div>
+      <div class="dash-nav-group">
+        <a href="/company/crm/leads" id="tab-crm" class="dash-nav-link">
+          <svg class="dash-nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 4h16l-6.5 8.2V20l-3-1.5v-6.3L4 4z"/></svg>
+          <span>CRM</span>
+        </a>
+        <div id="crm-subnav" class="dash-sub hidden">
+          <a href="/company/crm/leads" id="tab-leads" class="dash-sub-link">
+            <svg class="dash-nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="8" r="3.25"/><path d="M5 19.2c.9-3.1 3.5-4.7 7-4.7s6.1 1.6 7 4.7"/></svg>
+            <span>Lead</span>
+          </a>
+          <a href="/company/crm/pipeline" id="tab-pipeline" class="dash-sub-link">
+            <svg class="dash-nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4" width="5" height="16" rx="1"/><rect x="10" y="8" width="5" height="12" rx="1"/><rect x="17" y="12" width="4" height="8" rx="1"/></svg>
+            <span>Pipeline</span>
+          </a>
+          <a href="/company/crm/activities" id="tab-activities" class="dash-sub-link">
+            <svg class="dash-nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="5" width="16" height="16" rx="2"/><path d="M8 3v4M16 3v4M4 11h16"/><path d="m9 15 2 2 4-4"/></svg>
+            <span>Activity</span>
           </a>
         </div>
       </div>
@@ -264,6 +317,16 @@
               </span>
               <strong class="dash-kpi-value" id="dash-stat-vendor">—</strong>
               <span class="dash-kpi-hint" id="dash-hint-vendor">Vendors</span>
+            </button>
+            <button type="button" class="dash-kpi" data-home="crm" aria-pressed="false">
+              <span class="dash-kpi-icon dash-kpi-icon-crm" aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16l-6.5 8.2V20l-3-1.5v-6.3L4 4z"/></svg>
+              </span>
+              <span class="dash-kpi-meta">
+                <span class="dash-kpi-label">CRM</span>
+              </span>
+              <strong class="dash-kpi-value" id="dash-stat-crm">—</strong>
+              <span class="dash-kpi-hint" id="dash-hint-crm">Leads and pipeline</span>
             </button>
             <button type="button" class="dash-kpi" data-home="customer" aria-pressed="false">
               <span class="dash-kpi-icon dash-kpi-icon-customers" aria-hidden="true">
@@ -1613,6 +1676,293 @@
         </div>
       </div>
 
+      <div id="crm-lead-section" class="hidden">
+        <div class="cc-workspace">
+        <div class="cc-list-inner">
+          <div class="page-kpis page-kpis-6 cc-list-kpis" id="crm-lead-overview">
+            <button type="button" class="dash-kpi is-on" data-filter="all" aria-pressed="true">
+              <span class="dash-kpi-icon dash-kpi-icon-crm" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M4 4h16l-6.5 8.2V20l-3-1.5v-6.3L4 4z"/></svg></span>
+              <span class="dash-kpi-label">All</span>
+              <strong class="dash-kpi-value" id="crm-lead-stat-all">—</strong>
+              <span class="dash-kpi-hint">Every lead</span>
+            </button>
+            <button type="button" class="dash-kpi" data-filter="new" aria-pressed="false">
+              <span class="dash-kpi-icon dash-kpi-icon-website" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><circle cx="12" cy="12" r="8"/></svg></span>
+              <span class="dash-kpi-label">New</span>
+              <strong class="dash-kpi-value" id="crm-lead-stat-new">—</strong>
+              <span class="dash-kpi-hint">Not started</span>
+            </button>
+            <button type="button" class="dash-kpi" data-filter="working" aria-pressed="false">
+              <span class="dash-kpi-icon dash-kpi-icon-inventory" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M12 8v5"/><path d="M12 16h.01"/></svg></span>
+              <span class="dash-kpi-label">Working</span>
+              <strong class="dash-kpi-value" id="crm-lead-stat-working">—</strong>
+              <span class="dash-kpi-hint">In progress</span>
+            </button>
+            <button type="button" class="dash-kpi" data-filter="qualified" aria-pressed="false">
+              <span class="dash-kpi-icon dash-kpi-icon-sales" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="m9 12 2 2 4-4"/></svg></span>
+              <span class="dash-kpi-label">Qualified</span>
+              <strong class="dash-kpi-value" id="crm-lead-stat-qualified">—</strong>
+              <span class="dash-kpi-hint">Ready to sell</span>
+            </button>
+            <button type="button" class="dash-kpi" data-filter="converted" aria-pressed="false">
+              <span class="dash-kpi-icon dash-kpi-icon-customers" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><circle cx="12" cy="8" r="3.25"/><path d="M5 19.2c.9-3.1 3.5-4.7 7-4.7s6.1 1.6 7 4.7"/></svg></span>
+              <span class="dash-kpi-label">Converted</span>
+              <strong class="dash-kpi-value" id="crm-lead-stat-converted">—</strong>
+              <span class="dash-kpi-hint">Is a customer</span>
+            </button>
+            <button type="button" class="dash-kpi" data-filter="lost" aria-pressed="false">
+              <span class="dash-kpi-icon dash-kpi-icon-overdue" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="m9 9 6 6M15 9l-6 6"/></svg></span>
+              <span class="dash-kpi-label">Lost</span>
+              <strong class="dash-kpi-value" id="crm-lead-stat-lost">—</strong>
+              <span class="dash-kpi-hint">Closed lost</span>
+            </button>
+          </div>
+          <div class="cc-list-toolbar cc-list-tools">
+            <input id="crm-lead-search" type="search" placeholder="Search company, contact, email, phone" class="cc-list-search bg-slate-800 border border-slate-700 rounded-full px-3 py-1.5 text-sm">
+            <button id="crm-lead-new" type="button" class="cc-list-add-btn px-4 py-2 rounded-full bg-sky-500 hover:bg-sky-400 text-white text-sm font-semibold">Add lead</button>
+          </div>
+          <p id="crm-lead-error" class="hidden text-sm text-red-400 mb-3"></p>
+          <div class="dash-split">
+            <div class="dash-split-left">
+              <div class="cc-table-card rounded-2xl border border-slate-800">
+                <div class="cc-table-wrap overflow-x-auto">
+                  <table class="w-full text-sm dash-cols" data-cols="crm-leads">
+                    <thead class="text-left text-slate-400 border-b border-slate-800">
+                      <tr>
+                        <th class="py-3 px-4 font-medium" data-col="company">Company <span class="dash-col-caret">▾</span><span class="dash-col-grip" aria-hidden="true"></span></th>
+                        <th class="py-3 px-4 font-medium" data-col="contact">Contact <span class="dash-col-caret">▾</span><span class="dash-col-grip" aria-hidden="true"></span></th>
+                        <th class="py-3 px-4 font-medium" data-col="email">Email <span class="dash-col-caret">▾</span><span class="dash-col-grip" aria-hidden="true"></span></th>
+                        <th class="py-3 px-4 font-medium" data-col="phone">Phone <span class="dash-col-caret">▾</span><span class="dash-col-grip" aria-hidden="true"></span></th>
+                        <th class="py-3 px-4 font-medium" data-col="status">Status <span class="dash-col-caret">▾</span><span class="dash-col-grip" aria-hidden="true"></span></th>
+                        <th class="py-3 px-4 font-medium" data-col="source">Source <span class="dash-col-caret">▾</span><span class="dash-col-grip" aria-hidden="true"></span></th>
+                        <th class="py-3 px-4 font-medium" data-col="owner">Owner <span class="dash-col-caret">▾</span><span class="dash-col-grip" aria-hidden="true"></span></th>
+                        <th class="py-3 px-4 font-medium" data-col="updated">Updated <span class="dash-col-caret">▾</span><span class="dash-col-grip" aria-hidden="true"></span></th>
+                      </tr>
+                    </thead>
+                    <tbody id="crm-lead-table" class="text-slate-200"></tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+            <div class="dash-split-resizer" role="separator" aria-orientation="vertical" aria-label="Resize lead panels"></div>
+            <div class="dash-split-right">
+              <div id="crm-lead-overview-panel" class="inv-right-panel">
+                <div class="inv-overview-summary">
+                  <p class="inv-overview-lead">Leads from the website, dealer form, or staff. Convert a lead to create a Customer record for quotes.</p>
+                </div>
+              </div>
+              <div id="crm-lead-detail" class="cc-detail-pane inv-right-panel hidden" hidden>
+                <div class="cc-detail-hero">
+                  <div class="cc-detail-hero-main">
+                    <div class="cc-detail-hero-copy">
+                      <h2 id="crm-lead-detail-name">Lead</h2>
+                      <p id="crm-lead-detail-sub" class="cc-detail-subname"></p>
+                      <div class="cc-detail-quick">
+                        <a id="crm-lead-mail" class="cc-detail-quick-btn hidden" href="#" title="Email"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="m3 7 9 6 9-6"/></svg></a>
+                        <a id="crm-lead-tel" class="cc-detail-quick-btn hidden" href="#" title="Phone"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M5 4h4l2 5-2.5 1.5a11 11 0 0 0 5 5L15 13l5 2v4a2 2 0 0 1-2 2A15 15 0 0 1 3 6a2 2 0 0 1 2-2z"/></svg></a>
+                      </div>
+                    </div>
+                    <div class="cc-detail-toolbar-actions inv-detail-hero-actions">
+                      <button type="button" id="crm-lead-convert" class="cc-detail-btn cc-detail-btn-primary">Convert to customer</button>
+                      <button type="button" id="crm-lead-deal" class="cc-detail-btn">New deal</button>
+                      <button type="button" id="crm-lead-act" class="cc-detail-btn">Log activity</button>
+                      <button type="button" id="crm-lead-edit" class="cc-detail-btn">Edit</button>
+                    </div>
+                  </div>
+                  <div class="crm-detail-facts">
+                    <div class="cc-detail-block">
+                      <h3>Contact</h3>
+                      <dl class="cc-detail-dl">
+                        <div><dt>Email</dt><dd id="crm-lead-detail-email">—</dd></div>
+                        <div><dt>Phone</dt><dd id="crm-lead-detail-phone">—</dd></div>
+                        <div><dt>Owner</dt><dd id="crm-lead-detail-owner">—</dd></div>
+                      </dl>
+                    </div>
+                    <div class="cc-detail-block">
+                      <h3>Lead</h3>
+                      <dl class="cc-detail-dl">
+                        <div><dt>Status</dt><dd id="crm-lead-detail-status">—</dd></div>
+                        <div><dt>Source</dt><dd id="crm-lead-detail-source">—</dd></div>
+                        <div><dt>Project</dt><dd id="crm-lead-detail-project">—</dd></div>
+                      </dl>
+                    </div>
+                    <div class="cc-detail-block">
+                      <h3>Location</h3>
+                      <dl class="cc-detail-dl">
+                        <div><dt>City</dt><dd id="crm-lead-detail-city">—</dd></div>
+                        <div><dt>Customer</dt><dd><a id="crm-lead-converted" class="hidden" href="/company/customers">Open customer</a></dd></div>
+                      </dl>
+                    </div>
+                  </div>
+                </div>
+                <div class="cc-detail-tabs" role="tablist">
+                  <button type="button" class="cc-detail-tab is-on" data-crm-lead-tab="details" role="tab" aria-selected="true">Details</button>
+                  <button type="button" class="cc-detail-tab" data-crm-lead-tab="activity" role="tab" aria-selected="false">Activity</button>
+                  <button type="button" class="cc-detail-tab" data-crm-lead-tab="deals" role="tab" aria-selected="false">Deals</button>
+                </div>
+                <div id="crm-lead-panel-details" class="cc-detail-panel" role="tabpanel">
+                  <div class="cc-detail-notes-box" id="crm-lead-detail-notes">—</div>
+                </div>
+                <div id="crm-lead-panel-activity" class="cc-detail-panel hidden" role="tabpanel" hidden>
+                  <div id="crm-lead-acts"></div>
+                </div>
+                <div id="crm-lead-panel-deals" class="cc-detail-panel hidden" role="tabpanel" hidden>
+                  <div class="overflow-x-auto rounded-2xl border border-slate-800">
+                    <table class="w-full text-sm">
+                      <thead class="text-left text-slate-400 border-b border-slate-800"><tr><th class="py-2 px-3">Deal</th><th class="py-2 px-3">Stage</th><th class="py-2 px-3">Value</th></tr></thead>
+                      <tbody id="crm-lead-deals"></tbody>
+                    </table>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        </div>
+      </div>
+
+      <div id="crm-pipe-section" class="hidden">
+        <div class="cc-workspace">
+        <div class="cc-list-inner">
+          <div class="page-kpis page-kpis-3 cc-list-kpis">
+            <button type="button" class="dash-kpi is-on" aria-pressed="true">
+              <span class="dash-kpi-icon dash-kpi-icon-crm" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><rect x="3" y="4" width="5" height="16" rx="1"/><rect x="10" y="8" width="5" height="12" rx="1"/><rect x="17" y="12" width="4" height="8" rx="1"/></svg></span>
+              <span class="dash-kpi-label">Open deals</span>
+              <strong class="dash-kpi-value" id="crm-pipe-stat-open">—</strong>
+              <span class="dash-kpi-hint">Active pipeline</span>
+            </button>
+            <button type="button" class="dash-kpi" aria-pressed="false">
+              <span class="dash-kpi-icon dash-kpi-icon-sales" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M4 16l5-5 4 4 7-8"/></svg></span>
+              <span class="dash-kpi-label">Open value</span>
+              <strong class="dash-kpi-value" id="crm-pipe-stat-value">—</strong>
+              <span class="dash-kpi-hint">Not won or lost</span>
+            </button>
+            <button type="button" class="dash-kpi" aria-pressed="false">
+              <span class="dash-kpi-icon dash-kpi-icon-customers" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="m9 12 2 2 4-4"/></svg></span>
+              <span class="dash-kpi-label">Won</span>
+              <strong class="dash-kpi-value" id="crm-pipe-stat-won">—</strong>
+              <span class="dash-kpi-hint">Closed won</span>
+            </button>
+          </div>
+          <div class="cc-list-toolbar cc-list-tools">
+            <p class="cc-list-desc" style="margin:0">Drag a card to change stage. Click a card for details.</p>
+            <button id="crm-pipe-new" type="button" class="cc-list-add-btn px-4 py-2 rounded-full bg-sky-500 hover:bg-sky-400 text-white text-sm font-semibold">Add deal</button>
+          </div>
+          <p id="crm-pipe-error" class="hidden text-sm text-red-400 mb-3"></p>
+          <div class="dash-split">
+            <div class="dash-split-left">
+              <div id="crm-pipe-board" class="crm-board"></div>
+            </div>
+            <div class="dash-split-resizer" role="separator" aria-orientation="vertical" aria-label="Resize pipeline panels"></div>
+            <div class="dash-split-right">
+              <div id="crm-pipe-overview-panel" class="inv-right-panel">
+                <div class="inv-overview-summary">
+                  <p class="inv-overview-lead">Pipeline deals sit between a lead and a quote. Won or convert a linked lead to create a Customer, then Create quote.</p>
+                </div>
+              </div>
+              <div id="crm-pipe-detail" class="cc-detail-pane inv-right-panel hidden" hidden>
+                <div class="cc-detail-hero">
+                  <div class="cc-detail-hero-main">
+                    <div class="cc-detail-hero-copy">
+                      <h2 id="crm-pipe-detail-name">Deal</h2>
+                      <p id="crm-pipe-detail-sub" class="cc-detail-subname"></p>
+                    </div>
+                    <div class="cc-detail-toolbar-actions inv-detail-hero-actions">
+                      <button type="button" id="crm-pipe-quote" class="cc-detail-btn cc-detail-btn-primary hidden">Create quote</button>
+                      <button type="button" id="crm-pipe-act" class="cc-detail-btn">Log activity</button>
+                      <button type="button" id="crm-pipe-edit" class="cc-detail-btn">Edit</button>
+                    </div>
+                  </div>
+                  <div class="crm-detail-facts">
+                    <div class="cc-detail-block">
+                      <h3>Deal</h3>
+                      <dl class="cc-detail-dl">
+                        <div><dt>Stage</dt><dd id="crm-pipe-detail-stage">—</dd></div>
+                        <div><dt>Value</dt><dd id="crm-pipe-detail-value">—</dd></div>
+                        <div><dt>Close</dt><dd id="crm-pipe-detail-close">—</dd></div>
+                      </dl>
+                    </div>
+                    <div class="cc-detail-block">
+                      <h3>People</h3>
+                      <dl class="cc-detail-dl">
+                        <div><dt>Owner</dt><dd id="crm-pipe-detail-owner">—</dd></div>
+                        <div><dt>Email</dt><dd id="crm-pipe-detail-email">—</dd></div>
+                      </dl>
+                    </div>
+                  </div>
+                </div>
+                <div class="cc-detail-panel">
+                  <div class="cc-detail-notes-box" id="crm-pipe-detail-notes">—</div>
+                  <div id="crm-pipe-acts" class="mt-4"></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        </div>
+      </div>
+
+      <div id="crm-act-section" class="hidden">
+        <div class="cc-workspace">
+        <div class="cc-list-inner">
+          <div class="page-kpis cc-list-kpis" id="crm-act-overview">
+            <button type="button" class="dash-kpi is-on" data-filter="all" aria-pressed="true">
+              <span class="dash-kpi-icon dash-kpi-icon-crm" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><rect x="4" y="5" width="16" height="16" rx="2"/><path d="M8 3v4M16 3v4M4 11h16"/></svg></span>
+              <span class="dash-kpi-label">All</span>
+              <strong class="dash-kpi-value" id="crm-act-stat-all">—</strong>
+              <span class="dash-kpi-hint">Every activity</span>
+            </button>
+            <button type="button" class="dash-kpi" data-filter="overdue" aria-pressed="false">
+              <span class="dash-kpi-icon dash-kpi-icon-overdue" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><circle cx="12" cy="12" r="8"/><path d="M12 8v4l3 2"/></svg></span>
+              <span class="dash-kpi-label">Overdue</span>
+              <strong class="dash-kpi-value" id="crm-act-stat-overdue">—</strong>
+              <span class="dash-kpi-hint">Past due</span>
+            </button>
+            <button type="button" class="dash-kpi" data-filter="dueSoon" aria-pressed="false">
+              <span class="dash-kpi-icon dash-kpi-icon-inventory" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M12 8v5"/><path d="M12 16h.01"/></svg></span>
+              <span class="dash-kpi-label">Due soon</span>
+              <strong class="dash-kpi-value" id="crm-act-stat-soon">—</strong>
+              <span class="dash-kpi-hint">Within 5 days</span>
+            </button>
+            <button type="button" class="dash-kpi" data-filter="open" aria-pressed="false">
+              <span class="dash-kpi-icon dash-kpi-icon-website" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><rect x="4" y="5" width="16" height="16" rx="2"/></svg></span>
+              <span class="dash-kpi-label">Open tasks</span>
+              <strong class="dash-kpi-value" id="crm-act-stat-open">—</strong>
+              <span class="dash-kpi-hint">Not done</span>
+            </button>
+            <button type="button" class="dash-kpi" data-filter="done" aria-pressed="false">
+              <span class="dash-kpi-icon dash-kpi-icon-sales" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="m9 12 2 2 4-4"/></svg></span>
+              <span class="dash-kpi-label">Done</span>
+              <strong class="dash-kpi-value" id="crm-act-stat-done">—</strong>
+              <span class="dash-kpi-hint">Completed</span>
+            </button>
+          </div>
+          <div class="cc-list-toolbar cc-list-tools">
+            <input id="crm-act-search" type="search" placeholder="Search activity, lead, deal" class="cc-list-search bg-slate-800 border border-slate-700 rounded-full px-3 py-1.5 text-sm">
+            <button id="crm-act-new" type="button" class="cc-list-add-btn px-4 py-2 rounded-full bg-sky-500 hover:bg-sky-400 text-white text-sm font-semibold">Add activity</button>
+          </div>
+          <p id="crm-act-error" class="hidden text-sm text-red-400 mb-3"></p>
+          <div class="cc-table-card rounded-2xl border border-slate-800">
+            <div class="cc-table-wrap overflow-x-auto">
+              <table class="w-full text-sm dash-cols" data-cols="crm-activities">
+                <thead class="text-left text-slate-400 border-b border-slate-800">
+                  <tr>
+                    <th class="py-3 px-4 font-medium" data-col="type">Type <span class="dash-col-caret">▾</span><span class="dash-col-grip" aria-hidden="true"></span></th>
+                    <th class="py-3 px-4 font-medium" data-col="subject">Subject <span class="dash-col-caret">▾</span><span class="dash-col-grip" aria-hidden="true"></span></th>
+                    <th class="py-3 px-4 font-medium" data-col="related">Related <span class="dash-col-caret">▾</span><span class="dash-col-grip" aria-hidden="true"></span></th>
+                    <th class="py-3 px-4 font-medium" data-col="due">Due <span class="dash-col-caret">▾</span><span class="dash-col-grip" aria-hidden="true"></span></th>
+                    <th class="py-3 px-4 font-medium" data-col="status">Status <span class="dash-col-caret">▾</span><span class="dash-col-grip" aria-hidden="true"></span></th>
+                    <th class="py-3 px-4 font-medium" data-col="owner">Logged by <span class="dash-col-caret">▾</span><span class="dash-col-grip" aria-hidden="true"></span></th>
+                  </tr>
+                </thead>
+                <tbody id="crm-act-table" class="text-slate-200"></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+        </div>
+      </div>
+
       <div id="customers-section" class="hidden">
         <div id="cc-workspace" class="cc-workspace">
         <div id="customers-list-wrap" class="cc-list-inner">
@@ -2404,6 +2754,135 @@
     </section>
   </main>
   </div>
+  <div id="crm-drawer-scrim" class="cc-drawer-scrim"></div>
+  <aside id="crm-lead-drawer" class="cc-drawer" aria-hidden="true">
+    <div class="cc-drawer-head">
+      <h2 id="crm-lead-title">Lead</h2>
+      <div class="cc-drawer-tools">
+        <button type="button" class="cc-drawer-close" data-crm-drawer-close aria-label="Close">×</button>
+      </div>
+    </div>
+    <form id="crm-lead-form" class="cc-drawer-body">
+      <input type="hidden" id="crm-lead-id">
+      <section class="cc-sec is-open">
+        <button type="button" class="cc-sec-btn"><span class="cc-sec-label">Lead</span> <span class="cc-sec-chevron">▾</span></button>
+        <div class="cc-sec-body">
+          <div class="cc-field"><label>Company</label><input id="crm-lead-company" type="text"></div>
+          <div class="cc-field"><label>First name</label><input id="crm-lead-first" type="text"></div>
+          <div class="cc-field"><label>Last name</label><input id="crm-lead-last" type="text"></div>
+          <div class="cc-field"><label>Email</label><input id="crm-lead-email" type="email"></div>
+          <div class="cc-field"><label>Phone</label><input id="crm-lead-phone" type="text"></div>
+          <div class="cc-field"><label>Mobile</label><input id="crm-lead-mobile" type="text"></div>
+          <div class="cc-field"><label>Website</label><input id="crm-lead-website" type="text"></div>
+          <div class="cc-field"><label>Source</label>
+            <select id="crm-lead-source">
+              <option value="manual">Manual</option>
+              <option value="website">Website</option>
+              <option value="dealer">Dealer</option>
+              <option value="referral">Referral</option>
+              <option value="other">Other</option>
+            </select>
+          </div>
+          <div class="cc-field"><label>Status</label>
+            <select id="crm-lead-status">
+              <option value="new">New</option>
+              <option value="working">Working</option>
+              <option value="qualified">Qualified</option>
+              <option value="converted">Converted</option>
+              <option value="lost">Lost</option>
+            </select>
+          </div>
+          <div class="cc-field"><label>Owner</label><input id="crm-lead-owner" type="text"></div>
+          <div class="cc-field"><label>Project type</label><input id="crm-lead-project" type="text"></div>
+          <div class="cc-field"><label>City</label><input id="crm-lead-city" type="text"></div>
+          <div class="cc-field"><label>State</label><input id="crm-lead-state" type="text"></div>
+          <div class="cc-field"><label>Country</label><input id="crm-lead-country" type="text" value="United States"></div>
+          <div class="cc-field wide"><label>Notes</label><textarea id="crm-lead-notes" rows="4"></textarea></div>
+        </div>
+      </section>
+      <p id="crm-lead-msg" class="hidden text-sm px-5 pt-3 text-red-500"></p>
+    </form>
+    <div class="cc-drawer-foot">
+      <button id="crm-lead-delete" type="button" class="hidden px-5 py-2 rounded-full border border-slate-200 text-red-500 hover:border-red-400 text-sm">Delete</button>
+      <button type="submit" form="crm-lead-form" class="px-5 py-2 rounded-full bg-sky-500 hover:bg-sky-400 text-white text-sm font-semibold">Save lead</button>
+    </div>
+  </aside>
+  <aside id="crm-deal-drawer" class="cc-drawer" aria-hidden="true">
+    <div class="cc-drawer-head">
+      <h2 id="crm-deal-title-label">Deal</h2>
+      <div class="cc-drawer-tools">
+        <button type="button" class="cc-drawer-close" data-crm-drawer-close aria-label="Close">×</button>
+      </div>
+    </div>
+    <form id="crm-deal-form" class="cc-drawer-body">
+      <input type="hidden" id="crm-deal-id">
+      <section class="cc-sec is-open">
+        <button type="button" class="cc-sec-btn"><span class="cc-sec-label">Deal</span> <span class="cc-sec-chevron">▾</span></button>
+        <div class="cc-sec-body">
+          <div class="cc-field wide"><label>Name</label><input id="crm-deal-title" type="text"></div>
+          <div class="cc-field"><label>Company</label><input id="crm-deal-company" type="text"></div>
+          <div class="cc-field"><label>Contact</label><input id="crm-deal-contact" type="text"></div>
+          <div class="cc-field"><label>Email</label><input id="crm-deal-email" type="email"></div>
+          <div class="cc-field"><label>Stage</label>
+            <select id="crm-deal-stage">
+              <option value="new">New</option>
+              <option value="qualified">Qualified</option>
+              <option value="quoted">Quoted</option>
+              <option value="negotiation">Negotiation</option>
+              <option value="won">Won</option>
+              <option value="lost">Lost</option>
+            </select>
+          </div>
+          <div class="cc-field"><label>Value ($)</label><input id="crm-deal-value" type="number" min="0" step="1"></div>
+          <div class="cc-field"><label>Expected close</label><input id="crm-deal-close" type="date"></div>
+          <div class="cc-field"><label>Owner</label><input id="crm-deal-owner" type="text"></div>
+          <div class="cc-field wide"><label>Lead</label><select id="crm-deal-lead"><option value="">No lead</option></select></div>
+          <div class="cc-field wide"><label>Notes</label><textarea id="crm-deal-notes" rows="4"></textarea></div>
+        </div>
+      </section>
+      <p id="crm-deal-msg" class="hidden text-sm px-5 pt-3 text-red-500"></p>
+    </form>
+    <div class="cc-drawer-foot">
+      <button id="crm-deal-delete" type="button" class="hidden px-5 py-2 rounded-full border border-slate-200 text-red-500 hover:border-red-400 text-sm">Delete</button>
+      <button type="submit" form="crm-deal-form" class="px-5 py-2 rounded-full bg-sky-500 hover:bg-sky-400 text-white text-sm font-semibold">Save deal</button>
+    </div>
+  </aside>
+  <aside id="crm-act-drawer" class="cc-drawer" aria-hidden="true">
+    <div class="cc-drawer-head">
+      <h2 id="crm-act-title">Activity</h2>
+      <div class="cc-drawer-tools">
+        <button type="button" class="cc-drawer-close" data-crm-drawer-close aria-label="Close">×</button>
+      </div>
+    </div>
+    <form id="crm-act-form" class="cc-drawer-body">
+      <input type="hidden" id="crm-act-id">
+      <section class="cc-sec is-open">
+        <button type="button" class="cc-sec-btn"><span class="cc-sec-label">Activity</span> <span class="cc-sec-chevron">▾</span></button>
+        <div class="cc-sec-body">
+          <div class="cc-field"><label>Type</label>
+            <select id="crm-act-type">
+              <option value="note">Note</option>
+              <option value="call">Call</option>
+              <option value="email">Email</option>
+              <option value="meeting">Meeting</option>
+              <option value="task">Task</option>
+            </select>
+          </div>
+          <div class="cc-field"><label>Due</label><input id="crm-act-due" type="date"></div>
+          <div class="cc-field wide"><label>Subject</label><input id="crm-act-subject" type="text"></div>
+          <div class="cc-field"><label>Lead</label><select id="crm-act-lead"><option value="">Lead (optional)</option></select></div>
+          <div class="cc-field"><label>Deal</label><select id="crm-act-deal"><option value="">Deal (optional)</option></select></div>
+          <div class="cc-field wide"><label>Notes</label><textarea id="crm-act-body" rows="4"></textarea></div>
+          <label class="cc-check wide"><input id="crm-act-done" type="checkbox"> Done</label>
+        </div>
+      </section>
+      <p id="crm-act-msg" class="hidden text-sm px-5 pt-3 text-red-500"></p>
+    </form>
+    <div class="cc-drawer-foot">
+      <button id="crm-act-delete" type="button" class="hidden px-5 py-2 rounded-full border border-slate-200 text-red-500 hover:border-red-400 text-sm">Delete</button>
+      <button type="submit" form="crm-act-form" class="px-5 py-2 rounded-full bg-sky-500 hover:bg-sky-400 text-white text-sm font-semibold">Save activity</button>
+    </div>
+  </aside>
   <div id="cc-drawer-scrim" class="cc-drawer-scrim"></div>
   <aside id="cc-drawer" class="cc-drawer" aria-hidden="true">
     <div class="cc-drawer-head">
@@ -3078,6 +3557,10 @@
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="8" r="3.25"/><path d="M5 19.2c.9-3.1 3.5-4.7 7-4.7s6.1 1.6 7 4.7"/></svg>
       <span>Vendor</span>
     </a>
+    <a href="/company/crm/leads" id="tabbar-crm" data-tabbar-group="crm" class="hidden">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 4h16l-6.5 8.2V20l-3-1.5v-6.3L4 4z"/></svg>
+      <span>CRM</span>
+    </a>
     <a href="/company/customers" id="tabbar-customer" data-tabbar-group="customer" class="hidden">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="8" r="3.25"/><path d="M5 19.2c.9-3.1 3.5-4.7 7-4.7s6.1 1.6 7 4.7"/></svg>
       <span>Customer</span>
@@ -3093,7 +3576,7 @@
     </a>
   </nav>
 
-  <link rel="stylesheet" href="/css/company-dash.css?v=mail3" />
+  <link rel="stylesheet" href="/css/company-dash.css?v=crm8" />
 
   <script>
     const loginPanel = document.getElementById('login-panel');
@@ -3167,6 +3650,9 @@
       if (hash === 'website/store' || hash === 'store') return 'store';
       if (hash === 'website' || hash === 'website/products' || hash === 'products') return 'products';
       if (hash === 'customers' || hash === 'customer') return 'customers';
+      if (hash === 'crm' || hash === 'crm/leads' || hash === 'leads') return 'leads';
+      if (hash === 'crm/pipeline' || hash === 'pipeline') return 'pipeline';
+      if (hash === 'crm/activities' || hash === 'activities') return 'activities';
       if (hash === 'sales' || hash === 'quotes' || hash === 'sales/quotes') return 'quotes';
       if (hash === 'orders' || hash === 'sales/orders') return 'orders';
       if (hash === 'invoices' || hash === 'sales/invoices') return 'invoices';
@@ -3177,6 +3663,12 @@
       if (p === '/company' || p === '/company/dashboard') return 'dashboard';
       if (p === '/company/customers') return 'customers';
       if (/^\/company\/customers\/\d+$/.test(p)) return 'customers';
+      if (p === '/company/crm' || p === '/company/crm/leads') return 'leads';
+      if (/^\/company\/crm\/leads\/\d+$/.test(p)) return 'leads';
+      if (p === '/company/crm/pipeline') return 'pipeline';
+      if (/^\/company\/crm\/pipeline\/\d+$/.test(p)) return 'pipeline';
+      if (p === '/company/crm/activities') return 'activities';
+      if (/^\/company\/crm\/activities\/\d+$/.test(p)) return 'activities';
       if (p === '/company/sales/orders') return 'orders';
       const docPath = docMasterFromPath();
       if (docPath) {
@@ -3212,6 +3704,9 @@
       if (name === 'purchase-orders') return '/company/inventory/purchase-orders';
       if (name === 'receipt-shipments') return '/company/inventory/receipt-shipments';
       if (name === 'customers') return '/company/customers';
+      if (name === 'crm' || name === 'leads') return '/company/crm/leads';
+      if (name === 'pipeline') return '/company/crm/pipeline';
+      if (name === 'activities') return '/company/crm/activities';
       if (name === 'orders') return '/company/sales/orders';
       if (name === 'invoices') return '/company/sales/invoices';
       if (name === 'quotes' || name === 'sales') return '/company/sales/quotes';
@@ -3279,6 +3774,10 @@
       if (canUse('dashboard')) return 'dashboard';
       if (canUse('website')) return 'products';
       if (canUse('inventory')) return 'inventory';
+      if (canUse('leads')) return 'leads';
+      if (canUse('pipeline')) return 'pipeline';
+      if (canUse('activities')) return 'activities';
+      if (canUseCrmNav()) return 'leads';
       if (canUse('customers')) return 'customers';
       if (canUse('quotes')) return 'quotes';
       if (canUse('settings')) return 'staff';
@@ -3296,6 +3795,12 @@
         const p = new URL(href, location.origin).pathname.replace(/\/+$/, '') || '/company';
         if (p === '/company/customers') return 'customers';
         if (/^\/company\/customers\/\d+$/.test(p)) return 'customers';
+        if (p === '/company/crm' || p === '/company/crm/leads') return 'leads';
+        if (/^\/company\/crm\/leads\/\d+$/.test(p)) return 'leads';
+        if (p === '/company/crm/pipeline') return 'pipeline';
+        if (/^\/company\/crm\/pipeline\/\d+$/.test(p)) return 'pipeline';
+        if (p === '/company/crm/activities') return 'activities';
+        if (/^\/company\/crm\/activities\/\d+$/.test(p)) return 'activities';
         if (p === '/company/sales/orders') return 'orders';
         const docHref = (function () {
           const sm = p.match(/^\/company\/sales\/(quotes|orders|invoices)\/(\d+|new)$/);
@@ -3390,6 +3895,10 @@
           rlAskLeave(go);
           return;
         }
+        if (window.SpectrumCrm && SpectrumCrm.drawerNeedsLeave()) {
+          if (!window.confirm('Discard unsaved CRM changes?')) return;
+          SpectrumCrm.closeDrawers(true);
+        }
       }
       go();
     }
@@ -3410,6 +3919,10 @@
       'purchase-orders': 'Purchase Order',
       customer: 'Customer',
       customers: 'Customer',
+      crm: 'CRM',
+      leads: 'Lead',
+      pipeline: 'Pipeline',
+      activities: 'Activity',
       quotes: 'Sales Quote',
       sales: 'Sales Quote',
       orders: 'Sales Order',
@@ -3437,13 +3950,17 @@
       orders: '<svg class="dash-master-tab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 7h16l-1.5 12H5.5L4 7z"/><path d="M9 7V5a3 3 0 0 1 6 0v2"/></svg>',
       invoices: '<svg class="dash-master-tab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="5" y="3" width="14" height="18" rx="1.5"/><path d="M8 8h8M8 12h8M8 16h5"/></svg>',
       'purchase-orders': '<svg class="dash-master-tab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 3h8l4 4v14a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1z"/><path d="M15 3v5h5"/><path d="M9 13h6M9 17h4"/></svg>',
-      'receipt-shipments': '<svg class="dash-master-tab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 7h16l-1.5 12H5.5L4 7z"/><path d="M9 7V5a3 3 0 0 1 6 0v2"/><path d="M9 14h6M9 18h4"/></svg>'
+      'receipt-shipments': '<svg class="dash-master-tab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 7h16l-1.5 12H5.5L4 7z"/><path d="M9 7V5a3 3 0 0 1 6 0v2"/><path d="M9 14h6M9 18h4"/></svg>',
+      crm: '<svg class="dash-master-tab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 4h16l-6.5 8.2V20l-3-1.5v-6.3L4 4z"/></svg>'
     };
     MASTER_TAB_ICON.products = MASTER_TAB_ICON.website;
     MASTER_TAB_ICON.store = MASTER_TAB_ICON.website;
     MASTER_TAB_ICON.accounts = MASTER_TAB_ICON.customer;
     MASTER_TAB_ICON.vendors = MASTER_TAB_ICON.vendor;
     MASTER_TAB_ICON.customers = MASTER_TAB_ICON.customer;
+    MASTER_TAB_ICON.leads = MASTER_TAB_ICON.crm;
+    MASTER_TAB_ICON.pipeline = MASTER_TAB_ICON.crm;
+    MASTER_TAB_ICON.activities = MASTER_TAB_ICON.crm;
     MASTER_TAB_ICON.company = MASTER_TAB_ICON.settings;
     MASTER_TAB_ICON.forms = MASTER_TAB_ICON.settings;
     MASTER_TAB_ICON.staff = MASTER_TAB_ICON.settings;
@@ -3466,6 +3983,9 @@
       vendors: '/company/inventory/vendors',
       'purchase-orders': '/company/inventory/purchase-orders',
       customers: '/company/customers',
+      leads: '/company/crm/leads',
+      pipeline: '/company/crm/pipeline',
+      activities: '/company/crm/activities',
       quotes: '/company/sales/quotes',
       orders: '/company/sales/orders',
       invoices: '/company/sales/invoices',
@@ -3494,6 +4014,7 @@
       if (name === 'products' || name === 'store' || name === 'accounts' || name === 'website') return 'website';
       if (name === 'inventory' || name === 'warehouses' || name === 'receipt-shipments') return 'inventory';
       if (name === 'vendors' || name === 'purchase-orders') return 'vendor';
+      if (name === 'leads' || name === 'pipeline' || name === 'activities' || name === 'crm') return 'crm';
       if (name === 'customers' || name === 'quotes' || name === 'orders' || name === 'invoices' || name === 'sales') return 'customer';
       if (name === 'staff' || name === 'roles' || name === 'company' || name === 'forms') return 'settings';
       return '';
@@ -3504,6 +4025,7 @@
       if (group === 'website') return 'products';
       if (group === 'inventory') return 'inventory';
       if (group === 'vendor') return 'vendors';
+      if (group === 'crm') return 'leads';
       if (group === 'customer') return 'customers';
       if (group === 'settings') return 'staff';
       return 'dashboard';
@@ -3514,6 +4036,7 @@
       if (group === 'website') return ['products', 'store', 'accounts'];
       if (group === 'inventory') return ['inventory', 'warehouses', 'receipt-shipments'];
       if (group === 'vendor') return ['vendors', 'purchase-orders'];
+      if (group === 'crm') return ['leads', 'pipeline', 'activities'];
       if (group === 'customer') return ['customers', 'quotes', 'orders', 'invoices', 'sales'];
       if (group === 'settings') return ['staff', 'roles', 'company', 'forms'];
       return ['dashboard'];
@@ -3523,6 +4046,7 @@
       if (name === 'sales') return 'quotes';
       if (name === 'roles') return 'staff';
       if (name === 'website') return 'products';
+      if (name === 'crm') return 'leads';
       return name;
     }
 
@@ -4084,6 +4608,10 @@
       quotes: 'quotes',
       orders: 'orders',
       invoices: 'invoices',
+      crm: 'crm',
+      leads: 'leads',
+      pipeline: 'pipeline',
+      activities: 'activities',
       settings: 'settings',
       company: 'company',
       forms: 'company',
@@ -4100,6 +4628,9 @@
       if ((level !== 'view' && level !== 'edit') && key === 'warehouses') {
         level = (adminPerms().menu || {}).inventory;
       }
+      if ((level !== 'view' && level !== 'edit') && (key === 'leads' || key === 'pipeline' || key === 'activities')) {
+        level = (adminPerms().menu || {}).crm;
+      }
       return level === 'view' || level === 'edit';
     }
     function canUseSalesNav() {
@@ -4113,6 +4644,18 @@
     }
     function canUseVendorNav() {
       return canUse('vendors') || canUse('purchase-orders');
+    }
+    function canUseCrmNav() {
+      return canUse('crm') || canUse('leads') || canUse('pipeline') || canUse('activities');
+    }
+    function canEditMenu(key) {
+      if (!currentAdminUser) return false;
+      if (adminPerms().settings) return true;
+      const menu = adminPerms().menu || {};
+      if (key === 'crm' || key === 'leads' || key === 'pipeline' || key === 'activities') {
+        return menu[key] === 'edit' || menu.crm === 'edit';
+      }
+      return menu[key] === 'edit';
     }
     function staffRoleLabel(role) {
       const found = adminRoles.find(function (r) { return r.slug === role; });
@@ -4210,6 +4753,10 @@
       document.getElementById('tab-warehouses').classList.toggle('hidden', !canUse('warehouses') && !canUse('inventory'));
       document.getElementById('tab-customers').classList.toggle('hidden', !canUse('customers'));
       document.getElementById('tab-customer').classList.toggle('hidden', !canUseCustomerNav());
+      document.getElementById('tab-crm').classList.toggle('hidden', !canUseCrmNav());
+      document.getElementById('tab-leads').classList.toggle('hidden', !canUse('leads') && !canUse('crm'));
+      document.getElementById('tab-pipeline').classList.toggle('hidden', !canUse('pipeline') && !canUse('crm'));
+      document.getElementById('tab-activities').classList.toggle('hidden', !canUse('activities') && !canUse('crm'));
       document.getElementById('header-chat').classList.toggle('hidden', !canUse('chat'));
       document.getElementById('tabbar-chat').classList.toggle('hidden', !canUse('chat'));
       document.getElementById('header-settings').classList.toggle('hidden', !canUse('settings'));
@@ -4218,6 +4765,7 @@
       document.getElementById('tabbar-website').classList.add('hidden');
       document.getElementById('tabbar-inventory').classList.toggle('hidden', !canUseInventoryNav());
       document.getElementById('tabbar-vendor').classList.toggle('hidden', !canUseVendorNav());
+      document.getElementById('tabbar-crm').classList.toggle('hidden', !canUseCrmNav());
       document.getElementById('tabbar-customer').classList.toggle('hidden', !canUseCustomerNav());
       document.getElementById('tabbar-settings').classList.add('hidden');
       const chatAiSec = document.getElementById('chat-ai-section');
@@ -4240,6 +4788,7 @@
         ensureMasterTab(docMasterListTab(bootDoc.kind), pathForTab(docMasterListTab(bootDoc.kind)));
       }
       rememberMasterTab(next || 'dashboard');
+      bootSpectrumCrm(admin);
       showAdminTab(next || 'dashboard');
       renderDashTabBar();
       startMasterTabWorkWatch();
@@ -4606,11 +5155,15 @@
     let dashVendors = [];
     let dashPos = [];
     let dashReceipts = [];
+    let dashLeads = [];
+    let dashDeals = [];
     let dashCounts = {
       products: 0, productsShown: 0, accounts: 0,
       inventory: 0, inventoryLow: 0, inventoryOut: 0, receipts: 0,
       vendors: 0, vendorsWithEmail: 0, pos: 0, openPos: 0,
-      customers: 0, quotes: 0, orders: 0, invoices: 0, sales: 0
+      customers: 0, quotes: 0, orders: 0, invoices: 0, sales: 0,
+      leads: 0, openLeads: 0, deals: 0, openDeals: 0, pipelineValue: 0,
+      activities: 0, overdueActivities: 0
     };
 
     function canUseSalesDocs() {
@@ -4620,6 +5173,7 @@
       if (name === 'website') return canUse('website');
       if (name === 'inventory') return canUseInventoryNav();
       if (name === 'vendor') return canUseVendorNav();
+      if (name === 'crm') return canUseCrmNav();
       if (name === 'customer') return canUseCustomerNav();
       return false;
     }
@@ -4642,6 +5196,7 @@
       if (canUse('website')) return 'website';
       if (canUseInventoryNav()) return 'inventory';
       if (canUseVendorNav()) return 'vendor';
+      if (canUseCrmNav()) return 'crm';
       if (canUseCustomerNav()) return 'customer';
       return 'website';
     }
@@ -4668,10 +5223,12 @@
       const webEl = document.getElementById('dash-stat-website');
       const invEl = document.getElementById('dash-stat-inventory');
       const vendorEl = document.getElementById('dash-stat-vendor');
+      const crmEl = document.getElementById('dash-stat-crm');
       const custEl = document.getElementById('dash-stat-customer');
       if (webEl) webEl.textContent = canUse('website') ? dashCount(websiteN) : '—';
       if (invEl) invEl.textContent = canUse('inventory') ? dashCount(invN) : '—';
       if (vendorEl) vendorEl.textContent = canUse('vendors') ? dashCount(vendorN) : (canUse('purchase-orders') ? dashCount(openPoN) : '—');
+      if (crmEl) crmEl.textContent = canUseCrmNav() ? dashCount(dashCounts.openLeads) : '—';
       if (custEl) {
         if (canUse('customers')) custEl.textContent = dashCount(custN);
         else if (canUseSalesDocs()) custEl.textContent = dashCount(salesN);
@@ -4696,6 +5253,14 @@
         if (canUse('vendors')) bits.push(vendorN + ' vendors');
         if (canUse('purchase-orders')) bits.push(openPoN + ' open POs');
         vendorHint.textContent = bits.join(' · ') || 'Vendors';
+      }
+      const crmHint = document.getElementById('dash-hint-crm');
+      if (crmHint) {
+        const bits = [];
+        if (dashCounts.openLeads) bits.push(dashCounts.openLeads + ' open');
+        if (dashCounts.pipelineValue) bits.push('$' + dashCount(dashCounts.pipelineValue) + ' pipeline');
+        if (dashCounts.overdueActivities) bits.push(dashCounts.overdueActivities + ' overdue');
+        crmHint.textContent = bits.join(' · ') || 'Leads and pipeline';
       }
       const custHint = document.getElementById('dash-hint-customer');
       if (custHint) {
@@ -4737,6 +5302,11 @@
           title: 'Vendor',
           sub: 'Purchase vendors and purchase orders.',
           href: '/company/inventory/vendors'
+        },
+        crm: {
+          title: 'CRM',
+          sub: 'Leads, pipeline deals, and activity.',
+          href: '/company/crm/leads'
         },
         customer: {
           title: 'Customer',
@@ -4786,6 +5356,29 @@
         list.innerHTML = rows || '<p class="dash-activity-empty">No purchase orders yet.</p>';
         return;
       }
+      if (name === 'crm') {
+        stats.innerHTML = dashChip(dashCounts.openLeads, 'Open leads') +
+          dashChip(dashCounts.leads, 'Leads') +
+          dashChip(dashCounts.openDeals, 'Open deals') +
+          '<div class="dash-detail-chip"><strong>' + esc('$' + dashCount(dashCounts.pipelineValue)) + '</strong><span>Pipeline</span></div>' +
+          (dashCounts.overdueActivities ? dashChip(dashCounts.overdueActivities, 'Overdue activity') : '');
+        const leadRows = dashLeads.slice(0, 5).map(function (lead) {
+          return dashRow(
+            lead.displayName || lead.companyName || 'Lead',
+            [lead.email, lead.source].filter(Boolean).join(' · '),
+            lead.status || ''
+          );
+        }).join('');
+        const dealRows = dashDeals.slice(0, 5).map(function (deal) {
+          return dashRow(
+            deal.title || deal.companyName || 'Deal',
+            deal.stage || '',
+            '$' + dashCount(deal.value)
+          );
+        }).join('');
+        list.innerHTML = (leadRows + dealRows) || '<p class="dash-activity-empty">No leads or deals yet.</p>';
+        return;
+      }
       stats.innerHTML =
         (canUse('customers') ? dashChip(dashCounts.customers, 'Customers') : '') +
         (canUseSalesDocs() ? dashChip(dashCounts.quotes, 'Quotes') + dashChip(dashCounts.orders, 'Orders') + dashChip(dashCounts.invoices, 'Invoices') : '');
@@ -4816,6 +5409,8 @@
         dashVendors = data.vendors || [];
         dashPos = data.purchaseOrders || [];
         dashReceipts = data.receipts || [];
+        dashLeads = data.leads || [];
+        dashDeals = data.deals || [];
       } catch (err) {
         dashProducts = [];
         dashInventory = [];
@@ -4824,6 +5419,8 @@
         dashVendors = [];
         dashPos = [];
         dashReceipts = [];
+        dashLeads = [];
+        dashDeals = [];
       }
       if (!canDashOverview(dashOverview)) dashOverview = firstDashOverview();
       renderDashKpis();
@@ -5159,6 +5756,9 @@
       quotes: '<span id="so-total">0</span> <span id="so-list-label">sales documents</span>. Pick a company customer, add line items, then save. Website Sign in accounts stay under Website → Accounts.',
       orders: '<span id="so-total">0</span> <span id="so-list-label">sales documents</span>. Pick a company customer, add line items, then save. Website Sign in accounts stay under Website → Accounts.',
       invoices: '<span id="so-total">0</span> <span id="so-list-label">sales documents</span>. Pick a company customer, add line items, then save. Website Sign in accounts stay under Website → Accounts.',
+      leads: '<span id="crm-lead-total">0</span> leads from the website, dealer form, or staff. Convert a lead to create a Customer for quotes.',
+      pipeline: '<span id="crm-pipe-total">0</span> deals. Drag a card to change stage. Create a quote after the deal has a customer.',
+      activities: '<span id="crm-act-total">0</span> activities — notes, calls, emails, meetings, and tasks.',
       company: '<span id="ca-total">0</span> company accounts — logins and passwords.',
       forms: 'Letter print for Quote, Sales Order, Invoice, and PO. Save a template per type. Print uses that layout, not the editor.'
     };
@@ -5209,6 +5809,10 @@
         rlAskLeave(function () { showAdminTab(name); });
         return;
       }
+      if (window.SpectrumCrm && SpectrumCrm.drawerNeedsLeave()) {
+        if (!window.confirm('Discard unsaved CRM changes?')) return;
+      }
+      if (window.SpectrumCrm) SpectrumCrm.closeDrawers(true);
       if (typeof closeCustomerDrawer === 'function') closeCustomerDrawer(true);
       if (typeof closeInventoryDrawer === 'function') closeInventoryDrawer(true);
       if (typeof closeVendorDrawer === 'function') closeVendorDrawer(true);
@@ -5221,6 +5825,7 @@
       const onWebsite = view === 'products' || view === 'store' || view === 'accounts';
       const onSettings = view === 'staff' || view === 'roles' || view === 'company' || view === 'forms';
       const onCustomerNav = view === 'quotes' || view === 'orders' || view === 'invoices' || view === 'sales' || view === 'customers';
+      const onCrmNav = view === 'leads' || view === 'pipeline' || view === 'activities' || view === 'crm';
       const onSales = view === 'quotes' || view === 'orders' || view === 'invoices' || view === 'sales';
       const onInventory = view === 'inventory' || view === 'warehouses' || view === 'receipt-shipments';
       const onVendorNav = view === 'vendors' || view === 'purchase-orders';
@@ -5264,7 +5869,7 @@
       if (whSec) whSec.classList.toggle('wh-split-on', view === 'warehouses' && !isMobileDash());
       document.body.classList.toggle('inv-layout-lock', view === 'inventory' && !isMobileDash());
       document.body.classList.toggle('dash-split-lock',
-        (view === 'customers' || view === 'vendors' || view === 'warehouses' || view === 'products' || view === 'store' || view === 'accounts') && !isMobileDash());
+        (view === 'customers' || view === 'vendors' || view === 'warehouses' || view === 'products' || view === 'store' || view === 'accounts' || view === 'leads' || view === 'pipeline' || view === 'activities') && !isMobileDash());
       const vnSec = document.getElementById('vendors-section');
       if (vnSec) vnSec.classList.toggle('vn-split-on', view === 'vendors' && !isMobileDash());
       const wpSec = document.getElementById('products-section');
@@ -5288,6 +5893,9 @@
       document.getElementById('po-section').classList.toggle('hidden', view !== 'purchase-orders');
       document.getElementById('rs-section').classList.toggle('hidden', view !== 'receipt-shipments');
       document.getElementById('customers-section').classList.toggle('hidden', view !== 'customers');
+      document.getElementById('crm-lead-section').classList.toggle('hidden', view !== 'leads' && view !== 'crm');
+      document.getElementById('crm-pipe-section').classList.toggle('hidden', view !== 'pipeline');
+      document.getElementById('crm-act-section').classList.toggle('hidden', view !== 'activities');
       document.getElementById('sales-section').classList.toggle('hidden', !onSales);
       const soNavKpis = document.getElementById('so-overview');
       const soInvKpis = document.getElementById('so-inv-overview');
@@ -5302,11 +5910,16 @@
       document.getElementById('customer-subnav').classList.toggle('hidden', !onCustomerNav);
       document.getElementById('inventory-subnav').classList.toggle('hidden', !onInventory);
       document.getElementById('vendor-subnav').classList.toggle('hidden', !onVendorNav);
+      document.getElementById('crm-subnav').classList.toggle('hidden', !onCrmNav);
       document.getElementById('tab-website').className = navLinkClass(onWebsite, !canUse('website'));
       document.getElementById('tab-inventory').className = navLinkClass(onInventory, !canUseInventoryNav());
       document.getElementById('tab-vendor').className = navLinkClass(onVendorNav, !canUseVendorNav());
       document.getElementById('tab-customers').className = navLinkClass(view === 'customers', !canUse('customers'), 'sub');
       document.getElementById('tab-customer').className = navLinkClass(onCustomerNav, !canUseCustomerNav());
+      document.getElementById('tab-crm').className = navLinkClass(onCrmNav, !canUseCrmNav());
+      document.getElementById('tab-leads').className = navLinkClass(view === 'leads' || view === 'crm', !canUse('leads') && !canUse('crm'), 'sub');
+      document.getElementById('tab-pipeline').className = navLinkClass(view === 'pipeline', !canUse('pipeline') && !canUse('crm'), 'sub');
+      document.getElementById('tab-activities').className = navLinkClass(view === 'activities', !canUse('activities') && !canUse('crm'), 'sub');
       document.getElementById('tab-inv-items').className = navLinkClass(view === 'inventory', false, 'sub');
       document.getElementById('tab-warehouses').className = navLinkClass(view === 'warehouses', false, 'sub');
       document.getElementById('tab-vendors').className = navLinkClass(view === 'vendors', false, 'sub');
@@ -5338,6 +5951,10 @@
         'purchase-orders': ['Vendor', 'Purchase Order'],
         'receipt-shipments': ['Inventory', 'Receipt Shipment'],
         customers: ['Customer', ''],
+        leads: ['CRM', 'Lead'],
+        pipeline: ['CRM', 'Pipeline'],
+        activities: ['CRM', 'Activity'],
+        crm: ['CRM', 'Lead'],
         quotes: ['Customer', 'Sales Quote'],
         orders: ['Customer', 'Sales Order'],
         invoices: ['Customer', 'Invoice'],
@@ -6593,6 +7210,32 @@
       dashTabPath[tab] = href;
       if (companyPath() !== href) history.pushState({ tab: tab }, '', href);
       openCompanyTab(tab, false, { restorePath: href, reload: true });
+    }
+
+    function bootSpectrumCrm(admin) {
+      if (!window.SpectrumCrm || !admin) return;
+      SpectrumCrm.boot({
+        api: api,
+        canUse: canUse,
+        canEdit: canEditMenu,
+        esc: esc,
+        isMobile: isMobileDash,
+        openCompanyTab: openCompanyTab,
+        openQuote: function (customerId) {
+          if (typeof openDocMasterTab === 'function') {
+            openDocMasterTab('quote', 'new', { customerId: customerId });
+          }
+        },
+        pushPath: function (href) {
+          history.pushState({ tab: tabFromPath() }, '', href);
+          const tab = tabFromPath();
+          if (tab) dashTabPath[tab] = href;
+        },
+        companyPath: companyPath,
+        adminName: function () {
+          return (currentAdminUser && (currentAdminUser.name || currentAdminUser.email)) || '';
+        }
+      });
     }
 
     function bootSpectrumChat(admin) {
@@ -9536,12 +10179,14 @@
       const onInventory = name === 'inventory' || name === 'warehouses' || name === 'receipt-shipments';
       const onVendorNav = name === 'vendors' || name === 'purchase-orders';
       const onCustomerNav = name === 'sales' || name === 'quotes' || name === 'orders' || name === 'invoices' || name === 'customers';
+      const onCrmNav = name === 'leads' || name === 'pipeline' || name === 'activities' || name === 'crm';
       const onSettings = name === 'staff' || name === 'roles' || name === 'company' || name === 'forms';
       const map = {
         'tabbar-dashboard': name === 'dashboard',
         'tabbar-website': onWebsite,
         'tabbar-inventory': onInventory,
         'tabbar-vendor': onVendorNav,
+        'tabbar-crm': onCrmNav,
         'tabbar-customer': onCustomerNav,
         'tabbar-chat': name === 'chat',
         'tabbar-settings': onSettings
@@ -9569,6 +10214,7 @@
       website: 'website-subnav',
       inventory: 'inventory-subnav',
       vendor: 'vendor-subnav',
+      crm: 'crm-subnav',
       customer: 'customer-subnav',
       settings: 'settings-subnav'
     };
@@ -14381,6 +15027,9 @@
         showCcList();
         await loadCompanyCustomers();
       }
+      if (name === 'leads' || name === 'pipeline' || name === 'activities' || name === 'crm') {
+        if (window.SpectrumCrm) await SpectrumCrm.openRouted(name);
+      }
       if (name === 'quotes' || name === 'orders' || name === 'invoices' || name === 'sales') {
         const t = salesTypeFromTab(name);
         const kind = t;
@@ -16495,6 +17144,12 @@
         { key: 'vendors', label: 'Vendor' },
         { key: 'purchase-orders', label: 'Purchase Order' }
       ]},
+      { label: 'CRM', children: [
+        { key: 'crm', label: 'CRM' },
+        { key: 'leads', label: 'Lead' },
+        { key: 'pipeline', label: 'Pipeline' },
+        { key: 'activities', label: 'Activity' }
+      ]},
       { label: 'Customer', children: [
         { key: 'customers', label: 'Customer' },
         { key: 'sales', label: 'Sales' },
@@ -18563,12 +19218,18 @@
         const products = document.getElementById('products-section');
         const storeSec = document.getElementById('store-section');
         const accounts = document.getElementById('accounts-section');
+        const crmLead = document.getElementById('crm-lead-section');
+        const crmPipe = document.getElementById('crm-pipe-section');
+        const crmAct = document.getElementById('crm-act-section');
         const onVendors = !!(vn && !vn.classList.contains('hidden'));
         const onWarehouses = !!(warehouses && !warehouses.classList.contains('hidden'));
         const onProducts = !!(products && !products.classList.contains('hidden'));
         const onStore = !!(storeSec && !storeSec.classList.contains('hidden'));
         const onAccounts = !!(accounts && !accounts.classList.contains('hidden'));
-        document.body.classList.toggle('dash-split-lock', (onCustomers || onVendors || onWarehouses || onProducts || onStore || onAccounts) && desktop);
+        const onCrm = !!((crmLead && !crmLead.classList.contains('hidden')) ||
+          (crmPipe && !crmPipe.classList.contains('hidden')) ||
+          (crmAct && !crmAct.classList.contains('hidden')));
+        document.body.classList.toggle('dash-split-lock', (onCustomers || onVendors || onWarehouses || onProducts || onStore || onAccounts || onCrm) && desktop);
         if (vn) vn.classList.toggle('vn-split-on', onVendors && desktop);
         if (warehouses) warehouses.classList.toggle('wh-split-on', onWarehouses && desktop);
         if (products) products.classList.toggle('wp-split-on', onProducts && desktop);

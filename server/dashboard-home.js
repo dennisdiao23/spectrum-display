@@ -19,7 +19,14 @@ function emptyCounts() {
     quotes: 0,
     orders: 0,
     invoices: 0,
-    sales: 0
+    sales: 0,
+    leads: 0,
+    openLeads: 0,
+    deals: 0,
+    openDeals: 0,
+    pipelineValue: 0,
+    activities: 0,
+    overdueActivities: 0
   };
 }
 
@@ -33,7 +40,9 @@ function emptyDashboard(source) {
     sales: [],
     customers: [],
     accounts: [],
-    staff: []
+    staff: [],
+    leads: [],
+    deals: []
   };
 }
 
@@ -43,6 +52,10 @@ function canSee(admin, module) {
 
 function canSeeSales(admin) {
   return canSee(admin, 'sales') || canSee(admin, 'quotes') || canSee(admin, 'orders') || canSee(admin, 'invoices');
+}
+
+function canSeeCrm(admin) {
+  return canSee(admin, 'crm') || canSee(admin, 'leads') || canSee(admin, 'pipeline') || canSee(admin, 'activities');
 }
 
 function productPitchLabel(pitchesRaw, type) {
@@ -94,6 +107,29 @@ function mapSalesPreview(row) {
     customerName: row.customer_name || row.customerName || '',
     status: row.status || '',
     total: Number(row.total) || 0
+  };
+}
+
+function mapLeadPreview(row) {
+  return {
+    displayName: row.display_name || row.displayName || '',
+    companyName: row.company_name || row.companyName || '',
+    contactFirst: row.contact_first || row.contactFirst || '',
+    contactLast: row.contact_last || row.contactLast || '',
+    email: row.email || '',
+    phone: row.phone || '',
+    status: row.status || '',
+    source: row.source || ''
+  };
+}
+
+function mapDealPreview(row) {
+  return {
+    title: row.title || '',
+    companyName: row.company_name || row.companyName || '',
+    stage: row.stage || '',
+    value: Number(row.value) || 0,
+    expectedClose: row.expected_close || row.expectedClose || ''
   };
 }
 
@@ -236,6 +272,43 @@ function getSqliteDashboardHome(db, admin) {
       ORDER BY company_name COLLATE NOCASE, contact_last COLLATE NOCASE, id DESC
       LIMIT 3
     `).map(mapCustomerPreview);
+  }
+
+  if (canSeeCrm(admin)) {
+    counts.leads = sqliteCount(db, 'SELECT COUNT(*) AS n FROM company_crm_leads');
+    counts.openLeads = sqliteCount(db, `
+      SELECT COUNT(*) AS n FROM company_crm_leads
+      WHERE status IN ('new', 'working', 'qualified')
+    `);
+    counts.deals = sqliteCount(db, 'SELECT COUNT(*) AS n FROM company_crm_deals');
+    counts.openDeals = sqliteCount(db, `
+      SELECT COUNT(*) AS n FROM company_crm_deals
+      WHERE stage IN ('new', 'qualified', 'quoted', 'negotiation')
+    `);
+    counts.pipelineValue = sqliteCount(db, `
+      SELECT COALESCE(SUM(value), 0) AS n FROM company_crm_deals
+      WHERE stage IN ('new', 'qualified', 'quoted', 'negotiation')
+    `);
+    counts.activities = sqliteCount(db, 'SELECT COUNT(*) AS n FROM company_crm_activities');
+    counts.overdueActivities = sqliteCount(db, `
+      SELECT COUNT(*) AS n FROM company_crm_activities
+      WHERE (done_at IS NULL OR done_at = '')
+        AND due_at IS NOT NULL AND due_at != ''
+        AND datetime(due_at) < datetime('now')
+    `);
+    out.leads = sqliteAll(db, `
+      SELECT display_name, company_name, contact_first, contact_last, email, phone, status, source
+      FROM company_crm_leads
+      ORDER BY datetime(updated_at) DESC, id DESC
+      LIMIT 8
+    `).map(mapLeadPreview);
+    out.deals = sqliteAll(db, `
+      SELECT title, company_name, stage, value, expected_close
+      FROM company_crm_deals
+      WHERE stage IN ('new', 'qualified', 'quoted', 'negotiation')
+      ORDER BY datetime(updated_at) DESC, id DESC
+      LIMIT 8
+    `).map(mapDealPreview);
   }
 
   if (canSeeSales(admin)) {
@@ -435,6 +508,53 @@ async function getSupabaseDashboardHome(supabase, admin) {
       out.sales = rows.map(function (row) {
         return mapSalesPreview(Object.assign({}, row, { total: totals[String(row.id)] || 0 }));
       });
+    })().catch(function () {}));
+  }
+
+  if (canSeeCrm(admin)) {
+    tasks.push((async function () {
+      const openLead = function (q) { return q.in('status', ['new', 'working', 'qualified']); };
+      const openDeal = function (q) { return q.in('stage', ['new', 'qualified', 'quoted', 'negotiation']); };
+      const [leads, openLeads, deals, openDeals, activities, leadPreview, dealPreview, openDealRows, dueActs] = await Promise.all([
+        countSupabase(supabase, 'company_crm_leads'),
+        countSupabase(supabase, 'company_crm_leads', openLead),
+        countSupabase(supabase, 'company_crm_deals'),
+        countSupabase(supabase, 'company_crm_deals', openDeal),
+        countSupabase(supabase, 'company_crm_activities'),
+        supabase.from('company_crm_leads')
+          .select('display_name, company_name, contact_first, contact_last, email, phone, status, source')
+          .order('updated_at', { ascending: false })
+          .limit(8),
+        supabase.from('company_crm_deals')
+          .select('title, company_name, stage, value, expected_close')
+          .in('stage', ['new', 'qualified', 'quoted', 'negotiation'])
+          .order('updated_at', { ascending: false })
+          .limit(8),
+        supabase.from('company_crm_deals')
+          .select('value')
+          .in('stage', ['new', 'qualified', 'quoted', 'negotiation']),
+        supabase.from('company_crm_activities')
+          .select('due_at, done_at')
+          .eq('done_at', '')
+          .neq('due_at', '')
+      ]);
+      counts.leads = leads;
+      counts.openLeads = openLeads;
+      counts.deals = deals;
+      counts.openDeals = openDeals;
+      counts.activities = activities;
+      let pipelineValue = 0;
+      ((openDealRows && openDealRows.data) || []).forEach(function (row) {
+        pipelineValue += Number(row.value) || 0;
+      });
+      counts.pipelineValue = pipelineValue;
+      const now = Date.now();
+      counts.overdueActivities = ((dueActs && dueActs.data) || []).filter(function (row) {
+        const due = Date.parse(row.due_at);
+        return Number.isFinite(due) && due < now;
+      }).length;
+      out.leads = ((leadPreview && leadPreview.data) || []).map(mapLeadPreview);
+      out.deals = ((dealPreview && dealPreview.data) || []).map(mapDealPreview);
     })().catch(function () {}));
   }
 
