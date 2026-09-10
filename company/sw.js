@@ -26,6 +26,7 @@ function isApi(url) {
 function isCompanyChrome(url) {
   return url.pathname.indexOf('/css/company-dash') === 0
     || url.pathname.indexOf('/js/company-chat') === 0
+    || url.pathname.indexOf('/js/company-crm') === 0
     || url.pathname.indexOf('/js/print-form') === 0
     || url.pathname.indexOf('/js/address-autocomplete') === 0
     || url.pathname.indexOf('/assets/favicon-') === 0

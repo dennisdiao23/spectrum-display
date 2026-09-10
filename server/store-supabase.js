@@ -2369,6 +2369,7 @@ function createSupabaseStore() {
   };
   Object.assign(api, require('./walls').supabaseApi(supabase));
   Object.assign(api, require('./company-chat').supabaseApi(supabase));
+  Object.assign(api, require('./company-crm').supabaseApi(supabase, api));
   return api;
 }
 

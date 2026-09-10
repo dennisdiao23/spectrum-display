@@ -140,6 +140,10 @@ async function main() {
     '/company/inventory/purchase-orders',
     '/company/inventory/receipt-shipments',
     '/company/customers',
+    '/company/crm',
+    '/company/crm/leads',
+    '/company/crm/pipeline',
+    '/company/crm/activities',
     '/company/sales',
     '/company/sales/quotes',
     '/company/sales/orders',
@@ -153,6 +157,9 @@ async function main() {
     app.get([route, route + '/'], sendCompany);
   });
   app.get(['/company/customers/:id', '/company/customers/:id/'], sendCompany);
+  app.get(['/company/crm/leads/:id', '/company/crm/leads/:id/'], sendCompany);
+  app.get(['/company/crm/pipeline/:id', '/company/crm/pipeline/:id/'], sendCompany);
+  app.get(['/company/crm/activities/:id', '/company/crm/activities/:id/'], sendCompany);
   app.get(['/company/sales/quotes/:id', '/company/sales/quotes/:id/'], sendCompany);
   app.get(['/company/sales/orders/:id', '/company/sales/orders/:id/'], sendCompany);
   app.get(['/company/sales/invoices/:id', '/company/sales/invoices/:id/'], sendCompany);
@@ -341,6 +348,29 @@ async function main() {
     };
   }
 
+  function hasCrmAccess(admin, need) {
+    return hasPerm(admin, 'crm', need) ||
+      hasPerm(admin, 'leads', need) ||
+      hasPerm(admin, 'pipeline', need) ||
+      hasPerm(admin, 'activities', need);
+  }
+
+  function requireCrmView(req, res, next) {
+    if (hasCrmAccess(req.admin, 'view')) return next();
+    return res.status(403).json({ ok: false, error: 'You do not have access to this.' });
+  }
+
+  function requireCrmEdit(module) {
+    return function (req, res, next) {
+      if (hasPerm(req.admin, 'crm', 'edit') || hasPerm(req.admin, module, 'edit')) return next();
+      return res.status(403).json({ ok: false, error: 'You do not have access to this.' });
+    };
+  }
+
+  function actorName(req) {
+    return (req.admin && (req.admin.name || req.admin.email)) || '';
+  }
+
   function requireCatalogRead(req, res, next) {
     if (hasPerm(req.admin, 'website', 'view') || hasPerm(req.admin, 'inventory', 'view')) return next();
     return res.status(403).json({ ok: false, error: 'You do not have access to this.' });
@@ -473,6 +503,20 @@ async function main() {
       } catch (err) {
         console.error('Could not store contact inquiry:', err.message || err);
       }
+      try {
+        await store.upsertCrmLeadFromInquiry({
+          source: 'website',
+          sourceKey: inquiry.email ? 'website:' + inquiry.email.toLowerCase() : '',
+          name: inquiry.name,
+          company: inquiry.company,
+          email: inquiry.email,
+          phone: inquiry.phone,
+          projectType: inquiry.projectType,
+          notes: inquiry.message
+        });
+      } catch (err) {
+        console.error('Could not store CRM lead from contact:', err.message || err);
+      }
       if (!mailConfigured()) {
         return res.status(503).json({
           ok: false,
@@ -567,6 +611,32 @@ async function main() {
       }
       if (!app.agree_terms_privacy) {
         return res.status(400).json({ ok: false, error: 'Please acknowledge the Terms of Use and Privacy Policy.' });
+      }
+      try {
+        const addr = app.company_address || {};
+        const extra = [
+          app.tax_id ? 'Tax ID: ' + app.tax_id : '',
+          app.years_in_business ? 'Years in business: ' + app.years_in_business : '',
+          app.company_size ? 'Company size: ' + app.company_size : '',
+          app.business_type && app.business_type.length ? 'Business type: ' + app.business_type.join(', ') : '',
+          app.primary_verticals && app.primary_verticals.length ? 'Verticals: ' + app.primary_verticals.join(', ') : '',
+          addr.line1 ? 'Address: ' + [addr.line1, addr.city, addr.state, addr.postal_code].filter(Boolean).join(', ') : '',
+          app.references_text ? 'References: ' + app.references_text : ''
+        ].filter(Boolean).join('\n');
+        await store.upsertCrmLeadFromInquiry({
+          source: 'dealer',
+          sourceKey: app.email ? 'dealer:' + app.email : '',
+          name: app.contact_name,
+          company: app.company_name,
+          email: app.email,
+          phone: app.phone,
+          website: app.website,
+          city: addr.city || '',
+          state: addr.state || '',
+          notes: extra
+        });
+      } catch (err) {
+        console.error('Could not store CRM lead from dealer:', err.message || err);
       }
       const attachments = [];
       if (req.file && req.file.buffer) {
@@ -1008,6 +1078,123 @@ async function main() {
     try {
       const ok = await store.deleteCustomerContact(req.params.customerId, req.params.contactId);
       if (!ok) return res.status(404).json({ ok: false, error: 'Contact not found.' });
+      res.json({ ok: true });
+    } catch (err) { next(err); }
+  });
+
+  app.get('/api/admin/crm/leads', requireAdmin, requireCrmView, async function (_req, res, next) {
+    try {
+      res.json({ ok: true, leads: await store.listCrmLeads() });
+    } catch (err) { next(err); }
+  });
+
+  app.get('/api/admin/crm/leads/:id', requireAdmin, requireCrmView, async function (req, res, next) {
+    try {
+      const lead = await store.getCrmLead(req.params.id);
+      if (!lead) return res.status(404).json({ ok: false, error: 'Lead not found.' });
+      res.json({ ok: true, lead: lead });
+    } catch (err) { next(err); }
+  });
+
+  app.post('/api/admin/crm/leads', requireAdmin, requireCrmEdit('leads'), async function (req, res, next) {
+    try {
+      res.json({ ok: true, lead: await store.createCrmLead(req.body || {}) });
+    } catch (err) { next(err); }
+  });
+
+  app.put('/api/admin/crm/leads/:id', requireAdmin, requireCrmEdit('leads'), async function (req, res, next) {
+    try {
+      const lead = await store.updateCrmLead(req.params.id, req.body || {});
+      if (!lead) return res.status(404).json({ ok: false, error: 'Lead not found.' });
+      res.json({ ok: true, lead: lead });
+    } catch (err) { next(err); }
+  });
+
+  app.delete('/api/admin/crm/leads/:id', requireAdmin, requireCrmEdit('leads'), async function (req, res, next) {
+    try {
+      const ok = await store.deleteCrmLead(req.params.id);
+      if (!ok) return res.status(404).json({ ok: false, error: 'Lead not found.' });
+      res.json({ ok: true });
+    } catch (err) { next(err); }
+  });
+
+  app.post('/api/admin/crm/leads/:id/convert', requireAdmin, requireCrmEdit('leads'), async function (req, res, next) {
+    try {
+      const result = await store.convertCrmLead(req.params.id);
+      if (!result) return res.status(404).json({ ok: false, error: 'Lead not found.' });
+      res.json({ ok: true, lead: result.lead, customer: result.customer });
+    } catch (err) { next(err); }
+  });
+
+  app.get('/api/admin/crm/deals', requireAdmin, requireCrmView, async function (_req, res, next) {
+    try {
+      res.json({ ok: true, deals: await store.listCrmDeals() });
+    } catch (err) { next(err); }
+  });
+
+  app.get('/api/admin/crm/deals/:id', requireAdmin, requireCrmView, async function (req, res, next) {
+    try {
+      const deal = await store.getCrmDeal(req.params.id);
+      if (!deal) return res.status(404).json({ ok: false, error: 'Deal not found.' });
+      res.json({ ok: true, deal: deal });
+    } catch (err) { next(err); }
+  });
+
+  app.post('/api/admin/crm/deals', requireAdmin, requireCrmEdit('pipeline'), async function (req, res, next) {
+    try {
+      res.json({ ok: true, deal: await store.createCrmDeal(req.body || {}) });
+    } catch (err) { next(err); }
+  });
+
+  app.put('/api/admin/crm/deals/:id', requireAdmin, requireCrmEdit('pipeline'), async function (req, res, next) {
+    try {
+      const deal = await store.updateCrmDeal(req.params.id, req.body || {});
+      if (!deal) return res.status(404).json({ ok: false, error: 'Deal not found.' });
+      res.json({ ok: true, deal: deal });
+    } catch (err) { next(err); }
+  });
+
+  app.delete('/api/admin/crm/deals/:id', requireAdmin, requireCrmEdit('pipeline'), async function (req, res, next) {
+    try {
+      const ok = await store.deleteCrmDeal(req.params.id);
+      if (!ok) return res.status(404).json({ ok: false, error: 'Deal not found.' });
+      res.json({ ok: true });
+    } catch (err) { next(err); }
+  });
+
+  app.get('/api/admin/crm/activities', requireAdmin, requireCrmView, async function (_req, res, next) {
+    try {
+      res.json({ ok: true, activities: await store.listCrmActivities() });
+    } catch (err) { next(err); }
+  });
+
+  app.get('/api/admin/crm/activities/:id', requireAdmin, requireCrmView, async function (req, res, next) {
+    try {
+      const activity = await store.getCrmActivity(req.params.id);
+      if (!activity) return res.status(404).json({ ok: false, error: 'Activity not found.' });
+      res.json({ ok: true, activity: activity });
+    } catch (err) { next(err); }
+  });
+
+  app.post('/api/admin/crm/activities', requireAdmin, requireCrmEdit('activities'), async function (req, res, next) {
+    try {
+      const body = Object.assign({}, req.body || {}, { createdByName: actorName(req) });
+      res.json({ ok: true, activity: await store.createCrmActivity(body) });
+    } catch (err) { next(err); }
+  });
+
+  app.put('/api/admin/crm/activities/:id', requireAdmin, requireCrmEdit('activities'), async function (req, res, next) {
+    try {
+      const activity = await store.updateCrmActivity(req.params.id, req.body || {});
+      if (!activity) return res.status(404).json({ ok: false, error: 'Activity not found.' });
+      res.json({ ok: true, activity: activity });
+    } catch (err) { next(err); }
+  });
+
+  app.delete('/api/admin/crm/activities/:id', requireAdmin, requireCrmEdit('activities'), async function (req, res, next) {
+    try {
+      const ok = await store.deleteCrmActivity(req.params.id);
+      if (!ok) return res.status(404).json({ ok: false, error: 'Activity not found.' });
       res.json({ ok: true });
     } catch (err) { next(err); }
   });
@@ -1934,6 +2121,7 @@ async function main() {
     console.log('Store:   http://localhost:' + PORT + '/store');
     console.log('Company: http://localhost:' + PORT + '/company');
     console.log('Customer: http://localhost:' + PORT + '/company/customers');
+    console.log('CRM: http://localhost:' + PORT + '/company/crm/leads');
     console.log('Sales:    http://localhost:' + PORT + '/company/sales');
   });
 }
