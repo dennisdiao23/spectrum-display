@@ -1692,6 +1692,7 @@ function createSupabaseStore() {
           return {
             doc_id: data.id,
             sku: line.sku,
+            item: line.item || '',
             description: line.description,
             qty: line.qty,
             unit_price: line.unitPrice,
@@ -1727,6 +1728,7 @@ function createSupabaseStore() {
           return {
             doc_id: Number(id),
             sku: line.sku,
+            item: line.item || '',
             description: line.description,
             qty: line.qty,
             unit_price: line.unitPrice,
@@ -2376,6 +2378,7 @@ function createSupabaseStore() {
   Object.assign(api, require('./walls').supabaseApi(supabase));
   Object.assign(api, require('./company-chat').supabaseApi(supabase));
   Object.assign(api, require('./company-emails').supabaseApi(supabase, throwIf));
+  Object.assign(api, require('./gmail-accounts').supabaseApi(supabase, throwIf));
   return api;
 }
 

@@ -326,5 +326,6 @@ module.exports = {
   sendContactEmail,
   sendDealerInquiryEmail,
   sendStaffEmail,
-  mailConfigured
+  mailConfigured,
+  saveLocalOutbox: writeLocalOutbox
 };

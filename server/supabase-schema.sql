@@ -581,6 +581,7 @@ create table if not exists public.company_sales_lines (
   id bigint generated always as identity primary key,
   doc_id bigint not null references public.company_sales_docs(id) on delete cascade,
   sku text not null default '',
+  item text not null default '',
   description text not null default '',
   qty numeric not null default 0,
   unit_price numeric not null default 0,
@@ -1134,6 +1135,7 @@ create table if not exists public.company_emails (
   body_text text not null default '',
   filename text not null default '',
   pdf_base64 text not null default '',
+  from_email text not null default '',
   sent_by_email text not null default '',
   sent_by_name text not null default '',
   created_at timestamptz not null default now()
@@ -1145,5 +1147,19 @@ drop policy if exists company_emails_admin_all on public.company_emails;
 create policy company_emails_admin_all on public.company_emails
   for all using (public.is_spectrum_admin()) with check (public.is_spectrum_admin());
 grant all on public.company_emails to service_role;
+
+create table if not exists public.admin_gmail_accounts (
+  admin_id bigint primary key references public.admins(id) on delete cascade,
+  gmail_email text not null,
+  refresh_token text not null,
+  access_token text not null default '',
+  access_expires_at timestamptz,
+  updated_at timestamptz not null default now()
+);
+alter table public.admin_gmail_accounts enable row level security;
+drop policy if exists admin_gmail_accounts_admin_all on public.admin_gmail_accounts;
+create policy admin_gmail_accounts_admin_all on public.admin_gmail_accounts
+  for all using (public.is_spectrum_admin()) with check (public.is_spectrum_admin());
+grant all on public.admin_gmail_accounts to service_role;
 
 notify pgrst, 'reload schema';

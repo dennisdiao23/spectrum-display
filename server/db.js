@@ -132,6 +132,7 @@ function openDb() {
   ensureColumnPrefs(db);
   ensureWalls(db);
   require('./company-emails').ensureCompanyEmails(db);
+  require('./gmail-accounts').ensureAdminGmailAccounts(db);
   require('./company-chat').ensureCompanyChat(db);
   db.exec(`
     CREATE TABLE IF NOT EXISTS inventory_stock (
@@ -506,6 +507,7 @@ function ensureCompanySales(db) {
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       doc_id INTEGER NOT NULL,
       sku TEXT NOT NULL DEFAULT '',
+      item TEXT NOT NULL DEFAULT '',
       description TEXT NOT NULL DEFAULT '',
       qty REAL NOT NULL DEFAULT 0,
       unit_price REAL NOT NULL DEFAULT 0,
@@ -517,6 +519,7 @@ function ensureCompanySales(db) {
   ['rep', 'account_no', 'ship_date', 'ship_via', 'tracking', 'so_number'].forEach(function (col) {
     try { db.exec("ALTER TABLE company_sales_docs ADD COLUMN " + col + " TEXT NOT NULL DEFAULT ''"); } catch (e) { /* already present */ }
   });
+  try { db.exec("ALTER TABLE company_sales_lines ADD COLUMN item TEXT NOT NULL DEFAULT ''"); } catch (e) { /* already present */ }
 }
 
 function ensurePrintForms(db) {
