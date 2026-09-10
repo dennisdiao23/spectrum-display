@@ -61,6 +61,7 @@
     if (id === 'account') return d.account || d.accountNo || '';
     if (id === 'shipDate') return fmtDate(d.shipDate);
     if (id === 'shipVia') return d.shipVia || '';
+    if (id === 'shipFrom') return d.shipFromLabel || d.shipFrom || '';
     if (id === 'permit') return d.permitNo || d.permit || '';
     return '';
   }
@@ -150,7 +151,7 @@
 
   const HEADER_FIELD_IDS = [
     'number', 'date', 'terms', 'dueDate', 'poNumber', 'soNumber', 'tracking',
-    'rep', 'account', 'shipDate', 'shipVia', 'permit'
+    'rep', 'account', 'shipDate', 'shipVia', 'shipFrom', 'permit'
   ];
 
   const LAYOUT_IDS = [

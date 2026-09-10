@@ -637,12 +637,13 @@ function createSqliteStore() {
       const info = db.prepare(`
         INSERT INTO inventory_items (
           sku, name, brand_id, pitch, unit, panel_type, packaging_type, qty, low_at, price, cost, dealer_net,
-          weight, panel_w, panel_h, description, image, notes, created_at, updated_at
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+          local_warehouse_cost, weight, panel_w, panel_h, description, image, notes, created_at, updated_at
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
       `).run(
         fields.sku, fields.name, fields.brand_id, fields.pitch, fields.unit, fields.panel_type || '',
         fields.packaging_type || '', itemQty,
-        fields.low_at, fields.price, fields.cost, fields.dealer_net, fields.weight,
+        fields.low_at, fields.price, fields.cost, fields.dealer_net,
+        fields.local_warehouse_cost != null ? fields.local_warehouse_cost : 0, fields.weight,
         fields.panel_w, fields.panel_h, fields.description, fields.image, fields.notes,
         stamp, stamp
       );
@@ -672,6 +673,7 @@ function createSqliteStore() {
         lowAt: input.lowAt != null ? input.lowAt : Number(current.low_at),
         price: input.price != null ? input.price : Number(current.price) || 0,
         cost: input.cost != null ? input.cost : Number(current.cost) || 0,
+        localWarehouseCost: input.localWarehouseCost != null ? input.localWarehouseCost : Number(current.local_warehouse_cost) || 0,
         dealerNet: input.dealerNet != null ? input.dealerNet : Number(current.dealer_net) || 0,
         weight: input.weight != null ? input.weight : Number(current.weight) || 0,
         panelW: input.panelW != null ? input.panelW : Number(current.panel_w) || 0,
@@ -687,13 +689,13 @@ function createSqliteStore() {
         UPDATE inventory_items SET
           sku = ?, name = ?, brand_id = ?, pitch = ?, unit = ?, panel_type = ?, packaging_type = ?,
           low_at = ?, price = ?,
-          cost = ?, dealer_net = ?, weight = ?, panel_w = ?, panel_h = ?,
+          cost = ?, dealer_net = ?, local_warehouse_cost = ?, weight = ?, panel_w = ?, panel_h = ?,
           description = ?, image = ?, notes = ?, updated_at = ?
         WHERE id = ?
       `).run(
         next.sku, next.name, next.brandId, next.pitch, next.unit, next.panelType, next.packagingType,
         next.lowAt, next.price,
-        next.cost, next.dealerNet, next.weight, next.panelW, next.panelH,
+        next.cost, next.dealerNet, next.localWarehouseCost, next.weight, next.panelW, next.panelH,
         next.description, next.image, next.notes, dbUtil.nowIso(), id
       );
       if (input.warehouseId || input.bin != null) {
@@ -1165,12 +1167,12 @@ function createSqliteStore() {
       const info = db.prepare(`
         INSERT INTO purchase_orders (
           number, vendor_id, vendor_name, vendor_email, status, issue_date, due_date,
-          ship_via, permit_no, mailing_address, ship_to_customer_id, ship_to_name, shipping_address,
+          ship_via, ship_from, permit_no, mailing_address, ship_to_customer_id, ship_to_name, shipping_address,
           notes, created_at, updated_at
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
       `).run(
         fields.number, fields.vendor_id, fields.vendor_name, fields.vendor_email, fields.status,
-        fields.issue_date, fields.due_date, fields.ship_via, fields.permit_no, fields.mailing_address,
+        fields.issue_date, fields.due_date, fields.ship_via, fields.ship_from, fields.permit_no, fields.mailing_address,
         fields.ship_to_customer_id, fields.ship_to_name, fields.shipping_address, fields.notes, stamp, stamp
       );
       const insertLine = db.prepare(
@@ -1192,12 +1194,12 @@ function createSqliteStore() {
       db.prepare(`
         UPDATE purchase_orders SET
           number = ?, vendor_id = ?, vendor_name = ?, vendor_email = ?, status = ?,
-          issue_date = ?, due_date = ?, ship_via = ?, permit_no = ?, mailing_address = ?,
+          issue_date = ?, due_date = ?, ship_via = ?, ship_from = ?, permit_no = ?, mailing_address = ?,
           ship_to_customer_id = ?, ship_to_name = ?, shipping_address = ?, notes = ?, updated_at = ?
         WHERE id = ?
       `).run(
         fields.number, fields.vendor_id, fields.vendor_name, fields.vendor_email, fields.status,
-        fields.issue_date, fields.due_date, fields.ship_via, fields.permit_no, fields.mailing_address,
+        fields.issue_date, fields.due_date, fields.ship_via, fields.ship_from, fields.permit_no, fields.mailing_address,
         fields.ship_to_customer_id, fields.ship_to_name, fields.shipping_address, fields.notes,
         dbUtil.nowIso(), id
       );

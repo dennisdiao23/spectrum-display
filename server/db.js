@@ -200,6 +200,7 @@ function openDb() {
     "ALTER TABLE inventory_items ADD COLUMN description TEXT NOT NULL DEFAULT ''",
     "ALTER TABLE inventory_items ADD COLUMN cost REAL NOT NULL DEFAULT 0",
     "ALTER TABLE inventory_items ADD COLUMN dealer_net REAL NOT NULL DEFAULT 0",
+    "ALTER TABLE inventory_items ADD COLUMN local_warehouse_cost REAL NOT NULL DEFAULT 0",
     "ALTER TABLE inventory_items ADD COLUMN weight REAL NOT NULL DEFAULT 0",
     "ALTER TABLE inventory_items ADD COLUMN panel_w REAL NOT NULL DEFAULT 0",
     "ALTER TABLE inventory_items ADD COLUMN panel_h REAL NOT NULL DEFAULT 0",
@@ -932,6 +933,7 @@ function ensurePurchaseOrders(db) {
     );
     CREATE INDEX IF NOT EXISTS purchase_order_lines_po_idx ON purchase_order_lines (po_id, sort_order);
   `);
+  try { db.exec("ALTER TABLE purchase_orders ADD COLUMN ship_from TEXT NOT NULL DEFAULT ''"); } catch (e) { /* already present */ }
 }
 
 function seedAdmin(db) {

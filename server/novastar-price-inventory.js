@@ -2,6 +2,8 @@
  * Apply NovaStar MAP + vendor-warehouse Available onto inventory, website, and store.
  *
  * MAP → inventory sell price and website/store MSRP (priceEach).
+ * Dist. FOB → inventory Cost (China factory).
+ * Dist. US local → inventory Local warehouse cost (Las Vegas). Not dealer net.
  * Available → qty at the untracked "NovaStar Warehouse" only (not Azusa).
  * Warehouse-only SKUs with no MAP are not in the JSON and are not imported.
  */
@@ -149,6 +151,29 @@ function money(value) {
   return Number.isFinite(n) && n > 0 ? Math.round(n) : 0;
 }
 
+function moneyOrZero(value) {
+  const n = Number(value);
+  return Number.isFinite(n) && n >= 0 ? Math.round(n) : 0;
+}
+
+function itemCostsFromRow(row, existing) {
+  const src = row || {};
+  const hasFob = src.distFob != null && src.distFob !== '';
+  const hasUs = src.distUs != null && src.distUs !== '';
+  const localWarehouseCost = hasUs
+    ? moneyOrZero(src.distUs)
+    : (existing ? moneyOrZero(existing.local_warehouse_cost) : 0);
+  let dealerNet = existing ? moneyOrZero(existing.dealer_net) : 0;
+  if (!existing) dealerNet = 0;
+  else if (hasUs && dealerNet === moneyOrZero(src.distUs)) dealerNet = 0;
+  return {
+    price: money(src.map),
+    cost: hasFob ? moneyOrZero(src.distFob) : (existing ? moneyOrZero(existing.cost) : 0),
+    localWarehouseCost: localWarehouseCost,
+    dealerNet: dealerNet
+  };
+}
+
 function qtyInt(value) {
   const n = Number(value);
   if (!Number.isFinite(n) || n < 0) return 0;
@@ -202,11 +227,11 @@ function applySqlite(db) {
   const insertItem = db.prepare(`
     INSERT INTO inventory_items (
       sku, name, brand_id, pitch, unit, panel_type, packaging_type, qty, low_at, price, cost, dealer_net,
-      weight, panel_w, panel_h, description, image, notes, created_at, updated_at
-    ) VALUES (?, ?, 'novastar', '', 'each', '', '', 0, 0, ?, 0, ?, 0, 0, 0, '', '', ?, ?, ?)
+      local_warehouse_cost, weight, panel_w, panel_h, description, image, notes, created_at, updated_at
+    ) VALUES (?, ?, 'novastar', '', 'each', '', '', 0, 0, ?, ?, 0, ?, 0, 0, 0, '', '', ?, ?, ?)
   `);
   const updateItem = db.prepare(
-    'UPDATE inventory_items SET price = ?, dealer_net = ?, unit = ?, updated_at = ? WHERE id = ?'
+    'UPDATE inventory_items SET price = ?, cost = ?, local_warehouse_cost = ?, dealer_net = ?, unit = ?, updated_at = ? WHERE id = ?'
   );
   const getMap = db.prepare('SELECT * FROM product_inventory_map WHERE product_id = ? AND pitch = ?');
   const insertMap = db.prepare(
@@ -228,7 +253,6 @@ function applySqlite(db) {
       const seriesId = matchSeries(row.model, bySeries);
       const product = seriesId ? bySeries.get(seriesId) : null;
       const price = money(row.map);
-      const dealerNet = row.distUs != null ? money(row.distUs) : 0;
 
       let item = null;
       if (product) {
@@ -251,12 +275,17 @@ function applySqlite(db) {
         );
         taken[sku] = true;
         const name = product ? inv.skuNameFromProduct(product, '') : row.model;
-        const info = insertItem.run(sku, name, price, dealerNet, SOURCE_NOTE, stamp, stamp);
+        const costs = itemCostsFromRow(row, null);
+        const info = insertItem.run(
+          sku, name, costs.price, costs.cost, costs.localWarehouseCost, SOURCE_NOTE, stamp, stamp
+        );
         item = db.prepare('SELECT * FROM inventory_items WHERE id = ?').get(info.lastInsertRowid);
         bySku[inv.normalizeSku(sku)] = item;
       } else {
-        const nextDealer = row.distUs != null ? dealerNet : (Number(item.dealer_net) || 0);
-        updateItem.run(price, nextDealer, 'each', stamp, item.id);
+        const costs = itemCostsFromRow(row, item);
+        updateItem.run(
+          costs.price, costs.cost, costs.localWarehouseCost, costs.dealerNet, 'each', stamp, item.id
+        );
         item = db.prepare('SELECT * FROM inventory_items WHERE id = ?').get(item.id);
         if (item.sku) bySku[inv.normalizeSku(item.sku)] = item;
       }
@@ -423,7 +452,6 @@ async function applySupabase(supabase) {
     const seriesId = matchSeries(row.model, bySeries);
     const product = seriesId ? bySeries.get(seriesId) : null;
     const price = money(row.map);
-    const dealerNet = row.distUs != null ? money(row.distUs) : 0;
 
     let item = null;
     if (product) {
@@ -440,6 +468,7 @@ async function applySupabase(supabase) {
       );
       taken[sku] = true;
       const name = product ? inv.skuNameFromProduct(product, '') : row.model;
+      const costs = itemCostsFromRow(row, null);
       const { data: created, error: cErr } = await supabase.from('inventory_items').insert({
         sku: sku,
         name: name,
@@ -448,9 +477,10 @@ async function applySupabase(supabase) {
         unit: 'each',
         qty: 0,
         low_at: 0,
-        price: price,
-        cost: 0,
-        dealer_net: dealerNet,
+        price: costs.price,
+        cost: costs.cost,
+        dealer_net: 0,
+        local_warehouse_cost: costs.localWarehouseCost,
         notes: SOURCE_NOTE,
         updated_at: stamp
       }).select('*').single();
@@ -459,10 +489,12 @@ async function applySupabase(supabase) {
       bySku[inv.normalizeSku(sku)] = item;
       itemById[String(item.id)] = item;
     } else {
-      const nextDealer = row.distUs != null ? dealerNet : (Number(item.dealer_net) || 0);
+      const costs = itemCostsFromRow(row, item);
       const { data: updated, error: uErr } = await supabase.from('inventory_items').update({
-        price: price,
-        dealer_net: nextDealer,
+        price: costs.price,
+        cost: costs.cost,
+        local_warehouse_cost: costs.localWarehouseCost,
+        dealer_net: costs.dealerNet,
         unit: 'each',
         updated_at: stamp
       }).eq('id', item.id).select('*').single();
