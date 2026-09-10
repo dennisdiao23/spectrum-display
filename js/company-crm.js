@@ -282,7 +282,7 @@
       var sum = cards.reduce(function (n, deal) { return n + (Number(deal.value) || 0); }, 0);
       return '<section class="crm-col" data-stage="' + esc(stage.id) + '">' +
         '<header class="crm-col-head"><strong>' + esc(stage.label) + '</strong><span>' + cards.length + ' · ' + money(sum) + '</span></header>' +
-        '<div class="crm-col-cards" data-stage="' + esc(stage.id) + '">' +
+        '<div class="crm-col-cards">' +
         (cards.length ? cards.map(function (deal) {
           var on = String(deal.id) === String(S.dealId);
           return '<button type="button" class="crm-card' + (on ? ' is-on' : '') + '" draggable="true" data-deal-id="' + esc(deal.id) + '">' +
@@ -870,17 +870,22 @@
         if (!card || !ev.dataTransfer) return;
         ev.dataTransfer.setData('text/plain', card.getAttribute('data-deal-id'));
         ev.dataTransfer.effectAllowed = 'move';
+        card.classList.add('is-dragging');
+      });
+      board.addEventListener('dragend', function () {
+        renderPipelineBoard();
       });
       board.addEventListener('dragover', function (ev) {
-        if (ev.target.closest('[data-stage]')) {
+        if (ev.target.closest('.crm-col')) {
           ev.preventDefault();
           ev.dataTransfer.dropEffect = 'move';
         }
       });
       board.addEventListener('drop', function (ev) {
-        var col = ev.target.closest('[data-stage]');
+        var col = ev.target.closest('.crm-col');
         if (!col) return;
         ev.preventDefault();
+        ev.stopPropagation();
         var id = ev.dataTransfer.getData('text/plain');
         if (id) moveDeal(id, col.getAttribute('data-stage'));
       });

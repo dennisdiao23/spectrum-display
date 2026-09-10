@@ -6304,6 +6304,7 @@ body.is-pf-dragging.is-pf-col-dragging * {
   cursor: grab;
 }
 .crm-card.is-on { border-color: #7aa2ff; box-shadow: 0 0 0 2px rgba(47, 107, 255, 0.15); }
+.crm-card.is-dragging { opacity: 0.35; }
 .crm-card strong { font-size: 0.86rem; color: #102047; }
 .crm-card span, .crm-card em { font-size: 0.75rem; color: var(--dash-muted); font-style: normal; }
 .crm-col-empty { margin: 0.4rem 0; font-size: 0.78rem; color: #94a3b8; }
