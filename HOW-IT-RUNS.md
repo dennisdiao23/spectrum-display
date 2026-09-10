@@ -171,6 +171,11 @@ Inquiries are also stored in Supabase `contact_inquiries` even if mail fails (if
 
 Gmail App Passwords were **not** available on this account. That is why we use Resend, not Gmail SMTP.
 
+Staff document Email (quote / order / invoice / PO) is different: it sends from each person’s
+Gmail. Click-by-click setup (Google Cloud + Railway), written for a non-IT reader, is in
+[AGENTS.md — Staff Gmail send — you do this once](AGENTS.md#staff-gmail-send--you-do-this-once).
+Google Cloud project for that work is **Spectrum Display** (`nifty-condition-506807-a2`).
+
 ---
 
 ### 8. Google Search — so www.spectrumdisplay.com shows up in Google
