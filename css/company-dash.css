@@ -6334,10 +6334,34 @@ body.dash-split-lock #crm-pipe-section .crm-board {
   flex: 1 1 auto;
 }
 #crm-lead-section .dash-split {
-  grid-template-columns: minmax(28rem, 1fr) 14px minmax(22rem, 34rem);
+  grid-template-columns: minmax(28rem, 1fr) 14px minmax(26rem, 38rem);
 }
 #crm-pipe-section .dash-split {
-  grid-template-columns: minmax(0, 1fr) 14px minmax(20rem, 28rem);
+  grid-template-columns: minmax(0, 1fr) 14px minmax(24rem, 32rem);
+}
+#crm-lead-detail .cc-detail-hero-grid,
+#crm-pipe-detail .cc-detail-hero-grid {
+  grid-template-columns: 1fr;
+}
+#crm-lead-detail .cc-detail-hero-main,
+#crm-pipe-detail .cc-detail-hero-main {
+  flex-wrap: wrap;
+}
+#crm-lead-detail .inv-detail-hero-actions,
+#crm-pipe-detail .inv-detail-hero-actions {
+  flex-wrap: wrap;
+}
+#crm-lead-section .cc-detail-dl > div,
+#crm-pipe-section .cc-detail-dl > div {
+  grid-template-columns: 7rem minmax(0, 1fr);
+}
+#crm-lead-section .cc-detail-dl dd,
+#crm-pipe-section .cc-detail-dl dd {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  word-break: normal;
+  overflow-wrap: normal;
 }
 #crm-lead-section .cc-workspace:not(.cc-detail-open) .dash-split-right > .cc-detail-pane:not(.hidden),
 #crm-pipe-section .cc-workspace:not(.cc-detail-open) .dash-split-right > .cc-detail-pane:not(.hidden) {
