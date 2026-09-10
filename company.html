@@ -14,10 +14,10 @@
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
   <title>Company | Spectrum Display</title>
   <meta name="robots" content="noindex, nofollow" />
-  <link rel="stylesheet" href="/css/company-dash.css?v=crmv2" />
+  <link rel="stylesheet" href="/css/company-dash.css?v=crmv2b" />
   <script src="/js/address-autocomplete.js"></script>
   <script src="/js/company-chat.js?v=chatmove2"></script>
-  <script src="/js/company-crm.js?v=crmv2"></script>
+  <script src="/js/company-crm.js?v=crmv2b"></script>
   <script src="/js/print-form.js?v=forms20"></script>
   <script>
     if ('serviceWorker' in navigator && location.pathname.indexOf('/company') === 0) {
@@ -1822,6 +1822,7 @@
                   <div class="cc-detail-notes-box" id="crm-lead-detail-notes">—</div>
                 </div>
                 <div id="crm-lead-panel-email" class="cc-detail-panel hidden" role="tabpanel" hidden>
+                  <div id="crm-lead-thread" class="crm-mail-thread"></div>
                   <form id="crm-mail-form" class="crm-mail-compose">
                     <p class="crm-mail-from">Send from sales@spectrumdisplay.com · replies go to sales@</p>
                     <div class="cc-field"><label>To</label><input id="crm-mail-to" type="email" autocomplete="off"></div>
@@ -1830,7 +1831,6 @@
                     <p id="crm-mail-msg" class="hidden text-sm text-red-500"></p>
                     <button type="submit" id="crm-mail-send" class="cc-detail-btn cc-detail-btn-primary">Send email</button>
                   </form>
-                  <div id="crm-lead-thread" class="crm-mail-thread"></div>
                 </div>
                 <div id="crm-lead-panel-activity" class="cc-detail-panel hidden" role="tabpanel" hidden>
                   <div id="crm-lead-acts"></div>
@@ -3688,7 +3688,7 @@
     </a>
   </nav>
 
-  <link rel="stylesheet" href="/css/company-dash.css?v=crmv2" />
+  <link rel="stylesheet" href="/css/company-dash.css?v=crmv2b" />
 
   <script>
     const loginPanel = document.getElementById('login-panel');

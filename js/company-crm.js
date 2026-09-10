@@ -445,7 +445,13 @@
     if (convertBtn) convertBtn.classList.toggle('hidden', lead.status === 'converted' || !canEdit('leads'));
     var dup = $('crm-lead-dup');
     if (dup) {
-      var dupText = duplicateBanner(lead.duplicates || localDuplicates(lead.email, lead.companyName, lead.id));
+      var dupText = '';
+      if (lead.mergedIntoId) {
+        var into = S.leads.find(function (row) { return String(row.id) === String(lead.mergedIntoId); });
+        dupText = 'Merged into ' + (into ? leadName(into) : ('lead #' + lead.mergedIntoId)) + '. Email and deals moved there.';
+      } else {
+        dupText = duplicateBanner(lead.duplicates || localDuplicates(lead.email, lead.companyName, lead.id));
+      }
       dup.textContent = dupText;
       dup.classList.toggle('hidden', !dupText);
     }
