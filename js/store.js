@@ -36,6 +36,14 @@
     if (window.spectrumDisplayImage) return window.spectrumDisplayImage(src, kind || 'card');
     return src.charAt(0) === '/' ? src : '/' + src;
   }
+  function photoFor(p, kind) {
+    if (window.spectrumProductPhoto) return window.spectrumProductPhoto(p, kind || 'card');
+    return imgSrc(p && p.image, kind);
+  }
+  function photoOrFallback(p) {
+    if (p && p.image) return p.image;
+    return (window.spectrumProductPhotoFallback && window.spectrumProductPhotoFallback(p)) || '';
+  }
 
   function parseRoute() {
     var raw = location.pathname || '/';
@@ -193,7 +201,7 @@
 
   function cardHtml(p, opts) {
     opts = opts || {};
-    var photo = imgSrc(p.image, 'card');
+    var photo = photoFor(p, 'card');
     return '<article class="shop-card">' +
       (opts.caption ? '<div class="shop-caption">' + esc(opts.caption) + '</div>' : '') +
       '<div class="shop-card-media">' +
@@ -224,7 +232,7 @@
           handle: p.handle,
           name: p.name,
           sku: p.sku,
-          image: p.image,
+          image: photoOrFallback(p),
           priceLabel: p.priceLabel
         }, 1);
         updateCartBadge();
@@ -244,7 +252,7 @@
       html += '<section class="shop-section" id="whats-new"><div class="shop-wrap">' +
         '<div class="shop-section-head"><h2 class="shop-h">Take a look at <em>what’s new</em></h2></div>' +
         '<div class="shop-editorial">' + featured.map(function (p) {
-          var photo = imgSrc(p.image, 'card');
+          var photo = photoFor(p, 'card');
           return '<a class="shop-ed-card" href="' + esc(href('/products/' + p.handle)) + '" data-shop-link>' +
             (photo ? '<img src="' + esc(photo) + '" alt="">' : '') +
             '<div class="shop-ed-copy"><div class="shop-new">New</div><h3>' + esc(p.name) + '</h3><p>' +
@@ -338,6 +346,10 @@
     state.qty = 1;
     state.variantId = (p.variants[0] && p.variants[0].id) || '';
     var photos = [p.image].concat(p.gallery || []).filter(Boolean);
+    if (!photos.length) {
+      var fallback = photoOrFallback(p);
+      if (fallback) photos = [fallback];
+    }
     var photo = imgSrc(photos[0], 'card');
     var html = '<div class="shop-wrap"><div class="shop-pdp">' +
       '<div><div class="shop-pdp-photo">' + (photo ? '<img id="pdp-photo" src="' + esc(photo) + '" alt="">' : '') + '</div>' +
@@ -404,7 +416,7 @@
           handle: p.handle,
           name: p.name,
           sku: p.sku,
-          image: p.image,
+          image: photoOrFallback(p),
           priceLabel: p.priceLabel
         }, state.qty);
         updateCartBadge();
@@ -474,7 +486,7 @@
     }).slice(0, 8);
     box.innerHTML = hits.map(function (p) {
       return '<a href="' + esc(href('/products/' + p.handle)) + '" data-shop-link>' +
-        (p.image ? '<img src="' + esc(imgSrc(p.image, 'thumb')) + '" alt="">' : '') +
+        (photoFor(p, 'thumb') ? '<img src="' + esc(photoFor(p, 'thumb')) + '" alt="">' : '') +
         '<span><strong>' + esc(p.name) + '</strong><div class="shop-sku">' + esc(p.sku) + '</div></span></a>';
     }).join('') || '<p class="shop-empty">No matches.</p>';
     $all('#shop-search-hits a').forEach(function (a) {

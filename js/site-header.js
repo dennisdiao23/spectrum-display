@@ -285,7 +285,9 @@
           name: p.name,
           href: 'product.html?brand=' + encodeURIComponent(p.brandId) + '&series=' + encodeURIComponent(p.id),
           tag: 'NVS',
-          image: window.spectrumDisplayImage ? spectrumDisplayImage(p.image, 'thumb') : p.image,
+          image: window.spectrumProductPhoto
+            ? spectrumProductPhoto(p, 'thumb')
+            : (window.spectrumDisplayImage ? spectrumDisplayImage(p.image, 'thumb') : p.image),
           contain: true
         };
       });
@@ -301,7 +303,9 @@
         name: p.name,
         href: 'product.html?brand=' + encodeURIComponent(p.brandId) + '&series=' + encodeURIComponent(p.id),
         tag: brandTag(p.brandId),
-        image: window.spectrumDisplayImage ? spectrumDisplayImage(p.image, 'thumb') : p.image
+        image: window.spectrumProductPhoto
+          ? spectrumProductPhoto(p, 'thumb')
+          : (window.spectrumDisplayImage ? spectrumDisplayImage(p.image, 'thumb') : p.image)
       };
     });
   }
@@ -643,8 +647,9 @@
   function ensureCatalog() {
     if (window.spectrumCatalogReady) return;
     var files = [
+      ['product-photo.js', '/js/product-photo.js?v=ph1'],
       ['control-systems.js', '/js/control-systems.js'],
-      ['catalog-api.js', '/js/catalog-api.js']
+      ['catalog-api.js', '/js/catalog-api.js?v=ph1']
     ];
     var chain = Promise.resolve();
     files.forEach(function (pair) {

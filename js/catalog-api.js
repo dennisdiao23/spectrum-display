@@ -69,6 +69,13 @@
     Object.keys(keep).forEach(function (k) {
       if (!target[k] || !(target[k].series && target[k].series.length)) target[k] = keep[k];
     });
+    if (global.spectrumProductPhotoFallback) {
+      Object.keys(target).forEach(function (brandId) {
+        ((target[brandId] && target[brandId].series) || []).forEach(function (s) {
+          if (s && !s.image) s.image = global.spectrumProductPhotoFallback(s) || '';
+        });
+      });
+    }
     global.SPECTRUM_PRODUCT_LIST = rebuildList(target);
     global.getSpectrumSeries = function (brandId, seriesId) {
       const brand = target[brandId];
