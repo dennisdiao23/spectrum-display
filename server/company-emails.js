@@ -76,6 +76,7 @@ function normalizeRecord(input) {
     bodyText: body,
     filename: src.filename ? safeFilename(src.filename) : '',
     pdfBase64: trim(src.pdfBase64 || src.pdf_base64, 12 * 1024 * 1024),
+    fromEmail: trim(src.fromEmail || src.from_email, 160).toLowerCase(),
     sentByEmail: trim(src.sentByEmail || src.sent_by_email, 160).toLowerCase(),
     sentByName: trim(src.sentByName || src.sent_by_name, 160)
   };
@@ -97,13 +98,14 @@ function formatEmail(row) {
     body: row.body_text || '',
     filename: row.filename || '',
     hasPdf: !!(row.filename || row.has_pdf),
+    fromEmail: row.from_email || '',
     sentByEmail: row.sent_by_email || '',
     sentByName: row.sent_by_name || '',
     createdAt: row.created_at
   };
 }
 
-const LIST_COLS = 'id, party_kind, party_id, doc_kind, doc_id, doc_number, to_emails, cc_emails, bcc_emails, subject, body_text, filename, sent_by_email, sent_by_name, created_at';
+const LIST_COLS = 'id, party_kind, party_id, doc_kind, doc_id, doc_number, to_emails, cc_emails, bcc_emails, subject, body_text, filename, from_email, sent_by_email, sent_by_name, created_at';
 
 function ensureCompanyEmails(db) {
   db.exec(`
@@ -121,6 +123,7 @@ function ensureCompanyEmails(db) {
       body_text TEXT NOT NULL DEFAULT '',
       filename TEXT NOT NULL DEFAULT '',
       pdf_base64 TEXT NOT NULL DEFAULT '',
+      from_email TEXT NOT NULL DEFAULT '',
       sent_by_email TEXT NOT NULL DEFAULT '',
       sent_by_name TEXT NOT NULL DEFAULT '',
       created_at TEXT NOT NULL
@@ -128,6 +131,7 @@ function ensureCompanyEmails(db) {
     CREATE INDEX IF NOT EXISTS company_emails_party_idx
       ON company_emails (party_kind, party_id, created_at);
   `);
+  try { db.exec("ALTER TABLE company_emails ADD COLUMN from_email TEXT NOT NULL DEFAULT ''"); } catch (e) { /* already present */ }
 }
 
 function missingTable(err) {
@@ -167,12 +171,12 @@ function sqliteApi(db) {
         INSERT INTO company_emails (
           party_kind, party_id, doc_kind, doc_id, doc_number,
           to_emails, cc_emails, bcc_emails, subject, body_text,
-          filename, pdf_base64, sent_by_email, sent_by_name, created_at
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+          filename, pdf_base64, from_email, sent_by_email, sent_by_name, created_at
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
       `).run(
         input.partyKind, input.partyId, input.docKind, input.docId, input.docNumber,
         input.toEmails, input.ccEmails, input.bccEmails, input.subject, input.bodyText,
-        input.filename, input.pdfBase64, input.sentByEmail, input.sentByName, stamp
+        input.filename, input.pdfBase64, input.fromEmail, input.sentByEmail, input.sentByName, stamp
       );
       return this.getCompanyEmail(info.lastInsertRowid);
     }
@@ -237,6 +241,7 @@ function supabaseApi(supabase, throwIf) {
         body_text: input.bodyText,
         filename: input.filename,
         pdf_base64: input.pdfBase64,
+        from_email: input.fromEmail,
         sent_by_email: input.sentByEmail,
         sent_by_name: input.sentByName,
         created_at: stamp

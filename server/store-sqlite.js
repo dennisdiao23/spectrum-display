@@ -1540,6 +1540,7 @@ function createSqliteStore() {
   Object.assign(api, require('./walls').sqliteApi(db));
   Object.assign(api, require('./company-chat').sqliteApi(db));
   Object.assign(api, require('./company-emails').sqliteApi(db));
+  Object.assign(api, require('./gmail-accounts').sqliteApi(db));
   return api;
 }
 

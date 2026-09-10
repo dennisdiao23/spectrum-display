@@ -6275,6 +6275,29 @@ body.is-pf-dragging.is-pf-col-dragging * {
   font-weight: 650;
   color: var(--dash-muted);
 }
+.mail-from-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.45rem;
+}
+.mail-from-row input {
+  flex: 1 1 10rem;
+  min-width: 0;
+}
+.mail-gmail-btn {
+  border: 1px solid #c9d3e4;
+  background: #fff;
+  color: #0f2744;
+  border-radius: 999px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  padding: 0.32rem 0.75rem;
+  cursor: pointer;
+  white-space: nowrap;
+}
+.mail-gmail-btn:hover { border-color: #2f6bff; color: #2f6bff; }
+.mail-gmail-btn-quiet { color: var(--dash-muted); font-weight: 600; }
 .mail-fields input,
 .mail-fields textarea {
   width: 100%;

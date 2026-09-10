@@ -11,7 +11,8 @@ const multer = require('multer');
 const { getStore, hasSupabase } = require('./store');
 const siteAuth = require('./site-auth');
 const wallsLib = require('./walls');
-const { sendContactEmail, sendDealerInquiryEmail, sendStaffEmail, mailConfigured } = require('./mail');
+const { sendContactEmail, sendDealerInquiryEmail, mailConfigured } = require('./mail');
+const gmail = require('./gmail');
 const { blockedSignupReason } = require('../js/signup-guard');
 const img = require('./image');
 const { publicAdmin, hasPerm, isOwnerAdmin, isOwnerRole, OWNER_ROLE_SLUG, roleInputFromBody } = require('./admin-roles');
@@ -811,7 +812,13 @@ async function main() {
     try {
       const admin = await currentAdmin(req);
       if (!admin) return res.json({ ok: false, admin: null });
-      res.json({ ok: true, admin: publicAdmin(admin), mailConfigured: mailConfigured() });
+      const gmailRow = await store.getAdminGmailStatus(admin.id);
+      res.json({
+        ok: true,
+        admin: publicAdmin(admin),
+        mailConfigured: mailConfigured(),
+        gmail: gmail.publicGmailStatus(gmailRow, gmail.gmailConfigured())
+      });
     } catch (err) { next(err); }
   });
 
@@ -849,7 +856,11 @@ async function main() {
       } catch (e) {
         console.error('lobby announce', e);
       }
-      res.json({ ok: true, admin: publicAdmin(admin) });
+      res.json({
+        ok: true,
+        admin: publicAdmin(admin),
+        gmail: gmail.publicGmailStatus(await store.getAdminGmailStatus(admin.id), gmail.gmailConfigured())
+      });
     } catch (err) { next(err); }
   });
 
@@ -1443,6 +1454,75 @@ async function main() {
     } catch (err) { next(err); }
   });
 
+  function gmailRedirect(res, req, returnPath, query) {
+    res.redirect(gmail.returnUrl(req, returnPath, query));
+  }
+
+  app.get('/api/admin/gmail', requireAdmin, async function (req, res, next) {
+    try {
+      const row = await store.getAdminGmailStatus(req.admin.id);
+      res.json({ ok: true, gmail: gmail.publicGmailStatus(row, gmail.gmailConfigured()) });
+    } catch (err) { next(err); }
+  });
+
+  app.get('/api/admin/gmail/connect', async function (req, res) {
+    try {
+      const admin = await currentAdmin(req);
+      if (!admin) return res.redirect('/company?gmail=error&reason=signin');
+      const started = gmail.authUrl(req, admin, req.query.return);
+      res.cookie(gmail.OAUTH_COOKIE, started.cookie, gmail.oauthCookieOpts());
+      res.redirect(started.url);
+    } catch (err) {
+      gmailRedirect(res, req, req.query.return, {
+        gmail: 'error',
+        reason: err.code === 'gmail_setup' ? 'setup' : 'oauth'
+      });
+    }
+  });
+
+  app.get('/api/admin/gmail/callback', async function (req, res) {
+    const fallback = '/company';
+    try {
+      const admin = await currentAdmin(req);
+      if (!admin) return res.redirect('/company?gmail=error&reason=signin');
+      if (req.query.error) {
+        return gmailRedirect(res, req, fallback, {
+          gmail: 'error',
+          reason: req.query.error === 'access_denied' ? 'denied' : 'oauth'
+        });
+      }
+      const payload = gmail.readState(req.query.state);
+      if (String(payload.adminId) !== String(admin.id)) {
+        return gmailRedirect(res, req, payload.returnPath, { gmail: 'error', reason: 'oauth' });
+      }
+      const nonce = req.cookies[gmail.OAUTH_COOKIE];
+      if (nonce && payload.nonce && nonce !== payload.nonce) {
+        return gmailRedirect(res, req, payload.returnPath, { gmail: 'error', reason: 'oauth' });
+      }
+      const tokens = await gmail.exchangeCode(req, req.query.code);
+      await store.saveAdminGmailAccount(admin.id, tokens);
+      res.clearCookie(gmail.OAUTH_COOKIE, { path: '/' });
+      gmailRedirect(res, req, payload.returnPath, { gmail: 'connected' });
+    } catch (err) {
+      console.error('Gmail OAuth error:', err.message || err);
+      res.clearCookie(gmail.OAUTH_COOKIE, { path: '/' });
+      gmailRedirect(res, req, fallback, {
+        gmail: 'error',
+        reason: err.code === 'gmail_reconnect' ? 'reconnect' : 'oauth'
+      });
+    }
+  });
+
+  app.post('/api/admin/gmail/disconnect', requireAdmin, async function (req, res, next) {
+    try {
+      await store.deleteAdminGmailAccount(req.admin.id);
+      res.json({
+        ok: true,
+        gmail: gmail.publicGmailStatus(null, gmail.gmailConfigured())
+      });
+    } catch (err) { next(err); }
+  });
+
   app.get('/api/admin/emails', requireAdmin, async function (req, res) {
     try {
       const emails = await store.listCompanyEmails(req.query.partyKind, req.query.partyId);
@@ -1488,13 +1568,12 @@ async function main() {
         });
         pdfBase64 = req.file.buffer.toString('base64');
       }
-      const result = await sendStaffEmail({
+      const result = await gmail.sendWithGmailAccount(store, req.admin, {
         to: body.to,
         cc: body.cc,
         bcc: body.bcc,
         subject: body.subject,
         body: body.body,
-        replyTo: req.admin && req.admin.email,
         attachments: attachments
       });
       const saved = await store.createCompanyEmail({
@@ -1510,15 +1589,24 @@ async function main() {
         body: body.body,
         filename: attachments.length ? filename : '',
         pdfBase64: pdfBase64,
+        fromEmail: result && result.fromEmail,
         sentByEmail: req.admin && req.admin.email,
         sentByName: req.admin && req.admin.name
       });
-      res.json({ ok: true, email: saved, local: !!(result && result.provider === 'local') });
+      res.json({
+        ok: true,
+        email: saved,
+        local: !!(result && result.provider === 'local'),
+        fromEmail: result && result.fromEmail
+      });
     } catch (err) {
       console.error('Staff email error:', err.message || err);
       const msg = err.message || 'Could not send the email.';
-      const status = /not configured|not set up/i.test(msg) ? 503 : 400;
-      res.status(status).json({ ok: false, error: msg });
+      const code = err.code || '';
+      const status = code === 'gmail_setup' || /not configured|not set up/i.test(msg)
+        ? 503
+        : (code === 'gmail_required' || code === 'gmail_reconnect' ? 409 : 400);
+      res.status(status).json({ ok: false, error: msg, code: code || undefined });
     }
   });
 

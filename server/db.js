@@ -132,6 +132,7 @@ function openDb() {
   ensureColumnPrefs(db);
   ensureWalls(db);
   require('./company-emails').ensureCompanyEmails(db);
+  require('./gmail-accounts').ensureAdminGmailAccounts(db);
   require('./company-chat').ensureCompanyChat(db);
   db.exec(`
     CREATE TABLE IF NOT EXISTS inventory_stock (
