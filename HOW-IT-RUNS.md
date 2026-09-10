@@ -69,8 +69,11 @@ flowchart TB
 | `SPECTRUM_ADMIN_SECRET` | Lets the server write catalog as admin |
 | `NODE_ENV=production` | Secure cookies, production mode |
 | `CONTACT_TO_EMAIL` | Inbox: `sales@spectrumdisplay.com` |
-| `CONTACT_FROM_EMAIL` | `Spectrum Display <hello@send.spectrumdisplay.com>` |
-| `RESEND_API_KEY` | Password for sending mail |
+| `CONTACT_FROM_EMAIL` | `Spectrum Display <hello@send.spectrumdisplay.com>` (contact form only) |
+| `RESEND_API_KEY` | Password for sending contact-form mail |
+| `GOOGLE_GMAIL_CLIENT_ID` | OAuth client for staff Gmail send |
+| `GOOGLE_GMAIL_CLIENT_SECRET` | OAuth secret for staff Gmail send |
+| `GMAIL_TOKEN_SECRET` | Optional. Encrypts stored Gmail refresh tokens |
 | `GOOGLE_MAPS_API_KEY` | Optional. Enables US address autofill on `dealer.html` (Places API). Restrict to your domain in Google Cloud. |
 | `SHOPIFY_SHOP` | Store hostname for cart permalinks, default `n0eg5t-nw.myshopify.com`. Empty disables Check out (catalog still shows). |
 | `PORT` | Set by Railway (do not hardcode) |
@@ -150,7 +153,7 @@ Email/password Sign in does **not** need Google. Only the Google button does.
 
 | | |
 |---|---|
-| **What it is** | Sends the contact form to sales@spectrumdisplay.com. |
+| **What it is** | Sends the public contact form to sales@spectrumdisplay.com. |
 | **Dashboard** | https://resend.com |
 | **From** | `hello@send.spectrumdisplay.com` |
 | **To** | `sales@spectrumdisplay.com` |
@@ -159,9 +162,26 @@ Email/password Sign in does **not** need Google. Only the Google button does.
 
 Inquiries are also stored in Supabase `contact_inquiries` even if mail fails (if the server could reach the database).
 
+Company quotes / orders / invoices / POs do **not** use Resend. Those send from each staff person’s connected Gmail (next section).
+
 ---
 
-### 7. Gmail — where contact mail arrives
+### 7. Gmail — staff document send + where contact mail arrives
+
+**Staff send (quotes, orders, invoices, POs)**
+
+| | |
+|---|---|
+| **What it is** | Each staff user connects their own Gmail once (Google permission screen). Send uses the Gmail API as that account. |
+| **From** | The connected Gmail, e.g. `dennisdiao@diaoinc.com` |
+| **Google Cloud** | Project **Spectrum Display** (`nifty-condition-506807-a2`). Click-by-click: [AGENTS.md](AGENTS.md#staff-gmail-send--you-do-this-once) |
+| **APIs** | Enable **Gmail API**. Create a **Web** OAuth client. |
+| **Redirect URIs** | `https://www.spectrumdisplay.com/api/admin/gmail/callback` and `http://localhost:3000/api/admin/gmail/callback` |
+| **Consent** | Scope `gmail.send`. Workspace org `spectrumdisplay.com` can connect. Personal Gmail outside that org needs the consent screen set to External. |
+| **Connect** | `/company` → Email on a document → **Connect Gmail**, or Settings → **Your Gmail** |
+| **If it breaks** | Connect again. Check Google Cloud OAuth client, redirect URI, Railway `GOOGLE_GMAIL_CLIENT_*`, and Gmail API enabled. |
+
+**Contact-form inbox**
 
 | | |
 |---|---|
@@ -169,7 +189,12 @@ Inquiries are also stored in Supabase `contact_inquiries` even if mail fails (if
 | **What it does** | Receives Resend messages. Reply-To is the visitor’s email. |
 | **If it breaks** | Check **Spam**. From address is `hello@send.spectrumdisplay.com`. |
 
-Gmail App Passwords were **not** available on this account. That is why we use Resend, not Gmail SMTP.
+Gmail App Passwords were **not** available on this account. Contact form still uses Resend. Staff document mail uses OAuth, not SMTP.
+
+Staff document Email (quote / order / invoice / PO) is different: it sends from each person’s
+Gmail. Click-by-click setup (Google Cloud + Railway), written for a non-IT reader, is in
+[AGENTS.md — Staff Gmail send — you do this once](AGENTS.md#staff-gmail-send--you-do-this-once).
+Google Cloud project for that work is **Spectrum Display** (`nifty-condition-506807-a2`).
 
 ---
 

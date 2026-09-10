@@ -14,11 +14,11 @@
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
   <title>Company | Spectrum Display</title>
   <meta name="robots" content="noindex, nofollow" />
-  <link rel="stylesheet" href="/css/company-dash.css?v=crm7" />
+  <link rel="stylesheet" href="/css/company-dash.css?v=crm8" />
   <script src="/js/address-autocomplete.js"></script>
   <script src="/js/company-chat.js?v=chatmove2"></script>
-  <script src="/js/company-crm.js?v=crm7"></script>
-  <script src="/js/print-form.js?v=forms18"></script>
+  <script src="/js/company-crm.js?v=crm8"></script>
+  <script src="/js/print-form.js?v=forms19"></script>
   <script>
     if ('serviceWorker' in navigator && location.pathname.indexOf('/company') === 0) {
       navigator.serviceWorker.register('/company/sw.js', { scope: '/company' });
@@ -1320,6 +1320,7 @@
           </div>
           <div class="cc-detail-tabs" role="tablist">
             <button type="button" class="cc-detail-tab is-on" data-vn-tab="pos" role="tab" aria-selected="true">Purchase orders</button>
+            <button type="button" class="cc-detail-tab" data-vn-tab="emails" role="tab" aria-selected="false">Activities/Emails</button>
             <button type="button" class="cc-detail-tab" data-vn-tab="contacts" role="tab" aria-selected="false">Contacts</button>
             <button type="button" class="cc-detail-tab" data-vn-tab="details" role="tab" aria-selected="false">Vendor details</button>
             <button type="button" class="cc-detail-tab" data-vn-tab="notes" role="tab" aria-selected="false">Notes</button>
@@ -1348,6 +1349,25 @@
               </table>
             </div>
             <p id="vn-detail-po-empty" class="cc-detail-empty hidden">No purchase orders for this vendor yet.</p>
+          </div>
+          <div id="vn-detail-panel-emails" class="cc-detail-panel hidden" role="tabpanel" hidden>
+            <div class="cc-table-wrap cc-detail-mail-wrap">
+              <table class="w-full text-sm cc-detail-tx-table">
+                <thead class="text-left text-slate-400 border-b border-slate-800">
+                  <tr>
+                    <th class="py-3 px-4 font-medium">Date</th>
+                    <th class="py-3 px-4 font-medium">Type</th>
+                    <th class="py-3 px-4 font-medium">To</th>
+                    <th class="py-3 px-4 font-medium">Subject</th>
+                    <th class="py-3 px-4 font-medium">From</th>
+                    <th class="py-3 px-4 font-medium">Sent by</th>
+                    <th class="py-3 px-4 font-medium"></th>
+                  </tr>
+                </thead>
+                <tbody id="vn-detail-mail-body" class="text-slate-200"></tbody>
+              </table>
+            </div>
+            <p id="vn-detail-mail-empty" class="cc-detail-empty hidden">No emails sent to this vendor yet.</p>
           </div>
           <div id="vn-detail-panel-contacts" class="cc-detail-panel hidden" role="tabpanel" hidden>
             <div class="cc-contact-toolbar">
@@ -1469,6 +1489,7 @@
                   <button type="button" id="po-edit-btn" class="hidden so-doc-btn so-doc-btn-primary">Edit</button>
                   <button type="button" id="po-print" class="so-doc-btn">Print</button>
                   <button type="button" id="po-pdf" class="so-doc-btn">PDF</button>
+                  <button type="button" id="po-email-btn" class="so-doc-btn">Email</button>
                 </div>
                 <div class="po-amount">AMOUNT <strong id="po-amount">$0.00</strong></div>
               </div>
@@ -2071,6 +2092,7 @@
           </div>
           <div class="cc-detail-tabs" role="tablist">
             <button type="button" class="cc-detail-tab is-on" data-cc-tab="transactions" role="tab" aria-selected="true">Transaction list</button>
+            <button type="button" class="cc-detail-tab" data-cc-tab="emails" role="tab" aria-selected="false">Activities/Emails</button>
             <button type="button" class="cc-detail-tab" data-cc-tab="contacts" role="tab" aria-selected="false">Contacts</button>
             <button type="button" class="cc-detail-tab" data-cc-tab="details" role="tab" aria-selected="false">Customer details</button>
             <button type="button" class="cc-detail-tab" data-cc-tab="notes" role="tab" aria-selected="false">Notes</button>
@@ -2105,6 +2127,25 @@
               </table>
             </div>
             <p id="cc-detail-tx-empty" class="cc-detail-empty hidden">No transactions for this customer yet.</p>
+          </div>
+          <div id="cc-detail-panel-emails" class="cc-detail-panel hidden" role="tabpanel" hidden>
+            <div class="cc-table-wrap cc-detail-mail-wrap">
+              <table class="w-full text-sm cc-detail-tx-table">
+                <thead class="text-left text-slate-400 border-b border-slate-800">
+                  <tr>
+                    <th class="py-3 px-4 font-medium">Date</th>
+                    <th class="py-3 px-4 font-medium">Type</th>
+                    <th class="py-3 px-4 font-medium">To</th>
+                    <th class="py-3 px-4 font-medium">Subject</th>
+                    <th class="py-3 px-4 font-medium">From</th>
+                    <th class="py-3 px-4 font-medium">Sent by</th>
+                    <th class="py-3 px-4 font-medium"></th>
+                  </tr>
+                </thead>
+                <tbody id="cc-detail-mail-body" class="text-slate-200"></tbody>
+              </table>
+            </div>
+            <p id="cc-detail-mail-empty" class="cc-detail-empty hidden">No emails sent to this customer yet.</p>
           </div>
           <div id="cc-detail-panel-contacts" class="cc-detail-panel hidden" role="tabpanel" hidden>
             <div class="cc-contact-toolbar">
@@ -2646,6 +2687,23 @@
             <p id="chat-ai-msg" class="hidden text-sm"></p>
           </div>
         </div>
+        <div id="gmail-section" class="space-y-4">
+          <div>
+            <h2 class="text-base font-semibold text-slate-800">Your Gmail</h2>
+            <p class="text-slate-400 text-sm mt-1">Quotes, orders, invoices, and POs send from your own Gmail. Google asks for permission the first time.</p>
+          </div>
+          <div class="chat-ai-card">
+            <div class="chat-ai-row">
+              <span class="chat-ai-label">From</span>
+              <p id="gmail-status" class="chat-ai-key-status">Not connected</p>
+            </div>
+            <div class="chat-ai-actions">
+              <button type="button" id="gmail-connect" class="px-4 py-2 rounded-full bg-sky-500 hover:bg-sky-400 text-white text-sm font-semibold">Connect Gmail</button>
+              <button type="button" id="gmail-disconnect" class="px-4 py-2 rounded-full border border-slate-200 text-slate-600 hover:border-red-400 text-sm font-semibold hidden">Disconnect</button>
+            </div>
+            <p id="gmail-msg" class="hidden text-sm"></p>
+          </div>
+        </div>
         <div class="space-y-6">
           <div class="flex items-start justify-between gap-4">
             <div>
@@ -3053,6 +3111,58 @@
       <div class="cc-leave-actions">
         <button type="button" id="so-delete-no" class="cc-leave-no">No</button>
         <button type="button" id="so-delete-yes" class="cc-leave-yes">Yes</button>
+      </div>
+    </div>
+  </div>
+  <div id="mail-compose" class="cc-leave" hidden>
+    <div class="mail-card" role="dialog" aria-modal="true" aria-labelledby="mail-title">
+      <div class="mail-card-head">
+        <p id="mail-title" class="mail-card-title">Review email</p>
+        <button type="button" id="mail-close" class="mail-card-close" aria-label="Close">×</button>
+      </div>
+      <div class="mail-card-body">
+        <div class="mail-fields">
+          <input type="hidden" id="mail-record-id">
+          <label>From
+            <div class="mail-from-row">
+              <input id="mail-from" type="text" readonly>
+              <button type="button" id="mail-gmail-connect" class="mail-gmail-btn">Connect Gmail</button>
+              <button type="button" id="mail-gmail-disconnect" class="mail-gmail-btn mail-gmail-btn-quiet hidden">Disconnect</button>
+            </div>
+          </label>
+          <label>To
+            <input id="mail-to" type="text" placeholder="name@gmail.com, other@company.com">
+          </label>
+          <label>Cc
+            <input id="mail-cc" type="text">
+          </label>
+          <label>Bcc
+            <input id="mail-bcc" type="text">
+          </label>
+          <label>Subject
+            <input id="mail-subject" type="text">
+          </label>
+          <label>Message
+            <textarea id="mail-body" rows="8"></textarea>
+          </label>
+          <label class="mail-attach">
+            <input id="mail-attach" type="checkbox" checked>
+            <span>Attach PDF</span>
+            <strong id="mail-filename">document.pdf</strong>
+          </label>
+          <p id="mail-note" class="mail-note">Sends from your connected Gmail. Recipients can be Gmail or any other inbox.</p>
+          <p id="mail-msg" class="mail-msg hidden"></p>
+        </div>
+        <div class="mail-preview">
+          <div class="mail-preview-label">PDF preview</div>
+          <iframe id="mail-preview-frame" class="mail-preview-frame hidden" title="PDF preview"></iframe>
+          <p id="mail-preview-empty" class="mail-preview-empty">Preparing PDF…</p>
+        </div>
+      </div>
+      <div class="mail-card-actions">
+        <button type="button" id="mail-cancel" class="cc-leave-no">Cancel</button>
+        <button type="button" id="mail-again" class="cc-leave-no hidden">Send again</button>
+        <button type="button" id="mail-send" class="cc-leave-yes">Send</button>
       </div>
     </div>
   </div>
@@ -3466,7 +3576,7 @@
     </a>
   </nav>
 
-  <link rel="stylesheet" href="/css/company-dash.css?v=crm7" />
+  <link rel="stylesheet" href="/css/company-dash.css?v=crm8" />
 
   <script>
     const loginPanel = document.getElementById('login-panel');
@@ -3477,6 +3587,7 @@
     let editingId = null;
     let editingHidden = false;
     let currentAdminUser = null;
+    let staffGmail = { configured: false, connected: false, email: '' };
     let editingStaffId = null;
     let editingRoleId = null;
     let websiteSubTab = 'products';
@@ -4571,8 +4682,53 @@
     async function api(url, opts) {
       const res = await fetch(url, Object.assign({ credentials: 'same-origin' }, opts || {}));
       const data = await res.json().catch(function () { return {}; });
-      if (!res.ok) throw new Error(data.error || 'Request failed');
+      if (!res.ok) {
+        const err = new Error(data.error || 'Request failed');
+        err.code = data.code || '';
+        throw err;
+      }
       return data;
+    }
+
+    function applyStaffGmail(status) {
+      staffGmail = {
+        configured: !!(status && status.configured),
+        connected: !!(status && status.connected && status.email),
+        email: (status && status.email) || ''
+      };
+      const statusEl = document.getElementById('gmail-status');
+      const connectBtn = document.getElementById('gmail-connect');
+      const disconnectBtn = document.getElementById('gmail-disconnect');
+      if (statusEl) {
+        statusEl.textContent = staffGmail.connected
+          ? staffGmail.email
+          : (staffGmail.configured ? 'Not connected' : 'Not set up on the server yet');
+      }
+      if (connectBtn) connectBtn.textContent = staffGmail.connected ? 'Reconnect Gmail' : 'Connect Gmail';
+      if (disconnectBtn) disconnectBtn.classList.toggle('hidden', !staffGmail.connected);
+      syncMailGmailUi();
+    }
+    function gmailReasonText(reason) {
+      if (reason === 'setup') return 'Gmail send is not set up on the server yet. Add Google Gmail OAuth on Railway.';
+      if (reason === 'denied') return 'Google permission was not granted.';
+      if (reason === 'signin') return 'Sign in first, then connect Gmail.';
+      if (reason === 'reconnect') return 'Gmail access expired. Connect Gmail again.';
+      return 'Could not connect Gmail.';
+    }
+    function showGmailMsg(text, ok) {
+      const el = document.getElementById('gmail-msg');
+      if (!el) return;
+      el.textContent = text || '';
+      el.className = 'text-sm ' + (ok ? 'text-sky-600' : 'text-red-500');
+      el.classList.toggle('hidden', !text);
+    }
+    function gmailConnectHref() {
+      const ret = encodeURIComponent(companyPath() + (location.search || ''));
+      return '/api/admin/gmail/connect?return=' + ret;
+    }
+    function startGmailConnect() {
+      stashMailDraft();
+      window.location.href = gmailConnectHref();
     }
 
     function showDash(admin) {
@@ -10530,6 +10686,7 @@
     let ccOpenTabs = [];
     let ccActiveTab = 'overview';
     let ccTabDetailTab = {};
+    let partyMailCache = {};
 
     function ccCustomerLabel(c) {
       if (!c) return 'Customer';
@@ -10794,13 +10951,14 @@
         btn.classList.toggle('is-on', on);
         btn.setAttribute('aria-selected', on ? 'true' : 'false');
       });
-      ['transactions', 'contacts', 'details', 'notes'].forEach(function (key) {
+      ['transactions', 'emails', 'contacts', 'details', 'notes'].forEach(function (key) {
         const panel = document.getElementById('cc-detail-panel-' + key);
         if (!panel) return;
         const on = key === ccDetailTab;
         panel.classList.toggle('hidden', !on);
         panel.hidden = !on;
       });
+      if (ccDetailTab === 'emails') loadPartyEmails('customer', ccDetailId);
     }
 
     function renderCustomerDetailTransactions() {
@@ -10908,6 +11066,7 @@
       renderCustomerDetailDetails();
       renderCustomerDetailNotes();
       renderCcSideList();
+      if (ccDetailTab === 'emails') loadPartyEmails('customer', c.id);
     }
 
     function ccTabCustomer(id) {
@@ -11705,13 +11864,14 @@
         btn.classList.toggle('is-on', on);
         btn.setAttribute('aria-selected', on ? 'true' : 'false');
       });
-      ['pos', 'contacts', 'details', 'notes'].forEach(function (key) {
+      ['pos', 'emails', 'contacts', 'details', 'notes'].forEach(function (key) {
         const panel = document.getElementById('vn-detail-panel-' + key);
         if (!panel) return;
         const on = key === vnDetailTab;
         panel.classList.toggle('hidden', !on);
         panel.hidden = !on;
       });
+      if (vnDetailTab === 'emails') loadPartyEmails('vendor', vnDetailId);
     }
 
     function renderVnDetailPos() {
@@ -11797,6 +11957,7 @@
       renderVnDetailDetails();
       renderVnDetailNotes();
       renderVnSideList();
+      if (vnDetailTab === 'emails') loadPartyEmails('vendor', v.id);
     }
 
     function fitBrowserTabWidths(stripId, overviewAttr) {
@@ -12477,6 +12638,8 @@
     function applyPoVendor(v) {
       if (!v) return;
       document.getElementById('po-email').value = v.email || '';
+      document.getElementById('po-cc').value = v.emailCc || '';
+      document.getElementById('po-bcc').value = v.emailBcc || '';
       document.getElementById('po-mail').value = v.mailingAddress || '';
     }
 
@@ -12722,8 +12885,9 @@
       fillPoVendors(src.vendorId || '');
       fillPoShipTo(src.shipToCustomerId || '');
       document.getElementById('po-email').value = src.vendorEmail || '';
-      document.getElementById('po-cc').value = '';
-      document.getElementById('po-bcc').value = '';
+      const vendor = (inventoryVendors || []).find(function (row) { return String(row.id) === String(src.vendorId || ''); });
+      document.getElementById('po-cc').value = (vendor && vendor.emailCc) || '';
+      document.getElementById('po-bcc').value = (vendor && vendor.emailBcc) || '';
       document.getElementById('po-status').value = src.status || 'open';
       document.getElementById('po-mail').value = src.mailingAddress || '';
       document.getElementById('po-ship').value = src.shippingAddress || '';
@@ -13793,13 +13957,14 @@
     }
 
     function soBlankLine() {
-      return { itemId: '', sku: '', description: '', qty: '', unitPrice: '' };
+      return { itemId: '', item: '', sku: '', description: '', qty: '', unitPrice: '' };
     }
 
     function soLineHasContent(line) {
       if (!line) return false;
       return !!(
         String(line.itemId || '').trim() ||
+        String(line.item || '').trim() ||
         String(line.sku || '').trim() ||
         String(line.description || '').trim() ||
         money(line.unitPrice)
@@ -13859,9 +14024,9 @@
       const price = item.unitPrice == null || item.unitPrice === '' ? '' : item.unitPrice;
       const amt = money(qty) * money(price);
       const itemId = item.itemId || (inv && inv.id) || '';
-      const itemName = (inv && (inv.name || inv.sku)) || '';
+      const itemName = String(item.item || '').trim() || (inv && (inv.name || inv.sku)) || '';
       const cells = {
-        item: '<td class="py-2 px-2 so-inv-read" data-line-item-name>' + esc(itemName) + '</td>',
+        item: '<td class="py-2 px-2"><input data-line="item" value="' + esc(itemName) + '"></td>',
         sku: '<td class="py-2 px-2"><div class="so-sku-search"><svg class="so-sku-search-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><circle cx="11" cy="11" r="6"/><path d="m20 20-3.5-3.5"/></svg><input data-line="sku" type="search" autocomplete="off" placeholder="Search SKU, name, brand" value="' + esc(item.sku || (inv && inv.sku) || '') + '"></div></td>',
         description: '<td class="py-2 px-2"><input data-line="description" value="' + esc(item.description || '') + '"></td>',
         qty: '<td class="py-2 px-2"><input data-line="qty" type="number" step="0.01" value="' + esc(qty) + '"></td>',
@@ -13903,6 +14068,7 @@
         : (prev.itemId || '');
       return {
         itemId: itemId,
+        item: val('item', prev.item || ''),
         sku: val('sku', prev.sku || ''),
         description: val('description', prev.description || ''),
         qty: qtyRaw === '' ? '' : money(qtyRaw),
@@ -13914,7 +14080,7 @@
       const rows = Array.prototype.map.call(document.querySelectorAll('#so-lines .so-line'), readSoLineRow);
       if (keepBlanks) return rows;
       const content = rows.filter(soLineHasContent);
-      return content.length ? content : [{ sku: '', description: '', qty: 1, unitPrice: 0 }];
+      return content.length ? content : [{ item: '', sku: '', description: '', qty: 1, unitPrice: 0 }];
     }
 
     function renderSoLines(lines) {
@@ -13982,8 +14148,8 @@
       if (!row || !item) return;
       const itemIdEl = row.querySelector('[data-line="itemId"]');
       if (itemIdEl) itemIdEl.value = item.id || '';
-      const nameEl = row.querySelector('[data-line-item-name]');
-      if (nameEl) nameEl.textContent = item.name || item.sku || '';
+      const nameEl = row.querySelector('[data-line="item"]');
+      if (nameEl) nameEl.value = item.name || item.sku || '';
       const sku = row.querySelector('[data-line="sku"]');
       const desc = row.querySelector('[data-line="description"]');
       const price = row.querySelector('[data-line="unitPrice"]');
@@ -14000,6 +14166,7 @@
       if (idx !== -1) {
         soLineState[idx] = Object.assign({}, soLineState[idx], {
           itemId: item.id,
+          item: (nameEl && nameEl.value) || item.name || item.sku || '',
           sku: item.sku || '',
           description: (desc && desc.value) || item.description || item.name || '',
           unitPrice: price ? price.value : (item.price != null ? item.price : '')
@@ -14007,6 +14174,57 @@
       }
       refreshSoTotals();
       ensureSoSpareLines();
+    }
+
+    function soLineLinkedInventoryId(row) {
+      if (!row) return '';
+      const itemEl = row.querySelector('[data-line="itemId"]');
+      const fromId = itemEl && itemEl.value && itemEl.value !== '__new__' ? String(itemEl.value) : '';
+      if (fromId) return fromId;
+      const skuEl = row.querySelector('[data-line="sku"]');
+      const inv = soInvBySku(skuEl ? skuEl.value : '');
+      return inv && inv.id ? String(inv.id) : '';
+    }
+
+    function patchCachedInventoryDescription(id, description) {
+      const item = soInvById(id);
+      if (item) item.description = description;
+      if (inventoryDetail && inventoryDetail.item && String(inventoryDetail.item.id) === String(id)) {
+        inventoryDetail.item.description = description;
+      }
+      if (invDetailData && invDetailData.item && String(invDetailData.item.id) === String(id)) {
+        invDetailData.item.description = description;
+      }
+      const idEl = document.getElementById('inv-item-id');
+      const box = document.getElementById('inv-description');
+      if (idEl && box && String(idEl.value) === String(id)) box.value = description;
+    }
+
+    const soInvDescSave = {};
+    async function syncSoLineDescriptionToInventory(row) {
+      if (soReadOnly || !row || !canEdit('inventory')) return;
+      const desc = row.querySelector('[data-line="description"]');
+      if (!desc) return;
+      const itemId = soLineLinkedInventoryId(row);
+      if (!itemId) return;
+      const text = String(desc.value || '');
+      const inv = soInvById(itemId);
+      if (inv && String(inv.description || '') === text) return;
+      const token = (soInvDescSave[itemId] || 0) + 1;
+      soInvDescSave[itemId] = token;
+      try {
+        const data = await api('/api/admin/inventory/' + encodeURIComponent(itemId), {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ description: text })
+        });
+        if (soInvDescSave[itemId] !== token) return;
+        const next = data && data.item && data.item.description != null ? data.item.description : text;
+        patchCachedInventoryDescription(itemId, next);
+      } catch (err) {
+        if (soInvDescSave[itemId] !== token) return;
+        showSoMsg(err.message || 'Could not save description to inventory.');
+      }
     }
 
     function lookupSoSku(row) {
@@ -15255,6 +15473,7 @@
     document.getElementById('so-lines').addEventListener('change', function (e) {
       if (soReadOnly) return;
       if (e.target.closest('[data-line="sku"]')) lookupSoSku(e.target.closest('tr'));
+      if (e.target.closest('[data-line="description"]')) syncSoLineDescriptionToInventory(e.target.closest('tr'));
     });
     document.getElementById('so-lines').addEventListener('focusin', function (e) {
       if (soReadOnly) return;
@@ -15450,6 +15669,7 @@
         const inv = typeof soInvForLine === 'function' ? soInvForLine(line) : null;
         return {
           sku: line.sku,
+          item: line.item || (inv && (inv.name || inv.sku)) || '',
           description: line.description,
           qty: line.qty,
           unitPrice: line.unitPrice,
@@ -16206,26 +16426,507 @@
       if (side && side !== '—') return side;
       return soCustomerEmail(soCustomerById((document.getElementById('so-customer') || {}).value));
     }
+    function mailKindLabel(kind) {
+      if (kind === 'order') return 'Sales Order';
+      if (kind === 'invoice') return 'Invoice';
+      if (kind === 'po') return 'Purchase Order';
+      if (kind === 'quote') return 'Sales Quote';
+      return 'Document';
+    }
+    function mailCacheKey(kind, id) {
+      return String(kind || '') + ':' + String(id || '');
+    }
+    function mailFmtWhen(value) {
+      if (!value) return '—';
+      const d = new Date(value);
+      if (Number.isNaN(d.getTime())) return String(value);
+      return d.toLocaleString();
+    }
+    function renderPartyEmailRows(kind, rows) {
+      const bodyId = kind === 'vendor' ? 'vn-detail-mail-body' : 'cc-detail-mail-body';
+      const emptyId = kind === 'vendor' ? 'vn-detail-mail-empty' : 'cc-detail-mail-empty';
+      const body = document.getElementById(bodyId);
+      const empty = document.getElementById(emptyId);
+      if (!body) return;
+      const list = rows || [];
+      if (!list.length) {
+        body.innerHTML = '';
+        if (empty) empty.classList.remove('hidden');
+        return;
+      }
+      if (empty) empty.classList.add('hidden');
+      body.innerHTML = list.map(function (row) {
+        return '<tr class="border-b border-slate-800 hover:bg-slate-900/80 cursor-pointer" data-mail-id="' + esc(row.id) + '">' +
+          '<td class="py-3 px-4">' + esc(mailFmtWhen(row.createdAt)) + '</td>' +
+          '<td class="py-3 px-4">' + esc(mailKindLabel(row.docKind)) + '</td>' +
+          '<td class="py-3 px-4">' + esc(row.to || '—') + '</td>' +
+          '<td class="py-3 px-4">' + esc(row.subject || '—') + '</td>' +
+          '<td class="py-3 px-4">' + esc(row.fromEmail || '—') + '</td>' +
+          '<td class="py-3 px-4">' + esc(row.sentByName || row.sentByEmail || '—') + '</td>' +
+          '<td class="py-3 px-4 text-right"><span class="text-sky-400 text-xs font-medium">Open →</span></td></tr>';
+      }).join('');
+    }
+    async function loadPartyEmails(kind, id, force) {
+      if (!id) return;
+      const key = mailCacheKey(kind, id);
+      if (!force && partyMailCache[key]) {
+        renderPartyEmailRows(kind, partyMailCache[key]);
+        return;
+      }
+      try {
+        const data = await api('/api/admin/emails?partyKind=' + encodeURIComponent(kind) + '&partyId=' + encodeURIComponent(id));
+        partyMailCache[key] = data.emails || [];
+        renderPartyEmailRows(kind, partyMailCache[key]);
+      } catch (err) {
+        renderPartyEmailRows(kind, []);
+      }
+    }
+    function rememberSentMail(email) {
+      if (!email || !email.partyKind || !email.partyId) return;
+      const key = mailCacheKey(email.partyKind, email.partyId);
+      const list = partyMailCache[key] ? partyMailCache[key].slice() : [];
+      list.unshift(email);
+      partyMailCache[key] = list;
+      const openId = email.partyKind === 'vendor' ? vnDetailId : ccDetailId;
+      if (String(openId) === String(email.partyId)) renderPartyEmailRows(email.partyKind, list);
+    }
+    let mailState = null;
+    function mailShowMsg(text, ok) {
+      const el = document.getElementById('mail-msg');
+      if (!el) return;
+      el.textContent = text || '';
+      el.className = 'mail-msg' + (text ? (ok ? ' is-ok' : ' is-err') : ' hidden');
+      el.classList.toggle('hidden', !text);
+    }
+    function mailSetPreviewEmpty(text) {
+      const empty = document.getElementById('mail-preview-empty');
+      const frame = document.getElementById('mail-preview-frame');
+      if (empty) {
+        empty.textContent = text || '';
+        empty.classList.toggle('hidden', !text);
+      }
+      if (frame && text) frame.classList.add('hidden');
+    }
+    function mailRevokePreview() {
+      if (mailState && mailState.blobUrl) {
+        try { URL.revokeObjectURL(mailState.blobUrl); } catch (e) {}
+        mailState.blobUrl = '';
+      }
+    }
+    function mailShowPdf(url) {
+      const frame = document.getElementById('mail-preview-frame');
+      const empty = document.getElementById('mail-preview-empty');
+      if (!frame) return;
+      frame.src = url;
+      frame.classList.remove('hidden');
+      if (empty) empty.classList.add('hidden');
+    }
+    function mailSetReadonly(on) {
+      ['mail-to', 'mail-cc', 'mail-bcc', 'mail-subject', 'mail-body', 'mail-attach'].forEach(function (id) {
+        const el = document.getElementById(id);
+        if (el) el.disabled = !!on;
+      });
+      document.getElementById('mail-send').classList.toggle('hidden', !!on);
+      document.getElementById('mail-again').classList.toggle('hidden', !on);
+      syncMailGmailUi();
+    }
+    function syncMailGmailUi() {
+      const from = document.getElementById('mail-from');
+      const connect = document.getElementById('mail-gmail-connect');
+      const disconnect = document.getElementById('mail-gmail-disconnect');
+      const sendBtn = document.getElementById('mail-send');
+      const note = document.getElementById('mail-note');
+      const review = !!(mailState && mailState.mode === 'review');
+      const fromValue = review && mailState && mailState.fromEmail
+        ? mailState.fromEmail
+        : (staffGmail.connected ? staffGmail.email : 'Not connected');
+      if (from) from.value = fromValue;
+      if (connect) {
+        connect.classList.toggle('hidden', review);
+        connect.textContent = staffGmail.connected ? 'Reconnect Gmail' : 'Connect Gmail';
+        connect.disabled = false;
+      }
+      if (disconnect) disconnect.classList.toggle('hidden', review || !staffGmail.connected);
+      if (sendBtn) {
+        sendBtn.classList.toggle('hidden', review || !staffGmail.connected);
+        sendBtn.disabled = review || !staffGmail.connected;
+      }
+      if (note) {
+        note.textContent = staffGmail.connected
+          ? ('Sends from ' + staffGmail.email + '. Recipients can be Gmail or any other inbox.')
+          : (staffGmail.configured
+            ? 'Connect Gmail to send from your own inbox. Recipients can be Gmail or any other inbox.'
+            : 'Gmail send is not set up on the server yet. Connect will ask Google for permission once it is.');
+      }
+    }
+    const MAIL_DRAFT_KEY = 'sd-mail-gmail-draft';
+    function stashMailDraft() {
+      if (!mailState || mailState.mode === 'review') return;
+      try {
+        sessionStorage.setItem(MAIL_DRAFT_KEY, JSON.stringify({
+          partyKind: mailState.partyKind,
+          partyId: mailState.partyId,
+          docKind: mailState.docKind,
+          docId: mailState.docId,
+          docNumber: mailState.docNumber,
+          partyName: mailState.partyName || '',
+          to: document.getElementById('mail-to').value,
+          cc: document.getElementById('mail-cc').value,
+          bcc: document.getElementById('mail-bcc').value,
+          subject: document.getElementById('mail-subject').value,
+          body: document.getElementById('mail-body').value,
+          filename: mailState.filename || 'document.pdf',
+          attach: document.getElementById('mail-attach').checked,
+          printDoc: mailState.printDoc || null
+        }));
+      } catch (err) {}
+    }
+    function restoreMailDraft() {
+      let raw = '';
+      try { raw = sessionStorage.getItem(MAIL_DRAFT_KEY) || ''; } catch (err) { raw = ''; }
+      if (!raw) return false;
+      try { sessionStorage.removeItem(MAIL_DRAFT_KEY); } catch (err) {}
+      let draft;
+      try { draft = JSON.parse(raw); } catch (err) { return false; }
+      if (!draft || !draft.partyId) return false;
+      openMailCompose(draft);
+      return true;
+    }
+    async function consumeGmailReturn() {
+      const params = new URLSearchParams(location.search);
+      const flag = params.get('gmail');
+      if (!flag) return;
+      const reason = params.get('reason') || '';
+      params.delete('gmail');
+      params.delete('reason');
+      const next = companyPath() + (params.toString() ? '?' + params.toString() : '') + location.hash;
+      history.replaceState({}, '', next);
+      try {
+        const data = await api('/api/admin/gmail');
+        applyStaffGmail(data.gmail);
+      } catch (err) {}
+      restoreMailDraft();
+      if (flag === 'connected') {
+        showGmailMsg('Gmail connected as ' + (staffGmail.email || 'your account') + '.', true);
+        mailShowMsg(staffGmail.email ? ('Sending as ' + staffGmail.email + '.') : 'Gmail connected.', true);
+      } else if (flag === 'error') {
+        const text = gmailReasonText(reason);
+        showGmailMsg(text, false);
+        mailShowMsg(text);
+      }
+    }
+    function closeMailCompose() {
+      mailRevokePreview();
+      mailState = null;
+      const box = document.getElementById('mail-compose');
+      if (!box) return;
+      box.classList.remove('is-open');
+      box.hidden = true;
+    }
+    function fillMailFields(draft) {
+      document.getElementById('mail-record-id').value = (draft && draft.recordId) || '';
+      document.getElementById('mail-to').value = (draft && draft.to) || '';
+      document.getElementById('mail-cc').value = (draft && draft.cc) || '';
+      document.getElementById('mail-bcc').value = (draft && draft.bcc) || '';
+      document.getElementById('mail-subject').value = (draft && draft.subject) || '';
+      document.getElementById('mail-body').value = (draft && draft.body) || '';
+      document.getElementById('mail-filename').textContent = (draft && draft.filename) || 'document.pdf';
+      document.getElementById('mail-attach').checked = draft && draft.attach === false ? false : true;
+    }
+    function defaultMailBody(opts) {
+      const kind = mailKindLabel(opts.docKind);
+      const number = opts.docNumber || '';
+      const name = String(opts.partyName || '').trim() || 'there';
+      const lines = [
+        'Hi ' + name + ',',
+        '',
+        'Please review the attached ' + kind + (number ? ' ' + number : '') + '.',
+        ''
+      ];
+      if (opts.total != null && opts.total !== '') lines.push('Amount: ' + moneyText(opts.total));
+      if (opts.due) lines.push('Due: ' + opts.due);
+      lines.push('', 'Thank you,', 'Spectrum Display');
+      return lines.join('\n');
+    }
+    async function prepareMailPdf() {
+      if (!mailState) return;
+      const filename = mailState.filename || 'document.pdf';
+      document.getElementById('mail-filename').textContent = filename;
+      if (mailState.previewUrl) {
+        mailShowPdf(mailState.previewUrl);
+        return;
+      }
+      if (!mailState.printDoc || !window.SpectrumPrintForm) {
+        mailSetPreviewEmpty('No PDF to preview.');
+        return;
+      }
+      mailSetPreviewEmpty('Preparing PDF…');
+      const sendBtn = document.getElementById('mail-send');
+      if (sendBtn && mailState.mode !== 'review') sendBtn.disabled = true;
+      try {
+        const pack = await loadPrintBundle();
+        const type = mailState.docKind === 'po' ? 'po' : (mailState.docKind || 'invoice');
+        const template = (pack.forms && pack.forms[type]) || null;
+        const data = { company: pack.company, doc: mailState.printDoc };
+        if (SpectrumPrintForm.letterSrcdoc) {
+          const frame = document.getElementById('mail-preview-frame');
+          if (frame) {
+            frame.srcdoc = SpectrumPrintForm.letterSrcdoc(template, data);
+            frame.classList.remove('hidden');
+            const empty = document.getElementById('mail-preview-empty');
+            if (empty) empty.classList.add('hidden');
+          }
+        }
+        const blob = await SpectrumPrintForm.buildPdfBlob(template, data, filename);
+        mailState.pdfBlob = blob;
+        mailRevokePreview();
+        mailState.blobUrl = URL.createObjectURL(blob);
+        mailShowPdf(mailState.blobUrl);
+      } catch (err) {
+        mailState.pdfBlob = null;
+        mailSetPreviewEmpty(err.message || 'Could not build the PDF preview.');
+      } finally {
+        if (sendBtn && mailState && mailState.mode !== 'review') syncMailGmailUi();
+      }
+    }
+    function openMailCompose(opts) {
+      mailRevokePreview();
+      mailState = Object.assign({
+        mode: 'compose',
+        attach: true,
+        pdfBlob: null,
+        blobUrl: '',
+        previewUrl: '',
+        printDoc: null
+      }, opts || {});
+      const kind = mailKindLabel(mailState.docKind);
+      const number = mailState.docNumber || '';
+      document.getElementById('mail-title').textContent = mailState.mode === 'review'
+        ? ('Sent ' + kind + (number ? ' ' + number : ''))
+        : ('Email ' + kind + (number ? ' ' + number : ''));
+      fillMailFields(mailState);
+      mailSetReadonly(mailState.mode === 'review');
+      mailShowMsg('');
+      syncMailGmailUi();
+      openSoPop('mail-compose', staffGmail.connected ? 'mail-to' : 'mail-gmail-connect');
+      prepareMailPdf();
+    }
+    async function openSentMail(id) {
+      try {
+        const data = await api('/api/admin/emails/' + id);
+        const email = data.email;
+        if (!email) throw new Error('Email not found.');
+        openMailCompose({
+          mode: 'review',
+          recordId: email.id,
+          partyKind: email.partyKind,
+          partyId: email.partyId,
+          docKind: email.docKind,
+          docId: email.docId,
+          docNumber: email.docNumber,
+          to: email.to,
+          cc: email.cc,
+          bcc: email.bcc,
+          subject: email.subject,
+          body: email.body,
+          filename: email.filename || 'document.pdf',
+          attach: !!email.hasPdf,
+          fromEmail: email.fromEmail || email.sentByEmail || '',
+          previewUrl: email.hasPdf ? ('/api/admin/emails/' + email.id + '/pdf') : '',
+          printDoc: null
+        });
+        if (!email.hasPdf) mailSetPreviewEmpty('This message has no PDF attached.');
+        else {
+          fetch('/api/admin/emails/' + email.id + '/pdf', { credentials: 'same-origin' }).then(function (res) {
+            if (!res.ok) return null;
+            return res.blob();
+          }).then(function (blob) {
+            if (blob && mailState && String(mailState.recordId) === String(email.id)) mailState.pdfBlob = blob;
+          }).catch(function () {});
+        }
+      } catch (err) {
+        alert(err.message || 'Could not open that email.');
+      }
+    }
+    async function sendMailCompose() {
+      if (!mailState || mailState.mode === 'review') return;
+      const to = document.getElementById('mail-to').value.trim();
+      const subject = document.getElementById('mail-subject').value.trim();
+      const body = document.getElementById('mail-body').value.trim();
+      const attach = document.getElementById('mail-attach').checked;
+      if (!staffGmail.connected) {
+        mailShowMsg('Connect Gmail to send from your own inbox.');
+        return;
+      }
+      if (!mailState.partyId) {
+        mailShowMsg('Select a customer or vendor first.');
+        return;
+      }
+      if (!to) {
+        mailShowMsg('Add a To address.');
+        return;
+      }
+      if (!body) {
+        mailShowMsg('Write a message before sending.');
+        return;
+      }
+      if (attach && !mailState.pdfBlob && mailState.printDoc) {
+        mailShowMsg('Wait for the PDF preview, then send.');
+        return;
+      }
+      const sendBtn = document.getElementById('mail-send');
+      sendBtn.disabled = true;
+      sendBtn.textContent = 'Sending…';
+      mailShowMsg('');
+      try {
+        const fd = new FormData();
+        fd.append('partyKind', mailState.partyKind);
+        fd.append('partyId', String(mailState.partyId));
+        fd.append('docKind', mailState.docKind || '');
+        if (mailState.docId) fd.append('docId', String(mailState.docId));
+        fd.append('docNumber', mailState.docNumber || '');
+        fd.append('to', to);
+        fd.append('cc', document.getElementById('mail-cc').value.trim());
+        fd.append('bcc', document.getElementById('mail-bcc').value.trim());
+        fd.append('subject', subject);
+        fd.append('body', body);
+        fd.append('filename', mailState.filename || 'document.pdf');
+        fd.append('attach', attach ? '1' : '0');
+        if (attach && mailState.pdfBlob) {
+          fd.append('pdf', mailState.pdfBlob, mailState.filename || 'document.pdf');
+        }
+        const data = await api('/api/admin/email', { method: 'POST', body: fd });
+        const saved = data.email;
+        const partyKind = mailState.partyKind;
+        rememberSentMail(saved);
+        closeMailCompose();
+        const note = (saved && saved.docNumber ? saved.docNumber : 'Email') +
+          (data.local ? ' saved in Activities/Emails (local outbox).' : ' sent.');
+        if (partyKind === 'vendor') showPoMsg(note, true);
+        else showSoMsg(note, true);
+      } catch (err) {
+        if (err.code === 'gmail_required' || err.code === 'gmail_reconnect') {
+          applyStaffGmail({ configured: staffGmail.configured, connected: false, email: '' });
+        }
+        mailShowMsg(err.message || 'Could not send.');
+      } finally {
+        sendBtn.textContent = 'Send';
+        syncMailGmailUi();
+      }
+    }
+    async function disconnectStaffGmail() {
+      if (!staffGmail.connected) return;
+      if (!confirm('Disconnect Gmail? You will need to connect again before sending.')) return;
+      try {
+        const data = await api('/api/admin/gmail/disconnect', { method: 'POST' });
+        applyStaffGmail(data.gmail);
+        showGmailMsg('Gmail disconnected.', true);
+        mailShowMsg('Gmail disconnected. Connect Gmail to send.');
+      } catch (err) {
+        showGmailMsg(err.message || 'Could not disconnect Gmail.', false);
+      }
+    }
     function emailSalesDoc() {
       const email = salesDocEmailAddress();
       const number = (document.getElementById('so-number').value || '').trim();
       const type = (document.getElementById('so-type') || {}).value || 'quote';
       const field = document.getElementById('so-customer-email');
+      const customerId = (document.getElementById('so-customer') || {}).value;
       if (!email) {
         showSoMsg('Add a customer email first.');
         return;
       }
+      if (!customerId || customerId === '__new__') {
+        showSoMsg('Select a customer first.');
+        return;
+      }
       if (field && !field.value.trim()) field.value = email;
-      const subject = [salesTypeLabel(type), number].filter(Boolean).join(' ');
-      const href = 'mailto:' + email + (subject ? '?subject=' + encodeURIComponent(subject) : '');
-      const a = document.createElement('a');
-      a.href = href;
-      a.rel = 'noopener';
-      document.body.appendChild(a);
-      a.click();
-      a.remove();
+      const customer = soCustomerById(customerId);
+      const doc = soPrintDoc();
+      const filename = ((number || type || 'document').replace(/[\\/:*?"<>|]+/g, '-').replace(/\s+/g, ' ').slice(0, 80)) + '.pdf';
+      openMailCompose({
+        partyKind: 'customer',
+        partyId: customerId,
+        docKind: type,
+        docId: document.getElementById('so-id').value,
+        docNumber: number,
+        partyName: (document.getElementById('so-customer-name').value || (customer && ccCustomerLabel(customer)) || '').trim(),
+        to: email,
+        cc: customer && customer.emailCc || '',
+        bcc: customer && customer.emailBcc || '',
+        subject: [salesTypeLabel(type), number].filter(Boolean).join(' '),
+        body: defaultMailBody({
+          docKind: type,
+          docNumber: number,
+          partyName: (customer && (customer.contactFirst || customer.displayName || customer.companyName)) || '',
+          total: doc.total,
+          due: document.getElementById('so-due').value
+        }),
+        filename: filename,
+        printDoc: doc
+      });
+    }
+    function emailPoDoc() {
+      const to = (document.getElementById('po-email').value || '').trim();
+      const vendorId = (document.getElementById('po-vendor') || {}).value;
+      const number = (document.getElementById('po-number').value || '').trim();
+      if (!to) {
+        showPoMsg('Add a vendor email first.');
+        return;
+      }
+      if (!vendorId || vendorId === '__new__') {
+        showPoMsg('Select a vendor first.');
+        return;
+      }
+      const vendor = (inventoryVendors || []).find(function (row) { return String(row.id) === String(vendorId); });
+      const doc = poPrintDoc();
+      const filename = ((number || 'PO').replace(/[\\/:*?"<>|]+/g, '-').replace(/\s+/g, ' ').slice(0, 80)) + '.pdf';
+      openMailCompose({
+        partyKind: 'vendor',
+        partyId: vendorId,
+        docKind: 'po',
+        docId: document.getElementById('po-id').value,
+        docNumber: number,
+        partyName: (vendor && (vendor.displayName || vendor.companyName)) || '',
+        to: to,
+        cc: document.getElementById('po-cc').value.trim() || (vendor && vendor.emailCc) || '',
+        bcc: document.getElementById('po-bcc').value.trim() || (vendor && vendor.emailBcc) || '',
+        subject: ['Purchase Order', number].filter(Boolean).join(' '),
+        body: defaultMailBody({
+          docKind: 'po',
+          docNumber: number,
+          partyName: (vendor && (vendor.contactFirst || vendor.displayName || vendor.companyName)) || '',
+          total: doc.total,
+          due: document.getElementById('po-due').value
+        }),
+        filename: filename,
+        printDoc: doc
+      });
     }
     document.getElementById('so-ribbon-email').addEventListener('click', emailSalesDoc);
+    document.getElementById('mail-close').addEventListener('click', closeMailCompose);
+    document.getElementById('mail-cancel').addEventListener('click', closeMailCompose);
+    document.getElementById('mail-send').addEventListener('click', sendMailCompose);
+    document.getElementById('mail-gmail-connect').addEventListener('click', startGmailConnect);
+    document.getElementById('mail-gmail-disconnect').addEventListener('click', disconnectStaffGmail);
+    document.getElementById('gmail-connect').addEventListener('click', startGmailConnect);
+    document.getElementById('gmail-disconnect').addEventListener('click', disconnectStaffGmail);
+    document.getElementById('mail-again').addEventListener('click', function () {
+      if (!mailState) return;
+      mailState.mode = 'compose';
+      document.getElementById('mail-title').textContent = 'Email ' + mailKindLabel(mailState.docKind) +
+        (mailState.docNumber ? ' ' + mailState.docNumber : '');
+      mailSetReadonly(false);
+      mailShowMsg('Review and send again.');
+    });
+    document.getElementById('cc-detail-mail-body').addEventListener('click', function (e) {
+      const row = e.target.closest('tr[data-mail-id]');
+      if (row) openSentMail(row.getAttribute('data-mail-id'));
+    });
+    document.getElementById('vn-detail-mail-body').addEventListener('click', function (e) {
+      const row = e.target.closest('tr[data-mail-id]');
+      if (row) openSentMail(row.getAttribute('data-mail-id'));
+    });
     document.getElementById('so-revert').addEventListener('click', function () {
       if (!soSavedSnapshot) return;
       try { fillSoForm(JSON.parse(soSavedSnapshot)); }
@@ -17606,6 +18307,8 @@
           })
         });
         if (!showDash(data.admin)) return;
+        applyStaffGmail(data.gmail);
+        await consumeGmailReturn();
         await loadColumnPrefs();
         bootSpectrumChat(data.admin);
         await openRoutedSection(tabFromPath());
@@ -18195,6 +18898,8 @@
     });
     const poPdfBtn = document.getElementById('po-pdf');
     if (poPdfBtn) poPdfBtn.addEventListener('click', function () { downloadPoPdf(); });
+    const poEmailBtn = document.getElementById('po-email-btn');
+    if (poEmailBtn) poEmailBtn.addEventListener('click', emailPoDoc);
     document.getElementById('po-edit-btn').addEventListener('click', function () {
       editCurrentPo();
     });
@@ -18551,7 +19256,10 @@
     api('/api/admin/me').then(function (data) {
       if (data.ok && data.admin) {
         if (!showDash(data.admin)) return;
-        return loadColumnPrefs().then(function () {
+        applyStaffGmail(data.gmail);
+        return consumeGmailReturn().then(function () {
+          return loadColumnPrefs();
+        }).then(function () {
           if (window.SpectrumChat) bootSpectrumChat(data.admin);
           return openRoutedSection(tabFromPath()).then(function () {
             var bootDraft = copilotTokenFromHref(location.href);
