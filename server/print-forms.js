@@ -16,6 +16,7 @@ const HEADER_FIELDS = [
   { id: 'account', label: 'Account #' },
   { id: 'shipDate', label: 'Ship Date' },
   { id: 'shipVia', label: 'Ship Via' },
+  { id: 'shipFrom', label: 'Ship from' },
   { id: 'permit', label: 'Permit no.' }
 ];
 
@@ -126,8 +127,9 @@ function headerDefaults(type) {
       { id: 'date', title: 'Date', print: true, order: 2 },
       { id: 'dueDate', title: 'Due Date', print: true, order: 3 },
       { id: 'shipVia', title: 'Ship Via', print: true, order: 4 },
-      { id: 'permit', title: 'Permit no.', print: true, order: 5 },
-      { id: 'tracking', title: 'Tracking No.', print: false, order: 6 }
+      { id: 'shipFrom', title: 'Ship from', print: true, order: 5 },
+      { id: 'permit', title: 'Permit no.', print: true, order: 6 },
+      { id: 'tracking', title: 'Tracking No.', print: false, order: 7 }
     ];
   }
   const numberTitle = type === 'quote' ? 'Quote No.' : type === 'order' ? 'S.O. No.' : 'Invoice No.';

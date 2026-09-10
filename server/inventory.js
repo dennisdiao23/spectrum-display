@@ -273,6 +273,12 @@ function normalizeItemInput(body, opts) {
   if (!patch || src.cost != null) {
     out.cost = nonNegNumber(src.cost, 'Cost');
   }
+  if (!patch || src.localWarehouseCost != null || src.local_warehouse_cost != null) {
+    out.localWarehouseCost = nonNegNumber(
+      src.localWarehouseCost != null ? src.localWarehouseCost : src.local_warehouse_cost,
+      'Local warehouse cost'
+    );
+  }
   if (!patch || src.dealerNet != null || src.dealer_net != null) {
     out.dealerNet = nonNegNumber(src.dealerNet != null ? src.dealerNet : src.dealer_net, 'Dealer net');
   }
@@ -294,6 +300,7 @@ function normalizeItemInput(body, opts) {
   if (!patch && out.notes == null) out.notes = '';
   if (!patch && out.description == null) out.description = '';
   if (!patch && out.cost == null) out.cost = 0;
+  if (!patch && out.localWarehouseCost == null) out.localWarehouseCost = 0;
   if (!patch && out.dealerNet == null) out.dealerNet = 0;
   if (!patch && out.weight == null) out.weight = 0;
   if (!patch && out.panelW == null) out.panelW = 0;
@@ -329,6 +336,7 @@ function dbFieldsFromInput(input) {
   if (input.lowAt != null) row.low_at = input.lowAt;
   if (input.price != null) row.price = input.price;
   if (input.cost != null) row.cost = input.cost;
+  if (input.localWarehouseCost != null) row.local_warehouse_cost = input.localWarehouseCost;
   if (input.dealerNet != null) row.dealer_net = input.dealerNet;
   if (input.weight != null) row.weight = input.weight;
   if (input.panelW != null) row.panel_w = input.panelW;
@@ -465,6 +473,7 @@ function formatItem(row, brandName, maps, locations) {
     lowAt: lowAt,
     price: Number(row && row.price) || 0,
     cost: Number(row && row.cost) || 0,
+    localWarehouseCost: Number(row && row.local_warehouse_cost) || 0,
     dealerNet: Number(row && row.dealer_net) || 0,
     weight: Number(row && row.weight) || 0,
     panelW: Number(row && row.panel_w) || 0,

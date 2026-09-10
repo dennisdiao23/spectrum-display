@@ -18,7 +18,7 @@
   <script src="/js/address-autocomplete.js"></script>
   <script src="/js/company-chat.js?v=chatmove2"></script>
   <script src="/js/company-crm.js?v=crm8"></script>
-  <script src="/js/print-form.js?v=forms19"></script>
+  <script src="/js/print-form.js?v=forms20"></script>
   <script>
     if ('serviceWorker' in navigator && location.pathname.indexOf('/company') === 0) {
       navigator.serviceWorker.register('/company/sw.js', { scope: '/company' });
@@ -553,6 +553,7 @@
                 <select id="store-lead" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm">
                   <option value="">Default</option>
                   <option value="ships_azusa">Ships from Azusa</option>
+                  <option value="ships_novastar">Ships from NovaStar</option>
                   <option value="incoming">Incoming</option>
                   <option value="built_to_order">Built to order</option>
                   <option value="quote">Request quote</option>
@@ -672,6 +673,7 @@
             <select id="ws-store-lead" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm">
               <option value="">Default</option>
               <option value="ships_azusa">Ships from Azusa</option>
+              <option value="ships_novastar">Ships from NovaStar</option>
               <option value="incoming">Incoming</option>
               <option value="built_to_order">Built to order</option>
               <option value="quote">Request quote</option>
@@ -875,6 +877,7 @@
                       <th class="py-3 px-4 font-medium" data-col="warehouse">Location <span class="dash-col-caret">▾</span><span class="dash-col-grip" aria-hidden="true"></span></th>
                       <th class="py-3 px-4 font-medium" data-col="bin">Bin # <span class="dash-col-caret">▾</span><span class="dash-col-grip" aria-hidden="true"></span></th>
                       <th class="py-3 px-4 font-medium" data-col="cost">Cost <span class="dash-col-caret">▾</span><span class="dash-col-grip" aria-hidden="true"></span></th>
+                      <th class="py-3 px-4 font-medium" data-col="localCost">Local warehouse cost <span class="dash-col-caret">▾</span><span class="dash-col-grip" aria-hidden="true"></span></th>
                       <th class="py-3 px-4 font-medium" data-col="price">Sell price <span class="dash-col-caret">▾</span><span class="dash-col-grip" aria-hidden="true"></span></th>
                       <th class="py-3 px-4 font-medium" data-col="dealer">Dealer net <span class="dash-col-caret">▾</span><span class="dash-col-grip" aria-hidden="true"></span></th>
                       <th class="py-3 px-4 font-medium" data-col="photo">Photo <span class="dash-col-caret">▾</span><span class="dash-col-grip" aria-hidden="true"></span></th>
@@ -939,6 +942,7 @@
                       <h3>Pricing</h3>
                       <dl class="cc-detail-dl">
                         <div><dt>Cost</dt><dd id="inv-detail-cost">—</dd></div>
+                        <div><dt>Local warehouse cost</dt><dd id="inv-detail-local-cost">—</dd></div>
                         <div><dt>Sell price</dt><dd id="inv-detail-price">—</dd></div>
                         <div><dt>Dealer net</dt><dd id="inv-detail-dealer">—</dd></div>
                       </dl>
@@ -1534,6 +1538,14 @@
               <div class="po-field">
                 <label>Due date</label>
                 <input id="po-due" type="date">
+              </div>
+              <div class="po-field">
+                <label>Ship from</label>
+                <select id="po-ship-from">
+                  <option value="">Select ship from</option>
+                  <option value="china_fob">China factory (FOB)</option>
+                  <option value="novastar_vegas">NovaStar Warehouse (Las Vegas)</option>
+                </select>
               </div>
               <div class="po-field">
                 <label>Ship Via</label>
@@ -3271,7 +3283,16 @@
         <section class="cc-sec is-open" id="inv-sec-buy">
           <button type="button" class="cc-sec-btn"><span class="cc-sec-label"><svg class="cc-sec-ico" viewBox="0 0 24 24"><rect x="3" y="6" width="18" height="12" rx="2"/><path d="M3 10h18"/><path d="M7 15h4"/></svg> Purchasing</span> <span class="cc-sec-chevron">▾</span></button>
           <div class="cc-sec-body">
-            <div class="cc-field"><label>Cost ($)</label><input id="inv-cost" form="inv-item-form" type="number" min="0" step="0.01"></div>
+            <div class="cc-field">
+              <label>Cost ($)</label>
+              <input id="inv-cost" form="inv-item-form" type="number" min="0" step="0.01">
+              <p class="cc-note" style="margin-top:0.35rem">China factory FOB.</p>
+            </div>
+            <div class="cc-field">
+              <label>Local warehouse cost ($)</label>
+              <input id="inv-local-cost" form="inv-item-form" type="number" min="0" step="0.01">
+              <p class="cc-note" style="margin-top:0.35rem">NovaStar Warehouse (Las Vegas).</p>
+            </div>
           </div>
         </section>
         <p id="inv-item-msg" class="hidden text-sm px-5 pt-3"></p>
@@ -6497,6 +6518,7 @@
         { id: 'warehouse', label: 'Location' },
         { id: 'bin', label: 'Bin #' },
         { id: 'cost', label: 'Cost' },
+        { id: 'localCost', label: 'Local warehouse cost' },
         { id: 'price', label: 'Sell price' },
         { id: 'dealer', label: 'Dealer net' },
         { id: 'photo', label: 'Photo' },
@@ -6642,7 +6664,7 @@
     };
 
     const DASH_COL_DEFAULTS = {
-      inventory: ['name', 'sku', 'qty', 'warehouse', 'bin', 'cost', 'price'],
+      inventory: ['name', 'sku', 'qty', 'warehouse', 'bin', 'cost', 'localCost', 'price'],
       warehouses: ['name', 'type', 'vendor', 'tracked', 'qty', 'skus'],
       customers: ['company', 'contact', 'email', 'phone', 'balance'],
       sales: ['number', 'customer', 'date', 'status', 'total'],
@@ -6788,7 +6810,7 @@
         sortDir: '',
         widths: fallbackWidths,
         splitLeftPx: keptSplit,
-        schema: dashColKey(table) === 'warehouses' ? 3 : (dashColKey(table) === 'inventory' ? 2 : (dashColKey(table) === 'po-lines' || dashColKey(table) === 'so-lines' ? 1 : 0))
+        schema: dashColKey(table) === 'warehouses' ? 3 : (dashColKey(table) === 'inventory' ? 3 : (dashColKey(table) === 'po-lines' || dashColKey(table) === 'so-lines' ? 1 : 0))
       };
       pinStartLockedInState(table, fallback.order, fallback.hidden);
       if (!saved) {
@@ -6871,6 +6893,16 @@
           sortDir = '';
         }
         schema = 2;
+      }
+      if (dashColKey(table) === 'inventory' && schema < 3) {
+        if (order.indexOf('localCost') === -1) {
+          const costAt = order.indexOf('cost');
+          const at = costAt === -1 ? order.length : costAt + 1;
+          order.splice(at, 0, 'localCost');
+          const drop = hidden.indexOf('localCost');
+          if (drop !== -1) hidden.splice(drop, 1);
+        }
+        schema = 3;
       }
       if (dashColKey(table) === 'warehouses' && schema < 3) {
         const dropStatus = function (list) {
@@ -8103,6 +8135,7 @@
         if (col === 'warehouse') return item.warehouse || '';
         if (col === 'bin') return item.bin || '';
         if (col === 'cost') return Number(item.cost) || 0;
+        if (col === 'localCost') return Number(item.localWarehouseCost) || 0;
         if (col === 'price') return Number(item.price) || 0;
         if (col === 'dealer') return Number(item.dealerNet) || 0;
         if (col === 'photo') return item.image || '';
@@ -8139,6 +8172,7 @@
           warehouse: '<td class="py-3 px-4 text-slate-400">' + esc(item.warehouse || '—') + '</td>',
           bin: '<td class="py-3 px-4 text-slate-400">' + esc(item.bin || '—') + '</td>',
           cost: '<td class="py-3 px-4">' + money(item.cost) + '</td>',
+          localCost: '<td class="py-3 px-4">' + money(item.localWarehouseCost) + '</td>',
           price: '<td class="py-3 px-4">' + money(item.price) + '</td>',
           dealer: '<td class="py-3 px-4">' + money(item.dealerNet) + '</td>',
           website: '<td class="py-3 px-4 text-slate-400">' + site + '</td>',
@@ -9071,6 +9105,7 @@
         ['Weight', item.weight != null ? String(item.weight) : '—'],
         ['Panel size', item.panelW && item.panelH ? (item.panelW + ' × ' + item.panelH) : '—'],
         ['Cost', item.cost != null ? moneyText(item.cost) : '—'],
+        ['Local warehouse cost', item.localWarehouseCost != null ? moneyText(item.localWarehouseCost) : '—'],
         ['Sell price', item.price != null ? moneyText(item.price) : '—'],
         ['Dealer net', item.dealerNet != null ? moneyText(item.dealerNet) : '—'],
         ['Location', item.warehouse || '—'],
@@ -9131,6 +9166,7 @@
         esc(stockStatusLabel(item.status)) + '</span>';
       document.getElementById('inv-detail-low').textContent = item.lowAt != null ? String(item.lowAt) : '—';
       document.getElementById('inv-detail-cost').textContent = money(item.cost);
+      document.getElementById('inv-detail-local-cost').textContent = money(item.localWarehouseCost);
       document.getElementById('inv-detail-price').textContent = money(item.price);
       document.getElementById('inv-detail-dealer').textContent = money(item.dealerNet);
       document.getElementById('inv-detail-brand').textContent = item.brandName || '—';
@@ -9567,7 +9603,7 @@
     }
 
     function invFormSnapshot() {
-      const ids = ['inv-name', 'inv-sku', 'inv-brand', 'inv-unit', 'inv-panel-type', 'inv-packaging-type', 'inv-item-pitch', 'inv-qty-init', 'inv-item-low', 'inv-weight', 'inv-panel-w', 'inv-panel-h', 'inv-item-notes', 'inv-description', 'inv-price', 'inv-dealer-net', 'inv-cost'];
+      const ids = ['inv-name', 'inv-sku', 'inv-brand', 'inv-unit', 'inv-panel-type', 'inv-packaging-type', 'inv-item-pitch', 'inv-qty-init', 'inv-item-low', 'inv-weight', 'inv-panel-w', 'inv-panel-h', 'inv-item-notes', 'inv-description', 'inv-price', 'inv-dealer-net', 'inv-cost', 'inv-local-cost'];
       const vals = ids.map(function (id) {
         const el = document.getElementById(id);
         return el ? String(el.value || '') : '';
@@ -9691,6 +9727,7 @@
       fillInvBrands(item && item.brandId);
       document.getElementById('inv-description').value = (item && item.description) || '';
       document.getElementById('inv-cost').value = item && item.cost != null ? item.cost : '';
+      document.getElementById('inv-local-cost').value = item && item.localWarehouseCost != null ? item.localWarehouseCost : '';
       document.getElementById('inv-dealer-net').value = item && item.dealerNet != null ? item.dealerNet : '';
       document.getElementById('inv-item-pitch').value = (item && item.pitch) || '';
       document.getElementById('inv-unit').value = (item && item.unit) || 'panels';
@@ -12667,6 +12704,30 @@
       const el = document.getElementById('po-vendor');
       return el ? el.value : '';
     }
+    function poCurrentShipFrom() {
+      const el = document.getElementById('po-ship-from');
+      return el ? el.value : '';
+    }
+    function poRateForItem(item, shipFrom) {
+      if (!item) return 0;
+      if (shipFrom === 'novastar_vegas') return Number(item.localWarehouseCost) || 0;
+      return Number(item.cost) || 0;
+    }
+    function applyPoShipFromRates() {
+      const shipFrom = poCurrentShipFrom();
+      document.querySelectorAll('#po-lines .po-line').forEach(function (row, i) {
+        const sel = row.querySelector('[data-line="itemId"]');
+        const itemId = sel && sel.value && sel.value !== '__new__' ? sel.value : '';
+        if (!itemId) return;
+        const item = (inventoryItems || []).find(function (rowItem) { return String(rowItem.id) === String(itemId); });
+        if (!item) return;
+        const nextRate = poRateForItem(item, shipFrom);
+        const rateEl = row.querySelector('[data-line="rate"]');
+        if (rateEl) rateEl.value = nextRate;
+        if (poLineState[i]) poLineState[i].rate = nextRate;
+      });
+      refreshPoTotals();
+    }
     function poHandsDisplay(n) {
       if (n == null || n === '') return '—';
       return Number(n).toLocaleString();
@@ -12777,7 +12838,7 @@
       const rate = row.querySelector('[data-line="rate"]');
       if (sku) sku.value = item.sku || '';
       if (desc) desc.value = item.description || item.name || '';
-      if (rate) rate.value = item.cost != null ? item.cost : 0;
+      if (rate) rate.value = poRateForItem(item, poCurrentShipFrom());
       const hands = poLineHands(item.id);
       const ours = row.querySelector('[data-line="ourHands"]');
       const vendor = row.querySelector('[data-line="vendorHands"]');
@@ -12790,7 +12851,7 @@
           product: item.name || item.sku || '',
           sku: item.sku || '',
           description: item.description || item.name || '',
-          rate: item.cost != null ? item.cost : 0
+          rate: poRateForItem(item, poCurrentShipFrom())
         });
       }
       refreshPoTotals();
@@ -12894,6 +12955,7 @@
       document.getElementById('po-issue').value = src.issueDate || new Date().toISOString().slice(0, 10);
       document.getElementById('po-due').value = src.dueDate || '';
       document.getElementById('po-via').value = src.shipVia || '';
+      document.getElementById('po-ship-from').value = src.shipFrom || '';
       document.getElementById('po-permit').value = src.permitNo || '';
       document.getElementById('po-notes').value = src.notes || '';
       document.getElementById('po-delete-btn').classList.toggle('hidden', !src.id || poReadOnly);
@@ -12925,6 +12987,7 @@
         issueDate: document.getElementById('po-issue').value,
         dueDate: document.getElementById('po-due').value,
         shipVia: document.getElementById('po-via').value.trim(),
+        shipFrom: document.getElementById('po-ship-from').value,
         permitNo: document.getElementById('po-permit').value.trim(),
         notes: document.getElementById('po-notes').value.trim(),
         lines: readPoLines()
@@ -15746,6 +15809,10 @@
         issueDate: form.issueDate,
         dueDate: form.dueDate,
         shipVia: form.shipVia,
+        shipFrom: form.shipFrom,
+        shipFromLabel: form.shipFrom === 'china_fob'
+          ? 'China factory (FOB)'
+          : (form.shipFrom === 'novastar_vegas' ? 'NovaStar Warehouse (Las Vegas)' : ''),
         permitNo: form.permitNo,
         notes: form.notes || '',
         subtotal: total,
@@ -18063,6 +18130,7 @@
       fd.append('brandId', document.getElementById('inv-brand').value);
       fd.append('description', document.getElementById('inv-description').value);
       fd.append('cost', document.getElementById('inv-cost').value);
+      fd.append('localWarehouseCost', document.getElementById('inv-local-cost').value);
       fd.append('dealerNet', document.getElementById('inv-dealer-net').value);
       fd.append('pitch', document.getElementById('inv-item-pitch').value);
       fd.append('unit', document.getElementById('inv-unit').value);
@@ -19035,6 +19103,10 @@
       const id = this.value;
       const c = (poCustomers || []).find(function (row) { return String(row.id) === String(id); });
       document.getElementById('po-ship').value = formatCustomerShip(c);
+    });
+    document.getElementById('po-ship-from').addEventListener('change', function () {
+      if (poReadOnly) return;
+      applyPoShipFromRates();
     });
     document.getElementById('po-add-line').addEventListener('click', function () {
       if (poReadOnly) return;

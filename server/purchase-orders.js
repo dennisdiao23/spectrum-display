@@ -22,6 +22,28 @@ function normalizeStatus(value) {
   return STATUSES.indexOf(s) !== -1 ? s : 'open';
 }
 
+function normalizeShipFrom(value) {
+  const s = String(value || '').trim().toLowerCase();
+  if (s === 'china_fob') return 'china_fob';
+  if (s === 'novastar_vegas') return 'novastar_vegas';
+  return '';
+}
+
+function shipFromLabel(value) {
+  const s = normalizeShipFrom(value);
+  if (s === 'china_fob') return 'China factory (FOB)';
+  if (s === 'novastar_vegas') return 'NovaStar Warehouse (Las Vegas)';
+  return '';
+}
+
+function poRateForItem(item, shipFrom) {
+  const src = item || {};
+  if (normalizeShipFrom(shipFrom) === 'novastar_vegas') {
+    return money(src.localWarehouseCost != null ? src.localWarehouseCost : src.local_warehouse_cost);
+  }
+  return money(src.cost);
+}
+
 function normalizeLine(input, index) {
   const src = input || {};
   const qty = money(src.qty == null ? 1 : src.qty);
@@ -76,6 +98,7 @@ function normalizePo(input) {
     issueDate: trim(src.issueDate || src.issue_date, 20) || todayIso(),
     dueDate: trim(src.dueDate || src.due_date, 20),
     shipVia: trim(src.shipVia || src.ship_via, 80),
+    shipFrom: normalizeShipFrom(src.shipFrom != null ? src.shipFrom : src.ship_from),
     permitNo: trim(src.permitNo || src.permit_no, 80),
     mailingAddress: trim(src.mailingAddress || src.mailing_address, 800),
     shipToCustomerId: src.shipToCustomerId != null ? String(src.shipToCustomerId) : String(src.ship_to_customer_id || ''),
@@ -117,6 +140,8 @@ function formatPo(row, lines) {
     issueDate: row.issue_date || '',
     dueDate: row.due_date || '',
     shipVia: row.ship_via || '',
+    shipFrom: normalizeShipFrom(row.ship_from),
+    shipFromLabel: shipFromLabel(row.ship_from),
     permitNo: row.permit_no || '',
     mailingAddress: row.mailing_address || '',
     shipToCustomerId: row.ship_to_customer_id == null ? '' : String(row.ship_to_customer_id),
@@ -140,6 +165,7 @@ function dbPoFields(input) {
     issue_date: input.issueDate,
     due_date: input.dueDate,
     ship_via: input.shipVia,
+    ship_from: input.shipFrom,
     permit_no: input.permitNo,
     mailing_address: input.mailingAddress,
     ship_to_customer_id: input.shipToCustomerId ? Number(input.shipToCustomerId) : null,
@@ -166,5 +192,8 @@ module.exports = {
   dbPoFields,
   nextPoNumber,
   snapshotFromVendor,
-  todayIso
+  todayIso,
+  normalizeShipFrom,
+  shipFromLabel,
+  poRateForItem
 };

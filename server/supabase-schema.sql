@@ -394,6 +394,7 @@ alter table public.inventory_items add column if not exists sku text not null de
 alter table public.inventory_items add column if not exists description text not null default '';
 alter table public.inventory_items add column if not exists cost double precision not null default 0;
 alter table public.inventory_items add column if not exists dealer_net double precision not null default 0;
+alter table public.inventory_items add column if not exists local_warehouse_cost double precision not null default 0;
 alter table public.inventory_items add column if not exists weight double precision not null default 0;
 alter table public.inventory_items add column if not exists panel_w double precision not null default 0;
 alter table public.inventory_items add column if not exists panel_h double precision not null default 0;
@@ -685,6 +686,7 @@ create table if not exists public.purchase_orders (
   issue_date text not null default '',
   due_date text not null default '',
   ship_via text not null default '',
+  ship_from text not null default '',
   permit_no text not null default '',
   mailing_address text not null default '',
   ship_to_customer_id bigint references public.company_customers(id) on delete set null,
