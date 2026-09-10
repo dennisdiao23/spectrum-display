@@ -6378,6 +6378,10 @@ body.is-pf-dragging.is-pf-col-dragging * {
 .mail-card-actions .cc-leave-yes {
   min-width: 5.5rem;
 }
+.mail-card-actions .cc-leave-yes:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
 .cc-detail-mail-wrap {
   max-height: min(28rem, 55vh);
   overflow: auto;
