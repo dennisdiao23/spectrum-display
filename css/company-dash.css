@@ -6356,15 +6356,15 @@ body.dash-split-lock #crm-pipe-section .crm-board {
 #crm-lead-section .crm-detail-facts .cc-detail-dl > div,
 #crm-pipe-section .crm-detail-facts .cc-detail-dl > div {
   display: flex;
-  flex-direction: column;
-  align-items: stretch;
-  gap: 0.12rem;
-  margin-bottom: 0.5rem;
+  flex-direction: row;
+  align-items: baseline;
+  gap: 0.75rem;
+  margin-bottom: 0.35rem;
 }
 #crm-lead-section .crm-detail-facts .cc-detail-dl dt,
 #crm-pipe-section .crm-detail-facts .cc-detail-dl dt {
   width: auto;
-  flex: none;
+  flex: 0 0 6.5rem;
 }
 #crm-lead-section .crm-detail-facts .cc-detail-dl dd,
 #crm-pipe-section .crm-detail-facts .cc-detail-dl dd {

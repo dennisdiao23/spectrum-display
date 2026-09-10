@@ -14,10 +14,10 @@
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
   <title>Company | Spectrum Display</title>
   <meta name="robots" content="noindex, nofollow" />
-  <link rel="stylesheet" href="/css/company-dash.css?v=crm6" />
+  <link rel="stylesheet" href="/css/company-dash.css?v=crm7" />
   <script src="/js/address-autocomplete.js"></script>
   <script src="/js/company-chat.js?v=chatmove2"></script>
-  <script src="/js/company-crm.js?v=crm6"></script>
+  <script src="/js/company-crm.js?v=crm7"></script>
   <script src="/js/print-form.js?v=forms18"></script>
   <script>
     if ('serviceWorker' in navigator && location.pathname.indexOf('/company') === 0) {
@@ -67,15 +67,15 @@
     #crm-lead-section .crm-detail-facts .cc-detail-dl > div,
     #crm-pipe-section .crm-detail-facts .cc-detail-dl > div {
       display: flex;
-      flex-direction: column;
-      align-items: stretch;
-      gap: 0.12rem;
-      margin-bottom: 0.5rem;
+      flex-direction: row;
+      align-items: baseline;
+      gap: 0.75rem;
+      margin-bottom: 0.35rem;
     }
     #crm-lead-section .crm-detail-facts .cc-detail-dl dt,
     #crm-pipe-section .crm-detail-facts .cc-detail-dl dt {
       width: auto;
-      flex: none;
+      flex: 0 0 6.5rem;
     }
     #crm-lead-section .crm-detail-facts .cc-detail-dl dd,
     #crm-pipe-section .crm-detail-facts .cc-detail-dl dd {
@@ -3466,7 +3466,7 @@
     </a>
   </nav>
 
-  <link rel="stylesheet" href="/css/company-dash.css?v=crm6" />
+  <link rel="stylesheet" href="/css/company-dash.css?v=crm7" />
 
   <script>
     const loginPanel = document.getElementById('login-panel');
