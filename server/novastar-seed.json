@@ -2888,6 +2888,3074 @@
           "url": "https://oss.novastar.tech/uploads/2025/05/MRV416-N-Receiving-Card-Specifications-V1.0.3.pdf"
         }
       ]
+    },
+    {
+      "type": "control",
+      "replacementOnly": false,
+      "pitches": [],
+      "pricePerM2": 0,
+      "priceEach": 0,
+      "cabinetW": 0,
+      "cabinetH": 0,
+      "weightPerM2": 0,
+      "powerAvg": 0,
+      "powerMax": 0,
+      "badge": null,
+      "latency": "0-frame (less than 1 ms)",
+      "hdr": "HDR10 · HLG",
+      "image": "assets/products/novastar/cx40-pro.webp",
+      "gallery": [
+        "assets/products/novastar/cx40-pro-2.webp",
+        "assets/products/novastar/cx40-pro-3.webp",
+        "assets/products/novastar/cx40-pro-4.webp"
+      ],
+      "bestWith": [
+        "indoor-rental",
+        "cob",
+        "fixed-indoor"
+      ],
+      "downloadVersion": "V1.5.0",
+      "downloads": [
+        {
+          "label": "Specifications",
+          "url": "https://oss.novastar.tech/uploads/2025/09/CX40-Pro-LED-Display-Controller-Specifications-V1.5.0.pdf"
+        },
+        {
+          "label": "User Manual",
+          "url": "https://oss.novastar.tech/uploads/2025/09/CX40-Pro-LED-Display-Controller-User-Manual-V1.5.0.pdf"
+        }
+      ],
+      "id": "cx40-pro",
+      "name": "NovaStar CX40 Pro",
+      "model": "CX40 Pro",
+      "family": "COEX",
+      "subtype": "all-in-one",
+      "description": "COEX 5G 4K controller in 2U. Six 5Gbps Neutrik ports load 9 million pixels, plus a 40Gbps QSFP+ for the run to the wall. HDMI 2.0, DP 1.2, and 12G-SDI in — VMP on a 5.5-inch touch LCD.",
+      "maxPixels": 9000000,
+      "outputs": "6× 5Gbps Neutrik · 1× 40Gbps QSFP+",
+      "inputs": "2× HDMI 2.0 · 1× DP 1.2 · 2× 12G-SDI",
+      "bestFor": "4K rental · 5G COEX walls",
+      "chips": [
+        "9M px",
+        "6× 5G",
+        "2U COEX"
+      ],
+      "specTable": [
+        [
+          "Parameter",
+          "Value"
+        ],
+        [
+          "Family",
+          "COEX 5G controller"
+        ],
+        [
+          "Chassis",
+          "2U"
+        ],
+        [
+          "Loading capacity",
+          "9 million pixels"
+        ],
+        [
+          "Ethernet outputs",
+          "6× 5Gbps Neutrik"
+        ],
+        [
+          "Optical",
+          "1× 40Gbps QSFP+"
+        ],
+        [
+          "Key inputs",
+          "2× HDMI 2.0 (IN & LOOP), 1× DP 1.2, 2× 12G-SDI (IN & LOOP)"
+        ],
+        [
+          "Layers",
+          "Up to 3× 4K"
+        ],
+        [
+          "HDR",
+          "HDR10 / HLG"
+        ],
+        [
+          "Control",
+          "VMP · 5.5-inch touch LCD · Genlock"
+        ]
+      ],
+      "sourceUrl": "https://www.novastar.tech/product/detail.html?catid=2&id=48",
+      "features": [
+        {
+          "title": "5G COEX sender",
+          "text": "Six 5Gbps Ethernet ports carry 9 million pixels. One 40Gbps optical port for the long run."
+        },
+        {
+          "title": "4K inputs, three layers",
+          "text": "HDMI 2.0, DP 1.2, and 12G-SDI with loop. Up to three 4K layers in all-in-one mode."
+        },
+        {
+          "title": "VMP on the front panel",
+          "text": "5.5-inch touch LCD. HDR10/HLG, 3D LUT, Dynamic Booster, and 0-frame latency without cutting load."
+        }
+      ],
+      "lead": "COEX 5G 4K controller in 2U. Six 5Gbps Neutrik ports load 9 million pixels, plus a 40Gbps QSFP+ for the run to the wall. HDMI 2.0, DP 1.2, and 12G-SDI in — VMP on a 5.5-inch touch LCD.",
+      "cats": [
+        "control",
+        "all-in-one"
+      ]
+    },
+    {
+      "type": "control",
+      "replacementOnly": false,
+      "pitches": [],
+      "pricePerM2": 0,
+      "priceEach": 0,
+      "cabinetW": 0,
+      "cabinetH": 0,
+      "weightPerM2": 0,
+      "powerAvg": 0,
+      "powerMax": 0,
+      "badge": null,
+      "latency": "",
+      "hdr": "",
+      "image": "assets/products/novastar/mctrl-r5.webp",
+      "gallery": [
+        "assets/products/novastar/mctrl-r5-2.webp",
+        "assets/products/novastar/mctrl-r5-3.webp",
+        "assets/products/novastar/mctrl-r5-4.webp"
+      ],
+      "bestWith": [
+        "indoor-rental",
+        "outdoor-rental"
+      ],
+      "downloadVersion": "V1.0.5",
+      "downloads": [
+        {
+          "label": "Specifications",
+          "url": "https://oss.novastar.tech/uploads/2024/11/MCTRL-R5-LED-Display-Controller-Specifications-V1.0.5.pdf"
+        },
+        {
+          "label": "User Manual",
+          "url": "https://oss.novastar.tech/uploads/2024/11/MCTRL-R5-LED-Display-Controller-User-Manual-V1.0.5.pdf"
+        }
+      ],
+      "id": "mctrl-r5",
+      "name": "NovaStar MCTRL R5",
+      "model": "MCTRL R5",
+      "family": "MCTRL",
+      "subtype": "sending",
+      "description": "Independent sender that can rotate the image at any angle when paired with A8s or A10s Pro cards. Eight Neutrik Gigabit ports, two optical ports, 6G-SDI, HDMI 1.4, and dual-link DVI. Published load 3840×1080@60Hz.",
+      "maxPixels": 4147200,
+      "outputs": "8× Neutrik RJ45 · 2× OPT",
+      "inputs": "6G-SDI · HDMI 1.4 · DL-DVI",
+      "bestFor": "Rotated walls · ultra-wide rental",
+      "chips": [
+        "3840×1080",
+        "8× RJ45",
+        "Rotation"
+      ],
+      "specTable": [
+        [
+          "Parameter",
+          "Value"
+        ],
+        [
+          "Family",
+          "MCTRL sending"
+        ],
+        [
+          "Loading capacity",
+          "3840×1080@60Hz"
+        ],
+        [
+          "Ethernet outputs",
+          "8× Neutrik (NE8FBH) Gigabit"
+        ],
+        [
+          "Optical",
+          "2× OPT (OPT1 = ports 1–8, OPT2 backup)"
+        ],
+        [
+          "Key inputs",
+          "1× 6G-SDI, 1× HDMI 1.4, 1× DL-DVI"
+        ],
+        [
+          "Rotation",
+          "Any angle with A8s / A10s Pro and SmartLCT"
+        ],
+        [
+          "Control",
+          "Ethernet · USB cascade (up to 8) · Genlock"
+        ]
+      ],
+      "sourceUrl": "https://www.novastar.tech/product/detail.html?catid=2&id=25",
+      "features": [
+        {
+          "title": "Image rotation",
+          "text": "First NovaStar sender that rotates the image at any angle when the wall uses A8s or A10s Pro cards."
+        },
+        {
+          "title": "3840×1080 load",
+          "text": "Published capacity 3840×1080@60Hz. Custom resolutions inside that load for ultra-long or ultra-wide walls."
+        },
+        {
+          "title": "Eight copper + fiber",
+          "text": "8× Neutrik Gigabit and 2× optical. 6G-SDI, HDMI 1.4, dual-link DVI, and Genlock."
+        }
+      ],
+      "lead": "Independent sender that can rotate the image at any angle when paired with A8s or A10s Pro cards. Eight Neutrik Gigabit ports, two optical ports, 6G-SDI, HDMI 1.4, and dual-link DVI. Published load 3840×1080@60Hz.",
+      "cats": [
+        "control",
+        "sending"
+      ]
+    },
+    {
+      "type": "control",
+      "replacementOnly": false,
+      "pitches": [],
+      "pricePerM2": 0,
+      "priceEach": 0,
+      "cabinetW": 0,
+      "cabinetH": 0,
+      "weightPerM2": 0,
+      "powerAvg": 0,
+      "powerMax": 0,
+      "badge": null,
+      "latency": "",
+      "hdr": "",
+      "image": "assets/products/novastar/mctrl700.webp",
+      "gallery": [
+        "assets/products/novastar/mctrl700-2.webp",
+        "assets/products/novastar/mctrl700-3.webp",
+        "assets/products/novastar/mctrl700-4.webp"
+      ],
+      "bestWith": [
+        "indoor-rental",
+        "fixed-indoor"
+      ],
+      "downloadVersion": "V1.2.3",
+      "downloads": [
+        {
+          "label": "Specifications",
+          "url": "https://en-website001.oss-us-east-1.aliyuncs.com/Specification/MCTRL700%20LED%20Display%20Controller%20Specifications-V1.2.3.pdf"
+        }
+      ],
+      "id": "mctrl700",
+      "name": "NovaStar MCTRL700",
+      "model": "MCTRL700",
+      "family": "MCTRL",
+      "subtype": "sending",
+      "description": "Independent sender with HDMI 1.3, single-link DVI, and six Gigabit outputs. Published device capacity 1920×1200@60Hz. USB to PC, UART cascade up to 20 units.",
+      "maxPixels": 2304000,
+      "outputs": "6× RJ45",
+      "inputs": "HDMI 1.3 · SL-DVI · audio",
+      "bestFor": "Rental sender · fixed 2K walls",
+      "chips": [
+        "2.3M px",
+        "6× RJ45",
+        "HDMI + DVI"
+      ],
+      "specTable": [
+        [
+          "Parameter",
+          "Value"
+        ],
+        [
+          "Family",
+          "MCTRL sending"
+        ],
+        [
+          "Loading capacity",
+          "1920×1200@60Hz"
+        ],
+        [
+          "Ethernet outputs",
+          "6× Gigabit RJ45 (up to 650,000 px per port)"
+        ],
+        [
+          "Key inputs",
+          "1× HDMI 1.3 (IN & LOOP), 1× SL-DVI (IN & LOOP), audio"
+        ],
+        [
+          "Max width / height",
+          "3840 × 3840 px (custom)"
+        ],
+        [
+          "Control",
+          "USB Type-B · UART cascade up to 20"
+        ]
+      ],
+      "sourceUrl": "https://www.novastar.tech/product/detail.html?catid=2&id=29",
+      "features": [
+        {
+          "title": "Six Gigabit ports",
+          "text": "650,000 pixels per port with port redundancy. HDMI and DVI loop for cascading senders."
+        },
+        {
+          "title": "1920×1200@60Hz load",
+          "text": "Published device capacity 1920×1200@60Hz. Custom resolutions to 3840 wide or 3840 tall."
+        }
+      ],
+      "lead": "Independent sender with HDMI 1.3, single-link DVI, and six Gigabit outputs. Published device capacity 1920×1200@60Hz. USB to PC, UART cascade up to 20 units.",
+      "cats": [
+        "control",
+        "sending"
+      ]
+    },
+    {
+      "type": "control",
+      "replacementOnly": false,
+      "pitches": [],
+      "pricePerM2": 0,
+      "priceEach": 0,
+      "cabinetW": 0,
+      "cabinetH": 0,
+      "weightPerM2": 0,
+      "powerAvg": 0,
+      "powerMax": 0,
+      "badge": null,
+      "latency": "",
+      "hdr": "",
+      "image": "assets/products/novastar/mctrl660.webp",
+      "gallery": [
+        "assets/products/novastar/mctrl660-2.webp",
+        "assets/products/novastar/mctrl660-3.webp",
+        "assets/products/novastar/mctrl660-4.webp"
+      ],
+      "bestWith": [
+        "indoor-rental",
+        "fixed-indoor"
+      ],
+      "downloadVersion": "V1.4.5",
+      "downloads": [
+        {
+          "label": "Specifications",
+          "url": "https://en-website001.oss-us-east-1.aliyuncs.com/Specification/MCTRL660%20LED%20Display%20Controller%20Specifications-V1.4.5.pdf"
+        },
+        {
+          "label": "User Manual",
+          "url": "https://en-website001.oss-us-east-1.aliyuncs.com/Specification/MCTRL660%20LED%20Display%20Controller%20User%20Manual%20V1.4.5.pdf"
+        }
+      ],
+      "id": "mctrl660",
+      "name": "NovaStar MCTRL660",
+      "model": "MCTRL660",
+      "family": "MCTRL",
+      "subtype": "sending",
+      "description": "Four-port independent sender with HDMI 1.3, single-link DVI, and audio. Input up to 1920×1200@60Hz. Front-panel screen configuration without a PC. Not the 660 Pro — no SDI or fiber on this chassis.",
+      "maxPixels": 2304000,
+      "outputs": "4× RJ45",
+      "inputs": "HDMI 1.3 · SL-DVI · audio",
+      "bestFor": "Compact sender · 2K rental",
+      "chips": [
+        "2.3M px",
+        "4× RJ45",
+        "HDMI + DVI"
+      ],
+      "specTable": [
+        [
+          "Parameter",
+          "Value"
+        ],
+        [
+          "Family",
+          "MCTRL sending"
+        ],
+        [
+          "Loading / input",
+          "1920×1200@60Hz"
+        ],
+        [
+          "Ethernet outputs",
+          "4× Gigabit RJ45 (up to 650,000 px per port)"
+        ],
+        [
+          "Key inputs",
+          "1× HDMI 1.3, 1× SL-DVI, audio"
+        ],
+        [
+          "Max width / height",
+          "3840×600@60Hz · 800×2560@60Hz"
+        ],
+        [
+          "Control",
+          "USB Type-B · UART cascade up to 20"
+        ]
+      ],
+      "sourceUrl": "https://www.novastar.tech/product/detail.html?catid=2&id=27",
+      "features": [
+        {
+          "title": "Four copper ports",
+          "text": "Gigabit outputs with port redundancy. HDMI 1.3 and single-link DVI in."
+        },
+        {
+          "title": "Configure without a PC",
+          "text": "NovaStar’s 30-second front-panel screen configuration and manual brightness."
+        },
+        {
+          "title": "Not the 660 Pro",
+          "text": "This SKU is the four-port MCTRL660. The Pro adds SDI and dual 10G fiber — that series is listed separately."
+        }
+      ],
+      "lead": "Four-port independent sender with HDMI 1.3, single-link DVI, and audio. Input up to 1920×1200@60Hz. Front-panel screen configuration without a PC. Not the 660 Pro — no SDI or fiber on this chassis.",
+      "cats": [
+        "control",
+        "sending"
+      ]
+    },
+    {
+      "type": "control",
+      "replacementOnly": false,
+      "pitches": [],
+      "pricePerM2": 0,
+      "priceEach": 0,
+      "cabinetW": 0,
+      "cabinetH": 0,
+      "weightPerM2": 0,
+      "powerAvg": 0,
+      "powerMax": 0,
+      "badge": null,
+      "latency": "",
+      "hdr": "HDR10",
+      "image": "assets/products/novastar/h9.webp",
+      "gallery": [
+        "assets/products/novastar/h9-2.webp",
+        "assets/products/novastar/h9-3.webp"
+      ],
+      "bestWith": [
+        "fixed-indoor",
+        "cob"
+      ],
+      "downloadVersion": "V1.17.0",
+      "downloads": [
+        {
+          "label": "Specifications",
+          "url": "https://en-website001.oss-us-east-1.aliyuncs.com/Specification/H9%20Video%20Wall%20Splicer%20Specifications-V1.17.0.pdf"
+        },
+        {
+          "label": "H Series User Manual",
+          "url": "https://en-website001.oss-us-east-1.aliyuncs.com/Specification/H%20Series%20Video%20Wall%20Splicers%20User%20Manual%20V1.15.0.pdf"
+        },
+        {
+          "label": "H Series Quick Start",
+          "url": "https://oss.novastar.tech/uploads/2020/10/H-Series-Quick-Start-Guide.pdf"
+        }
+      ],
+      "id": "h9",
+      "name": "NovaStar H9",
+      "model": "H9",
+      "family": "H Series",
+      "subtype": "all-in-one",
+      "description": "H Series 9U video wall splicer. Fifteen input slots and five output slots (ten on H9 Enhanced). Up to 65 million pixels on H_20×RJ45 sending cards — the mid chassis between H5 and H15.",
+      "maxPixels": 65000000,
+      "outputs": "5× output cards (10 Enhanced) · HDMI / SDI / DVI or LED sending",
+      "inputs": "15× input cards · HDMI · DP · SDI · IP",
+      "bestFor": "Control room · large splice · fine pitch",
+      "chips": [
+        "65M px",
+        "9U splicer",
+        "15 in · 5 out"
+      ],
+      "specTable": [
+        [
+          "Parameter",
+          "Value"
+        ],
+        [
+          "Family",
+          "H Series splicer"
+        ],
+        [
+          "Chassis",
+          "9U"
+        ],
+        [
+          "Input slots",
+          "15 cards"
+        ],
+        [
+          "Output slots",
+          "5 cards · 10 on H9 Enhanced"
+        ],
+        [
+          "Loading (H_20×RJ45 sending)",
+          "65 million pixels"
+        ],
+        [
+          "Loading (H_4×fiber enhanced)",
+          "130 million pixels (H9) · 260 million pixels (H9 Enhanced)"
+        ],
+        [
+          "Max layers",
+          "80 (H9) · 160 (H9 Enhanced)"
+        ],
+        [
+          "Control",
+          "Web (B/S) · TCP/IP and RS232"
+        ]
+      ],
+      "sourceUrl": "https://www.novastar.tech/product/detail.html?catid=3&id=39",
+      "features": [
+        {
+          "title": "9U H Series chassis",
+          "text": "Fifteen input slots versus H5’s ten. Same modular cards, more load and layers."
+        },
+        {
+          "title": "65 million pixel Ethernet load",
+          "text": "Published H_20×RJ45 sending-card capacity 65 million pixels. Fiber enhanced cards reach 130–260 million pixels."
+        },
+        {
+          "title": "Splicer or LED controller",
+          "text": "Fit HDMI/SDI/DVI output cards or LED sending cards. Browser control, optional redundant PSU."
+        }
+      ],
+      "lead": "H Series 9U video wall splicer. Fifteen input slots and five output slots (ten on H9 Enhanced). Up to 65 million pixels on H_20×RJ45 sending cards — the mid chassis between H5 and H15.",
+      "cats": [
+        "control",
+        "all-in-one"
+      ]
+    },
+    {
+      "type": "control",
+      "replacementOnly": false,
+      "pitches": [],
+      "pricePerM2": 0,
+      "priceEach": 0,
+      "cabinetW": 0,
+      "cabinetH": 0,
+      "weightPerM2": 0,
+      "powerAvg": 0,
+      "powerMax": 0,
+      "badge": null,
+      "latency": "",
+      "hdr": "HDR10",
+      "image": "assets/products/novastar/h15.webp",
+      "gallery": [
+        "assets/products/novastar/h15-2.webp",
+        "assets/products/novastar/h15-3.webp",
+        "assets/products/novastar/h15-4.webp"
+      ],
+      "bestWith": [
+        "fixed-indoor",
+        "cob"
+      ],
+      "downloadVersion": "V1.15.0",
+      "downloads": [
+        {
+          "label": "Specifications",
+          "url": "https://en-website001.oss-us-east-1.aliyuncs.com/Specification/H15%20Video%20Wall%20Splicer%20Specifications-V1.15.0.pdf"
+        },
+        {
+          "label": "H Series User Manual",
+          "url": "https://en-website001.oss-us-east-1.aliyuncs.com/Specification/H%20Series%20Video%20Wall%20Splicers%20User%20Manual%20V1.15.0.pdf"
+        },
+        {
+          "label": "H Series Quick Start",
+          "url": "https://oss.novastar.tech/uploads/2020/10/H-Series-Quick-Start-Guide.pdf"
+        }
+      ],
+      "id": "h15",
+      "name": "NovaStar H15",
+      "model": "H15",
+      "family": "H Series",
+      "subtype": "all-in-one",
+      "description": "H Series 15U video wall splicer. Thirty input slots and ten output slots (sixteen on H15 Enhanced). Up to 130 million pixels on Ethernet sending cards, 208 million on H15 Enhanced.",
+      "maxPixels": 130000000,
+      "outputs": "10× output cards (16 Enhanced) · HDMI / SDI / DVI or LED sending",
+      "inputs": "30× input cards · HDMI · DP · SDI · IP",
+      "bestFor": "Large control room · 8K splice",
+      "chips": [
+        "130M px",
+        "15U splicer",
+        "30 in · 10 out"
+      ],
+      "specTable": [
+        [
+          "Parameter",
+          "Value"
+        ],
+        [
+          "Family",
+          "H Series splicer"
+        ],
+        [
+          "Chassis",
+          "15U"
+        ],
+        [
+          "Input slots",
+          "30 cards"
+        ],
+        [
+          "Output slots",
+          "10 cards · 16 on H15 Enhanced"
+        ],
+        [
+          "Loading (H_20×RJ45 sending)",
+          "130 million pixels (H15) · 208 million pixels (H15 Enhanced)"
+        ],
+        [
+          "Loading (H_4×fiber enhanced)",
+          "260 million pixels (H15) · 416 million pixels (H15 Enhanced)"
+        ],
+        [
+          "Max layers",
+          "160"
+        ],
+        [
+          "Control",
+          "Web (B/S) · TCP/IP and RS232 · touch panel"
+        ]
+      ],
+      "sourceUrl": "https://www.novastar.tech/product/detail.html?catid=3&id=39",
+      "features": [
+        {
+          "title": "15U H Series chassis",
+          "text": "Thirty input slots and ten (or sixteen Enhanced) output slots — the hall-scale H splicer."
+        },
+        {
+          "title": "130 million pixel Ethernet load",
+          "text": "Published H_20×RJ45 capacity 130 million pixels, 208 million on H15 Enhanced. Fiber enhanced cards reach 260–416 million pixels."
+        }
+      ],
+      "lead": "H Series 15U video wall splicer. Thirty input slots and ten output slots (sixteen on H15 Enhanced). Up to 130 million pixels on Ethernet sending cards, 208 million on H15 Enhanced.",
+      "cats": [
+        "control",
+        "all-in-one"
+      ]
+    },
+    {
+      "type": "control",
+      "replacementOnly": false,
+      "pitches": [],
+      "pricePerM2": 0,
+      "priceEach": 0,
+      "cabinetW": 0,
+      "cabinetH": 0,
+      "weightPerM2": 0,
+      "powerAvg": 0,
+      "powerMax": 0,
+      "badge": null,
+      "latency": "",
+      "hdr": "HDR10",
+      "image": "",
+      "gallery": [],
+      "bestWith": [
+        "fixed-indoor",
+        "cob"
+      ],
+      "downloadVersion": "V1.8.0",
+      "downloads": [
+        {
+          "label": "Specifications",
+          "url": "https://en-website001.oss-us-east-1.aliyuncs.com/Specification/H20%20Video%20Wall%20Splicer%20Specifications-V1.8.0.pdf"
+        },
+        {
+          "label": "H Series User Manual",
+          "url": "https://en-website001.oss-us-east-1.aliyuncs.com/Specification/H%20Series%20Video%20Wall%20Splicers%20User%20Manual%20V1.15.0.pdf"
+        },
+        {
+          "label": "H Series Quick Start",
+          "url": "https://oss.novastar.tech/uploads/2022/07/H-Series-Quick-Start-Guide.pdf"
+        }
+      ],
+      "id": "h20",
+      "name": "NovaStar H20",
+      "model": "H20",
+      "family": "H Series",
+      "subtype": "all-in-one",
+      "description": "H Series 20U video wall splicer. Forty input slots and twenty output slots. Up to 260 million pixels on Ethernet sending cards, 520 million on fiber enhanced cards — the largest H chassis.",
+      "maxPixels": 260000000,
+      "outputs": "20× output cards · HDMI / SDI / DVI or LED sending",
+      "inputs": "40× input cards · HDMI · DP · SDI · IP",
+      "bestFor": "Stadium · command center · 8K+",
+      "chips": [
+        "260M px",
+        "20U splicer",
+        "40 in · 20 out"
+      ],
+      "specTable": [
+        [
+          "Parameter",
+          "Value"
+        ],
+        [
+          "Family",
+          "H Series splicer"
+        ],
+        [
+          "Chassis",
+          "20U"
+        ],
+        [
+          "Input slots",
+          "40 cards"
+        ],
+        [
+          "Output slots",
+          "20 cards"
+        ],
+        [
+          "Loading (H_20×RJ45 sending)",
+          "260 million pixels"
+        ],
+        [
+          "Loading (H_4×fiber enhanced)",
+          "520 million pixels"
+        ],
+        [
+          "Max layers",
+          "320"
+        ],
+        [
+          "Control",
+          "Web (B/S) · TCP/IP and RS232 · touch panel"
+        ]
+      ],
+      "sourceUrl": "https://www.novastar.tech/product/detail.html?catid=3&id=39",
+      "features": [
+        {
+          "title": "Largest H Series chassis",
+          "text": "Forty input slots and twenty output slots in 20U. Optional redundant PSU and touch-panel control."
+        },
+        {
+          "title": "260 million pixel Ethernet load",
+          "text": "Published H_20×RJ45 capacity 260 million pixels. Fiber enhanced sending cards reach 520 million pixels."
+        }
+      ],
+      "lead": "H Series 20U video wall splicer. Forty input slots and twenty output slots. Up to 260 million pixels on Ethernet sending cards, 520 million on fiber enhanced cards — the largest H chassis.",
+      "cats": [
+        "control",
+        "all-in-one"
+      ]
+    },
+    {
+      "type": "control",
+      "replacementOnly": false,
+      "pitches": [],
+      "pricePerM2": 0,
+      "priceEach": 0,
+      "cabinetW": 0,
+      "cabinetH": 0,
+      "weightPerM2": 0,
+      "powerAvg": 0,
+      "powerMax": 0,
+      "badge": null,
+      "latency": "",
+      "hdr": "",
+      "image": "assets/products/novastar/novapro-uhd-jr.webp",
+      "gallery": [
+        "assets/products/novastar/novapro-uhd-jr-2.webp",
+        "assets/products/novastar/novapro-uhd-jr-3.webp",
+        "assets/products/novastar/novapro-uhd-jr-4.webp"
+      ],
+      "bestWith": [
+        "indoor-rental",
+        "cob",
+        "fixed-indoor"
+      ],
+      "downloadVersion": "V1.6.0",
+      "downloads": [
+        {
+          "label": "Specifications",
+          "url": "https://en-website001.oss-us-east-1.aliyuncs.com/Specification/NovaPro%20UHD%20Jr%20All-in-One%20Controller%20Specifications-V1.6.0.pdf"
+        },
+        {
+          "label": "User Manual",
+          "url": "https://en-website001.oss-us-east-1.aliyuncs.com/Specification/NovaPro%20UHD%20Jr%20All-in-One%20Controller%20User%20Manual-V1.6.0.pdf"
+        },
+        {
+          "label": "Quick Start Guide",
+          "url": "https://oss.novastar.tech/uploads/2024/07/NovaPro-UHD-Jr-All-in-One-Controller-Quick-Start-Guide-V1.5.0.pdf"
+        }
+      ],
+      "id": "novapro-uhd-jr",
+      "name": "NovaStar NovaPro UHD Jr",
+      "model": "NovaPro UHD Jr",
+      "family": "NovaPro",
+      "subtype": "all-in-one",
+      "description": "All-in-one 4K processor and sender. Sixteen Neutrik Gigabit ports load 10.4 million pixels, plus four 10G optical ports. DP 1.2, HDMI 2.0, four DVI, and dual 12G-SDI with loop.",
+      "maxPixels": 10400000,
+      "outputs": "16× Neutrik RJ45 · 4× 10G OPT",
+      "inputs": "DP 1.2 · HDMI 2.0 · 4× DVI · 2× 12G-SDI",
+      "bestFor": "Stage · 4K rental · fine pitch",
+      "chips": [
+        "10.4M px",
+        "16× RJ45",
+        "4K all-in-one"
+      ],
+      "specTable": [
+        [
+          "Parameter",
+          "Value"
+        ],
+        [
+          "Family",
+          "NovaPro all-in-one"
+        ],
+        [
+          "Loading capacity",
+          "10.4 million pixels"
+        ],
+        [
+          "Ethernet outputs",
+          "16× Neutrik Gigabit"
+        ],
+        [
+          "Optical",
+          "4× 10G OPT (copy / hot backup)"
+        ],
+        [
+          "Key inputs",
+          "1× DP 1.2, 1× HDMI 2.0 (loop), 4× DVI, 2× 12G-SDI (loop)"
+        ],
+        [
+          "Max width / height",
+          "16,384 × 8,192 px"
+        ],
+        [
+          "Control",
+          "V-Can · web"
+        ]
+      ],
+      "sourceUrl": "https://www.novastar.tech/product/detail.html?catid=3&id=36",
+      "features": [
+        {
+          "title": "Processor + 16-port sender",
+          "text": "10.4 million pixel load on sixteen Neutrik ports. Four 10G optical ports for copy or hot backup."
+        },
+        {
+          "title": "4K×2K@60Hz processing",
+          "text": "Also publishes 8K×1K@60Hz. HDMI 2.0, DP 1.2, dual 12G-SDI, and DVI mosaic."
+        }
+      ],
+      "lead": "All-in-one 4K processor and sender. Sixteen Neutrik Gigabit ports load 10.4 million pixels, plus four 10G optical ports. DP 1.2, HDMI 2.0, four DVI, and dual 12G-SDI with loop.",
+      "cats": [
+        "control",
+        "all-in-one"
+      ]
+    },
+    {
+      "type": "control",
+      "replacementOnly": false,
+      "pitches": [],
+      "pricePerM2": 0,
+      "priceEach": 0,
+      "cabinetW": 0,
+      "cabinetH": 0,
+      "weightPerM2": 0,
+      "powerAvg": 0,
+      "powerMax": 0,
+      "badge": null,
+      "latency": "",
+      "hdr": "",
+      "image": "assets/products/novastar/vunit-3000.webp",
+      "gallery": [
+        "assets/products/novastar/vunit-3000-2.webp",
+        "assets/products/novastar/vunit-3000-3.webp",
+        "assets/products/novastar/vunit-3000-4.webp"
+      ],
+      "bestWith": [
+        "fixed-indoor"
+      ],
+      "downloadVersion": "V1.1.0",
+      "downloads": [
+        {
+          "label": "Specifications",
+          "url": "https://oss.novastar.tech/uploads/2025/06/Vunit-3000-Professional-Control-Processor-Specifications-V1.1.0.pdf"
+        },
+        {
+          "label": "User Manual",
+          "url": "https://oss.novastar.tech/uploads/2025/06/Vunit3000-Professional-Control-Processor-User-Manual-V1.0.0.pdf"
+        }
+      ],
+      "id": "vunit-3000",
+      "name": "NovaStar Vunit 3000",
+      "model": "Vunit 3000",
+      "family": "Vunit",
+      "subtype": "all-in-one",
+      "description": "Modular control processor for rooms that need relays, IR, COM, and HDMI routing alongside the wall. Card options cover 12× relay, 7× COM (RS232/485/DMX), and 4× HDMI 2.0 in / 3× HDMI 2.0 out.",
+      "maxPixels": 0,
+      "outputs": "Modular · HDMI 2.0 · relay · IR · COM",
+      "inputs": "Modular · HDMI 2.0 · COM · Ethernet · I/O",
+      "bestFor": "Control room · show control",
+      "chips": [
+        "Modular",
+        "HDMI 2.0",
+        "Relay / IR"
+      ],
+      "specTable": [
+        [
+          "Parameter",
+          "Value"
+        ],
+        [
+          "Family",
+          "Vunit control processor"
+        ],
+        [
+          "Control card",
+          "COM, 3× RELAY OUT, 2× I/O, 9× IR OUT, CAN, USB 2.0, Ethernet"
+        ],
+        [
+          "Relay card",
+          "12× RELAY + 6× I/O + 3× IR"
+        ],
+        [
+          "COM card",
+          "7× COM · RS232 / RS485 / RS422 / DMX512 / Modbus"
+        ],
+        [
+          "HDMI card",
+          "4× HDMI 2.0 in · 3× HDMI 2.0 out · 3.5 mm audio"
+        ]
+      ],
+      "sourceUrl": "https://www.novastar.tech/product/detail.html?catid=3&id=40",
+      "features": [
+        {
+          "title": "Show control, not just pixels",
+          "text": "Relays, IR, COM, and HDMI cards in one chassis so the room and the wall share a controller."
+        },
+        {
+          "title": "Modular cards",
+          "text": "Published cards include 12× relay, 7× COM with DMX512, and HDMI 2.0 I/O."
+        }
+      ],
+      "lead": "Modular control processor for rooms that need relays, IR, COM, and HDMI routing alongside the wall. Card options cover 12× relay, 7× COM (RS232/485/DMX), and 4× HDMI 2.0 in / 3× HDMI 2.0 out.",
+      "cats": [
+        "control",
+        "all-in-one"
+      ]
+    },
+    {
+      "type": "control",
+      "replacementOnly": false,
+      "pitches": [],
+      "pricePerM2": 0,
+      "priceEach": 0,
+      "cabinetW": 0,
+      "cabinetH": 0,
+      "weightPerM2": 0,
+      "powerAvg": 0,
+      "powerMax": 0,
+      "badge": null,
+      "latency": "",
+      "hdr": "HDR10 · HLG",
+      "image": "",
+      "gallery": [],
+      "bestWith": [
+        "indoor-rental",
+        "cob"
+      ],
+      "downloadVersion": "V2.1.0",
+      "downloads": [
+        {
+          "label": "Specifications",
+          "url": "https://oss.novastar.tech/uploads/2021/08/HDR-Master-4K-Specifications-V2.1.0.pdf"
+        },
+        {
+          "label": "User Manual",
+          "url": "https://oss.novastar.tech/uploads/2021/08/HDR-Master-4K-Video-Processor-User-Manual-V2.1.0.pdf"
+        }
+      ],
+      "id": "hdr-master-4k",
+      "name": "NovaStar HDR Master 4K",
+      "model": "HDR Master 4K",
+      "family": "HDR Master",
+      "subtype": "all-in-one",
+      "description": "4K video processor that converts SDR to HDR. HDMI 2.0, DP 1.2, and four 12G-SDI in. Output cards: HDMI 2.0 plus four 10G fiber, or four 12G-SDI plus HDMI 2.0.",
+      "maxPixels": 0,
+      "outputs": "HDMI 2.0 · 4× 10G OPT or 4× 12G-SDI",
+      "inputs": "HDMI 2.0 · DP 1.2 · 4× 12G-SDI",
+      "bestFor": "HDR grade · 4K program feed",
+      "chips": [
+        "4K HDR",
+        "HDMI + SDI",
+        "SDR→HDR"
+      ],
+      "specTable": [
+        [
+          "Parameter",
+          "Value"
+        ],
+        [
+          "Family",
+          "HDR Master video processor"
+        ],
+        [
+          "Inputs",
+          "1× HDMI 2.0, 1× DP 1.2, 4× 12G-SDI"
+        ],
+        [
+          "Input resolution",
+          "Up to 4K×2K@60Hz or 8K×1K@60Hz"
+        ],
+        [
+          "Output card A",
+          "1× HDMI 2.0 + 4× 10G optical (OPT copies HDMI)"
+        ],
+        [
+          "Output card B",
+          "4× 12G-SDI + 1× HDMI 2.0"
+        ],
+        [
+          "HDR",
+          "HDR10 / HLG"
+        ]
+      ],
+      "sourceUrl": "https://www.novastar.tech/product/detail.html?catid=3&id=41",
+      "features": [
+        {
+          "title": "SDR to HDR",
+          "text": "Analyzes the SDR program and fills missing highlight detail so the wall can run HDR10."
+        },
+        {
+          "title": "4K I/O",
+          "text": "HDMI 2.0, DP 1.2, and 12G-SDI in. Fiber or SDI output cards for the send path."
+        }
+      ],
+      "lead": "4K video processor that converts SDR to HDR. HDMI 2.0, DP 1.2, and four 12G-SDI in. Output cards: HDMI 2.0 plus four 10G fiber, or four 12G-SDI plus HDMI 2.0.",
+      "cats": [
+        "control",
+        "all-in-one"
+      ]
+    },
+    {
+      "type": "control",
+      "replacementOnly": false,
+      "pitches": [],
+      "pricePerM2": 0,
+      "priceEach": 0,
+      "cabinetW": 0,
+      "cabinetH": 0,
+      "weightPerM2": 0,
+      "powerAvg": 0,
+      "powerMax": 0,
+      "badge": null,
+      "latency": "",
+      "hdr": "",
+      "image": "assets/products/novastar/et1s-g.webp",
+      "gallery": [
+        "assets/products/novastar/et1s-g-2.webp",
+        "assets/products/novastar/et1s-g-3.webp",
+        "assets/products/novastar/et1s-g-4.webp"
+      ],
+      "bestWith": [
+        "indoor-rental",
+        "fixed-indoor"
+      ],
+      "downloadVersion": "V1.3.1",
+      "downloads": [
+        {
+          "label": "Specifications",
+          "url": "https://en-website001.oss-us-east-1.aliyuncs.com/Specification/ET1S-G%20Media%20Server%20Specifications-V1.3.1.pdf"
+        },
+        {
+          "label": "Quick Start Guide",
+          "url": "https://oss.novastar.tech/uploads/2024/08/ET1S-G-Media-Server-Quick-Start-Guide-V1.0.0.pdf"
+        }
+      ],
+      "family": "ET",
+      "subtype": "playback",
+      "bestFor": "Media server · playback",
+      "sourceUrl": "https://www.novastar.tech/product/detail.html?catid=3&id=38",
+      "id": "et1s-g",
+      "name": "NovaStar ET1S-G",
+      "model": "ET1S-G",
+      "description": "Entry ET media server. One 4096×2160@60Hz output, 32 GB DDR5, 5th-gen AMD Ryzen, 250 GB M.2 SSD. Kompass playback software is separate — this SKU is the hardware.",
+      "maxPixels": 8847360,
+      "outputs": "1× 4096×2160@60Hz",
+      "inputs": "Media server · Kompass playback",
+      "chips": [
+        "1× 4K",
+        "32 GB",
+        "ET1S-G"
+      ],
+      "specTable": [
+        [
+          "Parameter",
+          "Value"
+        ],
+        [
+          "Family",
+          "ET media server"
+        ],
+        [
+          "Loading capacity",
+          "1× 4096×2160@60Hz"
+        ],
+        [
+          "Memory",
+          "32 GB DDR5"
+        ],
+        [
+          "CPU",
+          "5th Gen AMD Ryzen"
+        ],
+        [
+          "Storage",
+          "250 GB M.2 SSD"
+        ],
+        [
+          "Graphics",
+          "AMD5600HB"
+        ],
+        [
+          "Decoding",
+          "1× 4K2K@60fps or 4× 2K1K@60fps"
+        ],
+        [
+          "OS",
+          "Windows 10 Enterprise LTSC"
+        ]
+      ],
+      "features": [
+        {
+          "title": "Single 4K output",
+          "text": "Published loading 1× 4096×2160@60Hz. Four mixing layers plus audio."
+        },
+        {
+          "title": "Hardware only",
+          "text": "Kompass FX software is not sold as a catalog SKU here. Order the ET1S-G chassis."
+        }
+      ],
+      "lead": "Entry ET media server. One 4096×2160@60Hz output, 32 GB DDR5, 5th-gen AMD Ryzen, 250 GB M.2 SSD. Kompass playback software is separate — this SKU is the hardware.",
+      "cats": [
+        "control",
+        "playback"
+      ]
+    },
+    {
+      "type": "control",
+      "replacementOnly": false,
+      "pitches": [],
+      "pricePerM2": 0,
+      "priceEach": 0,
+      "cabinetW": 0,
+      "cabinetH": 0,
+      "weightPerM2": 0,
+      "powerAvg": 0,
+      "powerMax": 0,
+      "badge": null,
+      "latency": "",
+      "hdr": "",
+      "image": "assets/products/novastar/et2s-g.webp",
+      "gallery": [
+        "assets/products/novastar/et2s-g-2.webp",
+        "assets/products/novastar/et2s-g-3.webp",
+        "assets/products/novastar/et2s-g-4.webp"
+      ],
+      "bestWith": [
+        "indoor-rental",
+        "fixed-indoor"
+      ],
+      "downloadVersion": "V1.3.2",
+      "downloads": [
+        {
+          "label": "Specifications",
+          "url": "https://en-website001.oss-us-east-1.aliyuncs.com/Specification/ET2S-G%20Media%20Server%20Specifications-V1.3.2.pdf"
+        }
+      ],
+      "family": "ET",
+      "subtype": "playback",
+      "bestFor": "Media server · playback",
+      "sourceUrl": "https://www.novastar.tech/product/detail.html?catid=3&id=38",
+      "id": "et2s-g",
+      "name": "NovaStar ET2S-G",
+      "model": "ET2S-G",
+      "description": "ET media server with two 4096×2160@60Hz outputs. 32 GB DDR5, 12th-gen Intel Core i5-12400, 500 GB M.2 SSD.",
+      "maxPixels": 17694720,
+      "outputs": "2× 4096×2160@60Hz",
+      "inputs": "Media server · Kompass playback",
+      "chips": [
+        "2× 4K",
+        "32 GB",
+        "ET2S-G"
+      ],
+      "specTable": [
+        [
+          "Parameter",
+          "Value"
+        ],
+        [
+          "Family",
+          "ET media server"
+        ],
+        [
+          "Loading capacity",
+          "2× 4096×2160@60Hz"
+        ],
+        [
+          "Memory",
+          "32 GB DDR5"
+        ],
+        [
+          "CPU",
+          "12th Gen Intel Core i5-12400"
+        ],
+        [
+          "Storage",
+          "500 GB M.2 SSD"
+        ],
+        [
+          "Graphics",
+          "HPGT400"
+        ],
+        [
+          "Decoding",
+          "1× 8K2K@60fps or 2× 4K2K@60fps"
+        ],
+        [
+          "OS",
+          "Windows 10 Enterprise LTSC"
+        ]
+      ],
+      "features": [
+        {
+          "title": "Dual 4K output",
+          "text": "Published loading 2× 4096×2160@60Hz."
+        }
+      ],
+      "lead": "ET media server with two 4096×2160@60Hz outputs. 32 GB DDR5, 12th-gen Intel Core i5-12400, 500 GB M.2 SSD.",
+      "cats": [
+        "control",
+        "playback"
+      ]
+    },
+    {
+      "type": "control",
+      "replacementOnly": false,
+      "pitches": [],
+      "pricePerM2": 0,
+      "priceEach": 0,
+      "cabinetW": 0,
+      "cabinetH": 0,
+      "weightPerM2": 0,
+      "powerAvg": 0,
+      "powerMax": 0,
+      "badge": null,
+      "latency": "",
+      "hdr": "",
+      "image": "assets/products/novastar/et4s-g.webp",
+      "gallery": [
+        "assets/products/novastar/et4s-g-2.webp",
+        "assets/products/novastar/et4s-g-3.webp",
+        "assets/products/novastar/et4s-g-4.webp"
+      ],
+      "bestWith": [
+        "indoor-rental",
+        "fixed-indoor"
+      ],
+      "downloadVersion": "V1.4.1",
+      "downloads": [
+        {
+          "label": "Specifications",
+          "url": "https://en-website001.oss-us-east-1.aliyuncs.com/Specification/ET4S-G%20Media%20Server%20Specifications-V1.4.1.pdf"
+        }
+      ],
+      "family": "ET",
+      "subtype": "playback",
+      "bestFor": "Media server · playback",
+      "sourceUrl": "https://www.novastar.tech/product/detail.html?catid=3&id=38",
+      "id": "et4s-g",
+      "name": "NovaStar ET4S-G",
+      "model": "ET4S-G",
+      "description": "ET media server with four 5120×2880@60Hz outputs. 64 GB DDR4, 12th-gen Intel Core i7-12700, frame-sync mosaic with a sync card.",
+      "maxPixels": 58982400,
+      "outputs": "4× 5120×2880@60Hz",
+      "inputs": "Media server · Kompass playback",
+      "chips": [
+        "4× 5K",
+        "64 GB",
+        "ET4S-G"
+      ],
+      "specTable": [
+        [
+          "Parameter",
+          "Value"
+        ],
+        [
+          "Family",
+          "ET media server"
+        ],
+        [
+          "Loading capacity",
+          "4× 5120×2880@60Hz"
+        ],
+        [
+          "Memory",
+          "64 GB DDR4"
+        ],
+        [
+          "CPU",
+          "12th Gen Intel Core i7-12700"
+        ],
+        [
+          "Storage",
+          "250 GB M.2 system + 1 TB M.2 storage"
+        ],
+        [
+          "Graphics",
+          "MPG2000 / MPG2200"
+        ],
+        [
+          "Frame sync mosaic",
+          "With sync card"
+        ],
+        [
+          "OS",
+          "Windows 10 Enterprise LTSC"
+        ]
+      ],
+      "features": [
+        {
+          "title": "Four 5K outputs",
+          "text": "Published loading 4× 5120×2880@60Hz. Frame-sync mosaic when a sync card is fitted."
+        }
+      ],
+      "lead": "ET media server with four 5120×2880@60Hz outputs. 64 GB DDR4, 12th-gen Intel Core i7-12700, frame-sync mosaic with a sync card.",
+      "cats": [
+        "control",
+        "playback"
+      ]
+    },
+    {
+      "type": "control",
+      "replacementOnly": false,
+      "pitches": [],
+      "pricePerM2": 0,
+      "priceEach": 0,
+      "cabinetW": 0,
+      "cabinetH": 0,
+      "weightPerM2": 0,
+      "powerAvg": 0,
+      "powerMax": 0,
+      "badge": null,
+      "latency": "",
+      "hdr": "",
+      "image": "assets/products/novastar/et16s-g.webp",
+      "gallery": [
+        "assets/products/novastar/et16s-g-2.webp",
+        "assets/products/novastar/et16s-g-3.webp",
+        "assets/products/novastar/et16s-g-4.webp"
+      ],
+      "bestWith": [
+        "indoor-rental",
+        "fixed-indoor"
+      ],
+      "downloadVersion": "V1.4.1",
+      "downloads": [
+        {
+          "label": "Specifications",
+          "url": "https://en-website001.oss-us-east-1.aliyuncs.com/Specification/ET16S-G%20Media%20Server%20Specifications-V1.4.1.pdf"
+        }
+      ],
+      "family": "ET",
+      "subtype": "playback",
+      "bestFor": "Media server · playback",
+      "sourceUrl": "https://www.novastar.tech/product/detail.html?catid=3&id=38",
+      "id": "et16s-g",
+      "name": "NovaStar ET16S-G",
+      "model": "ET16S-G",
+      "description": "Flagship ET media server. Published loading from 8× to 12× 5120×2880@60Hz depending on graphics-card fit (including 2A4 / 3A4 variants). Dual Xeon Gold options on the larger chassis.",
+      "maxPixels": 0,
+      "outputs": "8×–12× 5120×2880@60Hz (variant)",
+      "inputs": "Media server · Kompass playback",
+      "chips": [
+        "8–12× 5K",
+        "Xeon",
+        "ET16S-G"
+      ],
+      "specTable": [
+        [
+          "Parameter",
+          "Value"
+        ],
+        [
+          "Family",
+          "ET media server"
+        ],
+        [
+          "Loading capacity",
+          "8× 5120×2880@60Hz · 12× 5120×2880@60Hz on 3-GPU variants"
+        ],
+        [
+          "CPU",
+          "1× or 2× Intel Xeon Gold (variant)"
+        ],
+        [
+          "Graphics",
+          "HPG4000 / HPGA4000 · 2× or 3× GPU variants"
+        ],
+        [
+          "Frame sync mosaic",
+          "Yes"
+        ],
+        [
+          "OS",
+          "Windows 10 Enterprise LTSC"
+        ]
+      ],
+      "features": [
+        {
+          "title": "Multi-output flagship",
+          "text": "Official listing shows 8× and 12× 5120×2880@60Hz loading on ET16S-G variants. Confirm GPU fit when quoting."
+        }
+      ],
+      "lead": "Flagship ET media server. Published loading from 8× to 12× 5120×2880@60Hz depending on graphics-card fit (including 2A4 / 3A4 variants). Dual Xeon Gold options on the larger chassis.",
+      "cats": [
+        "control",
+        "playback"
+      ]
+    },
+    {
+      "type": "control",
+      "replacementOnly": false,
+      "pitches": [],
+      "pricePerM2": 0,
+      "priceEach": 0,
+      "cabinetW": 0,
+      "cabinetH": 0,
+      "weightPerM2": 0,
+      "powerAvg": 0,
+      "powerMax": 0,
+      "badge": null,
+      "latency": "",
+      "hdr": "",
+      "image": "assets/products/novastar/mg420.webp",
+      "gallery": [
+        "assets/products/novastar/mg420-2.webp",
+        "assets/products/novastar/mg420-3.webp",
+        "assets/products/novastar/mg420-4.webp"
+      ],
+      "bestWith": [
+        "fixed-indoor"
+      ],
+      "downloadVersion": "V3.2.0",
+      "downloads": [
+        {
+          "label": "2K Specifications",
+          "url": "https://oss.novastar.tech/uploads/2024/07/MG-Series-2K-Distributed-Processors-Specifications-V1.0.0.pdf"
+        },
+        {
+          "label": "4K Specifications",
+          "url": "https://oss.novastar.tech/uploads/2024/07/MG-Series-4K-Distributed-Processors-Specifications-V2.1.0.pdf"
+        },
+        {
+          "label": "User Manual",
+          "url": "https://oss.novastar.tech/uploads/2024/07/MG-Series-Distributed-Processors-User-Manual-V3.2.0.pdf"
+        }
+      ],
+      "id": "mg420",
+      "name": "NovaStar MG420",
+      "model": "MG420",
+      "family": "MG",
+      "subtype": "all-in-one",
+      "description": "4K MG encoder. DP 1.2 and HDMI 2.0 in, LAN/PoE plus optical, third-party ports (RS232/485, IR, I/O, relay). Encodes video onto the MG network.",
+      "maxPixels": 0,
+      "outputs": "LAN/PoE · OPT",
+      "inputs": "DP 1.2 · HDMI 2.0 · audio",
+      "bestFor": "AV over IP · distributed walls",
+      "chips": [
+        "4K encoder",
+        "DP + HDMI",
+        "PoE"
+      ],
+      "specTable": [
+        [
+          "Parameter",
+          "Value"
+        ],
+        [
+          "Family",
+          "MG AV-over-IP"
+        ],
+        [
+          "Role",
+          "4K encoder"
+        ],
+        [
+          "Video",
+          "1× DP 1.2 IN · 1× HDMI 2.0 IN"
+        ],
+        [
+          "Network",
+          "1× LAN/PoE · 1× OPT"
+        ],
+        [
+          "USB",
+          "1× USB-A · 1× USB-B"
+        ],
+        [
+          "Third-party",
+          "RS232, RS485, IR in/out, I/O, relay"
+        ]
+      ],
+      "sourceUrl": "https://www.novastar.tech/product/detail.html?catid=3&id=37",
+      "features": [
+        {
+          "title": "MG distributed processor",
+          "text": "4K MG encoder. DP 1.2 and HDMI 2.0 in, LAN/PoE plus optical, third-party ports (RS232/485, IR, I/O, relay). Encodes video onto the MG network."
+        }
+      ],
+      "lead": "4K MG encoder. DP 1.2 and HDMI 2.0 in, LAN/PoE plus optical, third-party ports (RS232/485, IR, I/O, relay). Encodes video onto the MG network.",
+      "cats": [
+        "control",
+        "all-in-one"
+      ]
+    },
+    {
+      "type": "control",
+      "replacementOnly": false,
+      "pitches": [],
+      "pricePerM2": 0,
+      "priceEach": 0,
+      "cabinetW": 0,
+      "cabinetH": 0,
+      "weightPerM2": 0,
+      "powerAvg": 0,
+      "powerMax": 0,
+      "badge": null,
+      "latency": "",
+      "hdr": "",
+      "image": "assets/products/novastar/mg421.webp",
+      "gallery": [
+        "assets/products/novastar/mg421-2.webp",
+        "assets/products/novastar/mg421-3.webp",
+        "assets/products/novastar/mg421-4.webp"
+      ],
+      "bestWith": [
+        "fixed-indoor"
+      ],
+      "downloadVersion": "V3.2.0",
+      "downloads": [
+        {
+          "label": "2K Specifications",
+          "url": "https://oss.novastar.tech/uploads/2024/07/MG-Series-2K-Distributed-Processors-Specifications-V1.0.0.pdf"
+        },
+        {
+          "label": "4K Specifications",
+          "url": "https://oss.novastar.tech/uploads/2024/07/MG-Series-4K-Distributed-Processors-Specifications-V2.1.0.pdf"
+        },
+        {
+          "label": "User Manual",
+          "url": "https://oss.novastar.tech/uploads/2024/07/MG-Series-Distributed-Processors-User-Manual-V3.2.0.pdf"
+        }
+      ],
+      "id": "mg421",
+      "name": "NovaStar MG421",
+      "model": "MG421",
+      "family": "MG",
+      "subtype": "all-in-one",
+      "description": "4K MG decoder. HDMI 2.0 out with KVM and display control. LAN/PoE plus optical.",
+      "maxPixels": 0,
+      "outputs": "HDMI 2.0 · LAN/PoE · OPT",
+      "inputs": "MG network · audio",
+      "bestFor": "AV over IP · distributed walls",
+      "chips": [
+        "4K decoder",
+        "HDMI 2.0",
+        "KVM"
+      ],
+      "specTable": [
+        [
+          "Parameter",
+          "Value"
+        ],
+        [
+          "Family",
+          "MG AV-over-IP"
+        ],
+        [
+          "Role",
+          "4K decoder · KVM · display control"
+        ],
+        [
+          "Video",
+          "1× HDMI 2.0 OUT"
+        ],
+        [
+          "Network",
+          "1× LAN/PoE · 1× OPT"
+        ],
+        [
+          "USB",
+          "2× USB-A 2.0 · 4× USB-A 3.0"
+        ]
+      ],
+      "sourceUrl": "https://www.novastar.tech/product/detail.html?catid=3&id=37",
+      "features": [
+        {
+          "title": "MG distributed processor",
+          "text": "4K MG decoder. HDMI 2.0 out with KVM and display control. LAN/PoE plus optical."
+        }
+      ],
+      "lead": "4K MG decoder. HDMI 2.0 out with KVM and display control. LAN/PoE plus optical.",
+      "cats": [
+        "control",
+        "all-in-one"
+      ]
+    },
+    {
+      "type": "control",
+      "replacementOnly": false,
+      "pitches": [],
+      "pricePerM2": 0,
+      "priceEach": 0,
+      "cabinetW": 0,
+      "cabinetH": 0,
+      "weightPerM2": 0,
+      "powerAvg": 0,
+      "powerMax": 0,
+      "badge": null,
+      "latency": "",
+      "hdr": "",
+      "image": "assets/products/novastar/mgt1000.webp",
+      "gallery": [
+        "assets/products/novastar/mgt1000-2.webp",
+        "assets/products/novastar/mgt1000-3.webp",
+        "assets/products/novastar/mgt1000-4.webp"
+      ],
+      "bestWith": [
+        "fixed-indoor"
+      ],
+      "downloadVersion": "V3.2.0",
+      "downloads": [
+        {
+          "label": "2K Specifications",
+          "url": "https://oss.novastar.tech/uploads/2024/07/MG-Series-2K-Distributed-Processors-Specifications-V1.0.0.pdf"
+        },
+        {
+          "label": "4K Specifications",
+          "url": "https://oss.novastar.tech/uploads/2024/07/MG-Series-4K-Distributed-Processors-Specifications-V2.1.0.pdf"
+        },
+        {
+          "label": "User Manual",
+          "url": "https://oss.novastar.tech/uploads/2024/07/MG-Series-Distributed-Processors-User-Manual-V3.2.0.pdf"
+        }
+      ],
+      "id": "mgt1000",
+      "name": "NovaStar MGT1000",
+      "model": "MGT1000",
+      "family": "MG",
+      "subtype": "all-in-one",
+      "description": "MG LED decoder with ten Gigabit RJ45 LED outputs. LAN plus optical. Free-cabling LED display control on the MG network.",
+      "maxPixels": 0,
+      "outputs": "10× RJ45 LED · LAN · OPT",
+      "inputs": "MG network · audio",
+      "bestFor": "AV over IP · distributed walls",
+      "chips": [
+        "10× RJ45",
+        "LED decoder",
+        "OPT"
+      ],
+      "specTable": [
+        [
+          "Parameter",
+          "Value"
+        ],
+        [
+          "Family",
+          "MG AV-over-IP"
+        ],
+        [
+          "Role",
+          "LED display control · free cabling"
+        ],
+        [
+          "LED outputs",
+          "10× RJ45"
+        ],
+        [
+          "Network",
+          "1× LAN · 1× OPT"
+        ],
+        [
+          "USB",
+          "2× USB-A 2.0"
+        ]
+      ],
+      "sourceUrl": "https://www.novastar.tech/product/detail.html?catid=3&id=37",
+      "features": [
+        {
+          "title": "MG distributed processor",
+          "text": "MG LED decoder with ten Gigabit RJ45 LED outputs. LAN plus optical. Free-cabling LED display control on the MG network."
+        }
+      ],
+      "lead": "MG LED decoder with ten Gigabit RJ45 LED outputs. LAN plus optical. Free-cabling LED display control on the MG network.",
+      "cats": [
+        "control",
+        "all-in-one"
+      ]
+    },
+    {
+      "type": "control",
+      "replacementOnly": false,
+      "pitches": [],
+      "pricePerM2": 0,
+      "priceEach": 0,
+      "cabinetW": 0,
+      "cabinetH": 0,
+      "weightPerM2": 0,
+      "powerAvg": 0,
+      "powerMax": 0,
+      "badge": null,
+      "latency": "",
+      "hdr": "",
+      "image": "assets/products/novastar/mgt2000.webp",
+      "gallery": [
+        "assets/products/novastar/mgt2000-2.webp",
+        "assets/products/novastar/mgt2000-3.webp",
+        "assets/products/novastar/mgt2000-4.webp"
+      ],
+      "bestWith": [
+        "fixed-indoor"
+      ],
+      "downloadVersion": "V3.2.0",
+      "downloads": [
+        {
+          "label": "2K Specifications",
+          "url": "https://oss.novastar.tech/uploads/2024/07/MG-Series-2K-Distributed-Processors-Specifications-V1.0.0.pdf"
+        },
+        {
+          "label": "4K Specifications",
+          "url": "https://oss.novastar.tech/uploads/2024/07/MG-Series-4K-Distributed-Processors-Specifications-V2.1.0.pdf"
+        },
+        {
+          "label": "User Manual",
+          "url": "https://oss.novastar.tech/uploads/2024/07/MG-Series-Distributed-Processors-User-Manual-V3.2.0.pdf"
+        }
+      ],
+      "id": "mgt2000",
+      "name": "NovaStar MGT2000",
+      "model": "MGT2000",
+      "family": "MG",
+      "subtype": "all-in-one",
+      "description": "MG LED decoder with twenty Gigabit RJ45 LED outputs. LAN plus optical.",
+      "maxPixels": 0,
+      "outputs": "20× RJ45 LED · LAN · OPT",
+      "inputs": "MG network · audio",
+      "bestFor": "AV over IP · distributed walls",
+      "chips": [
+        "20× RJ45",
+        "LED decoder",
+        "OPT"
+      ],
+      "specTable": [
+        [
+          "Parameter",
+          "Value"
+        ],
+        [
+          "Family",
+          "MG AV-over-IP"
+        ],
+        [
+          "Role",
+          "LED display control · free cabling"
+        ],
+        [
+          "LED outputs",
+          "20× RJ45"
+        ],
+        [
+          "Network",
+          "1× LAN · 1× OPT"
+        ],
+        [
+          "USB",
+          "2× USB-A 2.0"
+        ]
+      ],
+      "sourceUrl": "https://www.novastar.tech/product/detail.html?catid=3&id=37",
+      "features": [
+        {
+          "title": "MG distributed processor",
+          "text": "MG LED decoder with twenty Gigabit RJ45 LED outputs. LAN plus optical."
+        }
+      ],
+      "lead": "MG LED decoder with twenty Gigabit RJ45 LED outputs. LAN plus optical.",
+      "cats": [
+        "control",
+        "all-in-one"
+      ]
+    },
+    {
+      "type": "control",
+      "replacementOnly": false,
+      "pitches": [],
+      "pricePerM2": 0,
+      "priceEach": 0,
+      "cabinetW": 0,
+      "cabinetH": 0,
+      "weightPerM2": 0,
+      "powerAvg": 0,
+      "powerMax": 0,
+      "badge": null,
+      "latency": "",
+      "hdr": "",
+      "image": "",
+      "gallery": [],
+      "bestWith": [
+        "fixed-indoor"
+      ],
+      "downloadVersion": "V3.2.0",
+      "downloads": [
+        {
+          "label": "2K Specifications",
+          "url": "https://oss.novastar.tech/uploads/2024/07/MG-Series-2K-Distributed-Processors-Specifications-V1.0.0.pdf"
+        },
+        {
+          "label": "4K Specifications",
+          "url": "https://oss.novastar.tech/uploads/2024/07/MG-Series-4K-Distributed-Processors-Specifications-V2.1.0.pdf"
+        },
+        {
+          "label": "User Manual",
+          "url": "https://oss.novastar.tech/uploads/2024/07/MG-Series-Distributed-Processors-User-Manual-V3.2.0.pdf"
+        }
+      ],
+      "id": "mg200",
+      "name": "NovaStar MG200",
+      "model": "MG200",
+      "family": "MG",
+      "subtype": "all-in-one",
+      "description": "2K MG encoder. HDMI 1.3 in with loop, LAN. Encodes onto the MG network.",
+      "maxPixels": 0,
+      "outputs": "LAN",
+      "inputs": "HDMI 1.3 (IN + LOOP) · audio",
+      "bestFor": "AV over IP · distributed walls",
+      "chips": [
+        "2K encoder",
+        "HDMI 1.3",
+        "LAN"
+      ],
+      "specTable": [
+        [
+          "Parameter",
+          "Value"
+        ],
+        [
+          "Family",
+          "MG AV-over-IP"
+        ],
+        [
+          "Role",
+          "2K encoder"
+        ],
+        [
+          "Video",
+          "1× HDMI 1.3 IN · 1× HDMI 1.3 LOOP"
+        ],
+        [
+          "Network",
+          "1× LAN"
+        ],
+        [
+          "USB",
+          "1× USB-A · 1× USB-B"
+        ],
+        [
+          "Third-party",
+          "RS232, RS485, IR in/out, I/O, relay"
+        ]
+      ],
+      "sourceUrl": "https://www.novastar.tech/product/detail.html?catid=3&id=37",
+      "features": [
+        {
+          "title": "MG distributed processor",
+          "text": "2K MG encoder. HDMI 1.3 in with loop, LAN. Encodes onto the MG network."
+        }
+      ],
+      "lead": "2K MG encoder. HDMI 1.3 in with loop, LAN. Encodes onto the MG network.",
+      "cats": [
+        "control",
+        "all-in-one"
+      ]
+    },
+    {
+      "type": "control",
+      "replacementOnly": false,
+      "pitches": [],
+      "pricePerM2": 0,
+      "priceEach": 0,
+      "cabinetW": 0,
+      "cabinetH": 0,
+      "weightPerM2": 0,
+      "powerAvg": 0,
+      "powerMax": 0,
+      "badge": null,
+      "latency": "",
+      "hdr": "",
+      "image": "",
+      "gallery": [],
+      "bestWith": [
+        "fixed-indoor"
+      ],
+      "downloadVersion": "V3.2.0",
+      "downloads": [
+        {
+          "label": "2K Specifications",
+          "url": "https://oss.novastar.tech/uploads/2024/07/MG-Series-2K-Distributed-Processors-Specifications-V1.0.0.pdf"
+        },
+        {
+          "label": "4K Specifications",
+          "url": "https://oss.novastar.tech/uploads/2024/07/MG-Series-4K-Distributed-Processors-Specifications-V2.1.0.pdf"
+        },
+        {
+          "label": "User Manual",
+          "url": "https://oss.novastar.tech/uploads/2024/07/MG-Series-Distributed-Processors-User-Manual-V3.2.0.pdf"
+        }
+      ],
+      "id": "mg201",
+      "name": "NovaStar MG201",
+      "model": "MG201",
+      "family": "MG",
+      "subtype": "all-in-one",
+      "description": "2K MG decoder. HDMI 1.3 out with KVM and display control.",
+      "maxPixels": 0,
+      "outputs": "HDMI 1.3 · LAN",
+      "inputs": "MG network · audio",
+      "bestFor": "AV over IP · distributed walls",
+      "chips": [
+        "2K decoder",
+        "HDMI 1.3",
+        "KVM"
+      ],
+      "specTable": [
+        [
+          "Parameter",
+          "Value"
+        ],
+        [
+          "Family",
+          "MG AV-over-IP"
+        ],
+        [
+          "Role",
+          "2K decoder · KVM · display control"
+        ],
+        [
+          "Video",
+          "1× HDMI 1.3 OUT"
+        ],
+        [
+          "Network",
+          "1× LAN"
+        ],
+        [
+          "USB",
+          "2× USB-A 2.0"
+        ]
+      ],
+      "sourceUrl": "https://www.novastar.tech/product/detail.html?catid=3&id=37",
+      "features": [
+        {
+          "title": "MG distributed processor",
+          "text": "2K MG decoder. HDMI 1.3 out with KVM and display control."
+        }
+      ],
+      "lead": "2K MG decoder. HDMI 1.3 out with KVM and display control.",
+      "cats": [
+        "control",
+        "all-in-one"
+      ]
+    },
+    {
+      "type": "control",
+      "replacementOnly": false,
+      "pitches": [],
+      "pricePerM2": 0,
+      "priceEach": 0,
+      "cabinetW": 0,
+      "cabinetH": 0,
+      "weightPerM2": 0,
+      "powerAvg": 0,
+      "powerMax": 0,
+      "badge": null,
+      "latency": "",
+      "hdr": "",
+      "image": "",
+      "gallery": [],
+      "bestWith": [
+        "fixed-indoor"
+      ],
+      "downloadVersion": "V3.2.0",
+      "downloads": [
+        {
+          "label": "2K Specifications",
+          "url": "https://oss.novastar.tech/uploads/2024/07/MG-Series-2K-Distributed-Processors-Specifications-V1.0.0.pdf"
+        },
+        {
+          "label": "4K Specifications",
+          "url": "https://oss.novastar.tech/uploads/2024/07/MG-Series-4K-Distributed-Processors-Specifications-V2.1.0.pdf"
+        },
+        {
+          "label": "User Manual",
+          "url": "https://oss.novastar.tech/uploads/2024/07/MG-Series-Distributed-Processors-User-Manual-V3.2.0.pdf"
+        }
+      ],
+      "id": "mgt600",
+      "name": "NovaStar MGT600",
+      "model": "MGT600",
+      "family": "MG",
+      "subtype": "all-in-one",
+      "description": "MG LED decoder with six Gigabit RJ45 LED outputs.",
+      "maxPixels": 0,
+      "outputs": "6× RJ45 LED · LAN",
+      "inputs": "MG network · audio",
+      "bestFor": "AV over IP · distributed walls",
+      "chips": [
+        "6× RJ45",
+        "LED decoder",
+        "2K"
+      ],
+      "specTable": [
+        [
+          "Parameter",
+          "Value"
+        ],
+        [
+          "Family",
+          "MG AV-over-IP"
+        ],
+        [
+          "Role",
+          "LED display control · free cabling"
+        ],
+        [
+          "LED outputs",
+          "6× RJ45"
+        ],
+        [
+          "Network",
+          "1× LAN"
+        ],
+        [
+          "USB",
+          "2× USB-A 2.0"
+        ]
+      ],
+      "sourceUrl": "https://www.novastar.tech/product/detail.html?catid=3&id=37",
+      "features": [
+        {
+          "title": "MG distributed processor",
+          "text": "MG LED decoder with six Gigabit RJ45 LED outputs."
+        }
+      ],
+      "lead": "MG LED decoder with six Gigabit RJ45 LED outputs.",
+      "cats": [
+        "control",
+        "all-in-one"
+      ]
+    },
+    {
+      "type": "control",
+      "replacementOnly": true,
+      "pitches": [],
+      "pricePerM2": 0,
+      "priceEach": 0,
+      "cabinetW": 0,
+      "cabinetH": 0,
+      "weightPerM2": 0,
+      "powerAvg": 0,
+      "powerMax": 0,
+      "badge": "Replacement only — included with new panels",
+      "latency": "",
+      "hdr": "",
+      "image": "",
+      "gallery": [],
+      "bestWith": [],
+      "downloadVersion": "V1.2.5",
+      "downloads": [
+        {
+          "label": "Specifications",
+          "url": "https://oss.novastar.tech/uploads/2025/05/A7s-Plus-Receiving-Card-Specifications-V1.2.5.pdf"
+        }
+      ],
+      "id": "a7s-plus",
+      "name": "NovaStar A7s Plus",
+      "model": "A7s Plus",
+      "family": "Armor",
+      "description": "A7s Plus receiving card sold only as a spare. New Spectrum walls already include a card in each panel — do not add this to a new-wall quote.",
+      "maxPixels": 262144,
+      "chips": [
+        "512×512",
+        "Replacement only"
+      ],
+      "specTable": [
+        [
+          "Parameter",
+          "Value"
+        ],
+        [
+          "Family",
+          "Armor receiving card"
+        ],
+        [
+          "Use",
+          "Replacement / spare only"
+        ],
+        [
+          "Typical load",
+          "512×512 px"
+        ],
+        [
+          "Included with new panels",
+          "Yes — do not add to new-wall quotes"
+        ]
+      ],
+      "sourceUrl": "https://www.novastar.tech/product/detail.html?catid=2&id=33",
+      "features": [
+        {
+          "title": "Replacement only",
+          "text": "New Spectrum panels ship with receiving cards installed. Order A7s Plus only if you need a spare or a field replacement."
+        },
+        {
+          "title": "Published load",
+          "text": "Typical load 512×512 pixels per card."
+        }
+      ],
+      "subtype": "receiving-card",
+      "outputs": "Panel hub (spare)",
+      "inputs": "Gigabit from sender",
+      "bestFor": "Spare / field replacement",
+      "store_collection": "spares",
+      "lead": "A7s Plus receiving card sold only as a spare. New Spectrum walls already include a card in each panel — do not add this to a new-wall quote.",
+      "cats": [
+        "control",
+        "receiving-card",
+        "receiving-cards"
+      ]
+    },
+    {
+      "type": "control",
+      "replacementOnly": true,
+      "pitches": [],
+      "pricePerM2": 0,
+      "priceEach": 0,
+      "cabinetW": 0,
+      "cabinetH": 0,
+      "weightPerM2": 0,
+      "powerAvg": 0,
+      "powerMax": 0,
+      "badge": "Replacement only — included with new panels",
+      "latency": "",
+      "hdr": "",
+      "image": "",
+      "gallery": [],
+      "bestWith": [],
+      "downloadVersion": "V1.1.5",
+      "downloads": [
+        {
+          "label": "Specifications",
+          "url": "https://oss.novastar.tech/uploads/2025/05/A10s-Plus-N-Receiving-Card-Specifications-V1.1.5.pdf"
+        }
+      ],
+      "id": "a10s-plus-n",
+      "name": "NovaStar A10s Plus-N",
+      "model": "A10s Plus-N",
+      "family": "Armor",
+      "description": "A10s Plus-N receiving card sold only as a spare. New Spectrum walls already include a card in each panel — do not add this to a new-wall quote.",
+      "maxPixels": 262144,
+      "chips": [
+        "512×512",
+        "Replacement only"
+      ],
+      "specTable": [
+        [
+          "Parameter",
+          "Value"
+        ],
+        [
+          "Family",
+          "Armor receiving card"
+        ],
+        [
+          "Use",
+          "Replacement / spare only"
+        ],
+        [
+          "Typical load",
+          "512×512 px"
+        ],
+        [
+          "Included with new panels",
+          "Yes — do not add to new-wall quotes"
+        ],
+        [
+          "HDR",
+          "Yes"
+        ]
+      ],
+      "sourceUrl": "https://www.novastar.tech/product/detail.html?catid=2&id=33",
+      "features": [
+        {
+          "title": "Replacement only",
+          "text": "New Spectrum panels ship with receiving cards installed. Order A10s Plus-N only if you need a spare or a field replacement."
+        },
+        {
+          "title": "Published load",
+          "text": "Typical load 512×512 pixels per card."
+        }
+      ],
+      "subtype": "receiving-card",
+      "outputs": "Panel hub (spare)",
+      "inputs": "Gigabit from sender",
+      "bestFor": "Spare / field replacement",
+      "store_collection": "spares",
+      "lead": "A10s Plus-N receiving card sold only as a spare. New Spectrum walls already include a card in each panel — do not add this to a new-wall quote.",
+      "cats": [
+        "control",
+        "receiving-card",
+        "receiving-cards"
+      ]
+    },
+    {
+      "type": "control",
+      "replacementOnly": true,
+      "pitches": [],
+      "pricePerM2": 0,
+      "priceEach": 0,
+      "cabinetW": 0,
+      "cabinetH": 0,
+      "weightPerM2": 0,
+      "powerAvg": 0,
+      "powerMax": 0,
+      "badge": "Replacement only — included with new panels",
+      "latency": "",
+      "hdr": "",
+      "image": "",
+      "gallery": [],
+      "bestWith": [],
+      "downloadVersion": "V1.0.3",
+      "downloads": [
+        {
+          "label": "Specifications",
+          "url": "https://oss.novastar.tech/uploads/2025/04/XA50-Pro-Receiving-Card-Specifications-V1.0.3.pdf"
+        }
+      ],
+      "id": "xa50-pro",
+      "name": "NovaStar XA50 Pro",
+      "model": "XA50 Pro",
+      "family": "XA",
+      "description": "XA50 Pro receiving card sold only as a spare. New Spectrum walls already include a card in each panel — do not add this to a new-wall quote.",
+      "maxPixels": 524288,
+      "chips": [
+        "512×1024",
+        "5G",
+        "Replacement only"
+      ],
+      "specTable": [
+        [
+          "Parameter",
+          "Value"
+        ],
+        [
+          "Family",
+          "XA receiving card"
+        ],
+        [
+          "Use",
+          "Replacement / spare only"
+        ],
+        [
+          "Typical load",
+          "512×1024 px"
+        ],
+        [
+          "Included with new panels",
+          "Yes — do not add to new-wall quotes"
+        ],
+        [
+          "Bandwidth",
+          "5G"
+        ],
+        [
+          "Connector",
+          "DDR3"
+        ]
+      ],
+      "sourceUrl": "https://www.novastar.tech/product/detail.html?catid=2&id=51",
+      "features": [
+        {
+          "title": "Replacement only",
+          "text": "New Spectrum panels ship with receiving cards installed. Order XA50 Pro only if you need a spare or a field replacement."
+        },
+        {
+          "title": "Published load",
+          "text": "Typical load 512×1024 pixels per card."
+        }
+      ],
+      "subtype": "receiving-card",
+      "outputs": "Panel hub (spare)",
+      "inputs": "5G from CX / MX 5G cards",
+      "bestFor": "Spare / field replacement",
+      "store_collection": "spares",
+      "lead": "XA50 Pro receiving card sold only as a spare. New Spectrum walls already include a card in each panel — do not add this to a new-wall quote.",
+      "cats": [
+        "control",
+        "receiving-card",
+        "receiving-cards"
+      ]
+    },
+    {
+      "type": "control",
+      "replacementOnly": true,
+      "pitches": [],
+      "pricePerM2": 0,
+      "priceEach": 0,
+      "cabinetW": 0,
+      "cabinetH": 0,
+      "weightPerM2": 0,
+      "powerAvg": 0,
+      "powerMax": 0,
+      "badge": "Replacement only — included with new panels",
+      "latency": "",
+      "hdr": "",
+      "image": "",
+      "gallery": [],
+      "bestWith": [],
+      "downloadVersion": "V1.1.2",
+      "downloads": [
+        {
+          "label": "Specifications",
+          "url": "https://oss.novastar.tech/uploads/2025/03/MRV532-Receiving-Card-Specifications-V1.1.2.pdf"
+        }
+      ],
+      "id": "mrv532",
+      "name": "NovaStar MRV532",
+      "model": "MRV532",
+      "family": "MRV",
+      "description": "MRV532 receiving card sold only as a spare. New Spectrum walls already include a card in each panel — do not add this to a new-wall quote.",
+      "maxPixels": 262144,
+      "chips": [
+        "512×512",
+        "Replacement only"
+      ],
+      "specTable": [
+        [
+          "Parameter",
+          "Value"
+        ],
+        [
+          "Family",
+          "MRV receiving card"
+        ],
+        [
+          "Use",
+          "Replacement / spare only"
+        ],
+        [
+          "Typical load",
+          "512×512 px"
+        ],
+        [
+          "Included with new panels",
+          "Yes — do not add to new-wall quotes"
+        ],
+        [
+          "Output interface",
+          "HUB320F×10"
+        ],
+        [
+          "RGB data groups",
+          "40"
+        ]
+      ],
+      "sourceUrl": "https://www.novastar.tech/product/detail.html?catid=2&id=32",
+      "features": [
+        {
+          "title": "Replacement only",
+          "text": "New Spectrum panels ship with receiving cards installed. Order MRV532 only if you need a spare or a field replacement."
+        },
+        {
+          "title": "Published load",
+          "text": "Typical load 512×512 pixels per card."
+        }
+      ],
+      "subtype": "receiving-card",
+      "outputs": "Panel hub (spare)",
+      "inputs": "Gigabit from sender",
+      "bestFor": "Spare / field replacement",
+      "store_collection": "spares",
+      "lead": "MRV532 receiving card sold only as a spare. New Spectrum walls already include a card in each panel — do not add this to a new-wall quote.",
+      "cats": [
+        "control",
+        "receiving-card",
+        "receiving-cards"
+      ]
+    },
+    {
+      "type": "control",
+      "replacementOnly": true,
+      "pitches": [],
+      "pricePerM2": 0,
+      "priceEach": 0,
+      "cabinetW": 0,
+      "cabinetH": 0,
+      "weightPerM2": 0,
+      "powerAvg": 0,
+      "powerMax": 0,
+      "badge": "Replacement only — included with new panels",
+      "latency": "",
+      "hdr": "",
+      "image": "",
+      "gallery": [],
+      "bestWith": [],
+      "downloadVersion": "V1.0.0",
+      "downloads": [
+        {
+          "label": "Specifications",
+          "url": "https://oss.novastar.tech/uploads/2023/02/MRV570-1-Receiving-Card-Specifications-V1.0.0.pdf"
+        }
+      ],
+      "id": "mrv570-1",
+      "name": "NovaStar MRV570-1",
+      "model": "MRV570-1",
+      "family": "MRV",
+      "description": "MRV570-1 receiving card sold only as a spare. New Spectrum walls already include a card in each panel — do not add this to a new-wall quote.",
+      "maxPixels": 131072,
+      "chips": [
+        "512×256",
+        "Replacement only"
+      ],
+      "specTable": [
+        [
+          "Parameter",
+          "Value"
+        ],
+        [
+          "Family",
+          "MRV receiving card"
+        ],
+        [
+          "Use",
+          "Replacement / spare only"
+        ],
+        [
+          "Typical load",
+          "512×256 px"
+        ],
+        [
+          "Included with new panels",
+          "Yes — do not add to new-wall quotes"
+        ],
+        [
+          "RGB data groups",
+          "20 parallel / 64 serial"
+        ]
+      ],
+      "sourceUrl": "https://www.novastar.tech/product/detail.html?catid=2&id=32",
+      "features": [
+        {
+          "title": "Replacement only",
+          "text": "New Spectrum panels ship with receiving cards installed. Order MRV570-1 only if you need a spare or a field replacement."
+        },
+        {
+          "title": "Published load",
+          "text": "Typical load 512×256 pixels per card."
+        }
+      ],
+      "subtype": "receiving-card",
+      "outputs": "Panel hub (spare)",
+      "inputs": "Gigabit from sender",
+      "bestFor": "Spare / field replacement",
+      "store_collection": "spares",
+      "lead": "MRV570-1 receiving card sold only as a spare. New Spectrum walls already include a card in each panel — do not add this to a new-wall quote.",
+      "cats": [
+        "control",
+        "receiving-card",
+        "receiving-cards"
+      ]
+    },
+    {
+      "type": "control",
+      "replacementOnly": true,
+      "pitches": [],
+      "pricePerM2": 0,
+      "priceEach": 0,
+      "cabinetW": 0,
+      "cabinetH": 0,
+      "weightPerM2": 0,
+      "powerAvg": 0,
+      "powerMax": 0,
+      "badge": "Replacement only — included with new panels",
+      "latency": "",
+      "hdr": "",
+      "image": "",
+      "gallery": [],
+      "bestWith": [],
+      "downloadVersion": "",
+      "downloads": [],
+      "id": "br860-pro",
+      "name": "NovaStar BR860 Pro",
+      "model": "BR860 Pro",
+      "family": "BR",
+      "description": "BR860 Pro receiving card sold only as a spare. New Spectrum walls already include a card in each panel — do not add this to a new-wall quote.",
+      "maxPixels": 262144,
+      "chips": [
+        "512×512",
+        "Replacement only"
+      ],
+      "specTable": [
+        [
+          "Parameter",
+          "Value"
+        ],
+        [
+          "Family",
+          "BR receiving card"
+        ],
+        [
+          "Use",
+          "Replacement / spare only"
+        ],
+        [
+          "Typical load",
+          "512×512 px"
+        ],
+        [
+          "Included with new panels",
+          "Yes — do not add to new-wall quotes"
+        ],
+        [
+          "RGB parallel data groups",
+          "32"
+        ],
+        [
+          "Interface",
+          "8×60Pin"
+        ]
+      ],
+      "sourceUrl": "https://www.novastar.tech/product/detail.html?catid=2&id=57",
+      "features": [
+        {
+          "title": "Replacement only",
+          "text": "New Spectrum panels ship with receiving cards installed. Order BR860 Pro only if you need a spare or a field replacement."
+        },
+        {
+          "title": "Published load",
+          "text": "Typical load 512×512 pixels per card."
+        }
+      ],
+      "subtype": "receiving-card",
+      "outputs": "Panel hub (spare)",
+      "inputs": "Gigabit from sender",
+      "bestFor": "Spare / field replacement",
+      "store_collection": "spares",
+      "lead": "BR860 Pro receiving card sold only as a spare. New Spectrum walls already include a card in each panel — do not add this to a new-wall quote.",
+      "cats": [
+        "control",
+        "receiving-card",
+        "receiving-cards"
+      ]
+    },
+    {
+      "type": "control",
+      "replacementOnly": true,
+      "pitches": [],
+      "pricePerM2": 0,
+      "priceEach": 0,
+      "cabinetW": 0,
+      "cabinetH": 0,
+      "weightPerM2": 0,
+      "powerAvg": 0,
+      "powerMax": 0,
+      "badge": "Replacement only — included with new panels",
+      "latency": "",
+      "hdr": "",
+      "image": "",
+      "gallery": [],
+      "bestWith": [],
+      "downloadVersion": "",
+      "downloads": [],
+      "id": "br860",
+      "name": "NovaStar BR860",
+      "model": "BR860",
+      "family": "BR",
+      "description": "BR860 receiving card sold only as a spare. New Spectrum walls already include a card in each panel — do not add this to a new-wall quote.",
+      "maxPixels": 196608,
+      "chips": [
+        "512×384",
+        "Replacement only"
+      ],
+      "specTable": [
+        [
+          "Parameter",
+          "Value"
+        ],
+        [
+          "Family",
+          "BR receiving card"
+        ],
+        [
+          "Use",
+          "Replacement / spare only"
+        ],
+        [
+          "Typical load",
+          "512×384 px"
+        ],
+        [
+          "Included with new panels",
+          "Yes — do not add to new-wall quotes"
+        ],
+        [
+          "RGB parallel data groups",
+          "32"
+        ],
+        [
+          "Interface",
+          "8×60Pin"
+        ]
+      ],
+      "sourceUrl": "https://www.novastar.tech/product/detail.html?catid=2&id=57",
+      "features": [
+        {
+          "title": "Replacement only",
+          "text": "New Spectrum panels ship with receiving cards installed. Order BR860 only if you need a spare or a field replacement."
+        },
+        {
+          "title": "Published load",
+          "text": "Typical load 512×384 pixels per card."
+        }
+      ],
+      "subtype": "receiving-card",
+      "outputs": "Panel hub (spare)",
+      "inputs": "Gigabit from sender",
+      "bestFor": "Spare / field replacement",
+      "store_collection": "spares",
+      "lead": "BR860 receiving card sold only as a spare. New Spectrum walls already include a card in each panel — do not add this to a new-wall quote.",
+      "cats": [
+        "control",
+        "receiving-card",
+        "receiving-cards"
+      ]
+    },
+    {
+      "type": "control",
+      "replacementOnly": true,
+      "pitches": [],
+      "pricePerM2": 0,
+      "priceEach": 0,
+      "cabinetW": 0,
+      "cabinetH": 0,
+      "weightPerM2": 0,
+      "powerAvg": 0,
+      "powerMax": 0,
+      "badge": "Replacement only — included with new panels",
+      "latency": "",
+      "hdr": "",
+      "image": "",
+      "gallery": [],
+      "bestWith": [],
+      "downloadVersion": "",
+      "downloads": [],
+      "id": "br840-pro",
+      "name": "NovaStar BR840 Pro",
+      "model": "BR840 Pro",
+      "family": "BR",
+      "description": "BR840 Pro receiving card sold only as a spare. New Spectrum walls already include a card in each panel — do not add this to a new-wall quote.",
+      "maxPixels": 262144,
+      "chips": [
+        "512×512",
+        "Replacement only"
+      ],
+      "specTable": [
+        [
+          "Parameter",
+          "Value"
+        ],
+        [
+          "Family",
+          "BR receiving card"
+        ],
+        [
+          "Use",
+          "Replacement / spare only"
+        ],
+        [
+          "Typical load",
+          "512×512 px"
+        ],
+        [
+          "Included with new panels",
+          "Yes — do not add to new-wall quotes"
+        ],
+        [
+          "RGB parallel data groups",
+          "24"
+        ],
+        [
+          "Interface",
+          "8×40Pin"
+        ]
+      ],
+      "sourceUrl": "https://www.novastar.tech/product/detail.html?catid=2&id=57",
+      "features": [
+        {
+          "title": "Replacement only",
+          "text": "New Spectrum panels ship with receiving cards installed. Order BR840 Pro only if you need a spare or a field replacement."
+        },
+        {
+          "title": "Published load",
+          "text": "Typical load 512×512 pixels per card."
+        }
+      ],
+      "subtype": "receiving-card",
+      "outputs": "Panel hub (spare)",
+      "inputs": "Gigabit from sender",
+      "bestFor": "Spare / field replacement",
+      "store_collection": "spares",
+      "lead": "BR840 Pro receiving card sold only as a spare. New Spectrum walls already include a card in each panel — do not add this to a new-wall quote.",
+      "cats": [
+        "control",
+        "receiving-card",
+        "receiving-cards"
+      ]
+    },
+    {
+      "type": "control",
+      "replacementOnly": true,
+      "pitches": [],
+      "pricePerM2": 0,
+      "priceEach": 0,
+      "cabinetW": 0,
+      "cabinetH": 0,
+      "weightPerM2": 0,
+      "powerAvg": 0,
+      "powerMax": 0,
+      "badge": "Replacement only — included with new panels",
+      "latency": "",
+      "hdr": "",
+      "image": "",
+      "gallery": [],
+      "bestWith": [],
+      "downloadVersion": "",
+      "downloads": [],
+      "id": "br840",
+      "name": "NovaStar BR840",
+      "model": "BR840",
+      "family": "BR",
+      "description": "BR840 receiving card sold only as a spare. New Spectrum walls already include a card in each panel — do not add this to a new-wall quote.",
+      "maxPixels": 196608,
+      "chips": [
+        "512×384",
+        "Replacement only"
+      ],
+      "specTable": [
+        [
+          "Parameter",
+          "Value"
+        ],
+        [
+          "Family",
+          "BR receiving card"
+        ],
+        [
+          "Use",
+          "Replacement / spare only"
+        ],
+        [
+          "Typical load",
+          "512×384 px"
+        ],
+        [
+          "Included with new panels",
+          "Yes — do not add to new-wall quotes"
+        ],
+        [
+          "RGB parallel data groups",
+          "24"
+        ],
+        [
+          "Interface",
+          "8×40Pin"
+        ]
+      ],
+      "sourceUrl": "https://www.novastar.tech/product/detail.html?catid=2&id=57",
+      "features": [
+        {
+          "title": "Replacement only",
+          "text": "New Spectrum panels ship with receiving cards installed. Order BR840 only if you need a spare or a field replacement."
+        },
+        {
+          "title": "Published load",
+          "text": "Typical load 512×384 pixels per card."
+        }
+      ],
+      "subtype": "receiving-card",
+      "outputs": "Panel hub (spare)",
+      "inputs": "Gigabit from sender",
+      "bestFor": "Spare / field replacement",
+      "store_collection": "spares",
+      "lead": "BR840 receiving card sold only as a spare. New Spectrum walls already include a card in each panel — do not add this to a new-wall quote.",
+      "cats": [
+        "control",
+        "receiving-card",
+        "receiving-cards"
+      ]
+    },
+    {
+      "type": "control",
+      "replacementOnly": true,
+      "pitches": [],
+      "pricePerM2": 0,
+      "priceEach": 0,
+      "cabinetW": 0,
+      "cabinetH": 0,
+      "weightPerM2": 0,
+      "powerAvg": 0,
+      "powerMax": 0,
+      "badge": "Replacement only — included with new panels",
+      "latency": "",
+      "hdr": "",
+      "image": "",
+      "gallery": [],
+      "bestWith": [],
+      "downloadVersion": "",
+      "downloads": [],
+      "id": "br203-n",
+      "name": "NovaStar BR203-N",
+      "model": "BR203-N",
+      "family": "BR",
+      "description": "BR203-N receiving card sold only as a spare. New Spectrum walls already include a card in each panel — do not add this to a new-wall quote.",
+      "maxPixels": 98304,
+      "chips": [
+        "384×256",
+        "Replacement only"
+      ],
+      "specTable": [
+        [
+          "Parameter",
+          "Value"
+        ],
+        [
+          "Family",
+          "BR receiving card"
+        ],
+        [
+          "Use",
+          "Replacement / spare only"
+        ],
+        [
+          "Typical load",
+          "384×256 px"
+        ],
+        [
+          "Included with new panels",
+          "Yes — do not add to new-wall quotes"
+        ],
+        [
+          "RGB parallel data groups",
+          "6"
+        ],
+        [
+          "Interface",
+          "HUB75×3"
+        ]
+      ],
+      "sourceUrl": "https://www.novastar.tech/product/detail.html?catid=2&id=57",
+      "features": [
+        {
+          "title": "Replacement only",
+          "text": "New Spectrum panels ship with receiving cards installed. Order BR203-N only if you need a spare or a field replacement."
+        },
+        {
+          "title": "Published load",
+          "text": "Typical load 384×256 pixels per card."
+        }
+      ],
+      "subtype": "receiving-card",
+      "outputs": "Panel hub (spare)",
+      "inputs": "Gigabit from sender",
+      "bestFor": "Spare / field replacement",
+      "store_collection": "spares",
+      "lead": "BR203-N receiving card sold only as a spare. New Spectrum walls already include a card in each panel — do not add this to a new-wall quote.",
+      "cats": [
+        "control",
+        "receiving-card",
+        "receiving-cards"
+      ]
+    },
+    {
+      "type": "control",
+      "replacementOnly": false,
+      "pitches": [],
+      "pricePerM2": 0,
+      "priceEach": 0,
+      "cabinetW": 0,
+      "cabinetH": 0,
+      "weightPerM2": 0,
+      "powerAvg": 0,
+      "powerMax": 0,
+      "badge": null,
+      "latency": "",
+      "hdr": "",
+      "image": "assets/products/novastar/cvt10-pro.webp",
+      "gallery": [
+        "assets/products/novastar/cvt10-pro-2.webp",
+        "assets/products/novastar/cvt10-pro-3.webp",
+        "assets/products/novastar/cvt10-pro-4.webp"
+      ],
+      "bestWith": [
+        "indoor-rental",
+        "outdoor-rental",
+        "cob"
+      ],
+      "downloadVersion": "",
+      "downloads": [],
+      "id": "cvt10-pro",
+      "name": "NovaStar CVT10 Pro",
+      "model": "CVT10 Pro",
+      "family": "CVT",
+      "subtype": "accessories",
+      "store_collection": "accessories",
+      "description": "Rugged 10G fiber converter for the wall. Two 10G optical ports (single- or multi-mode) and ten EtherCon Gigabit ports. IP65, 2U, PowerCON — the tour version of CVT10.",
+      "maxPixels": 0,
+      "outputs": "10× EtherCon · 2× 10G OPT",
+      "inputs": "2× 10G SFP+ (or 10× EtherCon reverse)",
+      "bestFor": "Touring fiber · IP65 · MX / H fiber cards",
+      "chips": [
+        "10G fiber",
+        "10× EtherCon",
+        "IP65"
+      ],
+      "specTable": [
+        [
+          "Parameter",
+          "Value"
+        ],
+        [
+          "Family",
+          "Fiber converter"
+        ],
+        [
+          "Optical ports",
+          "2× 10G OPT (single- or multi-mode)"
+        ],
+        [
+          "Ethernet ports",
+          "10× EtherCon"
+        ],
+        [
+          "Control",
+          "USB"
+        ],
+        [
+          "Power",
+          "100–240 V · 1.5 A · PowerCON · 22 W"
+        ],
+        [
+          "Ingress",
+          "IP65"
+        ],
+        [
+          "Size / weight",
+          "2U · 5.9 kg"
+        ]
+      ],
+      "sourceUrl": "https://www.novastar.tech/product/detail.html?catid=27&id=54",
+      "features": [
+        {
+          "title": "Touring CVT10",
+          "text": "Same 2×10G / 10×1G conversion as CVT10, in a 2U IP65 chassis with EtherCon and PowerCON."
+        },
+        {
+          "title": "Pairs with MX and H fiber cards",
+          "text": "Lands 10G from MX / H fiber cards as Gigabit at the panels."
+        }
+      ],
+      "cats": [
+        "control",
+        "accessories"
+      ],
+      "lead": "Rugged 10G fiber converter for the wall. Two 10G optical ports (single- or multi-mode) and ten EtherCon Gigabit ports. IP65, 2U, PowerCON — the tour version of CVT10."
+    },
+    {
+      "type": "control",
+      "replacementOnly": false,
+      "pitches": [],
+      "pricePerM2": 0,
+      "priceEach": 0,
+      "cabinetW": 0,
+      "cabinetH": 0,
+      "weightPerM2": 0,
+      "powerAvg": 0,
+      "powerMax": 0,
+      "badge": null,
+      "latency": "",
+      "hdr": "",
+      "image": "assets/products/novastar/cvt4k.webp",
+      "gallery": [
+        "assets/products/novastar/cvt4k-2.webp",
+        "assets/products/novastar/cvt4k-3.webp",
+        "assets/products/novastar/cvt4k-4.webp"
+      ],
+      "bestWith": [
+        "indoor-rental",
+        "cob",
+        "fixed-indoor"
+      ],
+      "downloadVersion": "",
+      "downloads": [],
+      "id": "cvt4k",
+      "name": "NovaStar CVT4K",
+      "model": "CVT4K",
+      "family": "CVT",
+      "subtype": "accessories",
+      "store_collection": "accessories",
+      "description": "Larger fiber converter on NovaStar’s CVT comparison: four optical ports and sixteen Neutrik Gigabit ports in 2U.",
+      "maxPixels": 0,
+      "outputs": "16× Neutrik · 4× OPT",
+      "inputs": "4× OPT (or 16× Neutrik reverse)",
+      "bestFor": "High-count fiber · MX / H fiber cards",
+      "chips": [
+        "4× OPT",
+        "16× Neutrik",
+        "2U"
+      ],
+      "specTable": [
+        [
+          "Parameter",
+          "Value"
+        ],
+        [
+          "Family",
+          "Fiber converter"
+        ],
+        [
+          "Optical ports",
+          "4× OPT (single- or multi-mode)"
+        ],
+        [
+          "Ethernet ports",
+          "16× Neutrik"
+        ],
+        [
+          "Control",
+          "USB · Ethernet"
+        ],
+        [
+          "Power",
+          "100–240 V · 10 W · PowerCON"
+        ],
+        [
+          "Size / weight",
+          "2U · 4.6 kg"
+        ]
+      ],
+      "sourceUrl": "https://www.novastar.tech/product/detail.html?catid=27&id=54",
+      "features": [
+        {
+          "title": "Sixteen copper ports",
+          "text": "Official CVT comparison lists 4× OPT and 16× Neutrik versus CVT10’s 2× OPT and 10× RJ45."
+        }
+      ],
+      "cats": [
+        "control",
+        "accessories"
+      ],
+      "lead": "Larger fiber converter on NovaStar’s CVT comparison: four optical ports and sixteen Neutrik Gigabit ports in 2U."
     }
   ]
 }

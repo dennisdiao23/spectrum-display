@@ -292,6 +292,7 @@
       sending: 'Senders',
       playback: 'Playback',
       'receiving-card': 'Spares',
+      accessories: 'Accessories',
       fiber: 'Fiber',
       other: 'Other'
     };
