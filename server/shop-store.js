@@ -24,6 +24,7 @@ COLLECTIONS.forEach(function (c) {
 const LEAD_LABELS = {
   ships_azusa: 'Ships from Azusa',
   ships_novastar: 'Ships from NovaStar',
+  ships_gloshine: 'Ships from Gloshine',
   incoming: 'Incoming',
   built_to_order: 'Built to order',
   quote: 'Request quote'
