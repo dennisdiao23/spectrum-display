@@ -844,8 +844,6 @@
                       <tr>
                         <th class="py-3 px-4 font-medium">Company</th>
                         <th class="py-3 px-4 font-medium">Applicant</th>
-                        <th class="py-3 px-4 font-medium">Tax ID</th>
-                        <th class="py-3 px-4 font-medium">Submitted</th>
                         <th class="py-3 px-4 font-medium">Status</th>
                       </tr>
                     </thead>
@@ -10217,17 +10215,14 @@
       const list = rows || [];
       if (total) total.textContent = String(list.length);
       if (!list.length) {
-        tb.innerHTML = '<tr><td class="py-6 px-4 text-slate-500" colspan="5">No dealer applications in this filter.</td></tr>';
+        tb.innerHTML = '<tr><td class="py-6 px-4 text-slate-500" colspan="3">No dealer applications in this filter.</td></tr>';
         return;
       }
       tb.innerHTML = list.map(function (app) {
-        const when = app.createdAt ? new Date(app.createdAt).toLocaleDateString() : '';
         const on = String(app.id) === String(dealerAppActiveId);
         return '<tr class="border-b border-slate-800 hover:bg-slate-900/80 cursor-pointer' + (on ? ' is-selected' : '') + '" data-id="' + esc(String(app.id)) + '">' +
           '<td class="py-3 px-4">' + esc(app.companyName || '—') + '</td>' +
           '<td class="py-3 px-4">' + esc(app.contactName || '') + '<div class="text-xs text-slate-500">' + esc(app.email || '') + '</div></td>' +
-          '<td class="py-3 px-4 text-slate-400">' + esc(app.taxId || '—') + '</td>' +
-          '<td class="py-3 px-4 text-slate-500">' + esc(when) + '</td>' +
           '<td class="py-3 px-4"><span class="text-xs px-2 py-0.5 rounded-full ' + dealerAppStatusClass(app.status) + '">' + esc(dealerAppStatusLabel(app.status)) + '</span></td>' +
           '</tr>';
       }).join('');
@@ -10250,7 +10245,7 @@
           errEl.textContent = err.message || 'Could not load dealer applications.';
           errEl.classList.remove('hidden');
         }
-        if (tb) tb.innerHTML = '<tr><td class="py-6 px-4 text-slate-500" colspan="5">Could not load applications.</td></tr>';
+        if (tb) tb.innerHTML = '<tr><td class="py-6 px-4 text-slate-500" colspan="3">Could not load applications.</td></tr>';
       }
     }
 
