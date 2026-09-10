@@ -216,6 +216,10 @@ body.company-app {
   line-height: 1;
 }
 .dash-nav-unread.is-overdue { background: #dc2626; }
+.dash-nav-unread[hidden],
+.dash-nav-unread:empty {
+  display: none !important;
+}
 #header-chat {
   width: 100%;
   text-align: left;
