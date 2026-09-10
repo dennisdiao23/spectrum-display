@@ -122,6 +122,11 @@ function createSupabaseStore() {
     } catch (e) {
       console.error('Could not apply Gloshine LA warehouse list:', e.message || e);
     }
+    try {
+      await require('./shop-store').remapLegacyStoreLeadsSupabase(supabase);
+    } catch (e) {
+      console.error('Could not remap public store lead labels:', e.message || e);
+    }
   }
 
   async function backfillItemLocations() {

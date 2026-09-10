@@ -358,6 +358,11 @@ function createSqliteStore() {
   } catch (e) {
     console.error('Could not apply Gloshine LA warehouse list:', e.message || e);
   }
+  try {
+    require('./shop-store').remapLegacyStoreLeadsSqlite(db);
+  } catch (e) {
+    console.error('Could not remap public store lead labels:', e.message || e);
+  }
 
   const api = {
     name: 'sqlite',

@@ -76,9 +76,10 @@ function isGloshineWarehouse(row) {
 }
 
 function nextLead(details, qty) {
-  const cur = String((details && details.store_lead) || '').trim();
+  const shopStore = require('./shop-store');
+  const cur = shopStore.normalizeLead((details && details.store_lead) || '');
   if (cur) return cur;
-  if ((Number(qty) || 0) > 0) return 'ships_gloshine';
+  if ((Number(qty) || 0) > 0) return 'ships_la';
   return cur;
 }
 

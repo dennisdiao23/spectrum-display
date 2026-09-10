@@ -24,11 +24,21 @@ COLLECTIONS.forEach(function (c) {
 const LEAD_LABELS = {
   ships_azusa: 'Ships from Azusa',
   ships_novastar: 'Ships from NovaStar',
-  ships_gloshine: 'Ships from Gloshine',
+  ships_la: 'Ships from LA',
   incoming: 'Incoming',
   built_to_order: 'Built to order',
   quote: 'Request quote'
 };
+
+const LEAD_ALIASES = {
+  ships_gloshine: 'ships_la'
+};
+
+function normalizeLead(value) {
+  const lead = String(value || '').trim().toLowerCase();
+  if (!lead) return '';
+  return LEAD_ALIASES[lead] || lead;
+}
 
 const SUBTYPE_LABELS = {
   'all-in-one': 'Processors',
@@ -189,7 +199,7 @@ function toPublicCard(product, opts) {
   const variants = parseVariants(details);
   const shopifySell = asBool(details.shopify_sell != null ? details.shopify_sell : product.shopify_sell);
   const featured = asBool(details.store_featured != null ? details.store_featured : product.store_featured);
-  let lead = String(details.store_lead || product.store_lead || '').toLowerCase();
+  let lead = normalizeLead(details.store_lead || product.store_lead);
   if (!LEAD_LABELS[lead]) lead = mode === 'buy' ? 'ships_azusa' : 'quote';
   const qty = mappedQty(opts.stock, product.dbId);
   const mappedOut = qty === 0;
@@ -333,7 +343,7 @@ function toAdminStoreItem(product) {
     hidden: websiteHidden,
     store_collection: storedCollection === 'hidden' || COLLECTION_BY_ID[storedCollection] ? storedCollection : '',
     store_featured: featured,
-    store_lead: String(details.store_lead || product.store_lead || ''),
+    store_lead: normalizeLead(details.store_lead || product.store_lead),
     shopify_sell: shopifySell,
     shopify_variant_id: String(details.shopify_variant_id || product.shopify_variant_id || ''),
     shopify_product_id: String(details.shopify_product_id || product.shopify_product_id || ''),
@@ -377,6 +387,7 @@ function applyStoreFlags(details, body) {
       next.store_collection = '';
     }
   }
+  if (next.store_lead) next.store_lead = normalizeLead(next.store_lead);
   if (next.store_lead && !LEAD_LABELS[next.store_lead]) next.store_lead = '';
   if (Object.prototype.hasOwnProperty.call(body, 'shopify_variants')) {
     try {
@@ -390,9 +401,49 @@ function applyStoreFlags(details, body) {
   return next;
 }
 
+function remapLegacyStoreLeadsSqlite(db) {
+  const dbUtil = require('./db');
+  const rows = db.prepare('SELECT id, details FROM products').all();
+  const upd = db.prepare('UPDATE products SET details = ?, updated_at = ? WHERE id = ?');
+  let n = 0;
+  rows.forEach(function (row) {
+    const details = dbUtil.parseDetails(row);
+    const mapped = normalizeLead(details.store_lead);
+    if (!mapped || mapped === String(details.store_lead || '').trim()) return;
+    details.store_lead = mapped;
+    upd.run(JSON.stringify(details), dbUtil.nowIso(), row.id);
+    n += 1;
+  });
+  if (n) console.log('Remapped store lead ships_gloshine → ships_la on ' + n + ' products');
+  return n;
+}
+
+async function remapLegacyStoreLeadsSupabase(supabase) {
+  const dbUtil = require('./db');
+  const { data: products, error } = await supabase.from('products').select('id, details');
+  if (error) throw error;
+  let n = 0;
+  for (let i = 0; i < (products || []).length; i++) {
+    const row = products[i];
+    const details = dbUtil.parseDetails(row);
+    const mapped = normalizeLead(details.store_lead);
+    if (!mapped || mapped === String(details.store_lead || '').trim()) continue;
+    details.store_lead = mapped;
+    const { error: upErr } = await supabase.from('products').update({ details: details }).eq('id', row.id);
+    if (upErr) throw upErr;
+    n += 1;
+  }
+  if (n) console.log('Remapped store lead ships_gloshine → ships_la on ' + n + ' products');
+  return n;
+}
+
 module.exports = {
   COLLECTIONS,
   COLLECTION_BY_SLUG,
+  LEAD_LABELS,
+  normalizeLead,
+  remapLegacyStoreLeadsSqlite,
+  remapLegacyStoreLeadsSupabase,
   shopHostname,
   wwwOrigin,
   storeOrigin,

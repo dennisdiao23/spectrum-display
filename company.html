@@ -561,7 +561,7 @@
                   <option value="">Default</option>
                   <option value="ships_azusa">Ships from Azusa</option>
                   <option value="ships_novastar">Ships from NovaStar</option>
-                  <option value="ships_gloshine">Ships from Gloshine</option>
+                  <option value="ships_la">Ships from LA</option>
                   <option value="incoming">Incoming</option>
                   <option value="built_to_order">Built to order</option>
                   <option value="quote">Request quote</option>
@@ -682,7 +682,7 @@
               <option value="">Default</option>
               <option value="ships_azusa">Ships from Azusa</option>
               <option value="ships_novastar">Ships from NovaStar</option>
-              <option value="ships_gloshine">Ships from Gloshine</option>
+              <option value="ships_la">Ships from LA</option>
               <option value="incoming">Incoming</option>
               <option value="built_to_order">Built to order</option>
               <option value="quote">Request quote</option>
@@ -4884,6 +4884,12 @@
       return data;
     }
 
+    function storeLeadSelectValue(value) {
+      const lead = String(value || '').trim();
+      if (lead === 'ships_gloshine') return 'ships_la';
+      return lead;
+    }
+
     function applyStaffGmail(status) {
       staffGmail = {
         configured: !!(status && status.configured),
@@ -5171,7 +5177,7 @@
       document.getElementById('shopify-sell').checked = !!(product.shopify_sell);
       document.getElementById('store-featured').checked = !!(product.store_featured);
       document.getElementById('store-collection').value = product.store_collection || '';
-      document.getElementById('store-lead').value = product.store_lead || '';
+      document.getElementById('store-lead').value = storeLeadSelectValue(product.store_lead);
       document.getElementById('shopify-variant-id').value = product.shopify_variant_id || '';
       document.getElementById('shopify-product-id').value = product.shopify_product_id || '';
       document.getElementById('shopify-handle').value = product.shopify_handle || '';
@@ -5722,7 +5728,7 @@
       document.getElementById('ws-store-collection').value = vals.collection || '';
       document.getElementById('ws-store-featured').checked = !!vals.featured;
       document.getElementById('ws-shopify-sell').checked = !!vals.sell;
-      document.getElementById('ws-store-lead').value = vals.lead || '';
+      document.getElementById('ws-store-lead').value = storeLeadSelectValue(vals.lead);
       document.getElementById('ws-shopify-variant-id').value = vals.variant || '';
       document.getElementById('ws-shopify-product-id').value = vals.productId || '';
       document.getElementById('ws-shopify-handle').value = vals.handle || '';
@@ -5765,7 +5771,7 @@
       document.getElementById('ws-store-collection').value = (item && item.store_collection) || '';
       document.getElementById('ws-store-featured').checked = !!(item && item.store_featured);
       document.getElementById('ws-shopify-sell').checked = !!(item && item.shopify_sell);
-      document.getElementById('ws-store-lead').value = (item && item.store_lead) || '';
+      document.getElementById('ws-store-lead').value = storeLeadSelectValue(item && item.store_lead);
       document.getElementById('ws-shopify-variant-id').value = (item && item.shopify_variant_id) || '';
       document.getElementById('ws-shopify-product-id').value = (item && item.shopify_product_id) || '';
       document.getElementById('ws-shopify-handle').value = (item && item.shopify_handle) || '';
