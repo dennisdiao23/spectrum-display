@@ -2986,7 +2986,7 @@ body.po-split-lock #po-section #po-error {
   grid-template-columns: var(--wa-left-w, var(--wa-split-left-boot, 400px)) 14px minmax(0, 1fr);
 }
 #da-split {
-  grid-template-columns: var(--da-left-w, 440px) 14px minmax(0, 1fr);
+  grid-template-columns: var(--da-left-w, var(--da-split-left-boot, 440px)) 14px minmax(0, 1fr);
 }
 body.inv-layout-lock .inv-split,
 body.dash-split-lock .dash-split,
