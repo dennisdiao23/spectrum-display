@@ -131,6 +131,7 @@ function openDb() {
   ensureCompanyAccounts(db);
   ensureColumnPrefs(db);
   ensureWalls(db);
+  require('./company-emails').ensureCompanyEmails(db);
   require('./company-chat').ensureCompanyChat(db);
   db.exec(`
     CREATE TABLE IF NOT EXISTS inventory_stock (
@@ -1235,5 +1236,8 @@ module.exports = {
   ensureReceiptShipments,
   ensureCompanyAccounts,
   ensureColumnPrefs,
-  ensureWalls
+  ensureWalls,
+  ensureCompanyEmails: function (db) {
+    return require('./company-emails').ensureCompanyEmails(db);
+  }
 };

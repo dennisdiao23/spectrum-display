@@ -11,7 +11,7 @@ const multer = require('multer');
 const { getStore, hasSupabase } = require('./store');
 const siteAuth = require('./site-auth');
 const wallsLib = require('./walls');
-const { sendContactEmail, sendDealerInquiryEmail, mailConfigured } = require('./mail');
+const { sendContactEmail, sendDealerInquiryEmail, sendStaffEmail, mailConfigured } = require('./mail');
 const { blockedSignupReason } = require('../js/signup-guard');
 const img = require('./image');
 const { publicAdmin, hasPerm, isOwnerAdmin, isOwnerRole, OWNER_ROLE_SLUG, roleInputFromBody } = require('./admin-roles');
@@ -50,6 +50,17 @@ const dealerInquiryUpload = multer({
   fileFilter: function (_req, file, cb) {
     const ok = /^(application\/pdf|image\/(jpeg|png))$/i.test(file.mimetype || '');
     cb(ok ? null : new Error('Resale certificate must be PDF, JPG, or PNG (max 10MB).'), ok);
+  }
+});
+
+const staffEmailUpload = multer({
+  storage: multer.memoryStorage(),
+  limits: { fileSize: 8 * 1024 * 1024, files: 1 },
+  fileFilter: function (_req, file, cb) {
+    const mime = String(file.mimetype || '').toLowerCase();
+    const name = String(file.originalname || '').toLowerCase();
+    const ok = mime === 'application/pdf' || /\.pdf$/i.test(name);
+    cb(ok ? null : new Error('Attachment must be a PDF.'), ok);
   }
 });
 
@@ -800,7 +811,7 @@ async function main() {
     try {
       const admin = await currentAdmin(req);
       if (!admin) return res.json({ ok: false, admin: null });
-      res.json({ ok: true, admin: publicAdmin(admin) });
+      res.json({ ok: true, admin: publicAdmin(admin), mailConfigured: mailConfigured() });
     } catch (err) { next(err); }
   });
 
@@ -1430,6 +1441,85 @@ async function main() {
       if (!doc) return res.status(404).json({ ok: false, error: 'Document not found.' });
       res.json({ ok: true, doc: doc });
     } catch (err) { next(err); }
+  });
+
+  app.get('/api/admin/emails', requireAdmin, async function (req, res) {
+    try {
+      const emails = await store.listCompanyEmails(req.query.partyKind, req.query.partyId);
+      res.json({ ok: true, emails: emails });
+    } catch (err) {
+      res.status(400).json({ ok: false, error: err.message || 'Could not load emails.' });
+    }
+  });
+
+  app.get('/api/admin/emails/:id', requireAdmin, async function (req, res, next) {
+    try {
+      const email = await store.getCompanyEmail(req.params.id);
+      if (!email) return res.status(404).json({ ok: false, error: 'Email not found.' });
+      res.json({ ok: true, email: email });
+    } catch (err) { next(err); }
+  });
+
+  app.get('/api/admin/emails/:id/pdf', requireAdmin, async function (req, res, next) {
+    try {
+      const pdf = await store.getCompanyEmailPdf(req.params.id);
+      if (!pdf) return res.status(404).json({ ok: false, error: 'Email not found.' });
+      if (!pdf.buffer) return res.status(404).json({ ok: false, error: 'No PDF attached.' });
+      const name = String(pdf.filename || 'document.pdf').replace(/"/g, '');
+      res.setHeader('Content-Type', 'application/pdf');
+      res.setHeader('Content-Disposition', 'inline; filename="' + name + '"');
+      res.send(pdf.buffer);
+    } catch (err) { next(err); }
+  });
+
+  app.post('/api/admin/email', requireAdmin, staffEmailUpload.single('pdf'), async function (req, res) {
+    try {
+      const body = req.body || {};
+      const attach = String(body.attach == null ? '1' : body.attach) !== '0' &&
+        String(body.attach || '').toLowerCase() !== 'false';
+      const filename = String(body.filename || (req.file && req.file.originalname) || 'document.pdf');
+      const attachments = [];
+      let pdfBase64 = '';
+      if (attach && req.file && req.file.buffer) {
+        attachments.push({
+          filename: filename,
+          content: req.file.buffer,
+          contentType: 'application/pdf'
+        });
+        pdfBase64 = req.file.buffer.toString('base64');
+      }
+      const result = await sendStaffEmail({
+        to: body.to,
+        cc: body.cc,
+        bcc: body.bcc,
+        subject: body.subject,
+        body: body.body,
+        replyTo: req.admin && req.admin.email,
+        attachments: attachments
+      });
+      const saved = await store.createCompanyEmail({
+        partyKind: body.partyKind,
+        partyId: body.partyId,
+        docKind: body.docKind,
+        docId: body.docId,
+        docNumber: body.docNumber,
+        to: body.to,
+        cc: body.cc,
+        bcc: body.bcc,
+        subject: body.subject,
+        body: body.body,
+        filename: attachments.length ? filename : '',
+        pdfBase64: pdfBase64,
+        sentByEmail: req.admin && req.admin.email,
+        sentByName: req.admin && req.admin.name
+      });
+      res.json({ ok: true, email: saved, local: !!(result && result.provider === 'local') });
+    } catch (err) {
+      console.error('Staff email error:', err.message || err);
+      const msg = err.message || 'Could not send the email.';
+      const status = /not configured|not set up/i.test(msg) ? 503 : 400;
+      res.status(status).json({ ok: false, error: msg });
+    }
   });
 
   app.get('/api/admin/accounts', requireAdmin, requirePerm('website', 'view'), async function (_req, res, next) {

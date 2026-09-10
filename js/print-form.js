@@ -808,6 +808,84 @@
     };
   }
 
+  function pdfOptions(filename) {
+    return {
+      margin: 0,
+      filename: filename || 'document.pdf',
+      image: { type: 'jpeg', quality: 0.95 },
+      html2canvas: { scale: 2, useCORS: true, logging: false },
+      jsPDF: { unit: 'in', format: 'letter', orientation: 'portrait' }
+    };
+  }
+
+  function loadHtml2Pdf() {
+    return new Promise(function (resolve, reject) {
+      if (typeof html2pdf === 'function') {
+        resolve();
+        return;
+      }
+      const s = document.createElement('script');
+      s.src = 'https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js';
+      s.onload = function () { resolve(); };
+      s.onerror = function () { reject(new Error('Could not load the PDF library.')); };
+      document.head.appendChild(s);
+    });
+  }
+
+  function letterSrcdoc(template, data) {
+    return '<!doctype html><html><head><meta charset="utf-8"><style>' + printCss() +
+      'html,body{background:#fff}</style></head><body>' + sheetHtml(template, data) + '</body></html>';
+  }
+
+  function coercePdfBlob(out) {
+    if (typeof Blob !== 'undefined' && out instanceof Blob) return out;
+    if (typeof out === 'string' && out.indexOf('data:') === 0) {
+      const parts = out.split(',');
+      const bin = atob(parts[1] || '');
+      const arr = new Uint8Array(bin.length);
+      let i = 0;
+      for (i = 0; i < bin.length; i++) arr[i] = bin.charCodeAt(i);
+      return new Blob([arr], { type: 'application/pdf' });
+    }
+    throw new Error('Could not build PDF.');
+  }
+
+  function buildPdfBlob(template, data, filename) {
+    return loadHtml2Pdf().then(function () {
+      const host = document.createElement('div');
+      host.setAttribute('aria-hidden', 'true');
+      host.style.cssText = 'position:fixed;left:-12000px;top:0;width:8.5in;background:#fff;pointer-events:none;z-index:-1;';
+      const style = document.createElement('style');
+      style.textContent = printCss();
+      host.appendChild(style);
+      const wrap = document.createElement('div');
+      wrap.innerHTML = sheetHtml(template, data);
+      host.appendChild(wrap);
+      document.body.appendChild(host);
+      const sheet = host.querySelector('.pf-sheet');
+      function cleanup() {
+        if (host.parentNode) host.parentNode.removeChild(host);
+      }
+      return new Promise(function (resolve, reject) {
+        setTimeout(function () {
+          try {
+            const job = html2pdf().set(pdfOptions(filename)).from(sheet).outputPdf('blob');
+            Promise.resolve(job).then(function (blob) {
+              cleanup();
+              resolve(coercePdfBlob(blob));
+            }).catch(function (err) {
+              cleanup();
+              reject(err);
+            });
+          } catch (err) {
+            cleanup();
+            reject(err);
+          }
+        }, 180);
+      });
+    });
+  }
+
   root.SpectrumPrintForm = {
     sheetHtml: sheetHtml,
     documentHtml: documentHtml,
@@ -835,6 +913,8 @@
     visibleColumnWidths: visibleColumnWidths,
     applyColumnResize: applyColumnResize,
     COL_MIN: COL_MIN,
-    COL_WIDTH_DEFAULTS: COL_WIDTH_DEFAULTS
+    COL_WIDTH_DEFAULTS: COL_WIDTH_DEFAULTS,
+    letterSrcdoc: letterSrcdoc,
+    buildPdfBlob: buildPdfBlob
   };
 })(window);
