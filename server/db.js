@@ -122,6 +122,7 @@ function openDb() {
   try { db.exec("ALTER TABLE admins ADD COLUMN role TEXT NOT NULL DEFAULT 'owner'"); } catch (e) { /* already present */ }
   seedAdminRoles(db);
   ensureCompanyCustomers(db);
+  require('./company-crm').ensureCompanyCrm(db);
   ensureCompanySales(db);
   ensurePrintForms(db);
   ensureInventoryVendors(db);

@@ -7,6 +7,7 @@ const MENU_KEYS = [
   'inventory', 'warehouses', 'vendors', 'purchase-orders', 'receipt-shipments',
   'customers',
   'sales', 'quotes', 'orders', 'invoices',
+  'crm', 'leads', 'pipeline', 'activities',
   'settings', 'company', 'staff'
 ];
 
@@ -34,6 +35,15 @@ const MENU_GROUPS = [
     children: [
       { key: 'vendors', label: 'Vendor' },
       { key: 'purchase-orders', label: 'Purchase Order' }
+    ]
+  },
+  {
+    label: 'CRM',
+    children: [
+      { key: 'crm', label: 'CRM' },
+      { key: 'leads', label: 'Lead' },
+      { key: 'pipeline', label: 'Pipeline' },
+      { key: 'activities', label: 'Activity' }
     ]
   },
   {
@@ -120,6 +130,10 @@ function menuFromLegacy(website, inventory, settings) {
     quotes: open,
     orders: open,
     invoices: open,
+    crm: open,
+    leads: open,
+    pipeline: open,
+    activities: open,
     settings: settings ? 'edit' : 'none',
     company: settings ? 'edit' : 'none',
     staff: settings ? 'edit' : 'none'
@@ -136,6 +150,20 @@ function parseMenuAccess(raw) {
     MENU_KEYS.forEach(function (key) {
       menu[key] = accessLevel(raw[key]);
     });
+    if (raw.crm == null && raw.leads == null && raw.pipeline == null && raw.activities == null) {
+      const inherit = accessLevel(raw.customers) === 'none' ? 'none' : accessLevel(raw.customers || 'edit');
+      if (raw.customers == null) {
+        menu.crm = 'edit';
+        menu.leads = 'edit';
+        menu.pipeline = 'edit';
+        menu.activities = 'edit';
+      } else {
+        menu.crm = inherit;
+        menu.leads = inherit;
+        menu.pipeline = inherit;
+        menu.activities = inherit;
+      }
+    }
     return menu;
   }
   if (typeof raw === 'string') {
@@ -251,6 +279,7 @@ function menuLevel(perms, key) {
   if (key === 'settings') return highestAccess(menu.settings, menu.company, menu.staff);
   if (key === 'website') return highestAccess(menu.website, menu.products, menu.accounts);
   if (key === 'inventory') return highestAccess(menu.inventory, menu.warehouses, menu.vendors, menu['purchase-orders'], menu['receipt-shipments']);
+  if (key === 'crm') return highestAccess(menu.crm, menu.leads, menu.pipeline, menu.activities);
   return accessLevel(menu[key]);
 }
 
