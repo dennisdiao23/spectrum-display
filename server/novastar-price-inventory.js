@@ -226,9 +226,9 @@ function applySqlite(db) {
 
   const insertItem = db.prepare(`
     INSERT INTO inventory_items (
-      sku, name, brand_id, pitch, unit, panel_type, packaging_type, qty, low_at, price, cost, dealer_net,
+      sku, name, brand_id, category, pitch, unit, panel_type, packaging_type, qty, low_at, price, cost, dealer_net,
       local_warehouse_cost, weight, panel_w, panel_h, description, image, notes, created_at, updated_at
-    ) VALUES (?, ?, 'novastar', '', 'each', '', '', 0, 0, ?, ?, 0, ?, 0, 0, 0, '', '', ?, ?, ?)
+    ) VALUES (?, ?, 'novastar', 'Control', '', 'each', '', '', 0, 0, ?, ?, 0, ?, 0, 0, 0, '', '', ?, ?, ?)
   `);
   const updateItem = db.prepare(
     'UPDATE inventory_items SET price = ?, cost = ?, local_warehouse_cost = ?, dealer_net = ?, unit = ?, updated_at = ? WHERE id = ?'
@@ -473,6 +473,7 @@ async function applySupabase(supabase) {
         sku: sku,
         name: name,
         brand_id: 'novastar',
+        category: 'Control',
         pitch: '',
         unit: 'each',
         qty: 0,
