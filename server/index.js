@@ -115,6 +115,19 @@ async function main() {
     res.set('Cache-Control', 'private, no-store');
     res.sendFile(path.join(ROOT, 'company.html'));
   }
+  app.get('/company/manifest.webmanifest', function (_req, res) {
+    res.set('Content-Type', 'application/manifest+json; charset=utf-8');
+    res.set('Cache-Control', 'no-cache');
+    res.set('X-Robots-Tag', 'noindex, nofollow');
+    res.sendFile(path.join(ROOT, 'company', 'manifest.webmanifest'));
+  });
+  app.get('/company/sw.js', function (_req, res) {
+    res.set('Content-Type', 'application/javascript; charset=utf-8');
+    res.set('Cache-Control', 'no-cache');
+    res.set('Service-Worker-Allowed', '/company');
+    res.set('X-Robots-Tag', 'noindex, nofollow');
+    res.sendFile(path.join(ROOT, 'company', 'sw.js'));
+  });
   const COMPANY_PAGES = [
     '/company',
     '/company/dashboard',

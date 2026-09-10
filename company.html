@@ -6,12 +6,23 @@
   <link rel="icon" href="/favicon.ico" sizes="48x48" />
   <link rel="icon" type="image/png" href="/assets/favicon-32.png" sizes="32x32" />
   <link rel="apple-touch-icon" href="/assets/apple-touch-icon.png" />
+  <link rel="manifest" href="/company/manifest.webmanifest" />
+  <meta name="theme-color" content="#070B14" />
+  <meta name="mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-title" content="Company" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
   <title>Company | Spectrum Display</title>
   <meta name="robots" content="noindex, nofollow" />
   <link rel="stylesheet" href="/css/company-dash.css?v=store12" />
   <script src="/js/address-autocomplete.js"></script>
   <script src="/js/company-chat.js?v=chatmove2"></script>
   <script src="/js/print-form.js?v=forms18"></script>
+  <script>
+    if ('serviceWorker' in navigator && location.pathname.indexOf('/company') === 0) {
+      navigator.serviceWorker.register('/company/sw.js', { scope: '/company' });
+    }
+  </script>
   <script>
     (function () {
       try {
