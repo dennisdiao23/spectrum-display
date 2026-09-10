@@ -941,10 +941,10 @@ function createSqliteStore() {
         stamp, stamp
       );
       const insertLine = db.prepare(
-        'INSERT INTO company_sales_lines (doc_id, sku, description, qty, unit_price, sort_order) VALUES (?, ?, ?, ?, ?, ?)'
+        'INSERT INTO company_sales_lines (doc_id, sku, item, description, qty, unit_price, sort_order) VALUES (?, ?, ?, ?, ?, ?, ?)'
       );
       input.lines.forEach(function (line, i) {
-        insertLine.run(info.lastInsertRowid, line.sku, line.description, line.qty, line.unitPrice, i);
+        insertLine.run(info.lastInsertRowid, line.sku, line.item || '', line.description, line.qty, line.unitPrice, i);
       });
       const created = await this.getSalesDoc(info.lastInsertRowid);
       if (created && created.type === 'order') {
@@ -979,10 +979,10 @@ function createSqliteStore() {
       );
       db.prepare('DELETE FROM company_sales_lines WHERE doc_id = ?').run(id);
       const insertLine = db.prepare(
-        'INSERT INTO company_sales_lines (doc_id, sku, description, qty, unit_price, sort_order) VALUES (?, ?, ?, ?, ?, ?)'
+        'INSERT INTO company_sales_lines (doc_id, sku, item, description, qty, unit_price, sort_order) VALUES (?, ?, ?, ?, ?, ?, ?)'
       );
       input.lines.forEach(function (line, i) {
-        insertLine.run(id, line.sku, line.description, line.qty, line.unitPrice, i);
+        insertLine.run(id, line.sku, line.item || '', line.description, line.qty, line.unitPrice, i);
       });
       const updated = await this.getSalesDoc(id);
       if (updated && updated.type === 'order') {

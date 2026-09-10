@@ -48,6 +48,7 @@ function normalizeLine(input, index) {
   const unitPrice = money(src.unitPrice != null ? src.unitPrice : src.unit_price);
   return {
     sku: trim(src.sku, 80),
+    item: trim(src.item || src.item_name, 160),
     description: trim(src.description, 400),
     qty: qty,
     unitPrice: unitPrice,
@@ -58,7 +59,7 @@ function normalizeLine(input, index) {
 
 function normalizeLines(list) {
   return (Array.isArray(list) ? list : []).map(normalizeLine).filter(function (line) {
-    return line.sku || line.description || line.qty || line.unitPrice;
+    return line.sku || line.item || line.description || line.qty || line.unitPrice;
   });
 }
 
@@ -143,6 +144,7 @@ function formatLine(row) {
   return {
     id: row.id,
     sku: row.sku || '',
+    item: row.item || '',
     description: row.description || '',
     qty: qty,
     unitPrice: unitPrice,

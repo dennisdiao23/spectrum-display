@@ -580,6 +580,7 @@ create table if not exists public.company_sales_lines (
   id bigint generated always as identity primary key,
   doc_id bigint not null references public.company_sales_docs(id) on delete cascade,
   sku text not null default '',
+  item text not null default '',
   description text not null default '',
   qty numeric not null default 0,
   unit_price numeric not null default 0,
