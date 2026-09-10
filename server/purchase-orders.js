@@ -26,6 +26,7 @@ function normalizeShipFrom(value) {
   const s = String(value || '').trim().toLowerCase();
   if (s === 'china_fob') return 'china_fob';
   if (s === 'novastar_vegas') return 'novastar_vegas';
+  if (s === 'gloshine_la') return 'gloshine_la';
   return '';
 }
 
@@ -33,12 +34,14 @@ function shipFromLabel(value) {
   const s = normalizeShipFrom(value);
   if (s === 'china_fob') return 'China factory (FOB)';
   if (s === 'novastar_vegas') return 'NovaStar Warehouse (Las Vegas)';
+  if (s === 'gloshine_la') return 'Gloshine US Warehouse (Los Angeles)';
   return '';
 }
 
 function poRateForItem(item, shipFrom) {
   const src = item || {};
-  if (normalizeShipFrom(shipFrom) === 'novastar_vegas') {
+  const from = normalizeShipFrom(shipFrom);
+  if (from === 'novastar_vegas' || from === 'gloshine_la') {
     return money(src.localWarehouseCost != null ? src.localWarehouseCost : src.local_warehouse_cost);
   }
   return money(src.cost);

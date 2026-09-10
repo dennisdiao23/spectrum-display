@@ -554,6 +554,7 @@
                   <option value="">Default</option>
                   <option value="ships_azusa">Ships from Azusa</option>
                   <option value="ships_novastar">Ships from NovaStar</option>
+                  <option value="ships_gloshine">Ships from Gloshine</option>
                   <option value="incoming">Incoming</option>
                   <option value="built_to_order">Built to order</option>
                   <option value="quote">Request quote</option>
@@ -674,6 +675,7 @@
               <option value="">Default</option>
               <option value="ships_azusa">Ships from Azusa</option>
               <option value="ships_novastar">Ships from NovaStar</option>
+              <option value="ships_gloshine">Ships from Gloshine</option>
               <option value="incoming">Incoming</option>
               <option value="built_to_order">Built to order</option>
               <option value="quote">Request quote</option>
@@ -1545,6 +1547,7 @@
                   <option value="">Select ship from</option>
                   <option value="china_fob">China factory (FOB)</option>
                   <option value="novastar_vegas">NovaStar Warehouse (Las Vegas)</option>
+                  <option value="gloshine_la">Gloshine US Warehouse (Los Angeles)</option>
                 </select>
               </div>
               <div class="po-field">
@@ -3291,7 +3294,7 @@
             <div class="cc-field">
               <label>Local warehouse cost ($)</label>
               <input id="inv-local-cost" form="inv-item-form" type="number" min="0" step="0.01">
-              <p class="cc-note" style="margin-top:0.35rem">NovaStar Warehouse (Las Vegas).</p>
+              <p class="cc-note" style="margin-top:0.35rem">Vendor US warehouse (NovaStar Las Vegas / Gloshine LA).</p>
             </div>
           </div>
         </section>
@@ -12710,7 +12713,7 @@
     }
     function poRateForItem(item, shipFrom) {
       if (!item) return 0;
-      if (shipFrom === 'novastar_vegas') return Number(item.localWarehouseCost) || 0;
+      if (shipFrom === 'novastar_vegas' || shipFrom === 'gloshine_la') return Number(item.localWarehouseCost) || 0;
       return Number(item.cost) || 0;
     }
     function applyPoShipFromRates() {
@@ -15812,7 +15815,9 @@
         shipFrom: form.shipFrom,
         shipFromLabel: form.shipFrom === 'china_fob'
           ? 'China factory (FOB)'
-          : (form.shipFrom === 'novastar_vegas' ? 'NovaStar Warehouse (Las Vegas)' : ''),
+          : (form.shipFrom === 'novastar_vegas'
+            ? 'NovaStar Warehouse (Las Vegas)'
+            : (form.shipFrom === 'gloshine_la' ? 'Gloshine US Warehouse (Los Angeles)' : '')),
         permitNo: form.permitNo,
         notes: form.notes || '',
         subtotal: total,

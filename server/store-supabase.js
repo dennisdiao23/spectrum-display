@@ -117,6 +117,11 @@ function createSupabaseStore() {
     } catch (e) {
       console.error('Could not apply NovaStar price list:', e.message || e);
     }
+    try {
+      await require('./gloshine-price-inventory').applySupabase(supabase);
+    } catch (e) {
+      console.error('Could not apply Gloshine LA warehouse list:', e.message || e);
+    }
   }
 
   async function backfillItemLocations() {
