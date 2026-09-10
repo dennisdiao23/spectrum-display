@@ -57,14 +57,43 @@ body.company-app {
   display: block;
   object-fit: contain;
 }
-
+.dash-nav-label-row {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  margin: 0 0.15rem 0.45rem;
+  min-height: 1.85rem;
+}
 .dash-nav-label {
-  margin: 0 0.7rem 0.45rem;
+  margin: 0;
+  flex: 1 1 auto;
+  min-width: 0;
   font-size: 0.68rem;
   font-weight: 700;
   letter-spacing: 0.08em;
   text-transform: uppercase;
   color: #7f8db3;
+}
+.dash-sidebar-hide {
+  display: none;
+  flex-shrink: 0;
+  width: 1.85rem;
+  height: 1.85rem;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  border-radius: 0.45rem;
+  background: rgba(255, 255, 255, 0.08);
+  color: #c9d3ea;
+  cursor: pointer;
+  align-items: center;
+  justify-content: center;
+  -webkit-tap-highlight-color: transparent;
+}
+.dash-sidebar-hide:hover,
+.dash-sidebar-hide:focus-visible {
+  background: rgba(255, 255, 255, 0.14);
+  color: #fff;
 }
 
 .dash-nav {
@@ -394,6 +423,40 @@ body.dash-tab-reordering #dash-tab-strip {
   background: #eef2ff;
   color: #102047;
   cursor: pointer;
+}
+
+@media (min-width: 901px) and (any-pointer: coarse) {
+  .dash-sidebar-hide {
+    display: inline-flex;
+  }
+  .dash-sidebar {
+    transition: transform 0.2s ease;
+  }
+  .dash-shell {
+    transition: margin-left 0.2s ease;
+  }
+  html.dash-sidebar-collapsed .dash-sidebar,
+  body.dash-sidebar-collapsed .dash-sidebar {
+    transform: translateX(-105%);
+    pointer-events: none;
+  }
+  html.dash-sidebar-collapsed .dash-shell,
+  body.dash-sidebar-collapsed .dash-shell {
+    margin-left: var(--dash-chrome);
+  }
+  html.dash-sidebar-collapsed .dash-menu-btn,
+  body.dash-sidebar-collapsed .dash-menu-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+  }
+  html.dash-sidebar-collapsed body.so-invoice-float #sales-section,
+  body.dash-sidebar-collapsed.so-invoice-float #sales-section,
+  html.dash-sidebar-collapsed body.po-doc-float #po-section,
+  body.dash-sidebar-collapsed.po-doc-float #po-section {
+    left: var(--dash-chrome);
+    transition: left 0.2s ease;
+  }
 }
 
 .company-main {
@@ -2007,6 +2070,7 @@ html.dash-scroll-lock body.company-app {
   .po-grid { grid-template-columns: 1fr; }
   .po-span2 { grid-column: auto; }
   .dash-menu-btn { display: inline-flex !important; align-items: center; justify-content: center; }
+  .dash-sidebar-hide { display: none !important; }
   .company-main, .dash-topbar { padding-left: 1rem; padding-right: 1rem; }
   .dash-topbar h1 { font-size: 1.15rem; }
   #admin-name { display: none; }
