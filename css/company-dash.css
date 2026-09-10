@@ -2237,6 +2237,12 @@ html.dash-scroll-lock body.company-app {
   max-width: 22rem;
   width: auto;
 }
+.cc-list-toolbar .cc-list-select {
+  flex: 0 0 auto;
+  min-width: 9rem;
+  max-width: 14rem;
+  color: inherit;
+}
 .cc-list-filters {
   display: flex;
   flex-wrap: wrap;

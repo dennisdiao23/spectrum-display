@@ -202,6 +202,42 @@ function packagingTypeOf(value) {
   throw new Error('Packaging type must be COB, MIP, GOB, or SMD.');
 }
 
+const DEFAULT_CATEGORIES = [
+  'LED Panel',
+  'Control',
+  'Receiving Card',
+  'Processor',
+  'Accessory',
+  'Service',
+  'Spare'
+];
+
+function normalizeCategory(value) {
+  return String(value == null ? '' : value).trim().replace(/\s+/g, ' ').slice(0, 80);
+}
+
+function guessInventoryCategory(item) {
+  const sku = String((item && item.sku) || '').toUpperCase();
+  const name = String((item && item.name) || '').toUpperCase();
+  const brand = String((item && (item.brandId != null ? item.brandId : item.brand_id)) || '').toLowerCase();
+  const unit = String((item && item.unit) || '').toLowerCase();
+  const blob = (sku + ' ' + name).replace(/[_-]+/g, ' ');
+  if (/\bINSTALL|\bWARRANTY|\bSERVICE|\bLABOR|\bFREIGHT/.test(blob)) return 'Service';
+  if (brand === 'novastar' || /\bNOVASTAR|\bCONTROLLER|\bRECEIVING|\bPROCESSOR|\bCONTROL/.test(blob)) {
+    return 'Control';
+  }
+  if (unit === 'panels') return 'LED Panel';
+  return '';
+}
+
+function resolveItemCategory(incoming, current, guessSrc) {
+  if (incoming == null) return normalizeCategory(current);
+  const next = normalizeCategory(incoming);
+  if (next) return next;
+  if (normalizeCategory(current)) return '';
+  return guessInventoryCategory(guessSrc) || '';
+}
+
 function normalizeItemInput(body, opts) {
   const patch = !!(opts && opts.patch);
   const src = body || {};
@@ -294,6 +330,9 @@ function normalizeItemInput(body, opts) {
   if (!patch || src.image != null) {
     out.image = String(src.image || '').trim().slice(0, 500);
   }
+  if (!patch || src.category != null) {
+    out.category = normalizeCategory(src.category);
+  }
   if (!patch && out.lowAt == null) out.lowAt = defaultLowAt(out.unit);
   if (!patch && out.qty == null) out.qty = 0;
   if (!patch && out.price == null) out.price = 0;
@@ -311,6 +350,8 @@ function normalizeItemInput(body, opts) {
   if (!patch && out.unit == null) out.unit = 'panels';
   if (!patch && out.panelType == null) out.panelType = '';
   if (!patch && out.packagingType == null) out.packagingType = '';
+  if (!patch && out.category == null) out.category = '';
+  if (!patch && !out.category) out.category = guessInventoryCategory(out) || '';
   if (!patch && !out.sku) {
     out.sku = suggestedSku({
       brandId: out.brandId,
@@ -344,6 +385,7 @@ function dbFieldsFromInput(input) {
   if (input.description != null) row.description = input.description;
   if (input.image != null) row.image = input.image;
   if (input.notes != null) row.notes = input.notes;
+  if (input.category != null) row.category = input.category;
   return row;
 }
 
@@ -461,6 +503,7 @@ function formatItem(row, brandName, maps, locations) {
     id: row && row.id,
     sku: (row && row.sku) || '',
     name: (row && row.name) || '',
+    category: (row && row.category) || '',
     brandId: (row && row.brand_id) || '',
     brandName: brandName || (row && row.brand_id) || '',
     pitch: pitch,
@@ -659,6 +702,10 @@ module.exports = {
   slotsForProduct,
   catalogSkuPlan,
   priceFromProduct,
+  DEFAULT_CATEGORIES,
+  normalizeCategory,
+  guessInventoryCategory,
+  resolveItemCategory,
   normalizeItemInput,
   dbFieldsFromInput,
   defaultLowAt,
