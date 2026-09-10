@@ -14,7 +14,7 @@
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
   <title>Company | Spectrum Display</title>
   <meta name="robots" content="noindex, nofollow" />
-  <link rel="stylesheet" href="/css/company-dash.css?v=mail1" />
+  <link rel="stylesheet" href="/css/company-dash.css?v=mail3" />
   <script src="/js/address-autocomplete.js"></script>
   <script src="/js/company-chat.js?v=chatmove2"></script>
   <script src="/js/print-form.js?v=forms19"></script>
@@ -1296,6 +1296,7 @@
                     <th class="py-3 px-4 font-medium">Type</th>
                     <th class="py-3 px-4 font-medium">To</th>
                     <th class="py-3 px-4 font-medium">Subject</th>
+                    <th class="py-3 px-4 font-medium">From</th>
                     <th class="py-3 px-4 font-medium">Sent by</th>
                     <th class="py-3 px-4 font-medium"></th>
                   </tr>
@@ -1786,6 +1787,7 @@
                     <th class="py-3 px-4 font-medium">Type</th>
                     <th class="py-3 px-4 font-medium">To</th>
                     <th class="py-3 px-4 font-medium">Subject</th>
+                    <th class="py-3 px-4 font-medium">From</th>
                     <th class="py-3 px-4 font-medium">Sent by</th>
                     <th class="py-3 px-4 font-medium"></th>
                   </tr>
@@ -2335,6 +2337,23 @@
             <p id="chat-ai-msg" class="hidden text-sm"></p>
           </div>
         </div>
+        <div id="gmail-section" class="space-y-4">
+          <div>
+            <h2 class="text-base font-semibold text-slate-800">Your Gmail</h2>
+            <p class="text-slate-400 text-sm mt-1">Quotes, orders, invoices, and POs send from your own Gmail. Google asks for permission the first time.</p>
+          </div>
+          <div class="chat-ai-card">
+            <div class="chat-ai-row">
+              <span class="chat-ai-label">From</span>
+              <p id="gmail-status" class="chat-ai-key-status">Not connected</p>
+            </div>
+            <div class="chat-ai-actions">
+              <button type="button" id="gmail-connect" class="px-4 py-2 rounded-full bg-sky-500 hover:bg-sky-400 text-white text-sm font-semibold">Connect Gmail</button>
+              <button type="button" id="gmail-disconnect" class="px-4 py-2 rounded-full border border-slate-200 text-slate-600 hover:border-red-400 text-sm font-semibold hidden">Disconnect</button>
+            </div>
+            <p id="gmail-msg" class="hidden text-sm"></p>
+          </div>
+        </div>
         <div class="space-y-6">
           <div class="flex items-start justify-between gap-4">
             <div>
@@ -2625,6 +2644,13 @@
       <div class="mail-card-body">
         <div class="mail-fields">
           <input type="hidden" id="mail-record-id">
+          <label>From
+            <div class="mail-from-row">
+              <input id="mail-from" type="text" readonly>
+              <button type="button" id="mail-gmail-connect" class="mail-gmail-btn">Connect Gmail</button>
+              <button type="button" id="mail-gmail-disconnect" class="mail-gmail-btn mail-gmail-btn-quiet hidden">Disconnect</button>
+            </div>
+          </label>
           <label>To
             <input id="mail-to" type="text" placeholder="name@gmail.com, other@company.com">
           </label>
@@ -2645,7 +2671,7 @@
             <span>Attach PDF</span>
             <strong id="mail-filename">document.pdf</strong>
           </label>
-          <p id="mail-note" class="mail-note">Sends from Spectrum Display. Recipients can be Gmail or any other inbox.</p>
+          <p id="mail-note" class="mail-note">Sends from your connected Gmail. Recipients can be Gmail or any other inbox.</p>
           <p id="mail-msg" class="mail-msg hidden"></p>
         </div>
         <div class="mail-preview">
@@ -3067,7 +3093,7 @@
     </a>
   </nav>
 
-  <link rel="stylesheet" href="/css/company-dash.css?v=mail1" />
+  <link rel="stylesheet" href="/css/company-dash.css?v=mail3" />
 
   <script>
     const loginPanel = document.getElementById('login-panel');
@@ -3078,6 +3104,7 @@
     let editingId = null;
     let editingHidden = false;
     let currentAdminUser = null;
+    let staffGmail = { configured: false, connected: false, email: '' };
     let editingStaffId = null;
     let editingRoleId = null;
     let websiteSubTab = 'products';
@@ -4112,8 +4139,53 @@
     async function api(url, opts) {
       const res = await fetch(url, Object.assign({ credentials: 'same-origin' }, opts || {}));
       const data = await res.json().catch(function () { return {}; });
-      if (!res.ok) throw new Error(data.error || 'Request failed');
+      if (!res.ok) {
+        const err = new Error(data.error || 'Request failed');
+        err.code = data.code || '';
+        throw err;
+      }
       return data;
+    }
+
+    function applyStaffGmail(status) {
+      staffGmail = {
+        configured: !!(status && status.configured),
+        connected: !!(status && status.connected && status.email),
+        email: (status && status.email) || ''
+      };
+      const statusEl = document.getElementById('gmail-status');
+      const connectBtn = document.getElementById('gmail-connect');
+      const disconnectBtn = document.getElementById('gmail-disconnect');
+      if (statusEl) {
+        statusEl.textContent = staffGmail.connected
+          ? staffGmail.email
+          : (staffGmail.configured ? 'Not connected' : 'Not set up on the server yet');
+      }
+      if (connectBtn) connectBtn.textContent = staffGmail.connected ? 'Reconnect Gmail' : 'Connect Gmail';
+      if (disconnectBtn) disconnectBtn.classList.toggle('hidden', !staffGmail.connected);
+      syncMailGmailUi();
+    }
+    function gmailReasonText(reason) {
+      if (reason === 'setup') return 'Gmail send is not set up on the server yet. Add Google Gmail OAuth on Railway.';
+      if (reason === 'denied') return 'Google permission was not granted.';
+      if (reason === 'signin') return 'Sign in first, then connect Gmail.';
+      if (reason === 'reconnect') return 'Gmail access expired. Connect Gmail again.';
+      return 'Could not connect Gmail.';
+    }
+    function showGmailMsg(text, ok) {
+      const el = document.getElementById('gmail-msg');
+      if (!el) return;
+      el.textContent = text || '';
+      el.className = 'text-sm ' + (ok ? 'text-sky-600' : 'text-red-500');
+      el.classList.toggle('hidden', !text);
+    }
+    function gmailConnectHref() {
+      const ret = encodeURIComponent(companyPath() + (location.search || ''));
+      return '/api/admin/gmail/connect?return=' + ret;
+    }
+    function startGmailConnect() {
+      stashMailDraft();
+      window.location.href = gmailConnectHref();
     }
 
     function showDash(admin) {
@@ -15684,6 +15756,7 @@
           '<td class="py-3 px-4">' + esc(mailKindLabel(row.docKind)) + '</td>' +
           '<td class="py-3 px-4">' + esc(row.to || '—') + '</td>' +
           '<td class="py-3 px-4">' + esc(row.subject || '—') + '</td>' +
+          '<td class="py-3 px-4">' + esc(row.fromEmail || '—') + '</td>' +
           '<td class="py-3 px-4">' + esc(row.sentByName || row.sentByEmail || '—') + '</td>' +
           '<td class="py-3 px-4 text-right"><span class="text-sky-400 text-xs font-medium">Open →</span></td></tr>';
       }).join('');
@@ -15750,6 +15823,92 @@
       });
       document.getElementById('mail-send').classList.toggle('hidden', !!on);
       document.getElementById('mail-again').classList.toggle('hidden', !on);
+      syncMailGmailUi();
+    }
+    function syncMailGmailUi() {
+      const from = document.getElementById('mail-from');
+      const connect = document.getElementById('mail-gmail-connect');
+      const disconnect = document.getElementById('mail-gmail-disconnect');
+      const sendBtn = document.getElementById('mail-send');
+      const note = document.getElementById('mail-note');
+      const review = !!(mailState && mailState.mode === 'review');
+      const fromValue = review && mailState && mailState.fromEmail
+        ? mailState.fromEmail
+        : (staffGmail.connected ? staffGmail.email : 'Not connected');
+      if (from) from.value = fromValue;
+      if (connect) {
+        connect.classList.toggle('hidden', review);
+        connect.textContent = staffGmail.connected ? 'Reconnect Gmail' : 'Connect Gmail';
+        connect.disabled = false;
+      }
+      if (disconnect) disconnect.classList.toggle('hidden', review || !staffGmail.connected);
+      if (sendBtn) {
+        sendBtn.classList.toggle('hidden', review || !staffGmail.connected);
+        sendBtn.disabled = review || !staffGmail.connected;
+      }
+      if (note) {
+        note.textContent = staffGmail.connected
+          ? ('Sends from ' + staffGmail.email + '. Recipients can be Gmail or any other inbox.')
+          : (staffGmail.configured
+            ? 'Connect Gmail to send from your own inbox. Recipients can be Gmail or any other inbox.'
+            : 'Gmail send is not set up on the server yet. Connect will ask Google for permission once it is.');
+      }
+    }
+    const MAIL_DRAFT_KEY = 'sd-mail-gmail-draft';
+    function stashMailDraft() {
+      if (!mailState || mailState.mode === 'review') return;
+      try {
+        sessionStorage.setItem(MAIL_DRAFT_KEY, JSON.stringify({
+          partyKind: mailState.partyKind,
+          partyId: mailState.partyId,
+          docKind: mailState.docKind,
+          docId: mailState.docId,
+          docNumber: mailState.docNumber,
+          partyName: mailState.partyName || '',
+          to: document.getElementById('mail-to').value,
+          cc: document.getElementById('mail-cc').value,
+          bcc: document.getElementById('mail-bcc').value,
+          subject: document.getElementById('mail-subject').value,
+          body: document.getElementById('mail-body').value,
+          filename: mailState.filename || 'document.pdf',
+          attach: document.getElementById('mail-attach').checked,
+          printDoc: mailState.printDoc || null
+        }));
+      } catch (err) {}
+    }
+    function restoreMailDraft() {
+      let raw = '';
+      try { raw = sessionStorage.getItem(MAIL_DRAFT_KEY) || ''; } catch (err) { raw = ''; }
+      if (!raw) return false;
+      try { sessionStorage.removeItem(MAIL_DRAFT_KEY); } catch (err) {}
+      let draft;
+      try { draft = JSON.parse(raw); } catch (err) { return false; }
+      if (!draft || !draft.partyId) return false;
+      openMailCompose(draft);
+      return true;
+    }
+    async function consumeGmailReturn() {
+      const params = new URLSearchParams(location.search);
+      const flag = params.get('gmail');
+      if (!flag) return;
+      const reason = params.get('reason') || '';
+      params.delete('gmail');
+      params.delete('reason');
+      const next = companyPath() + (params.toString() ? '?' + params.toString() : '') + location.hash;
+      history.replaceState({}, '', next);
+      try {
+        const data = await api('/api/admin/gmail');
+        applyStaffGmail(data.gmail);
+      } catch (err) {}
+      restoreMailDraft();
+      if (flag === 'connected') {
+        showGmailMsg('Gmail connected as ' + (staffGmail.email || 'your account') + '.', true);
+        mailShowMsg(staffGmail.email ? ('Sending as ' + staffGmail.email + '.') : 'Gmail connected.', true);
+      } else if (flag === 'error') {
+        const text = gmailReasonText(reason);
+        showGmailMsg(text, false);
+        mailShowMsg(text);
+      }
     }
     function closeMailCompose() {
       mailRevokePreview();
@@ -15822,7 +15981,7 @@
         mailState.pdfBlob = null;
         mailSetPreviewEmpty(err.message || 'Could not build the PDF preview.');
       } finally {
-        if (sendBtn && mailState && mailState.mode !== 'review') sendBtn.disabled = false;
+        if (sendBtn && mailState && mailState.mode !== 'review') syncMailGmailUi();
       }
     }
     function openMailCompose(opts) {
@@ -15843,7 +16002,8 @@
       fillMailFields(mailState);
       mailSetReadonly(mailState.mode === 'review');
       mailShowMsg('');
-      openSoPop('mail-compose', 'mail-to');
+      syncMailGmailUi();
+      openSoPop('mail-compose', staffGmail.connected ? 'mail-to' : 'mail-gmail-connect');
       prepareMailPdf();
     }
     async function openSentMail(id) {
@@ -15866,6 +16026,7 @@
           body: email.body,
           filename: email.filename || 'document.pdf',
           attach: !!email.hasPdf,
+          fromEmail: email.fromEmail || email.sentByEmail || '',
           previewUrl: email.hasPdf ? ('/api/admin/emails/' + email.id + '/pdf') : '',
           printDoc: null
         });
@@ -15888,6 +16049,10 @@
       const subject = document.getElementById('mail-subject').value.trim();
       const body = document.getElementById('mail-body').value.trim();
       const attach = document.getElementById('mail-attach').checked;
+      if (!staffGmail.connected) {
+        mailShowMsg('Connect Gmail to send from your own inbox.');
+        return;
+      }
       if (!mailState.partyId) {
         mailShowMsg('Select a customer or vendor first.');
         return;
@@ -15935,10 +16100,25 @@
         if (partyKind === 'vendor') showPoMsg(note, true);
         else showSoMsg(note, true);
       } catch (err) {
+        if (err.code === 'gmail_required' || err.code === 'gmail_reconnect') {
+          applyStaffGmail({ configured: staffGmail.configured, connected: false, email: '' });
+        }
         mailShowMsg(err.message || 'Could not send.');
       } finally {
-        sendBtn.disabled = false;
         sendBtn.textContent = 'Send';
+        syncMailGmailUi();
+      }
+    }
+    async function disconnectStaffGmail() {
+      if (!staffGmail.connected) return;
+      if (!confirm('Disconnect Gmail? You will need to connect again before sending.')) return;
+      try {
+        const data = await api('/api/admin/gmail/disconnect', { method: 'POST' });
+        applyStaffGmail(data.gmail);
+        showGmailMsg('Gmail disconnected.', true);
+        mailShowMsg('Gmail disconnected. Connect Gmail to send.');
+      } catch (err) {
+        showGmailMsg(err.message || 'Could not disconnect Gmail.', false);
       }
     }
     function emailSalesDoc() {
@@ -16022,6 +16202,10 @@
     document.getElementById('mail-close').addEventListener('click', closeMailCompose);
     document.getElementById('mail-cancel').addEventListener('click', closeMailCompose);
     document.getElementById('mail-send').addEventListener('click', sendMailCompose);
+    document.getElementById('mail-gmail-connect').addEventListener('click', startGmailConnect);
+    document.getElementById('mail-gmail-disconnect').addEventListener('click', disconnectStaffGmail);
+    document.getElementById('gmail-connect').addEventListener('click', startGmailConnect);
+    document.getElementById('gmail-disconnect').addEventListener('click', disconnectStaffGmail);
     document.getElementById('mail-again').addEventListener('click', function () {
       if (!mailState) return;
       mailState.mode = 'compose';
@@ -17412,6 +17596,8 @@
           })
         });
         if (!showDash(data.admin)) return;
+        applyStaffGmail(data.gmail);
+        await consumeGmailReturn();
         await loadColumnPrefs();
         bootSpectrumChat(data.admin);
         await openRoutedSection(tabFromPath());
@@ -18353,7 +18539,10 @@
     api('/api/admin/me').then(function (data) {
       if (data.ok && data.admin) {
         if (!showDash(data.admin)) return;
-        return loadColumnPrefs().then(function () {
+        applyStaffGmail(data.gmail);
+        return consumeGmailReturn().then(function () {
+          return loadColumnPrefs();
+        }).then(function () {
           if (window.SpectrumChat) bootSpectrumChat(data.admin);
           return openRoutedSection(tabFromPath()).then(function () {
             var bootDraft = copilotTokenFromHref(location.href);
