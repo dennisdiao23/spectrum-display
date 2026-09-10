@@ -1549,6 +1549,7 @@ function createSqliteStore() {
   Object.assign(api, require('./company-crm').sqliteApi(db, api));
   Object.assign(api, require('./company-emails').sqliteApi(db));
   Object.assign(api, require('./gmail-accounts').sqliteApi(db));
+  Object.assign(api, require('./dealer-portal').sqliteApi(db, api));
   return api;
 }
 

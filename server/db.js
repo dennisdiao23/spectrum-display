@@ -123,6 +123,7 @@ function openDb() {
   seedAdminRoles(db);
   ensureCompanyCustomers(db);
   require('./company-crm').ensureCompanyCrm(db);
+  require('./dealer-portal').ensureDealerPortal(db);
   ensureCompanySales(db);
   ensurePrintForms(db);
   ensureInventoryVendors(db);

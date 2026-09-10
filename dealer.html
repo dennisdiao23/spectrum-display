@@ -249,7 +249,7 @@
       <div class="site-wrap dealer-reveal">
         <p class="dealer-kicker">Application</p>
         <h2>Register as Spectrum Dealer</h2>
-        <p class="dealer-lead">No account required. Send your company details to Spectrum sales — we review and follow up by email. Attach a resale certificate if you have one.</p>
+        <p class="dealer-lead">No account required. We save your application even if email is down. If you already have My Account, you’ll see a pending notice there after Spectrum receives it. Attach a resale certificate if you have one.</p>
 
         <form id="dealer-inquiry-form" class="dealer-form" enctype="multipart/form-data" novalidate>
           <input class="dealer-hp" type="text" name="website" tabindex="-1" autocomplete="off" aria-hidden="true" />
@@ -501,7 +501,12 @@
         submitBtn.disabled = true;
         submitBtn.textContent = 'Sending…';
         try {
-          var res = await fetch('/api/dealer-inquiry', { method: 'POST', body: fd });
+          var headers = {};
+          if (window.SpectrumAuth && SpectrumAuth.accessToken) {
+            var token = await SpectrumAuth.accessToken();
+            if (token) headers.Authorization = 'Bearer ' + token;
+          }
+          var res = await fetch('/api/dealer-inquiry', { method: 'POST', body: fd, headers: headers });
           var json = await res.json().catch(function () { return {}; });
           if (!res.ok || !json.ok) {
             throw new Error(json.error || 'Could not send the application. Please try again.');
@@ -509,7 +514,10 @@
           form.reset();
           document.getElementById('company_address_country').value = 'US';
           syncSubmitEnabled();
-          msg.textContent = 'Thanks — Spectrum received your dealer application and will follow up by email.';
+          var signedIn = window.SpectrumAuth && SpectrumAuth.getSession && SpectrumAuth.getSession();
+          msg.textContent = signedIn
+            ? 'Thanks — Spectrum saved your dealer application. Check My Account for a pending notice while we review it.'
+            : 'Thanks — Spectrum saved your dealer application and will follow up by email.';
           msg.className = 'dealer-form-msg is-ok';
         } catch (err) {
           msg.textContent = (err && err.message) || 'Could not send the application. Please try again.';
@@ -573,8 +581,23 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="js/supabase-client.js"></script>
   <script src="js/pricing.js"></script>
-  <script src="js/auth.js"></script>
+  <script src="js/auth.js?v=dealer-portal-v1"></script>
   <script src="js/site-header.js"></script>
   <script src="js/i18n.js"></script>
+  <script>
+    (function () {
+      function prefill() {
+        if (!window.SpectrumAuth || !SpectrumAuth.getSession) return;
+        var session = SpectrumAuth.getSession();
+        if (!session) return;
+        var name = document.getElementById('contact_name');
+        var email = document.getElementById('email');
+        if (name && !name.value) name.value = session.name || '';
+        if (email && !email.value) email.value = session.email || '';
+      }
+      if (window.SpectrumAuth && SpectrumAuth.ready) SpectrumAuth.ready.then(prefill);
+      else window.addEventListener('spectrum:auth', prefill);
+    })();
+  </script>
 </body>
 </html>

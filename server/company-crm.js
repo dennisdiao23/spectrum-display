@@ -318,7 +318,7 @@ function customerPayloadFromLead(lead) {
     shipSame: true,
     source: lead.source || '',
     salesRep: lead.ownerName || '',
-    customerType: lead.projectType || '',
+    customerType: lead.projectType || (lead.source === 'dealer' ? 'Dealer' : ''),
     notes: lead.notes || ''
   };
 }

@@ -129,6 +129,10 @@
             <svg class="dash-nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="8" r="3.25"/><path d="M5 19.2c.9-3.1 3.5-4.7 7-4.7s6.1 1.6 7 4.7"/></svg>
             <span>Accounts</span>
           </a>
+          <a href="/company/website/dealers" id="tab-dealers" class="dash-sub-link">
+            <svg class="dash-nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 7V5a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><rect x="4" y="7" width="16" height="14" rx="2"/><path d="M9 12h6M9 16h4"/></svg>
+            <span>Applications</span>
+          </a>
         </div>
       </div>
       <div class="dash-nav-group">
@@ -814,6 +818,61 @@
             <div id="acct-panels" class="space-y-2 text-sm"></div>
           </div>
         </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div id="dealers-section" class="hidden">
+        <p class="text-slate-400 text-sm mb-4 da-list-head">Dealer applications from the public form. Approve as Authorized to set the matching website account to Dealer and convert the CRM lead to a Customer. Reject leaves them as Customer.</p>
+        <div class="flex flex-wrap gap-2 mb-4 da-list-head" id="da-filters">
+          <button type="button" class="px-3 py-1.5 rounded-full text-sm font-medium bg-sky-500/20 text-sky-300 is-on" data-da-filter="pending" aria-pressed="true">Pending</button>
+          <button type="button" class="px-3 py-1.5 rounded-full text-sm font-medium text-slate-400 border border-slate-700 hover:text-white" data-da-filter="approved" aria-pressed="false">Approved</button>
+          <button type="button" class="px-3 py-1.5 rounded-full text-sm font-medium text-slate-400 border border-slate-700 hover:text-white" data-da-filter="rejected" aria-pressed="false">Rejected</button>
+          <button type="button" class="px-3 py-1.5 rounded-full text-sm font-medium text-slate-400 border border-slate-700 hover:text-white" data-da-filter="all" aria-pressed="false">All</button>
+        </div>
+        <p id="dealers-error" class="hidden text-sm text-red-400 mb-3 da-list-head"></p>
+        <div id="dealers-list-wrap" class="cc-list-inner">
+          <div id="da-split" class="dash-split da-split">
+            <div id="da-split-left" class="dash-split-left">
+              <div class="cc-table-card rounded-2xl border border-slate-800">
+                <div class="cc-table-wrap overflow-x-auto">
+                  <table class="w-full text-sm dash-cols" data-cols="dealer-applications">
+                    <thead class="text-left text-slate-400 border-b border-slate-800">
+                      <tr>
+                        <th class="py-3 px-4 font-medium">Company</th>
+                        <th class="py-3 px-4 font-medium">Applicant</th>
+                        <th class="py-3 px-4 font-medium">Tax ID</th>
+                        <th class="py-3 px-4 font-medium">Submitted</th>
+                        <th class="py-3 px-4 font-medium">Status</th>
+                      </tr>
+                    </thead>
+                    <tbody id="dealers-table" class="text-slate-200"></tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+            <div id="da-split-resizer" class="dash-split-resizer" role="separator" aria-orientation="vertical" aria-label="Resize application panels" tabindex="0"></div>
+            <div id="da-split-right" class="dash-split-right">
+              <div id="da-overview-panel" class="inv-right-panel">
+                <div class="inv-overview-summary">
+                  <p class="inv-overview-lead">Select an application to review, then Approve as Authorized or Reject.</p>
+                </div>
+              </div>
+              <div id="dealer-app-detail" class="hidden space-y-5 inv-right-panel">
+                <button type="button" id="dealer-app-back" class="text-sm text-sky-400 hover:text-sky-300">← All applications</button>
+                <div class="rounded-2xl border border-slate-800 bg-slate-900/50 p-5 space-y-4">
+                  <div class="flex flex-wrap items-start justify-between gap-3">
+                    <div>
+                      <h3 id="da-detail-company" class="font-semibold text-lg">—</h3>
+                      <p id="da-detail-status" class="text-sm text-slate-400 mt-1"></p>
+                    </div>
+                    <div id="da-detail-actions" class="flex flex-wrap gap-2"></div>
+                  </div>
+                  <dl id="da-detail-fields" class="grid sm:grid-cols-2 gap-x-6 gap-y-3 text-sm"></dl>
+                  <p id="da-detail-msg" class="hidden text-sm text-sky-400"></p>
+                </div>
+              </div>
             </div>
           </div>
         </div>
@@ -3668,6 +3727,7 @@
       if (hash === 'settings/roles' || hash === 'roles') return 'staff';
       if (hash === 'settings' || hash === 'settings/staff') return 'staff';
       if (hash === 'website/accounts' || hash === 'accounts') return 'accounts';
+      if (hash === 'website/dealers' || hash === 'dealers') return 'dealers';
       if (hash === 'website/store' || hash === 'store') return 'store';
       if (hash === 'website' || hash === 'website/products' || hash === 'products') return 'products';
       if (hash === 'customers' || hash === 'customer') return 'customers';
@@ -3712,6 +3772,7 @@
       if (p === '/company/settings/roles') return 'staff';
       if (p === '/company/settings') return 'staff';
       if (p === '/company/website/accounts') return 'accounts';
+      if (p === '/company/website/dealers') return 'dealers';
       if (p === '/company/website/store') return 'store';
       if (p === '/company/website') return 'products';
       return '';
@@ -3734,6 +3795,7 @@
       const doc = parseDocMasterTab(name);
       if (doc) return pathForDocMaster(doc.kind, doc.id);
       if (name === 'accounts') return '/company/website/accounts';
+      if (name === 'dealers') return '/company/website/dealers';
       if (name === 'store') return '/company/website/store';
       if (name === 'company') return '/company/settings/company';
       if (name === 'forms') return '/company/settings/forms';
@@ -3854,6 +3916,7 @@
         if (p === '/company/settings/forms') return 'forms';
         if (p === '/company/settings/roles' || p === '/company/settings') return 'staff';
         if (p === '/company/website/accounts') return 'accounts';
+        if (p === '/company/website/dealers') return 'dealers';
         if (p === '/company/website/store') return 'store';
         if (p === '/company/website') return 'products';
         if (p === '/company/chat') return 'chat';
@@ -3932,6 +3995,7 @@
       products: 'Website',
       store: 'Store',
       accounts: 'Accounts',
+      dealers: 'Applications',
       inventory: 'Inventory',
       warehouses: 'Location',
       'receipt-shipments': 'Receipt Shipment',
@@ -3977,6 +4041,7 @@
     MASTER_TAB_ICON.products = MASTER_TAB_ICON.website;
     MASTER_TAB_ICON.store = MASTER_TAB_ICON.website;
     MASTER_TAB_ICON.accounts = MASTER_TAB_ICON.customer;
+    MASTER_TAB_ICON.dealers = MASTER_TAB_ICON.customer;
     MASTER_TAB_ICON.vendors = MASTER_TAB_ICON.vendor;
     MASTER_TAB_ICON.customers = MASTER_TAB_ICON.customer;
     MASTER_TAB_ICON.leads = MASTER_TAB_ICON.crm;
@@ -3998,6 +4063,7 @@
       products: '/company/website',
       store: '/company/website/store',
       accounts: '/company/website/accounts',
+      dealers: '/company/website/dealers',
       inventory: '/company/inventory',
       warehouses: '/company/inventory/locations',
       'receipt-shipments': '/company/inventory/receipt-shipments',
@@ -4032,7 +4098,7 @@
       if (doc) return doc.kind === 'po' ? 'vendor' : 'customer';
       if (name === 'dashboard') return 'dashboard';
       if (name === 'chat') return 'chat';
-      if (name === 'products' || name === 'store' || name === 'accounts' || name === 'website') return 'website';
+      if (name === 'products' || name === 'store' || name === 'accounts' || name === 'dealers' || name === 'website') return 'website';
       if (name === 'inventory' || name === 'warehouses' || name === 'receipt-shipments') return 'inventory';
       if (name === 'vendors' || name === 'purchase-orders') return 'vendor';
       if (name === 'leads' || name === 'pipeline' || name === 'activities' || name === 'crm') return 'crm';
@@ -4054,7 +4120,7 @@
 
     function masterInnersFor(group) {
       if (group === 'chat') return ['chat'];
-      if (group === 'website') return ['products', 'store', 'accounts'];
+      if (group === 'website') return ['products', 'store', 'accounts', 'dealers'];
       if (group === 'inventory') return ['inventory', 'warehouses', 'receipt-shipments'];
       if (group === 'vendor') return ['vendors', 'purchase-orders'];
       if (group === 'crm') return ['leads', 'pipeline', 'activities'];
@@ -4595,7 +4661,7 @@
     function canView(mod) {
       if (adminPerms().settings) return true;
       if (mod === 'settings') return canUse('settings') || canUse('company') || canUse('staff') || canUse('forms');
-      if (mod === 'website') return canUse('website') || canUse('products') || canUse('store') || canUse('accounts');
+      if (mod === 'website') return canUse('website') || canUse('products') || canUse('store') || canUse('accounts') || canUse('dealers');
       if (mod === 'inventory') return canUse('inventory') || canUse('warehouses') || canUse('vendors') || canUse('purchase-orders') || canUse('receipt-shipments');
       const v = adminPerms()[mod];
       return v === 'view' || v === 'edit';
@@ -4619,6 +4685,7 @@
       products: 'products',
       store: 'products',
       accounts: 'accounts',
+      dealers: 'accounts',
       inventory: 'inventory',
       warehouses: 'warehouses',
       vendors: 'vendors',
@@ -4651,6 +4718,9 @@
       }
       if ((level !== 'view' && level !== 'edit') && (key === 'leads' || key === 'pipeline' || key === 'activities')) {
         level = (adminPerms().menu || {}).crm;
+      }
+      if ((level !== 'view' && level !== 'edit') && section === 'dealers') {
+        level = (adminPerms().menu || {}).website || (adminPerms().menu || {}).products || (adminPerms().menu || {}).accounts;
       }
       return level === 'view' || level === 'edit';
     }
@@ -4800,7 +4870,7 @@
       if (!fromPath || !canUse(fromPath)) {
         if (goCompany(next ? pathForTab(next) : '/company')) return false;
       }
-      websiteSubTab = next === 'accounts' ? 'accounts' : next === 'store' ? 'store' : 'products';
+      websiteSubTab = next === 'dealers' ? 'dealers' : next === 'accounts' ? 'accounts' : next === 'store' ? 'store' : 'products';
       settingsSubTab = next === 'company' ? 'company' : next === 'forms' ? 'forms' : 'staff';
       if (next === 'quotes' || next === 'orders' || next === 'invoices') salesSubTab = next;
       const bootDoc = parseDocMasterTab(next);
@@ -5778,6 +5848,7 @@
       orders: '<span id="so-total">0</span> <span id="so-list-label">sales documents</span>. Pick a company customer, add line items, then save. Website Sign in accounts stay under Website → Accounts.',
       invoices: '<span id="so-total">0</span> <span id="so-list-label">sales documents</span>. Pick a company customer, add line items, then save. Website Sign in accounts stay under Website → Accounts.',
       leads: '<span id="crm-lead-total">0</span> leads from the website, dealer form, or staff. Convert a lead to create a Customer for quotes.',
+      dealers: '<span id="da-total">0</span> dealer applications. Approve as Authorized to set the website account to Dealer.',
       pipeline: '<span id="crm-pipe-total">0</span> deals. Drag a card to change stage. Create a quote after the deal has a customer.',
       activities: '<span id="crm-act-total">0</span> activities — notes, calls, emails, meetings, and tasks.',
       company: '<span id="ca-total">0</span> company accounts — logins and passwords.',
@@ -5843,7 +5914,7 @@
       if (typeof closeRoleDrawer === 'function') closeRoleDrawer(true);
       const doc = parseDocMasterTab(name);
       const view = viewTabForMaster(name);
-      const onWebsite = view === 'products' || view === 'store' || view === 'accounts';
+      const onWebsite = view === 'products' || view === 'store' || view === 'accounts' || view === 'dealers';
       const onSettings = view === 'staff' || view === 'roles' || view === 'company' || view === 'forms';
       const onCustomerNav = view === 'quotes' || view === 'orders' || view === 'invoices' || view === 'sales' || view === 'customers';
       const onCrmNav = view === 'leads' || view === 'pipeline' || view === 'activities' || view === 'crm';
@@ -5890,7 +5961,7 @@
       if (whSec) whSec.classList.toggle('wh-split-on', view === 'warehouses' && !isMobileDash());
       document.body.classList.toggle('inv-layout-lock', view === 'inventory' && !isMobileDash());
       document.body.classList.toggle('dash-split-lock',
-        (view === 'customers' || view === 'vendors' || view === 'warehouses' || view === 'products' || view === 'store' || view === 'accounts' || view === 'leads' || view === 'pipeline' || view === 'activities') && !isMobileDash());
+        (view === 'customers' || view === 'vendors' || view === 'warehouses' || view === 'products' || view === 'store' || view === 'accounts' || view === 'dealers' || view === 'leads' || view === 'pipeline' || view === 'activities') && !isMobileDash());
       const vnSec = document.getElementById('vendors-section');
       if (vnSec) vnSec.classList.toggle('vn-split-on', view === 'vendors' && !isMobileDash());
       const wpSec = document.getElementById('products-section');
@@ -5899,6 +5970,8 @@
       if (wsSec) wsSec.classList.toggle('ws-split-on', view === 'store' && !isMobileDash());
       const waSec = document.getElementById('accounts-section');
       if (waSec) waSec.classList.toggle('wa-split-on', view === 'accounts' && !isMobileDash());
+      const daSec = document.getElementById('dealers-section');
+      if (daSec) daSec.classList.toggle('da-split-on', view === 'dealers' && !isMobileDash());
       if (view !== 'products' && typeof stashWpActiveTab === 'function') stashWpActiveTab();
       if (view !== 'store' && typeof stashWsActiveTab === 'function') stashWsActiveTab();
       if (view !== 'accounts' && typeof stashWaActiveTab === 'function') stashWaActiveTab();
@@ -5923,6 +5996,8 @@
       if (soNavKpis) soNavKpis.classList.toggle('hidden', view === 'invoices');
       if (soInvKpis) soInvKpis.classList.toggle('hidden', view !== 'invoices');
       document.getElementById('accounts-section').classList.toggle('hidden', view !== 'accounts');
+      const dealersSec = document.getElementById('dealers-section');
+      if (dealersSec) dealersSec.classList.toggle('hidden', view !== 'dealers');
       document.getElementById('company-section').classList.toggle('hidden', view !== 'company');
       document.getElementById('forms-section').classList.toggle('hidden', view !== 'forms');
       document.getElementById('staff-section').classList.toggle('hidden', view !== 'staff' && view !== 'roles');
@@ -5949,6 +6024,8 @@
       document.getElementById('tab-products').className = navLinkClass(view === 'products', false, 'sub');
       document.getElementById('tab-store').className = navLinkClass(view === 'store', false, 'sub');
       document.getElementById('tab-accounts').className = navLinkClass(view === 'accounts', !canUse('accounts'), 'sub');
+      const tabDealers = document.getElementById('tab-dealers');
+      if (tabDealers) tabDealers.className = navLinkClass(view === 'dealers', !canUse('dealers'), 'sub');
       document.getElementById('tab-quotes').className = navLinkClass(view === 'quotes', !canUse('quotes'), 'sub');
       document.getElementById('tab-orders').className = navLinkClass(view === 'orders', !canUse('orders'), 'sub');
       document.getElementById('tab-invoices').className = navLinkClass(view === 'invoices', !canUse('invoices'), 'sub');
@@ -5966,6 +6043,7 @@
         products: ['Website', 'Product pages'],
         store: ['Website', 'US Store'],
         accounts: ['Website', 'Website accounts'],
+        dealers: ['Website', 'Dealer applications'],
         inventory: ['Inventory', ''],
         warehouses: ['Inventory', 'Location'],
         vendors: ['Vendor', ''],
@@ -9979,6 +10057,186 @@
       }
     }
 
+    let dealerApplications = [];
+    let dealerAppFilter = 'pending';
+    let dealerAppActiveId = '';
+
+    function isDaSplitOn() {
+      return !isMobileDash();
+    }
+
+    function dealerAppStatusLabel(status) {
+      if (status === 'approved') return 'Approved';
+      if (status === 'rejected') return 'Rejected';
+      return 'Pending';
+    }
+
+    function dealerAppStatusClass(status) {
+      if (status === 'approved') return 'bg-emerald-500/15 text-emerald-300';
+      if (status === 'rejected') return 'bg-rose-500/15 text-rose-300';
+      return 'bg-amber-500/15 text-amber-300';
+    }
+
+    function showDealerAppOverview() {
+      dealerAppActiveId = '';
+      const detail = document.getElementById('dealer-app-detail');
+      const overview = document.getElementById('da-overview-panel');
+      const sec = document.getElementById('dealers-section');
+      if (detail) detail.classList.add('hidden');
+      if (overview) overview.classList.remove('hidden');
+      if (sec) sec.classList.remove('da-detail-open');
+      renderDealerApplicationsTable(dealerApplications);
+    }
+
+    function daField(label, value) {
+      const text = value == null || value === '' ? '—' : String(value);
+      return '<div><dt class="text-xs text-slate-500 mb-0.5">' + esc(label) + '</dt><dd class="text-slate-200">' + esc(text) + '</dd></div>';
+    }
+
+    function renderDealerAppDetail(app) {
+      const detail = document.getElementById('dealer-app-detail');
+      const overview = document.getElementById('da-overview-panel');
+      const sec = document.getElementById('dealers-section');
+      if (!app || !detail) return;
+      dealerAppActiveId = String(app.id);
+      if (overview) overview.classList.add('hidden');
+      detail.classList.remove('hidden');
+      if (sec && !isDaSplitOn()) sec.classList.add('da-detail-open');
+      document.getElementById('da-detail-company').textContent = app.companyName || '—';
+      document.getElementById('da-detail-status').textContent = dealerAppStatusLabel(app.status) +
+        (app.reviewedAt ? ' · ' + new Date(app.reviewedAt).toLocaleString() : '') +
+        (app.reviewedBy ? ' · ' + app.reviewedBy : '');
+      const addr = app.companyAddress || {};
+      const addrLine = [addr.line1, addr.line2, addr.city, addr.state, addr.postal_code, addr.country].filter(Boolean).join(', ');
+      const fields = document.getElementById('da-detail-fields');
+      const cert = app.resaleCertificateUrl
+        ? '<a class="text-sky-400 hover:text-sky-300" href="' + esc(app.resaleCertificateUrl) + '" target="_blank" rel="noopener">' + esc(app.resaleCertificateName || 'View file') + '</a>'
+        : esc(app.resaleCertificateName || '—');
+      fields.innerHTML =
+        daField('Applicant', app.contactName) +
+        daField('Email', app.email) +
+        daField('Phone', app.phone) +
+        daField('Website', app.website) +
+        daField('Tax ID', app.taxId) +
+        daField('Years in business', app.yearsInBusiness) +
+        daField('Company size', app.companySize) +
+        daField('Business type', (app.businessType || []).join(', ')) +
+        daField('Verticals', (app.primaryVerticals || []).join(', ')) +
+        daField('Typical job size', app.typicalJobSizeM2) +
+        daField('Address', addrLine) +
+        daField('References', app.referencesText) +
+        '<div class="sm:col-span-2"><dt class="text-xs text-slate-500 mb-0.5">Resale certificate</dt><dd>' + cert + '</dd></div>' +
+        daField('Submitted', app.createdAt ? new Date(app.createdAt).toLocaleString() : '') +
+        daField('CRM customer', app.customerId ? '#' + app.customerId : '');
+      const actions = document.getElementById('da-detail-actions');
+      const pending = app.status === 'pending';
+      actions.innerHTML = pending && canEdit('website')
+        ? '<button type="button" id="da-approve-btn" class="px-4 py-2 rounded-full bg-sky-500 hover:bg-sky-400 text-white text-sm font-semibold">Approve as Authorized</button>' +
+          '<button type="button" id="da-reject-btn" class="px-4 py-2 rounded-full border border-slate-600 text-sm text-slate-300 hover:border-rose-400 hover:text-white">Reject</button>'
+        : '';
+      const msg = document.getElementById('da-detail-msg');
+      msg.classList.add('hidden');
+      msg.classList.remove('text-rose-400');
+      msg.textContent = '';
+      const approveBtn = document.getElementById('da-approve-btn');
+      const rejectBtn = document.getElementById('da-reject-btn');
+      if (approveBtn) approveBtn.addEventListener('click', function () { reviewDealerApplication(app.id, 'approve'); });
+      if (rejectBtn) rejectBtn.addEventListener('click', function () { reviewDealerApplication(app.id, 'reject'); });
+      renderDealerApplicationsTable(dealerApplications);
+    }
+
+    async function reviewDealerApplication(id, action) {
+      const msg = document.getElementById('da-detail-msg');
+      try {
+        const data = await api('/api/admin/dealer-applications/' + encodeURIComponent(id) + '/' + action, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: '{}'
+        });
+        const app = data.application;
+        await loadDealerApplications();
+        const next = dealerApplications.find(function (row) { return String(row.id) === String(app.id); }) || app;
+        renderDealerAppDetail(next);
+        msg.textContent = action === 'approve' ? 'Approved as Authorized dealer.' : 'Application rejected.';
+        msg.classList.remove('hidden');
+      } catch (err) {
+        msg.textContent = err.message || 'Could not update this application.';
+        msg.classList.remove('hidden');
+        msg.classList.add('text-rose-400');
+      }
+    }
+
+    function renderDealerApplicationsTable(rows) {
+      const tb = document.getElementById('dealers-table');
+      const total = document.getElementById('da-total');
+      if (!tb) return;
+      const list = rows || [];
+      if (total) total.textContent = String(list.length);
+      if (!list.length) {
+        tb.innerHTML = '<tr><td class="py-6 px-4 text-slate-500" colspan="5">No dealer applications in this filter.</td></tr>';
+        return;
+      }
+      tb.innerHTML = list.map(function (app) {
+        const when = app.createdAt ? new Date(app.createdAt).toLocaleDateString() : '';
+        const on = String(app.id) === String(dealerAppActiveId);
+        return '<tr class="border-b border-slate-800 hover:bg-slate-900/80 cursor-pointer' + (on ? ' is-selected' : '') + '" data-id="' + esc(String(app.id)) + '">' +
+          '<td class="py-3 px-4">' + esc(app.companyName || '—') + '</td>' +
+          '<td class="py-3 px-4">' + esc(app.contactName || '') + '<div class="text-xs text-slate-500">' + esc(app.email || '') + '</div></td>' +
+          '<td class="py-3 px-4 text-slate-400">' + esc(app.taxId || '—') + '</td>' +
+          '<td class="py-3 px-4 text-slate-500">' + esc(when) + '</td>' +
+          '<td class="py-3 px-4"><span class="text-xs px-2 py-0.5 rounded-full ' + dealerAppStatusClass(app.status) + '">' + esc(dealerAppStatusLabel(app.status)) + '</span></td>' +
+          '</tr>';
+      }).join('');
+    }
+
+    async function loadDealerApplications() {
+      const errEl = document.getElementById('dealers-error');
+      const tb = document.getElementById('dealers-table');
+      if (errEl) {
+        errEl.classList.add('hidden');
+        errEl.textContent = '';
+      }
+      try {
+        const q = dealerAppFilter && dealerAppFilter !== 'all' ? ('?status=' + encodeURIComponent(dealerAppFilter)) : '';
+        const data = await api('/api/admin/dealer-applications' + q);
+        dealerApplications = data.applications || [];
+        renderDealerApplicationsTable(dealerApplications);
+      } catch (err) {
+        if (errEl) {
+          errEl.textContent = err.message || 'Could not load dealer applications.';
+          errEl.classList.remove('hidden');
+        }
+        if (tb) tb.innerHTML = '<tr><td class="py-6 px-4 text-slate-500" colspan="5">Could not load applications.</td></tr>';
+      }
+    }
+
+    document.getElementById('da-filters').addEventListener('click', function (e) {
+      const btn = e.target.closest('[data-da-filter]');
+      if (!btn) return;
+      dealerAppFilter = btn.getAttribute('data-da-filter') || 'pending';
+      document.querySelectorAll('#da-filters [data-da-filter]').forEach(function (el) {
+        const on = el === btn;
+        el.classList.toggle('is-on', on);
+        el.classList.toggle('bg-sky-500/20', on);
+        el.classList.toggle('text-sky-300', on);
+        el.classList.toggle('border', !on);
+        el.classList.toggle('border-slate-700', !on);
+        el.classList.toggle('text-slate-400', !on);
+        el.setAttribute('aria-pressed', on ? 'true' : 'false');
+      });
+      loadDealerApplications();
+    });
+    document.getElementById('dealers-table').addEventListener('click', function (e) {
+      const row = e.target.closest('tr[data-id]');
+      if (!row) return;
+      const id = row.getAttribute('data-id');
+      const app = dealerApplications.find(function (item) { return String(item.id) === String(id); });
+      if (app) renderDealerAppDetail(app);
+    });
+    document.getElementById('dealer-app-back').addEventListener('click', function () {
+      showDealerAppOverview();
+    });
+
     function renderAccountsTable(rows) {
       const dashTable = document.querySelector('table.dash-cols[data-cols="website-accounts"]');
       const tb = document.getElementById('accounts-table');
@@ -10212,7 +10470,7 @@
     }
 
     function syncTabbarActive(name) {
-      const onWebsite = name === 'products' || name === 'store' || name === 'accounts';
+      const onWebsite = name === 'products' || name === 'store' || name === 'accounts' || name === 'dealers';
       const onInventory = name === 'inventory' || name === 'warehouses' || name === 'receipt-shipments';
       const onVendorNav = name === 'vendors' || name === 'purchase-orders';
       const onCustomerNav = name === 'sales' || name === 'quotes' || name === 'orders' || name === 'invoices' || name === 'customers';
@@ -15047,6 +15305,9 @@
           showWaOverview();
         }
       }
+      if (name === 'dealers') {
+        await loadDealerApplications();
+      }
       if (name === 'inventory') {
         await loadInventory();
       }
@@ -19290,6 +19551,7 @@
         const products = document.getElementById('products-section');
         const storeSec = document.getElementById('store-section');
         const accounts = document.getElementById('accounts-section');
+        const dealers = document.getElementById('dealers-section');
         const crmLead = document.getElementById('crm-lead-section');
         const crmPipe = document.getElementById('crm-pipe-section');
         const crmAct = document.getElementById('crm-act-section');
@@ -19298,15 +19560,17 @@
         const onProducts = !!(products && !products.classList.contains('hidden'));
         const onStore = !!(storeSec && !storeSec.classList.contains('hidden'));
         const onAccounts = !!(accounts && !accounts.classList.contains('hidden'));
+        const onDealers = !!(dealers && !dealers.classList.contains('hidden'));
         const onCrm = !!((crmLead && !crmLead.classList.contains('hidden')) ||
           (crmPipe && !crmPipe.classList.contains('hidden')) ||
           (crmAct && !crmAct.classList.contains('hidden')));
-        document.body.classList.toggle('dash-split-lock', (onCustomers || onVendors || onWarehouses || onProducts || onStore || onAccounts || onCrm) && desktop);
+        document.body.classList.toggle('dash-split-lock', (onCustomers || onVendors || onWarehouses || onProducts || onStore || onAccounts || onDealers || onCrm) && desktop);
         if (vn) vn.classList.toggle('vn-split-on', onVendors && desktop);
         if (warehouses) warehouses.classList.toggle('wh-split-on', onWarehouses && desktop);
         if (products) products.classList.toggle('wp-split-on', onProducts && desktop);
         if (storeSec) storeSec.classList.toggle('ws-split-on', onStore && desktop);
         if (accounts) accounts.classList.toggle('wa-split-on', onAccounts && desktop);
+        if (dealers) dealers.classList.toggle('da-split-on', onDealers && desktop);
         if (sales) sales.classList.toggle('so-split-on', onSales && desktop && !floating);
         document.body.classList.toggle('so-split-lock', onSales && desktop && !floating);
         if (po) po.classList.toggle('po-split-on', onPo && desktop && !poFloating);

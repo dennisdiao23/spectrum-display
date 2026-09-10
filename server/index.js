@@ -146,6 +146,7 @@ async function main() {
     '/company/website',
     '/company/website/store',
     '/company/website/accounts',
+    '/company/website/dealers',
     '/company/inventory',
     '/company/inventory/locations',
     '/company/inventory/vendors',
@@ -624,6 +625,9 @@ async function main() {
       if (!app.agree_terms_privacy) {
         return res.status(400).json({ ok: false, error: 'Please acknowledge the Terms of Use and Privacy Policy.' });
       }
+      const siteUser = await siteAuth.userFromBearer(req);
+      if (siteUser && siteUser.id) app.user_id = siteUser.id;
+      let crmLeadId = null;
       try {
         const addr = app.company_address || {};
         const extra = [
@@ -635,7 +639,7 @@ async function main() {
           addr.line1 ? 'Address: ' + [addr.line1, addr.city, addr.state, addr.postal_code].filter(Boolean).join(', ') : '',
           app.references_text ? 'References: ' + app.references_text : ''
         ].filter(Boolean).join('\n');
-        await store.upsertCrmLeadFromInquiry({
+        const lead = await store.upsertCrmLeadFromInquiry({
           source: 'dealer',
           sourceKey: app.email ? 'dealer:' + app.email : '',
           name: app.contact_name,
@@ -647,28 +651,51 @@ async function main() {
           state: addr.state || '',
           notes: extra
         });
+        if (lead && lead.id) crmLeadId = lead.id;
       } catch (err) {
         console.error('Could not store CRM lead from dealer:', err.message || err);
       }
       const attachments = [];
       if (req.file && req.file.buffer) {
-        const ext = path.extname(req.file.originalname || '').toLowerCase() || '.pdf';
-        const safeName = 'resale-certificate' + (['.pdf', '.jpg', '.jpeg', '.png'].includes(ext) ? ext : '.pdf');
-        app.resale_certificate_name = safeName;
+        const saved = require('./dealer-portal').saveResaleFile(req.file);
+        app.resale_certificate_name = saved.name;
+        app.resale_certificate_url = saved.url;
         attachments.push({
-          filename: safeName,
+          filename: saved.name || 'resale-certificate.pdf',
           content: req.file.buffer,
           contentType: req.file.mimetype || 'application/octet-stream'
         });
       }
-      if (!mailConfigured()) {
-        return res.status(503).json({
-          ok: false,
-          error: 'The dealer form is not connected to email yet. Please try again later or email sales@spectrumdisplay.com.'
-        });
+      let savedApp = null;
+      let duplicate = false;
+      try {
+        const result = await store.createDealerApplication(Object.assign({}, app, {
+          crm_lead_id: crmLeadId
+        }));
+        savedApp = result && result.application;
+        duplicate = !!(result && result.duplicate);
+      } catch (err) {
+        if (err && err.code === 'already_dealer') {
+          return res.status(409).json({ ok: false, error: err.message, code: 'already_dealer' });
+        }
+        console.error('Could not store dealer application:', err.message || err);
+        return res.status(502).json({ ok: false, error: 'Could not save the application. Please try again.' });
       }
-      await sendDealerInquiryEmail(app, attachments);
-      res.json({ ok: true });
+      let emailed = false;
+      if (mailConfigured()) {
+        try {
+          await sendDealerInquiryEmail(app, attachments);
+          emailed = true;
+        } catch (err) {
+          console.error('Dealer inquiry email error:', err.message || err);
+        }
+      }
+      res.json({
+        ok: true,
+        emailed: emailed,
+        duplicate: duplicate,
+        application: savedApp ? { id: savedApp.id, status: savedApp.status } : null
+      });
     } catch (err) {
       console.error('Dealer inquiry error:', err.message || err);
       res.status(502).json({ ok: false, error: 'Could not send the application. Please try again.' });
@@ -728,6 +755,24 @@ async function main() {
         return res.status(401).json({ ok: false, error: 'Sign in as dealer or sales to see stock.' });
       }
       res.json({ ok: true, stock: await store.getCatalogStock() });
+    } catch (err) { next(err); }
+  });
+
+  app.get('/api/dealer/me', async function (req, res, next) {
+    try {
+      const user = await siteAuth.userFromBearer(req);
+      if (!user) return res.status(401).json({ ok: false, error: 'Sign in to see dealer status.' });
+      res.json(Object.assign({ ok: true }, await store.getDealerPortalMe(user)));
+    } catch (err) { next(err); }
+  });
+
+  app.get('/api/dealer/price-book', async function (req, res, next) {
+    try {
+      const user = await siteAuth.userFromBearer(req);
+      if (!user || !siteAuth.canSeeStock(user.role)) {
+        return res.status(401).json({ ok: false, error: 'Sign in as dealer or sales to see the price book.' });
+      }
+      res.json({ ok: true, items: await store.getDealerPriceBook() });
     } catch (err) { next(err); }
   });
 
@@ -1834,6 +1879,42 @@ async function main() {
       const updated = await store.updateAccount(req.params.id, patch);
       if (!updated) return res.status(404).json({ ok: false, error: 'Account not found.' });
       res.json({ ok: true, profile: updated });
+    } catch (err) { next(err); }
+  });
+
+  app.get('/api/admin/dealer-applications', requireAdmin, requirePerm('website', 'view'), async function (req, res, next) {
+    try {
+      const status = String((req.query && req.query.status) || '').trim();
+      res.json({
+        ok: true,
+        applications: await store.listDealerApplications(status ? { status: status } : {}),
+        source: hasSupabase() ? 'supabase' : 'sqlite'
+      });
+    } catch (err) { next(err); }
+  });
+
+  app.get('/api/admin/dealer-applications/:id', requireAdmin, requirePerm('website', 'view'), async function (req, res, next) {
+    try {
+      const application = await store.getDealerApplication(req.params.id);
+      if (!application) return res.status(404).json({ ok: false, error: 'Application not found.' });
+      res.json({ ok: true, application: application });
+    } catch (err) { next(err); }
+  });
+
+  app.post('/api/admin/dealer-applications/:id/approve', requireAdmin, requirePerm('website', 'edit'), async function (req, res, next) {
+    try {
+      const application = await store.approveDealerApplication(req.params.id, req.admin);
+      if (!application) return res.status(404).json({ ok: false, error: 'Application not found.' });
+      res.json({ ok: true, application: application });
+    } catch (err) { next(err); }
+  });
+
+  app.post('/api/admin/dealer-applications/:id/reject', requireAdmin, requirePerm('website', 'edit'), async function (req, res, next) {
+    try {
+      const notes = req.body && req.body.notes != null ? req.body.notes : '';
+      const application = await store.rejectDealerApplication(req.params.id, req.admin, notes);
+      if (!application) return res.status(404).json({ ok: false, error: 'Application not found.' });
+      res.json({ ok: true, application: application });
     } catch (err) { next(err); }
   });
 

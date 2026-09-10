@@ -119,7 +119,8 @@ OneDrive does **not** update GitHub. After Cloud Agent changes, pull and review 
 | `brands`, `products` | Public catalog. Panel series, prices, photos, and extra copy (`details` jsonb: cats, spec tables, features, lead) are edited in Admin. Public pages do not load `js/products-data.js`. |
 | `admins`, `sessions` | Company pages at `/company` (not customer Sign in) |
 | `app_config` | Admin secret check |
-| `profiles` | Site accounts. Role is `customer` (default), `dealer`, or `sales`. Only Admin can change type. |
+| `profiles` | Site accounts. Role is `customer` (default), `dealer`, or `sales`. Only Admin can change type. Approving a dealer application sets Dealer. |
+| `dealer_applications` | Public dealer form. Status `pending` / `approved` / `rejected`. Pending is here, not a profile role. Company → Website → Applications. |
 | `price_tiers` | Admin-only markup % by Customer / Dealer / Sales. Signed-in prices = catalog × (1 + %). Default 0%. Users never see this percent. |
 | `account_price_overrides` | Admin-only per-account markup that overwrites the type %. Leave blank on an account to inherit the type %. |
 | `saved_projects`, `custom_panels` | Designer saves (online, per user) |
@@ -161,6 +162,8 @@ Email/password Sign in does **not** need Google. Only the Google button does.
 | **If it breaks** | Form says it failed, or you get no email. Check Resend **Logs**, Railway logs (`Contact form error`), and GoDaddy records for `send`. |
 
 Inquiries are also stored in Supabase `contact_inquiries` even if mail fails (if the server could reach the database).
+
+The **dealer application** on `dealer.html` is stored in `dealer_applications` first (and a CRM lead). Email is best-effort. If Resend is down, the form still succeeds and Company → Website → Applications can approve it.
 
 Company quotes / orders / invoices / POs do **not** use Resend. Those send from each staff person’s connected Gmail (next section).
 
