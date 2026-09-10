@@ -33,6 +33,7 @@ const SUBTYPE_LABELS = {
   sending: 'Senders',
   playback: 'Playback',
   'receiving-card': 'Spares',
+  accessories: 'Accessories',
   fiber: 'Fiber',
   cable: 'Cables',
   case: 'Cases',
@@ -97,7 +98,9 @@ function inferCollection(product) {
   const blob = (subtype + ' ' + (product.id || '') + ' ' + (product.name || '') + ' ' + (details.family || '')).toLowerCase();
   if (type === 'control' || subtype || product.brandId === 'novastar') {
     if (subtype === 'receiving-card' || details.replacementOnly || /receiving/.test(blob)) return 'spares';
+    if (subtype === 'accessories' || subtype === 'fiber' || subtype === 'cable' || subtype === 'case' || subtype === 'mount') return 'accessories';
     if (/module|psu|power supply/.test(blob) && /spare|replacement/.test(blob)) return 'spares';
+    if (/fiber converter|cvt\d|mfn300|mon300|ns060|mth310|dis-300/.test(blob)) return 'accessories';
     return 'control';
   }
   if (/cable|flight case|mount|clamp|connector/.test(blob)) return 'accessories';
