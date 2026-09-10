@@ -627,7 +627,30 @@ async function main() {
       }
       const siteUser = await siteAuth.userFromBearer(req);
       if (siteUser && siteUser.id) app.user_id = siteUser.id;
-      let crmLeadId = null;
+      const attachments = [];
+      if (req.file && req.file.buffer) {
+        const saved = require('./dealer-portal').saveResaleFile(req.file);
+        app.resale_certificate_name = saved.name;
+        app.resale_certificate_url = saved.url;
+        attachments.push({
+          filename: saved.name || 'resale-certificate.pdf',
+          content: req.file.buffer,
+          contentType: req.file.mimetype || 'application/octet-stream'
+        });
+      }
+      let savedApp = null;
+      let duplicate = false;
+      try {
+        const result = await store.createDealerApplication(app);
+        savedApp = result && result.application;
+        duplicate = !!(result && result.duplicate);
+      } catch (err) {
+        if (err && err.code === 'already_dealer') {
+          return res.status(409).json({ ok: false, error: err.message, code: 'already_dealer' });
+        }
+        console.error('Could not store dealer application:', err.message || err);
+        return res.status(502).json({ ok: false, error: 'Could not save the application. Please try again.' });
+      }
       try {
         const addr = app.company_address || {};
         const extra = [
@@ -651,35 +674,11 @@ async function main() {
           state: addr.state || '',
           notes: extra
         });
-        if (lead && lead.id) crmLeadId = lead.id;
+        if (lead && lead.id && savedApp && savedApp.id) {
+          await store.attachDealerApplicationCrmLead(savedApp.id, lead.id);
+        }
       } catch (err) {
         console.error('Could not store CRM lead from dealer:', err.message || err);
-      }
-      const attachments = [];
-      if (req.file && req.file.buffer) {
-        const saved = require('./dealer-portal').saveResaleFile(req.file);
-        app.resale_certificate_name = saved.name;
-        app.resale_certificate_url = saved.url;
-        attachments.push({
-          filename: saved.name || 'resale-certificate.pdf',
-          content: req.file.buffer,
-          contentType: req.file.mimetype || 'application/octet-stream'
-        });
-      }
-      let savedApp = null;
-      let duplicate = false;
-      try {
-        const result = await store.createDealerApplication(Object.assign({}, app, {
-          crm_lead_id: crmLeadId
-        }));
-        savedApp = result && result.application;
-        duplicate = !!(result && result.duplicate);
-      } catch (err) {
-        if (err && err.code === 'already_dealer') {
-          return res.status(409).json({ ok: false, error: err.message, code: 'already_dealer' });
-        }
-        console.error('Could not store dealer application:', err.message || err);
-        return res.status(502).json({ ok: false, error: 'Could not save the application. Please try again.' });
       }
       let emailed = false;
       if (mailConfigured()) {

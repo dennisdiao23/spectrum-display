@@ -461,7 +461,7 @@ function sqliteApi(db, store) {
         'INSERT INTO dealer_applications (' + keys.join(', ') +
         ', status, dealer_tier, payment_terms, hold_hours, notes_internal, reviewed_at, reviewed_by, created_at, updated_at) VALUES (' +
         keys.map(function () { return '?'; }).join(', ') +
-        ", 'pending', 'authorized', 'prepaid_30_70', 48, '', '', ?, ?)"
+        ", 'pending', 'authorized', 'prepaid_30_70', 48, '', '', '', ?, ?)"
       ).run(...keys.map(function (k) { return fields[k]; }).concat([stamp, stamp]));
       return { application: formatApplication(getRow(info.lastInsertRowid), { admin: true }), duplicate: false };
     },
@@ -473,6 +473,12 @@ function sqliteApi(db, store) {
       return rows.map(function (row) { return formatApplication(row, { admin: true }); });
     },
     async getDealerApplication(id) {
+      return formatApplication(getRow(id), { admin: true });
+    },
+    async attachDealerApplicationCrmLead(id, leadId) {
+      const n = Number(leadId);
+      if (!id || !Number.isFinite(n) || n <= 0) return this.getDealerApplication(id);
+      db.prepare('UPDATE dealer_applications SET crm_lead_id = ?, updated_at = ? WHERE id = ?').run(n, nowIso(), id);
       return formatApplication(getRow(id), { admin: true });
     },
     async getDealerApplicationForUser(opts) {
@@ -598,6 +604,16 @@ function supabaseApi(supabase, store) {
     },
     async getDealerApplication(id) {
       return formatApplication(await fetchRow(id), { admin: true });
+    },
+    async attachDealerApplicationCrmLead(id, leadId) {
+      const n = Number(leadId);
+      if (!id || !Number.isFinite(n) || n <= 0) return this.getDealerApplication(id);
+      const { error } = await supabase
+        .from('dealer_applications')
+        .update({ crm_lead_id: n, updated_at: nowIso() })
+        .eq('id', id);
+      throwIfMissing(error, 'Could not link CRM lead.');
+      return this.getDealerApplication(id);
     },
     async getDealerApplicationForUser(opts) {
       const userId = trim((opts && opts.userId) || '', 80);
