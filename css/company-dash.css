@@ -6334,14 +6334,10 @@ body.dash-split-lock #crm-pipe-section .crm-board {
   flex: 1 1 auto;
 }
 #crm-lead-section .dash-split {
-  grid-template-columns: minmax(28rem, 1fr) 14px minmax(26rem, 38rem);
+  grid-template-columns: minmax(24rem, 1fr) 14px minmax(22rem, 1fr);
 }
 #crm-pipe-section .dash-split {
-  grid-template-columns: minmax(0, 1fr) 14px minmax(24rem, 32rem);
-}
-#crm-lead-detail .cc-detail-hero-grid,
-#crm-pipe-detail .cc-detail-hero-grid {
-  grid-template-columns: 1fr;
+  grid-template-columns: minmax(0, 1.4fr) 14px minmax(22rem, 0.9fr);
 }
 #crm-lead-detail .cc-detail-hero-main,
 #crm-pipe-detail .cc-detail-hero-main {
@@ -6351,12 +6347,30 @@ body.dash-split-lock #crm-pipe-section .crm-board {
 #crm-pipe-detail .inv-detail-hero-actions {
   flex-wrap: wrap;
 }
-#crm-lead-section .cc-detail-dl > div,
-#crm-pipe-section .cc-detail-dl > div {
-  grid-template-columns: 7rem minmax(0, 1fr);
+#crm-lead-detail .crm-detail-facts,
+#crm-pipe-detail .crm-detail-facts {
+  display: flex;
+  flex-direction: column;
+  gap: 0.65rem;
 }
-#crm-lead-section .cc-detail-dl dd,
-#crm-pipe-section .cc-detail-dl dd {
+#crm-lead-section .crm-detail-facts .cc-detail-dl > div,
+#crm-pipe-section .crm-detail-facts .cc-detail-dl > div {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 0.12rem;
+  margin-bottom: 0.5rem;
+}
+#crm-lead-section .crm-detail-facts .cc-detail-dl dt,
+#crm-pipe-section .crm-detail-facts .cc-detail-dl dt {
+  width: auto;
+  flex: none;
+}
+#crm-lead-section .crm-detail-facts .cc-detail-dl dd,
+#crm-pipe-section .crm-detail-facts .cc-detail-dl dd {
+  margin: 0;
+  min-width: 0;
+  max-width: 100%;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
