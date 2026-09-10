@@ -295,6 +295,16 @@
     }).join('');
   }
 
+  function setCrmDetailOpen(sectionId, on) {
+    var root = $(sectionId);
+    if (!root) return;
+    var ws = root.querySelector('.cc-workspace');
+    if (!ws) return;
+    if (H.isMobile && H.isMobile()) ws.classList.toggle('cc-detail-open', !!on);
+    else ws.classList.remove('cc-detail-open');
+    document.body.classList.toggle('dash-detail-open', !!document.querySelector('.cc-workspace.cc-detail-open'));
+  }
+
   function showLeadOverview() {
     S.leadId = '';
     var pane = $('crm-lead-detail');
@@ -304,6 +314,7 @@
       pane.hidden = true;
     }
     if (overview) overview.classList.remove('hidden');
+    setCrmDetailOpen('crm-lead-section', false);
     renderLeadTable();
   }
 
@@ -316,6 +327,7 @@
       pane.hidden = true;
     }
     if (overview) overview.classList.remove('hidden');
+    setCrmDetailOpen('crm-pipe-section', false);
     renderPipelineBoard();
   }
 
@@ -378,6 +390,7 @@
       pane.classList.remove('hidden');
       pane.hidden = false;
     }
+    setCrmDetailOpen('crm-lead-section', true);
     setLeadTab(S.leadTab || 'details');
     renderLeadTable();
     var convertBtn = $('crm-lead-convert');
@@ -406,6 +419,7 @@
       pane.classList.remove('hidden');
       pane.hidden = false;
     }
+    setCrmDetailOpen('crm-pipe-section', true);
     renderPipelineBoard();
   }
 
@@ -791,6 +805,10 @@
   async function moveDeal(id, stage) {
     var deal = S.deals.find(function (row) { return String(row.id) === String(id); });
     if (!deal || deal.stage === stage || !canEdit('pipeline')) return;
+    var prev = deal.stage;
+    deal.stage = stage;
+    fillPipelineKpis();
+    renderPipelineBoard();
     try {
       await H.api('/api/admin/crm/deals/' + encodeURIComponent(id), {
         method: 'PUT',
@@ -801,6 +819,9 @@
       if (S.dealId === String(id)) await openDeal(id);
       else renderPipelineBoard();
     } catch (err) {
+      deal.stage = prev;
+      fillPipelineKpis();
+      renderPipelineBoard();
       showErr('crm-pipe-error', err.message || 'Could not move this deal.');
     }
   }

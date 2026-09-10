@@ -14,10 +14,10 @@
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
   <title>Company | Spectrum Display</title>
   <meta name="robots" content="noindex, nofollow" />
-  <link rel="stylesheet" href="/css/company-dash.css?v=crm1" />
+  <link rel="stylesheet" href="/css/company-dash.css?v=crm2" />
   <script src="/js/address-autocomplete.js"></script>
   <script src="/js/company-chat.js?v=chatmove2"></script>
-  <script src="/js/company-crm.js?v=crm1"></script>
+  <script src="/js/company-crm.js?v=crm2"></script>
   <script src="/js/print-form.js?v=forms18"></script>
   <script>
     if ('serviceWorker' in navigator && location.pathname.indexOf('/company') === 0) {
@@ -3434,7 +3434,7 @@
     </a>
   </nav>
 
-  <link rel="stylesheet" href="/css/company-dash.css?v=crm1" />
+  <link rel="stylesheet" href="/css/company-dash.css?v=crm2" />
 
   <script>
     const loginPanel = document.getElementById('login-panel');
@@ -5172,7 +5172,7 @@
         stats.innerHTML = dashChip(dashCounts.openLeads, 'Open leads') +
           dashChip(dashCounts.leads, 'Leads') +
           dashChip(dashCounts.openDeals, 'Open deals') +
-          dashChip('$' + dashCount(dashCounts.pipelineValue), 'Pipeline') +
+          '<div class="dash-detail-chip"><strong>' + esc('$' + dashCount(dashCounts.pipelineValue)) + '</strong><span>Pipeline</span></div>' +
           (dashCounts.overdueActivities ? dashChip(dashCounts.overdueActivities, 'Overdue activity') : '');
         const leadRows = dashLeads.slice(0, 5).map(function (lead) {
           return dashRow(

@@ -6332,5 +6332,24 @@ body.dash-split-lock #crm-pipe-section .crm-board {
   min-height: 0;
   flex: 1 1 auto;
 }
+#crm-lead-section .dash-split {
+  grid-template-columns: minmax(28rem, 1fr) 14px minmax(22rem, 34rem);
+}
+#crm-pipe-section .dash-split {
+  grid-template-columns: minmax(0, 1fr) 14px minmax(20rem, 28rem);
+}
+#crm-lead-section .cc-workspace:not(.cc-detail-open) .dash-split-right > .cc-detail-pane:not(.hidden),
+#crm-pipe-section .cc-workspace:not(.cc-detail-open) .dash-split-right > .cc-detail-pane:not(.hidden) {
+  display: flex !important;
+}
+#crm-lead-section .dash-split-left .cc-table-wrap {
+  overflow-x: auto;
+}
+#crm-lead-section .dash-split-left table.dash-cols,
+#crm-act-section table.dash-cols {
+  min-width: 56rem;
+  max-width: none;
+  table-layout: auto;
+}
 
 
