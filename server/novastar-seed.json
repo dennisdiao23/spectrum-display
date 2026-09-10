@@ -2903,8 +2903,12 @@
       "badge": null,
       "latency": "0-frame (less than 1 ms)",
       "hdr": "HDR10 · HLG",
-      "image": "",
-      "gallery": [],
+      "image": "assets/products/novastar/cx40-pro.webp",
+      "gallery": [
+        "assets/products/novastar/cx40-pro-2.webp",
+        "assets/products/novastar/cx40-pro-3.webp",
+        "assets/products/novastar/cx40-pro-4.webp"
+      ],
       "bestWith": [
         "indoor-rental",
         "cob",
@@ -3013,8 +3017,12 @@
       "badge": null,
       "latency": "",
       "hdr": "",
-      "image": "",
-      "gallery": [],
+      "image": "assets/products/novastar/mctrl-r5.webp",
+      "gallery": [
+        "assets/products/novastar/mctrl-r5-2.webp",
+        "assets/products/novastar/mctrl-r5-3.webp",
+        "assets/products/novastar/mctrl-r5-4.webp"
+      ],
       "bestWith": [
         "indoor-rental",
         "outdoor-rental"
@@ -3114,8 +3122,12 @@
       "badge": null,
       "latency": "",
       "hdr": "",
-      "image": "",
-      "gallery": [],
+      "image": "assets/products/novastar/mctrl700.webp",
+      "gallery": [
+        "assets/products/novastar/mctrl700-2.webp",
+        "assets/products/novastar/mctrl700-3.webp",
+        "assets/products/novastar/mctrl700-4.webp"
+      ],
       "bestWith": [
         "indoor-rental",
         "fixed-indoor"
@@ -3203,8 +3215,12 @@
       "badge": null,
       "latency": "",
       "hdr": "",
-      "image": "",
-      "gallery": [],
+      "image": "assets/products/novastar/mctrl660.webp",
+      "gallery": [
+        "assets/products/novastar/mctrl660-2.webp",
+        "assets/products/novastar/mctrl660-3.webp",
+        "assets/products/novastar/mctrl660-4.webp"
+      ],
       "bestWith": [
         "indoor-rental",
         "fixed-indoor"
@@ -3300,8 +3316,11 @@
       "badge": null,
       "latency": "",
       "hdr": "HDR10",
-      "image": "",
-      "gallery": [],
+      "image": "assets/products/novastar/h9.webp",
+      "gallery": [
+        "assets/products/novastar/h9-2.webp",
+        "assets/products/novastar/h9-3.webp"
+      ],
       "bestWith": [
         "fixed-indoor",
         "cob"
@@ -3409,8 +3428,12 @@
       "badge": null,
       "latency": "",
       "hdr": "HDR10",
-      "image": "",
-      "gallery": [],
+      "image": "assets/products/novastar/h15.webp",
+      "gallery": [
+        "assets/products/novastar/h15-2.webp",
+        "assets/products/novastar/h15-3.webp",
+        "assets/products/novastar/h15-4.webp"
+      ],
       "bestWith": [
         "fixed-indoor",
         "cob"
@@ -3619,8 +3642,12 @@
       "badge": null,
       "latency": "",
       "hdr": "",
-      "image": "",
-      "gallery": [],
+      "image": "assets/products/novastar/novapro-uhd-jr.webp",
+      "gallery": [
+        "assets/products/novastar/novapro-uhd-jr-2.webp",
+        "assets/products/novastar/novapro-uhd-jr-3.webp",
+        "assets/products/novastar/novapro-uhd-jr-4.webp"
+      ],
       "bestWith": [
         "indoor-rental",
         "cob",
@@ -3721,8 +3748,12 @@
       "badge": null,
       "latency": "",
       "hdr": "",
-      "image": "",
-      "gallery": [],
+      "image": "assets/products/novastar/vunit-3000.webp",
+      "gallery": [
+        "assets/products/novastar/vunit-3000-2.webp",
+        "assets/products/novastar/vunit-3000-3.webp",
+        "assets/products/novastar/vunit-3000-4.webp"
+      ],
       "bestWith": [
         "fixed-indoor"
       ],
@@ -3902,8 +3933,12 @@
       "badge": null,
       "latency": "",
       "hdr": "",
-      "image": "",
-      "gallery": [],
+      "image": "assets/products/novastar/et1s-g.webp",
+      "gallery": [
+        "assets/products/novastar/et1s-g-2.webp",
+        "assets/products/novastar/et1s-g-3.webp",
+        "assets/products/novastar/et1s-g-4.webp"
+      ],
       "bestWith": [
         "indoor-rental",
         "fixed-indoor"
@@ -4003,8 +4038,12 @@
       "badge": null,
       "latency": "",
       "hdr": "",
-      "image": "",
-      "gallery": [],
+      "image": "assets/products/novastar/et2s-g.webp",
+      "gallery": [
+        "assets/products/novastar/et2s-g-2.webp",
+        "assets/products/novastar/et2s-g-3.webp",
+        "assets/products/novastar/et2s-g-4.webp"
+      ],
       "bestWith": [
         "indoor-rental",
         "fixed-indoor"
@@ -4096,8 +4135,12 @@
       "badge": null,
       "latency": "",
       "hdr": "",
-      "image": "",
-      "gallery": [],
+      "image": "assets/products/novastar/et4s-g.webp",
+      "gallery": [
+        "assets/products/novastar/et4s-g-2.webp",
+        "assets/products/novastar/et4s-g-3.webp",
+        "assets/products/novastar/et4s-g-4.webp"
+      ],
       "bestWith": [
         "indoor-rental",
         "fixed-indoor"
@@ -4189,8 +4232,12 @@
       "badge": null,
       "latency": "",
       "hdr": "",
-      "image": "",
-      "gallery": [],
+      "image": "assets/products/novastar/et16s-g.webp",
+      "gallery": [
+        "assets/products/novastar/et16s-g-2.webp",
+        "assets/products/novastar/et16s-g-3.webp",
+        "assets/products/novastar/et16s-g-4.webp"
+      ],
       "bestWith": [
         "indoor-rental",
         "fixed-indoor"
@@ -4274,8 +4321,12 @@
       "badge": null,
       "latency": "",
       "hdr": "",
-      "image": "",
-      "gallery": [],
+      "image": "assets/products/novastar/mg420.webp",
+      "gallery": [
+        "assets/products/novastar/mg420-2.webp",
+        "assets/products/novastar/mg420-3.webp",
+        "assets/products/novastar/mg420-4.webp"
+      ],
       "bestWith": [
         "fixed-indoor"
       ],
@@ -4366,8 +4417,12 @@
       "badge": null,
       "latency": "",
       "hdr": "",
-      "image": "",
-      "gallery": [],
+      "image": "assets/products/novastar/mg421.webp",
+      "gallery": [
+        "assets/products/novastar/mg421-2.webp",
+        "assets/products/novastar/mg421-3.webp",
+        "assets/products/novastar/mg421-4.webp"
+      ],
       "bestWith": [
         "fixed-indoor"
       ],
@@ -4454,8 +4509,12 @@
       "badge": null,
       "latency": "",
       "hdr": "",
-      "image": "",
-      "gallery": [],
+      "image": "assets/products/novastar/mgt1000.webp",
+      "gallery": [
+        "assets/products/novastar/mgt1000-2.webp",
+        "assets/products/novastar/mgt1000-3.webp",
+        "assets/products/novastar/mgt1000-4.webp"
+      ],
       "bestWith": [
         "fixed-indoor"
       ],
@@ -4542,8 +4601,12 @@
       "badge": null,
       "latency": "",
       "hdr": "",
-      "image": "",
-      "gallery": [],
+      "image": "assets/products/novastar/mgt2000.webp",
+      "gallery": [
+        "assets/products/novastar/mgt2000-2.webp",
+        "assets/products/novastar/mgt2000-3.webp",
+        "assets/products/novastar/mgt2000-4.webp"
+      ],
       "bestWith": [
         "fixed-indoor"
       ],
@@ -5728,8 +5791,12 @@
       "badge": null,
       "latency": "",
       "hdr": "",
-      "image": "",
-      "gallery": [],
+      "image": "assets/products/novastar/cvt10-pro.webp",
+      "gallery": [
+        "assets/products/novastar/cvt10-pro-2.webp",
+        "assets/products/novastar/cvt10-pro-3.webp",
+        "assets/products/novastar/cvt10-pro-4.webp"
+      ],
       "bestWith": [
         "indoor-rental",
         "outdoor-rental",
@@ -5818,8 +5885,12 @@
       "badge": null,
       "latency": "",
       "hdr": "",
-      "image": "",
-      "gallery": [],
+      "image": "assets/products/novastar/cvt4k.webp",
+      "gallery": [
+        "assets/products/novastar/cvt4k-2.webp",
+        "assets/products/novastar/cvt4k-3.webp",
+        "assets/products/novastar/cvt4k-4.webp"
+      ],
       "bestWith": [
         "indoor-rental",
         "cob",
