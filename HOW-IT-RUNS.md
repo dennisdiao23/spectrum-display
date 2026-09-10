@@ -174,10 +174,10 @@ Company quotes / orders / invoices / POs do **not** use Resend. Those send from 
 |---|---|
 | **What it is** | Each staff user connects their own Gmail once (Google permission screen). Send uses the Gmail API as that account. |
 | **From** | The connected Gmail, e.g. `dennisdiao@diaoinc.com` |
-| **Google Cloud** | Same project as Continue with Google (`big-unison-420919`) |
+| **Google Cloud** | Project **Spectrum Display** (`nifty-condition-506807-a2`). Click-by-click: [AGENTS.md](AGENTS.md#staff-gmail-send--you-do-this-once) |
 | **APIs** | Enable **Gmail API**. Create a **Web** OAuth client. |
 | **Redirect URIs** | `https://www.spectrumdisplay.com/api/admin/gmail/callback` and `http://localhost:3000/api/admin/gmail/callback` |
-| **Consent** | Scope `gmail.send`. While the OAuth app is in **Testing**, add each staff Gmail as a test user. Testing refresh tokens expire about every 7 days until you publish the app. |
+| **Consent** | Scope `gmail.send`. Workspace org `spectrumdisplay.com` can connect. Personal Gmail outside that org needs the consent screen set to External. |
 | **Connect** | `/company` → Email on a document → **Connect Gmail**, or Settings → **Your Gmail** |
 | **If it breaks** | Connect again. Check Google Cloud OAuth client, redirect URI, Railway `GOOGLE_GMAIL_CLIENT_*`, and Gmail API enabled. |
 
