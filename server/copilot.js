@@ -85,6 +85,7 @@ function compactItem(item) {
     price: Number(item.price) || 0,
     unit: item.unit || '',
     brandName: item.brandName || '',
+    category: item.category || '',
     locations: (item.locations || []).map(function (loc) {
       return {
         name: loc.warehouseName || loc.locationName || '',
@@ -428,7 +429,7 @@ async function runTool(store, admin, roomId, name, args) {
     const st = trim(a.status, 20).toLowerCase();
     return (rows || []).filter(function (item) {
       if (st && String(item.status || '') !== st) return false;
-      return matchesQuery([item.sku, item.name, item.brandName, item.description], q || ' ');
+      return matchesQuery([item.sku, item.name, item.brandName, item.description, item.category], q || ' ');
     }).slice(0, 30).map(compactItem);
   }
   if (name === 'search_vendors') {

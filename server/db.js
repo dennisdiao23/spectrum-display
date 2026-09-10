@@ -209,13 +209,15 @@ function openDb() {
     "ALTER TABLE inventory_items ADD COLUMN image TEXT NOT NULL DEFAULT ''",
     "ALTER TABLE inventory_items ADD COLUMN panel_type TEXT NOT NULL DEFAULT ''",
     "ALTER TABLE inventory_items ADD COLUMN packaging_type TEXT NOT NULL DEFAULT ''",
-    "ALTER TABLE inventory_items ADD COLUMN inactive INTEGER NOT NULL DEFAULT 0"
+    "ALTER TABLE inventory_items ADD COLUMN inactive INTEGER NOT NULL DEFAULT 0",
+    "ALTER TABLE inventory_items ADD COLUMN category TEXT NOT NULL DEFAULT ''"
   ].forEach(function (sql) {
     try { db.exec(sql); } catch (e) { /* already present */ }
   });
   ensureInventoryWarehouses(db);
   migrateLegacyInventory(db);
   applySchemaPatches(db);
+  applyInventoryCategoryBackfill(db);
   return db;
 }
 
@@ -233,6 +235,50 @@ function applySchemaPatches(db) {
     db.prepare('INSERT INTO schema_patches (id, applied_at) VALUES (?, ?)').run('inventory_low_at_zero', nowIso());
   } catch (e) {
     console.error('Could not reset inventory low_at:', e.message || e);
+  }
+}
+
+function applyInventoryCategoryBackfill(db) {
+  db.exec(`
+    CREATE TABLE IF NOT EXISTS schema_patches (
+      id TEXT PRIMARY KEY,
+      applied_at TEXT NOT NULL
+    )
+  `);
+  const done = db.prepare('SELECT 1 AS n FROM schema_patches WHERE id = ?').get('inventory_item_category');
+  if (done) return;
+  try {
+    db.prepare(`
+      UPDATE inventory_items SET category = 'Service'
+      WHERE TRIM(COALESCE(category, '')) = ''
+        AND (
+          UPPER(sku || ' ' || name) LIKE '%INSTALL%'
+          OR UPPER(sku || ' ' || name) LIKE '%WARRANTY%'
+          OR UPPER(sku || ' ' || name) LIKE '%SERVICE%'
+          OR UPPER(sku || ' ' || name) LIKE '%LABOR%'
+          OR UPPER(sku || ' ' || name) LIKE '%FREIGHT%'
+        )
+    `).run();
+    db.prepare(`
+      UPDATE inventory_items SET category = 'Control'
+      WHERE TRIM(COALESCE(category, '')) = ''
+        AND (
+          LOWER(brand_id) = 'novastar'
+          OR UPPER(sku || ' ' || name) LIKE '%NOVASTAR%'
+          OR UPPER(sku || ' ' || name) LIKE '%CONTROLLER%'
+          OR UPPER(sku || ' ' || name) LIKE '%RECEIVING%'
+          OR UPPER(sku || ' ' || name) LIKE '%PROCESSOR%'
+          OR UPPER(sku || ' ' || name) LIKE '%CONTROL%'
+        )
+    `).run();
+    db.prepare(`
+      UPDATE inventory_items SET category = 'LED Panel'
+      WHERE TRIM(COALESCE(category, '')) = ''
+        AND LOWER(unit) = 'panels'
+    `).run();
+    db.prepare('INSERT INTO schema_patches (id, applied_at) VALUES (?, ?)').run('inventory_item_category', nowIso());
+  } catch (e) {
+    console.error('Could not backfill inventory category:', e.message || e);
   }
 }
 
