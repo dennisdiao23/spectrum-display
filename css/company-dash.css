@@ -459,6 +459,177 @@ body.dash-tab-reordering #dash-tab-strip {
   }
 }
 
+/* Touch: 44px hit targets + 16px fields. Desktop mouse is unchanged. */
+@media (any-pointer: coarse) {
+  .dash-sidebar-hide,
+  .dash-menu-btn,
+  .cc-ico-btn,
+  .cc-drawer-close,
+  .cc-detail-quick-btn,
+  .co-chat-close,
+  .so-doc-close,
+  body.so-invoice-float .so-doc-close,
+  body.po-doc-float .so-doc-close {
+    width: 2.75rem;
+    height: 2.75rem;
+    min-width: 2.75rem;
+    min-height: 2.75rem;
+  }
+  .dash-nav-label-row {
+    min-height: 2.75rem;
+  }
+  .dash-sidebar-hide,
+  .dash-menu-btn,
+  .cc-ico-btn,
+  .cc-drawer-close,
+  .cc-detail-quick-btn,
+  .co-chat-close,
+  .inv-browser-tab-close,
+  .so-line-act,
+  .so-doc-ribbon-btn,
+  .cc-contact-action,
+  #logout-btn,
+  .co-chat-btn,
+  .co-chat-send,
+  .co-chat-attach,
+  .co-chat-link-btn,
+  .co-chat-back {
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
+  }
+  html.dash-sidebar-collapsed .dash-menu-btn,
+  body.dash-sidebar-collapsed .dash-menu-btn {
+    width: 2.75rem;
+    height: 2.75rem;
+  }
+  .inv-browser-tab-close {
+    width: 2.75rem;
+    height: 2.75rem;
+    min-width: 2.75rem;
+    min-height: 2.75rem;
+    font-size: 1.2rem;
+  }
+  #dash-tab-strip .inv-browser-tab,
+  .inv-browser-tab {
+    min-height: 2.85rem;
+    align-items: center;
+  }
+  .so-line-act {
+    width: 2.75rem;
+    height: 2.75rem;
+  }
+  .so-line-acts-h {
+    width: 6.2rem;
+  }
+  .so-line-drag {
+    min-width: 2.75rem;
+    min-height: 2.75rem;
+    padding: 0.45rem 0.35rem;
+  }
+  .so-line-drag svg {
+    width: 1.15rem;
+    height: 1.15rem;
+  }
+  .cc-contact-action {
+    min-height: 2.75rem;
+    padding: 0.55rem 0.9rem;
+    font-size: 0.9rem;
+  }
+  .so-doc-ribbon-btn {
+    min-height: 2.75rem;
+    padding: 0.55rem 1rem;
+  }
+  #logout-btn {
+    min-height: 2.75rem;
+    height: 2.75rem;
+    padding: 0 1.05rem;
+  }
+  .co-chat-back {
+    min-width: 2.75rem;
+    height: 2.75rem;
+  }
+  .co-chat-btn,
+  .co-chat-send,
+  .co-chat-attach,
+  .co-chat-link-btn {
+    min-height: 2.75rem;
+  }
+  .co-chat-move {
+    width: 2.75rem;
+    height: 2.75rem;
+  }
+  body.company-app input:not([type="checkbox"]):not([type="radio"]):not([type="file"]):not([type="hidden"]):not([type="range"]):not([type="color"]):not([type="button"]):not([type="submit"]):not([type="reset"]),
+  body.company-app select,
+  body.company-app textarea,
+  .co-chat-search,
+  .cc-field input,
+  .cc-field select,
+  .cc-field textarea {
+    font-size: 16px;
+  }
+}
+
+/* iPad/tablet: visible splitters, thicker window edges, safe-area. */
+@media (min-width: 901px) and (any-pointer: coarse) {
+  .dash-topbar {
+    padding-top: calc(0.85rem + env(safe-area-inset-top, 0px));
+    padding-right: calc(1.6rem + env(safe-area-inset-right, 0px));
+  }
+  .dash-sidebar {
+    padding-top: calc(1.15rem + env(safe-area-inset-top, 0px));
+    padding-bottom: calc(1rem + env(safe-area-inset-bottom, 0px));
+  }
+  .dash-split-resizer,
+  .inv-split-resizer {
+    flex: 0 0 28px;
+    width: 28px;
+  }
+  .dash-split-resizer::after,
+  .inv-split-resizer::after {
+    opacity: 1;
+    background: #c5cddc;
+    width: 4px;
+    margin-left: -2px;
+  }
+  .dash-col-grip {
+    width: 28px;
+    right: -10px;
+  }
+  .dash-col-grip::after {
+    width: 4px;
+    left: 12px;
+    background: #b7c0d0;
+  }
+  .co-chat-split {
+    width: 28px;
+    margin-right: -14px;
+    background: linear-gradient(90deg, transparent 12px, #d5dcea 12px, #d5dcea 16px, transparent 16px);
+  }
+  .co-chat-resize[data-resize="n"],
+  .co-chat-resize[data-resize="s"] {
+    height: 20px;
+  }
+  .co-chat-resize[data-resize="e"],
+  .co-chat-resize[data-resize="w"] {
+    width: 20px;
+  }
+  .co-chat-resize[data-resize="ne"],
+  .co-chat-resize[data-resize="nw"],
+  .co-chat-resize[data-resize="se"],
+  .co-chat-resize[data-resize="sw"] {
+    width: 28px;
+    height: 28px;
+  }
+  .co-chat.is-window {
+    max-width: calc(100vw - env(safe-area-inset-left, 0px) - env(safe-area-inset-right, 0px) - 1rem);
+    max-height: calc(100vh - env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px) - 1rem);
+  }
+  body.so-invoice-float #sales-section,
+  body.po-doc-float #po-section {
+    bottom: env(safe-area-inset-bottom, 0px);
+  }
+}
+
 .company-main {
   flex: 1 1 auto;
   min-height: 0;
@@ -4800,8 +4971,8 @@ body.so-invoice-float .so-doc-side {
 }
 @media (pointer: coarse) {
   .co-chat-move {
-    width: 2.5rem;
-    height: 2.35rem;
+    width: 2.75rem;
+    height: 2.75rem;
   }
   .co-chat-move svg {
     width: 1.2rem;
