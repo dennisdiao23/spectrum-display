@@ -2991,6 +2991,18 @@ body.po-split-lock #po-section #po-error {
 #wa-split {
   grid-template-columns: var(--wa-left-w, var(--wa-split-left-boot, 400px)) 14px minmax(0, 1fr);
 }
+#da-split {
+  grid-template-columns: var(--da-left-w, var(--da-split-left-boot, 480px)) 14px minmax(0, 1fr);
+}
+#da-split-left table.dash-cols[data-cols="dealer-applications"] td {
+  white-space: normal;
+  overflow: visible;
+  text-overflow: unset;
+}
+#da-split-left table.dash-cols[data-cols="dealer-applications"] th:nth-child(3),
+#da-split-left table.dash-cols[data-cols="dealer-applications"] td:nth-child(3) {
+  width: 7.25rem;
+}
 body.inv-layout-lock .inv-split,
 body.dash-split-lock .dash-split,
 body.so-split-lock .so-split,
@@ -3204,6 +3216,20 @@ body.inv-split-dragging .inv-split-resizer::after {
   display: none !important;
 }
 #accounts-section.wa-split-on #account-back {
+  display: none;
+}
+#dealers-section:not(.da-split-on) #da-split {
+  display: block;
+}
+#dealers-section:not(.da-split-on) #da-split-resizer,
+#dealers-section:not(.da-split-on) #da-overview-panel {
+  display: none !important;
+}
+#dealers-section:not(.da-split-on).da-detail-open .da-list-head,
+#dealers-section:not(.da-split-on).da-detail-open #da-split-left {
+  display: none !important;
+}
+#dealers-section.da-split-on #dealer-app-back {
   display: none;
 }
 body.dash-split-lock #wa-split-left table.dash-cols[data-cols="website-accounts"] thead th:not([data-col]),

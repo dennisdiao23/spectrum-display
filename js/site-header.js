@@ -738,9 +738,34 @@
       });
     }
     injectWallLink();
+    function injectPriceBookLink() {
+      var session = window.SpectrumAuth && SpectrumAuth.getSession && SpectrumAuth.getSession();
+      var can = session && (session.role === 'dealer' || session.role === 'sales');
+      $all('.site-drop-list').forEach(function (list) {
+        var existing = list.querySelector('[data-price-book-link]');
+        if (!can) {
+          if (existing) existing.remove();
+          return;
+        }
+        if (existing) return;
+        var account = list.querySelector('a[href*="account"]');
+        var a = document.createElement('a');
+        a.href = '/account.html#price-book';
+        a.setAttribute('data-price-book-link', '1');
+        a.setAttribute('data-i18n', 'account.priceBook');
+        a.textContent = 'Price book';
+        if (account && account.nextSibling) list.insertBefore(a, account.nextSibling);
+        else if (account) account.after(a);
+        else list.insertBefore(a, list.firstChild);
+      });
+    }
+    injectPriceBookLink();
     applyAuth();
     applyLangLabel();
-    window.addEventListener('spectrum:auth', applyAuth);
+    window.addEventListener('spectrum:auth', function () {
+      applyAuth();
+      injectPriceBookLink();
+    });
     if (window.SpectrumAuth && SpectrumAuth.ready) {
       SpectrumAuth.ready.then(applyAuth);
     }

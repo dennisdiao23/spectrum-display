@@ -167,6 +167,8 @@
             <p class="text-slate-400 text-sm mt-1">Welcome back, <span id="dash-name" class="text-slate-200 font-medium">—</span>
               <span id="dash-role-badge" class="ml-2 text-xs px-2 py-0.5 rounded-full bg-sky-500/20 text-sky-300"></span>
             </p>
+            <p id="dealer-pending-banner" class="hidden mt-3 text-sm text-amber-200 bg-amber-500/10 border border-amber-500/20 rounded-xl px-4 py-3">Your dealer application is in review. Spectrum will email you when you’re approved. Saved projects stay available.</p>
+            <p id="dealer-cta-banner" class="hidden mt-3 text-sm text-slate-300">Want Authorized net pricing and stock? <a href="/dealer.html#apply" class="text-sky-400 hover:text-sky-300 font-medium">Become a dealer →</a></p>
             <p class="text-sm mt-2"><a href="/wall" class="text-sky-400 hover:text-sky-300 font-medium">Open LED Wall Controller →</a></p>
           </div>
           <button type="button" id="logout-btn" class="self-start px-4 py-2 rounded-full border border-slate-600 text-sm text-slate-300 hover:border-sky-500 hover:text-white transition" data-i18n="account.signout">Sign out</button>
@@ -175,6 +177,8 @@
         <!-- Tabs -->
         <div class="flex flex-wrap gap-2 mb-6 border-b border-slate-800 pb-3">
           <button type="button" data-tab="projects" class="dash-tab px-4 py-2 rounded-full text-sm font-medium bg-sky-500/20 text-sky-300" data-i18n="account.projects">Saved projects</button>
+          <button type="button" data-tab="price-book" class="dash-tab hidden px-4 py-2 rounded-full text-sm font-medium text-slate-400 hover:text-white" data-i18n="account.priceBook">Price book</button>
+          <button type="button" data-tab="stock" class="dash-tab hidden px-4 py-2 rounded-full text-sm font-medium text-slate-400 hover:text-white" data-i18n="account.stock">Stock</button>
           <button type="button" data-tab="panels" class="dash-tab px-4 py-2 rounded-full text-sm font-medium text-slate-400 hover:text-white" data-i18n="account.panels">Custom panels</button>
           <button type="button" data-tab="orders" class="dash-tab px-4 py-2 rounded-full text-sm font-medium text-slate-400 hover:text-white" data-i18n="account.orders">Orders</button>
           <button type="button" data-tab="profile" class="dash-tab px-4 py-2 rounded-full text-sm font-medium text-slate-400 hover:text-white" data-i18n="account.info">Account info</button>
@@ -191,6 +195,45 @@
             No saved projects yet.<br />
             <a href="/led-wall-calculator" class="text-sky-400 hover:text-sky-300 mt-2 inline-block">Create a wall design and click Save to Account</a>
           </p>
+        </div>
+
+        <div id="tab-price-book" class="dash-section hidden space-y-4">
+          <p class="text-sm text-slate-400">Authorized dealer net and list by SKU. Factory cost is never shown here.</p>
+          <div class="overflow-x-auto rounded-2xl border border-slate-800">
+            <table class="w-full text-sm">
+              <thead class="text-left text-slate-400 border-b border-slate-800 bg-slate-900">
+                <tr>
+                  <th class="py-3 px-4 font-medium">SKU</th>
+                  <th class="py-3 px-4 font-medium">Name</th>
+                  <th class="py-3 px-4 font-medium">Brand</th>
+                  <th class="py-3 px-4 font-medium">Pitch</th>
+                  <th class="py-3 px-4 font-medium text-right">Dealer net</th>
+                  <th class="py-3 px-4 font-medium text-right">List</th>
+                </tr>
+              </thead>
+              <tbody id="price-book-table" class="text-slate-200"></tbody>
+            </table>
+          </div>
+          <p id="price-book-empty" class="hidden text-center py-12 text-slate-500 text-sm rounded-2xl border border-dashed border-slate-800">No price book items yet.</p>
+        </div>
+
+        <div id="tab-stock" class="dash-section hidden space-y-4">
+          <p class="text-sm text-slate-400">On-hand quantity and status. Location city is shown when it is on the warehouse.</p>
+          <div class="overflow-x-auto rounded-2xl border border-slate-800">
+            <table class="w-full text-sm">
+              <thead class="text-left text-slate-400 border-b border-slate-800 bg-slate-900">
+                <tr>
+                  <th class="py-3 px-4 font-medium">SKU</th>
+                  <th class="py-3 px-4 font-medium">Name</th>
+                  <th class="py-3 px-4 font-medium">On hand</th>
+                  <th class="py-3 px-4 font-medium">Status</th>
+                  <th class="py-3 px-4 font-medium">Location</th>
+                </tr>
+              </thead>
+              <tbody id="stock-table" class="text-slate-200"></tbody>
+            </table>
+          </div>
+          <p id="stock-empty" class="hidden text-center py-12 text-slate-500 text-sm rounded-2xl border border-dashed border-slate-800">No stock rows yet.</p>
         </div>
 
         <!-- Custom panels -->
@@ -235,7 +278,7 @@
             <div>
               <label class="block text-xs text-slate-400 mb-1">Account type</label>
               <input id="prof-role" type="text" disabled class="w-full bg-slate-900 border border-slate-800 rounded-lg px-3 py-2.5 text-sm text-slate-500" />
-              <p class="text-xs text-slate-500 mt-1">New accounts are Customer. Dealer and Sales types are set by Spectrum in Admin.</p>
+              <p class="text-xs text-slate-500 mt-1">New accounts are Customer. Apply on Become a dealer — Spectrum approves you as Dealer. Staff can also set Dealer on Website → Accounts.</p>
             </div>
             <p id="profile-msg" class="hidden text-sm text-sky-400"></p>
             <button type="submit" class="px-6 py-2.5 rounded-full bg-sky-500 hover:bg-sky-400 text-white text-sm font-semibold transition">Save changes</button>
@@ -254,7 +297,7 @@
   <script src="js/supabase-client.js"></script>
   <script src="js/pricing.js"></script>
   <script src="js/signup-guard.js"></script>
-  <script src="js/auth.js?v=signup-guard"></script>
+  <script src="js/auth.js?v=dealer-portal-v1"></script>
   <script src="js/site-header.js"></script>
   <script src="js/i18n.js"></script>
   <script>
@@ -350,14 +393,110 @@
     // Dashboard tabs
     document.querySelectorAll('.dash-tab').forEach(btn => {
       btn.onclick = () => {
-        document.querySelectorAll('.dash-tab').forEach(b => {
-          b.className = 'dash-tab px-4 py-2 rounded-full text-sm font-medium text-slate-400 hover:text-white';
-        });
-        btn.className = 'dash-tab px-4 py-2 rounded-full text-sm font-medium bg-sky-500/20 text-sky-300';
-        document.querySelectorAll('.dash-section').forEach(s => s.classList.add('hidden'));
-        document.getElementById('tab-' + btn.dataset.tab).classList.remove('hidden');
+        openDashTab(btn.dataset.tab, true);
       };
     });
+
+    function money(n) {
+      return '$' + (Number(n) || 0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    }
+
+    function stockStatusLabel(status) {
+      if (status === 'ok') return 'In stock';
+      if (status === 'low') return 'Low';
+      if (status === 'out') return 'Out';
+      if (status === 'special') return 'Special order';
+      return status || '—';
+    }
+
+    let dealerPriceBook = [];
+
+    function renderPriceBook(items) {
+      dealerPriceBook = items || [];
+      const tb = document.getElementById('price-book-table');
+      const empty = document.getElementById('price-book-empty');
+      const stockTb = document.getElementById('stock-table');
+      const stockEmpty = document.getElementById('stock-empty');
+      if (!dealerPriceBook.length) {
+        tb.innerHTML = '';
+        stockTb.innerHTML = '';
+        empty.classList.remove('hidden');
+        stockEmpty.classList.remove('hidden');
+        return;
+      }
+      empty.classList.add('hidden');
+      stockEmpty.classList.add('hidden');
+      tb.innerHTML = dealerPriceBook.map(function (item) {
+        return '<tr class="border-b border-slate-800">' +
+          '<td class="py-3 px-4 font-medium">' + escapeHtml(item.sku || '—') + '</td>' +
+          '<td class="py-3 px-4">' + escapeHtml(item.name || '') + '</td>' +
+          '<td class="py-3 px-4 text-slate-400">' + escapeHtml(item.brand || '') + '</td>' +
+          '<td class="py-3 px-4">' + escapeHtml(item.pitchLabel || item.pitch || '') + '</td>' +
+          '<td class="py-3 px-4 text-right text-sky-300">' + money(item.dealerNet) + '</td>' +
+          '<td class="py-3 px-4 text-right text-slate-400">' + money(item.listPrice) + '</td>' +
+          '</tr>';
+      }).join('');
+      stockTb.innerHTML = dealerPriceBook.map(function (item) {
+        const loc = (item.locations && item.locations[0]) || item.warehouse || '—';
+        return '<tr class="border-b border-slate-800">' +
+          '<td class="py-3 px-4 font-medium">' + escapeHtml(item.sku || '—') + '</td>' +
+          '<td class="py-3 px-4">' + escapeHtml(item.name || '') + '</td>' +
+          '<td class="py-3 px-4">' + escapeHtml(String(item.qty == null ? 0 : item.qty)) + '</td>' +
+          '<td class="py-3 px-4">' + escapeHtml(stockStatusLabel(item.status)) + '</td>' +
+          '<td class="py-3 px-4 text-slate-400">' + escapeHtml(loc) + '</td>' +
+          '</tr>';
+      }).join('');
+    }
+
+    function escapeHtml(value) {
+      return String(value == null ? '' : value)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;');
+    }
+
+    async function authHeaders() {
+      const token = Auth.accessToken ? await Auth.accessToken() : '';
+      const headers = {};
+      if (token) headers.Authorization = 'Bearer ' + token;
+      return headers;
+    }
+
+    async function loadDealerPortal() {
+      const pending = document.getElementById('dealer-pending-banner');
+      const cta = document.getElementById('dealer-cta-banner');
+      const priceTab = document.querySelector('.dash-tab[data-tab="price-book"]');
+      const stockTab = document.querySelector('.dash-tab[data-tab="stock"]');
+      pending.classList.add('hidden');
+      cta.classList.add('hidden');
+      priceTab.classList.add('hidden');
+      stockTab.classList.add('hidden');
+      try {
+        const headers = await authHeaders();
+        if (!headers.Authorization) return null;
+        const res = await fetch('/api/dealer/me', { headers: headers });
+        const json = await res.json().catch(function () { return {}; });
+        if (!res.ok || !json.ok) return null;
+        const app = json.application;
+        if (json.canSeeNets) {
+          priceTab.classList.remove('hidden');
+          stockTab.classList.remove('hidden');
+          const bookRes = await fetch('/api/dealer/price-book', { headers: headers });
+          const book = await bookRes.json().catch(function () { return {}; });
+          if (bookRes.ok && book.ok) renderPriceBook(book.items || []);
+          const hashTab = tabFromHash();
+          if (hashTab) openDashTab(hashTab, false);
+        } else if (app && app.status === 'pending') {
+          pending.classList.remove('hidden');
+        } else {
+          cta.classList.remove('hidden');
+        }
+        return json;
+      } catch (_err) {
+        return null;
+      }
+    }
 
     function renderDash() {
       const profile = Auth.getFullProfile();
@@ -485,6 +624,7 @@
       document.getElementById('prof-company').value = profile.company || '';
       document.getElementById('prof-phone').value = profile.phone || '';
       document.getElementById('prof-role').value = (Auth.roleLabel && Auth.roleLabel(profile.role)) || 'Customer';
+      loadDealerPortal();
     }
 
     document.getElementById('profile-form').onsubmit = async (e) => {
@@ -506,9 +646,36 @@
       }
     };
 
-    function openDashTab(name) {
+    function openDashTab(name, pushHash) {
+      const allowed = { projects: 1, panels: 1, orders: 1, profile: 1, 'price-book': 1, stock: 1 };
+      if (!allowed[name]) name = 'projects';
       const btn = document.querySelector('.dash-tab[data-tab="' + name + '"]');
-      if (btn) btn.click();
+      if (!btn || btn.classList.contains('hidden')) {
+        if (name === 'price-book' || name === 'stock') name = 'projects';
+      }
+      document.querySelectorAll('.dash-tab').forEach(function (b) {
+        const on = b.dataset.tab === name;
+        const hide = b.classList.contains('hidden');
+        b.className = 'dash-tab px-4 py-2 rounded-full text-sm font-medium ' +
+          (on ? 'bg-sky-500/20 text-sky-300' : 'text-slate-400 hover:text-white') +
+          (hide ? ' hidden' : '');
+      });
+      document.querySelectorAll('.dash-section').forEach(function (s) { s.classList.add('hidden'); });
+      const section = document.getElementById('tab-' + name);
+      if (section) section.classList.remove('hidden');
+      if (pushHash) {
+        if (name === 'price-book' || name === 'stock') {
+          if (location.hash !== '#' + name) history.replaceState(null, '', '#' + name);
+        } else if (location.hash === '#price-book' || location.hash === '#stock') {
+          history.replaceState(null, '', location.pathname + location.search);
+        }
+      }
+    }
+
+    function tabFromHash() {
+      const hash = String(location.hash || '').replace(/^#/, '');
+      if (hash === 'price-book' || hash === 'stock') return hash;
+      return '';
     }
 
     function afterAuthSuccess() {
@@ -561,7 +728,12 @@
           return;
         }
         showDash();
-        if (urlTab === 'orders' || urlTab === 'projects' || urlTab === 'profile' || urlTab === 'panels') openDashTab(urlTab);
+        const hashTab = tabFromHash();
+        if (urlTab === 'orders' || urlTab === 'projects' || urlTab === 'profile' || urlTab === 'panels' || urlTab === 'price-book' || urlTab === 'stock') {
+          openDashTab(urlTab, false);
+        } else if (hashTab) {
+          openDashTab(hashTab, false);
+        }
         tryPendingCheckout();
       } else {
         showAuth();
