@@ -348,6 +348,11 @@ function createSqliteStore() {
   dbUtil.rewriteExistingCabinetCopy(db);
   dbUtil.ensureCatalogSkus(db);
   dbUtil.ensureInventoryWarehouses(db);
+  try {
+    require('./novastar-price-inventory').applySqlite(db);
+  } catch (e) {
+    console.error('Could not apply NovaStar price list:', e.message || e);
+  }
 
   const api = {
     name: 'sqlite',

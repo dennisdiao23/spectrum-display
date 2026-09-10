@@ -112,6 +112,11 @@ function createSupabaseStore() {
     } catch (e) {
       console.error('Could not seed inventory warehouses:', e.message || e);
     }
+    try {
+      await require('./novastar-price-inventory').applySupabase(supabase);
+    } catch (e) {
+      console.error('Could not apply NovaStar price list:', e.message || e);
+    }
   }
 
   async function backfillItemLocations() {
