@@ -1,0 +1,660 @@
+{
+  "source": {
+    "pricingDate": "2026-09-01",
+    "inventoryDate": "2026-09-01",
+    "file": "Gloshine洛杉矶仓库库存清单及价格20260901.xlsx",
+    "note": "USD/pcs is inventory Local warehouse cost (Gloshine LA). Qty is untracked Gloshine US Warehouse pcs, not Spectrum Azusa. No MAP or China FOB in this sheet — do not overwrite sell price, dealer net, or website $/m2. Straight vs curve vs corner stay separate SKUs when prices differ. Same model+cabinet batches are summed."
+  },
+  "rows": [
+    {
+      "id": "le-b-p3.91-500x1000",
+      "name": "LE-B 3.91 500×1000 straight",
+      "sheetModel": "LE-B3.91 黑灯 (500*1000mm)",
+      "skuHint": "GLO-LE-B-P3.91-500X1000",
+      "seriesId": "legend",
+      "pitch": 3.91,
+      "mapToCatalog": true,
+      "shape": "straight",
+      "size": "500x1000",
+      "panelType": "outdoor-rental",
+      "qty": 610,
+      "usdPcs": 789,
+      "sourceRows": [
+        6,
+        10
+      ]
+    },
+    {
+      "id": "le-b-p3.91-500x1000-curve",
+      "name": "LE-B 3.91 500×1000 curve",
+      "sheetModel": "LE-B3.91 黑灯 (500*1000mm) 弧形",
+      "skuHint": "GLO-LE-B-P3.91-500X1000-CURVE",
+      "seriesId": "legend",
+      "pitch": 3.91,
+      "mapToCatalog": false,
+      "shape": "curve",
+      "size": "500x1000",
+      "panelType": "outdoor-rental",
+      "qty": 72,
+      "usdPcs": 812,
+      "sourceRows": [
+        7
+      ]
+    },
+    {
+      "id": "le-mini-p3.91-555b",
+      "name": "LE Mini 3.91 500×500 (555B)",
+      "sheetModel": "LE Mini3.91 黑灯 (500*500mm)",
+      "skuHint": "GLO-LE-MINI-P3.91-555B",
+      "seriesId": "legend",
+      "pitch": 3.91,
+      "mapToCatalog": false,
+      "shape": "straight",
+      "size": "500x500",
+      "panelType": "outdoor-rental",
+      "qty": 120,
+      "usdPcs": 441,
+      "sourceRows": [
+        8
+      ]
+    },
+    {
+      "id": "le-mini-p3.91-335ic",
+      "name": "LE Mini 3.91 500×500 (335IC)",
+      "sheetModel": "LEmini3.91 (500*500mm)",
+      "skuHint": "GLO-LE-MINI-P3.91-335IC",
+      "seriesId": "legend",
+      "pitch": 3.91,
+      "mapToCatalog": false,
+      "shape": "straight",
+      "size": "500x500",
+      "panelType": "outdoor-rental",
+      "qty": 304,
+      "usdPcs": 382,
+      "sourceRows": [
+        12
+      ]
+    },
+    {
+      "id": "mr-p3.91-corner",
+      "name": "MR 3.91 250×500 corner",
+      "sheetModel": "MR3.91 黑灯 250*500mm",
+      "skuHint": "GLO-MR-P3.91-250X500-CORNER",
+      "seriesId": "mr",
+      "pitch": 3.91,
+      "mapToCatalog": true,
+      "shape": "corner",
+      "size": "250x500",
+      "panelType": "outdoor-rental",
+      "qty": 57,
+      "usdPcs": 370,
+      "sourceRows": [
+        11,
+        13
+      ]
+    },
+    {
+      "id": "ur-p3.91",
+      "name": "UR 3.91 500×1000 curve",
+      "sheetModel": "UR 3.91 黑灯 (500*1000mm)",
+      "skuHint": "GLO-UR-P3.91-500X1000-CURVE",
+      "seriesId": "ur",
+      "pitch": 3.91,
+      "mapToCatalog": true,
+      "shape": "curve",
+      "size": "500x1000",
+      "panelType": "outdoor-rental",
+      "qty": 274,
+      "usdPcs": 1202,
+      "sourceRows": [
+        14
+      ]
+    },
+    {
+      "id": "urmini-p3.91",
+      "name": "UR Mini 3.91 500×500 curve",
+      "sheetModel": "URmini3.91 黑灯 (500*500mm)",
+      "skuHint": "GLO-URMINI-P3.91-500X500-CURVE",
+      "seriesId": "ur",
+      "pitch": 3.91,
+      "mapToCatalog": false,
+      "shape": "curve",
+      "size": "500x500",
+      "panelType": "outdoor-rental",
+      "qty": 112,
+      "usdPcs": 713,
+      "sourceRows": [
+        15
+      ]
+    },
+    {
+      "id": "ut-mixed",
+      "name": "UT 3.7 / UT 5.7 600×1200",
+      "sheetModel": "UT3.7/UT5.7 (600X1200mm)",
+      "skuHint": "GLO-UT-3.7-5.7",
+      "seriesId": "",
+      "pitch": "",
+      "mapToCatalog": false,
+      "shape": "",
+      "size": "600x1200",
+      "panelType": "",
+      "qty": 4,
+      "usdPcs": null,
+      "sourceRows": [
+        16
+      ]
+    },
+    {
+      "id": "ur-urmini-mix-p3.91",
+      "name": "UR / UR Mini 3.91 mixed",
+      "sheetModel": "UR/URMINI3.91",
+      "skuHint": "GLO-UR-URMINI-P3.91-MIX",
+      "seriesId": "ur",
+      "pitch": 3.91,
+      "mapToCatalog": false,
+      "shape": "",
+      "size": "",
+      "panelType": "outdoor-rental",
+      "qty": 22,
+      "usdPcs": null,
+      "sourceRows": [
+        17
+      ]
+    },
+    {
+      "id": "urmini-p2.6",
+      "name": "UR Mini 2.6 500×1000 curve",
+      "sheetModel": "URmini2.6 (500*1000mm)",
+      "skuHint": "GLO-URMINI-P2.6-500X1000-CURVE",
+      "seriesId": "ur",
+      "pitch": 2.6,
+      "mapToCatalog": false,
+      "shape": "curve",
+      "size": "500x1000",
+      "panelType": "outdoor-rental",
+      "qty": 2,
+      "usdPcs": null,
+      "sourceRows": [
+        18
+      ]
+    },
+    {
+      "id": "ur-p2.6",
+      "name": "UR 2.6 500×1000 curve",
+      "sheetModel": "UR2.6 (500*1000mm)",
+      "skuHint": "GLO-UR-P2.6-500X1000-CURVE",
+      "seriesId": "ur",
+      "pitch": 2.6,
+      "mapToCatalog": true,
+      "shape": "curve",
+      "size": "500x1000",
+      "panelType": "outdoor-rental",
+      "qty": 6,
+      "usdPcs": null,
+      "sourceRows": [
+        19
+      ]
+    },
+    {
+      "id": "mt2-p2.3-flat",
+      "name": "MT II 2.3 Flat 496×496",
+      "sheetModel": "MTII 2.3 Flat (496*496mm)",
+      "skuHint": "GLO-MT2-P2.3-FLAT",
+      "seriesId": "mt2",
+      "pitch": 2.3,
+      "mapToCatalog": true,
+      "shape": "straight",
+      "size": "496x496",
+      "panelType": "indoor-rental",
+      "qty": 273,
+      "usdPcs": 616,
+      "sourceRows": [
+        20
+      ]
+    },
+    {
+      "id": "mt2-p2.3-corner",
+      "name": "MT II 2.3 Corner 496×496",
+      "sheetModel": "MTII 2.3 Conner (496*496mm)",
+      "skuHint": "GLO-MT2-P2.3-CORNER",
+      "seriesId": "mt2",
+      "pitch": 2.3,
+      "mapToCatalog": false,
+      "shape": "corner",
+      "size": "496x496",
+      "panelType": "indoor-rental",
+      "qty": 64,
+      "usdPcs": 636,
+      "sourceRows": [
+        21
+      ]
+    },
+    {
+      "id": "mtedge-p2.3",
+      "name": "MT Edge 2.3 496×496",
+      "sheetModel": "MTedge 2.3 (496*496mm)",
+      "skuHint": "GLO-MTEDGE-P2.3",
+      "seriesId": "mtedge",
+      "pitch": 2.38,
+      "mapToCatalog": true,
+      "shape": "flex",
+      "size": "496x496",
+      "panelType": "indoor-rental",
+      "qty": 284,
+      "usdPcs": 805,
+      "sourceRows": [
+        22
+      ]
+    },
+    {
+      "id": "mt2-p1.5-flat",
+      "name": "MT II 1.5 Flat 496×496",
+      "sheetModel": "MTII 1.5 Flat (496*496mm) HOB",
+      "skuHint": "GLO-MT2-P1.5-FLAT",
+      "seriesId": "mt2",
+      "pitch": 1.5,
+      "mapToCatalog": false,
+      "shape": "straight",
+      "size": "496x496",
+      "panelType": "indoor-rental",
+      "qty": 642,
+      "usdPcs": 842,
+      "sourceRows": [
+        23
+      ]
+    },
+    {
+      "id": "mt2-p1.5-corner",
+      "name": "MT II 1.5 Corner 496×496",
+      "sheetModel": "MTII 1.5 Corner (496*496mm) HOB",
+      "skuHint": "GLO-MT2-P1.5-CORNER",
+      "seriesId": "mt2",
+      "pitch": 1.5,
+      "mapToCatalog": false,
+      "shape": "corner",
+      "size": "496x496",
+      "panelType": "indoor-rental",
+      "qty": 96,
+      "usdPcs": 862,
+      "sourceRows": [
+        24
+      ]
+    },
+    {
+      "id": "dnin-p3.91",
+      "name": "DN Indoor 3.91 500×500",
+      "sheetModel": "DN3.91 (500*500mm)",
+      "skuHint": "GLO-DNIN-P3.91",
+      "seriesId": "dnin",
+      "pitch": 3.9,
+      "mapToCatalog": true,
+      "shape": "straight",
+      "size": "500x500",
+      "panelType": "indoor-rental",
+      "qty": 10,
+      "usdPcs": null,
+      "sourceRows": [
+        26
+      ]
+    },
+    {
+      "id": "dnplus-p2.97",
+      "name": "DN Plus 2.97 500×1000",
+      "sheetModel": "DNPlus2.97 (500*1000mm)",
+      "skuHint": "GLO-DNPLUS-P2.97-500X1000",
+      "seriesId": "dnin",
+      "pitch": 2.97,
+      "mapToCatalog": false,
+      "shape": "straight",
+      "size": "500x1000",
+      "panelType": "indoor-rental",
+      "qty": 17,
+      "usdPcs": 620,
+      "sourceRows": [
+        27
+      ]
+    },
+    {
+      "id": "dn-p2.97-in",
+      "name": "DN Indoor 2.97 500×500",
+      "sheetModel": "DN2.97 (500*500mm)",
+      "skuHint": "GLO-DNIN-P2.97-500X500",
+      "seriesId": "dnin",
+      "pitch": 2.97,
+      "mapToCatalog": false,
+      "shape": "straight",
+      "size": "500x500",
+      "panelType": "indoor-rental",
+      "qty": 123,
+      "usdPcs": 373,
+      "sourceRows": [
+        28
+      ]
+    },
+    {
+      "id": "dnin-p2.6",
+      "name": "DN Indoor 2.6 500×500",
+      "sheetModel": "DN2.6直角 (500*500mm)",
+      "skuHint": "GLO-DNIN-P2.6",
+      "seriesId": "dnin",
+      "pitch": 2.6,
+      "mapToCatalog": true,
+      "shape": "straight",
+      "size": "500x500",
+      "panelType": "indoor-rental",
+      "qty": 29,
+      "usdPcs": 344,
+      "sourceRows": [
+        30
+      ]
+    },
+    {
+      "id": "cfpro-p2.6",
+      "name": "CF Pro 2.6 500×500",
+      "sheetModel": "CFPRO 2.6 (500*500mm)",
+      "skuHint": "GLO-CFPRO-P2.6",
+      "seriesId": "cfpro",
+      "pitch": 2.6,
+      "mapToCatalog": true,
+      "shape": "flex",
+      "size": "500x500",
+      "panelType": "indoor-rental",
+      "qty": 177,
+      "usdPcs": 510,
+      "sourceRows": [
+        31
+      ]
+    },
+    {
+      "id": "dnin-p1.95",
+      "name": "DN Indoor 1.95 HOB 500×500 curve",
+      "sheetModel": "DN1.95 HOB 黑灯 (500*500mm)",
+      "skuHint": "GLO-DNIN-P1.95",
+      "seriesId": "dnin",
+      "pitch": 1.9,
+      "mapToCatalog": true,
+      "shape": "curve",
+      "size": "500x500",
+      "panelType": "indoor-rental",
+      "qty": 273,
+      "usdPcs": 592,
+      "sourceRows": [
+        32
+      ]
+    },
+    {
+      "id": "va-p3.91",
+      "name": "VA 3.91 500×1000 curve",
+      "sheetModel": "VA3.91 (500*1000mm)",
+      "skuHint": "GLO-VA-P3.91-500X1000",
+      "seriesId": "",
+      "pitch": 3.91,
+      "mapToCatalog": false,
+      "shape": "curve",
+      "size": "500x1000",
+      "panelType": "outdoor-rental",
+      "qty": 34,
+      "usdPcs": null,
+      "sourceRows": [
+        34
+      ]
+    },
+    {
+      "id": "ra-p1.9",
+      "name": "RA 1.9 500×500",
+      "sheetModel": "RA1.9 (500*500mm)",
+      "skuHint": "GLO-RA-P1.9",
+      "seriesId": "ra2",
+      "pitch": 1.98,
+      "mapToCatalog": true,
+      "shape": "straight",
+      "size": "500x500",
+      "panelType": "indoor-fixed",
+      "qty": 183,
+      "usdPcs": 321,
+      "sourceRows": [
+        35
+      ]
+    },
+    {
+      "id": "mvpro-p2.6",
+      "name": "MV Pro 2.6 500×500",
+      "sheetModel": "MV Pro2.6 (500*500mm)",
+      "skuHint": "GLO-MVPRO-P2.6",
+      "seriesId": "mvpro",
+      "pitch": 2.6,
+      "mapToCatalog": true,
+      "shape": "straight",
+      "size": "500x500",
+      "panelType": "indoor-rental",
+      "qty": 58,
+      "usdPcs": null,
+      "sourceRows": [
+        36
+      ]
+    },
+    {
+      "id": "mvpro-p1.9",
+      "name": "MV Pro 1.9 500×500 exhibit",
+      "sheetModel": "MV Pro 1.9 (500*500mm) 展品",
+      "skuHint": "GLO-MVPRO-P1.9-EXHIBIT",
+      "seriesId": "mvpro",
+      "pitch": 1.9,
+      "mapToCatalog": true,
+      "shape": "curve",
+      "size": "500x500",
+      "panelType": "indoor-rental",
+      "qty": 70,
+      "usdPcs": null,
+      "sourceRows": [
+        37
+      ]
+    },
+    {
+      "id": "cfpro-p1.9",
+      "name": "CF Pro 1.9 500×500 exhibit",
+      "sheetModel": "CF Pro 1.9 (500*500mm) 展品",
+      "skuHint": "GLO-CFPRO-P1.9-EXHIBIT",
+      "seriesId": "cfpro",
+      "pitch": 1.9,
+      "mapToCatalog": true,
+      "shape": "curve",
+      "size": "500x500",
+      "panelType": "indoor-rental",
+      "qty": 40,
+      "usdPcs": null,
+      "sourceRows": [
+        38
+      ]
+    },
+    {
+      "id": "pl-p3.91",
+      "name": "PL 3.91 500×500 bevel",
+      "sheetModel": "PL3.91斜角 (500*500mm)",
+      "skuHint": "GLO-PL-P3.91-500X500",
+      "seriesId": "",
+      "pitch": 3.91,
+      "mapToCatalog": false,
+      "shape": "bevel",
+      "size": "500x500",
+      "panelType": "indoor-rental",
+      "qty": 19,
+      "usdPcs": null,
+      "sourceRows": [
+        39
+      ]
+    },
+    {
+      "id": "bd-p2.5",
+      "name": "BD 2.5",
+      "sheetModel": "BD2.5",
+      "skuHint": "GLO-BD-P2.5",
+      "seriesId": "",
+      "pitch": 2.5,
+      "mapToCatalog": false,
+      "shape": "",
+      "size": "",
+      "panelType": "indoor-rental",
+      "qty": 2,
+      "usdPcs": null,
+      "sourceRows": [
+        40
+      ]
+    },
+    {
+      "id": "mvultra-p1.95",
+      "name": "MV Ultra 1.95 500×500 bevel",
+      "sheetModel": "MV Ultra1.95 二合一黑灯",
+      "skuHint": "GLO-MVULTRA-P1.95",
+      "seriesId": "mvultra",
+      "pitch": 1.9,
+      "mapToCatalog": true,
+      "shape": "bevel",
+      "size": "500x500",
+      "panelType": "indoor-rental",
+      "qty": 120,
+      "usdPcs": null,
+      "sourceRows": [
+        41
+      ]
+    },
+    {
+      "id": "cfpro2-p1.95",
+      "name": "CF Pro II 1.95 curve",
+      "sheetModel": "CF Pro Ⅱ1.95",
+      "skuHint": "GLO-CFPRO2-P1.95",
+      "seriesId": "cfpro2",
+      "pitch": 1.9,
+      "mapToCatalog": true,
+      "shape": "curve",
+      "size": "500x500",
+      "panelType": "indoor-rental",
+      "qty": 38,
+      "usdPcs": null,
+      "sourceRows": [
+        42
+      ]
+    },
+    {
+      "id": "mt55-p1.5",
+      "name": "MT55 1.5",
+      "sheetModel": "MT55 1.5",
+      "skuHint": "GLO-MT55-P1.5",
+      "seriesId": "mt55",
+      "pitch": 1.5,
+      "mapToCatalog": true,
+      "shape": "straight",
+      "size": "",
+      "panelType": "indoor-rental",
+      "qty": 24,
+      "usdPcs": null,
+      "sourceRows": [
+        43
+      ]
+    },
+    {
+      "id": "dnplus-b-p2.6",
+      "name": "DN Plus-B 2.6 500×1000",
+      "sheetModel": "DN Plus-B2.6黑灯 500*1000mm",
+      "skuHint": "GLO-DNPLUS-B-P2.6-500X1000",
+      "seriesId": "dn",
+      "pitch": 2.6,
+      "mapToCatalog": false,
+      "shape": "straight",
+      "size": "500x1000",
+      "panelType": "outdoor-rental",
+      "qty": 76,
+      "usdPcs": 1113,
+      "sourceRows": [
+        47,
+        48
+      ]
+    },
+    {
+      "id": "dn-b-p2.6",
+      "name": "DN-B 2.6 500×500",
+      "sheetModel": "DN-B2.6黑灯 500*500mm",
+      "skuHint": "GLO-DN-B-P2.6-500X500",
+      "seriesId": "dn",
+      "pitch": 2.6,
+      "mapToCatalog": true,
+      "shape": "straight",
+      "size": "500x500",
+      "panelType": "outdoor-rental",
+      "qty": 140,
+      "usdPcs": 587,
+      "sourceRows": [
+        49
+      ]
+    },
+    {
+      "id": "dn-b-p2.6-corner",
+      "name": "DN-B 2.6 500×500 corner",
+      "sheetModel": "DN-B2.6黑灯 500*500mm 四边切",
+      "skuHint": "GLO-DN-B-P2.6-CORNER",
+      "seriesId": "dn",
+      "pitch": 2.6,
+      "mapToCatalog": false,
+      "shape": "corner",
+      "size": "500x500",
+      "panelType": "outdoor-rental",
+      "qty": 96,
+      "usdPcs": null,
+      "sourceRows": [
+        50
+      ]
+    },
+    {
+      "id": "ra2-p2.6",
+      "name": "RA II 2.6 500×500",
+      "sheetModel": "RA Ⅱ 2.6 500*500mm",
+      "skuHint": "GLO-RA2-P2.6",
+      "seriesId": "ra2",
+      "pitch": 2.6,
+      "mapToCatalog": true,
+      "shape": "straight",
+      "size": "500x500",
+      "panelType": "indoor-fixed",
+      "qty": 390,
+      "usdPcs": 264,
+      "sourceRows": [
+        51,
+        53
+      ]
+    },
+    {
+      "id": "ra-plus-ii-p2.6",
+      "name": "RA Plus II 2.6 500×1000",
+      "sheetModel": "RA Plus Ⅱ2.6 500*1000mm",
+      "skuHint": "GLO-RA-PLUS-II-P2.6-500X1000",
+      "seriesId": "ra2",
+      "pitch": 2.6,
+      "mapToCatalog": false,
+      "shape": "straight",
+      "size": "500x1000",
+      "panelType": "indoor-fixed",
+      "qty": 384,
+      "usdPcs": 494,
+      "sourceRows": [
+        52
+      ]
+    },
+    {
+      "id": "mvultra-p2.6",
+      "name": "MV Ultra 2.6 500×500 curve",
+      "sheetModel": "MV Ultra 2.6 500x500mm",
+      "skuHint": "GLO-MVULTRA-P2.6",
+      "seriesId": "mvultra",
+      "pitch": 2.6,
+      "mapToCatalog": true,
+      "shape": "curve",
+      "size": "500x500",
+      "panelType": "outdoor-rental",
+      "qty": 200,
+      "usdPcs": 400,
+      "sourceRows": [
+        54
+      ]
+    }
+  ]
+}

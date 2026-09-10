@@ -117,6 +117,11 @@ function createSupabaseStore() {
     } catch (e) {
       console.error('Could not apply NovaStar price list:', e.message || e);
     }
+    try {
+      await require('./gloshine-price-inventory').applySupabase(supabase);
+    } catch (e) {
+      console.error('Could not apply Gloshine LA warehouse list:', e.message || e);
+    }
   }
 
   async function backfillItemLocations() {
@@ -1404,6 +1409,14 @@ function createSupabaseStore() {
       if (input.description != null) patch.description = input.description;
       if (input.image != null) patch.image = input.image;
       if (input.notes != null) patch.notes = input.notes;
+      if (input.category != null) {
+        patch.category = inv.resolveItemCategory(input.category, current.category, {
+          sku: input.sku != null ? input.sku : current.sku,
+          name: input.name != null ? input.name : current.name,
+          brandId: input.brandId != null ? input.brandId : current.brand_id,
+          unit: input.unit != null ? input.unit : current.unit
+        });
+      }
       const { error } = await supabase.from('inventory_items').update(patch).eq('id', id);
       throwIf(error, 'Could not save inventory item.');
       if (input.warehouseId || input.bin != null) {

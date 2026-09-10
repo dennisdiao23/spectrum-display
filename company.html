@@ -14,10 +14,10 @@
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
   <title>Company | Spectrum Display</title>
   <meta name="robots" content="noindex, nofollow" />
-  <link rel="stylesheet" href="/css/company-dash.css?v=dealer-v2" />
+  <link rel="stylesheet" href="/css/company-dash.css?v=crmv2-dealer" />
   <script src="/js/address-autocomplete.js"></script>
   <script src="/js/company-chat.js?v=chatmove2"></script>
-  <script src="/js/company-crm.js?v=crm8"></script>
+  <script src="/js/company-crm.js?v=crmv2b"></script>
   <script src="/js/print-form.js?v=forms20"></script>
   <script>
     if ('serviceWorker' in navigator && location.pathname.indexOf('/company') === 0) {
@@ -177,6 +177,7 @@
         <a href="/company/crm/leads" id="tab-crm" class="dash-nav-link">
           <svg class="dash-nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 4h16l-6.5 8.2V20l-3-1.5v-6.3L4 4z"/></svg>
           <span>CRM</span>
+          <span class="dash-nav-unread" id="crm-nav-badge" hidden></span>
         </a>
         <div id="crm-subnav" class="dash-sub hidden">
           <a href="/company/crm/leads" id="tab-leads" class="dash-sub-link">
@@ -560,6 +561,7 @@
                   <option value="">Default</option>
                   <option value="ships_azusa">Ships from Azusa</option>
                   <option value="ships_novastar">Ships from NovaStar</option>
+                  <option value="ships_gloshine">Ships from Gloshine</option>
                   <option value="incoming">Incoming</option>
                   <option value="built_to_order">Built to order</option>
                   <option value="quote">Request quote</option>
@@ -680,6 +682,7 @@
               <option value="">Default</option>
               <option value="ships_azusa">Ships from Azusa</option>
               <option value="ships_novastar">Ships from NovaStar</option>
+              <option value="ships_gloshine">Ships from Gloshine</option>
               <option value="incoming">Incoming</option>
               <option value="built_to_order">Built to order</option>
               <option value="quote">Request quote</option>
@@ -910,7 +913,10 @@
             </button>
           </div>
           <div class="cc-list-toolbar cc-list-tools">
-            <input id="inv-search" type="search" placeholder="Search SKU, name, brand" class="cc-list-search bg-slate-800 border border-slate-700 rounded-full px-3 py-1.5 text-sm">
+            <input id="inv-search" type="search" placeholder="Search SKU, name, brand, category" class="cc-list-search bg-slate-800 border border-slate-700 rounded-full px-3 py-1.5 text-sm">
+            <select id="inv-category-filter" class="cc-list-select bg-slate-800 border border-slate-700 rounded-full px-3 py-1.5 text-sm" aria-label="Filter by category">
+              <option value="">All categories</option>
+            </select>
             <div class="cc-list-filters">
               <button type="button" data-inv-filter="all" class="inv-filter px-3 py-1.5 rounded-full text-xs font-medium bg-sky-500/20 text-sky-300">All</button>
               <button type="button" data-inv-filter="low" class="inv-filter px-3 py-1.5 rounded-full text-xs font-medium text-slate-400 hover:text-white">Low</button>
@@ -929,6 +935,7 @@
                     <tr>
                       <th class="py-3 px-4 font-medium" data-col="name" data-lock="start">Item <span class="dash-col-caret">▾</span><span class="dash-col-grip" aria-hidden="true"></span></th>
                       <th class="py-3 px-4 font-medium" data-col="sku">SKU <span class="dash-col-caret">▾</span><span class="dash-col-grip" aria-hidden="true"></span></th>
+                      <th class="py-3 px-4 font-medium" data-col="category">Category <span class="dash-col-caret">▾</span><span class="dash-col-grip" aria-hidden="true"></span></th>
                       <th class="py-3 px-4 font-medium" data-col="description">Description <span class="dash-col-caret">▾</span><span class="dash-col-grip" aria-hidden="true"></span></th>
                       <th class="py-3 px-4 font-medium" data-col="pitch">Pitch <span class="dash-col-caret">▾</span><span class="dash-col-grip" aria-hidden="true"></span></th>
                       <th class="py-3 px-4 font-medium" data-col="brand">Brand <span class="dash-col-caret">▾</span><span class="dash-col-grip" aria-hidden="true"></span></th>
@@ -1010,6 +1017,7 @@
                       <h3>Specs</h3>
                       <dl class="cc-detail-dl">
                         <div><dt>Brand</dt><dd id="inv-detail-brand">—</dd></div>
+                        <div><dt>Category</dt><dd id="inv-detail-category">—</dd></div>
                         <div><dt>Pitch</dt><dd id="inv-detail-pitch">—</dd></div>
                         <div><dt>Unit</dt><dd id="inv-detail-unit">—</dd></div>
                       </dl>
@@ -1604,6 +1612,7 @@
                   <option value="">Select ship from</option>
                   <option value="china_fob">China factory (FOB)</option>
                   <option value="novastar_vegas">NovaStar Warehouse (Las Vegas)</option>
+                  <option value="gloshine_la">Gloshine US Warehouse (Los Angeles)</option>
                 </select>
               </div>
               <div class="po-field">
@@ -1790,6 +1799,9 @@
           </div>
           <div class="cc-list-toolbar cc-list-tools">
             <input id="crm-lead-search" type="search" placeholder="Search company, contact, email, phone" class="cc-list-search bg-slate-800 border border-slate-700 rounded-full px-3 py-1.5 text-sm">
+            <button id="crm-lead-export" type="button" class="cc-detail-btn">Export CSV</button>
+            <button id="crm-lead-import-btn" type="button" class="cc-detail-btn">Import CSV</button>
+            <input id="crm-lead-import" type="file" accept=".csv,text/csv" hidden>
             <button id="crm-lead-new" type="button" class="cc-list-add-btn px-4 py-2 rounded-full bg-sky-500 hover:bg-sky-400 text-white text-sm font-semibold">Add lead</button>
           </div>
           <p id="crm-lead-error" class="hidden text-sm text-red-400 mb-3"></p>
@@ -1866,13 +1878,26 @@
                     </div>
                   </div>
                 </div>
+                <p id="crm-lead-dup" class="crm-dup-banner hidden"></p>
                 <div class="cc-detail-tabs" role="tablist">
                   <button type="button" class="cc-detail-tab is-on" data-crm-lead-tab="details" role="tab" aria-selected="true">Details</button>
+                  <button type="button" class="cc-detail-tab" data-crm-lead-tab="email" role="tab" aria-selected="false">Email</button>
                   <button type="button" class="cc-detail-tab" data-crm-lead-tab="activity" role="tab" aria-selected="false">Activity</button>
                   <button type="button" class="cc-detail-tab" data-crm-lead-tab="deals" role="tab" aria-selected="false">Deals</button>
                 </div>
                 <div id="crm-lead-panel-details" class="cc-detail-panel" role="tabpanel">
                   <div class="cc-detail-notes-box" id="crm-lead-detail-notes">—</div>
+                </div>
+                <div id="crm-lead-panel-email" class="cc-detail-panel hidden" role="tabpanel" hidden>
+                  <div id="crm-lead-thread" class="crm-mail-thread"></div>
+                  <form id="crm-mail-form" class="crm-mail-compose">
+                    <p class="crm-mail-from">Send from sales@spectrumdisplay.com · replies go to sales@</p>
+                    <div class="cc-field"><label>To</label><input id="crm-mail-to" type="email" autocomplete="off"></div>
+                    <div class="cc-field"><label>Subject</label><input id="crm-mail-subject" type="text"></div>
+                    <div class="cc-field wide"><label>Message</label><textarea id="crm-mail-body" rows="5"></textarea></div>
+                    <p id="crm-mail-msg" class="hidden text-sm text-red-500"></p>
+                    <button type="submit" id="crm-mail-send" class="cc-detail-btn cc-detail-btn-primary">Send email</button>
+                  </form>
                 </div>
                 <div id="crm-lead-panel-activity" class="cc-detail-panel hidden" role="tabpanel" hidden>
                   <div id="crm-lead-acts"></div>
@@ -1895,7 +1920,7 @@
       <div id="crm-pipe-section" class="hidden">
         <div class="cc-workspace">
         <div class="cc-list-inner">
-          <div class="page-kpis page-kpis-3 cc-list-kpis">
+          <div class="page-kpis page-kpis-5 cc-list-kpis">
             <button type="button" class="dash-kpi is-on" aria-pressed="true">
               <span class="dash-kpi-icon dash-kpi-icon-crm" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><rect x="3" y="4" width="5" height="16" rx="1"/><rect x="10" y="8" width="5" height="12" rx="1"/><rect x="17" y="12" width="4" height="8" rx="1"/></svg></span>
               <span class="dash-kpi-label">Open deals</span>
@@ -1909,10 +1934,22 @@
               <span class="dash-kpi-hint">Not won or lost</span>
             </button>
             <button type="button" class="dash-kpi" aria-pressed="false">
+              <span class="dash-kpi-icon dash-kpi-icon-website" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M4 16l5-5 4 4 7-8"/></svg></span>
+              <span class="dash-kpi-label">Win rate</span>
+              <strong class="dash-kpi-value" id="crm-pipe-stat-rate">—</strong>
+              <span class="dash-kpi-hint">Won / closed</span>
+            </button>
+            <button type="button" class="dash-kpi" aria-pressed="false">
               <span class="dash-kpi-icon dash-kpi-icon-customers" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="m9 12 2 2 4-4"/></svg></span>
               <span class="dash-kpi-label">Won</span>
               <strong class="dash-kpi-value" id="crm-pipe-stat-won">—</strong>
               <span class="dash-kpi-hint">Closed won</span>
+            </button>
+            <button type="button" class="dash-kpi" aria-pressed="false">
+              <span class="dash-kpi-icon dash-kpi-icon-overdue" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="m9 9 6 6M15 9l-6 6"/></svg></span>
+              <span class="dash-kpi-label">Lost</span>
+              <strong class="dash-kpi-value" id="crm-pipe-stat-lost">—</strong>
+              <span class="dash-kpi-hint">Closed lost</span>
             </button>
           </div>
           <div class="cc-list-toolbar cc-list-tools">
@@ -1951,6 +1988,8 @@
                         <div><dt>Stage</dt><dd id="crm-pipe-detail-stage">—</dd></div>
                         <div><dt>Value</dt><dd id="crm-pipe-detail-value">—</dd></div>
                         <div><dt>Close</dt><dd id="crm-pipe-detail-close">—</dd></div>
+                        <div><dt>Quote</dt><dd id="crm-pipe-detail-quote">—</dd></div>
+                        <div><dt>Reason</dt><dd id="crm-pipe-detail-reason">—</dd></div>
                       </dl>
                     </div>
                     <div class="cc-detail-block">
@@ -2023,6 +2062,7 @@
                     <th class="py-3 px-4 font-medium" data-col="related">Related <span class="dash-col-caret">▾</span><span class="dash-col-grip" aria-hidden="true"></span></th>
                     <th class="py-3 px-4 font-medium" data-col="due">Due <span class="dash-col-caret">▾</span><span class="dash-col-grip" aria-hidden="true"></span></th>
                     <th class="py-3 px-4 font-medium" data-col="status">Status <span class="dash-col-caret">▾</span><span class="dash-col-grip" aria-hidden="true"></span></th>
+                    <th class="py-3 px-4 font-medium" data-col="assigned">Assigned <span class="dash-col-caret">▾</span><span class="dash-col-grip" aria-hidden="true"></span></th>
                     <th class="py-3 px-4 font-medium" data-col="owner">Logged by <span class="dash-col-caret">▾</span><span class="dash-col-grip" aria-hidden="true"></span></th>
                   </tr>
                 </thead>
@@ -2863,7 +2903,7 @@
               <option value="lost">Lost</option>
             </select>
           </div>
-          <div class="cc-field"><label>Owner</label><input id="crm-lead-owner" type="text"></div>
+          <div class="cc-field"><label>Owner</label><input id="crm-lead-owner" type="text" list="crm-assignee-list"></div>
           <div class="cc-field"><label>Project type</label><input id="crm-lead-project" type="text"></div>
           <div class="cc-field"><label>City</label><input id="crm-lead-city" type="text"></div>
           <div class="cc-field"><label>State</label><input id="crm-lead-state" type="text"></div>
@@ -2871,6 +2911,7 @@
           <div class="cc-field wide"><label>Notes</label><textarea id="crm-lead-notes" rows="4"></textarea></div>
         </div>
       </section>
+      <p id="crm-lead-dups" class="hidden text-sm px-5 pt-3 text-amber-600"></p>
       <p id="crm-lead-msg" class="hidden text-sm px-5 pt-3 text-red-500"></p>
     </form>
     <div class="cc-drawer-foot">
@@ -2906,7 +2947,29 @@
           </div>
           <div class="cc-field"><label>Value ($)</label><input id="crm-deal-value" type="number" min="0" step="1"></div>
           <div class="cc-field"><label>Expected close</label><input id="crm-deal-close" type="date"></div>
-          <div class="cc-field"><label>Owner</label><input id="crm-deal-owner" type="text"></div>
+          <div class="cc-field"><label>Owner</label><input id="crm-deal-owner" type="text" list="crm-assignee-list"></div>
+          <div class="cc-field" id="crm-deal-won-wrap">
+            <label>Won reason</label>
+            <select id="crm-deal-won-reason">
+              <option value="">Choose a reason</option>
+              <option value="price">Price</option>
+              <option value="timing">Timing</option>
+              <option value="competitor">Competitor</option>
+              <option value="no_budget">No budget</option>
+              <option value="other">Other</option>
+            </select>
+          </div>
+          <div class="cc-field" id="crm-deal-lost-wrap">
+            <label>Lost reason</label>
+            <select id="crm-deal-lost-reason">
+              <option value="">Choose a reason</option>
+              <option value="price">Price</option>
+              <option value="timing">Timing</option>
+              <option value="competitor">Competitor</option>
+              <option value="no_budget">No budget</option>
+              <option value="other">Other</option>
+            </select>
+          </div>
           <div class="cc-field wide"><label>Lead</label><select id="crm-deal-lead"><option value="">No lead</option></select></div>
           <div class="cc-field wide"><label>Notes</label><textarea id="crm-deal-notes" rows="4"></textarea></div>
         </div>
@@ -2943,6 +3006,7 @@
           <div class="cc-field wide"><label>Subject</label><input id="crm-act-subject" type="text"></div>
           <div class="cc-field"><label>Lead</label><select id="crm-act-lead"><option value="">Lead (optional)</option></select></div>
           <div class="cc-field"><label>Deal</label><select id="crm-act-deal"><option value="">Deal (optional)</option></select></div>
+          <div class="cc-field wide"><label>Assign follow-up</label><input id="crm-act-assigned" type="text" list="crm-assignee-list" placeholder="Staff name"></div>
           <div class="cc-field wide"><label>Notes</label><textarea id="crm-act-body" rows="4"></textarea></div>
           <label class="cc-check wide"><input id="crm-act-done" type="checkbox"> Done</label>
         </div>
@@ -2954,6 +3018,40 @@
       <button type="submit" form="crm-act-form" class="px-5 py-2 rounded-full bg-sky-500 hover:bg-sky-400 text-white text-sm font-semibold">Save activity</button>
     </div>
   </aside>
+  <datalist id="crm-assignee-list"></datalist>
+  <div id="crm-convert-modal" class="crm-modal hidden" hidden>
+    <div class="crm-modal-card">
+      <h3>Convert to customer</h3>
+      <p id="crm-convert-dup" class="crm-dup-banner hidden"></p>
+      <div class="cc-field"><label>Merge this lead into</label>
+        <select id="crm-convert-merge"><option value="">Keep this lead</option></select>
+      </div>
+      <label class="cc-check"><input id="crm-convert-quote" type="checkbox"> Open a draft quote after convert</label>
+      <div class="crm-modal-actions">
+        <button type="button" id="crm-convert-cancel" class="cc-detail-btn">Cancel</button>
+        <button type="button" id="crm-convert-go" class="cc-detail-btn cc-detail-btn-primary">Convert</button>
+      </div>
+    </div>
+  </div>
+  <div id="crm-reason-modal" class="crm-modal hidden" hidden>
+    <div class="crm-modal-card">
+      <h3 id="crm-reason-title">Reason</h3>
+      <p class="crm-mail-from">Why did this deal close?</p>
+      <div class="cc-field">
+        <select id="crm-reason-value">
+          <option value="price">Price</option>
+          <option value="timing">Timing</option>
+          <option value="competitor">Competitor</option>
+          <option value="no_budget">No budget</option>
+          <option value="other">Other</option>
+        </select>
+      </div>
+      <div class="crm-modal-actions">
+        <button type="button" id="crm-reason-cancel" class="cc-detail-btn">Cancel</button>
+        <button type="button" id="crm-reason-go" class="cc-detail-btn cc-detail-btn-primary">Save</button>
+      </div>
+    </div>
+  </div>
   <div id="cc-drawer-scrim" class="cc-drawer-scrim"></div>
   <aside id="cc-drawer" class="cc-drawer" aria-hidden="true">
     <div class="cc-drawer-head">
@@ -3266,6 +3364,10 @@
             <div class="cc-field"><label>Name *</label><input id="inv-name" required type="text" placeholder="Discovery P0.93"></div>
             <div class="cc-field"><label>SKU *</label><input id="inv-sku" required type="text" placeholder="TRT-DISCOVERY-P0.93"></div>
             <div class="cc-field"><label>Brand</label><select id="inv-brand"></select></div>
+            <div class="cc-field"><label>Category</label><select id="inv-category"></select></div>
+            <div class="cc-field hidden" id="inv-category-new-wrap"><label>New category</label>
+              <input id="inv-category-new" type="text" maxlength="80" placeholder="Category name">
+            </div>
             <div class="cc-field"><label>Unit</label>
               <select id="inv-unit"><option value="panels">Panels</option><option value="each">Each</option></select>
             </div>
@@ -3350,7 +3452,7 @@
             <div class="cc-field">
               <label>Local warehouse cost ($)</label>
               <input id="inv-local-cost" form="inv-item-form" type="number" min="0" step="0.01">
-              <p class="cc-note" style="margin-top:0.35rem">NovaStar Warehouse (Las Vegas).</p>
+              <p class="cc-note" style="margin-top:0.35rem">Vendor US warehouse (NovaStar Las Vegas / Gloshine LA).</p>
             </div>
           </div>
         </section>
@@ -3640,6 +3742,7 @@
     <a href="/company/crm/leads" id="tabbar-crm" data-tabbar-group="crm" class="hidden">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 4h16l-6.5 8.2V20l-3-1.5v-6.3L4 4z"/></svg>
       <span>CRM</span>
+      <span class="dash-nav-unread dash-tabbar-unread is-overdue" id="tabbar-crm-badge" hidden></span>
     </a>
     <a href="/company/customers" id="tabbar-customer" data-tabbar-group="customer" class="hidden">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="8" r="3.25"/><path d="M5 19.2c.9-3.1 3.5-4.7 7-4.7s6.1 1.6 7 4.7"/></svg>
@@ -3656,7 +3759,7 @@
     </a>
   </nav>
 
-  <link rel="stylesheet" href="/css/company-dash.css?v=dealer-v2" />
+  <link rel="stylesheet" href="/css/company-dash.css?v=crmv2-dealer" />
 
   <script>
     const loginPanel = document.getElementById('login-panel');
@@ -5248,6 +5351,7 @@
     let dashReceipts = [];
     let dashLeads = [];
     let dashDeals = [];
+    let dashReminders = [];
     let dashCounts = {
       products: 0, productsShown: 0, accounts: 0,
       inventory: 0, inventoryLow: 0, inventoryOut: 0, receipts: 0,
@@ -5353,6 +5457,19 @@
         if (dashCounts.overdueActivities) bits.push(dashCounts.overdueActivities + ' overdue');
         crmHint.textContent = bits.join(' · ') || 'Leads and pipeline';
       }
+      const overdue = Number(dashCounts.overdueActivities) || 0;
+      ['crm-nav-badge', 'tabbar-crm-badge'].forEach(function (id) {
+        const badge = document.getElementById(id);
+        if (!badge) return;
+        if (overdue) {
+          badge.hidden = false;
+          badge.textContent = overdue > 9 ? '9+' : String(overdue);
+          badge.classList.add('is-overdue');
+        } else {
+          badge.hidden = true;
+          badge.textContent = '';
+        }
+      });
       const custHint = document.getElementById('dash-hint-customer');
       if (custHint) {
         const quotes = dashCounts.quotes;
@@ -5453,21 +5570,21 @@
           dashChip(dashCounts.openDeals, 'Open deals') +
           '<div class="dash-detail-chip"><strong>' + esc('$' + dashCount(dashCounts.pipelineValue)) + '</strong><span>Pipeline</span></div>' +
           (dashCounts.overdueActivities ? dashChip(dashCounts.overdueActivities, 'Overdue activity') : '');
-        const leadRows = dashLeads.slice(0, 5).map(function (lead) {
+        const reminderRows = dashReminders.slice(0, 6).map(function (item) {
+          return dashRow(
+            item.subject || 'Follow-up',
+            [item.leadName || item.dealTitle, item.assignedTo].filter(Boolean).join(' · ') || 'Reminder',
+            item.overdue ? 'Overdue' : (item.dueAt || '')
+          );
+        }).join('');
+        const leadRows = dashLeads.slice(0, 4).map(function (lead) {
           return dashRow(
             lead.displayName || lead.companyName || 'Lead',
             [lead.email, lead.source].filter(Boolean).join(' · '),
             lead.status || ''
           );
         }).join('');
-        const dealRows = dashDeals.slice(0, 5).map(function (deal) {
-          return dashRow(
-            deal.title || deal.companyName || 'Deal',
-            deal.stage || '',
-            '$' + dashCount(deal.value)
-          );
-        }).join('');
-        list.innerHTML = (leadRows + dealRows) || '<p class="dash-activity-empty">No leads or deals yet.</p>';
+        list.innerHTML = (reminderRows + leadRows) || '<p class="dash-activity-empty">No leads, deals, or reminders yet.</p>';
         return;
       }
       stats.innerHTML =
@@ -5502,6 +5619,7 @@
         dashReceipts = data.receipts || [];
         dashLeads = data.leads || [];
         dashDeals = data.deals || [];
+        dashReminders = data.reminders || [];
       } catch (err) {
         dashProducts = [];
         dashInventory = [];
@@ -5512,6 +5630,7 @@
         dashReceipts = [];
         dashLeads = [];
         dashDeals = [];
+        dashReminders = [];
       }
       if (!canDashOverview(dashOverview)) dashOverview = firstDashOverview();
       renderDashKpis();
@@ -6098,6 +6217,7 @@
     let inventoryRecentActivity = [];
     let inventoryMovesCache = [];
     let inventoryFilter = 'all';
+    let inventoryCategoryFilter = '';
     let ccFilter = 'all';
     let vnFilter = 'all';
     let caFilter = 'all';
@@ -6589,6 +6709,7 @@
       inventory: [
         { id: 'name', label: 'Item' },
         { id: 'sku', label: 'SKU' },
+        { id: 'category', label: 'Category' },
         { id: 'description', label: 'Description' },
         { id: 'pitch', label: 'Pitch' },
         { id: 'brand', label: 'Brand' },
@@ -6742,7 +6863,7 @@
     };
 
     const DASH_COL_DEFAULTS = {
-      inventory: ['name', 'sku', 'qty', 'warehouse', 'bin', 'cost', 'localCost', 'price'],
+      inventory: ['name', 'sku', 'category', 'qty', 'warehouse', 'bin', 'cost', 'localCost', 'price'],
       warehouses: ['name', 'type', 'vendor', 'tracked', 'qty', 'skus'],
       customers: ['company', 'contact', 'email', 'phone', 'balance'],
       sales: ['number', 'customer', 'date', 'status', 'total'],
@@ -6888,7 +7009,7 @@
         sortDir: '',
         widths: fallbackWidths,
         splitLeftPx: keptSplit,
-        schema: dashColKey(table) === 'warehouses' ? 3 : (dashColKey(table) === 'inventory' ? 3 : (dashColKey(table) === 'po-lines' || dashColKey(table) === 'so-lines' ? 1 : 0))
+        schema: dashColKey(table) === 'warehouses' ? 3 : (dashColKey(table) === 'inventory' ? 4 : (dashColKey(table) === 'po-lines' || dashColKey(table) === 'so-lines' ? 1 : 0))
       };
       pinStartLockedInState(table, fallback.order, fallback.hidden);
       if (!saved) {
@@ -6981,6 +7102,16 @@
           if (drop !== -1) hidden.splice(drop, 1);
         }
         schema = 3;
+      }
+      if (dashColKey(table) === 'inventory' && schema < 4) {
+        if (order.indexOf('category') === -1) {
+          const skuAt = order.indexOf('sku');
+          const at = skuAt === -1 ? (order.indexOf('name') === -1 ? 0 : order.indexOf('name') + 1) : skuAt + 1;
+          order.splice(at, 0, 'category');
+          const drop = hidden.indexOf('category');
+          if (drop !== -1) hidden.splice(drop, 1);
+        }
+        schema = 4;
       }
       if (dashColKey(table) === 'warehouses' && schema < 3) {
         const dropStatus = function (list) {
@@ -7334,10 +7465,11 @@
         esc: esc,
         isMobile: isMobileDash,
         openCompanyTab: openCompanyTab,
-        openQuote: function (customerId) {
-          if (typeof openDocMasterTab === 'function') {
-            openDocMasterTab('quote', 'new', { customerId: customerId });
-          }
+        openQuote: function (opts) {
+          const args = opts && typeof opts === 'object' ? opts : { customerId: opts };
+          if (typeof openDocMasterTab !== 'function') return;
+          if (args.quoteId) openDocMasterTab('quote', args.quoteId);
+          else if (args.customerId) openDocMasterTab('quote', 'new', { customerId: args.customerId });
         },
         pushPath: function (href) {
           history.pushState({ tab: tabFromPath() }, '', href);
@@ -7570,6 +7702,7 @@
     const INV_SPLIT_COL_DEFAULT_PCT = {
       sku: 18,
       name: 34,
+      category: 14,
       qty: 10,
       warehouse: 16,
       bin: 10,
@@ -8200,7 +8333,74 @@
       }).join('');
     }
 
+    const INV_DEFAULT_CATEGORIES = ['LED Panel', 'Control', 'Receiving Card', 'Processor', 'Accessory', 'Service', 'Spare'];
+
+    function collectInvCategoryNames() {
+      const seen = {};
+      const out = [];
+      function add(name) {
+        const c = String(name || '').trim();
+        if (!c) return;
+        const key = c.toLowerCase();
+        if (seen[key]) return;
+        seen[key] = true;
+        out.push(c);
+      }
+      INV_DEFAULT_CATEGORIES.forEach(add);
+      (inventoryItems || []).forEach(function (item) { add(item.category); });
+      return out;
+    }
+
+    function showInvCategoryNew(on) {
+      const wrap = document.getElementById('inv-category-new-wrap');
+      if (wrap) wrap.classList.toggle('hidden', !on);
+      if (!on) {
+        const inp = document.getElementById('inv-category-new');
+        if (inp) inp.value = '';
+      }
+    }
+
+    function fillInvCategories(selected) {
+      const sel = document.getElementById('inv-category');
+      if (!sel) return;
+      const cur = String(selected || '').trim();
+      const names = collectInvCategoryNames();
+      if (cur && names.indexOf(cur) === -1) names.push(cur);
+      let html = '<option value="">—</option>';
+      names.forEach(function (c) {
+        html += '<option value="' + esc(c) + '"' + (c === cur ? ' selected' : '') + '>' + esc(c) + '</option>';
+      });
+      html += '<option value="__new__">+ Add category…</option>';
+      sel.innerHTML = html;
+      showInvCategoryNew(false);
+    }
+
+    function fillInvCategoryFilter() {
+      const sel = document.getElementById('inv-category-filter');
+      if (!sel) return;
+      const cur = inventoryCategoryFilter || '';
+      const names = collectInvCategoryNames();
+      let html = '<option value="">All categories</option>';
+      names.forEach(function (c) {
+        html += '<option value="' + esc(c) + '"' + (c === cur ? ' selected' : '') + '>' + esc(c) + '</option>';
+      });
+      sel.innerHTML = html;
+      if (cur && sel.value !== cur) {
+        inventoryCategoryFilter = '';
+        sel.value = '';
+      }
+    }
+
+    function invCategoryFromForm() {
+      const sel = document.getElementById('inv-category');
+      if (sel && sel.value === '__new__') {
+        return String((document.getElementById('inv-category-new') || {}).value || '').trim();
+      }
+      return sel ? String(sel.value || '').trim() : '';
+    }
+
     function renderInventoryTable() {
+      fillInvCategoryFilter();
       const q = (document.getElementById('inv-search').value || '').trim().toLowerCase();
       const rows = inventoryItems.filter(function (item) {
         if (inventoryFilter === 'inactive') {
@@ -8210,8 +8410,9 @@
         }
         if (inventoryFilter === 'low' && item.status !== 'low') return false;
         if (inventoryFilter === 'out' && item.status !== 'out') return false;
+        if (inventoryCategoryFilter && String(item.category || '') !== inventoryCategoryFilter) return false;
         if (q) {
-          const blob = ((item.sku || '') + ' ' + (item.name || '') + ' ' + (item.brandName || '') + ' ' + (item.pitchLabel || '') + ' ' + (item.description || '') + ' ' + (item.warehouse || '') + ' ' + (item.bin || '')).toLowerCase();
+          const blob = ((item.sku || '') + ' ' + (item.name || '') + ' ' + (item.brandName || '') + ' ' + (item.category || '') + ' ' + (item.pitchLabel || '') + ' ' + (item.description || '') + ' ' + (item.warehouse || '') + ' ' + (item.bin || '')).toLowerCase();
           if (blob.indexOf(q) === -1) return false;
         }
         return true;
@@ -8221,6 +8422,7 @@
       const sorted = sortColRows(rows, table, function (item, col) {
         if (col === 'sku') return item.sku || '';
         if (col === 'name') return item.name || '';
+        if (col === 'category') return item.category || '';
         if (col === 'description') return item.description || '';
         if (col === 'brand') return item.brandName || '';
         if (col === 'pitch') return item.pitchLabel || '';
@@ -8258,6 +8460,7 @@
           name: '<td class="py-3 px-4 font-medium"><span class="cc-acct-cell">' +
             '<span class="cc-acct-status ' + invTabStatusClass(item.status) + '" title="' + esc(stockStatusLabel(item.status)) + '" aria-hidden="true"></span>' +
             '<span class="cc-acct-name">' + esc(item.name || '') + '</span></span></td>',
+          category: '<td class="py-3 px-4 text-slate-400">' + esc(item.category || '—') + '</td>',
           description: '<td class="py-3 px-4 text-slate-400">' + esc(item.description || '—') + '</td>',
           brand: '<td class="py-3 px-4 text-sky-400">' + esc(item.brandName || '—') + '</td>',
           pitch: '<td class="py-3 px-4 text-slate-400">' + esc(item.pitchLabel || '—') + '</td>',
@@ -9200,6 +9403,7 @@
         ['Name', item.name || '—'],
         ['Description', item.description || '—'],
         ['Brand', item.brandName || '—'],
+        ['Category', item.category || '—'],
         ['Pitch', item.pitchLabel || item.pitch || '—'],
         ['Unit', item.unit || '—'],
         ['Panel type', panelTypeLabel(item.panelType)],
@@ -9273,6 +9477,7 @@
       document.getElementById('inv-detail-price').textContent = money(item.price);
       document.getElementById('inv-detail-dealer').textContent = money(item.dealerNet);
       document.getElementById('inv-detail-brand').textContent = item.brandName || '—';
+      document.getElementById('inv-detail-category').textContent = item.category || '—';
       document.getElementById('inv-detail-pitch').textContent = item.pitchLabel || item.pitch || '—';
       document.getElementById('inv-detail-unit').textContent = item.unit || '—';
       document.getElementById('inv-detail-edit').classList.toggle('hidden', !canEdit('inventory'));
@@ -9706,7 +9911,7 @@
     }
 
     function invFormSnapshot() {
-      const ids = ['inv-name', 'inv-sku', 'inv-brand', 'inv-unit', 'inv-panel-type', 'inv-packaging-type', 'inv-item-pitch', 'inv-qty-init', 'inv-item-low', 'inv-weight', 'inv-panel-w', 'inv-panel-h', 'inv-item-notes', 'inv-description', 'inv-price', 'inv-dealer-net', 'inv-cost', 'inv-local-cost'];
+      const ids = ['inv-name', 'inv-sku', 'inv-brand', 'inv-category', 'inv-category-new', 'inv-unit', 'inv-panel-type', 'inv-packaging-type', 'inv-item-pitch', 'inv-qty-init', 'inv-item-low', 'inv-weight', 'inv-panel-w', 'inv-panel-h', 'inv-item-notes', 'inv-description', 'inv-price', 'inv-dealer-net', 'inv-cost', 'inv-local-cost'];
       const vals = ids.map(function (id) {
         const el = document.getElementById(id);
         return el ? String(el.value || '') : '';
@@ -9828,6 +10033,7 @@
       document.getElementById('inv-name').value = (item && item.name) || '';
       document.getElementById('inv-sku').value = (item && item.sku) || '';
       fillInvBrands(item && item.brandId);
+      fillInvCategories(item && item.category);
       document.getElementById('inv-description').value = (item && item.description) || '';
       document.getElementById('inv-cost').value = item && item.cost != null ? item.cost : '';
       document.getElementById('inv-local-cost').value = item && item.localWarehouseCost != null ? item.localWarehouseCost : '';
@@ -12997,7 +13203,7 @@
     }
     function poRateForItem(item, shipFrom) {
       if (!item) return 0;
-      if (shipFrom === 'novastar_vegas') return Number(item.localWarehouseCost) || 0;
+      if (shipFrom === 'novastar_vegas' || shipFrom === 'gloshine_la') return Number(item.localWarehouseCost) || 0;
       return Number(item.cost) || 0;
     }
     function applyPoShipFromRates() {
@@ -14377,7 +14583,7 @@
       const itemName = String(item.item || '').trim() || (inv && (inv.name || inv.sku)) || '';
       const cells = {
         item: '<td class="py-2 px-2"><input data-line="item" value="' + esc(itemName) + '"></td>',
-        sku: '<td class="py-2 px-2"><div class="so-sku-search"><svg class="so-sku-search-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><circle cx="11" cy="11" r="6"/><path d="m20 20-3.5-3.5"/></svg><input data-line="sku" type="search" autocomplete="off" placeholder="Search SKU, name, brand" value="' + esc(item.sku || (inv && inv.sku) || '') + '"></div></td>',
+        sku: '<td class="py-2 px-2"><div class="so-sku-search"><svg class="so-sku-search-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><circle cx="11" cy="11" r="6"/><path d="m20 20-3.5-3.5"/></svg><input data-line="sku" type="search" autocomplete="off" placeholder="Search SKU, name, brand, category" value="' + esc(item.sku || (inv && inv.sku) || '') + '"></div></td>',
         description: '<td class="py-2 px-2"><input data-line="description" value="' + esc(item.description || '') + '"></td>',
         qty: '<td class="py-2 px-2"><input data-line="qty" type="number" step="0.01" value="' + esc(qty) + '"></td>',
         onHand: '<td class="py-2 px-2 tabular-nums so-inv-read" data-line="onHand">' + soInvCell(inv && inv.qty != null ? invQtyDisplay(inv) : '') + '</td>',
@@ -14591,7 +14797,7 @@
       const needle = String(q || '').trim().toLowerCase();
       return invPickableItems().filter(function (item) {
         if (!needle) return true;
-        const blob = ((item.sku || '') + ' ' + (item.name || '') + ' ' + (item.brandName || '') + ' ' + (item.pitchLabel || '') + ' ' + (item.description || '')).toLowerCase();
+        const blob = ((item.sku || '') + ' ' + (item.name || '') + ' ' + (item.brandName || '') + ' ' + (item.category || '') + ' ' + (item.pitchLabel || '') + ' ' + (item.description || '')).toLowerCase();
         return blob.indexOf(needle) !== -1;
       }).slice(0, 20);
     }
@@ -16103,7 +16309,9 @@
         shipFrom: form.shipFrom,
         shipFromLabel: form.shipFrom === 'china_fob'
           ? 'China factory (FOB)'
-          : (form.shipFrom === 'novastar_vegas' ? 'NovaStar Warehouse (Las Vegas)' : ''),
+          : (form.shipFrom === 'novastar_vegas'
+            ? 'NovaStar Warehouse (Las Vegas)'
+            : (form.shipFrom === 'gloshine_la' ? 'Gloshine US Warehouse (Los Angeles)' : '')),
         permitNo: form.permitNo,
         notes: form.notes || '',
         subtotal: total,
@@ -18360,6 +18568,18 @@
       e.preventDefault();
     }, { passive: false });
     document.getElementById('inv-search').addEventListener('input', renderInventoryTable);
+    document.getElementById('inv-category-filter').addEventListener('change', function () {
+      inventoryCategoryFilter = this.value || '';
+      renderInventoryTable();
+    });
+    document.getElementById('inv-category').addEventListener('change', function () {
+      const isNew = this.value === '__new__';
+      showInvCategoryNew(isNew);
+      if (isNew) {
+        const inp = document.getElementById('inv-category-new');
+        if (inp) inp.focus();
+      }
+    });
     document.querySelectorAll('.inv-filter').forEach(function (btn) {
       btn.addEventListener('click', function () {
         setInvFilter(btn.getAttribute('data-inv-filter') || 'all');
@@ -18419,6 +18639,7 @@
       fd.append('name', document.getElementById('inv-name').value);
       fd.append('sku', document.getElementById('inv-sku').value);
       fd.append('brandId', document.getElementById('inv-brand').value);
+      fd.append('category', invCategoryFromForm());
       fd.append('description', document.getElementById('inv-description').value);
       fd.append('cost', document.getElementById('inv-cost').value);
       fd.append('localWarehouseCost', document.getElementById('inv-local-cost').value);
