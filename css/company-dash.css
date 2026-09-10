@@ -42,38 +42,47 @@ body.company-app {
   padding: 1.15rem 0.75rem 1rem;
 }
 
-.dash-brand-row {
-  display: flex;
-  align-items: center;
-  gap: 0.35rem;
-  padding: 0 0.15rem 1.15rem;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
-  margin-bottom: 1.15rem;
-}
 .dash-brand {
   display: flex;
   align-items: center;
   text-decoration: none;
-  padding: 0 0.3rem 0;
-  min-width: 0;
-  flex: 1 1 auto;
+  padding: 0 0.45rem 1.15rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  margin-bottom: 1.15rem;
 }
 .dash-brand img {
   height: 2.55rem;
   width: auto;
-  max-width: min(11rem, 100%);
+  max-width: 11rem;
   display: block;
   object-fit: contain;
+}
+.dash-nav-label-row {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  margin: 0 0.15rem 0.45rem;
+  min-height: 1.85rem;
+}
+.dash-nav-label {
+  margin: 0;
+  flex: 1 1 auto;
+  min-width: 0;
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #7f8db3;
 }
 .dash-sidebar-hide {
   display: none;
   flex-shrink: 0;
-  width: 2.15rem;
-  height: 2.15rem;
+  width: 1.85rem;
+  height: 1.85rem;
   margin: 0;
   padding: 0;
   border: 0;
-  border-radius: 0.55rem;
+  border-radius: 0.45rem;
   background: rgba(255, 255, 255, 0.08);
   color: #c9d3ea;
   cursor: pointer;
@@ -85,15 +94,6 @@ body.company-app {
 .dash-sidebar-hide:focus-visible {
   background: rgba(255, 255, 255, 0.14);
   color: #fff;
-}
-
-.dash-nav-label {
-  margin: 0 0.7rem 0.45rem;
-  font-size: 0.68rem;
-  font-weight: 700;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  color: #7f8db3;
 }
 
 .dash-nav {
