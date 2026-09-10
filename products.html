@@ -374,7 +374,8 @@
     <p>© 2026 Spectrum Display</p>
   </footer>
   <script src="js/control-systems.js?v=20260908-h2cvt"></script>
-  <script src="js/catalog-api.js"></script>
+  <script src="js/product-photo.js?v=ph1"></script>
+  <script src="js/catalog-api.js?v=ph1"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="js/supabase-client.js"></script>
   <script src="js/pricing.js"></script>
@@ -465,8 +466,10 @@
         const imgClass = control
           ? 'absolute inset-0 w-full h-full object-contain bg-slate-950 p-4 group-hover:scale-105 transition duration-300'
           : 'absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition duration-300';
-        const photoSrc = (window.spectrumDisplayImage ? spectrumDisplayImage(p.image, 'card') : p.image);
-        const photo = p.image
+        const photoSrc = window.spectrumProductPhoto
+          ? spectrumProductPhoto(p, 'card')
+          : (window.spectrumDisplayImage ? spectrumDisplayImage(p.image, 'card') : p.image);
+        const photo = photoSrc
           ? '<img src="' + escAttr(photoSrc) + '" alt="' + escAttr(p.name) + '" class="' + imgClass + '" loading="lazy" onerror="this.style.display=\'none\'">'
           : '';
         const href = 'product.html?brand=' + encodeURIComponent(p.brandId) + '&series=' + encodeURIComponent(p.id);

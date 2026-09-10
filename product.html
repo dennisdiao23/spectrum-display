@@ -386,7 +386,8 @@
 
   <script src="js/control-systems.js?v=20260908-h2cvt"></script>
   <script src="js/product-copy.js"></script>
-  <script src="js/catalog-api.js"></script>
+  <script src="js/product-photo.js?v=ph1"></script>
+  <script src="js/catalog-api.js?v=ph1"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="js/supabase-client.js"></script>
   <script src="js/pricing.js"></script>
@@ -516,6 +517,10 @@
       ((seriesData && seriesData.gallery) || []).forEach(function (g) {
         if (g && photos.indexOf(g) === -1) photos.push(g);
       });
+      if (!photos.length && window.spectrumProductPhotoFallback) {
+        const fallback = spectrumProductPhotoFallback(seriesData);
+        if (fallback) photos.push(fallback);
+      }
       function displayPhoto(src, kind) {
         return (window.spectrumDisplayImage && spectrumDisplayImage(src, kind)) || src;
       }
