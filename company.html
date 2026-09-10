@@ -955,6 +955,7 @@
                       <h3>Specs</h3>
                       <dl class="cc-detail-dl">
                         <div><dt>Brand</dt><dd id="inv-detail-brand">—</dd></div>
+                        <div><dt>Category</dt><dd id="inv-detail-category">—</dd></div>
                         <div><dt>Pitch</dt><dd id="inv-detail-pitch">—</dd></div>
                         <div><dt>Unit</dt><dd id="inv-detail-unit">—</dd></div>
                       </dl>
@@ -9262,6 +9263,7 @@
       document.getElementById('inv-detail-price').textContent = money(item.price);
       document.getElementById('inv-detail-dealer').textContent = money(item.dealerNet);
       document.getElementById('inv-detail-brand').textContent = item.brandName || '—';
+      document.getElementById('inv-detail-category').textContent = item.category || '—';
       document.getElementById('inv-detail-pitch').textContent = item.pitchLabel || item.pitch || '—';
       document.getElementById('inv-detail-unit').textContent = item.unit || '—';
       document.getElementById('inv-detail-edit').classList.toggle('hidden', !canEdit('inventory'));
