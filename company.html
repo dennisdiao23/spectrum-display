@@ -14,10 +14,10 @@
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
   <title>Company | Spectrum Display</title>
   <meta name="robots" content="noindex, nofollow" />
-  <link rel="stylesheet" href="/css/company-dash.css?v=crm8" />
+  <link rel="stylesheet" href="/css/company-dash.css?v=crmv2" />
   <script src="/js/address-autocomplete.js"></script>
   <script src="/js/company-chat.js?v=chatmove2"></script>
-  <script src="/js/company-crm.js?v=crm8"></script>
+  <script src="/js/company-crm.js?v=crmv2"></script>
   <script src="/js/print-form.js?v=forms20"></script>
   <script>
     if ('serviceWorker' in navigator && location.pathname.indexOf('/company') === 0) {
@@ -171,6 +171,7 @@
         <a href="/company/crm/leads" id="tab-crm" class="dash-nav-link">
           <svg class="dash-nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 4h16l-6.5 8.2V20l-3-1.5v-6.3L4 4z"/></svg>
           <span>CRM</span>
+          <span class="dash-nav-unread" id="crm-nav-badge" hidden></span>
         </a>
         <div id="crm-subnav" class="dash-sub hidden">
           <a href="/company/crm/leads" id="tab-leads" class="dash-sub-link">
@@ -1731,6 +1732,9 @@
           </div>
           <div class="cc-list-toolbar cc-list-tools">
             <input id="crm-lead-search" type="search" placeholder="Search company, contact, email, phone" class="cc-list-search bg-slate-800 border border-slate-700 rounded-full px-3 py-1.5 text-sm">
+            <button id="crm-lead-export" type="button" class="cc-detail-btn">Export CSV</button>
+            <button id="crm-lead-import-btn" type="button" class="cc-detail-btn">Import CSV</button>
+            <input id="crm-lead-import" type="file" accept=".csv,text/csv" hidden>
             <button id="crm-lead-new" type="button" class="cc-list-add-btn px-4 py-2 rounded-full bg-sky-500 hover:bg-sky-400 text-white text-sm font-semibold">Add lead</button>
           </div>
           <p id="crm-lead-error" class="hidden text-sm text-red-400 mb-3"></p>
@@ -1807,13 +1811,26 @@
                     </div>
                   </div>
                 </div>
+                <p id="crm-lead-dup" class="crm-dup-banner hidden"></p>
                 <div class="cc-detail-tabs" role="tablist">
                   <button type="button" class="cc-detail-tab is-on" data-crm-lead-tab="details" role="tab" aria-selected="true">Details</button>
+                  <button type="button" class="cc-detail-tab" data-crm-lead-tab="email" role="tab" aria-selected="false">Email</button>
                   <button type="button" class="cc-detail-tab" data-crm-lead-tab="activity" role="tab" aria-selected="false">Activity</button>
                   <button type="button" class="cc-detail-tab" data-crm-lead-tab="deals" role="tab" aria-selected="false">Deals</button>
                 </div>
                 <div id="crm-lead-panel-details" class="cc-detail-panel" role="tabpanel">
                   <div class="cc-detail-notes-box" id="crm-lead-detail-notes">—</div>
+                </div>
+                <div id="crm-lead-panel-email" class="cc-detail-panel hidden" role="tabpanel" hidden>
+                  <form id="crm-mail-form" class="crm-mail-compose">
+                    <p class="crm-mail-from">Send from sales@spectrumdisplay.com · replies go to sales@</p>
+                    <div class="cc-field"><label>To</label><input id="crm-mail-to" type="email" autocomplete="off"></div>
+                    <div class="cc-field"><label>Subject</label><input id="crm-mail-subject" type="text"></div>
+                    <div class="cc-field wide"><label>Message</label><textarea id="crm-mail-body" rows="5"></textarea></div>
+                    <p id="crm-mail-msg" class="hidden text-sm text-red-500"></p>
+                    <button type="submit" id="crm-mail-send" class="cc-detail-btn cc-detail-btn-primary">Send email</button>
+                  </form>
+                  <div id="crm-lead-thread" class="crm-mail-thread"></div>
                 </div>
                 <div id="crm-lead-panel-activity" class="cc-detail-panel hidden" role="tabpanel" hidden>
                   <div id="crm-lead-acts"></div>
@@ -1836,7 +1853,7 @@
       <div id="crm-pipe-section" class="hidden">
         <div class="cc-workspace">
         <div class="cc-list-inner">
-          <div class="page-kpis page-kpis-3 cc-list-kpis">
+          <div class="page-kpis page-kpis-5 cc-list-kpis">
             <button type="button" class="dash-kpi is-on" aria-pressed="true">
               <span class="dash-kpi-icon dash-kpi-icon-crm" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><rect x="3" y="4" width="5" height="16" rx="1"/><rect x="10" y="8" width="5" height="12" rx="1"/><rect x="17" y="12" width="4" height="8" rx="1"/></svg></span>
               <span class="dash-kpi-label">Open deals</span>
@@ -1850,10 +1867,22 @@
               <span class="dash-kpi-hint">Not won or lost</span>
             </button>
             <button type="button" class="dash-kpi" aria-pressed="false">
+              <span class="dash-kpi-icon dash-kpi-icon-website" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M4 16l5-5 4 4 7-8"/></svg></span>
+              <span class="dash-kpi-label">Win rate</span>
+              <strong class="dash-kpi-value" id="crm-pipe-stat-rate">—</strong>
+              <span class="dash-kpi-hint">Won / closed</span>
+            </button>
+            <button type="button" class="dash-kpi" aria-pressed="false">
               <span class="dash-kpi-icon dash-kpi-icon-customers" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="m9 12 2 2 4-4"/></svg></span>
               <span class="dash-kpi-label">Won</span>
               <strong class="dash-kpi-value" id="crm-pipe-stat-won">—</strong>
               <span class="dash-kpi-hint">Closed won</span>
+            </button>
+            <button type="button" class="dash-kpi" aria-pressed="false">
+              <span class="dash-kpi-icon dash-kpi-icon-overdue" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="m9 9 6 6M15 9l-6 6"/></svg></span>
+              <span class="dash-kpi-label">Lost</span>
+              <strong class="dash-kpi-value" id="crm-pipe-stat-lost">—</strong>
+              <span class="dash-kpi-hint">Closed lost</span>
             </button>
           </div>
           <div class="cc-list-toolbar cc-list-tools">
@@ -1892,6 +1921,8 @@
                         <div><dt>Stage</dt><dd id="crm-pipe-detail-stage">—</dd></div>
                         <div><dt>Value</dt><dd id="crm-pipe-detail-value">—</dd></div>
                         <div><dt>Close</dt><dd id="crm-pipe-detail-close">—</dd></div>
+                        <div><dt>Quote</dt><dd id="crm-pipe-detail-quote">—</dd></div>
+                        <div><dt>Reason</dt><dd id="crm-pipe-detail-reason">—</dd></div>
                       </dl>
                     </div>
                     <div class="cc-detail-block">
@@ -1964,6 +1995,7 @@
                     <th class="py-3 px-4 font-medium" data-col="related">Related <span class="dash-col-caret">▾</span><span class="dash-col-grip" aria-hidden="true"></span></th>
                     <th class="py-3 px-4 font-medium" data-col="due">Due <span class="dash-col-caret">▾</span><span class="dash-col-grip" aria-hidden="true"></span></th>
                     <th class="py-3 px-4 font-medium" data-col="status">Status <span class="dash-col-caret">▾</span><span class="dash-col-grip" aria-hidden="true"></span></th>
+                    <th class="py-3 px-4 font-medium" data-col="assigned">Assigned <span class="dash-col-caret">▾</span><span class="dash-col-grip" aria-hidden="true"></span></th>
                     <th class="py-3 px-4 font-medium" data-col="owner">Logged by <span class="dash-col-caret">▾</span><span class="dash-col-grip" aria-hidden="true"></span></th>
                   </tr>
                 </thead>
@@ -2804,7 +2836,7 @@
               <option value="lost">Lost</option>
             </select>
           </div>
-          <div class="cc-field"><label>Owner</label><input id="crm-lead-owner" type="text"></div>
+          <div class="cc-field"><label>Owner</label><input id="crm-lead-owner" type="text" list="crm-assignee-list"></div>
           <div class="cc-field"><label>Project type</label><input id="crm-lead-project" type="text"></div>
           <div class="cc-field"><label>City</label><input id="crm-lead-city" type="text"></div>
           <div class="cc-field"><label>State</label><input id="crm-lead-state" type="text"></div>
@@ -2812,6 +2844,7 @@
           <div class="cc-field wide"><label>Notes</label><textarea id="crm-lead-notes" rows="4"></textarea></div>
         </div>
       </section>
+      <p id="crm-lead-dups" class="hidden text-sm px-5 pt-3 text-amber-600"></p>
       <p id="crm-lead-msg" class="hidden text-sm px-5 pt-3 text-red-500"></p>
     </form>
     <div class="cc-drawer-foot">
@@ -2847,7 +2880,29 @@
           </div>
           <div class="cc-field"><label>Value ($)</label><input id="crm-deal-value" type="number" min="0" step="1"></div>
           <div class="cc-field"><label>Expected close</label><input id="crm-deal-close" type="date"></div>
-          <div class="cc-field"><label>Owner</label><input id="crm-deal-owner" type="text"></div>
+          <div class="cc-field"><label>Owner</label><input id="crm-deal-owner" type="text" list="crm-assignee-list"></div>
+          <div class="cc-field" id="crm-deal-won-wrap">
+            <label>Won reason</label>
+            <select id="crm-deal-won-reason">
+              <option value="">Choose a reason</option>
+              <option value="price">Price</option>
+              <option value="timing">Timing</option>
+              <option value="competitor">Competitor</option>
+              <option value="no_budget">No budget</option>
+              <option value="other">Other</option>
+            </select>
+          </div>
+          <div class="cc-field" id="crm-deal-lost-wrap">
+            <label>Lost reason</label>
+            <select id="crm-deal-lost-reason">
+              <option value="">Choose a reason</option>
+              <option value="price">Price</option>
+              <option value="timing">Timing</option>
+              <option value="competitor">Competitor</option>
+              <option value="no_budget">No budget</option>
+              <option value="other">Other</option>
+            </select>
+          </div>
           <div class="cc-field wide"><label>Lead</label><select id="crm-deal-lead"><option value="">No lead</option></select></div>
           <div class="cc-field wide"><label>Notes</label><textarea id="crm-deal-notes" rows="4"></textarea></div>
         </div>
@@ -2884,6 +2939,7 @@
           <div class="cc-field wide"><label>Subject</label><input id="crm-act-subject" type="text"></div>
           <div class="cc-field"><label>Lead</label><select id="crm-act-lead"><option value="">Lead (optional)</option></select></div>
           <div class="cc-field"><label>Deal</label><select id="crm-act-deal"><option value="">Deal (optional)</option></select></div>
+          <div class="cc-field wide"><label>Assign follow-up</label><input id="crm-act-assigned" type="text" list="crm-assignee-list" placeholder="Staff name"></div>
           <div class="cc-field wide"><label>Notes</label><textarea id="crm-act-body" rows="4"></textarea></div>
           <label class="cc-check wide"><input id="crm-act-done" type="checkbox"> Done</label>
         </div>
@@ -2895,6 +2951,40 @@
       <button type="submit" form="crm-act-form" class="px-5 py-2 rounded-full bg-sky-500 hover:bg-sky-400 text-white text-sm font-semibold">Save activity</button>
     </div>
   </aside>
+  <datalist id="crm-assignee-list"></datalist>
+  <div id="crm-convert-modal" class="crm-modal hidden" hidden>
+    <div class="crm-modal-card">
+      <h3>Convert to customer</h3>
+      <p id="crm-convert-dup" class="crm-dup-banner hidden"></p>
+      <div class="cc-field"><label>Merge this lead into</label>
+        <select id="crm-convert-merge"><option value="">Keep this lead</option></select>
+      </div>
+      <label class="cc-check"><input id="crm-convert-quote" type="checkbox"> Open a draft quote after convert</label>
+      <div class="crm-modal-actions">
+        <button type="button" id="crm-convert-cancel" class="cc-detail-btn">Cancel</button>
+        <button type="button" id="crm-convert-go" class="cc-detail-btn cc-detail-btn-primary">Convert</button>
+      </div>
+    </div>
+  </div>
+  <div id="crm-reason-modal" class="crm-modal hidden" hidden>
+    <div class="crm-modal-card">
+      <h3 id="crm-reason-title">Reason</h3>
+      <p class="crm-mail-from">Why did this deal close?</p>
+      <div class="cc-field">
+        <select id="crm-reason-value">
+          <option value="price">Price</option>
+          <option value="timing">Timing</option>
+          <option value="competitor">Competitor</option>
+          <option value="no_budget">No budget</option>
+          <option value="other">Other</option>
+        </select>
+      </div>
+      <div class="crm-modal-actions">
+        <button type="button" id="crm-reason-cancel" class="cc-detail-btn">Cancel</button>
+        <button type="button" id="crm-reason-go" class="cc-detail-btn cc-detail-btn-primary">Save</button>
+      </div>
+    </div>
+  </div>
   <div id="cc-drawer-scrim" class="cc-drawer-scrim"></div>
   <aside id="cc-drawer" class="cc-drawer" aria-hidden="true">
     <div class="cc-drawer-head">
@@ -3581,6 +3671,7 @@
     <a href="/company/crm/leads" id="tabbar-crm" data-tabbar-group="crm" class="hidden">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 4h16l-6.5 8.2V20l-3-1.5v-6.3L4 4z"/></svg>
       <span>CRM</span>
+      <span class="dash-nav-unread dash-tabbar-unread is-overdue" id="tabbar-crm-badge" hidden></span>
     </a>
     <a href="/company/customers" id="tabbar-customer" data-tabbar-group="customer" class="hidden">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="8" r="3.25"/><path d="M5 19.2c.9-3.1 3.5-4.7 7-4.7s6.1 1.6 7 4.7"/></svg>
@@ -3597,7 +3688,7 @@
     </a>
   </nav>
 
-  <link rel="stylesheet" href="/css/company-dash.css?v=crm8" />
+  <link rel="stylesheet" href="/css/company-dash.css?v=crmv2" />
 
   <script>
     const loginPanel = document.getElementById('login-panel');
@@ -5178,6 +5269,7 @@
     let dashReceipts = [];
     let dashLeads = [];
     let dashDeals = [];
+    let dashReminders = [];
     let dashCounts = {
       products: 0, productsShown: 0, accounts: 0,
       inventory: 0, inventoryLow: 0, inventoryOut: 0, receipts: 0,
@@ -5283,6 +5375,19 @@
         if (dashCounts.overdueActivities) bits.push(dashCounts.overdueActivities + ' overdue');
         crmHint.textContent = bits.join(' · ') || 'Leads and pipeline';
       }
+      const overdue = Number(dashCounts.overdueActivities) || 0;
+      ['crm-nav-badge', 'tabbar-crm-badge'].forEach(function (id) {
+        const badge = document.getElementById(id);
+        if (!badge) return;
+        if (overdue) {
+          badge.hidden = false;
+          badge.textContent = overdue > 9 ? '9+' : String(overdue);
+          badge.classList.add('is-overdue');
+        } else {
+          badge.hidden = true;
+          badge.textContent = '';
+        }
+      });
       const custHint = document.getElementById('dash-hint-customer');
       if (custHint) {
         const quotes = dashCounts.quotes;
@@ -5383,21 +5488,21 @@
           dashChip(dashCounts.openDeals, 'Open deals') +
           '<div class="dash-detail-chip"><strong>' + esc('$' + dashCount(dashCounts.pipelineValue)) + '</strong><span>Pipeline</span></div>' +
           (dashCounts.overdueActivities ? dashChip(dashCounts.overdueActivities, 'Overdue activity') : '');
-        const leadRows = dashLeads.slice(0, 5).map(function (lead) {
+        const reminderRows = dashReminders.slice(0, 6).map(function (item) {
+          return dashRow(
+            item.subject || 'Follow-up',
+            [item.leadName || item.dealTitle, item.assignedTo].filter(Boolean).join(' · ') || 'Reminder',
+            item.overdue ? 'Overdue' : (item.dueAt || '')
+          );
+        }).join('');
+        const leadRows = dashLeads.slice(0, 4).map(function (lead) {
           return dashRow(
             lead.displayName || lead.companyName || 'Lead',
             [lead.email, lead.source].filter(Boolean).join(' · '),
             lead.status || ''
           );
         }).join('');
-        const dealRows = dashDeals.slice(0, 5).map(function (deal) {
-          return dashRow(
-            deal.title || deal.companyName || 'Deal',
-            deal.stage || '',
-            '$' + dashCount(deal.value)
-          );
-        }).join('');
-        list.innerHTML = (leadRows + dealRows) || '<p class="dash-activity-empty">No leads or deals yet.</p>';
+        list.innerHTML = (reminderRows + leadRows) || '<p class="dash-activity-empty">No leads, deals, or reminders yet.</p>';
         return;
       }
       stats.innerHTML =
@@ -5432,6 +5537,7 @@
         dashReceipts = data.receipts || [];
         dashLeads = data.leads || [];
         dashDeals = data.deals || [];
+        dashReminders = data.reminders || [];
       } catch (err) {
         dashProducts = [];
         dashInventory = [];
@@ -5442,6 +5548,7 @@
         dashReceipts = [];
         dashLeads = [];
         dashDeals = [];
+        dashReminders = [];
       }
       if (!canDashOverview(dashOverview)) dashOverview = firstDashOverview();
       renderDashKpis();
@@ -7253,10 +7360,11 @@
         esc: esc,
         isMobile: isMobileDash,
         openCompanyTab: openCompanyTab,
-        openQuote: function (customerId) {
-          if (typeof openDocMasterTab === 'function') {
-            openDocMasterTab('quote', 'new', { customerId: customerId });
-          }
+        openQuote: function (opts) {
+          const args = opts && typeof opts === 'object' ? opts : { customerId: opts };
+          if (typeof openDocMasterTab !== 'function') return;
+          if (args.quoteId) openDocMasterTab('quote', args.quoteId);
+          else if (args.customerId) openDocMasterTab('quote', 'new', { customerId: args.customerId });
         },
         pushPath: function (href) {
           history.pushState({ tab: tabFromPath() }, '', href);

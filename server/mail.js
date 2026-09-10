@@ -273,7 +273,7 @@ async function sendStaffEmail(input) {
     return file && file.filename && file.content;
   });
   return deliverMail({
-    from: defaultFrom(),
+    from: input.from || defaultFrom(),
     to: to,
     cc: cc,
     bcc: bcc,

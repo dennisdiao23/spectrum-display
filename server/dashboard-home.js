@@ -42,7 +42,8 @@ function emptyDashboard(source) {
     accounts: [],
     staff: [],
     leads: [],
-    deals: []
+    deals: [],
+    reminders: []
   };
 }
 
@@ -130,6 +131,23 @@ function mapDealPreview(row) {
     stage: row.stage || '',
     value: Number(row.value) || 0,
     expectedClose: row.expected_close || row.expectedClose || ''
+  };
+}
+
+function mapReminderPreview(row) {
+  const dueAt = row.due_at || row.dueAt || '';
+  const due = Date.parse(dueAt);
+  const overdue = Number.isFinite(due) && due < Date.now() && !(row.done_at || row.doneAt);
+  return {
+    id: row.id,
+    subject: row.subject || '',
+    dueAt: dueAt,
+    assignedTo: row.assigned_to || row.assignedTo || '',
+    leadId: row.lead_id || row.leadId || null,
+    dealId: row.deal_id || row.dealId || null,
+    leadName: row.lead_name || row.leadName || '',
+    dealTitle: row.deal_title || row.dealTitle || '',
+    overdue: overdue
   };
 }
 
@@ -309,6 +327,17 @@ function getSqliteDashboardHome(db, admin) {
       ORDER BY datetime(updated_at) DESC, id DESC
       LIMIT 8
     `).map(mapDealPreview);
+    out.reminders = sqliteAll(db, `
+      SELECT a.id, a.subject, a.due_at, a.assigned_to, a.lead_id, a.deal_id, a.done_at,
+        l.display_name AS lead_name, d.title AS deal_title
+      FROM company_crm_activities a
+      LEFT JOIN company_crm_leads l ON l.id = a.lead_id
+      LEFT JOIN company_crm_deals d ON d.id = a.deal_id
+      WHERE (a.done_at IS NULL OR a.done_at = '')
+        AND a.due_at IS NOT NULL AND a.due_at != ''
+      ORDER BY datetime(a.due_at) ASC, a.id ASC
+      LIMIT 12
+    `).map(mapReminderPreview);
   }
 
   if (canSeeSales(admin)) {
@@ -515,7 +544,7 @@ async function getSupabaseDashboardHome(supabase, admin) {
     tasks.push((async function () {
       const openLead = function (q) { return q.in('status', ['new', 'working', 'qualified']); };
       const openDeal = function (q) { return q.in('stage', ['new', 'qualified', 'quoted', 'negotiation']); };
-      const [leads, openLeads, deals, openDeals, activities, leadPreview, dealPreview, openDealRows, dueActs] = await Promise.all([
+      const [leads, openLeads, deals, openDeals, activities, leadPreview, dealPreview, openDealRows, dueActs, reminderPreview] = await Promise.all([
         countSupabase(supabase, 'company_crm_leads'),
         countSupabase(supabase, 'company_crm_leads', openLead),
         countSupabase(supabase, 'company_crm_deals'),
@@ -536,7 +565,13 @@ async function getSupabaseDashboardHome(supabase, admin) {
         supabase.from('company_crm_activities')
           .select('due_at, done_at')
           .eq('done_at', '')
+          .neq('due_at', ''),
+        supabase.from('company_crm_activities')
+          .select('id, subject, due_at, assigned_to, lead_id, deal_id, done_at')
+          .eq('done_at', '')
           .neq('due_at', '')
+          .order('due_at', { ascending: true })
+          .limit(12)
       ]);
       counts.leads = leads;
       counts.openLeads = openLeads;
@@ -555,6 +590,7 @@ async function getSupabaseDashboardHome(supabase, admin) {
       }).length;
       out.leads = ((leadPreview && leadPreview.data) || []).map(mapLeadPreview);
       out.deals = ((dealPreview && dealPreview.data) || []).map(mapDealPreview);
+      out.reminders = ((reminderPreview && reminderPreview.data) || []).map(mapReminderPreview);
     })().catch(function () {}));
   }
 

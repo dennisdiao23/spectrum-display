@@ -24,6 +24,7 @@
     leads: [],
     deals: [],
     activities: [],
+    assignees: [],
     leadFilter: 'all',
     activityFilter: 'all',
     leadId: '',
@@ -33,6 +34,7 @@
     dealTab: 'details',
     dirty: false,
     drawer: '',
+    pendingMove: null,
     loaded: false,
     booted: false
   };
@@ -58,6 +60,13 @@
     { id: 'email', label: 'Email' },
     { id: 'meeting', label: 'Meeting' },
     { id: 'task', label: 'Task' }
+  ];
+  var CLOSE_REASONS = [
+    { id: 'price', label: 'Price' },
+    { id: 'timing', label: 'Timing' },
+    { id: 'competitor', label: 'Competitor' },
+    { id: 'no_budget', label: 'No budget' },
+    { id: 'other', label: 'Other' }
   ];
   var SOURCES = [
     { id: 'website', label: 'Website' },
@@ -141,6 +150,37 @@
     return Number.isFinite(due) && due <= Date.now() + 5 * 24 * 60 * 60 * 1000;
   }
 
+  function closeReasonLabel(id) {
+    return statusLabel(CLOSE_REASONS, id);
+  }
+
+  function fillAssigneeList() {
+    var list = $('crm-assignee-list');
+    if (!list) return;
+    list.innerHTML = (S.assignees || []).map(function (row) {
+      return '<option value="' + esc(row.label || row.name || row.email || '') + '"></option>';
+    }).join('');
+  }
+
+  function duplicateBanner(leads) {
+    if (!leads || !leads.length) return '';
+    return 'Possible duplicate' + (leads.length > 1 ? 's' : '') + ': ' + leads.map(function (row) {
+      return leadName(row) + (row.email ? ' (' + row.email + ')' : '');
+    }).join('; ');
+  }
+
+  function localDuplicates(email, company, excludeId) {
+    var mail = String(email || '').trim().toLowerCase();
+    var companyName = String(company || '').trim().toLowerCase();
+    return S.leads.filter(function (lead) {
+      if (lead.mergedIntoId) return false;
+      if (excludeId && String(lead.id) === String(excludeId)) return false;
+      if (mail && String(lead.email || '').toLowerCase() === mail) return true;
+      if (companyName && String(lead.companyName || '').toLowerCase() === companyName) return true;
+      return false;
+    });
+  }
+
   function optionsHtml(list, selected) {
     return list.map(function (row) {
       var id = row.id || row.value;
@@ -215,17 +255,23 @@
   }
 
   function fillPipelineKpis() {
-    var openValue = 0, openN = 0, won = 0;
+    var openValue = 0, openN = 0, won = 0, lost = 0;
+    var stageValue = { new: 0, qualified: 0, quoted: 0, negotiation: 0, won: 0, lost: 0 };
     S.deals.forEach(function (deal) {
+      if (stageValue[deal.stage] != null) stageValue[deal.stage] += Number(deal.value) || 0;
       if (deal.stage === 'won') won += 1;
-      else if (deal.stage !== 'lost') {
+      else if (deal.stage === 'lost') lost += 1;
+      else {
         openN += 1;
         openValue += Number(deal.value) || 0;
       }
     });
+    var closed = won + lost;
     setText('crm-pipe-stat-open', openN);
     setText('crm-pipe-stat-value', money(openValue));
+    setText('crm-pipe-stat-rate', closed ? Math.round((won / closed) * 100) + '%' : '—');
     setText('crm-pipe-stat-won', won);
+    setText('crm-pipe-stat-lost', lost);
     setText('crm-pipe-total', String(S.deals.length));
   }
 
@@ -257,7 +303,7 @@
     if (!body) return;
     var rows = filteredActivities();
     if (!rows.length) {
-      body.innerHTML = '<tr><td colspan="6" class="py-6 px-4 text-slate-500">No activities match.</td></tr>';
+      body.innerHTML = '<tr><td colspan="7" class="py-6 px-4 text-slate-500">No activities match.</td></tr>';
       return;
     }
     body.innerHTML = rows.map(function (act) {
@@ -269,6 +315,7 @@
         '<td class="py-3 px-4">' + esc(relatedLabel(act)) + '</td>' +
         '<td class="py-3 px-4' + dueClass + '">' + esc(act.dueAt ? fmtDate(act.dueAt) : '—') + '</td>' +
         '<td class="py-3 px-4">' + (act.doneAt ? 'Done' : (isOverdue(act) ? 'Overdue' : 'Open')) + '</td>' +
+        '<td class="py-3 px-4">' + esc(act.assignedTo || '—') + '</td>' +
         '<td class="py-3 px-4">' + esc(act.createdByName || '—') + '</td>' +
         '</tr>';
     }).join('');
@@ -288,6 +335,7 @@
           return '<button type="button" class="crm-card' + (on ? ' is-on' : '') + '" draggable="true" data-deal-id="' + esc(deal.id) + '">' +
             '<strong>' + esc(dealName(deal)) + '</strong>' +
             '<span>' + esc(deal.companyName || deal.contactName || deal.email || '') + '</span>' +
+            (deal.quoteNumber ? '<span class="crm-card-quote">' + esc(deal.quoteNumber) + (deal.quoteTotal ? ' · ' + money(deal.quoteTotal) : '') + '</span>' : '') +
             '<em>' + money(deal.value) + (deal.expectedClose ? ' · ' + esc(fmtDate(deal.expectedClose)) : '') + '</em>' +
             '</button>';
         }).join('') : '<p class="crm-col-empty">Drop a deal here</p>') +
@@ -395,6 +443,31 @@
     renderLeadTable();
     var convertBtn = $('crm-lead-convert');
     if (convertBtn) convertBtn.classList.toggle('hidden', lead.status === 'converted' || !canEdit('leads'));
+    var dup = $('crm-lead-dup');
+    if (dup) {
+      var dupText = duplicateBanner(lead.duplicates || localDuplicates(lead.email, lead.companyName, lead.id));
+      dup.textContent = dupText;
+      dup.classList.toggle('hidden', !dupText);
+    }
+    var messages = lead.messages || [];
+    if (!messages.length && lead.notes && (lead.source === 'website' || lead.source === 'dealer')) {
+      messages = [{
+        direction: 'in',
+        fromEmail: lead.email,
+        toEmail: 'sales@spectrumdisplay.com',
+        subject: lead.source === 'dealer' ? 'Dealer inquiry' : 'Website inquiry',
+        body: lead.notes,
+        source: lead.source,
+        createdAt: lead.createdAt
+      }];
+    }
+    renderLeadThread(messages);
+    setVal('crm-mail-to', lead.email || '');
+    setVal('crm-mail-subject', 'Following up — ' + leadName(lead));
+    setVal('crm-mail-body', '');
+    showErr('crm-mail-msg', '');
+    var mailSend = $('crm-mail-send');
+    if (mailSend) mailSend.classList.toggle('hidden', !canEdit('leads'));
   }
 
   function fillDealDetail(deal) {
@@ -409,7 +482,15 @@
     setText('crm-pipe-detail-email', deal.email || '—');
     setText('crm-pipe-detail-notes', deal.notes || '—');
     var quoteBtn = $('crm-pipe-quote');
-    if (quoteBtn) quoteBtn.classList.toggle('hidden', !deal.customerId);
+    if (quoteBtn) {
+      quoteBtn.classList.toggle('hidden', !(deal.customerId || deal.leadId || deal.quoteId));
+      quoteBtn.textContent = deal.quoteId ? 'Open quote' : 'Create quote';
+    }
+    setText('crm-pipe-detail-quote', deal.quoteNumber
+      ? (deal.quoteNumber + (deal.quoteTotal ? ' · ' + money(deal.quoteTotal) : ''))
+      : (deal.quoteId ? '#' + deal.quoteId : '—'));
+    var reason = deal.stage === 'won' ? deal.wonReason : (deal.stage === 'lost' ? deal.lostReason : '');
+    setText('crm-pipe-detail-reason', reason ? closeReasonLabel(reason) : '—');
     var pipeActs = $('crm-pipe-acts');
     if (pipeActs) pipeActs.innerHTML = activityListHtml(deal.activities || [], 'No activity yet.');
     var pane = $('crm-pipe-detail');
@@ -423,9 +504,29 @@
     renderPipelineBoard();
   }
 
+  function renderLeadThread(messages) {
+    var root = $('crm-lead-thread');
+    if (!root) return;
+    if (!messages || !messages.length) {
+      root.innerHTML = '<p class="cc-detail-empty">No email on this lead yet. Website and dealer inquiries show up here.</p>';
+      return;
+    }
+    root.innerHTML = messages.map(function (msg) {
+      var dir = msg.direction === 'out' ? 'Sent' : 'Received';
+      var who = msg.direction === 'out'
+        ? ('To ' + (msg.toEmail || '—'))
+        : ('From ' + (msg.fromEmail || '—'));
+      return '<article class="crm-mail-item' + (msg.direction === 'out' ? ' is-out' : '') + '">' +
+        '<header><strong>' + esc(msg.subject || dir) + '</strong><span>' + esc(dir + ' · ' + who) +
+        (msg.createdAt ? ' · ' + esc(fmtDate(msg.createdAt)) : '') + '</span></header>' +
+        (msg.body ? '<p>' + esc(msg.body) + '</p>' : '') +
+        '</article>';
+    }).join('');
+  }
+
   function setLeadTab(name) {
     S.leadTab = name;
-    ['details', 'activity', 'deals'].forEach(function (tab) {
+    ['details', 'email', 'activity', 'deals'].forEach(function (tab) {
       var btn = document.querySelector('#crm-lead-detail [data-crm-lead-tab="' + tab + '"]');
       var panel = $('crm-lead-panel-' + tab);
       if (btn) {
@@ -443,12 +544,15 @@
     var data = await Promise.all([
       H.api('/api/admin/crm/leads'),
       H.api('/api/admin/crm/deals'),
-      H.api('/api/admin/crm/activities')
+      H.api('/api/admin/crm/activities'),
+      H.api('/api/admin/crm/assignees').catch(function () { return { assignees: [] }; })
     ]);
     S.leads = data[0].leads || [];
     S.deals = data[1].deals || [];
     S.activities = data[2].activities || [];
+    S.assignees = data[3].assignees || [];
     S.loaded = true;
+    fillAssigneeList();
     fillLeadKpis();
     fillPipelineKpis();
     fillActivityKpis();
@@ -540,6 +644,8 @@
     setVal('crm-deal-value', deal && deal.value ? String(deal.value) : '');
     setVal('crm-deal-close', deal && deal.expectedClose ? String(deal.expectedClose).slice(0, 10) : '');
     setVal('crm-deal-owner', deal && deal.ownerName || '');
+    setVal('crm-deal-won-reason', deal && deal.wonReason || '');
+    setVal('crm-deal-lost-reason', deal && deal.lostReason || '');
     setVal('crm-deal-notes', deal && deal.notes || '');
     var leadSel = $('crm-deal-lead');
     if (leadSel) {
@@ -550,7 +656,16 @@
     }
     $('crm-deal-title-label').textContent = deal && deal.id ? dealName(deal) : 'Deal';
     $('crm-deal-delete').classList.toggle('hidden', !(deal && deal.id) || !canEdit('pipeline'));
+    syncDealReasonFields();
     S.dirty = false;
+  }
+
+  function syncDealReasonFields() {
+    var stage = val('crm-deal-stage') || 'new';
+    var won = $('crm-deal-won-wrap');
+    var lost = $('crm-deal-lost-wrap');
+    if (won) won.classList.toggle('hidden', stage !== 'won');
+    if (lost) lost.classList.toggle('hidden', stage !== 'lost');
   }
 
   function dealFormPayload() {
@@ -566,7 +681,10 @@
       ownerName: val('crm-deal-owner'),
       notes: val('crm-deal-notes'),
       leadId: val('crm-deal-lead') || null,
-      customerId: current && current.customerId || null
+      customerId: current && current.customerId || null,
+      quoteId: current && current.quoteId || null,
+      wonReason: val('crm-deal-won-reason'),
+      lostReason: val('crm-deal-lost-reason')
     };
   }
 
@@ -592,6 +710,7 @@
     }
     var done = $('crm-act-done');
     if (done) done.checked = !!(act && act.doneAt);
+    setVal('crm-act-assigned', act && act.assignedTo || '');
     $('crm-act-title').textContent = act && act.id ? (act.subject || 'Activity') : 'Activity';
     $('crm-act-delete').classList.toggle('hidden', !(act && act.id) || !canEdit('activities'));
     S.dirty = false;
@@ -605,6 +724,7 @@
       body: val('crm-act-body'),
       leadId: val('crm-act-lead') || null,
       dealId: val('crm-act-deal') || null,
+      assignedTo: val('crm-act-assigned'),
       done: $('crm-act-done') ? $('crm-act-done').checked : false,
       createdByName: typeof H.adminName === 'function' ? H.adminName() : ''
     };
@@ -706,6 +826,10 @@
     }
     var addLead = $('crm-lead-new');
     if (addLead) addLead.classList.toggle('hidden', !canEdit('leads'));
+    var exp = $('crm-lead-export');
+    if (exp) exp.classList.toggle('hidden', false);
+    var imp = $('crm-lead-import-btn');
+    if (imp) imp.classList.toggle('hidden', !canEdit('leads'));
     var addDeal = $('crm-pipe-new');
     if (addDeal) addDeal.classList.toggle('hidden', !canEdit('pipeline'));
     var addAct = $('crm-act-new');
@@ -718,6 +842,14 @@
     try {
       var id = val('crm-lead-id');
       var payload = leadFormPayload();
+      var dups = localDuplicates(payload.email, payload.companyName, id);
+      var dupEl = $('crm-lead-dups');
+      if (dupEl) {
+        var text = duplicateBanner(dups);
+        dupEl.textContent = text;
+        dupEl.classList.toggle('hidden', !text);
+      }
+      if (dups.length && !window.confirm(duplicateBanner(dups) + '\n\nSave this lead anyway?')) return;
       var data = id
         ? await H.api('/api/admin/crm/leads/' + encodeURIComponent(id), { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) })
         : await H.api('/api/admin/crm/leads', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
@@ -786,34 +918,133 @@
     }
   }
 
-  async function convertLead() {
+  function showModal(id, on) {
+    var el = $(id);
+    if (!el) return;
+    el.classList.toggle('hidden', !on);
+    el.hidden = !on;
+  }
+
+  function currentLead() {
+    return S.leads.find(function (row) { return String(row.id) === String(S.leadId); }) || null;
+  }
+
+  function convertLead() {
+    var lead = currentLead();
+    if (!lead) return;
+    var merge = $('crm-convert-merge');
+    var dups = lead.duplicates || localDuplicates(lead.email, lead.companyName, lead.id);
+    if (merge) {
+      merge.innerHTML = '<option value="">Keep this lead</option>' + dups.map(function (row) {
+        return '<option value="' + esc(row.id) + '">Merge into ' + esc(leadName(row)) + '</option>';
+      }).join('');
+    }
+    var dup = $('crm-convert-dup');
+    if (dup) {
+      var text = duplicateBanner(dups);
+      dup.textContent = text;
+      dup.classList.toggle('hidden', !text);
+    }
+    var quote = $('crm-convert-quote');
+    if (quote) {
+      var hasValue = (lead.deals || S.deals.filter(function (d) { return String(d.leadId) === String(lead.id); }))
+        .some(function (d) { return Number(d.value) > 0; });
+      quote.checked = hasValue;
+    }
+    showModal('crm-convert-modal', true);
+  }
+
+  async function runConvert() {
     if (!S.leadId) return;
-    if (!window.confirm('Create a Customer from this lead?')) return;
+    showModal('crm-convert-modal', false);
     try {
+      var mergeIntoId = val('crm-convert-merge');
+      var createQuote = $('crm-convert-quote') ? $('crm-convert-quote').checked : false;
       var data = await H.api('/api/admin/crm/leads/' + encodeURIComponent(S.leadId) + '/convert', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: '{}'
+        body: JSON.stringify({ createQuote: createQuote, mergeIntoId: mergeIntoId || null })
       });
       await loadAll();
       await openLead(data.lead.id);
+      if (data.quote && data.quote.id && H.openQuote) H.openQuote({ quoteId: data.quote.id, customerId: data.customer && data.customer.id });
     } catch (err) {
       showErr('crm-lead-error', err.message || 'Could not convert this lead.');
     }
   }
 
-  async function moveDeal(id, stage) {
+  async function sendLeadEmail(ev) {
+    if (ev) ev.preventDefault();
+    if (!S.leadId) return;
+    showErr('crm-mail-msg', '');
+    try {
+      await H.api('/api/admin/crm/leads/' + encodeURIComponent(S.leadId) + '/messages', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          to: val('crm-mail-to'),
+          subject: val('crm-mail-subject'),
+          body: val('crm-mail-body')
+        })
+      });
+      setVal('crm-mail-body', '');
+      await openLead(S.leadId);
+      setLeadTab('email');
+    } catch (err) {
+      showErr('crm-mail-msg', err.message || 'Could not send email.');
+    }
+  }
+
+  async function exportLeads() {
+    var res = await fetch('/api/admin/crm/leads.csv', { credentials: 'same-origin' });
+    if (!res.ok) throw new Error('Could not export leads.');
+    var blob = await res.blob();
+    var url = URL.createObjectURL(blob);
+    var a = document.createElement('a');
+    a.href = url;
+    a.download = 'crm-leads.csv';
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    URL.revokeObjectURL(url);
+  }
+
+  async function importLeads(file) {
+    if (!file) return;
+    var text = await file.text();
+    var data = await H.api('/api/admin/crm/leads/import', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ csv: text })
+    });
+    await loadAll();
+    var msg = 'Imported ' + (data.created || 0) + ' lead' + ((data.created || 0) === 1 ? '' : 's') + '.';
+    if (data.errors && data.errors.length) msg += ' ' + data.errors.length + ' row' + (data.errors.length === 1 ? '' : 's') + ' skipped.';
+    showErr('crm-lead-error', '');
+    window.alert(msg);
+  }
+
+  async function moveDeal(id, stage, extra) {
     var deal = S.deals.find(function (row) { return String(row.id) === String(id); });
     if (!deal || deal.stage === stage || !canEdit('pipeline')) return;
+    extra = extra || {};
+    if ((stage === 'won' || stage === 'lost') && !(extra.wonReason || extra.lostReason || deal.wonReason || deal.lostReason)) {
+      S.pendingMove = { id: id, stage: stage };
+      setText('crm-reason-title', stage === 'won' ? 'Won reason' : 'Lost reason');
+      showModal('crm-reason-modal', true);
+      return;
+    }
     var prev = deal.stage;
     deal.stage = stage;
+    if (stage === 'won' && extra.wonReason) deal.wonReason = extra.wonReason;
+    if (stage === 'lost' && extra.lostReason) deal.lostReason = extra.lostReason;
     fillPipelineKpis();
     renderPipelineBoard();
     try {
       await H.api('/api/admin/crm/deals/' + encodeURIComponent(id), {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(Object.assign({}, deal, { stage: stage }))
+        body: JSON.stringify(Object.assign({}, deal, extra, { stage: stage }))
       });
       await loadAll();
       if (S.dealId === String(id)) await openDeal(id);
@@ -903,6 +1134,42 @@
       openLeadDrawer(lead || null);
     });
     if ($('crm-lead-convert')) $('crm-lead-convert').addEventListener('click', convertLead);
+    if ($('crm-lead-mail')) $('crm-lead-mail').addEventListener('click', function (ev) {
+      ev.preventDefault();
+      setLeadTab('email');
+      var to = $('crm-mail-to');
+      if (to) to.focus();
+    });
+    if ($('crm-mail-form')) $('crm-mail-form').addEventListener('submit', sendLeadEmail);
+    if ($('crm-lead-export')) $('crm-lead-export').addEventListener('click', function () {
+      exportLeads().catch(function (err) { showErr('crm-lead-error', err.message || 'Could not export.'); });
+    });
+    if ($('crm-lead-import-btn')) $('crm-lead-import-btn').addEventListener('click', function () {
+      var input = $('crm-lead-import');
+      if (input) input.click();
+    });
+    if ($('crm-lead-import')) $('crm-lead-import').addEventListener('change', function (ev) {
+      var file = ev.target.files && ev.target.files[0];
+      ev.target.value = '';
+      if (file) importLeads(file).catch(function (err) { showErr('crm-lead-error', err.message || 'Could not import.'); });
+    });
+    if ($('crm-convert-cancel')) $('crm-convert-cancel').addEventListener('click', function () { showModal('crm-convert-modal', false); });
+    if ($('crm-convert-go')) $('crm-convert-go').addEventListener('click', runConvert);
+    if ($('crm-reason-cancel')) $('crm-reason-cancel').addEventListener('click', function () {
+      S.pendingMove = null;
+      showModal('crm-reason-modal', false);
+    });
+    if ($('crm-reason-go')) $('crm-reason-go').addEventListener('click', function () {
+      var pending = S.pendingMove;
+      showModal('crm-reason-modal', false);
+      if (!pending) return;
+      var reason = val('crm-reason-value') || 'other';
+      var extra = pending.stage === 'won' ? { wonReason: reason } : { lostReason: reason };
+      S.pendingMove = null;
+      moveDeal(pending.id, pending.stage, extra);
+    });
+    var dealStage = $('crm-deal-stage');
+    if (dealStage) dealStage.addEventListener('change', syncDealReasonFields);
     if ($('crm-lead-deal')) $('crm-lead-deal').addEventListener('click', function () {
       var lead = S.leads.find(function (row) { return String(row.id) === String(S.leadId); });
       openDealDrawer(lead ? {
@@ -922,9 +1189,19 @@
       openDealDrawer(deal || null);
     });
     if ($('crm-pipe-act')) $('crm-pipe-act').addEventListener('click', function () { openActivityDrawer({ dealId: S.dealId, type: 'task' }); });
-    if ($('crm-pipe-quote')) $('crm-pipe-quote').addEventListener('click', function () {
+    if ($('crm-pipe-quote')) $('crm-pipe-quote').addEventListener('click', async function () {
       var deal = S.deals.find(function (row) { return String(row.id) === String(S.dealId); });
-      if (deal && deal.customerId && H.openQuote) H.openQuote(deal.customerId);
+      if (!deal) return;
+      try {
+        var data = await H.api('/api/admin/crm/deals/' + encodeURIComponent(deal.id) + '/quote', { method: 'POST' });
+        await loadAll();
+        if (data.deal) await openDeal(data.deal.id);
+        if (data.quote && data.quote.id && H.openQuote) {
+          H.openQuote({ quoteId: data.quote.id, customerId: data.deal && data.deal.customerId || deal.customerId });
+        }
+      } catch (err) {
+        showErr('crm-pipe-error', err.message || 'Could not open a quote for this deal.');
+      }
     });
     if ($('crm-act-new')) $('crm-act-new').addEventListener('click', function () { openActivityDrawer(null); });
     document.querySelectorAll('#crm-lead-detail [data-crm-lead-tab]').forEach(function (btn) {

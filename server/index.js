@@ -1104,6 +1104,52 @@ async function main() {
     } catch (err) { next(err); }
   });
 
+  app.get('/api/admin/crm/leads.csv', requireAdmin, requireCrmView, async function (_req, res, next) {
+    try {
+      const crm = require('./company-crm');
+      const csv = crm.leadsToCsv(await store.listCrmLeads());
+      res.setHeader('Content-Type', 'text/csv; charset=utf-8');
+      res.setHeader('Content-Disposition', 'attachment; filename="crm-leads.csv"');
+      res.send(csv);
+    } catch (err) { next(err); }
+  });
+
+  app.get('/api/admin/crm/leads/duplicates', requireAdmin, requireCrmView, async function (req, res, next) {
+    try {
+      res.json({
+        ok: true,
+        leads: await store.findCrmDuplicates({
+          email: req.query.email,
+          companyName: req.query.company || req.query.companyName,
+          excludeId: req.query.excludeId
+        })
+      });
+    } catch (err) { next(err); }
+  });
+
+  app.post('/api/admin/crm/leads/import', requireAdmin, requireCrmEdit('leads'), async function (req, res, next) {
+    try {
+      const crm = require('./company-crm');
+      const rows = Array.isArray(req.body && req.body.leads)
+        ? req.body.leads
+        : crm.leadsFromCsv(req.body && req.body.csv);
+      const result = await store.importCrmLeads(rows);
+      res.json({ ok: true, created: result.created, errors: result.errors });
+    } catch (err) { next(err); }
+  });
+
+  app.get('/api/admin/crm/assignees', requireAdmin, requireCrmView, async function (_req, res, next) {
+    try {
+      res.json({ ok: true, assignees: await store.listCrmAssignees() });
+    } catch (err) { next(err); }
+  });
+
+  app.get('/api/admin/crm/reminders', requireAdmin, requireCrmView, async function (_req, res, next) {
+    try {
+      res.json({ ok: true, reminders: await store.listCrmReminders() });
+    } catch (err) { next(err); }
+  });
+
   app.get('/api/admin/crm/leads', requireAdmin, requireCrmView, async function (_req, res, next) {
     try {
       res.json({ ok: true, leads: await store.listCrmLeads() });
@@ -1142,9 +1188,69 @@ async function main() {
 
   app.post('/api/admin/crm/leads/:id/convert', requireAdmin, requireCrmEdit('leads'), async function (req, res, next) {
     try {
-      const result = await store.convertCrmLead(req.params.id);
+      const body = req.body || {};
+      const result = await store.convertCrmLead(req.params.id, {
+        createQuote: body.createQuote === true || body.createQuote === '1',
+        mergeIntoId: body.mergeIntoId || body.merge_into_id || null,
+        value: body.value
+      });
       if (!result) return res.status(404).json({ ok: false, error: 'Lead not found.' });
-      res.json({ ok: true, lead: result.lead, customer: result.customer });
+      res.json({ ok: true, lead: result.lead, customer: result.customer, quote: result.quote || null });
+    } catch (err) { next(err); }
+  });
+
+  app.post('/api/admin/crm/leads/:id/merge', requireAdmin, requireCrmEdit('leads'), async function (req, res, next) {
+    try {
+      const intoId = (req.body || {}).intoLeadId || (req.body || {}).intoId;
+      const lead = await store.mergeCrmLeads(req.params.id, intoId);
+      if (!lead) return res.status(404).json({ ok: false, error: 'Lead not found.' });
+      res.json({ ok: true, lead: lead });
+    } catch (err) { next(err); }
+  });
+
+  app.get('/api/admin/crm/leads/:id/messages', requireAdmin, requireCrmView, async function (req, res, next) {
+    try {
+      const lead = await store.getCrmLead(req.params.id);
+      if (!lead) return res.status(404).json({ ok: false, error: 'Lead not found.' });
+      res.json({ ok: true, messages: lead.messages || [] });
+    } catch (err) { next(err); }
+  });
+
+  app.post('/api/admin/crm/leads/:id/messages', requireAdmin, requireCrmEdit('leads'), async function (req, res, next) {
+    try {
+      const crm = require('./company-crm');
+      const lead = await store.getCrmLead(req.params.id);
+      if (!lead) return res.status(404).json({ ok: false, error: 'Lead not found.' });
+      const body = req.body || {};
+      const to = String(body.to || lead.email || '').trim();
+      const subject = String(body.subject || '').trim() || ('Spectrum Display — ' + (lead.displayName || 'follow-up'));
+      const text = String(body.body || '').trim();
+      if (!to) return res.status(400).json({ ok: false, error: 'Add an email address on this lead, or in To.' });
+      if (!text) return res.status(400).json({ ok: false, error: 'Write a message before sending.' });
+      await sendStaffEmail({
+        to: to,
+        subject: subject,
+        body: text,
+        from: process.env.CRM_FROM_EMAIL || undefined,
+        replyTo: crm.CRM_SALES_EMAIL
+      });
+      const message = await store.createCrmMessage({
+        leadId: lead.id,
+        direction: 'out',
+        fromEmail: crm.CRM_SALES_EMAIL,
+        toEmail: to,
+        subject: subject,
+        body: text,
+        source: 'compose'
+      });
+      await store.createCrmActivity({
+        type: 'email',
+        subject: subject,
+        body: text,
+        leadId: lead.id,
+        createdByName: actorName(req)
+      });
+      res.json({ ok: true, message: message });
     } catch (err) { next(err); }
   });
 
@@ -1181,6 +1287,39 @@ async function main() {
       const ok = await store.deleteCrmDeal(req.params.id);
       if (!ok) return res.status(404).json({ ok: false, error: 'Deal not found.' });
       res.json({ ok: true });
+    } catch (err) { next(err); }
+  });
+
+  app.post('/api/admin/crm/deals/:id/quote', requireAdmin, requireCrmEdit('pipeline'), async function (req, res, next) {
+    try {
+      const deal = await store.getCrmDeal(req.params.id);
+      if (!deal) return res.status(404).json({ ok: false, error: 'Deal not found.' });
+      if (deal.quoteId) {
+        const quote = await store.getSalesDoc(deal.quoteId);
+        return res.json({ ok: true, deal: deal, quote: quote });
+      }
+      if (!deal.customerId && deal.leadId) {
+        const result = await store.convertCrmLead(deal.leadId, { createQuote: true, value: deal.value });
+        const next = (result.lead && result.lead.deals || []).find(function (row) {
+          return String(row.id) === String(deal.id);
+        }) || await store.getCrmDeal(deal.id);
+        return res.json({ ok: true, deal: next, quote: result.quote, customer: result.customer });
+      }
+      if (!deal.customerId) {
+        return res.status(400).json({ ok: false, error: 'Convert the lead to a customer first.' });
+      }
+      const quote = await store.createSalesDoc({
+        type: 'quote',
+        customerId: deal.customerId,
+        notes: deal.notes || '',
+        status: 'draft'
+      });
+      const next = await store.updateCrmDeal(deal.id, {
+        quoteId: quote.id,
+        customerId: deal.customerId,
+        stage: deal.stage === 'new' ? 'quoted' : deal.stage
+      });
+      res.json({ ok: true, deal: next, quote: quote });
     } catch (err) { next(err); }
   });
 

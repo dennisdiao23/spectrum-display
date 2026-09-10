@@ -23,6 +23,12 @@ const LEAD_STATUSES = ['new', 'working', 'qualified', 'converted', 'lost'];
 const DEAL_STAGES = ['new', 'qualified', 'quoted', 'negotiation', 'won', 'lost'];
 const ACTIVITY_TYPES = ['note', 'call', 'email', 'meeting', 'task'];
 const LEAD_SOURCES = ['website', 'dealer', 'manual', 'referral', 'other'];
+const CLOSE_REASONS = ['price', 'timing', 'competitor', 'no_budget', 'other'];
+const CRM_SALES_EMAIL = 'sales@spectrumdisplay.com';
+const LEAD_CSV_HEADERS = [
+  'companyName', 'contactFirst', 'contactLast', 'email', 'phone', 'mobile', 'website',
+  'source', 'status', 'ownerName', 'projectType', 'city', 'state', 'country', 'notes'
+];
 
 function leadStatus(value) {
   const v = String(value || 'new').toLowerCase().trim();
@@ -42,6 +48,230 @@ function activityType(value) {
 function leadSource(value) {
   const v = String(value || 'manual').toLowerCase().trim();
   return LEAD_SOURCES.indexOf(v) === -1 ? 'other' : v;
+}
+
+function closeReason(value) {
+  const v = String(value || '').toLowerCase().trim().replace(/\s+/g, '_');
+  if (!v) return '';
+  if (v === 'no-budget') return 'no_budget';
+  return CLOSE_REASONS.indexOf(v) === -1 ? 'other' : v;
+}
+
+function closeReasonLabel(value) {
+  const v = closeReason(value);
+  if (v === 'price') return 'Price';
+  if (v === 'timing') return 'Timing';
+  if (v === 'competitor') return 'Competitor';
+  if (v === 'no_budget') return 'No budget';
+  if (v === 'other') return 'Other';
+  return '';
+}
+
+function messageDirection(value) {
+  return String(value || '').toLowerCase() === 'out' ? 'out' : 'in';
+}
+
+function normalizeMessage(input) {
+  const src = input || {};
+  const body = trim(src.body || src.bodyText || src.body_text, 8000);
+  const subject = trim(src.subject, 200);
+  if (!body && !subject) throw new Error('Write a subject or message.');
+  return {
+    leadId: idOrNull(src.leadId != null ? src.leadId : src.lead_id),
+    dealId: idOrNull(src.dealId != null ? src.dealId : src.deal_id),
+    activityId: idOrNull(src.activityId != null ? src.activityId : src.activity_id),
+    direction: messageDirection(src.direction),
+    fromEmail: trim(src.fromEmail || src.from_email, 160).toLowerCase(),
+    toEmail: trim(src.toEmail || src.to_email, 160).toLowerCase(),
+    subject: subject,
+    body: body,
+    source: trim(src.source, 40) || 'compose'
+  };
+}
+
+function formatMessage(row) {
+  if (!row) return null;
+  return {
+    id: row.id,
+    leadId: row.lead_id || null,
+    dealId: row.deal_id || null,
+    activityId: row.activity_id || null,
+    direction: row.direction || 'in',
+    fromEmail: row.from_email || '',
+    toEmail: row.to_email || '',
+    subject: row.subject || '',
+    body: row.body || '',
+    source: row.source || '',
+    createdAt: row.created_at || '',
+    updatedAt: row.updated_at || ''
+  };
+}
+
+function messageDbFields(input) {
+  return {
+    lead_id: input.leadId,
+    deal_id: input.dealId,
+    activity_id: input.activityId,
+    direction: input.direction,
+    from_email: input.fromEmail,
+    to_email: input.toEmail,
+    subject: input.subject,
+    body: input.body,
+    source: input.source
+  };
+}
+
+function csvEscape(value) {
+  const s = String(value == null ? '' : value);
+  if (/[",\n\r]/.test(s)) return '"' + s.replace(/"/g, '""') + '"';
+  return s;
+}
+
+function leadsToCsv(leads) {
+  const rows = [LEAD_CSV_HEADERS.join(',')];
+  (leads || []).forEach(function (lead) {
+    rows.push(LEAD_CSV_HEADERS.map(function (key) { return csvEscape(lead[key] || ''); }).join(','));
+  });
+  return rows.join('\n') + '\n';
+}
+
+function parseCsvText(text) {
+  const src = String(text || '').replace(/^\uFEFF/, '');
+  const rows = [];
+  let row = [];
+  let cell = '';
+  let inQuotes = false;
+  for (let i = 0; i < src.length; i++) {
+    const ch = src[i];
+    if (inQuotes) {
+      if (ch === '"') {
+        if (src[i + 1] === '"') {
+          cell += '"';
+          i += 1;
+        } else {
+          inQuotes = false;
+        }
+      } else {
+        cell += ch;
+      }
+    } else if (ch === '"') {
+      inQuotes = true;
+    } else if (ch === ',') {
+      row.push(cell);
+      cell = '';
+    } else if (ch === '\n') {
+      row.push(cell);
+      rows.push(row);
+      row = [];
+      cell = '';
+    } else if (ch !== '\r') {
+      cell += ch;
+    }
+  }
+  if (cell.length || row.length) {
+    row.push(cell);
+    rows.push(row);
+  }
+  return rows.filter(function (r) {
+    return r.some(function (c) { return String(c || '').trim(); });
+  });
+}
+
+function csvHeaderKey(name) {
+  const n = String(name || '').trim().toLowerCase().replace(/[^a-z0-9]+/g, '');
+  const map = {
+    company: 'companyName',
+    companyname: 'companyName',
+    first: 'contactFirst',
+    firstname: 'contactFirst',
+    contactfirst: 'contactFirst',
+    last: 'contactLast',
+    lastname: 'contactLast',
+    contactlast: 'contactLast',
+    email: 'email',
+    phone: 'phone',
+    mobile: 'mobile',
+    website: 'website',
+    source: 'source',
+    status: 'status',
+    owner: 'ownerName',
+    ownername: 'ownerName',
+    project: 'projectType',
+    projecttype: 'projectType',
+    city: 'city',
+    state: 'state',
+    country: 'country',
+    notes: 'notes',
+    note: 'notes'
+  };
+  return map[n] || '';
+}
+
+function leadsFromCsv(text) {
+  const table = parseCsvText(text);
+  if (!table.length) return [];
+  const keys = table[0].map(csvHeaderKey);
+  if (!keys.some(Boolean)) throw new Error('CSV needs a header row (company, email, name).');
+  return table.slice(1).map(function (cells) {
+    const out = {};
+    keys.forEach(function (key, i) {
+      if (key) out[key] = String(cells[i] == null ? '' : cells[i]).trim();
+    });
+    return out;
+  }).filter(function (row) {
+    return row.companyName || row.contactFirst || row.contactLast || row.email || row.phone;
+  });
+}
+
+function sameText(a, b) {
+  return String(a || '').trim().toLowerCase() === String(b || '').trim().toLowerCase();
+}
+
+function isOpenLead(lead) {
+  return !lead.mergedIntoId && lead.status !== 'lost';
+}
+
+function leadMatchesDuplicate(lead, email, companyName, excludeId) {
+  if (!lead || lead.mergedIntoId) return false;
+  if (excludeId && String(lead.id) === String(excludeId)) return false;
+  const mail = String(email || '').trim().toLowerCase();
+  const company = String(companyName || '').trim();
+  if (mail && lead.email && sameText(lead.email, mail)) return true;
+  if (company && lead.companyName && sameText(lead.companyName, company)) return true;
+  return false;
+}
+
+function fillEmptyLeadFields(target, source) {
+  const out = Object.assign({}, target);
+  [
+    'companyName', 'contactFirst', 'contactLast', 'email', 'phone', 'mobile', 'website',
+    'ownerName', 'projectType', 'city', 'state', 'country', 'source'
+  ].forEach(function (key) {
+    if (!out[key] && source[key]) out[key] = source[key];
+  });
+  if (!out.convertedCustomerId && source.convertedCustomerId) {
+    out.convertedCustomerId = source.convertedCustomerId;
+    out.status = 'converted';
+  }
+  out.notes = [target.notes, source.notes].filter(Boolean).join('\n\n').slice(0, 4000);
+  out.displayName = leadDisplayName(out);
+  return out;
+}
+
+function inquiryMessageFromLead(lead, extra) {
+  const src = extra || {};
+  const body = trim(src.body || src.notes || lead.notes, 8000);
+  if (!body) return null;
+  const source = lead.source === 'dealer' ? 'dealer' : (lead.source === 'website' ? 'website' : 'system');
+  return {
+    leadId: lead.id,
+    direction: 'in',
+    fromEmail: lead.email || '',
+    toEmail: CRM_SALES_EMAIL,
+    subject: src.subject || (source === 'dealer' ? 'Dealer inquiry' : 'Website inquiry'),
+    body: body,
+    source: source
+  };
 }
 
 function leadDisplayName(input) {
@@ -92,7 +322,8 @@ function normalizeLead(input) {
     state: trim(src.state, 80),
     country: trim(src.country, 80) || 'United States',
     notes: trim(src.notes, 4000),
-    convertedCustomerId: idOrNull(src.convertedCustomerId != null ? src.convertedCustomerId : src.converted_customer_id)
+    convertedCustomerId: idOrNull(src.convertedCustomerId != null ? src.convertedCustomerId : src.converted_customer_id),
+    mergedIntoId: idOrNull(src.mergedIntoId != null ? src.mergedIntoId : src.merged_into_id)
   };
 }
 
@@ -123,6 +354,7 @@ function formatLead(row) {
     country: row.country || '',
     notes: row.notes || '',
     convertedCustomerId: row.converted_customer_id || null,
+    mergedIntoId: row.merged_into_id || null,
     createdAt: row.created_at || '',
     updatedAt: row.updated_at || ''
   };
@@ -147,7 +379,8 @@ function leadDbFields(input) {
     state: input.state,
     country: input.country,
     notes: input.notes,
-    converted_customer_id: input.convertedCustomerId
+    converted_customer_id: input.convertedCustomerId,
+    merged_into_id: input.mergedIntoId
   };
 }
 
@@ -168,7 +401,9 @@ function normalizeDeal(input) {
     notes: trim(src.notes, 4000),
     leadId: idOrNull(src.leadId != null ? src.leadId : src.lead_id),
     customerId: idOrNull(src.customerId != null ? src.customerId : src.customer_id),
-    quoteId: idOrNull(src.quoteId != null ? src.quoteId : src.quote_id)
+    quoteId: idOrNull(src.quoteId != null ? src.quoteId : src.quote_id),
+    wonReason: closeReason(src.wonReason != null ? src.wonReason : src.won_reason),
+    lostReason: closeReason(src.lostReason != null ? src.lostReason : src.lost_reason)
   };
 }
 
@@ -188,6 +423,10 @@ function formatDeal(row) {
     leadId: row.lead_id || null,
     customerId: row.customer_id || null,
     quoteId: row.quote_id || null,
+    quoteNumber: row.quote_number || row.quoteNumber || '',
+    quoteTotal: num(row.quote_total != null ? row.quote_total : row.quoteTotal),
+    wonReason: row.won_reason || '',
+    lostReason: row.lost_reason || '',
     createdAt: row.created_at || '',
     updatedAt: row.updated_at || ''
   };
@@ -206,7 +445,9 @@ function dealDbFields(input) {
     notes: input.notes,
     lead_id: input.leadId,
     customer_id: input.customerId,
-    quote_id: input.quoteId
+    quote_id: input.quoteId,
+    won_reason: input.wonReason,
+    lost_reason: input.lostReason
   };
 }
 
@@ -231,7 +472,8 @@ function normalizeActivity(input) {
     leadId: leadId,
     dealId: dealId,
     customerId: customerId,
-    createdByName: trim(src.createdByName || src.created_by_name, 120)
+    createdByName: trim(src.createdByName || src.created_by_name, 120),
+    assignedTo: trim(src.assignedTo || src.assigned_to, 120)
   };
 }
 
@@ -248,6 +490,9 @@ function formatActivity(row) {
     dealId: row.deal_id || null,
     customerId: row.customer_id || null,
     createdByName: row.created_by_name || '',
+    assignedTo: row.assigned_to || '',
+    leadName: row.lead_name || row.leadName || '',
+    dealTitle: row.deal_title || row.dealTitle || '',
     createdAt: row.created_at || '',
     updatedAt: row.updated_at || ''
   };
@@ -263,13 +508,14 @@ function activityDbFields(input) {
     lead_id: input.leadId,
     deal_id: input.dealId,
     customer_id: input.customerId,
-    created_by_name: input.createdByName
+    created_by_name: input.createdByName,
+    assigned_to: input.assignedTo
   };
 }
 
 function forSupabase(fields) {
   const out = Object.assign({}, fields);
-  ['converted_customer_id', 'lead_id', 'customer_id', 'quote_id', 'deal_id'].forEach(function (key) {
+  ['converted_customer_id', 'merged_into_id', 'lead_id', 'customer_id', 'quote_id', 'deal_id', 'activity_id'].forEach(function (key) {
     if (!Object.prototype.hasOwnProperty.call(out, key)) return;
     if (out[key] == null) out[key] = null;
   });
@@ -366,6 +612,7 @@ function ensureCompanyCrm(db) {
       country TEXT NOT NULL DEFAULT 'United States',
       notes TEXT NOT NULL DEFAULT '',
       converted_customer_id INTEGER,
+      merged_into_id INTEGER,
       created_at TEXT NOT NULL,
       updated_at TEXT NOT NULL
     );
@@ -386,6 +633,8 @@ function ensureCompanyCrm(db) {
       lead_id INTEGER,
       customer_id INTEGER,
       quote_id INTEGER,
+      won_reason TEXT NOT NULL DEFAULT '',
+      lost_reason TEXT NOT NULL DEFAULT '',
       created_at TEXT NOT NULL,
       updated_at TEXT NOT NULL
     );
@@ -402,13 +651,37 @@ function ensureCompanyCrm(db) {
       deal_id INTEGER,
       customer_id INTEGER,
       created_by_name TEXT NOT NULL DEFAULT '',
+      assigned_to TEXT NOT NULL DEFAULT '',
       created_at TEXT NOT NULL,
       updated_at TEXT NOT NULL
     );
     CREATE INDEX IF NOT EXISTS company_crm_activities_due_idx ON company_crm_activities (due_at, done_at);
     CREATE INDEX IF NOT EXISTS company_crm_activities_lead_idx ON company_crm_activities (lead_id);
     CREATE INDEX IF NOT EXISTS company_crm_activities_deal_idx ON company_crm_activities (deal_id);
+    CREATE TABLE IF NOT EXISTS company_crm_messages (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      lead_id INTEGER,
+      deal_id INTEGER,
+      activity_id INTEGER,
+      direction TEXT NOT NULL DEFAULT 'in',
+      from_email TEXT NOT NULL DEFAULT '',
+      to_email TEXT NOT NULL DEFAULT '',
+      subject TEXT NOT NULL DEFAULT '',
+      body TEXT NOT NULL DEFAULT '',
+      source TEXT NOT NULL DEFAULT 'compose',
+      created_at TEXT NOT NULL,
+      updated_at TEXT NOT NULL
+    );
+    CREATE INDEX IF NOT EXISTS company_crm_messages_lead_idx ON company_crm_messages (lead_id, created_at);
   `);
+  [
+    'ALTER TABLE company_crm_leads ADD COLUMN merged_into_id INTEGER',
+    "ALTER TABLE company_crm_deals ADD COLUMN won_reason TEXT NOT NULL DEFAULT ''",
+    "ALTER TABLE company_crm_deals ADD COLUMN lost_reason TEXT NOT NULL DEFAULT ''",
+    "ALTER TABLE company_crm_activities ADD COLUMN assigned_to TEXT NOT NULL DEFAULT ''"
+  ].forEach(function (sql) {
+    try { db.exec(sql); } catch (e) { /* already present */ }
+  });
 }
 
 function insertRow(db, table, fields) {
@@ -433,8 +706,29 @@ function openLeadBySourceKey(db, sourceKey) {
   return db.prepare(`
     SELECT * FROM company_crm_leads
     WHERE source_key = ? AND status NOT IN ('converted', 'lost')
+      AND (merged_into_id IS NULL OR merged_into_id = 0)
     ORDER BY id DESC LIMIT 1
   `).get(sourceKey);
+}
+
+function sqliteAttachQuotes(db, deals) {
+  return (deals || []).map(function (deal) {
+    if (!deal || !deal.quoteId) return deal;
+    const row = db.prepare('SELECT id, number FROM company_sales_docs WHERE id = ?').get(deal.quoteId);
+    if (!row) return deal;
+    deal.quoteNumber = row.number || '';
+    const tot = db.prepare(
+      'SELECT COALESCE(SUM(qty * unit_price), 0) AS n FROM company_sales_lines WHERE doc_id = ?'
+    ).get(deal.quoteId);
+    deal.quoteTotal = tot ? Number(tot.n) || 0 : 0;
+    return deal;
+  });
+}
+
+function sqliteListMessages(db, leadId) {
+  return db.prepare(
+    'SELECT * FROM company_crm_messages WHERE lead_id = ? ORDER BY datetime(created_at) ASC, id ASC'
+  ).all(leadId).map(formatMessage);
 }
 
 function sqliteApi(db, store) {
@@ -447,10 +741,16 @@ function sqliteApi(db, store) {
     async getCrmLead(id) {
       const lead = formatLead(db.prepare('SELECT * FROM company_crm_leads WHERE id = ?').get(id));
       if (!lead) return null;
-      lead.deals = db.prepare('SELECT * FROM company_crm_deals WHERE lead_id = ? ORDER BY id DESC').all(id).map(formatDeal);
+      lead.deals = sqliteAttachQuotes(db, db.prepare('SELECT * FROM company_crm_deals WHERE lead_id = ? ORDER BY id DESC').all(id).map(formatDeal));
       lead.activities = db.prepare(
         'SELECT * FROM company_crm_activities WHERE lead_id = ? ORDER BY datetime(created_at) DESC, id DESC'
       ).all(id).map(formatActivity);
+      lead.messages = sqliteListMessages(db, id);
+      lead.duplicates = db.prepare('SELECT * FROM company_crm_leads ORDER BY id DESC').all()
+        .map(formatLead)
+        .filter(function (row) {
+          return leadMatchesDuplicate(row, lead.email, lead.companyName, lead.id);
+        });
       return lead;
     },
     async createCrmLead(payload) {
@@ -459,9 +759,9 @@ function sqliteApi(db, store) {
       return this.getCrmLead(id);
     },
     async updateCrmLead(id, payload) {
-      const current = db.prepare('SELECT id FROM company_crm_leads WHERE id = ?').get(id);
+      const current = formatLead(db.prepare('SELECT * FROM company_crm_leads WHERE id = ?').get(id));
       if (!current) return null;
-      const input = normalizeLead(payload);
+      const input = normalizeLead(Object.assign({}, current, payload));
       updateRow(db, 'company_crm_leads', id, leadDbFields(input));
       return this.getCrmLead(id);
     },
@@ -472,42 +772,131 @@ function sqliteApi(db, store) {
     async upsertCrmLeadFromInquiry(inquiry) {
       const input = leadFromInquiry(inquiry);
       const existing = openLeadBySourceKey(db, input.sourceKey);
+      let lead;
       if (existing) {
         const merged = normalizeLead(Object.assign({}, formatLead(existing), input, {
           status: existing.status || 'new',
           notes: [existing.notes, input.notes].filter(Boolean).join('\n\n').slice(0, 4000)
         }));
         updateRow(db, 'company_crm_leads', existing.id, leadDbFields(merged));
-        return this.getCrmLead(existing.id);
+        lead = await this.getCrmLead(existing.id);
+      } else {
+        lead = await this.createCrmLead(input);
       }
-      return this.createCrmLead(input);
+      const inbound = inquiryMessageFromLead(lead, {
+        notes: input.notes,
+        subject: inquiry && inquiry.subject
+      });
+      if (inbound) await this.createCrmMessage(inbound);
+      return this.getCrmLead(lead.id);
     },
-    async convertCrmLead(id) {
-      const lead = await this.getCrmLead(id);
-      if (!lead) return null;
-      if (lead.convertedCustomerId) {
-        const customer = await store.getCompanyCustomer(lead.convertedCustomerId);
-        return { lead: lead, customer: customer };
+    async findCrmDuplicates(query) {
+      const src = query || {};
+      const email = trim(src.email, 160).toLowerCase();
+      const companyName = trim(src.companyName || src.company_name, 160);
+      const excludeId = idOrNull(src.excludeId != null ? src.excludeId : src.exclude_id);
+      if (!email && !companyName) return [];
+      return db.prepare('SELECT * FROM company_crm_leads ORDER BY datetime(updated_at) DESC, id DESC').all()
+        .map(formatLead)
+        .filter(function (row) {
+          return leadMatchesDuplicate(row, email, companyName, excludeId);
+        });
+    },
+    async importCrmLeads(rows) {
+      const created = [];
+      const errors = [];
+      (rows || []).forEach(function (row, i) {
+        try {
+          const input = normalizeLead(row);
+          const id = insertRow(db, 'company_crm_leads', leadDbFields(input));
+          created.push(id);
+        } catch (err) {
+          errors.push({ row: i + 1, error: err.message || 'Could not import row.' });
+        }
+      });
+      return { created: created.length, errors: errors };
+    },
+    async mergeCrmLeads(fromId, intoId) {
+      const from = formatLead(db.prepare('SELECT * FROM company_crm_leads WHERE id = ?').get(fromId));
+      const into = formatLead(db.prepare('SELECT * FROM company_crm_leads WHERE id = ?').get(intoId));
+      if (!from || !into) return null;
+      if (String(from.id) === String(into.id)) throw new Error('Choose a different lead to merge into.');
+      if (from.mergedIntoId) throw new Error('That lead was already merged.');
+      const next = normalizeLead(fillEmptyLeadFields(into, from));
+      updateRow(db, 'company_crm_leads', into.id, leadDbFields(next));
+      const stamp = nowIso();
+      db.prepare('UPDATE company_crm_deals SET lead_id = ?, updated_at = ? WHERE lead_id = ?').run(into.id, stamp, from.id);
+      db.prepare('UPDATE company_crm_activities SET lead_id = ?, updated_at = ? WHERE lead_id = ?').run(into.id, stamp, from.id);
+      db.prepare('UPDATE company_crm_messages SET lead_id = ?, updated_at = ? WHERE lead_id = ?').run(into.id, stamp, from.id);
+      updateRow(db, 'company_crm_leads', from.id, leadDbFields(normalizeLead(Object.assign({}, from, {
+        status: 'lost',
+        mergedIntoId: into.id,
+        notes: ('Merged into lead #' + into.id + (from.notes ? '\n\n' + from.notes : '')).slice(0, 4000)
+      }))));
+      return this.getCrmLead(into.id);
+    },
+    async convertCrmLead(id, opts) {
+      const options = opts || {};
+      if (options.mergeIntoId && String(options.mergeIntoId) !== String(id)) {
+        const merged = await this.mergeCrmLeads(id, options.mergeIntoId);
+        if (!merged) return null;
+        id = merged.id;
       }
-      const customer = await store.createCompanyCustomer(customerPayloadFromLead(lead));
-      const next = normalizeLead(Object.assign({}, lead, {
-        status: 'converted',
-        convertedCustomerId: customer.id
-      }));
-      updateRow(db, 'company_crm_leads', id, leadDbFields(next));
-      db.prepare(
-        'UPDATE company_crm_deals SET customer_id = ?, updated_at = ? WHERE lead_id = ? AND (customer_id IS NULL OR customer_id = 0)'
-      ).run(customer.id, nowIso(), id);
-      return { lead: await this.getCrmLead(id), customer: customer };
+      let lead = await this.getCrmLead(id);
+      if (!lead) return null;
+      let customer = null;
+      if (lead.convertedCustomerId) {
+        customer = await store.getCompanyCustomer(lead.convertedCustomerId);
+      } else {
+        customer = await store.createCompanyCustomer(customerPayloadFromLead(lead));
+        const next = normalizeLead(Object.assign({}, lead, {
+          status: 'converted',
+          convertedCustomerId: customer.id
+        }));
+        updateRow(db, 'company_crm_leads', id, leadDbFields(next));
+        db.prepare(
+          'UPDATE company_crm_deals SET customer_id = ?, updated_at = ? WHERE lead_id = ? AND (customer_id IS NULL OR customer_id = 0)'
+        ).run(customer.id, nowIso(), id);
+        lead = await this.getCrmLead(id);
+      }
+      let quote = null;
+      if (options.createQuote && customer && customer.id) {
+        quote = await store.createSalesDoc({
+          type: 'quote',
+          customerId: customer.id,
+          notes: lead.notes || '',
+          status: 'draft'
+        });
+        const deals = lead.deals || [];
+        if (deals.length) {
+          await this.updateCrmDeal(deals[0].id, { quoteId: quote.id, customerId: customer.id, stage: deals[0].stage === 'new' ? 'quoted' : deals[0].stage });
+        } else {
+          await this.createCrmDeal({
+            title: (lead.companyName || lead.displayName || 'Lead') + ' deal',
+            companyName: lead.companyName,
+            contactName: lead.contactName,
+            email: lead.email,
+            ownerName: lead.ownerName,
+            leadId: lead.id,
+            customerId: customer.id,
+            quoteId: quote.id,
+            value: options.value,
+            stage: 'quoted'
+          });
+        }
+        lead = await this.getCrmLead(id);
+      }
+      return { lead: lead, customer: customer, quote: quote };
     },
     async listCrmDeals() {
-      return db.prepare(
+      return sqliteAttachQuotes(db, db.prepare(
         'SELECT * FROM company_crm_deals ORDER BY datetime(updated_at) DESC, id DESC'
-      ).all().map(formatDeal);
+      ).all().map(formatDeal));
     },
     async getCrmDeal(id) {
       const deal = formatDeal(db.prepare('SELECT * FROM company_crm_deals WHERE id = ?').get(id));
       if (!deal) return null;
+      sqliteAttachQuotes(db, [deal]);
       deal.activities = db.prepare(
         'SELECT * FROM company_crm_activities WHERE deal_id = ? ORDER BY datetime(created_at) DESC, id DESC'
       ).all(id).map(formatActivity);
@@ -558,6 +947,38 @@ function sqliteApi(db, store) {
     async deleteCrmActivity(id) {
       const info = db.prepare('DELETE FROM company_crm_activities WHERE id = ?').run(id);
       return info.changes > 0;
+    },
+    async listCrmMessages(leadId) {
+      return sqliteListMessages(db, leadId);
+    },
+    async createCrmMessage(payload) {
+      const input = normalizeMessage(payload);
+      if (!input.leadId) throw new Error('Lead is required.');
+      const id = insertRow(db, 'company_crm_messages', messageDbFields(input));
+      return formatMessage(db.prepare('SELECT * FROM company_crm_messages WHERE id = ?').get(id));
+    },
+    async listCrmReminders() {
+      return db.prepare(`
+        SELECT a.*, l.display_name AS lead_name, d.title AS deal_title
+        FROM company_crm_activities a
+        LEFT JOIN company_crm_leads l ON l.id = a.lead_id
+        LEFT JOIN company_crm_deals d ON d.id = a.deal_id
+        WHERE (a.done_at IS NULL OR a.done_at = '')
+          AND a.due_at IS NOT NULL AND a.due_at != ''
+        ORDER BY datetime(a.due_at) ASC, a.id ASC
+        LIMIT 20
+      `).all().map(formatActivity);
+    },
+    async listCrmAssignees() {
+      const admins = await store.listAdmins();
+      return (admins || []).map(function (row) {
+        return {
+          id: row.id,
+          name: row.name || '',
+          email: row.email || '',
+          label: row.name || row.email || 'Staff'
+        };
+      }).filter(function (row) { return row.label; });
     }
   };
 }
@@ -574,6 +995,36 @@ function supabaseApi(supabase, store) {
     return data;
   }
 
+  async function attachQuotes(deals) {
+    const list = deals || [];
+    const ids = [];
+    list.forEach(function (deal) {
+      if (deal && deal.quoteId && ids.indexOf(deal.quoteId) === -1) ids.push(deal.quoteId);
+    });
+    if (!ids.length) return list;
+    const { data, error } = await supabase.from('company_sales_docs').select('id, number').in('id', ids);
+    throwIf(error, 'Could not load quotes.');
+    const map = {};
+    (data || []).forEach(function (row) { map[row.id] = row; });
+    list.forEach(function (deal) {
+      const row = deal.quoteId ? map[deal.quoteId] : null;
+      if (!row) return;
+      deal.quoteNumber = row.number || '';
+    });
+    return list;
+  }
+
+  async function listMessages(leadId) {
+    const { data, error } = await supabase
+      .from('company_crm_messages')
+      .select('*')
+      .eq('lead_id', leadId)
+      .order('created_at', { ascending: true })
+      .order('id', { ascending: true });
+    throwIf(error, 'Could not list messages.');
+    return (data || []).map(formatMessage);
+  }
+
   return {
     async listCrmLeads() {
       const { data, error } = await supabase
@@ -588,14 +1039,22 @@ function supabaseApi(supabase, store) {
       const data = await fetchLeadRow(id);
       const lead = formatLead(data);
       if (!lead) return null;
-      const [deals, activities] = await Promise.all([
+      const [deals, activities, messages, allLeads] = await Promise.all([
         supabase.from('company_crm_deals').select('*').eq('lead_id', id).order('id', { ascending: false }),
-        supabase.from('company_crm_activities').select('*').eq('lead_id', id).order('created_at', { ascending: false })
+        supabase.from('company_crm_activities').select('*').eq('lead_id', id).order('created_at', { ascending: false }),
+        supabase.from('company_crm_messages').select('*').eq('lead_id', id).order('created_at', { ascending: true }),
+        supabase.from('company_crm_leads').select('*').order('id', { ascending: false })
       ]);
       throwIf(deals.error, 'Could not list deals.');
       throwIf(activities.error, 'Could not list activities.');
-      lead.deals = (deals.data || []).map(formatDeal);
+      throwIf(messages.error, 'Could not list messages.');
+      throwIf(allLeads.error, 'Could not list leads.');
+      lead.deals = await attachQuotes((deals.data || []).map(formatDeal));
       lead.activities = (activities.data || []).map(formatActivity);
+      lead.messages = (messages.data || []).map(formatMessage);
+      lead.duplicates = (allLeads.data || []).map(formatLead).filter(function (row) {
+        return leadMatchesDuplicate(row, lead.email, lead.companyName, lead.id);
+      });
       return lead;
     },
     async createCrmLead(payload) {
@@ -609,7 +1068,9 @@ function supabaseApi(supabase, store) {
       return this.getCrmLead(data.id);
     },
     async updateCrmLead(id, payload) {
-      const input = normalizeLead(payload);
+      const current = formatLead(await fetchLeadRow(id));
+      if (!current) return null;
+      const input = normalizeLead(Object.assign({}, current, payload));
       const fields = forSupabase(leadDbFields(input));
       fields.updated_at = nowIso();
       const { data, error } = await supabase.from('company_crm_leads').update(fields).eq('id', id).select('*').maybeSingle();
@@ -624,6 +1085,7 @@ function supabaseApi(supabase, store) {
     },
     async upsertCrmLeadFromInquiry(inquiry) {
       const input = leadFromInquiry(inquiry);
+      let lead = null;
       if (input.sourceKey) {
         const { data, error } = await supabase
           .from('company_crm_leads')
@@ -634,36 +1096,127 @@ function supabaseApi(supabase, store) {
         throwIf(error, 'Could not match lead.');
         const existing = (data || []).find(function (row) {
           const status = String(row.status || '').toLowerCase();
-          return status !== 'converted' && status !== 'lost';
+          return status !== 'converted' && status !== 'lost' && !row.merged_into_id;
         }) || null;
         if (existing) {
           const merged = normalizeLead(Object.assign({}, formatLead(existing), input, {
             status: existing.status || 'new',
             notes: [existing.notes, input.notes].filter(Boolean).join('\n\n').slice(0, 4000)
           }));
-          return this.updateCrmLead(existing.id, merged);
+          lead = await this.updateCrmLead(existing.id, merged);
         }
       }
-      return this.createCrmLead(input);
+      if (!lead) lead = await this.createCrmLead(input);
+      const inbound = inquiryMessageFromLead(lead, {
+        notes: input.notes,
+        subject: inquiry && inquiry.subject
+      });
+      if (inbound) await this.createCrmMessage(inbound);
+      return this.getCrmLead(lead.id);
     },
-    async convertCrmLead(id) {
-      const lead = await this.getCrmLead(id);
-      if (!lead) return null;
-      if (lead.convertedCustomerId) {
-        const customer = await store.getCompanyCustomer(lead.convertedCustomerId);
-        return { lead: lead, customer: customer };
+    async findCrmDuplicates(query) {
+      const src = query || {};
+      const email = trim(src.email, 160).toLowerCase();
+      const companyName = trim(src.companyName || src.company_name, 160);
+      const excludeId = idOrNull(src.excludeId != null ? src.excludeId : src.exclude_id);
+      if (!email && !companyName) return [];
+      const { data, error } = await supabase.from('company_crm_leads').select('*').order('updated_at', { ascending: false });
+      throwIf(error, 'Could not list leads.');
+      return (data || []).map(formatLead).filter(function (row) {
+        return leadMatchesDuplicate(row, email, companyName, excludeId);
+      });
+    },
+    async importCrmLeads(rows) {
+      const created = [];
+      const errors = [];
+      for (let i = 0; i < (rows || []).length; i++) {
+        try {
+          const lead = await this.createCrmLead(rows[i]);
+          created.push(lead.id);
+        } catch (err) {
+          errors.push({ row: i + 1, error: err.message || 'Could not import row.' });
+        }
       }
-      const customer = await store.createCompanyCustomer(customerPayloadFromLead(lead));
-      const next = await this.updateCrmLead(id, Object.assign({}, lead, {
-        status: 'converted',
-        convertedCustomerId: customer.id
+      return { created: created.length, errors: errors };
+    },
+    async mergeCrmLeads(fromId, intoId) {
+      const from = formatLead(await fetchLeadRow(fromId));
+      const into = formatLead(await fetchLeadRow(intoId));
+      if (!from || !into) return null;
+      if (String(from.id) === String(into.id)) throw new Error('Choose a different lead to merge into.');
+      if (from.mergedIntoId) throw new Error('That lead was already merged.');
+      await this.updateCrmLead(into.id, fillEmptyLeadFields(into, from));
+      const stamp = nowIso();
+      const fromDeals = await supabase.from('company_crm_deals').update({ lead_id: into.id, updated_at: stamp }).eq('lead_id', from.id);
+      throwIf(fromDeals.error, 'Could not move deals.');
+      const fromActs = await supabase.from('company_crm_activities').update({ lead_id: into.id, updated_at: stamp }).eq('lead_id', from.id);
+      throwIf(fromActs.error, 'Could not move activities.');
+      const fromMail = await supabase.from('company_crm_messages').update({ lead_id: into.id, updated_at: stamp }).eq('lead_id', from.id);
+      throwIf(fromMail.error, 'Could not move email.');
+      await this.updateCrmLead(from.id, Object.assign({}, from, {
+        status: 'lost',
+        mergedIntoId: into.id,
+        notes: ('Merged into lead #' + into.id + (from.notes ? '\n\n' + from.notes : '')).slice(0, 4000)
       }));
-      await supabase
-        .from('company_crm_deals')
-        .update({ customer_id: customer.id, updated_at: nowIso() })
-        .eq('lead_id', id)
-        .is('customer_id', null);
-      return { lead: next, customer: customer };
+      return this.getCrmLead(into.id);
+    },
+    async convertCrmLead(id, opts) {
+      const options = opts || {};
+      if (options.mergeIntoId && String(options.mergeIntoId) !== String(id)) {
+        const merged = await this.mergeCrmLeads(id, options.mergeIntoId);
+        if (!merged) return null;
+        id = merged.id;
+      }
+      let lead = await this.getCrmLead(id);
+      if (!lead) return null;
+      let customer = null;
+      if (lead.convertedCustomerId) {
+        customer = await store.getCompanyCustomer(lead.convertedCustomerId);
+      } else {
+        customer = await store.createCompanyCustomer(customerPayloadFromLead(lead));
+        lead = await this.updateCrmLead(id, Object.assign({}, lead, {
+          status: 'converted',
+          convertedCustomerId: customer.id
+        }));
+        await supabase
+          .from('company_crm_deals')
+          .update({ customer_id: customer.id, updated_at: nowIso() })
+          .eq('lead_id', id)
+          .is('customer_id', null);
+        lead = await this.getCrmLead(id);
+      }
+      let quote = null;
+      if (options.createQuote && customer && customer.id) {
+        quote = await store.createSalesDoc({
+          type: 'quote',
+          customerId: customer.id,
+          notes: lead.notes || '',
+          status: 'draft'
+        });
+        const deals = lead.deals || [];
+        if (deals.length) {
+          await this.updateCrmDeal(deals[0].id, {
+            quoteId: quote.id,
+            customerId: customer.id,
+            stage: deals[0].stage === 'new' ? 'quoted' : deals[0].stage
+          });
+        } else {
+          await this.createCrmDeal({
+            title: (lead.companyName || lead.displayName || 'Lead') + ' deal',
+            companyName: lead.companyName,
+            contactName: lead.contactName,
+            email: lead.email,
+            ownerName: lead.ownerName,
+            leadId: lead.id,
+            customerId: customer.id,
+            quoteId: quote.id,
+            value: options.value,
+            stage: 'quoted'
+          });
+        }
+        lead = await this.getCrmLead(id);
+      }
+      return { lead: lead, customer: customer, quote: quote };
     },
     async listCrmDeals() {
       const { data, error } = await supabase
@@ -672,13 +1225,14 @@ function supabaseApi(supabase, store) {
         .order('updated_at', { ascending: false })
         .order('id', { ascending: false });
       throwIf(error, 'Could not list deals.');
-      return (data || []).map(formatDeal);
+      return attachQuotes((data || []).map(formatDeal));
     },
     async getCrmDeal(id) {
       const { data, error } = await supabase.from('company_crm_deals').select('*').eq('id', id).maybeSingle();
       throwIf(error, 'Could not load deal.');
       const deal = formatDeal(data);
       if (!deal) return null;
+      await attachQuotes([deal]);
       const acts = await supabase
         .from('company_crm_activities')
         .select('*')
@@ -762,6 +1316,67 @@ function supabaseApi(supabase, store) {
       const { data, error } = await supabase.from('company_crm_activities').delete().eq('id', id).select('id');
       throwIf(error, 'Could not delete activity.');
       return !!(data && data.length);
+    },
+    async listCrmMessages(leadId) {
+      return listMessages(leadId);
+    },
+    async createCrmMessage(payload) {
+      const input = normalizeMessage(payload);
+      if (!input.leadId) throw new Error('Lead is required.');
+      const fields = forSupabase(messageDbFields(input));
+      const stamp = nowIso();
+      fields.created_at = stamp;
+      fields.updated_at = stamp;
+      const { data, error } = await supabase.from('company_crm_messages').insert(fields).select('*').single();
+      throwIf(error, 'Could not save email.');
+      return formatMessage(data);
+    },
+    async listCrmReminders() {
+      const { data, error } = await supabase
+        .from('company_crm_activities')
+        .select('*')
+        .eq('done_at', '')
+        .neq('due_at', '')
+        .order('due_at', { ascending: true })
+        .limit(20);
+      throwIf(error, 'Could not list reminders.');
+      const acts = (data || []).map(formatActivity);
+      const leadIds = [];
+      const dealIds = [];
+      acts.forEach(function (act) {
+        if (act.leadId && leadIds.indexOf(act.leadId) === -1) leadIds.push(act.leadId);
+        if (act.dealId && dealIds.indexOf(act.dealId) === -1) dealIds.push(act.dealId);
+      });
+      const [leads, deals] = await Promise.all([
+        leadIds.length
+          ? supabase.from('company_crm_leads').select('id, display_name').in('id', leadIds)
+          : Promise.resolve({ data: [], error: null }),
+        dealIds.length
+          ? supabase.from('company_crm_deals').select('id, title').in('id', dealIds)
+          : Promise.resolve({ data: [], error: null })
+      ]);
+      throwIf(leads.error, 'Could not list leads.');
+      throwIf(deals.error, 'Could not list deals.');
+      const leadMap = {};
+      const dealMap = {};
+      (leads.data || []).forEach(function (row) { leadMap[row.id] = row.display_name; });
+      (deals.data || []).forEach(function (row) { dealMap[row.id] = row.title; });
+      acts.forEach(function (act) {
+        act.leadName = act.leadId ? (leadMap[act.leadId] || '') : '';
+        act.dealTitle = act.dealId ? (dealMap[act.dealId] || '') : '';
+      });
+      return acts;
+    },
+    async listCrmAssignees() {
+      const admins = await store.listAdmins();
+      return (admins || []).map(function (row) {
+        return {
+          id: row.id,
+          name: row.name || '',
+          email: row.email || '',
+          label: row.name || row.email || 'Staff'
+        };
+      }).filter(function (row) { return row.label; });
     }
   };
 }
@@ -807,6 +1422,9 @@ module.exports = {
   LEAD_STATUSES,
   DEAL_STAGES,
   ACTIVITY_TYPES,
+  CLOSE_REASONS,
+  CRM_SALES_EMAIL,
+  LEAD_CSV_HEADERS,
   normalizeLead,
   formatLead,
   leadDbFields,
@@ -816,10 +1434,16 @@ module.exports = {
   normalizeActivity,
   formatActivity,
   activityDbFields,
+  normalizeMessage,
+  formatMessage,
   forSupabase,
   leadFromInquiry,
   customerPayloadFromLead,
   dealFromLead,
+  closeReason,
+  closeReasonLabel,
+  leadsToCsv,
+  leadsFromCsv,
   ensureCompanyCrm,
   sqliteApi,
   supabaseApi,
