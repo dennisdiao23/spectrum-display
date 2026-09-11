@@ -587,6 +587,7 @@ function ensureInventoryWarehouses(db) {
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       name TEXT NOT NULL,
       type TEXT NOT NULL DEFAULT 'warehouse',
+      parent_id INTEGER,
       vendor_id INTEGER,
       untracked INTEGER NOT NULL DEFAULT 0,
       notes TEXT NOT NULL DEFAULT '',
@@ -598,6 +599,7 @@ function ensureInventoryWarehouses(db) {
       country TEXT NOT NULL DEFAULT '',
       created_at TEXT NOT NULL,
       updated_at TEXT NOT NULL,
+      FOREIGN KEY (parent_id) REFERENCES inventory_warehouses(id) ON DELETE RESTRICT,
       FOREIGN KEY (vendor_id) REFERENCES inventory_vendors(id) ON DELETE SET NULL
     );
     CREATE INDEX IF NOT EXISTS inventory_warehouses_type_idx ON inventory_warehouses (type, name);
@@ -622,6 +624,7 @@ function ensureInventoryWarehouses(db) {
   try { db.exec("ALTER TABLE inventory_warehouses ADD COLUMN state TEXT NOT NULL DEFAULT ''"); } catch (e) { /* already present */ }
   try { db.exec("ALTER TABLE inventory_warehouses ADD COLUMN zip TEXT NOT NULL DEFAULT ''"); } catch (e) { /* already present */ }
   try { db.exec("ALTER TABLE inventory_warehouses ADD COLUMN country TEXT NOT NULL DEFAULT ''"); } catch (e) { /* already present */ }
+  try { db.exec('ALTER TABLE inventory_warehouses ADD COLUMN parent_id INTEGER'); } catch (e) { /* already present */ }
   try {
     db.prepare("UPDATE inventory_warehouses SET untracked = 1, type = 'warehouse' WHERE type = 'partner'").run();
     db.prepare("UPDATE inventory_warehouses SET type = 'warehouse' WHERE type = 'spectrum' OR type = '' OR type IS NULL").run();
@@ -635,30 +638,106 @@ function ensureInventoryWarehouses(db) {
   }
   const home = db.prepare(`
     SELECT id FROM inventory_warehouses
-    WHERE COALESCE(untracked, 0) = 0 AND type != 'partner'
+    WHERE COALESCE(untracked, 0) = 0 AND type != 'partner' AND type != 'bin' AND type != 'custom'
     ORDER BY CASE type WHEN 'warehouse' THEN 0 WHEN 'spectrum' THEN 0 ELSE 1 END, id
     LIMIT 1
   `).get();
-  if (!home) return;
-  const items = db.prepare(`
-    SELECT i.id, i.qty
-    FROM inventory_items i
-    WHERE NOT EXISTS (SELECT 1 FROM inventory_item_locations l WHERE l.item_id = i.id)
-  `).all();
-  if (!items.length) return;
-  const insert = db.prepare(`
-    INSERT INTO inventory_item_locations (item_id, warehouse_id, bin, qty, created_at, updated_at)
-    VALUES (?, ?, '', ?, ?, ?)
-  `);
-  db.exec('BEGIN');
+  if (home) {
+    const items = db.prepare(`
+      SELECT i.id, i.qty
+      FROM inventory_items i
+      WHERE NOT EXISTS (SELECT 1 FROM inventory_item_locations l WHERE l.item_id = i.id)
+    `).all();
+    if (items.length) {
+      const insert = db.prepare(`
+        INSERT INTO inventory_item_locations (item_id, warehouse_id, bin, qty, created_at, updated_at)
+        VALUES (?, ?, '', ?, ?, ?)
+      `);
+      db.exec('BEGIN');
+      try {
+        items.forEach(function (item) {
+          insert.run(item.id, home.id, Math.max(0, Number(item.qty) || 0), stamp, stamp);
+        });
+        db.exec('COMMIT');
+      } catch (err) {
+        try { db.exec('ROLLBACK'); } catch (e) { /* ignore */ }
+        console.error('Could not migrate inventory locations:', err.message || err);
+      }
+    }
+  }
+  migrateInventoryBinLocations(db, stamp);
+}
+
+function sqliteFindOrCreateBin(db, parentId, name, stamp) {
+  const label = String(name || '').trim();
+  if (!label || !parentId) return null;
+  const existing = db.prepare(`
+    SELECT * FROM inventory_warehouses
+    WHERE type = 'bin' AND parent_id = ? AND lower(name) = lower(?)
+  `).get(parentId, label);
+  if (existing) return existing;
+  const info = db.prepare(`
+    INSERT INTO inventory_warehouses (
+      name, type, parent_id, vendor_id, untracked, notes, street, street2, city, state, zip, country, created_at, updated_at
+    ) VALUES (?, 'bin', ?, NULL, 0, '', '', '', '', '', '', '', ?, ?)
+  `).run(label, parentId, stamp, stamp);
+  return db.prepare('SELECT * FROM inventory_warehouses WHERE id = ?').get(info.lastInsertRowid);
+}
+
+function migrateInventoryBinLocations(db, stamp) {
+  const now = stamp || nowIso();
   try {
-    items.forEach(function (item) {
-      insert.run(item.id, home.id, Math.max(0, Number(item.qty) || 0), stamp, stamp);
-    });
-    db.exec('COMMIT');
+    const home = db.prepare(`
+      SELECT id FROM inventory_warehouses
+      WHERE type = 'warehouse' AND COALESCE(untracked, 0) = 0
+      ORDER BY id LIMIT 1
+    `).get();
+    const orphanBins = db.prepare(`
+      SELECT id FROM inventory_warehouses WHERE type = 'bin' AND (parent_id IS NULL OR parent_id = '')
+    `).all();
+    if (home && orphanBins.length) {
+      const assign = db.prepare('UPDATE inventory_warehouses SET parent_id = ?, updated_at = ? WHERE id = ?');
+      orphanBins.forEach(function (row) { assign.run(home.id, now, row.id); });
+    }
+    const rows = db.prepare(`
+      SELECT l.id, l.item_id, l.warehouse_id, l.bin, l.qty, w.type
+      FROM inventory_item_locations l
+      JOIN inventory_warehouses w ON w.id = l.warehouse_id
+      WHERE TRIM(l.bin) != ''
+    `).all();
+    if (!rows.length) return;
+    db.exec('BEGIN');
+    try {
+      rows.forEach(function (row) {
+        const binName = String(row.bin || '').trim();
+        if (!binName) return;
+        if (String(row.type || '').toLowerCase() === 'bin') {
+          db.prepare('UPDATE inventory_item_locations SET bin = ?, updated_at = ? WHERE id = ?')
+            .run('', now, row.id);
+          return;
+        }
+        const bin = sqliteFindOrCreateBin(db, row.warehouse_id, binName, now);
+        if (!bin) return;
+        const dest = db.prepare(
+          'SELECT * FROM inventory_item_locations WHERE item_id = ? AND warehouse_id = ?'
+        ).get(row.item_id, bin.id);
+        const qty = Math.max(0, Number(row.qty) || 0);
+        if (dest) {
+          db.prepare('UPDATE inventory_item_locations SET qty = ?, bin = ?, updated_at = ? WHERE id = ?')
+            .run(Math.max(0, Number(dest.qty) || 0) + qty, '', now, dest.id);
+          db.prepare('DELETE FROM inventory_item_locations WHERE id = ?').run(row.id);
+        } else {
+          db.prepare('UPDATE inventory_item_locations SET warehouse_id = ?, bin = ?, updated_at = ? WHERE id = ?')
+            .run(bin.id, '', now, row.id);
+        }
+      });
+      db.exec('COMMIT');
+    } catch (err) {
+      try { db.exec('ROLLBACK'); } catch (e) { /* ignore */ }
+      console.error('Could not migrate bin locations:', err.message || err);
+    }
   } catch (err) {
-    try { db.exec('ROLLBACK'); } catch (e) { /* ignore */ }
-    console.error('Could not migrate inventory locations:', err.message || err);
+    console.error('Could not migrate bin locations:', err.message || err);
   }
 }
 
@@ -946,6 +1025,8 @@ function ensureReceiptShipments(db) {
     );
     CREATE INDEX IF NOT EXISTS receipt_shipment_lines_receipt_idx ON receipt_shipment_lines (receipt_id, sort_order);
   `);
+  try { db.exec('ALTER TABLE receipt_shipments ADD COLUMN warehouse_id INTEGER'); } catch (e) { /* already present */ }
+  try { db.exec('ALTER TABLE receipt_shipment_lines ADD COLUMN warehouse_id INTEGER'); } catch (e) { /* already present */ }
 }
 
 function ensurePurchaseOrders(db) {
