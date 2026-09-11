@@ -361,7 +361,6 @@ body.shop-collection-mode .shop-subnav { display: block; }
   text-decoration: none;
   color: inherit;
   position: relative;
-  pointer-events: none;
 }
 .shop-card:hover {
   background: #f1f2f4;
