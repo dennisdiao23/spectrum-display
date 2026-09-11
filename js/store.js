@@ -199,6 +199,12 @@
     return '<button class="shop-btn is-off" type="button" disabled>Add to cart</button>';
   }
 
+  function leadLine(p) {
+    var label = String((p && p.leadLabel) || '');
+    if (!label || /^ships from/i.test(label) || /^ships_/.test(String((p && p.lead) || ''))) return '';
+    return '<div class="shop-lead">' + esc(label) + '</div>';
+  }
+
   function cardHtml(p, opts) {
     opts = opts || {};
     var photo = photoFor(p, 'card');
@@ -217,7 +223,7 @@
         return '<span class="shop-chip">' + esc(c) + '</span>';
       }).join('') + '</div>' +
       (p.priceLabel ? '<div class="shop-price">' + esc(p.priceLabel) + '</div>' : '') +
-      '<div class="shop-lead">' + esc(p.leadLabel || '') + '</div>' +
+      leadLine(p) +
       cta(p) +
     '</article>';
   }
@@ -360,7 +366,7 @@
         '<h1>' + esc(p.name) + '</h1>' +
         '<div class="shop-sku">' + esc(p.sku) + '</div>' +
         (p.priceLabel ? '<div class="shop-price" style="margin-top:.6rem">' + esc(p.priceLabel) + '</div>' : '') +
-        '<div class="shop-lead">' + esc(p.leadLabel) + (p.mode === 'buy' ? ' | Parcel when the Shopify profile allows' : '') + '</div>' +
+        leadLine(p) +
         (p.hasOptions ? '<div class="shop-filters" style="margin:.8rem 0">' + p.variants.map(function (v, i) {
           return '<button type="button" class="shop-pill' + (i === 0 ? ' is-on' : '') + '" data-variant="' + esc(v.id) + '">' + esc(v.title) + '</button>';
         }).join('') + '</div>' : '') +

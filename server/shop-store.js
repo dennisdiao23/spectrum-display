@@ -30,6 +30,12 @@ const LEAD_LABELS = {
   quote: 'Request quote'
 };
 
+/** Warehouse origin stays on the product for staff; do not show "Ships from …" on the public store. */
+function publicLeadLabel(lead) {
+  if (!lead || String(lead).indexOf('ships_') === 0) return '';
+  return LEAD_LABELS[lead] || '';
+}
+
 const SUBTYPE_LABELS = {
   'all-in-one': 'Processors',
   sending: 'Senders',
@@ -249,7 +255,7 @@ function toPublicCard(product, opts) {
     mode: mode,
     featured: featured,
     lead: lead,
-    leadLabel: LEAD_LABELS[lead],
+    leadLabel: publicLeadLabel(lead),
     subtype: details.subtype || '',
     subtypeLabel: SUBTYPE_LABELS[details.subtype] || '',
     replacementOnly: replacementOnly || details.subtype === 'receiving-card',
