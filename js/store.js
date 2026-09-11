@@ -208,20 +208,19 @@
   function cardHtml(p, opts) {
     opts = opts || {};
     var photo = photoFor(p, 'card');
+    var chips = (p.chips || []).filter(Boolean);
     return '<article class="shop-card">' +
+      '<a class="shop-card-hit" href="' + esc(href('/products/' + p.handle)) + '" data-shop-link aria-label="' + esc(p.name) + '"></a>' +
       (opts.caption ? '<div class="shop-caption">' + esc(opts.caption) + '</div>' : '') +
       '<div class="shop-card-media">' +
         (photo ? '<img src="' + esc(photo) + '" alt="">' : '') +
-        '<div class="shop-card-hover">' +
-          '<a class="shop-ghost" href="' + esc(href('/products/' + p.handle)) + '" data-shop-link>Learn more</a>' +
-        '</div>' +
       '</div>' +
       '<h3>' + esc(p.name) + '</h3>' +
       '<div class="shop-sku">' + esc(p.sku || p.brandName || '') + '</div>' +
       '<p>' + esc(p.description || '') + '</p>' +
-      '<div class="shop-chips">' + (p.chips || []).map(function (c) {
+      (chips.length ? '<div class="shop-chips">' + chips.map(function (c) {
         return '<span class="shop-chip">' + esc(c) + '</span>';
-      }).join('') + '</div>' +
+      }).join('') + '</div>' : '') +
       (p.priceLabel ? '<div class="shop-price">' + esc(p.priceLabel) + '</div>' : '') +
       leadLine(p) +
       cta(p) +

@@ -192,7 +192,6 @@ function specChips(product, mode) {
   const details = detailsOf(product);
   const chips = [];
   if (mode === 'buy') {
-    chips.push('Sold each');
     if (details.family) chips.push(String(details.family));
     else if (details.subtype && SUBTYPE_LABELS[details.subtype]) chips.push(SUBTYPE_LABELS[details.subtype]);
     if (details.maxPixels) chips.push((Number(details.maxPixels) / 1e6).toFixed(1).replace(/\.0$/, '') + 'M px');
