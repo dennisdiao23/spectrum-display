@@ -76,6 +76,7 @@ flowchart TB
 | `GMAIL_TOKEN_SECRET` | Optional. Encrypts stored Gmail refresh tokens |
 | `GOOGLE_MAPS_API_KEY` | Optional. Enables US address autofill on `dealer.html` (Places API). Restrict to your domain in Google Cloud. |
 | `SHOPIFY_SHOP` | Store hostname for cart permalinks, default `n0eg5t-nw.myshopify.com`. Empty disables Check out (catalog still shows). |
+| `SHOPIFY_ADMIN_ACCESS_TOKEN` | Custom-app Admin API token. Company **Website → Store → Sync to Shopify** creates priced buy SKUs in Shopify and saves variant IDs. Never put this in GitHub. |
 | `PORT` | Set by Railway (do not hardcode) |
 
 `ADMIN_PASSWORD` is **not** required on Railway (admin user already exists in Supabase).
@@ -262,6 +263,20 @@ Leave NS (`ns37` / `ns38`) and SOA alone.
 | CNAME | `pay` | GoDaddy commerce | Optional GoDaddy feature |
 
 **Forwarding tab:** `spectrumdisplay.com` → `https://www.spectrumdisplay.com`, 301, no masking.
+
+---
+
+## US Store checkout (Shopify)
+
+The catalog on `store.spectrumdisplay.com` is ours. **Check out** happens on Shopify cart permalinks (`n0eg5t-nw.myshopify.com/cart/VARIANT:QTY`). Priced controllers/spares get variant IDs from **Company → Website → Store → Sync to Shopify**. Cabinets stay Configure wall. MAP/street price only — not dealer net or warehouse cost.
+
+Click-by-click for the Admin token and turning off the Shopify password: **AGENTS.md → Staff Shopify checkout — you do this once**.
+
+| Symptom | Look at first |
+|---|---|
+| Add to cart stays grey | No variant ID yet, or warehouse qty is 0. Sync after the Railway token is set. |
+| Sync says not set up | Railway `SHOPIFY_ADMIN_ACCESS_TOKEN` missing |
+| Checkout asks for a password | Shopify online store password is still on |
 
 ---
 

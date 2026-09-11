@@ -530,7 +530,7 @@
           </div>
           <div class="sm:col-span-2 rounded-xl border border-slate-800 bg-slate-950/50 p-4 space-y-3">
             <h3 class="text-sm font-semibold text-slate-200">US Store (store.spectrumdisplay.com)</h3>
-            <p class="text-[11px] text-slate-500">Shopify Checkout only. Cabinets stay Configure wall — never add m² walls to the cart. Paste the Shopify variant ID after you create the product in Shopify admin.</p>
+            <p class="text-[11px] text-slate-500">Shopify Checkout only. Cabinets stay Configure wall — never add m² walls to the cart. Website → Store → Sync to Shopify creates the product and fills the variant ID. Street/MAP only.</p>
             <label class="flex items-center gap-2 text-sm text-slate-200">
               <input id="shopify-sell" type="checkbox" class="rounded border-slate-600">
               Buy now on the US Store (requires variant ID)
@@ -606,6 +606,10 @@
       <div id="store-list-wrap" class="cc-list-inner">
       <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4 ws-list-head">
         <p class="text-slate-400 text-sm"><span id="store-total">0</span> US Store listings. Collection, What’s New, Buy now, and show/hide live here. Photos and copy stay on Products. Click a row to edit. Click Shown to open the live store page.</p>
+        <div class="flex flex-col items-stretch sm:items-end gap-1 shrink-0">
+          <button type="button" id="store-shopify-sync" class="px-4 py-2 rounded-full bg-sky-500 hover:bg-sky-400 text-white text-sm font-semibold">Sync to Shopify</button>
+          <p id="store-shopify-status" class="text-[11px] text-slate-500 max-w-xs sm:text-right"></p>
+        </div>
       </div>
       <div id="ws-split" class="dash-split ws-split">
         <div id="ws-split-left" class="dash-split-left">
@@ -5903,10 +5907,57 @@
       const total = document.getElementById('store-total');
       if (total) total.textContent = String((list && list.length) || 0);
     }
-    async function loadStoreCatalog() {
+    async function loadStoreCatalog(opts) {
       if (!canUse('store') && !canUse('products') && !canUse('website')) return;
       const data = await api('/api/admin/store');
       renderStoreItems(data.products || []);
+      if (!(opts && opts.keepShopifyStatus)) await loadShopifyStoreStatus();
+    }
+    async function loadShopifyStoreStatus() {
+      const el = document.getElementById('store-shopify-status');
+      const btn = document.getElementById('store-shopify-sync');
+      if (!el) return;
+      try {
+        const data = await api('/api/admin/store/shopify');
+        const buyNow = (storeItems || []).filter(function (p) { return p.shopify_sell && p.shopify_variant_id; }).length;
+        if (data.configured) {
+          el.textContent = buyNow
+            ? buyNow + ' listings have Shopify checkout. Sync updates prices and missing IDs.'
+            : 'Shopify is connected. Sync priced controllers and spares to turn on Add to cart.';
+        } else {
+          el.textContent = 'Shopify Admin token is not on the server yet. Add SHOPIFY_ADMIN_ACCESS_TOKEN on Railway, then Sync.';
+        }
+        if (btn) btn.classList.toggle('hidden', !canEdit('website'));
+      } catch (err) {
+        el.textContent = err.message || 'Could not read Shopify status.';
+      }
+    }
+    async function syncStoreToShopify() {
+      const el = document.getElementById('store-shopify-status');
+      const btn = document.getElementById('store-shopify-sync');
+      if (btn) btn.disabled = true;
+      if (el) el.textContent = 'Syncing priced SKUs to Shopify…';
+      try {
+        const data = await api('/api/admin/store/shopify-sync', { method: 'POST' });
+        const bits = [];
+        if (data.created) bits.push(data.created + ' new');
+        if (data.updated) bits.push(data.updated + ' updated');
+        if (data.failed) bits.push(data.failed + ' failed');
+        el.textContent = bits.length
+          ? ('Shopify sync: ' + bits.join(', ') + ' of ' + data.eligible + ' priced SKUs.')
+          : ('No priced buy SKUs to sync' + (data.eligible ? '' : '.'));
+        if (data.errors && data.errors.length) {
+          el.textContent += ' ' + data.errors.slice(0, 3).map(function (row) {
+            return (row.name || row.id) + ': ' + row.error;
+          }).join(' ');
+        }
+        await loadStoreCatalog({ keepShopifyStatus: true });
+      } catch (err) {
+        if (el) el.textContent = err.code === 'setup'
+          ? 'Shopify Admin is not set up on Railway yet. Add SHOPIFY_ADMIN_ACCESS_TOKEN, wait for deploy, then Sync.'
+          : (err.message || 'Shopify sync failed.');
+      }
+      if (btn) btn.disabled = false;
     }
     function storeFormPayload() {
       return {
@@ -19059,6 +19110,15 @@
     }
     document.getElementById('store-back').addEventListener('click', closeStoreForm);
     document.getElementById('ws-cancel-btn').addEventListener('click', closeStoreForm);
+    const storeShopifySync = document.getElementById('store-shopify-sync');
+    if (storeShopifySync) {
+      storeShopifySync.addEventListener('click', function () {
+        syncStoreToShopify().catch(function (err) {
+          const el = document.getElementById('store-shopify-status');
+          if (el) el.textContent = err.message || 'Shopify sync failed.';
+        });
+      });
+    }
     document.getElementById('ws-hide-btn').addEventListener('click', async function () {
       if (!wsEditingId) return;
       showError('ws-form-error', '');
