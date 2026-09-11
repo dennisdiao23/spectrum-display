@@ -2600,6 +2600,7 @@ function createSupabaseStore() {
   Object.assign(api, require('./company-emails').supabaseApi(supabase, throwIf));
   Object.assign(api, require('./gmail-accounts').supabaseApi(supabase, throwIf));
   Object.assign(api, require('./dealer-portal').supabaseApi(supabase, api));
+  Object.assign(api, require('./site-analytics').supabaseApi(supabase));
   return api;
 }
 
