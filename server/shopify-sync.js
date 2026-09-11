@@ -211,9 +211,10 @@ function detailsWithShopify(product, shopifyProduct) {
 }
 
 function isPricedBuySku(product) {
-  if (!product || product.hidden) return false;
+  if (!product || !shopStore.isStoreListed(product)) return false;
   if (shopStore.blockedFromStore(product)) return false;
   const collection = shopStore.inferCollection(product);
+  if (collection === 'hidden') return false;
   const col = shopStore.COLLECTION_BY_ID[collection];
   if (!col || col.mode !== 'buy') return false;
   return shopStore.publicPrice(product, 'buy') > 0;

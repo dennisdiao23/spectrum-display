@@ -14,7 +14,7 @@
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
   <title>Company | Spectrum Display</title>
   <meta name="robots" content="noindex, nofollow" />
-  <link rel="stylesheet" href="/css/company-dash.css?v=tr34" />
+  <link rel="stylesheet" href="/css/company-dash.css?v=storelist1" />
   <script src="/js/address-autocomplete.js"></script>
   <script src="/js/company-chat.js?v=chatcrm3"></script>
   <script src="/js/company-crm.js?v=crmv3"></script>
@@ -665,9 +665,12 @@
       <div id="store-section" class="hidden">
       <div id="store-list-wrap" class="cc-list-inner">
       <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4 ws-list-head">
-        <p class="text-slate-400 text-sm"><span id="store-total">0</span> US Store listings. Collection, What’s New, Buy now, and show/hide live here. Photos and copy stay on Products. Click a row to edit. Click Shown to open the live store page.</p>
+        <p class="text-slate-400 text-sm"><span id="store-total">0</span> US Store listings, added from Inventory. Hide/Show and Delete here only affect the store — Website → Products stay separate. Click a row to edit. Click Shown to open the live store page.</p>
         <div class="flex flex-col items-stretch sm:items-end gap-1 shrink-0">
-          <button type="button" id="store-shopify-sync" class="px-4 py-2 rounded-full bg-sky-500 hover:bg-sky-400 text-white text-sm font-semibold">Sync to Shopify</button>
+          <div class="flex flex-wrap gap-2 justify-end">
+            <button type="button" id="store-add-listing" class="px-4 py-2 rounded-full border border-slate-600 text-slate-100 hover:border-sky-500 text-sm font-semibold">Add listing</button>
+            <button type="button" id="store-shopify-sync" class="px-4 py-2 rounded-full bg-sky-500 hover:bg-sky-400 text-white text-sm font-semibold">Sync to Shopify</button>
+          </div>
           <p id="store-shopify-status" class="text-[11px] text-slate-500 max-w-xs sm:text-right"></p>
         </div>
       </div>
@@ -699,7 +702,7 @@
           </div>
           <div id="ws-overview-panel" class="inv-right-panel">
             <div class="inv-overview-summary">
-              <p class="inv-overview-lead">Select a store item to set collection, What’s New, Buy now, and show or hide it on the US Store.</p>
+              <p class="inv-overview-lead">Select a listing to set collection, What’s New, Buy now, and show or hide it on the US Store. Add listing picks an Inventory SKU. Delete removes it from the store only.</p>
             </div>
           </div>
       <div id="ws-form-wrap" class="hidden space-y-4 inv-right-panel">
@@ -716,7 +719,7 @@
             </div>
           </div>
           <p id="ws-blocked-note" class="hidden sm:col-span-2 text-sm text-amber-400">This brand stays off the public store (Element, DIAO, or home TV).</p>
-          <p id="ws-website-note" class="hidden sm:col-span-2 text-sm text-amber-400">This product is hidden on the website, so it will not appear on the store until you show it under Website → Products.</p>
+          <p id="ws-website-note" class="hidden sm:col-span-2 text-sm text-slate-400">This product is hidden on the website catalog. That does not hide it on the US Store — use Hide from store or Delete here.</p>
           <div class="sm:col-span-2">
             <label class="block text-xs text-slate-400 mb-1">Store collection</label>
             <select id="ws-store-collection" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm">
@@ -769,11 +772,43 @@
             <button type="submit" id="ws-save-btn" class="px-5 py-2 rounded-full bg-sky-500 hover:bg-sky-400 text-white text-sm font-semibold">Save store listing</button>
             <button id="ws-cancel-btn" type="button" class="px-5 py-2 rounded-full border border-slate-600 text-sm">Cancel</button>
             <button id="ws-hide-btn" type="button" class="px-5 py-2 rounded-full border border-slate-700 text-slate-200 hover:border-sky-500 text-sm">Hide from store</button>
+            <button id="ws-delete-btn" type="button" class="hidden px-5 py-2 rounded-full border border-slate-700 text-red-400 hover:border-red-500 text-sm">Delete</button>
           </div>
         </form>
         </div>
       </div>
             </div>
+          </div>
+        </div>
+      </div>
+
+      <div id="ws-listing-modal" class="dash-picker-modal hidden" role="dialog" aria-modal="true" aria-labelledby="ws-listing-title">
+        <div class="dash-picker-card">
+          <div class="dash-picker-head">
+            <h3 id="ws-listing-title">Add store listing</h3>
+            <p>Pick an Inventory SKU. Mapped SKUs list that website series; unmapped SKUs create a store-only product (hidden on the website).</p>
+          </div>
+          <div class="dash-picker-search">
+            <input id="ws-listing-search" type="search" placeholder="Search SKU, name, or brand" autocomplete="off">
+          </div>
+          <div class="dash-picker-table-wrap cc-table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>SKU</th>
+                  <th>Name</th>
+                  <th>Brand</th>
+                  <th>Category</th>
+                  <th>Pitch</th>
+                  <th>Store</th>
+                </tr>
+              </thead>
+              <tbody id="ws-listing-table"></tbody>
+            </table>
+          </div>
+          <p id="ws-listing-error" class="hidden px-5 pb-2 text-sm text-red-400"></p>
+          <div class="dash-picker-actions">
+            <button type="button" id="ws-listing-cancel" class="px-5 py-2 rounded-full border border-slate-600 text-sm">Cancel</button>
           </div>
         </div>
       </div>
@@ -4048,7 +4083,7 @@
     </a>
   </nav>
 
-  <link rel="stylesheet" href="/css/company-dash.css?v=crmv3t" />
+  <link rel="stylesheet" href="/css/company-dash.css?v=storelist1" />
 
   <script>
     const loginPanel = document.getElementById('login-panel');
@@ -6263,10 +6298,13 @@
     }
     function syncWsHideButton() {
       const btn = document.getElementById('ws-hide-btn');
-      if (!btn) return;
+      const del = document.getElementById('ws-delete-btn');
       const can = canEdit('website') && !!wsEditingId;
-      btn.classList.toggle('hidden', !can);
-      btn.textContent = wsStoreHidden ? 'Show on store' : 'Hide from store';
+      if (btn) {
+        btn.classList.toggle('hidden', !can);
+        btn.textContent = wsStoreHidden ? 'Show on store' : 'Hide from store';
+      }
+      if (del) del.classList.toggle('hidden', !can);
     }
     function fillStoreForm(item) {
       wsEditingId = item && item.dbId ? item.dbId : null;
@@ -6386,7 +6424,6 @@
     }
     function storeVisibilityCell(p) {
       if (p.storeVisibility === 'blocked') return '<span class="text-amber-400">Blocked</span>';
-      if (p.storeVisibility === 'website_hidden') return '<span class="text-amber-400">Website hidden</span>';
       if (p.storeVisibility === 'hidden' || !p.storeShown) return '<span class="text-amber-400">Hidden</span>';
       const href = p.storePath || ('/store/products/' + (p.handle || p.id || ''));
       return '<a href="' + esc(href) + '" target="_blank" rel="noopener" class="text-emerald-400 hover:underline py-1" data-open-store>Shown</a>';
@@ -6423,7 +6460,7 @@
           '" data-id="' + esc(p.dbId) + '">' +
           dashOrderedCells(dashTable, cells) +
           '</tr>';
-      }).join('') || '<tr><td class="py-6 px-4 text-slate-500" colspan="' + dashColSpan(dashTable) + '">No catalog items yet.</td></tr>';
+      }).join('') || '<tr><td class="py-6 px-4 text-slate-500" colspan="' + dashColSpan(dashTable) + '">No store listings yet. Use Add listing to pick an Inventory SKU.</td></tr>';
       applyColOrder(dashTable);
       const total = document.getElementById('store-total');
       if (total) total.textContent = String((list && list.length) || 0);
@@ -6507,6 +6544,78 @@
       await loadStoreCatalog();
       renderStoreItems(storeItems);
       setMasterTabDirty('store', false);
+    }
+
+    function closeWsListingPicker() {
+      const modal = document.getElementById('ws-listing-modal');
+      if (modal) modal.classList.add('hidden');
+    }
+    function filteredWsListingItems() {
+      const q = String((document.getElementById('ws-listing-search') || {}).value || '').trim().toLowerCase();
+      if (!q) return wsListingItems;
+      return wsListingItems.filter(function (item) {
+        const blob = [item.sku, item.name, item.brandName, item.category, item.pitchLabel].join(' ').toLowerCase();
+        return blob.indexOf(q) !== -1;
+      });
+    }
+    function renderWsListingPicker() {
+      const tbody = document.getElementById('ws-listing-table');
+      if (!tbody) return;
+      const rows = filteredWsListingItems();
+      tbody.innerHTML = rows.map(function (item) {
+        const status = item.listed
+          ? 'On store'
+          : (item.mapped ? 'Maps to ' + (item.mappedProductName || 'product') : 'New listing');
+        return '<tr data-inventory-id="' + esc(item.id) + '" class="' + (item.listed ? 'is-listed' : '') + '"' +
+          (item.listed ? ' aria-disabled="true"' : '') + '>' +
+          '<td>' + esc(item.sku || '—') + '</td>' +
+          '<td>' + esc(item.name || '') + '</td>' +
+          '<td>' + esc(item.brandName || '') + '</td>' +
+          '<td>' + esc(item.category || '—') + '</td>' +
+          '<td>' + esc(item.pitchLabel || '—') + '</td>' +
+          '<td>' + esc(status) + '</td>' +
+          '</tr>';
+      }).join('') || '<tr><td class="py-6 px-4 text-slate-500" colspan="6">No inventory SKUs match.</td></tr>';
+    }
+    async function openWsListingPicker() {
+      const modal = document.getElementById('ws-listing-modal');
+      if (!modal) return;
+      showError('ws-listing-error', '');
+      const search = document.getElementById('ws-listing-search');
+      if (search) search.value = '';
+      modal.classList.remove('hidden');
+      const tbody = document.getElementById('ws-listing-table');
+      if (tbody) tbody.innerHTML = '<tr><td class="py-6 px-4 text-slate-500" colspan="6">Loading inventory…</td></tr>';
+      try {
+        const data = await api('/api/admin/store/inventory-options');
+        wsListingItems = data.items || [];
+        renderWsListingPicker();
+        if (search) search.focus();
+      } catch (err) {
+        if (tbody) tbody.innerHTML = '';
+        showError('ws-listing-error', err.message || 'Could not load inventory.');
+      }
+    }
+    async function addWsListingFromInventory(inventoryId) {
+      showError('ws-listing-error', '');
+      const data = await api('/api/admin/store/listings', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ inventoryId: inventoryId })
+      });
+      closeWsListingPicker();
+      await loadStoreCatalog();
+      if (data && data.product) openStoreForm(data.product);
+    }
+    async function deleteWsListing() {
+      if (!wsEditingId) return;
+      if (!confirm('Remove this listing from the US Store? The website product and inventory SKU stay.')) return;
+      showError('ws-form-error', '');
+      const id = String(wsEditingId);
+      await api('/api/admin/store/listings/' + encodeURIComponent(id), { method: 'DELETE' });
+      if (isWsSplitOn()) closeWsTab(id);
+      else closeStoreForm();
+      await loadStoreCatalog();
     }
 
     function roleLabel(role) {
@@ -6772,6 +6881,10 @@
       if (wsSave) wsSave.classList.toggle('hidden', !canEdit('website'));
       const wsHide = document.getElementById('ws-hide-btn');
       if (wsHide && view === 'store' && !canEdit('website')) wsHide.classList.add('hidden');
+      const wsDelete = document.getElementById('ws-delete-btn');
+      if (wsDelete && view === 'store' && !canEdit('website')) wsDelete.classList.add('hidden');
+      const wsAdd = document.getElementById('store-add-listing');
+      if (wsAdd) wsAdd.classList.toggle('hidden', !canEdit('website'));
       const invNew = document.getElementById('inv-new-btn');
       if (invNew) invNew.classList.toggle('hidden', !canEdit('inventory'));
       const whNew = document.getElementById('wh-new-btn');
@@ -7477,6 +7590,7 @@
     let wsTabLabels = {};
     let wsEditingId = null;
     let wsStoreHidden = false;
+    let wsListingItems = [];
     const WA_TAB_MAX = 7;
     let waOpenTabs = [];
     let waActiveTab = 'overview';
@@ -20003,6 +20117,49 @@
         showError('ws-form-error', err.message);
       }
     });
+    const wsDeleteBtn = document.getElementById('ws-delete-btn');
+    if (wsDeleteBtn) {
+      wsDeleteBtn.addEventListener('click', function () {
+        deleteWsListing().catch(function (err) {
+          showError('ws-form-error', err.message);
+        });
+      });
+    }
+    const storeAddListing = document.getElementById('store-add-listing');
+    if (storeAddListing) {
+      storeAddListing.addEventListener('click', function () {
+        openWsListingPicker().catch(function (err) {
+          showError('ws-listing-error', err.message);
+        });
+      });
+    }
+    const wsListingCancel = document.getElementById('ws-listing-cancel');
+    if (wsListingCancel) wsListingCancel.addEventListener('click', closeWsListingPicker);
+    const wsListingModal = document.getElementById('ws-listing-modal');
+    if (wsListingModal) {
+      wsListingModal.addEventListener('click', function (e) {
+        if (e.target === wsListingModal) closeWsListingPicker();
+      });
+    }
+    document.addEventListener('keydown', function (e) {
+      if (e.key !== 'Escape') return;
+      const modal = document.getElementById('ws-listing-modal');
+      if (modal && !modal.classList.contains('hidden')) closeWsListingPicker();
+    });
+    const wsListingSearch = document.getElementById('ws-listing-search');
+    if (wsListingSearch) {
+      wsListingSearch.addEventListener('input', renderWsListingPicker);
+    }
+    const wsListingTable = document.getElementById('ws-listing-table');
+    if (wsListingTable) {
+      wsListingTable.addEventListener('click', function (e) {
+        const row = e.target.closest('tr[data-inventory-id]');
+        if (!row || row.classList.contains('is-listed')) return;
+        addWsListingFromInventory(row.getAttribute('data-inventory-id')).catch(function (err) {
+          showError('ws-listing-error', err.message);
+        });
+      });
+    }
     document.getElementById('store-form').addEventListener('submit', async function (e) {
       e.preventDefault();
       try {

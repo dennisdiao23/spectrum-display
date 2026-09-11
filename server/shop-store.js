@@ -114,6 +114,63 @@ function blockedFromStore(product) {
   return false;
 }
 
+function slugifyId(value) {
+  return String(value || '')
+    .toLowerCase()
+    .trim()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '')
+    .slice(0, 48);
+}
+
+function mmToMeters(value) {
+  const n = Number(value);
+  if (!Number.isFinite(n) || n <= 0) return 0;
+  return n > 20 ? n / 1000 : n;
+}
+
+/** Independent of website `products.hidden`. Missing key = listed (legacy catalog). */
+function isStoreListed(product) {
+  if (!product) return false;
+  const details = detailsOf(product);
+  if (Object.prototype.hasOwnProperty.call(details, 'store_listed')) {
+    return asBool(details.store_listed);
+  }
+  if (Object.prototype.hasOwnProperty.call(product, 'store_listed')) {
+    return asBool(product.store_listed);
+  }
+  return true;
+}
+
+function catalogTypeFromInventory(item) {
+  const cat = String((item && item.category) || '').toLowerCase();
+  const panel = String((item && item.panelType) || '').toLowerCase();
+  const blob = (cat + ' ' + panel + ' ' + ((item && item.name) || '') + ' ' + ((item && item.sku) || '')).toLowerCase();
+  if (cat === 'receiving card' || cat === 'spare' || /\breceiving card|\bspares?\b/.test(blob)) {
+    return {
+      type: 'control',
+      collection: 'spares',
+      subtype: /receiving/.test(blob) ? 'receiving-card' : '',
+      cats: ['control', 'spares'].concat(/receiving/.test(blob) ? ['receiving-cards'] : [])
+    };
+  }
+  if (cat === 'accessory' || /\baccessor/.test(blob)) {
+    return { type: 'control', collection: 'accessories', subtype: 'accessories', cats: ['control', 'accessories'] };
+  }
+  if (
+    cat === 'control' ||
+    cat === 'processor' ||
+    String((item && item.brandId) || '').toLowerCase() === 'novastar' ||
+    /\bcontroller|\bprocessor|\bnovastar|\bcontrol\b/.test(blob)
+  ) {
+    return { type: 'control', collection: 'control', subtype: '', cats: ['control'] };
+  }
+  if (/\brental/.test(blob)) return { type: 'rental', collection: 'rental', subtype: '', cats: ['rental'] };
+  if (/\boutdoor/.test(blob)) return { type: 'outdoor', collection: 'outdoor', subtype: '', cats: ['outdoor'] };
+  if (/\bposter/.test(blob)) return { type: 'poster', collection: 'poster', subtype: '', cats: ['poster'] };
+  return { type: 'Fixed', collection: '', subtype: '', cats: [] };
+}
+
 function detailsOf(product) {
   const d = product && product.details;
   return d && typeof d === 'object' && !Array.isArray(d) ? d : {};
@@ -293,7 +350,7 @@ async function buildCatalog(store) {
   ]);
   const cards = [];
   (products || []).forEach(function (p) {
-    if (!p || p.hidden) return;
+    if (!p || !isStoreListed(p)) return;
     if (blockedFromStore(p)) return;
     const card = toPublicCard(p, { stock: stock, shop: shop });
     if (card) cards.push(card);
@@ -333,6 +390,7 @@ function toAdminStoreItem(product) {
   const collection = inferCollection(product);
   const blocked = blockedFromStore(product);
   const websiteHidden = !!product.hidden;
+  const listed = isStoreListed(product);
   const storeHidden = collection === 'hidden';
   const col = COLLECTION_BY_ID[collection];
   const featured = asBool(details.store_featured != null ? details.store_featured : product.store_featured);
@@ -343,9 +401,6 @@ function toAdminStoreItem(product) {
   if (blocked) {
     visibility = 'blocked';
     visibilityLabel = 'Blocked';
-  } else if (websiteHidden) {
-    visibility = 'website_hidden';
-    visibilityLabel = 'Website hidden';
   } else if (storeHidden) {
     visibility = 'hidden';
     visibilityLabel = 'Hidden';
@@ -362,6 +417,7 @@ function toAdminStoreItem(product) {
     type: product.type,
     image: product.image || '',
     hidden: websiteHidden,
+    store_listed: listed,
     store_collection: storedCollection === 'hidden' || COLLECTION_BY_ID[storedCollection] ? storedCollection : '',
     store_featured: featured,
     store_lead: String(details.store_lead || product.store_lead || ''),
@@ -401,6 +457,9 @@ function applyStoreFlags(details, body) {
     next.store_collection = next.store_collection.toLowerCase().replace(/-/g, '_');
     if (next.store_collection !== 'hidden' && !COLLECTION_BY_ID[next.store_collection]) next.store_collection = '';
   }
+  if (Object.prototype.hasOwnProperty.call(body, 'store_listed') || Object.prototype.hasOwnProperty.call(body, 'storeListed')) {
+    next.store_listed = asBool(body.store_listed != null ? body.store_listed : body.storeListed);
+  }
   if (Object.prototype.hasOwnProperty.call(body, 'store_hidden') || Object.prototype.hasOwnProperty.call(body, 'storeHidden')) {
     if (asBool(body.store_hidden != null ? body.store_hidden : body.storeHidden)) {
       next.store_collection = 'hidden';
@@ -421,6 +480,147 @@ function applyStoreFlags(details, body) {
   return next;
 }
 
+function mappedProductsForItem(item, products) {
+  const maps = (item && item.maps) || [];
+  const byId = {};
+  (products || []).forEach(function (p) {
+    if (p && p.dbId != null) byId[String(p.dbId)] = p;
+  });
+  const out = [];
+  const seen = {};
+  maps.forEach(function (m) {
+    const id = String(m.productId != null ? m.productId : m.product_id || '');
+    if (!id || seen[id]) return;
+    seen[id] = true;
+    if (byId[id]) out.push(byId[id]);
+  });
+  return out;
+}
+
+function inventoryListingOptions(items, products) {
+  return (items || []).map(function (item) {
+    const mapped = mappedProductsForItem(item, products);
+    const listed = mapped.find(isStoreListed) || null;
+    const primary = listed || mapped[0] || null;
+    return {
+      id: item.id,
+      sku: item.sku || '',
+      name: item.name || '',
+      brandId: item.brandId || '',
+      brandName: item.brandName || '',
+      category: item.category || '',
+      pitch: item.pitch || '',
+      pitchLabel: item.pitchLabel || '',
+      image: item.image || '',
+      price: Number(item.price) || 0,
+      mapped: mapped.length > 0,
+      listed: !!listed,
+      listedProductId: listed ? listed.dbId : null,
+      listedProductName: listed ? listed.name : '',
+      mappedProductId: primary ? primary.dbId : null,
+      mappedProductName: primary ? primary.name : ''
+    };
+  });
+}
+
+async function uniqueSeriesId(store, brandId, preferred) {
+  const base = slugifyId(preferred) || 'inv-item';
+  let candidate = base;
+  let n = 2;
+  while (await store.getProductByBrandSeries(brandId, candidate)) {
+    candidate = (base.slice(0, 40) + '-' + n).slice(0, 48);
+    n += 1;
+    if (n > 80) {
+      candidate = ('inv-' + Date.now()).slice(0, 48);
+      break;
+    }
+  }
+  return candidate;
+}
+
+async function createCatalogFromInventory(store, item) {
+  const kind = catalogTypeFromInventory(item);
+  const brandId = slugifyId(item.brandId) || slugifyId(item.brandName) || 'inventory';
+  const brandName = String(item.brandName || item.brandId || 'Inventory').trim() || brandId;
+  await store.ensureBrand(brandId, brandName);
+  const seriesId = await uniqueSeriesId(store, brandId, item.sku || item.name || ('inv-' + item.id));
+  const pitchNum = Number(item.pitch);
+  const pitches = (kind.type === 'control')
+    ? []
+    : (Number.isFinite(pitchNum) && pitchNum > 0 ? [pitchNum] : []);
+  const details = {
+    store_listed: true,
+    model: String(item.sku || '').trim()
+  };
+  if (kind.cats && kind.cats.length) details.cats = kind.cats.slice();
+  if (kind.collection) details.store_collection = kind.collection;
+  if (kind.type === 'control') {
+    details.subtype = kind.subtype || '';
+    details.priceEach = Number(item.price) || 0;
+    if (!details.cats || !details.cats.length) details.cats = ['control'];
+  }
+  const product = await store.insertProduct({
+    brandId: brandId,
+    seriesId: seriesId,
+    name: String(item.name || item.sku || 'Store item').trim() || 'Store item',
+    pitches: pitches,
+    price: Number(item.price) || 0,
+    weight: Number(item.weight) || 0,
+    powerAvg: 0,
+    powerMax: 0,
+    cabinetW: mmToMeters(item.panelW),
+    cabinetH: mmToMeters(item.panelH),
+    type: kind.type,
+    description: String(item.description || '').trim(),
+    badge: '',
+    image: item.image || '',
+    gallery: [],
+    details: details
+  });
+  if (product && product.dbId) {
+    await store.setProductHidden(product.dbId, true);
+    await store.setProductInventoryMaps(product.dbId, [{
+      pitch: item.pitch || '',
+      itemId: item.id
+    }]);
+    return store.getProduct(product.dbId);
+  }
+  return product;
+}
+
+async function addListingFromInventory(store, inventoryId) {
+  const detail = await store.getInventoryItem(inventoryId);
+  const item = detail && detail.item;
+  if (!item) {
+    const err = new Error('Inventory item not found.');
+    err.status = 404;
+    throw err;
+  }
+  const products = await store.listProducts();
+  const mapped = mappedProductsForItem(item, products);
+  const listed = mapped.find(isStoreListed);
+  if (listed) {
+    return { product: toAdminStoreItem(listed), created: false, alreadyListed: true };
+  }
+  if (mapped[0]) {
+    const details = Object.assign({}, detailsOf(mapped[0]), { store_listed: true });
+    if (String(details.store_collection || '') === 'hidden') details.store_collection = '';
+    const product = await store.updateProductDetails(mapped[0].dbId, details);
+    return { product: toAdminStoreItem(product), created: false, alreadyListed: false };
+  }
+  const product = await createCatalogFromInventory(store, item);
+  return { product: toAdminStoreItem(product), created: true, alreadyListed: false };
+}
+
+async function unlistStoreProduct(store, productId) {
+  const existing = await store.getRawProduct(productId);
+  if (!existing) return null;
+  const dbUtil = require('./db');
+  const details = applyStoreFlags(Object.assign({}, dbUtil.parseDetails(existing)), { store_listed: false });
+  const product = await store.updateProductDetails(productId, details);
+  return product ? toAdminStoreItem(product) : null;
+}
+
 module.exports = {
   COLLECTIONS,
   COLLECTION_BY_ID,
@@ -432,12 +632,17 @@ module.exports = {
   wwwStoreRedirectTarget,
   storeProductPath,
   blockedFromStore,
+  isStoreListed,
+  catalogTypeFromInventory,
   inferCollection,
   publicPrice,
   storeHandleOf,
   buildCatalog,
   applyStoreFlags,
   toAdminStoreItem,
+  inventoryListingOptions,
+  addListingFromInventory,
+  unlistStoreProduct,
   asBool,
   variantNumericId
 };

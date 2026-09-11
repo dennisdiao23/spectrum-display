@@ -7196,3 +7196,99 @@ body.dash-split-lock #crm-pipe-section .crm-board {
     grid-template-columns: 1fr;
   }
 }
+
+.dash-picker-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 260;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1.25rem;
+  background: rgba(2, 6, 23, 0.72);
+}
+.dash-picker-modal.hidden { display: none; }
+.dash-picker-card {
+  width: min(56rem, 100%);
+  max-height: min(40rem, calc(100vh - 2.5rem));
+  display: flex;
+  flex-direction: column;
+  background: #0f172a;
+  border: 1px solid #1e293b;
+  border-radius: 1.1rem;
+  box-shadow: 0 24px 64px rgba(0, 0, 0, 0.45);
+  color: #e2e8f0;
+  overflow: hidden;
+}
+.dash-picker-head {
+  flex-shrink: 0;
+  padding: 1.05rem 1.2rem 0.85rem;
+  border-bottom: 1px solid #1e293b;
+}
+.dash-picker-head h3 {
+  margin: 0;
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: #f8fafc;
+}
+.dash-picker-head p {
+  margin: 0.35rem 0 0;
+  font-size: 0.8rem;
+  color: #94a3b8;
+}
+.dash-picker-search {
+  flex-shrink: 0;
+  padding: 0.75rem 1.2rem;
+}
+.dash-picker-search input {
+  width: 100%;
+  background: #1e293b;
+  border: 1px solid #334155;
+  border-radius: 999px;
+  padding: 0.55rem 0.95rem;
+  color: #f1f5f9;
+  font-size: 0.875rem;
+}
+.dash-picker-search input::placeholder { color: #64748b; }
+.dash-picker-table-wrap {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow: auto;
+  margin: 0 1.2rem 1.1rem;
+  border: 1px solid #1e293b;
+  border-radius: 0.85rem;
+  background: #0b1220;
+}
+.dash-picker-table-wrap table { width: 100%; border-collapse: separate; border-spacing: 0; background: transparent; }
+.dash-picker-table-wrap thead th {
+  position: sticky;
+  top: 0;
+  z-index: 5;
+  background: #0b1220;
+  color: #94a3b8;
+  font-weight: 600;
+  font-size: 0.75rem;
+  text-align: left;
+  padding: 0.7rem 0.9rem;
+  box-shadow: inset 0 -1px 0 #1e293b;
+}
+.dash-picker-table-wrap tbody td {
+  padding: 0.65rem 0.9rem;
+  border-bottom: 1px solid #1e293b;
+  font-size: 0.82rem;
+  color: #e2e8f0;
+}
+.dash-picker-table-wrap tbody tr { cursor: pointer; }
+.dash-picker-table-wrap tbody tr:hover { background: rgba(14, 165, 233, 0.08); }
+.dash-picker-table-wrap tbody tr.is-listed {
+  cursor: default;
+  opacity: 0.55;
+}
+.dash-picker-table-wrap tbody tr.is-listed:hover { background: transparent; }
+.dash-picker-actions {
+  flex-shrink: 0;
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.5rem;
+  padding: 0 1.2rem 1.1rem;
+}

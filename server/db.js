@@ -14,7 +14,8 @@ const CONTROL_DETAIL_KEYS = [
 ];
 const STORE_DETAIL_KEYS = [
   'shopify_sell', 'shopify_product_id', 'shopify_variant_id', 'shopify_handle',
-  'shopify_variants', 'store_collection', 'store_lead', 'store_featured', 'store_icon'
+  'shopify_variants', 'store_collection', 'store_lead', 'store_featured', 'store_icon',
+  'store_listed'
 ];
 
 function loadSeedBrands() {

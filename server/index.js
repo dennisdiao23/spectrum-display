@@ -467,6 +467,13 @@ async function main() {
       }
     }
     shopStore.applyStoreFlags(details, body);
+    if (!existing) {
+      const bodyHasListed = body && (
+        Object.prototype.hasOwnProperty.call(body, 'store_listed') ||
+        Object.prototype.hasOwnProperty.call(body, 'storeListed')
+      );
+      if (!bodyHasListed) details.store_listed = false;
+    }
     return {
       brandId: resolvedBrand,
       seriesId,
@@ -1154,9 +1161,49 @@ async function main() {
       const products = await store.listProducts();
       res.json({
         ok: true,
-        products: products.map(function (p) { return shopStore.toAdminStoreItem(p); })
+        products: products.filter(shopStore.isStoreListed).map(function (p) {
+          return shopStore.toAdminStoreItem(p);
+        })
       });
     } catch (err) { next(err); }
+  });
+
+  app.get('/api/admin/store/inventory-options', requireAdmin, requireCatalogRead, async function (_req, res, next) {
+    try {
+      const [items, products] = await Promise.all([store.listInventory(), store.listProducts()]);
+      res.json({ ok: true, items: shopStore.inventoryListingOptions(items, products) });
+    } catch (err) { next(err); }
+  });
+
+  app.post('/api/admin/store/listings', requireAdmin, requirePerm('website', 'edit'), async function (req, res, next) {
+    try {
+      const inventoryId = req.body && (req.body.inventoryId != null ? req.body.inventoryId : req.body.inventory_id);
+      if (inventoryId == null || inventoryId === '') {
+        return res.status(400).json({ ok: false, error: 'Pick an inventory SKU.' });
+      }
+      const result = await shopStore.addListingFromInventory(store, inventoryId);
+      res.json({
+        ok: true,
+        product: result.product,
+        created: !!result.created,
+        alreadyListed: !!result.alreadyListed
+      });
+    } catch (err) {
+      if (err && err.status === 404) {
+        return res.status(404).json({ ok: false, error: err.message || 'Inventory item not found.' });
+      }
+      res.status(400).json({ ok: false, error: err.message || 'Could not add store listing.' });
+    }
+  });
+
+  app.delete('/api/admin/store/listings/:id', requireAdmin, requirePerm('website', 'edit'), async function (req, res, next) {
+    try {
+      const product = await shopStore.unlistStoreProduct(store, req.params.id);
+      if (!product) return res.status(404).json({ ok: false, error: 'Product not found.' });
+      res.json({ ok: true, product: product });
+    } catch (err) {
+      res.status(400).json({ ok: false, error: err.message || 'Could not remove store listing.' });
+    }
   });
 
   app.put('/api/admin/products/:id/store', requireAdmin, requirePerm('website', 'edit'), async function (req, res, next) {
