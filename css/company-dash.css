@@ -1695,9 +1695,40 @@ html.dash-scroll-lock body.company-app {
   text-decoration: none;
 }
 .dash-traffic-sources-head a:hover { text-decoration: underline; }
-.dash-traffic-sources-wrap {
-  flex: 0 1 auto;
-  max-height: 11rem;
+.dash-traffic-source-list {
+  list-style: none;
+  margin: 0;
+  padding: 0 0.2rem 0.35rem;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  flex-shrink: 0;
+}
+.dash-traffic-source-list li {
+  background: #f7f9ff;
+  border: 1px solid var(--dash-line);
+  border-radius: 999px;
+  padding: 0.28rem 0.7rem;
+  font-size: 0.75rem;
+  color: #243056;
+  display: flex;
+  align-items: baseline;
+  gap: 0.4rem;
+}
+.dash-traffic-source-list li strong {
+  font-size: 0.75rem;
+  font-weight: 800;
+  color: #122046;
+}
+.dash-traffic-source-list li span {
+  color: var(--dash-muted);
+  font-weight: 600;
+}
+.dash-traffic-source-list li.is-empty {
+  background: transparent;
+  border: 0;
+  padding-left: 0;
+  border-radius: 0;
 }
 .dash-home-detail:has(.dash-traffic:not(.hidden)):hover {
   transform: none;

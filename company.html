@@ -14,7 +14,7 @@
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
   <title>Company | Spectrum Display</title>
   <meta name="robots" content="noindex, nofollow" />
-  <link rel="stylesheet" href="/css/company-dash.css?v=traffic32" />
+  <link rel="stylesheet" href="/css/company-dash.css?v=traffic33" />
   <script src="/js/address-autocomplete.js"></script>
   <script src="/js/company-chat.js?v=chatmove2"></script>
   <script src="/js/company-crm.js?v=crmv2b"></script>
@@ -414,18 +414,7 @@
                   <h4>Where they came from</h4>
                   <a href="/company/website/traffic" id="dash-traffic-log">Visitor log →</a>
                 </div>
-                <div class="dash-traffic-table-wrap dash-traffic-sources-wrap">
-                  <table class="dash-traffic-table">
-                    <thead>
-                      <tr>
-                        <th>Source</th>
-                        <th>Visitors</th>
-                        <th>Views</th>
-                      </tr>
-                    </thead>
-                    <tbody id="dash-traffic-sources"></tbody>
-                  </table>
-                </div>
+                <ul class="dash-traffic-source-list" id="dash-traffic-sources"></ul>
               </div>
               <div class="dash-detail-list" id="dash-detail-list"></div>
             </section>
@@ -5776,9 +5765,9 @@
           .sort(function (a, b) { return b.visitors - a.visitors || b.views - a.views; })
           .slice(0, 8);
         sourcesBody.innerHTML = sources.map(function (row) {
-          return '<tr><td>' + esc(row.source) + '</td><td>' + esc(dashCount(row.visitors)) +
-            '</td><td>' + esc(dashCount(row.views)) + '</td></tr>';
-        }).join('') || '<tr><td colspan="3">Sources appear after someone opens the public site with this update.</td></tr>';
+          return '<li><strong>' + esc(row.source) + '</strong><span>' +
+            esc(dashCount(row.visitors)) + ' visitors · ' + esc(dashCount(row.views)) + ' views</span></li>';
+        }).join('') || '<li class="is-empty">Sources appear after someone opens the public site with this update.</li>';
       }
     }
 
