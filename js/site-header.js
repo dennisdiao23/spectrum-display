@@ -8,7 +8,7 @@
     if (p.indexOf('/company') === 0 || p.indexOf('/portal') === 0) return;
     if (document.querySelector('script[src*="site-analytics.js"]')) return;
     var s = document.createElement('script');
-    s.src = '/js/site-analytics.js?v=ga1';
+    s.src = '/js/site-analytics.js?v=src1';
     s.async = true;
     document.head.appendChild(s);
   })();

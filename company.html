@@ -14,10 +14,11 @@
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
   <title>Company | Spectrum Display</title>
   <meta name="robots" content="noindex, nofollow" />
-  <link rel="stylesheet" href="/css/company-dash.css?v=traffic31" />
+  <link rel="stylesheet" href="/css/company-dash.css?v=traffic32" />
   <script src="/js/address-autocomplete.js"></script>
   <script src="/js/company-chat.js?v=chatmove2"></script>
   <script src="/js/company-crm.js?v=crmv2b"></script>
+  <script src="/js/company-traffic.js?v=src1"></script>
   <script src="/js/print-form.js?v=forms20"></script>
   <script>
     if ('serviceWorker' in navigator && location.pathname.indexOf('/company') === 0) {
@@ -134,6 +135,10 @@
           <a href="/company/website/dealers" id="tab-dealers" class="dash-sub-link">
             <svg class="dash-nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 7V5a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><rect x="4" y="7" width="16" height="14" rx="2"/><path d="M9 12h6M9 16h4"/></svg>
             <span>Applications</span>
+          </a>
+          <a href="/company/website/traffic" id="tab-traffic" class="dash-sub-link">
+            <svg class="dash-nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 19V5"/><path d="M4 19h16"/><path d="M8 15l3.2-4.2 2.6 2.4L18 8"/></svg>
+            <span>Traffic</span>
           </a>
         </div>
       </div>
@@ -403,6 +408,22 @@
                       </tr>
                     </thead>
                     <tbody id="dash-traffic-pages"></tbody>
+                  </table>
+                </div>
+                <div class="dash-traffic-sources-head">
+                  <h4>Where they came from</h4>
+                  <a href="/company/website/traffic" id="dash-traffic-log">Visitor log →</a>
+                </div>
+                <div class="dash-traffic-table-wrap dash-traffic-sources-wrap">
+                  <table class="dash-traffic-table">
+                    <thead>
+                      <tr>
+                        <th>Source</th>
+                        <th>Visitors</th>
+                        <th>Views</th>
+                      </tr>
+                    </thead>
+                    <tbody id="dash-traffic-sources"></tbody>
                   </table>
                 </div>
               </div>
@@ -933,6 +954,76 @@
                 </div>
               </div>
             </div>
+          </div>
+        </div>
+      </div>
+
+      <div id="traffic-section" class="hidden">
+        <p class="text-slate-400 text-sm mb-4">Anonymous visitors on the website and US Store. No names or IP addresses. Unique visitor is one browser cookie.</p>
+        <div class="traffic-toolbar">
+          <div class="dash-traffic-tabs" role="group" aria-label="Website or Store">
+            <button type="button" class="is-on" data-traffic-log-ch="both" aria-pressed="true">Both</button>
+            <button type="button" data-traffic-log-ch="website" aria-pressed="false">Website</button>
+            <button type="button" data-traffic-log-ch="store" aria-pressed="false">Store</button>
+          </div>
+          <div class="dash-traffic-range" role="group" aria-label="Date range">
+            <button type="button" data-traffic-log-range="1d" aria-pressed="false">Today</button>
+            <button type="button" data-traffic-log-range="7d" aria-pressed="false">7D</button>
+            <button type="button" data-traffic-log-range="30d" class="is-on" aria-pressed="true">30D</button>
+          </div>
+          <button type="button" class="dash-traffic-refresh" id="traffic-refresh">Refresh</button>
+        </div>
+        <p id="traffic-error" class="hidden text-sm text-red-400 mb-3"></p>
+        <div class="traffic-kpis">
+          <div class="dash-traffic-card">
+            <span class="dash-traffic-card-label">Unique visitors</span>
+            <strong id="traffic-stat-uniques">0</strong>
+          </div>
+          <div class="dash-traffic-card">
+            <span class="dash-traffic-card-label">Page views</span>
+            <strong id="traffic-stat-views">0</strong>
+          </div>
+        </div>
+        <h3 class="traffic-h">Where they came from</h3>
+        <div class="cc-table-card rounded-2xl border border-slate-800 traffic-sources-card">
+          <div class="cc-table-wrap overflow-auto">
+            <table class="w-full text-sm dash-cols">
+              <thead class="text-left text-slate-400 border-b border-slate-800">
+                <tr>
+                  <th class="py-3 px-4 font-medium">Source</th>
+                  <th class="py-3 px-4 font-medium">Visitors</th>
+                  <th class="py-3 px-4 font-medium">Views</th>
+                </tr>
+              </thead>
+              <tbody id="traffic-sources" class="text-slate-200"></tbody>
+            </table>
+          </div>
+        </div>
+        <div class="traffic-split">
+          <div class="traffic-split-left">
+            <h3 class="traffic-h">Visitor log</h3>
+            <div class="cc-table-card rounded-2xl border border-slate-800">
+              <div class="cc-table-wrap overflow-auto">
+                <table class="w-full text-sm dash-cols">
+                  <thead class="text-left text-slate-400 border-b border-slate-800">
+                    <tr>
+                      <th class="py-3 px-4 font-medium">Visitor</th>
+                      <th class="py-3 px-4 font-medium">Came from</th>
+                      <th class="py-3 px-4 font-medium">First page</th>
+                      <th class="py-3 px-4 font-medium">Last page</th>
+                      <th class="py-3 px-4 font-medium">Pages</th>
+                      <th class="py-3 px-4 font-medium">Last seen</th>
+                    </tr>
+                  </thead>
+                  <tbody id="traffic-visitors" class="text-slate-200"></tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+          <div class="traffic-split-right">
+            <h3 class="traffic-h" id="traffic-journey-title">Path</h3>
+            <p class="traffic-journey-lead" id="traffic-journey-sub">Select a visitor to see the pages they opened, in order.</p>
+            <ol class="traffic-journey" id="traffic-journey"></ol>
           </div>
         </div>
       </div>
@@ -3940,6 +4031,7 @@
       if (hash === 'settings' || hash === 'settings/staff') return 'staff';
       if (hash === 'website/accounts' || hash === 'accounts') return 'accounts';
       if (hash === 'website/dealers' || hash === 'dealers') return 'dealers';
+      if (hash === 'website/traffic' || hash === 'traffic') return 'traffic';
       if (hash === 'website/store' || hash === 'store') return 'store';
       if (hash === 'website' || hash === 'website/products' || hash === 'products') return 'products';
       if (hash === 'customers' || hash === 'customer') return 'customers';
@@ -3985,6 +4077,7 @@
       if (p === '/company/settings') return 'staff';
       if (p === '/company/website/accounts') return 'accounts';
       if (p === '/company/website/dealers') return 'dealers';
+      if (p === '/company/website/traffic') return 'traffic';
       if (p === '/company/website/store') return 'store';
       if (p === '/company/website') return 'products';
       return '';
@@ -4008,6 +4101,7 @@
       if (doc) return pathForDocMaster(doc.kind, doc.id);
       if (name === 'accounts') return '/company/website/accounts';
       if (name === 'dealers') return '/company/website/dealers';
+      if (name === 'traffic') return '/company/website/traffic';
       if (name === 'store') return '/company/website/store';
       if (name === 'company') return '/company/settings/company';
       if (name === 'forms') return '/company/settings/forms';
@@ -4129,6 +4223,7 @@
         if (p === '/company/settings/roles' || p === '/company/settings') return 'staff';
         if (p === '/company/website/accounts') return 'accounts';
         if (p === '/company/website/dealers') return 'dealers';
+        if (p === '/company/website/traffic') return 'traffic';
         if (p === '/company/website/store') return 'store';
         if (p === '/company/website') return 'products';
         if (p === '/company/chat') return 'chat';
@@ -4160,7 +4255,7 @@
         const view = viewTabForMaster(name);
         const salesTab = view === 'quotes' || view === 'orders' || view === 'invoices' || view === 'sales' || !!parseDocMasterTab(name);
         const poTab = view === 'purchase-orders' || (parseDocMasterTab(name) || {}).kind === 'po';
-        if (opts.reload || name === 'dashboard' || masterRouteNeedsLoad(name) || salesTab || poTab) openRoutedSection(name);
+        if (opts.reload || name === 'dashboard' || name === 'traffic' || masterRouteNeedsLoad(name) || salesTab || poTab) openRoutedSection(name);
       };
       if (!opts.skipTabBar) {
         if (typeof ccDrawerNeedsLeave === 'function' && ccDrawerNeedsLeave()) {
@@ -4208,6 +4303,7 @@
       store: 'Store',
       accounts: 'Accounts',
       dealers: 'Applications',
+      traffic: 'Traffic',
       inventory: 'Inventory',
       warehouses: 'Location',
       'receipt-shipments': 'Receipt Shipment',
@@ -4254,6 +4350,7 @@
     MASTER_TAB_ICON.store = MASTER_TAB_ICON.website;
     MASTER_TAB_ICON.accounts = MASTER_TAB_ICON.customer;
     MASTER_TAB_ICON.dealers = MASTER_TAB_ICON.customer;
+    MASTER_TAB_ICON.traffic = MASTER_TAB_ICON.website;
     MASTER_TAB_ICON.vendors = MASTER_TAB_ICON.vendor;
     MASTER_TAB_ICON.customers = MASTER_TAB_ICON.customer;
     MASTER_TAB_ICON.leads = MASTER_TAB_ICON.crm;
@@ -4276,6 +4373,7 @@
       store: '/company/website/store',
       accounts: '/company/website/accounts',
       dealers: '/company/website/dealers',
+      traffic: '/company/website/traffic',
       inventory: '/company/inventory',
       warehouses: '/company/inventory/locations',
       'receipt-shipments': '/company/inventory/receipt-shipments',
@@ -4309,7 +4407,7 @@
       if (doc) return doc.kind === 'po' ? 'vendor' : 'customer';
       if (name === 'dashboard') return 'dashboard';
       if (name === 'chat') return 'chat';
-      if (name === 'products' || name === 'store' || name === 'accounts' || name === 'dealers' || name === 'website') return 'website';
+      if (name === 'products' || name === 'store' || name === 'accounts' || name === 'dealers' || name === 'traffic' || name === 'website') return 'website';
       if (name === 'inventory' || name === 'warehouses' || name === 'receipt-shipments') return 'inventory';
       if (name === 'vendors' || name === 'purchase-orders') return 'vendor';
       if (name === 'leads' || name === 'pipeline' || name === 'activities' || name === 'crm') return 'crm';
@@ -4331,7 +4429,7 @@
 
     function masterInnersFor(group) {
       if (group === 'chat') return ['chat'];
-      if (group === 'website') return ['products', 'store', 'accounts', 'dealers'];
+      if (group === 'website') return ['products', 'store', 'accounts', 'dealers', 'traffic'];
       if (group === 'inventory') return ['inventory', 'warehouses', 'receipt-shipments'];
       if (group === 'vendor') return ['vendors', 'purchase-orders'];
       if (group === 'crm') return ['leads', 'pipeline', 'activities'];
@@ -4897,6 +4995,7 @@
       store: 'products',
       accounts: 'accounts',
       dealers: 'accounts',
+      traffic: 'products',
       inventory: 'inventory',
       warehouses: 'warehouses',
       vendors: 'vendors',
@@ -4932,6 +5031,9 @@
       }
       if ((level !== 'view' && level !== 'edit') && section === 'dealers') {
         level = (adminPerms().menu || {}).website || (adminPerms().menu || {}).products || (adminPerms().menu || {}).accounts;
+      }
+      if ((level !== 'view' && level !== 'edit') && section === 'traffic') {
+        level = (adminPerms().menu || {}).website || (adminPerms().menu || {}).products;
       }
       return level === 'view' || level === 'edit';
     }
@@ -5081,7 +5183,7 @@
       if (!fromPath || !canUse(fromPath)) {
         if (goCompany(next ? pathForTab(next) : '/company')) return false;
       }
-      websiteSubTab = next === 'dealers' ? 'dealers' : next === 'accounts' ? 'accounts' : next === 'store' ? 'store' : 'products';
+      websiteSubTab = next === 'dealers' ? 'dealers' : next === 'accounts' ? 'accounts' : next === 'store' ? 'store' : next === 'traffic' ? 'traffic' : 'products';
       settingsSubTab = next === 'company' ? 'company' : next === 'forms' ? 'forms' : 'staff';
       if (next === 'quotes' || next === 'orders' || next === 'invoices') salesSubTab = next;
       const bootDoc = parseDocMasterTab(next);
@@ -5091,6 +5193,7 @@
       }
       rememberMasterTab(next || 'dashboard');
       bootSpectrumCrm(admin);
+      bootSpectrumTraffic();
       showAdminTab(next || 'dashboard');
       renderDashTabBar();
       startMasterTabWorkWatch();
@@ -5655,6 +5758,27 @@
           return '<tr><td>' + esc(row.path) + '</td><td>' + esc(dashCount(row.views)) +
             '</td><td class="dash-traffic-delta ' + d.cls + '">' + esc(d.text || '—') + '</td></tr>';
         }).join('') || '<tr><td colspan="3">No page views in this range yet. Open the public site to start counting.</td></tr>';
+      }
+      const sourcesBody = document.getElementById('dash-traffic-sources');
+      if (sourcesBody) {
+        const start = win.rows[0] && win.rows[0].day;
+        const end = win.rows[win.rows.length - 1] && win.rows[win.rows.length - 1].day;
+        const bySource = {};
+        (dashTraffic.sources || []).forEach(function (row) {
+          if (row.channel !== ch) return;
+          if (start && end && (row.day < start || row.day > end)) return;
+          const key = row.source || 'Direct';
+          if (!bySource[key]) bySource[key] = { source: key, visitors: 0, views: 0 };
+          bySource[key].visitors += Number(row.visitors) || 0;
+          bySource[key].views += Number(row.views) || 0;
+        });
+        const sources = Object.keys(bySource).map(function (key) { return bySource[key]; })
+          .sort(function (a, b) { return b.visitors - a.visitors || b.views - a.views; })
+          .slice(0, 8);
+        sourcesBody.innerHTML = sources.map(function (row) {
+          return '<tr><td>' + esc(row.source) + '</td><td>' + esc(dashCount(row.visitors)) +
+            '</td><td>' + esc(dashCount(row.views)) + '</td></tr>';
+        }).join('') || '<tr><td colspan="3">Sources appear after someone opens the public site with this update.</td></tr>';
       }
     }
 
@@ -6326,6 +6450,7 @@
       invoices: '<span id="so-total">0</span> <span id="so-list-label">sales documents</span>. Pick a company customer, add line items, then save. Website Sign in accounts stay under Website → Accounts.',
       leads: '<span id="crm-lead-total">0</span> leads from the website, dealer form, or staff. Convert a lead to create a Customer for quotes.',
       dealers: '<span id="da-total">0</span> dealer applications. Approve as Authorized to set the website account to Dealer.',
+      traffic: 'Anonymous visitors on the website and US Store. Click a row for the pages they opened.',
       pipeline: '<span id="crm-pipe-total">0</span> deals. Drag a card to change stage. Create a quote after the deal has a customer.',
       activities: '<span id="crm-act-total">0</span> activities — notes, calls, emails, meetings, and tasks.',
       company: '<span id="ca-total">0</span> company accounts — logins and passwords.',
@@ -6391,7 +6516,7 @@
       if (typeof closeRoleDrawer === 'function') closeRoleDrawer(true);
       const doc = parseDocMasterTab(name);
       const view = viewTabForMaster(name);
-      const onWebsite = view === 'products' || view === 'store' || view === 'accounts' || view === 'dealers';
+      const onWebsite = view === 'products' || view === 'store' || view === 'accounts' || view === 'dealers' || view === 'traffic';
       const onSettings = view === 'staff' || view === 'roles' || view === 'company' || view === 'forms';
       const onCustomerNav = view === 'quotes' || view === 'orders' || view === 'invoices' || view === 'sales' || view === 'customers';
       const onCrmNav = view === 'leads' || view === 'pipeline' || view === 'activities' || view === 'crm';
@@ -6475,6 +6600,8 @@
       document.getElementById('accounts-section').classList.toggle('hidden', view !== 'accounts');
       const dealersSec = document.getElementById('dealers-section');
       if (dealersSec) dealersSec.classList.toggle('hidden', view !== 'dealers');
+      const trafficSec = document.getElementById('traffic-section');
+      if (trafficSec) trafficSec.classList.toggle('hidden', view !== 'traffic');
       document.getElementById('company-section').classList.toggle('hidden', view !== 'company');
       document.getElementById('forms-section').classList.toggle('hidden', view !== 'forms');
       document.getElementById('staff-section').classList.toggle('hidden', view !== 'staff' && view !== 'roles');
@@ -6503,6 +6630,8 @@
       document.getElementById('tab-accounts').className = navLinkClass(view === 'accounts', !canUse('accounts'), 'sub');
       const tabDealers = document.getElementById('tab-dealers');
       if (tabDealers) tabDealers.className = navLinkClass(view === 'dealers', !canUse('dealers'), 'sub');
+      const tabTraffic = document.getElementById('tab-traffic');
+      if (tabTraffic) tabTraffic.className = navLinkClass(view === 'traffic', !canUse('traffic'), 'sub');
       document.getElementById('tab-quotes').className = navLinkClass(view === 'quotes', !canUse('quotes'), 'sub');
       document.getElementById('tab-orders').className = navLinkClass(view === 'orders', !canUse('orders'), 'sub');
       document.getElementById('tab-invoices').className = navLinkClass(view === 'invoices', !canUse('invoices'), 'sub');
@@ -6521,6 +6650,7 @@
         store: ['Website', 'US Store'],
         accounts: ['Website', 'Website accounts'],
         dealers: ['Website', 'Dealer applications'],
+        traffic: ['Website', 'Traffic'],
         inventory: ['Inventory', ''],
         warehouses: ['Inventory', 'Location'],
         vendors: ['Vendor', ''],
@@ -7836,6 +7966,14 @@
       dashTabPath[tab] = href;
       if (companyPath() !== href) history.pushState({ tab: tab }, '', href);
       openCompanyTab(tab, false, { restorePath: href, reload: true });
+    }
+
+    function bootSpectrumTraffic() {
+      if (!window.SpectrumTraffic) return;
+      SpectrumTraffic.boot({
+        api: api,
+        esc: esc
+      });
     }
 
     function bootSpectrumCrm(admin) {
@@ -11266,7 +11404,7 @@
     }
 
     function syncTabbarActive(name) {
-      const onWebsite = name === 'products' || name === 'store' || name === 'accounts' || name === 'dealers';
+      const onWebsite = name === 'products' || name === 'store' || name === 'accounts' || name === 'dealers' || name === 'traffic';
       const onInventory = name === 'inventory' || name === 'warehouses' || name === 'receipt-shipments';
       const onVendorNav = name === 'vendors' || name === 'purchase-orders';
       const onCustomerNav = name === 'sales' || name === 'quotes' || name === 'orders' || name === 'invoices' || name === 'customers';
@@ -16175,6 +16313,9 @@
       if (name === 'dealers') {
         await loadDealerApplications();
         if (isDaSplitOn()) initDaSplitResize();
+      }
+      if (name === 'traffic') {
+        if (window.SpectrumTraffic) await SpectrumTraffic.load();
       }
       if (name === 'inventory') {
         await loadInventory();

@@ -148,6 +148,7 @@ async function main() {
     '/company/website/store',
     '/company/website/accounts',
     '/company/website/dealers',
+    '/company/website/traffic',
     '/company/inventory',
     '/company/inventory/locations',
     '/company/inventory/vendors',
@@ -1002,6 +1003,35 @@ async function main() {
     try {
       const home = await store.getDashboardHome(req.admin);
       res.json(Object.assign({ ok: true }, home));
+    } catch (err) { next(err); }
+  });
+
+  app.get('/api/admin/traffic', requireAdmin, requirePerm('website', 'view'), async function (req, res, next) {
+    try {
+      if (typeof store.getSiteTrafficLog !== 'function') {
+        return res.json({ ok: true, timezone: 'America/Los_Angeles', range: '30d', channel: 'both', totals: { visitors: 0, views: 0 }, sources: [], visitors: [] });
+      }
+      const data = await store.getSiteTrafficLog({
+        range: String(req.query.range || '30d'),
+        channel: String(req.query.channel || 'both')
+      });
+      res.json(Object.assign({ ok: true }, data));
+    } catch (err) { next(err); }
+  });
+
+  app.get('/api/admin/traffic/visitors/:hash', requireAdmin, requirePerm('website', 'view'), async function (req, res, next) {
+    try {
+      if (typeof store.getSiteVisitorEvents !== 'function') {
+        return res.status(404).json({ ok: false, error: 'Unknown visitor.' });
+      }
+      const data = await store.getSiteVisitorEvents(String(req.params.hash || ''), {
+        range: String(req.query.range || '30d'),
+        channel: String(req.query.channel || 'both')
+      });
+      if (!data || !Array.isArray(data.events)) {
+        return res.status(404).json({ ok: false, error: 'Unknown visitor.' });
+      }
+      res.json(Object.assign({ ok: true }, data));
     } catch (err) { next(err); }
   });
 

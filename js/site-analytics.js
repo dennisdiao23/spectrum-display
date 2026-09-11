@@ -1,6 +1,6 @@
 /**
  * Public traffic: Google Analytics G-4RDTWJECX0 plus a first-party ping
- * for Company → Dashboard. Skips /company and /portal.
+ * for Company → Website → Traffic. Skips /company and /portal.
  */
 (function (global) {
   var GA_ID = 'G-4RDTWJECX0';
@@ -27,15 +27,34 @@
     return 'website';
   }
 
+  function cookieDomain() {
+    var host = (location.hostname || '').toLowerCase();
+    if (host === 'spectrumdisplay.com' || host.indexOf('.spectrumdisplay.com') !== -1) {
+      return ';domain=.spectrumdisplay.com';
+    }
+    return '';
+  }
+
   function visitorId() {
     var match = document.cookie.match(/(?:^|; )sd_vid=([^;]*)/);
-    if (match && match[1]) return decodeURIComponent(match[1]);
-    var id = 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function (c) {
-      var r = Math.random() * 16 | 0;
-      return (c === 'x' ? r : (r & 0x3 | 0x8)).toString(16);
-    });
-    document.cookie = 'sd_vid=' + encodeURIComponent(id) + ';path=/;max-age=31536000;SameSite=Lax';
+    var id = match && match[1] ? decodeURIComponent(match[1]) : '';
+    if (!id) {
+      id = 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function (c) {
+        var r = Math.random() * 16 | 0;
+        return (c === 'x' ? r : (r & 0x3 | 0x8)).toString(16);
+      });
+    }
+    var secure = location.protocol === 'https:' ? ';Secure' : '';
+    document.cookie = 'sd_vid=' + encodeURIComponent(id) + ';path=/;max-age=31536000;SameSite=Lax' + cookieDomain() + secure;
     return id;
+  }
+
+  function queryUtm(name) {
+    try {
+      return new URLSearchParams(location.search).get(name) || '';
+    } catch (e) {
+      return '';
+    }
   }
 
   function loadGtag() {
@@ -58,7 +77,11 @@
       event: event,
       path: location.pathname || '/',
       channel: channel(),
-      visitor: visitorId()
+      visitor: visitorId(),
+      referrer: document.referrer || '',
+      utm_source: queryUtm('utm_source'),
+      utm_medium: queryUtm('utm_medium'),
+      utm_campaign: queryUtm('utm_campaign')
     };
     try {
       fetch('/api/analytics/pageview', {
