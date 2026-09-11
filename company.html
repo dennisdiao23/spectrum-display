@@ -14,7 +14,7 @@
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
   <title>Company | Spectrum Display</title>
   <meta name="robots" content="noindex, nofollow" />
-  <link rel="stylesheet" href="/css/company-dash.css?v=location-v2-2" />
+  <link rel="stylesheet" href="/css/company-dash.css?v=location-v2-3" />
   <script src="/js/address-autocomplete.js"></script>
   <script src="/js/company-chat.js?v=chatmove2"></script>
   <script src="/js/company-crm.js?v=crmv2b"></script>
@@ -1005,45 +1005,6 @@
                         <div><dt>On hand</dt><dd id="inv-detail-qty">—</dd></div>
                         <div><dt>Status</dt><dd id="inv-detail-status">—</dd></div>
                         <div><dt>Low at</dt><dd id="inv-detail-low">—</dd></div>
-                        <div class="cc-detail-span">
-                          <dt>Locations</dt>
-                          <dd>
-                            <div class="cc-table-wrap inv-locs-wrap overflow-x-auto">
-                              <table class="w-full text-sm inv-locs-table">
-                                <thead>
-                                  <tr>
-                                    <th>Location</th>
-                                    <th>Type</th>
-                                    <th>Qty</th>
-                                    <th>Tracked</th>
-                                  </tr>
-                                </thead>
-                                <tbody id="inv-detail-locations-body"></tbody>
-                              </table>
-                            </div>
-                            <p id="inv-detail-locations-empty" class="cc-detail-empty hidden">No locations yet.</p>
-                            <form id="inv-transfer-form" class="hidden inv-item-transfer">
-                              <p class="inv-item-transfer-lead">Move qty from one location to another.</p>
-                              <div class="inv-item-transfer-grid">
-                                <label>From
-                                  <select id="inv-transfer-from"></select>
-                                </label>
-                                <label>To
-                                  <select id="inv-transfer-to"></select>
-                                </label>
-                                <label>Qty
-                                  <input id="inv-transfer-qty" type="number" min="1" step="1">
-                                </label>
-                              </div>
-                              <p id="inv-transfer-avail" class="text-[11px] text-slate-500 mt-1"></p>
-                              <p id="inv-transfer-msg" class="hidden text-sm mt-2"></p>
-                              <div class="inv-item-transfer-actions">
-                                <button type="submit" class="cc-detail-btn cc-detail-btn-primary">Transfer</button>
-                                <button type="button" id="inv-transfer-cancel" class="cc-detail-btn">Cancel</button>
-                              </div>
-                            </form>
-                          </dd>
-                        </div>
                       </dl>
                     </div>
                     <div class="cc-detail-block">
@@ -1064,6 +1025,43 @@
                         <div><dt>Unit</dt><dd id="inv-detail-unit">—</dd></div>
                       </dl>
                     </div>
+                  </div>
+                  <div class="cc-detail-block inv-locs-block">
+                    <h3>Locations</h3>
+                    <div class="cc-table-wrap inv-locs-wrap overflow-x-auto">
+                      <table class="w-full text-sm inv-locs-table">
+                        <thead>
+                          <tr>
+                            <th>Location</th>
+                            <th>Type</th>
+                            <th>Qty</th>
+                            <th>Tracked</th>
+                          </tr>
+                        </thead>
+                        <tbody id="inv-detail-locations-body"></tbody>
+                      </table>
+                    </div>
+                    <p id="inv-detail-locations-empty" class="cc-detail-empty hidden">No locations yet.</p>
+                    <form id="inv-transfer-form" class="hidden inv-item-transfer">
+                      <p class="inv-item-transfer-lead">Move qty from one location to another.</p>
+                      <div class="inv-item-transfer-grid">
+                        <label>From
+                          <select id="inv-transfer-from"></select>
+                        </label>
+                        <label>To
+                          <select id="inv-transfer-to"></select>
+                        </label>
+                        <label>Qty
+                          <input id="inv-transfer-qty" type="number" min="1" step="1">
+                        </label>
+                      </div>
+                      <p id="inv-transfer-avail" class="text-[11px] text-slate-500 mt-1"></p>
+                      <p id="inv-transfer-msg" class="hidden text-sm mt-2"></p>
+                      <div class="inv-item-transfer-actions">
+                        <button type="submit" class="cc-detail-btn cc-detail-btn-primary">Transfer</button>
+                        <button type="button" id="inv-transfer-cancel" class="cc-detail-btn">Cancel</button>
+                      </div>
+                    </form>
                   </div>
                 </div>
                 <div class="cc-detail-tabs" role="tablist">
@@ -3814,7 +3812,7 @@
     </a>
   </nav>
 
-  <link rel="stylesheet" href="/css/company-dash.css?v=location-v2-2" />
+  <link rel="stylesheet" href="/css/company-dash.css?v=location-v2-3" />
 
   <script>
     const loginPanel = document.getElementById('login-panel');

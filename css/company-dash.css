@@ -6695,10 +6695,13 @@ body.dash-split-lock #crm-pipe-section .crm-board {
   white-space: normal;
 }
 .inv-locs-wrap {
-  max-height: 14rem;
-  margin-top: 0.35rem;
+  max-height: 16rem;
+  margin-top: 0.15rem;
   border: 1px solid var(--dash-line);
   border-radius: 0.75rem;
+}
+.inv-locs-block {
+  margin-top: 0.75rem;
 }
 .inv-locs-table {
   table-layout: auto;
@@ -6716,6 +6719,9 @@ body.dash-split-lock #crm-pipe-section .crm-board {
 .inv-locs-table td {
   padding: 0.45rem 0.65rem;
   font-size: 0.8125rem;
+}
+.inv-locs-table td:nth-child(3),
+.inv-locs-table td:nth-child(4) {
   white-space: nowrap;
 }
 .inv-locs-table tbody tr:hover {
