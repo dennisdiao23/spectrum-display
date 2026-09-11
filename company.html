@@ -14,7 +14,7 @@
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
   <title>Company | Spectrum Display</title>
   <meta name="robots" content="noindex, nofollow" />
-  <link rel="stylesheet" href="/css/company-dash.css?v=poinv1" />
+  <link rel="stylesheet" href="/css/company-dash.css?v=poinv2" />
   <script src="/js/address-autocomplete.js"></script>
   <script src="/js/company-chat.js?v=chatcrm3"></script>
   <script src="/js/company-crm.js?v=crmv3"></script>
@@ -1838,10 +1838,10 @@
                       <label class="so-field"><span>Email <button type="button" id="po-cc-toggle" class="po-link">Cc/Bcc</button></span>
                         <input id="po-email" type="text" placeholder="Email (Separate emails with a comma)">
                       </label>
-                      <label class="so-field hidden" id="po-cc-field"><span>Cc</span>
+                      <label class="so-field" id="po-cc-field" hidden><span>Cc</span>
                         <input id="po-cc" type="text">
                       </label>
-                      <label class="so-field hidden" id="po-bcc-field"><span>Bcc</span>
+                      <label class="so-field" id="po-bcc-field" hidden><span>Bcc</span>
                         <input id="po-bcc" type="text">
                       </label>
                     </div>
@@ -4132,7 +4132,7 @@
     </a>
   </nav>
 
-  <link rel="stylesheet" href="/css/company-dash.css?v=poinv1" />
+  <link rel="stylesheet" href="/css/company-dash.css?v=poinv2" />
 
   <script>
     const loginPanel = document.getElementById('login-panel');
@@ -14469,6 +14469,10 @@
       showPoMsg('');
       applyPoFormReadOnly();
       markPoClean();
+      const ccField = document.getElementById('po-cc-field');
+      const bccField = document.getElementById('po-bcc-field');
+      if (ccField) ccField.hidden = true;
+      if (bccField) bccField.hidden = true;
     }
 
     function readPoForm() {
@@ -20715,8 +20719,10 @@
     document.getElementById('po-cc-toggle').addEventListener('click', function (e) {
       e.preventDefault();
       if (poReadOnly) return;
-      document.getElementById('po-cc-field').classList.toggle('hidden');
-      document.getElementById('po-bcc-field').classList.toggle('hidden');
+      const cc = document.getElementById('po-cc-field');
+      const show = cc.hidden;
+      cc.hidden = !show;
+      document.getElementById('po-bcc-field').hidden = !show;
     });
     document.getElementById('po-vendor').addEventListener('change', function () {
       if (poReadOnly) return;

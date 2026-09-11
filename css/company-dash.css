@@ -5034,6 +5034,10 @@ body.po-doc-float .po-email-block {
   grid-row: 3;
   min-width: 0;
 }
+#po-cc-field[hidden],
+#po-bcc-field[hidden] {
+  display: none !important;
+}
 body.po-doc-float #po-form .so-doc-addresses {
   grid-row: 4;
 }
