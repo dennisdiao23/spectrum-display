@@ -230,7 +230,7 @@ function warehouseStats(db) {
   const rows = db.prepare(`
     SELECT
       l.warehouse_id,
-      COUNT(*) AS item_count,
+      SUM(CASE WHEN l.qty > 0 THEN 1 ELSE 0 END) AS item_count,
       COALESCE(SUM(l.qty), 0) AS qty,
       COALESCE(SUM(
         CASE
@@ -1415,7 +1415,7 @@ function createSqliteStore() {
       warehouse.items = [];
       listInventoryItems(db).forEach(function (item) {
         (item.locations || []).forEach(function (loc) {
-          if (String(loc.warehouseId) !== String(id) && !(idSet[String(loc.warehouseId)] && Number(loc.qty) > 0)) return;
+          if (!(idSet[String(loc.warehouseId)] && Number(loc.qty) > 0)) return;
           warehouse.items.push({
             id: item.id,
             sku: item.sku,

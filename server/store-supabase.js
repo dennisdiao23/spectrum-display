@@ -821,7 +821,7 @@ function createSupabaseStore() {
       const key = String(row.warehouse_id);
       if (!out[key]) out[key] = { itemCount: 0, qty: 0, hasLow: false };
       const qty = Math.max(0, Number(row.qty) || 0);
-      out[key].itemCount += 1;
+      if (qty > 0) out[key].itemCount += 1;
       out[key].qty += qty;
       const lowAt = lowById[String(row.item_id)];
       if (qty > 0 && lowAt > 0 && qty <= lowAt) out[key].hasLow = true;
@@ -2339,7 +2339,7 @@ function createSupabaseStore() {
       warehouse.items = [];
       (items || []).forEach(function (item) {
         (item.locations || []).forEach(function (loc) {
-          if (String(loc.warehouseId) !== String(id) && !(idSet[String(loc.warehouseId)] && Number(loc.qty) > 0)) return;
+          if (!(idSet[String(loc.warehouseId)] && Number(loc.qty) > 0)) return;
           warehouse.items.push({
             id: item.id,
             sku: item.sku,

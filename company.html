@@ -14,7 +14,7 @@
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
   <title>Company | Spectrum Display</title>
   <meta name="robots" content="noindex, nofollow" />
-  <link rel="stylesheet" href="/css/company-dash.css?v=location-v2" />
+  <link rel="stylesheet" href="/css/company-dash.css?v=location-v2-2" />
   <script src="/js/address-autocomplete.js"></script>
   <script src="/js/company-chat.js?v=chatmove2"></script>
   <script src="/js/company-crm.js?v=crmv2b"></script>
@@ -3814,7 +3814,7 @@
     </a>
   </nav>
 
-  <link rel="stylesheet" href="/css/company-dash.css?v=location-v2" />
+  <link rel="stylesheet" href="/css/company-dash.css?v=location-v2-2" />
 
   <script>
     const loginPanel = document.getElementById('login-panel');
@@ -6920,7 +6920,7 @@
 
     const DASH_COL_DEFAULTS = {
       inventory: ['name', 'sku', 'category', 'qty', 'warehouse', 'cost', 'localCost', 'price'],
-      warehouses: ['name', 'type', 'vendor', 'tracked', 'qty', 'skus'],
+      warehouses: ['name', 'type', 'qty', 'skus'],
       customers: ['company', 'contact', 'email', 'phone', 'balance'],
       sales: ['number', 'customer', 'date', 'status', 'total'],
       'so-lines': ['sku', 'description', 'qty', 'price', 'amount'],
@@ -7065,7 +7065,7 @@
         sortDir: '',
         widths: fallbackWidths,
         splitLeftPx: keptSplit,
-        schema: dashColKey(table) === 'warehouses' ? 3 : (dashColKey(table) === 'inventory' ? 5 : (dashColKey(table) === 'po-lines' || dashColKey(table) === 'so-lines' ? 1 : 0))
+        schema: dashColKey(table) === 'warehouses' ? 4 : (dashColKey(table) === 'inventory' ? 5 : (dashColKey(table) === 'po-lines' || dashColKey(table) === 'so-lines' ? 1 : 0))
       };
       pinStartLockedInState(table, fallback.order, fallback.hidden);
       if (!saved) {
@@ -7190,6 +7190,20 @@
           sortDir = '';
         }
         schema = 3;
+      }
+      if (dashColKey(table) === 'warehouses' && schema < 4) {
+        ['vendor', 'tracked', 'notes'].forEach(function (id) {
+          const i = order.indexOf(id);
+          if (i !== -1) order.splice(i, 1);
+          if (hidden.indexOf(id) === -1) hidden.push(id);
+        });
+        if (order.indexOf('type') === -1) {
+          const nameAt = order.indexOf('name');
+          order.splice(nameAt === -1 ? 0 : nameAt + 1, 0, 'type');
+        }
+        const dropType = hidden.indexOf('type');
+        if (dropType !== -1) hidden.splice(dropType, 1);
+        schema = 4;
       }
       pinStartLockedInState(table, order, hidden);
       const merged = {
@@ -9898,7 +9912,7 @@
           name: '<td class="py-3 px-4 font-medium' + (isBin ? ' wh-bin-name' : '') + '"><span class="cc-acct-cell">' +
             locStatusIconHtml(wh, null, 'cc-acct-status') +
             '<span class="cc-acct-name">' + esc(wh.name || '') + '</span></span></td>',
-          type: '<td class="py-3 px-4 text-slate-400">' + esc(wh.typeLabel || wh.type || '') + '</td>',
+          type: '<td class="py-3 px-4 text-slate-400 wh-type">' + esc(wh.typeLabel || wh.type || '') + '</td>',
           vendor: '<td class="py-3 px-4 text-slate-400">' + esc(wh.vendorName || '—') + '</td>',
           tracked: '<td class="py-3 px-4 text-slate-400">' + (tracked ? 'Yes' : 'No') + '</td>',
           qty: '<td class="py-3 px-4">' + Number(wh.qty || 0).toLocaleString() + '</td>',
@@ -9977,7 +9991,7 @@
       document.getElementById('wh-edit-btn').classList.toggle('hidden', !canChange);
       document.getElementById('wh-transfer-btn').classList.toggle('hidden', !canChange);
       const items = (wh && wh.items) || [];
-      const showBin = !!(wh && (wh.hasChildBins || locKind(wh) === 'warehouse'));
+      const showBin = !!(wh && wh.hasChildBins);
       const binTh = document.getElementById('wh-items-bin-th');
       if (binTh) binTh.classList.toggle('hidden', !showBin);
       const q = ((document.getElementById('wh-items-search') || {}).value || '').trim().toLowerCase();

@@ -2980,7 +2980,7 @@ body.po-split-lock #po-section #po-error {
   grid-template-columns: var(--vn-left-w, var(--vn-split-left-boot, 400px)) 14px minmax(0, 1fr);
 }
 #wh-split {
-  grid-template-columns: var(--wh-left-w, var(--wh-split-left-boot, 400px)) 14px minmax(0, 1fr);
+  grid-template-columns: var(--wh-left-w, var(--wh-split-left-boot, 460px)) 14px minmax(0, 1fr);
 }
 #wp-split {
   grid-template-columns: var(--wp-left-w, var(--wp-split-left-boot, 400px)) 14px minmax(0, 1fr);
@@ -6659,6 +6659,22 @@ body.dash-split-lock #crm-pipe-section .crm-board {
 
 .wh-bin-name .cc-acct-name {
   padding-left: 1.15rem;
+}
+.dash-split-left table.dash-cols[data-cols="warehouses"] td.wh-type {
+  white-space: normal;
+  line-height: 1.3;
+  overflow: visible;
+  text-overflow: unset;
+}
+#wh-items-card .cc-table-wrap {
+  max-height: min(22rem, 45vh);
+  overflow: auto;
+}
+#wh-items-card table thead th {
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  background: #fff;
 }
 .wh-items-head {
   display: flex;
