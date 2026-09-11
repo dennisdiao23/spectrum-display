@@ -1,4 +1,5 @@
 const crypto = require('crypto');
+const geoIp = require('./geo-ip');
 
 const TZ = 'America/Los_Angeles';
 const CHANNELS = ['website', 'store'];
@@ -62,8 +63,50 @@ function emptyTrafficLog() {
     channel: 'both',
     totals: { visitors: 0, views: 0 },
     sources: [],
+    places: [],
     visitors: []
   };
+}
+
+function eventLocation(row) {
+  if (!row) return '';
+  if (row.location) return String(row.location);
+  return geoIp.formatLocation(
+    row.location_city || row.city,
+    row.location_region || row.region,
+    row.location_country || row.country
+  );
+}
+
+function mapPlaceRows(rows) {
+  return (rows || []).map(function (row) {
+    return {
+      location: eventLocation(row),
+      views: Number(row.views) || 0,
+      visitors: Number(row.visitors) || 0
+    };
+  }).filter(function (row) { return row.location; });
+}
+
+function aggregatePlaces(rows) {
+  const byKey = {};
+  (rows || []).forEach(function (row) {
+    const location = eventLocation(row);
+    if (!location) return;
+    if (!byKey[location]) byKey[location] = { location: location, views: 0, visitors: {} };
+    byKey[location].views += 1;
+    if (row.visitor_hash) byKey[location].visitors[row.visitor_hash] = true;
+  });
+  return Object.keys(byKey).map(function (key) {
+    const row = byKey[key];
+    return {
+      location: row.location,
+      views: row.views,
+      visitors: Object.keys(row.visitors).length
+    };
+  }).sort(function (a, b) {
+    return b.visitors - a.visitors || b.views - a.views;
+  });
 }
 
 function channelOf(req, body) {
@@ -204,6 +247,7 @@ function parseHit(req, body) {
   const ref = parseReferrer(src.referrer || src.referer || headerRef || '');
   const channel = channelOf(req, src);
   const utmSource = cleanUtm(src.utm_source || src.utmSource);
+  const geo = geoIp.lookup(req);
   return {
     day: dayStamp(),
     channel: channel,
@@ -211,6 +255,9 @@ function parseHit(req, body) {
     visitorHash: visitorHash(src.visitor),
     action: action,
     referrerHost: String(ref.host || '').slice(0, 120),
+    country: geo.country,
+    region: geo.region,
+    city: geo.city,
     source: classifySource({
       referrerHost: ref.host,
       referrerPath: ref.path,
@@ -251,7 +298,10 @@ function ensureSqlite(db) {
       visitor_hash TEXT NOT NULL DEFAULT '',
       path TEXT NOT NULL DEFAULT '',
       referrer_host TEXT NOT NULL DEFAULT '',
-      source TEXT NOT NULL DEFAULT 'Direct'
+      source TEXT NOT NULL DEFAULT 'Direct',
+      location_country TEXT NOT NULL DEFAULT '',
+      location_region TEXT NOT NULL DEFAULT '',
+      location_city TEXT NOT NULL DEFAULT ''
     );
     CREATE INDEX IF NOT EXISTS site_pageview_daily_day_idx ON site_pageview_daily (day);
     CREATE INDEX IF NOT EXISTS site_pageview_paths_day_idx ON site_pageview_paths (day, channel, views);
@@ -259,6 +309,25 @@ function ensureSqlite(db) {
     CREATE INDEX IF NOT EXISTS site_pageview_events_visitor_idx ON site_pageview_events (visitor_hash, created_at);
     CREATE INDEX IF NOT EXISTS site_pageview_events_source_idx ON site_pageview_events (day, source);
   `);
+  ensureSqliteLocation(db);
+}
+
+function sqliteHasColumn(db, table, column) {
+  try {
+    return db.prepare('PRAGMA table_info(' + table + ')').all().some(function (row) {
+      return String(row.name || '') === column;
+    });
+  } catch (e) {
+    return false;
+  }
+}
+
+function ensureSqliteLocation(db) {
+  ['location_country', 'location_region', 'location_city'].forEach(function (col) {
+    if (!sqliteHasColumn(db, 'site_pageview_events', col)) {
+      db.exec('ALTER TABLE site_pageview_events ADD COLUMN ' + col + " TEXT NOT NULL DEFAULT ''");
+    }
+  });
 }
 
 function pruneSqliteEvents(db) {
@@ -304,8 +373,9 @@ function recordSqlite(db, hit) {
       `).run(hit.day, hit.channel, hit.path);
       db.prepare(`
         INSERT INTO site_pageview_events
-          (created_at, day, channel, visitor_hash, path, referrer_host, source)
-        VALUES (?, ?, ?, ?, ?, ?, ?)
+          (created_at, day, channel, visitor_hash, path, referrer_host, source,
+           location_country, location_region, location_city)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
       `).run(
         new Date().toISOString(),
         hit.day,
@@ -313,7 +383,10 @@ function recordSqlite(db, hit) {
         hit.visitorHash || '',
         hit.path,
         hit.referrerHost || '',
-        hit.source || 'Direct'
+        hit.source || 'Direct',
+        hit.country || '',
+        hit.region || '',
+        hit.city || ''
       );
     }
     db.exec('COMMIT');
@@ -420,6 +493,7 @@ function visitorRowsFromHits(stats, hits) {
         landing: row.path || '/',
         exit: row.path || '/',
         source: row.source || 'Direct',
+        location: eventLocation(row),
         firstAt: row.created_at,
         lastAt: row.created_at,
         channels: {}
@@ -427,10 +501,13 @@ function visitorRowsFromHits(stats, hits) {
     }
     const cur = byHash[hash];
     cur.channels[row.channel] = true;
+    const loc = eventLocation(row);
+    if (!cur.location && loc) cur.location = loc;
     if (String(row.created_at || '') <= String(cur.firstAt || '')) {
       cur.firstAt = row.created_at;
       cur.landing = row.path || '/';
       cur.source = row.source || 'Direct';
+      if (loc) cur.location = loc;
     }
     if (String(row.created_at || '') >= String(cur.lastAt || '')) {
       cur.lastAt = row.created_at;
@@ -443,6 +520,7 @@ function visitorRowsFromHits(stats, hits) {
     return {
       hash: row.hash,
       source: extra.source || 'Direct',
+      location: extra.location || '',
       firstAt: extra.firstAt || row.first_at,
       lastAt: extra.lastAt || row.last_at,
       landing: extra.landing || '/',
@@ -484,6 +562,15 @@ function sqliteTrafficLog(db, opts) {
         visitors: Number(row.visitors) || 0
       };
     });
+    out.places = mapPlaceRows(db.prepare(`
+      SELECT location_city, location_region, location_country,
+             COUNT(*) AS views,
+             COUNT(DISTINCT CASE WHEN visitor_hash <> '' THEN visitor_hash END) AS visitors
+      FROM site_pageview_events
+      WHERE day >= ? AND (location_city <> '' OR location_region <> '' OR location_country <> '')${ch.sql}
+      GROUP BY location_city, location_region, location_country
+      ORDER BY visitors DESC, views DESC
+    `).all(range.start, ...ch.args));
     const stats = db.prepare(`
       SELECT visitor_hash AS hash, MIN(created_at) AS first_at, MAX(created_at) AS last_at, COUNT(*) AS pages
       FROM site_pageview_events
@@ -496,7 +583,8 @@ function sqliteTrafficLog(db, opts) {
     if (stats.length) {
       const placeholders = stats.map(function () { return '?'; }).join(',');
       hits = db.prepare(`
-        SELECT visitor_hash, path, source, channel, created_at
+        SELECT visitor_hash, path, source, channel, created_at,
+               location_city, location_region, location_country
         FROM site_pageview_events
         WHERE day >= ? AND visitor_hash IN (${placeholders})${ch.sql}
         ORDER BY created_at ASC
@@ -515,11 +603,12 @@ function sqliteVisitorEvents(db, hash, opts) {
   const channel = parseChannelFilter(opts && opts.channel);
   const ch = channelWhere(channel);
   const id = String(hash || '').toLowerCase();
-  const empty = { hash: id, range: range.key, channel: channel, source: 'Direct', events: [] };
+  const empty = { hash: id, range: range.key, channel: channel, source: 'Direct', location: '', events: [] };
   if (!/^[a-f0-9]{24}$/.test(id)) return empty;
   try {
     const rows = db.prepare(`
-      SELECT created_at, channel, path, source, referrer_host
+      SELECT created_at, channel, path, source, referrer_host,
+             location_city, location_region, location_country
       FROM site_pageview_events
       WHERE visitor_hash = ? AND day >= ?${ch.sql}
       ORDER BY created_at ASC
@@ -531,7 +620,8 @@ function sqliteVisitorEvents(db, hash, opts) {
         channel: row.channel,
         path: row.path || '/',
         source: row.source || 'Direct',
-        referrerHost: row.referrer_host || ''
+        referrerHost: row.referrer_host || '',
+        location: eventLocation(row)
       };
     });
     return {
@@ -539,6 +629,7 @@ function sqliteVisitorEvents(db, hash, opts) {
       range: range.key,
       channel: channel,
       source: (events[0] && events[0].source) || 'Direct',
+      location: (events.find(function (ev) { return ev.location; }) || {}).location || '',
       events: events
     };
   } catch (e) {
@@ -617,6 +708,7 @@ function supabaseTrafficLog(rows, opts) {
         people[hash] = {
           hash: hash,
           source: source,
+          location: eventLocation(row),
           firstAt: row.created_at,
           lastAt: row.created_at,
           landing: row.path || '/',
@@ -628,10 +720,13 @@ function supabaseTrafficLog(rows, opts) {
       const v = people[hash];
       v.pages += 1;
       v.channels[row.channel] = true;
+      const loc = eventLocation(row);
+      if (!v.location && loc) v.location = loc;
       if (String(row.created_at || '') <= String(v.firstAt || '')) {
         v.firstAt = row.created_at;
         v.landing = row.path || '/';
         v.source = source;
+        if (loc) v.location = loc;
       }
       if (String(row.created_at || '') >= String(v.lastAt || '')) {
         v.lastAt = row.created_at;
@@ -646,11 +741,13 @@ function supabaseTrafficLog(rows, opts) {
   }).sort(function (a, b) {
     return b.visitors - a.visitors || b.views - a.views;
   });
+  out.places = aggregatePlaces(events);
   out.visitors = Object.keys(people).map(function (hash) {
     const row = people[hash];
     return {
       hash: row.hash,
       source: row.source,
+      location: row.location || '',
       firstAt: row.firstAt,
       lastAt: row.lastAt,
       landing: row.landing,
@@ -674,16 +771,21 @@ function supabaseApi(supabase) {
         p_visitor: hit.visitorHash || '',
         p_action: !!hit.action,
         p_source: hit.source || 'Direct',
-        p_referrer: hit.referrerHost || ''
+        p_referrer: hit.referrerHost || '',
+        p_country: hit.country || '',
+        p_region: hit.region || '',
+        p_city: hit.city || ''
       };
       let { error } = await supabase.rpc('record_site_pageview', args);
-      if (error && /p_source|p_referrer|PGRST202|could not find the function/i.test(error.message || '')) {
+      if (error && /p_source|p_referrer|p_country|p_region|p_city|PGRST202|could not find the function/i.test(error.message || '')) {
         const retry = await supabase.rpc('record_site_pageview', {
           p_day: args.p_day,
           p_channel: args.p_channel,
           p_path: args.p_path,
           p_visitor: args.p_visitor,
-          p_action: args.p_action
+          p_action: args.p_action,
+          p_source: args.p_source,
+          p_referrer: args.p_referrer
         });
         error = retry.error;
       }
@@ -719,12 +821,23 @@ function supabaseApi(supabase) {
       const range = parseRange(opts && opts.range);
       const channel = parseChannelFilter(opts && opts.channel);
       let query = supabase.from('site_pageview_events')
-        .select('created_at, day, channel, visitor_hash, path, source, referrer_host')
+        .select('created_at, day, channel, visitor_hash, path, source, referrer_host, location_city, location_region, location_country')
         .gte('day', range.start)
         .order('created_at', { ascending: true })
         .limit(20000);
       if (channel !== 'both') query = query.eq('channel', channel);
       const { data, error } = await query;
+      if (error && /location_/i.test(error.message || '')) {
+        let retryQuery = supabase.from('site_pageview_events')
+          .select('created_at, day, channel, visitor_hash, path, source, referrer_host')
+          .gte('day', range.start)
+          .order('created_at', { ascending: true })
+          .limit(20000);
+        if (channel !== 'both') retryQuery = retryQuery.eq('channel', channel);
+        const retry = await retryQuery;
+        if (retry.error) return emptyTrafficLog();
+        return supabaseTrafficLog(retry.data || [], opts);
+      }
       if (error) return emptyTrafficLog();
       return supabaseTrafficLog(data || [], opts);
     },
@@ -732,10 +845,10 @@ function supabaseApi(supabase) {
       const range = parseRange(opts && opts.range);
       const channel = parseChannelFilter(opts && opts.channel);
       const id = String(hash || '').toLowerCase();
-      const empty = { hash: id, range: range.key, channel: channel, source: 'Direct', events: [] };
+      const empty = { hash: id, range: range.key, channel: channel, source: 'Direct', location: '', events: [] };
       if (!/^[a-f0-9]{24}$/.test(id)) return empty;
       let query = supabase.from('site_pageview_events')
-        .select('created_at, channel, path, source, referrer_host')
+        .select('created_at, channel, path, source, referrer_host, location_city, location_region, location_country')
         .eq('visitor_hash', id)
         .gte('day', range.start)
         .order('created_at', { ascending: true })
@@ -749,7 +862,8 @@ function supabaseApi(supabase) {
           channel: row.channel,
           path: row.path || '/',
           source: row.source || 'Direct',
-          referrerHost: row.referrer_host || ''
+          referrerHost: row.referrer_host || '',
+          location: eventLocation(row)
         };
       });
       return {
@@ -757,6 +871,7 @@ function supabaseApi(supabase) {
         range: range.key,
         channel: channel,
         source: (events[0] && events[0].source) || 'Direct',
+        location: (events.find(function (ev) { return ev.location; }) || {}).location || '',
         events: events
       };
     }

@@ -1429,7 +1429,10 @@ create table if not exists public.site_pageview_events (
   visitor_hash text not null default '',
   path text not null default '',
   referrer_host text not null default '',
-  source text not null default 'Direct'
+  source text not null default 'Direct',
+  location_country text not null default '',
+  location_region text not null default '',
+  location_city text not null default ''
 );
 create index if not exists site_pageview_events_day_idx
   on public.site_pageview_events (day, channel);
@@ -1437,6 +1440,8 @@ create index if not exists site_pageview_events_visitor_idx
   on public.site_pageview_events (visitor_hash, created_at);
 create index if not exists site_pageview_events_source_idx
   on public.site_pageview_events (day, source);
+create index if not exists site_pageview_events_place_idx
+  on public.site_pageview_events (day, location_country);
 
 alter table public.site_pageview_events enable row level security;
 
@@ -1447,6 +1452,7 @@ create policy site_pageview_events_admin_all on public.site_pageview_events
 grant all on table public.site_pageview_events to service_role;
 
 drop function if exists public.record_site_pageview(date, text, text, text, boolean);
+drop function if exists public.record_site_pageview(date, text, text, text, boolean, text, text);
 
 create or replace function public.record_site_pageview(
   p_day date,
@@ -1455,7 +1461,10 @@ create or replace function public.record_site_pageview(
   p_visitor text,
   p_action boolean,
   p_source text default 'Direct',
-  p_referrer text default ''
+  p_referrer text default '',
+  p_country text default '',
+  p_region text default '',
+  p_city text default ''
 ) returns void
 language plpgsql
 security definer
@@ -1466,6 +1475,9 @@ declare
   ch text := lower(coalesce(p_channel, 'website'));
   src text := left(coalesce(nullif(btrim(p_source), ''), 'Direct'), 80);
   ref text := left(coalesce(p_referrer, ''), 120);
+  country text := left(upper(coalesce(p_country, '')), 2);
+  region text := left(coalesce(p_region, ''), 40);
+  city text := left(coalesce(p_city, ''), 80);
 begin
   if ch <> 'website' and ch <> 'store' then
     ch := 'website';
@@ -1503,8 +1515,10 @@ begin
       set views = public.site_pageview_paths.views + 1;
 
     insert into public.site_pageview_events
-      (day, channel, visitor_hash, path, referrer_host, source)
-    values (p_day, ch, coalesce(p_visitor, ''), left(p_path, 180), ref, src);
+      (day, channel, visitor_hash, path, referrer_host, source,
+       location_country, location_region, location_city)
+    values (p_day, ch, coalesce(p_visitor, ''), left(p_path, 180), ref, src,
+            country, region, city);
 
     delete from public.site_pageview_events
       where day < (p_day - 90);
@@ -1512,7 +1526,7 @@ begin
 end;
 $$;
 
-revoke all on function public.record_site_pageview(date, text, text, text, boolean, text, text) from public;
-grant execute on function public.record_site_pageview(date, text, text, text, boolean, text, text) to service_role;
+revoke all on function public.record_site_pageview(date, text, text, text, boolean, text, text, text, text, text) from public;
+grant execute on function public.record_site_pageview(date, text, text, text, boolean, text, text, text, text, text) to service_role;
 
 notify pgrst, 'reload schema';

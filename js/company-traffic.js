@@ -89,19 +89,33 @@
     }).join('');
   }
 
+  function renderPlaces(rows) {
+    var body = $('traffic-places');
+    if (!body) return;
+    if (!rows || !rows.length) {
+      body.innerHTML = '<tr><td colspan="3">No locations yet. New visits after this update show city and country.</td></tr>';
+      return;
+    }
+    body.innerHTML = rows.map(function (row) {
+      return '<tr><td>' + esc(row.location || '—') + '</td><td>' +
+        esc(Number(row.visitors || 0).toLocaleString()) + '</td><td>' +
+        esc(Number(row.views || 0).toLocaleString()) + '</td></tr>';
+    }).join('');
+  }
+
   function renderVisitors(rows) {
     var body = $('traffic-visitors');
     if (!body) return;
     if (!rows || !rows.length) {
-      body.innerHTML = '<tr><td colspan="6">No visitor log in this range yet.</td></tr>';
+      body.innerHTML = '<tr><td colspan="7">No visitor log in this range yet.</td></tr>';
       return;
     }
     body.innerHTML = rows.map(function (row) {
       var on = row.hash === S.selected ? ' is-on' : '';
-      var places = (row.channels || []).map(channelLabel).join(' + ') || '—';
       return '<tr class="traffic-visitor-row' + on + '" data-visitor="' + esc(row.hash) + '">' +
         '<td>' + esc(visitorLabel(row.hash)) + '</td>' +
         '<td>' + esc(row.source || 'Direct') + '</td>' +
+        '<td>' + esc(row.location || '—') + '</td>' +
         '<td>' + esc(row.landing || '/') + '</td>' +
         '<td>' + esc(row.exit || '/') + '</td>' +
         '<td>' + esc(String(row.pages || 0)) + '</td>' +
@@ -123,16 +137,18 @@
     }
     if (title) title.textContent = visitorLabel(data.hash);
     if (sub) {
-      sub.textContent = (data.source || 'Direct') + ' · ' + data.events.length +
-        (data.events.length === 1 ? ' page' : ' pages');
+      var bits = [data.location || '', data.source || 'Direct', data.events.length +
+        (data.events.length === 1 ? ' page' : ' pages')].filter(Boolean);
+      sub.textContent = bits.join(' · ');
     }
     list.innerHTML = data.events.map(function (ev, i) {
       var ch = channelLabel(ev.channel);
       var from = ev.referrerHost ? ' from ' + ev.referrerHost : '';
+      var place = ev.location ? ' · ' + ev.location : '';
       return '<li>' +
         '<span class="traffic-journey-n">' + (i + 1) + '</span>' +
         '<div><strong>' + esc(ev.path || '/') + '</strong>' +
-        '<em>' + esc(fmtWhen(ev.at)) + ' · ' + esc(ch) + ' · ' + esc(ev.source || 'Direct') + esc(from) + '</em></div>' +
+        '<em>' + esc(fmtWhen(ev.at)) + ' · ' + esc(ch) + ' · ' + esc(ev.source || 'Direct') + esc(from) + esc(place) + '</em></div>' +
         '</li>';
     }).join('');
   }
@@ -166,6 +182,7 @@
       if (uniques) uniques.textContent = Number((data.totals && data.totals.visitors) || 0).toLocaleString();
       if (views) views.textContent = Number((data.totals && data.totals.views) || 0).toLocaleString();
       renderSources(data.sources || []);
+      renderPlaces(data.places || []);
       var visitors = data.visitors || [];
       if (S.selected && !visitors.some(function (row) { return row.hash === S.selected; })) {
         S.selected = '';
@@ -177,6 +194,7 @@
       if (uniques) uniques.textContent = '0';
       if (views) views.textContent = '0';
       renderSources([]);
+      renderPlaces([]);
       renderVisitors([]);
       showError(err.message || 'Could not load traffic.');
     }
