@@ -38,7 +38,7 @@
       'nav.brands': 'Brands',
       'nav.products': 'Products',
       'nav.designer': 'LED Wall Calculator',
-      'nav.store': 'STORE',
+      'nav.store': 'Store',
       'nav.dealer': 'Dealer',
       'nav.dealerPortal': 'Dealer Portal',
       'nav.tabDesigner': 'Calculator',
