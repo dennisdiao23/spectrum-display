@@ -62,29 +62,23 @@ button, input, select { font-family: inherit; }
 .shop-wordmark {
   text-decoration: none;
   display: flex;
-  flex-direction: column;
-  line-height: 1;
+  align-items: center;
   flex-shrink: 0;
 }
-.shop-wordmark-text {
-  font-weight: 800;
-  letter-spacing: -0.045em;
-  font-size: 1.22rem;
-  color: #111;
-}
-.shop-wordmark-bar {
+.shop-wordmark img {
   display: block;
-  height: 3px;
-  margin-top: 3px;
-  border-radius: 99px;
-  background: linear-gradient(90deg, #ef4444, #f59e0b, #eab308, #22c55e, #06b6d4, #3b82f6, #8b5cf6, #ec4899);
+  width: auto;
+  height: 1.85rem;
+}
+.shop-footer .shop-wordmark img {
+  height: 2.4rem;
+  margin-bottom: 0.75rem;
 }
 .shop-us {
   font-size: 0.72rem;
   font-weight: 600;
   color: var(--shop-muted);
   white-space: nowrap;
-  padding-top: 0.35rem;
 }
 .shop-integrator {
   display: inline-flex;
