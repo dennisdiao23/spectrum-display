@@ -2999,8 +2999,8 @@ body.po-split-lock #po-section #po-error {
   overflow: visible;
   text-overflow: unset;
 }
-#da-split-left table.dash-cols[data-cols="dealer-applications"] th:nth-child(3),
-#da-split-left table.dash-cols[data-cols="dealer-applications"] td:nth-child(3) {
+#da-split-left table.dash-cols[data-cols="dealer-applications"] th:nth-child(5),
+#da-split-left table.dash-cols[data-cols="dealer-applications"] td:nth-child(5) {
   width: 7.25rem;
 }
 body.inv-layout-lock .inv-split,

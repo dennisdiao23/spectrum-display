@@ -89,6 +89,8 @@ function throwIfMissing(error, fallback) {
 function formatApplication(row, opts) {
   if (!row) return null;
   const admin = !!(opts && opts.admin);
+  const self = !!(opts && opts.self);
+  const reveal = admin || self;
   const addr = asAddress(row.company_address);
   const out = {
     id: row.id,
@@ -97,26 +99,26 @@ function formatApplication(row, opts) {
     phone: row.phone || '',
     companyName: row.company_name || '',
     website: row.website || '',
-    taxId: admin ? (row.tax_id || '') : '',
+    taxId: reveal ? (row.tax_id || '') : '',
     yearsInBusiness: row.years_in_business || '',
     companySize: row.company_size || '',
     businessType: asList(row.business_type),
     primaryVerticals: asList(row.primary_verticals),
     typicalJobSizeM2: row.typical_job_size_m2 || '',
-    companyAddress: admin ? addr : { city: addr.city, state: addr.state, country: addr.country },
-    referencesText: admin ? (row.references_text || '') : '',
+    companyAddress: reveal ? addr : { city: addr.city, state: addr.state, country: addr.country },
+    referencesText: reveal ? (row.references_text || '') : '',
     certifyAuthorized: truthy(row.certify_authorized),
     agreeTermsPrivacy: truthy(row.agree_terms_privacy),
     marketingOptIn: truthy(row.marketing_opt_in),
     resaleCertificateName: row.resale_certificate_name || '',
-    resaleCertificateUrl: admin ? (row.resale_certificate_url || '') : '',
+    resaleCertificateUrl: reveal ? (row.resale_certificate_url || '') : '',
     userId: admin ? (row.user_id || '') : '',
     crmLeadId: admin ? (row.crm_lead_id || null) : undefined,
     status: statusOf(row.status),
     dealerTier: row.dealer_tier || 'authorized',
     paymentTerms: row.payment_terms || 'prepaid_30_70',
     holdHours: Number(row.hold_hours) || 48,
-    customerId: admin ? (row.customer_id || null) : undefined,
+    customerId: reveal ? (row.customer_id || null) : undefined,
     reviewedAt: row.reviewed_at || '',
     createdAt: row.created_at || '',
     updatedAt: row.updated_at || ''
@@ -124,11 +126,135 @@ function formatApplication(row, opts) {
   if (admin) {
     out.notesInternal = row.notes_internal || '';
     out.reviewedBy = row.reviewed_by || '';
-    out.taxId = row.tax_id || '';
-    out.companyAddress = addr;
-    out.referencesText = row.references_text || '';
   }
   return out;
+}
+
+function portalMePayload(user, application) {
+  const canSee = !!(user && (user.role === 'dealer' || user.role === 'sales'));
+  const pending = !!(application && application.status === 'pending' && !canSee);
+  const preferred = !!(application && application.dealerTier === 'preferred');
+  const holdHours = (application && application.holdHours) || 48;
+  let roleLabel = 'Customer';
+  if (canSee) roleLabel = user.role === 'sales' ? 'Sales' : 'Dealer';
+  else if (pending) roleLabel = 'Application pending';
+  return {
+    role: (user && user.role) || 'customer',
+    roleLabel: roleLabel,
+    application: application,
+    canSeeNets: canSee,
+    canSeeStock: canSee,
+    pending: pending,
+    overview: {
+      companyName: (application && application.companyName) || (user && user.company) || '',
+      contactName: (application && application.contactName) || (user && user.name) || '',
+      email: (application && application.email) || (user && user.email) || '',
+      tierLabel: canSee ? (preferred ? 'Preferred' : 'Authorized') : '',
+      paymentLabel: '30% deposit / balance before ship',
+      holdHours: holdHours,
+      holdLabel: holdHours + '-hour hold (policy)'
+    }
+  };
+}
+
+function publicDealerQuote(doc) {
+  if (!doc) return null;
+  return {
+    id: doc.id,
+    number: doc.number || '',
+    status: doc.status || 'draft',
+    issueDate: doc.issueDate || '',
+    total: Number(doc.total) || 0,
+    notes: doc.notes || '',
+    lines: (doc.lines || []).map(function (line) {
+      return {
+        sku: line.sku || '',
+        item: line.item || '',
+        qty: line.qty,
+        unitPrice: line.unitPrice,
+        amount: line.amount
+      };
+    })
+  };
+}
+
+function noCustomerError() {
+  const err = new Error('Spectrum has not linked a company customer yet.');
+  err.code = 'no_customer';
+  return err;
+}
+
+async function resolveDealerCustomerId(store, user) {
+  const app = await store.getDealerApplicationForUser({
+    userId: user && user.id,
+    email: user && user.email
+  });
+  if (app && app.customerId) return app.customerId;
+  const email = trim((user && user.email) || '', 160).toLowerCase();
+  if (!email || !store.listCompanyCustomers) return null;
+  try {
+    const customers = await store.listCompanyCustomers();
+    const hit = (customers || []).find(function (row) {
+      return String(row.email || '').toLowerCase() === email;
+    });
+    return hit && hit.id ? hit.id : null;
+  } catch (_err) {
+    return null;
+  }
+}
+
+async function listDealerQuotesFor(store, user) {
+  const customerId = await resolveDealerCustomerId(store, user);
+  if (!customerId) return [];
+  const docs = await store.listSalesDocs('quote');
+  return (docs || []).filter(function (doc) {
+    return String(doc.customerId) === String(customerId);
+  }).map(publicDealerQuote);
+}
+
+async function createDealerQuoteFor(store, user, payload) {
+  const customerId = await resolveDealerCustomerId(store, user);
+  if (!customerId) throw noCustomerError();
+  const body = payload || {};
+  const notes = trim(body.notes, 2000);
+  const rawLines = Array.isArray(body.lines) ? body.lines : [];
+  const book = {};
+  (await store.getDealerPriceBook()).forEach(function (item) {
+    if (item && item.sku) book[item.sku] = item;
+  });
+  const lines = [];
+  rawLines.forEach(function (line) {
+    const sku = trim(line && line.sku, 80);
+    if (!sku) return;
+    const item = book[sku];
+    if (!item) throw new Error('Unknown SKU ' + sku + '.');
+    const qty = Number(line && line.qty);
+    const n = Number.isFinite(qty) && qty > 0 ? qty : 1;
+    lines.push({
+      sku: sku,
+      item: item.name || sku,
+      description: [item.brand, item.pitchLabel || item.pitch].filter(Boolean).join(' · '),
+      qty: n,
+      unitPrice: Number(item.dealerNet) || 0
+    });
+  });
+  if (!notes && !lines.length) throw new Error('Add a note or at least one SKU.');
+  const app = await store.getDealerApplicationForUser({
+    userId: user && user.id,
+    email: user && user.email
+  });
+  const extra = 'Requested from Dealer Portal' + (app && app.companyName ? ' (' + app.companyName + ')' : '');
+  const created = await store.createSalesDoc({
+    type: 'quote',
+    customerId: customerId,
+    customerEmail: (user && user.email) || '',
+    notes: extra + (notes ? '\n' + notes : ''),
+    paymentTerms: '30% deposit / balance before ship',
+    status: 'draft',
+    lines: lines,
+    rep: 'Dealer Portal'
+  });
+  return publicDealerQuote(created);
 }
 
 function publicPriceBookItem(item) {
@@ -499,7 +625,7 @@ function sqliteApi(db, store) {
           'SELECT * FROM dealer_applications WHERE lower(email) = ? ORDER BY datetime(created_at) DESC, id DESC LIMIT 1'
         ).get(email);
       }
-      return formatApplication(row, { admin: false });
+      return formatApplication(row, { self: true });
     },
     async approveDealerApplication(id, actor) {
       const row = getRow(id);
@@ -543,13 +669,13 @@ function sqliteApi(db, store) {
         userId: user && user.id,
         email: user && user.email
       });
-      const canSee = !!(user && (user.role === 'dealer' || user.role === 'sales'));
-      return {
-        role: (user && user.role) || 'customer',
-        application: application,
-        canSeeNets: canSee,
-        canSeeStock: canSee
-      };
+      return portalMePayload(user, application);
+    },
+    async listDealerQuotes(user) {
+      return listDealerQuotesFor(store, user);
+    },
+    async createDealerQuote(user, payload) {
+      return createDealerQuoteFor(store, user, payload);
     }
   };
 }
@@ -649,7 +775,7 @@ function supabaseApi(supabase, store) {
         if (at === bt) return (Number(b.id) || 0) - (Number(a.id) || 0);
         return at < bt ? 1 : -1;
       });
-      return formatApplication(results[0], { admin: false });
+      return formatApplication(results[0], { self: true });
     },
     async approveDealerApplication(id, actor) {
       const row = await fetchRow(id);
@@ -703,13 +829,13 @@ function supabaseApi(supabase, store) {
         userId: user && user.id,
         email: user && user.email
       });
-      const canSee = !!(user && (user.role === 'dealer' || user.role === 'sales'));
-      return {
-        role: (user && user.role) || 'customer',
-        application: application,
-        canSeeNets: canSee,
-        canSeeStock: canSee
-      };
+      return portalMePayload(user, application);
+    },
+    async listDealerQuotes(user) {
+      return listDealerQuotesFor(store, user);
+    },
+    async createDealerQuote(user, payload) {
+      return createDealerQuoteFor(store, user, payload);
     }
   };
 }

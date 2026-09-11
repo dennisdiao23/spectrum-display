@@ -120,7 +120,7 @@ OneDrive does **not** update GitHub. After Cloud Agent changes, pull and review 
 | `admins`, `sessions` | Company pages at `/company` (not customer Sign in) |
 | `app_config` | Admin secret check |
 | `profiles` | Site accounts. Role is `customer` (default), `dealer`, or `sales`. Only Admin can change type. Approving a dealer application sets Dealer. |
-| `dealer_applications` | Public dealer form. Status `pending` / `approved` / `rejected`. Pending is here, not a profile role. Company → Website → Applications. |
+| `dealer_applications` | Public dealer form. Status `pending` / `approved` / `rejected`. Pending is here, not a profile role. Company → Website → Applications. Header/account can show **Application pending** without changing `profiles.role`. |
 | `price_tiers` | Admin-only markup % by Customer / Dealer / Sales. Signed-in prices = catalog × (1 + %). Default 0%. Users never see this percent. |
 | `account_price_overrides` | Admin-only per-account markup that overwrites the type %. Leave blank on an account to inherit the type %. |
 | `saved_projects`, `custom_panels` | Designer saves (online, per user) |
@@ -164,6 +164,8 @@ Email/password Sign in does **not** need Google. Only the Google button does.
 Inquiries are also stored in Supabase `contact_inquiries` even if mail fails (if the server could reach the database).
 
 The **dealer application** on `dealer.html` is stored in `dealer_applications` first (and a CRM lead). Email is best-effort. If Resend is down, the form still succeeds and Company → Website → Applications can approve it.
+
+Approved dealers use **`/portal`** (Dealer Portal): Overview, live net price book (never cost), stock, saved calculator projects, quote requests that create a Company Sales Quote, and a read-only copy of their application. Guests hitting `/portal` are sent to Sign in (`account.html?next=/portal`). Customers who are not dealers see an apply CTA. Pending applicants see “in review.” My Account still shows nets as an alias.
 
 Company quotes / orders / invoices / POs do **not** use Resend. Those send from each staff person’s connected Gmail (next section).
 

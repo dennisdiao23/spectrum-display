@@ -46,7 +46,8 @@ Hosting is **Railway only** (not Netlify or Vercel).
 | `home-theater.html` | Home Theater & Residential (`/home-theater`) |
 | `support.html` | Support |
 | `designer.html` | LED Wall Calculator (`/led-wall-calculator`) |
-| `account.html` | Customer Sign in / account. Dealers also see Price book and Stock after approval. |
+| `account.html` | Customer Sign in / account. Dealers also see Price book and Stock after approval (alias of `/portal`). |
+| `portal.html` | Dealer Portal (`/portal`). Guests go to Sign in. Approved dealers see Overview, nets, stock, projects, quotes, and the company application. |
 | `dealer.html` | Become a dealer application. Saved even if email is down. Company approves under Website → Applications. |
 | `cart.html` | Cart (only after Sign in — **this browser only**) |
 | `contact.html` | Quote / contact form (emails you) |
@@ -77,8 +78,8 @@ Copy `.env.example` to `.env` for local keys. With Supabase vars, you use the li
 3. Add or edit products, photos, pitches, panel size, $/m², and categories (filters / mega menu).
    Control gear (NovaStar) is the same list — type Control, price each. Public product pages and the
    calculator read **only** this database (`/api/catalog`). They do not load `js/products-data.js`.
-4. **Inventory** tab: on-hand qty in **panels** per pitch, or **each** for control. Receive / sell / damage / count with a note. Dealer net is on the item; approved dealers see net + stock in **My Account**, never factory cost.
-5. **Website → Applications**: dealer form submissions. Approve as Authorized sets the matching website account to Dealer and converts the CRM lead to a Customer.
+4. **Inventory** tab: on-hand qty in **panels** per pitch, or **each** for control. Receive / sell / damage / count with a note. Dealer net is on the item; approved dealers see net + stock in **Dealer Portal** (`/portal`) and as an alias in **My Account**, never factory cost.
+5. **Website → Applications**: dealer form submissions. Approve as Authorized sets the matching website account to Dealer and converts the CRM lead to a Customer. List columns: Company, Applicant, Tax ID, Submitted, Status.
 
 Customer **Sign in** on the public site is not the admin login.
 

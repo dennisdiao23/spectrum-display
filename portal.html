@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link rel="icon" href="/favicon.ico" sizes="48x48" />
+  <link rel="icon" type="image/png" href="/assets/favicon-32.png" sizes="32x32" />
+  <link rel="apple-touch-icon" href="/assets/apple-touch-icon.png" />
+  <script src="js/i18n-boot.js"></script>
+  <link rel="stylesheet" href="css/site-header.css" />
+  <link rel="stylesheet" href="css/portal.css" />
+  <title>Dealer Portal | Spectrum Display</title>
+  <meta name="robots" content="noindex, nofollow" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+</head>
+<body class="portal-page">
+  <header class="site-header" id="site-header">
+    <div class="site-header-inner">
+      <div class="site-header-top">
+        <a href="/" class="site-brand">
+          <img src="assets/spectrum-logo.png" alt="Spectrum" class="site-brand-logo" />
+        </a>
+        <nav class="site-nav" id="site-nav">
+          <div class="site-nav-item" data-mega="products">
+            <button type="button" class="site-nav-link" aria-expanded="false" aria-haspopup="true">
+              <span data-i18n="nav.products">Products</span>
+              <svg class="site-nav-chevron" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M6 9l6 6 6-6"/></svg>
+            </button>
+          </div>
+          <div class="site-nav-item" data-mega="solutions">
+            <button type="button" class="site-nav-link" aria-expanded="false" aria-haspopup="true">
+              <span data-i18n="nav.solutions">Solutions</span>
+              <svg class="site-nav-chevron" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M6 9l6 6 6-6"/></svg>
+            </button>
+          </div>
+          <a class="site-nav-link" href="/led-wall-calculator" data-i18n="nav.designer">LED Wall Calculator</a>
+          <a class="site-nav-link" href="dealer.html" data-i18n="nav.dealer">Dealer</a>
+        </nav>
+        <div class="site-utils">
+          <div class="site-drop" id="hdr-search-drop">
+            <button type="button" class="site-util site-icon-btn" aria-label="Search" aria-haspopup="true">
+              <svg fill="none" stroke="currentColor" stroke-width="1.7" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z"/></svg>
+            </button>
+            <div class="site-drop-panel site-search-panel">
+              <form id="hdr-search-form" action="products.html" method="get">
+                <input id="hdr-search-input" name="q" type="search" autocomplete="off" placeholder="Search products" data-i18n-placeholder="nav.searchPlaceholder" />
+              </form>
+              <div class="site-search-results" id="hdr-search-results"></div>
+            </div>
+          </div>
+          <div class="site-drop" id="hdr-lang-drop">
+            <button type="button" class="site-util site-icon-btn" aria-label="Language" aria-haspopup="true">
+              <svg fill="none" stroke="currentColor" stroke-width="1.7" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 21a9 9 0 100-18 9 9 0 000 18zM3.6 9h16.8M3.6 15h16.8M12 3c2.5 3.2 2.5 14.8 0 18M12 3c-2.5 3.2-2.5 14.8 0 18"/></svg>
+            </button>
+            <div class="site-drop-panel site-lang-panel">
+              <button type="button" data-set-lang="en">English</button>
+              <button type="button" data-set-lang="es">Español</button>
+              <button type="button" data-set-lang="fr">Français</button>
+              <button type="button" data-set-lang="ko">한국어</button>
+              <button type="button" data-set-lang="ja">日本語</button>
+              <button type="button" data-set-lang="zh">中文</button>
+            </div>
+          </div>
+          <div class="site-drop" id="hdr-signin-drop">
+            <button type="button" class="site-util" aria-haspopup="true">
+              <svg fill="none" stroke="currentColor" stroke-width="1.7" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 7.5a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.5 19.5a7.5 7.5 0 0115 0"/></svg>
+              <span class="site-util-label site-util-guest" data-i18n="nav.signin">Sign in</span>
+              <span class="site-util-label site-util-user" id="hdr-user-name"></span>
+            </button>
+            <div class="site-drop-panel">
+              <div class="site-guest">
+                <h3 data-i18n="nav.myAccount">My Account</h3>
+                <ul class="site-account-roles">
+                  <li data-i18n="nav.benefitOrders">Place orders quickly and easily</li>
+                  <li data-i18n="nav.benefitTrack">View orders and track your shipping status</li>
+                  <li data-i18n="nav.benefitList">Create and access a list of your products</li>
+                  <li data-i18n="nav.benefitProjects">View Saved Projects</li>
+                </ul>
+                <div class="site-drop-actions">
+                  <a href="account.html?next=/portal" class="site-btn-primary" data-i18n="nav.signin">Sign in</a>
+                  <a href="account.html?mode=register&next=/portal" class="site-btn-ghost" data-i18n="nav.createAccount">Create account</a>
+                </div>
+              </div>
+              <div class="site-logged">
+                <h3 id="hdr-user-name-panel"></h3>
+                <p id="hdr-user-role"></p>
+                <div class="site-drop-list">
+                  <a href="account.html" data-i18n="nav.myAccount">My Account</a>
+                  <button type="button" id="hdr-logout" data-i18n="nav.signout">Sign out</button>
+                </div>
+              </div>
+            </div>
+          </div>
+          <a href="support.html" class="site-util site-support-link"><span data-i18n="nav.support">Support</span></a>
+          <a href="contact.html" class="site-cta" data-i18n="nav.contactSales">Contact Sales</a>
+          <a href="contact.html" class="site-util site-contact-icon" aria-label="Contact Sales">
+            <svg fill="none" stroke="currentColor" stroke-width="1.7" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M21.75 6.75v10.5a2.25 2.25 0 01-2.25 2.25h-15a2.25 2.25 0 01-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0019.5 4.5h-15a2.25 2.25 0 00-2.25 2.25m19.5 0v.243a2.25 2.25 0 01-1.07 1.916l-7.5 4.615a2.25 2.25 0 01-2.36 0L3.32 8.91a2.25 2.25 0 01-1.07-1.916V6.75"/></svg>
+          </a>
+          <a href="cart.html" class="site-util site-cart site-icon-btn" aria-label="Cart">
+            <svg fill="none" stroke="currentColor" stroke-width="1.7" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"/></svg>
+            <span class="site-cart-count" id="cart-count">0</span>
+          </a>
+          <button type="button" class="site-util site-menu-btn" id="hdr-menu-btn" aria-label="Menu">
+            <svg fill="none" stroke="currentColor" stroke-width="1.7" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h16"/></svg>
+          </button>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <main class="portal-main">
+    <p class="portal-note" id="portal-loading">Loading…</p>
+
+    <div class="portal-gate" id="gate-pending">
+      <h1>Application in review</h1>
+      <p>Thanks for applying. We typically review within one business day. You’ll get nets and stock here once you’re approved as an Authorized dealer.</p>
+      <p id="pending-company"></p>
+      <p><a href="/account.html">My Account</a></p>
+    </div>
+
+    <div class="portal-gate" id="gate-customer">
+      <h1>Become an Authorized dealer</h1>
+      <p>Nets, stock, and quote requests are for Authorized dealers. Apply with your tax ID and we’ll review it.</p>
+      <p><a href="/dealer.html">Apply as a dealer</a></p>
+      <p><a href="/account.html">My Account</a></p>
+    </div>
+
+    <div class="portal-dash" id="portal-dash">
+      <div class="portal-head">
+        <div>
+          <h1>Dealer Portal</h1>
+          <p id="dash-name"></p>
+        </div>
+        <span class="portal-badge" id="dash-role">Dealer</span>
+      </div>
+      <div class="portal-tabs" role="tablist">
+        <button type="button" class="portal-tab is-on" data-tab="overview">Overview</button>
+        <button type="button" class="portal-tab" data-tab="price-book">Price book</button>
+        <button type="button" class="portal-tab" data-tab="stock">Stock</button>
+        <button type="button" class="portal-tab" data-tab="projects">Projects</button>
+        <button type="button" class="portal-tab" data-tab="quotes">Quotes</button>
+        <button type="button" class="portal-tab" data-tab="company">Company</button>
+      </div>
+
+      <section class="portal-section is-on" id="sec-overview">
+        <div class="portal-cards">
+          <div class="portal-card"><span>Company</span><strong id="ov-company">—</strong></div>
+          <div class="portal-card"><span>Contact</span><strong id="ov-contact">—</strong></div>
+          <div class="portal-card"><span>Status</span><strong id="ov-tier">Authorized</strong></div>
+          <div class="portal-card"><span>Payment</span><strong id="ov-pay">30% deposit / balance before ship</strong></div>
+          <div class="portal-card"><span>Inventory hold</span><strong id="ov-hold">48-hour hold (policy)</strong></div>
+        </div>
+        <p class="portal-note">Hold is a stated policy, not an automatic reservation in inventory. Factory cost is never shown here.</p>
+      </section>
+
+      <section class="portal-section" id="sec-price-book">
+        <p class="portal-note">Authorized dealer net and list by SKU. Factory cost is never shown here.</p>
+        <div class="portal-table-wrap">
+          <table class="portal-table">
+            <thead>
+              <tr>
+                <th>SKU</th>
+                <th>Name</th>
+                <th>Brand</th>
+                <th>Pitch</th>
+                <th class="num">Dealer net</th>
+                <th class="num">List</th>
+              </tr>
+            </thead>
+            <tbody id="price-book-table"></tbody>
+          </table>
+        </div>
+        <p class="portal-empty" id="price-book-empty">No SKUs in the price book yet.</p>
+      </section>
+
+      <section class="portal-section" id="sec-stock">
+        <p class="portal-note">On-hand qty and warehouse. Incoming weeks and live holds are not shown here.</p>
+        <div class="portal-table-wrap">
+          <table class="portal-table">
+            <thead>
+              <tr>
+                <th>SKU</th>
+                <th>Name</th>
+                <th>On hand</th>
+                <th>Status</th>
+                <th>Warehouse</th>
+              </tr>
+            </thead>
+            <tbody id="stock-table"></tbody>
+          </table>
+        </div>
+        <p class="portal-empty" id="stock-empty">No stock rows yet.</p>
+      </section>
+
+      <section class="portal-section" id="sec-projects">
+        <p class="portal-note">Layouts you saved from the LED Wall Calculator.</p>
+        <div id="projects-list"></div>
+        <p class="portal-empty" id="projects-empty">No saved calculator layouts yet. Save one from the LED wall calculator.</p>
+      </section>
+
+      <section class="portal-section" id="sec-quotes">
+        <form class="portal-form" id="quote-form">
+          <h2>Request a quote</h2>
+          <p class="portal-note">Creates a sales quote in Company for your dealer account. Lines use dealer net, never factory cost.</p>
+          <div class="portal-line-row">
+            <select id="quote-sku" aria-label="SKU"></select>
+            <input id="quote-qty" type="number" min="1" value="1" aria-label="Qty">
+            <button type="button" class="portal-btn portal-btn-ghost" id="quote-add">Add line</button>
+          </div>
+          <div id="quote-lines"></div>
+          <label>Notes
+            <textarea id="quote-notes" placeholder="Notes for sales (required if you have no SKU lines)"></textarea>
+          </label>
+          <button type="submit" class="portal-btn portal-btn-primary">Send quote request</button>
+          <p class="portal-msg" id="quote-msg"></p>
+        </form>
+        <h2>Your quotes</h2>
+        <div id="quotes-list"></div>
+        <p class="portal-empty" id="quotes-empty">No quotes yet.</p>
+      </section>
+
+      <section class="portal-section" id="sec-company">
+        <p class="portal-note">The application you submitted. Spectrum staff edit status in Company.</p>
+        <dl class="portal-dl" id="company-fields"></dl>
+      </section>
+    </div>
+  </main>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="js/supabase-client.js"></script>
+  <script src="js/pricing.js"></script>
+  <script src="js/auth.js?v=dealer-portal-v2"></script>
+  <script src="js/site-header.js?v=dealer-portal-v2"></script>
+  <script src="js/i18n.js"></script>
+  <script src="js/portal.js?v=dealer-portal-v2"></script>
+</body>
+</html>
