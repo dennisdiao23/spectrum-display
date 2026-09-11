@@ -519,6 +519,7 @@
             ? 'Thanks — Spectrum saved your dealer application. Check My Account for a pending notice while we review it.'
             : 'Thanks — Spectrum saved your dealer application and will follow up by email.';
           msg.className = 'dealer-form-msg is-ok';
+          if (window.SpectrumAnalytics && SpectrumAnalytics.track) SpectrumAnalytics.track('dealer');
         } catch (err) {
           msg.textContent = (err && err.message) || 'Could not send the application. Please try again.';
           msg.className = 'dealer-form-msg is-error';

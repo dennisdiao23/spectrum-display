@@ -3,6 +3,16 @@
  * Header markup is static in HTML so it never jumps on load.
  */
 (function () {
+  (function loadAnalytics() {
+    var p = (location.pathname || '').toLowerCase();
+    if (p.indexOf('/company') === 0 || p.indexOf('/portal') === 0) return;
+    if (document.querySelector('script[src*="site-analytics.js"]')) return;
+    var s = document.createElement('script');
+    s.src = '/js/site-analytics.js?v=ga1';
+    s.async = true;
+    document.head.appendChild(s);
+  })();
+
   function $(sel, root) { return (root || document).querySelector(sel); }
   function $all(sel, root) { return Array.prototype.slice.call((root || document).querySelectorAll(sel)); }
 

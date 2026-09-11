@@ -237,6 +237,7 @@
         }
         form.reset();
         showStatus('ok', t('contact.success', 'Thanks — we received your message and will get back to you by email.'));
+        if (window.SpectrumAnalytics && SpectrumAnalytics.track) SpectrumAnalytics.track('contact');
       } catch (err) {
         showStatus('err', err.message || t('contact.error', 'Could not send the message. Please try again.'));
       } finally {

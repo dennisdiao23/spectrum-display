@@ -124,13 +124,19 @@
         if (e.target === overlay) overlay.classList.remove('is-on');
       };
       document.addEventListener('keydown', function (e) {
-        if (e.key === 'Escape') overlay.classList.remove('is-on');
+        if (e.key !== 'Escape') return;
+        if (document.body.classList.contains('shop-cart-open')) {
+          closeCartDrawer();
+          return;
+        }
+        overlay.classList.remove('is-on');
       });
     }
     if (input) {
       input.oninput = function () { renderSearch(input.value); };
     }
     document.body.addEventListener('click', function (e) {
+      if (e.target.closest && e.target.closest('.shop-card-cta, .shop-btn, [data-add]')) return;
       var a = e.target.closest && e.target.closest('a[data-shop-link]');
       if (!a) return;
       var url = a.getAttribute('href') || '';
@@ -186,6 +192,86 @@
     updateCartBadge();
   }
 
+  function fillCartDrawer() {
+    var body = $('#shop-cart-body');
+    var foot = $('#shop-cart-foot');
+    if (!body || !foot) return;
+    var items = SpectrumStoreCart.read();
+    var ready = !!(shop() && items.length);
+    if (!items.length) {
+      body.innerHTML = '<p class="shop-empty">Your cart is empty.</p>';
+      foot.innerHTML = '<button type="button" class="shop-btn" data-cart-close>Continue shopping</button>';
+      return;
+    }
+    body.innerHTML = items.map(function (line) {
+      var qty = Math.max(1, Number(line.qty) || 1);
+      return '<div class="shop-cart-line">' +
+        (line.image ? '<img src="' + esc(imgSrc(line.image, 'thumb')) + '" alt="">' : '<div class="shop-cart-line-ph"></div>') +
+        '<div><strong>' + esc(line.name) + '</strong>' +
+          '<div class="shop-sku">' + esc(line.sku || '') + '</div>' +
+          '<div class="shop-cart-qty">' +
+            '<button type="button" data-cart-qty="-1" data-id="' + esc(line.variantId) + '" aria-label="Less">−</button>' +
+            '<span>' + esc(qty) + '</span>' +
+            '<button type="button" data-cart-qty="1" data-id="' + esc(line.variantId) + '" aria-label="More">+</button>' +
+          '</div></div>' +
+        '<div class="shop-cart-line-price">' + esc(line.priceLabel || '') + '</div></div>';
+    }).join('');
+    var checkout = ready
+      ? '<a class="shop-btn" href="' + esc(SpectrumStoreCart.checkoutUrl(shop())) + '">Check out</a>'
+      : '<button class="shop-btn is-off" type="button" disabled>Check out</button>' +
+        '<p class="shop-quiet">Checkout is not connected yet. Catalog stays visible — no payment is taken on this site.</p>';
+    foot.innerHTML = '<p class="shop-quiet">Checkout opens Shopify. Spectrum does not collect cards on this page. Oversized LED freight is confirmed by Spectrum before the truck is booked. Small control and spare orders ship parcel.</p>' + checkout;
+  }
+
+  function openCartDrawer() {
+    fillCartDrawer();
+    document.body.classList.add('shop-cart-open');
+    var drawer = $('#shop-cart-drawer');
+    if (drawer) drawer.setAttribute('aria-hidden', 'false');
+    var close = $('[data-cart-close]');
+    if (close) close.focus();
+  }
+
+  function closeCartDrawer() {
+    document.body.classList.remove('shop-cart-open');
+    var drawer = $('#shop-cart-drawer');
+    if (drawer) drawer.setAttribute('aria-hidden', 'true');
+    if (parseRoute().name === 'cart') {
+      history.replaceState({}, '', href('/'));
+    }
+  }
+
+  function bindCartDrawer() {
+    var cart = $('[data-cart]');
+    if (cart) {
+      cart.addEventListener('click', function (e) {
+        e.preventDefault();
+        openCartDrawer();
+      });
+    }
+    var scrim = $('#shop-cart-scrim');
+    if (scrim) scrim.addEventListener('click', closeCartDrawer);
+    var drawer = $('#shop-cart-drawer');
+    if (drawer) {
+      drawer.addEventListener('click', function (e) {
+        if (e.target.closest && e.target.closest('[data-cart-close]')) {
+          e.preventDefault();
+          closeCartDrawer();
+          return;
+        }
+        var btn = e.target.closest && e.target.closest('[data-cart-qty]');
+        if (!btn) return;
+        var id = btn.getAttribute('data-id');
+        var delta = Number(btn.getAttribute('data-cart-qty')) || 0;
+        var line = SpectrumStoreCart.read().filter(function (item) {
+          return String(item.variantId) === String(id);
+        })[0];
+        var next = Math.max(0, (Number(line && line.qty) || 1) + delta);
+        SpectrumStoreCart.setQty(id, next);
+      });
+    }
+  }
+
   function cta(p) {
     if (p.mode === 'configure') {
       return '<a class="shop-btn" href="' + esc(p.configureUrl) + '">Configure wall</a>';
@@ -199,32 +285,39 @@
     return '<button class="shop-btn is-off" type="button" disabled>Add to cart</button>';
   }
 
+  function leadLine(p) {
+    var label = String((p && p.leadLabel) || '');
+    if (!label || /^ships from/i.test(label) || /^ships_/.test(String((p && p.lead) || ''))) return '';
+    return '<div class="shop-lead">' + esc(label) + '</div>';
+  }
+
   function cardHtml(p, opts) {
     opts = opts || {};
     var photo = photoFor(p, 'card');
+    var chips = (p.chips || []).filter(Boolean);
     return '<article class="shop-card">' +
-      (opts.caption ? '<div class="shop-caption">' + esc(opts.caption) + '</div>' : '') +
-      '<div class="shop-card-media">' +
-        (photo ? '<img src="' + esc(photo) + '" alt="">' : '') +
-        '<div class="shop-card-hover">' +
-          '<a class="shop-ghost" href="' + esc(href('/products/' + p.handle)) + '" data-shop-link>Learn more</a>' +
+      '<a class="shop-card-main" href="' + esc(href('/products/' + p.handle)) + '" data-shop-link>' +
+        (opts.caption ? '<div class="shop-caption">' + esc(opts.caption) + '</div>' : '') +
+        '<div class="shop-card-media">' +
+          (photo ? '<img src="' + esc(photo) + '" alt="">' : '') +
         '</div>' +
-      '</div>' +
-      '<h3>' + esc(p.name) + '</h3>' +
-      '<div class="shop-sku">' + esc(p.sku || p.brandName || '') + '</div>' +
-      '<p>' + esc(p.description || '') + '</p>' +
-      '<div class="shop-chips">' + (p.chips || []).map(function (c) {
-        return '<span class="shop-chip">' + esc(c) + '</span>';
-      }).join('') + '</div>' +
-      (p.priceLabel ? '<div class="shop-price">' + esc(p.priceLabel) + '</div>' : '') +
-      '<div class="shop-lead">' + esc(p.leadLabel || '') + '</div>' +
-      cta(p) +
+        '<h3>' + esc(p.name) + '</h3>' +
+        '<div class="shop-sku">' + esc(p.sku || p.brandName || '') + '</div>' +
+        '<p>' + esc(p.description || '') + '</p>' +
+        (chips.length ? '<div class="shop-chips">' + chips.map(function (c) {
+          return '<span class="shop-chip">' + esc(c) + '</span>';
+        }).join('') + '</div>' : '') +
+        (p.priceLabel ? '<div class="shop-price">' + esc(p.priceLabel) + '</div>' : '') +
+        leadLine(p) +
+      '</a>' +
+      '<div class="shop-card-cta">' + cta(p) + '</div>' +
     '</article>';
   }
 
   function bindAddButtons(root) {
     $all('[data-add]', root || document).forEach(function (btn) {
-      btn.addEventListener('click', function () {
+      btn.addEventListener('click', function (e) {
+        e.stopPropagation();
         var p = byHandle(btn.getAttribute('data-add'));
         if (!p || !p.canAddToCart || !p.variants.length) return;
         SpectrumStoreCart.add({
@@ -235,8 +328,9 @@
           image: photoOrFallback(p),
           priceLabel: p.priceLabel
         }, 1);
+        if (window.SpectrumAnalytics && SpectrumAnalytics.track) SpectrumAnalytics.track('add_to_cart');
         updateCartBadge();
-        go('/cart');
+        openCartDrawer();
       });
     });
   }
@@ -360,7 +454,7 @@
         '<h1>' + esc(p.name) + '</h1>' +
         '<div class="shop-sku">' + esc(p.sku) + '</div>' +
         (p.priceLabel ? '<div class="shop-price" style="margin-top:.6rem">' + esc(p.priceLabel) + '</div>' : '') +
-        '<div class="shop-lead">' + esc(p.leadLabel) + (p.mode === 'buy' ? ' | Parcel when the Shopify profile allows' : '') + '</div>' +
+        leadLine(p) +
         (p.hasOptions ? '<div class="shop-filters" style="margin:.8rem 0">' + p.variants.map(function (v, i) {
           return '<button type="button" class="shop-pill' + (i === 0 ? ' is-on' : '') + '" data-variant="' + esc(v.id) + '">' + esc(v.title) + '</button>';
         }).join('') + '</div>' : '') +
@@ -419,35 +513,11 @@
           image: photoOrFallback(p),
           priceLabel: p.priceLabel
         }, state.qty);
+        if (window.SpectrumAnalytics && SpectrumAnalytics.track) SpectrumAnalytics.track('add_to_cart');
         updateCartBadge();
-        go('/cart');
+        openCartDrawer();
       };
     }
-  }
-
-  function renderCart() {
-    var items = SpectrumStoreCart.read();
-    var ready = !!(shop() && items.length);
-    var html = '<div class="shop-wrap shop-cart-page"><h1 class="shop-h">Cart</h1>';
-    if (!items.length) {
-      html += '<p class="shop-empty">Your cart is empty.</p><p><a class="shop-btn" style="max-width:12rem" href="' + esc(href('/')) + '" data-shop-link>Continue shopping</a></p>';
-    } else {
-      html += items.map(function (line) {
-        return '<div class="shop-cart-line">' +
-          (line.image ? '<img src="' + esc(imgSrc(line.image, 'thumb')) + '" alt="">' : '<div></div>') +
-          '<div><strong>' + esc(line.name) + '</strong><div class="shop-sku">' + esc(line.sku) + ' · qty ' + esc(line.qty) + '</div></div>' +
-          '<div>' + esc(line.priceLabel || '') + '</div></div>';
-      }).join('');
-      html += '<p class="shop-quiet">Checkout opens Shopify. Spectrum does not collect cards on this page. Oversized LED freight is confirmed by Spectrum before the truck is booked. Small control and spare orders ship parcel.</p>';
-      if (ready) {
-        html += '<a class="shop-btn" style="max-width:16rem" href="' + esc(SpectrumStoreCart.checkoutUrl(shop())) + '">Check out</a>';
-      } else {
-        html += '<button class="shop-btn is-off" type="button" disabled>Check out</button>' +
-          '<p class="shop-quiet">Checkout is not connected yet. Catalog stays visible — no payment is taken on this site.</p>';
-      }
-    }
-    html += '</div>';
-    $('#shop-main').innerHTML = html;
   }
 
   var POLICY_SRC = {
@@ -521,7 +591,10 @@
       state.collectionSlug = '';
       state.filter = 'all';
       if (route.name === 'product') renderProduct(route.handle);
-      else if (route.name === 'cart') renderCart();
+      else if (route.name === 'cart') {
+        renderHome();
+        openCartDrawer();
+      }
       else if (route.name === 'page') renderPage(route.slug);
       else renderHome();
     }
@@ -534,8 +607,12 @@
   function boot() {
     if (location.hostname === 'localhost' || location.hostname === '127.0.0.1') WWW = '';
     bindChrome();
+    bindCartDrawer();
     window.addEventListener('popstate', render);
-    window.addEventListener('spectrum:store-cart', updateCartBadge);
+    window.addEventListener('spectrum:store-cart', function () {
+      updateCartBadge();
+      if (document.body.classList.contains('shop-cart-open')) fillCartDrawer();
+    });
     fetch('/api/store/catalog', { headers: { Accept: 'application/json' } })
       .then(function (res) { return res.ok ? res.json() : null; })
       .then(function (data) {

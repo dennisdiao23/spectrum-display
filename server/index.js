@@ -500,6 +500,29 @@ async function main() {
     return false;
   }
 
+  const analyticsHits = require('./site-analytics');
+
+  app.post('/api/analytics/pageview', async function (req, res) {
+    try {
+      if (analyticsHits.isBot(req)) return res.json({ ok: true });
+      const ip = String(req.ip || req.headers['x-forwarded-for'] || 'unknown').split(',')[0].trim();
+      if (analyticsHits.rateLimited(ip)) return res.json({ ok: true });
+      let body = req.body;
+      if (typeof body === 'string') {
+        try { body = JSON.parse(body); } catch (e) { body = {}; }
+      }
+      const hit = analyticsHits.parseHit(req, body || {});
+      if (!hit) return res.json({ ok: true });
+      if (typeof store.recordSitePageview === 'function') {
+        await store.recordSitePageview(hit);
+      }
+      res.json({ ok: true });
+    } catch (err) {
+      console.error('analytics pageview', err.message || err);
+      res.json({ ok: true });
+    }
+  });
+
   app.post('/api/contact', async function (req, res, next) {
     try {
       if (String(req.body.website || '').trim()) {
