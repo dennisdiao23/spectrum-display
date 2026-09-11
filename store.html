@@ -15,7 +15,7 @@
   <meta property="og:description" content="Control boxes, spares, and packaged kits. Custom LED walls are quoted on spectrumdisplay.com." />
   <meta property="og:url" content="https://store.spectrumdisplay.com/" />
   <meta property="og:image" content="https://www.spectrumdisplay.com/assets/spectrum-logo.png" />
-  <link rel="stylesheet" href="/css/store.css?v=rail3d" />
+  <link rel="stylesheet" href="/css/store.css?v=cartdrawer1" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
@@ -66,6 +66,16 @@
   </div>
 
   <main id="shop-main"></main>
+
+  <div id="shop-cart-scrim" class="shop-cart-scrim"></div>
+  <aside id="shop-cart-drawer" class="shop-cart-drawer" aria-hidden="true">
+    <div class="shop-cart-head">
+      <h2>Cart</h2>
+      <button type="button" class="shop-cart-close" data-cart-close aria-label="Close">×</button>
+    </div>
+    <div class="shop-cart-body" id="shop-cart-body"></div>
+    <div class="shop-cart-foot" id="shop-cart-foot"></div>
+  </aside>
 
   <footer class="shop-footer">
     <div class="shop-wrap">
@@ -123,6 +133,6 @@
   <script src="/js/site-analytics.js?v=ga1"></script>
   <script src="/js/store-cart.js?v=rail3d"></script>
   <script src="/js/product-photo.js?v=ph1"></script>
-  <script src="/js/store.js?v=ph1"></script>
+  <script src="/js/store.js?v=cartdrawer1"></script>
 </body>
 </html>
