@@ -1249,6 +1249,40 @@ async function main() {
     } catch (err) { next(err); }
   });
 
+  app.get('/api/admin/crm/sequences', requireAdmin, requireCrmView, async function (_req, res, next) {
+    try {
+      res.json({ ok: true, sequences: await store.listCrmSequences() });
+    } catch (err) { next(err); }
+  });
+
+  app.post('/api/admin/crm/sequences', requireAdmin, requireCrmEdit('activities'), async function (req, res, next) {
+    try {
+      res.json({ ok: true, sequence: await store.createCrmSequence(req.body || {}) });
+    } catch (err) { next(err); }
+  });
+
+  app.put('/api/admin/crm/sequences/:id', requireAdmin, requireCrmEdit('activities'), async function (req, res, next) {
+    try {
+      const sequence = await store.updateCrmSequence(req.params.id, req.body || {});
+      if (!sequence) return res.status(404).json({ ok: false, error: 'Sequence not found.' });
+      res.json({ ok: true, sequence: sequence });
+    } catch (err) { next(err); }
+  });
+
+  app.delete('/api/admin/crm/sequences/:id', requireAdmin, requireCrmEdit('activities'), async function (req, res, next) {
+    try {
+      const ok = await store.deleteCrmSequence(req.params.id);
+      if (!ok) return res.status(404).json({ ok: false, error: 'Sequence not found.' });
+      res.json({ ok: true });
+    } catch (err) { next(err); }
+  });
+
+  app.get('/api/admin/crm/mentions', requireAdmin, requireCrmView, async function (req, res, next) {
+    try {
+      res.json({ ok: true, mentions: await store.listCrmMentions(req.query.q || req.query.query || '') });
+    } catch (err) { next(err); }
+  });
+
   app.get('/api/admin/crm/leads', requireAdmin, requireCrmView, async function (_req, res, next) {
     try {
       res.json({ ok: true, leads: await store.listCrmLeads() });
@@ -1303,6 +1337,22 @@ async function main() {
       const intoId = (req.body || {}).intoLeadId || (req.body || {}).intoId;
       const lead = await store.mergeCrmLeads(req.params.id, intoId);
       if (!lead) return res.status(404).json({ ok: false, error: 'Lead not found.' });
+      res.json({ ok: true, lead: lead });
+    } catch (err) { next(err); }
+  });
+
+  app.post('/api/admin/crm/leads/:id/enroll', requireAdmin, requireCrmEdit('leads'), async function (req, res, next) {
+    try {
+      const lead = await store.enrollCrmLead(req.params.id, req.body && (req.body.sequenceId || req.body.sequence_id), actorName(req));
+      if (!lead) return res.status(404).json({ ok: false, error: 'Lead not found.' });
+      res.json({ ok: true, lead: lead });
+    } catch (err) { next(err); }
+  });
+
+  app.post('/api/admin/crm/leads/:id/enrollments/:enrollmentId/pause', requireAdmin, requireCrmEdit('leads'), async function (req, res, next) {
+    try {
+      const lead = await store.pauseCrmEnrollment(req.params.id, req.params.enrollmentId);
+      if (!lead) return res.status(404).json({ ok: false, error: 'Enrollment not found.' });
       res.json({ ok: true, lead: lead });
     } catch (err) { next(err); }
   });
@@ -1419,6 +1469,14 @@ async function main() {
         stage: deal.stage === 'new' ? 'quoted' : deal.stage
       });
       res.json({ ok: true, deal: next, quote: quote });
+    } catch (err) { next(err); }
+  });
+
+  app.post('/api/admin/crm/deals/:id/calculator', requireAdmin, requireCrmEdit('pipeline'), async function (req, res, next) {
+    try {
+      const deal = await store.saveCrmDealCalculator(req.params.id, req.body || {});
+      if (!deal) return res.status(404).json({ ok: false, error: 'Deal not found.' });
+      res.json({ ok: true, deal: deal });
     } catch (err) { next(err); }
   });
 

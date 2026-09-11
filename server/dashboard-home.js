@@ -26,7 +26,8 @@ function emptyCounts() {
     openDeals: 0,
     pipelineValue: 0,
     activities: 0,
-    overdueActivities: 0
+    overdueActivities: 0,
+    weightedForecast: 0
   };
 }
 
@@ -307,6 +308,19 @@ function getSqliteDashboardHome(db, admin) {
       SELECT COALESCE(SUM(value), 0) AS n FROM company_crm_deals
       WHERE stage IN ('new', 'qualified', 'quoted', 'negotiation')
     `);
+    counts.weightedForecast = sqliteCount(db, `
+      SELECT COALESCE(SUM(
+        value * CASE
+          WHEN probability IS NOT NULL AND probability >= 0 THEN probability
+          WHEN stage = 'new' THEN 10
+          WHEN stage = 'qualified' THEN 25
+          WHEN stage = 'quoted' THEN 50
+          WHEN stage = 'negotiation' THEN 75
+          ELSE 10
+        END / 100.0
+      ), 0) AS n FROM company_crm_deals
+      WHERE stage IN ('new', 'qualified', 'quoted', 'negotiation')
+    `);
     counts.activities = sqliteCount(db, 'SELECT COUNT(*) AS n FROM company_crm_activities');
     counts.overdueActivities = sqliteCount(db, `
       SELECT COUNT(*) AS n FROM company_crm_activities
@@ -560,7 +574,7 @@ async function getSupabaseDashboardHome(supabase, admin) {
           .order('updated_at', { ascending: false })
           .limit(8),
         supabase.from('company_crm_deals')
-          .select('value')
+          .select('value, stage, probability')
           .in('stage', ['new', 'qualified', 'quoted', 'negotiation']),
         supabase.from('company_crm_activities')
           .select('due_at, done_at')
@@ -579,10 +593,18 @@ async function getSupabaseDashboardHome(supabase, admin) {
       counts.openDeals = openDeals;
       counts.activities = activities;
       let pipelineValue = 0;
+      let weightedForecast = 0;
       ((openDealRows && openDealRows.data) || []).forEach(function (row) {
-        pipelineValue += Number(row.value) || 0;
+        const value = Number(row.value) || 0;
+        pipelineValue += value;
+        const stored = Number(row.probability);
+        const p = Number.isFinite(stored) && stored >= 0
+          ? stored
+          : (row.stage === 'qualified' ? 25 : row.stage === 'quoted' ? 50 : row.stage === 'negotiation' ? 75 : 10);
+        weightedForecast += Math.round(value * p / 100);
       });
       counts.pipelineValue = pipelineValue;
+      counts.weightedForecast = weightedForecast;
       const now = Date.now();
       counts.overdueActivities = ((dueActs && dueActs.data) || []).filter(function (row) {
         const due = Date.parse(row.due_at);

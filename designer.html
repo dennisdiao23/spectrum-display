@@ -21,6 +21,12 @@
   <meta name="twitter:title" content="LED Wall Calculator | Spectrum Display" />
   <meta name="twitter:description" content="Size panels, pixel pitch, power, weight, and estimated price for professional LED video walls." />
   <script src="js/seo.js"></script>
+  <script>
+    (function () {
+      var q = new URLSearchParams(location.search);
+      if (q.get('embed') === '1') document.documentElement.classList.add('designer-embed');
+    })();
+  </script>
   <script src="https://cdn.tailwindcss.com"></script>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
   <style>
@@ -48,6 +54,10 @@
       position: sticky;
       top: var(--nav-h);
     }
+    html.designer-embed .site-header { display: none !important; }
+    html.designer-embed body.designer-app { padding-top: var(--designer-bar-h) !important; }
+    html.designer-embed .designer-toolbar { top: 0 !important; }
+    html.designer-embed #save-project-btn { display: none; }
     @media (min-width: 1024px) {
       html {
         overflow: hidden;
@@ -809,6 +819,10 @@
           <span class="sm:hidden" data-i18n="designer.saveShort">Save</span>
         </button>
         <span id="save-toast" class="hidden text-xs text-sky-400">Saved!</span>
+        <span id="designer-deal-bar" hidden class="items-center gap-2 shrink-0">
+          <span id="designer-deal-status" class="text-xs text-sky-300 truncate max-w-[10rem]">Deal wall</span>
+          <button id="designer-deal-save" type="button" class="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-sky-500 hover:bg-sky-400 text-white text-sm font-medium transition whitespace-nowrap">Save to deal</button>
+        </span>
       </div>
     </div>
   </header>
@@ -1242,6 +1256,13 @@
     const seriesEl = document.getElementById('series');
     const pitchEl = document.getElementById('pitch');
     const incomingQuery = window.location.search;
+    const incomingParams = new URLSearchParams(incomingQuery);
+    const crmDealId = String(incomingParams.get('deal') || '').trim();
+    const crmEmbed = incomingParams.get('embed') === '1';
+    let crmDealCanSave = false;
+    let crmDealTimer = 0;
+    let crmDealSaving = false;
+    let lastDealCalc = null;
     let shareUrlReady = false;
     const customNameEl = document.getElementById('custom-name');
     const customWEl = document.getElementById('custom-w');
@@ -2536,8 +2557,26 @@
       if (controlSel.playback) q += `&playback=${encodeURIComponent(controlSel.playback.name)}`;
       syncSummaryCta('contact.html' + q);
 
+      lastDealCalc = {
+        query: designerShareQuery(),
+        summary: {
+          brand: brandEl.value,
+          series: isCustomPanel() ? 'custom' : seriesEl.value,
+          seriesName: series.name,
+          pitch: pitch,
+          width: actualW,
+          height: actualH,
+          unit: sizeUnit || 'ft',
+          cabinets: panels,
+          estimate: sellPrice,
+          sizeLabel: sizeLabel
+        },
+        value: sellPrice
+      };
+
       // Update shareable URL without reloading
       updateShareUrl();
+      scheduleDealSave();
     }
 
     function isLoggedIn() {
@@ -2638,14 +2677,13 @@
       return false;
     }
 
-    function updateShareUrl() {
-      if (!shareUrlReady) return;
+    function designerShareQuery() {
       const series = getCurrentSeries();
-      if (!series) return;
+      if (!series) return '';
       const pitch = getPitch();
-      if (!Number.isFinite(pitch)) return;
+      if (!Number.isFinite(pitch)) return '';
       const seriesId = isCustomPanel() ? 'custom' : (seriesEl.value || series.id || '');
-      if (!seriesId) return;
+      if (!seriesId) return '';
       const params = new URLSearchParams({
         brand: brandEl.value,
         series: seriesId,
@@ -2666,8 +2704,102 @@
         const extra = customShareFields();
         Object.keys(extra).forEach(k => params.set(k, extra[k]));
       }
+      return params.toString();
+    }
+
+    function updateShareUrl() {
+      if (!shareUrlReady) return;
+      const qs = designerShareQuery();
+      if (!qs) return;
+      const params = new URLSearchParams(qs);
+      if (crmDealId) params.set('deal', crmDealId);
+      if (crmEmbed) params.set('embed', '1');
       const newUrl = window.location.pathname + '?' + params.toString();
       history.replaceState(null, '', newUrl);
+    }
+
+    function setDealStatus(text) {
+      const el = document.getElementById('designer-deal-status');
+      if (el) el.textContent = text || 'Deal wall';
+    }
+
+    async function saveDealCalculator(opts) {
+      opts = opts || {};
+      if (!crmDealId || !crmDealCanSave || !lastDealCalc) return false;
+      crmDealSaving = true;
+      setDealStatus(opts.manual ? 'Saving…' : 'Saving to deal…');
+      try {
+        const res = await fetch('/api/admin/crm/deals/' + encodeURIComponent(crmDealId) + '/calculator', {
+          method: 'POST',
+          credentials: 'include',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            query: lastDealCalc.query,
+            summary: lastDealCalc.summary,
+            value: lastDealCalc.value
+          })
+        });
+        const data = await res.json().catch(function () { return {}; });
+        if (!res.ok || !data.ok) throw new Error(data.error || 'Could not save to deal.');
+        setDealStatus('Saved to deal');
+        return true;
+      } catch (err) {
+        setDealStatus(err.message || 'Could not save');
+        return false;
+      } finally {
+        crmDealSaving = false;
+      }
+    }
+
+    function scheduleDealSave() {
+      if (!crmDealId || !crmDealCanSave) return;
+      if (crmDealTimer) clearTimeout(crmDealTimer);
+      crmDealTimer = setTimeout(function () {
+        saveDealCalculator();
+      }, 900);
+    }
+
+    async function bootDealLink() {
+      const bar = document.getElementById('designer-deal-bar');
+      const saveBtn = document.getElementById('designer-deal-save');
+      if (!crmDealId) return;
+      if (bar) {
+        bar.hidden = false;
+        bar.style.display = 'inline-flex';
+      }
+      setDealStatus('Checking company login…');
+      try {
+        const me = await fetch('/api/admin/me', { credentials: 'include' }).then(function (r) { return r.json(); });
+        crmDealCanSave = !!(me && me.ok && me.admin);
+      } catch (e) {
+        crmDealCanSave = false;
+      }
+      if (!crmDealCanSave) {
+        setDealStatus('Sign in to Company to save');
+        if (saveBtn) saveBtn.disabled = true;
+        return;
+      }
+      if (saveBtn) {
+        saveBtn.disabled = false;
+        saveBtn.addEventListener('click', function () {
+          saveDealCalculator({ manual: true });
+        });
+      }
+      const hasBrand = incomingParams.has('brand');
+      if (!hasBrand) {
+        try {
+          const data = await fetch('/api/admin/crm/deals/' + encodeURIComponent(crmDealId), { credentials: 'include' }).then(function (r) { return r.json(); });
+          const q = data && data.deal && data.deal.calculatorQuery;
+          if (q) {
+            const search = String(q).indexOf('?') === 0 ? q : ('?' + String(q).replace(/^\?/, ''));
+            loadFromUrl(search);
+            shareUrlReady = true;
+            updateShareUrl();
+          }
+        } catch (e) { /* leave defaults */ }
+      }
+      setDealStatus('Live on deal #' + crmDealId);
+      if (lastDealCalc) scheduleDealSave();
     }
 
     function applyProjectState(state) {
@@ -3235,6 +3367,7 @@
     shareUrlReady = true;
     updateShareUrl();
     loadOpenedCustomPanel();
+    bootDealLink();
     async function refreshAuthUi() {
       await tryPendingCustomPanelSave();
       if (isCustomPanel()) renderSavedCustomPanels();

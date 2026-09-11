@@ -68,6 +68,13 @@ function canReadInventory(admin) {
   return hasPerm(admin, 'inventory', 'view') || hasPerm(admin, 'website', 'view');
 }
 
+function canSeeCrm(admin) {
+  return hasPerm(admin, 'crm', 'view') ||
+    hasPerm(admin, 'leads', 'view') ||
+    hasPerm(admin, 'pipeline', 'view') ||
+    hasPerm(admin, 'activities', 'view');
+}
+
 function canEditInventory(admin) {
   return hasPerm(admin, 'inventory', 'edit');
 }
@@ -143,6 +150,44 @@ function compactPo(d) {
     total: d.total,
     lineCount: (d.lines || []).length
   };
+}
+
+function compactCrmLead(lead) {
+  if (!lead) return null;
+  return {
+    id: lead.id,
+    kind: 'lead',
+    name: lead.displayName || lead.companyName || '',
+    companyName: lead.companyName || '',
+    email: lead.email || '',
+    status: lead.status || '',
+    source: lead.source || '',
+    leadKind: lead.kind || 'project',
+    ownerName: lead.ownerName || '',
+    path: '/company/crm/leads/' + lead.id
+  };
+}
+
+function compactCrmDeal(deal) {
+  if (!deal) return null;
+  return {
+    id: deal.id,
+    kind: 'deal',
+    title: deal.title || '',
+    companyName: deal.companyName || '',
+    stage: deal.stage || '',
+    value: Number(deal.value) || 0,
+    probability: deal.effectiveProbability != null ? deal.effectiveProbability : deal.probability,
+    weightedValue: deal.weightedValue,
+    dealKind: deal.kind || 'project',
+    path: '/company/crm/pipeline/' + deal.id
+  };
+}
+
+function crmMentionNote(text) {
+  const found = String(text || '').match(/@(lead|deal)\/(\d+)/gi);
+  if (!found || !found.length) return '';
+  return 'Referenced CRM records: ' + found.join(', ') + '. Use get_record with kind lead or deal, or search_crm.';
 }
 
 function hay(row) {
@@ -325,6 +370,20 @@ const TOOLS = [
   {
     type: 'function',
     function: {
+      name: 'search_crm',
+      description: 'Search CRM leads and deals by name, company, email, or @lead/id / @deal/id.',
+      parameters: {
+        type: 'object',
+        properties: {
+          query: { type: 'string' },
+          kind: { type: 'string', description: 'lead, deal, or empty for both' }
+        }
+      }
+    }
+  },
+  {
+    type: 'function',
+    function: {
       name: 'get_record',
       description: 'Get one record the staff member can open.',
       parameters: {
@@ -332,7 +391,7 @@ const TOOLS = [
         properties: {
           kind: {
             type: 'string',
-            description: 'customer, inventory, vendor, quote, order, invoice, po, warehouse'
+            description: 'customer, inventory, vendor, quote, order, invoice, po, warehouse, lead, deal'
           },
           id: { type: 'string' }
         },
@@ -457,6 +516,28 @@ async function runTool(store, admin, roomId, name, args) {
       return matchesQuery([d.number, d.vendorName, d.status], q || ' ');
     }).slice(0, 20).map(compactPo);
   }
+  if (name === 'search_crm') {
+    if (!canSeeCrm(admin)) return { error: 'No CRM access.' };
+    const q = trim(a.query, 80);
+    const kind = trim(a.kind, 20).toLowerCase();
+    const out = [];
+    if (kind !== 'deal' && typeof store.listCrmLeads === 'function') {
+      const leads = await store.listCrmLeads();
+      (leads || []).forEach(function (lead) {
+        if (lead.mergedIntoId) return;
+        if (!matchesQuery([lead.displayName, lead.companyName, lead.email, lead.kind, 'lead', '@lead/' + lead.id], q || ' ')) return;
+        out.push(compactCrmLead(lead));
+      });
+    }
+    if (kind !== 'lead' && typeof store.listCrmDeals === 'function') {
+      const deals = await store.listCrmDeals();
+      (deals || []).forEach(function (deal) {
+        if (!matchesQuery([deal.title, deal.companyName, deal.email, deal.kind, 'deal', '@deal/' + deal.id], q || ' ')) return;
+        out.push(compactCrmDeal(deal));
+      });
+    }
+    return out.slice(0, 24);
+  }
   if (name === 'get_record') {
     return getRecord(store, admin, trim(a.kind, 40), a.id);
   }
@@ -531,6 +612,16 @@ async function getRecord(store, admin, kind, id) {
     const wh = await store.getWarehouse(id);
     if (!wh) return null;
     return { id: wh.id, name: wh.name, kind: wh.kind || wh.type, vendorId: wh.vendorId || '', vendorName: wh.vendorName || '' };
+  }
+  if (k === 'lead') {
+    if (!canSeeCrm(admin)) return { error: 'No CRM access.' };
+    if (typeof store.getCrmLead !== 'function') return { error: 'CRM is not available.' };
+    return compactCrmLead(await store.getCrmLead(id));
+  }
+  if (k === 'deal') {
+    if (!canSeeCrm(admin)) return { error: 'No CRM access.' };
+    if (typeof store.getCrmDeal !== 'function') return { error: 'CRM is not available.' };
+    return compactCrmDeal(await store.getCrmDeal(id));
   }
   return { error: 'Unknown kind.' };
 }
@@ -804,11 +895,12 @@ function systemPrompt(admin, name) {
   const bot = chatAi.normalizeAiName(name);
   return [
     'You are ' + bot + ' inside Spectrum Display’s company admin chat.',
-    'You help ' + who + ' with inventory, vendors, purchase orders, customers, quotes, orders, and invoices.',
+    'You help ' + who + ' with inventory, vendors, purchase orders, customers, quotes, orders, invoices, and CRM leads and deals.',
     'You can do anything they can do in this app, but you MUST NOT save, send, email, delete, or finalize any record.',
     'Prepare a draft and send it to chat for review. They open it and save it themselves.',
     'Never invent prices, stock qty, warranty years, or people\'s names. If unknown, leave blank and say so.',
     'Use tools to look up live data. When the user wants a PO from low stock for a vendor, call draft_low_stock_po.',
+    'When they mention @lead/id or @deal/id, call get_record or search_crm.',
     'When you create a draft via a tool, include the tool\'s body text in your reply so the review card appears.',
     'If you lack permission, say so. Do not pretend a save happened.'
   ].join(' ');
@@ -825,6 +917,8 @@ function toOpenAiMessages(admin, history, userText, fileNote, name) {
   });
   let latest = userText || '';
   if (fileNote) latest += '\n\n' + fileNote;
+  const crmNote = crmMentionNote(latest);
+  if (crmNote) latest += '\n\n' + crmNote;
   msgs.push({ role: 'user', content: latest || '(see attachment)' });
   return msgs;
 }
@@ -840,6 +934,8 @@ function toAnthropicMessages(history, userText, fileNote) {
   });
   let latest = userText || '';
   if (fileNote) latest += '\n\n' + fileNote;
+  const crmNote = crmMentionNote(latest);
+  if (crmNote) latest += '\n\n' + crmNote;
   raw.push({ role: 'user', content: latest || '(see attachment)' });
   const out = [];
   raw.forEach(function (m) {

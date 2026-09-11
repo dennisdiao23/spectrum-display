@@ -598,6 +598,10 @@
     s = s.replace(/\b(SQ-\d+)\b/g, function (n) {
       return '<span class="co-chat-inline-ref">' + n + '</span>';
     });
+    s = s.replace(/@(lead|deal)\/(\d+)/g, function (_, kind, id) {
+      var path = kind === 'lead' ? '/company/crm/leads/' + id : '/company/crm/pipeline/' + id;
+      return '<button type="button" class="co-chat-crm-chip" data-chat-path="' + path + '">@' + kind + '/' + id + '</button>';
+    });
     return s.replace(/\n/g, '<br>');
   }
 
@@ -1980,6 +1984,7 @@
   }
 
   var mentionState = { textarea: null, start: 0, items: [], index: 0 };
+  var crmMentionState = { q: '', items: [], timer: 0, seq: 0 };
 
   function mentionMenuEl() {
     return $('chat-mention-menu');
@@ -2028,9 +2033,54 @@
         hint: user.isSelf ? 'You' : (user.roleName || user.role || '')
       });
     });
+    (crmMentionState.items || []).forEach(function (row) {
+      if (!row || !row.id) return;
+      items.push({
+        kind: row.kind,
+        id: row.id,
+        name: row.name || (row.kind === 'deal' ? 'Deal' : 'Lead'),
+        hint: row.hint || (row.kind === 'deal' ? 'Deal' : 'Lead'),
+        token: '@' + row.kind + '/' + row.id
+      });
+    });
     return items.filter(function (item) {
-      return !q || item.name.toLowerCase().indexOf(q) >= 0;
-    }).slice(0, 8);
+      if (!q) return true;
+      var blob = [item.name, item.hint, item.kind, item.token].join(' ').toLowerCase();
+      return blob.indexOf(q) >= 0;
+    }).slice(0, 10);
+  }
+
+  function fetchCrmMentions(query) {
+    if (!S.api) return;
+    var q = String(query || '').trim();
+    crmMentionState.seq += 1;
+    var seq = crmMentionState.seq;
+    S.api('/api/admin/crm/mentions?q=' + encodeURIComponent(q)).then(function (data) {
+      if (seq !== crmMentionState.seq) return;
+      crmMentionState.q = q;
+      crmMentionState.items = (data && data.mentions) || [];
+      if (!mentionState.textarea) return;
+      var found = mentionQueryAt(mentionState.textarea);
+      mentionState.items = mentionCandidates(found && found.query);
+      if (mentionState.items.length) renderMentionMenu();
+      else {
+        var menu = mentionMenuEl();
+        if (menu) {
+          menu.hidden = true;
+          menu.innerHTML = '';
+        }
+      }
+    }).catch(function () {
+      if (seq !== crmMentionState.seq) return;
+      crmMentionState.items = [];
+    });
+  }
+
+  function scheduleCrmMentions(query) {
+    if (crmMentionState.timer) clearTimeout(crmMentionState.timer);
+    crmMentionState.timer = setTimeout(function () {
+      fetchCrmMentions(query);
+    }, 160);
   }
 
   function renderMentionMenu() {
@@ -2071,8 +2121,13 @@
     mentionState.textarea = textarea;
     mentionState.start = found.start;
     mentionState.items = mentionCandidates(found.query);
+    scheduleCrmMentions(found.query);
     if (!mentionState.items.length) {
-      hideMentionMenu();
+      var menu = mentionMenuEl();
+      if (menu) {
+        menu.hidden = true;
+        menu.innerHTML = '';
+      }
       return;
     }
     if (mentionState.index >= mentionState.items.length) mentionState.index = 0;
@@ -2087,7 +2142,9 @@
     var value = textarea.value;
     var before = value.slice(0, start);
     var after = value.slice(pos);
-    var insert = '@' + item.name + ' ';
+    var insert = (item.kind === 'lead' || item.kind === 'deal')
+      ? ('@' + item.kind + '/' + item.id + ' ')
+      : ('@' + item.name + ' ');
     textarea.value = before + insert + after;
     var caret = before.length + insert.length;
     textarea.setSelectionRange(caret, caret);
