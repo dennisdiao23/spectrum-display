@@ -241,6 +241,7 @@ async function upsertShopifyProduct(product) {
 
 async function syncPricedBuyProducts(store) {
   if (!isConfigured()) throw setupError('Shopify Client ID and Client secret are not on Railway yet.');
+  await getAccessToken();
   const products = await store.listProducts();
   const eligible = (products || []).filter(isPricedBuySku);
   const created = [];
