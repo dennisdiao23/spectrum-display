@@ -14,11 +14,11 @@
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
   <title>Company | Spectrum Display</title>
   <meta name="robots" content="noindex, nofollow" />
-  <link rel="stylesheet" href="/css/company-dash.css?v=storelist1" />
+  <link rel="stylesheet" href="/css/company-dash.css?v=storelist2" />
   <script src="/js/address-autocomplete.js"></script>
   <script src="/js/company-chat.js?v=chatcrm3"></script>
   <script src="/js/company-crm.js?v=crmv3"></script>
-  <script src="/js/company-traffic.js?v=src1"></script>
+  <script src="/js/company-traffic.js?v=loc1"></script>
   <script src="/js/print-form.js?v=forms20"></script>
   <script>
     if ('serviceWorker' in navigator && location.pathname.indexOf('/company') === 0) {
@@ -983,7 +983,7 @@
       </div>
 
       <div id="traffic-section" class="hidden">
-        <p class="text-slate-400 text-sm mb-4">Anonymous visitors on the website and US Store. No names or IP addresses. Unique visitor is one browser cookie.</p>
+        <p class="text-slate-400 text-sm mb-4">Anonymous visitors on the website and US Store. No names or IP addresses. Location is an approximate city from the connection. Unique visitor is one browser cookie.</p>
         <div class="traffic-toolbar">
           <div class="dash-traffic-tabs" role="group" aria-label="Website or Store">
             <button type="button" class="is-on" data-traffic-log-ch="both" aria-pressed="true">Both</button>
@@ -1008,6 +1008,8 @@
             <strong id="traffic-stat-views">0</strong>
           </div>
         </div>
+        <div class="traffic-summary">
+        <div>
         <h3 class="traffic-h">Where they came from</h3>
         <div class="cc-table-card rounded-2xl border border-slate-800 traffic-sources-card">
           <div class="cc-table-wrap overflow-auto">
@@ -1023,6 +1025,25 @@
             </table>
           </div>
         </div>
+        </div>
+        <div>
+        <h3 class="traffic-h">Places</h3>
+        <div class="cc-table-card rounded-2xl border border-slate-800 traffic-sources-card">
+          <div class="cc-table-wrap overflow-auto">
+            <table class="w-full text-sm dash-cols">
+              <thead class="text-left text-slate-400 border-b border-slate-800">
+                <tr>
+                  <th class="py-3 px-4 font-medium">Location</th>
+                  <th class="py-3 px-4 font-medium">Visitors</th>
+                  <th class="py-3 px-4 font-medium">Views</th>
+                </tr>
+              </thead>
+              <tbody id="traffic-places" class="text-slate-200"></tbody>
+            </table>
+          </div>
+        </div>
+        </div>
+        </div>
         <div class="traffic-split">
           <div class="traffic-split-left">
             <h3 class="traffic-h">Visitor log</h3>
@@ -1033,6 +1054,7 @@
                     <tr>
                       <th class="py-3 px-4 font-medium">Visitor</th>
                       <th class="py-3 px-4 font-medium">Came from</th>
+                      <th class="py-3 px-4 font-medium">Location</th>
                       <th class="py-3 px-4 font-medium">First page</th>
                       <th class="py-3 px-4 font-medium">Last page</th>
                       <th class="py-3 px-4 font-medium">Pages</th>
@@ -4083,7 +4105,7 @@
     </a>
   </nav>
 
-  <link rel="stylesheet" href="/css/company-dash.css?v=storelist1" />
+  <link rel="stylesheet" href="/css/company-dash.css?v=storelist2" />
 
   <script>
     const loginPanel = document.getElementById('login-panel');
@@ -6649,7 +6671,7 @@
       invoices: '<span id="so-total">0</span> <span id="so-list-label">sales documents</span>. Pick a company customer, add line items, then save. Website Sign in accounts stay under Website → Accounts.',
       leads: '<span id="crm-lead-total">0</span> leads from the website, dealer form, or staff. Convert a lead to create a Customer for quotes.',
       dealers: '<span id="da-total">0</span> dealer applications. Approve as Authorized to set the website account to Dealer.',
-      traffic: 'Anonymous visitors on the website and US Store. Click a row for the pages they opened.',
+      traffic: 'Anonymous visitors on the website and US Store. Click a row for the pages they opened and where they were.',
       pipeline: '<span id="crm-pipe-total">0</span> deals. Drag a card to change stage. Create a quote after the deal has a customer.',
       activities: '<span id="crm-act-total">0</span> activities — notes, calls, emails, meetings, and tasks.',
       company: '<span id="ca-total">0</span> company accounts — logins and passwords.',

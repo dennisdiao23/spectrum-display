@@ -1016,7 +1016,7 @@ async function main() {
   app.get('/api/admin/traffic', requireAdmin, requirePerm('website', 'view'), async function (req, res, next) {
     try {
       if (typeof store.getSiteTrafficLog !== 'function') {
-        return res.json({ ok: true, timezone: 'America/Los_Angeles', range: '30d', channel: 'both', totals: { visitors: 0, views: 0 }, sources: [], visitors: [] });
+        return res.json({ ok: true, timezone: 'America/Los_Angeles', range: '30d', channel: 'both', totals: { visitors: 0, views: 0 }, sources: [], places: [], visitors: [] });
       }
       const data = await store.getSiteTrafficLog({
         range: String(req.query.range || '30d'),
