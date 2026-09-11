@@ -9007,8 +9007,8 @@
       const split = document.getElementById(cfg.splitId);
       const resizer = document.getElementById(cfg.resizerId);
       if (!split || !resizer) return;
-      const MIN_LEFT = 400;
-      const MIN_RIGHT = 600;
+      const MIN_LEFT = cfg.minLeft || 400;
+      const MIN_RIGHT = cfg.minRight || 600;
       const RESIZER_W = 14;
       const cssVar = cfg.cssVar;
       const bootVar = cfg.bootVar;
@@ -9162,7 +9162,9 @@
         cssVar: '--da-left-w',
         bootVar: '--da-split-left-boot',
         fromPrefs: daSplitLeftFromPrefs,
-        save: saveDaSplitLeftPx
+        save: saveDaSplitLeftPx,
+        minLeft: 640,
+        minRight: 280
       });
     }
 
