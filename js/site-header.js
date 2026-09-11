@@ -464,8 +464,8 @@
         '</button>' +
       '</div>' +
       '<a class="site-nav-link' + (onCalculatorPath() ? ' is-active' : '') + '" href="/led-wall-calculator" data-i18n="nav.designer">LED Wall Calculator</a>' +
-      '<a class="site-nav-link" href="' + storeHref() + '" data-i18n="nav.store">Store</a>' +
-      '<a class="site-nav-link' + (file === 'dealer.html' ? ' is-active' : '') + '" href="/dealer.html" data-i18n="nav.dealer">Dealer</a>';
+      '<a class="site-nav-link' + (file === 'dealer.html' ? ' is-active' : '') + '" href="/dealer.html" data-i18n="nav.dealer">Dealer</a>' +
+      '<a class="site-cta" href="' + storeHref() + '">STORE</a>';
 
     var header = $('.site-header');
     if (!header || $('#site-mega-products')) return;
