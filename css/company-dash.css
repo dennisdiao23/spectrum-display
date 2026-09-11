@@ -7141,8 +7141,17 @@ body.dash-split-lock #crm-pipe-section .crm-board {
 .traffic-split-left .cc-table-wrap {
   max-height: calc(100vh - 22rem);
 }
+.traffic-split-left table.dash-cols {
+  table-layout: auto;
+}
 #traffic-visitors tr {
   cursor: pointer;
+}
+#traffic-visitors th:nth-child(3),
+#traffic-visitors td:nth-child(3) {
+  min-width: 12.5rem;
+  overflow: visible;
+  text-overflow: clip;
 }
 #traffic-visitors tr.is-on {
   background: #eef4ff;
