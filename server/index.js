@@ -2501,6 +2501,12 @@ async function main() {
     res.sendFile(path.join(ROOT, 'store.html'));
   }
 
+  app.use(function (req, res, next) {
+    const dest = shopStore.wwwStoreRedirectTarget(req);
+    if (!dest) return next();
+    res.redirect(301, dest);
+  });
+
   app.get(['/store', '/store/'], sendStorePage);
   app.get('/store.html', function (req, res) {
     const qs = req.url.includes('?') ? req.url.slice(req.url.indexOf('?')) : '';

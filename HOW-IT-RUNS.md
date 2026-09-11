@@ -43,7 +43,7 @@ flowchart TB
 | **DNS that matters** | See [DNS cheat sheet](#dns-cheat-sheet) below. |
 | **If it breaks** | The name does not load, or www goes to Coming Soon / “Not secure”, or contact email stops (Resend DNS lives here too). |
 
-**Bare domain (no www):** GoDaddy **Forwarding** sends `spectrumdisplay.com` → `https://www.spectrumdisplay.com` (301). Railway Trial only allows **one** custom domain, and that slot is `www`. GoDaddy cannot CNAME the apex to Railway.
+**Bare domain (no www):** GoDaddy **Forwarding** sends `spectrumdisplay.com` → `https://www.spectrumdisplay.com` (301). `www` is the first Railway custom domain. Add `store.spectrumdisplay.com` as a second custom domain on the same **web** service (upgrade the plan if Railway blocks a second domain). GoDaddy cannot CNAME the apex to Railway.
 
 ---
 
@@ -54,7 +54,7 @@ flowchart TB
 | **What it is** | Hosting. Node/Express (`npm start`) serves HTML and `/api/*`. |
 | **Account** | `dennisdiao@diaoinc.com` |
 | **Dashboard** | https://railway.com → project **spectrum-display** → service **web** |
-| **Public URLs** | https://www.spectrumdisplay.com and backup https://web-production-51ccb.up.railway.app |
+| **Public URLs** | https://www.spectrumdisplay.com , https://store.spectrumdisplay.com (US Store), backup https://web-production-51ccb.up.railway.app |
 | **Railway CNAME target** | `www` → `12f3f64q.up.railway.app` |
 | **What it does** | Serves pages, `/api/catalog`, `/api/config`, `/api/contact`, admin APIs. Issues HTTPS for **www** (Let’s Encrypt). |
 | **GitHub hook** | Service **web** deploys from GitHub repo `dennisdiao23/spectrum-display`, branch **`main`**. Merge to main = live update. |

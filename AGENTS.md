@@ -320,3 +320,49 @@ If Sync says it is not set up, Railway is missing `SHOPIFY_CLIENT_ID` / `SHOPIFY
 or the deploy has not finished. Do not paste the secret into chat or GitHub.
 
 Dealer nets, FOB, and warehouse cost stay in Company. Shopify only gets the street/MAP price.
+
+## Staff store hostname — store.spectrumdisplay.com
+
+The US Store is our page on Railway, not Shopify. Shopify Domains must stay `n0eg5t-nw.myshopify.com` only.
+Do **not** click Connect existing / Buy domain in Shopify for `store` or `www`.
+
+### A. Add the hostname on Railway
+
+**1. Open the live website service**
+
+- Link: https://railway.com/project/0417ceae-d2ed-4a51-b2d1-64a31db5b8b9
+- Sign in with `dennisdiao@diaoinc.com`.
+- Click service **web**.
+
+**2. Custom Domain**
+
+- Open **Settings** → **Networking** (or **Domains**).
+- **Custom Domain** → type `store.spectrumdisplay.com` → add.
+- Leave the tab open. Copy the **CNAME** target Railway shows (same family as `www` → `12f3f64q.up.railway.app`).
+- If Railway also shows a **TXT** `_railway-verify.store`, copy that too.
+
+If Railway says the plan allows only one custom domain, upgrade the **web** service plan, then add `store` again. `www` stays. Do not remove `www`.
+
+### B. Point DNS on GoDaddy
+
+**1. Open DNS**
+
+- Link: https://dcc.godaddy.com or godaddy.com → **DNS** for `spectrumdisplay.com`
+- Sign in with `dennisdiao@diaoinc.com`.
+
+**2. Add the store record**
+
+- **Add** → **CNAME**
+  - Name (exactly): `store`
+  - Value: the Railway CNAME target from step A (usually `12f3f64q.up.railway.app`)
+- If Railway asked for a TXT, add that too (`_railway-verify.store`).
+- Save.
+
+Do not point `store` at Shopify. Do not change the `www` CNAME.
+
+### C. Wait for HTTPS
+
+Railway **Domains** should show `store.spectrumdisplay.com` as **Active** with a certificate.
+Then https://store.spectrumdisplay.com should load the US Store (not Shopify, not a DNS error).
+
+After that, say **push** so www `/store` redirects to the subdomain and the header **Store** link comes back.

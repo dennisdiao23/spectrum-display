@@ -73,6 +73,32 @@ function isStoreHost(req) {
   return host === 'store.spectrumdisplay.com' || host === 'store.localhost' || host.indexOf('store.') === 0;
 }
 
+function isLocalHostname(host) {
+  const h = String(host || '').toLowerCase().replace(/:\d+$/, '');
+  return h === 'localhost' || h === '127.0.0.1' || h === '::1';
+}
+
+function storeProductPath(handle) {
+  const h = String(handle || '').replace(/^\/+|\/+$/g, '');
+  if (process.env.NODE_ENV === 'production') return storeOrigin() + '/products/' + h;
+  return '/store/products/' + h;
+}
+
+function wwwStoreRedirectTarget(req) {
+  if (!req || isStoreHost(req) || isLocalHostname(req.hostname)) return '';
+  if (process.env.NODE_ENV !== 'production') return '';
+  if (String(process.env.STORE_HOST_REDIRECT || '1') === '0') return '';
+  const p = String(req.path || '');
+  let rest = '';
+  if (p === '/store.html') rest = '/';
+  else if (p === '/store' || p === '/store/') rest = '/';
+  else if (p.indexOf('/store/') === 0) rest = p.slice('/store'.length);
+  else return '';
+  const qsIndex = String(req.url || '').indexOf('?');
+  const qs = qsIndex >= 0 ? req.url.slice(qsIndex) : '';
+  return storeOrigin() + rest + qs;
+}
+
 function blockedFromStore(product) {
   const brand = String((product && product.brandId) || '').toLowerCase();
   const name = String((product && product.name) || '').toLowerCase();
@@ -347,7 +373,7 @@ function toAdminStoreItem(product) {
     storeVisibilityLabel: visibilityLabel,
     featured: featured,
     handle: handle,
-    storePath: '/store/products/' + handle
+    storePath: storeProductPath(handle)
   };
 }
 
@@ -398,6 +424,8 @@ module.exports = {
   wwwOrigin,
   storeOrigin,
   isStoreHost,
+  wwwStoreRedirectTarget,
+  storeProductPath,
   blockedFromStore,
   inferCollection,
   publicPrice,
