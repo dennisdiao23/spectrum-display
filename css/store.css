@@ -371,6 +371,12 @@ body.shop-collection-mode .shop-subnav { display: block; }
   inset: 0;
   z-index: 1;
   border-radius: inherit;
+  background: transparent;
+}
+.shop-card > *:not(.shop-card-hit):not(.shop-btn) {
+  position: relative;
+  z-index: 0;
+  pointer-events: none;
 }
 .shop-card-media {
   position: relative;
@@ -443,6 +449,7 @@ body.shop-collection-mode .shop-subnav { display: block; }
 .shop-card .shop-btn {
   position: relative;
   z-index: 2;
+  pointer-events: auto;
 }
 .shop-btn {
   display: flex;

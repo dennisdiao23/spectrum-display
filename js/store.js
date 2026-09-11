@@ -229,7 +229,8 @@
 
   function bindAddButtons(root) {
     $all('[data-add]', root || document).forEach(function (btn) {
-      btn.addEventListener('click', function () {
+      btn.addEventListener('click', function (e) {
+        e.stopPropagation();
         var p = byHandle(btn.getAttribute('data-add'));
         if (!p || !p.canAddToCart || !p.variants.length) return;
         SpectrumStoreCart.add({
@@ -242,6 +243,24 @@
         }, 1);
         updateCartBadge();
         go('/cart');
+      });
+    });
+  }
+
+  function bindCards(root) {
+    bindAddButtons(root);
+    $all('.shop-card', root || document).forEach(function (card) {
+      card.addEventListener('click', function (e) {
+        if (e.defaultPrevented) return;
+        if (e.target.closest('.shop-btn, [data-add]')) return;
+        var hit = card.querySelector('a.shop-card-hit');
+        if (!hit) return;
+        var url = hit.getAttribute('href') || '';
+        if (!url) return;
+        e.preventDefault();
+        var path = url;
+        if (BASE && path.indexOf(BASE) === 0) path = path.slice(BASE.length) || '/';
+        go(path);
       });
     });
   }
@@ -290,7 +309,7 @@
       '<div class="shop-design-art" aria-hidden="true"></div></a>' +
       '<p class="shop-quiet">Custom walls are quoted on spectrumdisplay.com. New walls include receiving cards. This store sells control boxes, spares, and packaged kits.</p></div>';
     $('#shop-main').innerHTML = html;
-    bindAddButtons($('#shop-main'));
+    bindCards($('#shop-main'));
   }
 
   function subtypePills(list) {
@@ -339,7 +358,7 @@
         renderCollection(slug);
       };
     });
-    bindAddButtons($('#shop-main'));
+    bindCards($('#shop-main'));
   }
 
   function renderProduct(handle) {
