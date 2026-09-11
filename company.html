@@ -14,7 +14,7 @@
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
   <title>Company | Spectrum Display</title>
   <meta name="robots" content="noindex, nofollow" />
-  <link rel="stylesheet" href="/css/company-dash.css?v=crmv2-dealer-apps5" />
+  <link rel="stylesheet" href="/css/company-dash.css?v=crmv2-dealer-apps5b" />
   <script src="/js/address-autocomplete.js"></script>
   <script src="/js/company-chat.js?v=chatmove2"></script>
   <script src="/js/company-crm.js?v=crmv2b"></script>
@@ -47,7 +47,7 @@
         var waPx = prefs['website-accounts'] && prefs['website-accounts'].splitLeftPx;
         if (waPx && waPx >= 160) document.documentElement.style.setProperty('--wa-split-left-boot', waPx + 'px');
         var daPx = prefs['dealer-applications'] && prefs['dealer-applications'].splitLeftPx;
-        if (daPx && daPx >= 160) document.documentElement.style.setProperty('--da-split-left-boot', daPx + 'px');
+        if (daPx && daPx >= 560) document.documentElement.style.setProperty('--da-split-left-boot', daPx + 'px');
         var whPx = prefs.warehouses && prefs.warehouses.splitLeftPx;
         if (whPx && whPx >= 160) document.documentElement.style.setProperty('--wh-split-left-boot', whPx + 'px');
         if (localStorage.getItem('dash-sidebar-collapsed') === '1' &&
@@ -3761,7 +3761,7 @@
     </a>
   </nav>
 
-  <link rel="stylesheet" href="/css/company-dash.css?v=crmv2-dealer-apps5" />
+  <link rel="stylesheet" href="/css/company-dash.css?v=crmv2-dealer-apps5b" />
 
   <script>
     const loginPanel = document.getElementById('login-panel');
@@ -7188,7 +7188,7 @@
         if (waPx >= 160) document.documentElement.style.setProperty('--wa-split-left-boot', waPx + 'px');
         const da = dashColMine['dealer-applications'];
         const daPx = da && da.splitLeftPx ? parseInt(da.splitLeftPx, 10) : 0;
-        if (daPx >= 160) document.documentElement.style.setProperty('--da-split-left-boot', daPx + 'px');
+        if (daPx >= 560) document.documentElement.style.setProperty('--da-split-left-boot', daPx + 'px');
         const wh = dashColMine.warehouses;
         const whPx = wh && wh.splitLeftPx ? parseInt(wh.splitLeftPx, 10) : 0;
         if (whPx >= 160) document.documentElement.style.setProperty('--wh-split-left-boot', whPx + 'px');
@@ -7869,7 +7869,7 @@
     function daSplitLeftFromPrefs() {
       const saved = tableStateFromPrefs(dashColMine, 'dealer-applications') || tableStateFromPrefs(dashColOwner, 'dealer-applications');
       const px = saved && saved.splitLeftPx ? parseInt(saved.splitLeftPx, 10) : 0;
-      return px > 0 ? px : 0;
+      return px >= 560 ? px : 0;
     }
     function saveDaSplitLeftPx(px) {
       const table = document.querySelector('table.dash-cols[data-cols="dealer-applications"]');

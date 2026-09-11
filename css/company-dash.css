@@ -2992,12 +2992,20 @@ body.po-split-lock #po-section #po-error {
   grid-template-columns: var(--wa-left-w, var(--wa-split-left-boot, 400px)) 14px minmax(0, 1fr);
 }
 #da-split {
-  grid-template-columns: var(--da-left-w, var(--da-split-left-boot, 480px)) 14px minmax(0, 1fr);
+  grid-template-columns: var(--da-left-w, var(--da-split-left-boot, 640px)) 14px minmax(0, 1fr);
 }
+#da-split-left table.dash-cols[data-cols="dealer-applications"] {
+  table-layout: auto;
+  min-width: 36rem;
+}
+#da-split-left table.dash-cols[data-cols="dealer-applications"] th,
 #da-split-left table.dash-cols[data-cols="dealer-applications"] td {
   white-space: normal;
   overflow: visible;
   text-overflow: unset;
+}
+#da-split-left table.dash-cols[data-cols="dealer-applications"] th {
+  white-space: nowrap;
 }
 #da-split-left table.dash-cols[data-cols="dealer-applications"] th:nth-child(5),
 #da-split-left table.dash-cols[data-cols="dealer-applications"] td:nth-child(5) {
