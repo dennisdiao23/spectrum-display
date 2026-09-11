@@ -14,7 +14,7 @@
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
   <title>Company | Spectrum Display</title>
   <meta name="robots" content="noindex, nofollow" />
-  <link rel="stylesheet" href="/css/company-dash.css?v=location-v2-4-dpv2" />
+  <link rel="stylesheet" href="/css/company-dash.css?v=tabbar-unsaved1" />
   <script src="/js/address-autocomplete.js"></script>
   <script src="/js/company-chat.js?v=chatmove2"></script>
   <script src="/js/company-crm.js?v=crmv2b"></script>
@@ -3317,7 +3317,7 @@
   <div id="dash-tab-stale" class="cc-leave" hidden>
     <div class="cc-leave-card" role="dialog" aria-modal="true" aria-labelledby="dash-tab-stale-title">
       <p id="dash-tab-stale-title" class="cc-leave-title">Save changes on this tab.</p>
-      <p class="dash-tab-stale-lead">This tab has been unsaved for an hour.</p>
+      <p class="dash-tab-stale-lead">This tab has been unsaved for 30 minutes.</p>
       <div class="cc-leave-actions">
         <button type="button" id="dash-tab-stale-ok" class="cc-leave-no">OK</button>
         <button type="button" id="dash-tab-stale-open" class="cc-leave-yes">Open tab</button>
@@ -3818,7 +3818,7 @@
     </a>
   </nav>
 
-  <link rel="stylesheet" href="/css/company-dash.css?v=location-v2-4-dpv2" />
+  <link rel="stylesheet" href="/css/company-dash.css?v=tabbar-unsaved1" />
 
   <script>
     const loginPanel = document.getElementById('login-panel');
@@ -4252,8 +4252,7 @@
     let dashTabStaleName = '';
     let dashTabWorkWatch = false;
     let dashTabWorkApplying = false;
-    const MASTER_TAB_IDLE_MS = 30 * 60 * 1000;
-    const MASTER_TAB_STALE_MS = 60 * 60 * 1000;
+    const MASTER_TAB_STALE_MS = 30 * 60 * 1000;
 
     function masterGroupFor(name) {
       const doc = parseDocMasterTab(name);
@@ -4562,7 +4561,7 @@
     }
 
     function masterTabIsIdle(name) {
-      return masterTabDirtyAge(name) >= MASTER_TAB_IDLE_MS;
+      return masterTabIsDirty(name);
     }
 
     function masterTabIsStale(name) {
@@ -4632,7 +4631,7 @@
         tab.classList.toggle('is-work-idle', idle);
         tab.classList.toggle('is-work-stale', stale);
         if (!mode) tab.removeAttribute('title');
-        else if (stale) tab.title = 'Unsaved for an hour — save changes on this tab';
+        else if (stale) tab.title = 'Unsaved for 30 minutes — save changes on this tab';
         else if (idle) tab.title = 'Unsaved changes — save and close, or come back to it';
         else tab.title = 'Edit or create — close this tab if you are done';
       });
