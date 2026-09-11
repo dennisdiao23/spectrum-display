@@ -1527,6 +1527,14 @@ html.dash-scroll-lock body.company-app {
   flex: 1 1 auto;
 }
 .dash-traffic.hidden { display: none !important; }
+.dash-traffic-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.45rem;
+  flex-shrink: 0;
+}
 .dash-traffic-tabs,
 .dash-traffic-range {
   display: flex;
@@ -1534,6 +1542,7 @@ html.dash-scroll-lock body.company-app {
   gap: 0.35rem;
   flex-shrink: 0;
 }
+.dash-traffic-refresh,
 .dash-traffic-tabs button,
 .dash-traffic-range button {
   appearance: none;
@@ -1552,6 +1561,10 @@ html.dash-scroll-lock body.company-app {
   background: #eef3ff;
   border-color: #c5d2ea;
   color: #2f6bff;
+}
+.dash-traffic-refresh:disabled {
+  opacity: 0.65;
+  cursor: wait;
 }
 .dash-traffic-stage {
   position: relative;

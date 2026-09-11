@@ -14,7 +14,7 @@
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
   <title>Company | Spectrum Display</title>
   <meta name="robots" content="noindex, nofollow" />
-  <link rel="stylesheet" href="/css/company-dash.css?v=traffic30" />
+  <link rel="stylesheet" href="/css/company-dash.css?v=traffic31" />
   <script src="/js/address-autocomplete.js"></script>
   <script src="/js/company-chat.js?v=chatmove2"></script>
   <script src="/js/company-crm.js?v=crmv2b"></script>
@@ -95,7 +95,7 @@
 <body class="company-app antialiased">
   <div class="dash-scrim" id="dash-scrim"></div>
   <aside class="dash-sidebar" id="dash-sidebar">
-    <a href="/" class="dash-brand">
+    <a href="/company" class="dash-brand" title="Dashboard">
       <img src="/assets/spectrum-logo-company.png" alt="Spectrum" />
     </a>
     <nav class="dash-nav hidden" id="admin-nav">
@@ -357,9 +357,12 @@
               </div>
               <div class="dash-detail-stats" id="dash-detail-stats"></div>
               <div id="dash-traffic" class="dash-traffic hidden">
-                <div class="dash-traffic-tabs" role="tablist" aria-label="Website or Store">
-                  <button type="button" class="is-on" data-traffic-ch="website" role="tab" aria-selected="true">Website</button>
-                  <button type="button" data-traffic-ch="store" role="tab" aria-selected="false">Store</button>
+                <div class="dash-traffic-toolbar">
+                  <div class="dash-traffic-tabs" role="tablist" aria-label="Website or Store">
+                    <button type="button" class="is-on" data-traffic-ch="website" role="tab" aria-selected="true">Website</button>
+                    <button type="button" data-traffic-ch="store" role="tab" aria-selected="false">Store</button>
+                  </div>
+                  <button type="button" class="dash-traffic-refresh" id="dash-traffic-refresh">Refresh</button>
                 </div>
                 <div class="dash-traffic-range" role="group" aria-label="Date range">
                   <button type="button" data-traffic-range="today">Today</button>
@@ -3865,7 +3868,7 @@
     </a>
   </nav>
 
-  <link rel="stylesheet" href="/css/company-dash.css?v=traffic30" />
+  <link rel="stylesheet" href="/css/company-dash.css?v=traffic31" />
 
   <script>
     const loginPanel = document.getElementById('login-panel');
@@ -4157,7 +4160,7 @@
         const view = viewTabForMaster(name);
         const salesTab = view === 'quotes' || view === 'orders' || view === 'invoices' || view === 'sales' || !!parseDocMasterTab(name);
         const poTab = view === 'purchase-orders' || (parseDocMasterTab(name) || {}).kind === 'po';
-        if (opts.reload || masterRouteNeedsLoad(name) || salesTab || poTab) openRoutedSection(name);
+        if (opts.reload || name === 'dashboard' || masterRouteNeedsLoad(name) || salesTab || poTab) openRoutedSection(name);
       };
       if (!opts.skipTabBar) {
         if (typeof ccDrawerNeedsLeave === 'function' && ccDrawerNeedsLeave()) {
@@ -5895,7 +5898,15 @@
       list.innerHTML = (docRows + custRows) || '<p class="dash-activity-empty">No customers or sales documents yet.</p>';
     }
 
+    let dashHomeLoading = false;
     async function loadDashboardHome() {
+      if (dashHomeLoading) return;
+      dashHomeLoading = true;
+      const refreshBtn = document.getElementById('dash-traffic-refresh');
+      if (refreshBtn) {
+        refreshBtn.disabled = true;
+        refreshBtn.textContent = 'Refreshing…';
+      }
       document.querySelectorAll('#dash-home .dash-kpi').forEach(function (el) {
         el.classList.toggle('hidden', !canDashOverview(el.getAttribute('data-home')));
       });
@@ -5925,6 +5936,12 @@
         dashDeals = [];
         dashReminders = [];
         dashTraffic = { timezone: 'America/Los_Angeles', days: [], pages: [] };
+      } finally {
+        dashHomeLoading = false;
+        if (refreshBtn) {
+          refreshBtn.disabled = false;
+          refreshBtn.textContent = 'Refresh';
+        }
       }
       if (!canDashOverview(dashOverview)) dashOverview = firstDashOverview();
       renderDashKpis();
@@ -11338,6 +11355,11 @@
     }
 
     document.getElementById('dash-home').addEventListener('click', function (e) {
+      const refreshBtn = e.target.closest('#dash-traffic-refresh');
+      if (refreshBtn) {
+        loadDashboardHome();
+        return;
+      }
       const chBtn = e.target.closest('[data-traffic-ch]');
       if (chBtn) {
         dashTrafficChannel = chBtn.getAttribute('data-traffic-ch') === 'store' ? 'store' : 'website';
