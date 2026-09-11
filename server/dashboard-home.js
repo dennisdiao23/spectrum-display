@@ -308,7 +308,7 @@ function getSqliteDashboardHome(db, admin) {
       SELECT COALESCE(SUM(value), 0) AS n FROM company_crm_deals
       WHERE stage IN ('new', 'qualified', 'quoted', 'negotiation')
     `);
-    counts.weightedForecast = sqliteCount(db, `
+    counts.weightedForecast = Math.round(sqliteCount(db, `
       SELECT COALESCE(SUM(
         value * CASE
           WHEN probability IS NOT NULL AND probability >= 0 THEN probability
@@ -320,7 +320,7 @@ function getSqliteDashboardHome(db, admin) {
         END / 100.0
       ), 0) AS n FROM company_crm_deals
       WHERE stage IN ('new', 'qualified', 'quoted', 'negotiation')
-    `);
+    `));
     counts.activities = sqliteCount(db, 'SELECT COUNT(*) AS n FROM company_crm_activities');
     counts.overdueActivities = sqliteCount(db, `
       SELECT COUNT(*) AS n FROM company_crm_activities

@@ -2779,12 +2779,8 @@
         if (saveBtn) saveBtn.disabled = true;
         return;
       }
-      if (saveBtn) {
-        saveBtn.disabled = false;
-        saveBtn.addEventListener('click', function () {
-          saveDealCalculator({ manual: true });
-        });
-      }
+      crmDealCanSave = false;
+      if (saveBtn) saveBtn.disabled = true;
       const hasBrand = incomingParams.has('brand');
       if (!hasBrand) {
         try {
@@ -2798,8 +2794,14 @@
           }
         } catch (e) { /* leave defaults */ }
       }
+      crmDealCanSave = true;
+      if (saveBtn) {
+        saveBtn.disabled = false;
+        saveBtn.addEventListener('click', function () {
+          saveDealCalculator({ manual: true });
+        });
+      }
       setDealStatus('Live on deal #' + crmDealId);
-      if (lastDealCalc) scheduleDealSave();
     }
 
     function applyProjectState(state) {
