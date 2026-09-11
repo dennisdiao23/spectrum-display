@@ -23,10 +23,20 @@ function kindLabel(kind) {
   return 'Warehouse';
 }
 
+function idOf(value) {
+  if (value == null || value === '') return '';
+  return String(value);
+}
+
 function rowUntracked(row) {
   if (!row) return false;
   if (bool(row.untracked)) return true;
   return String(row.type || row.kind || '').toLowerCase() === 'partner';
+}
+
+function isHomeWarehouse(row) {
+  if (!row) return false;
+  return locationKind(row.type || row.kind) === 'warehouse' && !rowUntracked(row);
 }
 
 function addressFrom(kind, src) {
@@ -51,11 +61,19 @@ function addressText(addr) {
   return [street, cityLine, a.country].filter(Boolean).join('\n');
 }
 
-function normalizeWarehouse(input) {
+function parentIdFrom(src, kind) {
+  if (kind !== 'bin') return '';
+  const raw = src.parentId != null ? src.parentId : src.parent_id;
+  return String(raw || '').trim();
+}
+
+function normalizeWarehouse(input, opts) {
   const src = input || {};
   const name = trim(src.name, 160);
   if (!name) throw new Error('Name the location.');
   const kind = locationKind(src.kind || src.type);
+  const parentId = parentIdFrom(src, kind);
+  if (kind === 'bin' && !parentId) throw new Error('Pick a warehouse for this bin.');
   const vendorId = src.vendorId != null ? src.vendorId : src.vendor_id;
   const vendor = kind === 'warehouse' ? String(vendorId || '').trim() : '';
   let untracked = false;
@@ -63,10 +81,11 @@ function normalizeWarehouse(input) {
     untracked = bool(src.untracked != null ? src.untracked : src.doNotTrack);
   }
   const addr = addressFrom(kind, src);
-  return {
+  const out = {
     name: name,
     type: kind,
     kind: kind,
+    parentId: parentId,
     vendorId: vendor,
     untracked: untracked,
     notes: trim(src.notes, 2000),
@@ -77,6 +96,24 @@ function normalizeWarehouse(input) {
     zip: addr.zip,
     country: addr.country
   };
+  const existing = (opts && opts.existing) || [];
+  const selfId = opts && opts.id != null ? String(opts.id) : '';
+  if (kind === 'bin') {
+    const parent = existing.find(function (row) { return String(row.id) === parentId; });
+    if (!parent) throw new Error('Parent warehouse not found.');
+    if (locationKind(parent.type || parent.kind) !== 'warehouse') {
+      throw new Error('A bin has to live in a warehouse.');
+    }
+    if (selfId && String(parent.id) === selfId) throw new Error('A bin cannot be its own warehouse.');
+    const clash = existing.find(function (row) {
+      if (selfId && String(row.id) === selfId) return false;
+      if (locationKind(row.type || row.kind) !== 'bin') return false;
+      if (String(row.parent_id != null ? row.parent_id : row.parentId) !== parentId) return false;
+      return String(row.name || '').trim().toLowerCase() === name.toLowerCase();
+    });
+    if (clash) throw new Error('That bin already exists in this warehouse.');
+  }
+  return out;
 }
 
 function locationStockStatus(untracked, extraBits) {
@@ -99,6 +136,9 @@ function formatWarehouse(row, extra) {
   if (!row) return null;
   const extraBits = extra || {};
   const kind = locationKind(row.type || row.kind);
+  const parentId = kind === 'bin'
+    ? idOf(row.parent_id != null ? row.parent_id : (row.parentId != null ? row.parentId : extraBits.parentId))
+    : '';
   const vendorId = kind === 'warehouse' ? (row.vendor_id || extraBits.vendorId || '') : '';
   const untracked = kind === 'warehouse' && vendorId ? rowUntracked(row) : false;
   const itemCount = extraBits.itemCount != null ? Number(extraBits.itemCount) || 0 : 0;
@@ -111,6 +151,8 @@ function formatWarehouse(row, extra) {
     type: kind,
     kind: kind,
     typeLabel: kindLabel(kind),
+    parentId: parentId,
+    parentName: extraBits.parentName || '',
     vendorId: vendorId,
     vendorName: vendorId ? (extraBits.vendorName || row.vendor_name || '') : '',
     untracked: untracked,
@@ -125,6 +167,9 @@ function formatWarehouse(row, extra) {
     address: addressText(addr),
     itemCount: itemCount,
     qty: qty,
+    ownQty: qty,
+    ownItemCount: itemCount,
+    hasChildBins: false,
     hasLow: !!extraBits.hasLow,
     status: stock.status,
     statusLabel: stock.statusLabel,
@@ -133,10 +178,96 @@ function formatWarehouse(row, extra) {
   };
 }
 
+function decorateWarehouses(list) {
+  const rows = (list || []).filter(Boolean);
+  const byId = {};
+  rows.forEach(function (row) { byId[String(row.id)] = row; });
+  rows.forEach(function (row) {
+    if (row.kind !== 'bin') {
+      if (row.kind === 'warehouse' && row.vendorName) {
+        row.typeLabel = 'Warehouse · ' + row.vendorName;
+      }
+      return;
+    }
+    const parent = row.parentId ? byId[String(row.parentId)] : null;
+    if (parent) {
+      row.parentName = parent.name || '';
+      row.vendorId = parent.vendorId || '';
+      row.vendorName = parent.vendorName || '';
+      row.untracked = !!parent.untracked;
+      row.tracked = !row.untracked;
+      row.typeLabel = row.parentName ? ('Bin · ' + row.parentName) : 'Bin';
+    } else {
+      row.typeLabel = 'Bin';
+    }
+    const stock = locationStockStatus(row.untracked, {
+      itemCount: row.itemCount,
+      qty: row.qty,
+      hasLow: row.hasLow
+    });
+    row.status = stock.status;
+    row.statusLabel = stock.statusLabel;
+  });
+  rows.forEach(function (row) {
+    if (row.kind !== 'warehouse') return;
+    const kids = rows.filter(function (child) {
+      return child.kind === 'bin' && String(child.parentId) === String(row.id);
+    });
+    row.hasChildBins = kids.length > 0;
+    row.ownQty = row.qty;
+    row.ownItemCount = row.itemCount;
+    kids.forEach(function (child) {
+      row.qty += Number(child.qty) || 0;
+      row.itemCount += Number(child.itemCount) || 0;
+      if (child.hasLow) row.hasLow = true;
+    });
+    const stock = locationStockStatus(row.untracked, {
+      itemCount: row.itemCount,
+      qty: row.qty,
+      hasLow: row.hasLow
+    });
+    row.status = stock.status;
+    row.statusLabel = stock.statusLabel;
+  });
+  return rows;
+}
+
+function sortGrouped(list) {
+  const rows = (list || []).slice();
+  function byName(a, b) {
+    return String(a.name || '').localeCompare(String(b.name || ''), undefined, { numeric: true, sensitivity: 'base' });
+  }
+  const warehouses = rows.filter(function (row) { return row.kind === 'warehouse'; }).sort(byName);
+  const customs = rows.filter(function (row) { return row.kind === 'custom'; }).sort(byName);
+  const bins = rows.filter(function (row) { return row.kind === 'bin'; });
+  const used = {};
+  const out = [];
+  warehouses.forEach(function (wh) {
+    out.push(wh);
+    bins.filter(function (bin) { return String(bin.parentId) === String(wh.id); }).sort(byName).forEach(function (bin) {
+      used[String(bin.id)] = true;
+      out.push(bin);
+    });
+  });
+  bins.filter(function (bin) { return !used[String(bin.id)]; }).sort(byName).forEach(function (bin) {
+    out.push(bin);
+  });
+  customs.forEach(function (row) { out.push(row); });
+  return out;
+}
+
+function childIdsOf(list, warehouseId) {
+  const id = String(warehouseId);
+  return (list || []).filter(function (row) {
+    return locationKind(row.type || row.kind) === 'bin' && String(row.parent_id != null ? row.parent_id : row.parentId) === id;
+  }).map(function (row) { return row.id; });
+}
+
 function dbFields(input) {
   return {
     name: input.name,
     type: input.type,
+    parent_id: input.parentId ? input.parentId : null,
     vendor_id: input.vendorId ? input.vendorId : null,
     untracked: input.untracked ? 1 : 0,
     notes: input.notes,
@@ -151,6 +282,8 @@ function dbFields(input) {
 
 function forSupabase(fields) {
   const out = Object.assign({}, fields);
+  if (out.parent_id != null && out.parent_id !== '') out.parent_id = Number(out.parent_id);
+  else out.parent_id = null;
   if (out.vendor_id != null && out.vendor_id !== '') out.vendor_id = Number(out.vendor_id);
   else out.vendor_id = null;
   out.untracked = !!fields.untracked;
@@ -167,10 +300,15 @@ module.exports = {
   warehouseType: locationKind,
   typeLabel: kindLabel,
   rowUntracked,
+  isHomeWarehouse,
   addressFrom,
   addressText,
   normalizeWarehouse,
   formatWarehouse,
+  decorateWarehouses,
+  sortGrouped,
+  childIdsOf,
+  locationStockStatus,
   dbFields,
   forSupabase
 };

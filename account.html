@@ -169,6 +169,7 @@
             </p>
             <p id="dealer-pending-banner" class="hidden mt-3 text-sm text-amber-200 bg-amber-500/10 border border-amber-500/20 rounded-xl px-4 py-3">Your dealer application is in review. Spectrum will email you when you’re approved. Saved projects stay available.</p>
             <p id="dealer-cta-banner" class="hidden mt-3 text-sm text-slate-300">Want Authorized net pricing and stock? <a href="/dealer.html#apply" class="text-sky-400 hover:text-sky-300 font-medium">Become a dealer →</a></p>
+            <p class="text-sm mt-2"><a id="dealer-portal-link" href="/portal" class="hidden text-sky-400 hover:text-sky-300 font-medium">Open Dealer Portal →</a></p>
             <p class="text-sm mt-2"><a href="/wall" class="text-sky-400 hover:text-sky-300 font-medium">Open LED Wall Controller →</a></p>
           </div>
           <button type="button" id="logout-btn" class="self-start px-4 py-2 rounded-full border border-slate-600 text-sm text-slate-300 hover:border-sky-500 hover:text-white transition" data-i18n="account.signout">Sign out</button>
@@ -297,8 +298,8 @@
   <script src="js/supabase-client.js"></script>
   <script src="js/pricing.js"></script>
   <script src="js/signup-guard.js"></script>
-  <script src="js/auth.js?v=dealer-portal-v1"></script>
-  <script src="js/site-header.js"></script>
+  <script src="js/auth.js?v=dealer-portal-v2"></script>
+  <script src="js/site-header.js?v=dealer-portal-v2"></script>
   <script src="js/i18n.js"></script>
   <script>
     const Auth = window.SpectrumAuth;
@@ -466,10 +467,13 @@
     async function loadDealerPortal() {
       const pending = document.getElementById('dealer-pending-banner');
       const cta = document.getElementById('dealer-cta-banner');
+      const portalLink = document.getElementById('dealer-portal-link');
       const priceTab = document.querySelector('.dash-tab[data-tab="price-book"]');
       const stockTab = document.querySelector('.dash-tab[data-tab="stock"]');
+      const roleBadge = document.getElementById('dash-role-badge');
       pending.classList.add('hidden');
       cta.classList.add('hidden');
+      if (portalLink) portalLink.classList.add('hidden');
       priceTab.classList.add('hidden');
       stockTab.classList.add('hidden');
       try {
@@ -479,9 +483,11 @@
         const json = await res.json().catch(function () { return {}; });
         if (!res.ok || !json.ok) return null;
         const app = json.application;
+        if (json.roleLabel && roleBadge) roleBadge.textContent = json.roleLabel;
         if (json.canSeeNets) {
           priceTab.classList.remove('hidden');
           stockTab.classList.remove('hidden');
+          if (portalLink) portalLink.classList.remove('hidden');
           const bookRes = await fetch('/api/dealer/price-book', { headers: headers });
           const book = await bookRes.json().catch(function () { return {}; });
           if (bookRes.ok && book.ok) renderPriceBook(book.items || []);
@@ -678,20 +684,29 @@
       return '';
     }
 
+    function isSafeAuthNext(next) {
+      if (!next) return false;
+      if (next === 'designer-custom') return true;
+      if (next === '/portal' || next === '/portal/') return true;
+      if (next === '/wall' || next === '/led-wall-calculator') return true;
+      if (/^\/portal(\?[-a-zA-Z0-9._=&%]*)?(#[-a-zA-Z0-9._-]*)?$/.test(next)) return true;
+      if (/^\/wall(\?[-a-zA-Z0-9._=&%]*)?$/.test(next)) return true;
+      if (/^[a-z0-9._-]+\.html(\?[-a-zA-Z0-9._=&%]*)?$/.test(next)) return true;
+      return false;
+    }
+
+    function resolveAuthNext(next) {
+      if (next === 'designer-custom') return '/led-wall-calculator?brand=custom';
+      if (next === '/portal/') return '/portal';
+      return next;
+    }
+
     function afterAuthSuccess() {
       const params = new URLSearchParams(window.location.search);
       const next = params.get('next') || sessionStorage.getItem('spectrumAuthNext') || '';
       sessionStorage.removeItem('spectrumAuthNext');
-      if (next === 'designer-custom') {
-        window.location.replace('/led-wall-calculator?brand=custom');
-        return;
-      }
-      if (next === '/wall' || next === '/led-wall-calculator' || /^\/wall(\?[-a-zA-Z0-9._=&%]*)?$/.test(next)) {
-        window.location.replace(next);
-        return;
-      }
-      if (/^[a-z0-9._-]+\.html(\?[-a-zA-Z0-9._=&%]*)?$/.test(next)) {
-        window.location.replace(next);
+      if (isSafeAuthNext(next)) {
+        window.location.replace(resolveAuthNext(next));
         return;
       }
       showDash();
@@ -723,7 +738,7 @@
       if (next) sessionStorage.setItem('spectrumAuthNext', next);
       if (Auth.isLoggedIn()) {
         const pending = next || sessionStorage.getItem('spectrumAuthNext') || '';
-        if (pending === 'designer-custom' || pending === '/wall' || pending === '/led-wall-calculator' || /^\/wall(\?[-a-zA-Z0-9._=&%]*)?$/.test(pending) || /^[a-z0-9._-]+\.html(\?[-a-zA-Z0-9._=&%]*)?$/.test(pending)) {
+        if (isSafeAuthNext(pending) && pending !== '/account.html') {
           afterAuthSuccess();
           return;
         }

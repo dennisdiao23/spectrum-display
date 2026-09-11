@@ -22,26 +22,47 @@ function normalizeStatus(value) {
   return STATUSES.indexOf(s) !== -1 ? s : 'open';
 }
 
-function normalizeShipFrom(value) {
-  const s = String(value || '').trim().toLowerCase();
-  if (s === 'china_fob') return 'china_fob';
-  if (s === 'novastar_vegas') return 'novastar_vegas';
-  if (s === 'gloshine_la') return 'gloshine_la';
+function locationIdFromShipFrom(value) {
+  const s = String(value || '').trim();
+  const m = s.match(/^loc:(\d+)$/i) || s.match(/^location:(\d+)$/i);
+  if (m) return m[1];
+  if (/^\d+$/.test(s)) return s;
   return '';
 }
 
-function shipFromLabel(value) {
+function normalizeShipFrom(value) {
+  const s = String(value || '').trim();
+  const lower = s.toLowerCase();
+  if (!s) return '';
+  if (lower === 'china_fob' || lower === 'novastar_vegas' || lower === 'gloshine_la') return lower;
+  const id = locationIdFromShipFrom(s);
+  if (id) return 'loc:' + id;
+  return '';
+}
+
+function shipFromLabel(value, warehouse) {
   const s = normalizeShipFrom(value);
   if (s === 'china_fob') return 'China factory (FOB)';
   if (s === 'novastar_vegas') return 'NovaStar Warehouse (Las Vegas)';
   if (s === 'gloshine_la') return 'Gloshine US Warehouse (Los Angeles)';
+  if (warehouse && warehouse.name) return warehouse.name;
   return '';
 }
 
-function poRateForItem(item, shipFrom) {
+function shipFromUsesLocalCost(value, warehouse) {
+  const s = normalizeShipFrom(value);
+  if (!s || s === 'china_fob') return false;
+  if (s === 'novastar_vegas' || s === 'gloshine_la') return true;
+  if (warehouse) {
+    const vendorId = warehouse.vendorId != null ? warehouse.vendorId : warehouse.vendor_id;
+    return !!(vendorId || warehouse.untracked);
+  }
+  return false;
+}
+
+function poRateForItem(item, shipFrom, warehouse) {
   const src = item || {};
-  const from = normalizeShipFrom(shipFrom);
-  if (from === 'novastar_vegas' || from === 'gloshine_la') {
+  if (shipFromUsesLocalCost(shipFrom, warehouse)) {
     return money(src.localWarehouseCost != null ? src.localWarehouseCost : src.local_warehouse_cost);
   }
   return money(src.cost);
@@ -129,10 +150,12 @@ function formatLine(row) {
   };
 }
 
-function formatPo(row, lines) {
+function formatPo(row, lines, extra) {
   if (!row) return null;
   const items = (lines || []).map(formatLine).filter(Boolean);
   const totals = totalsFrom(items);
+  const shipFrom = normalizeShipFrom(row.ship_from);
+  const warehouse = extra && extra.warehouse;
   return {
     id: row.id,
     number: row.number || '',
@@ -143,8 +166,9 @@ function formatPo(row, lines) {
     issueDate: row.issue_date || '',
     dueDate: row.due_date || '',
     shipVia: row.ship_via || '',
-    shipFrom: normalizeShipFrom(row.ship_from),
-    shipFromLabel: shipFromLabel(row.ship_from),
+    shipFrom: shipFrom,
+    shipFromLabel: shipFromLabel(shipFrom, warehouse),
+    shipFromLocationId: locationIdFromShipFrom(shipFrom),
     permitNo: row.permit_no || '',
     mailingAddress: row.mailing_address || '',
     shipToCustomerId: row.ship_to_customer_id == null ? '' : String(row.ship_to_customer_id),
@@ -197,6 +221,8 @@ module.exports = {
   snapshotFromVendor,
   todayIso,
   normalizeShipFrom,
+  locationIdFromShipFrom,
   shipFromLabel,
+  shipFromUsesLocalCost,
   poRateForItem
 };

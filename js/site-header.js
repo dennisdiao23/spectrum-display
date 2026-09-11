@@ -79,7 +79,8 @@
       if (!session) {
         closeAll();
         closeMegas();
-        location.href = '/account.html';
+        var p = (location.pathname || '').toLowerCase().replace(/\/$/, '') || '/';
+        location.href = (p === '/portal') ? '/account.html?next=/portal' : '/account.html';
         return;
       }
       var open = wrap.classList.contains('is-open');
@@ -149,7 +150,7 @@
     if (file === 'products.html' || file === 'product.html') tab = 'products';
     else if (onSolutionsPath()) tab = 'solutions';
     else if (onCalculatorPath()) tab = 'designer';
-    else if (file === 'account.html') tab = 'account';
+    else if (file === 'account.html' || file === 'portal.html' || file === 'portal') tab = 'account';
     $all('[data-tab]', nav).forEach(function (a) {
       var on = tab && a.getAttribute('data-tab') === tab;
       a.classList.toggle('is-active', on);
@@ -738,36 +739,62 @@
       });
     }
     injectWallLink();
-    function injectPriceBookLink() {
+    function injectDealerPortalLink() {
       var session = window.SpectrumAuth && SpectrumAuth.getSession && SpectrumAuth.getSession();
       var can = session && (session.role === 'dealer' || session.role === 'sales');
       $all('.site-drop-list').forEach(function (list) {
-        var existing = list.querySelector('[data-price-book-link]');
+        var existing = list.querySelector('[data-dealer-portal-link], [data-price-book-link]');
         if (!can) {
           if (existing) existing.remove();
           return;
         }
-        if (existing) return;
+        if (existing && existing.getAttribute('data-dealer-portal-link')) return;
+        if (existing) existing.remove();
         var account = list.querySelector('a[href*="account"]');
         var a = document.createElement('a');
-        a.href = '/account.html#price-book';
-        a.setAttribute('data-price-book-link', '1');
-        a.setAttribute('data-i18n', 'account.priceBook');
-        a.textContent = 'Price book';
+        a.href = '/portal';
+        a.setAttribute('data-dealer-portal-link', '1');
+        a.setAttribute('data-i18n', 'nav.dealerPortal');
+        a.textContent = (window.SpectrumI18n && SpectrumI18n.t && SpectrumI18n.t('nav.dealerPortal')) || 'Dealer Portal';
         if (account && account.nextSibling) list.insertBefore(a, account.nextSibling);
         else if (account) account.after(a);
         else list.insertBefore(a, list.firstChild);
       });
     }
-    injectPriceBookLink();
+    function applyPendingRole() {
+      var roleEl = $('#hdr-user-role');
+      if (!roleEl) return;
+      var session = window.SpectrumAuth && SpectrumAuth.getSession && SpectrumAuth.getSession();
+      if (!session || session.role === 'dealer' || session.role === 'sales') return;
+      var Auth = window.SpectrumAuth;
+      if (!Auth || !Auth.accessToken) return;
+      Promise.resolve(Auth.accessToken()).then(function (token) {
+        if (!token) return;
+        return fetch('/api/dealer/me', { headers: { Authorization: 'Bearer ' + token } })
+          .then(function (res) { return res.json().catch(function () { return {}; }); })
+          .then(function (me) {
+            if (!me || !me.ok) return;
+            if (me.pending || (me.application && me.application.status === 'pending')) {
+              roleEl.textContent = (window.SpectrumI18n && SpectrumI18n.t && SpectrumI18n.t('account.applicationPending')) || 'Application pending';
+            }
+          });
+      }).catch(function () {});
+    }
+    injectDealerPortalLink();
     applyAuth();
+    applyPendingRole();
     applyLangLabel();
     window.addEventListener('spectrum:auth', function () {
       applyAuth();
-      injectPriceBookLink();
+      applyPendingRole();
+      injectDealerPortalLink();
     });
     if (window.SpectrumAuth && SpectrumAuth.ready) {
-      SpectrumAuth.ready.then(applyAuth);
+      SpectrumAuth.ready.then(function () {
+        applyAuth();
+        applyPendingRole();
+        injectDealerPortalLink();
+      });
     }
 
     var cart = [];

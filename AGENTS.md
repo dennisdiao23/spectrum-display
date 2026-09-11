@@ -22,8 +22,8 @@ When Dennis reports a bug (screenshot, “nothing show up”, broken UI, or simi
 ## Cursor Cloud specific instructions
 
 Spectrum Display is a static HTML/CSS/JS marketing + catalog website (`index.html`, `products.html`,
-`product.html`, `brands.html`, `cart.html`, `contact.html`, `account.html`, `designer.html`
-at `/led-wall-calculator`, `company.html` at `/company`, `store.html` at `/store` and
+`product.html`, `brands.html`, `cart.html`, `contact.html`, `account.html`, `portal.html` at `/portal`,
+`designer.html` at `/led-wall-calculator`, `company.html` at `/company`, `store.html` at `/store` and
 `store.spectrumdisplay.com`) served by a small Express backend in `server/`. The backend exposes a product/brand
 catalog API and a cookie-session company login used by `/company`, `/company/website`, and `/company/inventory`.
 

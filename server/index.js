@@ -112,7 +112,7 @@ async function main() {
   app.use(function (req, res, next) {
     const host = String(req.hostname || '').toLowerCase();
     const file = String(req.path || '').toLowerCase();
-    const privatePage = file === '/admin.html' || file === '/company.html' || file === '/cart.html' || file === '/account.html' || file === '/wall' || file === '/wall.html' || file === '/company' || file.indexOf('/company/') === 0;
+    const privatePage = file === '/admin.html' || file === '/company.html' || file === '/cart.html' || file === '/account.html' || file === '/wall' || file === '/wall.html' || file === '/portal' || file === '/portal.html' || file === '/company' || file.indexOf('/company/') === 0;
     if (host.endsWith('.up.railway.app') || privatePage) {
       res.set('X-Robots-Tag', 'noindex, nofollow');
     }
@@ -222,6 +222,15 @@ async function main() {
   app.get(['/designer', '/designer/'], function (req, res) {
     const qs = req.url.includes('?') ? req.url.slice(req.url.indexOf('?')) : '';
     res.redirect(301, '/led-wall-calculator' + qs);
+  });
+  app.get(['/portal', '/portal/'], function (_req, res) {
+    res.set('X-Robots-Tag', 'noindex, nofollow');
+    res.set('Cache-Control', 'private, no-store');
+    res.sendFile(path.join(ROOT, 'portal.html'));
+  });
+  app.get('/portal.html', function (req, res) {
+    const qs = req.url.includes('?') ? req.url.slice(req.url.indexOf('?')) : '';
+    res.redirect(301, '/portal' + qs);
   });
 
   const OLD_SOLUTION_REDIRECTS = [
@@ -774,6 +783,35 @@ async function main() {
       }
       res.json({ ok: true, items: await store.getDealerPriceBook() });
     } catch (err) { next(err); }
+  });
+
+  app.get('/api/dealer/quotes', async function (req, res, next) {
+    try {
+      const user = await siteAuth.userFromBearer(req);
+      if (!user || !siteAuth.canSeeStock(user.role)) {
+        return res.status(401).json({ ok: false, error: 'Sign in as dealer or sales to request a quote.' });
+      }
+      res.json({ ok: true, quotes: await store.listDealerQuotes(user) });
+    } catch (err) { next(err); }
+  });
+
+  app.post('/api/dealer/quotes', async function (req, res, next) {
+    try {
+      const user = await siteAuth.userFromBearer(req);
+      if (!user || !siteAuth.canSeeStock(user.role)) {
+        return res.status(401).json({ ok: false, error: 'Sign in as dealer or sales to request a quote.' });
+      }
+      const quote = await store.createDealerQuote(user, req.body || {});
+      res.json({ ok: true, quote: quote });
+    } catch (err) {
+      if (err && err.code === 'no_customer') {
+        return res.status(409).json({ ok: false, error: err.message, code: err.code });
+      }
+      if (err && /Unknown SKU|Add a note|customer/i.test(err.message || '')) {
+        return res.status(400).json({ ok: false, error: err.message });
+      }
+      next(err);
+    }
   });
 
   app.get('/api/products', async function (_req, res, next) {

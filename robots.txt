@@ -6,6 +6,8 @@ Disallow: /company
 Disallow: /company/
 Disallow: /cart.html
 Disallow: /account.html
+Disallow: /portal
+Disallow: /portal.html
 Disallow: /api/
 
 Sitemap: https://www.spectrumdisplay.com/sitemap.xml

@@ -17,6 +17,7 @@ function todayIso() {
 
 function normalizeLine(input, index) {
   const src = input || {};
+  const warehouseId = src.warehouseId != null ? src.warehouseId : (src.warehouse_id != null ? src.warehouse_id : src.locationId);
   return {
     poLineId: src.poLineId != null ? src.poLineId : (src.po_line_id || ''),
     itemId: src.itemId != null ? src.itemId : (src.item_id || ''),
@@ -24,6 +25,7 @@ function normalizeLine(input, index) {
     product: trim(src.product || src.name, 160),
     poQty: money(src.poQty != null ? src.poQty : (src.po_qty != null ? src.po_qty : src.qty)),
     qtyReceived: money(src.qtyReceived != null ? src.qtyReceived : (src.qty_received != null ? src.qty_received : src.received)),
+    warehouseId: warehouseId ? String(warehouseId).trim() : '',
     sortOrder: index
   };
 }
@@ -45,6 +47,7 @@ function normalizeReceipt(input) {
   received.forEach(function (line) {
     if (!line.sku && !line.itemId) throw new Error('Each received line needs a SKU.');
   });
+  const warehouseId = src.warehouseId != null ? src.warehouseId : (src.warehouse_id != null ? src.warehouse_id : src.locationId);
   return {
     number: trim(src.number, 40),
     vendorId: vendorId ? String(vendorId) : '',
@@ -52,6 +55,7 @@ function normalizeReceipt(input) {
     poId: src.poId != null ? String(src.poId) : String(src.po_id || ''),
     poNumber: trim(src.poNumber || src.po_number, 40),
     receiptDate: trim(src.receiptDate || src.receipt_date, 20) || todayIso(),
+    warehouseId: warehouseId ? String(warehouseId).trim() : '',
     memo: trim(src.memo || src.notes, 2000),
     lines: lines,
     status: 'received'
@@ -67,14 +71,17 @@ function formatLine(row) {
     sku: row.sku || '',
     product: row.product || '',
     poQty: money(row.po_qty),
-    qtyReceived: money(row.qty_received)
+    qtyReceived: money(row.qty_received),
+    warehouseId: row.warehouse_id == null ? '' : String(row.warehouse_id)
   };
 }
 
-function formatReceipt(row, lines) {
+function formatReceipt(row, lines, extra) {
   if (!row) return null;
+  const bits = extra || {};
   const items = (lines || []).map(formatLine).filter(Boolean);
   const totalReceived = money(items.reduce(function (sum, line) { return sum + line.qtyReceived; }, 0));
+  const warehouseId = row.warehouse_id == null ? '' : String(row.warehouse_id);
   return {
     id: row.id,
     number: row.number || '',
@@ -83,6 +90,9 @@ function formatReceipt(row, lines) {
     poId: row.po_id == null ? '' : String(row.po_id),
     poNumber: row.po_number || '',
     receiptDate: row.receipt_date || '',
+    warehouseId: warehouseId,
+    locationId: warehouseId,
+    warehouseName: bits.warehouseName || row.warehouse_name || '',
     memo: row.memo || '',
     status: row.status || 'received',
     lines: items,
@@ -100,6 +110,7 @@ function dbReceiptFields(input) {
     po_id: input.poId ? Number(input.poId) : null,
     po_number: input.poNumber,
     receipt_date: input.receiptDate,
+    warehouse_id: input.warehouseId ? Number(input.warehouseId) : null,
     memo: input.memo,
     status: input.status || 'received'
   };
