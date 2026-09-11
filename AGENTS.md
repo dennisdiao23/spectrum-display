@@ -222,3 +222,88 @@ Reconnect. Publishing / Google verification is a later step if you want it to st
 
 The public **contact form** is separate. It still sends through Resend from
 `hello@send.spectrumdisplay.com` to `sales@spectrumdisplay.com`.
+
+## Staff Shopify checkout — you do this once
+
+The US Store page is ours (`store.spectrumdisplay.com`). **Pay / Check out** is Shopify.
+Add to cart stays grey until Shopify has a product with a variant ID. You do not paste IDs by
+hand — Company **Website → Store → Sync to Shopify** does that after this token is on Railway.
+
+Use Shopify account **`dennisdiao@diaoinc.com`**. Shop: **spectrum-display**
+(`n0eg5t-nw.myshopify.com`). Do **not** point the `store` DNS record at Shopify — that hostname
+stays on Railway.
+
+### A. Allow the website to create products in Shopify
+
+**1. Open app development**
+
+- Link: https://admin.shopify.com/store/n0eg5t-nw/settings/apps/development
+- If Shopify asks you to sign in, use `dennisdiao@diaoinc.com`.
+- You should see **Develop apps** (or **App development**) for this shop.
+
+**2. Create the app** (skip if you already have one named Spectrum Store sync)
+
+- Click **Allow custom app development** if Shopify asks — confirm **Allow**.
+- Click **Create an app**.
+- App name: `Spectrum Store sync`
+- Click **Create app**.
+
+**3. Turn on product permission**
+
+- Open **Configuration** (or **API credentials** / **Admin API integration**).
+- Click **Configure** next to **Admin API integration**.
+- Enable:
+  - `read_products`
+  - `write_products`
+- Click **Save**.
+
+**4. Install and copy the token**
+
+- Open **API credentials**.
+- Click **Install app** → **Install**.
+- Under **Admin API access token**, click **Reveal token once**.
+- Copy the token (starts with `shpat_`). Leave the tab open. Never put it in GitHub.
+
+### B. Put the token on Railway
+
+**1. Open the live website service**
+
+- Link: https://railway.com/project/0417ceae-d2ed-4a51-b2d1-64a31db5b8b9
+- Sign in with `dennisdiao@diaoinc.com`.
+- Click service **web**.
+
+**2. Add the variable**
+
+- Open **Variables**.
+- **New Variable**:
+  - Name (exactly): `SHOPIFY_ADMIN_ACCESS_TOKEN`
+  - Value: the `shpat_…` token from Shopify.
+- Save. Wait until the new **Deployment** is **SUCCESS**.
+
+`SHOPIFY_SHOP` can stay `n0eg5t-nw.myshopify.com` (already the default).
+
+### C. Turn off the Shopify storefront password
+
+Checkout links go to `n0eg5t-nw.myshopify.com/cart/…`. If the shop still has a password,
+customers cannot pay.
+
+- Link: https://admin.shopify.com/store/n0eg5t-nw/online_store/preferences
+- Under **Password protection**, turn the password **off** (uncheck **Enable password** / click
+  **Remove password**).
+- Save.
+- The default Shopify theme at `n0eg5t-nw.myshopify.com` may become visible. Leave it. Customers
+  use https://store.spectrumdisplay.com. Do not connect `store.spectrumdisplay.com` as a Shopify
+  domain.
+
+### D. Sync products
+
+1. Open https://www.spectrumdisplay.com/company/website/store and sign in.
+2. Click **Sync to Shopify**.
+3. Wait until it says how many SKUs were created or updated (priced NovaStar boxes/spares only).
+4. Open https://store.spectrumdisplay.com/collections/control — **Add to cart** should work on
+   priced items that have warehouse qty.
+
+If Sync says it is not set up, Railway is missing `SHOPIFY_ADMIN_ACCESS_TOKEN` or the deploy
+has not finished. Do not paste the token into chat or GitHub.
+
+Dealer nets, FOB, and warehouse cost stay in Company. Shopify only gets the street/MAP price.

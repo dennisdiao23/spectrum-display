@@ -392,6 +392,7 @@ function applyStoreFlags(details, body) {
 
 module.exports = {
   COLLECTIONS,
+  COLLECTION_BY_ID,
   COLLECTION_BY_SLUG,
   shopHostname,
   wwwOrigin,
@@ -399,6 +400,8 @@ module.exports = {
   isStoreHost,
   blockedFromStore,
   inferCollection,
+  publicPrice,
+  storeHandleOf,
   buildCatalog,
   applyStoreFlags,
   toAdminStoreItem,

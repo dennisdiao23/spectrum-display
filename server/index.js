@@ -17,6 +17,7 @@ const { blockedSignupReason } = require('../js/signup-guard');
 const img = require('./image');
 const { publicAdmin, hasPerm, isOwnerAdmin, isOwnerRole, OWNER_ROLE_SLUG, roleInputFromBody } = require('./admin-roles');
 const shopStore = require('./shop-store');
+const shopifySync = require('./shopify-sync');
 const dbUtil = require('./db');
 
 const ROOT = path.join(__dirname, '..');
@@ -1115,6 +1116,22 @@ async function main() {
       res.json({ ok: true, product: shopStore.toAdminStoreItem(product) });
     } catch (err) {
       res.status(400).json({ ok: false, error: err.message || 'Could not update store listing.' });
+    }
+  });
+
+  app.get('/api/admin/store/shopify', requireAdmin, requireCatalogRead, function (_req, res) {
+    res.json(shopifySync.status());
+  });
+
+  app.post('/api/admin/store/shopify-sync', requireAdmin, requirePerm('website', 'edit'), async function (_req, res, next) {
+    try {
+      const result = await shopifySync.syncPricedBuyProducts(store);
+      res.json(result);
+    } catch (err) {
+      if (err && err.code === 'setup') {
+        return res.status(400).json({ ok: false, code: 'setup', error: err.message });
+      }
+      next(err);
     }
   });
 
