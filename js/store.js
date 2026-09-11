@@ -131,6 +131,7 @@
       input.oninput = function () { renderSearch(input.value); };
     }
     document.body.addEventListener('click', function (e) {
+      if (e.target.closest && e.target.closest('.shop-card-cta, .shop-btn, [data-add]')) return;
       var a = e.target.closest && e.target.closest('a[data-shop-link]');
       if (!a) return;
       var url = a.getAttribute('href') || '';
