@@ -14,7 +14,7 @@
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
   <title>Company | Spectrum Display</title>
   <meta name="robots" content="noindex, nofollow" />
-  <link rel="stylesheet" href="/css/company-dash.css?v=tabbar-unsaved1" />
+  <link rel="stylesheet" href="/css/company-dash.css?v=traffic30" />
   <script src="/js/address-autocomplete.js"></script>
   <script src="/js/company-chat.js?v=chatmove2"></script>
   <script src="/js/company-crm.js?v=crmv2b"></script>
@@ -356,6 +356,53 @@
                 <a id="dash-detail-open" href="/company/website">Open tab →</a>
               </div>
               <div class="dash-detail-stats" id="dash-detail-stats"></div>
+              <div id="dash-traffic" class="dash-traffic hidden">
+                <div class="dash-traffic-tabs" role="tablist" aria-label="Website or Store">
+                  <button type="button" class="is-on" data-traffic-ch="website" role="tab" aria-selected="true">Website</button>
+                  <button type="button" data-traffic-ch="store" role="tab" aria-selected="false">Store</button>
+                </div>
+                <div class="dash-traffic-range" role="group" aria-label="Date range">
+                  <button type="button" data-traffic-range="today">Today</button>
+                  <button type="button" data-traffic-range="yesterday">Yesterday</button>
+                  <button type="button" data-traffic-range="7d">7D</button>
+                  <button type="button" data-traffic-range="14d">14D</button>
+                  <button type="button" data-traffic-range="30d" class="is-on">30D</button>
+                </div>
+                <div class="dash-traffic-stage">
+                  <svg id="dash-traffic-chart" class="dash-traffic-svg" viewBox="0 0 640 220" preserveAspectRatio="none" aria-hidden="true"></svg>
+                  <div class="dash-traffic-cards">
+                    <div class="dash-traffic-card">
+                      <span class="dash-traffic-card-label">Unique visitors</span>
+                      <strong id="dash-traffic-uniques">0</strong>
+                      <em id="dash-traffic-uniques-delta" class="dash-traffic-delta"></em>
+                    </div>
+                    <div class="dash-traffic-card">
+                      <span class="dash-traffic-card-label">Page views</span>
+                      <strong id="dash-traffic-views">0</strong>
+                      <em id="dash-traffic-views-delta" class="dash-traffic-delta"></em>
+                    </div>
+                    <div class="dash-traffic-card">
+                      <span class="dash-traffic-card-label" id="dash-traffic-actions-label">Contact + Dealer</span>
+                      <strong id="dash-traffic-actions">0</strong>
+                      <em id="dash-traffic-actions-delta" class="dash-traffic-delta"></em>
+                    </div>
+                  </div>
+                  <div id="dash-traffic-tip" class="dash-traffic-tip" hidden></div>
+                </div>
+                <div class="dash-traffic-axis" id="dash-traffic-axis"></div>
+                <div class="dash-traffic-table-wrap">
+                  <table class="dash-traffic-table">
+                    <thead>
+                      <tr>
+                        <th>Page</th>
+                        <th>Views</th>
+                        <th>Trend</th>
+                      </tr>
+                    </thead>
+                    <tbody id="dash-traffic-pages"></tbody>
+                  </table>
+                </div>
+              </div>
               <div class="dash-detail-list" id="dash-detail-list"></div>
             </section>
             <section class="dash-home-panel dash-home-lobby" id="dash-lobby">
@@ -3818,7 +3865,7 @@
     </a>
   </nav>
 
-  <link rel="stylesheet" href="/css/company-dash.css?v=tabbar-unsaved1" />
+  <link rel="stylesheet" href="/css/company-dash.css?v=traffic30" />
 
   <script>
     const loginPanel = document.getElementById('login-panel');
@@ -5410,6 +5457,9 @@
     let dashLeads = [];
     let dashDeals = [];
     let dashReminders = [];
+    let dashTraffic = { timezone: 'America/Los_Angeles', days: [], pages: [] };
+    let dashTrafficChannel = 'website';
+    let dashTrafficRange = '30d';
     let dashCounts = {
       products: 0, productsShown: 0, accounts: 0,
       inventory: 0, inventoryLow: 0, inventoryOut: 0, receipts: 0,
@@ -5418,6 +5468,192 @@
       leads: 0, openLeads: 0, deals: 0, openDeals: 0, pipelineValue: 0,
       activities: 0, overdueActivities: 0
     };
+
+    function trafficTodayUniques() {
+      const days = dashTraffic.days || [];
+      const row = days[days.length - 1];
+      if (!row) return 0;
+      return (Number(row.website && row.website.uniques) || 0) + (Number(row.store && row.store.uniques) || 0);
+    }
+
+    function trafficRangeLen(range) {
+      if (range === 'today' || range === 'yesterday') return 1;
+      if (range === '7d') return 7;
+      if (range === '14d') return 14;
+      return 30;
+    }
+
+    function trafficWindow(range) {
+      const days = dashTraffic.days || [];
+      if (!days.length) return { rows: [], prev: [] };
+      const n = trafficRangeLen(range);
+      let endIdx = days.length - 1;
+      if (range === 'yesterday') endIdx = Math.max(0, days.length - 2);
+      const startIdx = Math.max(0, endIdx - n + 1);
+      const rows = days.slice(startIdx, endIdx + 1);
+      const prevStart = Math.max(0, startIdx - n);
+      const prev = days.slice(prevStart, startIdx);
+      return { rows: rows, prev: prev };
+    }
+
+    function trafficSum(rows, ch) {
+      const out = { views: 0, uniques: 0, actions: 0 };
+      (rows || []).forEach(function (row) {
+        const c = (row && row[ch]) || {};
+        out.views += Number(c.views) || 0;
+        out.uniques += Number(c.uniques) || 0;
+        out.actions += Number(c.actions) || 0;
+      });
+      return out;
+    }
+
+    function trafficDelta(cur, prev) {
+      if (!prev && !cur) return { text: '', cls: '' };
+      if (!prev) return { text: 'New', cls: 'is-up' };
+      const pct = Math.round(((cur - prev) / prev) * 1000) / 10;
+      const sign = pct > 0 ? '↑ ' : pct < 0 ? '↓ ' : '';
+      return {
+        text: sign + Math.abs(pct) + '%',
+        cls: pct > 0 ? 'is-up' : pct < 0 ? 'is-down' : ''
+      };
+    }
+
+    function setTrafficDelta(id, cur, prev) {
+      const el = document.getElementById(id);
+      if (!el) return;
+      const d = trafficDelta(cur, prev);
+      el.textContent = d.text;
+      el.className = 'dash-traffic-delta' + (d.cls ? ' ' + d.cls : '');
+    }
+
+    function formatTrafficDay(stamp) {
+      const parts = String(stamp || '').split('-');
+      if (parts.length < 3) return stamp || '';
+      const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+      return months[Number(parts[1]) - 1] + ' ' + Number(parts[2]);
+    }
+
+    function trafficTopPages(ch, rows, prevRows) {
+      const start = rows[0] && rows[0].day;
+      const end = rows[rows.length - 1] && rows[rows.length - 1].day;
+      const prevStart = prevRows[0] && prevRows[0].day;
+      const prevEnd = prevRows[prevRows.length - 1] && prevRows[prevRows.length - 1].day;
+      const curMap = {};
+      const prevMap = {};
+      (dashTraffic.pages || []).forEach(function (row) {
+        if (row.channel !== ch) return;
+        if (start && end && row.day >= start && row.day <= end) {
+          curMap[row.path] = (curMap[row.path] || 0) + (Number(row.views) || 0);
+        }
+        if (prevStart && prevEnd && row.day >= prevStart && row.day <= prevEnd) {
+          prevMap[row.path] = (prevMap[row.path] || 0) + (Number(row.views) || 0);
+        }
+      });
+      return Object.keys(curMap).map(function (path) {
+        return { path: path, views: curMap[path], prev: prevMap[path] || 0 };
+      }).sort(function (a, b) { return b.views - a.views; }).slice(0, 8);
+    }
+
+    function drawTrafficChart(rows, ch) {
+      const svg = document.getElementById('dash-traffic-chart');
+      const axis = document.getElementById('dash-traffic-axis');
+      const tip = document.getElementById('dash-traffic-tip');
+      if (!svg) return;
+      const w = 640;
+      const h = 220;
+      const padL = 8;
+      const padR = 8;
+      const padT = 78;
+      const padB = 18;
+      const values = (rows || []).map(function (row) {
+        return Number(row[ch] && row[ch].uniques) || 0;
+      });
+      const max = Math.max(1, Math.max.apply(null, values.concat([0])));
+      function xAt(i) {
+        if (values.length <= 1) return w / 2;
+        return padL + (i / (values.length - 1)) * (w - padL - padR);
+      }
+      function yAt(v) {
+        return padT + (1 - v / max) * (h - padT - padB);
+      }
+      let d = '';
+      values.forEach(function (v, i) {
+        d += (i ? ' L ' : 'M ') + xAt(i).toFixed(1) + ' ' + yAt(v).toFixed(1);
+      });
+      const lastX = values.length ? xAt(values.length - 1) : w / 2;
+      const lastY = values.length ? yAt(values[values.length - 1]) : yAt(0);
+      const area = d
+        ? d + ' L ' + lastX.toFixed(1) + ' ' + (h - padB) + ' L ' + xAt(0).toFixed(1) + ' ' + (h - padB) + ' Z'
+        : '';
+      svg.innerHTML =
+        '<defs><linearGradient id="dash-traffic-fill" x1="0" y1="0" x2="0" y2="1">' +
+        '<stop offset="0%" stop-color="#2f6bff" stop-opacity="0.22"/>' +
+        '<stop offset="100%" stop-color="#2f6bff" stop-opacity="0"/>' +
+        '</linearGradient></defs>' +
+        (area ? '<path d="' + area + '" fill="url(#dash-traffic-fill)"></path>' : '') +
+        (d ? '<path d="' + d + '" fill="none" stroke="#2f6bff" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"></path>' : '') +
+        (values.length ? '<circle cx="' + lastX.toFixed(1) + '" cy="' + lastY.toFixed(1) + '" r="4.2" fill="#2f6bff"></circle>' : '');
+      if (axis) {
+        const first = rows[0] && rows[0].day;
+        const mid = rows[Math.floor(rows.length / 2)] && rows[Math.floor(rows.length / 2)].day;
+        const last = rows[rows.length - 1] && rows[rows.length - 1].day;
+        axis.innerHTML = '<span>' + esc(formatTrafficDay(first)) + '</span><span>' +
+          esc(formatTrafficDay(mid)) + '</span><span>' + esc(formatTrafficDay(last)) + '</span>';
+      }
+      svg.onmousemove = function (ev) {
+        if (!rows.length || !tip) return;
+        const rect = svg.getBoundingClientRect();
+        const pct = (ev.clientX - rect.left) / Math.max(1, rect.width);
+        const i = Math.max(0, Math.min(rows.length - 1, Math.round(pct * (rows.length - 1))));
+        const row = rows[i];
+        const c = row[ch] || {};
+        tip.hidden = false;
+        tip.textContent = formatTrafficDay(row.day) + ' · ' + dashCount(c.uniques) + ' unique · ' + dashCount(c.views) + ' views';
+        tip.style.left = (pct * 100) + '%';
+        tip.style.top = '70%';
+      };
+      svg.onmouseleave = function () {
+        if (tip) tip.hidden = true;
+      };
+    }
+
+    function renderDashTraffic() {
+      const wrap = document.getElementById('dash-traffic');
+      if (!wrap || wrap.classList.contains('hidden')) return;
+      wrap.querySelectorAll('[data-traffic-ch]').forEach(function (btn) {
+        const on = btn.getAttribute('data-traffic-ch') === dashTrafficChannel;
+        btn.classList.toggle('is-on', on);
+        btn.setAttribute('aria-selected', on ? 'true' : 'false');
+      });
+      wrap.querySelectorAll('[data-traffic-range]').forEach(function (btn) {
+        btn.classList.toggle('is-on', btn.getAttribute('data-traffic-range') === dashTrafficRange);
+      });
+      const ch = dashTrafficChannel === 'store' ? 'store' : 'website';
+      const win = trafficWindow(dashTrafficRange);
+      const cur = trafficSum(win.rows, ch);
+      const prev = trafficSum(win.prev, ch);
+      const uniquesEl = document.getElementById('dash-traffic-uniques');
+      const viewsEl = document.getElementById('dash-traffic-views');
+      const actionsEl = document.getElementById('dash-traffic-actions');
+      if (uniquesEl) uniquesEl.textContent = dashCount(cur.uniques);
+      if (viewsEl) viewsEl.textContent = dashCount(cur.views);
+      if (actionsEl) actionsEl.textContent = dashCount(cur.actions);
+      setTrafficDelta('dash-traffic-uniques-delta', cur.uniques, prev.uniques);
+      setTrafficDelta('dash-traffic-views-delta', cur.views, prev.views);
+      setTrafficDelta('dash-traffic-actions-delta', cur.actions, prev.actions);
+      const actLabel = document.getElementById('dash-traffic-actions-label');
+      if (actLabel) actLabel.textContent = ch === 'store' ? 'Add to cart' : 'Contact + Dealer';
+      drawTrafficChart(win.rows, ch);
+      const body = document.getElementById('dash-traffic-pages');
+      if (body) {
+        const pages = trafficTopPages(ch, win.rows, win.prev);
+        body.innerHTML = pages.map(function (row) {
+          const d = trafficDelta(row.views, row.prev);
+          return '<tr><td>' + esc(row.path) + '</td><td>' + esc(dashCount(row.views)) +
+            '</td><td class="dash-traffic-delta ' + d.cls + '">' + esc(d.text || '—') + '</td></tr>';
+        }).join('') || '<tr><td colspan="3">No page views in this range yet. Open the public site to start counting.</td></tr>';
+      }
+    }
 
     function canUseSalesDocs() {
       return canUse('sales') || canUse('quotes') || canUse('orders') || canUse('invoices');
@@ -5478,7 +5714,7 @@
       const vendorEl = document.getElementById('dash-stat-vendor');
       const crmEl = document.getElementById('dash-stat-crm');
       const custEl = document.getElementById('dash-stat-customer');
-      if (webEl) webEl.textContent = canUse('website') ? dashCount(websiteN) : '—';
+      if (webEl) webEl.textContent = canUse('website') ? dashCount(trafficTodayUniques()) : '—';
       if (invEl) invEl.textContent = canUse('inventory') ? dashCount(invN) : '—';
       if (vendorEl) vendorEl.textContent = canUse('vendors') ? dashCount(vendorN) : (canUse('purchase-orders') ? dashCount(openPoN) : '—');
       if (crmEl) crmEl.textContent = canUseCrmNav() ? dashCount(dashCounts.openLeads) : '—';
@@ -5489,9 +5725,7 @@
       }
       const webHint = document.getElementById('dash-hint-website');
       if (webHint) {
-        webHint.textContent = accountsN
-          ? websiteN + ' pages · ' + accountsN + ' users'
-          : 'Product pages';
+        webHint.textContent = 'Today · last 30 days';
       }
       const invHint = document.getElementById('dash-hint-inventory');
       if (invHint) {
@@ -5556,7 +5790,7 @@
       const copy = {
         website: {
           title: 'Website',
-          sub: 'Product pages and website Sign in accounts.',
+          sub: 'Public traffic on www and the US Store.',
           href: '/company/website'
         },
         inventory: {
@@ -5585,15 +5819,15 @@
       sub.textContent = info.sub;
       open.href = info.href;
       open.textContent = 'Open ' + info.title + ' →';
+      const trafficEl = document.getElementById('dash-traffic');
+      if (trafficEl) trafficEl.classList.toggle('hidden', name !== 'website');
+      list.classList.toggle('hidden', name === 'website');
 
       if (name === 'website') {
         stats.innerHTML = dashChip(dashCounts.products, 'Product pages') +
           dashChip(dashCounts.productsShown, 'Shown') +
           dashChip(dashCounts.accounts, 'Website users');
-        const rows = dashProducts.slice(0, 8).map(function (p) {
-          return dashRow(p.name || 'Untitled', [p.brandName, p.type, p.pitchLabel].filter(Boolean).join(' · '), p.hidden ? 'Hidden' : 'Shown');
-        }).join('');
-        list.innerHTML = rows || '<p class="dash-activity-empty">No product pages yet.</p>';
+        renderDashTraffic();
         return;
       }
       if (name === 'inventory') {
@@ -5678,6 +5912,7 @@
         dashLeads = data.leads || [];
         dashDeals = data.deals || [];
         dashReminders = data.reminders || [];
+        dashTraffic = data.traffic || { timezone: 'America/Los_Angeles', days: [], pages: [] };
       } catch (err) {
         dashProducts = [];
         dashInventory = [];
@@ -5689,6 +5924,7 @@
         dashLeads = [];
         dashDeals = [];
         dashReminders = [];
+        dashTraffic = { timezone: 'America/Los_Angeles', days: [], pages: [] };
       }
       if (!canDashOverview(dashOverview)) dashOverview = firstDashOverview();
       renderDashKpis();
@@ -11102,6 +11338,18 @@
     }
 
     document.getElementById('dash-home').addEventListener('click', function (e) {
+      const chBtn = e.target.closest('[data-traffic-ch]');
+      if (chBtn) {
+        dashTrafficChannel = chBtn.getAttribute('data-traffic-ch') === 'store' ? 'store' : 'website';
+        renderDashTraffic();
+        return;
+      }
+      const rangeBtn = e.target.closest('[data-traffic-range]');
+      if (rangeBtn) {
+        dashTrafficRange = rangeBtn.getAttribute('data-traffic-range') || '30d';
+        renderDashTraffic();
+        return;
+      }
       const kpi = e.target.closest('.dash-kpi');
       if (kpi) {
         selectDashOverview(kpi.getAttribute('data-home'));

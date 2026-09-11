@@ -235,6 +235,7 @@
           image: photoOrFallback(p),
           priceLabel: p.priceLabel
         }, 1);
+        if (window.SpectrumAnalytics && SpectrumAnalytics.track) SpectrumAnalytics.track('add_to_cart');
         updateCartBadge();
         go('/cart');
       });
@@ -419,6 +420,7 @@
           image: photoOrFallback(p),
           priceLabel: p.priceLabel
         }, state.qty);
+        if (window.SpectrumAnalytics && SpectrumAnalytics.track) SpectrumAnalytics.track('add_to_cart');
         updateCartBadge();
         go('/cart');
       };

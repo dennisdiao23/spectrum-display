@@ -43,7 +43,8 @@ function emptyDashboard(source) {
     staff: [],
     leads: [],
     deals: [],
-    reminders: []
+    reminders: [],
+    traffic: require('./site-analytics').emptyTraffic()
   };
 }
 
@@ -221,6 +222,11 @@ function getSqliteDashboardHome(db, admin) {
   }
 
   if (canSee(admin, 'website')) {
+    try {
+      out.traffic = require('./site-analytics').sqliteTraffic(db);
+    } catch (err) {
+      out.traffic = require('./site-analytics').emptyTraffic();
+    }
     counts.products = sqliteCount(db, 'SELECT COUNT(*) AS n FROM products');
     counts.productsShown = sqliteCount(db, 'SELECT COUNT(*) AS n FROM products WHERE COALESCE(hidden, 0) = 0');
     counts.accounts = 0;
@@ -428,6 +434,11 @@ async function getSupabaseDashboardHome(supabase, admin) {
       });
       out.accounts = ((accountRows && accountRows.data) || []).map(mapAccountPreview);
     })().catch(function () {}));
+    tasks.push((async function () {
+      out.traffic = await require('./site-analytics').supabaseApi(supabase).getSiteTraffic();
+    })().catch(function () {
+      out.traffic = require('./site-analytics').emptyTraffic();
+    }));
   }
 
   if (canSee(admin, 'inventory')) {
