@@ -210,19 +210,20 @@
     var photo = photoFor(p, 'card');
     var chips = (p.chips || []).filter(Boolean);
     return '<article class="shop-card">' +
-      '<a class="shop-card-hit" href="' + esc(href('/products/' + p.handle)) + '" data-shop-link aria-label="' + esc(p.name) + '"></a>' +
-      (opts.caption ? '<div class="shop-caption">' + esc(opts.caption) + '</div>' : '') +
-      '<div class="shop-card-media">' +
-        (photo ? '<img src="' + esc(photo) + '" alt="">' : '') +
-      '</div>' +
-      '<h3>' + esc(p.name) + '</h3>' +
-      '<div class="shop-sku">' + esc(p.sku || p.brandName || '') + '</div>' +
-      '<p>' + esc(p.description || '') + '</p>' +
-      (chips.length ? '<div class="shop-chips">' + chips.map(function (c) {
-        return '<span class="shop-chip">' + esc(c) + '</span>';
-      }).join('') + '</div>' : '') +
-      (p.priceLabel ? '<div class="shop-price">' + esc(p.priceLabel) + '</div>' : '') +
-      leadLine(p) +
+      '<a class="shop-card-main" href="' + esc(href('/products/' + p.handle)) + '" data-shop-link>' +
+        (opts.caption ? '<div class="shop-caption">' + esc(opts.caption) + '</div>' : '') +
+        '<div class="shop-card-media">' +
+          (photo ? '<img src="' + esc(photo) + '" alt="">' : '') +
+        '</div>' +
+        '<h3>' + esc(p.name) + '</h3>' +
+        '<div class="shop-sku">' + esc(p.sku || p.brandName || '') + '</div>' +
+        '<p>' + esc(p.description || '') + '</p>' +
+        (chips.length ? '<div class="shop-chips">' + chips.map(function (c) {
+          return '<span class="shop-chip">' + esc(c) + '</span>';
+        }).join('') + '</div>' : '') +
+        (p.priceLabel ? '<div class="shop-price">' + esc(p.priceLabel) + '</div>' : '') +
+        leadLine(p) +
+      '</a>' +
       cta(p) +
     '</article>';
   }
@@ -243,24 +244,6 @@
         }, 1);
         updateCartBadge();
         go('/cart');
-      });
-    });
-  }
-
-  function bindCards(root) {
-    bindAddButtons(root);
-    $all('.shop-card', root || document).forEach(function (card) {
-      card.addEventListener('click', function (e) {
-        if (e.defaultPrevented) return;
-        if (e.target.closest('.shop-btn, [data-add]')) return;
-        var hit = card.querySelector('a.shop-card-hit');
-        if (!hit) return;
-        var url = hit.getAttribute('href') || '';
-        if (!url) return;
-        e.preventDefault();
-        var path = url;
-        if (BASE && path.indexOf(BASE) === 0) path = path.slice(BASE.length) || '/';
-        go(path);
       });
     });
   }
@@ -309,7 +292,7 @@
       '<div class="shop-design-art" aria-hidden="true"></div></a>' +
       '<p class="shop-quiet">Custom walls are quoted on spectrumdisplay.com. New walls include receiving cards. This store sells control boxes, spares, and packaged kits.</p></div>';
     $('#shop-main').innerHTML = html;
-    bindCards($('#shop-main'));
+    bindAddButtons($('#shop-main'));
   }
 
   function subtypePills(list) {
@@ -358,7 +341,7 @@
         renderCollection(slug);
       };
     });
-    bindCards($('#shop-main'));
+    bindAddButtons($('#shop-main'));
   }
 
   function renderProduct(handle) {
