@@ -394,6 +394,22 @@ html.is-logged-in .guest-pricing {
   background: #38bdf8;
   color: #fff;
 }
+.site-nav a.site-cta {
+  padding: 0 1.05rem;
+  margin-left: 0.35rem;
+  border-radius: 999px;
+  background: #0ea5e9;
+  color: #fff;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  box-shadow: 0 0 24px rgba(14, 165, 233, 0.28);
+}
+.site-nav a.site-cta:hover,
+.site-nav a.site-cta.is-active {
+  background: #38bdf8;
+  color: #fff;
+}
 .site-contact-icon {
   display: none;
 }
@@ -635,6 +651,10 @@ html.is-logged-in .guest-pricing {
     padding: 0 0.4rem;
   }
   .site-cta {
+    padding: 0 0.8rem;
+    font-size: 0.75rem;
+  }
+  .site-nav a.site-cta {
     padding: 0 0.8rem;
     font-size: 0.75rem;
   }

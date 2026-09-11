@@ -24,10 +24,41 @@ const DEAL_STAGES = ['new', 'qualified', 'quoted', 'negotiation', 'won', 'lost']
 const ACTIVITY_TYPES = ['note', 'call', 'email', 'meeting', 'task'];
 const LEAD_SOURCES = ['website', 'dealer', 'manual', 'referral', 'other'];
 const CLOSE_REASONS = ['price', 'timing', 'competitor', 'no_budget', 'other'];
+const CRM_KINDS = ['project', 'dealer'];
+const STAGE_PROBABILITY = {
+  new: 10,
+  qualified: 25,
+  quoted: 50,
+  negotiation: 75,
+  won: 100,
+  lost: 0
+};
+const DEFAULT_SEQUENCES = [
+  {
+    seqKey: 'website-inquiry',
+    name: 'Website inquiry',
+    autoSource: 'website',
+    steps: [
+      { delayDays: 0, type: 'task', subject: 'Review website inquiry' },
+      { delayDays: 2, type: 'call', subject: 'Follow up by phone' },
+      { delayDays: 5, type: 'email', subject: 'Send a check-in email' }
+    ]
+  },
+  {
+    seqKey: 'dealer-inquiry',
+    name: 'Dealer inquiry',
+    autoSource: 'dealer',
+    steps: [
+      { delayDays: 0, type: 'task', subject: 'Review dealer inquiry' },
+      { delayDays: 1, type: 'call', subject: 'Dealer intro call' },
+      { delayDays: 7, type: 'task', subject: 'Send dealer net sheet' }
+    ]
+  }
+];
 const CRM_SALES_EMAIL = 'sales@spectrumdisplay.com';
 const LEAD_CSV_HEADERS = [
   'companyName', 'contactFirst', 'contactLast', 'email', 'phone', 'mobile', 'website',
-  'source', 'status', 'ownerName', 'projectType', 'city', 'state', 'country', 'notes'
+  'source', 'status', 'kind', 'ownerName', 'projectType', 'city', 'state', 'country', 'notes'
 ];
 
 function leadStatus(value) {
@@ -65,6 +96,149 @@ function closeReasonLabel(value) {
   if (v === 'no_budget') return 'No budget';
   if (v === 'other') return 'Other';
   return '';
+}
+
+function crmKind(value, fallback) {
+  const v = String(value || '').toLowerCase().trim();
+  if (CRM_KINDS.indexOf(v) !== -1) return v;
+  if (v === 'dealer inquiry' || v === 'dealer-inquiry') return 'dealer';
+  return fallback === 'dealer' ? 'dealer' : 'project';
+}
+
+function kindFromSource(source) {
+  return leadSource(source) === 'dealer' ? 'dealer' : 'project';
+}
+
+function stageProbability(stage) {
+  const key = dealStage(stage);
+  return STAGE_PROBABILITY[key] != null ? STAGE_PROBABILITY[key] : 10;
+}
+
+function parseProbability(value) {
+  if (value == null || value === '') return -1;
+  const n = Number(value);
+  if (!Number.isFinite(n) || n < 0) return -1;
+  return Math.max(0, Math.min(100, Math.round(n)));
+}
+
+function effectiveProbability(deal) {
+  const stored = deal && deal.probability;
+  if (stored != null && Number(stored) >= 0) return Math.max(0, Math.min(100, Math.round(Number(stored))));
+  return stageProbability(deal && deal.stage);
+}
+
+function weightedValue(deal) {
+  if (!deal) return 0;
+  if (deal.stage === 'won' || deal.stage === 'lost') return 0;
+  return Math.round((Number(deal.value) || 0) * effectiveProbability(deal) / 100);
+}
+
+function parseStepsJson(raw) {
+  if (Array.isArray(raw)) return raw.map(normalizeSequenceStep).filter(Boolean);
+  try {
+    const parsed = JSON.parse(raw || '[]');
+    return (Array.isArray(parsed) ? parsed : []).map(normalizeSequenceStep).filter(Boolean);
+  } catch (e) {
+    return [];
+  }
+}
+
+function normalizeSequenceStep(step) {
+  const src = step || {};
+  const subject = trim(src.subject, 200);
+  if (!subject) return null;
+  const delay = Math.max(0, Math.min(365, Math.round(num(src.delayDays != null ? src.delayDays : src.delay_days))));
+  return {
+    delayDays: delay,
+    type: activityType(src.type || 'task'),
+    subject: subject,
+    body: trim(src.body, 2000)
+  };
+}
+
+function normalizeSequence(input) {
+  const src = input || {};
+  const name = trim(src.name, 160);
+  if (!name) throw new Error('Name this sequence.');
+  const steps = parseStepsJson(src.steps != null ? src.steps : src.steps_json);
+  if (!steps.length) throw new Error('Add at least one follow-up step.');
+  const auto = String(src.autoSource || src.auto_source || '').toLowerCase().trim();
+  return {
+    seqKey: trim(src.seqKey || src.seq_key, 80),
+    name: name,
+    autoSource: auto === 'website' || auto === 'dealer' ? auto : '',
+    active: src.active === false || src.active === 0 || src.active === '0' ? 0 : 1,
+    steps: steps,
+    stepsJson: JSON.stringify(steps)
+  };
+}
+
+function formatSequence(row) {
+  if (!row) return null;
+  const steps = parseStepsJson(row.steps_json || row.stepsJson || row.steps);
+  return {
+    id: row.id,
+    seqKey: row.seq_key || row.seqKey || '',
+    name: row.name || '',
+    autoSource: row.auto_source || row.autoSource || '',
+    active: row.active === false || row.active === 0 || row.active === '0' ? false : true,
+    steps: steps,
+    createdAt: row.created_at || row.createdAt || '',
+    updatedAt: row.updated_at || row.updatedAt || ''
+  };
+}
+
+function sequenceDbFields(input) {
+  return {
+    seq_key: input.seqKey || '',
+    name: input.name,
+    auto_source: input.autoSource || '',
+    active: input.active ? 1 : 0,
+    steps_json: input.stepsJson || JSON.stringify(input.steps || [])
+  };
+}
+
+function formatEnrollment(row, sequence) {
+  if (!row) return null;
+  const seq = sequence || null;
+  return {
+    id: row.id,
+    sequenceId: row.sequence_id || row.sequenceId || null,
+    leadId: row.lead_id || row.leadId || null,
+    status: row.status || 'active',
+    stepIndex: num(row.step_index != null ? row.step_index : row.stepIndex),
+    enrolledAt: row.enrolled_at || row.enrolledAt || row.created_at || '',
+    sequenceName: seq ? seq.name : (row.sequence_name || row.sequenceName || ''),
+    autoSource: seq ? seq.autoSource : '',
+    steps: seq ? seq.steps : parseStepsJson(row.steps_json)
+  };
+}
+
+function addDaysYmd(days) {
+  const d = new Date();
+  d.setHours(12, 0, 0, 0);
+  d.setDate(d.getDate() + Math.max(0, Number(days) || 0));
+  return d.toISOString().slice(0, 10);
+}
+
+function parseCalculatorSummary(raw) {
+  if (raw && typeof raw === 'object' && !Array.isArray(raw)) return raw;
+  try {
+    const parsed = JSON.parse(raw || '');
+    return parsed && typeof parsed === 'object' ? parsed : null;
+  } catch (e) {
+    return null;
+  }
+}
+
+function calculatorSummaryText(value) {
+  if (value == null || value === '') return '';
+  if (typeof value === 'string') return trim(value, 4000);
+  try {
+    return trim(JSON.stringify(value), 4000);
+  } catch (e) {
+    return '';
+  }
 }
 
 function messageDirection(value) {
@@ -194,6 +368,9 @@ function csvHeaderKey(name) {
     website: 'website',
     source: 'source',
     status: 'status',
+    kind: 'kind',
+    type: 'kind',
+    dealtype: 'kind',
     owner: 'ownerName',
     ownername: 'ownerName',
     project: 'projectType',
@@ -245,7 +422,7 @@ function fillEmptyLeadFields(target, source) {
   const out = Object.assign({}, target);
   [
     'companyName', 'contactFirst', 'contactLast', 'email', 'phone', 'mobile', 'website',
-    'ownerName', 'projectType', 'city', 'state', 'country', 'source'
+    'ownerName', 'projectType', 'city', 'state', 'country', 'source', 'kind'
   ].forEach(function (key) {
     if (!out[key] && source[key]) out[key] = source[key];
   });
@@ -316,6 +493,7 @@ function normalizeLead(input) {
     source: leadSource(src.source),
     sourceKey: trim(src.sourceKey || src.source_key, 200),
     status: leadStatus(src.status),
+    kind: crmKind(src.kind, kindFromSource(src.source)),
     ownerName: trim(src.ownerName || src.owner_name, 120),
     projectType: trim(src.projectType || src.project_type, 160),
     city: trim(src.city, 80),
@@ -347,6 +525,7 @@ function formatLead(row) {
     source: row.source || 'manual',
     sourceKey: row.source_key || '',
     status: row.status || 'new',
+    kind: crmKind(row.kind, kindFromSource(row.source)),
     ownerName: row.owner_name || '',
     projectType: row.project_type || '',
     city: row.city || '',
@@ -373,6 +552,7 @@ function leadDbFields(input) {
     source: input.source,
     source_key: input.sourceKey,
     status: input.status,
+    kind: input.kind,
     owner_name: input.ownerName,
     project_type: input.projectType,
     city: input.city,
@@ -399,6 +579,10 @@ function normalizeDeal(input) {
     expectedClose: trim(src.expectedClose || src.expected_close, 20),
     ownerName: trim(src.ownerName || src.owner_name, 120),
     notes: trim(src.notes, 4000),
+    kind: crmKind(src.kind, kindFromSource(src.source)),
+    probability: parseProbability(src.probability),
+    calculatorQuery: trim(src.calculatorQuery || src.calculator_query, 2000),
+    calculatorSummary: calculatorSummaryText(src.calculatorSummary != null ? src.calculatorSummary : src.calculator_summary),
     leadId: idOrNull(src.leadId != null ? src.leadId : src.lead_id),
     customerId: idOrNull(src.customerId != null ? src.customerId : src.customer_id),
     quoteId: idOrNull(src.quoteId != null ? src.quoteId : src.quote_id),
@@ -409,7 +593,7 @@ function normalizeDeal(input) {
 
 function formatDeal(row) {
   if (!row) return null;
-  return {
+  const out = {
     id: row.id,
     title: row.title || '',
     companyName: row.company_name || '',
@@ -420,6 +604,12 @@ function formatDeal(row) {
     expectedClose: row.expected_close || '',
     ownerName: row.owner_name || '',
     notes: row.notes || '',
+    kind: crmKind(row.kind, 'project'),
+    probability: parseProbability(row.probability),
+    stageProbability: stageProbability(row.stage),
+    weightedValue: 0,
+    calculatorQuery: row.calculator_query || row.calculatorQuery || '',
+    calculatorSummary: parseCalculatorSummary(row.calculator_summary || row.calculatorSummary),
     leadId: row.lead_id || null,
     customerId: row.customer_id || null,
     quoteId: row.quote_id || null,
@@ -430,6 +620,9 @@ function formatDeal(row) {
     createdAt: row.created_at || '',
     updatedAt: row.updated_at || ''
   };
+  out.effectiveProbability = effectiveProbability(out);
+  out.weightedValue = weightedValue(out);
+  return out;
 }
 
 function dealDbFields(input) {
@@ -443,6 +636,10 @@ function dealDbFields(input) {
     expected_close: input.expectedClose,
     owner_name: input.ownerName,
     notes: input.notes,
+    kind: input.kind,
+    probability: input.probability,
+    calculator_query: input.calculatorQuery,
+    calculator_summary: input.calculatorSummary,
     lead_id: input.leadId,
     customer_id: input.customerId,
     quote_id: input.quoteId,
@@ -473,7 +670,9 @@ function normalizeActivity(input) {
     dealId: dealId,
     customerId: customerId,
     createdByName: trim(src.createdByName || src.created_by_name, 120),
-    assignedTo: trim(src.assignedTo || src.assigned_to, 120)
+    assignedTo: trim(src.assignedTo || src.assigned_to, 120),
+    sequenceId: idOrNull(src.sequenceId != null ? src.sequenceId : src.sequence_id),
+    sequenceStep: Math.max(0, Math.round(num(src.sequenceStep != null ? src.sequenceStep : src.sequence_step)))
   };
 }
 
@@ -491,6 +690,8 @@ function formatActivity(row) {
     customerId: row.customer_id || null,
     createdByName: row.created_by_name || '',
     assignedTo: row.assigned_to || '',
+    sequenceId: row.sequence_id || null,
+    sequenceStep: num(row.sequence_step),
     leadName: row.lead_name || row.leadName || '',
     dealTitle: row.deal_title || row.dealTitle || '',
     createdAt: row.created_at || '',
@@ -509,13 +710,15 @@ function activityDbFields(input) {
     deal_id: input.dealId,
     customer_id: input.customerId,
     created_by_name: input.createdByName,
-    assigned_to: input.assignedTo
+    assigned_to: input.assignedTo,
+    sequence_id: input.sequenceId,
+    sequence_step: input.sequenceStep
   };
 }
 
 function forSupabase(fields) {
   const out = Object.assign({}, fields);
-  ['converted_customer_id', 'merged_into_id', 'lead_id', 'customer_id', 'quote_id', 'deal_id', 'activity_id'].forEach(function (key) {
+  ['converted_customer_id', 'merged_into_id', 'lead_id', 'customer_id', 'quote_id', 'deal_id', 'activity_id', 'sequence_id'].forEach(function (key) {
     if (!Object.prototype.hasOwnProperty.call(out, key)) return;
     if (out[key] == null) out[key] = null;
   });
@@ -540,6 +743,7 @@ function leadFromInquiry(inquiry) {
     source: source,
     sourceKey: sourceKey,
     status: 'new',
+    kind: crmKind(src.kind, kindFromSource(source)),
     projectType: src.projectType || src.project_type,
     city: src.city,
     state: src.state,
@@ -581,6 +785,8 @@ function dealFromLead(lead, extra) {
     expectedClose: src.expectedClose,
     ownerName: src.ownerName || lead.ownerName || '',
     notes: src.notes || '',
+    kind: crmKind(src.kind, lead.kind || kindFromSource(lead.source)),
+    probability: parseProbability(src.probability),
     leadId: lead.id,
     customerId: lead.convertedCustomerId || src.customerId || null
   };
@@ -676,12 +882,43 @@ function ensureCompanyCrm(db) {
   `);
   [
     'ALTER TABLE company_crm_leads ADD COLUMN merged_into_id INTEGER',
+    "ALTER TABLE company_crm_leads ADD COLUMN kind TEXT NOT NULL DEFAULT 'project'",
     "ALTER TABLE company_crm_deals ADD COLUMN won_reason TEXT NOT NULL DEFAULT ''",
     "ALTER TABLE company_crm_deals ADD COLUMN lost_reason TEXT NOT NULL DEFAULT ''",
-    "ALTER TABLE company_crm_activities ADD COLUMN assigned_to TEXT NOT NULL DEFAULT ''"
+    "ALTER TABLE company_crm_deals ADD COLUMN kind TEXT NOT NULL DEFAULT 'project'",
+    'ALTER TABLE company_crm_deals ADD COLUMN probability INTEGER NOT NULL DEFAULT -1',
+    "ALTER TABLE company_crm_deals ADD COLUMN calculator_query TEXT NOT NULL DEFAULT ''",
+    "ALTER TABLE company_crm_deals ADD COLUMN calculator_summary TEXT NOT NULL DEFAULT ''",
+    "ALTER TABLE company_crm_activities ADD COLUMN assigned_to TEXT NOT NULL DEFAULT ''",
+    'ALTER TABLE company_crm_activities ADD COLUMN sequence_id INTEGER',
+    'ALTER TABLE company_crm_activities ADD COLUMN sequence_step INTEGER NOT NULL DEFAULT 0'
   ].forEach(function (sql) {
     try { db.exec(sql); } catch (e) { /* already present */ }
   });
+  db.exec(`
+    CREATE TABLE IF NOT EXISTS company_crm_sequences (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      seq_key TEXT NOT NULL DEFAULT '',
+      name TEXT NOT NULL DEFAULT '',
+      auto_source TEXT NOT NULL DEFAULT '',
+      active INTEGER NOT NULL DEFAULT 1,
+      steps_json TEXT NOT NULL DEFAULT '[]',
+      created_at TEXT NOT NULL,
+      updated_at TEXT NOT NULL
+    );
+    CREATE TABLE IF NOT EXISTS company_crm_enrollments (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      sequence_id INTEGER,
+      lead_id INTEGER,
+      status TEXT NOT NULL DEFAULT 'active',
+      step_index INTEGER NOT NULL DEFAULT 0,
+      enrolled_at TEXT NOT NULL,
+      created_at TEXT NOT NULL,
+      updated_at TEXT NOT NULL
+    );
+    CREATE INDEX IF NOT EXISTS company_crm_enrollments_lead_idx ON company_crm_enrollments (lead_id, status);
+    CREATE INDEX IF NOT EXISTS company_crm_enrollments_seq_idx ON company_crm_enrollments (sequence_id);
+  `);
 }
 
 function insertRow(db, table, fields) {
@@ -731,6 +968,68 @@ function sqliteListMessages(db, leadId) {
   ).all(leadId).map(formatMessage);
 }
 
+function sqliteSeedSequences(db) {
+  const count = db.prepare('SELECT COUNT(*) AS n FROM company_crm_sequences').get();
+  if (count && Number(count.n) > 0) return;
+  DEFAULT_SEQUENCES.forEach(function (seq) {
+    insertRow(db, 'company_crm_sequences', sequenceDbFields({
+      seqKey: seq.seqKey,
+      name: seq.name,
+      autoSource: seq.autoSource,
+      active: 1,
+      steps: seq.steps,
+      stepsJson: JSON.stringify(seq.steps)
+    }));
+  });
+}
+
+function sqliteListSequences(db) {
+  sqliteSeedSequences(db);
+  return db.prepare(
+    'SELECT * FROM company_crm_sequences ORDER BY name COLLATE NOCASE, id ASC'
+  ).all().map(formatSequence);
+}
+
+function sqliteGetSequence(db, id) {
+  sqliteSeedSequences(db);
+  return formatSequence(db.prepare('SELECT * FROM company_crm_sequences WHERE id = ?').get(id));
+}
+
+function sqliteLeadEnrollments(db, leadId) {
+  sqliteSeedSequences(db);
+  return db.prepare(
+    'SELECT e.*, s.name AS sequence_name, s.steps_json, s.auto_source FROM company_crm_enrollments e LEFT JOIN company_crm_sequences s ON s.id = e.sequence_id WHERE e.lead_id = ? ORDER BY datetime(e.enrolled_at) DESC, e.id DESC'
+  ).all(leadId).map(function (row) {
+    return formatEnrollment(row, formatSequence({
+      id: row.sequence_id,
+      name: row.sequence_name,
+      auto_source: row.auto_source,
+      steps_json: row.steps_json
+    }));
+  });
+}
+
+function sqliteCreateEnrollment(db, leadId, sequence, actorName) {
+  const stamp = nowIso();
+  const info = db.prepare(
+    'INSERT INTO company_crm_enrollments (sequence_id, lead_id, status, step_index, enrolled_at, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?)'
+  ).run(sequence.id, leadId, 'active', 0, stamp, stamp, stamp);
+  (sequence.steps || []).forEach(function (step, i) {
+    insertRow(db, 'company_crm_activities', activityDbFields(normalizeActivity({
+      type: step.type,
+      subject: step.subject,
+      body: step.body || ('Sequence: ' + sequence.name),
+      dueAt: addDaysYmd(step.delayDays),
+      leadId: leadId,
+      createdByName: actorName || '',
+      assignedTo: '',
+      sequenceId: sequence.id,
+      sequenceStep: i + 1
+    })));
+  });
+  return info.lastInsertRowid;
+}
+
 function sqliteApi(db, store) {
   return {
     async listCrmLeads() {
@@ -746,6 +1045,7 @@ function sqliteApi(db, store) {
         'SELECT * FROM company_crm_activities WHERE lead_id = ? ORDER BY datetime(created_at) DESC, id DESC'
       ).all(id).map(formatActivity);
       lead.messages = sqliteListMessages(db, id);
+      lead.enrollments = sqliteLeadEnrollments(db, id);
       lead.duplicates = db.prepare('SELECT * FROM company_crm_leads ORDER BY id DESC').all()
         .map(formatLead)
         .filter(function (row) {
@@ -756,6 +1056,7 @@ function sqliteApi(db, store) {
     async createCrmLead(payload) {
       const input = normalizeLead(payload);
       const id = insertRow(db, 'company_crm_leads', leadDbFields(input));
+      await this.autoEnrollCrmLead(id, input.kind === 'dealer' ? 'dealer' : input.source, payload && payload.createdByName);
       return this.getCrmLead(id);
     },
     async updateCrmLead(id, payload) {
@@ -788,6 +1089,7 @@ function sqliteApi(db, store) {
         subject: inquiry && inquiry.subject
       });
       if (inbound) await this.createCrmMessage(inbound);
+      await this.autoEnrollCrmLead(lead.id, input.kind === 'dealer' ? 'dealer' : input.source, '');
       return this.getCrmLead(lead.id);
     },
     async findCrmDuplicates(query) {
@@ -828,6 +1130,7 @@ function sqliteApi(db, store) {
       db.prepare('UPDATE company_crm_deals SET lead_id = ?, updated_at = ? WHERE lead_id = ?').run(into.id, stamp, from.id);
       db.prepare('UPDATE company_crm_activities SET lead_id = ?, updated_at = ? WHERE lead_id = ?').run(into.id, stamp, from.id);
       db.prepare('UPDATE company_crm_messages SET lead_id = ?, updated_at = ? WHERE lead_id = ?').run(into.id, stamp, from.id);
+      db.prepare('UPDATE company_crm_enrollments SET lead_id = ?, updated_at = ? WHERE lead_id = ?').run(into.id, stamp, from.id);
       updateRow(db, 'company_crm_leads', from.id, leadDbFields(normalizeLead(Object.assign({}, from, {
         status: 'lost',
         mergedIntoId: into.id,
@@ -979,6 +1282,95 @@ function sqliteApi(db, store) {
           label: row.name || row.email || 'Staff'
         };
       }).filter(function (row) { return row.label; });
+    },
+    async listCrmSequences() {
+      return sqliteListSequences(db);
+    },
+    async createCrmSequence(payload) {
+      const input = normalizeSequence(payload);
+      const id = insertRow(db, 'company_crm_sequences', sequenceDbFields(input));
+      return sqliteGetSequence(db, id);
+    },
+    async updateCrmSequence(id, payload) {
+      const current = sqliteGetSequence(db, id);
+      if (!current) return null;
+      const input = normalizeSequence(Object.assign({}, current, payload, {
+        steps: payload.steps || payload.steps_json || current.steps
+      }));
+      updateRow(db, 'company_crm_sequences', id, sequenceDbFields(input));
+      return sqliteGetSequence(db, id);
+    },
+    async deleteCrmSequence(id) {
+      const info = db.prepare('DELETE FROM company_crm_sequences WHERE id = ?').run(id);
+      return info.changes > 0;
+    },
+    async enrollCrmLead(leadId, sequenceId, actorName) {
+      const lead = formatLead(db.prepare('SELECT * FROM company_crm_leads WHERE id = ?').get(leadId));
+      const sequence = sqliteGetSequence(db, sequenceId);
+      if (!lead) throw new Error('Lead not found.');
+      if (!sequence) throw new Error('Sequence not found.');
+      const existing = db.prepare(
+        "SELECT id FROM company_crm_enrollments WHERE lead_id = ? AND sequence_id = ? AND status = 'active' LIMIT 1"
+      ).get(lead.id, sequence.id);
+      if (existing) throw new Error('This lead is already on that sequence.');
+      sqliteCreateEnrollment(db, lead.id, sequence, actorName);
+      return this.getCrmLead(lead.id);
+    },
+    async pauseCrmEnrollment(leadId, enrollmentId) {
+      const row = db.prepare('SELECT * FROM company_crm_enrollments WHERE id = ? AND lead_id = ?').get(enrollmentId, leadId);
+      if (!row) return null;
+      const stamp = nowIso();
+      db.prepare('UPDATE company_crm_enrollments SET status = ?, updated_at = ? WHERE id = ?').run('paused', stamp, enrollmentId);
+      return this.getCrmLead(leadId);
+    },
+    async autoEnrollCrmLead(leadId, source, actorName) {
+      const auto = String(source || '').toLowerCase() === 'dealer' ? 'dealer' : (String(source || '').toLowerCase() === 'website' ? 'website' : '');
+      if (!auto) return null;
+      const sequences = sqliteListSequences(db).filter(function (seq) {
+        return seq.active && seq.autoSource === auto;
+      });
+      if (!sequences.length) return null;
+      const already = db.prepare(
+        "SELECT id FROM company_crm_enrollments WHERE lead_id = ? AND status = 'active' LIMIT 1"
+      ).get(leadId);
+      if (already) return null;
+      sqliteCreateEnrollment(db, leadId, sequences[0], actorName);
+      return sqliteGetSequence(db, sequences[0].id);
+    },
+    async listCrmMentions(query) {
+      const q = String(query || '').trim().toLowerCase();
+      const leads = db.prepare(
+        'SELECT * FROM company_crm_leads WHERE merged_into_id IS NULL OR merged_into_id = 0 ORDER BY datetime(updated_at) DESC LIMIT 80'
+      ).all().map(formatLead);
+      const deals = db.prepare(
+        'SELECT * FROM company_crm_deals ORDER BY datetime(updated_at) DESC LIMIT 80'
+      ).all().map(formatDeal);
+      function matches(parts) {
+        if (!q) return true;
+        return parts.join(' ').toLowerCase().indexOf(q) !== -1;
+      }
+      const mentions = [];
+      leads.forEach(function (lead) {
+        const name = lead.displayName || lead.companyName || 'Lead';
+        if (!matches([name, lead.email, lead.companyName, 'lead'])) return;
+        mentions.push({ kind: 'lead', id: lead.id, name: name, hint: 'Lead', path: '/company/crm/leads/' + lead.id });
+      });
+      deals.forEach(function (deal) {
+        const name = deal.title || deal.companyName || 'Deal';
+        if (!matches([name, deal.companyName, deal.email, 'deal'])) return;
+        mentions.push({ kind: 'deal', id: deal.id, name: name, hint: 'Deal', path: '/company/crm/pipeline/' + deal.id });
+      });
+      return mentions.slice(0, 24);
+    },
+    async saveCrmDealCalculator(id, payload) {
+      const current = formatDeal(db.prepare('SELECT * FROM company_crm_deals WHERE id = ?').get(id));
+      if (!current) return null;
+      const src = payload || {};
+      return this.updateCrmDeal(id, Object.assign({}, current, {
+        calculatorQuery: src.query || src.calculatorQuery || current.calculatorQuery,
+        calculatorSummary: src.summary || src.calculatorSummary || current.calculatorSummary,
+        value: src.value != null && src.value !== '' ? src.value : current.value
+      }));
     }
   };
 }
@@ -1025,6 +1417,101 @@ function supabaseApi(supabase, store) {
     return (data || []).map(formatMessage);
   }
 
+  async function seedSequences() {
+    const { data, error } = await supabase.from('company_crm_sequences').select('id').limit(1);
+    throwIf(error, 'Could not list sequences.');
+    if (data && data.length) return;
+    const stamp = nowIso();
+    const rows = DEFAULT_SEQUENCES.map(function (seq) {
+      return {
+        seq_key: seq.seqKey,
+        name: seq.name,
+        auto_source: seq.autoSource,
+        active: true,
+        steps_json: JSON.stringify(seq.steps),
+        created_at: stamp,
+        updated_at: stamp
+      };
+    });
+    const ins = await supabase.from('company_crm_sequences').insert(rows);
+    throwIf(ins.error, 'Could not seed sequences.');
+  }
+
+  async function listSequences() {
+    await seedSequences();
+    const { data, error } = await supabase
+      .from('company_crm_sequences')
+      .select('*')
+      .order('name', { ascending: true })
+      .order('id', { ascending: true });
+    throwIf(error, 'Could not list sequences.');
+    return (data || []).map(formatSequence);
+  }
+
+  async function getSequence(id) {
+    await seedSequences();
+    const { data, error } = await supabase.from('company_crm_sequences').select('*').eq('id', id).maybeSingle();
+    throwIf(error, 'Could not load sequence.');
+    return formatSequence(data);
+  }
+
+  async function leadEnrollments(leadId) {
+    await seedSequences();
+    const { data, error } = await supabase
+      .from('company_crm_enrollments')
+      .select('*')
+      .eq('lead_id', leadId)
+      .order('enrolled_at', { ascending: false });
+    throwIf(error, 'Could not list enrollments.');
+    const rows = data || [];
+    const seqIds = [];
+    rows.forEach(function (row) {
+      if (row.sequence_id && seqIds.indexOf(row.sequence_id) === -1) seqIds.push(row.sequence_id);
+    });
+    let sequences = [];
+    if (seqIds.length) {
+      const seq = await supabase.from('company_crm_sequences').select('*').in('id', seqIds);
+      throwIf(seq.error, 'Could not list sequences.');
+      sequences = (seq.data || []).map(formatSequence);
+    }
+    const map = {};
+    sequences.forEach(function (seq) { map[seq.id] = seq; });
+    return rows.map(function (row) { return formatEnrollment(row, map[row.sequence_id]); });
+  }
+
+  async function createEnrollment(leadId, sequence, actorName) {
+    const stamp = nowIso();
+    const ins = await supabase.from('company_crm_enrollments').insert({
+      sequence_id: sequence.id,
+      lead_id: leadId,
+      status: 'active',
+      step_index: 0,
+      enrolled_at: stamp,
+      created_at: stamp,
+      updated_at: stamp
+    }).select('*').single();
+    throwIf(ins.error, 'Could not enroll lead.');
+    for (let i = 0; i < (sequence.steps || []).length; i++) {
+      const step = sequence.steps[i];
+      const input = normalizeActivity({
+        type: step.type,
+        subject: step.subject,
+        body: step.body || ('Sequence: ' + sequence.name),
+        dueAt: addDaysYmd(step.delayDays),
+        leadId: leadId,
+        createdByName: actorName || '',
+        sequenceId: sequence.id,
+        sequenceStep: i + 1
+      });
+      const fields = forSupabase(activityDbFields(input));
+      fields.created_at = stamp;
+      fields.updated_at = stamp;
+      const act = await supabase.from('company_crm_activities').insert(fields);
+      throwIf(act.error, 'Could not add sequence activity.');
+    }
+    return ins.data;
+  }
+
   return {
     async listCrmLeads() {
       const { data, error } = await supabase
@@ -1039,11 +1526,12 @@ function supabaseApi(supabase, store) {
       const data = await fetchLeadRow(id);
       const lead = formatLead(data);
       if (!lead) return null;
-      const [deals, activities, messages, allLeads] = await Promise.all([
+      const [deals, activities, messages, allLeads, enrollments] = await Promise.all([
         supabase.from('company_crm_deals').select('*').eq('lead_id', id).order('id', { ascending: false }),
         supabase.from('company_crm_activities').select('*').eq('lead_id', id).order('created_at', { ascending: false }),
         supabase.from('company_crm_messages').select('*').eq('lead_id', id).order('created_at', { ascending: true }),
-        supabase.from('company_crm_leads').select('*').order('id', { ascending: false })
+        supabase.from('company_crm_leads').select('*').order('id', { ascending: false }),
+        leadEnrollments(id)
       ]);
       throwIf(deals.error, 'Could not list deals.');
       throwIf(activities.error, 'Could not list activities.');
@@ -1052,6 +1540,7 @@ function supabaseApi(supabase, store) {
       lead.deals = await attachQuotes((deals.data || []).map(formatDeal));
       lead.activities = (activities.data || []).map(formatActivity);
       lead.messages = (messages.data || []).map(formatMessage);
+      lead.enrollments = enrollments;
       lead.duplicates = (allLeads.data || []).map(formatLead).filter(function (row) {
         return leadMatchesDuplicate(row, lead.email, lead.companyName, lead.id);
       });
@@ -1065,6 +1554,7 @@ function supabaseApi(supabase, store) {
       fields.updated_at = stamp;
       const { data, error } = await supabase.from('company_crm_leads').insert(fields).select('*').single();
       throwIf(error, 'Could not add lead.');
+      await this.autoEnrollCrmLead(data.id, input.kind === 'dealer' ? 'dealer' : input.source, payload && payload.createdByName);
       return this.getCrmLead(data.id);
     },
     async updateCrmLead(id, payload) {
@@ -1112,6 +1602,7 @@ function supabaseApi(supabase, store) {
         subject: inquiry && inquiry.subject
       });
       if (inbound) await this.createCrmMessage(inbound);
+      await this.autoEnrollCrmLead(lead.id, input.kind === 'dealer' ? 'dealer' : input.source, '');
       return this.getCrmLead(lead.id);
     },
     async findCrmDuplicates(query) {
@@ -1153,6 +1644,8 @@ function supabaseApi(supabase, store) {
       throwIf(fromActs.error, 'Could not move activities.');
       const fromMail = await supabase.from('company_crm_messages').update({ lead_id: into.id, updated_at: stamp }).eq('lead_id', from.id);
       throwIf(fromMail.error, 'Could not move email.');
+      const fromEnroll = await supabase.from('company_crm_enrollments').update({ lead_id: into.id, updated_at: stamp }).eq('lead_id', from.id);
+      throwIf(fromEnroll.error, 'Could not move sequences.');
       await this.updateCrmLead(from.id, Object.assign({}, from, {
         status: 'lost',
         mergedIntoId: into.id,
@@ -1377,6 +1870,128 @@ function supabaseApi(supabase, store) {
           label: row.name || row.email || 'Staff'
         };
       }).filter(function (row) { return row.label; });
+    },
+    async listCrmSequences() {
+      return listSequences();
+    },
+    async createCrmSequence(payload) {
+      const input = normalizeSequence(payload);
+      const fields = sequenceDbFields(input);
+      fields.active = !!input.active;
+      const stamp = nowIso();
+      fields.created_at = stamp;
+      fields.updated_at = stamp;
+      const { data, error } = await supabase.from('company_crm_sequences').insert(fields).select('*').single();
+      throwIf(error, 'Could not add sequence.');
+      return formatSequence(data);
+    },
+    async updateCrmSequence(id, payload) {
+      const current = await getSequence(id);
+      if (!current) return null;
+      const input = normalizeSequence(Object.assign({}, current, payload, {
+        steps: payload.steps || payload.steps_json || current.steps
+      }));
+      const fields = sequenceDbFields(input);
+      fields.active = !!input.active;
+      fields.updated_at = nowIso();
+      const { data, error } = await supabase.from('company_crm_sequences').update(fields).eq('id', id).select('*').maybeSingle();
+      throwIf(error, 'Could not save sequence.');
+      return formatSequence(data);
+    },
+    async deleteCrmSequence(id) {
+      const { data, error } = await supabase.from('company_crm_sequences').delete().eq('id', id).select('id');
+      throwIf(error, 'Could not delete sequence.');
+      return !!(data && data.length);
+    },
+    async enrollCrmLead(leadId, sequenceId, actorName) {
+      const lead = formatLead(await fetchLeadRow(leadId));
+      const sequence = await getSequence(sequenceId);
+      if (!lead) throw new Error('Lead not found.');
+      if (!sequence) throw new Error('Sequence not found.');
+      const existing = await supabase
+        .from('company_crm_enrollments')
+        .select('id')
+        .eq('lead_id', lead.id)
+        .eq('sequence_id', sequence.id)
+        .eq('status', 'active')
+        .limit(1);
+      throwIf(existing.error, 'Could not check enrollment.');
+      if (existing.data && existing.data.length) throw new Error('This lead is already on that sequence.');
+      await createEnrollment(lead.id, sequence, actorName);
+      return this.getCrmLead(lead.id);
+    },
+    async pauseCrmEnrollment(leadId, enrollmentId) {
+      const { data, error } = await supabase
+        .from('company_crm_enrollments')
+        .select('*')
+        .eq('id', enrollmentId)
+        .eq('lead_id', leadId)
+        .maybeSingle();
+      throwIf(error, 'Could not load enrollment.');
+      if (!data) return null;
+      const upd = await supabase.from('company_crm_enrollments').update({
+        status: 'paused',
+        updated_at: nowIso()
+      }).eq('id', enrollmentId);
+      throwIf(upd.error, 'Could not pause sequence.');
+      return this.getCrmLead(leadId);
+    },
+    async autoEnrollCrmLead(leadId, source, actorName) {
+      const auto = String(source || '').toLowerCase() === 'dealer' ? 'dealer' : (String(source || '').toLowerCase() === 'website' ? 'website' : '');
+      if (!auto) return null;
+      const sequences = (await listSequences()).filter(function (seq) {
+        return seq.active && seq.autoSource === auto;
+      });
+      if (!sequences.length) return null;
+      const existing = await supabase
+        .from('company_crm_enrollments')
+        .select('id')
+        .eq('lead_id', leadId)
+        .eq('status', 'active')
+        .limit(1);
+      throwIf(existing.error, 'Could not check enrollment.');
+      if (existing.data && existing.data.length) return null;
+      await createEnrollment(leadId, sequences[0], actorName);
+      return sequences[0];
+    },
+    async listCrmMentions(query) {
+      const q = String(query || '').trim().toLowerCase();
+      const [leads, deals] = await Promise.all([
+        supabase.from('company_crm_leads').select('*').order('updated_at', { ascending: false }).limit(80),
+        supabase.from('company_crm_deals').select('*').order('updated_at', { ascending: false }).limit(80)
+      ]);
+      throwIf(leads.error, 'Could not list leads.');
+      throwIf(deals.error, 'Could not list deals.');
+      function matches(parts) {
+        if (!q) return true;
+        return parts.join(' ').toLowerCase().indexOf(q) !== -1;
+      }
+      const mentions = [];
+      (leads.data || []).map(formatLead).forEach(function (lead) {
+        if (lead.mergedIntoId) return;
+        const name = lead.displayName || lead.companyName || 'Lead';
+        if (!matches([name, lead.email, lead.companyName, 'lead'])) return;
+        mentions.push({ kind: 'lead', id: lead.id, name: name, hint: 'Lead', path: '/company/crm/leads/' + lead.id });
+      });
+      (deals.data || []).map(formatDeal).forEach(function (deal) {
+        const name = deal.title || deal.companyName || 'Deal';
+        if (!matches([name, deal.companyName, deal.email, 'deal'])) return;
+        mentions.push({ kind: 'deal', id: deal.id, name: name, hint: 'Deal', path: '/company/crm/pipeline/' + deal.id });
+      });
+      return mentions.slice(0, 24);
+    },
+    async saveCrmDealCalculator(id, payload) {
+      const current = formatDeal(await supabase.from('company_crm_deals').select('*').eq('id', id).maybeSingle().then(function (r) {
+        throwIf(r.error, 'Could not load deal.');
+        return r.data;
+      }));
+      if (!current) return null;
+      const src = payload || {};
+      return this.updateCrmDeal(id, Object.assign({}, current, {
+        calculatorQuery: src.query || src.calculatorQuery || current.calculatorQuery,
+        calculatorSummary: src.summary || src.calculatorSummary || current.calculatorSummary,
+        value: src.value != null && src.value !== '' ? src.value : current.value
+      }));
     }
   };
 }
@@ -1392,11 +2007,13 @@ function crmDashboardCounts(leads, deals, activities) {
     if (openStatuses[row.status]) openLeads += 1;
   });
   let pipelineValue = 0;
+  let weightedForecast = 0;
   let openDeals = 0;
   dealList.forEach(function (row) {
     if (openStages[row.stage]) {
       openDeals += 1;
       pipelineValue += Number(row.value) || 0;
+      weightedForecast += weightedValue(row);
     }
   });
   const now = Date.now();
@@ -1413,6 +2030,7 @@ function crmDashboardCounts(leads, deals, activities) {
     deals: dealList.length,
     openDeals: openDeals,
     pipelineValue: pipelineValue,
+    weightedForecast: weightedForecast,
     activities: actList.length,
     overdueActivities: overdue
   };
@@ -1423,6 +2041,9 @@ module.exports = {
   DEAL_STAGES,
   ACTIVITY_TYPES,
   CLOSE_REASONS,
+  STAGE_PROBABILITY,
+  CRM_KINDS,
+  DEFAULT_SEQUENCES,
   CRM_SALES_EMAIL,
   LEAD_CSV_HEADERS,
   normalizeLead,

@@ -14,10 +14,10 @@
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
   <title>Company | Spectrum Display</title>
   <meta name="robots" content="noindex, nofollow" />
-  <link rel="stylesheet" href="/css/company-dash.css?v=traffic33" />
+  <link rel="stylesheet" href="/css/company-dash.css?v=tr34" />
   <script src="/js/address-autocomplete.js"></script>
-  <script src="/js/company-chat.js?v=chatmove2"></script>
-  <script src="/js/company-crm.js?v=crmv2b"></script>
+  <script src="/js/company-chat.js?v=chatcrm3"></script>
+  <script src="/js/company-crm.js?v=crmv3"></script>
   <script src="/js/company-traffic.js?v=src1"></script>
   <script src="/js/print-form.js?v=forms20"></script>
   <script>
@@ -2005,6 +2005,7 @@
                         <th class="py-3 px-4 font-medium" data-col="email">Email <span class="dash-col-caret">▾</span><span class="dash-col-grip" aria-hidden="true"></span></th>
                         <th class="py-3 px-4 font-medium" data-col="phone">Phone <span class="dash-col-caret">▾</span><span class="dash-col-grip" aria-hidden="true"></span></th>
                         <th class="py-3 px-4 font-medium" data-col="status">Status <span class="dash-col-caret">▾</span><span class="dash-col-grip" aria-hidden="true"></span></th>
+                        <th class="py-3 px-4 font-medium" data-col="kind">Type <span class="dash-col-caret">▾</span><span class="dash-col-grip" aria-hidden="true"></span></th>
                         <th class="py-3 px-4 font-medium" data-col="source">Source <span class="dash-col-caret">▾</span><span class="dash-col-grip" aria-hidden="true"></span></th>
                         <th class="py-3 px-4 font-medium" data-col="owner">Owner <span class="dash-col-caret">▾</span><span class="dash-col-grip" aria-hidden="true"></span></th>
                         <th class="py-3 px-4 font-medium" data-col="updated">Updated <span class="dash-col-caret">▾</span><span class="dash-col-grip" aria-hidden="true"></span></th>
@@ -2053,6 +2054,7 @@
                       <h3>Lead</h3>
                       <dl class="cc-detail-dl">
                         <div><dt>Status</dt><dd id="crm-lead-detail-status">—</dd></div>
+                        <div><dt>Type</dt><dd id="crm-lead-detail-kind">—</dd></div>
                         <div><dt>Source</dt><dd id="crm-lead-detail-source">—</dd></div>
                         <div><dt>Project</dt><dd id="crm-lead-detail-project">—</dd></div>
                       </dl>
@@ -2074,6 +2076,14 @@
                   <button type="button" class="cc-detail-tab" data-crm-lead-tab="deals" role="tab" aria-selected="false">Deals</button>
                 </div>
                 <div id="crm-lead-panel-details" class="cc-detail-panel" role="tabpanel">
+                  <div class="crm-seq-box" id="crm-lead-seq-box">
+                    <p id="crm-lead-seq-status">No sequence yet.</p>
+                    <div class="crm-seq-actions">
+                      <select id="crm-lead-seq"></select>
+                      <button type="button" id="crm-lead-seq-enroll" class="cc-detail-btn cc-detail-btn-primary">Enroll</button>
+                      <button type="button" id="crm-lead-seq-pause" class="cc-detail-btn hidden">Pause</button>
+                    </div>
+                  </div>
                   <div class="cc-detail-notes-box" id="crm-lead-detail-notes">—</div>
                 </div>
                 <div id="crm-lead-panel-email" class="cc-detail-panel hidden" role="tabpanel" hidden>
@@ -2108,7 +2118,7 @@
       <div id="crm-pipe-section" class="hidden">
         <div class="cc-workspace">
         <div class="cc-list-inner">
-          <div class="page-kpis page-kpis-5 cc-list-kpis">
+          <div class="page-kpis page-kpis-6 cc-list-kpis">
             <button type="button" class="dash-kpi is-on" aria-pressed="true">
               <span class="dash-kpi-icon dash-kpi-icon-crm" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><rect x="3" y="4" width="5" height="16" rx="1"/><rect x="10" y="8" width="5" height="12" rx="1"/><rect x="17" y="12" width="4" height="8" rx="1"/></svg></span>
               <span class="dash-kpi-label">Open deals</span>
@@ -2120,6 +2130,12 @@
               <span class="dash-kpi-label">Open value</span>
               <strong class="dash-kpi-value" id="crm-pipe-stat-value">—</strong>
               <span class="dash-kpi-hint">Not won or lost</span>
+            </button>
+            <button type="button" class="dash-kpi" aria-pressed="false">
+              <span class="dash-kpi-icon dash-kpi-icon-inventory" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M4 16l5-5 4 4 7-8"/></svg></span>
+              <span class="dash-kpi-label">Weighted</span>
+              <strong class="dash-kpi-value" id="crm-pipe-stat-weighted">—</strong>
+              <span class="dash-kpi-hint">Value × win %</span>
             </button>
             <button type="button" class="dash-kpi" aria-pressed="false">
               <span class="dash-kpi-icon dash-kpi-icon-website" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M4 16l5-5 4 4 7-8"/></svg></span>
@@ -2142,6 +2158,11 @@
           </div>
           <div class="cc-list-toolbar cc-list-tools">
             <p class="cc-list-desc" style="margin:0">Drag a card to change stage. Click a card for details.</p>
+            <div class="crm-kind-filters" id="crm-pipe-kind">
+              <button type="button" class="crm-kind-btn is-on" data-kind="all">All</button>
+              <button type="button" class="crm-kind-btn" data-kind="project">Project</button>
+              <button type="button" class="crm-kind-btn" data-kind="dealer">Dealer</button>
+            </div>
             <button id="crm-pipe-new" type="button" class="cc-list-add-btn px-4 py-2 rounded-full bg-sky-500 hover:bg-sky-400 text-white text-sm font-semibold">Add deal</button>
           </div>
           <p id="crm-pipe-error" class="hidden text-sm text-red-400 mb-3"></p>
@@ -2165,6 +2186,7 @@
                     </div>
                     <div class="cc-detail-toolbar-actions inv-detail-hero-actions">
                       <button type="button" id="crm-pipe-quote" class="cc-detail-btn cc-detail-btn-primary hidden">Create quote</button>
+                      <button type="button" id="crm-pipe-calc" class="cc-detail-btn">Open calculator</button>
                       <button type="button" id="crm-pipe-act" class="cc-detail-btn">Log activity</button>
                       <button type="button" id="crm-pipe-edit" class="cc-detail-btn">Edit</button>
                     </div>
@@ -2174,7 +2196,10 @@
                       <h3>Deal</h3>
                       <dl class="cc-detail-dl">
                         <div><dt>Stage</dt><dd id="crm-pipe-detail-stage">—</dd></div>
+                        <div><dt>Type</dt><dd id="crm-pipe-detail-kind">—</dd></div>
                         <div><dt>Value</dt><dd id="crm-pipe-detail-value">—</dd></div>
+                        <div><dt>Win %</dt><dd id="crm-pipe-detail-prob">—</dd></div>
+                        <div><dt>Weighted</dt><dd id="crm-pipe-detail-weighted">—</dd></div>
                         <div><dt>Close</dt><dd id="crm-pipe-detail-close">—</dd></div>
                         <div><dt>Quote</dt><dd id="crm-pipe-detail-quote">—</dd></div>
                         <div><dt>Reason</dt><dd id="crm-pipe-detail-reason">—</dd></div>
@@ -2189,9 +2214,24 @@
                     </div>
                   </div>
                 </div>
-                <div class="cc-detail-panel">
+                <div class="cc-detail-tabs" role="tablist">
+                  <button type="button" class="cc-detail-tab is-on" data-crm-deal-tab="details" role="tab" aria-selected="true">Details</button>
+                  <button type="button" class="cc-detail-tab" data-crm-deal-tab="calculator" role="tab" aria-selected="false">Calculator</button>
+                  <button type="button" class="cc-detail-tab" data-crm-deal-tab="activity" role="tab" aria-selected="false">Activity</button>
+                </div>
+                <div id="crm-pipe-panel-details" class="cc-detail-panel" role="tabpanel">
                   <div class="cc-detail-notes-box" id="crm-pipe-detail-notes">—</div>
-                  <div id="crm-pipe-acts" class="mt-4"></div>
+                </div>
+                <div id="crm-pipe-panel-calculator" class="cc-detail-panel hidden" role="tabpanel" hidden>
+                  <div id="crm-pipe-calc-summary" class="crm-calc-summary">No wall on this deal yet.</div>
+                  <div class="crm-seq-actions">
+                    <a id="crm-pipe-calc-open" class="cc-detail-btn cc-detail-btn-primary" href="/led-wall-calculator" target="_blank" rel="noopener">Open live calculator</a>
+                    <button type="button" id="crm-pipe-calc-clear" class="cc-detail-btn hidden">Clear wall</button>
+                  </div>
+                  <iframe id="crm-pipe-calc-frame" class="crm-calc-frame" title="LED wall calculator" hidden></iframe>
+                </div>
+                <div id="crm-pipe-panel-activity" class="cc-detail-panel hidden" role="tabpanel" hidden>
+                  <div id="crm-pipe-acts"></div>
                 </div>
               </div>
             </div>
@@ -2237,6 +2277,7 @@
           </div>
           <div class="cc-list-toolbar cc-list-tools">
             <input id="crm-act-search" type="search" placeholder="Search activity, lead, deal" class="cc-list-search bg-slate-800 border border-slate-700 rounded-full px-3 py-1.5 text-sm">
+            <button id="crm-seq-open" type="button" class="cc-detail-btn">Sequences</button>
             <button id="crm-act-new" type="button" class="cc-list-add-btn px-4 py-2 rounded-full bg-sky-500 hover:bg-sky-400 text-white text-sm font-semibold">Add activity</button>
           </div>
           <p id="crm-act-error" class="hidden text-sm text-red-400 mb-3"></p>
@@ -3091,6 +3132,12 @@
               <option value="lost">Lost</option>
             </select>
           </div>
+          <div class="cc-field"><label>Type</label>
+            <select id="crm-lead-kind">
+              <option value="project">Project</option>
+              <option value="dealer">Dealer</option>
+            </select>
+          </div>
           <div class="cc-field"><label>Owner</label><input id="crm-lead-owner" type="text" list="crm-assignee-list"></div>
           <div class="cc-field"><label>Project type</label><input id="crm-lead-project" type="text"></div>
           <div class="cc-field"><label>City</label><input id="crm-lead-city" type="text"></div>
@@ -3134,6 +3181,13 @@
             </select>
           </div>
           <div class="cc-field"><label>Value ($)</label><input id="crm-deal-value" type="number" min="0" step="1"></div>
+          <div class="cc-field"><label>Win % (blank = stage)</label><input id="crm-deal-prob" type="number" min="0" max="100" step="1" placeholder="Auto"></div>
+          <div class="cc-field"><label>Type</label>
+            <select id="crm-deal-kind">
+              <option value="project">Project</option>
+              <option value="dealer">Dealer</option>
+            </select>
+          </div>
           <div class="cc-field"><label>Expected close</label><input id="crm-deal-close" type="date"></div>
           <div class="cc-field"><label>Owner</label><input id="crm-deal-owner" type="text" list="crm-assignee-list"></div>
           <div class="cc-field" id="crm-deal-won-wrap">
@@ -3204,6 +3258,52 @@
     <div class="cc-drawer-foot">
       <button id="crm-act-delete" type="button" class="hidden px-5 py-2 rounded-full border border-slate-200 text-red-500 hover:border-red-400 text-sm">Delete</button>
       <button type="submit" form="crm-act-form" class="px-5 py-2 rounded-full bg-sky-500 hover:bg-sky-400 text-white text-sm font-semibold">Save activity</button>
+    </div>
+  </aside>
+  <aside id="crm-seq-drawer" class="cc-drawer" aria-hidden="true">
+    <div class="cc-drawer-head">
+      <h2 id="crm-seq-title">Sequences</h2>
+      <div class="cc-drawer-tools">
+        <button type="button" id="crm-seq-new" class="cc-detail-btn">New</button>
+        <button type="button" class="cc-drawer-close" data-crm-drawer-close aria-label="Close">×</button>
+      </div>
+    </div>
+    <form id="crm-seq-form" class="cc-drawer-body">
+      <input type="hidden" id="crm-seq-id">
+      <section class="cc-sec is-open">
+        <button type="button" class="cc-sec-btn"><span class="cc-sec-label">Follow-up sequence</span> <span class="cc-sec-chevron">▾</span></button>
+        <div class="cc-sec-body">
+          <div class="cc-field wide"><label>Name</label><input id="crm-seq-name" type="text" placeholder="Website inquiry"></div>
+          <div class="cc-field"><label>Auto-enroll</label>
+            <select id="crm-seq-auto">
+              <option value="">Manual only</option>
+              <option value="website">Website inquiries</option>
+              <option value="dealer">Dealer inquiries</option>
+            </select>
+          </div>
+          <div class="cc-field"><label>Step 1 delay (days)</label><input id="crm-seq-d1" type="number" min="0" value="0"></div>
+          <div class="cc-field"><label>Step 1 type</label>
+            <select id="crm-seq-t1"><option value="task">Task</option><option value="call">Call</option><option value="email">Email</option><option value="meeting">Meeting</option></select>
+          </div>
+          <div class="cc-field wide"><label>Step 1 subject</label><input id="crm-seq-s1" type="text"></div>
+          <div class="cc-field"><label>Step 2 delay (days)</label><input id="crm-seq-d2" type="number" min="0" value="2"></div>
+          <div class="cc-field"><label>Step 2 type</label>
+            <select id="crm-seq-t2"><option value="call">Call</option><option value="task">Task</option><option value="email">Email</option><option value="meeting">Meeting</option></select>
+          </div>
+          <div class="cc-field wide"><label>Step 2 subject</label><input id="crm-seq-s2" type="text"></div>
+          <div class="cc-field"><label>Step 3 delay (days)</label><input id="crm-seq-d3" type="number" min="0" value="5"></div>
+          <div class="cc-field"><label>Step 3 type</label>
+            <select id="crm-seq-t3"><option value="email">Email</option><option value="task">Task</option><option value="call">Call</option><option value="meeting">Meeting</option></select>
+          </div>
+          <div class="cc-field wide"><label>Step 3 subject</label><input id="crm-seq-s3" type="text"></div>
+        </div>
+      </section>
+      <div id="crm-seq-list" class="crm-seq-list"></div>
+      <p id="crm-seq-msg" class="hidden text-sm px-5 pt-3 text-red-500"></p>
+    </form>
+    <div class="cc-drawer-foot">
+      <button id="crm-seq-delete" type="button" class="hidden px-5 py-2 rounded-full border border-slate-200 text-red-500 hover:border-red-400 text-sm">Delete</button>
+      <button type="submit" form="crm-seq-form" class="px-5 py-2 rounded-full bg-sky-500 hover:bg-sky-400 text-white text-sm font-semibold">Save sequence</button>
     </div>
   </aside>
   <datalist id="crm-assignee-list"></datalist>
@@ -3948,7 +4048,7 @@
     </a>
   </nav>
 
-  <link rel="stylesheet" href="/css/company-dash.css?v=traffic31" />
+  <link rel="stylesheet" href="/css/company-dash.css?v=crmv3t" />
 
   <script>
     const loginPanel = document.getElementById('login-panel');
@@ -5560,7 +5660,7 @@
       inventory: 0, inventoryLow: 0, inventoryOut: 0, receipts: 0,
       vendors: 0, vendorsWithEmail: 0, pos: 0, openPos: 0,
       customers: 0, quotes: 0, orders: 0, invoices: 0, sales: 0,
-      leads: 0, openLeads: 0, deals: 0, openDeals: 0, pipelineValue: 0,
+      leads: 0, openLeads: 0, deals: 0, openDeals: 0, pipelineValue: 0, weightedForecast: 0,
       activities: 0, overdueActivities: 0
     };
 
@@ -5977,6 +6077,7 @@
           dashChip(dashCounts.leads, 'Leads') +
           dashChip(dashCounts.openDeals, 'Open deals') +
           '<div class="dash-detail-chip"><strong>' + esc('$' + dashCount(dashCounts.pipelineValue)) + '</strong><span>Pipeline</span></div>' +
+          '<div class="dash-detail-chip"><strong>' + esc('$' + dashCount(dashCounts.weightedForecast)) + '</strong><span>Weighted</span></div>' +
           (dashCounts.overdueActivities ? dashChip(dashCounts.overdueActivities, 'Overdue activity') : '');
         const reminderRows = dashReminders.slice(0, 6).map(function (item) {
           return dashRow(
