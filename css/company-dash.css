@@ -1519,6 +1519,151 @@ html.dash-scroll-lock body.company-app {
   color: #243056;
   white-space: nowrap;
 }
+.dash-traffic {
+  display: flex;
+  flex-direction: column;
+  gap: 0.7rem;
+  min-height: 0;
+  flex: 1 1 auto;
+}
+.dash-traffic.hidden { display: none !important; }
+.dash-traffic-tabs,
+.dash-traffic-range {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+  flex-shrink: 0;
+}
+.dash-traffic-tabs button,
+.dash-traffic-range button {
+  appearance: none;
+  border: 1px solid var(--dash-line);
+  background: #fff;
+  color: #243056;
+  font: inherit;
+  font-size: 0.75rem;
+  font-weight: 700;
+  padding: 0.32rem 0.7rem;
+  border-radius: 999px;
+  cursor: pointer;
+}
+.dash-traffic-tabs button.is-on,
+.dash-traffic-range button.is-on {
+  background: #eef3ff;
+  border-color: #c5d2ea;
+  color: #2f6bff;
+}
+.dash-traffic-stage {
+  position: relative;
+  min-height: 11.5rem;
+  background: linear-gradient(180deg, #f7f9ff 0%, #ffffff 70%);
+  border: 1px solid var(--dash-line);
+  border-radius: 0.9rem;
+  overflow: hidden;
+  flex-shrink: 0;
+}
+.dash-traffic-svg {
+  display: block;
+  width: 100%;
+  height: 11.5rem;
+}
+.dash-traffic-cards {
+  position: absolute;
+  inset: 0.7rem 0.75rem auto 0.75rem;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.55rem;
+  pointer-events: none;
+}
+.dash-traffic-card {
+  background: #fff;
+  border: 1px solid #e7ecf5;
+  box-shadow: 0 10px 24px rgba(16, 32, 71, 0.08);
+  border-radius: 0.85rem;
+  padding: 0.55rem 0.75rem 0.5rem;
+  min-width: 7.2rem;
+}
+.dash-traffic-card-label {
+  display: block;
+  font-size: 0.68rem;
+  font-weight: 700;
+  color: var(--dash-muted);
+}
+.dash-traffic-card strong {
+  display: block;
+  font-size: 1.35rem;
+  font-weight: 800;
+  color: #102047;
+  letter-spacing: -0.03em;
+  line-height: 1.15;
+}
+.dash-traffic-delta {
+  font-style: normal;
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: var(--dash-muted);
+}
+.dash-traffic-delta.is-up { color: #1f9d57; }
+.dash-traffic-delta.is-down { color: #dc2626; }
+.dash-traffic-tip {
+  position: absolute;
+  z-index: 2;
+  background: #102047;
+  color: #fff;
+  font-size: 0.72rem;
+  font-weight: 600;
+  padding: 0.35rem 0.5rem;
+  border-radius: 0.45rem;
+  pointer-events: none;
+  white-space: nowrap;
+  transform: translate(-50%, -120%);
+}
+.dash-traffic-axis {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.68rem;
+  font-weight: 600;
+  color: var(--dash-muted);
+  padding: 0 0.2rem;
+  flex-shrink: 0;
+}
+.dash-traffic-table-wrap {
+  min-height: 0;
+  flex: 1 1 auto;
+  overflow: auto;
+  border-top: 1px solid var(--dash-line);
+}
+.dash-traffic-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.8rem;
+}
+.dash-traffic-table th {
+  position: sticky;
+  top: 0;
+  background: #fff;
+  text-align: left;
+  font-size: 0.68rem;
+  font-weight: 700;
+  color: var(--dash-muted);
+  padding: 0.55rem 0.35rem;
+  border-bottom: 1px solid var(--dash-line);
+}
+.dash-traffic-table td {
+  padding: 0.5rem 0.35rem;
+  border-bottom: 1px solid var(--dash-line);
+  color: #122046;
+}
+.dash-traffic-table td:nth-child(2),
+.dash-traffic-table th:nth-child(2),
+.dash-traffic-table td:nth-child(3),
+.dash-traffic-table th:nth-child(3) {
+  text-align: right;
+  white-space: nowrap;
+}
+.dash-home-detail:has(.dash-traffic:not(.hidden)):hover {
+  transform: none;
+}
 .dash-home-panel {
   background: var(--dash-card);
   border: 1px solid var(--dash-line);
