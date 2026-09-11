@@ -14,7 +14,7 @@
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
   <title>Company | Spectrum Display</title>
   <meta name="robots" content="noindex, nofollow" />
-  <link rel="stylesheet" href="/css/company-dash.css?v=crmv2-dealer-apps5c" />
+  <link rel="stylesheet" href="/css/company-dash.css?v=location-v2-4-dpv2" />
   <script src="/js/address-autocomplete.js"></script>
   <script src="/js/company-chat.js?v=chatmove2"></script>
   <script src="/js/company-crm.js?v=crmv2b"></script>
@@ -919,6 +919,9 @@
             <select id="inv-category-filter" class="cc-list-select bg-slate-800 border border-slate-700 rounded-full px-3 py-1.5 text-sm" aria-label="Filter by category">
               <option value="">All categories</option>
             </select>
+            <select id="inv-location-filter" class="cc-list-select bg-slate-800 border border-slate-700 rounded-full px-3 py-1.5 text-sm" aria-label="Filter by location">
+              <option value="">All locations</option>
+            </select>
             <div class="cc-list-filters">
               <button type="button" data-inv-filter="all" class="inv-filter px-3 py-1.5 rounded-full text-xs font-medium bg-sky-500/20 text-sky-300">All</button>
               <button type="button" data-inv-filter="low" class="inv-filter px-3 py-1.5 rounded-full text-xs font-medium text-slate-400 hover:text-white">Low</button>
@@ -993,6 +996,7 @@
                     </div>
                     <div class="cc-detail-toolbar-actions inv-detail-hero-actions">
                       <button type="button" id="inv-detail-adjust" class="cc-detail-btn">Adjust stock</button>
+                      <button type="button" id="inv-detail-transfer" class="cc-detail-btn">Transfer</button>
                       <button type="button" id="inv-detail-edit" class="cc-detail-btn">Edit</button>
                     </div>
                   </div>
@@ -1003,7 +1007,6 @@
                         <div><dt>On hand</dt><dd id="inv-detail-qty">—</dd></div>
                         <div><dt>Status</dt><dd id="inv-detail-status">—</dd></div>
                         <div><dt>Low at</dt><dd id="inv-detail-low">—</dd></div>
-                        <div class="cc-detail-span"><dt>Locations</dt><dd id="inv-detail-locations">—</dd></div>
                       </dl>
                     </div>
                     <div class="cc-detail-block">
@@ -1024,6 +1027,43 @@
                         <div><dt>Unit</dt><dd id="inv-detail-unit">—</dd></div>
                       </dl>
                     </div>
+                  </div>
+                  <div class="cc-detail-block inv-locs-block">
+                    <h3>Locations</h3>
+                    <div class="cc-table-wrap inv-locs-wrap overflow-x-auto">
+                      <table class="w-full text-sm inv-locs-table">
+                        <thead>
+                          <tr>
+                            <th>Location</th>
+                            <th>Type</th>
+                            <th>Qty</th>
+                            <th>Tracked</th>
+                          </tr>
+                        </thead>
+                        <tbody id="inv-detail-locations-body"></tbody>
+                      </table>
+                    </div>
+                    <p id="inv-detail-locations-empty" class="cc-detail-empty hidden">No locations yet.</p>
+                    <form id="inv-transfer-form" class="hidden inv-item-transfer">
+                      <p class="inv-item-transfer-lead">Move qty from one location to another.</p>
+                      <div class="inv-item-transfer-grid">
+                        <label>From
+                          <select id="inv-transfer-from"></select>
+                        </label>
+                        <label>To
+                          <select id="inv-transfer-to"></select>
+                        </label>
+                        <label>Qty
+                          <input id="inv-transfer-qty" type="number" min="1" step="1">
+                        </label>
+                      </div>
+                      <p id="inv-transfer-avail" class="text-[11px] text-slate-500 mt-1"></p>
+                      <p id="inv-transfer-msg" class="hidden text-sm mt-2"></p>
+                      <div class="inv-item-transfer-actions">
+                        <button type="submit" class="cc-detail-btn cc-detail-btn-primary">Transfer</button>
+                        <button type="button" id="inv-transfer-cancel" class="cc-detail-btn">Cancel</button>
+                      </div>
+                    </form>
                   </div>
                 </div>
                 <div class="cc-detail-tabs" role="tablist">
@@ -1123,7 +1163,7 @@
               </div>
               <div id="wh-overview-panel" class="inv-right-panel">
                 <div class="inv-overview-summary">
-                  <p class="inv-overview-lead">Locations are Bin, Warehouse, or Custom. A warehouse can be assigned to a vendor. If you mark it do-not-track, qty is not our on-hand — it still shows on the item and can count as website stock. POs for that vendor show this location’s qty.</p>
+                  <p class="inv-overview-lead">A warehouse owns its bins. Custom is a job site, trailer, or show hold. Open a SKU to see every place it lives. Click a SKU here to jump to that item.</p>
                 </div>
               </div>
               <div id="wh-item-panel" class="inv-right-panel hidden" aria-hidden="true">
@@ -1160,13 +1200,17 @@
                     </div>
                   </div>
                   <div id="wh-items-card" class="mt-4 rounded-2xl border border-slate-800 bg-slate-900/50 p-5">
-                    <h3 class="font-semibold mb-3">Items here</h3>
-                    <div class="cc-table-wrap overflow-x-auto">
+                    <div class="wh-items-head">
+                      <h3 class="font-semibold">Items here</h3>
+                      <input id="wh-items-search" type="search" placeholder="Search SKU, item" class="cc-list-search bg-slate-800 border border-slate-700 rounded-full px-3 py-1.5 text-sm">
+                    </div>
+                    <div class="cc-table-wrap overflow-x-auto mt-3">
                       <table class="w-full text-sm">
                         <thead class="text-left text-slate-400 border-b border-slate-800">
                           <tr>
                             <th class="py-2 px-3 font-medium">SKU</th>
                             <th class="py-2 px-3 font-medium">Item</th>
+                            <th id="wh-items-bin-th" class="py-2 px-3 font-medium hidden">Bin</th>
                             <th class="py-2 px-3 font-medium">Qty</th>
                           </tr>
                         </thead>
@@ -1191,6 +1235,11 @@
                       <option value="bin">Bin</option>
                       <option value="custom">Custom</option>
                     </select>
+                  </div>
+                  <div id="wh-parent-wrap" class="hidden sm:col-span-2">
+                    <label class="block text-xs text-slate-400 mb-1">Warehouse</label>
+                    <select id="wh-parent" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm"></select>
+                    <p class="text-[11px] text-slate-500 mt-1">This bin lives in that warehouse. Name it like A-12. No address or vendor.</p>
                   </div>
                   <div id="wh-vendor-wrap" class="hidden">
                     <label class="block text-xs text-slate-400 mb-1">Vendor</label>
@@ -1613,8 +1662,6 @@
                 <select id="po-ship-from">
                   <option value="">Select ship from</option>
                   <option value="china_fob">China factory (FOB)</option>
-                  <option value="novastar_vegas">NovaStar Warehouse (Las Vegas)</option>
-                  <option value="gloshine_la">Gloshine US Warehouse (Los Angeles)</option>
                 </select>
               </div>
               <div class="po-field">
@@ -1720,6 +1767,10 @@
                 <label>Receipt date</label>
                 <input id="rs-date" type="date">
               </div>
+              <div class="po-field">
+                <label>Receive to</label>
+                <select id="rs-warehouse"></select>
+              </div>
             </div>
             <div class="po-items">
               <h3>Item details</h3>
@@ -1732,6 +1783,7 @@
                       <th class="py-2 px-3 font-medium">Product</th>
                       <th class="py-2 px-3 font-medium w-24">PO QTY</th>
                       <th class="py-2 px-3 font-medium w-28">QTY received</th>
+                      <th class="py-2 px-3 font-medium">Receive to</th>
                       <th class="py-2 px-3 font-medium w-10"></th>
                     </tr>
                   </thead>
@@ -3419,8 +3471,9 @@
           <button type="button" class="cc-sec-btn"><span class="cc-sec-label"><svg class="cc-sec-ico" viewBox="0 0 24 24"><path d="M3 10 12 4.5 21 10v9.5a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V10z"/><path d="M9 20.5V12h6v8.5"/></svg> Inventory info</span> <span class="cc-sec-chevron">▾</span></button>
           <div class="cc-sec-body">
             <div class="cc-field" id="inv-qty-init-wrap"><label>Initial quantity on hand</label><input id="inv-qty-init" form="inv-item-form" type="number" min="0" step="1" value="0"></div>
-            <div class="cc-field"><label>Location</label><select id="inv-warehouse" form="inv-item-form"></select></div>
-            <div class="cc-field"><label>Bin #</label><input id="inv-bin" form="inv-item-form" type="text" maxlength="80" placeholder="A-12"></div>
+            <div class="cc-field"><label>Location</label><select id="inv-warehouse" form="inv-item-form"></select>
+              <p class="cc-note">Pick a warehouse or a bin. Bins live under their warehouse.</p>
+            </div>
             <div class="cc-field"><label>Low-stock at</label><input id="inv-item-low" form="inv-item-form" type="number" min="0" step="1" value="0"><p class="cc-note">0 = special order. Not counted as out of stock when qty is 0.</p></div>
             <div class="cc-field wide"><label>Notes</label><input id="inv-item-notes" form="inv-item-form" type="text" maxlength="500" placeholder="Internal notes"></div>
             <div id="inv-onhand-block" class="hidden wide">
@@ -3761,7 +3814,7 @@
     </a>
   </nav>
 
-  <link rel="stylesheet" href="/css/company-dash.css?v=crmv2-dealer-apps5c" />
+  <link rel="stylesheet" href="/css/company-dash.css?v=location-v2-4-dpv2" />
 
   <script>
     const loginPanel = document.getElementById('login-panel');
@@ -6220,6 +6273,7 @@
     let inventoryMovesCache = [];
     let inventoryFilter = 'all';
     let inventoryCategoryFilter = '';
+    let inventoryLocationFilter = '';
     let ccFilter = 'all';
     let vnFilter = 'all';
     let caFilter = 'all';
@@ -6865,8 +6919,8 @@
     };
 
     const DASH_COL_DEFAULTS = {
-      inventory: ['name', 'sku', 'category', 'qty', 'warehouse', 'bin', 'cost', 'localCost', 'price'],
-      warehouses: ['name', 'type', 'vendor', 'tracked', 'qty', 'skus'],
+      inventory: ['name', 'sku', 'category', 'qty', 'warehouse', 'cost', 'localCost', 'price'],
+      warehouses: ['name', 'type', 'qty', 'skus'],
       customers: ['company', 'contact', 'email', 'phone', 'balance'],
       sales: ['number', 'customer', 'date', 'status', 'total'],
       'so-lines': ['sku', 'description', 'qty', 'price', 'amount'],
@@ -7011,7 +7065,7 @@
         sortDir: '',
         widths: fallbackWidths,
         splitLeftPx: keptSplit,
-        schema: dashColKey(table) === 'warehouses' ? 3 : (dashColKey(table) === 'inventory' ? 4 : (dashColKey(table) === 'po-lines' || dashColKey(table) === 'so-lines' ? 1 : 0))
+        schema: dashColKey(table) === 'warehouses' ? 4 : (dashColKey(table) === 'inventory' ? 5 : (dashColKey(table) === 'po-lines' || dashColKey(table) === 'so-lines' ? 1 : 0))
       };
       pinStartLockedInState(table, fallback.order, fallback.hidden);
       if (!saved) {
@@ -7115,6 +7169,15 @@
         }
         schema = 4;
       }
+      if (dashColKey(table) === 'inventory' && schema < 5) {
+        const dropBin = function (list) {
+          const i = list.indexOf('bin');
+          if (i !== -1) list.splice(i, 1);
+        };
+        dropBin(order);
+        if (hidden.indexOf('bin') === -1) hidden.push('bin');
+        schema = 5;
+      }
       if (dashColKey(table) === 'warehouses' && schema < 3) {
         const dropStatus = function (list) {
           const i = list.indexOf('status');
@@ -7127,6 +7190,20 @@
           sortDir = '';
         }
         schema = 3;
+      }
+      if (dashColKey(table) === 'warehouses' && schema < 4) {
+        ['vendor', 'tracked', 'notes'].forEach(function (id) {
+          const i = order.indexOf(id);
+          if (i !== -1) order.splice(i, 1);
+          if (hidden.indexOf(id) === -1) hidden.push(id);
+        });
+        if (order.indexOf('type') === -1) {
+          const nameAt = order.indexOf('name');
+          order.splice(nameAt === -1 ? 0 : nameAt + 1, 0, 'type');
+        }
+        const dropType = hidden.indexOf('type');
+        if (dropType !== -1) hidden.splice(dropType, 1);
+        schema = 4;
       }
       pinStartLockedInState(table, order, hidden);
       const merged = {
@@ -8289,12 +8366,31 @@
       if (dashColMenu && !dashColMenu.hidden) closeColMenu();
     }, true);
 
+    function locKind(wh) {
+      return String((wh && (wh.kind || wh.type)) || 'warehouse').toLowerCase();
+    }
+    function locOptionLabel(wh) {
+      const name = (wh && wh.name) || 'Location';
+      const prefix = locKind(wh) === 'bin' ? '  ' : '';
+      const extra = (wh && (wh.untracked || wh.tracked === false)) ? ' · Untracked' : '';
+      return prefix + name + extra;
+    }
+    function groupedLocationOptions(selected, opts) {
+      opts = opts || {};
+      const skipId = opts.skipId;
+      const warehousesOnly = !!opts.warehousesOnly;
+      const includeEmpty = opts.emptyLabel;
+      let html = includeEmpty ? ('<option value="">' + esc(includeEmpty) + '</option>') : '';
+      (inventoryWarehouses || []).forEach(function (wh) {
+        if (skipId && String(wh.id) === String(skipId)) return;
+        if (warehousesOnly && locKind(wh) !== 'warehouse') return;
+        html += '<option value="' + esc(wh.id) + '"' + (String(wh.id) === String(selected || '') ? ' selected' : '') + '>' +
+          esc(locOptionLabel(wh)) + '</option>';
+      });
+      return html;
+    }
     function fillInvWarehouseSelects(selected, adjustSelected) {
-      const options = '<option value="">Default tracked location</option>' + (inventoryWarehouses || []).map(function (wh) {
-        const extra = wh.untracked || wh.tracked === false ? ' · Untracked' : '';
-        const label = (wh.name || 'Location') + extra;
-        return '<option value="' + esc(wh.id) + '">' + esc(label) + '</option>';
-      }).join('');
+      const options = groupedLocationOptions('', { emptyLabel: 'Default tracked location' });
       const sel = document.getElementById('inv-warehouse');
       const adj = document.getElementById('inv-adjust-warehouse');
       if (sel) {
@@ -8309,8 +8405,47 @@
       }
     }
     function defaultSpectrumWarehouseId() {
-      const found = (inventoryWarehouses || []).find(function (wh) { return wh.tracked !== false && !wh.untracked; });
+      const found = (inventoryWarehouses || []).find(function (wh) {
+        return locKind(wh) === 'warehouse' && wh.tracked !== false && !wh.untracked;
+      });
       return found ? String(found.id) : '';
+    }
+    function fillInvLocationFilter() {
+      const sel = document.getElementById('inv-location-filter');
+      if (!sel) return;
+      const cur = inventoryLocationFilter || '';
+      sel.innerHTML = groupedLocationOptions(cur, { emptyLabel: 'All locations' });
+      sel.value = cur;
+    }
+    function itemQtyAtLocation(item, locId) {
+      if (!item || !locId) return 0;
+      const loc = (inventoryWarehouses || []).find(function (w) { return String(w.id) === String(locId); });
+      if (!loc) return 0;
+      const ids = {};
+      ids[String(locId)] = true;
+      if (locKind(loc) === 'warehouse') {
+        (inventoryWarehouses || []).forEach(function (w) {
+          if (String(w.parentId) === String(locId)) ids[String(w.id)] = true;
+        });
+      }
+      return ((item.locations) || []).reduce(function (sum, row) {
+        return ids[String(row.warehouseId)] ? sum + (Number(row.qty) || 0) : sum;
+      }, 0);
+    }
+    function invVendorLocationLine(item) {
+      const vendorQty = invVendorQty(item);
+      if (!vendorQty) return '';
+      const vendorLoc = ((item && item.locations) || []).find(function (loc) {
+        return loc.untracked || loc.tracked === false;
+      });
+      const name = (vendorLoc && (vendorLoc.vendorName || vendorLoc.warehouseName || vendorLoc.locationName)) || 'Vendor';
+      return name + ' · ' + vendorQty.toLocaleString();
+    }
+    function invLocationCellHtml(item) {
+      const primary = esc((item && item.warehouse) || '—');
+      const vendorLine = invVendorLocationLine(item);
+      if (!vendorLine) return primary;
+      return primary + '<span class="inv-loc-vendor">' + esc(vendorLine) + '</span>';
     }
     function invVendorHands(item, vendorId) {
       if (!item || vendorId == null || vendorId === '') return 0;
@@ -8326,6 +8461,54 @@
         const vendor = loc.vendorName ? (' · ' + loc.vendorName) : '';
         return (loc.warehouseName || loc.locationName || 'Location') + ' (' + kind + vendor + ') · ' + Number(loc.qty || 0).toLocaleString();
       }).join('\n');
+    }
+    function fillInvTransferForm(item) {
+      const form = document.getElementById('inv-transfer-form');
+      const fromSel = document.getElementById('inv-transfer-from');
+      const toSel = document.getElementById('inv-transfer-to');
+      const msg = document.getElementById('inv-transfer-msg');
+      if (!form || !fromSel || !toSel) return;
+      if (msg) msg.classList.add('hidden');
+      const locs = ((item && item.locations) || []).filter(function (loc) { return Number(loc.qty) > 0; });
+      fromSel.innerHTML = locs.length
+        ? locs.map(function (loc) {
+          return '<option value="' + esc(loc.warehouseId) + '" data-qty="' + esc(loc.qty) + '">' +
+            esc((loc.locationName || loc.warehouseName || 'Location') + ' (' + Number(loc.qty || 0).toLocaleString() + ')') +
+            '</option>';
+        }).join('')
+        : '<option value="">No stock to move</option>';
+      const fromId = fromSel.value;
+      toSel.innerHTML = groupedLocationOptions('', { skipId: fromId, emptyLabel: 'Pick a location' });
+      document.getElementById('inv-transfer-qty').value = '';
+      updateInvTransferAvail();
+    }
+    function updateInvTransferAvail() {
+      const fromSel = document.getElementById('inv-transfer-from');
+      const opt = fromSel && fromSel.selectedOptions && fromSel.selectedOptions[0];
+      const have = opt ? Math.max(0, Number(opt.getAttribute('data-qty')) || 0) : 0;
+      const avail = document.getElementById('inv-transfer-avail');
+      if (avail) avail.textContent = have ? (have.toLocaleString() + ' available here') : '';
+      const qty = document.getElementById('inv-transfer-qty');
+      if (qty && have) qty.max = String(have);
+      const toSel = document.getElementById('inv-transfer-to');
+      if (toSel) {
+        const keep = toSel.value;
+        toSel.innerHTML = groupedLocationOptions(keep, { skipId: fromSel && fromSel.value, emptyLabel: 'Pick a location' });
+      }
+    }
+    async function openLocationFromInventory(id) {
+      if (!id) return;
+      if (typeof ensureMasterTab === 'function') ensureMasterTab('warehouses');
+      showAdminTab('warehouses');
+      await loadWarehouses();
+      await openWhTab(id);
+    }
+    async function openInventoryFromLocation(itemId) {
+      if (!itemId) return;
+      if (typeof ensureMasterTab === 'function') ensureMasterTab('inventory');
+      showAdminTab('inventory');
+      if (!inventoryItems.length) await loadInventory();
+      selectInventoryItem(itemId, { push: true });
     }
 
     function fillInvBrands(selected) {
@@ -8403,6 +8586,7 @@
 
     function renderInventoryTable() {
       fillInvCategoryFilter();
+      fillInvLocationFilter();
       const q = (document.getElementById('inv-search').value || '').trim().toLowerCase();
       const rows = inventoryItems.filter(function (item) {
         if (inventoryFilter === 'inactive') {
@@ -8413,6 +8597,7 @@
         if (inventoryFilter === 'low' && item.status !== 'low') return false;
         if (inventoryFilter === 'out' && item.status !== 'out') return false;
         if (inventoryCategoryFilter && String(item.category || '') !== inventoryCategoryFilter) return false;
+        if (inventoryLocationFilter && itemQtyAtLocation(item, inventoryLocationFilter) <= 0) return false;
         if (q) {
           const blob = ((item.sku || '') + ' ' + (item.name || '') + ' ' + (item.brandName || '') + ' ' + (item.category || '') + ' ' + (item.pitchLabel || '') + ' ' + (item.description || '') + ' ' + (item.warehouse || '') + ' ' + (item.bin || '')).toLowerCase();
           if (blob.indexOf(q) === -1) return false;
@@ -8467,7 +8652,7 @@
           brand: '<td class="py-3 px-4 text-sky-400">' + esc(item.brandName || '—') + '</td>',
           pitch: '<td class="py-3 px-4 text-slate-400">' + esc(item.pitchLabel || '—') + '</td>',
           qty: '<td class="py-3 px-4">' + esc(qtyText) + '</td>',
-          warehouse: '<td class="py-3 px-4 text-slate-400">' + esc(item.warehouse || '—') + '</td>',
+          warehouse: '<td class="py-3 px-4 text-slate-400">' + invLocationCellHtml(item) + '</td>',
           bin: '<td class="py-3 px-4 text-slate-400">' + esc(item.bin || '—') + '</td>',
           cost: '<td class="py-3 px-4">' + money(item.cost) + '</td>',
           localCost: '<td class="py-3 px-4">' + money(item.localWarehouseCost) + '</td>',
@@ -9470,8 +9655,26 @@
         photo.textContent = (item.name || item.sku || '?').charAt(0).toUpperCase();
       }
       document.getElementById('inv-detail-qty').textContent = invQtyDisplay(item);
-      const locEl = document.getElementById('inv-detail-locations');
-      if (locEl) locEl.textContent = invLocationSummary(item);
+      const locBody = document.getElementById('inv-detail-locations-body');
+      const locEmpty = document.getElementById('inv-detail-locations-empty');
+      const locs = (item.locations || []).slice().sort(function (a, b) {
+        return String(a.typeLabel || a.locationName || '').localeCompare(String(b.typeLabel || b.locationName || ''), undefined, { numeric: true, sensitivity: 'base' });
+      });
+      if (locBody) {
+        locBody.innerHTML = locs.length
+          ? locs.map(function (loc) {
+            const tracked = !(loc.untracked || loc.tracked === false);
+            return '<tr class="inv-loc-row cursor-pointer" data-location-id="' + esc(loc.warehouseId) + '">' +
+              '<td>' + esc(loc.locationName || loc.warehouseName || 'Location') + '</td>' +
+              '<td>' + esc(loc.typeLabel || loc.kind || loc.type || '') + '</td>' +
+              '<td>' + Number(loc.qty || 0).toLocaleString() + '</td>' +
+              '<td>' + (tracked ? 'Yes' : 'No') + '</td></tr>';
+          }).join('')
+          : '';
+      }
+      if (locEmpty) locEmpty.classList.toggle('hidden', locs.length > 0);
+      fillInvTransferForm(item);
+      document.getElementById('inv-detail-transfer').classList.toggle('hidden', !canEdit('inventory'));
       const statusEl = document.getElementById('inv-detail-status');
       statusEl.innerHTML = '<span class="text-xs px-2 py-0.5 rounded-full ' + stockStatusClass(item.status) + '">' +
         esc(stockStatusLabel(item.status)) + '</span>';
@@ -9590,6 +9793,18 @@
           esc(v.displayName || v.companyName || 'Vendor') + '</option>';
       }).join('');
     }
+    function fillWhParentSelect(selected) {
+      const sel = document.getElementById('wh-parent');
+      if (!sel) return;
+      const selfId = (document.getElementById('wh-id') || {}).value || '';
+      const rows = (inventoryWarehouses || []).filter(function (wh) {
+        return locKind(wh) === 'warehouse' && String(wh.id) !== String(selfId);
+      });
+      sel.innerHTML = '<option value="">Pick a warehouse</option>' + rows.map(function (wh) {
+        return '<option value="' + esc(wh.id) + '"' + (String(wh.id) === String(selected || '') ? ' selected' : '') + '>' +
+          esc(wh.name || 'Warehouse') + '</option>';
+      }).join('');
+    }
     function syncWhVendorWrap() {
       const typeEl = document.getElementById('wh-type');
       if (!typeEl) return;
@@ -9597,8 +9812,14 @@
       const vendorWrap = document.getElementById('wh-vendor-wrap');
       const untrackedWrap = document.getElementById('wh-untracked-wrap');
       const addressWrap = document.getElementById('wh-address-wrap');
+      const parentWrap = document.getElementById('wh-parent-wrap');
+      const nameEl = document.getElementById('wh-name');
       if (vendorWrap) vendorWrap.classList.toggle('hidden', type !== 'warehouse');
       if (addressWrap) addressWrap.classList.toggle('hidden', type !== 'warehouse');
+      if (parentWrap) parentWrap.classList.toggle('hidden', type !== 'bin');
+      if (nameEl) {
+        nameEl.placeholder = type === 'bin' ? 'A-12' : (type === 'custom' ? 'Job site, trailer, show hold' : 'Spectrum Warehouse');
+      }
       const vendorId = (document.getElementById('wh-vendor') || {}).value || '';
       if (untrackedWrap) untrackedWrap.classList.toggle('hidden', type !== 'warehouse' || !vendorId);
       if (type !== 'warehouse' || !vendorId) {
@@ -9643,35 +9864,57 @@
     }
     function renderWhTable() {
       const q = (document.getElementById('wh-search').value || '').trim().toLowerCase();
-      const rows = (inventoryWarehouses || []).filter(function (wh) {
-        if (warehouseFilter === 'tracked' && (wh.untracked || wh.tracked === false)) return false;
-        if (warehouseFilter === 'untracked' && !(wh.untracked || wh.tracked === false)) return false;
+      const matchIds = {};
+      (inventoryWarehouses || []).forEach(function (wh) {
+        if (warehouseFilter === 'tracked' && (wh.untracked || wh.tracked === false)) return;
+        if (warehouseFilter === 'untracked' && !(wh.untracked || wh.tracked === false)) return;
         if (q) {
-          const blob = ((wh.name || '') + ' ' + (wh.typeLabel || '') + ' ' + (wh.vendorName || '') + ' ' + (wh.notes || '') + ' ' + (wh.street || '') + ' ' + (wh.city || '') + ' ' + (wh.state || '') + ' ' + (wh.zip || '')).toLowerCase();
-          if (blob.indexOf(q) === -1) return false;
+          const blob = ((wh.name || '') + ' ' + (wh.typeLabel || '') + ' ' + (wh.parentName || '') + ' ' + (wh.vendorName || '') + ' ' + (wh.notes || '') + ' ' + (wh.street || '') + ' ' + (wh.city || '') + ' ' + (wh.state || '') + ' ' + (wh.zip || '')).toLowerCase();
+          if (blob.indexOf(q) === -1) return;
         }
-        return true;
+        matchIds[String(wh.id)] = true;
+        if (wh.parentId) matchIds[String(wh.parentId)] = true;
+      });
+      const rows = (inventoryWarehouses || []).filter(function (wh) {
+        return !!matchIds[String(wh.id)];
       });
       const table = document.querySelector('table.dash-cols[data-cols="warehouses"]');
       const tb = document.getElementById('wh-table');
-      const sorted = sortColRows(rows, table, function (wh, col) {
-        if (col === 'status') return locStatusOf(wh);
-        if (col === 'name') return wh.name || '';
-        if (col === 'type') return wh.typeLabel || wh.type || '';
-        if (col === 'vendor') return wh.vendorName || '';
-        if (col === 'tracked') return wh.untracked || wh.tracked === false ? 0 : 1;
-        if (col === 'qty') return Number(wh.qty) || 0;
-        if (col === 'skus') return Number(wh.itemCount) || 0;
-        if (col === 'notes') return wh.notes || '';
-        return '';
-      });
+      const state = loadColState(table);
+      let sorted = rows;
+      if (state.sortCol && state.sortCol !== 'name' && state.sortDir) {
+        const parents = rows.filter(function (wh) { return locKind(wh) !== 'bin'; });
+        const bins = rows.filter(function (wh) { return locKind(wh) === 'bin'; });
+        const sortedParents = sortColRows(parents, table, function (wh, col) {
+          if (col === 'status') return locStatusOf(wh);
+          if (col === 'name') return wh.name || '';
+          if (col === 'type') return wh.typeLabel || wh.type || '';
+          if (col === 'vendor') return wh.vendorName || '';
+          if (col === 'tracked') return wh.untracked || wh.tracked === false ? 0 : 1;
+          if (col === 'qty') return Number(wh.qty) || 0;
+          if (col === 'skus') return Number(wh.itemCount) || 0;
+          if (col === 'notes') return wh.notes || '';
+          return '';
+        });
+        sorted = [];
+        sortedParents.forEach(function (wh) {
+          sorted.push(wh);
+          bins.filter(function (bin) { return String(bin.parentId) === String(wh.id); })
+            .sort(function (a, b) { return String(a.name || '').localeCompare(String(b.name || ''), undefined, { numeric: true, sensitivity: 'base' }); })
+            .forEach(function (bin) { sorted.push(bin); });
+        });
+        bins.filter(function (bin) {
+          return !sortedParents.some(function (wh) { return String(wh.id) === String(bin.parentId); });
+        }).forEach(function (bin) { sorted.push(bin); });
+      }
       tb.innerHTML = sorted.map(function (wh) {
         const tracked = !(wh.untracked || wh.tracked === false);
+        const isBin = locKind(wh) === 'bin';
         const cells = {
-          name: '<td class="py-3 px-4 font-medium"><span class="cc-acct-cell">' +
+          name: '<td class="py-3 px-4 font-medium' + (isBin ? ' wh-bin-name' : '') + '"><span class="cc-acct-cell">' +
             locStatusIconHtml(wh, null, 'cc-acct-status') +
             '<span class="cc-acct-name">' + esc(wh.name || '') + '</span></span></td>',
-          type: '<td class="py-3 px-4 text-slate-400">' + esc(wh.typeLabel || wh.type || '') + '</td>',
+          type: '<td class="py-3 px-4 text-slate-400 wh-type">' + esc(wh.typeLabel || wh.type || '') + '</td>',
           vendor: '<td class="py-3 px-4 text-slate-400">' + esc(wh.vendorName || '—') + '</td>',
           tracked: '<td class="py-3 px-4 text-slate-400">' + (tracked ? 'Yes' : 'No') + '</td>',
           qty: '<td class="py-3 px-4">' + Number(wh.qty || 0).toLocaleString() + '</td>',
@@ -9681,6 +9924,7 @@
         const selected = String(wh.id) === String(whDetailId);
         return '<tr class="border-b border-slate-800 hover:bg-slate-900/80 cursor-pointer' +
           (selected ? ' is-selected' : '') +
+          (isBin ? ' wh-bin' : '') +
           '" data-id="' + esc(wh.id) + '">' + dashOrderedCells(table, cells) + '</tr>';
       }).join('') || '<tr><td class="py-6 px-4 text-slate-500" colspan="' + dashColSpan(table) + '">No locations yet.</td></tr>';
       applyColOrder(table);
@@ -9749,20 +9993,31 @@
       document.getElementById('wh-edit-btn').classList.toggle('hidden', !canChange);
       document.getElementById('wh-transfer-btn').classList.toggle('hidden', !canChange);
       const items = (wh && wh.items) || [];
+      const showBin = !!(wh && wh.hasChildBins);
+      const binTh = document.getElementById('wh-items-bin-th');
+      if (binTh) binTh.classList.toggle('hidden', !showBin);
+      const q = ((document.getElementById('wh-items-search') || {}).value || '').trim().toLowerCase();
+      const shown = items.filter(function (item) {
+        if (!q) return true;
+        const blob = ((item.sku || '') + ' ' + (item.name || '') + ' ' + (item.bin || '')).toLowerCase();
+        return blob.indexOf(q) !== -1;
+      });
       const body = document.getElementById('wh-items-body');
-      body.innerHTML = items.length
-        ? items.map(function (item) {
-          return '<tr class="border-b border-slate-800"><td class="py-2 px-3 font-mono text-xs text-sky-300">' + esc(item.sku || '') +
-            '</td><td class="py-2 px-3">' + esc(item.name || '') +
-            '</td><td class="py-2 px-3">' + Number(item.qty || 0).toLocaleString() + '</td></tr>';
+      const colSpan = showBin ? 4 : 3;
+      body.innerHTML = shown.length
+        ? shown.map(function (item) {
+          return '<tr class="border-b border-slate-800 hover:bg-slate-900/80 cursor-pointer wh-item-row" data-item-id="' + esc(item.id) + '">' +
+            '<td class="py-2 px-3 font-mono text-xs text-sky-300">' + esc(item.sku || '') + '</td>' +
+            '<td class="py-2 px-3">' + esc(item.name || '') + '</td>' +
+            (showBin ? ('<td class="py-2 px-3 text-slate-400">' + esc(item.bin || '—') + '</td>') : '') +
+            '<td class="py-2 px-3">' + Number(item.qty || 0).toLocaleString() + '</td></tr>';
         }).join('')
-        : '<tr><td class="py-4 px-3 text-slate-500" colspan="3">No items in this location yet.</td></tr>';
+        : '<tr><td class="py-4 px-3 text-slate-500" colspan="' + colSpan + '">No items in this location yet.</td></tr>';
     }
     function updateWhTransferAvail() {
-      const itemId = document.getElementById('wh-transfer-item').value;
-      const items = (whCurrentDetail && whCurrentDetail.items) || [];
-      const item = items.find(function (row) { return String(row.id) === String(itemId); });
-      const have = item ? Math.max(0, Number(item.qty) || 0) : 0;
+      const itemSel = document.getElementById('wh-transfer-item');
+      const opt = itemSel && itemSel.selectedOptions && itemSel.selectedOptions[0];
+      const have = opt ? Math.max(0, Number(opt.getAttribute('data-qty')) || 0) : 0;
       document.getElementById('wh-transfer-avail').textContent = have ? (have.toLocaleString() + ' available here') : '';
       const qty = document.getElementById('wh-transfer-qty');
       if (have) qty.max = String(have);
@@ -9775,18 +10030,14 @@
       const items = ((wh && wh.items) || []).filter(function (item) { return Number(item.qty) > 0; });
       itemSel.innerHTML = items.length
         ? items.map(function (item) {
-          return '<option value="' + esc(item.id) + '">' + esc((item.sku || '') + (item.sku && item.name ? ' · ' : '') + (item.name || '')) +
-            ' (' + Number(item.qty || 0).toLocaleString() + ')</option>';
+          const fromId = item.locationId || (wh && wh.id);
+          const label = (item.sku || '') + (item.sku && item.name ? ' · ' : '') + (item.name || '') +
+            (item.bin ? (' · ' + item.bin) : '');
+          return '<option value="' + esc(item.id) + '" data-from="' + esc(fromId) + '" data-qty="' + esc(item.qty) + '">' +
+            esc(label) + ' (' + Number(item.qty || 0).toLocaleString() + ')</option>';
         }).join('')
         : '<option value="">No stock at this location</option>';
-      const dests = (inventoryWarehouses || []).filter(function (row) {
-        return String(row.id) !== String(wh && wh.id);
-      });
-      toSel.innerHTML = dests.length
-        ? dests.map(function (row) {
-          return '<option value="' + esc(row.id) + '">' + esc(row.name || 'Location') + '</option>';
-        }).join('')
-        : '<option value="">No other locations</option>';
+      toSel.innerHTML = groupedLocationOptions('', { skipId: wh && wh.id, emptyLabel: 'Pick a location' });
       document.getElementById('wh-transfer-qty').value = '';
       updateWhTransferAvail();
     }
@@ -9797,6 +10048,7 @@
       const kind = (wh && (wh.kind || wh.type)) || 'warehouse';
       document.getElementById('wh-type').value = (kind === 'bin' || kind === 'custom' || kind === 'warehouse') ? kind : 'warehouse';
       fillWhVendorSelect(wh && wh.vendorId);
+      fillWhParentSelect(wh && wh.parentId);
       document.getElementById('wh-untracked').checked = !!(wh && wh.untracked);
       document.getElementById('wh-street').value = (wh && wh.street) || '';
       document.getElementById('wh-street2').value = (wh && wh.street2) || '';
@@ -10062,7 +10314,6 @@
       document.getElementById('inv-item-low').value = item && item.lowAt != null ? item.lowAt : 0;
       document.getElementById('inv-item-notes').value = (item && item.notes) || '';
       fillInvWarehouseSelects(item && item.warehouseId, item && item.warehouseId);
-      document.getElementById('inv-bin').value = (item && item.bin) || '';
       document.getElementById('inv-qty-init').value = item && item.qty != null ? item.qty : 0;
       const hasId = !!(item && item.id);
       document.getElementById('inv-qty-init-wrap').classList.toggle('hidden', hasId);
@@ -13208,10 +13459,40 @@
       const el = document.getElementById('po-ship-from');
       return el ? el.value : '';
     }
+    function fillPoShipFromSelect(selected) {
+      const el = document.getElementById('po-ship-from');
+      if (!el) return;
+      const cur = selected != null ? selected : el.value;
+      let html = '<option value="">Select ship from</option>' +
+        '<option value="china_fob">China factory (FOB)</option>';
+      (inventoryWarehouses || []).forEach(function (wh) {
+        if (locKind(wh) !== 'warehouse') return;
+        html += '<option value="loc:' + esc(wh.id) + '">' + esc(wh.name || 'Warehouse') + '</option>';
+      });
+      if (cur === 'novastar_vegas') html += '<option value="novastar_vegas">NovaStar Warehouse (Las Vegas)</option>';
+      if (cur === 'gloshine_la') html += '<option value="gloshine_la">Gloshine US Warehouse (Los Angeles)</option>';
+      el.innerHTML = html;
+      if (cur) el.value = cur;
+    }
+    function poWarehouseForShipFrom(shipFrom) {
+      const s = String(shipFrom || '');
+      const m = s.match(/^loc:(\d+)$/i);
+      if (!m) return null;
+      return (inventoryWarehouses || []).find(function (wh) { return String(wh.id) === m[1]; }) || null;
+    }
     function poRateForItem(item, shipFrom) {
       if (!item) return 0;
       if (shipFrom === 'novastar_vegas' || shipFrom === 'gloshine_la') return Number(item.localWarehouseCost) || 0;
+      const wh = poWarehouseForShipFrom(shipFrom);
+      if (wh && (wh.vendorId || wh.untracked)) return Number(item.localWarehouseCost) || 0;
       return Number(item.cost) || 0;
+    }
+    function poShipFromLabel(shipFrom) {
+      if (shipFrom === 'china_fob') return 'China factory (FOB)';
+      if (shipFrom === 'novastar_vegas') return 'NovaStar Warehouse (Las Vegas)';
+      if (shipFrom === 'gloshine_la') return 'Gloshine US Warehouse (Los Angeles)';
+      const wh = poWarehouseForShipFrom(shipFrom);
+      return (wh && wh.name) || '';
     }
     function applyPoShipFromRates() {
       const shipFrom = poCurrentShipFrom();
@@ -13455,7 +13736,7 @@
       document.getElementById('po-issue').value = src.issueDate || new Date().toISOString().slice(0, 10);
       document.getElementById('po-due').value = src.dueDate || '';
       document.getElementById('po-via').value = src.shipVia || '';
-      document.getElementById('po-ship-from').value = src.shipFrom || '';
+      fillPoShipFromSelect(src.shipFrom || '');
       document.getElementById('po-permit').value = src.permitNo || '';
       document.getElementById('po-notes').value = src.notes || '';
       document.getElementById('po-delete-btn').classList.toggle('hidden', !src.id || poReadOnly);
@@ -13488,6 +13769,7 @@
         dueDate: document.getElementById('po-due').value,
         shipVia: document.getElementById('po-via').value.trim(),
         shipFrom: document.getElementById('po-ship-from').value,
+        shipFromLabel: poShipFromLabel(document.getElementById('po-ship-from').value),
         permitNo: document.getElementById('po-permit').value.trim(),
         notes: document.getElementById('po-notes').value.trim(),
         lines: readPoLines()
@@ -13702,16 +13984,19 @@
     async function loadPurchaseOrders() {
       showError('po-error', '');
       try {
-        const [poData, vnData, ccData, invData] = await Promise.all([
+        const [poData, vnData, ccData, invData, whData] = await Promise.all([
           api('/api/admin/purchase-orders'),
           api('/api/admin/inventory-vendors'),
           api('/api/admin/company-customers'),
-          inventoryItems.length ? Promise.resolve({ items: inventoryItems }) : api('/api/admin/inventory')
+          inventoryItems.length ? Promise.resolve({ items: inventoryItems }) : api('/api/admin/inventory'),
+          inventoryWarehouses.length ? Promise.resolve({ warehouses: inventoryWarehouses }) : api('/api/admin/inventory-warehouses').catch(function () { return { warehouses: inventoryWarehouses }; })
         ]);
         purchaseOrders = poData.orders || [];
         inventoryVendors = vnData.vendors || [];
         poCustomers = ccData.customers || [];
         if (!inventoryItems.length) inventoryItems = invData.items || [];
+        inventoryWarehouses = whData.warehouses || inventoryWarehouses || [];
+        fillPoShipFromSelect(document.getElementById('po-ship-from').value);
         const keepVendor = document.getElementById('po-vendor').value;
         const keepShip = document.getElementById('po-ship-to').value;
         const onForm = !document.getElementById('po-detail').classList.contains('hidden');
@@ -13752,12 +14037,14 @@
       document.getElementById('rs-vendor').disabled = rsReadOnly;
       document.getElementById('rs-po').disabled = rsReadOnly || !document.getElementById('rs-vendor').value || document.getElementById('rs-vendor').value === '__new__';
       document.getElementById('rs-date').disabled = rsReadOnly;
+      const rsWh = document.getElementById('rs-warehouse');
+      if (rsWh) rsWh.disabled = rsReadOnly;
       document.getElementById('rs-memo').disabled = rsReadOnly;
       document.getElementById('rs-add-line').classList.toggle('hidden', rsReadOnly);
       document.getElementById('rs-clear-lines').classList.toggle('hidden', rsReadOnly);
       document.getElementById('rs-save').classList.toggle('hidden', rsReadOnly);
       document.getElementById('rs-save-close').classList.toggle('hidden', rsReadOnly);
-      document.querySelectorAll('#rs-lines input').forEach(function (el) {
+      document.querySelectorAll('#rs-lines input, #rs-lines select').forEach(function (el) {
         el.disabled = rsReadOnly || el.getAttribute('data-line') === 'poQty';
       });
       document.querySelectorAll('#rs-lines [data-remove-line]').forEach(function (el) {
@@ -13805,6 +14092,17 @@
       }
     }
 
+    function fillRsWarehouseSelects(selected) {
+      const sel = document.getElementById('rs-warehouse');
+      if (!sel) return;
+      const pick = selected || defaultSpectrumWarehouseId();
+      sel.innerHTML = groupedLocationOptions(pick);
+      if (pick) sel.value = String(pick);
+    }
+    function rsLineWarehouseOptions(selected) {
+      return groupedLocationOptions(selected || '', { emptyLabel: 'Same as receipt' });
+    }
+
     function rsLineRow(line, index) {
       const poQty = line.poQty == null ? '' : line.poQty;
       const received = line.qtyReceived == null ? '' : line.qtyReceived;
@@ -13815,6 +14113,7 @@
         '<td class="py-2 px-2"><input data-line="product" value="' + esc(line.product || '') + '" readonly placeholder="Product"></td>' +
         '<td class="py-2 px-2"><input data-line="poQty" type="number" step="0.01" value="' + esc(poQty) + '" readonly class="bg-slate-50"></td>' +
         '<td class="py-2 px-2"><input data-line="qtyReceived" type="number" step="0.01" min="0" value="' + esc(received) + '" placeholder="0"></td>' +
+        '<td class="py-2 px-2"><select data-line="warehouseId">' + rsLineWarehouseOptions(line.warehouseId || '') + '</select></td>' +
         '<td class="py-2 px-2"><button type="button" data-remove-line class="text-slate-400 hover:text-red-500 text-xs' + (rsReadOnly ? ' hidden' : '') + '">✕</button></td>' +
         '<input type="hidden" data-line="itemId" value="' + esc(line.itemId || '') + '">' +
         '<input type="hidden" data-line="poLineId" value="' + esc(line.poLineId || '') + '">' +
@@ -13833,7 +14132,8 @@
           sku: val('sku'),
           product: val('product'),
           poQty: money(val('poQty') || 0),
-          qtyReceived: money(val('qtyReceived') || 0)
+          qtyReceived: money(val('qtyReceived') || 0),
+          warehouseId: val('warehouseId')
         };
       });
     }
@@ -13925,6 +14225,7 @@
       document.getElementById('rs-number').value = src.number || '';
       fillRsVendors(src.vendorId || '');
       fillRsPoSelect(src.vendorId || '', src.poId || '');
+      fillRsWarehouseSelects(src.warehouseId || src.locationId || '');
       document.getElementById('rs-date').value = src.receiptDate || new Date().toISOString().slice(0, 10);
       document.getElementById('rs-memo').value = src.memo || '';
       renderRsLines(src.lines && src.lines.length ? src.lines : [{ sku: '', product: '', poQty: 0, qtyReceived: 0 }]);
@@ -13944,6 +14245,7 @@
         poId: poId,
         poNumber: po ? (po.number || '') : '',
         receiptDate: document.getElementById('rs-date').value,
+        warehouseId: document.getElementById('rs-warehouse').value,
         memo: document.getElementById('rs-memo').value.trim(),
         lines: readRsLines()
       };
@@ -14026,16 +14328,19 @@
     async function loadReceiptShipments() {
       showError('rs-error', '');
       try {
-        const [rsData, poData, vnData, invData] = await Promise.all([
+        const [rsData, poData, vnData, invData, whData] = await Promise.all([
           api('/api/admin/receipt-shipments'),
           api('/api/admin/purchase-orders'),
           api('/api/admin/inventory-vendors'),
-          inventoryItems.length ? Promise.resolve({ items: inventoryItems }) : api('/api/admin/inventory')
+          inventoryItems.length ? Promise.resolve({ items: inventoryItems }) : api('/api/admin/inventory'),
+          inventoryWarehouses.length ? Promise.resolve({ warehouses: inventoryWarehouses }) : api('/api/admin/inventory-warehouses').catch(function () { return { warehouses: inventoryWarehouses }; })
         ]);
         receiptShipments = rsData.receipts || [];
         purchaseOrders = poData.orders || purchaseOrders || [];
         inventoryVendors = vnData.vendors || inventoryVendors || [];
         if (!inventoryItems.length) inventoryItems = invData.items || [];
+        inventoryWarehouses = whData.warehouses || inventoryWarehouses || [];
+        fillRsWarehouseSelects(document.getElementById('rs-warehouse') && document.getElementById('rs-warehouse').value);
         refreshRsSkuList();
         renderRsTable(receiptShipments);
       } catch (err) {
@@ -16314,11 +16619,7 @@
         dueDate: form.dueDate,
         shipVia: form.shipVia,
         shipFrom: form.shipFrom,
-        shipFromLabel: form.shipFrom === 'china_fob'
-          ? 'China factory (FOB)'
-          : (form.shipFrom === 'novastar_vegas'
-            ? 'NovaStar Warehouse (Las Vegas)'
-            : (form.shipFrom === 'gloshine_la' ? 'Gloshine US Warehouse (Los Angeles)' : '')),
+        shipFromLabel: form.shipFromLabel || poShipFromLabel(form.shipFrom),
         permitNo: form.permitNo,
         notes: form.notes || '',
         subtotal: total,
@@ -18349,6 +18650,14 @@
       openWhTab('new');
     });
     document.getElementById('wh-search').addEventListener('input', renderWhTable);
+    document.getElementById('wh-items-search').addEventListener('input', function () {
+      fillWhDetailView(whCurrentDetail);
+    });
+    document.getElementById('wh-items-body').addEventListener('click', function (e) {
+      const row = e.target.closest('tr[data-item-id]');
+      if (!row) return;
+      openInventoryFromLocation(row.getAttribute('data-item-id'));
+    });
     document.getElementById('wh-type').addEventListener('change', syncWhVendorWrap);
     document.getElementById('wh-vendor').addEventListener('change', syncWhVendorWrap);
     document.getElementById('wh-edit-btn').addEventListener('click', function () {
@@ -18375,7 +18684,9 @@
     document.getElementById('wh-transfer-item').addEventListener('change', updateWhTransferAvail);
     document.getElementById('wh-transfer-form').addEventListener('submit', async function (e) {
       e.preventDefault();
-      const fromId = document.getElementById('wh-id').value || (whCurrentDetail && whCurrentDetail.id);
+      const itemSel = document.getElementById('wh-transfer-item');
+      const opt = itemSel && itemSel.selectedOptions && itemSel.selectedOptions[0];
+      const fromId = (opt && opt.getAttribute('data-from')) || document.getElementById('wh-id').value || (whCurrentDetail && whCurrentDetail.id);
       const msg = document.getElementById('wh-transfer-msg');
       if (!fromId) return;
       try {
@@ -18383,7 +18694,7 @@
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
-            itemId: document.getElementById('wh-transfer-item').value,
+            itemId: itemSel.value,
             toLocationId: document.getElementById('wh-transfer-to').value,
             qty: document.getElementById('wh-transfer-qty').value
           })
@@ -18391,7 +18702,7 @@
         const list = await api('/api/admin/inventory-warehouses');
         inventoryWarehouses = list.warehouses || list.locations || inventoryWarehouses;
         fillInvWarehouseSelects();
-        await openWhTab(fromId, { push: false, mode: 'transfer' });
+        await openWhTab((whCurrentDetail && whCurrentDetail.id) || fromId, { push: false, mode: 'transfer' });
         msg.textContent = 'Transferred.';
         msg.className = 'sm:col-span-2 text-sm text-sky-400';
         msg.classList.remove('hidden');
@@ -18433,6 +18744,7 @@
       const payload = {
         name: document.getElementById('wh-name').value,
         type: document.getElementById('wh-type').value,
+        parentId: document.getElementById('wh-parent').value,
         vendorId: document.getElementById('wh-vendor').value,
         untracked: document.getElementById('wh-untracked').checked,
         notes: document.getElementById('wh-notes').value,
@@ -18456,9 +18768,8 @@
             body: JSON.stringify(payload)
           });
         const saved = data.warehouse || data.location;
-        inventoryWarehouses = (inventoryWarehouses || []).filter(function (row) {
-          return String(row.id) !== String(saved.id);
-        }).concat([saved]);
+        const list = await api('/api/admin/inventory-warehouses');
+        inventoryWarehouses = list.warehouses || list.locations || inventoryWarehouses;
         if (id === '' || whOpenTabs.indexOf('new') !== -1) {
           whOpenTabs = whOpenTabs.filter(function (tabId) { return tabId !== 'new'; });
         }
@@ -18535,6 +18846,50 @@
       openInventoryFromDetail();
       setTimeout(function () { jumpInventorySection('inv-onhand-block'); }, 120);
     });
+    document.getElementById('inv-detail-transfer').addEventListener('click', function () {
+      if (!canEdit('inventory')) return;
+      const form = document.getElementById('inv-transfer-form');
+      if (!form) return;
+      fillInvTransferForm(invDetailData && invDetailData.item);
+      form.classList.remove('hidden');
+    });
+    document.getElementById('inv-transfer-cancel').addEventListener('click', function () {
+      const form = document.getElementById('inv-transfer-form');
+      if (form) form.classList.add('hidden');
+    });
+    document.getElementById('inv-transfer-from').addEventListener('change', updateInvTransferAvail);
+    document.getElementById('inv-transfer-form').addEventListener('submit', async function (e) {
+      e.preventDefault();
+      const fromId = document.getElementById('inv-transfer-from').value;
+      const toId = document.getElementById('inv-transfer-to').value;
+      const qty = document.getElementById('inv-transfer-qty').value;
+      const item = invDetailData && invDetailData.item;
+      const msg = document.getElementById('inv-transfer-msg');
+      if (!item || !fromId || !toId) return;
+      try {
+        await api('/api/admin/inventory-warehouses/' + encodeURIComponent(fromId) + '/transfer', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ itemId: item.id, toLocationId: toId, qty: qty })
+        });
+        const data = await api('/api/admin/inventory/' + encodeURIComponent(item.id));
+        invDetailData = data;
+        renderInventoryDetailView();
+        await loadInventory();
+        msg.textContent = 'Transferred.';
+        msg.className = 'text-sm text-sky-400 mt-2';
+        msg.classList.remove('hidden');
+      } catch (err) {
+        msg.textContent = err.message || 'Could not transfer.';
+        msg.className = 'text-sm text-red-400 mt-2';
+        msg.classList.remove('hidden');
+      }
+    });
+    document.getElementById('inv-detail-locations-body').addEventListener('click', function (e) {
+      const row = e.target.closest('tr[data-location-id]');
+      if (!row) return;
+      openLocationFromInventory(row.getAttribute('data-location-id'));
+    });
     document.getElementById('inv-activity-body').addEventListener('click', async function (e) {
       const row = e.target.closest('.inv-activity-row');
       if (!row) return;
@@ -18577,6 +18932,10 @@
     document.getElementById('inv-search').addEventListener('input', renderInventoryTable);
     document.getElementById('inv-category-filter').addEventListener('change', function () {
       inventoryCategoryFilter = this.value || '';
+      renderInventoryTable();
+    });
+    document.getElementById('inv-location-filter').addEventListener('change', function () {
+      inventoryLocationFilter = this.value || '';
       renderInventoryTable();
     });
     document.getElementById('inv-category').addEventListener('change', function () {
@@ -18662,7 +19021,6 @@
       fd.append('lowAt', document.getElementById('inv-item-low').value);
       fd.append('notes', document.getElementById('inv-item-notes').value);
       fd.append('warehouseId', document.getElementById('inv-warehouse').value);
-      fd.append('bin', document.getElementById('inv-bin').value);
       if (!id) fd.append('qty', document.getElementById('inv-qty-init').value || '0');
       const photo = document.getElementById('inv-image').files[0];
       if (photo) fd.append('image', photo);

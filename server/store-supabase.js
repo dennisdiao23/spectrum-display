@@ -122,6 +122,11 @@ function createSupabaseStore() {
     } catch (e) {
       console.error('Could not apply Gloshine LA warehouse list:', e.message || e);
     }
+    try {
+      await migrateInventoryBinLocations();
+    } catch (e) {
+      console.error('Could not migrate inventory bin locations:', e.message || e);
+    }
   }
 
   async function backfillItemLocations() {
@@ -490,15 +495,22 @@ function createSupabaseStore() {
     const names = vendorNames || await loadVendorNameMap();
     return (rows || []).map(function (row) {
       const wh = whMap[String(row.warehouse_id)] || {};
+      const parent = wh.parent_id ? (whMap[String(wh.parent_id)] || {}) : {};
+      const vendorId = wh.type === 'bin' ? parent.vendor_id : wh.vendor_id;
       return inv.formatLocation({
         id: row.id,
         item_id: row.item_id,
         warehouse_id: row.warehouse_id,
         warehouse_name: wh.name || '',
         warehouse_type: wh.type || 'warehouse',
-        vendor_id: wh.vendor_id || '',
-        vendor_name: wh.vendor_id ? (names[String(wh.vendor_id)] || '') : '',
+        vendor_id: vendorId || '',
+        vendor_name: vendorId ? (names[String(vendorId)] || '') : '',
         untracked: wh.untracked,
+        parent_id: wh.parent_id || '',
+        parent_name: parent.name || '',
+        parent_type: parent.type || '',
+        parent_vendor_id: parent.vendor_id || '',
+        parent_untracked: parent.untracked,
         bin: row.bin,
         qty: row.qty
       });
@@ -531,11 +543,22 @@ function createSupabaseStore() {
     const { data, error } = await supabase.from('inventory_warehouses').select('*').order('id', { ascending: true });
     throwIf(error, 'Could not read locations.');
     const rows = data || [];
-    const tracked = rows.filter(function (row) { return !wh.rowUntracked(row); });
-    const prefer = tracked.filter(function (row) { return wh.locationKind(row.type) === 'warehouse'; });
-    const row = prefer[0] || tracked[0] || rows[0];
+    const prefer = rows.filter(wh.isHomeWarehouse);
+    const row = prefer[0] || rows.filter(function (r) {
+      return !wh.rowUntracked(r) && wh.locationKind(r.type) !== 'bin';
+    })[0] || rows[0];
     if (!row) throw new Error('Add a tracked location first.');
     return row;
+  }
+
+  async function warehouseIsUntracked(row) {
+    const wh = require('./inventory-warehouses');
+    if (!row) return false;
+    if (wh.locationKind(row.type) === 'bin' && row.parent_id) {
+      const { data: parent } = await supabase.from('inventory_warehouses').select('*').eq('id', row.parent_id).maybeSingle();
+      return parent ? wh.rowUntracked(parent) : false;
+    }
+    return wh.rowUntracked(row);
   }
 
   async function countTrackedWarehouses(exceptId) {
@@ -544,21 +567,62 @@ function createSupabaseStore() {
     throwIf(error, 'Could not read locations.');
     return (data || []).filter(function (row) {
       if (exceptId != null && String(row.id) === String(exceptId)) return false;
-      return !wh.rowUntracked(row);
+      return wh.isHomeWarehouse(row);
     }).length;
   }
 
   async function resolveWarehouse(warehouseId, opts) {
-    const wh = require('./inventory-warehouses');
     const trackedOnly = !!(opts && (opts.spectrumOnly || opts.trackedOnly));
     if (warehouseId) {
       const { data, error } = await supabase.from('inventory_warehouses').select('*').eq('id', warehouseId).maybeSingle();
       throwIf(error, 'Could not read location.');
       if (!data) throw new Error('Location not found.');
-      if (trackedOnly && wh.rowUntracked(data)) return defaultSpectrumWarehouse();
+      if (trackedOnly && (await warehouseIsUntracked(data))) return defaultSpectrumWarehouse();
       return data;
     }
     return defaultSpectrumWarehouse();
+  }
+
+  async function findOrCreateBin(parentId, name) {
+    const label = String(name || '').trim();
+    if (!label || !parentId) return null;
+    const { data: siblings, error: eErr } = await supabase
+      .from('inventory_warehouses')
+      .select('*')
+      .eq('type', 'bin')
+      .eq('parent_id', parentId);
+    throwIf(eErr, 'Could not read bin.');
+    const existing = (siblings || []).find(function (row) {
+      return String(row.name || '').trim().toLowerCase() === label.toLowerCase();
+    });
+    if (existing) return existing;
+    const stamp = new Date().toISOString();
+    const { data, error } = await supabase.from('inventory_warehouses').insert({
+      name: label,
+      type: 'bin',
+      parent_id: Number(parentId),
+      untracked: false,
+      notes: '',
+      street: '',
+      street2: '',
+      city: '',
+      state: '',
+      zip: '',
+      country: '',
+      created_at: stamp,
+      updated_at: stamp
+    }).select('*').single();
+    throwIf(error, 'Could not save bin.');
+    return data;
+  }
+
+  async function resolveLocationTarget(warehouseId, binText) {
+    const wh = require('./inventory-warehouses');
+    const warehouse = await resolveWarehouse(warehouseId);
+    const bin = String(binText || '').trim();
+    if (!bin) return warehouse;
+    if (wh.locationKind(warehouse.type) === 'bin') return warehouse;
+    return (await findOrCreateBin(warehouse.id, bin)) || warehouse;
   }
 
   async function syncItemSpectrumQty(itemId) {
@@ -667,9 +731,79 @@ function createSupabaseStore() {
     await supabase.from('inventory_warehouses').insert({
       name: wh.DEFAULT_SPECTRUM_NAME,
       type: 'warehouse',
+      parent_id: null,
       untracked: false,
       notes: ''
     });
+  }
+
+  async function migrateInventoryBinLocations() {
+    const wh = require('./inventory-warehouses');
+    const { data: all, error } = await supabase.from('inventory_warehouses').select('*');
+    if (error) return;
+    const rows = all || [];
+    const home = rows.filter(wh.isHomeWarehouse)[0] || rows.filter(function (r) {
+      return !wh.rowUntracked(r) && wh.locationKind(r.type) !== 'bin';
+    })[0];
+    const stamp = new Date().toISOString();
+    if (home) {
+      const orphans = rows.filter(function (r) {
+        return wh.locationKind(r.type) === 'bin' && !r.parent_id;
+      });
+      for (let i = 0; i < orphans.length; i++) {
+        const { error: uErr } = await supabase.from('inventory_warehouses').update({
+          parent_id: home.id,
+          updated_at: stamp
+        }).eq('id', orphans[i].id);
+        if (uErr) throwIf(uErr, 'Could not attach bin to warehouse.');
+      }
+    }
+    const { data: locRows, error: lErr } = await supabase.from('inventory_item_locations').select('*');
+    if (lErr) return;
+    const locList = (locRows || []).filter(function (row) { return String(row.bin || '').trim(); });
+    if (!locList.length) return;
+    const { data: whNow } = await supabase.from('inventory_warehouses').select('*');
+    const byId = {};
+    (whNow || []).forEach(function (r) { byId[String(r.id)] = r; });
+    for (let i = 0; i < locList.length; i++) {
+      const row = locList[i];
+      const binName = String(row.bin || '').trim();
+      if (!binName) continue;
+      const locWh = byId[String(row.warehouse_id)];
+      if (locWh && wh.locationKind(locWh.type) === 'bin') {
+        await supabase.from('inventory_item_locations').update({ bin: '', updated_at: stamp }).eq('id', row.id);
+        continue;
+      }
+      const parentId = locWh ? locWh.id : (home && home.id);
+      if (!parentId) continue;
+      const bin = await findOrCreateBin(parentId, binName);
+      if (!bin) continue;
+      byId[String(bin.id)] = bin;
+      const { data: dest } = await supabase
+        .from('inventory_item_locations')
+        .select('*')
+        .eq('item_id', row.item_id)
+        .eq('warehouse_id', bin.id)
+        .maybeSingle();
+      const qty = Math.max(0, Number(row.qty) || 0);
+      if (dest && String(dest.id) !== String(row.id)) {
+        const { error: mErr } = await supabase.from('inventory_item_locations').update({
+          qty: Math.max(0, Number(dest.qty) || 0) + qty,
+          bin: '',
+          updated_at: stamp
+        }).eq('id', dest.id);
+        throwIf(mErr, 'Could not merge bin qty.');
+        const { error: dErr } = await supabase.from('inventory_item_locations').delete().eq('id', row.id);
+        throwIf(dErr, 'Could not clear old location.');
+      } else {
+        const { error: mErr } = await supabase.from('inventory_item_locations').update({
+          warehouse_id: bin.id,
+          bin: '',
+          updated_at: stamp
+        }).eq('id', row.id);
+        throwIf(mErr, 'Could not move qty into bin.');
+      }
+    }
   }
 
   async function warehouseStatsMap() {
@@ -687,7 +821,7 @@ function createSupabaseStore() {
       const key = String(row.warehouse_id);
       if (!out[key]) out[key] = { itemCount: 0, qty: 0, hasLow: false };
       const qty = Math.max(0, Number(row.qty) || 0);
-      out[key].itemCount += 1;
+      if (qty > 0) out[key].itemCount += 1;
       out[key].qty += qty;
       const lowAt = lowById[String(row.item_id)];
       if (qty > 0 && lowAt > 0 && qty <= lowAt) out[key].hasLow = true;
@@ -695,14 +829,43 @@ function createSupabaseStore() {
     return out;
   }
 
-  function formatWarehouseRow(row, stats, vendorNames) {
+  async function warehouseRowMap() {
+    const { data, error } = await supabase.from('inventory_warehouses').select('*');
+    throwIf(error, 'Could not read locations.');
+    const map = {};
+    (data || []).forEach(function (row) { map[String(row.id)] = row; });
+    return map;
+  }
+
+  async function warehouseNameMap() {
+    const map = await warehouseRowMap();
+    const names = {};
+    Object.keys(map).forEach(function (id) { names[id] = map[id].name || ''; });
+    return names;
+  }
+
+  function poWarehouseFromMap(map, shipFrom) {
+    const po = require('./purchase-orders');
+    const id = po.locationIdFromShipFrom(shipFrom);
+    if (!id) return null;
+    return (map || {})[String(id)] || null;
+  }
+
+  function formatWarehouseRow(row, stats, vendorNames, allRows) {
     const wh = require('./inventory-warehouses');
     const extra = (stats || {})[String(row.id)] || { itemCount: 0, qty: 0, hasLow: false };
+    let parentName = '';
+    if (row.parent_id && allRows) {
+      const parent = allRows.find(function (r) { return String(r.id) === String(row.parent_id); });
+      parentName = parent ? parent.name : '';
+    }
     return wh.formatWarehouse(row, {
       itemCount: extra.itemCount,
       qty: extra.qty,
       hasLow: extra.hasLow,
-      vendorName: row.vendor_id ? ((vendorNames || {})[String(row.vendor_id)] || '') : ''
+      vendorName: row.vendor_id ? ((vendorNames || {})[String(row.vendor_id)] || '') : '',
+      parentName: parentName,
+      parentId: row.parent_id || ''
     });
   }
 
@@ -1349,9 +1512,9 @@ function createSupabaseStore() {
         pitch: input.pitch
       }), taken);
       const stamp = new Date().toISOString();
-      const warehouse = await resolveWarehouse(input.warehouseId);
+      const warehouse = await resolveLocationTarget(input.warehouseId, input.bin);
       const locQty = Math.max(0, Number(input.qty) || 0);
-      const itemQty = require('./inventory-warehouses').rowUntracked(warehouse) ? 0 : locQty;
+      const itemQty = (await warehouseIsUntracked(warehouse)) ? 0 : locQty;
       const fields = Object.assign(inv.dbFieldsFromInput(input), {
         qty: itemQty,
         created_at: stamp,
@@ -1359,7 +1522,7 @@ function createSupabaseStore() {
       });
       const { data, error } = await supabase.from('inventory_items').insert(fields).select('id').single();
       throwIf(error, 'Could not create inventory item.');
-      await upsertItemLocation(data.id, warehouse.id, input.bin || '', locQty);
+      await upsertItemLocation(data.id, warehouse.id, '', locQty);
       if (locQty) {
         const { error: mErr } = await supabase.from('inventory_item_moves').insert({
           item_id: data.id,
@@ -1422,14 +1585,16 @@ function createSupabaseStore() {
       if (input.warehouseId || input.bin != null) {
         const locs = await locationsForItem(id);
         const primary = inv.pickPrimaryLocation(locs);
-        const warehouse = await resolveWarehouse(input.warehouseId || (primary && primary.warehouseId));
-        const bin = input.bin != null ? input.bin : (primary && primary.bin) || '';
+        const warehouse = await resolveLocationTarget(
+          input.warehouseId || (primary && primary.warehouseId),
+          input.bin
+        );
         if (primary && String(primary.warehouseId) === String(warehouse.id)) {
           const { error: bErr } = await supabase.from('inventory_item_locations').update({
-            bin: bin,
+            bin: '',
             updated_at: new Date().toISOString()
           }).eq('id', primary.id);
-          throwIf(bErr, 'Could not save bin.');
+          throwIf(bErr, 'Could not save location.');
         } else if (primary) {
           const { data: dest } = await supabase
             .from('inventory_item_locations')
@@ -1440,20 +1605,20 @@ function createSupabaseStore() {
           if (!dest) {
             const { error: mErr } = await supabase.from('inventory_item_locations').update({
               warehouse_id: Number(warehouse.id),
-              bin: bin,
+              bin: '',
               updated_at: new Date().toISOString()
             }).eq('id', primary.id);
             throwIf(mErr, 'Could not move location.');
             await syncItemSpectrumQty(id);
           } else {
             const { error: bErr } = await supabase.from('inventory_item_locations').update({
-              bin: bin,
+              bin: '',
               updated_at: new Date().toISOString()
             }).eq('id', primary.id);
-            throwIf(bErr, 'Could not save bin.');
+            throwIf(bErr, 'Could not save location.');
           }
         } else {
-          await upsertItemLocation(id, warehouse.id, bin, 0);
+          await upsertItemLocation(id, warehouse.id, '', 0);
           await syncItemSpectrumQty(id);
         }
       }
@@ -1929,8 +2094,11 @@ function createSupabaseStore() {
           linesByPo[key].push(line);
         });
       }
+      const warehouses = await warehouseRowMap();
       return (data || []).map(function (row) {
-        return po.formatPo(row, linesByPo[String(row.id)] || []);
+        return po.formatPo(row, linesByPo[String(row.id)] || [], {
+          warehouse: poWarehouseFromMap(warehouses, row.ship_from)
+        });
       });
     },
     async getPurchaseOrder(id) {
@@ -1944,7 +2112,8 @@ function createSupabaseStore() {
         .eq('po_id', id)
         .order('sort_order', { ascending: true });
       throwIf(lErr, 'Could not load purchase order lines.');
-      return po.formatPo(data, lines || []);
+      const warehouses = await warehouseRowMap();
+      return po.formatPo(data, lines || [], { warehouse: poWarehouseFromMap(warehouses, data.ship_from) });
     },
     async createPurchaseOrder(payload) {
       const po = require('./purchase-orders');
@@ -2028,13 +2197,16 @@ function createSupabaseStore() {
       const rs = require('./receipt-shipments');
       const { data, error } = await supabase.from('receipt_shipments').select('*').order('id', { ascending: false });
       throwIf(error, 'Could not load receipt shipments.');
+      const names = await warehouseNameMap();
       const rows = data || [];
       const out = [];
       for (let i = 0; i < rows.length; i++) {
         const { data: lines, error: lErr } = await supabase.from('receipt_shipment_lines')
           .select('*').eq('receipt_id', rows[i].id).order('sort_order').order('id');
         throwIf(lErr, 'Could not load receipt lines.');
-        out.push(rs.formatReceipt(rows[i], lines || []));
+        out.push(rs.formatReceipt(rows[i], lines || [], {
+          warehouseName: names[String(rows[i].warehouse_id)] || ''
+        }));
       }
       return out;
     },
@@ -2046,7 +2218,10 @@ function createSupabaseStore() {
       const { data: lines, error: lErr } = await supabase.from('receipt_shipment_lines')
         .select('*').eq('receipt_id', id).order('sort_order').order('id');
       throwIf(lErr, 'Could not load receipt lines.');
-      return rs.formatReceipt(data, lines || []);
+      const names = await warehouseNameMap();
+      return rs.formatReceipt(data, lines || [], {
+        warehouseName: names[String(data.warehouse_id)] || ''
+      });
     },
     async createReceiptShipment(payload, adminEmail) {
       const rs = require('./receipt-shipments');
@@ -2064,6 +2239,8 @@ function createSupabaseStore() {
       if (!input.number) input.number = rs.nextReceiptNumber(existing);
       const { data: taken } = await supabase.from('receipt_shipments').select('id').eq('number', input.number).maybeSingle();
       if (taken) throw new Error('That receipt number is already used.');
+      const defaultWh = await resolveWarehouse(input.warehouseId);
+      input.warehouseId = String(defaultWh.id);
       const fields = rs.dbReceiptFields(input);
       const stamp = new Date().toISOString();
       fields.created_at = stamp;
@@ -2077,6 +2254,7 @@ function createSupabaseStore() {
           let itemId = line.itemId || '';
           let product = line.product;
           let sku = line.sku;
+          const destId = line.warehouseId || input.warehouseId;
           if (line.qtyReceived > 0) {
             if (!itemId && sku) {
               const { data: items, error: skuErr } = await supabase.from('inventory_items').select('id,name,sku');
@@ -2090,11 +2268,12 @@ function createSupabaseStore() {
               sku = itemRow.sku;
             }
             if (!itemId) throw new Error('SKU not found for a received line.');
+            const dest = await resolveWarehouse(destId);
             const ok = await this.adjustInventory(itemId, {
               kind: 'receive',
               qty: line.qtyReceived,
-              note: noteBase,
-              spectrumOnly: true
+              warehouseId: dest.id,
+              note: noteBase
             }, adminEmail);
             if (!ok) throw new Error('Inventory item not found.');
           }
@@ -2106,6 +2285,7 @@ function createSupabaseStore() {
             product: product,
             po_qty: line.poQty,
             qty_received: line.qtyReceived,
+            warehouse_id: destId ? Number(destId) : null,
             sort_order: i
           });
           throwIf(lErr, 'Could not save receipt line.');
@@ -2118,48 +2298,66 @@ function createSupabaseStore() {
       return this.getReceiptShipment(header.id);
     },
     async listWarehouses() {
+      const wh = require('./inventory-warehouses');
       const [rows, stats, vendorNames] = await Promise.all([
-        supabase.from('inventory_warehouses').select('*').order('type').order('name'),
+        supabase.from('inventory_warehouses').select('*').order('id', { ascending: true }),
         warehouseStatsMap(),
         loadVendorNameMap()
       ]);
       throwIf(rows.error, 'Could not read warehouses.');
-      return (rows.data || []).map(function (row) {
-        return formatWarehouseRow(row, stats, vendorNames);
+      const allRows = rows.data || [];
+      const formatted = allRows.map(function (row) {
+        return formatWarehouseRow(row, stats, vendorNames, allRows);
       });
+      return wh.sortGrouped(wh.decorateWarehouses(formatted));
     },
     async getWarehouse(id) {
-      const { data, error } = await supabase.from('inventory_warehouses').select('*').eq('id', id).maybeSingle();
+      const wh = require('./inventory-warehouses');
+      const { data: allRows, error } = await supabase.from('inventory_warehouses').select('*').order('id', { ascending: true });
       throwIf(error, 'Could not read warehouse.');
-      if (!data) return null;
+      const row = (allRows || []).find(function (r) { return String(r.id) === String(id); });
+      if (!row) return null;
       const [stats, vendorNames, items] = await Promise.all([
         warehouseStatsMap(),
         loadVendorNameMap(),
         this.listInventory()
       ]);
-      const warehouse = formatWarehouseRow(data, stats, vendorNames);
-      warehouse.items = (items || []).filter(function (item) {
-        return (item.locations || []).some(function (loc) {
-          return String(loc.warehouseId) === String(id);
+      const formatted = (allRows || []).map(function (r) {
+        return formatWarehouseRow(r, stats, vendorNames, allRows);
+      });
+      const warehouse = wh.decorateWarehouses(formatted).find(function (r) { return String(r.id) === String(id); });
+      if (!warehouse) return null;
+      const childName = {};
+      const idSet = {};
+      idSet[String(id)] = true;
+      (allRows || []).forEach(function (r) {
+        if (String(r.parent_id) === String(id)) {
+          idSet[String(r.id)] = true;
+          childName[String(r.id)] = r.name;
+        }
+      });
+      warehouse.items = [];
+      (items || []).forEach(function (item) {
+        (item.locations || []).forEach(function (loc) {
+          if (!(idSet[String(loc.warehouseId)] && Number(loc.qty) > 0)) return;
+          warehouse.items.push({
+            id: item.id,
+            sku: item.sku,
+            name: item.name,
+            qty: loc.qty,
+            bin: loc.kind === 'bin' && String(loc.warehouseId) !== String(id) ? (loc.locationName || '') : (childName[String(loc.warehouseId)] || ''),
+            locationId: loc.warehouseId,
+            unit: item.unit
+          });
         });
-      }).map(function (item) {
-        const loc = (item.locations || []).find(function (row) {
-          return String(row.warehouseId) === String(id);
-        });
-        return {
-          id: item.id,
-          sku: item.sku,
-          name: item.name,
-          qty: loc ? loc.qty : 0,
-          bin: loc ? loc.bin : '',
-          unit: item.unit
-        };
       });
       return warehouse;
     },
     async createWarehouse(payload) {
       const wh = require('./inventory-warehouses');
-      const input = wh.normalizeWarehouse(payload);
+      const { data: existingRows, error: eErr } = await supabase.from('inventory_warehouses').select('*');
+      throwIf(eErr, 'Could not read locations.');
+      const input = wh.normalizeWarehouse(payload, { existing: existingRows || [] });
       if (input.vendorId) {
         const { data: vendor, error } = await supabase.from('inventory_vendors').select('id').eq('id', input.vendorId).maybeSingle();
         throwIf(error, 'Could not read vendor.');
@@ -2178,9 +2376,15 @@ function createSupabaseStore() {
       const { data: current, error: cErr } = await supabase.from('inventory_warehouses').select('*').eq('id', id).maybeSingle();
       throwIf(cErr, 'Could not read warehouse.');
       if (!current) return null;
-      const input = wh.normalizeWarehouse(payload);
-      if (!wh.rowUntracked(current) && input.untracked && !(await countTrackedWarehouses(id))) {
+      const { data: existingRows, error: eErr } = await supabase.from('inventory_warehouses').select('*');
+      throwIf(eErr, 'Could not read locations.');
+      const input = wh.normalizeWarehouse(payload, { existing: existingRows || [], id: id });
+      if (wh.isHomeWarehouse(current) && input.untracked && !(await countTrackedWarehouses(id))) {
         throw new Error('Keep at least one tracked location.');
+      }
+      if (wh.locationKind(current.type) === 'warehouse' && input.kind === 'bin') {
+        const { data: kids } = await supabase.from('inventory_warehouses').select('id').eq('parent_id', id);
+        if (kids && kids.length) throw new Error('Move or delete bins in this warehouse first.');
       }
       if (input.vendorId) {
         const { data: vendor, error } = await supabase.from('inventory_vendors').select('id').eq('id', input.vendorId).maybeSingle();
@@ -2201,7 +2405,9 @@ function createSupabaseStore() {
       const { data: current, error: cErr } = await supabase.from('inventory_warehouses').select('*').eq('id', id).maybeSingle();
       throwIf(cErr, 'Could not read location.');
       if (!current) return false;
-      if (!wh.rowUntracked(current) && !(await countTrackedWarehouses(id))) {
+      const { data: kids } = await supabase.from('inventory_warehouses').select('id').eq('parent_id', id);
+      if (kids && kids.length) throw new Error('Move or delete bins in this warehouse first.');
+      if (wh.isHomeWarehouse(current) && !(await countTrackedWarehouses(id))) {
         throw new Error('Keep at least one tracked location.');
       }
       const { data: locRows, error: lErr } = await supabase.from('inventory_item_locations').select('qty').eq('warehouse_id', id);

@@ -825,6 +825,7 @@ create table if not exists public.inventory_warehouses (
   id bigint generated always as identity primary key,
   name text not null,
   type text not null default 'warehouse',
+  parent_id bigint references public.inventory_warehouses(id) on delete restrict,
   vendor_id bigint references public.inventory_vendors(id) on delete set null,
   untracked boolean not null default false,
   notes text not null default '',
@@ -838,6 +839,8 @@ create table if not exists public.inventory_warehouses (
   updated_at timestamptz not null default now()
 );
 create index if not exists inventory_warehouses_type_idx on public.inventory_warehouses (type, name);
+create index if not exists inventory_warehouses_parent_idx on public.inventory_warehouses (parent_id, type, name);
+alter table public.inventory_warehouses add column if not exists parent_id bigint references public.inventory_warehouses(id) on delete restrict;
 alter table public.inventory_warehouses enable row level security;
 drop policy if exists inventory_warehouses_admin_all on public.inventory_warehouses;
 create policy inventory_warehouses_admin_all on public.inventory_warehouses
@@ -878,6 +881,13 @@ where not exists (
   select 1 from public.inventory_item_locations l where l.item_id = i.id
 )
 and exists (select 1 from public.inventory_warehouses w where coalesce(w.untracked, false) = false);
+
+alter table public.receipt_shipments
+  add column if not exists warehouse_id bigint references public.inventory_warehouses(id) on delete set null;
+alter table public.receipt_shipment_lines
+  add column if not exists warehouse_id bigint references public.inventory_warehouses(id) on delete set null;
+create index if not exists receipt_shipments_warehouse_idx on public.receipt_shipments (warehouse_id);
+create index if not exists receipt_shipment_lines_warehouse_idx on public.receipt_shipment_lines (warehouse_id);
 
 -- Wall Remote (customer owner + rack bridge via Express API)
 create table if not exists public.walls (

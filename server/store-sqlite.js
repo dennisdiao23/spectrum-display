@@ -54,10 +54,14 @@ function listInventoryItems(db) {
 function locationJoinSql() {
   return `
     SELECT l.*, w.name AS warehouse_name, w.type AS warehouse_type, w.vendor_id, w.untracked,
-      COALESCE(v.display_name, v.company_name, '') AS vendor_name
+      w.parent_id,
+      p.name AS parent_name, p.type AS parent_type, p.vendor_id AS parent_vendor_id, p.untracked AS parent_untracked,
+      COALESCE(v.display_name, v.company_name, pv.display_name, pv.company_name, '') AS vendor_name
     FROM inventory_item_locations l
     JOIN inventory_warehouses w ON w.id = l.warehouse_id
+    LEFT JOIN inventory_warehouses p ON p.id = w.parent_id
     LEFT JOIN inventory_vendors v ON v.id = w.vendor_id
+    LEFT JOIN inventory_vendors pv ON pv.id = p.vendor_id
   `;
 }
 
@@ -89,23 +93,28 @@ function defaultSpectrumWarehouse(db) {
   const rows = db.prepare(
     'SELECT * FROM inventory_warehouses ORDER BY id'
   ).all();
-  const tracked = rows.filter(function (row) { return !wh.rowUntracked(row); });
-  const prefer = tracked.filter(function (row) {
-    const k = wh.locationKind(row.type);
-    return k === 'warehouse';
-  });
-  const row = prefer[0] || tracked[0] || rows[0];
+  const prefer = rows.filter(wh.isHomeWarehouse);
+  const row = prefer[0] || rows.filter(function (r) { return !wh.rowUntracked(r) && wh.locationKind(r.type) !== 'bin'; })[0] || rows[0];
   if (!row) throw new Error('Add a tracked location first.');
   return row;
 }
 
-function resolveWarehouse(db, warehouseId, opts) {
+function warehouseIsUntracked(db, row) {
   const wh = require('./inventory-warehouses');
+  if (!row) return false;
+  if (wh.locationKind(row.type) === 'bin' && row.parent_id) {
+    const parent = db.prepare('SELECT * FROM inventory_warehouses WHERE id = ?').get(row.parent_id);
+    return parent ? wh.rowUntracked(parent) : false;
+  }
+  return wh.rowUntracked(row);
+}
+
+function resolveWarehouse(db, warehouseId, opts) {
   const trackedOnly = !!(opts && (opts.spectrumOnly || opts.trackedOnly));
   if (warehouseId) {
     const row = db.prepare('SELECT * FROM inventory_warehouses WHERE id = ?').get(warehouseId);
     if (!row) throw new Error('Location not found.');
-    if (trackedOnly && wh.rowUntracked(row)) return defaultSpectrumWarehouse(db);
+    if (trackedOnly && warehouseIsUntracked(db, row)) return defaultSpectrumWarehouse(db);
     return row;
   }
   return defaultSpectrumWarehouse(db);
@@ -115,8 +124,33 @@ function countTrackedWarehouses(db, exceptId) {
   const wh = require('./inventory-warehouses');
   return db.prepare('SELECT * FROM inventory_warehouses').all().filter(function (row) {
     if (exceptId != null && String(row.id) === String(exceptId)) return false;
-    return !wh.rowUntracked(row);
+    return wh.isHomeWarehouse(row);
   }).length;
+}
+
+function findOrCreateBin(db, parentId, name, stamp) {
+  const label = String(name || '').trim();
+  if (!label || !parentId) return null;
+  const existing = db.prepare(`
+    SELECT * FROM inventory_warehouses
+    WHERE type = 'bin' AND parent_id = ? AND lower(name) = lower(?)
+  `).get(parentId, label);
+  if (existing) return existing;
+  const info = db.prepare(`
+    INSERT INTO inventory_warehouses (
+      name, type, parent_id, vendor_id, untracked, notes, street, street2, city, state, zip, country, created_at, updated_at
+    ) VALUES (?, 'bin', ?, NULL, 0, '', '', '', '', '', '', '', ?, ?)
+  `).run(label, parentId, stamp, stamp);
+  return db.prepare('SELECT * FROM inventory_warehouses WHERE id = ?').get(info.lastInsertRowid);
+}
+
+function resolveLocationTarget(db, warehouseId, binText) {
+  const wh = require('./inventory-warehouses');
+  const warehouse = resolveWarehouse(db, warehouseId);
+  const bin = String(binText || '').trim();
+  if (!bin) return warehouse;
+  if (wh.locationKind(warehouse.type) === 'bin') return warehouse;
+  return findOrCreateBin(db, warehouse.id, bin, dbUtil.nowIso()) || warehouse;
 }
 
 function syncItemSpectrumQty(db, itemId, stamp) {
@@ -196,7 +230,7 @@ function warehouseStats(db) {
   const rows = db.prepare(`
     SELECT
       l.warehouse_id,
-      COUNT(*) AS item_count,
+      SUM(CASE WHEN l.qty > 0 THEN 1 ELSE 0 END) AS item_count,
       COALESCE(SUM(l.qty), 0) AS qty,
       COALESCE(SUM(
         CASE
@@ -218,21 +252,61 @@ function warehouseStats(db) {
   return out;
 }
 
-function formatWarehouseRow(db, row) {
+function formatWarehouseRow(db, row, allRows, statsMap, vendorNames) {
   const wh = require('./inventory-warehouses');
   if (!row) return null;
-  const stats = warehouseStats(db)[String(row.id)] || { itemCount: 0, qty: 0, hasLow: false };
+  const stats = (statsMap || warehouseStats(db))[String(row.id)] || { itemCount: 0, qty: 0, hasLow: false };
   let vendorName = '';
-  if (row.vendor_id) {
-    const vendor = db.prepare('SELECT display_name, company_name FROM inventory_vendors WHERE id = ?').get(row.vendor_id);
-    vendorName = vendor ? (vendor.display_name || vendor.company_name || '') : '';
+  const vendorId = row.vendor_id;
+  if (vendorId) {
+    if (vendorNames && vendorNames[String(vendorId)]) vendorName = vendorNames[String(vendorId)];
+    else {
+      const vendor = db.prepare('SELECT display_name, company_name FROM inventory_vendors WHERE id = ?').get(vendorId);
+      vendorName = vendor ? (vendor.display_name || vendor.company_name || '') : '';
+    }
+  }
+  let parentName = '';
+  if (row.parent_id && allRows) {
+    const parent = allRows.find(function (r) { return String(r.id) === String(row.parent_id); });
+    parentName = parent ? parent.name : '';
+  } else if (row.parent_id) {
+    const parent = db.prepare('SELECT name FROM inventory_warehouses WHERE id = ?').get(row.parent_id);
+    parentName = parent ? parent.name : '';
   }
   return wh.formatWarehouse(row, {
     itemCount: stats.itemCount,
     qty: stats.qty,
     hasLow: stats.hasLow,
-    vendorName: vendorName
+    vendorName: vendorName,
+    parentName: parentName,
+    parentId: row.parent_id || ''
   });
+}
+
+function listFormattedWarehouses(db) {
+  const wh = require('./inventory-warehouses');
+  const rows = db.prepare('SELECT * FROM inventory_warehouses ORDER BY id').all();
+  const stats = warehouseStats(db);
+  const formatted = rows.map(function (row) { return formatWarehouseRow(db, row, rows, stats); });
+  return wh.sortGrouped(wh.decorateWarehouses(formatted));
+}
+
+function receiptWarehouseName(db, id) {
+  if (!id) return '';
+  const row = db.prepare('SELECT name FROM inventory_warehouses WHERE id = ?').get(id);
+  return row ? row.name : '';
+}
+
+function formatSqliteReceipt(db, row, lines) {
+  const rs = require('./receipt-shipments');
+  return rs.formatReceipt(row, lines, { warehouseName: receiptWarehouseName(db, row.warehouse_id) });
+}
+
+function poWarehouseForShipFrom(db, shipFrom) {
+  const po = require('./purchase-orders');
+  const id = po.locationIdFromShipFrom(shipFrom);
+  if (!id) return null;
+  return db.prepare('SELECT * FROM inventory_warehouses WHERE id = ?').get(id);
 }
 
 const INVENTORY_BULK_MOVE_KINDS = ['receive'];
@@ -636,9 +710,9 @@ function createSqliteStore() {
       }), taken);
       const stamp = dbUtil.nowIso();
       const fields = inv.dbFieldsFromInput(input);
-      const warehouse = resolveWarehouse(db, input.warehouseId);
+      const warehouse = resolveLocationTarget(db, input.warehouseId, input.bin);
       const locQty = Math.max(0, Number(input.qty) || 0);
-      const itemQty = require('./inventory-warehouses').rowUntracked(warehouse) ? 0 : locQty;
+      const itemQty = warehouseIsUntracked(db, warehouse) ? 0 : locQty;
       const info = db.prepare(`
         INSERT INTO inventory_items (
           sku, name, brand_id, category, pitch, unit, panel_type, packaging_type, qty, low_at, price, cost, dealer_net,
@@ -652,7 +726,7 @@ function createSqliteStore() {
         fields.panel_w, fields.panel_h, fields.description, fields.image, fields.notes,
         stamp, stamp
       );
-      upsertItemLocation(db, info.lastInsertRowid, warehouse.id, input.bin || '', locQty, stamp);
+      upsertItemLocation(db, info.lastInsertRowid, warehouse.id, '', locQty, stamp);
       if (locQty) {
         db.prepare(`
           INSERT INTO inventory_item_moves (
@@ -713,23 +787,26 @@ function createSqliteStore() {
         const stamp = dbUtil.nowIso();
         const locs = locationsForItem(db, id);
         const primary = inv.pickPrimaryLocation(locs);
-        const warehouse = resolveWarehouse(db, input.warehouseId || (primary && primary.warehouseId));
-        const bin = input.bin != null ? input.bin : (primary && primary.bin) || '';
+        const warehouse = resolveLocationTarget(
+          db,
+          input.warehouseId || (primary && primary.warehouseId),
+          input.bin
+        );
         if (primary && String(primary.warehouseId) === String(warehouse.id)) {
           db.prepare('UPDATE inventory_item_locations SET bin = ?, updated_at = ? WHERE id = ?')
-            .run(bin, stamp, primary.id);
+            .run('', stamp, primary.id);
         } else if (primary && !db.prepare(
           'SELECT id FROM inventory_item_locations WHERE item_id = ? AND warehouse_id = ?'
         ).get(id, warehouse.id)) {
           db.prepare('UPDATE inventory_item_locations SET warehouse_id = ?, bin = ?, updated_at = ? WHERE id = ?')
-            .run(warehouse.id, bin, stamp, primary.id);
+            .run(warehouse.id, '', stamp, primary.id);
           syncItemSpectrumQty(db, id, stamp);
         } else if (!primary) {
-          upsertItemLocation(db, id, warehouse.id, bin, 0, stamp);
+          upsertItemLocation(db, id, warehouse.id, '', 0, stamp);
           syncItemSpectrumQty(db, id, stamp);
         } else {
           db.prepare('UPDATE inventory_item_locations SET bin = ?, updated_at = ? WHERE id = ?')
-            .run(bin, stamp, primary.id);
+            .run('', stamp, primary.id);
         }
       }
       return getInventoryItemDetail(db, id);
@@ -1146,7 +1223,7 @@ function createSqliteStore() {
       const po = require('./purchase-orders');
       return db.prepare('SELECT * FROM purchase_orders ORDER BY id DESC').all().map(function (row) {
         const lines = db.prepare('SELECT * FROM purchase_order_lines WHERE po_id = ? ORDER BY sort_order, id').all(row.id);
-        return po.formatPo(row, lines);
+        return po.formatPo(row, lines, { warehouse: poWarehouseForShipFrom(db, row.ship_from) });
       });
     },
     async getPurchaseOrder(id) {
@@ -1154,7 +1231,7 @@ function createSqliteStore() {
       const row = db.prepare('SELECT * FROM purchase_orders WHERE id = ?').get(id);
       if (!row) return null;
       const lines = db.prepare('SELECT * FROM purchase_order_lines WHERE po_id = ? ORDER BY sort_order, id').all(row.id);
-      return po.formatPo(row, lines);
+      return po.formatPo(row, lines, { warehouse: poWarehouseForShipFrom(db, row.ship_from) });
     },
     async createPurchaseOrder(payload) {
       const po = require('./purchase-orders');
@@ -1232,15 +1309,14 @@ function createSqliteStore() {
       const rs = require('./receipt-shipments');
       return db.prepare('SELECT * FROM receipt_shipments ORDER BY id DESC').all().map(function (row) {
         const lines = db.prepare('SELECT * FROM receipt_shipment_lines WHERE receipt_id = ? ORDER BY sort_order, id').all(row.id);
-        return rs.formatReceipt(row, lines);
+        return formatSqliteReceipt(db, row, lines);
       });
     },
     async getReceiptShipment(id) {
-      const rs = require('./receipt-shipments');
       const row = db.prepare('SELECT * FROM receipt_shipments WHERE id = ?').get(id);
       if (!row) return null;
       const lines = db.prepare('SELECT * FROM receipt_shipment_lines WHERE receipt_id = ? ORDER BY sort_order, id').all(row.id);
-      return rs.formatReceipt(row, lines);
+      return formatSqliteReceipt(db, row, lines);
     },
     async createReceiptShipment(payload, adminEmail) {
       const rs = require('./receipt-shipments');
@@ -1258,6 +1334,8 @@ function createSqliteStore() {
       if (db.prepare('SELECT id FROM receipt_shipments WHERE number = ?').get(input.number)) {
         throw new Error('That receipt number is already used.');
       }
+      const defaultWh = resolveWarehouse(db, input.warehouseId);
+      input.warehouseId = String(defaultWh.id);
       const fields = rs.dbReceiptFields(input);
       const stamp = dbUtil.nowIso();
       const noteBase = input.poNumber ? (input.number + ' / ' + input.poNumber) : input.number;
@@ -1266,20 +1344,21 @@ function createSqliteStore() {
       try {
         const info = db.prepare(`
           INSERT INTO receipt_shipments (
-            number, vendor_id, vendor_name, po_id, po_number, receipt_date, memo, status, created_at, updated_at
-          ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            number, vendor_id, vendor_name, po_id, po_number, receipt_date, warehouse_id, memo, status, created_at, updated_at
+          ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         `).run(
           fields.number, fields.vendor_id, fields.vendor_name, fields.po_id, fields.po_number,
-          fields.receipt_date, fields.memo, fields.status, stamp, stamp
+          fields.receipt_date, fields.warehouse_id, fields.memo, fields.status, stamp, stamp
         );
         const receiptId = info.lastInsertRowid;
         const insertLine = db.prepare(
-          'INSERT INTO receipt_shipment_lines (receipt_id, po_line_id, item_id, sku, product, po_qty, qty_received, sort_order) VALUES (?, ?, ?, ?, ?, ?, ?, ?)'
+          'INSERT INTO receipt_shipment_lines (receipt_id, po_line_id, item_id, sku, product, po_qty, qty_received, warehouse_id, sort_order) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)'
         );
         input.lines.forEach(function (line, i) {
           let itemId = line.itemId || '';
           let product = line.product;
           let sku = line.sku;
+          const destId = line.warehouseId || input.warehouseId;
           if (line.qtyReceived > 0) {
             if (!itemId && sku) {
               const row = findSku.get(sku);
@@ -1289,15 +1368,19 @@ function createSqliteStore() {
               sku = row.sku;
             }
             if (!itemId) throw new Error('SKU not found for a received line.');
+            const dest = resolveWarehouse(db, destId);
             const ok = applyLocationChange(db, itemId, {
               kind: 'receive',
               qty: line.qtyReceived,
-              note: noteBase,
-              spectrumOnly: true
+              warehouseId: dest.id,
+              note: noteBase
             }, adminEmail);
             if (!ok) throw new Error('Inventory item not found.');
           }
-          insertLine.run(receiptId, line.poLineId || null, itemId || null, sku, product, line.poQty, line.qtyReceived, i);
+          insertLine.run(
+            receiptId, line.poLineId || null, itemId || null, sku, product, line.poQty, line.qtyReceived,
+            destId || null, i
+          );
         });
         db.exec('COMMIT');
         return this.getReceiptShipment(receiptId);
@@ -1307,36 +1390,49 @@ function createSqliteStore() {
       }
     },
     async listWarehouses() {
-      return db.prepare(
-        'SELECT * FROM inventory_warehouses ORDER BY type, name COLLATE NOCASE, id'
-      ).all().map(function (row) { return formatWarehouseRow(db, row); });
+      return listFormattedWarehouses(db);
     },
     async getWarehouse(id) {
-      const row = db.prepare('SELECT * FROM inventory_warehouses WHERE id = ?').get(id);
+      const wh = require('./inventory-warehouses');
+      const rows = db.prepare('SELECT * FROM inventory_warehouses ORDER BY id').all();
+      const row = rows.find(function (r) { return String(r.id) === String(id); });
       if (!row) return null;
-      const warehouse = formatWarehouseRow(db, row);
-      warehouse.items = listInventoryItems(db).filter(function (item) {
-        return (item.locations || []).some(function (loc) {
-          return String(loc.warehouseId) === String(id);
+      const stats = warehouseStats(db);
+      const warehouse = wh.decorateWarehouses(rows.map(function (r) {
+        return formatWarehouseRow(db, r, rows, stats);
+      })).find(function (r) { return String(r.id) === String(id); });
+      if (!warehouse) return null;
+      const childIds = rows.filter(function (r) {
+        return String(r.parent_id) === String(id);
+      }).map(function (r) { return String(r.id); });
+      const idSet = {};
+      idSet[String(id)] = true;
+      childIds.forEach(function (cid) { idSet[cid] = true; });
+      const childName = {};
+      rows.forEach(function (r) {
+        if (String(r.parent_id) === String(id)) childName[String(r.id)] = r.name;
+      });
+      warehouse.items = [];
+      listInventoryItems(db).forEach(function (item) {
+        (item.locations || []).forEach(function (loc) {
+          if (!(idSet[String(loc.warehouseId)] && Number(loc.qty) > 0)) return;
+          warehouse.items.push({
+            id: item.id,
+            sku: item.sku,
+            name: item.name,
+            qty: loc.qty,
+            bin: loc.kind === 'bin' && String(loc.warehouseId) !== String(id) ? (loc.locationName || '') : (childName[String(loc.warehouseId)] || ''),
+            locationId: loc.warehouseId,
+            unit: item.unit
+          });
         });
-      }).map(function (item) {
-        const loc = (item.locations || []).find(function (row) {
-          return String(row.warehouseId) === String(id);
-        });
-        return {
-          id: item.id,
-          sku: item.sku,
-          name: item.name,
-          qty: loc ? loc.qty : 0,
-          bin: loc ? loc.bin : '',
-          unit: item.unit
-        };
       });
       return warehouse;
     },
     async createWarehouse(payload) {
       const wh = require('./inventory-warehouses');
-      const input = wh.normalizeWarehouse(payload);
+      const existing = db.prepare('SELECT * FROM inventory_warehouses').all();
+      const input = wh.normalizeWarehouse(payload, { existing: existing });
       if (input.vendorId) {
         const vendor = db.prepare('SELECT id FROM inventory_vendors WHERE id = ?').get(input.vendorId);
         if (!vendor) throw new Error('Vendor not found.');
@@ -1344,10 +1440,10 @@ function createSqliteStore() {
       const fields = wh.dbFields(input);
       const stamp = dbUtil.nowIso();
       const info = db.prepare(`
-        INSERT INTO inventory_warehouses (name, type, vendor_id, untracked, notes, street, street2, city, state, zip, country, created_at, updated_at)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        INSERT INTO inventory_warehouses (name, type, parent_id, vendor_id, untracked, notes, street, street2, city, state, zip, country, created_at, updated_at)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
       `).run(
-        fields.name, fields.type, fields.vendor_id, fields.untracked, fields.notes,
+        fields.name, fields.type, fields.parent_id, fields.vendor_id, fields.untracked, fields.notes,
         fields.street, fields.street2, fields.city, fields.state, fields.zip, fields.country,
         stamp, stamp
       );
@@ -1357,9 +1453,14 @@ function createSqliteStore() {
       const wh = require('./inventory-warehouses');
       const current = db.prepare('SELECT * FROM inventory_warehouses WHERE id = ?').get(id);
       if (!current) return null;
-      const input = wh.normalizeWarehouse(payload);
-      if (!wh.rowUntracked(current) && input.untracked && !countTrackedWarehouses(db, id)) {
+      const existing = db.prepare('SELECT * FROM inventory_warehouses').all();
+      const input = wh.normalizeWarehouse(payload, { existing: existing, id: id });
+      if (wh.isHomeWarehouse(current) && input.untracked && !countTrackedWarehouses(db, id)) {
         throw new Error('Keep at least one tracked location.');
+      }
+      if (wh.locationKind(current.type) === 'warehouse' && input.kind === 'bin') {
+        const kids = db.prepare('SELECT id FROM inventory_warehouses WHERE parent_id = ?').all(id);
+        if (kids.length) throw new Error('Move or delete bins in this warehouse first.');
       }
       if (input.vendorId) {
         const vendor = db.prepare('SELECT id FROM inventory_vendors WHERE id = ?').get(input.vendorId);
@@ -1367,9 +1468,9 @@ function createSqliteStore() {
       }
       const fields = wh.dbFields(input);
       db.prepare(
-        'UPDATE inventory_warehouses SET name = ?, type = ?, vendor_id = ?, untracked = ?, notes = ?, street = ?, street2 = ?, city = ?, state = ?, zip = ?, country = ?, updated_at = ? WHERE id = ?'
+        'UPDATE inventory_warehouses SET name = ?, type = ?, parent_id = ?, vendor_id = ?, untracked = ?, notes = ?, street = ?, street2 = ?, city = ?, state = ?, zip = ?, country = ?, updated_at = ? WHERE id = ?'
       ).run(
-        fields.name, fields.type, fields.vendor_id, fields.untracked, fields.notes,
+        fields.name, fields.type, fields.parent_id, fields.vendor_id, fields.untracked, fields.notes,
         fields.street, fields.street2, fields.city, fields.state, fields.zip, fields.country,
         dbUtil.nowIso(), id
       );
@@ -1382,7 +1483,9 @@ function createSqliteStore() {
       const wh = require('./inventory-warehouses');
       const current = db.prepare('SELECT * FROM inventory_warehouses WHERE id = ?').get(id);
       if (!current) return false;
-      if (!wh.rowUntracked(current) && !countTrackedWarehouses(db, id)) {
+      const kids = db.prepare('SELECT id FROM inventory_warehouses WHERE parent_id = ?').all(id);
+      if (kids.length) throw new Error('Move or delete bins in this warehouse first.');
+      if (wh.isHomeWarehouse(current) && !countTrackedWarehouses(db, id)) {
         throw new Error('Keep at least one tracked location.');
       }
       const stock = db.prepare(

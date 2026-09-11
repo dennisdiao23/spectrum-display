@@ -400,13 +400,31 @@ function formatLocation(row) {
   if (!row) return null;
   const wh = require('./inventory-warehouses');
   const kind = wh.locationKind(row.warehouse_type || row.warehouseType || row.kind || row.type);
-  const untracked = locUntracked({
-    untracked: row.untracked,
-    warehouseType: row.warehouse_type || row.warehouseType,
-    type: row.warehouse_type || row.type
-  });
+  const parentId = kind === 'bin'
+    ? (row.parent_id != null ? row.parent_id : (row.parentId || ''))
+    : '';
+  const parentName = kind === 'bin' ? (row.parent_name || row.parentName || '') : '';
+  const vendorId = kind === 'bin'
+    ? (row.parent_vendor_id != null ? row.parent_vendor_id : (row.parentVendorId || row.vendor_id || row.vendorId || ''))
+    : (row.vendor_id != null ? row.vendor_id : (row.vendorId || ''));
+  const untrackedSrc = kind === 'bin'
+    ? {
+      untracked: row.parent_untracked != null ? row.parent_untracked : row.untracked,
+      warehouseType: row.parent_type || row.warehouse_type,
+      type: row.parent_type || row.type
+    }
+    : {
+      untracked: row.untracked,
+      warehouseType: row.warehouse_type || row.warehouseType,
+      type: row.warehouse_type || row.type
+    };
+  const untracked = locUntracked(untrackedSrc);
   const name = row.warehouse_name || row.warehouseName || row.locationName || '';
   const id = row.warehouse_id != null ? row.warehouse_id : (row.warehouseId != null ? row.warehouseId : row.locationId);
+  const vendorName = row.vendor_name || row.vendorName || row.parent_vendor_name || '';
+  let typeLabel = wh.kindLabel(kind);
+  if (kind === 'bin' && parentName) typeLabel = 'Bin · ' + parentName;
+  else if (kind === 'warehouse' && vendorName) typeLabel = 'Warehouse · ' + vendorName;
   return {
     id: row.id,
     itemId: row.item_id != null ? row.item_id : row.itemId,
@@ -417,11 +435,14 @@ function formatLocation(row) {
     warehouseType: kind,
     kind: kind,
     kindLabel: wh.kindLabel(kind),
+    typeLabel: typeLabel,
+    parentId: parentId,
+    parentName: parentName,
     untracked: untracked,
     tracked: !untracked,
-    vendorId: row.vendor_id != null ? row.vendor_id : (row.vendorId || ''),
-    vendorName: row.vendor_name || row.vendorName || '',
-    bin: row.bin || '',
+    vendorId: vendorId,
+    vendorName: vendorName,
+    bin: kind === 'bin' ? name : (row.bin || ''),
     qty: Math.max(0, Number(row.qty) || 0)
   };
 }
@@ -485,11 +506,19 @@ function applyLocations(item, locations) {
   const primary = pickPrimaryLocation(locs);
   item.warehouseId = primary ? primary.warehouseId : '';
   item.locationId = item.warehouseId;
-  item.warehouse = primary ? primary.warehouseName : '';
-  item.location = item.warehouse;
-  item.bin = primary ? primary.bin : '';
+  if (primary && primary.kind === 'bin' && primary.parentName) {
+    item.warehouse = primary.parentName + ' · ' + primary.locationName;
+    item.location = item.warehouse;
+    item.bin = primary.locationName || '';
+  } else {
+    item.warehouse = primary ? primary.warehouseName : '';
+    item.location = item.warehouse;
+    item.bin = primary && primary.kind === 'bin' ? (primary.locationName || '') : '';
+  }
   item.warehouseType = primary ? primary.kind : '';
   item.locationKind = item.warehouseType;
+  item.parentId = primary && primary.kind === 'bin' ? primary.parentId : '';
+  item.parentName = primary && primary.kind === 'bin' ? primary.parentName : '';
   item.status = itemStatus(item);
   return item;
 }
