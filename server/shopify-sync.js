@@ -9,16 +9,71 @@ const dbUtil = require('./db');
 
 const API_VERSION = '2024-10';
 
-function adminToken() {
+let cachedToken = '';
+let cachedTokenExpiresAt = 0;
+
+function staticAdminToken() {
   return String(process.env.SHOPIFY_ADMIN_ACCESS_TOKEN || process.env.SHOPIFY_ADMIN_TOKEN || '').trim();
 }
 
+function clientId() {
+  return String(process.env.SHOPIFY_CLIENT_ID || '').trim();
+}
+
+function clientSecret() {
+  return String(process.env.SHOPIFY_CLIENT_SECRET || '').trim();
+}
+
 function isConfigured() {
-  return !!(shopStore.shopHostname() && adminToken());
+  return !!(shopStore.shopHostname() && (staticAdminToken() || (clientId() && clientSecret())));
 }
 
 function sleep(ms) {
   return new Promise(function (resolve) { setTimeout(resolve, ms); });
+}
+
+function setupError(message) {
+  const err = new Error(message || 'Shopify is not set up on the server yet.');
+  err.code = 'setup';
+  err.status = 400;
+  return err;
+}
+
+async function requestClientCredentialsToken() {
+  const shop = shopStore.shopHostname();
+  const id = clientId();
+  const secret = clientSecret();
+  if (!shop || !id || !secret) throw setupError('Shopify Client ID and Client secret are not on the server yet.');
+  const res = await fetch('https://' + shop + '/admin/oauth/access_token', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/x-www-form-urlencoded', Accept: 'application/json' },
+    body: new URLSearchParams({
+      grant_type: 'client_credentials',
+      client_id: id,
+      client_secret: secret
+    }).toString()
+  });
+  const data = await res.json().catch(function () { return {}; });
+  if (!res.ok || !data.access_token) {
+    const detail = data.error_description || data.error || (typeof data.errors === 'string' ? data.errors : ('HTTP ' + res.status));
+    const err = new Error('Shopify login failed: ' + detail);
+    err.status = res.status || 400;
+    if (/shop_not_permitted|not permitted/i.test(String(detail))) {
+      err.message = 'Shopify says this app cannot use Client credentials on this shop. The app and the Spectrum store must be in the same Shopify organization, and the app must be installed.';
+    }
+    throw err;
+  }
+  const expiresIn = Number(data.expires_in) || 86399;
+  cachedToken = String(data.access_token);
+  cachedTokenExpiresAt = Date.now() + Math.max(60, expiresIn) * 1000;
+  return cachedToken;
+}
+
+async function getAccessToken(forceRefresh) {
+  const staticToken = staticAdminToken();
+  if (staticToken) return staticToken;
+  if (!forceRefresh && cachedToken && Date.now() < cachedTokenExpiresAt - 60 * 1000) return cachedToken;
+  return requestClientCredentialsToken();
 }
 
 function money(n) {
@@ -49,13 +104,9 @@ function shopifyErrorMessage(data, status) {
 
 async function shopifyFetch(pathname, method, body) {
   const shop = shopStore.shopHostname();
-  const token = adminToken();
-  if (!shop || !token) {
-    const err = new Error('Shopify Admin is not set up on the server yet.');
-    err.code = 'setup';
-    err.status = 400;
-    throw err;
-  }
+  if (!shop || !isConfigured()) throw setupError();
+  let token = await getAccessToken();
+  let retriedAuth = false;
   let attempt = 0;
   while (attempt < 5) {
     attempt += 1;
@@ -68,6 +119,11 @@ async function shopifyFetch(pathname, method, body) {
       },
       body: body ? JSON.stringify(body) : undefined
     });
+    if (res.status === 401 && !staticAdminToken() && !retriedAuth) {
+      retriedAuth = true;
+      token = await getAccessToken(true);
+      continue;
+    }
     if (res.status === 429) {
       const wait = Number(res.headers.get('Retry-After')) || 2;
       await sleep(Math.max(1, wait) * 1000);
@@ -184,12 +240,7 @@ async function upsertShopifyProduct(product) {
 }
 
 async function syncPricedBuyProducts(store) {
-  if (!isConfigured()) {
-    const err = new Error('Shopify Admin is not set up on the server yet.');
-    err.code = 'setup';
-    err.status = 400;
-    throw err;
-  }
+  if (!isConfigured()) throw setupError('Shopify Client ID and Client secret are not on Railway yet.');
   const products = await store.listProducts();
   const eligible = (products || []).filter(isPricedBuySku);
   const created = [];
@@ -231,6 +282,7 @@ function status() {
   return {
     ok: true,
     configured: isConfigured(),
+    mode: staticAdminToken() ? 'admin_token' : (clientId() && clientSecret() ? 'client_credentials' : ''),
     shop: shopStore.shopHostname() || '',
     storeOrigin: shopStore.storeOrigin()
   };

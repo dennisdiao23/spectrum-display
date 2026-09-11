@@ -5980,7 +5980,7 @@
             ? buyNow + ' listings have Shopify checkout. Sync updates prices and missing IDs.'
             : 'Shopify is connected. Sync priced controllers and spares to turn on Add to cart.';
         } else {
-          el.textContent = 'Shopify Admin token is not on the server yet. Add SHOPIFY_ADMIN_ACCESS_TOKEN on Railway, then Sync.';
+          el.textContent = 'Shopify Client ID and Client secret are not on Railway yet. Add SHOPIFY_CLIENT_ID and SHOPIFY_CLIENT_SECRET, then Sync.';
         }
         if (btn) btn.classList.toggle('hidden', !canEdit('website'));
       } catch (err) {
@@ -6009,7 +6009,7 @@
         await loadStoreCatalog({ keepShopifyStatus: true });
       } catch (err) {
         if (el) el.textContent = err.code === 'setup'
-          ? 'Shopify Admin is not set up on Railway yet. Add SHOPIFY_ADMIN_ACCESS_TOKEN, wait for deploy, then Sync.'
+          ? 'Shopify is not set up on Railway yet. Add SHOPIFY_CLIENT_ID and SHOPIFY_CLIENT_SECRET, wait for deploy, then Sync.'
           : (err.message || 'Shopify sync failed.');
       }
       if (btn) btn.disabled = false;

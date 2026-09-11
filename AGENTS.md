@@ -227,44 +227,53 @@ The public **contact form** is separate. It still sends through Resend from
 
 The US Store page is ours (`store.spectrumdisplay.com`). **Pay / Check out** is Shopify.
 Add to cart stays grey until Shopify has a product with a variant ID. You do not paste IDs by
-hand — Company **Website → Store → Sync to Shopify** does that after this token is on Railway.
+hand — Company **Website → Store → Sync to Shopify** does that after Client ID and Client secret
+are on Railway.
 
 Use Shopify account **`dennisdiao@diaoinc.com`**. Shop: **spectrum-display**
 (`n0eg5t-nw.myshopify.com`). Do **not** point the `store` DNS record at Shopify — that hostname
 stays on Railway.
 
-### A. Allow the website to create products in Shopify
+Shopify no longer gives a long-lived `shpat_…` token for new apps. Create the app in the
+**Dev Dashboard**, then put **Client ID** and **Client secret** on Railway. The website fetches a
+fresh access token when it syncs.
 
-**1. Open app development**
+### A. Create the Dev Dashboard app (skip if Spectrum Store sync already exists)
 
-- Link: https://admin.shopify.com/store/n0eg5t-nw/settings/apps/development
-- If Shopify asks you to sign in, use `dennisdiao@diaoinc.com`.
-- You should see **Develop apps** (or **App development**) for this shop.
+**1. Open the Dev Dashboard Apps page**
 
-**2. Create the app** (skip if you already have one named Spectrum Store sync)
+- Link: https://dev.shopify.com/dashboard
+- Sign in with `dennisdiao@diaoinc.com`.
+- Left sidebar: **Apps**.
 
-- Click **Allow custom app development** if Shopify asks — confirm **Allow**.
-- Click **Create an app**.
+**2. Create the app**
+
+- Click **Create app** (not the `npm init` / Shopify CLI box).
+- Choose **Start from Dev Dashboard**.
 - App name: `Spectrum Store sync`
-- Click **Create app**.
+- Click **Create**.
 
-**3. Turn on product permission**
+**3. Release a version with product permission**
 
-- Open **Configuration** (or **API credentials** / **Admin API integration**).
-- Click **Configure** next to **Admin API integration**.
-- Enable:
-  - `read_products`
-  - `write_products`
-- Click **Save**.
+- **App URL:** `https://shopify.dev/apps/default-app-home`
+- **Uncheck** Embed app in Shopify admin.
+- **Scopes:** `read_products,write_products`
+- Leave optional scopes and legacy install off.
+- Click **Release**.
 
-**4. Install and copy the token**
+**4. Install on the Spectrum shop**
 
-- Open **API credentials**.
-- Click **Install app** → **Install**.
-- Under **Admin API access token**, click **Reveal token once**.
-- Copy the token (starts with `shpat_`). Leave the tab open. Never put it in GitHub.
+- Left sidebar: **Home** (Overview).
+- **Install app** → pick the Spectrum shop → **Install**.
+- **Installs** should show **1**.
 
-### B. Put the token on Railway
+**5. Copy credentials**
+
+- Left sidebar: **App settings**.
+- Copy **Client ID** and **Client secret**.
+- Leave the tab open. Never put them in GitHub or this chat.
+
+### B. Put the two values on Railway
 
 **1. Open the live website service**
 
@@ -272,15 +281,19 @@ stays on Railway.
 - Sign in with `dennisdiao@diaoinc.com`.
 - Click service **web**.
 
-**2. Add the variable**
+**2. Add two variables**
 
 - Open **Variables**.
 - **New Variable**:
-  - Name (exactly): `SHOPIFY_ADMIN_ACCESS_TOKEN`
-  - Value: the `shpat_…` token from Shopify.
+  - Name (exactly): `SHOPIFY_CLIENT_ID`
+  - Value: the Client ID from App settings.
+- Add another:
+  - Name (exactly): `SHOPIFY_CLIENT_SECRET`
+  - Value: the Client secret from App settings.
 - Save. Wait until the new **Deployment** is **SUCCESS**.
 
-`SHOPIFY_SHOP` can stay `n0eg5t-nw.myshopify.com` (already the default).
+`SHOPIFY_SHOP` can stay `n0eg5t-nw.myshopify.com` (already the default). Do not add
+`SHOPIFY_ADMIN_ACCESS_TOKEN` for this new app.
 
 ### C. Turn off the Shopify storefront password
 
@@ -303,7 +316,7 @@ customers cannot pay.
 4. Open https://store.spectrumdisplay.com/collections/control — **Add to cart** should work on
    priced items that have warehouse qty.
 
-If Sync says it is not set up, Railway is missing `SHOPIFY_ADMIN_ACCESS_TOKEN` or the deploy
-has not finished. Do not paste the token into chat or GitHub.
+If Sync says it is not set up, Railway is missing `SHOPIFY_CLIENT_ID` / `SHOPIFY_CLIENT_SECRET`
+or the deploy has not finished. Do not paste the secret into chat or GitHub.
 
 Dealer nets, FOB, and warehouse cost stay in Company. Shopify only gets the street/MAP price.
