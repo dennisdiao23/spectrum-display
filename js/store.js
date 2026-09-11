@@ -136,6 +136,7 @@
       input.oninput = function () { renderSearch(input.value); };
     }
     document.body.addEventListener('click', function (e) {
+      if (e.target.closest && e.target.closest('.shop-card-cta, .shop-btn, [data-add]')) return;
       var a = e.target.closest && e.target.closest('a[data-shop-link]');
       if (!a) return;
       var url = a.getAttribute('href') || '';
@@ -284,32 +285,39 @@
     return '<button class="shop-btn is-off" type="button" disabled>Add to cart</button>';
   }
 
+  function leadLine(p) {
+    var label = String((p && p.leadLabel) || '');
+    if (!label || /^ships from/i.test(label) || /^ships_/.test(String((p && p.lead) || ''))) return '';
+    return '<div class="shop-lead">' + esc(label) + '</div>';
+  }
+
   function cardHtml(p, opts) {
     opts = opts || {};
     var photo = photoFor(p, 'card');
+    var chips = (p.chips || []).filter(Boolean);
     return '<article class="shop-card">' +
-      (opts.caption ? '<div class="shop-caption">' + esc(opts.caption) + '</div>' : '') +
-      '<div class="shop-card-media">' +
-        (photo ? '<img src="' + esc(photo) + '" alt="">' : '') +
-        '<div class="shop-card-hover">' +
-          '<a class="shop-ghost" href="' + esc(href('/products/' + p.handle)) + '" data-shop-link>Learn more</a>' +
+      '<a class="shop-card-main" href="' + esc(href('/products/' + p.handle)) + '" data-shop-link>' +
+        (opts.caption ? '<div class="shop-caption">' + esc(opts.caption) + '</div>' : '') +
+        '<div class="shop-card-media">' +
+          (photo ? '<img src="' + esc(photo) + '" alt="">' : '') +
         '</div>' +
-      '</div>' +
-      '<h3>' + esc(p.name) + '</h3>' +
-      '<div class="shop-sku">' + esc(p.sku || p.brandName || '') + '</div>' +
-      '<p>' + esc(p.description || '') + '</p>' +
-      '<div class="shop-chips">' + (p.chips || []).map(function (c) {
-        return '<span class="shop-chip">' + esc(c) + '</span>';
-      }).join('') + '</div>' +
-      (p.priceLabel ? '<div class="shop-price">' + esc(p.priceLabel) + '</div>' : '') +
-      '<div class="shop-lead">' + esc(p.leadLabel || '') + '</div>' +
-      cta(p) +
+        '<h3>' + esc(p.name) + '</h3>' +
+        '<div class="shop-sku">' + esc(p.sku || p.brandName || '') + '</div>' +
+        '<p>' + esc(p.description || '') + '</p>' +
+        (chips.length ? '<div class="shop-chips">' + chips.map(function (c) {
+          return '<span class="shop-chip">' + esc(c) + '</span>';
+        }).join('') + '</div>' : '') +
+        (p.priceLabel ? '<div class="shop-price">' + esc(p.priceLabel) + '</div>' : '') +
+        leadLine(p) +
+      '</a>' +
+      '<div class="shop-card-cta">' + cta(p) + '</div>' +
     '</article>';
   }
 
   function bindAddButtons(root) {
     $all('[data-add]', root || document).forEach(function (btn) {
-      btn.addEventListener('click', function () {
+      btn.addEventListener('click', function (e) {
+        e.stopPropagation();
         var p = byHandle(btn.getAttribute('data-add'));
         if (!p || !p.canAddToCart || !p.variants.length) return;
         SpectrumStoreCart.add({
@@ -446,7 +454,7 @@
         '<h1>' + esc(p.name) + '</h1>' +
         '<div class="shop-sku">' + esc(p.sku) + '</div>' +
         (p.priceLabel ? '<div class="shop-price" style="margin-top:.6rem">' + esc(p.priceLabel) + '</div>' : '') +
-        '<div class="shop-lead">' + esc(p.leadLabel) + (p.mode === 'buy' ? ' | Parcel when the Shopify profile allows' : '') + '</div>' +
+        leadLine(p) +
         (p.hasOptions ? '<div class="shop-filters" style="margin:.8rem 0">' + p.variants.map(function (v, i) {
           return '<button type="button" class="shop-pill' + (i === 0 ? ' is-on' : '') + '" data-variant="' + esc(v.id) + '">' + esc(v.title) + '</button>';
         }).join('') + '</div>' : '') +

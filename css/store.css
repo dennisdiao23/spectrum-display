@@ -362,6 +362,28 @@ body.shop-collection-mode .shop-subnav { display: block; }
   color: inherit;
   position: relative;
 }
+.shop-card:hover {
+  background: #f1f2f4;
+}
+.shop-card-main {
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 auto;
+  min-height: 0;
+  text-decoration: none;
+  color: inherit;
+  cursor: pointer;
+  position: relative;
+  z-index: 0;
+  pointer-events: auto;
+}
+.shop-card-cta {
+  position: relative;
+  z-index: 2;
+  pointer-events: auto;
+  flex: 0 0 auto;
+  margin-top: 0.35rem;
+}
 .shop-card-media {
   position: relative;
   aspect-ratio: 1;
@@ -377,30 +399,6 @@ body.shop-collection-mode .shop-subnav { display: block; }
   width: 88%;
   height: 88%;
   object-fit: contain;
-}
-.shop-card-hover {
-  position: absolute;
-  inset: 0;
-  display: none;
-  align-items: flex-end;
-  justify-content: center;
-  gap: 0.4rem;
-  padding: 0.75rem;
-  background: linear-gradient(180deg, transparent 40%, rgba(255,255,255,.92));
-}
-.shop-card:hover .shop-card-hover { display: flex; }
-.shop-ghost {
-  height: 2rem;
-  padding: 0 0.8rem;
-  border-radius: 999px;
-  border: 1px solid #d1d5db;
-  background: #fff;
-  font-size: 0.75rem;
-  font-weight: 650;
-  text-decoration: none;
-  display: inline-flex;
-  align-items: center;
-  color: #111;
 }
 .shop-caption {
   font-size: 0.72rem;
@@ -453,6 +451,11 @@ body.shop-collection-mode .shop-subnav { display: block; }
   font-size: 0.75rem;
   color: var(--shop-muted);
   margin: 0 0 0.7rem;
+}
+.shop-card .shop-btn {
+  position: relative;
+  z-index: 2;
+  pointer-events: auto;
 }
 .shop-btn {
   display: flex;
@@ -814,6 +817,5 @@ body.shop-cart-open .shop-cart-drawer {
 
 @media (max-width: 720px) {
   .shop-integrator { display: none; }
-  .shop-card:hover .shop-card-hover { display: none; }
   .shop-ed-card { flex-basis: 14.5rem; width: 14.5rem; height: 21rem; }
 }
