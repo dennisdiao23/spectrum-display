@@ -224,7 +224,7 @@
         (p.priceLabel ? '<div class="shop-price">' + esc(p.priceLabel) + '</div>' : '') +
         leadLine(p) +
       '</a>' +
-      cta(p) +
+      '<div class="shop-card-cta">' + cta(p) + '</div>' +
     '</article>';
   }
 
