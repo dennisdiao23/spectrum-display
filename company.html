@@ -14,7 +14,7 @@
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
   <title>Company | Spectrum Display</title>
   <meta name="robots" content="noindex, nofollow" />
-  <link rel="stylesheet" href="/css/company-dash.css?v=tr34" />
+  <link rel="stylesheet" href="/css/company-dash.css?v=poinv1" />
   <script src="/js/address-autocomplete.js"></script>
   <script src="/js/company-chat.js?v=chatcrm3"></script>
   <script src="/js/company-crm.js?v=crmv3"></script>
@@ -1731,120 +1731,204 @@
                   <p class="inv-overview-lead">Select a purchase order to view it here. Edit opens it in a full window.</p>
                 </div>
               </div>
-        <div id="po-detail" class="hidden">
-          <button type="button" id="po-back" class="text-sm text-sky-400 hover:text-sky-300 mb-3">← All purchase orders</button>
-          <form id="po-form" class="po-sheet">
-            <input type="hidden" id="po-id">
-            <div class="po-sheet-head">
-              <div>
-                <h2>Purchase Order</h2>
-                <label class="po-no">No. <input id="po-number" type="text" placeholder="PO-1001"></label>
+        <div id="po-detail" class="hidden so-doc">
+          <button type="button" id="po-back" class="so-doc-back">← All purchase orders</button>
+          <div class="so-doc-frame">
+            <div class="so-doc-chrome">
+              <div class="so-doc-caption" id="po-doc-caption">
+                <span id="po-caption-title">Create Purchase Order</span>
               </div>
-              <div class="po-head-end">
-                <div class="doc-head-actions">
-                  <button type="button" id="po-edit-btn" class="hidden so-doc-btn so-doc-btn-primary">Edit</button>
-                  <button type="button" id="po-print" class="so-doc-btn">Print</button>
-                  <button type="button" id="po-pdf" class="so-doc-btn">PDF</button>
-                  <button type="button" id="po-email-btn" class="so-doc-btn">Email</button>
+              <div class="so-doc-ribbon" id="po-doc-ribbon">
+                <button type="button" id="po-ribbon-find" class="so-doc-ribbon-btn" title="Find">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="11" cy="11" r="6"/><path d="m20 20-3.5-3.5"/></svg>
+                  <span>Find</span>
+                </button>
+                <button type="button" id="po-ribbon-new" class="so-doc-ribbon-btn" title="New">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="5" y="3" width="14" height="18" rx="1.5"/><path d="M8 8h8M8 12h8M8 16h5"/></svg>
+                  <span>New</span>
+                </button>
+                <button type="submit" form="po-form" class="so-doc-ribbon-btn" data-po-after="stay" title="Save">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M5 5h11l3 3v11H5z"/><path d="M8 5v5h8V5M8 19v-6h8v6"/></svg>
+                  <span>Save</span>
+                </button>
+                <button type="button" id="po-ribbon-delete" class="so-doc-ribbon-btn" title="Delete">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 7h16M9 7V5h6v2M8 7l1 12h6l1-12"/></svg>
+                  <span>Delete</span>
+                </button>
+                <button type="button" id="po-ribbon-print" class="so-doc-ribbon-btn" title="Print">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M7 9V4h10v5"/><rect x="6" y="13" width="12" height="7"/><path d="M6 17H4V9h16v8h-2"/></svg>
+                  <span>Print</span>
+                </button>
+                <button type="button" id="po-ribbon-pdf" class="so-doc-ribbon-btn" title="PDF">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M7 3h7l5 5v13H7z"/><path d="M14 3v5h5"/><path d="M9 14h6M9 17h4"/></svg>
+                  <span>PDF</span>
+                </button>
+                <button type="button" id="po-ribbon-email" class="so-doc-ribbon-btn" title="Email">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="6" width="18" height="12" rx="1.5"/><path d="m3 8 9 6 9-6"/></svg>
+                  <span>Email</span>
+                </button>
+              </div>
+              <button type="button" id="po-caption-close" class="so-doc-close" aria-label="Close">×</button>
+            </div>
+            <div class="so-doc-tabs" id="po-doc-tabs">
+              <button type="button" class="so-doc-tab is-on">Document</button>
+            </div>
+            <div class="so-doc-workspace">
+              <form id="po-form" class="so-doc-main">
+                <input type="hidden" id="po-id">
+                <div class="so-doc-scroll">
+                <div class="so-doc-legacy-title">
+                  <div class="so-doc-legacy-copy">
+                    <h2 id="po-title" class="font-semibold text-lg">Purchase Order</h2>
+                  </div>
+                  <div class="doc-head-actions">
+                    <button type="button" id="po-edit-btn" class="hidden so-doc-btn so-doc-btn-primary">Edit</button>
+                    <button type="button" id="po-print" class="so-doc-btn">Print</button>
+                    <button type="button" id="po-pdf" class="so-doc-btn">PDF</button>
+                    <button type="button" id="po-email-btn" class="so-doc-btn">Email</button>
+                  </div>
                 </div>
-                <div class="po-amount">AMOUNT <strong id="po-amount">$0.00</strong></div>
-              </div>
+                <div class="so-doc-headblock">
+                  <div class="so-doc-kind">
+                    <h2 id="po-kind-label">Purchase Order</h2>
+                    <span id="po-status-badge" class="so-status-badge" hidden></span>
+                  </div>
+                  <div class="so-doc-top">
+                    <div class="so-doc-idline">
+                    <label class="so-field so-f-customer"><span>Vendor</span>
+                      <select id="po-vendor">
+                        <option value="">Choose a vendor</option>
+                      </select>
+                    </label>
+                    <label class="so-field so-f-number"><span>No.</span>
+                      <input id="po-number" type="text" placeholder="PO-1001">
+                    </label>
+                    </div>
+                    <div class="so-doc-head-right">
+                      <div class="so-doc-amount">AMOUNT <strong id="po-amount">$0.00</strong></div>
+                      <div class="so-doc-meta">
+                        <label class="so-field so-f-date"><span>Date</span>
+                          <input id="po-issue" type="date">
+                        </label>
+                        <label class="so-field so-f-due"><span>Due date</span>
+                          <input id="po-due" type="date">
+                        </label>
+                        <label class="so-field so-f-status"><span>Status</span>
+                          <select id="po-status">
+                            <option value="open">OPEN</option>
+                            <option value="closed">CLOSED</option>
+                            <option value="cancelled">CANCELLED</option>
+                          </select>
+                        </label>
+                        <label class="so-field so-f-ship-from"><span>Ship from</span>
+                          <select id="po-ship-from">
+                            <option value="">Select ship from</option>
+                            <option value="china_fob">China factory (FOB)</option>
+                          </select>
+                        </label>
+                        <label class="so-field so-f-ship-via"><span>Ship via</span>
+                          <input id="po-via" type="text">
+                        </label>
+                        <label class="so-field so-f-permit"><span>Permit no.</span>
+                          <input id="po-permit" type="text">
+                        </label>
+                      </div>
+                    </div>
+                    <div class="po-email-block">
+                      <label class="so-field"><span>Email <button type="button" id="po-cc-toggle" class="po-link">Cc/Bcc</button></span>
+                        <input id="po-email" type="text" placeholder="Email (Separate emails with a comma)">
+                      </label>
+                      <label class="so-field hidden" id="po-cc-field"><span>Cc</span>
+                        <input id="po-cc" type="text">
+                      </label>
+                      <label class="so-field hidden" id="po-bcc-field"><span>Bcc</span>
+                        <input id="po-bcc" type="text">
+                      </label>
+                    </div>
+                  </div>
+                  <div class="so-doc-addresses">
+                    <div>
+                      <h3>Bill to</h3>
+                      <textarea id="po-mail" rows="4" placeholder="Mailing address"></textarea>
+                    </div>
+                    <div>
+                      <h3>Ship to</h3>
+                      <select id="po-ship-to" class="so-addr-pick">
+                        <option value="">Select customer for address</option>
+                      </select>
+                      <textarea id="po-ship" rows="4" placeholder="Shipping address"></textarea>
+                    </div>
+                  </div>
+                </div>
+                <div class="so-doc-lines">
+                  <div class="so-doc-lines-head">
+                    <h3>Item details</h3>
+                  </div>
+                  <div class="so-doc-lines-wrap">
+                    <table class="w-full text-sm dash-cols" data-cols="po-lines">
+                      <thead>
+                        <tr>
+                          <th class="py-2 px-3 font-medium w-10" data-lock="start">#</th>
+                          <th class="py-2 px-3 font-medium" data-col="product">Product/Service <span class="dash-col-caret">▾</span><span class="dash-col-grip" aria-hidden="true"></span></th>
+                          <th class="py-2 px-3 font-medium" data-col="sku">SKU <span class="dash-col-caret">▾</span><span class="dash-col-grip" aria-hidden="true"></span></th>
+                          <th class="py-2 px-3 font-medium" data-col="description">Description <span class="dash-col-caret">▾</span><span class="dash-col-grip" aria-hidden="true"></span></th>
+                          <th class="py-2 px-3 font-medium" data-col="qty">Quantity <span class="dash-col-caret">▾</span><span class="dash-col-grip" aria-hidden="true"></span></th>
+                          <th class="py-2 px-3 font-medium" data-col="ourHands">Our hands <span class="dash-col-caret">▾</span><span class="dash-col-grip" aria-hidden="true"></span></th>
+                          <th class="py-2 px-3 font-medium" data-col="vendorHands">Vendor stock <span class="dash-col-caret">▾</span><span class="dash-col-grip" aria-hidden="true"></span></th>
+                          <th class="py-2 px-3 font-medium" data-col="rate">Rate <span class="dash-col-caret">▾</span><span class="dash-col-grip" aria-hidden="true"></span></th>
+                          <th class="py-2 px-3 font-medium" data-col="amount">Amount <span class="dash-col-caret">▾</span><span class="dash-col-grip" aria-hidden="true"></span></th>
+                          <th class="py-2 px-3 font-medium w-10"></th>
+                        </tr>
+                      </thead>
+                      <tbody id="po-lines"></tbody>
+                    </table>
+                  </div>
+                  <div class="so-doc-line-links">
+                    <button type="button" id="po-add-line" class="po-link">Add lines</button>
+                    <button type="button" id="po-clear-lines" class="po-link">Clear all lines</button>
+                  </div>
+                </div>
+                <div class="so-doc-foot">
+                  <div class="so-doc-memo">
+                    <label class="so-field"><span>Memo</span>
+                      <textarea id="po-notes" rows="3"></textarea>
+                    </label>
+                    <p id="po-msg" class="hidden text-sm"></p>
+                  </div>
+                  <div class="so-doc-totals">
+                    <div class="so-doc-total-row is-grand"><span>Total</span><span id="po-subtotal">$0.00</span></div>
+                  </div>
+                </div>
+                </div>
+                <div class="so-doc-actions">
+                  <button type="submit" id="po-save" class="so-doc-btn so-doc-btn-primary" data-po-after="stay">Save</button>
+                  <button type="submit" id="po-save-close" class="so-doc-btn so-doc-btn-primary" data-po-after="close">Save &amp; Close</button>
+                  <button type="submit" id="po-save-new" class="so-doc-btn" data-po-after="new">Save &amp; New</button>
+                  <button type="button" id="po-revert" class="so-doc-btn">Revert</button>
+                  <button type="button" id="po-cancel" class="so-doc-btn">Cancel</button>
+                  <button type="button" id="po-delete-btn" class="so-doc-btn hidden">Delete</button>
+                </div>
+              </form>
+              <aside class="so-doc-side" id="po-doc-side">
+                <h3 id="po-side-name">Vendor</h3>
+                <div class="so-side-tabs">
+                  <button type="button" class="is-on" data-po-side="vendor">Vendor</button>
+                  <button type="button" data-po-side="tx">Transaction</button>
+                </div>
+                <div id="po-side-vendor">
+                  <dl class="so-side-dl">
+                    <div><dt>Phone</dt><dd id="po-side-phone">—</dd></div>
+                    <div><dt>Email</dt><dd id="po-side-email">—</dd></div>
+                    <div><dt>Website</dt><dd id="po-side-web">—</dd></div>
+                  </dl>
+                </div>
+                <div id="po-side-tx" hidden>
+                  <p class="so-side-label">Recent purchase orders</p>
+                  <div id="po-side-tx-list" class="so-side-tx-list"></div>
+                </div>
+              </aside>
             </div>
-            <div class="po-grid">
-              <div class="po-field">
-                <label>Vendor</label>
-                <select id="po-vendor"><option value="">Choose a vendor</option></select>
-              </div>
-              <div class="po-field">
-                <label>Email <button type="button" id="po-cc-toggle" class="po-link">Cc/Bcc</button></label>
-                <input id="po-email" type="text" placeholder="Email (Separate emails with a comma)">
-              </div>
-              <div class="po-field hidden" id="po-cc-field">
-                <label>Cc</label>
-                <input id="po-cc" type="text">
-              </div>
-              <div class="po-field hidden" id="po-bcc-field">
-                <label>Bcc</label>
-                <input id="po-bcc" type="text">
-              </div>
-              <div class="po-field">
-                <label>Purchase Order status</label>
-                <select id="po-status"><option value="open">OPEN</option><option value="closed">CLOSED</option><option value="cancelled">CANCELLED</option></select>
-              </div>
-              <div class="po-field po-span2">
-                <label>Mailing address</label>
-                <textarea id="po-mail" rows="4"></textarea>
-              </div>
-              <div class="po-field">
-                <label>Ship to</label>
-                <select id="po-ship-to"><option value="">Select customer for address</option></select>
-              </div>
-              <div class="po-field po-span2">
-                <label>Shipping address</label>
-                <textarea id="po-ship" rows="4"></textarea>
-              </div>
-              <div class="po-field">
-                <label>Purchase Order date</label>
-                <input id="po-issue" type="date">
-              </div>
-              <div class="po-field">
-                <label>Due date</label>
-                <input id="po-due" type="date">
-              </div>
-              <div class="po-field">
-                <label>Ship from</label>
-                <select id="po-ship-from">
-                  <option value="">Select ship from</option>
-                  <option value="china_fob">China factory (FOB)</option>
-                </select>
-              </div>
-              <div class="po-field">
-                <label>Ship Via</label>
-                <input id="po-via" type="text">
-              </div>
-              <div class="po-field">
-                <label>Permit no.</label>
-                <input id="po-permit" type="text">
-              </div>
-            </div>
-            <div class="po-items">
-              <h3>Item details</h3>
-              <div class="overflow-x-auto">
-                <table class="w-full text-sm dash-cols" data-cols="po-lines">
-                  <thead>
-                    <tr>
-                      <th class="py-2 px-3 font-medium w-10" data-lock="start">#</th>
-                      <th class="py-2 px-3 font-medium" data-col="product">Product/Service <span class="dash-col-caret">▾</span><span class="dash-col-grip" aria-hidden="true"></span></th>
-                      <th class="py-2 px-3 font-medium" data-col="sku">SKU <span class="dash-col-caret">▾</span><span class="dash-col-grip" aria-hidden="true"></span></th>
-                      <th class="py-2 px-3 font-medium" data-col="description">Description <span class="dash-col-caret">▾</span><span class="dash-col-grip" aria-hidden="true"></span></th>
-                      <th class="py-2 px-3 font-medium" data-col="qty">Quantity <span class="dash-col-caret">▾</span><span class="dash-col-grip" aria-hidden="true"></span></th>
-                      <th class="py-2 px-3 font-medium" data-col="ourHands">Our hands <span class="dash-col-caret">▾</span><span class="dash-col-grip" aria-hidden="true"></span></th>
-                      <th class="py-2 px-3 font-medium" data-col="vendorHands">Vendor stock <span class="dash-col-caret">▾</span><span class="dash-col-grip" aria-hidden="true"></span></th>
-                      <th class="py-2 px-3 font-medium" data-col="rate">Rate <span class="dash-col-caret">▾</span><span class="dash-col-grip" aria-hidden="true"></span></th>
-                      <th class="py-2 px-3 font-medium" data-col="amount">Amount <span class="dash-col-caret">▾</span><span class="dash-col-grip" aria-hidden="true"></span></th>
-                      <th class="py-2 px-3 font-medium w-10"></th>
-                    </tr>
-                  </thead>
-                  <tbody id="po-lines"></tbody>
-                </table>
-              </div>
-              <div class="po-item-actions">
-                <button type="button" id="po-add-line" class="po-link">Add lines</button>
-                <button type="button" id="po-clear-lines" class="po-link">Clear all lines</button>
-                <span class="po-subtotal">Total <strong id="po-subtotal">$0.00</strong></span>
-              </div>
-            </div>
-            <div class="po-field po-memo">
-              <label>Memo</label>
-              <textarea id="po-notes" rows="3"></textarea>
-            </div>
-            <p id="po-msg" class="hidden text-sm"></p>
-            <div class="po-foot">
-              <button type="button" id="po-cancel" class="px-4 py-2 rounded-full border border-slate-700 text-sm">Cancel</button>
-              <button type="button" id="po-delete-btn" class="hidden px-4 py-2 rounded-full border border-slate-700 text-red-400 text-sm">Delete</button>
-              <button type="submit" id="po-save" class="px-5 py-2 rounded-full bg-sky-500 hover:bg-sky-400 text-white text-sm font-semibold">Save</button>
-            </div>
-          </form>
+          </div>
         </div>
             </div>
           </div>
@@ -4048,7 +4132,7 @@
     </a>
   </nav>
 
-  <link rel="stylesheet" href="/css/company-dash.css?v=crmv3t" />
+  <link rel="stylesheet" href="/css/company-dash.css?v=poinv1" />
 
   <script>
     const loginPanel = document.getElementById('login-panel');
@@ -6830,6 +6914,8 @@
     let poActiveTab = 'overview';
     let poTabCache = {};
     let poReadOnly = false;
+    let poSavedSnapshot = '';
+    let poAfterSave = 'stay';
     let invSavedSnapshot = '';
     let invDrawerSource = '';
     let invPoLineRow = null;
@@ -13933,12 +14019,14 @@
       const id = (document.getElementById('po-id') || {}).value;
       const editBtn = document.getElementById('po-edit-btn');
       if (editBtn) editBtn.classList.toggle('hidden', !poReadOnly || !id || !canEdit('inventory'));
-      ['po-add-line', 'po-clear-lines', 'po-save', 'po-cancel', 'po-cc-toggle'].forEach(function (nid) {
+      ['po-add-line', 'po-clear-lines', 'po-save', 'po-save-close', 'po-save-new', 'po-revert', 'po-cancel', 'po-cc-toggle'].forEach(function (nid) {
         const el = document.getElementById(nid);
         if (el) el.classList.toggle('hidden', poReadOnly);
       });
       const del = document.getElementById('po-delete-btn');
       if (del && poReadOnly) del.classList.add('hidden');
+      const ribbonDel = document.getElementById('po-ribbon-delete');
+      if (ribbonDel) ribbonDel.disabled = poReadOnly || !id;
       form.querySelectorAll('[data-remove-line]').forEach(function (el) {
         el.classList.toggle('hidden', poReadOnly);
       });
@@ -13972,11 +14060,89 @@
     }
 
     function applyPoVendor(v) {
-      if (!v) return;
+      if (!v) {
+        fillPoDocSide(null);
+        return;
+      }
       document.getElementById('po-email').value = v.email || '';
       document.getElementById('po-cc').value = v.emailCc || '';
       document.getElementById('po-bcc').value = v.emailBcc || '';
       document.getElementById('po-mail').value = v.mailingAddress || '';
+      fillPoDocSide(v);
+    }
+
+    function fillPoStatusBadge(status) {
+      const badge = document.getElementById('po-status-badge');
+      if (!badge) return;
+      const st = String(status || '').toLowerCase();
+      if (!st) { badge.hidden = true; badge.textContent = ''; return; }
+      badge.hidden = false;
+      badge.className = 'so-status-badge is-' + (st === 'closed' ? 'paid' : st === 'cancelled' ? 'void' : 'draft');
+      badge.textContent = st;
+    }
+
+    function syncPoPageName(number, vendorName) {
+      const n = String(number || '').trim();
+      const vendor = String(vendorName || '').trim();
+      const kind = document.getElementById('po-kind-label');
+      if (kind) kind.textContent = n || 'Purchase Order';
+      const title = document.getElementById('po-title');
+      if (title) {
+        title.textContent = n ? (n + (vendor ? ' · ' + vendor : '')) : 'Purchase Order';
+      }
+      const caption = document.getElementById('po-caption-title');
+      if (caption) caption.textContent = 'Create Purchase Order';
+    }
+
+    function fillPoDocSide(v) {
+      const nameEl = document.getElementById('po-side-name');
+      const phoneEl = document.getElementById('po-side-phone');
+      const emailEl = document.getElementById('po-side-email');
+      const webEl = document.getElementById('po-side-web');
+      const txList = document.getElementById('po-side-tx-list');
+      if (!v) {
+        if (nameEl) nameEl.textContent = 'Vendor';
+        if (phoneEl) phoneEl.textContent = '—';
+        if (emailEl) emailEl.textContent = '—';
+        if (webEl) webEl.textContent = '—';
+        if (txList) txList.innerHTML = '';
+        return;
+      }
+      if (nameEl) nameEl.textContent = v.displayName || v.companyName || 'Vendor';
+      if (phoneEl) phoneEl.textContent = v.phone || v.mobile || '—';
+      if (emailEl) emailEl.textContent = v.email || '—';
+      if (webEl) webEl.textContent = v.website || '—';
+      if (txList) {
+        const docs = (purchaseOrders || []).filter(function (d) {
+          return String(d.vendorId || '') === String(v.id || '');
+        }).slice(0, 6);
+        txList.innerHTML = docs.length ? docs.map(function (d) {
+          return '<div class="so-side-tx"><b>' + esc(d.number || 'PO') + '</b><span>' +
+            esc(d.status || '') + ' · ' + esc(moneyText(d.total)) + '</span></div>';
+        }).join('') : '<p class="so-detail-empty">No purchase orders yet.</p>';
+      }
+    }
+
+    function markPoClean() {
+      try {
+        const snap = readPoForm();
+        snap.id = document.getElementById('po-id').value;
+        poSavedSnapshot = JSON.stringify(snap);
+      } catch (err) { poSavedSnapshot = ''; }
+    }
+
+    function closePoDoc() {
+      const poTab = parseDocMasterTab(dashActiveGroup);
+      if (poTab && poTab.kind === 'po') {
+        closeMasterTab(dashActiveGroup);
+        return;
+      }
+      if (isPoSplitOn() && poActiveTab && poActiveTab !== 'overview') {
+        closePoTab(poActiveTab);
+        return;
+      }
+      showPoList();
+      loadPurchaseOrders();
     }
 
     function formatCustomerShip(c) {
@@ -14288,9 +14454,21 @@
       document.getElementById('po-permit').value = src.permitNo || '';
       document.getElementById('po-notes').value = src.notes || '';
       document.getElementById('po-delete-btn').classList.toggle('hidden', !src.id || poReadOnly);
+      const ribbonDel = document.getElementById('po-ribbon-delete');
+      if (ribbonDel) ribbonDel.disabled = poReadOnly || !src.id;
       renderPoLines(src.lines && src.lines.length ? src.lines : [{ qty: 1, rate: 0 }]);
+      fillPoStatusBadge(src.status || 'open');
+      syncPoPageName(src.number, src.vendorName || (vendor && (vendor.displayName || vendor.companyName)) || '');
+      fillPoDocSide(vendor || (src.vendorName ? {
+        id: src.vendorId,
+        displayName: src.vendorName,
+        email: src.vendorEmail,
+        phone: '',
+        website: ''
+      } : null));
       showPoMsg('');
       applyPoFormReadOnly();
+      markPoClean();
     }
 
     function readPoForm() {
@@ -14979,6 +15157,11 @@
         if (typeof applyPoFormReadOnly === 'function') applyPoFormReadOnly();
         const detail = document.getElementById('po-detail');
         if (detail) detail.classList.remove('hidden');
+        if (document.getElementById('po-lines')) {
+          requestAnimationFrame(function () {
+            renderPoLines(readPoLines());
+          });
+        }
       } else {
         poReadOnly = true;
         if (typeof applyPoFormReadOnly === 'function') applyPoFormReadOnly();
@@ -20372,32 +20555,25 @@
     });
 
     document.getElementById('po-new-btn').addEventListener('click', openNewPo);
-    document.getElementById('po-back').addEventListener('click', function () {
-      const poTab = parseDocMasterTab(dashActiveGroup);
-      if (poTab && poTab.kind === 'po') {
-        closeMasterTab(dashActiveGroup);
-        return;
-      }
-      if (isPoSplitOn() && poActiveTab && poActiveTab !== 'overview') {
-        closePoTab(poActiveTab);
-        return;
-      }
-      showPoList();
-      loadPurchaseOrders();
+    document.getElementById('po-back').addEventListener('click', closePoDoc);
+    document.getElementById('po-cancel').addEventListener('click', closePoDoc);
+    document.getElementById('po-caption-close').addEventListener('click', closePoDoc);
+    document.getElementById('po-ribbon-find').addEventListener('click', function () {
+      const sel = document.getElementById('po-vendor');
+      if (sel) { sel.focus(); if (typeof sel.showPicker === 'function') sel.showPicker(); }
     });
-    document.getElementById('po-cancel').addEventListener('click', function () {
-      const poTab = parseDocMasterTab(dashActiveGroup);
-      if (poTab && poTab.kind === 'po') {
-        closeMasterTab(dashActiveGroup);
-        return;
-      }
-      if (isPoSplitOn() && poActiveTab && poActiveTab !== 'overview') {
-        closePoTab(poActiveTab);
-        return;
-      }
-      showPoList();
-      loadPurchaseOrders();
+    document.getElementById('po-ribbon-new').addEventListener('click', function () {
+      openNewPo();
     });
+    document.getElementById('po-ribbon-delete').addEventListener('click', function () {
+      const del = document.getElementById('po-delete-btn');
+      if (del) del.click();
+    });
+    document.getElementById('po-ribbon-print').addEventListener('click', function () {
+      printPoLetter();
+    });
+    document.getElementById('po-ribbon-pdf').addEventListener('click', function () { downloadPoPdf(); });
+    document.getElementById('po-ribbon-email').addEventListener('click', emailPoDoc);
     document.getElementById('po-print').addEventListener('click', function () {
       printPoLetter();
     });
@@ -20407,6 +20583,23 @@
     if (poEmailBtn) poEmailBtn.addEventListener('click', emailPoDoc);
     document.getElementById('po-edit-btn').addEventListener('click', function () {
       editCurrentPo();
+    });
+    document.getElementById('po-revert').addEventListener('click', function () {
+      if (!poSavedSnapshot) return;
+      try { fillPoForm(JSON.parse(poSavedSnapshot)); }
+      catch (err) {}
+      setMasterTabDirty(dashActiveGroup, false);
+    });
+    document.getElementById('po-status').addEventListener('change', function () {
+      fillPoStatusBadge(this.value);
+    });
+    document.getElementById('po-doc-side').addEventListener('click', function (e) {
+      const btn = e.target.closest('button[data-po-side]');
+      if (!btn) return;
+      const tab = btn.getAttribute('data-po-side');
+      this.querySelectorAll('button[data-po-side]').forEach(function (b) { b.classList.toggle('is-on', b === btn); });
+      document.getElementById('po-side-vendor').hidden = tab !== 'vendor';
+      document.getElementById('po-side-tx').hidden = tab !== 'tx';
     });
     document.getElementById('po-search').addEventListener('input', function () {
       renderPoTable(purchaseOrders);
@@ -20519,7 +20712,8 @@
         });
       });
     })();
-    document.getElementById('po-cc-toggle').addEventListener('click', function () {
+    document.getElementById('po-cc-toggle').addEventListener('click', function (e) {
+      e.preventDefault();
       if (poReadOnly) return;
       document.getElementById('po-cc-field').classList.toggle('hidden');
       document.getElementById('po-bcc-field').classList.toggle('hidden');
@@ -20585,6 +20779,9 @@
       e.preventDefault();
       if (poReadOnly) return;
       showPoMsg('');
+      const afterBtn = e.submitter && e.submitter.getAttribute('data-po-after');
+      const after = afterBtn || poAfterSave || 'stay';
+      poAfterSave = 'stay';
       const id = document.getElementById('po-id').value;
       try {
         const payload = readPoForm();
@@ -20620,6 +20817,13 @@
           }
         }
         await loadPurchaseOrders();
+        if (after === 'close') {
+          closePoDoc();
+        } else if (after === 'new') {
+          openNewPo();
+        } else if (typeof showSoSavedPop === 'function') {
+          showSoSavedPop();
+        }
       } catch (err) {
         showPoMsg(err.message || 'Could not save purchase order.');
       }

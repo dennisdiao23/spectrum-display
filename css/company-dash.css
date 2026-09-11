@@ -3480,30 +3480,35 @@ body.dash-split-lock #wa-split-left table.dash-cols[data-cols="website-accounts"
   padding: 0 !important;
   overflow: hidden;
 }
-body.so-split-lock #so-detail:not(.hidden) {
+body.so-split-lock #so-detail:not(.hidden),
+body.po-split-lock #po-detail:not(.hidden) {
   display: flex;
   flex-direction: column;
   padding: 0;
   overflow: hidden;
 }
-body.so-split-lock #so-detail .so-doc-frame {
+body.so-split-lock #so-detail .so-doc-frame,
+body.po-split-lock #po-detail .so-doc-frame {
   flex: 1 1 auto;
   min-height: 0;
   display: flex;
   flex-direction: column;
   overflow: hidden;
 }
-body.so-split-lock #so-detail .so-doc-tabs {
+body.so-split-lock #so-detail .so-doc-tabs,
+body.po-split-lock #po-detail .so-doc-tabs {
   flex-shrink: 0;
 }
-body.so-split-lock #so-detail .so-doc-workspace {
+body.so-split-lock #so-detail .so-doc-workspace,
+body.po-split-lock #po-detail .so-doc-workspace {
   display: flex;
   flex-direction: column;
   flex: 1 1 auto;
   min-height: 0;
   overflow: hidden;
 }
-body.so-split-lock #so-form.so-doc-main {
+body.so-split-lock #so-form.so-doc-main,
+body.po-split-lock #po-form.so-doc-main {
   display: flex;
   flex-direction: column;
   flex: 1 1 auto;
@@ -3511,7 +3516,8 @@ body.so-split-lock #so-form.so-doc-main {
   overflow: hidden;
   gap: 0.55rem;
 }
-body.so-split-lock #so-detail .so-doc-scroll {
+body.so-split-lock #so-detail .so-doc-scroll,
+body.po-split-lock #po-detail .so-doc-scroll {
   display: flex;
   flex-direction: column;
   flex: 1 1 0;
@@ -3519,25 +3525,32 @@ body.so-split-lock #so-detail .so-doc-scroll {
   overflow: hidden;
   gap: 0.55rem;
 }
-body.so-split-lock #so-detail .so-doc-legacy-title {
+body.so-split-lock #so-detail .so-doc-legacy-title,
+body.po-split-lock #po-detail .so-doc-legacy-title {
   flex: 0 0 auto;
 }
-body.so-split-lock #so-detail .so-doc-headblock {
+body.so-split-lock #so-detail .so-doc-headblock,
+body.po-split-lock #po-detail .so-doc-headblock {
   display: block;
   flex: 0 1 auto;
   min-width: 0;
   min-height: 0;
 }
-body.so-split-lock #so-detail .so-doc-top {
+body.so-split-lock #so-detail .so-doc-top,
+body.po-split-lock #po-detail .so-doc-top {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
 }
 body.so-split-lock #so-detail .so-doc-head-right,
+body.po-split-lock #po-detail .so-doc-head-right,
 body.so-split-lock #so-detail .so-doc-meta,
-body.so-split-lock #so-detail .so-doc-idline {
+body.po-split-lock #po-detail .so-doc-meta,
+body.so-split-lock #so-detail .so-doc-idline,
+body.po-split-lock #po-detail .so-doc-idline {
   display: contents;
 }
-body.so-split-lock #so-detail .so-doc-lines {
+body.so-split-lock #so-detail .so-doc-lines,
+body.po-split-lock #po-detail .so-doc-lines {
   display: grid;
   grid-template-columns: 1fr auto;
   grid-template-rows: auto minmax(0, 1fr);
@@ -3546,31 +3559,30 @@ body.so-split-lock #so-detail .so-doc-lines {
   min-height: 8rem;
   overflow: hidden;
 }
-body.so-split-lock #so-detail .so-doc-lines-wrap {
+body.so-split-lock #so-detail .so-doc-lines-wrap,
+body.po-split-lock #po-detail .so-doc-lines-wrap {
   grid-column: 1 / -1;
   grid-row: 2;
   min-width: 0;
   min-height: 0;
   overflow: auto;
 }
-body.so-split-lock #so-detail .so-doc-lines th {
+body.so-split-lock #so-detail .so-doc-lines th,
+body.po-split-lock #po-detail .so-doc-lines th {
   position: sticky;
   top: 0;
   z-index: 1;
   background: #fff;
 }
 body.so-split-lock #so-detail .so-doc-foot,
-body.so-split-lock #so-detail .so-doc-actions {
+body.po-split-lock #po-detail .so-doc-foot,
+body.so-split-lock #so-detail .so-doc-actions,
+body.po-split-lock #po-detail .so-doc-actions {
   flex: 0 0 auto;
 }
 body.so-split-lock #so-table tr.is-active,
 body.po-split-lock #po-table tr.is-active {
   background: #eef4ff;
-}
-body.po-split-lock #po-detail:not(.hidden) {
-  display: flex;
-  flex-direction: column;
-  overflow: auto;
 }
 .inv-right-panel {
   flex: 1 1 auto;
@@ -4052,7 +4064,7 @@ body.inv-split-dragging {
   }
 }
 
-body.so-invoice-float .dash-topbar {
+body:is(.so-invoice-float, .po-doc-float) .dash-topbar {
   z-index: 50;
 }
 body.so-invoice-float #sales-section {
@@ -4101,7 +4113,7 @@ body.so-invoice-float #so-detail {
   min-height: 0;
   height: 100%;
 }
-body.so-invoice-float .so-doc-back {
+body:is(.so-invoice-float, .po-doc-float) .so-doc-back {
   display: none;
 }
 @media (max-width: 900px) {
@@ -4156,9 +4168,9 @@ body.po-doc-float #po-split-right {
 body.po-doc-float #po-detail {
   display: flex !important;
   flex-direction: column;
-  flex: 1 1 auto;
+  flex: 1;
   min-height: 0;
-  overflow: auto;
+  height: 100%;
 }
 @media (max-width: 900px) {
   body.po-doc-float #po-section {
@@ -4191,7 +4203,10 @@ body.po-doc-float #po-detail {
 #so-save-new,
 #so-revert,
 #so-payments-row,
-#so-balance-row { display: none; }
+#so-balance-row,
+#po-save-close,
+#po-save-new,
+#po-revert { display: none; }
 .so-doc-scroll,
 .so-doc-headblock,
 .so-doc-head-right,
@@ -4228,7 +4243,7 @@ body.po-doc-float #po-detail {
   gap: 0.45rem;
 }
 #so-form.is-readonly .so-doc-actions,
-#po-form.is-readonly .po-foot { display: none; }
+#po-form.is-readonly .so-doc-actions { display: none; }
 .so-doc-top {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
@@ -4280,7 +4295,9 @@ body.po-doc-float #po-detail {
 }
 .so-doc-lines-head h3 { margin: 0; font-size: 0.88rem; color: var(--dash-text); }
 .so-doc-lines-head button,
-#so-add-line {
+.so-doc-line-links,
+#so-add-line,
+#po-add-line {
   grid-column: 2;
   grid-row: 1;
   justify-self: end;
@@ -4446,29 +4463,39 @@ body.po-doc-float #po-edit-btn { display: none !important; }
 #po-form.is-readonly #po-add-line,
 #po-form.is-readonly #po-clear-lines,
 #po-form.is-readonly #po-cc-toggle,
+#po-form.is-readonly .so-doc-line-links,
 #po-form.is-readonly [data-remove-line] {
   display: none !important;
 }
 
-body.so-invoice-float .so-doc-caption,
-body.so-invoice-float .so-doc-ribbon,
-body.so-invoice-float .so-doc-kind,
-body.so-invoice-float .so-doc-addresses,
-body.so-invoice-float .so-doc-side,
+body:is(.so-invoice-float, .po-doc-float) .so-doc-caption,
+body:is(.so-invoice-float, .po-doc-float) .so-doc-ribbon,
+body:is(.so-invoice-float, .po-doc-float) .so-doc-kind,
+body:is(.so-invoice-float, .po-doc-float) .so-doc-addresses,
+body:is(.so-invoice-float, .po-doc-float) .so-doc-side,
 body.so-invoice-float #so-save-close,
 body.so-invoice-float #so-save-new,
 body.so-invoice-float #so-revert,
 body.so-invoice-float #so-payments-row,
-body.so-invoice-float #so-balance-row { display: flex; }
-body.so-invoice-float .so-doc-legacy-title,
+body.so-invoice-float #so-balance-row,
+body.po-doc-float #po-save-close,
+body.po-doc-float #po-save-new,
+body.po-doc-float #po-revert { display: flex; }
+body:is(.so-invoice-float, .po-doc-float) .so-doc-legacy-title,
 body.so-invoice-float #so-save,
 body.so-invoice-float #so-print-btn,
 body.so-invoice-float #so-pdf-btn,
 body.so-invoice-float #so-email-btn,
 body.so-invoice-float #so-to-order,
 body.so-invoice-float #so-to-invoice,
-body.so-invoice-float #so-delete-btn { display: none !important; }
-body.so-invoice-float .so-doc-frame {
+body.so-invoice-float #so-delete-btn,
+body.po-doc-float #po-save,
+body.po-doc-float #po-print,
+body.po-doc-float #po-pdf,
+body.po-doc-float #po-email-btn,
+body.po-doc-float #po-cancel,
+body.po-doc-float #po-delete-btn { display: none !important; }
+body:is(.so-invoice-float, .po-doc-float) .so-doc-frame {
   flex: 1;
   min-height: 0;
   display: flex;
@@ -4479,7 +4506,7 @@ body.so-invoice-float .so-doc-frame {
   border-radius: 1rem;
   box-shadow: 0 10px 30px rgba(16, 32, 71, 0.04);
 }
-body.so-invoice-float .so-doc-chrome {
+body:is(.so-invoice-float, .po-doc-float) .so-doc-chrome {
   display: flex;
   align-items: center;
   gap: 0.5rem;
@@ -4488,8 +4515,8 @@ body.so-invoice-float .so-doc-chrome {
   background: #fafbfd;
   border-bottom: 1px solid var(--dash-line);
 }
-body.so-invoice-float .so-doc-caption { display: none; }
-body.so-invoice-float .so-doc-ribbon {
+body:is(.so-invoice-float, .po-doc-float) .so-doc-caption { display: none; }
+body:is(.so-invoice-float, .po-doc-float) .so-doc-ribbon {
   display: flex;
   align-items: center;
   flex-wrap: wrap;
@@ -4526,16 +4553,16 @@ body.so-invoice-float .so-doc-ribbon {
   stroke-linecap: round;
   stroke-linejoin: round;
 }
-body.so-invoice-float .so-doc-chrome .so-doc-ribbon-btn {
+body:is(.so-invoice-float, .po-doc-float) .so-doc-chrome .so-doc-ribbon-btn {
   color: #102047;
 }
-body.so-invoice-float .so-doc-chrome .so-doc-ribbon-btn:hover {
+body:is(.so-invoice-float, .po-doc-float) .so-doc-chrome .so-doc-ribbon-btn:hover {
   background: #f7f9fc;
   color: #102047;
   text-decoration: none;
 }
 .so-doc-ribbon-btn:disabled { opacity: 0.4; cursor: default; }
-body.so-invoice-float .so-doc-close {
+body:is(.so-invoice-float, .po-doc-float) .so-doc-close {
   display: grid;
   place-items: center;
   width: 2rem;
@@ -4550,21 +4577,21 @@ body.so-invoice-float .so-doc-close {
   cursor: pointer;
   flex-shrink: 0;
 }
-body.so-invoice-float .so-doc-close:hover {
+body:is(.so-invoice-float, .po-doc-float) .so-doc-close:hover {
   background: #f7f9fc;
   color: var(--dash-text);
 }
-body.so-invoice-float .so-doc-workspace {
+body:is(.so-invoice-float, .po-doc-float) .so-doc-workspace {
   flex: 1;
   min-height: 0;
   display: grid;
   grid-template-columns: minmax(0, 1fr) 17.5rem;
   grid-template-rows: minmax(0, 1fr);
 }
-body.so-invoice-float .so-doc-tabs {
+body:is(.so-invoice-float, .po-doc-float) .so-doc-tabs {
   flex-shrink: 0;
 }
-body.so-invoice-float .so-doc-main {
+body:is(.so-invoice-float, .po-doc-float) .so-doc-main {
   display: flex;
   flex-direction: column;
   gap: 0;
@@ -4577,7 +4604,7 @@ body.so-invoice-float .so-doc-main {
   padding: 0.85rem 1.25rem 0.2rem;
   background: #fff;
 }
-body.so-invoice-float .so-doc-scroll {
+body:is(.so-invoice-float, .po-doc-float) .so-doc-scroll {
   display: flex;
   flex-direction: column;
   flex: 1 1 0;
@@ -4585,7 +4612,7 @@ body.so-invoice-float .so-doc-scroll {
   overflow: hidden;
   gap: 0.55rem;
 }
-body.so-invoice-float .so-doc-headblock {
+body:is(.so-invoice-float, .po-doc-float) .so-doc-headblock {
   display: grid;
   grid-template-columns: minmax(24rem, 34rem) minmax(0, 1fr);
   align-items: start;
@@ -4596,10 +4623,10 @@ body.so-invoice-float .so-doc-headblock {
   flex: 0 1 auto;
   min-height: 0;
 }
-body.so-invoice-float .so-doc-top {
+body:is(.so-invoice-float, .po-doc-float) .so-doc-top {
   display: contents;
 }
-body.so-invoice-float .so-doc-kind {
+body:is(.so-invoice-float, .po-doc-float) .so-doc-kind {
   display: flex;
   flex-direction: row;
   align-items: baseline;
@@ -4608,7 +4635,7 @@ body.so-invoice-float .so-doc-kind {
   grid-column: 1;
   grid-row: 1;
 }
-body.so-invoice-float .so-doc-kind h2 {
+body:is(.so-invoice-float, .po-doc-float) .so-doc-kind h2 {
   margin: 0;
   font-size: 1.2rem;
   font-weight: 700;
@@ -4616,7 +4643,7 @@ body.so-invoice-float .so-doc-kind h2 {
   letter-spacing: 0;
   line-height: 1.2;
 }
-body.so-invoice-float .so-doc-head-right {
+body:is(.so-invoice-float, .po-doc-float) .so-doc-head-right {
   display: flex;
   flex-direction: column;
   align-items: stretch;
@@ -4625,7 +4652,7 @@ body.so-invoice-float .so-doc-head-right {
   grid-row: 1 / 4;
   min-width: 0;
 }
-body.so-invoice-float .so-doc-amount {
+body:is(.so-invoice-float, .po-doc-float) .so-doc-amount {
   display: block;
   align-self: flex-end;
   text-align: right;
@@ -4633,14 +4660,14 @@ body.so-invoice-float .so-doc-amount {
   letter-spacing: 0.06em;
   color: var(--dash-muted);
 }
-body.so-invoice-float .so-doc-amount strong {
+body:is(.so-invoice-float, .po-doc-float) .so-doc-amount strong {
   display: block;
   font-size: 1.35rem;
   letter-spacing: 0;
   color: var(--dash-text);
   font-weight: 750;
 }
-body.so-invoice-float .so-doc-idline {
+body:is(.so-invoice-float, .po-doc-float) .so-doc-idline {
   display: grid;
   grid-template-columns: 9rem minmax(0, 1fr);
   grid-column: 1;
@@ -4649,7 +4676,7 @@ body.so-invoice-float .so-doc-idline {
   align-items: end;
   min-width: 0;
 }
-body.so-invoice-float .so-f-number {
+body:is(.so-invoice-float, .po-doc-float) .so-f-number {
   display: flex;
   flex-direction: column;
   align-items: stretch;
@@ -4658,8 +4685,8 @@ body.so-invoice-float .so-f-number {
   grid-column: 1;
   grid-row: 1;
 }
-body.so-invoice-float .so-f-number span { white-space: nowrap; }
-body.so-invoice-float .so-f-number input {
+body:is(.so-invoice-float, .po-doc-float) .so-f-number span { white-space: nowrap; }
+body:is(.so-invoice-float, .po-doc-float) .so-f-number input {
   width: 100%;
   max-width: 100%;
   padding: 0.22rem 0.45rem;
@@ -4667,7 +4694,7 @@ body.so-invoice-float .so-f-number input {
   border-radius: 0.4rem;
   border-color: var(--dash-line);
 }
-body.so-invoice-float .so-f-customer {
+body:is(.so-invoice-float, .po-doc-float) .so-f-customer {
   grid-column: 2;
   grid-row: 1;
   flex-direction: column;
@@ -4679,14 +4706,14 @@ body.so-invoice-float .so-f-customer {
   font-size: 0.75rem;
   min-width: 0;
 }
-body.so-invoice-float .so-f-customer span {
+body:is(.so-invoice-float, .po-doc-float) .so-f-customer span {
   color: var(--dash-muted);
   font-size: 0.72rem;
   font-weight: 500;
   letter-spacing: 0;
   text-transform: none;
 }
-body.so-invoice-float .so-f-customer select {
+body:is(.so-invoice-float, .po-doc-float) .so-f-customer select {
   max-width: none;
   width: 100%;
   border-color: var(--dash-line);
@@ -4694,7 +4721,7 @@ body.so-invoice-float .so-f-customer select {
   padding: 0.22rem 0.45rem;
   font-size: 0.82rem;
 }
-body.so-invoice-float .so-doc-meta {
+body:is(.so-invoice-float, .po-doc-float) .so-doc-meta {
   display: grid;
   grid-template-columns: repeat(3, minmax(7.25rem, 9.25rem));
   justify-content: start;
@@ -4704,8 +4731,8 @@ body.so-invoice-float .so-doc-meta {
   background: transparent;
   border: 0;
 }
-body.so-invoice-float .so-field-name,
-body.so-invoice-float .so-field-email { display: none; }
+body:is(.so-invoice-float, .po-doc-float) .so-field-name,
+body:is(.so-invoice-float, .po-doc-float) .so-field-email { display: none; }
 .so-status-badge {
   display: inline-flex;
   align-items: center;
@@ -4731,22 +4758,22 @@ body.so-invoice-float .so-field-email { display: none; }
 .so-status-badge.is-draft,
 .so-status-badge.is-sent,
 .so-status-badge.is-void { color: #3b5b9c; }
-body.so-invoice-float .so-field span {
+body:is(.so-invoice-float, .po-doc-float) .so-field span {
   font-size: 0.72rem;
   color: var(--dash-muted);
 }
-body.so-invoice-float .so-field {
+body:is(.so-invoice-float, .po-doc-float) .so-field {
   gap: 0.16rem;
 }
-body.so-invoice-float .so-field input,
-body.so-invoice-float .so-field select,
-body.so-invoice-float .so-field textarea {
+body:is(.so-invoice-float, .po-doc-float) .so-field input,
+body:is(.so-invoice-float, .po-doc-float) .so-field select,
+body:is(.so-invoice-float, .po-doc-float) .so-field textarea {
   border-color: var(--dash-line);
   border-radius: 0.45rem;
   padding: 0.22rem 0.45rem;
   font-size: 0.82rem;
 }
-body.so-invoice-float .so-doc-addresses {
+body:is(.so-invoice-float, .po-doc-float) .so-doc-addresses {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 0.4rem 0.75rem;
@@ -4756,12 +4783,12 @@ body.so-invoice-float .so-doc-addresses {
   align-self: stretch;
   min-width: 0;
 }
-body.so-invoice-float .so-doc-addresses > div {
+body:is(.so-invoice-float, .po-doc-float) .so-doc-addresses > div {
   display: flex;
   flex-direction: column;
   min-height: 0;
 }
-body.so-invoice-float .so-doc-addresses pre {
+body:is(.so-invoice-float, .po-doc-float) .so-doc-addresses pre {
   flex: 1;
   min-height: 6.5rem;
   padding: 0.5rem 0.65rem;
@@ -4787,7 +4814,7 @@ body.so-invoice-float .so-doc-addresses pre {
   color: var(--dash-text);
   white-space: pre-wrap;
 }
-body.so-invoice-float .so-doc-lines {
+body:is(.so-invoice-float, .po-doc-float) .so-doc-lines {
   display: grid;
   grid-template-columns: 1fr auto;
   grid-template-rows: auto minmax(0, 1fr);
@@ -4798,20 +4825,22 @@ body.so-invoice-float .so-doc-lines {
   padding: 0;
   margin-top: 0;
 }
-body.so-invoice-float .so-doc-lines-head {
+body:is(.so-invoice-float, .po-doc-float) .so-doc-lines-head {
   grid-column: 1;
   grid-row: 1;
   flex-shrink: 0;
   margin-bottom: 0.35rem;
 }
-body.so-invoice-float .so-doc-lines-head h3 {
+body:is(.so-invoice-float, .po-doc-float) .so-doc-lines-head h3 {
   display: block;
   font-size: 1.02rem;
   font-weight: 700;
   color: var(--dash-text);
 }
-body.so-invoice-float .so-doc-lines-head button,
-body.so-invoice-float #so-add-line {
+body:is(.so-invoice-float, .po-doc-float) .so-doc-lines-head button,
+body:is(.so-invoice-float, .po-doc-float) .so-doc-line-links,
+body.so-invoice-float #so-add-line,
+body.po-doc-float #po-add-line {
   grid-column: 2;
   grid-row: 1;
   justify-self: end;
@@ -4822,8 +4851,10 @@ body.so-invoice-float #so-add-line {
   font-weight: 650;
   color: #2f6bff;
 }
-body.so-invoice-float #so-add-line:hover { text-decoration: underline; }
-body.so-invoice-float .so-doc-lines-wrap {
+body.so-invoice-float #so-add-line:hover,
+body.po-doc-float #po-add-line:hover,
+body.po-doc-float #po-clear-lines:hover { text-decoration: underline; }
+body:is(.so-invoice-float, .po-doc-float) .so-doc-lines-wrap {
   grid-column: 1 / -1;
   grid-row: 2;
   min-width: 0;
@@ -4834,14 +4865,14 @@ body.so-invoice-float .so-doc-lines-wrap {
   overflow: auto;
   overflow-y: auto;
 }
-body.so-invoice-float .so-doc-lines .dash-cols {
+body:is(.so-invoice-float, .po-doc-float) .so-doc-lines .dash-cols {
   width: 100%;
   min-width: 0;
   max-width: 100%;
   border-collapse: separate;
   border-spacing: 0;
 }
-body.so-invoice-float .so-doc-lines th {
+body:is(.so-invoice-float, .po-doc-float) .so-doc-lines th {
   background: #fff;
   color: var(--dash-muted);
   font-size: 0.78rem;
@@ -4853,15 +4884,15 @@ body.so-invoice-float .so-doc-lines th {
   z-index: 1;
   border-bottom: 1px solid var(--dash-line);
 }
-body.so-invoice-float .so-doc-lines tbody tr:nth-child(even) { background: transparent; }
-body.so-invoice-float .so-doc-lines td input {
+body:is(.so-invoice-float, .po-doc-float) .so-doc-lines tbody tr:nth-child(even) { background: transparent; }
+body:is(.so-invoice-float, .po-doc-float) .so-doc-lines td input {
   border: 1px solid var(--dash-line);
   background: #fff;
   border-radius: 0.4rem;
   padding: 0.4rem 0.5rem;
   font-size: 0.85rem;
 }
-body.so-invoice-float .so-doc-foot {
+body:is(.so-invoice-float, .po-doc-float) .so-doc-foot {
   display: grid;
   grid-template-columns: minmax(0, 1fr) 18rem;
   gap: 0.5rem 1rem;
@@ -4870,23 +4901,24 @@ body.so-invoice-float .so-doc-foot {
   align-items: start;
   flex: 0 0 auto;
 }
-body.so-invoice-float #so-notes {
+body.so-invoice-float #so-notes,
+body.po-doc-float #po-notes {
   height: 2.4rem;
   min-height: 2.4rem;
   max-height: 7rem;
   resize: vertical;
 }
-body.so-invoice-float .so-doc-totals {
+body:is(.so-invoice-float, .po-doc-float) .so-doc-totals {
   font-size: 0.8rem;
 }
-body.so-invoice-float .so-doc-total-row {
+body:is(.so-invoice-float, .po-doc-float) .so-doc-total-row {
   padding: 0.06rem 0;
 }
-body.so-invoice-float .so-field-inline input {
+body:is(.so-invoice-float, .po-doc-float) .so-field-inline input {
   padding: 0.18rem 0.4rem;
   height: 1.7rem;
 }
-body.so-invoice-float .so-doc-total-row.is-grand {
+body:is(.so-invoice-float, .po-doc-float) .so-doc-total-row.is-grand {
   font-weight: 750;
   border-top: 1px solid var(--dash-line);
   margin-top: 0.15rem;
@@ -4895,7 +4927,7 @@ body.so-invoice-float .so-doc-total-row.is-grand {
   letter-spacing: 0;
   color: var(--dash-text);
 }
-body.so-invoice-float .so-doc-total-row.is-grand span:first-child {
+body:is(.so-invoice-float, .po-doc-float) .so-doc-total-row.is-grand span:first-child {
   font-size: 0.9rem;
   font-weight: 750;
   letter-spacing: 0;
@@ -4903,7 +4935,7 @@ body.so-invoice-float .so-doc-total-row.is-grand span:first-child {
   align-self: center;
 }
 body.so-invoice-float #so-balance-row { font-weight: 750; }
-body.so-invoice-float .so-doc-actions {
+body:is(.so-invoice-float, .po-doc-float) .so-doc-actions {
   flex-shrink: 0;
   justify-content: flex-end;
   gap: 0.5rem;
@@ -4911,18 +4943,18 @@ body.so-invoice-float .so-doc-actions {
   background: #fff;
   border-top: 0;
 }
-body.so-invoice-float .so-doc-btn {
+body:is(.so-invoice-float, .po-doc-float) .so-doc-btn {
   height: auto;
   padding: 0.5rem 1.15rem;
   border-radius: 999px;
   font-size: 0.875rem;
 }
-body.so-invoice-float .so-doc-btn-primary {
+body:is(.so-invoice-float, .po-doc-float) .so-doc-btn-primary {
   background: #0ea5e9;
   border-color: #0ea5e9;
 }
-body.so-invoice-float .so-doc-btn-primary:hover { background: #38bdf8; border-color: #38bdf8; }
-body.so-invoice-float .so-doc-side {
+body:is(.so-invoice-float, .po-doc-float) .so-doc-btn-primary:hover { background: #38bdf8; border-color: #38bdf8; }
+body:is(.so-invoice-float, .po-doc-float) .so-doc-side {
   display: flex;
   flex-direction: column;
   gap: 0.65rem;
@@ -4974,21 +5006,73 @@ body.so-invoice-float .so-doc-side {
 }
 .so-side-tx b { font-size: 0.85rem; }
 @media (max-width: 1100px) {
-  body.so-invoice-float .so-doc-workspace { grid-template-columns: 1fr; }
-  body.so-invoice-float .so-doc-side { border-left: 0; border-top: 1px solid var(--dash-line); }
-  body.so-invoice-float .so-doc-headblock {
+  body:is(.so-invoice-float, .po-doc-float) .so-doc-workspace { grid-template-columns: 1fr; }
+  body:is(.so-invoice-float, .po-doc-float) .so-doc-side { border-left: 0; border-top: 1px solid var(--dash-line); }
+  body:is(.so-invoice-float, .po-doc-float) .so-doc-headblock {
     grid-template-columns: 1fr;
   }
-  body.so-invoice-float .so-doc-kind,
-  body.so-invoice-float .so-doc-idline,
-  body.so-invoice-float .so-doc-addresses,
-  body.so-invoice-float .so-doc-head-right { grid-column: 1; }
-  body.so-invoice-float .so-doc-kind { grid-row: 1; }
-  body.so-invoice-float .so-doc-idline { grid-row: 2; }
-  body.so-invoice-float .so-doc-head-right { grid-row: 3; }
-  body.so-invoice-float .so-doc-addresses { grid-row: 4; }
-  body.so-invoice-float .so-doc-meta { grid-template-columns: repeat(2, minmax(7.25rem, 9.25rem)); }
-  body.so-invoice-float .so-doc-foot { grid-template-columns: 1fr; }
+  body:is(.so-invoice-float, .po-doc-float) .so-doc-kind,
+  body:is(.so-invoice-float, .po-doc-float) .so-doc-idline,
+  body:is(.so-invoice-float, .po-doc-float) .so-doc-addresses,
+  body:is(.so-invoice-float, .po-doc-float) .so-doc-head-right { grid-column: 1; }
+  body:is(.so-invoice-float, .po-doc-float) .so-doc-kind { grid-row: 1; }
+  body:is(.so-invoice-float, .po-doc-float) .so-doc-idline { grid-row: 2; }
+  body:is(.so-invoice-float, .po-doc-float) .so-doc-head-right { grid-row: 3; }
+  body:is(.so-invoice-float, .po-doc-float) .so-doc-addresses { grid-row: 4; }
+  body.po-doc-float .po-email-block { grid-column: 1; grid-row: 3; }
+  body.po-doc-float #po-form .so-doc-head-right { grid-row: 4; }
+  body.po-doc-float #po-form .so-doc-addresses { grid-row: 5; }
+  body:is(.so-invoice-float, .po-doc-float) .so-doc-meta { grid-template-columns: repeat(2, minmax(7.25rem, 9.25rem)); }
+  body:is(.so-invoice-float, .po-doc-float) .so-doc-foot { grid-template-columns: 1fr; }
+}
+
+
+body.po-doc-float .po-email-block {
+  display: grid;
+  gap: 0.35rem;
+  grid-column: 1;
+  grid-row: 3;
+  min-width: 0;
+}
+body.po-doc-float #po-form .so-doc-addresses {
+  grid-row: 4;
+}
+body.po-doc-float #po-form .so-doc-head-right {
+  grid-row: 1 / 5;
+}
+body.po-doc-float .so-doc-addresses textarea {
+  flex: 1;
+  min-height: 6.5rem;
+  width: 100%;
+  margin: 0;
+  padding: 0.5rem 0.65rem;
+  border: 1px solid var(--dash-line);
+  border-radius: 0.45rem;
+  background: #fff;
+  font: inherit;
+  font-size: 0.875rem;
+  color: var(--dash-text);
+  resize: vertical;
+}
+body.po-doc-float .so-addr-pick {
+  width: 100%;
+  margin: 0 0 0.35rem;
+  border: 1px solid var(--dash-line);
+  border-radius: 0.45rem;
+  padding: 0.22rem 0.45rem;
+  font: inherit;
+  font-size: 0.82rem;
+  color: var(--dash-text);
+  background: #fff;
+}
+.so-doc-line-links {
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+}
+body.po-doc-float #po-form .so-f-ship-from,
+body.po-doc-float #po-form .so-f-permit {
+  min-width: 0;
 }
 
 /* —— Company Chat —— */
@@ -6181,12 +6265,12 @@ body.chat-page-on #co-chat.is-thread .co-chat-main {
 }
 
 .so-doc-ship { grid-column: 1 / -1; }
-body.so-invoice-float .so-f-so,
-body.so-invoice-float .so-f-rep,
-body.so-invoice-float .so-f-account,
-body.so-invoice-float .so-f-ship-date,
-body.so-invoice-float .so-f-ship-via,
-body.so-invoice-float .so-f-tracking { min-width: 0; }
+body:is(.so-invoice-float, .po-doc-float) .so-f-so,
+body:is(.so-invoice-float, .po-doc-float) .so-f-rep,
+body:is(.so-invoice-float, .po-doc-float) .so-f-account,
+body:is(.so-invoice-float, .po-doc-float) .so-f-ship-date,
+body:is(.so-invoice-float, .po-doc-float) .so-f-ship-via,
+body:is(.so-invoice-float, .po-doc-float) .so-f-tracking { min-width: 0; }
 
 .pf-page { display: grid; gap: 1rem; }
 .pf-page-head {
@@ -6356,7 +6440,7 @@ body.is-pf-dragging.is-pf-col-dragging * {
   .cc-detail-quick-btn,
   .co-chat-close,
   .so-doc-close,
-  body.so-invoice-float .so-doc-close,
+  body:is(.so-invoice-float, .po-doc-float) .so-doc-close,
   body.po-doc-float .so-doc-close {
     width: 2.75rem;
     height: 2.75rem;
