@@ -1320,6 +1320,221 @@ html.dash-scroll-lock body.company-app {
   margin-top: 1.2rem;
 }
 
+/* Create PO — invoice window shape, current PO fields only */
+#po-form.po-inv-layout {
+  display: flex;
+  flex-direction: column;
+  gap: 0.55rem;
+  min-width: 0;
+}
+#po-form.po-inv-layout .po-headblock {
+  display: grid;
+  grid-template-columns: minmax(24rem, 34rem) minmax(0, 1fr);
+  align-items: start;
+  column-gap: 1.25rem;
+  row-gap: 0.35rem;
+  width: 100%;
+  min-width: 0;
+}
+#po-form.po-inv-layout .po-kind {
+  display: flex;
+  align-items: baseline;
+  gap: 0.45rem;
+  grid-column: 1;
+  grid-row: 1;
+}
+#po-form.po-inv-layout .po-kind h2 {
+  margin: 0;
+  font-size: 1.2rem;
+  font-weight: 700;
+  color: var(--dash-text);
+  letter-spacing: 0;
+  line-height: 1.2;
+}
+#po-form.po-inv-layout .po-idline {
+  display: grid;
+  grid-template-columns: 9rem minmax(0, 1fr);
+  grid-column: 1;
+  grid-row: 2;
+  gap: 0.65rem;
+  align-items: end;
+  min-width: 0;
+}
+#po-form.po-inv-layout .po-f-number { min-width: 0; }
+#po-form.po-inv-layout .po-f-vendor { min-width: 0; }
+#po-form.po-inv-layout .po-email-block {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  grid-column: 1;
+  grid-row: 3;
+  min-width: 0;
+}
+#po-form.po-inv-layout .po-addresses {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.4rem 0.75rem;
+  grid-column: 1;
+  grid-row: 4;
+  align-self: stretch;
+  min-width: 0;
+}
+#po-form.po-inv-layout .po-addresses .po-field {
+  min-height: 0;
+}
+#po-form.po-inv-layout .po-addresses textarea {
+  flex: 1;
+  min-height: 6.5rem;
+}
+#po-form.po-inv-layout .po-addresses select {
+  margin-bottom: 0.28rem;
+}
+#po-form.po-inv-layout .po-head-right {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 0.4rem;
+  grid-column: 2;
+  grid-row: 1 / 5;
+  min-width: 0;
+}
+#po-form.po-inv-layout .po-head-end {
+  align-items: flex-end;
+  gap: 0.35rem;
+}
+#po-form.po-inv-layout .po-amount {
+  align-self: flex-end;
+  font-size: 0.68rem;
+}
+#po-form.po-inv-layout .po-amount strong {
+  font-size: 1.35rem;
+}
+#po-form.po-inv-layout .po-meta {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(7.25rem, 9.25rem));
+  justify-content: start;
+  gap: 0.28rem 0.65rem;
+  align-content: start;
+}
+#po-form.po-inv-layout .po-field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.16rem;
+  margin: 0;
+}
+#po-form.po-inv-layout .po-field.hidden {
+  display: none !important;
+}
+#po-form.po-inv-layout .po-field label {
+  margin-bottom: 0;
+  font-size: 0.72rem;
+  color: var(--dash-muted);
+}
+#po-form.po-inv-layout .po-field input,
+#po-form.po-inv-layout .po-field select,
+#po-form.po-inv-layout .po-field textarea {
+  border-color: var(--dash-line);
+  border-radius: 0.45rem;
+  padding: 0.22rem 0.45rem;
+  font-size: 0.82rem;
+}
+#po-form.po-inv-layout .po-items {
+  display: flex;
+  flex-direction: column;
+  margin-top: 0.15rem;
+  min-height: 8rem;
+  min-width: 0;
+}
+#po-form.po-inv-layout .po-items-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  flex-shrink: 0;
+  margin-bottom: 0.35rem;
+}
+#po-form.po-inv-layout .po-items-head h3 {
+  margin: 0;
+}
+#po-form.po-inv-layout .po-item-actions {
+  margin: 0;
+}
+#po-form.po-inv-layout .po-items-wrap {
+  flex: 1 1 auto;
+  min-width: 0;
+  min-height: 0;
+  overflow: auto;
+}
+#po-form.po-inv-layout .po-items .dash-cols th {
+  background: #fff;
+  color: var(--dash-muted);
+  font-size: 0.78rem;
+  font-weight: 600;
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  border-bottom: 1px solid var(--dash-line);
+}
+#po-form.po-inv-layout .po-bottom {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 18rem;
+  gap: 0.5rem 1rem;
+  align-items: start;
+  flex: 0 0 auto;
+}
+#po-form.po-inv-layout .po-memo {
+  margin-top: 0;
+}
+#po-form.po-inv-layout #po-notes {
+  height: 2.4rem;
+  min-height: 2.4rem;
+  max-height: 7rem;
+  resize: vertical;
+}
+#po-form.po-inv-layout .po-totals {
+  font-size: 0.8rem;
+}
+#po-form.po-inv-layout .po-total-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 0.75rem;
+  font-weight: 750;
+  border-top: 1px solid var(--dash-line);
+  margin-top: 0.15rem;
+  padding-top: 0.2rem;
+  font-size: 0.86rem;
+  color: var(--dash-text);
+}
+#po-form.po-inv-layout .po-foot {
+  flex: 0 0 auto;
+  margin-top: 0.35rem;
+}
+#po-form.po-inv-layout #po-msg.hidden { display: none !important; }
+@media (max-width: 1100px) {
+  #po-form.po-inv-layout .po-headblock {
+    grid-template-columns: 1fr;
+  }
+  #po-form.po-inv-layout .po-kind,
+  #po-form.po-inv-layout .po-idline,
+  #po-form.po-inv-layout .po-email-block,
+  #po-form.po-inv-layout .po-addresses,
+  #po-form.po-inv-layout .po-head-right {
+    grid-column: 1;
+  }
+  #po-form.po-inv-layout .po-kind { grid-row: 1; }
+  #po-form.po-inv-layout .po-idline { grid-row: 2; }
+  #po-form.po-inv-layout .po-head-right { grid-row: 3; }
+  #po-form.po-inv-layout .po-email-block { grid-row: 4; }
+  #po-form.po-inv-layout .po-addresses { grid-row: 5; }
+  #po-form.po-inv-layout .po-meta {
+    grid-template-columns: repeat(2, minmax(7.25rem, 9.25rem));
+  }
+  #po-form.po-inv-layout .po-bottom {
+    grid-template-columns: 1fr;
+  }
+}
+
 .dash-home {
   display: flex;
   flex-direction: column;
@@ -4158,7 +4373,24 @@ body.po-doc-float #po-detail {
   flex-direction: column;
   flex: 1 1 auto;
   min-height: 0;
-  overflow: auto;
+  overflow: hidden;
+}
+body.po-doc-float #po-form.po-inv-layout {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow: hidden;
+  height: 100%;
+}
+body.po-doc-float #po-form.po-inv-layout .po-headblock,
+body.po-doc-float #po-form.po-inv-layout .po-bottom,
+body.po-doc-float #po-form.po-inv-layout .po-foot,
+body.po-doc-float #po-form.po-inv-layout #po-msg {
+  flex: 0 0 auto;
+}
+body.po-doc-float #po-form.po-inv-layout .po-items {
+  flex: 1 1 0;
+  min-height: 8rem;
+  overflow: hidden;
 }
 @media (max-width: 900px) {
   body.po-doc-float #po-section {
