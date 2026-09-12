@@ -51,7 +51,7 @@ Hosting is **Railway only** (not Netlify or Vercel).
 | `dealer.html` | Become a dealer application. Saved even if email is down. Company approves under Website → Applications. |
 | `cart.html` | Cart (only after Sign in — **this browser only**) |
 | `contact.html` | Quote / contact form (emails you) |
-| `company.html` | Company pages (`/company`, `/company/website`, `/company/website/control`, `/company/website/dealers`, `/company/inventory`) |
+| `company.html` | Company pages (`/company`, `/company/website`, `/company/website/dealers`, `/company/inventory`) |
 
 ## Preview on this PC
 
@@ -73,7 +73,7 @@ Copy `.env.example` to `.env` for local keys. With Supabase vars, you use the li
 
 ### Admin catalog
 
-1. Open http://localhost:3000/company (or `/company` on the live site). Website is `/company/website`, visual catalog editor is `/company/website/control`, inventory is `/company/inventory`.
+1. Open http://localhost:3000/company (or `/company` on the live site). Website is `/company/website`, inventory is `/company/inventory`.
 2. Sign in as `admin@spectrumdisplay.com` with the password in local `.env` (`ADMIN_PASSWORD`) when using SQLite. Live admin already exists in Supabase.
 3. Add or edit products, photos, pitches, panel size, $/m², and categories (filters / mega menu).
    Control gear (NovaStar) is the same list — type Control, price each. Public product pages and the

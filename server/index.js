@@ -204,7 +204,6 @@ async function main() {
     '/company',
     '/company/dashboard',
     '/company/website',
-    '/company/website/control',
     '/company/website/store',
     '/company/website/accounts',
     '/company/website/dealers',
@@ -228,6 +227,9 @@ async function main() {
     '/company/settings/forms',
     '/company/chat'
   ];
+  app.get(['/company/website/control', '/company/website/control/'], function (_req, res) {
+    res.redirect(301, '/company/website');
+  });
   COMPANY_PAGES.forEach(function (route) {
     app.get([route, route + '/'], sendCompany);
   });

@@ -67,7 +67,6 @@ The PowerShell window should say `Listening on 0.0.0.0:3000` and `Company: http:
 - If `/company` still fails: http://localhost:3000/company.html
 - Designer: http://localhost:3000/led-wall-calculator
 - Company website: http://localhost:3000/company/website
-- Website Control (products / brands / pictures): http://localhost:3000/company/website/control
 - Company inventory: http://localhost:3000/company/inventory
 - Company customers: http://localhost:3000/company/customers
 - Sales quotes: http://localhost:3000/company/sales/quotes
