@@ -39,12 +39,55 @@
   function onProductsPath() {
     var p = pathName();
     var file = pathFile();
-    return p === '/products' || p === '/product' || file === 'products.html' || file === 'product.html';
+    return p === '/products' || p.indexOf('/products/') === 0 || p === '/product' || file === 'products.html' || file === 'product.html';
   }
 
   function onDealerPath() {
     var p = pathName();
     return p === '/dealer' || pathFile() === 'dealer.html';
+  }
+
+  function spectrumProductHref(brandId, seriesId) {
+    var id = String(seriesId == null ? '' : seriesId).replace(/^\/+|\/+$/g, '');
+    if (!id) return '/products';
+    var brand = String(brandId == null ? '' : brandId).replace(/^\/+|\/+$/g, '');
+    var list = window.SPECTRUM_PRODUCT_LIST || [];
+    var dup = 0;
+    var i;
+    for (i = 0; i < list.length; i++) {
+      if (String(list[i].id) === id && !list[i].hidden) dup += 1;
+    }
+    if (dup > 1 && brand) {
+      return '/products/' + encodeURIComponent(brand) + '/' + encodeURIComponent(id);
+    }
+    return '/products/' + encodeURIComponent(id);
+  }
+  window.spectrumProductHref = spectrumProductHref;
+
+  function seriesIdFromHref(href) {
+    var m = String(href || '').match(/[?&]series=([^&]+)/);
+    if (m) {
+      try { return decodeURIComponent(m[1]); } catch (e) { return m[1]; }
+    }
+    var path = String(href || '').split('?')[0];
+    var parts = path.split('/').filter(Boolean);
+    if (parts[0] === 'products' && parts[1]) {
+      var last = parts.length >= 3 ? parts[2] : parts[1];
+      try { return decodeURIComponent(last); } catch (e2) { return last; }
+    }
+    return '';
+  }
+
+  function cleanLegacyProductHref(href) {
+    var m = String(href || '').match(/^(https?:\/\/(?:www\.)?spectrumdisplay\.com)?\/?(product(?:\.html)?)(\?[^#]*)?(#.*)?$/i);
+    if (!m) return href;
+    var origin = m[1] || '';
+    var qs = new URLSearchParams((m[3] || '').replace(/^\?/, ''));
+    var dest = spectrumProductHref(qs.get('brand') || '', qs.get('series') || '');
+    qs.delete('series');
+    qs.delete('brand');
+    var rest = qs.toString();
+    return origin + dest + (rest ? '?' + rest : '') + (m[4] || '');
   }
 
   function storeHref() {
@@ -55,9 +98,10 @@
 
   function cleanPublicHref(href) {
     if (!href || href.charAt(0) === '#' || /^(mailto:|tel:|javascript:)/i.test(href)) return href;
+    var legacy = cleanLegacyProductHref(href);
+    if (legacy !== href) return legacy;
     var map = {
       'products.html': '/products',
-      'product.html': '/product',
       'contact.html': '/contact',
       'dealer.html': '/dealer',
       'support.html': '/support',
@@ -68,7 +112,7 @@
       'brands.html': '/products',
       'control.html': '/products?cat=control'
     };
-    var m = String(href).match(/^(https?:\/\/(?:www\.)?spectrumdisplay\.com)?\/?((?:products|product|contact|dealer|support|warranty|shipping|privacy|terms|brands|control)\.html)(\?[^#]*)?(#.*)?$/i);
+    var m = String(href).match(/^(https?:\/\/(?:www\.)?spectrumdisplay\.com)?\/?((?:products|contact|dealer|support|warranty|shipping|privacy|terms|brands|control)\.html)(\?[^#]*)?(#.*)?$/i);
     if (!m) return href;
     var origin = m[1] || '';
     var file = m[2].toLowerCase();
@@ -307,9 +351,7 @@
   };
 
   function imageForHref(href) {
-    var m = (href || '').match(/series=([^&]+)/);
-    if (!m) return '';
-    return absUrl(SERIES_IMG[decodeURIComponent(m[1])] || '');
+    return absUrl(SERIES_IMG[seriesIdFromHref(href)] || '');
   }
 
   var MEGA_CATS = [
@@ -351,7 +393,7 @@
       }).slice(0, 7).map(function (p) {
         return {
           name: p.name,
-          href: '/product?brand=' + encodeURIComponent(p.brandId) + '&series=' + encodeURIComponent(p.id),
+          href: spectrumProductHref(p.brandId, p.id),
           tag: 'NVS',
           image: window.spectrumProductPhoto
             ? spectrumProductPhoto(p, 'thumb')
@@ -369,7 +411,7 @@
     }).map(function (p) {
       return {
         name: p.name,
-        href: '/product?brand=' + encodeURIComponent(p.brandId) + '&series=' + encodeURIComponent(p.id),
+        href: spectrumProductHref(p.brandId, p.id),
         tag: brandTag(p.brandId),
         image: window.spectrumProductPhoto
           ? spectrumProductPhoto(p, 'thumb')
@@ -717,7 +759,7 @@
         return;
       }
       results.innerHTML = list.map(function (p) {
-        var href = '/product?brand=' + encodeURIComponent(p.brandId) + '&series=' + encodeURIComponent(p.id);
+        var href = spectrumProductHref(p.brandId, p.id);
         return '<a href="' + href + '">' + (p.brandName || '') + ' · ' + p.name + '</a>';
       }).join('');
     }
@@ -754,7 +796,7 @@
     var files = [
       ['product-photo.js', '/js/product-photo.js?v=ph1'],
       ['control-systems.js', '/js/control-systems.js'],
-      ['catalog-api.js', '/js/catalog-api.js?v=ph1']
+      ['catalog-api.js', '/js/catalog-api.js?v=ph2']
     ];
     var chain = Promise.resolve();
     files.forEach(function (pair) {
