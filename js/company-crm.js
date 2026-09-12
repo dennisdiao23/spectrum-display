@@ -1498,6 +1498,11 @@
       if (!call || !call.leadId) return;
       if (H.openCompanyTab) H.openCompanyTab('leads', false);
       await openLead(call.leadId, { push: true });
+      setLeadTab('activity');
+      var tabs = document.querySelector('#crm-lead-detail .cc-detail-tabs');
+      if (tabs) tabs.scrollIntoView({ block: 'nearest', inline: 'nearest' });
+      var acts = $('crm-lead-acts');
+      if (acts) acts.scrollIntoView({ block: 'nearest', inline: 'nearest' });
     } catch (err) { /* ignore */ }
   }
 
