@@ -1121,7 +1121,14 @@
         "type": "Fixed",
         "description": "Spectrum MK Flip-Chip COB indoor fine-pitch cabinets for control rooms, boardrooms, retail, hospitality, and broadcast. Front service, NovaStar-ready, 600 × 337.5 mm 16:9 cabinets stocked from Azusa.",
         "badge": "COB",
-        "image": "assets/products/spectrum/mk-series.jpg"
+        "image": "assets/products/spectrum/mk-series.jpg",
+        "gallery": [
+          "assets/products/spectrum/mk-hero.jpg",
+          "assets/products/spectrum/mk-install.jpg",
+          "assets/products/spectrum/mk-back.jpg",
+          "assets/products/spectrum/mk-corner.jpg",
+          "assets/products/spectrum/mk-exploded.jpg"
+        ]
       }
     ]
   }
