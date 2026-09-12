@@ -1496,9 +1496,8 @@
       var data = await H.api('/api/admin/crm/phone/incoming');
       var call = ((data && data.calls) || []).find(function (row) { return String(row.id) === String(id); });
       if (!call || !call.leadId) return;
-      if (H.pushPath) H.pushPath('/company/crm/leads/' + call.leadId);
-      if (H.openCompanyTab) H.openCompanyTab('leads', false, { reload: true });
-      else await openLead(call.leadId, { push: false });
+      if (H.openCompanyTab) H.openCompanyTab('leads', false);
+      await openLead(call.leadId, { push: true });
     } catch (err) { /* ignore */ }
   }
 

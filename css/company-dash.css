@@ -6952,12 +6952,25 @@ body.is-pf-dragging.is-pf-col-dragging * {
 .crm-phone-media { margin-top: 0.55rem; }
 .crm-phone-audio { width: 100%; max-width: 22rem; height: 2.2rem; }
 .crm-phone-banner {
-  position: sticky;
+  position: fixed;
   top: 0;
-  z-index: 80;
+  left: 0;
+  right: 0;
+  z-index: 200;
   background: #102047;
   color: #fff;
   border-bottom: 1px solid #1e3a8a;
+  box-shadow: 0 10px 24px rgba(7, 21, 58, 0.28);
+}
+.crm-phone-banner[hidden],
+.crm-phone-banner.hidden {
+  display: none !important;
+}
+.crm-phone-banner:not([hidden]):not(.hidden) {
+  display: block;
+}
+.crm-phone-banner .hidden {
+  display: none !important;
 }
 .crm-phone-banner-inner {
   display: flex;
