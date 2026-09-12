@@ -5758,8 +5758,7 @@
         const img = p.image
           ? '<img src="' + esc(p.image) + '" alt="" class="h-11 w-11 rounded-md object-cover bg-slate-900 border border-slate-800">'
           : '<div class="h-11 w-11 rounded-md bg-slate-900 border border-slate-800 flex items-center justify-center text-[10px] text-slate-500">No photo</div>';
-        const pageHref = '/product.html?brand=' + encodeURIComponent(p.brandId || '') +
-          '&series=' + encodeURIComponent(p.id || '');
+        const pageHref = '/products/' + encodeURIComponent(p.id || '');
         const vis = p.hidden
           ? '<span class="text-amber-400">Hidden</span>'
           : '<a href="' + esc(pageHref) + '" target="_blank" rel="noopener" class="text-emerald-400 hover:underline py-1" data-open-site>Shown</a>';
@@ -10402,7 +10401,7 @@
       wrap.innerHTML = maps.map(function (m) {
         const pitch = m.pitch ? ('P' + m.pitch) : 'Each';
         const href = m.brandId && m.seriesId
-          ? ('/product.html?brand=' + encodeURIComponent(m.brandId) + '&series=' + encodeURIComponent(m.seriesId))
+          ? ('/products/' + encodeURIComponent(m.seriesId))
           : '';
         return '<div class="cc-mini-row">' + esc(m.productName || 'Product') + ' · ' + esc(pitch) +
           (href ? ' <a class="text-sky-500 text-xs" href="' + esc(href) + '" target="_blank" rel="noopener">View page</a>' : '') +
@@ -10935,7 +10934,7 @@
       wrap.innerHTML = rows.map(function (m) {
         const pitch = m.pitch ? ('P' + m.pitch) : 'Each';
         const href = m.brandId && m.seriesId
-          ? ('/product.html?brand=' + encodeURIComponent(m.brandId) + '&series=' + encodeURIComponent(m.seriesId))
+          ? ('/products/' + encodeURIComponent(m.seriesId))
           : '';
         return '<div class="cc-mini-row">' +
           esc(m.productName || 'Product') + ' · ' + esc(pitch) +

@@ -6,22 +6,22 @@
   <link rel="icon" href="/favicon.ico" sizes="48x48" />
   <link rel="icon" type="image/png" href="/assets/favicon-32.png" sizes="32x32" />
   <link rel="apple-touch-icon" href="/assets/apple-touch-icon.png" />
-  <script src="js/i18n-boot.js"></script>
-  <link rel="stylesheet" href="css/site-header.css?v=v2a" />
-  <link rel="stylesheet" href="css/market.css?v=v2a" />
+  <script src="/js/i18n-boot.js"></script>
+  <link rel="stylesheet" href="/css/site-header.css?v=v2a" />
+  <link rel="stylesheet" href="/css/market.css?v=v2a" />
   <title>LED Video Wall | Spectrum Display</title>
   <meta name="description" content="Configure LED video wall panels, pixel pitch, and pricing from Spectrum Display Inc., a US distributor of professional indoor, outdoor, and rental LED displays." />
-  <link rel="canonical" href="https://www.spectrumdisplay.com/product" />
+  <link rel="canonical" href="https://www.spectrumdisplay.com/products" />
   <meta property="og:type" content="website" />
   <meta property="og:site_name" content="Spectrum Display" />
   <meta property="og:title" content="LED Video Wall | Spectrum Display" />
   <meta property="og:description" content="Configure LED video wall panels, pixel pitch, and pricing from Spectrum Display Inc." />
-  <meta property="og:url" content="https://www.spectrumdisplay.com/product" />
+  <meta property="og:url" content="https://www.spectrumdisplay.com/products" />
   <meta property="og:image" content="https://www.spectrumdisplay.com/assets/spectrum-logo.png" />
   <meta name="twitter:card" content="summary_large_image" />
   <meta name="twitter:title" content="LED Video Wall | Spectrum Display" />
   <meta name="twitter:description" content="Configure LED video wall panels, pixel pitch, and pricing from Spectrum Display Inc." />
-  <script src="js/seo.js"></script>
+  <script src="/js/seo.js"></script>
   <script src="https://cdn.tailwindcss.com"></script>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
   <style>
@@ -149,7 +149,7 @@
     <div class="site-header-inner">
       <div class="site-header-top">
         <a href="/" class="site-brand">
-          <img src="assets/spectrum-logo.png" alt="Spectrum" class="site-brand-logo" />
+          <img src="/assets/spectrum-logo.png" alt="Spectrum" class="site-brand-logo" />
         </a>
         <nav class="site-nav" id="site-nav">
           <div class="site-nav-item" data-mega="products">
@@ -208,15 +208,15 @@
                   <li data-i18n="nav.benefitProjects">View Saved Projects</li>
                 </ul>
                 <div class="site-drop-actions">
-                  <a href="account.html" class="site-btn-primary" data-i18n="nav.signin">Sign in</a>
-                  <a href="account.html?mode=register" class="site-btn-ghost" data-i18n="nav.createAccount">Create account</a>
+                  <a href="/account.html" class="site-btn-primary" data-i18n="nav.signin">Sign in</a>
+                  <a href="/account.html?mode=register" class="site-btn-ghost" data-i18n="nav.createAccount">Create account</a>
                 </div>
               </div>
               <div class="site-logged">
                 <h3 id="hdr-user-name-panel"></h3>
                 <p id="hdr-user-role"></p>
                 <div class="site-drop-list">
-                  <a href="account.html" data-i18n="nav.myAccount">My Account</a>
+                  <a href="/account.html" data-i18n="nav.myAccount">My Account</a>
                   <button type="button" id="hdr-logout" data-i18n="nav.signout">Sign out</button>
                 </div>
               </div>
@@ -227,7 +227,7 @@
           <a href="/contact" class="site-util site-contact-icon" aria-label="Contact Sales">
             <svg fill="none" stroke="currentColor" stroke-width="1.7" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M21.75 6.75v10.5a2.25 2.25 0 01-2.25 2.25h-15a2.25 2.25 0 01-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0019.5 4.5h-15a2.25 2.25 0 00-2.25 2.25m19.5 0v.243a2.25 2.25 0 01-1.07 1.916l-7.5 4.615a2.25 2.25 0 01-2.36 0L3.32 8.91a2.25 2.25 0 01-1.07-1.916V6.75"/></svg>
           </a>
-          <a href="cart.html" class="site-util site-cart site-icon-btn" aria-label="Cart">
+          <a href="/cart.html" class="site-util site-cart site-icon-btn" aria-label="Cart">
             <svg fill="none" stroke="currentColor" stroke-width="1.7" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"/></svg>
             <span class="site-cart-count" id="cart-count">0</span>
           </a>
@@ -313,7 +313,7 @@
                 Add to Cart
               </button>
               <div class="space-y-2">
-                <a id="guest-price-cta" href="account.html" class="guest-pricing inline-flex px-6 py-3 rounded-full bg-sky-500 hover:bg-sky-400 text-white font-semibold" data-i18n="price.signInCta">Sign in to see pricing and use the cart</a>
+                <a id="guest-price-cta" href="/account.html" class="guest-pricing inline-flex px-6 py-3 rounded-full bg-sky-500 hover:bg-sky-400 text-white font-semibold" data-i18n="price.signInCta">Sign in to see pricing and use the cart</a>
                 <div><a id="use-in-calculator" href="/led-wall-calculator" class="text-sm text-sky-400 hover:text-sky-300">Use in Calculator →</a></div>
               </div>
             </div>
@@ -378,29 +378,34 @@
       <div class="flex items-center gap-3 ml-auto">
         <span class="text-lg font-bold pricing-only" id="sticky-price"></span>
         <button id="add-to-cart-sticky" class="pricing-only px-6 py-2.5 rounded-full bg-sky-500 hover:bg-sky-400 text-white text-sm font-semibold">Add to Cart</button>
-        <a id="sticky-guest-cta" href="account.html" class="guest-pricing px-6 py-2.5 rounded-full bg-sky-500 hover:bg-sky-400 text-white text-sm font-semibold" data-i18n="price.signIn">Sign in for pricing</a>
+        <a id="sticky-guest-cta" href="/account.html" class="guest-pricing px-6 py-2.5 rounded-full bg-sky-500 hover:bg-sky-400 text-white text-sm font-semibold" data-i18n="price.signIn">Sign in for pricing</a>
       </div>
     </div>
   </div>
 
   <div class="h-20"></div><!-- spacer for sticky bar -->
 
-  <script src="js/control-systems.js?v=20260908-h2cvt"></script>
-  <script src="js/product-copy.js"></script>
-  <script src="js/product-photo.js?v=ph1"></script>
-  <script src="js/catalog-api.js?v=ph1"></script>
+  <script src="/js/control-systems.js?v=20260908-h2cvt"></script>
+  <script src="/js/product-copy.js"></script>
+  <script src="/js/product-photo.js?v=ph1"></script>
+  <script src="/js/catalog-api.js?v=ph2"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <script src="js/supabase-client.js"></script>
-  <script src="js/pricing.js"></script>
-  <script src="js/auth.js"></script>
-  <script src="js/site-header.js?v=v2a"></script>
-  <script src="js/i18n.js?v=v2a"></script>
+  <script src="/js/supabase-client.js"></script>
+  <script src="/js/pricing.js"></script>
+  <script src="/js/auth.js"></script>
+  <script src="/js/site-header.js?v=v2b-url"></script>
+  <script src="/js/i18n.js?v=v2a"></script>
   <script>
     function bootProductPage() {
-    const params = new URLSearchParams(window.location.search);
-    const brandId = params.get('brand') || '';
-    const seriesId = params.get('series') || '';
-    const seriesData = (window.getSpectrumSeries && window.getSpectrumSeries(brandId, seriesId)) || null;
+    const ref = (window.getSpectrumProductFromLocation && window.getSpectrumProductFromLocation()) || {};
+    let brandId = ref.brandId || '';
+    let seriesId = ref.seriesId || '';
+    let seriesData = ref.series || null;
+    if (!seriesData && window.SPECTRUM_PRODUCT_LIST && SPECTRUM_PRODUCT_LIST.length) {
+      location.replace('/products');
+      return;
+    }
+    if (!seriesData) return;
     const brandName = (window.SPECTRUM_PRODUCTS && window.SPECTRUM_PRODUCTS[brandId] && window.SPECTRUM_PRODUCTS[brandId].name) || brandId || 'Spectrum';
     const isControl = !!(seriesData && (seriesData.type === 'control' || brandId === 'novastar'));
     const isReceiver = !!(isControl && (seriesData.replacementOnly || seriesData.subtype === 'receiving-card'));
@@ -498,8 +503,9 @@
         window.spectrumSetSeo({
           title: pageTitle,
           description: desc,
-          url: 'https://www.spectrumdisplay.com/product?brand=' +
-            encodeURIComponent(brandId) + '&series=' + encodeURIComponent(seriesId),
+          url: 'https://www.spectrumdisplay.com' + (window.spectrumProductHref
+            ? spectrumProductHref(brandId, seriesId)
+            : ('/products/' + encodeURIComponent(seriesId))),
           image: seriesData && seriesData.image
         });
       }
@@ -523,7 +529,9 @@
         if (fallback) photos.push(fallback);
       }
       function displayPhoto(src, kind) {
-        return (window.spectrumDisplayImage && spectrumDisplayImage(src, kind)) || src;
+        var out = (window.spectrumDisplayImage && spectrumDisplayImage(src, kind)) || src || '';
+        if (out && !/^https?:/i.test(out) && out.charAt(0) !== '/') out = '/' + out.replace(/^\.\//, '');
+        return out;
       }
       const hero = document.getElementById('product-hero-img');
       const fallback = document.getElementById('product-hero-fallback');
@@ -937,8 +945,9 @@
             '<div class="text-sm font-semibold mb-1">Recommended control</div>' +
             '<p class="text-xs text-slate-500 mb-3">' + esc(SpectrumControl.CABINET_CARD_NOTE) + '</p>' +
             '<div class="space-y-2">' + recs.map(function (r) {
-              return '<a class="flex items-center justify-between gap-3 rounded-xl border border-slate-800 px-3 py-2 text-sm hover:border-sky-500/40" href="/product?brand=novastar&amp;series=' +
-                encodeURIComponent(r.id) + '"><span>' + esc(r.name) + '</span><span class="text-xs text-slate-500">' +
+              return '<a class="flex items-center justify-between gap-3 rounded-xl border border-slate-800 px-3 py-2 text-sm hover:border-sky-500/40" href="' +
+                (window.spectrumProductHref ? spectrumProductHref('novastar', r.id) : ('/products/' + encodeURIComponent(r.id))) +
+                '"><span>' + esc(r.name) + '</span><span class="text-xs text-slate-500">' +
                 esc(r.chips && r.chips[0] ? r.chips[0] : SpectrumControl.formatPixels(r.maxPixels)) + '</span></a>';
             }).join('') + '</div>';
         } else {
@@ -1226,7 +1235,7 @@
         return;
       }
       if (!(window.SpectrumAuth && SpectrumAuth.isLoggedIn && SpectrumAuth.isLoggedIn())) {
-        location.href = '/account.html?next=' + encodeURIComponent((location.pathname || '/product') + location.search);
+        location.href = '/account.html?next=' + encodeURIComponent((location.pathname || '/products') + location.search);
         return;
       }
       const cart = JSON.parse(localStorage.getItem('spectrumCart') || '[]');
