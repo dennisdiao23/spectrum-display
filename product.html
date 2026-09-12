@@ -529,7 +529,9 @@
         if (fallback) photos.push(fallback);
       }
       function displayPhoto(src, kind) {
-        return (window.spectrumDisplayImage && spectrumDisplayImage(src, kind)) || src;
+        var out = (window.spectrumDisplayImage && spectrumDisplayImage(src, kind)) || src || '';
+        if (out && !/^https?:/i.test(out) && out.charAt(0) !== '/') out = '/' + out.replace(/^\.\//, '');
+        return out;
       }
       const hero = document.getElementById('product-hero-img');
       const fallback = document.getElementById('product-hero-fallback');

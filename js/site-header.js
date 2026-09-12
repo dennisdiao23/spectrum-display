@@ -796,7 +796,7 @@
     var files = [
       ['product-photo.js', '/js/product-photo.js?v=ph1'],
       ['control-systems.js', '/js/control-systems.js'],
-      ['catalog-api.js', '/js/catalog-api.js?v=ph2']
+      ['catalog-api.js', '/js/catalog-api.js?v=ph3']
     ];
     var chain = Promise.resolve();
     files.forEach(function (pair) {

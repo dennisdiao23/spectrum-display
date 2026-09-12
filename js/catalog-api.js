@@ -231,6 +231,7 @@
     if (/^https:\/\/[^/]+\.supabase\.co\/storage\/v1\/object\/public\/product-images\//i.test(src)) {
       return '/api/img?w=' + w + '&u=' + encodeURIComponent(src);
     }
+    if (!/^https?:/i.test(src) && src.charAt(0) !== '/') src = '/' + src.replace(/^\.\//, '');
     return src;
   };
 
