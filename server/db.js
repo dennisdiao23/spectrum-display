@@ -125,6 +125,7 @@ function openDb() {
   try { db.exec("ALTER TABLE brands ADD COLUMN description TEXT NOT NULL DEFAULT ''"); } catch (e) { /* already present */ }
   try { db.exec("ALTER TABLE brands ADD COLUMN image TEXT NOT NULL DEFAULT ''"); } catch (e) { /* already present */ }
   try { db.exec('ALTER TABLE brands ADD COLUMN hidden INTEGER NOT NULL DEFAULT 0'); } catch (e) { /* already present */ }
+  ensureCatalogTombstones(db);
   seedAdminRoles(db);
   ensureCompanyCustomers(db);
   require('./company-crm').ensureCompanyCrm(db);
@@ -1086,12 +1087,60 @@ function seedAdmin(db) {
   console.log('Seeded admin account: ' + email);
 }
 
+function catalogSeriesKey(brandId, seriesId) {
+  return String(brandId || '') + '/' + String(seriesId || '');
+}
+
+function ensureCatalogTombstones(db) {
+  db.exec(`
+    CREATE TABLE IF NOT EXISTS catalog_tombstones (
+      brand_id TEXT NOT NULL,
+      series_id TEXT NOT NULL,
+      deleted_at TEXT NOT NULL,
+      PRIMARY KEY (brand_id, series_id)
+    )
+  `);
+}
+
+function catalogTombstoneSet(db) {
+  ensureCatalogTombstones(db);
+  const have = {};
+  db.prepare('SELECT brand_id, series_id FROM catalog_tombstones').all().forEach(function (row) {
+    have[catalogSeriesKey(row.brand_id, row.series_id)] = true;
+  });
+  return have;
+}
+
+function rememberCatalogTombstone(db, brandId, seriesId) {
+  const brand = String(brandId || '').trim();
+  const series = String(seriesId || '').trim();
+  if (!brand || !series) return;
+  ensureCatalogTombstones(db);
+  db.prepare(`
+    INSERT INTO catalog_tombstones (brand_id, series_id, deleted_at)
+    VALUES (?, ?, ?)
+    ON CONFLICT (brand_id, series_id) DO UPDATE SET deleted_at = excluded.deleted_at
+  `).run(brand, series, nowIso());
+}
+
+function forgetCatalogTombstone(db, brandId, seriesId) {
+  const brand = String(brandId || '').trim();
+  const series = String(seriesId || '').trim();
+  if (!brand || !series) return;
+  ensureCatalogTombstones(db);
+  db.prepare('DELETE FROM catalog_tombstones WHERE brand_id = ? AND series_id = ?').run(brand, series);
+}
+
 function seedCatalog(db) {
   upsertMissingCatalog(db);
 }
 
 function upsertMissingCatalog(db) {
+  ensureCatalogTombstones(db);
+  const existing = db.prepare('SELECT COUNT(*) AS n FROM products').get();
+  if (existing && existing.n) return;
   const brands = loadSeedBrands();
+  const tombstones = catalogTombstoneSet(db);
   const insertBrand = db.prepare('INSERT OR IGNORE INTO brands (id, name, tagline) VALUES (?, ?, ?)');
   const hasProduct = db.prepare('SELECT id FROM products WHERE brand_id = ? AND series_id = ?');
   const insertProduct = db.prepare(`
@@ -1108,8 +1157,10 @@ function upsertMissingCatalog(db) {
     brands.forEach((brand, bi) => {
       insertBrand.run(brand.id, brand.name, brand.tagline || '');
       (brand.series || []).forEach((s, si) => {
-        if (hasProduct.get(brand.id, s.id)) return;
+        if (tombstones[catalogSeriesKey(brand.id, s.id)] || hasProduct.get(brand.id, s.id)) return;
         const isControl = s.type === 'control' || brand.id === 'novastar' || !!s.subtype;
+        const details = detailsFromSeries(s);
+        details.store_listed = false;
         insertProduct.run(
           brand.id,
           s.id,
@@ -1126,7 +1177,7 @@ function upsertMissingCatalog(db) {
           s.badge || '',
           s.image || '',
           JSON.stringify(Array.isArray(s.gallery) ? s.gallery : []),
-          JSON.stringify(detailsFromSeries(s)),
+          JSON.stringify(details),
           bi * 40 + si,
           stamp,
           stamp
@@ -1394,6 +1445,11 @@ module.exports = {
   upsertMissingCatalog,
   loadSeedBrands,
   detailsFromSeries,
+  catalogSeriesKey,
+  ensureCatalogTombstones,
+  rememberCatalogTombstone,
+  forgetCatalogTombstone,
+  catalogTombstoneSet,
   fillMissingProductDetails,
   refreshSeedProductMedia,
   nextSeedMedia,
