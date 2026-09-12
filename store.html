@@ -15,7 +15,9 @@
   <meta property="og:description" content="Control boxes, spares, and packaged kits. Custom LED walls are quoted on spectrumdisplay.com." />
   <meta property="og:url" content="https://store.spectrumdisplay.com/" />
   <meta property="og:image" content="https://www.spectrumdisplay.com/assets/spectrum-logo.png" />
-  <link rel="stylesheet" href="/css/store.css?v=logo2" />
+  <script src="/js/store-theme-boot.js"></script>
+  <script src="/js/i18n-boot.js"></script>
+  <link rel="stylesheet" href="/css/store.css?v=theme1" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
@@ -26,8 +28,8 @@
       <a class="shop-wordmark" data-home href="/store">
         <img src="/assets/spectrum-logo-store.png" alt="Spectrum" width="1159" height="212" />
       </a>
-      <span class="shop-us">US Store</span>
-      <a class="shop-integrator" data-integrator href="https://www.spectrumdisplay.com/contact">Find an integrator</a>
+      <span class="shop-us" data-i18n="store.usStore">US Store</span>
+      <a class="shop-integrator" data-integrator data-i18n="store.findIntegrator" href="https://www.spectrumdisplay.com/contact">Find an integrator</a>
       <div class="shop-header-spacer"></div>
       <div class="shop-header-icons">
         <button type="button" class="shop-icon-btn" data-open-search aria-label="Search">
@@ -40,6 +42,27 @@
         <a class="shop-icon-btn" data-account href="https://www.spectrumdisplay.com/account.html" aria-label="Account">
           <svg fill="none" stroke="currentColor" stroke-width="1.7" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 7.5a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.5 19.5a7.5 7.5 0 0115 0"/></svg>
         </a>
+        <div class="shop-settings" data-shop-settings>
+          <button type="button" class="shop-icon-btn" data-open-settings aria-label="Settings" aria-haspopup="dialog" aria-expanded="false" aria-controls="shop-settings-pop">
+            <svg fill="none" stroke="currentColor" stroke-width="1.7" viewBox="0 0 24 24" aria-hidden="true">
+              <rect x="4.25" y="4.25" width="15.5" height="15.5" rx="3.2"/>
+              <path stroke-linecap="round" d="M7 9.25h4.2"/>
+              <circle cx="14.35" cy="9.25" r="1.55" fill="currentColor" stroke="none"/>
+              <path stroke-linecap="round" d="M7 14.75h6.1"/>
+              <circle cx="15.35" cy="14.75" r="1.55" fill="currentColor" stroke="none"/>
+            </svg>
+          </button>
+          <div id="shop-settings-pop" class="shop-settings-pop" hidden role="dialog" aria-label="Settings">
+            <div class="shop-settings-label" data-i18n="store.theme">Theme</div>
+            <div class="shop-theme-seg" role="radiogroup" aria-label="Theme">
+              <button type="button" role="radio" data-theme="light" aria-checked="false" data-i18n="store.themeLight">Light</button>
+              <button type="button" role="radio" data-theme="dark" aria-checked="false" data-i18n="store.themeDark">Dark</button>
+              <button type="button" role="radio" data-theme="system" aria-checked="true" data-i18n="store.themeSystem">System</button>
+            </div>
+            <div class="shop-settings-label" data-i18n="store.language">Language</div>
+            <select id="shop-lang-select" aria-label="Language"></select>
+          </div>
+        </div>
       </div>
     </div>
   </header>
@@ -58,7 +81,7 @@
   <div id="shop-search" class="shop-search">
     <div class="shop-search-panel">
       <div class="shop-wrap">
-        <input id="shop-search-input" type="search" placeholder="Search the US Store" autocomplete="off" />
+        <input id="shop-search-input" type="search" placeholder="Search the US Store" autocomplete="off" data-i18n-placeholder="store.searchPlaceholder" />
         <div class="shop-search-hits" id="shop-search-hits"></div>
       </div>
     </div>
@@ -69,7 +92,7 @@
   <div id="shop-cart-scrim" class="shop-cart-scrim"></div>
   <aside id="shop-cart-drawer" class="shop-cart-drawer" aria-hidden="true">
     <div class="shop-cart-head">
-      <h2>Cart</h2>
+      <h2 data-i18n="store.cart">Cart</h2>
       <button type="button" class="shop-cart-close" data-cart-close aria-label="Close">×</button>
     </div>
     <div class="shop-cart-body" id="shop-cart-body"></div>
@@ -91,46 +114,47 @@
           </p>
         </div>
         <div>
-          <h4>Store</h4>
+          <h4 data-i18n="store.footerStore">Store</h4>
           <ul>
-            <li><a href="/store/collections/control">Controller</a></li>
-            <li><a href="/store/collections/rental">Rental Panel</a></li>
-            <li><a href="/store/collections/poster">Poster</a></li>
-            <li><a href="/store/collections/spares">Spares</a></li>
-            <li><a href="/store/collections/accessories">Accessories</a></li>
-            <li><a href="/store/collections/fine-pitch">Fine pitch</a></li>
-            <li><a href="https://www.spectrumdisplay.com/led-wall-calculator">Design a wall</a></li>
+            <li><a href="/store/collections/control" data-i18n="store.col.control">Controller</a></li>
+            <li><a href="/store/collections/rental" data-i18n="store.col.rental">Rental Panel</a></li>
+            <li><a href="/store/collections/poster" data-i18n="store.col.poster">Poster</a></li>
+            <li><a href="/store/collections/spares" data-i18n="store.col.spares">Spares</a></li>
+            <li><a href="/store/collections/accessories" data-i18n="store.col.accessories">Accessories</a></li>
+            <li><a href="/store/collections/fine-pitch" data-i18n="store.col.fine-pitch">Fine pitch</a></li>
+            <li><a href="https://www.spectrumdisplay.com/led-wall-calculator" data-i18n="store.designWall">Design a wall</a></li>
           </ul>
         </div>
         <div>
-          <h4>Company</h4>
+          <h4 data-i18n="store.company">Company</h4>
           <ul>
-            <li><a href="https://www.spectrumdisplay.com/products">Products</a></li>
-            <li><a href="https://www.spectrumdisplay.com/account.html">Account</a></li>
-            <li><a href="https://www.spectrumdisplay.com/contact">Contact</a></li>
-            <li><a href="https://www.diaoinc.com">Home TVs</a></li>
+            <li><a href="https://www.spectrumdisplay.com/products" data-i18n="store.products">Products</a></li>
+            <li><a href="https://www.spectrumdisplay.com/account.html" data-i18n="store.account">Account</a></li>
+            <li><a href="https://www.spectrumdisplay.com/contact" data-i18n="store.contact">Contact</a></li>
+            <li><a href="https://www.diaoinc.com" data-i18n="store.homeTvs">Home TVs</a></li>
           </ul>
         </div>
         <div>
-          <h4>Policies</h4>
+          <h4 data-i18n="store.policies">Policies</h4>
           <ul>
-            <li><a href="/store/pages/shipping">Shipping and Returns</a></li>
-            <li><a href="/store/pages/warranty">Warranty</a></li>
-            <li><a href="/store/pages/privacy">Privacy Policy</a></li>
-            <li><a href="/store/pages/terms">Terms of Service</a></li>
+            <li><a href="/store/pages/shipping" data-i18n="store.shippingReturns">Shipping and Returns</a></li>
+            <li><a href="/store/pages/warranty" data-i18n="store.warranty">Warranty</a></li>
+            <li><a href="/store/pages/privacy" data-i18n="store.privacy">Privacy Policy</a></li>
+            <li><a href="/store/pages/terms" data-i18n="store.terms">Terms of Service</a></li>
           </ul>
         </div>
       </div>
       <div class="shop-legal">
-        <p>© 2026 Spectrum Display Inc. All rights reserved.</p>
-        <p>Checkout is Shopify. Inventory and dealer nets stay on spectrumdisplay.com.</p>
+        <p data-i18n="store.legalCopy">© 2026 Spectrum Display Inc. All rights reserved.</p>
+        <p data-i18n="store.legalNote">Checkout is Shopify. Inventory and dealer nets stay on spectrumdisplay.com.</p>
       </div>
     </div>
   </footer>
 
   <script src="/js/site-analytics.js?v=src1"></script>
+  <script src="/js/i18n.js?v=storetheme1"></script>
   <script src="/js/store-cart.js?v=rail3d"></script>
   <script src="/js/product-photo.js?v=ph1"></script>
-  <script src="/js/store.js?v=cartdrawer2"></script>
+  <script src="/js/store.js?v=theme1"></script>
 </body>
 </html>

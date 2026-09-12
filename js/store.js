@@ -45,6 +45,28 @@
     return (window.spectrumProductPhotoFallback && window.spectrumProductPhotoFallback(p)) || '';
   }
 
+  function t(key, fallback) {
+    if (window.SpectrumI18n && typeof SpectrumI18n.t === 'function') {
+      var v = SpectrumI18n.t(key);
+      if (v && v !== key) return v;
+    }
+    return fallback || key;
+  }
+
+  var LANG_LABELS = {
+    en: 'US (English)',
+    es: 'US (Español)',
+    fr: 'US (Français)',
+    ko: 'US (한국어)',
+    ja: 'US (日本語)',
+    zh: 'US (中文)'
+  };
+
+  function colLabel(slug, fallback) {
+    var key = 'store.col.' + slug;
+    return t(key, fallback || slug);
+  }
+
   function parseRoute() {
     var raw = location.pathname || '/';
     if (BASE && raw.indexOf(BASE) === 0) raw = raw.slice(BASE.length) || '/';
@@ -92,12 +114,12 @@
 
   function railItems() {
     return [
-      { label: 'What’s New', href: href('/#whats-new'), img: '/assets/store/whats-new.webp?v=rail3d', key: 'new' },
-      { label: 'Controller', href: href('/collections/control'), img: '/assets/store/controller.webp?v=rail3d', key: 'control' },
-      { label: 'Rental Panel', href: href('/collections/rental'), img: '/assets/store/rental-panel.webp?v=rail3d', key: 'rental' },
-      { label: 'Poster', href: href('/collections/poster'), img: '/assets/store/poster.webp?v=rail3d', key: 'poster' },
-      { label: 'Spares', href: href('/collections/spares'), img: '/assets/store/spares.webp?v=rail3d', key: 'spares' },
-      { label: 'Accessories', href: href('/collections/accessories'), img: '/assets/store/accessories.webp?v=rail3d', key: 'accessories' }
+      { label: t('store.whatsNew', 'What’s New'), href: href('/#whats-new'), img: '/assets/store/whats-new.webp?v=rail3d', key: 'new' },
+      { label: t('store.col.control', 'Controller'), href: href('/collections/control'), img: '/assets/store/controller.webp?v=rail3d', key: 'control' },
+      { label: t('store.col.rental', 'Rental Panel'), href: href('/collections/rental'), img: '/assets/store/rental-panel.webp?v=rail3d', key: 'rental' },
+      { label: t('store.col.poster', 'Poster'), href: href('/collections/poster'), img: '/assets/store/poster.webp?v=rail3d', key: 'poster' },
+      { label: t('store.col.spares', 'Spares'), href: href('/collections/spares'), img: '/assets/store/spares.webp?v=rail3d', key: 'spares' },
+      { label: t('store.col.accessories', 'Accessories'), href: href('/collections/accessories'), img: '/assets/store/accessories.webp?v=rail3d', key: 'accessories' }
     ];
   }
 
@@ -125,6 +147,11 @@
       };
       document.addEventListener('keydown', function (e) {
         if (e.key !== 'Escape') return;
+        var settings = $('[data-shop-settings]');
+        if (settings && settings.classList.contains('is-open')) {
+          closeSettings();
+          return;
+        }
         if (document.body.classList.contains('shop-cart-open')) {
           closeCartDrawer();
           return;
@@ -160,12 +187,29 @@
           (item.ext ? '' : ' data-shop-link') + '>' + railIcon(item) + '<span>' + esc(item.label) + '</span></a>';
       }).join('');
     }
+    var searchBtn = $('[data-open-search]');
+    if (searchBtn) searchBtn.setAttribute('aria-label', t('store.search', 'Search'));
+    var cartBtn = $('[data-cart]');
+    if (cartBtn) cartBtn.setAttribute('aria-label', t('store.cart', 'Cart'));
+    var accountBtn = $('[data-account]');
+    if (accountBtn) accountBtn.setAttribute('aria-label', t('store.account', 'Account'));
+    var settingsBtn = $('[data-open-settings]');
+    if (settingsBtn) settingsBtn.setAttribute('aria-label', t('store.settings', 'Settings'));
+    var settingsPop = $('#shop-settings-pop');
+    if (settingsPop) settingsPop.setAttribute('aria-label', t('store.settings', 'Settings'));
+    var themeGroup = $('.shop-theme-seg');
+    if (themeGroup) themeGroup.setAttribute('aria-label', t('store.theme', 'Theme'));
+    var langSel = $('#shop-lang-select');
+    if (langSel) langSel.setAttribute('aria-label', t('store.language', 'Language'));
+    var cartClose = $('[data-cart-close]');
+    if (cartClose) cartClose.setAttribute('aria-label', t('store.close', 'Close'));
+
     var sub = $('#shop-subnav-row');
     if (sub) {
-      var links = [{ label: 'What’s New', slug: '', href: href('/') }].concat(collections().map(function (c) {
-        return { label: c.label, slug: c.slug, href: href('/collections/' + c.slug) };
+      var links = [{ label: t('store.whatsNew', 'What’s New'), slug: '', href: href('/') }].concat(collections().map(function (c) {
+        return { label: colLabel(c.slug, c.label), slug: c.slug, href: href('/collections/' + c.slug) };
       }));
-      links.push({ label: 'Design a wall', slug: 'design', href: www('/led-wall-calculator'), ext: true });
+      links.push({ label: t('store.designWall', 'Design a wall'), slug: 'design', href: www('/led-wall-calculator'), ext: true });
       sub.innerHTML = links.map(function (item) {
         var on = route.slug && item.slug === route.slug;
         return '<a class="' + (on ? 'is-on' : '') + '" href="' + esc(item.href) + '"' +
@@ -199,8 +243,9 @@
     var items = SpectrumStoreCart.read();
     var ready = !!(shop() && items.length);
     if (!items.length) {
-      body.innerHTML = '<p class="shop-empty">Your cart is empty.</p>';
-      foot.innerHTML = '<button type="button" class="shop-btn" data-cart-close>Continue shopping</button>';
+      body.innerHTML = '<p class="shop-empty">' + esc(t('store.cartEmpty', 'Your cart is empty.')) + '</p>';
+      foot.innerHTML = '<button type="button" class="shop-btn" data-cart-close>' +
+        esc(t('store.continueShopping', 'Continue shopping')) + '</button>';
       return;
     }
     body.innerHTML = items.map(function (line) {
@@ -210,17 +255,17 @@
         '<div><strong>' + esc(line.name) + '</strong>' +
           '<div class="shop-sku">' + esc(line.sku || '') + '</div>' +
           '<div class="shop-cart-qty">' +
-            '<button type="button" data-cart-qty="-1" data-id="' + esc(line.variantId) + '" aria-label="Less">−</button>' +
+            '<button type="button" data-cart-qty="-1" data-id="' + esc(line.variantId) + '" aria-label="' + esc(t('store.less', 'Less')) + '">−</button>' +
             '<span>' + esc(qty) + '</span>' +
-            '<button type="button" data-cart-qty="1" data-id="' + esc(line.variantId) + '" aria-label="More">+</button>' +
+            '<button type="button" data-cart-qty="1" data-id="' + esc(line.variantId) + '" aria-label="' + esc(t('store.more', 'More')) + '">+</button>' +
           '</div></div>' +
         '<div class="shop-cart-line-price">' + esc(line.priceLabel || '') + '</div></div>';
     }).join('');
     var checkout = ready
-      ? '<a class="shop-btn" href="' + esc(SpectrumStoreCart.checkoutUrl(shop())) + '">Check out</a>'
-      : '<button class="shop-btn is-off" type="button" disabled>Check out</button>' +
-        '<p class="shop-quiet">Checkout is not connected yet. Catalog stays visible — no payment is taken on this site.</p>';
-    foot.innerHTML = '<p class="shop-quiet">Checkout opens Shopify. Spectrum does not collect cards on this page. Oversized LED freight is confirmed by Spectrum before the truck is booked. Small control and spare orders ship parcel.</p>' + checkout;
+      ? '<a class="shop-btn" href="' + esc(SpectrumStoreCart.checkoutUrl(shop())) + '">' + esc(t('store.checkOut', 'Check out')) + '</a>'
+      : '<button class="shop-btn is-off" type="button" disabled>' + esc(t('store.checkOut', 'Check out')) + '</button>' +
+        '<p class="shop-quiet">' + esc(t('store.checkoutOffline', 'Checkout is not connected yet. Catalog stays visible — no payment is taken on this site.')) + '</p>';
+    foot.innerHTML = '<p class="shop-quiet">' + esc(t('store.checkoutNote', 'Checkout opens Shopify. Spectrum does not collect cards on this page. Oversized LED freight is confirmed by Spectrum before the truck is booked. Small control and spare orders ship parcel.')) + '</p>' + checkout;
   }
 
   function openCartDrawer() {
@@ -239,6 +284,70 @@
     if (parseRoute().name === 'cart') {
       history.replaceState({}, '', href('/'));
     }
+  }
+
+  function closeSettings() {
+    var wrap = $('[data-shop-settings]');
+    var btn = $('[data-open-settings]');
+    var pop = $('#shop-settings-pop');
+    if (wrap) wrap.classList.remove('is-open');
+    if (pop) pop.hidden = true;
+    if (btn) btn.setAttribute('aria-expanded', 'false');
+  }
+
+  function syncThemeSeg() {
+    var pref = (window.SpectrumStoreTheme && SpectrumStoreTheme.getPref()) || 'system';
+    $all('[data-theme]').forEach(function (b) {
+      var on = b.getAttribute('data-theme') === pref;
+      b.classList.toggle('is-on', on);
+      b.setAttribute('aria-checked', on ? 'true' : 'false');
+    });
+  }
+
+  function bindSettings() {
+    var wrap = $('[data-shop-settings]');
+    var btn = $('[data-open-settings]');
+    var pop = $('#shop-settings-pop');
+    var sel = $('#shop-lang-select');
+    if (!wrap || !btn || !pop) return;
+
+    btn.addEventListener('click', function (e) {
+      e.stopPropagation();
+      if (wrap.classList.contains('is-open')) closeSettings();
+      else {
+        wrap.classList.add('is-open');
+        pop.hidden = false;
+        btn.setAttribute('aria-expanded', 'true');
+        syncThemeSeg();
+      }
+    });
+    document.addEventListener('click', function (e) {
+      if (!wrap.contains(e.target)) closeSettings();
+    });
+    $all('[data-theme]', pop).forEach(function (b) {
+      b.addEventListener('click', function () {
+        if (window.SpectrumStoreTheme) SpectrumStoreTheme.setPref(b.getAttribute('data-theme'));
+        syncThemeSeg();
+      });
+    });
+    if (sel && !sel.dataset.bound) {
+      sel.dataset.bound = '1';
+      var langs = (window.SpectrumI18n && SpectrumI18n.langs) || [
+        { code: 'en' }, { code: 'es' }, { code: 'fr' }, { code: 'ko' }, { code: 'ja' }, { code: 'zh' }
+      ];
+      sel.innerHTML = langs.map(function (l) {
+        return '<option value="' + esc(l.code) + '">' + esc(LANG_LABELS[l.code] || l.label || l.code) + '</option>';
+      }).join('');
+      sel.value = (window.SpectrumI18n && SpectrumI18n.lang) || 'en';
+      sel.addEventListener('change', function () {
+        if (window.SpectrumI18n && SpectrumI18n.setLang) SpectrumI18n.setLang(sel.value);
+        else {
+          try { localStorage.setItem('spectrumLang', sel.value); } catch (err) {}
+          location.reload();
+        }
+      });
+    }
+    syncThemeSeg();
   }
 
   function bindCartDrawer() {
@@ -274,15 +383,18 @@
 
   function cta(p) {
     if (p.mode === 'configure') {
-      return '<a class="shop-btn" href="' + esc(p.configureUrl) + '">Configure wall</a>';
+      return '<a class="shop-btn" href="' + esc(p.configureUrl) + '">' + esc(t('store.configureWall', 'Configure wall')) + '</a>';
     }
     if (p.hasOptions) {
-      return '<a class="shop-btn" href="' + esc(href('/products/' + p.handle)) + '" data-shop-link>Select</a>';
+      return '<a class="shop-btn" href="' + esc(href('/products/' + p.handle)) + '" data-shop-link>' +
+        esc(t('store.select', 'Select')) + '</a>';
     }
     if (p.canAddToCart) {
-      return '<button class="shop-btn" type="button" data-add="' + esc(p.handle) + '">Add to cart</button>';
+      return '<button class="shop-btn" type="button" data-add="' + esc(p.handle) + '">' +
+        esc(t('store.addToCart', 'Add to cart')) + '</button>';
     }
-    return '<button class="shop-btn is-off" type="button" disabled>Add to cart</button>';
+    return '<button class="shop-btn is-off" type="button" disabled>' +
+      esc(t('store.addToCart', 'Add to cart')) + '</button>';
   }
 
   function leadLine(p) {
@@ -344,40 +456,40 @@
     var html = '';
     if (featured.length) {
       html += '<section class="shop-section" id="whats-new"><div class="shop-wrap">' +
-        '<div class="shop-section-head"><h2 class="shop-h">Take a look at <em>what’s new</em></h2></div>' +
+        '<div class="shop-section-head"><h2 class="shop-h">' + t('store.homeWhatsNew', 'Take a look at <em>what’s new</em>') + '</h2></div>' +
         '<div class="shop-editorial">' + featured.map(function (p) {
           var photo = photoFor(p, 'card');
           return '<a class="shop-ed-card" href="' + esc(href('/products/' + p.handle)) + '" data-shop-link>' +
             (photo ? '<img src="' + esc(photo) + '" alt="">' : '') +
-            '<div class="shop-ed-copy"><div class="shop-new">New</div><h3>' + esc(p.name) + '</h3><p>' +
+            '<div class="shop-ed-copy"><div class="shop-new">' + esc(t('store.new', 'New')) + '</div><h3>' + esc(p.name) + '</h3><p>' +
             esc(p.description || '') + '</p></div></a>';
         }).join('') + '</div></div></section>';
     }
     if (arrived.length) {
       html += '<section class="shop-section"><div class="shop-wrap">' +
         '<div class="shop-section-head"><div>' +
-        (state.catalog.receivedThisWeek ? '<p class="shop-eyebrow">Received this week</p>' : '') +
-        '<h2 class="shop-h">Just <em>arrived</em></h2></div></div>' +
+        (state.catalog.receivedThisWeek ? '<p class="shop-eyebrow">' + esc(t('store.receivedThisWeek', 'Received this week')) + '</p>' : '') +
+        '<h2 class="shop-h">' + t('store.homeArrived', 'Just <em>arrived</em>') + '</h2></div></div>' +
         '<div class="shop-hscroll">' + arrived.map(function (p) { return cardHtml(p); }).join('') +
         '</div></div></section>';
     }
     html += '<section class="shop-section"><div class="shop-wrap">' +
-      '<div class="shop-section-head"><h2 class="shop-h">Shop <em>control</em></h2></div>' +
+      '<div class="shop-section-head"><h2 class="shop-h">' + t('store.homeControl', 'Shop <em>control</em>') + '</h2></div>' +
       '<div class="shop-grid">' + (control.slice(0, 8).map(function (p) { return cardHtml(p); }).join('') ||
-        '<p class="shop-empty">Control boxes will appear here as they are published.</p>') +
+        '<p class="shop-empty">' + esc(t('store.emptyControl', 'Control boxes will appear here as they are published.')) + '</p>') +
       '</div></div></section>';
     html += '<section class="shop-section"><div class="shop-wrap">' +
-      '<div class="shop-section-head"><h2 class="shop-h">Shop <em>spares &amp; accessories</em></h2></div>' +
+      '<div class="shop-section-head"><h2 class="shop-h">' + t('store.homeSpares', 'Shop <em>spares &amp; accessories</em>') + '</h2></div>' +
       '<div class="shop-grid">' + (spares.slice(0, 8).map(function (p) { return cardHtml(p); }).join('') ||
-        '<p class="shop-empty">Spares and accessories will appear here as they are published.</p>') +
+        '<p class="shop-empty">' + esc(t('store.emptySpares', 'Spares and accessories will appear here as they are published.')) + '</p>') +
       '</div></div></section>';
     html += '<div class="shop-wrap"><a class="shop-design" href="' + esc(www('/led-wall-calculator')) + '">' +
-      '<div class="shop-design-copy"><p class="shop-eyebrow">Design a wall</p>' +
-      '<h2>Configure a custom LED wall on spectrumdisplay.com</h2>' +
-      '<p>Cabinets are quoted by the wall — size, pitch, and receiving cards included. This store sells control boxes, spares, and packaged kits.</p>' +
-      '<span class="shop-btn" style="max-width:14rem">Configure wall</span></div>' +
+      '<div class="shop-design-copy"><p class="shop-eyebrow">' + esc(t('store.designEyebrow', 'Design a wall')) + '</p>' +
+      '<h2>' + esc(t('store.designH2', 'Configure a custom LED wall on spectrumdisplay.com')) + '</h2>' +
+      '<p>' + esc(t('store.designP', 'Cabinets are quoted by the wall — size, pitch, and receiving cards included. This store sells control boxes, spares, and packaged kits.')) + '</p>' +
+      '<span class="shop-btn" style="max-width:14rem">' + esc(t('store.configureWall', 'Configure wall')) + '</span></div>' +
       '<div class="shop-design-art" aria-hidden="true"></div></a>' +
-      '<p class="shop-quiet">Custom walls are quoted on spectrumdisplay.com. New walls include receiving cards. This store sells control boxes, spares, and packaged kits.</p></div>';
+      '<p class="shop-quiet">' + esc(t('store.quietWalls', 'Custom walls are quoted on spectrumdisplay.com. New walls include receiving cards. This store sells control boxes, spares, and packaged kits.')) + '</p></div>';
     $('#shop-main').innerHTML = html;
     bindAddButtons($('#shop-main'));
   }
@@ -389,14 +501,14 @@
       counts[key] = (counts[key] || 0) + 1;
     });
     var labels = {
-      all: 'All',
-      'all-in-one': 'Processors',
-      sending: 'Senders',
-      playback: 'Playback',
-      'receiving-card': 'Spares',
-      accessories: 'Accessories',
-      fiber: 'Fiber',
-      other: 'Other'
+      all: t('store.filterAll', 'All'),
+      'all-in-one': t('store.filterProcessors', 'Processors'),
+      sending: t('store.filterSenders', 'Senders'),
+      playback: t('store.filterPlayback', 'Playback'),
+      'receiving-card': t('store.filterSpares', 'Spares'),
+      accessories: t('store.filterAccessories', 'Accessories'),
+      fiber: t('store.filterFiber', 'Fiber'),
+      other: t('store.filterOther', 'Other')
     };
     var keys = Object.keys(counts).filter(function (k) { return k === 'all' || (counts[k] && k !== 'other') || (k === 'other' && counts.other && Object.keys(counts).length > 2); });
     if (keys.length <= 2) return '';
@@ -414,12 +526,12 @@
     if (state.filter && state.filter !== 'all') {
       filtered = list.filter(function (p) { return (p.subtype || 'other') === state.filter; });
     }
-    var title = col ? col.label : slug;
+    var title = col ? colLabel(col.slug, col.label) : colLabel(slug, slug);
     var html = '<section class="shop-section"><div class="shop-wrap">' +
       '<h1 class="shop-h">' + esc(title) + '</h1>' +
       subtypePills(list) +
       '<div class="shop-grid">' + (filtered.map(function (p) { return cardHtml(p); }).join('') ||
-        '<p class="shop-empty">Nothing in this collection yet.</p>') +
+        '<p class="shop-empty">' + esc(t('store.emptyCollection', 'Nothing in this collection yet.')) + '</p>') +
       '</div></div></section>';
     $('#shop-main').innerHTML = html;
     $all('[data-filter]').forEach(function (btn) {
@@ -434,7 +546,8 @@
   function renderProduct(handle) {
     var p = byHandle(handle);
     if (!p) {
-      $('#shop-main').innerHTML = '<div class="shop-wrap shop-page"><h1>Product not found</h1><p><a href="' + esc(href('/')) + '" data-shop-link>Back to store</a></p></div>';
+      $('#shop-main').innerHTML = '<div class="shop-wrap shop-page"><h1>' + esc(t('store.productNotFound', 'Product not found')) +
+        '</h1><p><a href="' + esc(href('/')) + '" data-shop-link>' + esc(t('store.backToStore', 'Back to store')) + '</a></p></div>';
       return;
     }
     state.qty = 1;
@@ -458,23 +571,25 @@
         (p.hasOptions ? '<div class="shop-filters" style="margin:.8rem 0">' + p.variants.map(function (v, i) {
           return '<button type="button" class="shop-pill' + (i === 0 ? ' is-on' : '') + '" data-variant="' + esc(v.id) + '">' + esc(v.title) + '</button>';
         }).join('') + '</div>' : '') +
-        (p.mode === 'buy' ? '<div class="shop-qty"><button type="button" data-qty="-1" aria-label="Less">−</button><span data-qty-val>1</span><button type="button" data-qty="1" aria-label="More">+</button></div>' : '') +
+        (p.mode === 'buy' ? '<div class="shop-qty"><button type="button" data-qty="-1" aria-label="' + esc(t('store.less', 'Less')) + '">−</button><span data-qty-val>1</span><button type="button" data-qty="1" aria-label="' + esc(t('store.more', 'More')) + '">+</button></div>' : '') +
         (p.mode === 'configure'
-          ? '<a class="shop-btn" href="' + esc(p.configureUrl) + '">Configure wall</a>'
+          ? '<a class="shop-btn" href="' + esc(p.configureUrl) + '">' + esc(t('store.configureWall', 'Configure wall')) + '</a>'
           : (p.canAddToCart
-            ? '<button class="shop-btn" type="button" id="pdp-add">Add to cart</button>'
-            : '<button class="shop-btn is-off" type="button" disabled>Add to cart</button>')) +
+            ? '<button class="shop-btn" type="button" id="pdp-add">' + esc(t('store.addToCart', 'Add to cart')) + '</button>'
+            : '<button class="shop-btn is-off" type="button" disabled>' + esc(t('store.addToCart', 'Add to cart')) + '</button>')) +
         '<div class="shop-chips" style="margin-top:1rem">' + (p.chips || []).map(function (c) {
           return '<span class="shop-chip">' + esc(c) + '</span>';
         }).join('') + '</div>' +
-        '<p style="color:#4b5563;line-height:1.5">' + esc(p.description) + '</p>' +
+        '<p class="shop-pdp-desc">' + esc(p.description) + '</p>' +
         (p.replacementOnly
-          ? '<div class="shop-note"><strong>Replacement only.</strong> New Spectrum walls already include receiving cards in the cabinet price.</div>'
+          ? '<div class="shop-note"><strong>' + esc(t('store.replacementOnly', 'Replacement only.')) + '</strong> ' +
+            esc(t('store.replacementNote', 'New Spectrum walls already include receiving cards in the cabinet price.')) + '</div>'
           : '') +
-        '<div class="shop-note"><strong>In the box</strong> — unit as listed. Warranty: manufacturer coverage plus Spectrum’s 3-year support layer (COB 3+5 only on selected COB panels). ' +
-        (p.mode === 'buy'
-          ? 'Oversized LED freight is confirmed by Spectrum before the truck is booked. Small control and spare orders ship parcel.'
-          : 'Custom walls are quoted on spectrumdisplay.com. Cabinets ship freight from Azusa after the quote is accepted.') +
+        '<div class="shop-note"><strong>' + esc(t('store.inTheBox', 'In the box')) + '</strong>' +
+        esc(t('store.inTheBoxRest', ' — unit as listed. Warranty: manufacturer coverage plus Spectrum’s 3-year support layer (COB 3+5 only on selected COB panels). ')) +
+        esc(p.mode === 'buy'
+          ? t('store.freightBuy', 'Oversized LED freight is confirmed by Spectrum before the truck is booked. Small control and spare orders ship parcel.')
+          : t('store.freightConfigure', 'Custom walls are quoted on spectrumdisplay.com. Cabinets ship freight from Azusa after the quote is accepted.')) +
         '</div>' +
       '</div></div></div>';
     $('#shop-main').innerHTML = html;
@@ -530,9 +645,9 @@
 
   function renderPage(slug) {
     var src = POLICY_SRC[slug];
-    $('#shop-main').innerHTML = '<div class="shop-wrap shop-page"><p class="shop-empty">Loading…</p></div>';
+    $('#shop-main').innerHTML = '<div class="shop-wrap shop-page"><p class="shop-empty">' + esc(t('store.loading', 'Loading…')) + '</p></div>';
     if (!src) {
-      $('#shop-main').innerHTML = '<div class="shop-wrap shop-page"><h1>Not found</h1></div>';
+      $('#shop-main').innerHTML = '<div class="shop-wrap shop-page"><h1>' + esc(t('store.notFound', 'Not found')) + '</h1></div>';
       return;
     }
     fetch(src, { headers: { Accept: 'text/html' } }).then(function (res) { return res.text(); }).then(function (html) {
@@ -540,9 +655,11 @@
       var article = doc.querySelector('.war-card') || doc.querySelector('article');
       var title = (doc.querySelector('h1') && doc.querySelector('h1').textContent) || slug;
       $('#shop-main').innerHTML = '<div class="shop-wrap shop-page"><h1>' + esc(title) + '</h1>' +
-        (article ? article.innerHTML : '<p>See the full policy on spectrumdisplay.com.</p>') + '</div>';
+        (article ? article.innerHTML : '<p>' + esc(t('store.seePolicy', 'See the full policy on spectrumdisplay.com.')) + '</p>') + '</div>';
     }).catch(function () {
-      $('#shop-main').innerHTML = '<div class="shop-wrap shop-page"><h1>Policy</h1><p>Open the full page on <a href="' + esc(www('/' + slug + '.html')) + '">spectrumdisplay.com</a>.</p></div>';
+      $('#shop-main').innerHTML = '<div class="shop-wrap shop-page"><h1>' + esc(t('store.policy', 'Policy')) +
+        '</h1><p>' + esc(t('store.openFullPage', 'Open the full page on')) +
+        ' <a href="' + esc(www('/' + slug + '.html')) + '">spectrumdisplay.com</a>.</p></div>';
     });
   }
 
@@ -558,7 +675,7 @@
       return '<a href="' + esc(href('/products/' + p.handle)) + '" data-shop-link>' +
         (photoFor(p, 'thumb') ? '<img src="' + esc(photoFor(p, 'thumb')) + '" alt="">' : '') +
         '<span><strong>' + esc(p.name) + '</strong><div class="shop-sku">' + esc(p.sku) + '</div></span></a>';
-    }).join('') || '<p class="shop-empty">No matches.</p>';
+    }).join('') || '<p class="shop-empty">' + esc(t('store.noMatches', 'No matches.')) + '</p>';
     $all('#shop-search-hits a').forEach(function (a) {
       a.addEventListener('click', function () {
         $('#shop-search').classList.remove('is-on');
@@ -567,14 +684,15 @@
   }
 
   function setTitle(route) {
-    var t = 'US Store | Spectrum Display';
-    if (route.name === 'collection') t = (route.slug || 'Collection') + ' | Spectrum Store';
+    var suffix = t('store.titleSuffix', 'Spectrum Store');
+    var title = t('store.title', 'US Store | Spectrum Display');
+    if (route.name === 'collection') title = colLabel(route.slug, route.slug || t('store.collection', 'Collection')) + ' | ' + suffix;
     if (route.name === 'product') {
       var p = byHandle(route.handle);
-      if (p) t = p.name + ' | Spectrum Store';
+      if (p) title = p.name + ' | ' + suffix;
     }
-    if (route.name === 'cart') t = 'Cart | Spectrum Store';
-    document.title = t;
+    if (route.name === 'cart') title = t('store.titleCart', 'Cart | Spectrum Store');
+    document.title = title;
   }
 
   function render() {
@@ -607,6 +725,7 @@
   function boot() {
     if (location.hostname === 'localhost' || location.hostname === '127.0.0.1') WWW = '';
     bindChrome();
+    bindSettings();
     bindCartDrawer();
     window.addEventListener('popstate', render);
     window.addEventListener('spectrum:store-cart', function () {

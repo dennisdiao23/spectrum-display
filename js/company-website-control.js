@@ -101,7 +101,7 @@
 
   function productLiveUrl(p) {
     if (!p) return '/products';
-    return '/product?brand=' + encodeURIComponent(p.brandId) + '&series=' + encodeURIComponent(p.id);
+    return '/products/' + encodeURIComponent(p.id);
   }
 
   function brandLiveUrl(b) {

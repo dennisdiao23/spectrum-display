@@ -194,6 +194,35 @@
     return (brand.series || []).find(function (s) { return s.id === seriesId; }) || null;
   };
 
+  global.getSpectrumProductFromLocation = function () {
+    var params = new URLSearchParams(location.search);
+    var parts = String(location.pathname || '').replace(/\/+$/, '').split('/').filter(Boolean);
+    var brandId = params.get('brand') || '';
+    var seriesId = params.get('series') || '';
+    if (parts[0] === 'products' && parts[1]) {
+      if (parts.length >= 3) {
+        brandId = brandId || decodeURIComponent(parts[1]);
+        seriesId = seriesId || decodeURIComponent(parts[2]);
+      } else {
+        seriesId = seriesId || decodeURIComponent(parts[1]);
+      }
+    }
+    var series = brandId && global.getSpectrumSeries ? global.getSpectrumSeries(brandId, seriesId) : null;
+    if (!series && seriesId) {
+      var list = global.SPECTRUM_PRODUCT_LIST || [];
+      var matches = list.filter(function (p) { return String(p.id) === seriesId; });
+      if (brandId) {
+        var branded = matches.filter(function (p) { return p.brandId === brandId; });
+        if (branded.length) matches = branded;
+      }
+      if (matches[0]) {
+        brandId = matches[0].brandId;
+        series = matches[0];
+      }
+    }
+    return { brandId: brandId, seriesId: seriesId, series: series || null };
+  };
+
   global.spectrumDisplayImage = function (src, kind) {
     if (!src) return '';
     var w = 1000;
@@ -202,6 +231,7 @@
     if (/^https:\/\/[^/]+\.supabase\.co\/storage\/v1\/object\/public\/product-images\//i.test(src)) {
       return '/api/img?w=' + w + '&u=' + encodeURIComponent(src);
     }
+    if (!/^https?:/i.test(src) && src.charAt(0) !== '/') src = '/' + src.replace(/^\.\//, '');
     return src;
   };
 
