@@ -149,6 +149,9 @@ button, input, select { font-family: inherit; }
   width: auto;
   height: 1.85rem;
 }
+.shop-wordmark .shop-logo-dark { display: none; }
+html[data-shop-theme="dark"] .shop-wordmark .shop-logo-light { display: none; }
+html[data-shop-theme="dark"] .shop-wordmark .shop-logo-dark { display: block; }
 .shop-footer .shop-wordmark img {
   height: 2.4rem;
   margin-bottom: 0.75rem;
@@ -269,9 +272,6 @@ button, input, select { font-family: inherit; }
   font-size: 0.8rem;
   font-weight: 600;
 }
-html[data-shop-theme="dark"] .shop-wordmark img {
-  filter: invert(1) hue-rotate(180deg);
-}
 
 /* Category rail */
 .shop-rail {
@@ -327,6 +327,9 @@ html[data-shop-theme="dark"] .shop-wordmark img {
   display: block;
 }
 .shop-rail-icon svg { width: 100%; height: 100%; }
+.shop-rail-icon-dark { display: none; }
+html[data-shop-theme="dark"] .shop-rail-icon-light { display: none; }
+html[data-shop-theme="dark"] .shop-rail-icon-dark { display: block; }
 
 /* Collection text links (replaces rail) */
 .shop-subnav {

@@ -3,8 +3,8 @@
  * when a series has no product photo. Do not write these paths into the DB.
  */
 (function (global) {
-  var CONTROLLER = '/assets/products/placeholders/controller.webp';
-  var CARD = '/assets/products/placeholders/receiving-card.webp';
+  var CONTROLLER = '/assets/products/placeholders/controller.webp?v=dark1';
+  var CARD = '/assets/products/placeholders/receiving-card.webp?v=dark1';
 
   function isReceivingCard(p) {
     if (!p) return false;

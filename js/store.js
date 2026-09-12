@@ -106,20 +106,24 @@
   }
 
   function railIcon(item) {
+    var html = '';
     if (item.img) {
-      return '<img class="shop-rail-icon" src="' + esc(item.img) + '" alt="" width="80" height="80">';
+      html += '<img class="shop-rail-icon shop-rail-icon-light" src="' + esc(item.img) + '" alt="" width="80" height="80">';
     }
-    return '';
+    if (item.imgDark) {
+      html += '<img class="shop-rail-icon shop-rail-icon-dark" src="' + esc(item.imgDark) + '" alt="" width="80" height="80">';
+    }
+    return html;
   }
 
   function railItems() {
     return [
-      { label: t('store.whatsNew', 'What’s New'), href: href('/#whats-new'), img: '/assets/store/whats-new.webp?v=rail3d', key: 'new' },
-      { label: t('store.col.control', 'Controller'), href: href('/collections/control'), img: '/assets/store/controller.webp?v=rail3d', key: 'control' },
-      { label: t('store.col.rental', 'Rental Panel'), href: href('/collections/rental'), img: '/assets/store/rental-panel.webp?v=rail3d', key: 'rental' },
-      { label: t('store.col.poster', 'Poster'), href: href('/collections/poster'), img: '/assets/store/poster.webp?v=rail3d', key: 'poster' },
-      { label: t('store.col.spares', 'Spares'), href: href('/collections/spares'), img: '/assets/store/spares.webp?v=rail3d', key: 'spares' },
-      { label: t('store.col.accessories', 'Accessories'), href: href('/collections/accessories'), img: '/assets/store/accessories.webp?v=rail3d', key: 'accessories' }
+      { label: t('store.whatsNew', 'What’s New'), href: href('/#whats-new'), img: '/assets/store/whats-new.webp?v=rail3d', imgDark: '/assets/store/whats-new-dark.webp?v=dark1', key: 'new' },
+      { label: t('store.col.control', 'Controller'), href: href('/collections/control'), img: '/assets/store/controller.webp?v=rail3d', imgDark: '/assets/store/controller-dark.webp?v=dark1', key: 'control' },
+      { label: t('store.col.rental', 'Rental Panel'), href: href('/collections/rental'), img: '/assets/store/rental-panel.webp?v=rail3d', imgDark: '/assets/store/rental-panel-dark.webp?v=dark1', key: 'rental' },
+      { label: t('store.col.poster', 'Poster'), href: href('/collections/poster'), img: '/assets/store/poster.webp?v=rail3d', imgDark: '/assets/store/poster-dark.webp?v=dark1', key: 'poster' },
+      { label: t('store.col.spares', 'Spares'), href: href('/collections/spares'), img: '/assets/store/spares.webp?v=rail3d', imgDark: '/assets/store/spares-dark.webp?v=dark1', key: 'spares' },
+      { label: t('store.col.accessories', 'Accessories'), href: href('/collections/accessories'), img: '/assets/store/accessories.webp?v=rail3d', imgDark: '/assets/store/accessories-dark.webp?v=dark1', key: 'accessories' }
     ];
   }
 

@@ -794,7 +794,7 @@
   function ensureCatalog() {
     if (window.spectrumCatalogReady) return;
     var files = [
-      ['product-photo.js', '/js/product-photo.js?v=ph1'],
+      ['product-photo.js', '/js/product-photo.js?v=ph2'],
       ['control-systems.js', '/js/control-systems.js'],
       ['catalog-api.js', '/js/catalog-api.js?v=ph3']
     ];
