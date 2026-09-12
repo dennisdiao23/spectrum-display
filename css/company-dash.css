@@ -7599,7 +7599,7 @@ body.dash-split-lock #crm-pipe-section .crm-board {
   padding: 0 1.2rem 1.1rem;
 }
 
-/* Website → Control */
+/* Website → Products */
 #control-section:not(.hidden) {
   min-height: 0;
   flex: 1 1 auto;
@@ -7846,6 +7846,50 @@ body.dash-split-lock #crm-pipe-section .crm-board {
   font-weight: 700;
   padding: 0.12rem 0.4rem;
   cursor: pointer;
+}
+.wc-store-card,
+.wc-map-card {
+  margin-top: 1rem;
+  padding: 0.85rem;
+  border: 1px solid var(--dash-line);
+  border-radius: 0.8rem;
+  background: #fff;
+}
+.wc-store-card h3,
+.wc-map-card h3 {
+  margin-top: 0;
+}
+.wc-note {
+  font-size: 0.78rem;
+  color: #64748b;
+  margin: 0 0 0.7rem;
+}
+.wc-note.wc-ok { color: #0369a1; }
+.wc-note.wc-bad { color: #dc2626; }
+.wc-map-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 0.55rem;
+}
+.wc-map-label {
+  min-width: 5.5rem;
+  font-size: 0.8rem;
+  font-weight: 650;
+  color: #334155;
+}
+.wc-map-row select {
+  flex: 1 1 180px;
+}
+#control-section #wc-tab-bar {
+  flex-shrink: 0;
+}
+#control-section #wc-overview-panel {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow: auto;
+  padding: 0.75rem 1rem 1.4rem;
 }
 .wc-shot-add {
   display: flex;
