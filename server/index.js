@@ -282,7 +282,6 @@ async function main() {
   const MARKET_PAGES = [
     ['/products', 'products.html'],
     ['/product', 'product.html'],
-    ['/brands', 'brands.html'],
     ['/contact', 'contact.html'],
     ['/dealer', 'dealer.html'],
     ['/support', 'support.html'],
@@ -301,6 +300,10 @@ async function main() {
       const qs = req.url.includes('?') ? req.url.slice(req.url.indexOf('?')) : '';
       res.redirect(301, route + qs);
     });
+  });
+  app.get(['/brands', '/brands/', '/brands.html'], function (req, res) {
+    const qs = req.url.includes('?') ? req.url.slice(req.url.indexOf('?')) : '';
+    res.redirect(301, '/products' + qs);
   });
   app.get(['/control', '/control/', '/control.html'], function (_req, res) {
     res.redirect(301, '/products?cat=control');
@@ -382,7 +385,6 @@ async function main() {
     [
       ['/', 'weekly', '1.0'],
       ['/products', 'weekly', '0.9'],
-      ['/brands', 'weekly', '0.8'],
       ['/products?cat=control', 'weekly', '0.8'],
       ['/retail-hospitality', 'monthly', '0.7'],
       ['/worship', 'monthly', '0.7'],

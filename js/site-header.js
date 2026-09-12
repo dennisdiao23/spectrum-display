@@ -39,7 +39,7 @@
   function onProductsPath() {
     var p = pathName();
     var file = pathFile();
-    return p === '/products' || p === '/product' || p === '/brands' || file === 'products.html' || file === 'product.html' || file === 'brands.html';
+    return p === '/products' || p === '/product' || file === 'products.html' || file === 'product.html';
   }
 
   function onDealerPath() {
@@ -65,7 +65,7 @@
       'shipping.html': '/shipping',
       'privacy.html': '/privacy',
       'terms.html': '/terms',
-      'brands.html': '/brands',
+      'brands.html': '/products',
       'control.html': '/products?cat=control'
     };
     var m = String(href).match(/^(https?:\/\/(?:www\.)?spectrumdisplay\.com)?\/?((?:products|product|contact|dealer|support|warranty|shipping|privacy|terms|brands|control)\.html)(\?[^#]*)?(#.*)?$/i);

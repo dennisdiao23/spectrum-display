@@ -61,6 +61,7 @@
   if (pathName === '/company' || pathName.indexOf('/company/') === 0) return;
   if (pathName === '/portal' || pathName.indexOf('/portal') === 0) return;
   if (file === 'admin.html' || file === 'company.html' || file === 'cart.html' || file === 'account.html' || file === 'portal.html') return;
+  if (file === 'brands.html') return;
 
   var path = publicPath();
   var url = ORIGIN + path + location.search;

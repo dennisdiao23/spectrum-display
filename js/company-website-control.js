@@ -83,7 +83,7 @@
   }
 
   function brandLiveUrl(b) {
-    if (!b) return '/brands';
+    if (!b) return '/products';
     return '/products?brand=' + encodeURIComponent(b.id);
   }
 
@@ -376,8 +376,8 @@
           (b && b.id && canEdit() ? '<button type="button" class="wc-btn wc-btn-danger" id="wc-brand-delete">Delete</button>' : '') +
         '</div>' +
       '</form>';
-    setLiveLink(b && b.id ? brandLiveUrl(b) : '/brands');
-    refreshPreview(b && b.id ? brandLiveUrl(b) : '/brands');
+    setLiveLink(b && b.id ? brandLiveUrl(b) : '/products');
+    refreshPreview(b && b.id ? brandLiveUrl(b) : '/products');
   }
 
   function renderPicturesHelp() {
