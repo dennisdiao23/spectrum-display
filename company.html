@@ -14,10 +14,10 @@
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
   <title>Company | Spectrum Display</title>
   <meta name="robots" content="noindex, nofollow" />
-  <link rel="stylesheet" href="/css/company-dash.css?v=storelist3" />
+  <link rel="stylesheet" href="/css/company-dash.css?v=zoomphone1" />
   <script src="/js/address-autocomplete.js"></script>
   <script src="/js/company-chat.js?v=chatcrm3"></script>
-  <script src="/js/company-crm.js?v=crmv3"></script>
+  <script src="/js/company-crm.js?v=zoomphone1"></script>
   <script src="/js/company-traffic.js?v=loc1"></script>
   <script src="/js/print-form.js?v=forms20"></script>
   <script>
@@ -94,6 +94,20 @@
   </style>
 </head>
 <body class="company-app antialiased">
+  <div id="crm-phone-banner" class="crm-phone-banner hidden" hidden>
+    <div class="crm-phone-banner-inner">
+      <div class="crm-phone-banner-copy">
+        <strong id="crm-phone-banner-title">Incoming call</strong>
+        <span id="crm-phone-banner-sub"></span>
+      </div>
+      <div class="crm-phone-banner-actions">
+        <a id="crm-phone-banner-call" class="cc-detail-btn cc-detail-btn-primary hidden" href="#">Call back</a>
+        <a id="crm-phone-banner-sms" class="cc-detail-btn hidden" href="#">SMS</a>
+        <button type="button" id="crm-phone-banner-open" class="cc-detail-btn cc-detail-btn-primary">Open lead</button>
+        <button type="button" id="crm-phone-banner-dismiss" class="cc-detail-btn">Dismiss</button>
+      </div>
+    </div>
+  </div>
   <div class="dash-scrim" id="dash-scrim"></div>
   <aside class="dash-sidebar" id="dash-sidebar">
     <a href="/company" class="dash-brand" title="Dashboard">
@@ -2102,7 +2116,8 @@
                       <p id="crm-lead-detail-sub" class="cc-detail-subname"></p>
                       <div class="cc-detail-quick">
                         <a id="crm-lead-mail" class="cc-detail-quick-btn hidden" href="#" title="Email"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="m3 7 9 6 9-6"/></svg></a>
-                        <a id="crm-lead-tel" class="cc-detail-quick-btn hidden" href="#" title="Phone"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M5 4h4l2 5-2.5 1.5a11 11 0 0 0 5 5L15 13l5 2v4a2 2 0 0 1-2 2A15 15 0 0 1 3 6a2 2 0 0 1 2-2z"/></svg></a>
+                        <a id="crm-lead-tel" class="cc-detail-quick-btn hidden" href="#" title="Call with Zoom Phone"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M5 4h4l2 5-2.5 1.5a11 11 0 0 0 5 5L15 13l5 2v4a2 2 0 0 1-2 2A15 15 0 0 1 3 6a2 2 0 0 1 2-2z"/></svg></a>
+                        <a id="crm-lead-sms" class="cc-detail-quick-btn hidden" href="#" title="Text with Zoom Phone"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M4 6h16v10H8l-4 3V6z"/></svg></a>
                       </div>
                     </div>
                     <div class="cc-detail-toolbar-actions inv-detail-hero-actions">
@@ -3310,6 +3325,7 @@
             <select id="crm-act-type">
               <option value="note">Note</option>
               <option value="call">Call</option>
+              <option value="sms">SMS</option>
               <option value="email">Email</option>
               <option value="meeting">Meeting</option>
               <option value="task">Task</option>
@@ -4119,7 +4135,7 @@
     </a>
   </nav>
 
-  <link rel="stylesheet" href="/css/company-dash.css?v=storelist3" />
+  <link rel="stylesheet" href="/css/company-dash.css?v=zoomphone1" />
 
   <script>
     const loginPanel = document.getElementById('login-panel');

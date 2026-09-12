@@ -59,6 +59,7 @@
   var ACT_TYPES = [
     { id: 'note', label: 'Note' },
     { id: 'call', label: 'Call' },
+    { id: 'sms', label: 'SMS' },
     { id: 'email', label: 'Email' },
     { id: 'meeting', label: 'Meeting' },
     { id: 'task', label: 'Task' }
@@ -115,6 +116,53 @@
     var s = String(raw || '');
     if (!s) return '—';
     return s.slice(0, 10);
+  }
+
+  function toE164(value) {
+    var raw = String(value || '').trim();
+    var d = raw.replace(/\D/g, '');
+    if (!d) return '';
+    if (raw.charAt(0) === '+' && d.length >= 8) return '+' + d;
+    if (d.length === 10) return '+1' + d;
+    if (d.length === 11 && d.charAt(0) === '1') return '+' + d;
+    if (d.length >= 8) return '+' + d;
+    return '';
+  }
+
+  function zoomCallHref(value) {
+    var e164 = toE164(value);
+    return e164 ? 'zoomphonecall://' + e164 : '';
+  }
+
+  function zoomSmsHref(value) {
+    var e164 = toE164(value);
+    return e164 ? 'zoomphonesms://' + e164 : '';
+  }
+
+  function phoneActionsHtml(number, extraClass) {
+    var href = zoomCallHref(number);
+    var sms = zoomSmsHref(number);
+    if (!href) return esc(number || '—');
+    return '<span class="crm-phone-actions' + (extraClass ? ' ' + extraClass : '') + '">' +
+      '<a href="' + esc(href) + '" title="Call with Zoom Phone">' + esc(number) + '</a>' +
+      (sms ? ' <a class="crm-sms-link" href="' + esc(sms) + '" title="Text with Zoom Phone">SMS</a>' : '') +
+      '</span>';
+  }
+
+  function actMediaHtml(act) {
+    if (!act || !act.id) return '';
+    var bits = [];
+    if (act.recordingUrl) {
+      bits.push('<audio class="crm-phone-audio" controls preload="none" src="/api/admin/crm/phone/media/' +
+        encodeURIComponent(act.id) + '?kind=recording"></audio>');
+    }
+    if (act.mediaUrl && (act.voicemailId || act.type === 'sms')) {
+      if (act.voicemailId || act.type === 'call') {
+        bits.push('<audio class="crm-phone-audio" controls preload="none" src="/api/admin/crm/phone/media/' +
+          encodeURIComponent(act.id) + '?kind=voicemail"></audio>');
+      }
+    }
+    return bits.length ? '<div class="crm-phone-media">' + bits.join('') + '</div>' : '';
   }
 
   function statusLabel(list, id) {
@@ -419,9 +467,12 @@
     return '<div class="crm-act-feed">' + list.map(function (act) {
       return '<article class="crm-act-item">' +
         '<header><strong>' + esc(act.subject) + '</strong><span>' + esc(statusLabel(ACT_TYPES, act.type)) +
+        (act.durationSec ? ' · ' + esc(String(Math.round(act.durationSec)) + 's') : '') +
         (act.dueAt ? ' · ' + esc(fmtDate(act.dueAt)) : '') +
         (act.doneAt ? ' · Done' : '') + '</span></header>' +
+        (act.phoneFrom || act.phoneTo ? '<p class="crm-act-phone">' + phoneActionsHtml(act.phoneDirection === 'outbound' ? act.phoneTo : act.phoneFrom) + '</p>' : '') +
         (act.body ? '<p>' + esc(act.body) + '</p>' : '') +
+        actMediaHtml(act) +
         '</article>';
     }).join('') + '</div>';
   }
@@ -432,7 +483,8 @@
     setText('crm-lead-detail-name', leadName(lead));
     setText('crm-lead-detail-sub', [lead.companyName, lead.email].filter(Boolean).join(' · '));
     setText('crm-lead-detail-email', lead.email || '—');
-    setText('crm-lead-detail-phone', lead.phone || lead.mobile || '—');
+    var phoneEl = $('crm-lead-detail-phone');
+    if (phoneEl) phoneEl.innerHTML = phoneActionsHtml(lead.phone || lead.mobile);
     setText('crm-lead-detail-status', statusLabel(LEAD_STATUSES, lead.status));
     setText('crm-lead-detail-kind', kindLabel(lead.kind));
     setText('crm-lead-detail-source', statusLabel(SOURCES, lead.source));
@@ -452,8 +504,16 @@
     }
     var tel = $('crm-lead-tel');
     if (tel) {
-      tel.classList.toggle('hidden', !(lead.phone || lead.mobile));
-      tel.href = (lead.phone || lead.mobile) ? 'tel:' + (lead.phone || lead.mobile) : '#';
+      var callHref = zoomCallHref(lead.phone || lead.mobile);
+      tel.classList.toggle('hidden', !callHref);
+      tel.href = callHref || '#';
+      tel.title = 'Call with Zoom Phone';
+    }
+    var smsBtn = $('crm-lead-sms');
+    if (smsBtn) {
+      var smsHref = zoomSmsHref(lead.phone || lead.mobile);
+      smsBtn.classList.toggle('hidden', !smsHref);
+      smsBtn.href = smsHref || '#';
     }
     var deals = lead.deals || S.deals.filter(function (d) { return String(d.leadId) === String(lead.id); });
     var dealBody = $('crm-lead-deals');
@@ -1376,6 +1436,86 @@
     }
   }
 
+  var incomingShownId = '';
+
+  function incomingParty(call) {
+    return (call && (call.leadName || call.fromName || call.fromNumber)) || 'Unknown number';
+  }
+
+  function renderIncomingBanner(call) {
+    var banner = $('crm-phone-banner');
+    if (!banner) return;
+    if (!call) {
+      incomingShownId = '';
+      banner.classList.add('hidden');
+      banner.hidden = true;
+      return;
+    }
+    incomingShownId = String(call.id);
+    banner.classList.remove('hidden');
+    banner.hidden = false;
+    var title = $('crm-phone-banner-title');
+    var sub = $('crm-phone-banner-sub');
+    var openBtn = $('crm-phone-banner-open');
+    var smsBtn = $('crm-phone-banner-sms');
+    var callBtn = $('crm-phone-banner-call');
+    if (title) title.textContent = (call.status === 'answered' ? 'On a call' : 'Incoming call') + ' · ' + incomingParty(call);
+    if (sub) {
+      sub.textContent = [call.fromNumber, call.staffName ? 'for ' + call.staffName : ''].filter(Boolean).join(' ');
+    }
+    if (openBtn) {
+      openBtn.hidden = !call.leadId;
+      openBtn.textContent = call.leadId ? 'Open lead' : 'No matching lead';
+    }
+    if (callBtn) {
+      var href = zoomCallHref(call.fromNumber);
+      callBtn.classList.toggle('hidden', !href);
+      callBtn.href = href || '#';
+    }
+    if (smsBtn) {
+      var sms = zoomSmsHref(call.fromNumber);
+      smsBtn.classList.toggle('hidden', !sms);
+      smsBtn.href = sms || '#';
+    }
+  }
+
+  async function pollIncoming() {
+    if (!H.api || document.hidden) return;
+    try {
+      var data = await H.api('/api/admin/crm/phone/incoming');
+      var calls = (data && data.calls) || [];
+      renderIncomingBanner(calls[0] || null);
+    } catch (err) { /* stay quiet while signed out */ }
+  }
+
+  async function openIncomingLead() {
+    var banner = $('crm-phone-banner');
+    var id = incomingShownId;
+    if (!id) return;
+    try {
+      var data = await H.api('/api/admin/crm/phone/incoming');
+      var call = ((data && data.calls) || []).find(function (row) { return String(row.id) === String(id); });
+      if (!call || !call.leadId) return;
+      if (H.pushPath) H.pushPath('/company/crm/leads/' + call.leadId);
+      if (H.openCompanyTab) H.openCompanyTab('leads', false, { reload: true });
+      else await openLead(call.leadId, { push: false });
+    } catch (err) { /* ignore */ }
+  }
+
+  async function dismissIncoming() {
+    if (!incomingShownId) return;
+    try {
+      await H.api('/api/admin/crm/phone/incoming/' + encodeURIComponent(incomingShownId) + '/dismiss', { method: 'POST' });
+    } catch (err) { /* ignore */ }
+    renderIncomingBanner(null);
+  }
+
+  function startIncomingPoll() {
+    pollIncoming();
+    if (startIncomingPoll.timer) return;
+    startIncomingPoll.timer = setInterval(pollIncoming, 2500);
+  }
+
   function bindOnce() {
     if (S.booted) return;
     S.booted = true;
@@ -1586,11 +1726,16 @@
       if (S.dirty && !window.confirm('Discard unsaved changes?')) return;
       closeDrawers(true);
     });
+    var openIncomingBtn = $('crm-phone-banner-open');
+    if (openIncomingBtn) openIncomingBtn.addEventListener('click', function () { openIncomingLead(); });
+    var dismissIncomingBtn = $('crm-phone-banner-dismiss');
+    if (dismissIncomingBtn) dismissIncomingBtn.addEventListener('click', function () { dismissIncoming(); });
   }
 
   function boot(hooks) {
     Object.keys(hooks || {}).forEach(function (key) { H[key] = hooks[key]; });
     bindOnce();
+    startIncomingPoll();
   }
 
   global.SpectrumCrm = {
