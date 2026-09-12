@@ -6956,6 +6956,54 @@ body.is-pf-dragging.is-pf-col-dragging * {
 .crm-act-item header { display: flex; justify-content: space-between; gap: 0.75rem; margin-bottom: 0.25rem; }
 .crm-act-item header span { font-size: 0.75rem; color: var(--dash-muted); }
 .crm-act-item p { margin: 0; font-size: 0.86rem; color: #334155; white-space: pre-wrap; }
+.crm-act-phone { margin-top: 0.2rem; }
+.crm-phone-actions a { color: #1d4ed8; text-decoration: none; }
+.crm-phone-actions a:hover { text-decoration: underline; }
+.crm-sms-link { font-size: 0.75rem; font-weight: 600; margin-left: 0.35rem; }
+.crm-phone-media { margin-top: 0.55rem; }
+.crm-phone-audio { width: 100%; max-width: 22rem; height: 2.2rem; }
+.crm-phone-banner {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 200;
+  background: #102047;
+  color: #fff;
+  border-bottom: 1px solid #1e3a8a;
+  box-shadow: 0 10px 24px rgba(7, 21, 58, 0.28);
+}
+.crm-phone-banner[hidden],
+.crm-phone-banner.hidden {
+  display: none !important;
+}
+.crm-phone-banner:not([hidden]):not(.hidden) {
+  display: block;
+}
+.crm-phone-banner .hidden {
+  display: none !important;
+}
+.crm-phone-banner-inner {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  padding: 0.7rem 1.1rem;
+}
+.crm-phone-banner-copy { display: flex; flex-direction: column; gap: 0.15rem; min-width: 12rem; }
+.crm-phone-banner-copy strong { font-size: 0.95rem; }
+.crm-phone-banner-copy span { font-size: 0.8rem; color: #bfdbfe; }
+.crm-phone-banner-actions { display: flex; flex-wrap: wrap; gap: 0.45rem; }
+.crm-phone-banner .cc-detail-btn {
+  background: #fff;
+  color: #102047;
+}
+.crm-phone-banner .cc-detail-btn-primary {
+  background: #38bdf8;
+  color: #082f49;
+  border-color: #38bdf8;
+}
 #crm-lead-drawer.is-open,
 #crm-deal-drawer.is-open,
 #crm-act-drawer.is-open,

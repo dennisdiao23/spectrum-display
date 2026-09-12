@@ -159,7 +159,13 @@ async function main() {
   const app = express();
   app.set('trust proxy', 1);
   app.use(compression());
-  app.use(express.json({ limit: '2mb' }));
+  app.use(express.json({
+    limit: '2mb',
+    verify: function (req, buf) {
+      const url = String(req.originalUrl || req.url || '');
+      if (url.indexOf('/api/webhooks/zoom') === 0) req.rawBody = buf.toString('utf8');
+    }
+  }));
   app.use(express.urlencoded({ extended: true }));
   app.use(cookieParser());
   app.use(function (req, res, next) {
@@ -1832,6 +1838,55 @@ async function main() {
       const ok = await store.deleteCrmActivity(req.params.id);
       if (!ok) return res.status(404).json({ ok: false, error: 'Activity not found.' });
       res.json({ ok: true });
+    } catch (err) { next(err); }
+  });
+
+  app.post('/api/webhooks/zoom-phone', async function (req, res) {
+    const zoom = require('./zoom-phone');
+    try {
+      if (!zoom.verifyRequest(req)) {
+        return res.status(401).json({ ok: false, error: 'Invalid Zoom signature.' });
+      }
+      const result = await zoom.handleEvent(store, req.body || {});
+      if (result && result.crc) return res.json(result.crc);
+      res.json({ ok: true });
+    } catch (err) {
+      console.error('zoom-phone webhook', err);
+      res.status(500).json({ ok: false, error: err.message || 'Zoom webhook failed.' });
+    }
+  });
+
+  app.get('/api/admin/crm/phone/incoming', requireAdmin, requireCrmView, async function (req, res, next) {
+    try {
+      res.json({ ok: true, calls: await store.listCrmIncomingCalls(req.admin) });
+    } catch (err) { next(err); }
+  });
+
+  app.post('/api/admin/crm/phone/incoming/:id/dismiss', requireAdmin, requireCrmView, async function (req, res, next) {
+    try {
+      const ok = await store.dismissCrmIncomingCall(req.params.id, req.admin);
+      if (!ok) return res.status(404).json({ ok: false, error: 'Incoming call not found.' });
+      res.json({ ok: true });
+    } catch (err) { next(err); }
+  });
+
+  app.get('/api/admin/crm/phone/media/:id', requireAdmin, requireCrmView, async function (req, res, next) {
+    try {
+      const zoom = require('./zoom-phone');
+      const act = await store.getCrmActivity(req.params.id);
+      if (!act) return res.status(404).json({ ok: false, error: 'Activity not found.' });
+      const kind = String(req.query.kind || '').toLowerCase();
+      const url = kind === 'voicemail' || (!act.recordingUrl && act.mediaUrl) ? act.mediaUrl : act.recordingUrl;
+      if (!url) return res.status(404).json({ ok: false, error: 'No recording on this call.' });
+      const remote = await zoom.fetchZoomMedia(url);
+      const type = remote.headers.get('content-type') || 'audio/mpeg';
+      res.setHeader('Content-Type', type);
+      res.setHeader('Cache-Control', 'private, max-age=60');
+      if (typeof remote.body.pipe === 'function') remote.body.pipe(res);
+      else {
+        const buf = Buffer.from(await remote.arrayBuffer());
+        res.send(buf);
+      }
     } catch (err) { next(err); }
   });
 

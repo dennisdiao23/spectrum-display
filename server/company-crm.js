@@ -21,7 +21,8 @@ function splitName(name) {
 
 const LEAD_STATUSES = ['new', 'working', 'qualified', 'converted', 'lost'];
 const DEAL_STAGES = ['new', 'qualified', 'quoted', 'negotiation', 'won', 'lost'];
-const ACTIVITY_TYPES = ['note', 'call', 'email', 'meeting', 'task'];
+const ACTIVITY_TYPES = ['note', 'call', 'sms', 'email', 'meeting', 'task'];
+const zoomPhone = require('./zoom-phone');
 const LEAD_SOURCES = ['website', 'dealer', 'manual', 'referral', 'other'];
 const CLOSE_REASONS = ['price', 'timing', 'competitor', 'no_budget', 'other'];
 const CRM_KINDS = ['project', 'dealer'];
@@ -672,7 +673,17 @@ function normalizeActivity(input) {
     createdByName: trim(src.createdByName || src.created_by_name, 120),
     assignedTo: trim(src.assignedTo || src.assigned_to, 120),
     sequenceId: idOrNull(src.sequenceId != null ? src.sequenceId : src.sequence_id),
-    sequenceStep: Math.max(0, Math.round(num(src.sequenceStep != null ? src.sequenceStep : src.sequence_step)))
+    sequenceStep: Math.max(0, Math.round(num(src.sequenceStep != null ? src.sequenceStep : src.sequence_step))),
+    zoomEventKey: trim(src.zoomEventKey || src.zoom_event_key, 160),
+    zoomCallId: trim(src.zoomCallId || src.zoom_call_id, 80),
+    phoneFrom: trim(src.phoneFrom || src.phone_from, 40),
+    phoneTo: trim(src.phoneTo || src.phone_to, 40),
+    phoneDirection: trim(src.phoneDirection || src.phone_direction, 20),
+    durationSec: Math.max(0, Math.round(num(src.durationSec != null ? src.durationSec : src.duration_sec))),
+    recordingId: trim(src.recordingId || src.recording_id, 120),
+    recordingUrl: trim(src.recordingUrl || src.recording_url, 500),
+    voicemailId: trim(src.voicemailId || src.voicemail_id, 120),
+    mediaUrl: trim(src.mediaUrl || src.media_url, 500)
   };
 }
 
@@ -694,9 +705,79 @@ function formatActivity(row) {
     sequenceStep: num(row.sequence_step),
     leadName: row.lead_name || row.leadName || '',
     dealTitle: row.deal_title || row.dealTitle || '',
+    zoomEventKey: row.zoom_event_key || '',
+    zoomCallId: row.zoom_call_id || '',
+    phoneFrom: row.phone_from || '',
+    phoneTo: row.phone_to || '',
+    phoneDirection: row.phone_direction || '',
+    durationSec: num(row.duration_sec),
+    recordingId: row.recording_id || '',
+    recordingUrl: row.recording_url || '',
+    voicemailId: row.voicemail_id || '',
+    mediaUrl: row.media_url || '',
     createdAt: row.created_at || '',
     updatedAt: row.updated_at || ''
   };
+}
+
+function formatIncomingCall(row) {
+  if (!row) return null;
+  return {
+    id: row.id,
+    rowKey: row.row_key || '',
+    zoomCallId: row.zoom_call_id || '',
+    staffZoomUserId: row.staff_zoom_user_id || '',
+    status: row.status || 'ringing',
+    direction: row.direction || 'inbound',
+    fromNumber: row.from_number || '',
+    fromName: row.from_name || '',
+    toNumber: row.to_number || '',
+    staffName: row.staff_name || '',
+    staffEmail: row.staff_email || '',
+    leadId: row.lead_id || null,
+    customerId: row.customer_id || null,
+    dealId: row.deal_id || null,
+    leadName: row.lead_name || row.leadName || '',
+    createdAt: row.created_at || '',
+    updatedAt: row.updated_at || ''
+  };
+}
+
+function incomingRowKey(src) {
+  const callId = trim(src.zoomCallId || src.zoom_call_id, 80);
+  const userId = trim(src.staffZoomUserId || src.staff_zoom_user_id, 80);
+  return callId + '|' + (userId || trim(src.staffName || src.staff_name, 120) || 'staff');
+}
+
+function mergeZoomActivity(current, payload) {
+  const next = Object.assign({}, current || {}, payload || {});
+  if (payload && payload.mergeMedia && current) {
+    if (!next.recordingUrl) next.recordingUrl = current.recordingUrl;
+    if (!next.mediaUrl) next.mediaUrl = current.mediaUrl;
+    if (!next.recordingId) next.recordingId = current.recordingId;
+    if (!next.voicemailId) next.voicemailId = current.voicemailId;
+    if (!(Number(next.durationSec) > 0) && Number(current.durationSec) > 0) next.durationSec = current.durationSec;
+    if (current.body && payload.body && current.body.indexOf(payload.body) === -1) {
+      next.body = current.body + (payload.body ? '\n' + payload.body : '');
+    } else if (current.body && !payload.body) next.body = current.body;
+    if (current.subject && payload.mergeMedia) next.subject = current.subject;
+  }
+  next.done = true;
+  return next;
+}
+
+function recordPhones(row) {
+  if (!row) return [];
+  return [row.phone, row.mobile, row.otherPhone, row.other_phone, row.fax].filter(Boolean);
+}
+
+function matchPhoneOnList(list, number, pick) {
+  const hits = (list || []).filter(function (row) {
+    return recordPhones(pick ? pick(row) : row).some(function (phone) {
+      return zoomPhone.phonesMatch(phone, number);
+    });
+  });
+  return hits;
 }
 
 function activityDbFields(input) {
@@ -712,7 +793,17 @@ function activityDbFields(input) {
     created_by_name: input.createdByName,
     assigned_to: input.assignedTo,
     sequence_id: input.sequenceId,
-    sequence_step: input.sequenceStep
+    sequence_step: input.sequenceStep,
+    zoom_event_key: input.zoomEventKey || '',
+    zoom_call_id: input.zoomCallId || '',
+    phone_from: input.phoneFrom || '',
+    phone_to: input.phoneTo || '',
+    phone_direction: input.phoneDirection || '',
+    duration_sec: input.durationSec || 0,
+    recording_id: input.recordingId || '',
+    recording_url: input.recordingUrl || '',
+    voicemail_id: input.voicemailId || '',
+    media_url: input.mediaUrl || ''
   };
 }
 
@@ -891,7 +982,17 @@ function ensureCompanyCrm(db) {
     "ALTER TABLE company_crm_deals ADD COLUMN calculator_summary TEXT NOT NULL DEFAULT ''",
     "ALTER TABLE company_crm_activities ADD COLUMN assigned_to TEXT NOT NULL DEFAULT ''",
     'ALTER TABLE company_crm_activities ADD COLUMN sequence_id INTEGER',
-    'ALTER TABLE company_crm_activities ADD COLUMN sequence_step INTEGER NOT NULL DEFAULT 0'
+    'ALTER TABLE company_crm_activities ADD COLUMN sequence_step INTEGER NOT NULL DEFAULT 0',
+    "ALTER TABLE company_crm_activities ADD COLUMN zoom_event_key TEXT NOT NULL DEFAULT ''",
+    "ALTER TABLE company_crm_activities ADD COLUMN zoom_call_id TEXT NOT NULL DEFAULT ''",
+    "ALTER TABLE company_crm_activities ADD COLUMN phone_from TEXT NOT NULL DEFAULT ''",
+    "ALTER TABLE company_crm_activities ADD COLUMN phone_to TEXT NOT NULL DEFAULT ''",
+    "ALTER TABLE company_crm_activities ADD COLUMN phone_direction TEXT NOT NULL DEFAULT ''",
+    'ALTER TABLE company_crm_activities ADD COLUMN duration_sec INTEGER NOT NULL DEFAULT 0',
+    "ALTER TABLE company_crm_activities ADD COLUMN recording_id TEXT NOT NULL DEFAULT ''",
+    "ALTER TABLE company_crm_activities ADD COLUMN recording_url TEXT NOT NULL DEFAULT ''",
+    "ALTER TABLE company_crm_activities ADD COLUMN voicemail_id TEXT NOT NULL DEFAULT ''",
+    "ALTER TABLE company_crm_activities ADD COLUMN media_url TEXT NOT NULL DEFAULT ''"
   ].forEach(function (sql) {
     try { db.exec(sql); } catch (e) { /* already present */ }
   });
@@ -918,7 +1019,40 @@ function ensureCompanyCrm(db) {
     );
     CREATE INDEX IF NOT EXISTS company_crm_enrollments_lead_idx ON company_crm_enrollments (lead_id, status);
     CREATE INDEX IF NOT EXISTS company_crm_enrollments_seq_idx ON company_crm_enrollments (sequence_id);
+    CREATE TABLE IF NOT EXISTS company_crm_incoming_calls (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      row_key TEXT NOT NULL DEFAULT '',
+      zoom_call_id TEXT NOT NULL DEFAULT '',
+      staff_zoom_user_id TEXT NOT NULL DEFAULT '',
+      status TEXT NOT NULL DEFAULT 'ringing',
+      direction TEXT NOT NULL DEFAULT 'inbound',
+      from_number TEXT NOT NULL DEFAULT '',
+      from_name TEXT NOT NULL DEFAULT '',
+      to_number TEXT NOT NULL DEFAULT '',
+      staff_name TEXT NOT NULL DEFAULT '',
+      staff_email TEXT NOT NULL DEFAULT '',
+      lead_id INTEGER,
+      customer_id INTEGER,
+      deal_id INTEGER,
+      created_at TEXT NOT NULL,
+      updated_at TEXT NOT NULL
+    );
+    CREATE UNIQUE INDEX IF NOT EXISTS company_crm_incoming_calls_row_key_idx ON company_crm_incoming_calls (row_key);
+    CREATE INDEX IF NOT EXISTS company_crm_incoming_calls_call_idx ON company_crm_incoming_calls (zoom_call_id, status);
+    CREATE TABLE IF NOT EXISTS company_crm_zoom_staff (
+      zoom_user_id TEXT PRIMARY KEY,
+      staff_name TEXT NOT NULL DEFAULT '',
+      staff_email TEXT NOT NULL DEFAULT '',
+      created_at TEXT NOT NULL,
+      updated_at TEXT NOT NULL
+    );
   `);
+  try {
+    db.exec("CREATE UNIQUE INDEX IF NOT EXISTS company_crm_activities_zoom_event_key_idx ON company_crm_activities (zoom_event_key) WHERE zoom_event_key <> ''");
+  } catch (e) { /* already present */ }
+  try {
+    db.exec("CREATE INDEX IF NOT EXISTS company_crm_activities_zoom_call_idx ON company_crm_activities (zoom_call_id) WHERE zoom_call_id <> ''");
+  } catch (e) { /* already present */ }
 }
 
 function insertRow(db, table, fields) {
@@ -1028,6 +1162,71 @@ function sqliteCreateEnrollment(db, leadId, sequence, actorName) {
     })));
   });
   return info.lastInsertRowid;
+}
+
+function sqliteFindByPhone(db, number) {
+  if (!zoomPhone.phoneDigits(number)) return { lead: null, customer: null, deal: null };
+  const leads = db.prepare(`
+    SELECT * FROM company_crm_leads
+    WHERE (merged_into_id IS NULL OR merged_into_id = 0)
+      AND (phone != '' OR mobile != '')
+    ORDER BY datetime(updated_at) DESC, id DESC
+  `).all().map(formatLead);
+  const openLead = matchPhoneOnList(leads, number).find(function (row) {
+    return row.status !== 'converted' && row.status !== 'lost';
+  }) || matchPhoneOnList(leads, number)[0] || null;
+  let customer = null;
+  try {
+    const customers = db.prepare(`
+      SELECT * FROM company_customers
+      WHERE phone != '' OR mobile != '' OR other_phone != ''
+    `).all();
+    const cc = require('./company-customers');
+    customer = matchPhoneOnList(customers.map(cc.formatCustomer), number)[0] || null;
+    if (!customer) {
+      const contacts = db.prepare(`
+        SELECT customer_id, phone, mobile FROM company_customer_contacts
+        WHERE phone != '' OR mobile != ''
+      `).all();
+      const hit = contacts.find(function (row) {
+        return zoomPhone.phonesMatch(row.phone, number) || zoomPhone.phonesMatch(row.mobile, number);
+      });
+      if (hit) customer = cc.formatCustomer(db.prepare('SELECT * FROM company_customers WHERE id = ?').get(hit.customer_id));
+    }
+  } catch (e) { /* customers optional */ }
+  if (!customer && openLead && openLead.convertedCustomerId) {
+    try {
+      const cc = require('./company-customers');
+      customer = cc.formatCustomer(db.prepare('SELECT * FROM company_customers WHERE id = ?').get(openLead.convertedCustomerId));
+    } catch (e) { /* ignore */ }
+  }
+  let deal = null;
+  if (openLead) {
+    deal = formatDeal(db.prepare(`
+      SELECT * FROM company_crm_deals
+      WHERE lead_id = ? AND stage NOT IN ('won', 'lost')
+      ORDER BY datetime(updated_at) DESC, id DESC LIMIT 1
+    `).get(openLead.id));
+  }
+  return { lead: openLead, customer: customer, deal: deal };
+}
+
+function sqliteFindZoomActivity(db, payload) {
+  const key = trim(payload && (payload.zoomEventKey || payload.zoom_event_key), 160);
+  const callId = trim(payload && (payload.zoomCallId || payload.zoom_call_id), 80);
+  if (key) {
+    const byKey = db.prepare('SELECT * FROM company_crm_activities WHERE zoom_event_key = ?').get(key);
+    if (byKey) return formatActivity(byKey);
+  }
+  if (callId) {
+    const byCall = db.prepare(`
+      SELECT * FROM company_crm_activities
+      WHERE zoom_call_id = ? AND type IN ('call', 'sms')
+      ORDER BY id DESC LIMIT 1
+    `).get(callId);
+    if (byCall) return formatActivity(byCall);
+  }
+  return null;
 }
 
 function sqliteApi(db, store) {
@@ -1250,6 +1449,112 @@ function sqliteApi(db, store) {
     async deleteCrmActivity(id) {
       const info = db.prepare('DELETE FROM company_crm_activities WHERE id = ?').run(id);
       return info.changes > 0;
+    },
+    async findCrmByPhone(number) {
+      return sqliteFindByPhone(db, number);
+    },
+    async getCrmZoomStaff(zoomUserId) {
+      const id = trim(zoomUserId, 80);
+      if (!id) return null;
+      const row = db.prepare('SELECT * FROM company_crm_zoom_staff WHERE zoom_user_id = ?').get(id);
+      if (!row) return null;
+      return { zoomUserId: row.zoom_user_id, staffName: row.staff_name || '', staffEmail: row.staff_email || '' };
+    },
+    async saveCrmZoomStaff(input) {
+      const id = trim(input && input.zoomUserId, 80);
+      if (!id) return null;
+      const stamp = nowIso();
+      const name = trim(input.staffName, 120);
+      const email = trim(input.staffEmail, 160);
+      const existing = db.prepare('SELECT zoom_user_id FROM company_crm_zoom_staff WHERE zoom_user_id = ?').get(id);
+      if (existing) {
+        db.prepare('UPDATE company_crm_zoom_staff SET staff_name = ?, staff_email = ?, updated_at = ? WHERE zoom_user_id = ?')
+          .run(name, email, stamp, id);
+      } else {
+        db.prepare('INSERT INTO company_crm_zoom_staff (zoom_user_id, staff_name, staff_email, created_at, updated_at) VALUES (?, ?, ?, ?, ?)')
+          .run(id, name, email, stamp, stamp);
+      }
+      return this.getCrmZoomStaff(id);
+    },
+    async upsertCrmZoomActivity(payload) {
+      const existing = sqliteFindZoomActivity(db, payload);
+      const input = normalizeActivity(mergeZoomActivity(existing, payload));
+      if (existing) {
+        updateRow(db, 'company_crm_activities', existing.id, activityDbFields(input));
+        return formatActivity(db.prepare('SELECT * FROM company_crm_activities WHERE id = ?').get(existing.id));
+      }
+      const id = insertRow(db, 'company_crm_activities', activityDbFields(input));
+      return formatActivity(db.prepare('SELECT * FROM company_crm_activities WHERE id = ?').get(id));
+    },
+    async upsertCrmIncomingCall(payload) {
+      const src = payload || {};
+      const rowKey = incomingRowKey(src);
+      if (!trim(src.zoomCallId, 80)) return null;
+      const fields = {
+        row_key: rowKey,
+        zoom_call_id: trim(src.zoomCallId, 80),
+        staff_zoom_user_id: trim(src.staffZoomUserId, 80),
+        status: trim(src.status, 20) || 'ringing',
+        direction: trim(src.direction, 20) || 'inbound',
+        from_number: trim(src.fromNumber, 40),
+        from_name: trim(src.fromName, 120),
+        to_number: trim(src.toNumber, 40),
+        staff_name: trim(src.staffName, 120),
+        staff_email: trim(src.staffEmail, 160),
+        lead_id: idOrNull(src.leadId),
+        customer_id: idOrNull(src.customerId),
+        deal_id: idOrNull(src.dealId)
+      };
+      const existing = db.prepare('SELECT * FROM company_crm_incoming_calls WHERE row_key = ?').get(rowKey);
+      if (existing) {
+        updateRow(db, 'company_crm_incoming_calls', existing.id, fields);
+        return formatIncomingCall(db.prepare('SELECT * FROM company_crm_incoming_calls WHERE id = ?').get(existing.id));
+      }
+      const id = insertRow(db, 'company_crm_incoming_calls', fields);
+      return formatIncomingCall(db.prepare('SELECT * FROM company_crm_incoming_calls WHERE id = ?').get(id));
+    },
+    async updateCrmIncomingCallStatus(zoomCallId, staffZoomUserId, status) {
+      const callId = trim(zoomCallId, 80);
+      if (!callId) return 0;
+      const stamp = nowIso();
+      const next = trim(status, 20) || 'ended';
+      if (staffZoomUserId) {
+        const info = db.prepare(
+          'UPDATE company_crm_incoming_calls SET status = ?, updated_at = ? WHERE zoom_call_id = ? AND staff_zoom_user_id = ?'
+        ).run(next, stamp, callId, trim(staffZoomUserId, 80));
+        if (next === 'answered') {
+          db.prepare(
+            "UPDATE company_crm_incoming_calls SET status = 'ended', updated_at = ? WHERE zoom_call_id = ? AND staff_zoom_user_id != ? AND status = 'ringing'"
+          ).run(stamp, callId, trim(staffZoomUserId, 80));
+        }
+        return info.changes;
+      }
+      const info = db.prepare(
+        'UPDATE company_crm_incoming_calls SET status = ?, updated_at = ? WHERE zoom_call_id = ?'
+      ).run(next, stamp, callId);
+      return info.changes;
+    },
+    async listCrmIncomingCalls(admin) {
+      db.prepare(`
+        DELETE FROM company_crm_incoming_calls
+        WHERE datetime(updated_at) < datetime('now', '-15 minutes')
+           OR (status IN ('ended', 'missed', 'dismissed') AND datetime(updated_at) < datetime('now', '-2 minutes'))
+      `).run();
+      const rows = db.prepare(`
+        SELECT c.*, l.display_name AS lead_name
+        FROM company_crm_incoming_calls c
+        LEFT JOIN company_crm_leads l ON l.id = c.lead_id
+        WHERE c.status IN ('ringing', 'answered')
+        ORDER BY datetime(c.updated_at) DESC, c.id DESC
+      `).all().map(formatIncomingCall);
+      return rows.filter(function (row) { return zoomPhone.incomingForAdmin(row, admin); });
+    },
+    async dismissCrmIncomingCall(id, admin) {
+      const row = formatIncomingCall(db.prepare('SELECT * FROM company_crm_incoming_calls WHERE id = ?').get(id));
+      if (!row || !zoomPhone.incomingForAdmin(row, admin)) return false;
+      db.prepare("UPDATE company_crm_incoming_calls SET status = 'dismissed', updated_at = ? WHERE id = ?")
+        .run(nowIso(), id);
+      return true;
     },
     async listCrmMessages(leadId) {
       return sqliteListMessages(db, leadId);
@@ -1809,6 +2114,190 @@ function supabaseApi(supabase, store) {
       const { data, error } = await supabase.from('company_crm_activities').delete().eq('id', id).select('id');
       throwIf(error, 'Could not delete activity.');
       return !!(data && data.length);
+    },
+    async findCrmByPhone(number) {
+      if (!zoomPhone.phoneDigits(number)) return { lead: null, customer: null, deal: null };
+      const leads = (await this.listCrmLeads()).filter(function (row) { return !row.mergedIntoId; });
+      const openLead = matchPhoneOnList(leads, number).find(function (row) {
+        return row.status !== 'converted' && row.status !== 'lost';
+      }) || matchPhoneOnList(leads, number)[0] || null;
+      let customer = null;
+      const custRes = await supabase.from('company_customers').select('*');
+      if (!custRes.error) {
+        const cc = require('./company-customers');
+        customer = matchPhoneOnList((custRes.data || []).map(cc.formatCustomer), number)[0] || null;
+        if (!customer) {
+          const contacts = await supabase.from('company_customer_contacts').select('customer_id, phone, mobile');
+          const hit = (contacts.data || []).find(function (row) {
+            return zoomPhone.phonesMatch(row.phone, number) || zoomPhone.phonesMatch(row.mobile, number);
+          });
+          if (hit) {
+            const row = await supabase.from('company_customers').select('*').eq('id', hit.customer_id).maybeSingle();
+            customer = cc.formatCustomer(row.data);
+          }
+        }
+      }
+      if (!customer && openLead && openLead.convertedCustomerId) {
+        const row = await supabase.from('company_customers').select('*').eq('id', openLead.convertedCustomerId).maybeSingle();
+        const cc = require('./company-customers');
+        customer = cc.formatCustomer(row.data);
+      }
+      let deal = null;
+      if (openLead) {
+        const deals = await supabase
+          .from('company_crm_deals')
+          .select('*')
+          .eq('lead_id', openLead.id)
+          .order('updated_at', { ascending: false });
+        deal = (deals.data || []).map(formatDeal).find(function (row) {
+          return row.stage !== 'won' && row.stage !== 'lost';
+        }) || null;
+      }
+      return { lead: openLead, customer: customer, deal: deal };
+    },
+    async getCrmZoomStaff(zoomUserId) {
+      const id = trim(zoomUserId, 80);
+      if (!id) return null;
+      const { data, error } = await supabase.from('company_crm_zoom_staff').select('*').eq('zoom_user_id', id).maybeSingle();
+      throwIf(error, 'Could not load Zoom staff map.');
+      if (!data) return null;
+      return { zoomUserId: data.zoom_user_id, staffName: data.staff_name || '', staffEmail: data.staff_email || '' };
+    },
+    async saveCrmZoomStaff(input) {
+      const id = trim(input && input.zoomUserId, 80);
+      if (!id) return null;
+      const stamp = nowIso();
+      const row = {
+        zoom_user_id: id,
+        staff_name: trim(input.staffName, 120),
+        staff_email: trim(input.staffEmail, 160),
+        updated_at: stamp
+      };
+      const existing = await this.getCrmZoomStaff(id);
+      if (existing) {
+        const { error } = await supabase.from('company_crm_zoom_staff').update(row).eq('zoom_user_id', id);
+        throwIf(error, 'Could not save Zoom staff map.');
+      } else {
+        row.created_at = stamp;
+        const { error } = await supabase.from('company_crm_zoom_staff').insert(row);
+        throwIf(error, 'Could not save Zoom staff map.');
+      }
+      return this.getCrmZoomStaff(id);
+    },
+    async upsertCrmZoomActivity(payload) {
+      const key = trim(payload && payload.zoomEventKey, 160);
+      const callId = trim(payload && payload.zoomCallId, 80);
+      let existing = null;
+      if (key) {
+        const byKey = await supabase.from('company_crm_activities').select('*').eq('zoom_event_key', key).maybeSingle();
+        throwIf(byKey.error, 'Could not load Zoom activity.');
+        existing = formatActivity(byKey.data);
+      }
+      if (!existing && callId) {
+        const byCall = await supabase
+          .from('company_crm_activities')
+          .select('*')
+          .eq('zoom_call_id', callId)
+          .in('type', ['call', 'sms'])
+          .order('id', { ascending: false })
+          .limit(1);
+        throwIf(byCall.error, 'Could not load Zoom activity.');
+        existing = formatActivity((byCall.data || [])[0]);
+      }
+      const input = normalizeActivity(mergeZoomActivity(existing, payload));
+      const fields = forSupabase(activityDbFields(input));
+      fields.updated_at = nowIso();
+      if (existing) {
+        const { data, error } = await supabase.from('company_crm_activities').update(fields).eq('id', existing.id).select('*').maybeSingle();
+        throwIf(error, 'Could not save Zoom activity.');
+        return formatActivity(data);
+      }
+      fields.created_at = fields.updated_at;
+      const { data, error } = await supabase.from('company_crm_activities').insert(fields).select('*').single();
+      throwIf(error, 'Could not add Zoom activity.');
+      return formatActivity(data);
+    },
+    async upsertCrmIncomingCall(payload) {
+      const src = payload || {};
+      const rowKey = incomingRowKey(src);
+      if (!trim(src.zoomCallId, 80)) return null;
+      const stamp = nowIso();
+      const fields = {
+        row_key: rowKey,
+        zoom_call_id: trim(src.zoomCallId, 80),
+        staff_zoom_user_id: trim(src.staffZoomUserId, 80),
+        status: trim(src.status, 20) || 'ringing',
+        direction: trim(src.direction, 20) || 'inbound',
+        from_number: trim(src.fromNumber, 40),
+        from_name: trim(src.fromName, 120),
+        to_number: trim(src.toNumber, 40),
+        staff_name: trim(src.staffName, 120),
+        staff_email: trim(src.staffEmail, 160),
+        lead_id: idOrNull(src.leadId),
+        customer_id: idOrNull(src.customerId),
+        deal_id: idOrNull(src.dealId),
+        updated_at: stamp
+      };
+      const cur = await supabase.from('company_crm_incoming_calls').select('*').eq('row_key', rowKey).maybeSingle();
+      throwIf(cur.error, 'Could not load incoming call.');
+      if (cur.data) {
+        const { data, error } = await supabase.from('company_crm_incoming_calls').update(fields).eq('id', cur.data.id).select('*').maybeSingle();
+        throwIf(error, 'Could not save incoming call.');
+        return formatIncomingCall(data);
+      }
+      fields.created_at = stamp;
+      const { data, error } = await supabase.from('company_crm_incoming_calls').insert(fields).select('*').single();
+      throwIf(error, 'Could not save incoming call.');
+      return formatIncomingCall(data);
+    },
+    async updateCrmIncomingCallStatus(zoomCallId, staffZoomUserId, status) {
+      const callId = trim(zoomCallId, 80);
+      if (!callId) return 0;
+      const stamp = nowIso();
+      const next = trim(status, 20) || 'ended';
+      let q = supabase.from('company_crm_incoming_calls').update({ status: next, updated_at: stamp }).eq('zoom_call_id', callId);
+      if (staffZoomUserId) q = q.eq('staff_zoom_user_id', trim(staffZoomUserId, 80));
+      const { data, error } = await q.select('id');
+      throwIf(error, 'Could not update incoming call.');
+      if (staffZoomUserId && next === 'answered') {
+        await supabase
+          .from('company_crm_incoming_calls')
+          .update({ status: 'ended', updated_at: stamp })
+          .eq('zoom_call_id', callId)
+          .neq('staff_zoom_user_id', trim(staffZoomUserId, 80))
+          .eq('status', 'ringing');
+      }
+      return (data || []).length;
+    },
+    async listCrmIncomingCalls(admin) {
+      const cutoff = new Date(Date.now() - 15 * 60 * 1000).toISOString();
+      await supabase.from('company_crm_incoming_calls').delete().lt('updated_at', cutoff);
+      const { data, error } = await supabase
+        .from('company_crm_incoming_calls')
+        .select('*')
+        .in('status', ['ringing', 'answered'])
+        .order('updated_at', { ascending: false });
+      throwIf(error, 'Could not list incoming calls.');
+      const rows = (data || []).map(formatIncomingCall);
+      const leadIds = rows.map(function (row) { return row.leadId; }).filter(Boolean);
+      let names = {};
+      if (leadIds.length) {
+        const leads = await supabase.from('company_crm_leads').select('id, display_name').in('id', leadIds);
+        (leads.data || []).forEach(function (row) { names[row.id] = row.display_name; });
+      }
+      return rows.filter(function (row) { return zoomPhone.incomingForAdmin(row, admin); }).map(function (row) {
+        row.leadName = row.leadId ? (names[row.leadId] || '') : '';
+        return row;
+      });
+    },
+    async dismissCrmIncomingCall(id, admin) {
+      const { data, error } = await supabase.from('company_crm_incoming_calls').select('*').eq('id', id).maybeSingle();
+      throwIf(error, 'Could not load incoming call.');
+      const row = formatIncomingCall(data);
+      if (!row || !zoomPhone.incomingForAdmin(row, admin)) return false;
+      const upd = await supabase.from('company_crm_incoming_calls').update({ status: 'dismissed', updated_at: nowIso() }).eq('id', id);
+      throwIf(upd.error, 'Could not dismiss incoming call.');
+      return true;
     },
     async listCrmMessages(leadId) {
       return listMessages(leadId);
