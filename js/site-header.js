@@ -316,7 +316,8 @@
         tag: brandTag(p.brandId),
         image: window.spectrumProductPhoto
           ? spectrumProductPhoto(p, 'thumb')
-          : (window.spectrumDisplayImage ? spectrumDisplayImage(p.image, 'thumb') : p.image)
+          : (window.spectrumDisplayImage ? spectrumDisplayImage(p.image, 'thumb') : p.image),
+        contain: p.brandId === 'spectrum' && p.id === 'mk'
       };
     });
   }
