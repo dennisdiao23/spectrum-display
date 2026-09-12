@@ -1254,7 +1254,10 @@ function mergeProductDetails(current, incoming) {
 
 function isControlRow(row, details) {
   const type = String((row && row.type) || '').toLowerCase();
-  return type === 'control' || (row && row.brand_id === 'novastar') || !!(details && details.subtype);
+  if (row && row.brand_id === 'novastar') return true;
+  if (type === 'control') return true;
+  if (type) return false;
+  return !!(details && details.subtype);
 }
 
 function isProductHidden(row) {

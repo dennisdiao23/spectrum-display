@@ -563,6 +563,10 @@ async function main() {
       details.specTable = parseSpecTable(body.specTable || body.spec_table);
     }
     dbUtil.CONTROL_DETAIL_KEYS.forEach(function (key) {
+      if (!isControl && key === 'subtype') {
+        delete details.subtype;
+        return;
+      }
       if (!bodyHas(body, key)) return;
       const value = body[key];
       if (key === 'replacementOnly' || key === 'hdr') {
@@ -583,6 +587,7 @@ async function main() {
       }
       details[key] = typeof value === 'string' ? value.trim() : value;
     });
+    if (!isControl) delete details.subtype;
     if (isControl) {
       const subtype = String(body.subtype || details.subtype || '').trim();
       details.subtype = subtype;

@@ -97,7 +97,10 @@
   }
 
   function isControl(p) {
-    return !!(p && (p.type === 'control' || p.brandId === 'novastar' || p.subtype));
+    if (!p) return false;
+    if (p.brandId === 'novastar' || p.type === 'control') return true;
+    if (p.type) return false;
+    return !!p.subtype;
   }
 
   function setModeButtons() {
@@ -294,7 +297,7 @@
           field('wc-type', 'Type', '<select id="wc-type">' + optionList(TYPES.map(function (t) {
             return t === 'control' ? ['control', 'Control'] : t;
           }), typeVal) + '</select>') +
-          field('wc-subtype', 'Control subtype', '<select id="wc-subtype">' + optionList(SUBTYPES, p && p.subtype) + '</select>') +
+          field('wc-subtype', 'Control subtype', '<select id="wc-subtype">' + optionList([['', '—']].concat(SUBTYPES), p && p.subtype) + '</select>') +
           field('wc-badge', 'Badge', input('wc-badge', p && p.badge, { placeholder: 'Exclusive, Rental…' })) +
           field('wc-cats', 'Categories', input('wc-cats', cats, { placeholder: 'cob indoor-rental posters' }), true) +
           field('wc-lead', 'Lead (top of product page)', textarea('wc-lead', p && p.lead, 3), true) +
@@ -437,8 +440,9 @@
     fd.append('brandName', newBrand);
     fd.append('name', (($('wc-name') || {}).value || '').trim());
     fd.append('seriesId', (($('wc-series') || {}).value || '').trim());
-    fd.append('type', ($('wc-type') || {}).value || 'Fixed');
-    fd.append('subtype', ($('wc-subtype') || {}).value || '');
+    var typeVal = ($('wc-type') || {}).value || 'Fixed';
+    fd.append('type', typeVal);
+    fd.append('subtype', typeVal === 'control' ? (($('wc-subtype') || {}).value || '') : '');
     fd.append('badge', ($('wc-badge') || {}).value || '');
     fd.append('cats', ($('wc-cats') || {}).value || '');
     fd.append('lead', ($('wc-lead') || {}).value || '');
@@ -527,11 +531,24 @@
       S.creating = false;
       S.selected = '';
       S.pane = 'edit';
-      setModeButtons();
-      renderList();
-      if (S.mode === 'brands') renderBrandEditor(null);
-      else if (S.mode === 'pictures') renderPicturesHelp();
-      else renderProductEditor(null);
+      if (S.mode === 'brands') {
+        if (S.brands[0]) selectBrand(S.brands[0].id);
+        else {
+          setModeButtons();
+          renderList();
+          renderBrandEditor(null);
+        }
+      } else if (S.mode === 'pictures') {
+        setModeButtons();
+        renderList();
+        renderPicturesHelp();
+      } else if (S.products[0] && S.products[0].dbId) {
+        selectProduct(S.products[0].dbId);
+      } else {
+        setModeButtons();
+        renderList();
+        renderProductEditor(null);
+      }
       return;
     }
     var paneBtn = e.target.closest('[data-wc-pane]');
@@ -745,11 +762,15 @@
       if (S.mode === 'pictures') renderPicturesHelp();
       else if (S.mode === 'brands') {
         if (S.creating) renderBrandEditor(null);
-        else renderBrandEditor(brandById(S.selected));
+        else if (S.selected) renderBrandEditor(brandById(S.selected));
+        else if (S.brands[0]) selectBrand(S.brands[0].id);
+        else renderBrandEditor(null);
       } else if (S.creating) {
         renderProductEditor(null);
       } else if (S.selected) {
         renderProductEditor(productById(S.selected));
+      } else if (S.products[0] && S.products[0].dbId) {
+        selectProduct(S.products[0].dbId);
       } else {
         renderProductEditor(null);
         setLiveLink('/products');
