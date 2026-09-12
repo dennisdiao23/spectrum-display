@@ -44,6 +44,9 @@ catalog API and a cookie-session company login used by `/company`, `/company/web
 - With no Supabase env vars, the app runs fully on SQLite with zero external dependencies — this is the
   default in Cloud. On first run it auto-seeds the admin account and the catalog from
   `server/seed-catalog.json`, then fills missing `products.details` from `server/product-details.json`.
+  After the catalog has any products, boot does **not** copy missing series from seed (that was
+  putting deleted Website Products and US Store listings back on every deploy). Deleting a product
+  records `catalog_tombstones` so even an empty catalog will not restore that brand/series.
 - Public panel catalog is **database only**. Pages load `/api/catalog` via `js/catalog-api.js`. Do not
   include `js/products-data.js` on HTML pages. Edit series in **Company → Website → Products**. NovaStar control
   gear is also stored as products (`type: control`, brand `novastar`) and edited in Admin.

@@ -154,13 +154,54 @@ function createSupabaseStore() {
     throwIf(error, 'Could not backfill inventory locations.');
   }
 
+  async function rememberCatalogTombstone(brandId, seriesId) {
+    const brand = String(brandId || '').trim();
+    const series = String(seriesId || '').trim();
+    if (!brand || !series) return;
+    const { error } = await supabase.from('catalog_tombstones').upsert({
+      brand_id: brand,
+      series_id: series,
+      deleted_at: new Date().toISOString()
+    }, { onConflict: 'brand_id,series_id' });
+    if (error) {
+      console.error('Could not record catalog tombstone for ' + brand + '/' + series + ':', error.message || error);
+    }
+  }
+
+  async function forgetCatalogTombstone(brandId, seriesId) {
+    const brand = String(brandId || '').trim();
+    const series = String(seriesId || '').trim();
+    if (!brand || !series) return;
+    const { error } = await supabase.from('catalog_tombstones')
+      .delete()
+      .eq('brand_id', brand)
+      .eq('series_id', series);
+    if (error && !dbUtil.isMissingColumnError(error)) {
+      console.error('Could not clear catalog tombstone for ' + brand + '/' + series + ':', error.message || error);
+    }
+  }
+
   async function upsertMissingCatalog() {
+    const { count, error: cErr } = await supabase.from('products').select('id', { count: 'exact', head: true });
+    throwIf(cErr, 'Could not read products for catalog backfill.');
+    if (count) return;
+
+    const { data: tombRows, error: tErr } = await supabase.from('catalog_tombstones').select('brand_id, series_id');
+    if (tErr) {
+      console.error('Could not read catalog tombstones; skipping empty-catalog seed:', tErr.message || tErr);
+      return;
+    }
+    const tombstones = {};
+    (tombRows || []).forEach(function (r) {
+      tombstones[dbUtil.catalogSeriesKey(r.brand_id, r.series_id)] = true;
+    });
+
     const brands = dbUtil.loadSeedBrands();
     const { data: existingRows, error: eErr } = await supabase.from('products').select('brand_id, series_id');
     throwIf(eErr, 'Could not read products for catalog backfill.');
     const have = {};
     (existingRows || []).forEach(function (r) {
-      have[r.brand_id + '/' + r.series_id] = true;
+      have[dbUtil.catalogSeriesKey(r.brand_id, r.series_id)] = true;
     });
     let added = 0;
     for (let bi = 0; bi < brands.length; bi++) {
@@ -173,8 +214,11 @@ function createSupabaseStore() {
       throwIf(bErr, 'Could not seed brand ' + brand.id);
       const rows = [];
       (brand.series || []).forEach(function (s, si) {
-        if (have[brand.id + '/' + s.id]) return;
+        const key = dbUtil.catalogSeriesKey(brand.id, s.id);
+        if (have[key] || tombstones[key]) return;
         const isControl = s.type === 'control' || brand.id === 'novastar' || !!s.subtype;
+        const details = dbUtil.detailsFromSeries(s);
+        details.store_listed = false;
         rows.push({
           brand_id: brand.id,
           series_id: s.id,
@@ -191,7 +235,7 @@ function createSupabaseStore() {
           badge: s.badge || '',
           image: s.image || '',
           gallery: Array.isArray(s.gallery) ? s.gallery : [],
-          details: dbUtil.detailsFromSeries(s),
+          details: details,
           sort_order: bi * 40 + si
         });
       });
@@ -1159,6 +1203,7 @@ function createSupabaseStore() {
         sort_order: p.sortOrder == null ? 0 : Number(p.sortOrder) || 0
       }).select('id').single();
       throwIf(error);
+      await forgetCatalogTombstone(p.brandId, p.seriesId);
       return this.getProduct(data.id);
     },
     async updateProduct(id, p) {
@@ -1187,6 +1232,14 @@ function createSupabaseStore() {
       return this.getProduct(id);
     },
     async deleteProduct(id) {
+      const { data: row, error: rErr } = await supabase
+        .from('products')
+        .select('id, brand_id, series_id')
+        .eq('id', id)
+        .maybeSingle();
+      throwIf(rErr);
+      if (!row) return false;
+      await rememberCatalogTombstone(row.brand_id, row.series_id);
       const { data, error } = await supabase.from('products').delete().eq('id', id).select('id');
       throwIf(error);
       return !!(data && data.length);

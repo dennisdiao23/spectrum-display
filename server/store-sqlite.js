@@ -551,6 +551,7 @@ function createSqliteStore() {
         p.powerAvg, p.powerMax, p.cabinetW, p.cabinetH, p.type, p.description, p.badge,
         p.image, JSON.stringify(p.gallery), JSON.stringify(p.details || {}), sortOrder, stamp, stamp
       );
+      dbUtil.forgetCatalogTombstone(db, p.brandId, p.seriesId);
       return dbUtil.getProduct(db, info.lastInsertRowid);
     },
     async updateProduct(id, p) {
@@ -584,8 +585,18 @@ function createSqliteStore() {
       return dbUtil.getProduct(db, id);
     },
     async deleteProduct(id) {
-      const info = db.prepare('DELETE FROM products WHERE id = ?').run(id);
-      return info.changes > 0;
+      const row = db.prepare('SELECT brand_id, series_id FROM products WHERE id = ?').get(id);
+      if (!row) return false;
+      db.exec('BEGIN');
+      try {
+        dbUtil.rememberCatalogTombstone(db, row.brand_id, row.series_id);
+        const info = db.prepare('DELETE FROM products WHERE id = ?').run(id);
+        db.exec('COMMIT');
+        return info.changes > 0;
+      } catch (err) {
+        try { db.exec('ROLLBACK'); } catch (e) { /* ignore */ }
+        throw err;
+      }
     },
     async setProductHidden(id, hidden) {
       const info = db.prepare('UPDATE products SET hidden = ?, updated_at = ? WHERE id = ?')
