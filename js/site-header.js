@@ -26,16 +26,73 @@
     return (location.pathname.split('/').pop() || 'index.html').toLowerCase();
   }
 
+  function pathName() {
+    return (location.pathname || '/').toLowerCase().replace(/\/$/, '') || '/';
+  }
+
   function onCalculatorPath() {
-    var p = (location.pathname || '').toLowerCase().replace(/\/$/, '') || '/';
+    var p = pathName();
     var file = pathFile();
     return file === 'designer.html' || file === 'led-wall-calculator' || p === '/led-wall-calculator';
+  }
+
+  function onProductsPath() {
+    var p = pathName();
+    var file = pathFile();
+    return p === '/products' || p === '/product' || file === 'products.html' || file === 'product.html';
+  }
+
+  function onDealerPath() {
+    var p = pathName();
+    return p === '/dealer' || pathFile() === 'dealer.html';
   }
 
   function storeHref() {
     var host = (location.hostname || '').toLowerCase();
     if (host === 'localhost' || host === '127.0.0.1') return '/store';
     return 'https://store.spectrumdisplay.com';
+  }
+
+  function cleanPublicHref(href) {
+    if (!href || href.charAt(0) === '#' || /^(mailto:|tel:|javascript:)/i.test(href)) return href;
+    var map = {
+      'products.html': '/products',
+      'product.html': '/product',
+      'contact.html': '/contact',
+      'dealer.html': '/dealer',
+      'support.html': '/support',
+      'warranty.html': '/warranty',
+      'shipping.html': '/shipping',
+      'privacy.html': '/privacy',
+      'terms.html': '/terms',
+      'brands.html': '/products',
+      'control.html': '/products?cat=control'
+    };
+    var m = String(href).match(/^(https?:\/\/(?:www\.)?spectrumdisplay\.com)?\/?((?:products|product|contact|dealer|support|warranty|shipping|privacy|terms|brands|control)\.html)(\?[^#]*)?(#.*)?$/i);
+    if (!m) return href;
+    var origin = m[1] || '';
+    var file = m[2].toLowerCase();
+    var query = m[3] || '';
+    var hash = m[4] || '';
+    var dest = map[file];
+    if (!dest) return href;
+    if (file === 'control.html') return origin + '/products?cat=control' + hash;
+    return origin + dest + query + hash;
+  }
+
+  function rewritePublicHrefs() {
+    var p = (location.pathname || '').toLowerCase();
+    if (p.indexOf('/company') === 0) return;
+    $all('a[href]').forEach(function (el) {
+      var cur = el.getAttribute('href');
+      var next = cleanPublicHref(cur);
+      if (next && next !== cur) el.setAttribute('href', next);
+    });
+    $all('form[action]').forEach(function (el) {
+      var cur = el.getAttribute('action');
+      var next = cleanPublicHref(cur);
+      if (next && next !== cur) el.setAttribute('action', next);
+    });
   }
 
   function onSolutionsPath() {
@@ -141,7 +198,7 @@
     nav.id = 'site-tabbar';
     nav.setAttribute('aria-label', 'Main');
     nav.innerHTML =
-      '<a href="/products.html" data-tab="products">' +
+      '<a href="/products" data-tab="products">' +
         icon('<path stroke-linecap="round" stroke-linejoin="round" d="M4.5 4.5h6v6h-6v-6zm9 0h6v6h-6v-6zm-9 9h6v6h-6v-6zm9 0h6v6h-6v-6z"/>') +
         '<span data-i18n="nav.products">Products</span></a>' +
       '<a href="/retail-hospitality" data-tab="solutions">' +
@@ -157,7 +214,7 @@
 
     var file = pathFile();
     var tab = '';
-    if (file === 'products.html' || file === 'product.html') tab = 'products';
+    if (onProductsPath()) tab = 'products';
     else if (onSolutionsPath()) tab = 'solutions';
     else if (onCalculatorPath()) tab = 'designer';
     else if (file === 'account.html' || file === 'portal.html' || file === 'portal') tab = 'account';
@@ -294,7 +351,7 @@
       }).slice(0, 7).map(function (p) {
         return {
           name: p.name,
-          href: 'product.html?brand=' + encodeURIComponent(p.brandId) + '&series=' + encodeURIComponent(p.id),
+          href: '/product?brand=' + encodeURIComponent(p.brandId) + '&series=' + encodeURIComponent(p.id),
           tag: 'NVS',
           image: window.spectrumProductPhoto
             ? spectrumProductPhoto(p, 'thumb')
@@ -302,7 +359,7 @@
           contain: true
         };
       });
-      items.push({ name: 'All control systems', href: 'products.html?cat=control', tag: 'NVS' });
+      items.push({ name: 'All control systems', href: '/products?cat=control', tag: 'NVS' });
       return items;
     }
     return list.filter(function (p) {
@@ -312,7 +369,7 @@
     }).map(function (p) {
       return {
         name: p.name,
-        href: 'product.html?brand=' + encodeURIComponent(p.brandId) + '&series=' + encodeURIComponent(p.id),
+        href: '/product?brand=' + encodeURIComponent(p.brandId) + '&series=' + encodeURIComponent(p.id),
         tag: brandTag(p.brandId),
         image: window.spectrumProductPhoto
           ? spectrumProductPhoto(p, 'thumb')
@@ -373,7 +430,7 @@
         '</div>' +
       '</div>' +
       '<div class="site-mega-foot">' +
-        '<div class="site-mega-foot-item"><span>Explore</span><a href="/products.html?cat=indoor-rental" data-mega-all>View all in this category</a></div>' +
+        '<div class="site-mega-foot-item"><span>Explore</span><a href="/products?cat=indoor-rental" data-mega-all>View all in this category</a></div>' +
         '<div class="site-mega-foot-item"><span>Tools</span><a href="/led-wall-calculator">LED Wall Calculator</a></div>' +
       '</div>'
     );
@@ -396,8 +453,8 @@
     return (
       '<div class="site-mega-jobs">' + solutionCardsHtml() + '</div>' +
       '<div class="site-mega-foot">' +
-        '<div class="site-mega-foot-item"><span>Sales</span><a href="/contact.html">Talk to sales</a></div>' +
-        '<div class="site-mega-foot-item"><span>Dealer</span><a href="/dealer.html">Dealer signup</a></div>' +
+        '<div class="site-mega-foot-item"><span>Sales</span><a href="/contact">Talk to sales</a></div>' +
+        '<div class="site-mega-foot-item"><span>Dealer</span><a href="/dealer">Dealer signup</a></div>' +
       '</div>'
     );
   }
@@ -438,7 +495,7 @@
       btn.classList.toggle('is-active', btn.getAttribute('data-cat') === currentMegaKey);
     });
     $all('[data-mega-all]').forEach(function (el) {
-      el.href = '/products.html?cat=' + encodeURIComponent(currentMegaKey);
+      el.href = '/products?cat=' + encodeURIComponent(currentMegaKey);
     });
   }
 
@@ -452,10 +509,9 @@
   function injectNav() {
     var nav = $('#site-nav');
     if (!nav) return;
-    var file = pathFile();
     nav.innerHTML =
       '<div class="site-nav-item" data-mega="products">' +
-        '<button type="button" class="site-nav-link' + (file === 'products.html' || file === 'product.html' ? ' is-active' : '') + '" aria-expanded="false" aria-haspopup="true">' +
+        '<button type="button" class="site-nav-link' + (onProductsPath() ? ' is-active' : '') + '" aria-expanded="false" aria-haspopup="true">' +
           '<span data-i18n="nav.products">Products</span>' + chevron() +
         '</button>' +
       '</div>' +
@@ -464,9 +520,9 @@
           '<span data-i18n="nav.solutions">Solutions</span>' + chevron() +
         '</button>' +
       '</div>' +
-      '<a class="site-nav-link' + (onCalculatorPath() ? ' is-active' : '') + '" href="/led-wall-calculator" data-i18n="nav.designer">LED Wall Calculator</a>' +
-      '<a class="site-nav-link' + (file === 'dealer.html' ? ' is-active' : '') + '" href="/dealer.html" data-i18n="nav.dealer">Dealer</a>' +
-      '<a class="site-cta" href="' + storeHref() + '">Store</a>';
+      '<a class="site-nav-link' + (onCalculatorPath() ? ' is-active' : '') + '" href="/led-wall-calculator" data-i18n="nav.tabDesigner">Calculator</a>' +
+      '<a class="site-nav-link' + (onDealerPath() ? ' is-active' : '') + '" href="/dealer" data-i18n="nav.dealer">Dealer</a>' +
+      '<a class="site-nav-phone" href="tel:+18448488899">1.844.848.8899</a>';
 
     var header = $('.site-header');
     if (!header || $('#site-mega-products')) return;
@@ -493,14 +549,51 @@
     }
   }
 
+  function injectHeaderPhone() {
+    var utils = $('.site-utils');
+    if (!utils || utils.querySelector('.site-header-phone')) return;
+    var html = '<a class="site-header-phone" href="tel:+18448488899">1.844.848.8899</a>';
+    var search = $('#hdr-search-drop');
+    if (search) search.insertAdjacentHTML('beforebegin', html);
+    else utils.insertAdjacentHTML('afterbegin', html);
+  }
+
+  function injectFooterStore() {
+    var footer = document.querySelector('footer');
+    if (!footer) return;
+    var existing = footer.querySelectorAll('[data-us-store]');
+    if (existing.length) {
+      existing.forEach(function (a) { a.href = storeHref(); });
+      return;
+    }
+    var a = document.createElement('a');
+    a.href = storeHref();
+    a.setAttribute('data-us-store', '1');
+    a.setAttribute('data-i18n', 'footer.store');
+    a.textContent = 'US Store';
+    a.className = 'hover:text-slate-300';
+    var legal = footer.querySelector('.flex.gap-6');
+    if (legal) {
+      legal.appendChild(a);
+      return;
+    }
+    var company = footer.querySelector('[data-i18n="footer.company"]');
+    var list = company && company.parentNode && company.parentNode.querySelector('ul');
+    if (list) {
+      var li = document.createElement('li');
+      li.appendChild(a);
+      list.appendChild(li);
+    }
+  }
+
   function injectSalesCta() {
     var utils = $('.site-utils');
     if (!utils || utils.querySelector('.site-cta')) return;
-    var contact = utils.querySelector('a.site-util[href="contact.html"], a.site-util[href="/contact.html"]');
+    var contact = utils.querySelector('a.site-util[href="contact.html"], a.site-util[href="/contact.html"], a.site-util[href="/contact"]');
     var html =
-      '<a href="/support.html" class="site-util site-support-link"><span data-i18n="nav.support">Support</span></a>' +
-      '<a href="/contact.html" class="site-cta" data-i18n="nav.contactSales">Contact Sales</a>' +
-      '<a href="/contact.html" class="site-util site-contact-icon" aria-label="Contact Sales">' +
+      '<a href="/support" class="site-util site-support-link"><span data-i18n="nav.support">Support</span></a>' +
+      '<a href="/contact" class="site-cta" data-i18n="nav.contactSales">Contact Sales</a>' +
+      '<a href="/contact" class="site-util site-contact-icon" aria-label="Contact Sales">' +
         '<svg fill="none" stroke="currentColor" stroke-width="1.7" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M21.75 6.75v10.5a2.25 2.25 0 01-2.25 2.25h-15a2.25 2.25 0 01-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0019.5 4.5h-15a2.25 2.25 0 00-2.25 2.25m19.5 0v.243a2.25 2.25 0 01-1.07 1.916l-7.5 4.615a2.25 2.25 0 01-2.36 0L3.32 8.91a2.25 2.25 0 01-1.07-1.916V6.75"/></svg>' +
       '</a>';
     if (contact) {
@@ -613,7 +706,7 @@
       }
       var catalog = window.SPECTRUM_PRODUCT_LIST || [];
       if (!catalog.length) {
-        results.innerHTML = '<a href="/products.html?q=' + encodeURIComponent(q) + '">Search “' + q.replace(/[<>]/g, '') + '”</a>';
+        results.innerHTML = '<a href="/products?q=' + encodeURIComponent(q) + '">Search “' + q.replace(/[<>]/g, '') + '”</a>';
         return;
       }
       var list = catalog.filter(function (p) {
@@ -624,7 +717,7 @@
         return;
       }
       results.innerHTML = list.map(function (p) {
-        var href = '/product.html?brand=' + encodeURIComponent(p.brandId) + '&series=' + encodeURIComponent(p.id);
+        var href = '/product?brand=' + encodeURIComponent(p.brandId) + '&series=' + encodeURIComponent(p.id);
         return '<a href="' + href + '">' + (p.brandName || '') + ' · ' + p.name + '</a>';
       }).join('');
     }
@@ -673,6 +766,7 @@
   }
 
   function boot() {
+    rewritePublicHrefs();
     injectTabbar();
     injectNav();
     injectMobileProductBrowse();
@@ -681,7 +775,9 @@
       renderProductMega(currentMegaKey || megaCatFromUrl());
     });
     ensureCatalog();
+    injectHeaderPhone();
     injectSalesCta();
+    injectFooterStore();
     var header = $('.site-header');
     if (!header) return;
 

@@ -9,14 +9,14 @@
   --dealer-surface: #ffffff;
   background: var(--dealer-paper);
   color: var(--dealer-ink);
-  font-family: "Figtree", system-ui, sans-serif;
+  font-family: "Inter", system-ui, sans-serif;
 }
 
 .dealer-page h1,
 .dealer-page h2,
 .dealer-page h3,
 .dealer-brand {
-  font-family: "Syne", system-ui, sans-serif;
+  font-family: "Inter", system-ui, sans-serif;
   letter-spacing: -0.02em;
 }
 

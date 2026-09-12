@@ -7,15 +7,16 @@
   <link rel="icon" type="image/png" href="/assets/favicon-32.png" sizes="32x32" />
   <link rel="apple-touch-icon" href="/assets/apple-touch-icon.png" />
   <script src="js/i18n-boot.js"></script>
-  <link rel="stylesheet" href="css/site-header.css?v=store-label" />
+  <link rel="stylesheet" href="css/site-header.css?v=v2a" />
+  <link rel="stylesheet" href="css/market.css?v=v2a" />
   <title>LED Display Products | Spectrum Display</title>
   <meta name="description" content="Browse professional LED video walls by application: indoor fine pitch, outdoor, rental, COB, and Micro LED TV. Configure panels and request a quote from Spectrum Display Inc." />
-  <link rel="canonical" href="https://www.spectrumdisplay.com/products.html" />
+  <link rel="canonical" href="https://www.spectrumdisplay.com/products" />
   <meta property="og:type" content="website" />
   <meta property="og:site_name" content="Spectrum Display" />
   <meta property="og:title" content="LED Display Products | Spectrum Display" />
   <meta property="og:description" content="Indoor, outdoor, rental, COB, and Micro LED video walls from Spectrum Display Inc." />
-  <meta property="og:url" content="https://www.spectrumdisplay.com/products.html" />
+  <meta property="og:url" content="https://www.spectrumdisplay.com/products" />
   <meta property="og:image" content="https://www.spectrumdisplay.com/assets/products/discovery.jpg" />
   <meta name="twitter:card" content="summary_large_image" />
   <meta name="twitter:title" content="LED Display Products | Spectrum Display" />
@@ -25,7 +26,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
   <style>body { font-family: 'Inter', system-ui, sans-serif; }</style>
 </head>
-<body class="bg-slate-950 text-slate-100 antialiased">
+<body class="market-page bg-slate-950 text-slate-100 antialiased">
   <header class="site-header" id="site-header">
     <div class="site-header-inner">
       <div class="site-header-top">
@@ -46,7 +47,7 @@
             </button>
           </div>
           <a class="site-nav-link" href="/led-wall-calculator" data-i18n="nav.designer">LED Wall Calculator</a>
-          <a class="site-nav-link" href="dealer.html" data-i18n="nav.dealer">Dealer</a>
+          <a class="site-nav-link" href="/dealer" data-i18n="nav.dealer">Dealer</a>
         </nav>
         <div class="site-utils">
           <div class="site-drop" id="hdr-search-drop">
@@ -54,7 +55,7 @@
               <svg fill="none" stroke="currentColor" stroke-width="1.7" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z"/></svg>
             </button>
             <div class="site-drop-panel site-search-panel">
-              <form id="hdr-search-form" action="products.html" method="get">
+              <form id="hdr-search-form" action="/products" method="get">
                 <input id="hdr-search-input" name="q" type="search" autocomplete="off" placeholder="Search products" data-i18n-placeholder="nav.searchPlaceholder" />
               </form>
               <div class="site-search-results" id="hdr-search-results"></div>
@@ -103,9 +104,9 @@
               </div>
             </div>
           </div>
-          <a href="support.html" class="site-util site-support-link"><span data-i18n="nav.support">Support</span></a>
-          <a href="contact.html" class="site-cta" data-i18n="nav.contactSales">Contact Sales</a>
-          <a href="contact.html" class="site-util site-contact-icon" aria-label="Contact Sales">
+          <a href="/support" class="site-util site-support-link"><span data-i18n="nav.support">Support</span></a>
+          <a href="/contact" class="site-cta" data-i18n="nav.contactSales">Contact Sales</a>
+          <a href="/contact" class="site-util site-contact-icon" aria-label="Contact Sales">
             <svg fill="none" stroke="currentColor" stroke-width="1.7" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M21.75 6.75v10.5a2.25 2.25 0 01-2.25 2.25h-15a2.25 2.25 0 01-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0019.5 4.5h-15a2.25 2.25 0 00-2.25 2.25m19.5 0v.243a2.25 2.25 0 01-1.07 1.916l-7.5 4.615a2.25 2.25 0 01-2.36 0L3.32 8.91a2.25 2.25 0 01-1.07-1.916V6.75"/></svg>
           </a>
           <a href="cart.html" class="site-util site-cart site-icon-btn" aria-label="Cart">
@@ -137,36 +138,36 @@
           <div>
             <h3 class="text-sm font-semibold uppercase tracking-wider text-slate-400 mb-3" data-i18n="products.category">Category</h3>
             <div class="space-y-1 text-sm" id="product-cat-nav">
-              <a href="products.html" data-cat-link="" class="block rounded-lg px-3 py-2 text-slate-400 hover:text-white hover:bg-slate-800/60">All products</a>
-              <a href="products.html?cat=indoor-rental" data-cat-link="indoor-rental" class="block rounded-lg px-3 py-2 text-slate-400 hover:text-white hover:bg-slate-800/60">Indoor rental</a>
-              <a href="products.html?cat=outdoor-rental" data-cat-link="outdoor-rental" class="block rounded-lg px-3 py-2 text-slate-400 hover:text-white hover:bg-slate-800/60">Outdoor rental</a>
-              <a href="products.html?cat=cob" data-cat-link="cob" class="block rounded-lg px-3 py-2 text-slate-400 hover:text-white hover:bg-slate-800/60">Fine pitch / COB</a>
-              <a href="products.html?cat=fixed-indoor" data-cat-link="fixed-indoor" class="block rounded-lg px-3 py-2 text-slate-400 hover:text-white hover:bg-slate-800/60">Fixed indoor</a>
-              <a href="products.html?cat=posters" data-cat-link="posters" class="block rounded-lg px-3 py-2 text-slate-400 hover:text-white hover:bg-slate-800/60">Posters</a>
-              <a href="products.html?cat=transparent" data-cat-link="transparent" class="block rounded-lg px-3 py-2 text-slate-400 hover:text-white hover:bg-slate-800/60">Transparent</a>
-              <a href="products.html?cat=outdoor-fixed" data-cat-link="outdoor-fixed" class="block rounded-lg px-3 py-2 text-slate-400 hover:text-white hover:bg-slate-800/60">Outdoor fixed</a>
-              <a href="products.html?cat=creative" data-cat-link="creative" class="block rounded-lg px-3 py-2 text-slate-400 hover:text-white hover:bg-slate-800/60">Creative / XR</a>
-              <a href="products.html?cat=control" data-cat-link="control" class="block rounded-lg px-3 py-2 text-slate-400 hover:text-white hover:bg-slate-800/60">Control systems</a>
+              <a href="/products" data-cat-link="" class="block rounded-lg px-3 py-2 text-slate-400 hover:text-white hover:bg-slate-800/60">All products</a>
+              <a href="/products?cat=indoor-rental" data-cat-link="indoor-rental" class="block rounded-lg px-3 py-2 text-slate-400 hover:text-white hover:bg-slate-800/60">Indoor rental</a>
+              <a href="/products?cat=outdoor-rental" data-cat-link="outdoor-rental" class="block rounded-lg px-3 py-2 text-slate-400 hover:text-white hover:bg-slate-800/60">Outdoor rental</a>
+              <a href="/products?cat=cob" data-cat-link="cob" class="block rounded-lg px-3 py-2 text-slate-400 hover:text-white hover:bg-slate-800/60">Fine pitch / COB</a>
+              <a href="/products?cat=fixed-indoor" data-cat-link="fixed-indoor" class="block rounded-lg px-3 py-2 text-slate-400 hover:text-white hover:bg-slate-800/60">Fixed indoor</a>
+              <a href="/products?cat=posters" data-cat-link="posters" class="block rounded-lg px-3 py-2 text-slate-400 hover:text-white hover:bg-slate-800/60">Posters</a>
+              <a href="/products?cat=transparent" data-cat-link="transparent" class="block rounded-lg px-3 py-2 text-slate-400 hover:text-white hover:bg-slate-800/60">Transparent</a>
+              <a href="/products?cat=outdoor-fixed" data-cat-link="outdoor-fixed" class="block rounded-lg px-3 py-2 text-slate-400 hover:text-white hover:bg-slate-800/60">Outdoor fixed</a>
+              <a href="/products?cat=creative" data-cat-link="creative" class="block rounded-lg px-3 py-2 text-slate-400 hover:text-white hover:bg-slate-800/60">Creative / XR</a>
+              <a href="/products?cat=control" data-cat-link="control" class="block rounded-lg px-3 py-2 text-slate-400 hover:text-white hover:bg-slate-800/60">Control systems</a>
             </div>
             <div id="control-subnav" class="hidden mt-3 space-y-1 text-sm pl-2 border-l border-slate-800">
-              <a href="products.html?cat=control" data-sub-link="" class="block rounded-lg px-3 py-1.5 text-slate-400 hover:text-white hover:bg-slate-800/60">All processors</a>
-              <a href="products.html?cat=control&amp;sub=all-in-one" data-sub-link="all-in-one" class="block rounded-lg px-3 py-1.5 text-slate-400 hover:text-white hover:bg-slate-800/60">All-in-one processors</a>
-              <a href="products.html?cat=control&amp;sub=sending" data-sub-link="sending" class="block rounded-lg px-3 py-1.5 text-slate-400 hover:text-white hover:bg-slate-800/60">Sending boxes</a>
-              <a href="products.html?cat=control&amp;sub=playback" data-sub-link="playback" class="block rounded-lg px-3 py-1.5 text-slate-400 hover:text-white hover:bg-slate-800/60">Playback / NovaLCT players</a>
-              <a href="products.html?cat=control&amp;sub=receiving-cards" data-sub-link="receiving-card" class="block rounded-lg px-3 py-1.5 text-slate-400 hover:text-white hover:bg-slate-800/60">Receiving cards — replacements</a>
-              <a href="products.html?cat=control&amp;sub=accessories" data-sub-link="accessories" class="block rounded-lg px-3 py-1.5 text-slate-400 hover:text-white hover:bg-slate-800/60">Accessories</a>
+              <a href="/products?cat=control" data-sub-link="" class="block rounded-lg px-3 py-1.5 text-slate-400 hover:text-white hover:bg-slate-800/60">All processors</a>
+              <a href="/products?cat=control&amp;sub=all-in-one" data-sub-link="all-in-one" class="block rounded-lg px-3 py-1.5 text-slate-400 hover:text-white hover:bg-slate-800/60">All-in-one processors</a>
+              <a href="/products?cat=control&amp;sub=sending" data-sub-link="sending" class="block rounded-lg px-3 py-1.5 text-slate-400 hover:text-white hover:bg-slate-800/60">Sending boxes</a>
+              <a href="/products?cat=control&amp;sub=playback" data-sub-link="playback" class="block rounded-lg px-3 py-1.5 text-slate-400 hover:text-white hover:bg-slate-800/60">Playback / NovaLCT players</a>
+              <a href="/products?cat=control&amp;sub=receiving-cards" data-sub-link="receiving-card" class="block rounded-lg px-3 py-1.5 text-slate-400 hover:text-white hover:bg-slate-800/60">Receiving cards — replacements</a>
+              <a href="/products?cat=control&amp;sub=accessories" data-sub-link="accessories" class="block rounded-lg px-3 py-1.5 text-slate-400 hover:text-white hover:bg-slate-800/60">Accessories</a>
             </div>
           </div>
           <div>
             <h3 class="text-sm font-semibold uppercase tracking-wider text-slate-400 mb-3" data-i18n="products.brand">Brand</h3>
             <div class="space-y-1 text-sm" id="product-brand-nav">
-              <a href="products.html" data-brand-link="" class="block rounded-lg px-3 py-2 text-slate-400 hover:text-white hover:bg-slate-800/60">All brands</a>
-              <a href="products.html?brand=spectrum" data-brand-link="spectrum" class="block rounded-lg px-3 py-2 text-slate-400 hover:text-white hover:bg-slate-800/60">Spectrum</a>
-              <a href="products.html?brand=trt" data-brand-link="trt" class="block rounded-lg px-3 py-2 text-slate-400 hover:text-white hover:bg-slate-800/60">TRT</a>
-              <a href="products.html?brand=gloshine" data-brand-link="gloshine" class="block rounded-lg px-3 py-2 text-slate-400 hover:text-white hover:bg-slate-800/60">Gloshine</a>
-              <a href="products.html?brand=bako" data-brand-link="bako" class="block rounded-lg px-3 py-2 text-slate-400 hover:text-white hover:bg-slate-800/60">BAKO</a>
-              <a href="products.html?brand=element" data-brand-link="element" class="block rounded-lg px-3 py-2 text-slate-400 hover:text-white hover:bg-slate-800/60">Element</a>
-              <a href="products.html?brand=diao" data-brand-link="diao" class="block rounded-lg px-3 py-2 text-slate-400 hover:text-white hover:bg-slate-800/60">DIAO</a>
+              <a href="/products" data-brand-link="" class="block rounded-lg px-3 py-2 text-slate-400 hover:text-white hover:bg-slate-800/60">All brands</a>
+              <a href="/products?brand=spectrum" data-brand-link="spectrum" class="block rounded-lg px-3 py-2 text-slate-400 hover:text-white hover:bg-slate-800/60">Spectrum</a>
+              <a href="/products?brand=trt" data-brand-link="trt" class="block rounded-lg px-3 py-2 text-slate-400 hover:text-white hover:bg-slate-800/60">TRT</a>
+              <a href="/products?brand=gloshine" data-brand-link="gloshine" class="block rounded-lg px-3 py-2 text-slate-400 hover:text-white hover:bg-slate-800/60">Gloshine</a>
+              <a href="/products?brand=bako" data-brand-link="bako" class="block rounded-lg px-3 py-2 text-slate-400 hover:text-white hover:bg-slate-800/60">BAKO</a>
+              <a href="/products?brand=element" data-brand-link="element" class="block rounded-lg px-3 py-2 text-slate-400 hover:text-white hover:bg-slate-800/60">Element</a>
+              <a href="/products?brand=diao" data-brand-link="diao" class="block rounded-lg px-3 py-2 text-slate-400 hover:text-white hover:bg-slate-800/60">DIAO</a>
             </div>
           </div>
           <div id="pitch-filter-block">
@@ -203,7 +204,7 @@
         </div>
 
         <div class="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-4" id="product-grid">
-          <a href="product.html?brand=trt&series=discovery" data-cat="cob indoor popular micro-led" class="group rounded-xl border border-slate-800 bg-slate-950 overflow-hidden hover:border-sky-500/40 transition block" data-brand="trt">
+          <a href="/product?brand=trt&series=discovery" data-cat="cob indoor popular micro-led" class="group rounded-xl border border-slate-800 bg-slate-950 overflow-hidden hover:border-sky-500/40 transition block" data-brand="trt">
             <div class="aspect-[4/3] bg-slate-900 relative overflow-hidden">
               
               <img src="assets/products/discovery.jpg" alt="Discovery Series" class="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition duration-300" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';" />
@@ -221,7 +222,7 @@
               <div class="mt-2 text-xs guest-pricing" data-i18n="price.signIn">Sign in for pricing</div>
             </div>
           </a>
-          <a href="product.html?brand=trt&series=ledposter" data-cat="indoor popular micro-led" class="group rounded-xl border border-slate-800 bg-slate-950 overflow-hidden hover:border-sky-500/40 transition block" data-brand="trt">
+          <a href="/product?brand=trt&series=ledposter" data-cat="indoor popular micro-led" class="group rounded-xl border border-slate-800 bg-slate-950 overflow-hidden hover:border-sky-500/40 transition block" data-brand="trt">
             <div class="aspect-[4/3] bg-slate-900 relative overflow-hidden">
               
               <img src="assets/products/ledposter.jpg" alt="LedPoster" class="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition duration-300" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';" />
@@ -239,7 +240,7 @@
               <div class="mt-2 text-xs guest-pricing" data-i18n="price.signIn">Sign in for pricing</div>
             </div>
           </a>
-          <a href="product.html?brand=gloshine&series=mvultra" data-cat="rental popular" class="group rounded-xl border border-slate-800 bg-slate-950 overflow-hidden hover:border-sky-500/40 transition block" data-brand="gloshine">
+          <a href="/product?brand=gloshine&series=mvultra" data-cat="rental popular" class="group rounded-xl border border-slate-800 bg-slate-950 overflow-hidden hover:border-sky-500/40 transition block" data-brand="gloshine">
             <div class="aspect-[4/3] bg-slate-900 relative overflow-hidden">
               <span class="absolute top-2 left-2 px-1.5 py-0.5 rounded bg-sky-500/20 text-sky-300 text-[10px] font-medium z-10">Rental</span>
               <img src="assets/products/mvultra.jpg" alt="MV Ultra (Rental)" class="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition duration-300" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';" />
@@ -257,7 +258,7 @@
               <div class="mt-2 text-xs guest-pricing" data-i18n="price.signIn">Sign in for pricing</div>
             </div>
           </a>
-          <a href="product.html?brand=gloshine&series=dn" data-cat="outdoor" class="group rounded-xl border border-slate-800 bg-slate-950 overflow-hidden hover:border-sky-500/40 transition block" data-brand="gloshine">
+          <a href="/product?brand=gloshine&series=dn" data-cat="outdoor" class="group rounded-xl border border-slate-800 bg-slate-950 overflow-hidden hover:border-sky-500/40 transition block" data-brand="gloshine">
             <div class="aspect-[4/3] bg-slate-900 relative overflow-hidden">
               
               <img src="assets/products/dn.jpg" alt="DN Outdoor" class="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition duration-300" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';" />
@@ -275,7 +276,7 @@
               <div class="mt-2 text-xs guest-pricing" data-i18n="price.signIn">Sign in for pricing</div>
             </div>
           </a>
-          <a href="product.html?brand=bako&series=finepitch" data-cat="cob indoor popular" class="group rounded-xl border border-slate-800 bg-slate-950 overflow-hidden hover:border-sky-500/40 transition block" data-brand="bako">
+          <a href="/product?brand=bako&series=finepitch" data-cat="cob indoor popular" class="group rounded-xl border border-slate-800 bg-slate-950 overflow-hidden hover:border-sky-500/40 transition block" data-brand="bako">
             <div class="aspect-[4/3] bg-slate-900 relative overflow-hidden">
               
               <img src="assets/products/bako/finepitch.jpg" alt="Fine Pitch 600×337.5" class="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition duration-300" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';" />
@@ -293,7 +294,7 @@
               <div class="mt-2 text-xs guest-pricing" data-i18n="price.signIn">Sign in for pricing</div>
             </div>
           </a>
-          <a href="product.html?brand=diao&series=pro" data-cat="indoor popular" class="group rounded-xl border border-slate-800 bg-slate-950 overflow-hidden hover:border-sky-500/40 transition block" data-brand="diao">
+          <a href="/product?brand=diao&series=pro" data-cat="indoor popular" class="group rounded-xl border border-slate-800 bg-slate-950 overflow-hidden hover:border-sky-500/40 transition block" data-brand="diao">
             <div class="aspect-[4/3] bg-slate-900 relative overflow-hidden">
               <span class="absolute top-2 left-2 px-1.5 py-0.5 rounded bg-sky-500/20 text-sky-300 text-[10px] font-medium z-10">Exclusive</span>
               <img src="assets/products/diao-pro.jpg" alt="DIAO Pro Fixed" class="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition duration-300" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';" />
@@ -311,7 +312,7 @@
               <div class="mt-2 text-xs guest-pricing" data-i18n="price.signIn">Sign in for pricing</div>
             </div>
           </a>
-          <a href="product.html?brand=diao&series=value" data-cat="outdoor" class="group rounded-xl border border-slate-800 bg-slate-950 overflow-hidden hover:border-sky-500/40 transition block" data-brand="diao">
+          <a href="/product?brand=diao&series=value" data-cat="outdoor" class="group rounded-xl border border-slate-800 bg-slate-950 overflow-hidden hover:border-sky-500/40 transition block" data-brand="diao">
             <div class="aspect-[4/3] bg-slate-900 relative overflow-hidden">
               <span class="absolute top-2 left-2 px-1.5 py-0.5 rounded bg-sky-500/20 text-sky-300 text-[10px] font-medium z-10">Exclusive</span>
               <img src="assets/products/diao-value.jpg" alt="DIAO Value" class="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition duration-300" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';" />
@@ -329,7 +330,7 @@
               <div class="mt-2 text-xs guest-pricing" data-i18n="price.signIn">Sign in for pricing</div>
             </div>
           </a>
-          <a href="product.html?brand=element&series=rental" data-cat="rental" class="group rounded-xl border border-slate-800 bg-slate-950 overflow-hidden hover:border-sky-500/40 transition block" data-brand="element">
+          <a href="/product?brand=element&series=rental" data-cat="rental" class="group rounded-xl border border-slate-800 bg-slate-950 overflow-hidden hover:border-sky-500/40 transition block" data-brand="element">
             <div class="aspect-[4/3] bg-slate-900 relative overflow-hidden">
               <span class="absolute top-2 left-2 px-1.5 py-0.5 rounded bg-sky-500/20 text-sky-300 text-[10px] font-medium z-10">Exclusive</span>
               <img src="assets/products/element-rental.jpg" alt="Element Rental" class="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition duration-300" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';" />
@@ -347,7 +348,7 @@
               <div class="mt-2 text-xs guest-pricing" data-i18n="price.signIn">Sign in for pricing</div>
             </div>
           </a>
-          <a href="product.html?brand=element&series=creative" data-cat="indoor" class="group rounded-xl border border-slate-800 bg-slate-950 overflow-hidden hover:border-sky-500/40 transition block" data-brand="element">
+          <a href="/product?brand=element&series=creative" data-cat="indoor" class="group rounded-xl border border-slate-800 bg-slate-950 overflow-hidden hover:border-sky-500/40 transition block" data-brand="element">
             <div class="aspect-[4/3] bg-slate-900 relative overflow-hidden">
               <span class="absolute top-2 left-2 px-1.5 py-0.5 rounded bg-sky-500/20 text-sky-300 text-[10px] font-medium z-10">Creative</span>
               <img src="assets/products/element-creative.jpg" alt="Element Creative / XR" class="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition duration-300" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';" />
@@ -380,8 +381,8 @@
   <script src="js/supabase-client.js"></script>
   <script src="js/pricing.js"></script>
   <script src="js/auth.js"></script>
-  <script src="js/site-header.js?v=store-label"></script>
-  <script src="js/i18n.js?v=store-label"></script>
+  <script src="js/site-header.js?v=v2a"></script>
+  <script src="js/i18n.js?v=v2a"></script>
   <script>
     function updateCartCount() {
       const cart = JSON.parse(localStorage.getItem('spectrumCart') || '[]');
@@ -449,7 +450,7 @@
         list = list.filter(p => !isReceiver(p) || q);
       }
       if (!list.length && (params.get('sub') || '') === 'accessories') {
-        grid.innerHTML = '<div class="col-span-full rounded-xl border border-slate-800 p-6 text-sm text-slate-400">Accessories such as fiber converters, cables, and sensors are quoted by sales. <a class="text-sky-400 hover:text-sky-300" href="contact.html">Contact sales →</a></div>';
+        grid.innerHTML = '<div class="col-span-full rounded-xl border border-slate-800 p-6 text-sm text-slate-400">Accessories such as fiber converters, cables, and sensors are quoted by sales. <a class="text-sky-400 hover:text-sky-300" href="/contact">Contact sales →</a></div>';
         const countEl = document.getElementById('product-count');
         if (countEl) countEl.textContent = '0';
         return;
@@ -472,7 +473,7 @@
         const photo = photoSrc
           ? '<img src="' + escAttr(photoSrc) + '" alt="' + escAttr(p.name) + '" class="' + imgClass + '" loading="lazy" onerror="this.style.display=\'none\'">'
           : '';
-        const href = 'product.html?brand=' + encodeURIComponent(p.brandId) + '&series=' + encodeURIComponent(p.id);
+        const href = '/product?brand=' + encodeURIComponent(p.brandId) + '&series=' + encodeURIComponent(p.id);
         const meta = control
           ? ((p.chips && p.chips.length ? p.chips.join(' · ') : (p.maxPixels ? ((window.SpectrumControl && SpectrumControl.formatPixels(p.maxPixels)) || '') : '')) + ' · ' + (p.description || ''))
           : (p.pitchLabel + ' • ' + (p.description || ''));
@@ -528,7 +529,7 @@
       control: 'Processors and senders matched to your wall. Panel $/m² already includes the receiving card.'
     };
     const LINK_IDLE = 'block rounded-lg px-3 py-2 text-slate-400 hover:text-white hover:bg-slate-800/60';
-    const LINK_ON = 'block rounded-lg px-3 py-2 bg-sky-500/15 text-sky-300 font-medium';
+    const LINK_ON = 'block rounded-lg px-3 py-2 bg-sky-50 text-sky-800 font-medium';
 
     function filterHref(nextCat, nextBrand, nextSub) {
       const p = new URLSearchParams();
@@ -540,7 +541,7 @@
         if (nextSub) p.set('sub', nextSub === 'receiving-card' ? 'receiving-cards' : nextSub);
       }
       const q = p.toString();
-      return 'products.html' + (q ? '?' + q : '');
+      return '/products' + (q ? '?' + q : '');
     }
 
     function brandLabel(brandId) {
@@ -557,7 +558,7 @@
       params.delete('cat');
       params.delete('sub');
       const q = params.toString();
-      history.replaceState(null, '', 'products.html' + (q ? '?' + q : ''));
+      history.replaceState(null, '', '/products' + (q ? '?' + q : ''));
       return true;
     }
 

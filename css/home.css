@@ -677,5 +677,39 @@ a.home-control-line:hover { color: #fff; }
 .home-head-row a:hover { color: #0369a1; }
 .home-center { text-align: center; }
 .home-center h2, .home-center .sub { margin-left: auto; margin-right: auto; }
+
+.home-split {
+  display: grid;
+  gap: 1rem;
+  grid-template-columns: 1fr;
+}
+@media (min-width: 700px) {
+  .home-split { grid-template-columns: 1fr 1fr; gap: 1.25rem; }
+}
+.home-split article {
+  background: #fff;
+  border-radius: 1.25rem;
+  padding: 1.75rem 1.6rem 1.85rem;
+  box-shadow: 0 8px 24px rgba(15, 23, 42, 0.05);
+}
+.home-split h3 {
+  font-size: 1.25rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  color: #020617;
+  margin: 0 0 0.5rem;
+}
+.home-split p {
+  margin: 0 0 1.1rem;
+  font-size: 0.95rem;
+  color: #475569;
+  line-height: 1.55;
+}
+.home-split a {
+  color: #0284c7;
+  font-weight: 600;
+  text-decoration: none;
+}
+.home-split a:hover { color: #0369a1; }
 .home-center .sub { max-width: 36rem; }
 .home-center h2 { max-width: 22ch; }
