@@ -14,7 +14,7 @@
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
   <title>Company | Spectrum Display</title>
   <meta name="robots" content="noindex, nofollow" />
-  <link rel="stylesheet" href="/css/company-dash.css?v=storelist2" />
+  <link rel="stylesheet" href="/css/company-dash.css?v=storelist3" />
   <script src="/js/address-autocomplete.js"></script>
   <script src="/js/company-chat.js?v=chatcrm3"></script>
   <script src="/js/company-crm.js?v=crmv3"></script>
@@ -1790,83 +1790,97 @@
               </div>
         <div id="po-detail" class="hidden">
           <button type="button" id="po-back" class="text-sm text-sky-400 hover:text-sky-300 mb-3">← All purchase orders</button>
-          <form id="po-form" class="po-sheet">
+          <form id="po-form" class="po-sheet po-inv-layout">
             <input type="hidden" id="po-id">
-            <div class="po-sheet-head">
-              <div>
+            <div class="po-headblock">
+              <div class="po-kind">
                 <h2>Purchase Order</h2>
-                <label class="po-no">No. <input id="po-number" type="text" placeholder="PO-1001"></label>
               </div>
-              <div class="po-head-end">
-                <div class="doc-head-actions">
-                  <button type="button" id="po-edit-btn" class="hidden so-doc-btn so-doc-btn-primary">Edit</button>
-                  <button type="button" id="po-print" class="so-doc-btn">Print</button>
-                  <button type="button" id="po-pdf" class="so-doc-btn">PDF</button>
-                  <button type="button" id="po-email-btn" class="so-doc-btn">Email</button>
+              <div class="po-idline">
+                <div class="po-field po-f-number">
+                  <label>No.</label>
+                  <input id="po-number" type="text" placeholder="PO-1001">
                 </div>
-                <div class="po-amount">AMOUNT <strong id="po-amount">$0.00</strong></div>
+                <div class="po-field po-f-vendor">
+                  <label>Vendor</label>
+                  <select id="po-vendor"><option value="">Choose a vendor</option></select>
+                </div>
               </div>
-            </div>
-            <div class="po-grid">
-              <div class="po-field">
-                <label>Vendor</label>
-                <select id="po-vendor"><option value="">Choose a vendor</option></select>
+              <div class="po-head-right">
+                <div class="po-head-end">
+                  <div class="doc-head-actions">
+                    <button type="button" id="po-edit-btn" class="hidden so-doc-btn so-doc-btn-primary">Edit</button>
+                    <button type="button" id="po-print" class="so-doc-btn">Print</button>
+                    <button type="button" id="po-pdf" class="so-doc-btn">PDF</button>
+                    <button type="button" id="po-email-btn" class="so-doc-btn">Email</button>
+                  </div>
+                  <div class="po-amount">AMOUNT <strong id="po-amount">$0.00</strong></div>
+                </div>
+                <div class="po-meta">
+                  <div class="po-field">
+                    <label>Date</label>
+                    <input id="po-issue" type="date">
+                  </div>
+                  <div class="po-field">
+                    <label>Due date</label>
+                    <input id="po-due" type="date">
+                  </div>
+                  <div class="po-field">
+                    <label>Status</label>
+                    <select id="po-status"><option value="open">OPEN</option><option value="closed">CLOSED</option><option value="cancelled">CANCELLED</option></select>
+                  </div>
+                  <div class="po-field">
+                    <label>Ship from</label>
+                    <select id="po-ship-from">
+                      <option value="">Select ship from</option>
+                      <option value="china_fob">China factory (FOB)</option>
+                    </select>
+                  </div>
+                  <div class="po-field">
+                    <label>Ship Via</label>
+                    <input id="po-via" type="text">
+                  </div>
+                  <div class="po-field">
+                    <label>Permit no.</label>
+                    <input id="po-permit" type="text">
+                  </div>
+                </div>
               </div>
-              <div class="po-field">
-                <label>Email <button type="button" id="po-cc-toggle" class="po-link">Cc/Bcc</button></label>
-                <input id="po-email" type="text" placeholder="Email (Separate emails with a comma)">
+              <div class="po-email-block">
+                <div class="po-field">
+                  <label>Email <button type="button" id="po-cc-toggle" class="po-link">Cc/Bcc</button></label>
+                  <input id="po-email" type="text" placeholder="Email (Separate emails with a comma)">
+                </div>
+                <div class="po-field hidden" id="po-cc-field">
+                  <label>Cc</label>
+                  <input id="po-cc" type="text">
+                </div>
+                <div class="po-field hidden" id="po-bcc-field">
+                  <label>Bcc</label>
+                  <input id="po-bcc" type="text">
+                </div>
               </div>
-              <div class="po-field hidden" id="po-cc-field">
-                <label>Cc</label>
-                <input id="po-cc" type="text">
-              </div>
-              <div class="po-field hidden" id="po-bcc-field">
-                <label>Bcc</label>
-                <input id="po-bcc" type="text">
-              </div>
-              <div class="po-field">
-                <label>Purchase Order status</label>
-                <select id="po-status"><option value="open">OPEN</option><option value="closed">CLOSED</option><option value="cancelled">CANCELLED</option></select>
-              </div>
-              <div class="po-field po-span2">
-                <label>Mailing address</label>
-                <textarea id="po-mail" rows="4"></textarea>
-              </div>
-              <div class="po-field">
-                <label>Ship to</label>
-                <select id="po-ship-to"><option value="">Select customer for address</option></select>
-              </div>
-              <div class="po-field po-span2">
-                <label>Shipping address</label>
-                <textarea id="po-ship" rows="4"></textarea>
-              </div>
-              <div class="po-field">
-                <label>Purchase Order date</label>
-                <input id="po-issue" type="date">
-              </div>
-              <div class="po-field">
-                <label>Due date</label>
-                <input id="po-due" type="date">
-              </div>
-              <div class="po-field">
-                <label>Ship from</label>
-                <select id="po-ship-from">
-                  <option value="">Select ship from</option>
-                  <option value="china_fob">China factory (FOB)</option>
-                </select>
-              </div>
-              <div class="po-field">
-                <label>Ship Via</label>
-                <input id="po-via" type="text">
-              </div>
-              <div class="po-field">
-                <label>Permit no.</label>
-                <input id="po-permit" type="text">
+              <div class="po-addresses">
+                <div class="po-field">
+                  <label>Mailing address</label>
+                  <textarea id="po-mail" rows="4"></textarea>
+                </div>
+                <div class="po-field">
+                  <label>Ship to</label>
+                  <select id="po-ship-to"><option value="">Select customer for address</option></select>
+                  <textarea id="po-ship" rows="4" placeholder="Shipping address"></textarea>
+                </div>
               </div>
             </div>
             <div class="po-items">
-              <h3>Item details</h3>
-              <div class="overflow-x-auto">
+              <div class="po-items-head">
+                <h3>Item details</h3>
+                <div class="po-item-actions">
+                  <button type="button" id="po-add-line" class="po-link">Add lines</button>
+                  <button type="button" id="po-clear-lines" class="po-link">Clear all lines</button>
+                </div>
+              </div>
+              <div class="overflow-x-auto po-items-wrap">
                 <table class="w-full text-sm dash-cols" data-cols="po-lines">
                   <thead>
                     <tr>
@@ -1885,15 +1899,15 @@
                   <tbody id="po-lines"></tbody>
                 </table>
               </div>
-              <div class="po-item-actions">
-                <button type="button" id="po-add-line" class="po-link">Add lines</button>
-                <button type="button" id="po-clear-lines" class="po-link">Clear all lines</button>
-                <span class="po-subtotal">Total <strong id="po-subtotal">$0.00</strong></span>
-              </div>
             </div>
-            <div class="po-field po-memo">
-              <label>Memo</label>
-              <textarea id="po-notes" rows="3"></textarea>
+            <div class="po-bottom">
+              <div class="po-field po-memo">
+                <label>Memo</label>
+                <textarea id="po-notes" rows="3"></textarea>
+              </div>
+              <div class="po-totals">
+                <div class="po-total-row">Total <strong id="po-subtotal">$0.00</strong></div>
+              </div>
             </div>
             <p id="po-msg" class="hidden text-sm"></p>
             <div class="po-foot">
@@ -4105,7 +4119,7 @@
     </a>
   </nav>
 
-  <link rel="stylesheet" href="/css/company-dash.css?v=storelist2" />
+  <link rel="stylesheet" href="/css/company-dash.css?v=storelist3" />
 
   <script>
     const loginPanel = document.getElementById('login-panel');

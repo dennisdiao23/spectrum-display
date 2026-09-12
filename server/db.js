@@ -1164,7 +1164,8 @@ function isSeedManagedImage(image) {
   const s = String(image || '').replace(/^\/+/, '');
   if (!s) return true;
   if (/\.svg(\?|#|$)/i.test(s)) return true;
-  return /^assets\/products\/novastar\//i.test(s);
+  return /^assets\/products\/novastar\//i.test(s)
+    || /^assets\/products\/spectrum\/(mk|bk)/i.test(s);
 }
 
 function nextSeedMedia(row, series) {

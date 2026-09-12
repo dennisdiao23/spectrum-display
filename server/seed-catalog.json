@@ -1104,6 +1104,56 @@
         "description": "XP Series Flip-Chip COB UHD display — cost-effective fine pitch for command centers, studios, and commercial walls. Full front maintenance, IP65 face, 600 × 337.5 mm cabinets.",
         "badge": "COB",
         "image": "assets/products/spectrum/xp-series.jpg"
+      },
+      {
+        "id": "mk",
+        "name": "MK Series",
+        "pitches": [
+          0.93,
+          1.25
+        ],
+        "pricePerM2": 0,
+        "weightPerM2": 25,
+        "powerAvg": 90,
+        "powerMax": 275,
+        "cabinetW": 0.6,
+        "cabinetH": 0.3375,
+        "type": "Fixed",
+        "description": "Spectrum MK Flip-Chip COB indoor fine-pitch cabinets for control rooms, boardrooms, retail, hospitality, and broadcast. Front service, NovaStar-ready, 600 × 337.5 mm 16:9 cabinets stocked from Azusa.",
+        "badge": "COB",
+        "image": "assets/products/spectrum/mk-hero.jpg",
+        "gallery": [
+          "assets/products/spectrum/mk-series.jpg",
+          "assets/products/spectrum/mk-back.jpg",
+          "assets/products/spectrum/mk-exploded.jpg",
+          "assets/products/spectrum/mk-corner.jpg"
+        ]
+      },
+      {
+        "id": "bk",
+        "name": "BK Series",
+        "pitches": [
+          0.78,
+          0.93,
+          1.25,
+          1.56,
+          1.87
+        ],
+        "pricePerM2": 0,
+        "weightPerM2": 20,
+        "powerAvg": 100,
+        "powerMax": 350,
+        "cabinetW": 0.6,
+        "cabinetH": 0.3375,
+        "type": "Fixed",
+        "description": "Spectrum BK COB fine-pitch Flip-Chip display — 600 × 337.5 × 35.5 mm 16:9 panels, 4 kg, front IP65, front service. Close-view indoor walls for control rooms, studios, and commercial spaces.",
+        "badge": "COB",
+        "image": "assets/products/spectrum/bk-hero.jpg",
+        "gallery": [
+          "assets/products/spectrum/bk-front.jpg",
+          "assets/products/spectrum/bk-back.jpg",
+          "assets/products/spectrum/bk-views.jpg"
+        ]
       }
     ]
   }
