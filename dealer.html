@@ -7,23 +7,23 @@
   <link rel="icon" type="image/png" href="/assets/favicon-32.png" sizes="32x32" />
   <link rel="apple-touch-icon" href="/assets/apple-touch-icon.png" />
   <script src="js/i18n-boot.js"></script>
-  <link rel="stylesheet" href="css/site-header.css?v=store-label" />
+  <link rel="stylesheet" href="css/site-header.css?v=v2a" />
   <link rel="stylesheet" href="css/dealer.css" />
   <title>Register as Spectrum Dealer | Spectrum Display</title>
   <meta name="description" content="Register as a Spectrum Display dealer. Get Authorized net pricing, project support, and LED wall inventory access for integrators, rental houses, and resellers." />
-  <link rel="canonical" href="https://www.spectrumdisplay.com/dealer.html" />
+  <link rel="canonical" href="https://www.spectrumdisplay.com/dealer" />
   <meta property="og:type" content="website" />
   <meta property="og:site_name" content="Spectrum Display" />
   <meta property="og:title" content="Register as Spectrum Dealer | Spectrum Display" />
   <meta property="og:description" content="Apply to become a Spectrum Display dealer for LED video walls. Authorized nets, project support, and inventory access." />
-  <meta property="og:url" content="https://www.spectrumdisplay.com/dealer.html" />
+  <meta property="og:url" content="https://www.spectrumdisplay.com/dealer" />
   <meta property="og:image" content="https://www.spectrumdisplay.com/assets/content/concert.jpg" />
   <meta name="twitter:card" content="summary_large_image" />
   <meta name="twitter:title" content="Register as Spectrum Dealer | Spectrum Display" />
   <meta name="twitter:description" content="Apply to become a Spectrum Display dealer for LED video walls." />
   <script src="js/seo.js"></script>
   <script src="https://cdn.tailwindcss.com"></script>
-  <link href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600;700&family=Syne:wght@600;700;800&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
 </head>
 <body class="dealer-page antialiased">
   <header class="site-header" id="site-header">
@@ -46,7 +46,7 @@
             </button>
           </div>
           <a class="site-nav-link" href="/led-wall-calculator" data-i18n="nav.designer">LED Wall Calculator</a>
-          <a class="site-nav-link is-active" href="dealer.html" data-i18n="nav.dealer">Dealer</a>
+          <a class="site-nav-link is-active" href="/dealer" data-i18n="nav.dealer">Dealer</a>
         </nav>
         <div class="site-utils">
           <div class="site-drop" id="hdr-search-drop">
@@ -54,7 +54,7 @@
               <svg fill="none" stroke="currentColor" stroke-width="1.7" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z"/></svg>
             </button>
             <div class="site-drop-panel site-search-panel">
-              <form id="hdr-search-form" action="products.html" method="get">
+              <form id="hdr-search-form" action="/products" method="get">
                 <input id="hdr-search-input" name="q" type="search" autocomplete="off" placeholder="Search products" data-i18n-placeholder="nav.searchPlaceholder" />
               </form>
               <div class="site-search-results" id="hdr-search-results"></div>
@@ -103,9 +103,9 @@
               </div>
             </div>
           </div>
-          <a href="support.html" class="site-util site-support-link"><span data-i18n="nav.support">Support</span></a>
-          <a href="contact.html" class="site-cta" data-i18n="nav.contactSales">Contact Sales</a>
-          <a href="contact.html" class="site-util site-contact-icon" aria-label="Contact Sales">
+          <a href="/support" class="site-util site-support-link"><span data-i18n="nav.support">Support</span></a>
+          <a href="/contact" class="site-cta" data-i18n="nav.contactSales">Contact Sales</a>
+          <a href="/contact" class="site-util site-contact-icon" aria-label="Contact Sales">
             <svg fill="none" stroke="currentColor" stroke-width="1.7" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M21.75 6.75v10.5a2.25 2.25 0 01-2.25 2.25h-15a2.25 2.25 0 01-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0019.5 4.5h-15a2.25 2.25 0 00-2.25 2.25m19.5 0v.243a2.25 2.25 0 01-1.07 1.916l-7.5 4.615a2.25 2.25 0 01-2.36 0L3.32 8.91a2.25 2.25 0 01-1.07-1.916V6.75"/></svg>
           </a>
           <a href="cart.html" class="site-util site-cart site-icon-btn" aria-label="Cart">
@@ -132,7 +132,7 @@
           <p>Faster shipping from US local stock, dealer training, and project support for integrators, rental houses, and LED resellers.</p>
           <div class="dealer-cta-row">
             <a class="dealer-btn dealer-btn-primary" href="#apply">Start application</a>
-            <a class="dealer-btn dealer-btn-ghost" href="products.html">Products</a>
+            <a class="dealer-btn dealer-btn-ghost" href="/products">Products</a>
           </div>
         </div>
       </div>
@@ -384,7 +384,7 @@
             </label>
             <label class="dealer-agree">
               <input id="agree_terms_privacy" name="agree_terms_privacy" value="true" required type="checkbox" />
-              <span>I acknowledge that the provided business and financial data will be processed in accordance with Spectrum Display’s <a href="terms.html" target="_blank" rel="noopener">Terms of Use</a> and <a href="privacy.html" target="_blank" rel="noopener">Privacy Policy</a> for account verification and compliance purposes.</span>
+              <span>I acknowledge that the provided business and financial data will be processed in accordance with Spectrum Display’s <a href="/terms" target="_blank" rel="noopener">Terms of Use</a> and <a href="/privacy" target="_blank" rel="noopener">Privacy Policy</a> for account verification and compliance purposes.</span>
             </label>
             <label class="dealer-agree">
               <input id="marketing_opt_in" name="marketing_opt_in" value="true" type="checkbox" />
@@ -415,10 +415,10 @@
       <div>
         <h4 class="font-semibold mb-4 text-sm uppercase tracking-wider text-slate-300" data-i18n="footer.products">Products</h4>
         <ul class="space-y-2 text-sm text-slate-400">
-          <li><a href="products.html?cat=indoor-rental" class="hover:text-white">Indoor rental</a></li>
-          <li><a href="products.html?cat=outdoor-rental" class="hover:text-white">Outdoor rental</a></li>
-          <li><a href="products.html?cat=cob" class="hover:text-white">Fine pitch / COB</a></li>
-          <li><a href="products.html?cat=fixed-indoor" class="hover:text-white">Fixed indoor</a></li>
+          <li><a href="/products?cat=indoor-rental" class="hover:text-white">Indoor rental</a></li>
+          <li><a href="/products?cat=outdoor-rental" class="hover:text-white">Outdoor rental</a></li>
+          <li><a href="/products?cat=cob" class="hover:text-white">Fine pitch / COB</a></li>
+          <li><a href="/products?cat=fixed-indoor" class="hover:text-white">Fixed indoor</a></li>
           <li><a href="control.html" class="hover:text-white">Control systems</a></li>
         </ul>
       </div>
@@ -436,17 +436,17 @@
       <div>
         <h4 class="font-semibold mb-4 text-sm uppercase tracking-wider text-slate-300" data-i18n="footer.company">Company</h4>
         <ul class="space-y-2 text-sm text-slate-400">
-          <li><a href="products.html" class="hover:text-white" data-i18n="footer.ourBrands">Our Brands</a></li>
-          <li><a href="dealer.html" class="hover:text-white" data-i18n="footer.dealer">Become a dealer</a></li>
-          <li><a href="contact.html" class="hover:text-white" data-i18n="nav.contactSales">Contact Sales</a></li>
+          <li><a href="/products" class="hover:text-white" data-i18n="footer.ourBrands">Our Brands</a></li>
+          <li><a href="/dealer" class="hover:text-white" data-i18n="footer.dealer">Become a dealer</a></li>
+          <li><a href="/contact" class="hover:text-white" data-i18n="nav.contactSales">Contact Sales</a></li>
         </ul>
       </div>
       <div>
         <h4 class="font-semibold mb-4 text-sm uppercase tracking-wider text-slate-300" data-i18n="footer.support">Support</h4>
         <ul class="space-y-2 text-sm text-slate-400">
-          <li><a href="support.html#tech" class="hover:text-white" data-i18n="footer.tech">Technical Resources</a></li>
-          <li><a href="warranty.html" class="hover:text-white" data-i18n="footer.warranty">Warranty</a></li>
-          <li><a href="shipping.html" class="hover:text-white" data-i18n="footer.shipping">Shipping & Returns</a></li>
+          <li><a href="/support#tech" class="hover:text-white" data-i18n="footer.tech">Technical Resources</a></li>
+          <li><a href="/warranty" class="hover:text-white" data-i18n="footer.warranty">Warranty</a></li>
+          <li><a href="/shipping" class="hover:text-white" data-i18n="footer.shipping">Shipping & Returns</a></li>
           <li><a href="account.html" class="hover:text-white">My Account</a></li>
         </ul>
       </div>
@@ -454,8 +454,8 @@
     <div class="site-wrap mt-12 pt-8 border-t border-slate-800 text-sm text-slate-500 flex flex-col sm:flex-row justify-between gap-4">
       <p data-i18n="footer.copy">© 2026 Spectrum Display. All rights reserved.</p>
       <div class="flex gap-6">
-        <a href="privacy.html" class="hover:text-slate-300" data-i18n="footer.privacy">Privacy</a>
-        <a href="terms.html" class="hover:text-slate-300" data-i18n="footer.terms">Terms</a>
+        <a href="/privacy" class="hover:text-slate-300" data-i18n="footer.privacy">Privacy</a>
+        <a href="/terms" class="hover:text-slate-300" data-i18n="footer.terms">Terms</a>
       </div>
     </div>
   </footer>
@@ -583,8 +583,8 @@
   <script src="js/supabase-client.js"></script>
   <script src="js/pricing.js"></script>
   <script src="js/auth.js?v=dealer-portal-v1"></script>
-  <script src="js/site-header.js?v=store-label"></script>
-  <script src="js/i18n.js?v=store-label"></script>
+  <script src="js/site-header.js?v=v2a"></script>
+  <script src="js/i18n.js?v=v2a"></script>
   <script>
     (function () {
       function prefill() {

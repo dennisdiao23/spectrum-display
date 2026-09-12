@@ -7,7 +7,7 @@
   <link rel="icon" type="image/png" href="/assets/favicon-32.png" sizes="32x32" />
   <link rel="apple-touch-icon" href="/assets/apple-touch-icon.png" />
   <script src="/js/i18n-boot.js"></script>
-  <link rel="stylesheet" href="/css/site-header.css?v=store-label" />
+  <link rel="stylesheet" href="/css/site-header.css?v=v2a" />
   <link rel="stylesheet" href="/css/home.css" />
   <title>Corporate & Control Rooms | Spectrum Display</title>
   <meta name="description" content="Lobby brand walls, boardrooms, and 24/7 operations rooms — fine pitch and COB with tight seams and front service." />
@@ -77,7 +77,7 @@
             </button>
           </div>
           <a class="site-nav-link" href="/led-wall-calculator" data-i18n="nav.designer">LED Wall Calculator</a>
-          <a class="site-nav-link" href="/dealer.html" data-i18n="nav.dealer">Dealer</a>
+          <a class="site-nav-link" href="/dealer" data-i18n="nav.dealer">Dealer</a>
         </nav>
         <div class="site-utils">
           <div class="site-drop" id="hdr-search-drop">
@@ -85,7 +85,7 @@
               <svg fill="none" stroke="currentColor" stroke-width="1.7" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z"/></svg>
             </button>
             <div class="site-drop-panel site-search-panel">
-              <form id="hdr-search-form" action="/products.html" method="get">
+              <form id="hdr-search-form" action="/products" method="get">
                 <input id="hdr-search-input" name="q" type="search" autocomplete="off" placeholder="Search products" data-i18n-placeholder="nav.searchPlaceholder" />
               </form>
               <div class="site-search-results" id="hdr-search-results"></div>
@@ -134,9 +134,9 @@
               </div>
             </div>
           </div>
-          <a href="/support.html" class="site-util site-support-link"><span data-i18n="nav.support">Support</span></a>
-          <a href="/contact.html" class="site-cta" data-i18n="nav.contactSales">Contact Sales</a>
-          <a href="/contact.html" class="site-util site-contact-icon" aria-label="Contact Sales">
+          <a href="/support" class="site-util site-support-link"><span data-i18n="nav.support">Support</span></a>
+          <a href="/contact" class="site-cta" data-i18n="nav.contactSales">Contact Sales</a>
+          <a href="/contact" class="site-util site-contact-icon" aria-label="Contact Sales">
             <svg fill="none" stroke="currentColor" stroke-width="1.7" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M21.75 6.75v10.5a2.25 2.25 0 01-2.25 2.25h-15a2.25 2.25 0 01-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0019.5 4.5h-15a2.25 2.25 0 00-2.25 2.25m19.5 0v.243a2.25 2.25 0 01-1.07 1.916l-7.5 4.615a2.25 2.25 0 01-2.36 0L3.32 8.91a2.25 2.25 0 01-1.07-1.916V6.75"/></svg>
           </a>
           <a href="/cart.html" class="site-util site-cart site-icon-btn" aria-label="Cart">
@@ -164,8 +164,8 @@
           <span>Open calculator</span>
           <svg class="w-4 h-4" width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3"/></svg>
         </a>
-        <a class="home-btn home-btn-ghost" href="/contact.html">Contact sales</a>
-        <a class="home-btn home-btn-ghost" href="/dealer.html">Dealer signup</a>
+        <a class="home-btn home-btn-ghost" href="/contact">Contact sales</a>
+        <a class="home-btn home-btn-ghost" href="/dealer">Dealer signup</a>
       </div>
     </div>
   </section>
@@ -222,9 +222,9 @@
           <div class="home-kicker">Dealers</div>
           <h3>For integrators &amp; dealers</h3>
           <p>Small AV shops hang the wall. Apply once, then see nets after approval — not on these public pages.</p>
-          <a class="home-btn home-btn-primary" href="/dealer.html" style="align-self:flex-start">Dealer signup</a>
+          <a class="home-btn home-btn-primary" href="/dealer" style="align-self:flex-start">Dealer signup</a>
         </div>
-        <a class="home-spot-media" href="/dealer.html" aria-label="Dealer signup">
+        <a class="home-spot-media" href="/dealer" aria-label="Dealer signup">
           <img src="/assets/content/solutions-corporate.jpg" alt="Integrator LED wall install" />
         </a>
       </article>
@@ -233,9 +233,9 @@
           <div class="home-kicker">Projects</div>
           <h3>Project with no installer</h3>
           <p>Size the wall in the calculator, then talk to sales. We will help you find a hang path or quote the panels.</p>
-          <div class="home-ctas" style="justify-content:flex-start"><a class="home-btn home-btn-primary" href="/contact.html">Contact sales</a><a class="home-btn home-btn-ghost" href="/led-wall-calculator">Open calculator</a></div>
+          <div class="home-ctas" style="justify-content:flex-start"><a class="home-btn home-btn-primary" href="/contact">Contact sales</a><a class="home-btn home-btn-ghost" href="/led-wall-calculator">Open calculator</a></div>
         </div>
-        <a class="home-spot-media" href="/contact.html" aria-label="Contact sales">
+        <a class="home-spot-media" href="/contact" aria-label="Contact sales">
           <img src="/assets/content/calculator-devices.png" alt="Quote the wall with sales" />
         </a>
       </article>
@@ -293,7 +293,7 @@
       <p>Use the calculator, then talk to sales. Dealers apply once and see nets after approval.</p>
       <div class="home-ctas">
         <a class="home-btn home-btn-primary" href="/led-wall-calculator">Open calculator</a>
-        <a class="home-btn home-btn-light" href="/contact.html">Contact sales</a>
+        <a class="home-btn home-btn-light" href="/contact">Contact sales</a>
       </div>
     </section>
   </div>
@@ -313,10 +313,10 @@
       <div>
         <h4 class="font-semibold mb-4 text-sm uppercase tracking-wider text-slate-300" data-i18n="footer.products">Products</h4>
         <ul class="space-y-2 text-sm text-slate-400">
-          <li><a href="/products.html?cat=indoor-rental" class="hover:text-white">Indoor rental</a></li>
-          <li><a href="/products.html?cat=outdoor-rental" class="hover:text-white">Outdoor rental</a></li>
-          <li><a href="/products.html?cat=cob" class="hover:text-white">Fine pitch / COB</a></li>
-          <li><a href="/products.html?cat=fixed-indoor" class="hover:text-white">Fixed indoor</a></li>
+          <li><a href="/products?cat=indoor-rental" class="hover:text-white">Indoor rental</a></li>
+          <li><a href="/products?cat=outdoor-rental" class="hover:text-white">Outdoor rental</a></li>
+          <li><a href="/products?cat=cob" class="hover:text-white">Fine pitch / COB</a></li>
+          <li><a href="/products?cat=fixed-indoor" class="hover:text-white">Fixed indoor</a></li>
           <li><a href="/control.html" class="hover:text-white">Control systems</a></li>
         </ul>
       </div>
@@ -334,19 +334,19 @@
       <div>
         <h4 class="font-semibold mb-4 text-sm uppercase tracking-wider text-slate-300" data-i18n="footer.company">Company</h4>
         <ul class="space-y-2 text-sm text-slate-400">
-          <li><a href="/products.html" class="hover:text-white" data-i18n="footer.ourBrands">Our Brands</a></li>
-          <li><a href="/support.html" class="hover:text-white" data-i18n="nav.support">Support</a></li>
-          <li><a href="/contact.html" class="hover:text-white" data-i18n="nav.contactSales">Contact Sales</a></li>
-          <li><a href="/dealer.html" class="hover:text-white" data-i18n="footer.dealer">Become a dealer</a></li>
+          <li><a href="/products" class="hover:text-white" data-i18n="footer.ourBrands">Our Brands</a></li>
+          <li><a href="/support" class="hover:text-white" data-i18n="nav.support">Support</a></li>
+          <li><a href="/contact" class="hover:text-white" data-i18n="nav.contactSales">Contact Sales</a></li>
+          <li><a href="/dealer" class="hover:text-white" data-i18n="footer.dealer">Become a dealer</a></li>
         </ul>
       </div>
       <div>
         <h4 class="font-semibold mb-4 text-sm uppercase tracking-wider text-slate-300" data-i18n="footer.support">Support</h4>
         <ul class="space-y-2 text-sm text-slate-400">
-          <li><a href="/support.html#tech" class="hover:text-white" data-i18n="footer.tech">Technical Resources</a></li>
-          <li><a href="/warranty.html" class="hover:text-white" data-i18n="footer.warranty">Warranty</a></li>
-          <li><a href="/shipping.html" class="hover:text-white" data-i18n="footer.shipping">Shipping & Returns</a></li>
-          <li><a href="/contact.html" class="hover:text-white" data-i18n="nav.contactSales">Contact Sales</a></li>
+          <li><a href="/support#tech" class="hover:text-white" data-i18n="footer.tech">Technical Resources</a></li>
+          <li><a href="/warranty" class="hover:text-white" data-i18n="footer.warranty">Warranty</a></li>
+          <li><a href="/shipping" class="hover:text-white" data-i18n="footer.shipping">Shipping & Returns</a></li>
+          <li><a href="/contact" class="hover:text-white" data-i18n="nav.contactSales">Contact Sales</a></li>
           <li><a href="/account.html" class="hover:text-white">My Account</a></li>
         </ul>
       </div>
@@ -354,8 +354,8 @@
     <div class="site-wrap mt-12 pt-8 border-t border-slate-800 text-sm text-slate-500 flex flex-col sm:flex-row justify-between gap-4">
       <p data-i18n="footer.copy">© 2026 Spectrum Display. All rights reserved.</p>
       <div class="flex gap-6">
-        <a href="/privacy.html" class="hover:text-slate-300" data-i18n="footer.privacy">Privacy</a>
-        <a href="/terms.html" class="hover:text-slate-300" data-i18n="footer.terms">Terms</a>
+        <a href="/privacy" class="hover:text-slate-300" data-i18n="footer.privacy">Privacy</a>
+        <a href="/terms" class="hover:text-slate-300" data-i18n="footer.terms">Terms</a>
       </div>
     </div>
   </footer>
@@ -364,7 +364,7 @@
   <script src="/js/supabase-client.js"></script>
   <script src="/js/pricing.js"></script>
   <script src="/js/auth.js"></script>
-  <script src="/js/site-header.js?v=store-label"></script>
-  <script src="/js/i18n.js?v=store-label"></script>
+  <script src="/js/site-header.js?v=v2a"></script>
+  <script src="/js/i18n.js?v=v2a"></script>
 </body>
 </html>

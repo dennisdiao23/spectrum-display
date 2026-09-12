@@ -175,7 +175,7 @@
     var account = $('[data-account]');
     if (account) account.href = www('/account.html');
     var integrator = $('[data-integrator]');
-    if (integrator) integrator.href = www('/contact.html');
+    if (integrator) integrator.href = www('/contact');
     var word = $('[data-home]');
     if (word) word.href = href('/');
     var cart = $('[data-cart]');
@@ -185,9 +185,9 @@
       a.href = href(path);
       a.setAttribute('data-shop-link', '');
     });
-    $all('footer a[href="https://www.spectrumdisplay.com/products.html"]').forEach(function (a) { a.href = www('/products.html'); });
+    $all('footer a[href="https://www.spectrumdisplay.com/products.html"], footer a[href="https://www.spectrumdisplay.com/products"]').forEach(function (a) { a.href = www('/products'); });
     $all('footer a[href="https://www.spectrumdisplay.com/account.html"]').forEach(function (a) { a.href = www('/account.html'); });
-    $all('footer a[href="https://www.spectrumdisplay.com/contact.html"]').forEach(function (a) { a.href = www('/contact.html'); });
+    $all('footer a[href="https://www.spectrumdisplay.com/contact.html"], footer a[href="https://www.spectrumdisplay.com/contact"]').forEach(function (a) { a.href = www('/contact'); });
     $all('footer a[href="https://www.spectrumdisplay.com/led-wall-calculator"]').forEach(function (a) { a.href = www('/led-wall-calculator'); });
     updateCartBadge();
   }
