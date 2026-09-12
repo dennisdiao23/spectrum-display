@@ -463,7 +463,7 @@
         const badge = p.badge
           ? '<span class="absolute top-2 left-2 px-1.5 py-0.5 rounded bg-sky-500/20 text-sky-300 text-[10px] font-medium z-10 max-w-[90%] leading-tight">' + escAttr(p.badge) + '</span>'
           : '';
-        const imgClass = (control || (p.brandId === 'spectrum' && p.id === 'mk'))
+        const imgClass = (control || (p.brandId === 'spectrum' && (p.id === 'mk' || p.id === 'bk')))
           ? 'absolute inset-0 w-full h-full object-contain bg-slate-950 p-2 group-hover:scale-105 transition duration-300'
           : 'absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition duration-300';
         const photoSrc = window.spectrumProductPhoto

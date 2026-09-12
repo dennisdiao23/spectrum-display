@@ -388,7 +388,7 @@
       warranty: WARRANTY,
       extraTitle: 'Spectrum Display exclusive',
       extra:
-        'MK Series and XP Series are Spectrum Display’s own Flip-Chip COB lines. Specification PDFs and first-line support come directly from Spectrum — use Downloads on this page for the latest datasheet.'
+        'BK Series, MK Series, and XP Series are Spectrum Display’s own Flip-Chip COB lines. Specification PDFs and first-line support come directly from Spectrum — use Downloads on this page for the latest datasheet.'
     },
     novastar: {
       warrantyTitle: 'Control gear warranty',
