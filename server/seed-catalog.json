@@ -1124,10 +1124,9 @@
         "image": "assets/products/spectrum/mk-series.jpg",
         "gallery": [
           "assets/products/spectrum/mk-hero.jpg",
-          "assets/products/spectrum/mk-install.jpg",
           "assets/products/spectrum/mk-back.jpg",
-          "assets/products/spectrum/mk-corner.jpg",
-          "assets/products/spectrum/mk-exploded.jpg"
+          "assets/products/spectrum/mk-exploded.jpg",
+          "assets/products/spectrum/mk-corner.jpg"
         ]
       }
     ]
