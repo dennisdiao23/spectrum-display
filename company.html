@@ -14,11 +14,12 @@
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
   <title>Company | Spectrum Display</title>
   <meta name="robots" content="noindex, nofollow" />
-  <link rel="stylesheet" href="/css/company-dash.css?v=storelist3" />
+  <link rel="stylesheet" href="/css/company-dash.css?v=webctrl1" />
   <script src="/js/address-autocomplete.js"></script>
   <script src="/js/company-chat.js?v=chatcrm3"></script>
   <script src="/js/company-crm.js?v=crmv3"></script>
   <script src="/js/company-traffic.js?v=loc1"></script>
+  <script src="/js/company-website-control.js?v=webctrl1"></script>
   <script src="/js/print-form.js?v=forms20"></script>
   <script>
     if ('serviceWorker' in navigator && location.pathname.indexOf('/company') === 0) {
@@ -45,6 +46,10 @@
         if (wpPx && wpPx >= 160) document.documentElement.style.setProperty('--wp-split-left-boot', wpPx + 'px');
         var wsPx = prefs['website-store'] && prefs['website-store'].splitLeftPx;
         if (wsPx && wsPx >= 160) document.documentElement.style.setProperty('--ws-split-left-boot', wsPx + 'px');
+        try {
+          var wcPx = parseInt(localStorage.getItem('spectrum-wc-left'), 10);
+          if (wcPx && wcPx >= 220) document.documentElement.style.setProperty('--wc-split-left-boot', wcPx + 'px');
+        } catch (e2) {}
         var waPx = prefs['website-accounts'] && prefs['website-accounts'].splitLeftPx;
         if (waPx && waPx >= 160) document.documentElement.style.setProperty('--wa-split-left-boot', waPx + 'px');
         var daPx = prefs['dealer-applications'] && prefs['dealer-applications'].splitLeftPx;
@@ -123,6 +128,10 @@
           <a href="/company/website" id="tab-products" class="dash-sub-link">
             <svg class="dash-nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 8.5 12 13 3 8.5 12 4l9 4.5z"/><path d="M3 8.5v7L12 20l9-4.5v-7"/><path d="M12 13v7"/></svg>
             <span>Products</span>
+          </a>
+          <a href="/company/website/control" id="tab-control" class="dash-sub-link">
+            <svg class="dash-nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M8 9h8M8 13h5M8 17h6"/></svg>
+            <span>Control</span>
           </a>
           <a href="/company/website/store" id="tab-store" class="dash-sub-link">
             <svg class="dash-nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9h15l-1.4 8.2A2 2 0 0 1 17.6 19H8.4a2 2 0 0 1-2-1.8L5 4H3"/><circle cx="9" cy="21" r="1"/><circle cx="18" cy="21" r="1"/></svg>
@@ -658,6 +667,39 @@
         </div>
       </div>
             </div>
+          </div>
+        </div>
+      </div>
+
+      <div id="control-section" class="hidden">
+        <div class="wc-list-head">
+          <div class="wc-modes dash-traffic-tabs" role="tablist" aria-label="Website control">
+            <button type="button" class="is-on" data-wc-mode="products" role="tab" aria-selected="true">Products</button>
+            <button type="button" data-wc-mode="brands" role="tab" aria-selected="false">Brands</button>
+            <button type="button" data-wc-mode="pictures" role="tab" aria-selected="false">Pictures</button>
+          </div>
+          <button type="button" id="wc-add" class="px-4 py-2 rounded-full bg-sky-500 hover:bg-sky-400 text-white text-sm font-semibold">Add product</button>
+        </div>
+        <p id="wc-error" class="hidden text-sm text-red-400 mb-3"></p>
+        <div id="wc-split" class="dash-split wc-split">
+          <div id="wc-split-left" class="dash-split-left">
+            <div class="cc-table-card rounded-2xl border border-slate-800">
+              <div class="cc-table-wrap overflow-auto" id="wc-list-wrap">
+                <div id="wc-list"></div>
+              </div>
+            </div>
+          </div>
+          <div id="wc-split-resizer" class="dash-split-resizer" role="separator" aria-orientation="vertical" aria-label="Resize website control panels" tabindex="0"></div>
+          <div id="wc-split-right" class="dash-split-right">
+            <div class="wc-right-bar">
+              <div class="wc-panes dash-traffic-tabs" role="tablist" aria-label="Edit or preview">
+                <button type="button" class="is-on" data-wc-pane="edit">Edit</button>
+                <button type="button" data-wc-pane="preview">Preview</button>
+              </div>
+              <a id="wc-open-live" class="wc-live-link" href="/products" target="_blank" rel="noopener">Open live page</a>
+            </div>
+            <div id="wc-editor" class="inv-right-panel"></div>
+            <iframe id="wc-preview" class="wc-preview hidden" title="Live website preview"></iframe>
           </div>
         </div>
       </div>
@@ -4119,7 +4161,7 @@
     </a>
   </nav>
 
-  <link rel="stylesheet" href="/css/company-dash.css?v=storelist3" />
+  <link rel="stylesheet" href="/css/company-dash.css?v=webctrl1" />
 
   <script>
     const loginPanel = document.getElementById('login-panel');
@@ -4192,6 +4234,7 @@
       if (hash === 'website/accounts' || hash === 'accounts') return 'accounts';
       if (hash === 'website/dealers' || hash === 'dealers') return 'dealers';
       if (hash === 'website/traffic' || hash === 'traffic') return 'traffic';
+      if (hash === 'website/control' || hash === 'control') return 'control';
       if (hash === 'website/store' || hash === 'store') return 'store';
       if (hash === 'website' || hash === 'website/products' || hash === 'products') return 'products';
       if (hash === 'customers' || hash === 'customer') return 'customers';
@@ -4238,6 +4281,7 @@
       if (p === '/company/website/accounts') return 'accounts';
       if (p === '/company/website/dealers') return 'dealers';
       if (p === '/company/website/traffic') return 'traffic';
+      if (p === '/company/website/control') return 'control';
       if (p === '/company/website/store') return 'store';
       if (p === '/company/website') return 'products';
       return '';
@@ -4262,6 +4306,7 @@
       if (name === 'accounts') return '/company/website/accounts';
       if (name === 'dealers') return '/company/website/dealers';
       if (name === 'traffic') return '/company/website/traffic';
+      if (name === 'control') return '/company/website/control';
       if (name === 'store') return '/company/website/store';
       if (name === 'company') return '/company/settings/company';
       if (name === 'forms') return '/company/settings/forms';
@@ -4384,6 +4429,7 @@
         if (p === '/company/website/accounts') return 'accounts';
         if (p === '/company/website/dealers') return 'dealers';
         if (p === '/company/website/traffic') return 'traffic';
+        if (p === '/company/website/control') return 'control';
         if (p === '/company/website/store') return 'store';
         if (p === '/company/website') return 'products';
         if (p === '/company/chat') return 'chat';
@@ -4415,7 +4461,7 @@
         const view = viewTabForMaster(name);
         const salesTab = view === 'quotes' || view === 'orders' || view === 'invoices' || view === 'sales' || !!parseDocMasterTab(name);
         const poTab = view === 'purchase-orders' || (parseDocMasterTab(name) || {}).kind === 'po';
-        if (opts.reload || name === 'dashboard' || name === 'traffic' || masterRouteNeedsLoad(name) || salesTab || poTab) openRoutedSection(name);
+        if (opts.reload || name === 'dashboard' || name === 'traffic' || name === 'control' || masterRouteNeedsLoad(name) || salesTab || poTab) openRoutedSection(name);
       };
       if (!opts.skipTabBar) {
         if (typeof ccDrawerNeedsLeave === 'function' && ccDrawerNeedsLeave()) {
@@ -4464,6 +4510,7 @@
       accounts: 'Accounts',
       dealers: 'Applications',
       traffic: 'Traffic',
+      control: 'Control',
       inventory: 'Inventory',
       warehouses: 'Location',
       'receipt-shipments': 'Receipt Shipment',
@@ -4511,6 +4558,7 @@
     MASTER_TAB_ICON.accounts = MASTER_TAB_ICON.customer;
     MASTER_TAB_ICON.dealers = MASTER_TAB_ICON.customer;
     MASTER_TAB_ICON.traffic = MASTER_TAB_ICON.website;
+    MASTER_TAB_ICON.control = MASTER_TAB_ICON.website;
     MASTER_TAB_ICON.vendors = MASTER_TAB_ICON.vendor;
     MASTER_TAB_ICON.customers = MASTER_TAB_ICON.customer;
     MASTER_TAB_ICON.leads = MASTER_TAB_ICON.crm;
@@ -4534,6 +4582,7 @@
       accounts: '/company/website/accounts',
       dealers: '/company/website/dealers',
       traffic: '/company/website/traffic',
+      control: '/company/website/control',
       inventory: '/company/inventory',
       warehouses: '/company/inventory/locations',
       'receipt-shipments': '/company/inventory/receipt-shipments',
@@ -4567,7 +4616,7 @@
       if (doc) return doc.kind === 'po' ? 'vendor' : 'customer';
       if (name === 'dashboard') return 'dashboard';
       if (name === 'chat') return 'chat';
-      if (name === 'products' || name === 'store' || name === 'accounts' || name === 'dealers' || name === 'traffic' || name === 'website') return 'website';
+      if (name === 'products' || name === 'store' || name === 'accounts' || name === 'dealers' || name === 'traffic' || name === 'control' || name === 'website') return 'website';
       if (name === 'inventory' || name === 'warehouses' || name === 'receipt-shipments') return 'inventory';
       if (name === 'vendors' || name === 'purchase-orders') return 'vendor';
       if (name === 'leads' || name === 'pipeline' || name === 'activities' || name === 'crm') return 'crm';
@@ -4589,7 +4638,7 @@
 
     function masterInnersFor(group) {
       if (group === 'chat') return ['chat'];
-      if (group === 'website') return ['products', 'store', 'accounts', 'dealers', 'traffic'];
+      if (group === 'website') return ['products', 'control', 'store', 'accounts', 'dealers', 'traffic'];
       if (group === 'inventory') return ['inventory', 'warehouses', 'receipt-shipments'];
       if (group === 'vendor') return ['vendors', 'purchase-orders'];
       if (group === 'crm') return ['leads', 'pipeline', 'activities'];
@@ -5156,6 +5205,7 @@
       accounts: 'accounts',
       dealers: 'accounts',
       traffic: 'products',
+      control: 'products',
       inventory: 'inventory',
       warehouses: 'warehouses',
       vendors: 'vendors',
@@ -5192,7 +5242,7 @@
       if ((level !== 'view' && level !== 'edit') && section === 'dealers') {
         level = (adminPerms().menu || {}).website || (adminPerms().menu || {}).products || (adminPerms().menu || {}).accounts;
       }
-      if ((level !== 'view' && level !== 'edit') && section === 'traffic') {
+      if ((level !== 'view' && level !== 'edit') && (section === 'traffic' || section === 'control')) {
         level = (adminPerms().menu || {}).website || (adminPerms().menu || {}).products;
       }
       return level === 'view' || level === 'edit';
@@ -5343,7 +5393,7 @@
       if (!fromPath || !canUse(fromPath)) {
         if (goCompany(next ? pathForTab(next) : '/company')) return false;
       }
-      websiteSubTab = next === 'dealers' ? 'dealers' : next === 'accounts' ? 'accounts' : next === 'store' ? 'store' : next === 'traffic' ? 'traffic' : 'products';
+      websiteSubTab = next === 'dealers' ? 'dealers' : next === 'accounts' ? 'accounts' : next === 'store' ? 'store' : next === 'traffic' ? 'traffic' : next === 'control' ? 'control' : 'products';
       settingsSubTab = next === 'company' ? 'company' : next === 'forms' ? 'forms' : 'staff';
       if (next === 'quotes' || next === 'orders' || next === 'invoices') salesSubTab = next;
       const bootDoc = parseDocMasterTab(next);
@@ -5354,6 +5404,7 @@
       rememberMasterTab(next || 'dashboard');
       bootSpectrumCrm(admin);
       bootSpectrumTraffic();
+      bootSpectrumWebsiteControl();
       showAdminTab(next || 'dashboard');
       renderDashTabBar();
       startMasterTabWorkWatch();
@@ -6686,6 +6737,7 @@
       leads: '<span id="crm-lead-total">0</span> leads from the website, dealer form, or staff. Convert a lead to create a Customer for quotes.',
       dealers: '<span id="da-total">0</span> dealer applications. Approve as Authorized to set the website account to Dealer.',
       traffic: 'Anonymous visitors on the website and US Store. Click a row for the pages they opened and where they were.',
+      control: 'Edit website products, brands, and pictures the way a page builder would — photos, copy, and a live preview.',
       pipeline: '<span id="crm-pipe-total">0</span> deals. Drag a card to change stage. Create a quote after the deal has a customer.',
       activities: '<span id="crm-act-total">0</span> activities — notes, calls, emails, meetings, and tasks.',
       company: '<span id="ca-total">0</span> company accounts — logins and passwords.',
@@ -6751,7 +6803,7 @@
       if (typeof closeRoleDrawer === 'function') closeRoleDrawer(true);
       const doc = parseDocMasterTab(name);
       const view = viewTabForMaster(name);
-      const onWebsite = view === 'products' || view === 'store' || view === 'accounts' || view === 'dealers' || view === 'traffic';
+      const onWebsite = view === 'products' || view === 'store' || view === 'accounts' || view === 'dealers' || view === 'traffic' || view === 'control';
       const onSettings = view === 'staff' || view === 'roles' || view === 'company' || view === 'forms';
       const onCustomerNav = view === 'quotes' || view === 'orders' || view === 'invoices' || view === 'sales' || view === 'customers';
       const onCrmNav = view === 'leads' || view === 'pipeline' || view === 'activities' || view === 'crm';
@@ -6790,6 +6842,8 @@
       document.getElementById('website-pane').classList.toggle('hidden', !onWebsite);
       document.getElementById('settings-pane').classList.toggle('hidden', !onSettings);
       document.getElementById('products-section').classList.toggle('hidden', view !== 'products');
+      const controlSec = document.getElementById('control-section');
+      if (controlSec) controlSec.classList.toggle('hidden', view !== 'control');
       const storeSec = document.getElementById('store-section');
       if (storeSec) storeSec.classList.toggle('hidden', view !== 'store');
       document.getElementById('inventory-section').classList.toggle('hidden', view !== 'inventory');
@@ -6798,11 +6852,13 @@
       if (whSec) whSec.classList.toggle('wh-split-on', view === 'warehouses' && !isMobileDash());
       document.body.classList.toggle('inv-layout-lock', view === 'inventory' && !isMobileDash());
       document.body.classList.toggle('dash-split-lock',
-        (view === 'customers' || view === 'vendors' || view === 'warehouses' || view === 'products' || view === 'store' || view === 'accounts' || view === 'dealers' || view === 'leads' || view === 'pipeline' || view === 'activities') && !isMobileDash());
+        (view === 'customers' || view === 'vendors' || view === 'warehouses' || view === 'products' || view === 'control' || view === 'store' || view === 'accounts' || view === 'dealers' || view === 'leads' || view === 'pipeline' || view === 'activities') && !isMobileDash());
       const vnSec = document.getElementById('vendors-section');
       if (vnSec) vnSec.classList.toggle('vn-split-on', view === 'vendors' && !isMobileDash());
       const wpSec = document.getElementById('products-section');
       if (wpSec) wpSec.classList.toggle('wp-split-on', view === 'products' && !isMobileDash());
+      const wcSec = document.getElementById('control-section');
+      if (wcSec) wcSec.classList.toggle('wc-split-on', view === 'control' && !isMobileDash());
       const wsSec = document.getElementById('store-section');
       if (wsSec) wsSec.classList.toggle('ws-split-on', view === 'store' && !isMobileDash());
       const waSec = document.getElementById('accounts-section');
@@ -6861,6 +6917,8 @@
       document.getElementById('tab-purchase-orders').className = navLinkClass(view === 'purchase-orders', false, 'sub');
       document.getElementById('tab-receipt-shipments').className = navLinkClass(view === 'receipt-shipments', false, 'sub');
       document.getElementById('tab-products').className = navLinkClass(view === 'products', false, 'sub');
+      const tabControl = document.getElementById('tab-control');
+      if (tabControl) tabControl.className = navLinkClass(view === 'control', false, 'sub');
       document.getElementById('tab-store').className = navLinkClass(view === 'store', false, 'sub');
       document.getElementById('tab-accounts').className = navLinkClass(view === 'accounts', !canUse('accounts'), 'sub');
       const tabDealers = document.getElementById('tab-dealers');
@@ -6882,6 +6940,7 @@
         dashboard: ['Dashboard', ''],
         chat: ['Chat', ''],
         products: ['Website', 'Product pages'],
+        control: ['Website', 'Control'],
         store: ['Website', 'US Store'],
         accounts: ['Website', 'Website accounts'],
         dealers: ['Website', 'Dealer applications'],
@@ -8213,6 +8272,19 @@
       SpectrumTraffic.boot({
         api: api,
         esc: esc
+      });
+    }
+
+    function bootSpectrumWebsiteControl() {
+      if (!window.SpectrumWebsiteControl) return;
+      SpectrumWebsiteControl.boot({
+        api: api,
+        esc: esc,
+        canEdit: canEdit,
+        isMobile: isMobileDash,
+        onChanged: function () {
+          if (typeof loadWebsiteCatalog === 'function') loadWebsiteCatalog();
+        }
       });
     }
 
@@ -11644,7 +11716,7 @@
     }
 
     function syncTabbarActive(name) {
-      const onWebsite = name === 'products' || name === 'store' || name === 'accounts' || name === 'dealers' || name === 'traffic';
+      const onWebsite = name === 'products' || name === 'store' || name === 'accounts' || name === 'dealers' || name === 'traffic' || name === 'control';
       const onInventory = name === 'inventory' || name === 'warehouses' || name === 'receipt-shipments';
       const onVendorNav = name === 'vendors' || name === 'purchase-orders';
       const onCustomerNav = name === 'sales' || name === 'quotes' || name === 'orders' || name === 'invoices' || name === 'customers';
@@ -16557,6 +16629,9 @@
       if (name === 'traffic') {
         if (window.SpectrumTraffic) await SpectrumTraffic.load();
       }
+      if (name === 'control') {
+        if (window.SpectrumWebsiteControl) await SpectrumWebsiteControl.load();
+      }
       if (name === 'inventory') {
         await loadInventory();
       }
@@ -20918,6 +20993,7 @@
         const vn = document.getElementById('vendors-section');
         const warehouses = document.getElementById('warehouses-section');
         const products = document.getElementById('products-section');
+        const controlSec = document.getElementById('control-section');
         const storeSec = document.getElementById('store-section');
         const accounts = document.getElementById('accounts-section');
         const dealers = document.getElementById('dealers-section');
@@ -20927,16 +21003,18 @@
         const onVendors = !!(vn && !vn.classList.contains('hidden'));
         const onWarehouses = !!(warehouses && !warehouses.classList.contains('hidden'));
         const onProducts = !!(products && !products.classList.contains('hidden'));
+        const onControl = !!(controlSec && !controlSec.classList.contains('hidden'));
         const onStore = !!(storeSec && !storeSec.classList.contains('hidden'));
         const onAccounts = !!(accounts && !accounts.classList.contains('hidden'));
         const onDealers = !!(dealers && !dealers.classList.contains('hidden'));
         const onCrm = !!((crmLead && !crmLead.classList.contains('hidden')) ||
           (crmPipe && !crmPipe.classList.contains('hidden')) ||
           (crmAct && !crmAct.classList.contains('hidden')));
-        document.body.classList.toggle('dash-split-lock', (onCustomers || onVendors || onWarehouses || onProducts || onStore || onAccounts || onDealers || onCrm) && desktop);
+        document.body.classList.toggle('dash-split-lock', (onCustomers || onVendors || onWarehouses || onProducts || onControl || onStore || onAccounts || onDealers || onCrm) && desktop);
         if (vn) vn.classList.toggle('vn-split-on', onVendors && desktop);
         if (warehouses) warehouses.classList.toggle('wh-split-on', onWarehouses && desktop);
         if (products) products.classList.toggle('wp-split-on', onProducts && desktop);
+        if (controlSec) controlSec.classList.toggle('wc-split-on', onControl && desktop);
         if (storeSec) storeSec.classList.toggle('ws-split-on', onStore && desktop);
         if (accounts) accounts.classList.toggle('wa-split-on', onAccounts && desktop);
         if (dealers) dealers.classList.toggle('da-split-on', onDealers && desktop);

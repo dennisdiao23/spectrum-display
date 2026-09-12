@@ -27,7 +27,7 @@ const PORT = Number(process.env.PORT || 3000);
 
 const upload = multer({
   storage: multer.memoryStorage(),
-  limits: { fileSize: 8 * 1024 * 1024, files: 8 },
+  limits: { fileSize: 8 * 1024 * 1024, files: 16 },
   fileFilter: function (_req, file, cb) {
     const ok = /^image\/(jpeg|png|webp|gif)$/i.test(file.mimetype || '');
     cb(ok ? null : new Error('Only JPG, PNG, WebP, or GIF images are allowed.'), ok);
@@ -94,6 +94,59 @@ function parsePitches(value) {
     .filter((n) => Number.isFinite(n) && n > 0);
 }
 
+function bodyHas(body, key) {
+  return !!(body && Object.prototype.hasOwnProperty.call(body, key));
+}
+
+function truthyFlag(value) {
+  return value === true || value === 1 || value === '1' || String(value || '').toLowerCase() === 'true';
+}
+
+function parseFeatures(value) {
+  const raw = Array.isArray(value) ? value : parseJson(value, null);
+  if (Array.isArray(raw)) {
+    return raw.map(function (item) {
+      if (typeof item === 'string') return { title: item, text: '' };
+      if (!item || typeof item !== 'object') return null;
+      return {
+        title: String(item.title || item.name || '').trim(),
+        text: String(item.text || item.body || item.description || '').trim()
+      };
+    }).filter(function (row) { return row && (row.title || row.text); });
+  }
+  return String(value || '').split(/\n+/).map(function (line) {
+    const s = line.trim();
+    if (!s) return null;
+    const i = s.indexOf('|');
+    if (i === -1) return { title: s, text: '' };
+    return { title: s.slice(0, i).trim(), text: s.slice(i + 1).trim() };
+  }).filter(Boolean);
+}
+
+function parseSpecTable(value) {
+  const raw = Array.isArray(value) ? value : parseJson(value, null);
+  if (Array.isArray(raw)) {
+    return raw.map(function (row) {
+      if (Array.isArray(row)) return row.map(function (cell) { return String(cell == null ? '' : cell); });
+      if (row && typeof row === 'object') {
+        return [String(row.label || row.name || ''), String(row.value || '')];
+      }
+      return [String(row == null ? '' : row)];
+    }).filter(function (row) { return row.some(function (cell) { return String(cell).trim(); }); });
+  }
+  return String(value || '').split(/\n+/).map(function (line) {
+    const s = line.trim();
+    if (!s) return null;
+    return s.split('|').map(function (cell) { return cell.trim(); });
+  }).filter(Boolean);
+}
+
+function parseStringList(value) {
+  const raw = Array.isArray(value) ? value : parseJson(value, null);
+  if (Array.isArray(raw)) return raw.map(function (s) { return String(s || '').trim(); }).filter(Boolean);
+  return String(value || '').split(/[\n,]+/).map(function (s) { return s.trim(); }).filter(Boolean);
+}
+
 function mmToMeters(value) {
   const n = Number(value);
   if (!Number.isFinite(n) || n <= 0) return 0.5;
@@ -145,6 +198,7 @@ async function main() {
     '/company',
     '/company/dashboard',
     '/company/website',
+    '/company/website/control',
     '/company/website/store',
     '/company/website/accounts',
     '/company/website/dealers',
@@ -228,6 +282,7 @@ async function main() {
   const MARKET_PAGES = [
     ['/products', 'products.html'],
     ['/product', 'product.html'],
+    ['/brands', 'brands.html'],
     ['/contact', 'contact.html'],
     ['/dealer', 'dealer.html'],
     ['/support', 'support.html'],
@@ -246,10 +301,6 @@ async function main() {
       const qs = req.url.includes('?') ? req.url.slice(req.url.indexOf('?')) : '';
       res.redirect(301, route + qs);
     });
-  });
-  app.get(['/brands', '/brands/', '/brands.html'], function (req, res) {
-    const qs = req.url.includes('?') ? req.url.slice(req.url.indexOf('?')) : '';
-    res.redirect(301, '/products' + qs);
   });
   app.get(['/control', '/control/', '/control.html'], function (_req, res) {
     res.redirect(301, '/products?cat=control');
@@ -331,6 +382,7 @@ async function main() {
     [
       ['/', 'weekly', '1.0'],
       ['/products', 'weekly', '0.9'],
+      ['/brands', 'weekly', '0.8'],
       ['/products?cat=control', 'weekly', '0.8'],
       ['/retail-hospitality', 'monthly', '0.7'],
       ['/worship', 'monthly', '0.7'],
@@ -479,18 +531,62 @@ async function main() {
     const saved = await saveFiles(files);
     if (saved.imageUrl) image = saved.imageUrl;
     else if (body.imageUrl) image = String(body.imageUrl).trim();
-    const gallery = existingGallery.concat(saved.gallery);
+    else if (bodyHas(body, 'heroUrl') && String(body.heroUrl || '').trim()) {
+      image = String(body.heroUrl).trim();
+    } else if (truthyFlag(body.clearImage)) {
+      image = '';
+    }
+    let gallery;
+    if (bodyHas(body, 'galleryKeep')) {
+      const keep = parseJson(body.galleryKeep, []);
+      gallery = (Array.isArray(keep) ? keep : []).map(function (url) {
+        return String(url || '').trim();
+      }).filter(Boolean);
+    } else {
+      gallery = existingGallery.slice();
+    }
+    gallery = gallery.concat(saved.gallery);
+    if (!image && gallery[0] && !truthyFlag(body.clearImage)) image = gallery[0];
     const existingDetails = existing ? dbUtil.parseDetails(existing) : {};
     const cats = String(body.cats || '')
       .split(/[\s,]+/)
       .map(function (s) { return s.trim().toLowerCase(); })
       .filter(Boolean);
     const details = Object.assign({}, existingDetails);
-    if (Object.prototype.hasOwnProperty.call(body, 'cats')) details.cats = cats;
+    if (bodyHas(body, 'cats')) details.cats = cats;
+    if (bodyHas(body, 'lead')) details.lead = String(body.lead || '').trim();
+    if (bodyHas(body, 'sourceUrl') || bodyHas(body, 'source_url')) {
+      details.sourceUrl = String(body.sourceUrl || body.source_url || '').trim();
+    }
+    if (bodyHas(body, 'features')) details.features = parseFeatures(body.features);
+    if (bodyHas(body, 'specTable') || bodyHas(body, 'spec_table')) {
+      details.specTable = parseSpecTable(body.specTable || body.spec_table);
+    }
+    dbUtil.CONTROL_DETAIL_KEYS.forEach(function (key) {
+      if (!bodyHas(body, key)) return;
+      const value = body[key];
+      if (key === 'replacementOnly' || key === 'hdr') {
+        details[key] = truthyFlag(value);
+        return;
+      }
+      if (key === 'priceEach') {
+        details[key] = Number(value) || 0;
+        return;
+      }
+      if (key === 'chips') {
+        details[key] = parseStringList(value);
+        return;
+      }
+      if (key === 'downloads') {
+        details[key] = Array.isArray(value) ? value : parseJson(value, []);
+        return;
+      }
+      details[key] = typeof value === 'string' ? value.trim() : value;
+    });
     if (isControl) {
       const subtype = String(body.subtype || details.subtype || '').trim();
       details.subtype = subtype;
-      details.priceEach = Number(body.priceEach || body.pricePerM2 || body.price_per_m2) || 0;
+      details.priceEach = Number(body.priceEach || body.pricePerM2 || body.price_per_m2 || details.priceEach) || 0;
       if (!details.cats || !details.cats.length) {
         details.cats = ['control'].concat(subtype ? [subtype] : []);
         if (subtype === 'receiving-card') details.cats.push('receiving-cards');
@@ -504,6 +600,9 @@ async function main() {
       );
       if (!bodyHasListed) details.store_listed = false;
     }
+    const sortOrder = bodyHas(body, 'sortOrder') || bodyHas(body, 'sort_order')
+      ? Number(body.sortOrder != null ? body.sortOrder : body.sort_order) || 0
+      : (existing && existing.sort_order != null ? existing.sort_order : 0);
     return {
       brandId: resolvedBrand,
       seriesId,
@@ -520,7 +619,8 @@ async function main() {
       badge: String(body.badge || '').trim(),
       image,
       gallery,
-      details
+      details,
+      sortOrder
     };
   }
 
@@ -1122,6 +1222,87 @@ async function main() {
     } catch (err) { next(err); }
   });
 
+  app.get('/api/admin/brands/:id', requireAdmin, requireCatalogRead, async function (req, res, next) {
+    try {
+      const brand = await store.getBrand(req.params.id);
+      if (!brand) return res.status(404).json({ ok: false, error: 'Brand not found.' });
+      res.json({ ok: true, brand: brand });
+    } catch (err) { next(err); }
+  });
+
+  const brandUpload = upload.fields([
+    { name: 'logo', maxCount: 1 },
+    { name: 'image', maxCount: 1 }
+  ]);
+
+  async function brandPayload(body, files, existing) {
+    const name = String(body.name || (existing && existing.name) || '').trim();
+    if (!name) throw new Error('Brand name is required.');
+    const uploaded = files || {};
+    let logo = existing ? (existing.logo || '') : '';
+    let image = existing ? (existing.image || '') : '';
+    if (uploaded.logo && uploaded.logo[0]) logo = await store.saveUpload(uploaded.logo[0]);
+    else if (body.logoUrl) logo = String(body.logoUrl).trim();
+    else if (truthyFlag(body.clearLogo)) logo = '';
+    if (uploaded.image && uploaded.image[0]) image = await store.saveUpload(uploaded.image[0]);
+    else if (body.imageUrl) image = String(body.imageUrl).trim();
+    else if (truthyFlag(body.clearImage)) image = '';
+    return {
+      name,
+      tagline: bodyHas(body, 'tagline') ? String(body.tagline || '').trim() : (existing ? existing.tagline : ''),
+      description: bodyHas(body, 'description') ? String(body.description || '').trim() : (existing ? existing.description : ''),
+      logo,
+      image,
+      hidden: bodyHas(body, 'hidden') ? truthyFlag(body.hidden) : !!(existing && existing.hidden)
+    };
+  }
+
+  app.post('/api/admin/brands', requireAdmin, requirePerm('website', 'edit'), brandUpload, async function (req, res, next) {
+    try {
+      const p = await brandPayload(req.body, req.files, null);
+      let id = slugify(req.body.id || p.name);
+      if (!id) throw new Error('Brand name is required.');
+      let n = 2;
+      while (await store.getBrand(id)) {
+        id = slugify(p.name) + '-' + n;
+        n += 1;
+      }
+      const brand = await store.createBrand(Object.assign({ id: id }, p));
+      res.json({ ok: true, brand: brand });
+    } catch (err) {
+      res.status(400).json({ ok: false, error: err.message || 'Could not save brand.' });
+    }
+  });
+
+  app.put('/api/admin/brands/:id', requireAdmin, requirePerm('website', 'edit'), brandUpload, async function (req, res, next) {
+    try {
+      const existing = await store.getBrand(req.params.id);
+      if (!existing) return res.status(404).json({ ok: false, error: 'Brand not found.' });
+      const p = await brandPayload(req.body, req.files, existing);
+      const brand = await store.updateBrand(req.params.id, p);
+      res.json({ ok: true, brand: brand });
+    } catch (err) {
+      res.status(400).json({ ok: false, error: err.message || 'Could not update brand.' });
+    }
+  });
+
+  app.delete('/api/admin/brands/:id', requireAdmin, requirePerm('website', 'edit'), async function (req, res, next) {
+    try {
+      const result = await store.deleteBrand(req.params.id);
+      if (!result || !result.ok) {
+        if (result && result.reason === 'in-use') {
+          return res.status(400).json({
+            ok: false,
+            error: 'Move or delete this brand’s products first.',
+            productCount: result.productCount || 0
+          });
+        }
+        return res.status(404).json({ ok: false, error: 'Brand not found.' });
+      }
+      res.json({ ok: true });
+    } catch (err) { next(err); }
+  });
+
   app.get('/api/admin/products', requireAdmin, requireCatalogRead, async function (_req, res, next) {
     try {
       res.json({ ok: true, products: await store.listProducts() });
@@ -1138,7 +1319,7 @@ async function main() {
 
   const productUpload = upload.fields([
     { name: 'image', maxCount: 1 },
-    { name: 'gallery', maxCount: 6 }
+    { name: 'gallery', maxCount: 12 }
   ]);
 
   app.post('/api/admin/products', requireAdmin, requirePerm('website', 'edit'), productUpload, async function (req, res, next) {

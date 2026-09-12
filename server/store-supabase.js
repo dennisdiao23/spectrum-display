@@ -998,31 +998,26 @@ function createSupabaseStore() {
       }
     },
     async getCatalog() {
-      const { data: brands, error: bErr } = await supabase.from('brands').select('id, name, tagline').order('name');
-      throwIf(bErr);
+      let brandRes = await supabase.from('brands').select('*').order('name');
+      if (brandRes.error && dbUtil.isMissingColumnError(brandRes.error)) {
+        brandRes = await supabase.from('brands').select('id, name, tagline').order('name');
+      }
+      throwIf(brandRes.error);
       const { data: products, error: pErr } = await supabase.from('products').select('*').order('sort_order').order('name');
       throwIf(pErr);
       const byBrand = {};
-      (brands || []).forEach((b) => {
-        byBrand[b.id] = { name: b.name, tagline: b.tagline || '', series: [] };
+      (brandRes.data || []).forEach((b) => {
+        if (dbUtil.isBrandHidden(b)) return;
+        byBrand[b.id] = dbUtil.brandCatalogEntry(b);
       });
       (products || []).forEach((row) => {
         if (dbUtil.isProductHidden(row)) return;
         if (!byBrand[row.brand_id]) {
-          byBrand[row.brand_id] = { name: row.brand_id, tagline: '', series: [] };
+          byBrand[row.brand_id] = { name: row.brand_id, tagline: '', logo: '', image: '', description: '', series: [] };
         }
         byBrand[row.brand_id].series.push(dbUtil.rowToProduct(row, { name: byBrand[row.brand_id].name }));
       });
-      Object.keys(byBrand).forEach(function (id) {
-        if (!(byBrand[id].series && byBrand[id].series.length)) delete byBrand[id];
-      });
-      Object.keys(byBrand).forEach(function (id) {
-        const brand = byBrand[id];
-        if (id === 'novastar' || (brand.series || []).some(function (s) { return s.type === 'control'; })) {
-          brand.kind = 'control';
-        }
-      });
-      return attachInventoryToCatalog(byBrand);
+      return attachInventoryToCatalog(dbUtil.stampCatalogKinds(byBrand));
     },
     async listProducts() {
       const products = await listProductsUnmapped();
@@ -1049,9 +1044,85 @@ function createSupabaseStore() {
       return this.getProduct(row.id);
     },
     async listBrands() {
-      const { data, error } = await supabase.from('brands').select('id, name, tagline').order('name');
+      let res = await supabase.from('brands').select('*').order('name');
+      if (res.error && dbUtil.isMissingColumnError(res.error)) {
+        res = await supabase.from('brands').select('id, name, tagline').order('name');
+      }
+      throwIf(res.error);
+      const { data: products } = await supabase.from('products').select('brand_id');
+      const counts = {};
+      (products || []).forEach(function (row) {
+        counts[row.brand_id] = (counts[row.brand_id] || 0) + 1;
+      });
+      return (res.data || []).map(function (row) {
+        return dbUtil.formatBrand(row, { productCount: counts[row.id] || 0 });
+      });
+    },
+    async getBrand(id) {
+      let res = await supabase.from('brands').select('*').eq('id', id).maybeSingle();
+      if (res.error && dbUtil.isMissingColumnError(res.error)) {
+        res = await supabase.from('brands').select('id, name, tagline').eq('id', id).maybeSingle();
+      }
+      throwIf(res.error);
+      if (!res.data) return null;
+      const { count, error: cErr } = await supabase.from('products').select('id', { count: 'exact', head: true }).eq('brand_id', id);
+      if (cErr) throwIf(cErr);
+      return dbUtil.formatBrand(res.data, { productCount: count || 0 });
+    },
+    async createBrand(input) {
+      const id = String(input.id || '').trim();
+      if (!id) throw new Error('Brand id is required.');
+      const full = {
+        id,
+        name: input.name || id,
+        tagline: input.tagline || '',
+        logo: input.logo || '',
+        description: input.description || '',
+        image: input.image || '',
+        hidden: !!input.hidden
+      };
+      let { error } = await supabase.from('brands').insert(full);
+      if (error && dbUtil.isMissingColumnError(error)) {
+        const retry = await supabase.from('brands').insert({
+          id,
+          name: full.name,
+          tagline: full.tagline
+        });
+        error = retry.error;
+      }
       throwIf(error);
-      return data || [];
+      return this.getBrand(id);
+    },
+    async updateBrand(id, input) {
+      const current = await this.getBrand(id);
+      if (!current) return null;
+      const patch = {
+        name: input.name != null ? input.name : current.name,
+        tagline: input.tagline != null ? input.tagline : current.tagline,
+        logo: input.logo != null ? input.logo : current.logo,
+        description: input.description != null ? input.description : current.description,
+        image: input.image != null ? input.image : current.image,
+        hidden: input.hidden != null ? !!input.hidden : !!current.hidden
+      };
+      let { error } = await supabase.from('brands').update(patch).eq('id', id);
+      if (error && dbUtil.isMissingColumnError(error)) {
+        const retry = await supabase.from('brands').update({
+          name: patch.name,
+          tagline: patch.tagline
+        }).eq('id', id);
+        error = retry.error;
+      }
+      throwIf(error);
+      return this.getBrand(id);
+    },
+    async deleteBrand(id) {
+      const current = await this.getBrand(id);
+      if (!current) return { ok: false, reason: 'missing' };
+      if (current.productCount) return { ok: false, reason: 'in-use', productCount: current.productCount };
+      const { data, error } = await supabase.from('brands').delete().eq('id', id).select('id');
+      throwIf(error);
+      if (!(data && data.length)) return { ok: false, reason: 'missing' };
+      return { ok: true };
     },
     async ensureBrand(id, name, tagline) {
       const { data: existing, error } = await supabase.from('brands').select('id').eq('id', id).maybeSingle();
@@ -1085,13 +1156,13 @@ function createSupabaseStore() {
         image: p.image,
         gallery: p.gallery,
         details: p.details || {},
-        sort_order: 0
+        sort_order: p.sortOrder == null ? 0 : Number(p.sortOrder) || 0
       }).select('id').single();
       throwIf(error);
       return this.getProduct(data.id);
     },
     async updateProduct(id, p) {
-      const { error } = await supabase.from('products').update({
+      const patch = {
         brand_id: p.brandId,
         series_id: p.seriesId,
         name: p.name,
@@ -1109,7 +1180,9 @@ function createSupabaseStore() {
         gallery: p.gallery,
         details: p.details || {},
         updated_at: new Date().toISOString()
-      }).eq('id', id);
+      };
+      if (p.sortOrder != null) patch.sort_order = Number(p.sortOrder) || 0;
+      const { error } = await supabase.from('products').update(patch).eq('id', id);
       throwIf(error);
       return this.getProduct(id);
     },

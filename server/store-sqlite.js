@@ -471,7 +471,61 @@ function createSqliteStore() {
       return dbUtil.getProduct(db, row.id);
     },
     async listBrands() {
-      return db.prepare('SELECT id, name, tagline FROM brands ORDER BY name').all();
+      return db.prepare(`
+        SELECT b.*, (
+          SELECT COUNT(*) FROM products p WHERE p.brand_id = b.id
+        ) AS product_count
+        FROM brands b
+        ORDER BY name COLLATE NOCASE
+      `).all().map(function (row) {
+        return dbUtil.formatBrand(row);
+      });
+    },
+    async getBrand(id) {
+      const row = db.prepare('SELECT * FROM brands WHERE id = ?').get(id);
+      if (!row) return null;
+      const n = db.prepare('SELECT COUNT(*) AS n FROM products WHERE brand_id = ?').get(id);
+      return dbUtil.formatBrand(row, { productCount: n && n.n });
+    },
+    async createBrand(input) {
+      const id = String(input.id || '').trim();
+      if (!id) throw new Error('Brand id is required.');
+      db.prepare(
+        'INSERT INTO brands (id, name, tagline, logo, description, image, hidden) VALUES (?, ?, ?, ?, ?, ?, ?)'
+      ).run(
+        id,
+        input.name || id,
+        input.tagline || '',
+        input.logo || '',
+        input.description || '',
+        input.image || '',
+        input.hidden ? 1 : 0
+      );
+      return this.getBrand(id);
+    },
+    async updateBrand(id, input) {
+      const current = db.prepare('SELECT * FROM brands WHERE id = ?').get(id);
+      if (!current) return null;
+      db.prepare(
+        'UPDATE brands SET name = ?, tagline = ?, logo = ?, description = ?, image = ?, hidden = ? WHERE id = ?'
+      ).run(
+        input.name != null ? input.name : current.name,
+        input.tagline != null ? input.tagline : (current.tagline || ''),
+        input.logo != null ? input.logo : (current.logo || ''),
+        input.description != null ? input.description : (current.description || ''),
+        input.image != null ? input.image : (current.image || ''),
+        input.hidden != null ? (input.hidden ? 1 : 0) : (current.hidden ? 1 : 0),
+        id
+      );
+      return this.getBrand(id);
+    },
+    async deleteBrand(id) {
+      const current = db.prepare('SELECT id FROM brands WHERE id = ?').get(id);
+      if (!current) return { ok: false, reason: 'missing' };
+      const n = db.prepare('SELECT COUNT(*) AS n FROM products WHERE brand_id = ?').get(id);
+      if (n && n.n) return { ok: false, reason: 'in-use', productCount: n.n };
+      db.prepare('DELETE FROM brands WHERE id = ?').run(id);
+      return { ok: true };
     },
     async ensureBrand(id, name, tagline) {
       const existing = db.prepare('SELECT id FROM brands WHERE id = ?').get(id);
@@ -485,31 +539,48 @@ function createSqliteStore() {
     },
     async insertProduct(p) {
       const stamp = dbUtil.nowIso();
+      const sortOrder = p.sortOrder == null ? 0 : Number(p.sortOrder) || 0;
       const info = db.prepare(`
         INSERT INTO products (
           brand_id, series_id, name, pitches, price_per_m2, weight_per_m2,
           power_avg, power_max, cabinet_w, cabinet_h, type, description, badge,
           image, gallery, details, sort_order, created_at, updated_at
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 0, ?, ?)
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
       `).run(
         p.brandId, p.seriesId, p.name, JSON.stringify(p.pitches), p.price, p.weight,
         p.powerAvg, p.powerMax, p.cabinetW, p.cabinetH, p.type, p.description, p.badge,
-        p.image, JSON.stringify(p.gallery), JSON.stringify(p.details || {}), stamp, stamp
+        p.image, JSON.stringify(p.gallery), JSON.stringify(p.details || {}), sortOrder, stamp, stamp
       );
       return dbUtil.getProduct(db, info.lastInsertRowid);
     },
     async updateProduct(id, p) {
-      db.prepare(`
-        UPDATE products SET
-          brand_id = ?, series_id = ?, name = ?, pitches = ?, price_per_m2 = ?,
-          weight_per_m2 = ?, power_avg = ?, power_max = ?, cabinet_w = ?, cabinet_h = ?,
-          type = ?, description = ?, badge = ?, image = ?, gallery = ?, details = ?, updated_at = ?
-        WHERE id = ?
-      `).run(
-        p.brandId, p.seriesId, p.name, JSON.stringify(p.pitches), p.price, p.weight,
-        p.powerAvg, p.powerMax, p.cabinetW, p.cabinetH, p.type, p.description, p.badge,
-        p.image, JSON.stringify(p.gallery), JSON.stringify(p.details || {}), dbUtil.nowIso(), id
-      );
+      const sortOrder = p.sortOrder == null ? null : Number(p.sortOrder) || 0;
+      if (sortOrder == null) {
+        db.prepare(`
+          UPDATE products SET
+            brand_id = ?, series_id = ?, name = ?, pitches = ?, price_per_m2 = ?,
+            weight_per_m2 = ?, power_avg = ?, power_max = ?, cabinet_w = ?, cabinet_h = ?,
+            type = ?, description = ?, badge = ?, image = ?, gallery = ?, details = ?, updated_at = ?
+          WHERE id = ?
+        `).run(
+          p.brandId, p.seriesId, p.name, JSON.stringify(p.pitches), p.price, p.weight,
+          p.powerAvg, p.powerMax, p.cabinetW, p.cabinetH, p.type, p.description, p.badge,
+          p.image, JSON.stringify(p.gallery), JSON.stringify(p.details || {}), dbUtil.nowIso(), id
+        );
+      } else {
+        db.prepare(`
+          UPDATE products SET
+            brand_id = ?, series_id = ?, name = ?, pitches = ?, price_per_m2 = ?,
+            weight_per_m2 = ?, power_avg = ?, power_max = ?, cabinet_w = ?, cabinet_h = ?,
+            type = ?, description = ?, badge = ?, image = ?, gallery = ?, details = ?,
+            sort_order = ?, updated_at = ?
+          WHERE id = ?
+        `).run(
+          p.brandId, p.seriesId, p.name, JSON.stringify(p.pitches), p.price, p.weight,
+          p.powerAvg, p.powerMax, p.cabinetW, p.cabinetH, p.type, p.description, p.badge,
+          p.image, JSON.stringify(p.gallery), JSON.stringify(p.details || {}), sortOrder, dbUtil.nowIso(), id
+        );
+      }
       return dbUtil.getProduct(db, id);
     },
     async deleteProduct(id) {

@@ -549,6 +549,24 @@
       return (b && b.name) || brandId;
     }
 
+    function renderBrandNav() {
+      const nav = document.getElementById('product-brand-nav');
+      if (!nav || !window.SPECTRUM_PRODUCTS) return;
+      const data = window.SPECTRUM_PRODUCTS;
+      const ids = Object.keys(data).filter(function (id) {
+        const brand = data[id];
+        return brand && brand.kind !== 'control' && id !== 'novastar';
+      }).sort(function (a, b) {
+        return String((data[a] && data[a].name) || a).localeCompare(String((data[b] && data[b].name) || b));
+      });
+      const idle = 'block rounded-lg px-3 py-2 text-slate-400 hover:text-white hover:bg-slate-800/60';
+      nav.innerHTML = '<a href="/products" data-brand-link="" class="' + idle + '">All brands</a>' +
+        ids.map(function (id) {
+          return '<a href="/products?brand=' + encodeURIComponent(id) + '" data-brand-link="' + id + '" class="' + idle + '">' +
+            escAttr((data[id] && data[id].name) || id) + '</a>';
+        }).join('');
+    }
+
     /** Drop stacked ?cat=&brand= URLs so brand always means "all products" for that brand. */
     function dropCatWhenBrandSelected() {
       const params = new URLSearchParams(window.location.search);
@@ -636,9 +654,11 @@
     }
 
     dropCatWhenBrandSelected();
+    renderBrandNav();
     highlightFilters();
     renderProducts(currentBrand());
     window.addEventListener('spectrum:catalog', function () {
+      renderBrandNav();
       highlightFilters();
       renderProducts(currentBrand());
     });

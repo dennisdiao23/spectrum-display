@@ -121,6 +121,10 @@ function openDb() {
   try { db.exec("ALTER TABLE products ADD COLUMN details TEXT NOT NULL DEFAULT '{}'"); } catch (e) { /* already present */ }
   try { db.exec('ALTER TABLE products ADD COLUMN hidden INTEGER NOT NULL DEFAULT 0'); } catch (e) { /* already present */ }
   try { db.exec("ALTER TABLE admins ADD COLUMN role TEXT NOT NULL DEFAULT 'owner'"); } catch (e) { /* already present */ }
+  try { db.exec("ALTER TABLE brands ADD COLUMN logo TEXT NOT NULL DEFAULT ''"); } catch (e) { /* already present */ }
+  try { db.exec("ALTER TABLE brands ADD COLUMN description TEXT NOT NULL DEFAULT ''"); } catch (e) { /* already present */ }
+  try { db.exec("ALTER TABLE brands ADD COLUMN image TEXT NOT NULL DEFAULT ''"); } catch (e) { /* already present */ }
+  try { db.exec('ALTER TABLE brands ADD COLUMN hidden INTEGER NOT NULL DEFAULT 0'); } catch (e) { /* already present */ }
   seedAdminRoles(db);
   ensureCompanyCustomers(db);
   require('./company-crm').ensureCompanyCrm(db);
@@ -1258,6 +1262,53 @@ function isProductHidden(row) {
   return row.hidden === true || row.hidden === 1 || Number(row.hidden) === 1;
 }
 
+function isBrandHidden(row) {
+  if (!row) return false;
+  return row.hidden === true || row.hidden === 1 || Number(row.hidden) === 1;
+}
+
+function formatBrand(row, extra) {
+  extra = extra || {};
+  const count = extra.productCount != null ? extra.productCount : (row && (row.product_count != null ? row.product_count : row.productCount));
+  return {
+    id: row.id,
+    name: row.name,
+    tagline: row.tagline || '',
+    logo: row.logo || '',
+    image: row.image || '',
+    description: row.description || '',
+    hidden: isBrandHidden(row),
+    productCount: Number(count) || 0
+  };
+}
+
+function brandCatalogEntry(row) {
+  return {
+    name: row.name,
+    tagline: row.tagline || '',
+    logo: row.logo || '',
+    image: row.image || '',
+    description: row.description || '',
+    series: []
+  };
+}
+
+function stampCatalogKinds(byBrand) {
+  Object.keys(byBrand || {}).forEach(function (id) {
+    const brand = byBrand[id];
+    if (!brand) return;
+    if (id === 'novastar' || (brand.series || []).some(function (s) { return s.type === 'control'; })) {
+      brand.kind = 'control';
+    }
+  });
+  return byBrand;
+}
+
+function isMissingColumnError(err) {
+  const m = String((err && (err.message || err.details || err.hint)) || err || '').toLowerCase();
+  return /column|schema cache|does not exist|could not find/.test(m);
+}
+
 function rowToProduct(row, brand) {
   const pitches = parseJson(row.pitches, []);
   const gallery = parseJson(row.gallery, []);
@@ -1300,30 +1351,22 @@ function rowToProduct(row, brand) {
 }
 
 function getCatalog(db) {
-  const brands = db.prepare('SELECT id, name, tagline FROM brands ORDER BY name').all();
+  const brands = db.prepare('SELECT * FROM brands ORDER BY name').all();
   const products = db.prepare('SELECT * FROM products ORDER BY sort_order, name').all();
   const byBrand = {};
   brands.forEach((b) => {
-    byBrand[b.id] = { name: b.name, tagline: b.tagline || '', series: [] };
+    if (isBrandHidden(b)) return;
+    byBrand[b.id] = brandCatalogEntry(b);
   });
   products.forEach((row) => {
     if (isProductHidden(row)) return;
     if (!byBrand[row.brand_id]) {
-      byBrand[row.brand_id] = { name: row.brand_id, tagline: '', series: [] };
+      byBrand[row.brand_id] = { name: row.brand_id, tagline: '', logo: '', image: '', description: '', series: [] };
     }
     const item = rowToProduct(row, { name: byBrand[row.brand_id].name });
     byBrand[row.brand_id].series.push(item);
   });
-  Object.keys(byBrand).forEach(function (id) {
-    if (!(byBrand[id].series && byBrand[id].series.length)) delete byBrand[id];
-  });
-  Object.keys(byBrand).forEach(function (id) {
-    const brand = byBrand[id];
-    if (id === 'novastar' || (brand.series || []).some(function (s) { return s.type === 'control'; })) {
-      brand.kind = 'control';
-    }
-  });
-  return byBrand;
+  return stampCatalogKinds(byBrand);
 }
 
 function listProducts(db) {
@@ -1358,6 +1401,12 @@ module.exports = {
   getProduct,
   rowToProduct,
   isProductHidden,
+  isBrandHidden,
+  formatBrand,
+  brandCatalogEntry,
+  stampCatalogKinds,
+  isMissingColumnError,
+  CONTROL_DETAIL_KEYS,
   parseDetails,
   mergeProductDetails,
   nowIso,

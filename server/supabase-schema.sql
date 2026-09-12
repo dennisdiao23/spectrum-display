@@ -7,6 +7,11 @@ create table if not exists public.brands (
   tagline text not null default ''
 );
 
+alter table public.brands add column if not exists logo text not null default '';
+alter table public.brands add column if not exists description text not null default '';
+alter table public.brands add column if not exists image text not null default '';
+alter table public.brands add column if not exists hidden boolean not null default false;
+
 create table if not exists public.products (
   id bigint generated always as identity primary key,
   brand_id text not null references public.brands(id) on delete cascade,
