@@ -1475,6 +1475,20 @@ html.dash-scroll-lock body.company-app {
   z-index: 1;
   border-bottom: 1px solid var(--dash-line);
 }
+#po-form.po-inv-layout .po-items td {
+  padding: 0.25rem 0.35rem;
+  border-bottom: 1px solid #eef2f7;
+}
+#po-form.po-inv-layout .po-items .dash-cols input,
+#po-form.po-inv-layout .po-items .dash-cols select {
+  padding: 0.4rem 0.5rem;
+  font-size: 0.85rem;
+}
+#po-form.po-inv-layout .po-items .so-sku-search input {
+  padding-left: 1.65rem;
+}
+#po-form.po-inv-layout .po-items .so-line-num-h { width: 2.6rem; }
+#po-form.po-inv-layout .po-items .so-line-acts-h { width: 3.6rem; }
 #po-form.po-inv-layout .po-bottom {
   display: grid;
   grid-template-columns: minmax(0, 1fr) 18rem;
@@ -4604,7 +4618,8 @@ body.po-doc-float #po-form.po-inv-layout .po-items {
   flex: none;
 }
 .so-line-drag:hover { color: var(--dash-text); }
-.so-line.is-dragging {
+.so-line.is-dragging,
+.po-line.is-dragging {
   opacity: 0.45;
   background: #eef5ff;
   pointer-events: none;
@@ -4687,9 +4702,10 @@ body.po-doc-float #po-edit-btn { display: none !important; }
 #so-form.is-readonly [data-insert-line],
 #so-form.is-readonly [data-line-drag],
 #po-form.is-readonly #po-add-line,
-#po-form.is-readonly #po-clear-lines,
 #po-form.is-readonly #po-cc-toggle,
-#po-form.is-readonly [data-remove-line] {
+#po-form.is-readonly [data-remove-line],
+#po-form.is-readonly [data-insert-line],
+#po-form.is-readonly [data-line-drag] {
   display: none !important;
 }
 
