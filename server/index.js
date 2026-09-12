@@ -204,7 +204,6 @@ async function main() {
     '/company',
     '/company/dashboard',
     '/company/website',
-    '/company/website/control',
     '/company/website/store',
     '/company/website/accounts',
     '/company/website/dealers',
@@ -228,6 +227,9 @@ async function main() {
     '/company/settings/forms',
     '/company/chat'
   ];
+  app.get(['/company/website/control', '/company/website/control/'], function (_req, res) {
+    res.redirect(301, '/company/website');
+  });
   COMPANY_PAGES.forEach(function (route) {
     app.get([route, route + '/'], sendCompany);
   });
@@ -287,7 +289,6 @@ async function main() {
 
   const MARKET_PAGES = [
     ['/products', 'products.html'],
-    ['/product', 'product.html'],
     ['/contact', 'contact.html'],
     ['/dealer', 'dealer.html'],
     ['/support', 'support.html'],
@@ -307,6 +308,20 @@ async function main() {
       res.redirect(301, route + qs);
     });
   });
+  function catalogProductPath(seriesId, brandId, clash) {
+    const series = String(seriesId || '').trim();
+    if (!series) return '/products';
+    if (clash && brandId) {
+      return '/products/' + encodeURIComponent(String(brandId)) + '/' + encodeURIComponent(series);
+    }
+    return '/products/' + encodeURIComponent(series);
+  }
+  function redirectLegacyProduct(req, res) {
+    const series = String((req.query && req.query.series) || '').trim();
+    if (!series) return res.redirect(301, '/products');
+    return res.redirect(301, catalogProductPath(series));
+  }
+  app.get(['/product', '/product/', '/product.html'], redirectLegacyProduct);
   app.get(['/brands', '/brands/', '/brands.html'], function (req, res) {
     const qs = req.url.includes('?') ? req.url.slice(req.url.indexOf('?')) : '';
     res.redirect(301, '/products' + qs);
@@ -411,14 +426,14 @@ async function main() {
     });
     try {
       const products = await store.listProducts();
+      const seriesCount = {};
       products.forEach(function (product) {
-        if (product.hidden) return;
-        const loc =
-          SITE +
-          '/product?brand=' +
-          encodeURIComponent(product.brandId) +
-          '&series=' +
-          encodeURIComponent(product.id);
+        if (product.hidden || !product.id) return;
+        seriesCount[product.id] = (seriesCount[product.id] || 0) + 1;
+      });
+      products.forEach(function (product) {
+        if (product.hidden || !product.id) return;
+        const loc = SITE + catalogProductPath(product.id, product.brandId, seriesCount[product.id] > 1);
         xml += sitemapUrl(loc, 'weekly', '0.7', today);
       });
     } catch (err) {
@@ -2966,9 +2981,16 @@ async function main() {
     if (!shopStore.isStoreHost(req)) return next();
     sendStorePage(req, res);
   });
+  app.get(['/products/:brand/:series', '/products/:brand/:series/'], function (req, res, next) {
+    if (shopStore.isStoreHost(req)) return next();
+    res.sendFile(path.join(ROOT, 'product.html'));
+  });
   app.get(['/products/:handle', '/products/:handle/'], function (req, res, next) {
-    if (!shopStore.isStoreHost(req)) return next();
-    sendStorePage(req, res);
+    if (shopStore.isStoreHost(req)) {
+      sendStorePage(req, res);
+      return;
+    }
+    res.sendFile(path.join(ROOT, 'product.html'));
   });
   app.get(['/pages/:slug', '/pages/:slug/'], function (req, res, next) {
     if (!shopStore.isStoreHost(req)) return next();

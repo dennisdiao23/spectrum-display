@@ -25,14 +25,14 @@ Spectrum Display is a static HTML/CSS/JS marketing + catalog website (`index.htm
 `product.html`, `brands.html`, `cart.html`, `contact.html`, `account.html`, `portal.html` at `/portal`,
 `designer.html` at `/led-wall-calculator`, `company.html` at `/company`, `store.html` at `/store` and
 `store.spectrumdisplay.com`) served by a small Express backend in `server/`. The backend exposes a product/brand
-catalog API and a cookie-session company login used by `/company`, `/company/website`, `/company/website/control`, and `/company/inventory`.
+catalog API and a cookie-session company login used by `/company`, `/company/website`, and `/company/inventory`.
 
 ### Running the app (single service)
 
 - Start the dev server with `npm start` (`node server/index.js`). It listens on `PORT` (default `3000`)
   and serves both the static site and the `/api/*` endpoints. There is no separate frontend build/dev
   server — the HTML files are served as-is.
-- Visit `http://localhost:3000`. Company UI is at `/company` (`/company/website`, `/company/website/control`, `/company/inventory`).
+- Visit `http://localhost:3000`. Company UI is at `/company` (`/company/website`, `/company/inventory`).
 - Local US Store preview: `http://localhost:3000/store`. Production hostname is `https://store.spectrumdisplay.com`
   (same Express app; add the custom domain on Railway and CNAME `store` to the same Railway target as `www`).
 
@@ -45,7 +45,7 @@ catalog API and a cookie-session company login used by `/company`, `/company/web
   default in Cloud. On first run it auto-seeds the admin account and the catalog from
   `server/seed-catalog.json`, then fills missing `products.details` from `server/product-details.json`.
 - Public panel catalog is **database only**. Pages load `/api/catalog` via `js/catalog-api.js`. Do not
-  include `js/products-data.js` on HTML pages. Edit series in **Company → Website → Control** (or the Products list). NovaStar control
+  include `js/products-data.js` on HTML pages. Edit series in **Company → Website → Products**. NovaStar control
   gear is also stored as products (`type: control`, brand `novastar`) and edited in Admin.
 - The SQLite store uses Node's built-in `node:sqlite` (`server/db.js`), which requires Node 22+ (an
   `ExperimentalWarning` is printed and is harmless). No native/compiled sqlite package is installed.
