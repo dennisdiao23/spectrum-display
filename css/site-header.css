@@ -394,6 +394,31 @@ html.is-logged-in .guest-pricing {
   background: #38bdf8;
   color: #fff;
 }
+.site-nav-phone {
+  display: inline-flex;
+  align-items: center;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  letter-spacing: 0.03em;
+  color: #e2e8f0;
+  text-decoration: none;
+  white-space: nowrap;
+  padding: 0 0.55rem;
+  margin-left: 0.2rem;
+}
+.site-nav-phone:hover { color: #fff; }
+.site-header-phone {
+  display: none;
+  align-items: center;
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  color: #e2e8f0;
+  text-decoration: none;
+  white-space: nowrap;
+  padding: 0 0.35rem;
+}
+.site-header-phone:hover { color: #fff; }
 .site-nav a.site-cta {
   padding: 0 1.05rem;
   margin-left: 0.35rem;
@@ -663,6 +688,7 @@ html.is-logged-in .guest-pricing {
     padding: 0 0.4rem;
   }
   .site-icon-btn { padding: 0; }
+  .site-nav-phone { font-size: 0.72rem; padding: 0 0.3rem; }
 }
 .site-cart-count {
   position: absolute;
@@ -703,6 +729,7 @@ html.is-logged-in .guest-pricing {
   .site-cta,
   .site-mega-panel { display: none !important; }
   .site-contact-icon { display: inline-flex; }
+  .site-header-phone { display: inline-flex; }
   #hdr-signin-drop { display: none; }
   .site-utils { gap: 0.3rem; }
   .site-util {

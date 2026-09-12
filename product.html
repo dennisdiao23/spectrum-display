@@ -7,15 +7,16 @@
   <link rel="icon" type="image/png" href="/assets/favicon-32.png" sizes="32x32" />
   <link rel="apple-touch-icon" href="/assets/apple-touch-icon.png" />
   <script src="js/i18n-boot.js"></script>
-  <link rel="stylesheet" href="css/site-header.css?v=store-label" />
+  <link rel="stylesheet" href="css/site-header.css?v=v2a" />
+  <link rel="stylesheet" href="css/market.css?v=v2a" />
   <title>LED Video Wall | Spectrum Display</title>
   <meta name="description" content="Configure LED video wall panels, pixel pitch, and pricing from Spectrum Display Inc., a US distributor of professional indoor, outdoor, and rental LED displays." />
-  <link rel="canonical" href="https://www.spectrumdisplay.com/product.html" />
+  <link rel="canonical" href="https://www.spectrumdisplay.com/product" />
   <meta property="og:type" content="website" />
   <meta property="og:site_name" content="Spectrum Display" />
   <meta property="og:title" content="LED Video Wall | Spectrum Display" />
   <meta property="og:description" content="Configure LED video wall panels, pixel pitch, and pricing from Spectrum Display Inc." />
-  <meta property="og:url" content="https://www.spectrumdisplay.com/product.html" />
+  <meta property="og:url" content="https://www.spectrumdisplay.com/product" />
   <meta property="og:image" content="https://www.spectrumdisplay.com/assets/spectrum-logo.png" />
   <meta name="twitter:card" content="summary_large_image" />
   <meta name="twitter:title" content="LED Video Wall | Spectrum Display" />
@@ -143,7 +144,7 @@
     }
   </style>
 </head>
-<body class="bg-slate-950 text-slate-100 antialiased">
+<body class="market-page bg-slate-950 text-slate-100 antialiased">
   <header class="site-header" id="site-header">
     <div class="site-header-inner">
       <div class="site-header-top">
@@ -164,7 +165,7 @@
             </button>
           </div>
           <a class="site-nav-link" href="/led-wall-calculator" data-i18n="nav.designer">LED Wall Calculator</a>
-          <a class="site-nav-link" href="dealer.html" data-i18n="nav.dealer">Dealer</a>
+          <a class="site-nav-link" href="/dealer" data-i18n="nav.dealer">Dealer</a>
         </nav>
         <div class="site-utils">
           <div class="site-drop" id="hdr-search-drop">
@@ -172,7 +173,7 @@
               <svg fill="none" stroke="currentColor" stroke-width="1.7" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z"/></svg>
             </button>
             <div class="site-drop-panel site-search-panel">
-              <form id="hdr-search-form" action="products.html" method="get">
+              <form id="hdr-search-form" action="/products" method="get">
                 <input id="hdr-search-input" name="q" type="search" autocomplete="off" placeholder="Search products" data-i18n-placeholder="nav.searchPlaceholder" />
               </form>
               <div class="site-search-results" id="hdr-search-results"></div>
@@ -221,9 +222,9 @@
               </div>
             </div>
           </div>
-          <a href="support.html" class="site-util site-support-link"><span data-i18n="nav.support">Support</span></a>
-          <a href="contact.html" class="site-cta" data-i18n="nav.contactSales">Contact Sales</a>
-          <a href="contact.html" class="site-util site-contact-icon" aria-label="Contact Sales">
+          <a href="/support" class="site-util site-support-link"><span data-i18n="nav.support">Support</span></a>
+          <a href="/contact" class="site-cta" data-i18n="nav.contactSales">Contact Sales</a>
+          <a href="/contact" class="site-util site-contact-icon" aria-label="Contact Sales">
             <svg fill="none" stroke="currentColor" stroke-width="1.7" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M21.75 6.75v10.5a2.25 2.25 0 01-2.25 2.25h-15a2.25 2.25 0 01-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0019.5 4.5h-15a2.25 2.25 0 00-2.25 2.25m19.5 0v.243a2.25 2.25 0 01-1.07 1.916l-7.5 4.615a2.25 2.25 0 01-2.36 0L3.32 8.91a2.25 2.25 0 01-1.07-1.916V6.75"/></svg>
           </a>
           <a href="cart.html" class="site-util site-cart site-icon-btn" aria-label="Cart">
@@ -241,9 +242,9 @@
   <!-- Breadcrumb -->
   <div class="pt-6">
     <div class="site-wrap text-sm text-slate-500 py-4">
-      <a href="products.html" class="hover:text-slate-300" data-i18n="nav.products">Products</a>
+      <a href="/products" class="hover:text-slate-300" data-i18n="nav.products">Products</a>
       <span class="mx-2">/</span>
-      <a id="product-brand-crumb" href="products.html" class="hover:text-slate-300">Brand</a>
+      <a id="product-brand-crumb" href="/products" class="hover:text-slate-300">Brand</a>
       <span class="mx-2">/</span>
       <span id="product-name-crumb" class="text-slate-300">LED Series</span>
     </div>
@@ -319,7 +320,7 @@
           </div>
 
           <div class="flex flex-wrap gap-4 text-sm">
-            <a href="contact.html" class="text-sky-400 hover:text-sky-300">Request detailed quote →</a>
+            <a href="/contact" class="text-sky-400 hover:text-sky-300">Request detailed quote →</a>
             <span class="text-slate-600">|</span>
             <a id="datasheet-link" href="https://gloshine.com/products" class="text-slate-400 hover:text-white">Manufacturer specs</a>
           </div>
@@ -392,8 +393,8 @@
   <script src="js/supabase-client.js"></script>
   <script src="js/pricing.js"></script>
   <script src="js/auth.js"></script>
-  <script src="js/site-header.js?v=store-label"></script>
-  <script src="js/i18n.js?v=store-label"></script>
+  <script src="js/site-header.js?v=v2a"></script>
+  <script src="js/i18n.js?v=v2a"></script>
   <script>
     function bootProductPage() {
     const params = new URLSearchParams(window.location.search);
@@ -497,7 +498,7 @@
         window.spectrumSetSeo({
           title: pageTitle,
           description: desc,
-          url: 'https://www.spectrumdisplay.com/product.html?brand=' +
+          url: 'https://www.spectrumdisplay.com/product?brand=' +
             encodeURIComponent(brandId) + '&series=' + encodeURIComponent(seriesId),
           image: seriesData && seriesData.image
         });
@@ -506,8 +507,8 @@
       if (crumbBrand) {
         crumbBrand.textContent = isControl ? 'Control systems' : brandName;
         crumbBrand.href = isControl
-          ? (isReceiver ? 'products.html?cat=control&sub=receiving-cards' : 'products.html?cat=control')
-          : ('products.html?brand=' + encodeURIComponent(brandId));
+          ? (isReceiver ? '/products?cat=control&sub=receiving-cards' : '/products?cat=control')
+          : ('/products?brand=' + encodeURIComponent(brandId));
       }
       const crumbName = document.getElementById('product-name-crumb');
       if (crumbName) crumbName.textContent = productName;
@@ -874,13 +875,13 @@
             '</div>';
         } else {
           if (downloadsTabBtn) downloadsTabBtn.classList.add('hidden');
-          var fallbackHref = (seriesData && seriesData.sourceUrl) || 'contact.html';
+          var fallbackHref = (seriesData && seriesData.sourceUrl) || '/contact';
           downloadsWrap.innerHTML =
             '<div class="max-w-xl text-slate-400 text-sm space-y-3">' +
               '<p>No direct download package is listed for this model yet.</p>' +
               '<p><a class="text-sky-400 hover:text-sky-300" href="' + esc(fallbackHref) +
                 '" target="_blank" rel="noopener">Manufacturer resources</a> · ' +
-                '<a class="text-sky-400 hover:text-sky-300" href="contact.html">Ask sales</a></p>' +
+                '<a class="text-sky-400 hover:text-sky-300" href="/contact">Ask sales</a></p>' +
             '</div>';
         }
       }
@@ -891,8 +892,8 @@
         const specLink = (seriesData && seriesData.sourceUrl)
           ? '<p class="text-sm text-slate-400 mt-3"><a class="text-sky-400 hover:text-sky-300" href="' +
             esc(seriesData.sourceUrl) + '" target="_blank" rel="noopener">Official ' + esc(brandName) +
-            ' specifications</a> · <a class="text-sky-400 hover:text-sky-300" href="warranty.html">Limited Warranty Policy</a></p>'
-          : '<p class="text-sm text-slate-400 mt-3"><a class="text-sky-400 hover:text-sky-300" href="warranty.html">Limited Warranty Policy</a></p>';
+            ' specifications</a> · <a class="text-sky-400 hover:text-sky-300" href="/warranty">Limited Warranty Policy</a></p>'
+          : '<p class="text-sm text-slate-400 mt-3"><a class="text-sky-400 hover:text-sky-300" href="/warranty">Limited Warranty Policy</a></p>';
         supportEl.innerHTML =
           '<div class="max-w-3xl space-y-6">' +
             '<div>' +
@@ -926,7 +927,7 @@
           recBox.innerHTML = '<div class="text-sm font-semibold mb-2">Best with</div><div class="flex flex-wrap gap-2">' +
             seriesData.bestWith.map(function (cat) {
               const labels = { 'indoor-rental': 'Indoor rental', 'outdoor-rental': 'Outdoor rental', cob: 'Fine pitch / COB', 'fixed-indoor': 'Fixed indoor', posters: 'Posters', transparent: 'Transparent', 'outdoor-fixed': 'Outdoor fixed', creative: 'Creative / XR' };
-              return '<a class="px-3 py-1.5 rounded-full bg-slate-800 text-sm text-sky-300 hover:bg-slate-700" href="products.html?cat=' +
+              return '<a class="px-3 py-1.5 rounded-full bg-slate-800 text-sm text-sky-300 hover:bg-slate-700" href="/products?cat=' +
                 encodeURIComponent(cat) + '">' + esc(labels[cat] || cat) + '</a>';
             }).join('') + '</div>';
         } else if (!isControl && window.SpectrumControl) {
@@ -936,7 +937,7 @@
             '<div class="text-sm font-semibold mb-1">Recommended control</div>' +
             '<p class="text-xs text-slate-500 mb-3">' + esc(SpectrumControl.CABINET_CARD_NOTE) + '</p>' +
             '<div class="space-y-2">' + recs.map(function (r) {
-              return '<a class="flex items-center justify-between gap-3 rounded-xl border border-slate-800 px-3 py-2 text-sm hover:border-sky-500/40" href="product.html?brand=novastar&amp;series=' +
+              return '<a class="flex items-center justify-between gap-3 rounded-xl border border-slate-800 px-3 py-2 text-sm hover:border-sky-500/40" href="/product?brand=novastar&amp;series=' +
                 encodeURIComponent(r.id) + '"><span>' + esc(r.name) + '</span><span class="text-xs text-slate-500">' +
                 esc(r.chips && r.chips[0] ? r.chips[0] : SpectrumControl.formatPixels(r.maxPixels)) + '</span></a>';
             }).join('') + '</div>';
@@ -949,13 +950,13 @@
       if (!isControl) {
         const guestCta = document.getElementById('guest-price-cta');
         if (guestCta) {
-          guestCta.href = 'contact.html';
+          guestCta.href = '/contact';
           guestCta.removeAttribute('data-i18n');
           guestCta.textContent = 'Request pricing';
         }
         const stickyGuestCta = document.getElementById('sticky-guest-cta');
         if (stickyGuestCta) {
-          stickyGuestCta.href = 'contact.html';
+          stickyGuestCta.href = '/contact';
           stickyGuestCta.removeAttribute('data-i18n');
           stickyGuestCta.textContent = 'Request pricing';
         }
@@ -972,7 +973,7 @@
         var guestCtaQuote = document.getElementById('guest-price-cta');
         if (guestCtaQuote) {
           guestCtaQuote.classList.remove('guest-pricing');
-          guestCtaQuote.href = 'contact.html';
+          guestCtaQuote.href = '/contact';
           guestCtaQuote.removeAttribute('data-i18n');
           guestCtaQuote.textContent = 'Request a quote';
         }
@@ -982,7 +983,7 @@
         if (stickyGuest) {
           stickyGuest.classList.remove('guest-pricing');
           stickyGuest.textContent = 'Request quote';
-          stickyGuest.href = 'contact.html';
+          stickyGuest.href = '/contact';
         }
       }
     }
@@ -1165,7 +1166,7 @@
       const a = document.getElementById('use-in-calculator');
       if (!a) return;
       if (isControl) {
-        a.href = 'contact.html';
+        a.href = '/contact';
         a.textContent = 'Or contact sales →';
         return;
       }
@@ -1221,11 +1222,11 @@
     // Cart
     function addToCart() {
       if (!hasSellPrice()) {
-        location.href = 'contact.html';
+        location.href = '/contact';
         return;
       }
       if (!(window.SpectrumAuth && SpectrumAuth.isLoggedIn && SpectrumAuth.isLoggedIn())) {
-        location.href = 'account.html?next=' + encodeURIComponent((location.pathname.split('/').pop() || 'product.html') + location.search);
+        location.href = '/account.html?next=' + encodeURIComponent((location.pathname || '/product') + location.search);
         return;
       }
       const cart = JSON.parse(localStorage.getItem('spectrumCart') || '[]');

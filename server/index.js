@@ -230,6 +230,36 @@ async function main() {
     const qs = req.url.includes('?') ? req.url.slice(req.url.indexOf('?')) : '';
     res.redirect(301, '/led-wall-calculator' + qs);
   });
+
+  const MARKET_PAGES = [
+    ['/products', 'products.html'],
+    ['/product', 'product.html'],
+    ['/contact', 'contact.html'],
+    ['/dealer', 'dealer.html'],
+    ['/support', 'support.html'],
+    ['/warranty', 'warranty.html'],
+    ['/shipping', 'shipping.html'],
+    ['/privacy', 'privacy.html'],
+    ['/terms', 'terms.html']
+  ];
+  MARKET_PAGES.forEach(function (pair) {
+    const route = pair[0];
+    const file = pair[1];
+    app.get([route, route + '/'], function (_req, res) {
+      res.sendFile(path.join(ROOT, file));
+    });
+    app.get('/' + file, function (req, res) {
+      const qs = req.url.includes('?') ? req.url.slice(req.url.indexOf('?')) : '';
+      res.redirect(301, route + qs);
+    });
+  });
+  app.get(['/brands', '/brands/', '/brands.html'], function (req, res) {
+    const qs = req.url.includes('?') ? req.url.slice(req.url.indexOf('?')) : '';
+    res.redirect(301, '/products' + qs);
+  });
+  app.get(['/control', '/control/', '/control.html'], function (_req, res) {
+    res.redirect(301, '/products?cat=control');
+  });
   app.get(['/portal', '/portal/'], function (_req, res) {
     res.set('X-Robots-Tag', 'noindex, nofollow');
     res.set('Cache-Control', 'private, no-store');
@@ -306,8 +336,8 @@ async function main() {
       '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n';
     [
       ['/', 'weekly', '1.0'],
-      ['/products.html', 'weekly', '0.9'],
-      ['/control.html', 'weekly', '0.8'],
+      ['/products', 'weekly', '0.9'],
+      ['/products?cat=control', 'weekly', '0.8'],
       ['/retail-hospitality', 'monthly', '0.7'],
       ['/worship', 'monthly', '0.7'],
       ['/corporate', 'monthly', '0.7'],
@@ -315,13 +345,13 @@ async function main() {
       ['/outdoor', 'monthly', '0.7'],
       ['/home-theater', 'monthly', '0.7'],
       ['/led-wall-calculator', 'monthly', '0.8'],
-      ['/dealer.html', 'monthly', '0.7'],
-      ['/contact.html', 'monthly', '0.7'],
-      ['/support.html', 'monthly', '0.6'],
-      ['/warranty.html', 'monthly', '0.6'],
-      ['/shipping.html', 'monthly', '0.6'],
-      ['/privacy.html', 'monthly', '0.5'],
-      ['/terms.html', 'monthly', '0.5']
+      ['/dealer', 'monthly', '0.7'],
+      ['/contact', 'monthly', '0.7'],
+      ['/support', 'monthly', '0.6'],
+      ['/warranty', 'monthly', '0.6'],
+      ['/shipping', 'monthly', '0.6'],
+      ['/privacy', 'monthly', '0.5'],
+      ['/terms', 'monthly', '0.5']
     ].forEach(function (page) {
       xml += sitemapUrl(SITE + page[0], page[1], page[2], today);
     });
@@ -331,7 +361,7 @@ async function main() {
         if (product.hidden) return;
         const loc =
           SITE +
-          '/product.html?brand=' +
+          '/product?brand=' +
           encodeURIComponent(product.brandId) +
           '&series=' +
           encodeURIComponent(product.id);
