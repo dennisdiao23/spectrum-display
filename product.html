@@ -530,7 +530,7 @@
       if (label) label.textContent = productName;
       const waiting = fallback && fallback.querySelector('.text-slate-500');
       if (waiting) waiting.textContent = (seriesData && photos[0]) ? '' : 'Loading product…';
-      if (hero && (brandId === 'gloshine' || isControl || seriesId === 'mk')) {
+      if (hero && (brandId === 'gloshine' || isControl || seriesId === 'mk' || seriesId === 'bk')) {
         hero.classList.remove('object-cover');
         hero.classList.add('object-contain', 'bg-slate-950');
       } else if (hero) {

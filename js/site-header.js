@@ -317,7 +317,7 @@
         image: window.spectrumProductPhoto
           ? spectrumProductPhoto(p, 'thumb')
           : (window.spectrumDisplayImage ? spectrumDisplayImage(p.image, 'thumb') : p.image),
-        contain: p.brandId === 'spectrum' && p.id === 'mk'
+        contain: p.brandId === 'spectrum' && (p.id === 'mk' || p.id === 'bk')
       };
     });
   }
