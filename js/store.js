@@ -34,7 +34,9 @@
   function imgSrc(src, kind) {
     if (!src) return '';
     if (window.spectrumDisplayImage) return window.spectrumDisplayImage(src, kind || 'card');
-    return src.charAt(0) === '/' ? src : '/' + src;
+    // Keep absolute / data / blob URLs as-is (uploaded Supabase photos). Only prefix relative paths.
+    if (/^(https?:|data:|blob:)/i.test(src) || src.charAt(0) === '/') return src;
+    return '/' + src.replace(/^\.\//, '');
   }
   function photoFor(p, kind) {
     if (window.spectrumProductPhoto) return window.spectrumProductPhoto(p, kind || 'card');
