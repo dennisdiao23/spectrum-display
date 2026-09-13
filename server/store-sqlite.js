@@ -614,6 +614,16 @@ function createSqliteStore() {
       if (product) attachMapsToListedProducts(db, [product]);
       return product;
     },
+    async updateProductMedia(id, media) {
+      const image = media && media.image != null ? String(media.image) : '';
+      const gallery = Array.isArray(media && media.gallery) ? media.gallery : [];
+      const info = db.prepare('UPDATE products SET image = ?, gallery = ?, updated_at = ? WHERE id = ?')
+        .run(image, JSON.stringify(gallery), dbUtil.nowIso(), id);
+      if (!info.changes) return null;
+      const product = dbUtil.getProduct(db, id);
+      if (product) attachMapsToListedProducts(db, [product]);
+      return product;
+    },
     async getRawProduct(id) {
       return db.prepare('SELECT * FROM products WHERE id = ?').get(id) || null;
     },

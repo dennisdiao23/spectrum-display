@@ -1264,6 +1264,20 @@ function createSupabaseStore() {
       if (!data || !data.length) return null;
       return this.getProduct(id);
     },
+    async updateProductMedia(id, media) {
+      const { data, error } = await supabase
+        .from('products')
+        .update({
+          image: media && media.image != null ? String(media.image) : '',
+          gallery: Array.isArray(media && media.gallery) ? media.gallery : [],
+          updated_at: new Date().toISOString()
+        })
+        .eq('id', id)
+        .select('id');
+      throwIf(error);
+      if (!data || !data.length) return null;
+      return this.getProduct(id);
+    },
     async getRawProduct(id) {
       const { data, error } = await supabase.from('products').select('*').eq('id', id).maybeSingle();
       throwIf(error);

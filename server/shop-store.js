@@ -416,6 +416,7 @@ function toAdminStoreItem(product) {
     brandName: product.brandName,
     type: product.type,
     image: product.image || '',
+    gallery: Array.isArray(product.gallery) ? product.gallery.slice() : [],
     hidden: websiteHidden,
     store_listed: listed,
     store_collection: storedCollection === 'hidden' || COLLECTION_BY_ID[storedCollection] ? storedCollection : '',
