@@ -29,7 +29,7 @@ html[data-shop-theme="light"] {
   --shop-ghost-hover: #000000;
   --shop-note-bg: #f8fafc;
   --shop-card-hover: #f1f2f4;
-  --shop-media: #ffffff;
+  --shop-media: #f6f7f8;
   --shop-on-navy: #ffffff;
   --shop-ed-bg: #111111;
   --shop-close-hover-bg: #eef2ff;
@@ -71,7 +71,7 @@ html[data-shop-theme="dark"] {
   --shop-ghost-hover: #ffffff;
   --shop-note-bg: #151b24;
   --shop-card-hover: #1c2430;
-  --shop-media: #0f141b;
+  --shop-media: #151b24;
   --shop-on-navy: #ffffff;
   --shop-ed-bg: #111111;
   --shop-close-hover-bg: #1e293b;
@@ -519,8 +519,8 @@ body.shop-collection-mode .shop-subnav { display: block; }
 .shop-card-media {
   position: relative;
   aspect-ratio: 1;
-  background: var(--shop-media);
-  border-radius: 0.75rem;
+  background: transparent;
+  border-radius: 0;
   margin-bottom: 0.9rem;
   overflow: hidden;
   display: flex;
