@@ -20436,7 +20436,7 @@
     });
 
     document.getElementById('delete-btn').addEventListener('click', async function () {
-      if (!editingId || !confirm('Delete this product?')) return;
+      if (!editingId || !confirm('Delete this product from the website? If it is listed on the US Store, that store listing stays.')) return;
       const id = String(editingId);
       await api('/api/admin/products/' + editingId, { method: 'DELETE' });
       if (isWpSplitOn()) closeWpTab(id);
