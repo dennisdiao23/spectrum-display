@@ -14,7 +14,7 @@
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
   <title>Company | Spectrum Display</title>
   <meta name="robots" content="noindex, nofollow" />
-  <link rel="stylesheet" href="/css/company-dash.css?v=storeprev1" />
+  <link rel="stylesheet" href="/css/company-dash.css?v=storeimg1" />
   <script src="/js/address-autocomplete.js"></script>
   <script src="/js/company-chat.js?v=chatcrm3"></script>
   <script src="/js/company-crm.js?v=zoomphone3"></script>
@@ -778,11 +778,19 @@
         <h2 id="ws-form-title" class="font-semibold text-lg mb-4">Store listing</h2>
         <form id="store-form" class="grid sm:grid-cols-2 gap-4">
           <input type="hidden" id="ws-id">
-          <div class="sm:col-span-2 flex items-center gap-3">
-            <img id="ws-image-preview" alt="" class="hidden h-16 w-16 rounded-lg object-contain bg-white border border-slate-800">
-            <div>
-              <p id="ws-item-name" class="font-medium text-slate-100"></p>
-              <p id="ws-item-meta" class="text-xs text-slate-500 mt-0.5"></p>
+          <div class="sm:col-span-2">
+            <p id="ws-item-name" class="font-medium text-slate-100"></p>
+            <p id="ws-item-meta" class="text-xs text-slate-500 mt-0.5"></p>
+          </div>
+          <div class="sm:col-span-2">
+            <p class="block text-xs text-slate-400 mb-1">Photos</p>
+            <p class="text-[11px] text-slate-500 mb-2">First photo is the store hero. Hero / reorder / remove here. These are the same pictures on the website product page.</p>
+            <div class="wc-gallery" id="ws-photos-row">
+              <div id="ws-gallery" class="ws-gallery-shots"></div>
+              <label class="wc-shot wc-shot-add">
+                <input id="ws-gallery-files" type="file" accept="image/jpeg,image/png,image/webp,image/gif" multiple>
+                <span>Add photos</span>
+              </label>
             </div>
           </div>
           <p id="ws-blocked-note" class="hidden sm:col-span-2 text-sm text-amber-400">This brand stays off the public store (Element, DIAO, or home TV).</p>
@@ -4188,7 +4196,7 @@
     </a>
   </nav>
 
-  <link rel="stylesheet" href="/css/company-dash.css?v=storeprev1" />
+  <link rel="stylesheet" href="/css/company-dash.css?v=storeimg1" />
 
   <script>
     const loginPanel = document.getElementById('login-panel');
@@ -6429,6 +6437,8 @@
         variant: document.getElementById('ws-shopify-variant-id').value,
         productId: document.getElementById('ws-shopify-product-id').value,
         handle: document.getElementById('ws-shopify-handle').value,
+        gallery: wsGallery.slice(),
+        pending: wsPendingFiles.slice(),
         _id: wsEditingId,
         _hidden: wsStoreHidden
       };
@@ -6444,6 +6454,9 @@
       document.getElementById('ws-shopify-handle').value = vals.handle || '';
       wsEditingId = vals._id || null;
       wsStoreHidden = !!vals._hidden;
+      if (vals.gallery) wsGallery = vals.gallery.slice();
+      if (vals.pending) wsPendingFiles = vals.pending.slice();
+      renderWsGallery();
       syncWsHideButton();
     }
     function stashWsActiveTab() {
@@ -6462,6 +6475,66 @@
       }
       if (del) del.classList.toggle('hidden', !can);
     }
+    function storeGalleryFor(p) {
+      const urls = [];
+      if (p && p.image) urls.push(p.image);
+      ((p && p.gallery) || []).forEach(function (url) {
+        if (url && urls.indexOf(url) === -1) urls.push(url);
+      });
+      return urls;
+    }
+    function revokeWsBlobs() {
+      wsGallery.forEach(function (url) {
+        if (String(url || '').indexOf('blob:') === 0) {
+          try { URL.revokeObjectURL(url); } catch (err) {}
+        }
+      });
+    }
+    function renderWsGallery() {
+      const wrap = document.getElementById('ws-gallery');
+      if (!wrap) return;
+      wrap.innerHTML = wsGallery.map(function (url, i) {
+        const blob = String(url || '').indexOf('blob:') === 0;
+        const tools = blob
+          ? '<button type="button" data-ws-shot-del="' + i + '">Remove</button>'
+          : '<button type="button" data-ws-shot-hero="' + i + '">Hero</button>' +
+            '<button type="button" data-ws-shot-up="' + i + '"' + (i === 0 ? ' disabled' : '') + '>↑</button>' +
+            '<button type="button" data-ws-shot-down="' + i + '"' + (i === wsGallery.length - 1 ? ' disabled' : '') + '>↓</button>' +
+            '<button type="button" data-ws-shot-del="' + i + '">Remove</button>';
+        return '<div class="wc-shot' + (i === 0 && !blob ? ' is-hero' : '') + '" data-ws-shot="' + i + '">' +
+          '<img src="' + esc(mediaSrc(url)) + '" alt="">' +
+          '<span class="wc-shot-label">' + (blob ? 'New' : (i === 0 ? 'Hero' : String(i + 1))) + '</span>' +
+          '<span class="wc-shot-tools">' + tools + '</span></div>';
+      }).join('');
+    }
+    function mutateWsGallery(fn) {
+      wsGallery = fn(wsGallery.slice());
+      renderWsGallery();
+    }
+    function addWsGalleryFiles(fileList) {
+      Array.from(fileList || []).forEach(function (file) {
+        if (!file || !/^image\/(jpeg|png|webp|gif)$/i.test(file.type || '')) return;
+        const url = URL.createObjectURL(file);
+        wsGallery.push(url);
+        wsPendingFiles.push(file);
+      });
+      renderWsGallery();
+      const input = document.getElementById('ws-gallery-files');
+      if (input) input.value = '';
+    }
+    function removeWsGalleryAt(index) {
+      const url = wsGallery[index];
+      if (!url) return;
+      if (String(url).indexOf('blob:') === 0) {
+        const pendingIndex = wsGallery.slice(0, index + 1).filter(function (item) {
+          return String(item).indexOf('blob:') === 0;
+        }).length - 1;
+        if (pendingIndex >= 0) wsPendingFiles.splice(pendingIndex, 1);
+        try { URL.revokeObjectURL(url); } catch (err) {}
+      }
+      wsGallery.splice(index, 1);
+      renderWsGallery();
+    }
     function fillStoreForm(item) {
       wsEditingId = item && item.dbId ? item.dbId : null;
       wsStoreHidden = !!(item && (item.storeVisibility === 'hidden' || item.store_collection === 'hidden'));
@@ -6471,14 +6544,10 @@
       document.getElementById('ws-item-meta').textContent = item
         ? [item.brandName, item.type, item.collectionLabel].filter(Boolean).join(' · ')
         : '';
-      const img = document.getElementById('ws-image-preview');
-      if (item && item.image) {
-        img.src = mediaSrc(item.image);
-        img.classList.remove('hidden');
-      } else {
-        img.removeAttribute('src');
-        img.classList.add('hidden');
-      }
+      revokeWsBlobs();
+      wsGallery = storeGalleryFor(item);
+      wsPendingFiles = [];
+      renderWsGallery();
       document.getElementById('ws-blocked-note').classList.toggle('hidden', !(item && item.storeBlocked));
       document.getElementById('ws-website-note').classList.toggle('hidden', !(item && item.hidden));
       document.getElementById('ws-store-collection').value = (item && item.store_collection) || '';
@@ -6688,10 +6757,20 @@
     async function saveStoreListing() {
       if (!wsEditingId) return;
       showError('ws-form-error', '');
+      const payload = storeFormPayload();
+      const fd = new FormData();
+      Object.keys(payload).forEach(function (key) {
+        const val = payload[key];
+        fd.append(key, val === true ? '1' : val === false ? '0' : val);
+      });
+      const keep = wsGallery.filter(function (url) { return url && String(url).indexOf('blob:') !== 0; });
+      fd.append('galleryKeep', JSON.stringify(keep));
+      if (keep[0]) fd.append('heroUrl', keep[0]);
+      if (!keep.length && !wsPendingFiles.length) fd.append('clearImage', '1');
+      wsPendingFiles.forEach(function (file) { fd.append('gallery', file); });
       const data = await api('/api/admin/products/' + encodeURIComponent(wsEditingId) + '/store', {
         method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(storeFormPayload())
+        body: fd
       });
       const item = data.product;
       const sid = String(item.dbId);
@@ -7758,6 +7837,8 @@
     let wsEditingId = null;
     let wsStoreHidden = false;
     let wsPane = 'edit';
+    let wsGallery = [];
+    let wsPendingFiles = [];
     let wsListingItems = [];
     const WA_TAB_MAX = 7;
     let waOpenTabs = [];
@@ -20451,9 +20532,53 @@
     if (storeSection) {
       storeSection.addEventListener('click', function (e) {
         const paneBtn = e.target.closest('[data-ws-pane]');
-        if (!paneBtn || !storeSection.contains(paneBtn)) return;
-        wsPane = paneBtn.getAttribute('data-ws-pane') || 'edit';
-        showWsRightPanel((!wsActiveTab || wsActiveTab === 'overview') ? 'overview' : 'item');
+        if (paneBtn && storeSection.contains(paneBtn)) {
+          wsPane = paneBtn.getAttribute('data-ws-pane') || 'edit';
+          showWsRightPanel((!wsActiveTab || wsActiveTab === 'overview') ? 'overview' : 'item');
+          return;
+        }
+        const hero = e.target.closest('[data-ws-shot-hero]');
+        if (hero) {
+          const hi = Number(hero.getAttribute('data-ws-shot-hero'));
+          mutateWsGallery(function (urls) {
+            if (!urls[hi]) return urls;
+            const item = urls.splice(hi, 1)[0];
+            urls.unshift(item);
+            return urls;
+          });
+          return;
+        }
+        const up = e.target.closest('[data-ws-shot-up]');
+        if (up) {
+          const ui = Number(up.getAttribute('data-ws-shot-up'));
+          mutateWsGallery(function (urls) {
+            if (ui < 1) return urls;
+            const tmp = urls[ui - 1];
+            urls[ui - 1] = urls[ui];
+            urls[ui] = tmp;
+            return urls;
+          });
+          return;
+        }
+        const down = e.target.closest('[data-ws-shot-down]');
+        if (down) {
+          const di = Number(down.getAttribute('data-ws-shot-down'));
+          mutateWsGallery(function (urls) {
+            if (di >= urls.length - 1) return urls;
+            const tmp2 = urls[di + 1];
+            urls[di + 1] = urls[di];
+            urls[di] = tmp2;
+            return urls;
+          });
+          return;
+        }
+        const delShot = e.target.closest('[data-ws-shot-del]');
+        if (delShot) {
+          removeWsGalleryAt(Number(delShot.getAttribute('data-ws-shot-del')));
+        }
+      });
+      storeSection.addEventListener('change', function (e) {
+        if (e.target && e.target.id === 'ws-gallery-files') addWsGalleryFiles(e.target.files);
       });
     }
     document.getElementById('store-back').addEventListener('click', closeStoreForm);

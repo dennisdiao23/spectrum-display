@@ -3734,6 +3734,16 @@ body.inv-split-dragging .inv-split-resizer::after {
   min-height: 70vh;
   width: 100%;
 }
+.ws-gallery-shots {
+  display: contents;
+}
+#ws-form-wrap .wc-gallery {
+  margin-bottom: 0;
+}
+#ws-form-wrap .wc-shot-label,
+#ws-form-wrap .wc-shot-tools button {
+  color: #334155;
+}
 #accounts-section:not(.wa-split-on) #wa-split {
   display: block;
 }

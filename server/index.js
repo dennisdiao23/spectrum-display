@@ -531,6 +531,37 @@ async function main() {
     return { imageUrl, gallery };
   }
 
+  async function nextProductMedia(existing, body, files) {
+    const hasKeep = bodyHas(body, 'galleryKeep');
+    const uploaded = files && files.gallery && files.gallery.length;
+    if (!hasKeep && !uploaded && !bodyHas(body, 'heroUrl') && !bodyHas(body, 'clearImage') && !(files && files.image)) {
+      return null;
+    }
+    const saved = await saveFiles(files);
+    let gallery;
+    if (hasKeep) {
+      gallery = parseJson(body.galleryKeep, []).map(function (url) {
+        return String(url || '').trim();
+      }).filter(Boolean);
+    } else {
+      gallery = parseJson(existing && existing.gallery, []).slice();
+    }
+    gallery = gallery.concat(saved.gallery);
+    let image = existing ? (existing.image || '') : '';
+    if (saved.imageUrl) image = saved.imageUrl;
+    else if (bodyHas(body, 'heroUrl') && String(body.heroUrl || '').trim()) {
+      image = String(body.heroUrl).trim();
+    } else if (truthyFlag(body.clearImage)) {
+      image = '';
+    }
+    if (!image && gallery[0] && !truthyFlag(body.clearImage)) image = gallery[0];
+    if (truthyFlag(body.clearImage) && !gallery.length) image = '';
+    if (image) {
+      gallery = gallery.filter(function (url) { return url && url !== image; });
+    }
+    return { image: image, gallery: gallery };
+  }
+
   async function productPayload(body, files, existing) {
     const name = String(body.name || '').trim();
     if (!name) throw new Error('Product name is required.');
@@ -1349,6 +1380,11 @@ async function main() {
     { name: 'image', maxCount: 1 },
     { name: 'gallery', maxCount: 12 }
   ]);
+  function maybeProductUpload(req, res, next) {
+    const ct = String(req.headers['content-type'] || '');
+    if (ct.indexOf('multipart/form-data') === 0) return productUpload(req, res, next);
+    return next();
+  }
 
   app.post('/api/admin/products', requireAdmin, requirePerm('website', 'edit'), productUpload, async function (req, res, next) {
     try {
@@ -1445,13 +1481,18 @@ async function main() {
     }
   });
 
-  app.put('/api/admin/products/:id/store', requireAdmin, requirePerm('website', 'edit'), async function (req, res, next) {
+  app.put('/api/admin/products/:id/store', requireAdmin, requirePerm('website', 'edit'), maybeProductUpload, async function (req, res, next) {
     try {
       const existing = await store.getRawProduct(req.params.id);
       if (!existing) return res.status(404).json({ ok: false, error: 'Product not found.' });
       const details = shopStore.applyStoreFlags(Object.assign({}, dbUtil.parseDetails(existing)), req.body || {});
-      const product = await store.updateProductDetails(req.params.id, details);
+      let product = await store.updateProductDetails(req.params.id, details);
       if (!product) return res.status(404).json({ ok: false, error: 'Product not found.' });
+      const media = await nextProductMedia(existing, req.body || {}, req.files);
+      if (media) {
+        product = await store.updateProductMedia(req.params.id, media);
+        if (!product) return res.status(404).json({ ok: false, error: 'Product not found.' });
+      }
       res.json({ ok: true, product: shopStore.toAdminStoreItem(product) });
     } catch (err) {
       res.status(400).json({ ok: false, error: err.message || 'Could not update store listing.' });
