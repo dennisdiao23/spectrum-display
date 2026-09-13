@@ -1433,11 +1433,14 @@ async function main() {
 
   app.get('/api/admin/store', requireAdmin, requireCatalogRead, async function (_req, res, next) {
     try {
-      const products = await store.listProducts();
+      const [products, stock] = await Promise.all([
+        store.listProducts(),
+        store.getCatalogStock().catch(function () { return {}; })
+      ]);
       res.json({
         ok: true,
         products: products.filter(shopStore.isStoreListed).map(function (p) {
-          return shopStore.toAdminStoreItem(p);
+          return shopStore.toAdminStoreItem(p, { stock: stock });
         })
       });
     } catch (err) { next(err); }
