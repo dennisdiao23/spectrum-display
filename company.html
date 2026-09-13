@@ -14,7 +14,7 @@
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
   <title>Company | Spectrum Display</title>
   <meta name="robots" content="noindex, nofollow" />
-  <link rel="stylesheet" href="/css/company-dash.css?v=invimg1" />
+  <link rel="stylesheet" href="/css/company-dash.css?v=invimg2" />
   <script src="/js/address-autocomplete.js"></script>
   <script src="/js/company-chat.js?v=chatcrm3"></script>
   <script src="/js/company-crm.js?v=zoomphone3"></script>
@@ -4203,7 +4203,7 @@
     </a>
   </nav>
 
-  <link rel="stylesheet" href="/css/company-dash.css?v=invimg1" />
+  <link rel="stylesheet" href="/css/company-dash.css?v=invimg2" />
 
   <script>
     const loginPanel = document.getElementById('login-panel');
@@ -5777,8 +5777,9 @@
         return p.image || '';
       });
       table.innerHTML = sorted.map(function (p) {
-        const img = p.image
-          ? '<img src="' + esc(p.image) + '" alt="" class="h-11 w-11 rounded-md object-cover bg-slate-900 border border-slate-800">'
+        const thumb = listingThumb(p);
+        const img = thumb
+          ? '<img src="' + esc(mediaSrc(thumb)) + '" alt="" class="h-11 w-11 rounded-md object-cover bg-slate-900 border border-slate-800">'
           : '<div class="h-11 w-11 rounded-md bg-slate-900 border border-slate-800 flex items-center justify-center text-[10px] text-slate-500">No photo</div>';
         const pageHref = '/products/' + encodeURIComponent(p.id || '');
         const vis = p.hidden
@@ -6348,6 +6349,14 @@
       if (/^(https?:|data:|\/)/i.test(s)) return s;
       return '/' + s;
     }
+    function listingThumb(p) {
+      if (p && p.image) return p.image;
+      const gallery = (p && p.gallery) || [];
+      for (let i = 0; i < gallery.length; i++) {
+        if (gallery[i]) return gallery[i];
+      }
+      return '';
+    }
     function isWsSplitOn() {
       return !isMobileDash();
     }
@@ -6676,8 +6685,9 @@
         return p.image || '';
       });
       tbody.innerHTML = sorted.map(function (p) {
-        const img = p.image
-          ? '<img src="' + esc(mediaSrc(p.image)) + '" alt="" class="h-11 w-11 rounded-md object-contain bg-white border border-slate-800">'
+        const thumb = listingThumb(p);
+        const img = thumb
+          ? '<img src="' + esc(mediaSrc(thumb)) + '" alt="" class="h-11 w-11 rounded-md object-contain bg-white border border-slate-800">'
           : '<div class="h-11 w-11 rounded-md bg-slate-900 border border-slate-800 flex items-center justify-center text-[10px] text-slate-500">No photo</div>';
         const cells = {
           photo: '<td class="py-2.5 px-4">' + img + '</td>',
@@ -9629,8 +9639,9 @@
             return esc(m.productName || 'Product') + (m.pitch ? (' · P' + m.pitch) : '');
           }).join(', ')
           : 'Not on website';
-        const photo = item.image
-          ? '<img src="' + esc(mediaSrc(item.image)) + '" alt="" class="dash-col-photo">'
+        const photoUrl = item.image || ((item.gallery && item.gallery[0]) || '');
+        const photo = photoUrl
+          ? '<img src="' + esc(mediaSrc(photoUrl)) + '" alt="" class="dash-col-photo">'
           : '<span class="text-slate-400">—</span>';
         const cells = {
           sku: '<td class="py-3 px-4 font-mono text-xs text-sky-300">' + esc(item.sku || '—') + '</td>',

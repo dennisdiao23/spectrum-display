@@ -44,6 +44,7 @@
   }
   function photoOrFallback(p) {
     if (p && p.image) return p.image;
+    if (p && p.gallery && p.gallery[0]) return p.gallery[0];
     return (window.spectrumProductPhotoFallback && window.spectrumProductPhotoFallback(p)) || '';
   }
 
