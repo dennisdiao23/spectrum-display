@@ -554,7 +554,7 @@ async function main() {
     } else if (truthyFlag(body.clearImage)) {
       image = '';
     }
-    if (!image && gallery[0] && !truthyFlag(body.clearImage)) image = gallery[0];
+    if (!image && gallery[0]) image = gallery[0];
     if (truthyFlag(body.clearImage) && !gallery.length) image = '';
     if (image) {
       gallery = gallery.filter(function (url) { return url && url !== image; });
