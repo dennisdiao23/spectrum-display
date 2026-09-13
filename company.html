@@ -747,6 +747,7 @@
               <th class="py-3 px-4 font-medium" data-col="collection">Collection <span class="dash-col-caret">▾</span><span class="dash-col-grip" aria-hidden="true"></span></th>
               <th class="py-3 px-4 font-medium" data-col="featured">What’s New <span class="dash-col-caret">▾</span><span class="dash-col-grip" aria-hidden="true"></span></th>
               <th class="py-3 px-4 font-medium" data-col="buy">Buy now <span class="dash-col-caret">▾</span><span class="dash-col-grip" aria-hidden="true"></span></th>
+              <th class="py-3 px-4 font-medium" data-col="onHand">On hand in store <span class="dash-col-caret">▾</span><span class="dash-col-grip" aria-hidden="true"></span></th>
               <th class="py-3 px-4 font-medium" data-col="store">Store <span class="dash-col-caret">▾</span><span class="dash-col-grip" aria-hidden="true"></span></th>
             </tr>
           </thead>
@@ -6665,6 +6666,7 @@
         if (col === 'collection') return p.collectionLabel || '';
         if (col === 'featured') return p.featured || p.store_featured ? 'Yes' : '';
         if (col === 'buy') return p.shopify_sell ? 'Buy now' : 'Configure';
+        if (col === 'onHand') return p.onHand == null ? -1 : Number(p.onHand) || 0;
         if (col === 'store') return p.storeVisibilityLabel || '';
         return p.image || '';
       });
@@ -6672,6 +6674,9 @@
         const img = p.image
           ? '<img src="' + esc(mediaSrc(p.image)) + '" alt="" class="h-11 w-11 rounded-md object-contain bg-white border border-slate-800">'
           : '<div class="h-11 w-11 rounded-md bg-slate-900 border border-slate-800 flex items-center justify-center text-[10px] text-slate-500">No photo</div>';
+        const onHandCell = p.onHand == null
+          ? '<td class="py-2.5 px-4 text-slate-500">—</td>'
+          : '<td class="py-2.5 px-4 text-slate-300 tabular-nums">' + esc(String(p.onHand)) + '</td>';
         const cells = {
           photo: '<td class="py-2.5 px-4">' + img + '</td>',
           product: '<td class="py-2.5 px-4 font-medium" data-edit-name><span class="cursor-pointer hover:text-sky-300">' + esc(p.name || '') + '</span></td>',
@@ -6679,6 +6684,7 @@
           collection: '<td class="py-2.5 px-4 text-slate-400">' + esc(p.collectionLabel || '') + '</td>',
           featured: '<td class="py-2.5 px-4 text-slate-400">' + (p.featured || p.store_featured ? 'Yes' : '—') + '</td>',
           buy: '<td class="py-2.5 px-4 text-slate-400">' + esc(p.shopify_sell ? 'Buy now' : 'Configure') + '</td>',
+          onHand: onHandCell,
           store: '<td class="py-2.5 px-4" data-store-cell>' + storeVisibilityCell(p) + '</td>'
         };
         return '<tr class="border-b border-slate-800 hover:bg-slate-900/80 cursor-pointer' +
@@ -7788,6 +7794,7 @@
         { id: 'collection', label: 'Collection' },
         { id: 'featured', label: 'What’s New' },
         { id: 'buy', label: 'Buy now' },
+        { id: 'onHand', label: 'On hand in store' },
         { id: 'store', label: 'Store' }
       ],
       'website-accounts': [
@@ -7814,7 +7821,7 @@
       staff: ['name', 'email', 'role'],
       roles: ['name', 'website', 'inventory', 'users'],
       'website-products': ['photo', 'product', 'brand', 'type', 'pitch', 'price', 'website', 'store'],
-      'website-store': ['photo', 'product', 'brand', 'collection', 'featured', 'buy', 'store'],
+      'website-store': ['photo', 'product', 'brand', 'collection', 'featured', 'buy', 'onHand', 'store'],
       'website-accounts': ['name', 'email', 'type', 'markup', 'company', 'created']
     };
 
@@ -7951,7 +7958,7 @@
         sortDir: '',
         widths: fallbackWidths,
         splitLeftPx: keptSplit,
-        schema: dashColKey(table) === 'warehouses' ? 4 : (dashColKey(table) === 'inventory' ? 5 : (dashColKey(table) === 'po-lines' ? 2 : (dashColKey(table) === 'so-lines' ? 1 : 0)))
+        schema: dashColKey(table) === 'warehouses' ? 4 : (dashColKey(table) === 'inventory' ? 5 : (dashColKey(table) === 'po-lines' ? 2 : (dashColKey(table) === 'so-lines' ? 1 : (dashColKey(table) === 'website-store' ? 1 : 0))))
       };
       pinStartLockedInState(table, fallback.order, fallback.hidden);
       if (!saved) {
@@ -8105,6 +8112,16 @@
         const dropType = hidden.indexOf('type');
         if (dropType !== -1) hidden.splice(dropType, 1);
         schema = 4;
+      }
+      if (dashColKey(table) === 'website-store' && schema < 1) {
+        if (order.indexOf('onHand') === -1) {
+          const storeAt = order.indexOf('store');
+          const at = storeAt === -1 ? order.length : storeAt;
+          order.splice(at, 0, 'onHand');
+          const drop = hidden.indexOf('onHand');
+          if (drop !== -1) hidden.splice(drop, 1);
+        }
+        schema = 1;
       }
       pinStartLockedInState(table, order, hidden);
       const merged = {

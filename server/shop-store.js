@@ -380,8 +380,9 @@ function storeHandleOf(product) {
     .replace(/^-+|-+$/g, '') || String(product.id || product.dbId || '');
 }
 
-function toAdminStoreItem(product) {
+function toAdminStoreItem(product, opts) {
   if (!product) return null;
+  opts = opts || {};
   const details = detailsOf(product);
   const storedCollection = String(details.store_collection || product.store_collection || '')
     .trim()
@@ -435,7 +436,8 @@ function toAdminStoreItem(product) {
     storeVisibilityLabel: visibilityLabel,
     featured: featured,
     handle: handle,
-    storePath: storeProductPath(handle)
+    storePath: storeProductPath(handle),
+    onHand: mappedQty(opts.stock, product.dbId)
   };
 }
 
