@@ -457,10 +457,37 @@ function createSupabaseStore() {
     if (plan.length) console.log('Created ' + plan.length + ' inventory SKUs from website products');
   }
 
+  async function syncMappedInventoryMedia(productId, media) {
+    const inv = require('./inventory');
+    if (!productId) return;
+    const image = media && media.image != null ? String(media.image) : '';
+    const gallery = inv.parseGallery(media && media.gallery);
+    const { data: maps, error } = await supabase
+      .from('product_inventory_map')
+      .select('item_id')
+      .eq('product_id', productId);
+    if (error || !maps || !maps.length) return;
+    const ids = [];
+    const seen = {};
+    maps.forEach(function (row) {
+      const id = row.item_id;
+      if (id == null || seen[String(id)]) return;
+      seen[String(id)] = true;
+      ids.push(id);
+    });
+    if (!ids.length) return;
+    const { error: uErr } = await supabase.from('inventory_items').update({
+      image: image,
+      gallery: gallery,
+      updated_at: new Date().toISOString()
+    }).in('id', ids);
+    if (uErr) console.error('Could not sync inventory photos:', uErr.message || uErr);
+  }
+
   async function loadInventoryMaps() {
     const { data, error } = await supabase
       .from('product_inventory_map')
-      .select('product_id, pitch, item_id, products(name, series_id, brand_id)');
+      .select('product_id, pitch, item_id, products(name, series_id, brand_id, image, gallery, details)');
     if (error) {
       const { data: plain, error: pErr } = await supabase
         .from('product_inventory_map')
@@ -476,7 +503,10 @@ function createSupabaseStore() {
         item_id: row.item_id,
         product_name: p.name || '',
         series_id: p.series_id || '',
-        brand_id: p.brand_id || ''
+        brand_id: p.brand_id || '',
+        product_image: p.image || '',
+        product_gallery: p.gallery || [],
+        product_details: p.details || {}
       };
     });
   }
@@ -1229,6 +1259,7 @@ function createSupabaseStore() {
       if (p.sortOrder != null) patch.sort_order = Number(p.sortOrder) || 0;
       const { error } = await supabase.from('products').update(patch).eq('id', id);
       throwIf(error);
+      await syncMappedInventoryMedia(id, { image: p.image, gallery: p.gallery });
       return this.getProduct(id);
     },
     async deleteProduct(id) {
@@ -1276,6 +1307,10 @@ function createSupabaseStore() {
         .select('id');
       throwIf(error);
       if (!data || !data.length) return null;
+      await syncMappedInventoryMedia(id, {
+        image: media && media.image != null ? String(media.image) : '',
+        gallery: Array.isArray(media && media.gallery) ? media.gallery : []
+      });
       return this.getProduct(id);
     },
     async getRawProduct(id) {
@@ -1711,6 +1746,7 @@ function createSupabaseStore() {
       if (input.panelH != null) patch.panel_h = input.panelH;
       if (input.description != null) patch.description = input.description;
       if (input.image != null) patch.image = input.image;
+      if (input.gallery != null) patch.gallery = inv.parseGallery(input.gallery);
       if (input.notes != null) patch.notes = input.notes;
       if (input.category != null) {
         patch.category = inv.resolveItemCategory(input.category, current.category, {
@@ -1791,6 +1827,19 @@ function createSupabaseStore() {
       throwIf(error, 'Could not update inventory item.');
       return getInventoryItemDetail(id);
     },
+    async updateInventoryMedia(id, media) {
+      const inv = require('./inventory');
+      const { data: current, error: cErr } = await supabase.from('inventory_items').select('id').eq('id', id).maybeSingle();
+      throwIf(cErr, 'Could not read inventory.');
+      if (!current) return null;
+      const { error } = await supabase.from('inventory_items').update({
+        image: media && media.image != null ? String(media.image) : '',
+        gallery: inv.parseGallery(media && media.gallery),
+        updated_at: new Date().toISOString()
+      }).eq('id', id);
+      throwIf(error, 'Could not save photos.');
+      return getInventoryItemDetail(id);
+    },
     async adjustInventory(id, payload, adminEmail) {
       const ok = await applyLocationChange(id, payload || {}, adminEmail);
       if (!ok) return null;
@@ -1808,6 +1857,21 @@ function createSupabaseStore() {
           return { product_id: Number(productId), pitch: row.pitch, item_id: row.itemId };
         }));
         throwIf(iErr, 'Could not save inventory links.');
+      }
+      const itemRows = [];
+      for (let i = 0; i < rows.length; i++) {
+        const { data: itemRow } = await supabase
+          .from('inventory_items')
+          .select('image, gallery')
+          .eq('id', rows[i].itemId)
+          .maybeSingle();
+        if (itemRow) itemRows.push(itemRow);
+      }
+      const adopt = inv.adoptMediaFromItems(product, itemRows);
+      if (adopt) {
+        await this.updateProductMedia(productId, adopt);
+      } else if (inv.mediaHasPhotos({ image: product.image, gallery: product.gallery })) {
+        await syncMappedInventoryMedia(productId, { image: product.image, gallery: product.gallery });
       }
       return this.getProduct(productId);
     },

@@ -111,6 +111,103 @@ function normalizeSku(value) {
     .slice(0, 64);
 }
 
+function parseGallery(value) {
+  if (Array.isArray(value)) {
+    return value.map(function (url) { return String(url || '').trim(); }).filter(Boolean);
+  }
+  if (typeof value === 'string') {
+    const raw = value.trim();
+    if (!raw) return [];
+    try {
+      return parseGallery(JSON.parse(raw));
+    } catch (e) {
+      return [];
+    }
+  }
+  return [];
+}
+
+function urlsFromMedia(image, gallery) {
+  const urls = [];
+  const hero = String(image || '').trim();
+  if (hero) urls.push(hero);
+  parseGallery(gallery).forEach(function (url) {
+    if (url && urls.indexOf(url) === -1) urls.push(url);
+  });
+  return urls;
+}
+
+function mediaFromUrls(urls) {
+  const seen = {};
+  const unique = [];
+  (urls || []).forEach(function (url) {
+    const next = String(url || '').trim();
+    if (!next || seen[next]) return;
+    seen[next] = true;
+    unique.push(next);
+  });
+  return { image: unique[0] || '', gallery: unique.slice(1) };
+}
+
+function mediaHasPhotos(media) {
+  return !!(media && (String(media.image || '').trim() || parseGallery(media.gallery).length));
+}
+
+function storeListedFromDetails(details) {
+  let d = details;
+  if (typeof d === 'string') {
+    try { d = JSON.parse(d); } catch (e) { return false; }
+  }
+  if (!d || typeof d !== 'object') return false;
+  if (!Object.prototype.hasOwnProperty.call(d, 'store_listed')) return false;
+  const v = d.store_listed;
+  return v === true || v === 1 || v === '1' || v === 'true' || v === 't';
+}
+
+function photoMapForItem(maps) {
+  const list = maps || [];
+  for (let i = 0; i < list.length; i++) {
+    if (list[i] && list[i].storeListed) return list[i];
+  }
+  return list[0] || null;
+}
+
+function applySharedPhotos(item) {
+  if (!item) return item;
+  const own = mediaFromUrls(urlsFromMedia(item.image, item.gallery));
+  item.gallery = own.gallery;
+  const mapped = photoMapForItem(item.maps);
+  if (!mapped) {
+    item.photoSource = 'item';
+    item.photoProductId = '';
+    item.photoProductName = '';
+    item.image = own.image;
+    return item;
+  }
+  item.photoSource = 'product';
+  item.photoProductId = mapped.productId != null ? String(mapped.productId) : '';
+  item.photoProductName = mapped.productName || '';
+  const product = mediaFromUrls(urlsFromMedia(mapped.productImage, mapped.productGallery));
+  const use = mediaHasPhotos(product) ? product : own;
+  item.image = use.image;
+  item.gallery = use.gallery;
+  return item;
+}
+
+function adoptMediaFromItems(productRow, itemRows) {
+  const product = mediaFromUrls(urlsFromMedia(
+    productRow && productRow.image,
+    productRow && productRow.gallery
+  ));
+  if (mediaHasPhotos(product)) return null;
+  for (let i = 0; i < (itemRows || []).length; i++) {
+    const row = itemRows[i];
+    const media = mediaFromUrls(urlsFromMedia(row && row.image, row && row.gallery));
+    if (mediaHasPhotos(media)) return media;
+  }
+  return null;
+}
+
 function suggestedSku(parts) {
   const brand = skuToken(parts && parts.brandId).slice(0, 10) || 'INV';
   const series = skuToken((parts && (parts.seriesId || parts.name)) || '') || 'ITEM';
@@ -330,6 +427,9 @@ function normalizeItemInput(body, opts) {
   if (!patch || src.image != null) {
     out.image = String(src.image || '').trim().slice(0, 500);
   }
+  if (!patch || src.gallery != null) {
+    out.gallery = parseGallery(src.gallery);
+  }
   if (!patch || src.category != null) {
     out.category = normalizeCategory(src.category);
   }
@@ -345,6 +445,7 @@ function normalizeItemInput(body, opts) {
   if (!patch && out.panelW == null) out.panelW = 0;
   if (!patch && out.panelH == null) out.panelH = 0;
   if (!patch && out.image == null) out.image = '';
+  if (!patch && out.gallery == null) out.gallery = [];
   if (!patch && out.brandId == null) out.brandId = '';
   if (!patch && out.pitch == null) out.pitch = '';
   if (!patch && out.unit == null) out.unit = 'panels';
@@ -384,6 +485,7 @@ function dbFieldsFromInput(input) {
   if (input.panelH != null) row.panel_h = input.panelH;
   if (input.description != null) row.description = input.description;
   if (input.image != null) row.image = input.image;
+  if (input.gallery != null) row.gallery = parseGallery(input.gallery);
   if (input.notes != null) row.notes = input.notes;
   if (input.category != null) row.category = input.category;
   return row;
@@ -552,6 +654,7 @@ function formatItem(row, brandName, maps, locations) {
     panelH: Number(row && row.panel_h) || 0,
     description: (row && row.description) || '',
     image: (row && row.image) || '',
+    gallery: parseGallery(row && row.gallery),
     notes: (row && row.notes) || '',
     status: binStatus(qty, lowAt),
     updatedAt: row && row.updated_at,
@@ -566,9 +669,12 @@ function formatItem(row, brandName, maps, locations) {
     location: '',
     bin: '',
     warehouseType: '',
-    locationKind: ''
+    locationKind: '',
+    photoSource: 'item',
+    photoProductId: '',
+    photoProductName: ''
   };
-  return applyLocations(item, locations);
+  return applySharedPhotos(applyLocations(item, locations));
 }
 
 function publicLink(item) {
@@ -667,7 +773,12 @@ function mapsByItem(maps) {
       productName: m.product_name || '',
       seriesId: m.series_id || '',
       brandId: m.brand_id || '',
-      pitch: pitchKey(m.pitch)
+      pitch: pitchKey(m.pitch),
+      productImage: m.product_image || m.productImage || '',
+      productGallery: parseGallery(
+        m.product_gallery != null ? m.product_gallery : (m.productGallery != null ? m.productGallery : '')
+      ),
+      storeListed: storeListedFromDetails(m.product_details != null ? m.product_details : m.details)
     });
   });
   return out;
@@ -726,6 +837,11 @@ module.exports = {
   skuNameFromProduct,
   skuToken,
   normalizeSku,
+  parseGallery,
+  urlsFromMedia,
+  mediaFromUrls,
+  mediaHasPhotos,
+  adoptMediaFromItems,
   suggestedSku,
   uniqueSku,
   slotsForProduct,

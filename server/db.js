@@ -218,7 +218,8 @@ function openDb() {
     "ALTER TABLE inventory_items ADD COLUMN panel_type TEXT NOT NULL DEFAULT ''",
     "ALTER TABLE inventory_items ADD COLUMN packaging_type TEXT NOT NULL DEFAULT ''",
     "ALTER TABLE inventory_items ADD COLUMN inactive INTEGER NOT NULL DEFAULT 0",
-    "ALTER TABLE inventory_items ADD COLUMN category TEXT NOT NULL DEFAULT ''"
+    "ALTER TABLE inventory_items ADD COLUMN category TEXT NOT NULL DEFAULT ''",
+    "ALTER TABLE inventory_items ADD COLUMN gallery TEXT NOT NULL DEFAULT '[]'"
   ].forEach(function (sql) {
     try { db.exec(sql); } catch (e) { /* already present */ }
   });
