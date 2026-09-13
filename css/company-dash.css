@@ -3684,6 +3684,56 @@ body.inv-split-dragging .inv-split-resizer::after {
 #store-section.ws-split-on #store-back {
   display: none;
 }
+#store-section:not(.hidden) {
+  min-height: 0;
+  flex: 1 1 auto;
+  display: flex;
+  flex-direction: column;
+}
+#store-section #ws-split {
+  min-height: 0;
+  flex: 1 1 auto;
+}
+.ws-right-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.6rem;
+  padding: 0.55rem 0.7rem 0.4rem;
+  flex-shrink: 0;
+}
+.ws-live-link {
+  font-size: 0.78rem;
+  font-weight: 650;
+  color: #2f6bff;
+  text-decoration: none;
+}
+.ws-live-link.is-off {
+  pointer-events: none;
+  opacity: 0.45;
+}
+.ws-preview {
+  flex: 1 1 auto;
+  min-height: 0;
+  width: 100%;
+  border: 0;
+  background: #fff;
+}
+.ws-preview.hidden {
+  display: none !important;
+}
+#store-section:not(.ws-split-on) .ws-right-bar,
+#store-section:not(.ws-split-on) #ws-preview {
+  display: none;
+}
+#store-section:not(.ws-split-on).ws-form-open .ws-right-bar {
+  display: flex;
+}
+#store-section:not(.ws-split-on).ws-form-open #ws-preview:not(.hidden) {
+  display: block;
+  min-height: 70vh;
+  width: 100%;
+}
 #accounts-section:not(.wa-split-on) #wa-split {
   display: block;
 }
@@ -4169,11 +4219,13 @@ body.inv-split-dragging {
 #cc-table tr.is-selected,
 #vn-table tr.is-selected,
 #product-table tr.is-selected,
+#store-table tr.is-selected,
 #accounts-table tr.is-selected {
   background: rgba(56, 189, 248, 0.12) !important;
   box-shadow: inset 3px 0 0 #38bdf8;
 }
 #form-wrap.inv-right-panel:not(.hidden),
+#ws-form-wrap.inv-right-panel:not(.hidden),
 #account-detail.inv-right-panel:not(.hidden) {
   overflow: auto;
   padding: 0.75rem 1rem 1rem;

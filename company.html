@@ -14,7 +14,7 @@
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
   <title>Company | Spectrum Display</title>
   <meta name="robots" content="noindex, nofollow" />
-  <link rel="stylesheet" href="/css/company-dash.css?v=poitem1" />
+  <link rel="stylesheet" href="/css/company-dash.css?v=storeprev1" />
   <script src="/js/address-autocomplete.js"></script>
   <script src="/js/company-chat.js?v=chatcrm3"></script>
   <script src="/js/company-crm.js?v=zoomphone3"></script>
@@ -760,9 +760,16 @@
           <div id="ws-tab-bar" class="inv-tab-bar">
             <div id="ws-tab-strip" class="inv-tab-strip" role="tablist" aria-label="Open store items"></div>
           </div>
+          <div class="ws-right-bar">
+            <div class="ws-panes dash-traffic-tabs" role="tablist" aria-label="Edit or preview">
+              <button type="button" class="is-on" data-ws-pane="edit" role="tab" aria-selected="true">Edit</button>
+              <button type="button" data-ws-pane="preview" role="tab" aria-selected="false">Preview</button>
+            </div>
+            <a id="ws-open-live" class="ws-live-link" href="/store" target="_blank" rel="noopener">Open live page</a>
+          </div>
           <div id="ws-overview-panel" class="inv-right-panel">
             <div class="inv-overview-summary">
-              <p class="inv-overview-lead">Select a listing to set collection, What’s New, Buy now, and show or hide it on the US Store. Add listing picks an Inventory SKU. Delete removes it from the store only.</p>
+              <p class="inv-overview-lead">Select a listing to set collection, What’s New, Buy now, Shopify IDs, and show or hide it on the US Store. Preview shows the live store page. Add listing picks an Inventory SKU. Delete removes it from the store only.</p>
             </div>
           </div>
       <div id="ws-form-wrap" class="hidden space-y-4 inv-right-panel">
@@ -837,6 +844,7 @@
         </form>
         </div>
       </div>
+          <iframe id="ws-preview" class="ws-preview hidden" title="Live US Store preview"></iframe>
             </div>
           </div>
         </div>
@@ -4180,7 +4188,7 @@
     </a>
   </nav>
 
-  <link rel="stylesheet" href="/css/company-dash.css?v=poitem1" />
+  <link rel="stylesheet" href="/css/company-dash.css?v=storeprev1" />
 
   <script>
     const loginPanel = document.getElementById('login-panel');
@@ -6359,16 +6367,58 @@
     function showWsRightPanel(which) {
       const overview = document.getElementById('ws-overview-panel');
       const form = document.getElementById('ws-form-wrap');
+      const preview = document.getElementById('ws-preview');
       const onOverview = which === 'overview';
-      if (overview) overview.classList.toggle('hidden', !onOverview);
-      if (form) form.classList.toggle('hidden', onOverview);
+      const previewOn = wsPane === 'preview';
+      if (overview) overview.classList.toggle('hidden', !onOverview || previewOn);
+      if (form) form.classList.toggle('hidden', onOverview || previewOn);
+      if (preview) preview.classList.toggle('hidden', !previewOn);
       const sec = document.getElementById('store-section');
       if (sec) sec.classList.toggle('ws-form-open', !onOverview && !isWsSplitOn());
       if (onOverview || isWsSplitOn()) {
         const list = document.getElementById('store-list-wrap');
         if (list) list.classList.remove('hidden');
       }
+      setWsPaneButtons();
+      if (previewOn) refreshWsPreview(null, false);
       if (typeof applyMasterTabWorkMarks === 'function') applyMasterTabWorkMarks();
+    }
+    function storePreviewHref(item) {
+      if (!item) return '/store';
+      const handle = String(item.handle || item.id || '').trim();
+      if (!handle) return '/store';
+      return '/store/products/' + encodeURIComponent(handle);
+    }
+    function storeLiveHref(item) {
+      if (item && item.storePath) return item.storePath;
+      return storePreviewHref(item);
+    }
+    function setWsLiveLink(href) {
+      const a = document.getElementById('ws-open-live');
+      if (!a) return;
+      const next = href || '/store';
+      a.href = next;
+      a.classList.toggle('is-off', !next || next === '#');
+    }
+    function setWsPaneButtons() {
+      const wrap = document.getElementById('store-section');
+      if (!wrap) return;
+      wrap.querySelectorAll('[data-ws-pane]').forEach(function (btn) {
+        const on = btn.getAttribute('data-ws-pane') === wsPane;
+        btn.classList.toggle('is-on', on);
+        btn.setAttribute('aria-pressed', on ? 'true' : 'false');
+        btn.setAttribute('aria-selected', on ? 'true' : 'false');
+      });
+    }
+    function refreshWsPreview(href, force) {
+      const frame = document.getElementById('ws-preview');
+      if (!frame) return;
+      const next = href || frame.getAttribute('data-src') || '/store';
+      frame.setAttribute('data-src', next);
+      if (wsPane !== 'preview' && !force) return;
+      let src = next;
+      if (force) src = next + (next.indexOf('?') >= 0 ? '&' : '?') + 'preview=' + Date.now();
+      if (frame.getAttribute('src') !== src) frame.src = src;
     }
     function readWsFormValues() {
       return {
@@ -6442,11 +6492,15 @@
       syncWsHideButton();
       const saveBtn = document.getElementById('ws-save-btn');
       if (saveBtn) saveBtn.classList.toggle('hidden', !canEdit('website'));
+      setWsLiveLink(storeLiveHref(item));
+      refreshWsPreview(storePreviewHref(item));
     }
     function showWsOverview() {
       stashWsActiveTab();
       wsActiveTab = 'overview';
       wsEditingId = null;
+      setWsLiveLink('/store');
+      refreshWsPreview('/store');
       showWsRightPanel('overview');
       renderWsTabBar();
       renderStoreItems(storeItems);
@@ -6509,11 +6563,8 @@
         else showWsOverview();
         return;
       }
-      document.getElementById('ws-form-wrap').classList.add('hidden');
-      document.getElementById('store-list-wrap').classList.remove('hidden');
-      const sec = document.getElementById('store-section');
-      if (sec) sec.classList.remove('ws-form-open');
-      wsEditingId = null;
+      wsPane = 'edit';
+      showWsOverview();
     }
     function openStoreForm(item) {
       if (!item || !item.dbId) return;
@@ -6522,11 +6573,11 @@
         initWsSplitResize();
         return;
       }
+      const list = document.getElementById('store-list-wrap');
+      if (list) list.classList.remove('hidden');
       fillStoreForm(item);
-      document.getElementById('store-list-wrap').classList.add('hidden');
-      document.getElementById('ws-form-wrap').classList.remove('hidden');
-      const sec = document.getElementById('store-section');
-      if (sec) sec.classList.add('ws-form-open');
+      wsActiveTab = String(item.dbId);
+      showWsRightPanel('item');
     }
     function storeVisibilityCell(p) {
       if (p.storeVisibility === 'blocked') return '<span class="text-amber-400">Blocked</span>';
@@ -6650,6 +6701,7 @@
       await loadStoreCatalog();
       renderStoreItems(storeItems);
       setMasterTabDirty('store', false);
+      refreshWsPreview(storePreviewHref(item), wsPane === 'preview');
     }
 
     function closeWsListingPicker() {
@@ -7705,6 +7757,7 @@
     let wsTabLabels = {};
     let wsEditingId = null;
     let wsStoreHidden = false;
+    let wsPane = 'edit';
     let wsListingItems = [];
     const WA_TAB_MAX = 7;
     let waOpenTabs = [];
@@ -20394,6 +20447,15 @@
         else activateWsTab(tabId);
       });
     }
+    const storeSection = document.getElementById('store-section');
+    if (storeSection) {
+      storeSection.addEventListener('click', function (e) {
+        const paneBtn = e.target.closest('[data-ws-pane]');
+        if (!paneBtn || !storeSection.contains(paneBtn)) return;
+        wsPane = paneBtn.getAttribute('data-ws-pane') || 'edit';
+        showWsRightPanel((!wsActiveTab || wsActiveTab === 'overview') ? 'overview' : 'item');
+      });
+    }
     document.getElementById('store-back').addEventListener('click', closeStoreForm);
     document.getElementById('ws-cancel-btn').addEventListener('click', closeStoreForm);
     const storeShopifySync = document.getElementById('store-shopify-sync');
@@ -20420,6 +20482,7 @@
         fillStoreForm(item);
         await loadStoreCatalog();
         renderStoreItems(storeItems);
+        refreshWsPreview(storePreviewHref(item), wsPane === 'preview');
       } catch (err) {
         showError('ws-form-error', err.message);
       }
