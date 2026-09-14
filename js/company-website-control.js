@@ -1154,7 +1154,7 @@
     var del = e.target.closest('#wc-delete');
     if (del) {
       var did = ($('wc-product-id') || {}).value;
-      if (!did || !global.confirm('Delete this product page?')) return;
+      if (!did || !global.confirm('Delete this product from the website? If it is listed on the US Store, that store listing stays.')) return;
       try {
         await H.api('/api/admin/products/' + encodeURIComponent(did), { method: 'DELETE' });
         closeWcTab(did);

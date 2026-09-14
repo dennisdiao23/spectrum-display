@@ -658,6 +658,11 @@ async function main() {
         Object.prototype.hasOwnProperty.call(body, 'storeListed')
       );
       if (!bodyHasListed) details.store_listed = false;
+      const bodyHasWebsiteListed = body && (
+        Object.prototype.hasOwnProperty.call(body, 'website_listed') ||
+        Object.prototype.hasOwnProperty.call(body, 'websiteListed')
+      );
+      if (!bodyHasWebsiteListed) details.website_listed = true;
     }
     const sortOrder = bodyHas(body, 'sortOrder') || bodyHas(body, 'sort_order')
       ? Number(body.sortOrder != null ? body.sortOrder : body.sort_order) || 0
@@ -1036,7 +1041,9 @@ async function main() {
 
   app.get('/api/products', async function (_req, res, next) {
     try {
-      const products = (await store.listProducts()).filter(function (p) { return !p.hidden; });
+      const products = (await store.listProducts()).filter(function (p) {
+        return !p.hidden && shopStore.isWebsiteListed(p);
+      });
       res.json({ ok: true, products: products });
     } catch (err) { next(err); }
   });
@@ -1044,7 +1051,9 @@ async function main() {
   app.get('/api/products/:brand/:series', async function (req, res, next) {
     try {
       const product = await store.getProductByBrandSeries(req.params.brand, req.params.series);
-      if (!product || product.hidden) return res.status(404).json({ ok: false, error: 'Product not found.' });
+      if (!product || product.hidden || !shopStore.isWebsiteListed(product)) {
+        return res.status(404).json({ ok: false, error: 'Product not found.' });
+      }
       res.json({ ok: true, product: product, brandName: product.brandName });
     } catch (err) { next(err); }
   });
@@ -1364,7 +1373,8 @@ async function main() {
 
   app.get('/api/admin/products', requireAdmin, requireCatalogRead, async function (_req, res, next) {
     try {
-      res.json({ ok: true, products: await store.listProducts() });
+      const products = (await store.listProducts()).filter(shopStore.isWebsiteListed);
+      res.json({ ok: true, products: products });
     } catch (err) { next(err); }
   });
 
@@ -1415,9 +1425,21 @@ async function main() {
 
   app.delete('/api/admin/products/:id', requireAdmin, requirePerm('website', 'edit'), async function (req, res, next) {
     try {
+      const existing = await store.getProduct(req.params.id);
+      if (!existing) return res.status(404).json({ ok: false, error: 'Product not found.' });
+      // Soft-remove from website only when store_listed is explicitly on — missing legacy key hard-deletes.
+      const details = existing.details && typeof existing.details === 'object' ? existing.details : {};
+      const keepForStore = Object.prototype.hasOwnProperty.call(details, 'store_listed')
+        ? shopStore.asBool(details.store_listed)
+        : false;
+      if (keepForStore) {
+        const product = await shopStore.removeFromWebsite(store, req.params.id);
+        if (!product) return res.status(404).json({ ok: false, error: 'Product not found.' });
+        return res.json({ ok: true, keptOnStore: true, product: product });
+      }
       const ok = await store.deleteProduct(req.params.id);
       if (!ok) return res.status(404).json({ ok: false, error: 'Product not found.' });
-      res.json({ ok: true });
+      res.json({ ok: true, keptOnStore: false });
     } catch (err) { next(err); }
   });
 

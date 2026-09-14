@@ -142,6 +142,19 @@ function isStoreListed(product) {
   return true;
 }
 
+/** Website Products list / public catalog. Missing key = on website (legacy). Independent of store_listed. */
+function isWebsiteListed(product) {
+  if (!product) return false;
+  const details = detailsOf(product);
+  if (Object.prototype.hasOwnProperty.call(details, 'website_listed')) {
+    return asBool(details.website_listed);
+  }
+  if (Object.prototype.hasOwnProperty.call(product, 'website_listed')) {
+    return asBool(product.website_listed);
+  }
+  return true;
+}
+
 function catalogTypeFromInventory(item) {
   const cat = String((item && item.category) || '').toLowerCase();
   const panel = String((item && item.panelType) || '').toLowerCase();
@@ -553,6 +566,7 @@ async function createCatalogFromInventory(store, item) {
     : (Number.isFinite(pitchNum) && pitchNum > 0 ? [pitchNum] : []);
   const details = {
     store_listed: true,
+    website_listed: false,
     model: String(item.sku || '').trim()
   };
   if (kind.cats && kind.cats.length) details.cats = kind.cats.slice();
@@ -624,6 +638,18 @@ async function unlistStoreProduct(store, productId) {
   return product ? toAdminStoreItem(product) : null;
 }
 
+/** Remove from Website Products without destroying a US Store listing. */
+async function removeFromWebsite(store, productId) {
+  const existing = await store.getRawProduct(productId);
+  if (!existing) return null;
+  const dbUtil = require('./db');
+  const details = Object.assign({}, dbUtil.parseDetails(existing), { website_listed: false });
+  let product = await store.updateProductDetails(productId, details);
+  if (!product) return null;
+  product = await store.setProductHidden(productId, true);
+  return product || null;
+}
+
 module.exports = {
   COLLECTIONS,
   COLLECTION_BY_ID,
@@ -636,6 +662,7 @@ module.exports = {
   storeProductPath,
   blockedFromStore,
   isStoreListed,
+  isWebsiteListed,
   catalogTypeFromInventory,
   inferCollection,
   publicPrice,
@@ -646,6 +673,7 @@ module.exports = {
   inventoryListingOptions,
   addListingFromInventory,
   unlistStoreProduct,
+  removeFromWebsite,
   asBool,
   variantNumericId
 };
