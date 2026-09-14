@@ -7379,6 +7379,15 @@ body.dash-split-lock #crm-pipe-section .crm-board {
 .inv-locs-block {
   margin-top: 0.75rem;
 }
+.inv-photos-lead {
+  margin: 0 0 0.55rem;
+}
+#inv-sec-photos .wc-gallery {
+  margin-bottom: 0;
+}
+#inv-sec-photos .wc-shot-add {
+  color: var(--dash-muted);
+}
 .inv-locs-table {
   table-layout: auto;
 }

@@ -72,7 +72,7 @@
     if (global.spectrumProductPhotoFallback) {
       Object.keys(target).forEach(function (brandId) {
         ((target[brandId] && target[brandId].series) || []).forEach(function (s) {
-          if (s && !s.image) s.image = global.spectrumProductPhotoFallback(s) || '';
+          if (s && !s.image) s.image = (s.gallery && s.gallery[0]) || global.spectrumProductPhotoFallback(s) || '';
         });
       });
     }

@@ -562,6 +562,8 @@ async function createCatalogFromInventory(store, item) {
     details.priceEach = Number(item.price) || 0;
     if (!details.cats || !details.cats.length) details.cats = ['control'];
   }
+  const inv = require('./inventory');
+  const photos = inv.mediaFromUrls(inv.urlsFromMedia(item.image, item.gallery));
   const product = await store.insertProduct({
     brandId: brandId,
     seriesId: seriesId,
@@ -576,8 +578,8 @@ async function createCatalogFromInventory(store, item) {
     type: kind.type,
     description: String(item.description || '').trim(),
     badge: '',
-    image: item.image || '',
-    gallery: [],
+    image: photos.image,
+    gallery: photos.gallery,
     details: details
   });
   if (product && product.dbId) {
@@ -608,7 +610,10 @@ async function addListingFromInventory(store, inventoryId) {
   if (mapped[0]) {
     const details = Object.assign({}, detailsOf(mapped[0]), { store_listed: true });
     if (String(details.store_collection || '') === 'hidden') details.store_collection = '';
-    const product = await store.updateProductDetails(mapped[0].dbId, details);
+    let product = await store.updateProductDetails(mapped[0].dbId, details);
+    const inv = require('./inventory');
+    const adopt = inv.adoptMediaFromItems(product, [item]);
+    if (adopt) product = await store.updateProductMedia(mapped[0].dbId, adopt);
     return { product: toAdminStoreItem(product), created: false, alreadyListed: false };
   }
   const product = await createCatalogFromInventory(store, item);

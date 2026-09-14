@@ -554,7 +554,7 @@ async function main() {
     } else if (truthyFlag(body.clearImage)) {
       image = '';
     }
-    if (!image && gallery[0] && !truthyFlag(body.clearImage)) image = gallery[0];
+    if (!image && gallery[0]) image = gallery[0];
     if (truthyFlag(body.clearImage) && !gallery.length) image = '';
     if (image) {
       gallery = gallery.filter(function (url) { return url && url !== image; });
@@ -2615,7 +2615,10 @@ async function main() {
     } catch (err) { next(err); }
   });
 
-  const inventoryUpload = upload.fields([{ name: 'image', maxCount: 1 }]);
+  const inventoryUpload = upload.fields([
+    { name: 'image', maxCount: 1 },
+    { name: 'gallery', maxCount: 12 }
+  ]);
 
   async function inventoryPayload(req) {
     const body = Object.assign({}, req.body || {});
@@ -2666,6 +2669,28 @@ async function main() {
       if (!data) return res.status(404).json({ ok: false, error: 'Inventory item not found.' });
       res.json({ ok: true, item: data.item, moves: data.moves });
     } catch (err) { next(err); }
+  });
+
+  app.put('/api/admin/inventory/:id/photos', requireAdmin, requirePerm('inventory', 'edit'), inventoryUpload, async function (req, res, next) {
+    try {
+      const data = await store.getInventoryItem(req.params.id);
+      if (!data) return res.status(404).json({ ok: false, error: 'Inventory item not found.' });
+      const item = data.item;
+      const existing = { image: item.image || '', gallery: item.gallery || [] };
+      const media = await nextProductMedia(existing, req.body || {}, req.files);
+      if (!media) {
+        return res.json({ ok: true, item: item, moves: data.moves });
+      }
+      if (item.photoProductId) {
+        await store.updateProductMedia(item.photoProductId, media);
+      } else {
+        await store.updateInventoryMedia(req.params.id, media);
+      }
+      const next = await store.getInventoryItem(req.params.id);
+      res.json({ ok: true, item: next.item, moves: next.moves });
+    } catch (err) {
+      res.status(400).json({ ok: false, error: err.message || 'Could not save photos.' });
+    }
   });
 
   app.delete('/api/admin/inventory/:id', requireAdmin, requirePerm('inventory', 'edit'), async function (req, res, next) {

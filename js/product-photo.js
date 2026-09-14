@@ -39,7 +39,8 @@
   }
 
   function productPhoto(p, kind) {
-    var src = (p && p.image) || fallbackSrc(p);
+    var gallery0 = p && p.gallery && p.gallery[0];
+    var src = (p && p.image) || gallery0 || fallbackSrc(p);
     if (!src) return '';
     if (global.spectrumDisplayImage) return global.spectrumDisplayImage(src, kind || 'card');
     return abs(src);

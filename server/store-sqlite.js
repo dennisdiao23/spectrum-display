@@ -9,7 +9,8 @@ const UPLOAD_DIR = path.join(ROOT, 'uploads', 'products');
 
 function inventoryMapRows(db) {
   return db.prepare(`
-    SELECT m.product_id, m.pitch, m.item_id, p.name AS product_name, p.series_id, p.brand_id
+    SELECT m.product_id, m.pitch, m.item_id, p.name AS product_name, p.series_id, p.brand_id,
+      p.image AS product_image, p.gallery AS product_gallery, p.details AS product_details
     FROM product_inventory_map m
     JOIN products p ON p.id = m.product_id
   `).all();
@@ -37,6 +38,27 @@ function attachMapsToListedProducts(db, products) {
     return products;
   }
   return inv.attachMapsToProducts(products, maps);
+}
+
+function syncMappedInventoryMedia(db, productId, media) {
+  const inv = require('./inventory');
+  if (!productId) return;
+  const image = media && media.image != null ? String(media.image) : '';
+  const gallery = JSON.stringify(inv.parseGallery(media && media.gallery));
+  try {
+    db.prepare(`
+      UPDATE inventory_items SET image = ?, gallery = ?, updated_at = ?
+      WHERE id IN (SELECT item_id FROM product_inventory_map WHERE product_id = ?)
+    `).run(image, gallery, dbUtil.nowIso(), productId);
+  } catch (e) { /* gallery column may not exist yet */ }
+}
+
+function updateInventoryMediaRow(db, itemId, media) {
+  const inv = require('./inventory');
+  const image = media && media.image != null ? String(media.image) : '';
+  const gallery = JSON.stringify(inv.parseGallery(media && media.gallery));
+  db.prepare('UPDATE inventory_items SET image = ?, gallery = ?, updated_at = ? WHERE id = ?')
+    .run(image, gallery, dbUtil.nowIso(), itemId);
 }
 
 function listInventoryItems(db) {
@@ -397,7 +419,8 @@ function getInventoryItemDetail(db, id) {
     ? db.prepare('SELECT name FROM brands WHERE id = ?').get(row.brand_id)
     : null;
   const maps = db.prepare(`
-    SELECT m.product_id, m.pitch, m.item_id, p.name AS product_name, p.series_id, p.brand_id
+    SELECT m.product_id, m.pitch, m.item_id, p.name AS product_name, p.series_id, p.brand_id,
+      p.image AS product_image, p.gallery AS product_gallery, p.details AS product_details
     FROM product_inventory_map m
     JOIN products p ON p.id = m.product_id
     WHERE m.item_id = ?
@@ -582,6 +605,7 @@ function createSqliteStore() {
           p.image, JSON.stringify(p.gallery), JSON.stringify(p.details || {}), sortOrder, dbUtil.nowIso(), id
         );
       }
+      syncMappedInventoryMedia(db, id, { image: p.image, gallery: p.gallery });
       return dbUtil.getProduct(db, id);
     },
     async deleteProduct(id) {
@@ -620,6 +644,7 @@ function createSqliteStore() {
       const info = db.prepare('UPDATE products SET image = ?, gallery = ?, updated_at = ? WHERE id = ?')
         .run(image, JSON.stringify(gallery), dbUtil.nowIso(), id);
       if (!info.changes) return null;
+      syncMappedInventoryMedia(db, id, { image: image, gallery: gallery });
       const product = dbUtil.getProduct(db, id);
       if (product) attachMapsToListedProducts(db, [product]);
       return product;
@@ -808,14 +833,15 @@ function createSqliteStore() {
       const info = db.prepare(`
         INSERT INTO inventory_items (
           sku, name, brand_id, category, pitch, unit, panel_type, packaging_type, qty, low_at, price, cost, dealer_net,
-          local_warehouse_cost, weight, panel_w, panel_h, description, image, notes, created_at, updated_at
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+          local_warehouse_cost, weight, panel_w, panel_h, description, image, gallery, notes, created_at, updated_at
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
       `).run(
         fields.sku, fields.name, fields.brand_id, fields.category || '', fields.pitch, fields.unit, fields.panel_type || '',
         fields.packaging_type || '', itemQty,
         fields.low_at, fields.price, fields.cost, fields.dealer_net,
         fields.local_warehouse_cost != null ? fields.local_warehouse_cost : 0, fields.weight,
-        fields.panel_w, fields.panel_h, fields.description, fields.image, fields.notes,
+        fields.panel_w, fields.panel_h, fields.description, fields.image,
+        JSON.stringify(inv.parseGallery(fields.gallery)), fields.notes,
         stamp, stamp
       );
       upsertItemLocation(db, info.lastInsertRowid, warehouse.id, '', locQty, stamp);
@@ -851,6 +877,7 @@ function createSqliteStore() {
         panelH: input.panelH != null ? input.panelH : Number(current.panel_h) || 0,
         description: input.description != null ? input.description : (current.description || ''),
         image: input.image != null ? input.image : (current.image || ''),
+        gallery: input.gallery != null ? input.gallery : inv.parseGallery(current.gallery),
         notes: input.notes != null ? input.notes : (current.notes || ''),
         category: inv.resolveItemCategory(input.category, current.category, {
           sku: input.sku != null && input.sku !== '' ? input.sku : (current.sku || ''),
@@ -867,13 +894,13 @@ function createSqliteStore() {
           sku = ?, name = ?, brand_id = ?, category = ?, pitch = ?, unit = ?, panel_type = ?, packaging_type = ?,
           low_at = ?, price = ?,
           cost = ?, dealer_net = ?, local_warehouse_cost = ?, weight = ?, panel_w = ?, panel_h = ?,
-          description = ?, image = ?, notes = ?, updated_at = ?
+          description = ?, image = ?, gallery = ?, notes = ?, updated_at = ?
         WHERE id = ?
       `).run(
         next.sku, next.name, next.brandId, next.category, next.pitch, next.unit, next.panelType, next.packagingType,
         next.lowAt, next.price,
         next.cost, next.dealerNet, next.localWarehouseCost, next.weight, next.panelW, next.panelH,
-        next.description, next.image, next.notes, dbUtil.nowIso(), id
+        next.description, next.image, JSON.stringify(inv.parseGallery(next.gallery)), next.notes, dbUtil.nowIso(), id
       );
       if (input.warehouseId || input.bin != null) {
         const stamp = dbUtil.nowIso();
@@ -922,6 +949,12 @@ function createSqliteStore() {
         .run(on ? 1 : 0, dbUtil.nowIso(), id);
       return getInventoryItemDetail(db, id);
     },
+    async updateInventoryMedia(id, media) {
+      const current = db.prepare('SELECT id FROM inventory_items WHERE id = ?').get(id);
+      if (!current) return null;
+      updateInventoryMediaRow(db, id, media);
+      return getInventoryItemDetail(db, id);
+    },
     async adjustInventory(id, payload, adminEmail) {
       db.exec('BEGIN');
       try {
@@ -957,6 +990,15 @@ function createSqliteStore() {
       } catch (err) {
         try { db.exec('ROLLBACK'); } catch (e) { /* ignore */ }
         throw err;
+      }
+      const itemRows = rows.map(function (row) {
+        return db.prepare('SELECT image, gallery FROM inventory_items WHERE id = ?').get(row.itemId);
+      }).filter(Boolean);
+      const adopt = inv.adoptMediaFromItems(product, itemRows);
+      if (adopt) {
+        await this.updateProductMedia(productId, adopt);
+      } else if (inv.mediaHasPhotos({ image: product.image, gallery: product.gallery })) {
+        syncMappedInventoryMedia(db, productId, { image: product.image, gallery: product.gallery });
       }
       const updated = dbUtil.getProduct(db, productId);
       attachMapsToListedProducts(db, [updated]);
