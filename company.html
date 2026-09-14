@@ -14,7 +14,7 @@
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
   <title>Company | Spectrum Display</title>
   <meta name="robots" content="noindex, nofollow" />
-  <link rel="stylesheet" href="/css/company-dash.css?v=invimg2" />
+  <link rel="stylesheet" href="/css/company-dash.css?v=invimg3" />
   <script src="/js/address-autocomplete.js"></script>
   <script src="/js/company-chat.js?v=chatcrm3"></script>
   <script src="/js/company-crm.js?v=zoomphone3"></script>
@@ -1294,18 +1294,6 @@
                         <div><dt>Unit</dt><dd id="inv-detail-unit">—</dd></div>
                       </dl>
                     </div>
-                  </div>
-                  <div class="cc-detail-block inv-photos-block">
-                    <h3>Photos</h3>
-                    <p class="inv-photos-lead" id="inv-photos-lead"></p>
-                    <div class="wc-gallery" id="inv-photos-row">
-                      <div id="inv-gallery" class="ws-gallery-shots"></div>
-                      <label class="wc-shot wc-shot-add" id="inv-photos-add">
-                        <input id="inv-gallery-files" type="file" accept="image/jpeg,image/png,image/webp,image/gif" multiple>
-                        <span>Add photos</span>
-                      </label>
-                    </div>
-                    <p id="inv-photos-msg" class="hidden text-sm mt-2"></p>
                   </div>
                   <div class="cc-detail-block inv-locs-block">
                     <h3>Locations</h3>
@@ -3791,6 +3779,9 @@
         <button type="button" class="cc-ico-btn" data-inv-jump="inv-sec-basic" title="Basic info" aria-label="Basic info">
           <svg viewBox="0 0 24 24"><rect x="4" y="4" width="16" height="16" rx="2"/><path d="M8 9h8M8 13h5"/></svg>
         </button>
+        <button type="button" class="cc-ico-btn hidden" data-inv-jump="inv-sec-photos" title="Photos" aria-label="Photos">
+          <svg viewBox="0 0 24 24"><rect x="3" y="7" width="18" height="13" rx="2"/><path d="M8 7l1.5-3h5L16 7"/><circle cx="12" cy="13.5" r="3.25"/></svg>
+        </button>
         <button type="button" class="cc-ico-btn" data-inv-jump="inv-sec-sales" title="Sales" aria-label="Sales">
           <svg viewBox="0 0 24 24"><path d="M4 7h16l-1.5 12H5.5L4 7z"/><path d="M9 7V5a3 3 0 0 1 6 0v2"/></svg>
         </button>
@@ -3844,6 +3835,22 @@
                 <input id="inv-panel-w" type="number" min="0" step="0.5" placeholder="500">
                 <input id="inv-panel-h" type="number" min="0" step="0.5" placeholder="500">
               </div>
+            </div>
+          </div>
+        </section>
+        <section class="cc-sec is-open hidden" id="inv-sec-photos">
+          <button type="button" class="cc-sec-btn"><span class="cc-sec-label"><svg class="cc-sec-ico" viewBox="0 0 24 24"><rect x="3" y="7" width="18" height="13" rx="2"/><path d="M8 7l1.5-3h5L16 7"/><circle cx="12" cy="13.5" r="3.25"/></svg> Photos</span> <span class="cc-sec-chevron">▾</span></button>
+          <div class="cc-sec-body">
+            <div class="cc-field wide">
+              <p class="cc-note inv-photos-lead" id="inv-photos-lead"></p>
+              <div class="wc-gallery" id="inv-photos-row">
+                <div id="inv-gallery" class="ws-gallery-shots"></div>
+                <label class="wc-shot wc-shot-add" id="inv-photos-add">
+                  <input id="inv-gallery-files" type="file" accept="image/jpeg,image/png,image/webp,image/gif" multiple>
+                  <span>Add photos</span>
+                </label>
+              </div>
+              <p id="inv-photos-msg" class="hidden text-sm mt-2"></p>
             </div>
           </div>
         </section>
@@ -4203,7 +4210,7 @@
     </a>
   </nav>
 
-  <link rel="stylesheet" href="/css/company-dash.css?v=invimg2" />
+  <link rel="stylesheet" href="/css/company-dash.css?v=invimg3" />
 
   <script>
     const loginPanel = document.getElementById('login-panel');
@@ -10643,6 +10650,10 @@
         : '';
     }
 
+    function invPhotoItem() {
+      return (inventoryDetail && inventoryDetail.item) || (invDetailData && invDetailData.item) || null;
+    }
+
     function invPhotoUrls(item) {
       const urls = [];
       if (item && item.image) urls.push(item.image);
@@ -10656,7 +10667,7 @@
       const wrap = document.getElementById('inv-gallery');
       const lead = document.getElementById('inv-photos-lead');
       const add = document.getElementById('inv-photos-add');
-      const item = invDetailData && invDetailData.item;
+      const item = invPhotoItem();
       const can = canEdit('inventory');
       if (add) add.classList.toggle('hidden', !can);
       if (lead) {
@@ -10695,10 +10706,11 @@
       renderInventoryDetailView();
       renderInventoryTable();
       renderInvTabBar();
+      renderInvPhotos();
     }
 
     async function saveInvPhotos(urls, files) {
-      const item = invDetailData && invDetailData.item;
+      const item = invPhotoItem();
       if (!item || !item.id || invPhotosBusy) return;
       invPhotosBusy = true;
       const msg = document.getElementById('inv-photos-msg');
@@ -10741,7 +10753,7 @@
     }
 
     function mutateInvPhotos(fn) {
-      const next = fn(invPhotoUrls(invDetailData && invDetailData.item).slice());
+      const next = fn(invPhotoUrls(invPhotoItem()).slice());
       saveInvPhotos(next, []);
     }
 
@@ -10792,7 +10804,6 @@
       document.getElementById('inv-detail-unit').textContent = item.unit || '—';
       document.getElementById('inv-detail-edit').classList.toggle('hidden', !canEdit('inventory'));
       document.getElementById('inv-detail-adjust').classList.toggle('hidden', !canEdit('inventory'));
-      renderInvPhotos();
       setInvDetailTab(invDetailTab);
       renderInvDetailMoves();
       renderInvDetailDetails();
@@ -11429,6 +11440,11 @@
       inactBtn.title = (!isInactive && hasStock) ? 'Cannot mark this SKU inactive while stock is on hand.' : '';
       document.getElementById('inv-delete-note').classList.toggle('hidden', !locked);
       document.getElementById('inv-item-msg').classList.add('hidden');
+      const photosSec = document.getElementById('inv-sec-photos');
+      const photosJump = document.querySelector('#inv-drawer [data-inv-jump="inv-sec-photos"]');
+      if (photosSec) photosSec.classList.toggle('hidden', !hasId);
+      if (photosJump) photosJump.classList.toggle('hidden', !hasId);
+      renderInvPhotos();
     }
 
     function renderInventoryDetail(data) {
@@ -20107,9 +20123,9 @@
       if (!row) return;
       openLocationFromInventory(row.getAttribute('data-location-id'));
     });
-    const invItemPanel = document.getElementById('inv-item-panel');
-    if (invItemPanel) {
-      invItemPanel.addEventListener('click', function (e) {
+    const invPhotosSec = document.getElementById('inv-sec-photos');
+    if (invPhotosSec) {
+      invPhotosSec.addEventListener('click', function (e) {
         if (!canEdit('inventory')) return;
         const hero = e.target.closest('[data-inv-shot-hero]');
         if (hero) {
@@ -20155,9 +20171,9 @@
           });
         }
       });
-      invItemPanel.addEventListener('change', function (e) {
+      invPhotosSec.addEventListener('change', function (e) {
         if (e.target && e.target.id === 'inv-gallery-files') {
-          saveInvPhotos(invPhotoUrls(invDetailData && invDetailData.item), e.target.files);
+          saveInvPhotos(invPhotoUrls(invPhotoItem()), e.target.files);
         }
       });
     }
