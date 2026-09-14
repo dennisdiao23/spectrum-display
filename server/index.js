@@ -1455,9 +1455,23 @@ async function main() {
 
   app.post('/api/admin/store/listings', requireAdmin, requirePerm('website', 'edit'), async function (req, res, next) {
     try {
-      const inventoryId = req.body && (req.body.inventoryId != null ? req.body.inventoryId : req.body.inventory_id);
+      const body = req.body || {};
+      const inventoryId = body.inventoryId != null ? body.inventoryId : body.inventory_id;
+      const blank = body.blank === true || body.blank === 'true' || body.blank === 1 || body.blank === '1'
+        || body.createBlank === true || body.mode === 'blank' || body.kind === 'blank';
       if (inventoryId == null || inventoryId === '') {
-        return res.status(400).json({ ok: false, error: 'Pick an inventory SKU.' });
+        if (!blank && !String(body.name || '').trim()) {
+          return res.status(400).json({ ok: false, error: 'Pick an inventory SKU or create a blank listing.' });
+        }
+        const product = await shopStore.createBlankListing(store, body);
+        const stock = await store.getCatalogStock().catch(function () { return {}; });
+        return res.json({
+          ok: true,
+          product: shopStore.toAdminStoreItem(product, { stock: stock }),
+          created: true,
+          alreadyListed: false,
+          blank: true
+        });
       }
       const result = await shopStore.addListingFromInventory(store, inventoryId);
       res.json({
@@ -1484,21 +1498,35 @@ async function main() {
     }
   });
 
+  app.put('/api/admin/store/order', requireAdmin, requirePerm('website', 'edit'), async function (req, res, next) {
+    try {
+      const order = (req.body && (req.body.order || req.body.ids || req.body.productIds)) || [];
+      const products = await shopStore.reorderStoreListings(store, order);
+      res.json({ ok: true, products: products });
+    } catch (err) {
+      res.status(400).json({ ok: false, error: err.message || 'Could not reorder store listings.' });
+    }
+  });
+
   app.put('/api/admin/products/:id/store', requireAdmin, requirePerm('website', 'edit'), maybeProductUpload, async function (req, res, next) {
     try {
       const existing = await store.getRawProduct(req.params.id);
       if (!existing) return res.status(404).json({ ok: false, error: 'Product not found.' });
-      const details = shopStore.applyStoreFlags(Object.assign({}, dbUtil.parseDetails(existing)), req.body || {});
-      let product = await store.updateProductDetails(req.params.id, details);
-      if (!product) return res.status(404).json({ ok: false, error: 'Product not found.' });
       const media = await nextProductMedia(existing, req.body || {}, req.files);
-      if (media) {
-        product = await store.updateProductMedia(req.params.id, media);
-        if (!product) return res.status(404).json({ ok: false, error: 'Product not found.' });
+      const product = await shopStore.saveStoreListing(store, req.params.id, req.body || {}, media);
+      if (!product) return res.status(404).json({ ok: false, error: 'Product not found.' });
+      const stock = await store.getCatalogStock().catch(function () { return {}; });
+      // saveStoreListing already returns an admin item; refresh on-hand when possible
+      if (product.dbId != null && product.onHand == null) {
+        const full = await store.getProduct(product.dbId);
+        return res.json({ ok: true, product: shopStore.toAdminStoreItem(full || product, { stock: stock }) });
       }
-      res.json({ ok: true, product: shopStore.toAdminStoreItem(product) });
+      if (product.onHand == null && stock) {
+        product.onHand = shopStore.toAdminStoreItem(product, { stock: stock }).onHand;
+      }
+      res.json({ ok: true, product: product });
     } catch (err) {
-      res.status(400).json({ ok: false, error: err.message || 'Could not update store listing.' });
+      res.status(err && err.status ? err.status : 400).json({ ok: false, error: err.message || 'Could not update store listing.' });
     }
   });
 

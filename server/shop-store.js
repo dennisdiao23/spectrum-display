@@ -273,7 +273,8 @@ function toPublicCard(product, opts) {
   if (collection === 'hidden') return null;
   const col = COLLECTION_BY_ID[collection];
   if (!col) return null;
-  const mode = col.mode;
+  const modeOverride = String(details.store_mode || '').trim().toLowerCase();
+  const mode = (modeOverride === 'buy' || modeOverride === 'configure') ? modeOverride : col.mode;
   const variants = parseVariants(details);
   const shopifySell = asBool(details.shopify_sell != null ? details.shopify_sell : product.shopify_sell);
   const featured = asBool(details.store_featured != null ? details.store_featured : product.store_featured);
@@ -349,11 +350,20 @@ async function buildCatalog(store) {
     store.listReceiptShipments ? store.listReceiptShipments().catch(function () { return []; }) : Promise.resolve([])
   ]);
   const cards = [];
-  (products || []).forEach(function (p) {
-    if (!p || !isStoreListed(p)) return;
-    if (blockedFromStore(p)) return;
+  const listed = (products || []).filter(function (p) {
+    return p && isStoreListed(p) && !blockedFromStore(p);
+  }).sort(function (a, b) {
+    const as = sortKeyOf(a);
+    const bs = sortKeyOf(b);
+    if (as !== bs) return as - bs;
+    return String(a.name || '').localeCompare(String(b.name || ''), undefined, { sensitivity: 'base' });
+  });
+  listed.forEach(function (p) {
     const card = toPublicCard(p, { stock: stock, shop: shop });
-    if (card) cards.push(card);
+    if (card) {
+      card.storeSort = sortKeyOf(p);
+      cards.push(card);
+    }
   });
   const counts = {};
   COLLECTIONS.forEach(function (c) { counts[c.slug] = 0; });
@@ -409,6 +419,14 @@ function toAdminStoreItem(product, opts) {
   let collectionLabel = 'Auto';
   if (storeHidden) collectionLabel = 'Hidden';
   else if (col) collectionLabel = storedCollection ? col.label : col.label + ' (Auto)';
+  const modeOverride = String(details.store_mode || '').trim().toLowerCase();
+  const effectiveMode = (modeOverride === 'buy' || modeOverride === 'configure')
+    ? modeOverride
+    : (col ? col.mode : '');
+  const variants = parseVariants(details);
+  const maps = Array.isArray(product.inventoryMaps) ? product.inventoryMaps : [];
+  const sortRaw = details.store_sort != null ? details.store_sort : product.store_sort;
+  const storeSort = Number(sortRaw);
   return {
     dbId: product.dbId,
     id: product.id,
@@ -416,6 +434,16 @@ function toAdminStoreItem(product, opts) {
     brandId: product.brandId,
     brandName: product.brandName,
     type: product.type,
+    description: String(product.description || details.lead || '').trim(),
+    lead: String(details.lead || '').trim(),
+    priceEach: Number(details.priceEach != null ? details.priceEach : product.priceEach) || 0,
+    model: String(details.model || '').trim(),
+    subtype: String(details.subtype || '').trim(),
+    family: String(details.family || '').trim(),
+    outputs: String(details.outputs || '').trim(),
+    inputs: String(details.inputs || '').trim(),
+    bestFor: String(details.bestFor || '').trim(),
+    features: Array.isArray(details.features) ? details.features.slice() : [],
     image: product.image || '',
     gallery: Array.isArray(product.gallery) ? product.gallery.slice() : [],
     hidden: websiteHidden,
@@ -423,13 +451,16 @@ function toAdminStoreItem(product, opts) {
     store_collection: storedCollection === 'hidden' || COLLECTION_BY_ID[storedCollection] ? storedCollection : '',
     store_featured: featured,
     store_lead: String(details.store_lead || product.store_lead || ''),
+    store_mode: (modeOverride === 'buy' || modeOverride === 'configure') ? modeOverride : '',
+    store_sort: Number.isFinite(storeSort) ? storeSort : 0,
     shopify_sell: shopifySell,
     shopify_variant_id: String(details.shopify_variant_id || product.shopify_variant_id || ''),
     shopify_product_id: String(details.shopify_product_id || product.shopify_product_id || ''),
     shopify_handle: String(details.shopify_handle || product.shopify_handle || ''),
+    shopify_variants: variants.map(function (v) { return { id: v.id, title: v.title }; }),
     collection: collection,
     collectionLabel: collectionLabel,
-    collectionMode: col ? col.mode : '',
+    collectionMode: effectiveMode,
     storeBlocked: blocked,
     storeShown: visibility === 'shown',
     storeVisibility: visibility,
@@ -437,7 +468,14 @@ function toAdminStoreItem(product, opts) {
     featured: featured,
     handle: handle,
     storePath: storeProductPath(handle),
-    onHand: mappedQty(opts.stock, product.dbId)
+    onHand: mappedQty(opts.stock, product.dbId),
+    inventoryMaps: maps.map(function (m) {
+      return {
+        pitch: m.pitch || '',
+        itemId: m.itemId != null ? m.itemId : m.item_id
+      };
+    }),
+    inventoryItemId: maps.length ? (maps[0].itemId != null ? maps[0].itemId : maps[0].item_id) : null
   };
 }
 
@@ -471,16 +509,78 @@ function applyStoreFlags(details, body) {
     }
   }
   if (next.store_lead && !LEAD_LABELS[next.store_lead]) next.store_lead = '';
-  if (Object.prototype.hasOwnProperty.call(body, 'shopify_variants')) {
+  if (Object.prototype.hasOwnProperty.call(body, 'shopify_variants') || Object.prototype.hasOwnProperty.call(body, 'shopifyVariants')) {
     try {
-      next.shopify_variants = typeof body.shopify_variants === 'string'
-        ? JSON.parse(body.shopify_variants || '[]')
-        : body.shopify_variants;
+      const raw = body.shopify_variants != null ? body.shopify_variants : body.shopifyVariants;
+      const parsed = typeof raw === 'string' ? JSON.parse(raw || '[]') : raw;
+      const cleaned = [];
+      (Array.isArray(parsed) ? parsed : []).forEach(function (row) {
+        const id = variantNumericId(row && (row.id || row.variant_id || row.shopify_variant_id));
+        if (!id) return;
+        cleaned.push({
+          id: id,
+          title: String((row && (row.title || row.name)) || 'Default').trim() || 'Default'
+        });
+      });
+      next.shopify_variants = cleaned;
+      if (cleaned.length && !next.shopify_variant_id) next.shopify_variant_id = cleaned[0].id;
     } catch (e) {
       /* keep previous */
     }
   }
+  if (Object.prototype.hasOwnProperty.call(body, 'store_mode') || Object.prototype.hasOwnProperty.call(body, 'storeMode')) {
+    const mode = String(body.store_mode != null ? body.store_mode : body.storeMode || '').trim().toLowerCase();
+    next.store_mode = (mode === 'buy' || mode === 'configure') ? mode : '';
+  }
+  if (Object.prototype.hasOwnProperty.call(body, 'store_sort') || Object.prototype.hasOwnProperty.call(body, 'storeSort')) {
+    const n = Number(body.store_sort != null ? body.store_sort : body.storeSort);
+    next.store_sort = Number.isFinite(n) ? Math.max(0, Math.round(n)) : 0;
+  }
   return next;
+}
+
+function applySellFields(details, body) {
+  const next = details && typeof details === 'object' ? details : {};
+  if (!body) return next;
+  if (Object.prototype.hasOwnProperty.call(body, 'lead')) {
+    next.lead = String(body.lead || '').trim();
+  }
+  if (Object.prototype.hasOwnProperty.call(body, 'model')) {
+    next.model = String(body.model || '').trim();
+  }
+  if (Object.prototype.hasOwnProperty.call(body, 'subtype')) {
+    next.subtype = String(body.subtype || '').trim();
+  }
+  if (Object.prototype.hasOwnProperty.call(body, 'family')) {
+    next.family = String(body.family || '').trim();
+  }
+  if (Object.prototype.hasOwnProperty.call(body, 'outputs')) {
+    next.outputs = String(body.outputs || '').trim();
+  }
+  if (Object.prototype.hasOwnProperty.call(body, 'inputs')) {
+    next.inputs = String(body.inputs || '').trim();
+  }
+  if (Object.prototype.hasOwnProperty.call(body, 'bestFor') || Object.prototype.hasOwnProperty.call(body, 'best_for')) {
+    next.bestFor = String(body.bestFor != null ? body.bestFor : body.best_for || '').trim();
+  }
+  if (Object.prototype.hasOwnProperty.call(body, 'priceEach') || Object.prototype.hasOwnProperty.call(body, 'price_each') || Object.prototype.hasOwnProperty.call(body, 'price')) {
+    const raw = body.priceEach != null ? body.priceEach : (body.price_each != null ? body.price_each : body.price);
+    next.priceEach = Number(raw) || 0;
+  }
+  if (Object.prototype.hasOwnProperty.call(body, 'features')) {
+    if (Array.isArray(body.features)) {
+      next.features = body.features.map(function (f) { return String(f || '').trim(); }).filter(Boolean);
+    } else {
+      next.features = String(body.features || '').split(/\n|,/).map(function (f) { return f.trim(); }).filter(Boolean);
+    }
+  }
+  return next;
+}
+
+function sortKeyOf(product) {
+  const details = detailsOf(product);
+  const n = Number(details.store_sort != null ? details.store_sort : product.store_sort);
+  return Number.isFinite(n) ? n : 0;
 }
 
 function mappedProductsForItem(item, products) {
@@ -505,6 +605,7 @@ function inventoryListingOptions(items, products) {
     const mapped = mappedProductsForItem(item, products);
     const listed = mapped.find(isStoreListed) || null;
     const primary = listed || mapped[0] || null;
+    const qty = Number(item.qty);
     return {
       id: item.id,
       sku: item.sku || '',
@@ -516,6 +617,7 @@ function inventoryListingOptions(items, products) {
       pitchLabel: item.pitchLabel || '',
       image: item.image || '',
       price: Number(item.price) || 0,
+      onHand: Number.isFinite(qty) ? qty : 0,
       mapped: mapped.length > 0,
       listed: !!listed,
       listedProductId: listed ? listed.dbId : null,
@@ -629,6 +731,161 @@ async function unlistStoreProduct(store, productId) {
   return product ? toAdminStoreItem(product) : null;
 }
 
+async function createBlankListing(store, body) {
+  body = body || {};
+  const name = String(body.name || '').trim() || 'New store product';
+  const brandName = String(body.brandName || body.brand_name || '').trim();
+  const brandIdIn = String(body.brandId || body.brand_id || '').trim();
+  const brandId = slugifyId(brandIdIn || brandName) || 'store';
+  const brandLabel = brandName || brandIdIn || 'Store';
+  await store.ensureBrand(brandId, brandLabel);
+  const seriesId = await uniqueSeriesId(store, brandId, body.seriesId || body.series_id || name);
+  const typeRaw = String(body.type || 'control').trim() || 'control';
+  const isControl = typeRaw.toLowerCase() === 'control';
+  const details = {
+    store_listed: true,
+    store_collection: String(body.store_collection || body.storeCollection || (isControl ? 'control' : '')).trim(),
+    store_mode: String(body.store_mode || body.storeMode || (isControl ? 'buy' : 'configure')).trim().toLowerCase(),
+    model: String(body.model || '').trim(),
+    lead: String(body.lead || body.description || '').trim(),
+    priceEach: Number(body.priceEach || body.price || 0) || 0
+  };
+  applyStoreFlags(details, body);
+  applySellFields(details, body);
+  if (details.store_mode !== 'buy' && details.store_mode !== 'configure') {
+    details.store_mode = isControl ? 'buy' : 'configure';
+  }
+  if (isControl && (!details.cats || !details.cats.length)) details.cats = ['control'];
+  const product = await store.insertProduct({
+    brandId: brandId,
+    seriesId: seriesId,
+    name: name,
+    pitches: isControl ? [] : (Array.isArray(body.pitches) ? body.pitches : []),
+    price: Number(body.priceEach || body.price || 0) || 0,
+    weight: 0,
+    powerAvg: 0,
+    powerMax: 0,
+    cabinetW: 0,
+    cabinetH: 0,
+    type: isControl ? 'control' : typeRaw,
+    description: String(body.description || body.lead || '').trim(),
+    badge: '',
+    image: '',
+    gallery: [],
+    details: details
+  });
+  if (product && product.dbId) {
+    await store.setProductHidden(product.dbId, true);
+    return store.getProduct(product.dbId);
+  }
+  return product;
+}
+
+async function saveStoreListing(store, productId, body, media) {
+  body = body || {};
+  const existing = await store.getRawProduct(productId);
+  if (!existing) return null;
+  const dbUtil = require('./db');
+  const current = await store.getProduct(productId);
+  if (!current) return null;
+  let details = applyStoreFlags(Object.assign({}, dbUtil.parseDetails(existing)), body);
+  details = applySellFields(details, body);
+  details.store_listed = true;
+
+  const name = Object.prototype.hasOwnProperty.call(body, 'name')
+    ? String(body.name || '').trim()
+    : current.name;
+  if (!name) throw Object.assign(new Error('Product name is required.'), { status: 400 });
+  const brandName = String(body.brandName || body.brand_name || '').trim();
+  const brandIdIn = String(body.brandId || body.brand_id || current.brandId || '').trim();
+  const brandId = slugifyId(brandIdIn || brandName) || current.brandId;
+  if (brandId) await store.ensureBrand(brandId, brandName || current.brandName || brandId);
+  const typeRaw = Object.prototype.hasOwnProperty.call(body, 'type')
+    ? String(body.type || current.type || 'Fixed').trim()
+    : (current.type || 'Fixed');
+  const isControl = String(typeRaw).toLowerCase() === 'control';
+  const type = isControl ? 'control' : typeRaw;
+  const price = Object.prototype.hasOwnProperty.call(body, 'priceEach') || Object.prototype.hasOwnProperty.call(body, 'price')
+    ? (Number(body.priceEach != null ? body.priceEach : body.price) || 0)
+    : (Number(current.priceEach != null ? current.priceEach : current.pricePerM2) || 0);
+  if (isControl) details.priceEach = price;
+
+  let product = await store.updateProduct(productId, {
+    brandId: brandId,
+    seriesId: current.id,
+    name: name,
+    pitches: current.pitches || [],
+    price: price,
+    weight: Number(current.weightPerM2) || 0,
+    powerAvg: Number(current.powerAvg) || 0,
+    powerMax: Number(current.powerMax) || 0,
+    cabinetW: Number(current.cabinetW) || 0,
+    cabinetH: Number(current.cabinetH) || 0,
+    type: type,
+    description: Object.prototype.hasOwnProperty.call(body, 'description')
+      ? String(body.description || '').trim()
+      : String(current.description || ''),
+    badge: current.badge || '',
+    image: media && media.image != null ? media.image : (current.image || ''),
+    gallery: media && media.gallery != null ? media.gallery : (current.gallery || []),
+    details: details
+  });
+
+  if (Object.prototype.hasOwnProperty.call(body, 'inventoryItemId') || Object.prototype.hasOwnProperty.call(body, 'inventory_item_id') || Object.prototype.hasOwnProperty.call(body, 'inventoryMaps')) {
+    let maps = [];
+    if (Object.prototype.hasOwnProperty.call(body, 'inventoryMaps')) {
+      try {
+        maps = typeof body.inventoryMaps === 'string' ? JSON.parse(body.inventoryMaps || '[]') : (body.inventoryMaps || []);
+      } catch (e) { maps = []; }
+    } else {
+      const itemId = body.inventoryItemId != null ? body.inventoryItemId : body.inventory_item_id;
+      if (itemId != null && itemId !== '') {
+        maps = [{ pitch: '', itemId: itemId }];
+      }
+    }
+    product = await store.setProductInventoryMaps(productId, maps) || product;
+  }
+
+  return product ? toAdminStoreItem(product) : null;
+}
+
+async function reorderStoreListings(store, orderedIds) {
+  const ids = Array.isArray(orderedIds) ? orderedIds : [];
+  const products = await store.listProducts();
+  const byId = {};
+  (products || []).forEach(function (p) {
+    if (p && p.dbId != null) byId[String(p.dbId)] = p;
+  });
+  const updates = [];
+  ids.forEach(function (id, index) {
+    const product = byId[String(id)];
+    if (!product || !isStoreListed(product)) return;
+    updates.push({ product: product, sort: index + 1 });
+  });
+  // Keep unmentioned listed products after the ordered set, stable by current sort/name.
+  const mentioned = {};
+  updates.forEach(function (row) { mentioned[String(row.product.dbId)] = true; });
+  const rest = (products || []).filter(function (p) {
+    return p && isStoreListed(p) && !mentioned[String(p.dbId)];
+  }).sort(function (a, b) {
+    const as = sortKeyOf(a);
+    const bs = sortKeyOf(b);
+    if (as !== bs) return as - bs;
+    return String(a.name || '').localeCompare(String(b.name || ''), undefined, { sensitivity: 'base' });
+  });
+  rest.forEach(function (product, i) {
+    updates.push({ product: product, sort: updates.length + i + 1 });
+  });
+  const out = [];
+  for (let i = 0; i < updates.length; i++) {
+    const row = updates[i];
+    const details = Object.assign({}, detailsOf(row.product), { store_sort: row.sort, store_listed: true });
+    const product = await store.updateProductDetails(row.product.dbId, details);
+    if (product) out.push(toAdminStoreItem(product));
+  }
+  return out;
+}
+
 module.exports = {
   COLLECTIONS,
   COLLECTION_BY_ID,
@@ -651,6 +908,10 @@ module.exports = {
   inventoryListingOptions,
   addListingFromInventory,
   unlistStoreProduct,
+  createBlankListing,
+  saveStoreListing,
+  reorderStoreListings,
+  applySellFields,
   asBool,
   variantNumericId
 };

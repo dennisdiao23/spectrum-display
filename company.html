@@ -748,6 +748,7 @@
               <th class="py-3 px-4 font-medium" data-col="featured">What’s New <span class="dash-col-caret">▾</span><span class="dash-col-grip" aria-hidden="true"></span></th>
               <th class="py-3 px-4 font-medium" data-col="buy">Buy now <span class="dash-col-caret">▾</span><span class="dash-col-grip" aria-hidden="true"></span></th>
               <th class="py-3 px-4 font-medium" data-col="onHand">On hand in store <span class="dash-col-caret">▾</span><span class="dash-col-grip" aria-hidden="true"></span></th>
+              <th class="py-3 px-4 font-medium" data-col="sort">Sort <span class="dash-col-caret">▾</span><span class="dash-col-grip" aria-hidden="true"></span></th>
               <th class="py-3 px-4 font-medium" data-col="store">Store <span class="dash-col-caret">▾</span><span class="dash-col-grip" aria-hidden="true"></span></th>
             </tr>
           </thead>
@@ -770,7 +771,7 @@
           </div>
           <div id="ws-overview-panel" class="inv-right-panel">
             <div class="inv-overview-summary">
-              <p class="inv-overview-lead">Select a listing to set collection, What’s New, Buy now, Shopify IDs, and show or hide it on the US Store. Preview shows the live store page. Add listing picks an Inventory SKU. Delete removes it from the store only.</p>
+              <p class="inv-overview-lead">Select a listing to edit name, price, photos, specs, inventory link, collection, Buy vs Configure, What’s New, Shopify variants, and sort order. Preview shows the live store page. Add listing can pick Inventory or create a blank product. Delete removes it from the store only.</p>
             </div>
           </div>
       <div id="ws-form-wrap" class="hidden space-y-4 inv-right-panel">
@@ -779,9 +780,70 @@
         <h2 id="ws-form-title" class="font-semibold text-lg mb-4">Store listing</h2>
         <form id="store-form" class="grid sm:grid-cols-2 gap-4">
           <input type="hidden" id="ws-id">
+          <div>
+            <label class="block text-xs text-slate-400 mb-1">Name</label>
+            <input id="ws-name" type="text" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm" required>
+          </div>
+          <div>
+            <label class="block text-xs text-slate-400 mb-1">Brand</label>
+            <select id="ws-brand-id" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm"></select>
+          </div>
+          <div>
+            <label class="block text-xs text-slate-400 mb-1">Or new brand name</label>
+            <input id="ws-brand-name" type="text" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm" placeholder="Leave blank to use selected brand">
+          </div>
+          <div>
+            <label class="block text-xs text-slate-400 mb-1">Type</label>
+            <select id="ws-type" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm">
+              <option value="control">Control</option>
+              <option value="Fixed">Fixed</option>
+              <option value="Rental">Rental</option>
+              <option value="Outdoor">Outdoor</option>
+              <option value="Poster">Poster</option>
+            </select>
+          </div>
           <div class="sm:col-span-2">
-            <p id="ws-item-name" class="font-medium text-slate-100"></p>
-            <p id="ws-item-meta" class="text-xs text-slate-500 mt-0.5"></p>
+            <label class="block text-xs text-slate-400 mb-1">Description</label>
+            <textarea id="ws-description" rows="2" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm" placeholder="Short store product copy"></textarea>
+          </div>
+          <div>
+            <label class="block text-xs text-slate-400 mb-1">Street / MAP price ($)</label>
+            <input id="ws-price" type="number" min="0" step="0.01" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm">
+          </div>
+          <div>
+            <label class="block text-xs text-slate-400 mb-1">SKU / model</label>
+            <input id="ws-model" type="text" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm" placeholder="VX400 Pro">
+          </div>
+          <div>
+            <label class="block text-xs text-slate-400 mb-1">Control subtype</label>
+            <select id="ws-subtype" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm">
+              <option value="">—</option>
+              <option value="all-in-one">All-in-one processor</option>
+              <option value="sending">Sending box</option>
+              <option value="playback">Playback</option>
+              <option value="receiving-card">Receiving card</option>
+              <option value="accessories">Accessories</option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-xs text-slate-400 mb-1">Family</label>
+            <input id="ws-family" type="text" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm" placeholder="COEX, H series…">
+          </div>
+          <div>
+            <label class="block text-xs text-slate-400 mb-1">Outputs</label>
+            <input id="ws-outputs" type="text" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm">
+          </div>
+          <div>
+            <label class="block text-xs text-slate-400 mb-1">Inputs</label>
+            <input id="ws-inputs" type="text" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm">
+          </div>
+          <div class="sm:col-span-2">
+            <label class="block text-xs text-slate-400 mb-1">Best for</label>
+            <input id="ws-best-for" type="text" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm">
+          </div>
+          <div class="sm:col-span-2">
+            <label class="block text-xs text-slate-400 mb-1">Feature chips (comma or new line)</label>
+            <textarea id="ws-features" rows="2" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm" placeholder="HDR, low latency"></textarea>
           </div>
           <div class="sm:col-span-2">
             <p class="block text-xs text-slate-400 mb-1">Photos</p>
@@ -796,6 +858,19 @@
           </div>
           <p id="ws-blocked-note" class="hidden sm:col-span-2 text-sm text-amber-400">This brand stays off the public store (Element, DIAO, or home TV).</p>
           <p id="ws-website-note" class="hidden sm:col-span-2 text-sm text-slate-400">This product is hidden on the website catalog. That does not hide it on the US Store — use Hide from store or Delete here.</p>
+          
+          <div>
+            <label class="block text-xs text-slate-400 mb-1">Inventory link</label>
+            <select id="ws-inventory-id" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm">
+              <option value="">No inventory link</option>
+            </select>
+            <p id="ws-onhand" class="text-[11px] text-slate-500 mt-1">On hand: —</p>
+          </div>
+          <div>
+            <label class="block text-xs text-slate-400 mb-1">Sort order</label>
+            <input id="ws-store-sort" type="number" min="0" step="1" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm" placeholder="0">
+            <p class="text-[11px] text-slate-500 mt-1">Lower numbers show first on the US Store.</p>
+          </div>
           <div class="sm:col-span-2">
             <label class="block text-xs text-slate-400 mb-1">Store collection</label>
             <select id="ws-store-collection" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm">
@@ -809,6 +884,14 @@
               <option value="spares">Spares</option>
               <option value="accessories">Accessories</option>
               <option value="hidden">Hidden from store</option>
+            </select>
+          </div>
+          <div class="sm:col-span-2">
+            <label class="block text-xs text-slate-400 mb-1">Buy vs Configure</label>
+            <select id="ws-store-mode" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm">
+              <option value="">Auto from collection</option>
+              <option value="buy">Buy now</option>
+              <option value="configure">Configure wall</option>
             </select>
           </div>
           <label class="flex items-center gap-2 text-sm text-slate-200 sm:col-span-2">
@@ -832,16 +915,20 @@
             </select>
           </div>
           <div>
-            <label class="block text-xs text-slate-400 mb-1">Shopify variant ID</label>
-            <input id="ws-shopify-variant-id" type="text" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm" placeholder="3957…">
-          </div>
-          <div>
             <label class="block text-xs text-slate-400 mb-1">Shopify product ID</label>
             <input id="ws-shopify-product-id" type="text" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm">
           </div>
           <div>
             <label class="block text-xs text-slate-400 mb-1">Shopify handle</label>
             <input id="ws-shopify-handle" type="text" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm" placeholder="vx400-pro">
+          </div>
+          <div class="sm:col-span-2">
+            <div class="flex items-center justify-between gap-2 mb-1">
+              <label class="block text-xs text-slate-400">Shopify variants</label>
+              <button type="button" id="ws-variant-add" class="text-xs text-sky-400 hover:text-sky-300">Add variant</button>
+            </div>
+            <div id="ws-variants" class="space-y-2"></div>
+            <p class="text-[11px] text-slate-500 mt-1">First variant is the default Buy now ID. Title is what customers pick.</p>
           </div>
           <p id="ws-form-error" class="sm:col-span-2 hidden text-sm text-red-400"></p>
           <div class="sm:col-span-2 flex flex-wrap gap-2">
@@ -863,7 +950,7 @@
         <div class="dash-picker-card">
           <div class="dash-picker-head">
             <h3 id="ws-listing-title">Add store listing</h3>
-            <p>Pick an Inventory SKU. Mapped SKUs list that website series; unmapped SKUs create a store-only product (hidden on the website).</p>
+            <p>Pick an Inventory SKU, or create a blank listing with no inventory link. Mapped SKUs list that website series; unmapped SKUs create a store-only product (hidden on the website).</p>
           </div>
           <div class="dash-picker-search">
             <input id="ws-listing-search" type="search" placeholder="Search SKU, name, or brand" autocomplete="off">
@@ -885,6 +972,7 @@
           </div>
           <p id="ws-listing-error" class="hidden px-5 pb-2 text-sm text-red-400"></p>
           <div class="dash-picker-actions">
+            <button type="button" id="ws-listing-blank" class="px-5 py-2 rounded-full bg-sky-500 hover:bg-sky-400 text-white text-sm font-semibold">Create blank listing</button>
             <button type="button" id="ws-listing-cancel" class="px-5 py-2 rounded-full border border-slate-600 text-sm">Cancel</button>
           </div>
         </div>
@@ -6453,12 +6541,29 @@
       if (frame.getAttribute('src') !== src) frame.src = src;
     }
     function readWsFormValues() {
+      const variants = readWsVariantsFromDom();
       return {
+        name: (document.getElementById('ws-name') || {}).value || '',
+        brandId: (document.getElementById('ws-brand-id') || {}).value || '',
+        brandName: (document.getElementById('ws-brand-name') || {}).value || '',
+        type: (document.getElementById('ws-type') || {}).value || '',
+        description: (document.getElementById('ws-description') || {}).value || '',
+        priceEach: (document.getElementById('ws-price') || {}).value || '',
+        model: (document.getElementById('ws-model') || {}).value || '',
+        subtype: (document.getElementById('ws-subtype') || {}).value || '',
+        family: (document.getElementById('ws-family') || {}).value || '',
+        outputs: (document.getElementById('ws-outputs') || {}).value || '',
+        inputs: (document.getElementById('ws-inputs') || {}).value || '',
+        bestFor: (document.getElementById('ws-best-for') || {}).value || '',
+        features: (document.getElementById('ws-features') || {}).value || '',
+        inventoryItemId: (document.getElementById('ws-inventory-id') || {}).value || '',
         collection: document.getElementById('ws-store-collection').value,
         featured: document.getElementById('ws-store-featured').checked,
         sell: document.getElementById('ws-shopify-sell').checked,
         lead: document.getElementById('ws-store-lead').value,
-        variant: document.getElementById('ws-shopify-variant-id').value,
+        mode: (document.getElementById('ws-store-mode') || {}).value || '',
+        sort: (document.getElementById('ws-store-sort') || {}).value || '',
+        variants: variants,
         productId: document.getElementById('ws-shopify-product-id').value,
         handle: document.getElementById('ws-shopify-handle').value,
         gallery: wsGallery.slice(),
@@ -6468,14 +6573,33 @@
       };
     }
     function applyWsFormValues(vals) {
-      if (!vals) return;
+      vals = vals || {};
+      if (document.getElementById('ws-name')) document.getElementById('ws-name').value = vals.name || '';
+      if (document.getElementById('ws-brand-id')) document.getElementById('ws-brand-id').value = vals.brandId || '';
+      if (document.getElementById('ws-brand-name')) document.getElementById('ws-brand-name').value = vals.brandName || '';
+      if (document.getElementById('ws-type')) document.getElementById('ws-type').value = vals.type || 'control';
+      if (document.getElementById('ws-description')) document.getElementById('ws-description').value = vals.description || '';
+      if (document.getElementById('ws-price')) document.getElementById('ws-price').value = vals.priceEach || '';
+      if (document.getElementById('ws-model')) document.getElementById('ws-model').value = vals.model || '';
+      if (document.getElementById('ws-subtype')) document.getElementById('ws-subtype').value = vals.subtype || '';
+      if (document.getElementById('ws-family')) document.getElementById('ws-family').value = vals.family || '';
+      if (document.getElementById('ws-outputs')) document.getElementById('ws-outputs').value = vals.outputs || '';
+      if (document.getElementById('ws-inputs')) document.getElementById('ws-inputs').value = vals.inputs || '';
+      if (document.getElementById('ws-best-for')) document.getElementById('ws-best-for').value = vals.bestFor || '';
+      if (document.getElementById('ws-features')) document.getElementById('ws-features').value = vals.features || '';
+      if (document.getElementById('ws-inventory-id')) document.getElementById('ws-inventory-id').value = vals.inventoryItemId || '';
       document.getElementById('ws-store-collection').value = vals.collection || '';
       document.getElementById('ws-store-featured').checked = !!vals.featured;
       document.getElementById('ws-shopify-sell').checked = !!vals.sell;
       document.getElementById('ws-store-lead').value = vals.lead || '';
-      document.getElementById('ws-shopify-variant-id').value = vals.variant || '';
+      if (document.getElementById('ws-store-mode')) document.getElementById('ws-store-mode').value = vals.mode || '';
+      if (document.getElementById('ws-store-sort')) document.getElementById('ws-store-sort').value = vals.sort || '';
       document.getElementById('ws-shopify-product-id').value = vals.productId || '';
       document.getElementById('ws-shopify-handle').value = vals.handle || '';
+      wsVariants = Array.isArray(vals.variants) ? vals.variants.map(function (v) {
+        return { id: String(v.id || ''), title: String(v.title || 'Default') };
+      }) : [];
+      renderWsVariants();
       wsEditingId = vals._id || null;
       wsStoreHidden = !!vals._hidden;
       if (vals.gallery) wsGallery = vals.gallery.slice();
@@ -6559,15 +6683,140 @@
       wsGallery.splice(index, 1);
       renderWsGallery();
     }
+
+    let wsBrandOptions = [];
+    let wsInventoryOptions = [];
+    let wsVariants = [];
+
+    function setSelectOptions(sel, options, selected, emptyLabel) {
+      if (!sel) return;
+      const value = selected == null ? '' : String(selected);
+      sel.innerHTML = (emptyLabel ? '<option value="">' + esc(emptyLabel) + '</option>' : '') +
+        (options || []).map(function (opt) {
+          return '<option value="' + esc(String(opt.value)) + '"' +
+            (String(opt.value) === value ? ' selected' : '') + '>' + esc(opt.label) + '</option>';
+        }).join('');
+      if (value && !Array.prototype.some.call(sel.options, function (o) { return o.value === value; })) {
+        const opt = document.createElement('option');
+        opt.value = value;
+        opt.textContent = value;
+        opt.selected = true;
+        sel.appendChild(opt);
+      }
+    }
+
+    async function ensureWsBrandOptions() {
+      if (wsBrandOptions.length) return wsBrandOptions;
+      try {
+        const data = await api('/api/admin/brands');
+        const list = data.brands || data || [];
+        wsBrandOptions = list.map(function (b) {
+          return { value: b.id, label: b.name || b.id };
+        });
+      } catch (err) {
+        wsBrandOptions = [];
+      }
+      return wsBrandOptions;
+    }
+
+    async function ensureWsInventoryOptions(force) {
+      if (wsInventoryOptions.length && !force) return wsInventoryOptions;
+      try {
+        const data = await api('/api/admin/store/inventory-options');
+        wsInventoryOptions = (data.items || []).map(function (item) {
+          return {
+            value: String(item.id),
+            label: (item.sku ? item.sku + ' — ' : '') + (item.name || 'Item') +
+              (item.listed ? ' (listed)' : ''),
+            onHand: item.onHand,
+            listed: !!item.listed
+          };
+        });
+      } catch (err) {
+        wsInventoryOptions = [];
+      }
+      return wsInventoryOptions;
+    }
+
+    function renderWsVariants() {
+      const wrap = document.getElementById('ws-variants');
+      if (!wrap) return;
+      if (!wsVariants.length) {
+        wrap.innerHTML = '<p class="text-xs text-slate-500">No variants yet. Add one for Buy now checkout.</p>';
+        return;
+      }
+      wrap.innerHTML = wsVariants.map(function (v, i) {
+        return '<div class="grid grid-cols-[1fr_1fr_auto] gap-2 items-center" data-ws-variant="' + i + '">' +
+          '<input type="text" data-ws-variant-title class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm" placeholder="Title" value="' + esc(v.title || '') + '">' +
+          '<input type="text" data-ws-variant-id class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm" placeholder="Variant ID" value="' + esc(v.id || '') + '">' +
+          '<button type="button" data-ws-variant-del="' + i + '" class="text-xs text-red-400 hover:text-red-300 px-2">Remove</button>' +
+          '</div>';
+      }).join('');
+    }
+
+    function readWsVariantsFromDom() {
+      const wrap = document.getElementById('ws-variants');
+      if (!wrap) return wsVariants.slice();
+      const rows = [];
+      wrap.querySelectorAll('[data-ws-variant]').forEach(function (row) {
+        const title = ((row.querySelector('[data-ws-variant-title]') || {}).value || '').trim();
+        const id = ((row.querySelector('[data-ws-variant-id]') || {}).value || '').trim();
+        if (!title && !id) return;
+        rows.push({ title: title || 'Default', id: id });
+      });
+      wsVariants = rows;
+      return rows;
+    }
+
+    function featuresToText(list) {
+      return Array.isArray(list) ? list.join(', ') : String(list || '');
+    }
+
+    function featuresFromText(textValue) {
+      return String(textValue || '').split(/[\n,]+/).map(function (s) { return s.trim(); }).filter(Boolean);
+    }
+
     function fillStoreForm(item) {
       wsEditingId = item && item.dbId ? item.dbId : null;
       wsStoreHidden = !!(item && (item.storeVisibility === 'hidden' || item.store_collection === 'hidden'));
       document.getElementById('ws-id').value = wsEditingId || '';
-      document.getElementById('ws-form-title').textContent = item ? 'Edit ' + item.name : 'Store listing';
-      document.getElementById('ws-item-name').textContent = (item && item.name) || '';
-      document.getElementById('ws-item-meta').textContent = item
-        ? [item.brandName, item.type, item.collectionLabel].filter(Boolean).join(' · ')
-        : '';
+      document.getElementById('ws-form-title').textContent = item ? ('Edit ' + (item.name || 'listing')) : 'Store listing';
+      const nameEl = document.getElementById('ws-name');
+      if (nameEl) nameEl.value = (item && item.name) || '';
+      const typeEl = document.getElementById('ws-type');
+      if (typeEl) typeEl.value = (item && item.type) || 'control';
+      const descEl = document.getElementById('ws-description');
+      if (descEl) descEl.value = (item && (item.description || item.lead)) || '';
+      const priceEl = document.getElementById('ws-price');
+      if (priceEl) priceEl.value = item && item.priceEach != null ? item.priceEach : '';
+      const modelEl = document.getElementById('ws-model');
+      if (modelEl) modelEl.value = (item && item.model) || '';
+      const subtypeEl = document.getElementById('ws-subtype');
+      if (subtypeEl) subtypeEl.value = (item && item.subtype) || '';
+      const familyEl = document.getElementById('ws-family');
+      if (familyEl) familyEl.value = (item && item.family) || '';
+      const outputsEl = document.getElementById('ws-outputs');
+      if (outputsEl) outputsEl.value = (item && item.outputs) || '';
+      const inputsEl = document.getElementById('ws-inputs');
+      if (inputsEl) inputsEl.value = (item && item.inputs) || '';
+      const bestEl = document.getElementById('ws-best-for');
+      if (bestEl) bestEl.value = (item && item.bestFor) || '';
+      const featEl = document.getElementById('ws-features');
+      if (featEl) featEl.value = featuresToText(item && item.features);
+      const brandNameEl = document.getElementById('ws-brand-name');
+      if (brandNameEl) brandNameEl.value = '';
+      ensureWsBrandOptions().then(function (brands) {
+        setSelectOptions(document.getElementById('ws-brand-id'), brands, item && item.brandId, 'Select brand');
+      });
+      ensureWsInventoryOptions(true).then(function (items) {
+        setSelectOptions(document.getElementById('ws-inventory-id'), items, item && item.inventoryItemId, 'No inventory link');
+        const onHand = document.getElementById('ws-onhand');
+        if (onHand) {
+          onHand.textContent = item && item.onHand != null
+            ? ('On hand: ' + item.onHand)
+            : 'On hand: —';
+        }
+      });
       revokeWsBlobs();
       wsGallery = storeGalleryFor(item);
       wsPendingFiles = [];
@@ -6578,9 +6827,19 @@
       document.getElementById('ws-store-featured').checked = !!(item && item.store_featured);
       document.getElementById('ws-shopify-sell').checked = !!(item && item.shopify_sell);
       document.getElementById('ws-store-lead').value = (item && item.store_lead) || '';
-      document.getElementById('ws-shopify-variant-id').value = (item && item.shopify_variant_id) || '';
+      const modeEl = document.getElementById('ws-store-mode');
+      if (modeEl) modeEl.value = (item && item.store_mode) || '';
+      const sortEl = document.getElementById('ws-store-sort');
+      if (sortEl) sortEl.value = item && item.store_sort != null ? item.store_sort : 0;
       document.getElementById('ws-shopify-product-id').value = (item && item.shopify_product_id) || '';
       document.getElementById('ws-shopify-handle').value = (item && item.shopify_handle) || '';
+      const variants = (item && Array.isArray(item.shopify_variants) && item.shopify_variants.length)
+        ? item.shopify_variants
+        : ((item && item.shopify_variant_id) ? [{ id: item.shopify_variant_id, title: 'Default' }] : []);
+      wsVariants = variants.map(function (v) {
+        return { id: String(v.id || ''), title: String(v.title || 'Default') };
+      });
+      renderWsVariants();
       showError('ws-form-error', '');
       syncWsHideButton();
       const saveBtn = document.getElementById('ws-save-btn');
@@ -6690,6 +6949,7 @@
         if (col === 'featured') return p.featured || p.store_featured ? 'Yes' : '';
         if (col === 'buy') return p.shopify_sell ? 'Buy now' : 'Configure';
         if (col === 'onHand') return p.onHand == null ? -1 : Number(p.onHand) || 0;
+        if (col === 'sort') return Number(p.store_sort) || 0;
         if (col === 'store') return p.storeVisibilityLabel || '';
         return p.image || '';
       });
@@ -6709,6 +6969,10 @@
           featured: '<td class="py-2.5 px-4 text-slate-400">' + (p.featured || p.store_featured ? 'Yes' : '—') + '</td>',
           buy: '<td class="py-2.5 px-4 text-slate-400">' + esc(p.shopify_sell ? 'Buy now' : 'Configure') + '</td>',
           onHand: onHandCell,
+          sort: '<td class="py-2.5 px-4 text-slate-400 tabular-nums">' +
+            '<button type="button" class="text-slate-400 hover:text-sky-300 px-1" data-store-sort="-1" title="Move up">↑</button>' +
+            '<span class="px-1">' + esc(String(p.store_sort != null ? p.store_sort : 0)) + '</span>' +
+            '<button type="button" class="text-slate-400 hover:text-sky-300 px-1" data-store-sort="1" title="Move down">↓</button></td>',
           store: '<td class="py-2.5 px-4" data-store-cell>' + storeVisibilityCell(p) + '</td>'
         };
         return '<tr class="border-b border-slate-800 hover:bg-slate-900/80 cursor-pointer' +
@@ -6774,14 +7038,33 @@
       if (btn) btn.disabled = false;
     }
     function storeFormPayload() {
+      const variants = readWsVariantsFromDom();
+      const firstVariant = variants[0] || {};
       return {
+        name: (document.getElementById('ws-name') || {}).value || '',
+        brandId: (document.getElementById('ws-brand-id') || {}).value || '',
+        brandName: (document.getElementById('ws-brand-name') || {}).value || '',
+        type: (document.getElementById('ws-type') || {}).value || '',
+        description: (document.getElementById('ws-description') || {}).value || '',
+        priceEach: (document.getElementById('ws-price') || {}).value || '',
+        model: (document.getElementById('ws-model') || {}).value || '',
+        subtype: (document.getElementById('ws-subtype') || {}).value || '',
+        family: (document.getElementById('ws-family') || {}).value || '',
+        outputs: (document.getElementById('ws-outputs') || {}).value || '',
+        inputs: (document.getElementById('ws-inputs') || {}).value || '',
+        bestFor: (document.getElementById('ws-best-for') || {}).value || '',
+        features: ((document.getElementById('ws-features') || {}).value || ''),
+        inventoryItemId: (document.getElementById('ws-inventory-id') || {}).value || '',
         store_collection: document.getElementById('ws-store-collection').value,
         store_featured: document.getElementById('ws-store-featured').checked,
         shopify_sell: document.getElementById('ws-shopify-sell').checked,
         store_lead: document.getElementById('ws-store-lead').value,
-        shopify_variant_id: document.getElementById('ws-shopify-variant-id').value,
+        store_mode: (document.getElementById('ws-store-mode') || {}).value || '',
+        store_sort: (document.getElementById('ws-store-sort') || {}).value || '',
+        shopify_variant_id: firstVariant.id || '',
         shopify_product_id: document.getElementById('ws-shopify-product-id').value,
-        shopify_handle: document.getElementById('ws-shopify-handle').value
+        shopify_handle: document.getElementById('ws-shopify-handle').value,
+        shopify_variants: JSON.stringify(variants)
       };
     }
     async function saveStoreListing() {
@@ -6874,6 +7157,44 @@
       await loadStoreCatalog();
       if (data && data.product) openStoreForm(data.product);
     }
+
+    async function createBlankStoreListing() {
+      showError('ws-listing-error', '');
+      const data = await api('/api/admin/store/listings', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ blank: true, name: 'New store product', type: 'control' })
+      });
+      closeWsListingPicker();
+      await loadStoreCatalog();
+      if (data && data.product) openStoreForm(data.product);
+    }
+
+    async function moveStoreItem(dbId, direction) {
+      const list = (storeItems || []).slice().sort(function (a, b) {
+        const as = Number(a.store_sort) || 0;
+        const bs = Number(b.store_sort) || 0;
+        if (as !== bs) return as - bs;
+        return String(a.name || '').localeCompare(String(b.name || ''), undefined, { sensitivity: 'base' });
+      });
+      const id = String(dbId);
+      const at = list.findIndex(function (p) { return String(p.dbId) === id; });
+      if (at < 0) return;
+      const swapWith = at + (Number(direction) < 0 ? -1 : 1);
+      if (swapWith < 0 || swapWith >= list.length) return;
+      const tmp = list[at];
+      list[at] = list[swapWith];
+      list[swapWith] = tmp;
+      const order = list.map(function (p) { return p.dbId; });
+      const data = await api('/api/admin/store/order', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ order: order })
+      });
+      renderStoreItems(data.products || list);
+      await loadStoreCatalog();
+    }
+
     async function deleteWsListing() {
       if (!wsEditingId) return;
       if (!confirm('Remove this listing from the US Store? The website product and inventory SKU stay.')) return;
@@ -7820,6 +8141,7 @@
         { id: 'featured', label: 'What’s New' },
         { id: 'buy', label: 'Buy now' },
         { id: 'onHand', label: 'On hand in store' },
+        { id: 'sort', label: 'Sort' },
         { id: 'store', label: 'Store' }
       ],
       'website-accounts': [
@@ -7846,7 +8168,7 @@
       staff: ['name', 'email', 'role'],
       roles: ['name', 'website', 'inventory', 'users'],
       'website-products': ['photo', 'product', 'brand', 'type', 'pitch', 'price', 'website', 'store'],
-      'website-store': ['photo', 'product', 'brand', 'collection', 'featured', 'buy', 'onHand', 'store'],
+      'website-store': ['photo', 'product', 'brand', 'collection', 'featured', 'buy', 'onHand', 'sort', 'store'],
       'website-accounts': ['name', 'email', 'type', 'markup', 'company', 'created']
     };
 
@@ -7983,7 +8305,7 @@
         sortDir: '',
         widths: fallbackWidths,
         splitLeftPx: keptSplit,
-        schema: dashColKey(table) === 'warehouses' ? 4 : (dashColKey(table) === 'inventory' ? 5 : (dashColKey(table) === 'po-lines' ? 2 : (dashColKey(table) === 'so-lines' ? 1 : (dashColKey(table) === 'website-store' ? 1 : 0))))
+        schema: dashColKey(table) === 'warehouses' ? 4 : (dashColKey(table) === 'inventory' ? 5 : (dashColKey(table) === 'po-lines' ? 2 : (dashColKey(table) === 'so-lines' ? 1 : (dashColKey(table) === 'website-store' ? 2 : 0))))
       };
       pinStartLockedInState(table, fallback.order, fallback.hidden);
       if (!saved) {
@@ -8147,6 +8469,16 @@
           if (drop !== -1) hidden.splice(drop, 1);
         }
         schema = 1;
+      }
+      if (dashColKey(table) === 'website-store' && schema < 2) {
+        if (order.indexOf('sort') === -1) {
+          const storeAt = order.indexOf('store');
+          const at = storeAt === -1 ? order.length : storeAt;
+          order.splice(at, 0, 'sort');
+          const drop = hidden.indexOf('sort');
+          if (drop !== -1) hidden.splice(drop, 1);
+        }
+        schema = 2;
       }
       pinStartLockedInState(table, order, hidden);
       const merged = {
@@ -20849,6 +21181,56 @@
         addWsListingFromInventory(row.getAttribute('data-inventory-id')).catch(function (err) {
           showError('ws-listing-error', err.message);
         });
+      });
+    }
+    const wsListingBlank = document.getElementById('ws-listing-blank');
+    if (wsListingBlank) {
+      wsListingBlank.addEventListener('click', function () {
+        createBlankStoreListing().catch(function (err) {
+          showError('ws-listing-error', err.message);
+        });
+      });
+    }
+    const wsVariantAdd = document.getElementById('ws-variant-add');
+    if (wsVariantAdd) {
+      wsVariantAdd.addEventListener('click', function () {
+        readWsVariantsFromDom();
+        wsVariants.push({ id: '', title: 'Option ' + (wsVariants.length + 1) });
+        renderWsVariants();
+      });
+    }
+    const wsVariantsWrap = document.getElementById('ws-variants');
+    if (wsVariantsWrap) {
+      wsVariantsWrap.addEventListener('click', function (e) {
+        const btn = e.target.closest('[data-ws-variant-del]');
+        if (!btn) return;
+        const idx = Number(btn.getAttribute('data-ws-variant-del'));
+        readWsVariantsFromDom();
+        if (!Number.isFinite(idx)) return;
+        wsVariants.splice(idx, 1);
+        renderWsVariants();
+      });
+    }
+    const storeTable = document.getElementById('store-table');
+    if (storeTable) {
+      storeTable.addEventListener('click', function (e) {
+        const sortBtn = e.target.closest('[data-store-sort]');
+        if (!sortBtn) return;
+        e.preventDefault();
+        e.stopPropagation();
+        const row = sortBtn.closest('tr[data-id]');
+        if (!row) return;
+        moveStoreItem(row.getAttribute('data-id'), sortBtn.getAttribute('data-store-sort')).catch(function (err) {
+          showError('ws-form-error', err.message || 'Could not reorder.');
+        });
+      });
+    }
+    const wsInventorySel = document.getElementById('ws-inventory-id');
+    if (wsInventorySel) {
+      wsInventorySel.addEventListener('change', function () {
+        const opt = (wsInventoryOptions || []).find(function (o) { return String(o.value) === String(wsInventorySel.value); });
+        const onHand = document.getElementById('ws-onhand');
+        if (onHand) onHand.textContent = opt && opt.onHand != null ? ('On hand: ' + opt.onHand) : 'On hand: —';
       });
     }
     document.getElementById('store-form').addEventListener('submit', async function (e) {
