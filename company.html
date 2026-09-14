@@ -21024,6 +21024,17 @@
     const storeTable = document.getElementById('store-table');
     if (storeTable) {
       storeTable.addEventListener('click', async function (e) {
+        const sortBtn = e.target.closest('[data-store-sort]');
+        if (sortBtn) {
+          e.preventDefault();
+          e.stopPropagation();
+          const sortRow = sortBtn.closest('tr[data-id]');
+          if (!sortRow) return;
+          moveStoreItem(sortRow.getAttribute('data-id'), sortBtn.getAttribute('data-store-sort')).catch(function (err) {
+            showError('ws-form-error', err.message || 'Could not reorder.');
+          });
+          return;
+        }
         const row = e.target.closest('tr[data-id]');
         if (!row) return;
         const storeLink = e.target.closest('[data-store-cell]') && row.querySelector('a[data-open-store]');
@@ -21209,20 +21220,6 @@
         if (!Number.isFinite(idx)) return;
         wsVariants.splice(idx, 1);
         renderWsVariants();
-      });
-    }
-    const storeTable = document.getElementById('store-table');
-    if (storeTable) {
-      storeTable.addEventListener('click', function (e) {
-        const sortBtn = e.target.closest('[data-store-sort]');
-        if (!sortBtn) return;
-        e.preventDefault();
-        e.stopPropagation();
-        const row = sortBtn.closest('tr[data-id]');
-        if (!row) return;
-        moveStoreItem(row.getAttribute('data-id'), sortBtn.getAttribute('data-store-sort')).catch(function (err) {
-          showError('ws-form-error', err.message || 'Could not reorder.');
-        });
       });
     }
     const wsInventorySel = document.getElementById('ws-inventory-id');
