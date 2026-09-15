@@ -132,6 +132,7 @@ function openDb() {
   require('./dealer-portal').ensureDealerPortal(db);
   require('./site-analytics').ensureSqlite(db);
   ensureCompanySales(db);
+  ensureCompanyPayments(db);
   ensurePrintForms(db);
   ensureInventoryVendors(db);
   ensurePartyContacts(db);
@@ -571,11 +572,85 @@ function ensureCompanyCustomers(db) {
     ['industry', "TEXT NOT NULL DEFAULT ''"],
     ['social', "TEXT NOT NULL DEFAULT ''"],
     ['customer_type', "TEXT NOT NULL DEFAULT ''"],
-    ['sales_rep', "TEXT NOT NULL DEFAULT ''"]
+    ['sales_rep', "TEXT NOT NULL DEFAULT ''"],
+    ['pass_card_fee', 'INTEGER NOT NULL DEFAULT 0'],
+    ['invoice_collect_default', "TEXT NOT NULL DEFAULT 'full'"],
+    ['invoice_deposit_kind', "TEXT NOT NULL DEFAULT 'percent'"],
+    ['invoice_deposit_value', 'REAL NOT NULL DEFAULT 30'],
+    ['card_fee_percent', 'REAL']
   ];
   extra.forEach(function (col) {
     try { db.exec('ALTER TABLE company_customers ADD COLUMN ' + col[0] + ' ' + col[1]); } catch (e) { /* already present */ }
   });
+}
+
+
+function ensureCompanyPayments(db) {
+  db.exec(`
+    CREATE TABLE IF NOT EXISTS company_customer_payments (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      customer_id INTEGER NOT NULL,
+      payment_date TEXT NOT NULL DEFAULT '',
+      amount REAL NOT NULL DEFAULT 0,
+      method TEXT NOT NULL DEFAULT '',
+      reference TEXT NOT NULL DEFAULT '',
+      memo TEXT NOT NULL DEFAULT '',
+      source TEXT NOT NULL DEFAULT 'manual',
+      stripe_payment_intent_id TEXT NOT NULL DEFAULT '',
+      stripe_checkout_session_id TEXT NOT NULL DEFAULT '',
+      status TEXT NOT NULL DEFAULT 'posted',
+      card_fee_amount REAL NOT NULL DEFAULT 0,
+      card_fee_percent REAL NOT NULL DEFAULT 0,
+      pay_link_id INTEGER,
+      created_at TEXT NOT NULL,
+      updated_at TEXT NOT NULL,
+      FOREIGN KEY (customer_id) REFERENCES company_customers(id) ON DELETE CASCADE
+    );
+    CREATE INDEX IF NOT EXISTS company_customer_payments_customer_idx
+      ON company_customer_payments (customer_id, payment_date);
+    CREATE TABLE IF NOT EXISTS company_payment_applications (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      payment_id INTEGER NOT NULL,
+      invoice_id INTEGER NOT NULL,
+      amount REAL NOT NULL DEFAULT 0,
+      created_at TEXT NOT NULL,
+      FOREIGN KEY (payment_id) REFERENCES company_customer_payments(id) ON DELETE CASCADE,
+      FOREIGN KEY (invoice_id) REFERENCES company_sales_docs(id) ON DELETE CASCADE
+    );
+    CREATE INDEX IF NOT EXISTS company_payment_applications_payment_idx
+      ON company_payment_applications (payment_id);
+    CREATE INDEX IF NOT EXISTS company_payment_applications_invoice_idx
+      ON company_payment_applications (invoice_id);
+    CREATE TABLE IF NOT EXISTS company_card_fee_entries (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      payment_id INTEGER,
+      customer_id INTEGER,
+      invoice_id INTEGER,
+      fee_amount REAL NOT NULL DEFAULT 0,
+      fee_percent REAL NOT NULL DEFAULT 0,
+      stripe_charge_id TEXT NOT NULL DEFAULT '',
+      status TEXT NOT NULL DEFAULT 'charged',
+      created_at TEXT NOT NULL
+    );
+    CREATE INDEX IF NOT EXISTS company_card_fee_entries_customer_idx
+      ON company_card_fee_entries (customer_id, created_at);
+    CREATE TABLE IF NOT EXISTS company_invoice_pay_links (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      token TEXT NOT NULL UNIQUE,
+      invoice_id INTEGER NOT NULL,
+      customer_id INTEGER NOT NULL,
+      min_amount REAL NOT NULL DEFAULT 0,
+      balance_at_create REAL NOT NULL DEFAULT 0,
+      collect_mode TEXT NOT NULL DEFAULT 'full',
+      status TEXT NOT NULL DEFAULT 'open',
+      created_at TEXT NOT NULL,
+      updated_at TEXT NOT NULL,
+      FOREIGN KEY (invoice_id) REFERENCES company_sales_docs(id) ON DELETE CASCADE,
+      FOREIGN KEY (customer_id) REFERENCES company_customers(id) ON DELETE CASCADE
+    );
+    CREATE INDEX IF NOT EXISTS company_invoice_pay_links_invoice_idx
+      ON company_invoice_pay_links (invoice_id, status);
+  `);
 }
 
 function ensureCompanySales(db) {
@@ -1524,6 +1599,7 @@ module.exports = {
   ensureCatalogSkus,
   ensureCompanyCustomers,
   ensureCompanySales,
+  ensureCompanyPayments,
   ensurePrintForms,
   ensureInventoryVendors,
   ensureInventoryWarehouses,

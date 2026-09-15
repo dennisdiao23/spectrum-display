@@ -2,6 +2,7 @@ const fs = require('fs');
 const path = require('path');
 const crypto = require('crypto');
 const dbUtil = require('./db');
+const paymentStore = require('./store-payments-sqlite');
 const img = require('./image');
 
 const ROOT = path.join(__dirname, '..');
@@ -1799,6 +1800,7 @@ function createSqliteStore() {
   Object.assign(api, require('./gmail-accounts').sqliteApi(db));
   Object.assign(api, require('./dealer-portal').sqliteApi(db, api));
   Object.assign(api, require('./site-analytics').sqliteApi(db));
+  paymentStore.attachPaymentMethods(api, db);
   return api;
 }
 

@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Pay invoice — Spectrum Display</title>
+  <meta name="robots" content="noindex,nofollow" />
+  <style>
+    :root { --bg:#0b1220; --card:#121a2b; --line:#243049; --text:#e8eefc; --muted:#9aa8c3; --accent:#38bdf8; --ok:#34d399; --bad:#f87171; }
+    * { box-sizing: border-box; }
+    body { margin:0; font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif; background: radial-gradient(1200px 600px at 20% -10%, #1e3a5f 0%, var(--bg) 55%); color: var(--text); min-height: 100vh; }
+    .wrap { max-width: 520px; margin: 0 auto; padding: 40px 20px 64px; }
+    .brand { font-size: 14px; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); margin-bottom: 18px; }
+    .card { background: color-mix(in srgb, var(--card) 92%, black); border: 1px solid var(--line); border-radius: 18px; padding: 28px; box-shadow: 0 20px 50px rgba(0,0,0,.35); }
+    h1 { margin: 0 0 8px; font-size: 1.55rem; }
+    .sub { color: var(--muted); margin: 0 0 22px; line-height: 1.45; }
+    .row { display:flex; justify-content: space-between; gap: 12px; margin: 10px 0; font-size: 15px; }
+    .row strong { font-variant-numeric: tabular-nums; }
+    .divider { height:1px; background: var(--line); margin: 18px 0; }
+    label { display:block; font-size: 13px; color: var(--muted); margin-bottom: 6px; }
+    input[type=number] { width:100%; border-radius: 12px; border:1px solid var(--line); background:#0a1322; color:var(--text); padding: 12px 14px; font-size: 16px; }
+    .hint { font-size: 12px; color: var(--muted); margin-top: 8px; line-height: 1.4; }
+    .fee { color: var(--muted); font-size: 13px; }
+    button { width:100%; margin-top: 18px; border:0; border-radius: 999px; padding: 14px 18px; font-weight: 700; font-size: 15px; background: var(--accent); color:#041018; cursor:pointer; }
+    button:disabled { opacity: .55; cursor: wait; }
+    .msg { margin-top: 14px; font-size: 14px; }
+    .msg.ok { color: var(--ok); }
+    .msg.bad { color: var(--bad); }
+    .pill { display:inline-block; font-size: 12px; padding: 4px 10px; border-radius: 999px; border:1px solid var(--line); color: var(--muted); margin-bottom: 14px; }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="brand">Spectrum Display</div>
+    <div class="card" id="card">
+      <p class="pill" id="status-pill">Loading…</p>
+      <h1 id="title">Invoice payment</h1>
+      <p class="sub" id="subtitle">Secure checkout powered by Stripe.</p>
+      <div id="details"></div>
+      <div class="divider"></div>
+      <label for="amount">Payment amount (USD)</label>
+      <input id="amount" type="number" min="0.01" step="0.01" />
+      <p class="hint" id="amount-hint"></p>
+      <div class="row fee" id="fee-row" hidden><span>Card processing fee</span><strong id="fee-amt">$0.00</strong></div>
+      <div class="row"><span>You will be charged</span><strong id="charge-total">$0.00</strong></div>
+      <button type="button" id="pay-btn">Continue to payment</button>
+      <p class="msg" id="msg" hidden></p>
+    </div>
+  </div>
+  <script>
+    (function () {
+      var token = location.pathname.split('/').filter(Boolean).pop();
+      var state = null;
+      function money(n) {
+        var x = Number(n) || 0;
+        return '$' + x.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+      }
+      function showMsg(text, ok) {
+        var el = document.getElementById('msg');
+        el.hidden = !text;
+        el.textContent = text || '';
+        el.className = 'msg ' + (ok ? 'ok' : 'bad');
+      }
+      function feeFor(principal) {
+        if (!state || !state.passCardFee) return 0;
+        return Math.round(principal * (Number(state.feePercent) || 0)) / 100;
+      }
+      function refreshTotals() {
+        if (!state) return;
+        var principal = Number(document.getElementById('amount').value) || 0;
+        var fee = feeFor(principal);
+        document.getElementById('fee-row').hidden = !(fee > 0);
+        document.getElementById('fee-amt').textContent = money(fee);
+        document.getElementById('charge-total').textContent = money(principal + fee);
+      }
+      async function load() {
+        var params = new URLSearchParams(location.search);
+        if (params.get('paid') === '1') {
+          document.getElementById('status-pill').textContent = 'Payment received';
+          document.getElementById('title').textContent = 'Thank you';
+          document.getElementById('subtitle').textContent = 'Your payment was submitted. Spectrum will apply it to the invoice balance.';
+          document.getElementById('details').innerHTML = '';
+          document.getElementById('pay-btn').hidden = true;
+          document.getElementById('amount').hidden = true;
+          document.querySelector('label[for=amount]').hidden = true;
+          return;
+        }
+        var res = await fetch('/api/pay/' + encodeURIComponent(token));
+        var data = await res.json().catch(function () { return {}; });
+        if (!res.ok || !data.ok) throw new Error(data.error || 'Pay link not found.');
+        state = data.pay;
+        var inv = state.invoice || {};
+        var cust = state.customer || {};
+        document.getElementById('status-pill').textContent = (state.paymentMethodTypes || []).indexOf('us_bank_account') !== -1 ? 'ACH payment' : 'Card payment';
+        document.getElementById('title').textContent = 'Invoice ' + (inv.number || '');
+        document.getElementById('subtitle').textContent = (cust.displayName || cust.companyName || 'Customer') + ' · Balance ' + money(state.balanceDue);
+        document.getElementById('details').innerHTML =
+          '<div class="row"><span>Invoice total</span><strong>' + money(inv.total) + '</strong></div>' +
+          '<div class="row"><span>Already paid</span><strong>' + money((inv.amountPaid != null ? inv.amountPaid : inv.amountPaid)) + '</strong></div>' +
+          '<div class="row"><span>Balance due</span><strong>' + money(state.balanceDue) + '</strong></div>' +
+          '<div class="row"><span>Minimum for this email</span><strong>' + money(state.minAmount) + '</strong></div>';
+        var input = document.getElementById('amount');
+        input.min = String(state.minAmount);
+        input.max = String(state.maxAmount);
+        input.value = String(state.minAmount);
+        document.getElementById('amount-hint').textContent =
+          'You can pay any amount from ' + money(state.minAmount) + ' up to the full balance of ' + money(state.maxAmount) + '. The invoice PDF still shows the full amount.';
+        if (!state.stripeReady) {
+          document.getElementById('pay-btn').disabled = true;
+          showMsg('Online payment is not configured yet. Please contact Spectrum Display.', false);
+        }
+        refreshTotals();
+      }
+      document.getElementById('amount').addEventListener('input', refreshTotals);
+      document.getElementById('pay-btn').addEventListener('click', async function () {
+        try {
+          showMsg('');
+          var btn = document.getElementById('pay-btn');
+          btn.disabled = true;
+          btn.textContent = 'Redirecting…';
+          var res = await fetch('/api/pay/' + encodeURIComponent(token) + '/checkout', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ amount: Number(document.getElementById('amount').value) })
+          });
+          var data = await res.json().catch(function () { return {}; });
+          if (!res.ok || !data.ok) throw new Error(data.error || 'Could not start checkout.');
+          location.href = data.checkout.checkoutUrl;
+        } catch (err) {
+          document.getElementById('pay-btn').disabled = false;
+          document.getElementById('pay-btn').textContent = 'Continue to payment';
+          showMsg(err.message || 'Checkout failed.', false);
+        }
+      });
+      load().catch(function (err) {
+        document.getElementById('status-pill').textContent = 'Unavailable';
+        document.getElementById('title').textContent = 'Payment link unavailable';
+        document.getElementById('subtitle').textContent = err.message || 'This link is invalid or expired.';
+        document.getElementById('pay-btn').hidden = true;
+        document.getElementById('amount').hidden = true;
+        document.querySelector('label[for=amount]').hidden = true;
+      });
+    })();
+  </script>
+</body>
+</html>

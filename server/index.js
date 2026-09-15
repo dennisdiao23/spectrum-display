@@ -163,7 +163,9 @@ async function main() {
     limit: '2mb',
     verify: function (req, buf) {
       const url = String(req.originalUrl || req.url || '');
-      if (url.indexOf('/api/webhooks/zoom') === 0) req.rawBody = buf.toString('utf8');
+      if (url.indexOf('/api/webhooks/zoom') === 0 || url.indexOf('/api/webhooks/stripe') === 0) {
+        req.rawBody = buf.toString('utf8');
+      }
     }
   }));
   app.use(express.urlencoded({ extended: true }));
@@ -1976,6 +1978,116 @@ async function main() {
       }
     } catch (err) { next(err); }
   });
+
+
+  app.get('/api/admin/company-customers/:id/payments', requireAdmin, async function (req, res, next) {
+    try {
+      const customer = await store.getCompanyCustomer(req.params.id);
+      if (!customer) return res.status(404).json({ ok: false, error: 'Customer not found.' });
+      res.json({ ok: true, payments: await store.listCustomerPayments(req.params.id) });
+    } catch (err) { next(err); }
+  });
+
+  app.get('/api/admin/company-customers/:id/open-invoices', requireAdmin, async function (req, res, next) {
+    try {
+      const customer = await store.getCompanyCustomer(req.params.id);
+      if (!customer) return res.status(404).json({ ok: false, error: 'Customer not found.' });
+      res.json({ ok: true, invoices: await store.listOpenInvoicesForCustomer(req.params.id) });
+    } catch (err) { next(err); }
+  });
+
+  app.post('/api/admin/customer-payments', requireAdmin, async function (req, res, next) {
+    try {
+      const payment = await store.createCustomerPayment(req.body || {});
+      res.json({ ok: true, payment: payment });
+    } catch (err) {
+      if (err && err.message) return res.status(400).json({ ok: false, error: err.message });
+      next(err);
+    }
+  });
+
+  app.get('/api/admin/customer-payments/:id', requireAdmin, async function (req, res, next) {
+    try {
+      const payment = await store.getCustomerPayment(req.params.id);
+      if (!payment) return res.status(404).json({ ok: false, error: 'Payment not found.' });
+      res.json({ ok: true, payment: payment });
+    } catch (err) { next(err); }
+  });
+
+  app.post('/api/admin/customer-payments/:id/void', requireAdmin, async function (req, res, next) {
+    try {
+      const payment = await store.voidCustomerPayment(req.params.id);
+      if (!payment) return res.status(404).json({ ok: false, error: 'Payment not found.' });
+      res.json({ ok: true, payment: payment });
+    } catch (err) { next(err); }
+  });
+
+  app.get('/api/admin/card-fee-entries', requireAdmin, async function (req, res, next) {
+    try {
+      res.json({
+        ok: true,
+        entries: await store.listCardFeeEntries({
+          customerId: req.query.customerId,
+          limit: req.query.limit
+        })
+      });
+    } catch (err) { next(err); }
+  });
+
+  app.post('/api/admin/sales-docs/:id/pay-link', requireAdmin, async function (req, res, next) {
+    try {
+      const body = req.body || {};
+      const result = await store.createInvoicePayLink({
+        invoiceId: req.params.id,
+        collectMode: body.collectMode || body.collect_mode,
+        minAmount: body.minAmount != null ? body.minAmount : body.min_amount
+      });
+      res.json({ ok: true, link: result.link, payUrl: result.payUrl, invoice: result.invoice, customer: result.customer });
+    } catch (err) {
+      if (err && err.message) return res.status(400).json({ ok: false, error: err.message });
+      next(err);
+    }
+  });
+
+  app.get('/api/pay/:token', async function (req, res, next) {
+    try {
+      const detail = await store.getInvoicePayLinkByToken(req.params.token);
+      if (!detail) return res.status(404).json({ ok: false, error: 'Pay link not found.' });
+      res.json({ ok: true, pay: detail });
+    } catch (err) { next(err); }
+  });
+
+  app.post('/api/pay/:token/checkout', async function (req, res, next) {
+    try {
+      const body = req.body || {};
+      const result = await store.startInvoiceCheckout(req.params.token, body.amount);
+      res.json({ ok: true, checkout: result });
+    } catch (err) {
+      if (err && err.message) return res.status(400).json({ ok: false, error: err.message });
+      next(err);
+    }
+  });
+
+  app.post('/api/webhooks/stripe', async function (req, res) {
+    try {
+      const stripe = require('./stripe-billing');
+      const event = stripe.verifyWebhookSignature(req.rawBody || '', req.headers['stripe-signature']);
+      if (event.type === 'checkout.session.completed' || event.type === 'checkout.session.async_payment_succeeded') {
+        const session = event.data && event.data.object;
+        await store.applyStripeCheckoutSession(session);
+      }
+      res.json({ received: true });
+    } catch (err) {
+      console.error('stripe webhook', err);
+      res.status(400).json({ ok: false, error: err.message || 'Stripe webhook failed.' });
+    }
+  });
+
+  app.get('/pay/:token', function (req, res) {
+    res.set('Cache-Control', 'no-store');
+    res.sendFile(path.join(ROOT, 'pay.html'));
+  });
+
 
   app.get('/api/admin/sales-docs', requireAdmin, async function (req, res, next) {
     try {
