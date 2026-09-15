@@ -42,6 +42,20 @@ function createSupabaseStore() {
     global: adminSecret ? { headers: { 'x-spectrum-admin': adminSecret } } : {}
   });
 
+  async function fetchAllRows(table, columns) {
+    const page = 1000;
+    const out = [];
+    let from = 0;
+    for (;;) {
+      const { data, error } = await supabase.from(table).select(columns).range(from, from + page - 1);
+      if (error) return { error: error, rows: out };
+      const rows = data || [];
+      out.push.apply(out, rows);
+      if (rows.length < page) return { error: null, rows: out };
+      from += page;
+    }
+  }
+
   async function seedIfEmpty() {
     const { error } = await supabase.from('products').select('id', { count: 'exact', head: true });
     throwIf(error, 'Could not read products. Run server/supabase-schema.sql in the Supabase SQL editor.');
@@ -405,18 +419,56 @@ function createSupabaseStore() {
     return (products || []).map(function (row) { return dbUtil.rowToProduct(row, brandMap[row.brand_id]); });
   }
 
+  async function collectProtectedInventoryIds() {
+    const ids = {};
+    async function addFrom(table, columns, pick) {
+      const got = await fetchAllRows(table, columns);
+      if (got.error) return;
+      got.rows.forEach(function (row) {
+        const id = pick(row);
+        if (id != null && id !== '') ids[String(id)] = true;
+      });
+    }
+    await addFrom('purchase_order_lines', 'item_id', function (row) { return row.item_id; });
+    await addFrom('receipt_shipment_lines', 'item_id', function (row) { return row.item_id; });
+    const locs = await fetchAllRows('inventory_item_locations', 'item_id, qty');
+    if (!locs.error) {
+      locs.rows.forEach(function (row) {
+        if ((Number(row.qty) || 0) > 0 && row.item_id != null) ids[String(row.item_id)] = true;
+      });
+    }
+    return ids;
+  }
+
+  async function pruneCatalogSkuClones() {
+    const inv = require('./inventory');
+    const items = await fetchAllRows('inventory_items', 'id, sku, name, brand_id, pitch, category, qty');
+    if (items.error) return 0;
+    const maps = await fetchAllRows('product_inventory_map', 'product_id, pitch, item_id');
+    if (maps.error) return 0;
+    const drop = inv.catalogCloneIds(items.rows, maps.rows, await collectProtectedInventoryIds());
+    if (!drop.length) return 0;
+    for (let i = 0; i < drop.length; i += 80) {
+      const chunk = drop.slice(i, i + 80);
+      const { error } = await supabase.from('inventory_items').delete().in('id', chunk);
+      throwIf(error, 'Could not remove duplicate catalog SKUs.');
+    }
+    console.log('Removed ' + drop.length + ' duplicate catalog inventory SKUs');
+    return drop.length;
+  }
+
   async function ensureCatalogSkus() {
     const inv = require('./inventory');
-    const { data: items, error: iErr } = await supabase.from('inventory_items').select('id, sku, name, brand_id, pitch');
-    if (iErr) return;
+    let itemsGot = await fetchAllRows('inventory_items', 'id, sku, name, brand_id, pitch, category, qty');
+    if (itemsGot.error) return;
     const taken = {};
-    (items || []).forEach(function (row) {
+    itemsGot.rows.forEach(function (row) {
       const sku = inv.normalizeSku(row.sku);
       if (sku) taken[sku] = true;
     });
     const stamp = new Date().toISOString();
-    for (let i = 0; i < (items || []).length; i++) {
-      const row = items[i];
+    for (let i = 0; i < itemsGot.rows.length; i++) {
+      const row = itemsGot.rows[i];
       if (inv.normalizeSku(row.sku)) continue;
       const sku = inv.uniqueSku(inv.suggestedSku({
         brandId: row.brand_id,
@@ -427,17 +479,30 @@ function createSupabaseStore() {
       const { error: uErr } = await supabase.from('inventory_items').update({ sku: sku, updated_at: stamp }).eq('id', row.id);
       throwIf(uErr, 'Could not save inventory SKU.');
     }
+    await pruneCatalogSkuClones();
     const products = await listProductsUnmapped();
-    const { data: maps, error: mErr } = await supabase.from('product_inventory_map').select('product_id, pitch');
-    if (mErr) return;
-    const { data: skuRows } = await supabase.from('inventory_items').select('sku');
-    const plan = inv.catalogSkuPlan(products, maps || [], (skuRows || []).map(function (r) { return r.sku; }));
-    for (let i = 0; i < plan.length; i++) {
-      const row = plan[i];
+    const mapsGot = await fetchAllRows('product_inventory_map', 'product_id, pitch, item_id');
+    if (mapsGot.error) return;
+    itemsGot = await fetchAllRows('inventory_items', 'id, sku, name, brand_id, pitch, category, qty');
+    if (itemsGot.error) return;
+    const plan = inv.catalogPlanParts(inv.catalogSkuPlan(products, mapsGot.rows, itemsGot.rows));
+    for (let i = 0; i < plan.reuse.length; i++) {
+      const row = plan.reuse[i];
+      if (row.productId == null || row.itemId == null) continue;
+      const { error: mapErr } = await supabase.from('product_inventory_map').upsert({
+        product_id: Number(row.productId),
+        pitch: row.pitch,
+        item_id: Number(row.itemId)
+      }, { onConflict: 'product_id,pitch' });
+      throwIf(mapErr, 'Could not map existing inventory SKU.');
+    }
+    for (let i = 0; i < plan.create.length; i++) {
+      const row = plan.create[i];
       const { data: created, error: cErr } = await supabase.from('inventory_items').insert({
         sku: row.sku,
         name: row.name,
         brand_id: row.brandId,
+        category: row.category || '',
         pitch: row.pitch,
         unit: row.unit,
         qty: 0,
@@ -454,7 +519,8 @@ function createSupabaseStore() {
       }, { onConflict: 'product_id,pitch' });
       throwIf(mapErr, 'Could not map inventory SKU ' + row.sku);
     }
-    if (plan.length) console.log('Created ' + plan.length + ' inventory SKUs from website products');
+    if (plan.reuse.length) console.log('Linked ' + plan.reuse.length + ' existing inventory SKUs to website products');
+    if (plan.create.length) console.log('Created ' + plan.create.length + ' inventory SKUs from website products');
   }
 
   async function syncMappedInventoryMedia(productId, media) {
