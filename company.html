@@ -9328,7 +9328,7 @@
         canUse: canUse,
         canEdit: canEditMenu,
         esc: esc,
-        money: typeof money === 'function' ? money : undefined,
+        money: typeof moneyText === 'function' ? moneyText : undefined,
         pushPath: function (href) {
           history.pushState({ tab: tabFromPath() }, '', href);
           const tab = tabFromPath();
