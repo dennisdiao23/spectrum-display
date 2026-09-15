@@ -1176,13 +1176,12 @@ function sqliteApi(db, store) {
       if (!doc || doc.type !== 'invoice') return null;
       if (doc.status === 'draft' || doc.status === 'void') return null;
       if (doc.journalId) return loadJournal(doc.journalId);
-      // Prefer reading journal_id from DB in case enrich stripped it
-      const raw = db.prepare('SELECT journal_id, total, number, issue_date, status FROM company_sales_docs WHERE id = ?').get(invoiceId);
+      const raw = db.prepare('SELECT journal_id, number, issue_date, status FROM company_sales_docs WHERE id = ?').get(invoiceId);
       if (!raw || raw.journal_id) return raw && raw.journal_id ? loadJournal(raw.journal_id) : null;
       if (raw.status === 'draft' || raw.status === 'void') return null;
       const ar = requireSystemAccount('ar', 'Accounts Receivable');
       const sales = requireSystemAccount('sales', 'Sales Income');
-      const total = money(raw.total);
+      const total = money(doc.total);
       if (!(total > 0)) return null;
       const je = await createPostedJournal({
         entryDate: raw.issue_date || todayIso(),
