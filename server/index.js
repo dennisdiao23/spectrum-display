@@ -224,6 +224,13 @@ async function main() {
     '/company/sales/quotes',
     '/company/sales/orders',
     '/company/sales/invoices',
+    '/company/accounting',
+    '/company/accounting/accounts',
+    '/company/accounting/bills',
+    '/company/accounting/pay-bills',
+    '/company/accounting/deposits',
+    '/company/accounting/journals',
+    '/company/accounting/reports',
     '/company/settings',
     '/company/settings/company',
     '/company/settings/forms',
@@ -242,6 +249,9 @@ async function main() {
   app.get(['/company/sales/quotes/:id', '/company/sales/quotes/:id/'], sendCompany);
   app.get(['/company/sales/orders/:id', '/company/sales/orders/:id/'], sendCompany);
   app.get(['/company/sales/invoices/:id', '/company/sales/invoices/:id/'], sendCompany);
+  app.get(['/company/accounting/bills/:id', '/company/accounting/bills/:id/'], sendCompany);
+  app.get(['/company/accounting/journals/:id', '/company/accounting/journals/:id/'], sendCompany);
+  app.get(['/company/accounting/deposits/:id', '/company/accounting/deposits/:id/'], sendCompany);
   app.get(['/company/inventory/locations/:id', '/company/inventory/locations/:id/'], sendCompany);
   app.get(['/company/inventory/warehouses', '/company/inventory/warehouses/'], function (_req, res) {
     res.redirect(301, '/company/inventory/locations');
@@ -484,6 +494,28 @@ async function main() {
       hasPerm(admin, 'leads', need) ||
       hasPerm(admin, 'pipeline', need) ||
       hasPerm(admin, 'activities', need);
+  }
+
+  function hasAccountingAccess(admin, need) {
+    return hasPerm(admin, 'accounting', need) ||
+      hasPerm(admin, 'chart-of-accounts', need) ||
+      hasPerm(admin, 'bills', need) ||
+      hasPerm(admin, 'bill-payments', need) ||
+      hasPerm(admin, 'deposits', need) ||
+      hasPerm(admin, 'journals', need) ||
+      hasPerm(admin, 'reports', need);
+  }
+
+  function requireAccountingView(req, res, next) {
+    if (hasAccountingAccess(req.admin, 'view')) return next();
+    return res.status(403).json({ ok: false, error: 'You do not have access to this.' });
+  }
+
+  function requireAccountingEdit(module) {
+    return function (req, res, next) {
+      if (hasPerm(req.admin, 'accounting', 'edit') || hasPerm(req.admin, module, 'edit')) return next();
+      return res.status(403).json({ ok: false, error: 'You do not have access to this.' });
+    };
   }
 
   function requireCrmView(req, res, next) {
@@ -2035,6 +2067,186 @@ async function main() {
     } catch (err) { next(err); }
   });
 
+  app.get('/api/admin/accounting/overview', requireAdmin, requireAccountingView, async function (_req, res, next) {
+    try {
+      res.json({ ok: true, overview: await store.getAccountingOverview() });
+    } catch (err) { next(err); }
+  });
+
+  app.get('/api/admin/accounting/reports', requireAdmin, requireAccountingView, async function (req, res, next) {
+    try {
+      res.json({ ok: true, reports: await store.getAccountingReports(req.query || {}) });
+    } catch (err) { next(err); }
+  });
+
+  app.get('/api/admin/accounting/accounts', requireAdmin, requireAccountingView, async function (_req, res, next) {
+    try {
+      res.json({ ok: true, accounts: await store.listGlAccounts() });
+    } catch (err) { next(err); }
+  });
+
+  app.get('/api/admin/accounting/accounts/:id', requireAdmin, requireAccountingView, async function (req, res, next) {
+    try {
+      const account = await store.getGlAccount(req.params.id);
+      if (!account) return res.status(404).json({ ok: false, error: 'Account not found.' });
+      res.json({ ok: true, account: account });
+    } catch (err) { next(err); }
+  });
+
+  app.post('/api/admin/accounting/accounts', requireAdmin, requireAccountingEdit('chart-of-accounts'), async function (req, res, next) {
+    try {
+      res.json({ ok: true, account: await store.createGlAccount(req.body || {}) });
+    } catch (err) {
+      if (err && err.message) return res.status(400).json({ ok: false, error: err.message });
+      next(err);
+    }
+  });
+
+  app.put('/api/admin/accounting/accounts/:id', requireAdmin, requireAccountingEdit('chart-of-accounts'), async function (req, res, next) {
+    try {
+      const account = await store.updateGlAccount(req.params.id, req.body || {});
+      if (!account) return res.status(404).json({ ok: false, error: 'Account not found.' });
+      res.json({ ok: true, account: account });
+    } catch (err) {
+      if (err && err.message) return res.status(400).json({ ok: false, error: err.message });
+      next(err);
+    }
+  });
+
+  app.delete('/api/admin/accounting/accounts/:id', requireAdmin, requireAccountingEdit('chart-of-accounts'), async function (req, res, next) {
+    try {
+      const ok = await store.deleteGlAccount(req.params.id);
+      if (!ok) return res.status(404).json({ ok: false, error: 'Account not found.' });
+      res.json({ ok: true });
+    } catch (err) {
+      if (err && err.message) return res.status(400).json({ ok: false, error: err.message });
+      next(err);
+    }
+  });
+
+  app.get('/api/admin/accounting/bills', requireAdmin, requireAccountingView, async function (_req, res, next) {
+    try {
+      res.json({ ok: true, bills: await store.listBills() });
+    } catch (err) { next(err); }
+  });
+
+  app.get('/api/admin/accounting/bills/:id', requireAdmin, requireAccountingView, async function (req, res, next) {
+    try {
+      const bill = await store.getBill(req.params.id);
+      if (!bill) return res.status(404).json({ ok: false, error: 'Bill not found.' });
+      res.json({ ok: true, bill: bill });
+    } catch (err) { next(err); }
+  });
+
+  app.post('/api/admin/accounting/bills', requireAdmin, requireAccountingEdit('bills'), async function (req, res, next) {
+    try {
+      res.json({ ok: true, bill: await store.createBill(req.body || {}) });
+    } catch (err) {
+      if (err && err.message) return res.status(400).json({ ok: false, error: err.message });
+      next(err);
+    }
+  });
+
+  app.put('/api/admin/accounting/bills/:id', requireAdmin, requireAccountingEdit('bills'), async function (req, res, next) {
+    try {
+      const bill = await store.updateBill(req.params.id, req.body || {});
+      if (!bill) return res.status(404).json({ ok: false, error: 'Bill not found.' });
+      res.json({ ok: true, bill: bill });
+    } catch (err) {
+      if (err && err.message) return res.status(400).json({ ok: false, error: err.message });
+      next(err);
+    }
+  });
+
+  app.post('/api/admin/accounting/bills/:id/void', requireAdmin, requireAccountingEdit('bills'), async function (req, res, next) {
+    try {
+      const bill = await store.voidBill(req.params.id);
+      if (!bill) return res.status(404).json({ ok: false, error: 'Bill not found.' });
+      res.json({ ok: true, bill: bill });
+    } catch (err) {
+      if (err && err.message) return res.status(400).json({ ok: false, error: err.message });
+      next(err);
+    }
+  });
+
+  app.get('/api/admin/accounting/bill-payments', requireAdmin, requireAccountingView, async function (_req, res, next) {
+    try {
+      res.json({ ok: true, payments: await store.listBillPayments() });
+    } catch (err) { next(err); }
+  });
+
+  app.post('/api/admin/accounting/bill-payments', requireAdmin, requireAccountingEdit('bill-payments'), async function (req, res, next) {
+    try {
+      res.json({ ok: true, payment: await store.createBillPayment(req.body || {}) });
+    } catch (err) {
+      if (err && err.message) return res.status(400).json({ ok: false, error: err.message });
+      next(err);
+    }
+  });
+
+  app.get('/api/admin/accounting/undeposited', requireAdmin, requireAccountingView, async function (_req, res, next) {
+    try {
+      res.json({ ok: true, payments: await store.listUndepositedPayments() });
+    } catch (err) { next(err); }
+  });
+
+  app.get('/api/admin/accounting/deposits', requireAdmin, requireAccountingView, async function (_req, res, next) {
+    try {
+      res.json({ ok: true, deposits: await store.listBankDeposits() });
+    } catch (err) { next(err); }
+  });
+
+  app.get('/api/admin/accounting/deposits/:id', requireAdmin, requireAccountingView, async function (req, res, next) {
+    try {
+      const deposit = await store.getBankDeposit(req.params.id);
+      if (!deposit) return res.status(404).json({ ok: false, error: 'Deposit not found.' });
+      res.json({ ok: true, deposit: deposit });
+    } catch (err) { next(err); }
+  });
+
+  app.post('/api/admin/accounting/deposits', requireAdmin, requireAccountingEdit('deposits'), async function (req, res, next) {
+    try {
+      res.json({ ok: true, deposit: await store.createBankDeposit(req.body || {}) });
+    } catch (err) {
+      if (err && err.message) return res.status(400).json({ ok: false, error: err.message });
+      next(err);
+    }
+  });
+
+  app.get('/api/admin/accounting/journals', requireAdmin, requireAccountingView, async function (_req, res, next) {
+    try {
+      res.json({ ok: true, entries: await store.listJournalEntries() });
+    } catch (err) { next(err); }
+  });
+
+  app.get('/api/admin/accounting/journals/:id', requireAdmin, requireAccountingView, async function (req, res, next) {
+    try {
+      const entry = await store.getJournalEntry(req.params.id);
+      if (!entry) return res.status(404).json({ ok: false, error: 'Journal entry not found.' });
+      res.json({ ok: true, entry: entry });
+    } catch (err) { next(err); }
+  });
+
+  app.post('/api/admin/accounting/journals', requireAdmin, requireAccountingEdit('journals'), async function (req, res, next) {
+    try {
+      res.json({ ok: true, entry: await store.createJournalEntry(req.body || {}) });
+    } catch (err) {
+      if (err && err.message) return res.status(400).json({ ok: false, error: err.message });
+      next(err);
+    }
+  });
+
+  app.post('/api/admin/accounting/journals/:id/void', requireAdmin, requireAccountingEdit('journals'), async function (req, res, next) {
+    try {
+      const entry = await store.voidJournalEntry(req.params.id);
+      if (!entry) return res.status(404).json({ ok: false, error: 'Journal entry not found.' });
+      res.json({ ok: true, entry: entry });
+    } catch (err) {
+      if (err && err.message) return res.status(400).json({ ok: false, error: err.message });
+      next(err);
+    }
+  });
+
   app.post('/api/admin/sales-docs/:id/pay-link', requireAdmin, async function (req, res, next) {
     try {
       const body = req.body || {};
@@ -2363,8 +2575,11 @@ async function main() {
     } catch (err) { next(err); }
   });
 
-  app.get('/api/admin/inventory-vendors', requireAdmin, requirePerm('inventory', 'view'), async function (_req, res, next) {
+  app.get('/api/admin/inventory-vendors', requireAdmin, async function (req, res, next) {
     try {
+      if (!(hasPerm(req.admin, 'inventory', 'view') || hasPerm(req.admin, 'vendors', 'view') || hasAccountingAccess(req.admin, 'view'))) {
+        return res.status(403).json({ ok: false, error: 'You do not have access to this.' });
+      }
       res.json({ ok: true, vendors: await store.listVendors() });
     } catch (err) { next(err); }
   });

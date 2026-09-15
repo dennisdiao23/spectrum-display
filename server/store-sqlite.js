@@ -1801,6 +1801,7 @@ function createSqliteStore() {
   Object.assign(api, require('./dealer-portal').sqliteApi(db, api));
   Object.assign(api, require('./site-analytics').sqliteApi(db));
   paymentStore.attachPaymentMethods(api, db);
+  Object.assign(api, require('./company-accounting').sqliteApi(db, api));
   return api;
 }
 

@@ -18,6 +18,7 @@
   <script src="/js/address-autocomplete.js"></script>
   <script src="/js/company-chat.js?v=chatcrm3"></script>
   <script src="/js/company-crm.js?v=zoomphone3"></script>
+  <script src="/js/company-accounting.js?v=acct1"></script>
   <script src="/js/company-traffic.js?v=loc1"></script>
   <script src="/js/company-website-control.js?v=webctrl6"></script>
   <script src="/js/print-form.js?v=forms20"></script>
@@ -244,6 +245,42 @@
           <a href="/company/sales/invoices" id="tab-invoices" class="dash-sub-link">
             <svg class="dash-nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="5" y="3" width="14" height="18" rx="1.5"/><path d="M8 8h8M8 12h8M8 16h5"/></svg>
             <span>Invoice</span>
+          </a>
+        </div>
+      </div>
+      <div class="dash-nav-group">
+        <a href="/company/accounting" id="tab-accounting" class="dash-nav-link">
+          <svg class="dash-nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M7 9h10M7 13h6M7 17h4"/></svg>
+          <span>Accounting</span>
+        </a>
+        <div id="accounting-subnav" class="dash-sub hidden">
+          <a href="/company/accounting" id="tab-acct-overview" class="dash-sub-link" data-acct-tab="overview">
+            <svg class="dash-nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="8" height="8" rx="1.5"/><rect x="13" y="3" width="8" height="8" rx="1.5"/><rect x="3" y="13" width="8" height="8" rx="1.5"/><rect x="13" y="13" width="8" height="8" rx="1.5"/></svg>
+            <span>Overview</span>
+          </a>
+          <a href="/company/accounting/accounts" id="tab-chart-of-accounts" class="dash-sub-link" data-acct-tab="chart-of-accounts">
+            <svg class="dash-nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 4h8v4H8z"/><path d="M6 8h12v12H6z"/><path d="M9 12h6M9 16h4"/></svg>
+            <span>Chart of Accounts</span>
+          </a>
+          <a href="/company/accounting/bills" id="tab-bills" class="dash-sub-link" data-acct-tab="bills">
+            <svg class="dash-nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="5" y="3" width="14" height="18" rx="1.5"/><path d="M8 8h8M8 12h8M8 16h5"/></svg>
+            <span>Bills</span>
+          </a>
+          <a href="/company/accounting/pay-bills" id="tab-bill-payments" class="dash-sub-link" data-acct-tab="bill-payments">
+            <svg class="dash-nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="6" width="18" height="12" rx="2"/><path d="M3 10h18"/><path d="M7 15h4"/></svg>
+            <span>Pay Bills</span>
+          </a>
+          <a href="/company/accounting/deposits" id="tab-deposits" class="dash-sub-link" data-acct-tab="deposits">
+            <svg class="dash-nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12"/><path d="m8 11 4 4 4-4"/><path d="M4 19h16"/></svg>
+            <span>Deposits</span>
+          </a>
+          <a href="/company/accounting/journals" id="tab-journals" class="dash-sub-link" data-acct-tab="journals">
+            <svg class="dash-nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 3h8l4 4v14H7z"/><path d="M15 3v5h5"/><path d="M9 13h6M9 17h4"/></svg>
+            <span>Journal Entries</span>
+          </a>
+          <a href="/company/accounting/reports" id="tab-reports" class="dash-sub-link" data-acct-tab="reports">
+            <svg class="dash-nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 19V5"/><path d="M4 19h16"/><path d="M8 15l3.2-4.2 2.6 2.4L18 8"/></svg>
+            <span>Reports</span>
           </a>
         </div>
       </div>
@@ -3103,6 +3140,230 @@
         </div>
       </div>
 
+      <div id="accounting-section" class="hidden space-y-6">
+        <div class="flex flex-wrap items-end justify-between gap-3">
+          <div>
+            <h2 class="text-xl font-semibold">Accounting</h2>
+            <p class="text-slate-400 text-sm mt-1">Chart of accounts, bills, deposits, journals, and books reports. Customer invoices stay under Customer.</p>
+          </div>
+          <p id="acct-flash" class="hidden text-sm"></p>
+        </div>
+
+        <div data-acct-panel="overview">
+          <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
+            <div class="rounded-xl border border-slate-800 bg-slate-900/40 px-3 py-3"><div class="text-[11px] text-slate-500">AR open</div><div class="text-lg font-semibold mt-1" id="acct-kpi-ar">—</div></div>
+            <div class="rounded-xl border border-slate-800 bg-slate-900/40 px-3 py-3"><div class="text-[11px] text-slate-500">AP open</div><div class="text-lg font-semibold mt-1" id="acct-kpi-ap">—</div></div>
+            <div class="rounded-xl border border-slate-800 bg-slate-900/40 px-3 py-3"><div class="text-[11px] text-slate-500">Undeposited</div><div class="text-lg font-semibold mt-1" id="acct-kpi-undeposited">—</div></div>
+            <div class="rounded-xl border border-slate-800 bg-slate-900/40 px-3 py-3"><div class="text-[11px] text-slate-500">Checking</div><div class="text-lg font-semibold mt-1" id="acct-kpi-checking">—</div></div>
+            <div class="rounded-xl border border-slate-800 bg-slate-900/40 px-3 py-3"><div class="text-[11px] text-slate-500">Open bills</div><div class="text-lg font-semibold mt-1" id="acct-kpi-bills">—</div></div>
+            <div class="rounded-xl border border-slate-800 bg-slate-900/40 px-3 py-3"><div class="text-[11px] text-slate-500">Net income (MTD books)</div><div class="text-lg font-semibold mt-1" id="acct-kpi-income">—</div></div>
+          </div>
+        </div>
+
+        <div data-acct-panel="chart-of-accounts" class="hidden">
+          <div class="flex items-center justify-between gap-3 mb-3">
+            <h3 class="font-semibold">Chart of Accounts</h3>
+            <button type="button" id="acct-new-account" class="px-4 py-2 rounded-full bg-sky-500 hover:bg-sky-400 text-white text-sm font-semibold">New account</button>
+          </div>
+          <div class="cc-table-wrap overflow-auto max-h-[70vh] border border-slate-800 rounded-xl">
+            <table class="w-full text-sm">
+              <thead class="text-left text-slate-400 border-b border-slate-800">
+                <tr>
+                  <th class="py-3 px-4 font-medium sticky top-0 bg-slate-950">Number</th>
+                  <th class="py-3 px-4 font-medium sticky top-0 bg-slate-950">Name</th>
+                  <th class="py-3 px-4 font-medium sticky top-0 bg-slate-950">Type</th>
+                  <th class="py-3 px-4 font-medium sticky top-0 bg-slate-950">Status</th>
+                  <th class="py-3 px-4 font-medium sticky top-0 bg-slate-950"></th>
+                </tr>
+              </thead>
+              <tbody id="acct-accounts-body" class="text-slate-200"></tbody>
+            </table>
+          </div>
+        </div>
+
+        <div data-acct-panel="bills" class="hidden">
+          <div class="flex items-center justify-between gap-3 mb-3">
+            <h3 class="font-semibold">Bills</h3>
+            <button type="button" id="acct-new-bill" class="px-4 py-2 rounded-full bg-sky-500 hover:bg-sky-400 text-white text-sm font-semibold">New bill</button>
+          </div>
+          <div class="cc-table-wrap overflow-auto max-h-[70vh] border border-slate-800 rounded-xl">
+            <table class="w-full text-sm">
+              <thead class="text-left text-slate-400 border-b border-slate-800">
+                <tr>
+                  <th class="py-3 px-4 font-medium sticky top-0 bg-slate-950">Number</th>
+                  <th class="py-3 px-4 font-medium sticky top-0 bg-slate-950">Vendor</th>
+                  <th class="py-3 px-4 font-medium sticky top-0 bg-slate-950">Date</th>
+                  <th class="py-3 px-4 font-medium sticky top-0 bg-slate-950">Due</th>
+                  <th class="py-3 px-4 font-medium sticky top-0 bg-slate-950">Status</th>
+                  <th class="py-3 px-4 font-medium sticky top-0 bg-slate-950 text-right">Total</th>
+                  <th class="py-3 px-4 font-medium sticky top-0 bg-slate-950 text-right">Balance</th>
+                </tr>
+              </thead>
+              <tbody id="acct-bills-body" class="text-slate-200"></tbody>
+            </table>
+          </div>
+        </div>
+
+        <div data-acct-panel="bill-payments" class="hidden">
+          <h3 class="font-semibold mb-3">Pay Bills</h3>
+          <form id="acct-pay-form" class="space-y-4">
+            <div class="grid sm:grid-cols-4 gap-3">
+              <label class="text-xs text-slate-400">Vendor<select id="acct-pay-vendor" class="mt-1 w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-sm text-slate-100"></select></label>
+              <label class="text-xs text-slate-400">Payment date<input id="acct-pay-date" type="date" class="mt-1 w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-sm text-slate-100"></label>
+              <label class="text-xs text-slate-400">Method<select id="acct-pay-method" class="mt-1 w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-sm text-slate-100"><option>ACH</option><option>Check</option><option>Wire</option><option>Credit card</option></select></label>
+              <label class="text-xs text-slate-400">Reference<input id="acct-pay-ref" type="text" class="mt-1 w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-sm text-slate-100"></label>
+            </div>
+            <div class="cc-table-wrap overflow-auto max-h-[50vh] border border-slate-800 rounded-xl">
+              <table class="w-full text-sm">
+                <thead class="text-left text-slate-400 border-b border-slate-800">
+                  <tr>
+                    <th class="py-3 px-4 font-medium sticky top-0 bg-slate-950"></th>
+                    <th class="py-3 px-4 font-medium sticky top-0 bg-slate-950">Bill</th>
+                    <th class="py-3 px-4 font-medium sticky top-0 bg-slate-950">Vendor</th>
+                    <th class="py-3 px-4 font-medium sticky top-0 bg-slate-950 text-right">Balance</th>
+                    <th class="py-3 px-4 font-medium sticky top-0 bg-slate-950">Pay</th>
+                  </tr>
+                </thead>
+                <tbody id="acct-pay-bills-body" class="text-slate-200"></tbody>
+              </table>
+            </div>
+            <button type="submit" class="px-5 py-2 rounded-full bg-sky-500 hover:bg-sky-400 text-white text-sm font-semibold">Record payment</button>
+          </form>
+        </div>
+
+        <div data-acct-panel="deposits" class="hidden space-y-6">
+          <div>
+            <h3 class="font-semibold mb-3">Make deposit</h3>
+            <form id="acct-deposit-form" class="space-y-4">
+              <div class="grid sm:grid-cols-3 gap-3">
+                <label class="text-xs text-slate-400">Bank account<select id="acct-deposit-bank" class="mt-1 w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-sm text-slate-100"></select></label>
+                <label class="text-xs text-slate-400">Deposit date<input id="acct-deposit-date" type="date" class="mt-1 w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-sm text-slate-100"></label>
+                <label class="text-xs text-slate-400">Memo<input id="acct-deposit-memo" type="text" class="mt-1 w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-sm text-slate-100"></label>
+              </div>
+              <div class="cc-table-wrap overflow-auto max-h-[40vh] border border-slate-800 rounded-xl">
+                <table class="w-full text-sm">
+                  <thead class="text-left text-slate-400 border-b border-slate-800">
+                    <tr>
+                      <th class="py-3 px-4 font-medium sticky top-0 bg-slate-950"></th>
+                      <th class="py-3 px-4 font-medium sticky top-0 bg-slate-950">Date</th>
+                      <th class="py-3 px-4 font-medium sticky top-0 bg-slate-950">Customer</th>
+                      <th class="py-3 px-4 font-medium sticky top-0 bg-slate-950">Method</th>
+                      <th class="py-3 px-4 font-medium sticky top-0 bg-slate-950 text-right">Amount</th>
+                    </tr>
+                  </thead>
+                  <tbody id="acct-undeposited-body" class="text-slate-200"></tbody>
+                </table>
+              </div>
+              <button type="submit" class="px-5 py-2 rounded-full bg-sky-500 hover:bg-sky-400 text-white text-sm font-semibold">Deposit selected</button>
+            </form>
+          </div>
+          <div>
+            <h3 class="font-semibold mb-3">Deposit history</h3>
+            <div class="cc-table-wrap overflow-auto max-h-[40vh] border border-slate-800 rounded-xl">
+              <table class="w-full text-sm">
+                <thead class="text-left text-slate-400 border-b border-slate-800">
+                  <tr>
+                    <th class="py-3 px-4 font-medium sticky top-0 bg-slate-950">Number</th>
+                    <th class="py-3 px-4 font-medium sticky top-0 bg-slate-950">Date</th>
+                    <th class="py-3 px-4 font-medium sticky top-0 bg-slate-950">Bank</th>
+                    <th class="py-3 px-4 font-medium sticky top-0 bg-slate-950 text-right">Total</th>
+                  </tr>
+                </thead>
+                <tbody id="acct-deposits-body" class="text-slate-200"></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <div data-acct-panel="journals" class="hidden">
+          <div class="flex items-center justify-between gap-3 mb-3">
+            <h3 class="font-semibold">Journal Entries</h3>
+            <button type="button" id="acct-new-journal" class="px-4 py-2 rounded-full bg-sky-500 hover:bg-sky-400 text-white text-sm font-semibold">New entry</button>
+          </div>
+          <div id="acct-je-detail" class="hidden mb-4 rounded-xl border border-slate-800 bg-slate-900/40 p-4"></div>
+          <div class="cc-table-wrap overflow-auto max-h-[70vh] border border-slate-800 rounded-xl">
+            <table class="w-full text-sm">
+              <thead class="text-left text-slate-400 border-b border-slate-800">
+                <tr>
+                  <th class="py-3 px-4 font-medium sticky top-0 bg-slate-950">Number</th>
+                  <th class="py-3 px-4 font-medium sticky top-0 bg-slate-950">Date</th>
+                  <th class="py-3 px-4 font-medium sticky top-0 bg-slate-950">Memo</th>
+                  <th class="py-3 px-4 font-medium sticky top-0 bg-slate-950">Status</th>
+                  <th class="py-3 px-4 font-medium sticky top-0 bg-slate-950">Source</th>
+                </tr>
+              </thead>
+              <tbody id="acct-journals-body" class="text-slate-200"></tbody>
+            </table>
+          </div>
+        </div>
+
+        <div data-acct-panel="reports" class="hidden">
+          <div class="flex flex-wrap items-end gap-3 mb-4">
+            <label class="text-xs text-slate-400">From<input id="acct-report-from" type="date" class="mt-1 block bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-sm text-slate-100"></label>
+            <label class="text-xs text-slate-400">To / As of<input id="acct-report-to" type="date" class="mt-1 block bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-sm text-slate-100"></label>
+            <button type="button" id="acct-report-run" class="px-4 py-2 rounded-full border border-slate-600 text-sm hover:border-sky-400">Run</button>
+            <div class="flex flex-wrap gap-2 ml-auto">
+              <button type="button" class="px-3 py-1.5 rounded-full text-xs border border-slate-700 is-on" data-acct-report-tab="pnl">P&amp;L</button>
+              <button type="button" class="px-3 py-1.5 rounded-full text-xs border border-slate-700" data-acct-report-tab="bs">Balance Sheet</button>
+              <button type="button" class="px-3 py-1.5 rounded-full text-xs border border-slate-700" data-acct-report-tab="ar">AR Aging</button>
+              <button type="button" class="px-3 py-1.5 rounded-full text-xs border border-slate-700" data-acct-report-tab="ap">AP Aging</button>
+            </div>
+          </div>
+          <div id="acct-report-body"></div>
+        </div>
+      </div>
+
+      <div id="acct-account-modal" class="hidden fixed inset-0 z-[80] flex items-center justify-center bg-black/60 p-4">
+        <form id="acct-account-form" class="w-full max-w-md rounded-2xl border border-slate-700 bg-slate-950 p-5 space-y-3">
+          <h3 class="font-semibold text-lg">Account</h3>
+          <input type="hidden" id="acct-account-id">
+          <label class="block text-xs text-slate-400">Number<input id="acct-account-number" required class="mt-1 w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-sm"></label>
+          <label class="block text-xs text-slate-400">Name<input id="acct-account-name" required class="mt-1 w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-sm"></label>
+          <label class="block text-xs text-slate-400">Type<select id="acct-account-type" class="mt-1 w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-sm"></select></label>
+          <label class="flex items-center gap-2 text-sm text-slate-300"><input id="acct-account-active" type="checkbox" checked> Active</label>
+          <div class="flex justify-end gap-2 pt-2">
+            <button type="button" id="acct-account-cancel" class="px-4 py-2 rounded-full border border-slate-600 text-sm">Cancel</button>
+            <button type="submit" class="px-4 py-2 rounded-full bg-sky-500 text-white text-sm font-semibold">Save</button>
+          </div>
+        </form>
+      </div>
+
+      <div id="acct-bill-modal" class="hidden fixed inset-0 z-[80] flex items-center justify-center bg-black/60 p-4">
+        <form id="acct-bill-form" class="w-full max-w-3xl max-h-[90vh] overflow-auto rounded-2xl border border-slate-700 bg-slate-950 p-5 space-y-3">
+          <h3 class="font-semibold text-lg">Bill</h3>
+          <input type="hidden" id="acct-bill-id">
+          <div class="grid sm:grid-cols-3 gap-3">
+            <label class="text-xs text-slate-400 sm:col-span-1">Vendor<select id="acct-bill-vendor" required class="mt-1 w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-sm"></select></label>
+            <label class="text-xs text-slate-400">Bill date<input id="acct-bill-date" type="date" required class="mt-1 w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-sm"></label>
+            <label class="text-xs text-slate-400">Due date<input id="acct-bill-due" type="date" class="mt-1 w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-sm"></label>
+          </div>
+          <label class="block text-xs text-slate-400">Memo<input id="acct-bill-memo" class="mt-1 w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-sm"></label>
+          <div class="flex items-center justify-between"><span class="text-sm font-medium">Lines</span><button type="button" id="acct-add-bill-line" class="text-sky-400 text-xs">Add line</button></div>
+          <div id="acct-bill-lines" class="space-y-2"></div>
+          <div class="flex justify-end gap-2 pt-2">
+            <button type="button" id="acct-bill-cancel" class="px-4 py-2 rounded-full border border-slate-600 text-sm">Cancel</button>
+            <button type="submit" class="px-4 py-2 rounded-full bg-sky-500 text-white text-sm font-semibold">Save bill</button>
+          </div>
+        </form>
+      </div>
+
+      <div id="acct-je-modal" class="hidden fixed inset-0 z-[80] flex items-center justify-center bg-black/60 p-4">
+        <form id="acct-je-form" class="w-full max-w-3xl max-h-[90vh] overflow-auto rounded-2xl border border-slate-700 bg-slate-950 p-5 space-y-3">
+          <h3 class="font-semibold text-lg">Journal entry</h3>
+          <div class="grid sm:grid-cols-2 gap-3">
+            <label class="text-xs text-slate-400">Date<input id="acct-je-date" type="date" required class="mt-1 w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-sm"></label>
+            <label class="text-xs text-slate-400">Memo<input id="acct-je-memo" class="mt-1 w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-sm"></label>
+          </div>
+          <div class="flex items-center justify-between"><span class="text-sm font-medium">Lines</span><button type="button" id="acct-add-je-line" class="text-sky-400 text-xs">Add lines</button></div>
+          <div id="acct-je-lines" class="space-y-2"></div>
+          <div class="flex justify-end gap-2 pt-2">
+            <button type="button" id="acct-je-cancel" class="px-4 py-2 rounded-full border border-slate-600 text-sm">Cancel</button>
+            <button type="submit" class="px-4 py-2 rounded-full bg-sky-500 text-white text-sm font-semibold">Post</button>
+          </div>
+        </form>
+      </div>
+
+
       <div id="settings-pane" class="hidden space-y-6">
       <div id="company-section" class="hidden cc-list-inner">
         <div class="page-kpis" id="ca-overview">
@@ -4384,6 +4645,10 @@
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="8" r="3.25"/><path d="M5 19.2c.9-3.1 3.5-4.7 7-4.7s6.1 1.6 7 4.7"/></svg>
       <span>Customer</span>
     </a>
+    <a href="/company/accounting" id="tabbar-accounting" data-tabbar-group="accounting" class="hidden">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M7 9h10M7 13h6M7 17h4"/></svg>
+      <span>Accounting</span>
+    </a>
     <a href="/company/chat" id="tabbar-chat" class="hidden">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 15a2 2 0 0 1-2 2H8l-4 4V5a2 2 0 0 1 2-2h13a2 2 0 0 1 2 2z"/></svg>
       <span>Chat</span>
@@ -4478,6 +4743,13 @@
       if (hash === 'sales' || hash === 'quotes' || hash === 'sales/quotes') return 'quotes';
       if (hash === 'orders' || hash === 'sales/orders') return 'orders';
       if (hash === 'invoices' || hash === 'sales/invoices') return 'invoices';
+      if (hash === 'accounting') return 'accounting';
+      if (hash === 'accounting/accounts' || hash === 'chart-of-accounts') return 'chart-of-accounts';
+      if (hash === 'accounting/bills' || hash === 'bills') return 'bills';
+      if (hash === 'accounting/pay-bills' || hash === 'bill-payments') return 'bill-payments';
+      if (hash === 'accounting/deposits' || hash === 'deposits') return 'deposits';
+      if (hash === 'accounting/journals' || hash === 'journals') return 'journals';
+      if (hash === 'accounting/reports' || hash === 'reports') return 'reports';
       if (hash === 'chat') return 'chat';
       if (hash === 'dashboard') return 'dashboard';
       const p = companyPath();
@@ -4491,6 +4763,16 @@
       if (/^\/company\/crm\/pipeline\/\d+$/.test(p)) return 'pipeline';
       if (p === '/company/crm/activities') return 'activities';
       if (/^\/company\/crm\/activities\/\d+$/.test(p)) return 'activities';
+      if (p === '/company/accounting') return 'accounting';
+      if (p === '/company/accounting/accounts') return 'chart-of-accounts';
+      if (p === '/company/accounting/bills') return 'bills';
+      if (/^\/company\/accounting\/bills\/\d+$/.test(p)) return 'bills';
+      if (p === '/company/accounting/pay-bills') return 'bill-payments';
+      if (p === '/company/accounting/deposits') return 'deposits';
+      if (/^\/company\/accounting\/deposits\/\d+$/.test(p)) return 'deposits';
+      if (p === '/company/accounting/journals') return 'journals';
+      if (/^\/company\/accounting\/journals\/\d+$/.test(p)) return 'journals';
+      if (p === '/company/accounting/reports') return 'reports';
       if (p === '/company/sales/orders') return 'orders';
       const docPath = docMasterFromPath();
       if (docPath) {
@@ -4535,6 +4817,13 @@
       if (name === 'orders') return '/company/sales/orders';
       if (name === 'invoices') return '/company/sales/invoices';
       if (name === 'quotes' || name === 'sales') return '/company/sales/quotes';
+      if (name === 'accounting') return '/company/accounting';
+      if (name === 'chart-of-accounts') return '/company/accounting/accounts';
+      if (name === 'bills') return '/company/accounting/bills';
+      if (name === 'bill-payments') return '/company/accounting/pay-bills';
+      if (name === 'deposits') return '/company/accounting/deposits';
+      if (name === 'journals') return '/company/accounting/journals';
+      if (name === 'reports') return '/company/accounting/reports';
       const doc = parseDocMasterTab(name);
       if (doc) return pathForDocMaster(doc.kind, doc.id);
       if (name === 'accounts') return '/company/website/accounts';
@@ -4608,6 +4897,7 @@
       if (canUseCrmNav()) return 'leads';
       if (canUse('customers')) return 'customers';
       if (canUse('quotes')) return 'quotes';
+      if (canUseAccountingNav()) return 'accounting';
       if (canUse('settings')) return 'staff';
       return '';
     }
@@ -4769,7 +5059,14 @@
       company: 'Company',
       forms: 'Forms',
       staff: 'Manage users',
-      roles: 'Manage users'
+      roles: 'Manage users',
+      accounting: 'Accounting',
+      'chart-of-accounts': 'Chart of Accounts',
+      bills: 'Bills',
+      'bill-payments': 'Pay Bills',
+      deposits: 'Deposits',
+      journals: 'Journal Entries',
+      reports: 'Reports'
     };
     const MASTER_TAB_ICON = {
       dashboard: '<svg class="dash-master-tab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="8" height="8" rx="1.5"/><rect x="13" y="3" width="8" height="8" rx="1.5"/><rect x="3" y="13" width="8" height="8" rx="1.5"/><rect x="13" y="13" width="8" height="8" rx="1.5"/></svg>',
@@ -4785,7 +5082,8 @@
       invoices: '<svg class="dash-master-tab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="5" y="3" width="14" height="18" rx="1.5"/><path d="M8 8h8M8 12h8M8 16h5"/></svg>',
       'purchase-orders': '<svg class="dash-master-tab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 3h8l4 4v14a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1z"/><path d="M15 3v5h5"/><path d="M9 13h6M9 17h4"/></svg>',
       'receipt-shipments': '<svg class="dash-master-tab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 7h16l-1.5 12H5.5L4 7z"/><path d="M9 7V5a3 3 0 0 1 6 0v2"/><path d="M9 14h6M9 18h4"/></svg>',
-      crm: '<svg class="dash-master-tab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 4h16l-6.5 8.2V20l-3-1.5v-6.3L4 4z"/></svg>'
+      crm: '<svg class="dash-master-tab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 4h16l-6.5 8.2V20l-3-1.5v-6.3L4 4z"/></svg>',
+      accounting: '<svg class="dash-master-tab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M7 9h10M7 13h6M7 17h4"/></svg>'
     };
     MASTER_TAB_ICON.products = MASTER_TAB_ICON.website;
     MASTER_TAB_ICON.store = MASTER_TAB_ICON.website;
@@ -4798,6 +5096,12 @@
     MASTER_TAB_ICON.leads = MASTER_TAB_ICON.crm;
     MASTER_TAB_ICON.pipeline = MASTER_TAB_ICON.crm;
     MASTER_TAB_ICON.activities = MASTER_TAB_ICON.crm;
+    MASTER_TAB_ICON['chart-of-accounts'] = MASTER_TAB_ICON.accounting;
+    MASTER_TAB_ICON.bills = MASTER_TAB_ICON.accounting;
+    MASTER_TAB_ICON['bill-payments'] = MASTER_TAB_ICON.accounting;
+    MASTER_TAB_ICON.deposits = MASTER_TAB_ICON.accounting;
+    MASTER_TAB_ICON.journals = MASTER_TAB_ICON.accounting;
+    MASTER_TAB_ICON.reports = MASTER_TAB_ICON.accounting;
     MASTER_TAB_ICON.company = MASTER_TAB_ICON.settings;
     MASTER_TAB_ICON.forms = MASTER_TAB_ICON.settings;
     MASTER_TAB_ICON.staff = MASTER_TAB_ICON.settings;
@@ -4829,6 +5133,13 @@
       quotes: '/company/sales/quotes',
       orders: '/company/sales/orders',
       invoices: '/company/sales/invoices',
+      accounting: '/company/accounting',
+      'chart-of-accounts': '/company/accounting/accounts',
+      bills: '/company/accounting/bills',
+      'bill-payments': '/company/accounting/pay-bills',
+      deposits: '/company/accounting/deposits',
+      journals: '/company/accounting/journals',
+      reports: '/company/accounting/reports',
       company: '/company/settings/company',
       forms: '/company/settings/forms',
       staff: '/company/settings'
@@ -4855,6 +5166,7 @@
       if (name === 'vendors' || name === 'purchase-orders') return 'vendor';
       if (name === 'leads' || name === 'pipeline' || name === 'activities' || name === 'crm') return 'crm';
       if (name === 'customers' || name === 'quotes' || name === 'orders' || name === 'invoices' || name === 'sales') return 'customer';
+      if (name === 'accounting' || name === 'chart-of-accounts' || name === 'bills' || name === 'bill-payments' || name === 'deposits' || name === 'journals' || name === 'reports') return 'accounting';
       if (name === 'staff' || name === 'roles' || name === 'company' || name === 'forms') return 'settings';
       return '';
     }
@@ -4866,6 +5178,7 @@
       if (group === 'vendor') return 'vendors';
       if (group === 'crm') return 'leads';
       if (group === 'customer') return 'customers';
+      if (group === 'accounting') return 'accounting';
       if (group === 'settings') return 'staff';
       return 'dashboard';
     }
@@ -4877,6 +5190,7 @@
       if (group === 'vendor') return ['vendors', 'purchase-orders'];
       if (group === 'crm') return ['leads', 'pipeline', 'activities'];
       if (group === 'customer') return ['customers', 'quotes', 'orders', 'invoices', 'sales'];
+      if (group === 'accounting') return ['accounting', 'chart-of-accounts', 'bills', 'bill-payments', 'deposits', 'journals', 'reports'];
       if (group === 'settings') return ['staff', 'roles', 'company', 'forms'];
       return ['dashboard'];
     }
@@ -5455,6 +5769,13 @@
       leads: 'leads',
       pipeline: 'pipeline',
       activities: 'activities',
+      accounting: 'accounting',
+      'chart-of-accounts': 'chart-of-accounts',
+      bills: 'bills',
+      'bill-payments': 'bill-payments',
+      deposits: 'deposits',
+      journals: 'journals',
+      reports: 'reports',
       settings: 'settings',
       company: 'company',
       forms: 'company',
@@ -5473,6 +5794,13 @@
       }
       if ((level !== 'view' && level !== 'edit') && (key === 'leads' || key === 'pipeline' || key === 'activities')) {
         level = (adminPerms().menu || {}).crm;
+      }
+      if (
+        (level !== 'view' && level !== 'edit') &&
+        (key === 'chart-of-accounts' || key === 'bills' || key === 'bill-payments' ||
+          key === 'deposits' || key === 'journals' || key === 'reports' || key === 'accounting')
+      ) {
+        level = (adminPerms().menu || {}).accounting;
       }
       if ((level !== 'view' && level !== 'edit') && section === 'dealers') {
         level = (adminPerms().menu || {}).website || (adminPerms().menu || {}).products || (adminPerms().menu || {}).accounts;
@@ -5497,12 +5825,22 @@
     function canUseCrmNav() {
       return canUse('crm') || canUse('leads') || canUse('pipeline') || canUse('activities');
     }
+    function canUseAccountingNav() {
+      return canUse('accounting') || canUse('chart-of-accounts') || canUse('bills') ||
+        canUse('bill-payments') || canUse('deposits') || canUse('journals') || canUse('reports');
+    }
     function canEditMenu(key) {
       if (!currentAdminUser) return false;
       if (adminPerms().settings) return true;
       const menu = adminPerms().menu || {};
       if (key === 'crm' || key === 'leads' || key === 'pipeline' || key === 'activities') {
         return menu[key] === 'edit' || menu.crm === 'edit';
+      }
+      if (
+        key === 'accounting' || key === 'chart-of-accounts' || key === 'bills' ||
+        key === 'bill-payments' || key === 'deposits' || key === 'journals' || key === 'reports'
+      ) {
+        return menu[key] === 'edit' || menu.accounting === 'edit';
       }
       return menu[key] === 'edit';
     }
@@ -5606,6 +5944,14 @@
       document.getElementById('tab-leads').classList.toggle('hidden', !canUse('leads') && !canUse('crm'));
       document.getElementById('tab-pipeline').classList.toggle('hidden', !canUse('pipeline') && !canUse('crm'));
       document.getElementById('tab-activities').classList.toggle('hidden', !canUse('activities') && !canUse('crm'));
+      document.getElementById('tab-accounting').classList.toggle('hidden', !canUseAccountingNav());
+      document.getElementById('tab-acct-overview').classList.toggle('hidden', !canUse('accounting'));
+      document.getElementById('tab-chart-of-accounts').classList.toggle('hidden', !canUse('chart-of-accounts') && !canUse('accounting'));
+      document.getElementById('tab-bills').classList.toggle('hidden', !canUse('bills') && !canUse('accounting'));
+      document.getElementById('tab-bill-payments').classList.toggle('hidden', !canUse('bill-payments') && !canUse('accounting'));
+      document.getElementById('tab-deposits').classList.toggle('hidden', !canUse('deposits') && !canUse('accounting'));
+      document.getElementById('tab-journals').classList.toggle('hidden', !canUse('journals') && !canUse('accounting'));
+      document.getElementById('tab-reports').classList.toggle('hidden', !canUse('reports') && !canUse('accounting'));
       document.getElementById('header-chat').classList.toggle('hidden', !canUse('chat'));
       document.getElementById('tabbar-chat').classList.toggle('hidden', !canUse('chat'));
       document.getElementById('header-settings').classList.toggle('hidden', !canUse('settings'));
@@ -5616,6 +5962,7 @@
       document.getElementById('tabbar-vendor').classList.toggle('hidden', !canUseVendorNav());
       document.getElementById('tabbar-crm').classList.toggle('hidden', !canUseCrmNav());
       document.getElementById('tabbar-customer').classList.toggle('hidden', !canUseCustomerNav());
+      document.getElementById('tabbar-accounting').classList.toggle('hidden', !canUseAccountingNav());
       document.getElementById('tabbar-settings').classList.add('hidden');
       const chatAiSec = document.getElementById('chat-ai-section');
       if (chatAiSec) chatAiSec.classList.toggle('hidden', !canManageChatAi());
@@ -5638,6 +5985,7 @@
       }
       rememberMasterTab(next || 'dashboard');
       bootSpectrumCrm(admin);
+      bootSpectrumAccounting(admin);
       bootSpectrumTraffic();
       bootSpectrumWebsiteControl();
       showAdminTab(next || 'dashboard');
@@ -7429,6 +7777,8 @@
       const onSettings = view === 'staff' || view === 'roles' || view === 'company' || view === 'forms';
       const onCustomerNav = view === 'quotes' || view === 'orders' || view === 'invoices' || view === 'sales' || view === 'customers';
       const onCrmNav = view === 'leads' || view === 'pipeline' || view === 'activities' || view === 'crm';
+      const onAccountingNav = view === 'accounting' || view === 'chart-of-accounts' || view === 'bills' ||
+        view === 'bill-payments' || view === 'deposits' || view === 'journals' || view === 'reports';
       const onSales = view === 'quotes' || view === 'orders' || view === 'invoices' || view === 'sales';
       const onInventory = view === 'inventory' || view === 'warehouses' || view === 'receipt-shipments';
       const onVendorNav = view === 'vendors' || view === 'purchase-orders';
@@ -7507,6 +7857,8 @@
       document.getElementById('crm-lead-section').classList.toggle('hidden', view !== 'leads' && view !== 'crm');
       document.getElementById('crm-pipe-section').classList.toggle('hidden', view !== 'pipeline');
       document.getElementById('crm-act-section').classList.toggle('hidden', view !== 'activities');
+      const accountingSec = document.getElementById('accounting-section');
+      if (accountingSec) accountingSec.classList.toggle('hidden', !onAccountingNav);
       document.getElementById('sales-section').classList.toggle('hidden', !onSales);
       const soNavKpis = document.getElementById('so-overview');
       const soInvKpis = document.getElementById('so-inv-overview');
@@ -7526,6 +7878,8 @@
       document.getElementById('inventory-subnav').classList.toggle('hidden', !onInventory);
       document.getElementById('vendor-subnav').classList.toggle('hidden', !onVendorNav);
       document.getElementById('crm-subnav').classList.toggle('hidden', !onCrmNav);
+      const accountingSub = document.getElementById('accounting-subnav');
+      if (accountingSub) accountingSub.classList.toggle('hidden', !onAccountingNav);
       document.getElementById('tab-website').className = navLinkClass(onWebsite, !canUse('website'));
       document.getElementById('tab-inventory').className = navLinkClass(onInventory, !canUseInventoryNav());
       document.getElementById('tab-vendor').className = navLinkClass(onVendorNav, !canUseVendorNav());
@@ -7535,6 +7889,22 @@
       document.getElementById('tab-leads').className = navLinkClass(view === 'leads' || view === 'crm', !canUse('leads') && !canUse('crm'), 'sub');
       document.getElementById('tab-pipeline').className = navLinkClass(view === 'pipeline', !canUse('pipeline') && !canUse('crm'), 'sub');
       document.getElementById('tab-activities').className = navLinkClass(view === 'activities', !canUse('activities') && !canUse('crm'), 'sub');
+      const tabAccounting = document.getElementById('tab-accounting');
+      if (tabAccounting) tabAccounting.className = navLinkClass(onAccountingNav, !canUseAccountingNav());
+      const tabAcctOverview = document.getElementById('tab-acct-overview');
+      if (tabAcctOverview) tabAcctOverview.className = navLinkClass(view === 'accounting', !canUse('accounting'), 'sub');
+      const tabChart = document.getElementById('tab-chart-of-accounts');
+      if (tabChart) tabChart.className = navLinkClass(view === 'chart-of-accounts', !canUse('chart-of-accounts') && !canUse('accounting'), 'sub');
+      const tabBills = document.getElementById('tab-bills');
+      if (tabBills) tabBills.className = navLinkClass(view === 'bills', !canUse('bills') && !canUse('accounting'), 'sub');
+      const tabBillPay = document.getElementById('tab-bill-payments');
+      if (tabBillPay) tabBillPay.className = navLinkClass(view === 'bill-payments', !canUse('bill-payments') && !canUse('accounting'), 'sub');
+      const tabDeposits = document.getElementById('tab-deposits');
+      if (tabDeposits) tabDeposits.className = navLinkClass(view === 'deposits', !canUse('deposits') && !canUse('accounting'), 'sub');
+      const tabJournals = document.getElementById('tab-journals');
+      if (tabJournals) tabJournals.className = navLinkClass(view === 'journals', !canUse('journals') && !canUse('accounting'), 'sub');
+      const tabReports = document.getElementById('tab-reports');
+      if (tabReports) tabReports.className = navLinkClass(view === 'reports', !canUse('reports') && !canUse('accounting'), 'sub');
       document.getElementById('tab-inv-items').className = navLinkClass(view === 'inventory', false, 'sub');
       document.getElementById('tab-warehouses').className = navLinkClass(view === 'warehouses', false, 'sub');
       document.getElementById('tab-vendors').className = navLinkClass(view === 'vendors', false, 'sub');
@@ -7581,6 +7951,13 @@
         quotes: ['Customer', 'Sales Quote'],
         orders: ['Customer', 'Sales Order'],
         invoices: ['Customer', 'Invoice'],
+        accounting: ['Accounting', 'Overview'],
+        'chart-of-accounts': ['Accounting', 'Chart of Accounts'],
+        bills: ['Accounting', 'Bills'],
+        'bill-payments': ['Accounting', 'Pay Bills'],
+        deposits: ['Accounting', 'Deposits'],
+        journals: ['Accounting', 'Journal Entries'],
+        reports: ['Accounting', 'Reports'],
         company: ['Settings', 'Company accounts'],
         forms: ['Settings', 'Forms'],
         staff: ['Settings', 'Manage users'],
@@ -8979,6 +9356,22 @@
         companyPath: companyPath,
         adminName: function () {
           return (currentAdminUser && (currentAdminUser.name || currentAdminUser.email)) || '';
+        }
+      });
+    }
+
+    function bootSpectrumAccounting(admin) {
+      if (!window.SpectrumAccounting || !admin) return;
+      SpectrumAccounting.boot({
+        api: api,
+        canUse: canUse,
+        canEdit: canEditMenu,
+        esc: esc,
+        money: typeof moneyText === 'function' ? moneyText : undefined,
+        pushPath: function (href) {
+          history.pushState({ tab: tabFromPath() }, '', href);
+          const tab = tabFromPath();
+          if (tab) dashTabPath[tab] = href;
         }
       });
     }
@@ -12594,6 +12987,7 @@
       vendor: 'vendor-subnav',
       crm: 'crm-subnav',
       customer: 'customer-subnav',
+      accounting: 'accounting-subnav',
       settings: 'settings-subnav'
     };
 
@@ -17734,6 +18128,10 @@
       }
       if (name === 'leads' || name === 'pipeline' || name === 'activities' || name === 'crm') {
         if (window.SpectrumCrm) await SpectrumCrm.openRouted(name);
+      }
+      if (name === 'accounting' || name === 'chart-of-accounts' || name === 'bills' ||
+          name === 'bill-payments' || name === 'deposits' || name === 'journals' || name === 'reports') {
+        if (window.SpectrumAccounting) await SpectrumAccounting.openRouted(name);
       }
       if (name === 'quotes' || name === 'orders' || name === 'invoices' || name === 'sales') {
         const t = salesTypeFromTab(name);

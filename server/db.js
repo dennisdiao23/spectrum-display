@@ -147,6 +147,7 @@ function openDb() {
   require('./site-analytics').ensureSqlite(db);
   ensureCompanySales(db);
   ensureCompanyPayments(db);
+  require('./company-accounting').ensureCompanyAccounting(db);
   ensurePrintForms(db);
   ensureInventoryVendors(db);
   ensurePartyContacts(db);

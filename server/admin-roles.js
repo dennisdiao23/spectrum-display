@@ -8,6 +8,7 @@ const MENU_KEYS = [
   'customers',
   'sales', 'quotes', 'orders', 'invoices',
   'crm', 'leads', 'pipeline', 'activities',
+  'accounting', 'chart-of-accounts', 'bills', 'bill-payments', 'deposits', 'journals', 'reports',
   'settings', 'company', 'staff'
 ];
 
@@ -54,6 +55,18 @@ const MENU_GROUPS = [
       { key: 'quotes', label: 'Sales Quote' },
       { key: 'orders', label: 'Sales Order' },
       { key: 'invoices', label: 'Invoice' }
+    ]
+  },
+  {
+    label: 'Accounting',
+    children: [
+      { key: 'accounting', label: 'Accounting' },
+      { key: 'chart-of-accounts', label: 'Chart of Accounts' },
+      { key: 'bills', label: 'Bills' },
+      { key: 'bill-payments', label: 'Pay Bills' },
+      { key: 'deposits', label: 'Deposits' },
+      { key: 'journals', label: 'Journal Entries' },
+      { key: 'reports', label: 'Reports' }
     ]
   },
   {
@@ -134,6 +147,13 @@ function menuFromLegacy(website, inventory, settings) {
     leads: open,
     pipeline: open,
     activities: open,
+    accounting: open,
+    'chart-of-accounts': open,
+    bills: open,
+    'bill-payments': open,
+    deposits: open,
+    journals: open,
+    reports: open,
     settings: settings ? 'edit' : 'none',
     company: settings ? 'edit' : 'none',
     staff: settings ? 'edit' : 'none'
@@ -163,6 +183,25 @@ function parseMenuAccess(raw) {
         menu.pipeline = inherit;
         menu.activities = inherit;
       }
+    }
+    if (
+      raw.accounting == null &&
+      raw['chart-of-accounts'] == null &&
+      raw.bills == null &&
+      raw['bill-payments'] == null &&
+      raw.deposits == null &&
+      raw.journals == null &&
+      raw.reports == null
+    ) {
+      const inheritAcct = accessLevel(raw.customers) === 'none' ? 'none' : accessLevel(raw.customers || 'edit');
+      const acctLevel = raw.customers == null ? 'edit' : inheritAcct;
+      menu.accounting = acctLevel;
+      menu['chart-of-accounts'] = acctLevel;
+      menu.bills = acctLevel;
+      menu['bill-payments'] = acctLevel;
+      menu.deposits = acctLevel;
+      menu.journals = acctLevel;
+      menu.reports = acctLevel;
     }
     return menu;
   }
