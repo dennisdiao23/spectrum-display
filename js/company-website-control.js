@@ -37,6 +37,7 @@
     selected: '',
     creating: false,
     gallery: [],
+    photoFit: 'fit',
     bound: false,
     loading: false,
     openTabs: [],
@@ -223,6 +224,7 @@
     return {
       fields: fields,
       gallery: S.gallery.slice(),
+      photoFit: S.photoFit || 'fit',
       features: collectFeatures(),
       maps: currentMapSelection()
     };
@@ -231,8 +233,10 @@
   function applyProductSnapshot(snap) {
     if (!snap) return;
     if (snap.gallery) S.gallery = snap.gallery.slice();
+    if (snap.photoFit) S.photoFit = snap.photoFit === 'fill' ? 'fill' : 'fit';
     var wrap = $('wc-gallery');
     if (wrap) wrap.innerHTML = renderGalleryStrip(S.gallery);
+    syncPhotoFitUi();
     if (snap.fields) {
       Object.keys(snap.fields).forEach(function (id) {
         var el = $(id);
@@ -451,6 +455,36 @@
     return '<textarea id="' + id + '" rows="' + (rows || 3) + '">' + esc(value || '') + '</textarea>';
   }
 
+  function photoFitOf(value) {
+    return String(value || '').toLowerCase() === 'fill' ? 'fill' : 'fit';
+  }
+
+  function renderPhotoFitControl(value) {
+    var fit = photoFitOf(value);
+    return '<div class="wc-photo-fit" id="wc-photo-fit">' +
+      '<span class="wc-photo-fit-label">Photo crop</span>' +
+      '<button type="button" data-wc-photo-fit="fit"' + (fit === 'fit' ? ' class="is-on"' : '') + '>Fit</button>' +
+      '<button type="button" data-wc-photo-fit="fill"' + (fit === 'fill' ? ' class="is-on"' : '') + '>Fill</button>' +
+      '<p class="wc-photo-fit-note">Fit shows the whole photo. Fill zooms to fill the box.</p>' +
+    '</div>';
+  }
+
+  function syncPhotoFitUi() {
+    var fit = photoFitOf(S.photoFit);
+    S.photoFit = fit;
+    var host = $('wc-photo-fit');
+    if (host) {
+      host.querySelectorAll('[data-wc-photo-fit]').forEach(function (btn) {
+        btn.classList.toggle('is-on', btn.getAttribute('data-wc-photo-fit') === fit);
+      });
+    }
+    var gallery = $('wc-gallery');
+    if (gallery) {
+      gallery.classList.toggle('is-fit', fit === 'fit');
+      gallery.classList.toggle('is-fill', fit === 'fill');
+    }
+  }
+
   function renderGalleryStrip(urls) {
     return (urls || []).map(function (url, i) {
       return '<div class="wc-shot' + (i === 0 ? ' is-hero' : '') + '" data-wc-shot="' + i + '">' +
@@ -466,7 +500,8 @@
   }
 
   function renderGallery(urls) {
-    return '<div class="wc-gallery" id="wc-gallery">' + renderGalleryStrip(urls) + '</div>' +
+    return renderPhotoFitControl(S.photoFit) +
+      '<div class="wc-gallery is-' + photoFitOf(S.photoFit) + '" id="wc-gallery">' + renderGalleryStrip(urls) + '</div>' +
       '<label class="wc-shot wc-shot-add">' +
         '<input id="wc-gallery-files" type="file" accept="image/jpeg,image/png,image/webp,image/gif" multiple>' +
         '<span>Add photos</span>' +
@@ -555,6 +590,7 @@
     var editor = $('wc-editor');
     if (!editor) return;
     S.gallery = p ? galleryFor(p) : [];
+    S.photoFit = photoFitOf(p && p.photoFit);
     var brandOpts = S.brands.map(function (b) { return [b.id, b.name]; });
     var typeVal = p && isControl(p) ? 'control' : ((p && p.type) || 'Fixed');
     var cats = ((p && p.cats) || []).join(' ');
@@ -879,6 +915,7 @@
     S.gallery = fn(S.gallery.slice());
     var wrap = $('wc-gallery');
     if (wrap) wrap.innerHTML = renderGalleryStrip(S.gallery);
+    syncPhotoFitUi();
   }
 
   async function saveProduct(e) {
@@ -924,6 +961,7 @@
     var keep = S.gallery.filter(function (url) { return url && url.indexOf('blob:') !== 0; });
     fd.append('galleryKeep', JSON.stringify(keep));
     if (keep[0]) fd.append('heroUrl', keep[0]);
+    fd.append('photoFit', photoFitOf(S.photoFit));
     if (!keep.length) fd.append('clearImage', '1');
     var fileInput = $('wc-gallery-files');
     Array.from((fileInput && fileInput.files) || []).forEach(function (file) {
@@ -1103,6 +1141,12 @@
         urls.splice(si, 1);
         return urls;
       });
+      return;
+    }
+    var fitBtn = e.target.closest('[data-wc-photo-fit]');
+    if (fitBtn) {
+      S.photoFit = photoFitOf(fitBtn.getAttribute('data-wc-photo-fit'));
+      syncPhotoFitUi();
       return;
     }
     var featAdd = e.target.closest('#wc-feat-add');

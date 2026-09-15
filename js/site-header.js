@@ -398,7 +398,7 @@
           image: window.spectrumProductPhoto
             ? spectrumProductPhoto(p, 'thumb')
             : (window.spectrumDisplayImage ? spectrumDisplayImage(p.image, 'thumb') : p.image),
-          contain: true
+          contain: window.spectrumPhotoFit ? spectrumPhotoFit(p) !== 'fill' : true
         };
       });
       items.push({ name: 'All control systems', href: '/products?cat=control', tag: 'NVS' });
@@ -416,7 +416,7 @@
         image: window.spectrumProductPhoto
           ? spectrumProductPhoto(p, 'thumb')
           : (window.spectrumDisplayImage ? spectrumDisplayImage(p.image, 'thumb') : p.image),
-        contain: p.brandId === 'spectrum' && (p.id === 'mk' || p.id === 'bk')
+        contain: window.spectrumPhotoFit ? spectrumPhotoFit(p) !== 'fill' : true
       };
     });
   }
@@ -794,7 +794,7 @@
   function ensureCatalog() {
     if (window.spectrumCatalogReady) return;
     var files = [
-      ['product-photo.js', '/js/product-photo.js?v=ph3'],
+      ['product-photo.js', '/js/product-photo.js?v=ph5'],
       ['control-systems.js', '/js/control-systems.js'],
       ['catalog-api.js', '/js/catalog-api.js?v=ph4']
     ];
