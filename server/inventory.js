@@ -232,42 +232,224 @@ function slotsForProduct(product) {
   return pitches.length ? pitches : [''];
 }
 
-function catalogSkuPlan(products, existingMaps, existingSkus) {
+const CLONE_SUFFIX_MAX = 30;
+
+function cloneSuffix(sku) {
+  const s = normalizeSku(sku);
+  const m = s.match(/-(\d+)$/);
+  if (!m) return null;
+  const n = Number(m[1]);
+  if (!isFinite(n) || n < 2 || n > CLONE_SUFFIX_MAX) return null;
+  return { base: s.slice(0, -(m[1].length + 1)), n: n };
+}
+
+function skuSlotKey(sku) {
+  const s = normalizeSku(sku);
+  if (!s) return '';
+  const clone = cloneSuffix(s);
+  const core = clone ? clone.base : s;
+  return core.replace(/-P(\d+(?:\.\d+)?)$/i, function (_, p) {
+    return '-P' + pitchKey(p);
+  });
+}
+
+function itemNameBase(name) {
+  return String(name || '').trim().replace(/\s+P\d+(?:\.\d+)?$/i, '').trim().toLowerCase();
+}
+
+function nameSlotKey(item) {
+  const brand = skuToken(item && (item.brandId != null ? item.brandId : item.brand_id));
+  const pitch = pitchKey(item && item.pitch);
+  const base = itemNameBase(item && item.name);
+  if (!brand || !base) return '';
+  return brand + '|' + base + '|' + pitch;
+}
+
+function productNameSlotKey(product, pitch) {
+  return skuToken(product && product.brandId) + '|' + itemNameBase(product && product.name) + '|' + pitchKey(pitch);
+}
+
+function itemQtyOf(item) {
+  return Math.max(0, Number(item && item.qty) || 0);
+}
+
+function itemHasCategory(item) {
+  return String((item && item.category) || '').trim() !== '';
+}
+
+function coerceCatalogItems(existingItems) {
+  return (existingItems || []).map(function (row) {
+    if (row == null) return null;
+    if (typeof row === 'string') return { sku: row };
+    return row;
+  }).filter(Boolean);
+}
+
+function catalogPlanParts(plan) {
+  if (Array.isArray(plan)) return { create: plan, reuse: [] };
+  return {
+    create: (plan && plan.create) || [],
+    reuse: (plan && plan.reuse) || []
+  };
+}
+
+function pickCanonicalItem(items, mappedItemIds) {
+  const mapped = mappedItemIds || {};
+  let best = null;
+  let bestScore = -Infinity;
+  (items || []).forEach(function (item) {
+    if (!item || item.id == null) return;
+    let score = 0;
+    if (mapped[String(item.id)]) score += 1000;
+    score += Math.min(itemQtyOf(item), 100) * 10;
+    if (itemHasCategory(item)) score += 50;
+    if (!cloneSuffix(item.sku)) score += 20;
+    const idNum = Number(item.id);
+    if (isFinite(idNum)) score -= idNum / 1e12;
+    if (score > bestScore) {
+      bestScore = score;
+      best = item;
+    }
+  });
+  return best;
+}
+
+function pushUniqueItem(list, seen, item) {
+  if (!item) return;
+  if (item.id != null) {
+    const key = String(item.id);
+    if (seen[key]) return;
+    seen[key] = true;
+  }
+  list.push(item);
+}
+
+function catalogSkuPlan(products, existingMaps, existingItems) {
   const haveMap = {};
+  const mappedItemIds = {};
   (existingMaps || []).forEach(function (m) {
     haveMap[String(m.product_id) + '|' + pitchKey(m.pitch)] = true;
+    if (m.item_id != null) mappedItemIds[String(m.item_id)] = true;
   });
+  const items = coerceCatalogItems(existingItems);
+  const bySku = {};
+  const bySlot = {};
+  const byNameSlot = {};
   const taken = {};
-  (existingSkus || []).forEach(function (sku) {
-    const key = normalizeSku(sku);
-    if (key) taken[key] = true;
+  items.forEach(function (item) {
+    const sku = normalizeSku(item.sku);
+    if (sku) {
+      taken[sku] = true;
+      bySku[sku] = bySku[sku] || [];
+      bySku[sku].push(item);
+      const slot = skuSlotKey(sku);
+      if (slot) {
+        bySlot[slot] = bySlot[slot] || [];
+        bySlot[slot].push(item);
+      }
+    }
+    const ns = nameSlotKey(item);
+    if (ns) {
+      byNameSlot[ns] = byNameSlot[ns] || [];
+      byNameSlot[ns].push(item);
+    }
   });
   const create = [];
+  const reuse = [];
   (products || []).forEach(function (product) {
+    if (!product || product.dbId == null) return;
     slotsForProduct(product).forEach(function (pitch) {
-      if (haveMap[String(product.dbId) + '|' + pitch]) return;
-      const sku = uniqueSku(suggestedSku({
+      const mapKey = String(product.dbId) + '|' + pitch;
+      if (haveMap[mapKey]) return;
+      const want = suggestedSku({
         brandId: product.brandId,
         seriesId: product.id,
         name: product.name,
         pitch: pitch
-      }), taken);
+      });
+      const group = [];
+      const seen = {};
+      (bySlot[skuSlotKey(want)] || []).forEach(function (item) { pushUniqueItem(group, seen, item); });
+      (byNameSlot[productNameSlotKey(product, pitch)] || []).forEach(function (item) {
+        pushUniqueItem(group, seen, item);
+      });
+      const aliases = [want];
+      if (pitch && /^\d+$/.test(pitch)) aliases.push(want + '.0');
+      aliases.forEach(function (sku) {
+        (bySku[normalizeSku(sku)] || []).forEach(function (item) { pushUniqueItem(group, seen, item); });
+      });
+      const keeper = pickCanonicalItem(group, mappedItemIds);
+      if (keeper) {
+        haveMap[mapKey] = true;
+        mappedItemIds[String(keeper.id)] = true;
+        reuse.push({
+          productId: product.dbId,
+          pitch: pitch,
+          itemId: keeper.id
+        });
+        return;
+      }
+      const sku = uniqueSku(want, taken);
       taken[sku] = true;
       const control = isControlProduct(product);
       const unit = control || !pitch ? 'each' : 'panels';
+      const name = skuNameFromProduct(product, pitch);
       create.push({
         productId: product.dbId,
-        name: skuNameFromProduct(product, pitch),
+        name: name,
         brandId: product.brandId || '',
         pitch: pitch,
         unit: unit,
         sku: sku,
         price: priceFromProduct(product),
-        lowAt: defaultLowAt(unit)
+        lowAt: defaultLowAt(unit),
+        category: guessInventoryCategory({
+          sku: sku,
+          name: name,
+          brandId: product.brandId,
+          unit: unit
+        }) || ''
       });
     });
   });
-  return create;
+  return { create: create, reuse: reuse };
+}
+
+function catalogCloneIds(items, maps, protectedIds) {
+  const mapped = {};
+  (maps || []).forEach(function (m) {
+    if (m && m.item_id != null) mapped[String(m.item_id)] = true;
+  });
+  const prot = protectedIds || {};
+  const bySlot = {};
+  coerceCatalogItems(items).forEach(function (item) {
+    if (!item || item.id == null) return;
+    const key = skuSlotKey(item.sku) || nameSlotKey(item);
+    if (!key) return;
+    bySlot[key] = bySlot[key] || [];
+    bySlot[key].push(item);
+  });
+  const drop = [];
+  Object.keys(bySlot).forEach(function (key) {
+    const group = bySlot[key];
+    if (group.length < 2) return;
+    const keeper = pickCanonicalItem(group, mapped);
+    if (!keeper) return;
+    group.forEach(function (item) {
+      if (String(item.id) === String(keeper.id)) return;
+      if (prot[String(item.id)]) return;
+      if (mapped[String(item.id)]) return;
+      if (itemQtyOf(item) > 0) return;
+      if (itemHasCategory(item)) return;
+      const sameSlot = skuSlotKey(item.sku) === skuSlotKey(keeper.sku) || nameSlotKey(item) === nameSlotKey(keeper);
+      if (!sameSlot) return;
+      if (!cloneSuffix(item.sku) && pitchKey(item.pitch) !== pitchKey(keeper.pitch) && skuSlotKey(item.sku) !== skuSlotKey(keeper.sku)) {
+        return;
+      }
+      drop.push(item.id);
+    });
+  });
+  return drop;
 }
 
 function priceFromProduct(product) {
@@ -845,7 +1027,11 @@ module.exports = {
   suggestedSku,
   uniqueSku,
   slotsForProduct,
+  skuSlotKey,
+  cloneSuffix,
   catalogSkuPlan,
+  catalogPlanParts,
+  catalogCloneIds,
   priceFromProduct,
   DEFAULT_CATEGORIES,
   normalizeCategory,

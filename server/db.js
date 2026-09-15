@@ -399,30 +399,75 @@ function fillEmptySkus(db) {
   });
 }
 
+function protectedInventoryItemIds(db) {
+  const ids = {};
+  function add(sql) {
+    try {
+      db.prepare(sql).all().forEach(function (row) {
+        if (row && row.item_id != null) ids[String(row.item_id)] = true;
+      });
+    } catch (e) { /* table or column may not exist yet */ }
+  }
+  add('SELECT item_id FROM purchase_order_lines WHERE item_id IS NOT NULL');
+  add('SELECT item_id FROM receipt_shipment_lines WHERE item_id IS NOT NULL');
+  add('SELECT item_id FROM inventory_item_locations WHERE qty > 0');
+  return ids;
+}
+
+function pruneCatalogSkuClones(db) {
+  const inv = require('./inventory');
+  const items = db.prepare(
+    'SELECT id, sku, name, brand_id, pitch, category, qty FROM inventory_items'
+  ).all();
+  const maps = db.prepare('SELECT product_id, pitch, item_id FROM product_inventory_map').all();
+  const drop = inv.catalogCloneIds(items, maps, protectedInventoryItemIds(db));
+  if (!drop.length) return 0;
+  const del = db.prepare('DELETE FROM inventory_items WHERE id = ?');
+  db.exec('BEGIN');
+  try {
+    drop.forEach(function (id) { del.run(id); });
+    db.exec('COMMIT');
+  } catch (err) {
+    try { db.exec('ROLLBACK'); } catch (e) { /* ignore */ }
+    console.error('Could not remove duplicate catalog SKUs:', err.message || err);
+    return 0;
+  }
+  console.log('Removed ' + drop.length + ' duplicate catalog inventory SKUs');
+  return drop.length;
+}
+
 function ensureCatalogSkus(db) {
   const inv = require('./inventory');
   fillEmptySkus(db);
-  const maps = db.prepare('SELECT product_id, pitch FROM product_inventory_map').all();
-  const skus = db.prepare('SELECT sku FROM inventory_items').all().map(function (r) { return r.sku; });
-  const plan = inv.catalogSkuPlan(listProducts(db), maps, skus);
-  if (!plan.length) {
+  pruneCatalogSkuClones(db);
+  const maps = db.prepare('SELECT product_id, pitch, item_id FROM product_inventory_map').all();
+  const items = db.prepare(
+    'SELECT id, sku, name, brand_id, pitch, category, qty FROM inventory_items'
+  ).all();
+  const plan = inv.catalogPlanParts(inv.catalogSkuPlan(listProducts(db), maps, items));
+  if (!plan.create.length && !plan.reuse.length) {
     try { db.exec('CREATE UNIQUE INDEX IF NOT EXISTS inventory_items_sku_uidx ON inventory_items (sku)'); } catch (e) { /* ignore */ }
-    return plan.length;
+    return 0;
   }
   const stamp = nowIso();
   const insertItem = db.prepare(`
     INSERT INTO inventory_items (
-      sku, name, brand_id, pitch, unit, qty, low_at, price, notes, created_at, updated_at
-    ) VALUES (?, ?, ?, ?, ?, 0, ?, ?, '', ?, ?)
+      sku, name, brand_id, category, pitch, unit, qty, low_at, price, notes, created_at, updated_at
+    ) VALUES (?, ?, ?, ?, ?, ?, 0, ?, ?, '', ?, ?)
   `);
   const insertMap = db.prepare(
-    'INSERT OR IGNORE INTO product_inventory_map (product_id, pitch, item_id) VALUES (?, ?, ?)'
+    'INSERT INTO product_inventory_map (product_id, pitch, item_id) VALUES (?, ?, ?)'
   );
   db.exec('BEGIN');
   try {
-    plan.forEach(function (row) {
+    plan.reuse.forEach(function (row) {
+      if (row.productId == null || row.itemId == null) return;
+      insertMap.run(row.productId, row.pitch, row.itemId);
+    });
+    plan.create.forEach(function (row) {
       const info = insertItem.run(
-        row.sku, row.name, row.brandId, row.pitch, row.unit, row.lowAt, row.price, stamp, stamp
+        row.sku, row.name, row.brandId, row.category || '', row.pitch, row.unit,
+        row.lowAt, row.price, stamp, stamp
       );
       insertMap.run(row.productId, row.pitch, info.lastInsertRowid);
     });
@@ -433,8 +478,13 @@ function ensureCatalogSkus(db) {
     return 0;
   }
   try { db.exec('CREATE UNIQUE INDEX IF NOT EXISTS inventory_items_sku_uidx ON inventory_items (sku)'); } catch (e) { /* ignore */ }
-  console.log('Created ' + plan.length + ' inventory SKUs from website products');
-  return plan.length;
+  if (plan.reuse.length) {
+    console.log('Linked ' + plan.reuse.length + ' existing inventory SKUs to website products');
+  }
+  if (plan.create.length) {
+    console.log('Created ' + plan.create.length + ' inventory SKUs from website products');
+  }
+  return plan.create.length;
 }
 
 function seedAdminRoles(db) {
