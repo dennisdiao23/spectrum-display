@@ -96,7 +96,12 @@
       word-break: normal;
       overflow-wrap: normal;
     }
-  </style>
+  .mail-pay-box{margin:10px 0 14px;padding:12px;border:1px solid #1e293b;border-radius:12px;background:#0b1220}
+.mail-pay-title{font-size:12px;font-weight:700;color:#94a3b8;margin:0 0 8px;text-transform:uppercase;letter-spacing:.04em}
+.pay-recv-apps{display:flex;flex-direction:column;gap:8px;max-height:220px;overflow:auto}
+.pay-recv-app{display:grid;grid-template-columns:1fr auto 110px;gap:8px;align-items:center;font-size:13px;color:#cbd5e1}
+.pay-recv-app input{width:100%;border-radius:8px;border:1px solid #334155;background:#020617;color:#e2e8f0;padding:6px 8px}
+</style>
 </head>
 <body class="company-app antialiased">
   <div id="crm-phone-banner" class="crm-phone-banner hidden" hidden>
@@ -2635,6 +2640,7 @@
                     <button type="button" data-so-type="quote">Sales quote</button>
                     <button type="button" data-so-type="order">Sales order</button>
                     <button type="button" data-so-type="invoice">Invoice</button>
+                    <button type="button" data-pay-receive="1">Receive payment</button>
                   </div>
                 </div>
                 <button type="button" id="cc-detail-edit" class="cc-detail-btn">Edit</button>
@@ -3679,6 +3685,28 @@
           <div class="cc-field"><label>Primary payment method</label>
             <select id="cc-pay-method"><option value="">Select a primary payment method</option><option>Check</option><option>ACH</option><option>Credit card</option><option>Wire</option></select>
           </div>
+          <div class="cc-field" id="cc-pass-fee-wrap" hidden>
+            <label class="cc-check"><input id="cc-pass-card-fee" type="checkbox"> Charge card fee back to customer</label>
+            <p class="cc-note" style="margin-top:6px">Fee is tracked in a separate Card fee account — not added to the invoice. Invoice only receives the invoice amount paid.</p>
+          </div>
+          <div class="cc-field" id="cc-card-fee-pct-wrap" hidden>
+            <label>Card fee % (blank = default 3%)</label>
+            <input id="cc-card-fee-pct" type="number" min="0" step="0.01" placeholder="3">
+          </div>
+          <div class="cc-field"><label>Default invoice collect</label>
+            <select id="cc-collect-default">
+              <option value="full">Full balance</option>
+              <option value="deposit">Deposit (minimum)</option>
+            </select>
+          </div>
+          <div class="cc-field" id="cc-deposit-wrap" hidden>
+            <label>Default deposit</label>
+            <div style="display:flex;gap:8px;align-items:center">
+              <select id="cc-deposit-kind" style="flex:0 0 110px"><option value="percent">Percent</option><option value="amount">Amount $</option></select>
+              <input id="cc-deposit-value" type="number" min="0" step="0.01" value="30" style="flex:1">
+            </div>
+            <p class="cc-note" style="margin-top:6px">Deposit is the minimum on the pay link. Customer can still pay any amount up to the full balance. Invoice PDF stays full amount.</p>
+          </div>
           <div class="cc-field"><label>Terms</label>
             <select id="cc-terms"><option>Due on receipt</option><option>Net 15</option><option selected>Net 30</option><option>Net 45</option><option>Net 60</option></select>
           </div>
@@ -3808,6 +3836,48 @@
       </div>
     </div>
   </div>
+  
+  <div id="pay-receive" class="cc-leave" hidden>
+    <div class="mail-card" role="dialog" aria-modal="true" aria-labelledby="pay-recv-title" style="max-width:640px">
+      <div class="mail-card-head">
+        <p id="pay-recv-title" class="mail-card-title">Receive payment</p>
+        <button type="button" id="pay-recv-close" class="mail-card-close" aria-label="Close">×</button>
+      </div>
+      <div class="mail-card-body" style="display:block">
+        <div class="mail-fields">
+          <input type="hidden" id="pay-recv-customer-id">
+          <label>Customer
+            <input id="pay-recv-customer" type="text" readonly>
+          </label>
+          <label>Payment date
+            <input id="pay-recv-date" type="date">
+          </label>
+          <label>Amount
+            <input id="pay-recv-amount" type="number" min="0.01" step="0.01">
+          </label>
+          <label>Method
+            <select id="pay-recv-method">
+              <option>Check</option><option>ACH</option><option>Credit card</option><option>Wire</option><option>Other</option>
+            </select>
+          </label>
+          <label>Reference #
+            <input id="pay-recv-ref" type="text" placeholder="Check # / wire ref">
+          </label>
+          <label>Memo
+            <input id="pay-recv-memo" type="text">
+          </label>
+          <p class="mail-note">Apply to open invoices (invoice balance only — card fees are never applied here).</p>
+          <div id="pay-recv-apps" class="pay-recv-apps"></div>
+          <p id="pay-recv-msg" class="mail-msg hidden"></p>
+        </div>
+      </div>
+      <div class="mail-card-actions">
+        <button type="button" id="pay-recv-cancel" class="cc-leave-no">Cancel</button>
+        <button type="button" id="pay-recv-save" class="cc-leave-yes">Save payment</button>
+      </div>
+    </div>
+  </div>
+
   <div id="mail-compose" class="cc-leave" hidden>
     <div class="mail-card" role="dialog" aria-modal="true" aria-labelledby="mail-title">
       <div class="mail-card-head">
@@ -3839,6 +3909,20 @@
           <label>Message
             <textarea id="mail-body" rows="8"></textarea>
           </label>
+          <div id="mail-pay-box" class="mail-pay-box" hidden>
+            <p class="mail-pay-title">Online payment (Stripe)</p>
+            <label class="mail-attach"><input id="mail-include-pay" type="checkbox" checked><span>Include Pay invoice link</span></label>
+            <label>Collect
+              <select id="mail-collect-mode">
+                <option value="full">Full balance</option>
+                <option value="deposit">Deposit minimum</option>
+              </select>
+            </label>
+            <label id="mail-deposit-wrap" hidden>Minimum amount $
+              <input id="mail-deposit-amount" type="number" min="0.01" step="0.01">
+            </label>
+            <p class="mail-note">Invoice PDF stays the full amount. Pay link minimum can be a deposit; customer may pay any amount from that minimum up to the balance.</p>
+          </div>
           <label class="mail-attach">
             <input id="mail-attach" type="checkbox" checked>
             <span>Attach PDF</span>
@@ -12752,6 +12836,112 @@
       setSelectKeep('cc-rep', selected || '');
     }
 
+
+    function syncCcPaySettingsUi() {
+      const method = (document.getElementById('cc-pay-method') || {}).value || '';
+      const isCard = /credit\s*card/i.test(method);
+      const passWrap = document.getElementById('cc-pass-fee-wrap');
+      const pctWrap = document.getElementById('cc-card-fee-pct-wrap');
+      const pass = document.getElementById('cc-pass-card-fee');
+      if (passWrap) passWrap.hidden = !isCard;
+      if (pctWrap) pctWrap.hidden = !(isCard && pass && pass.checked);
+      const collect = (document.getElementById('cc-collect-default') || {}).value || 'full';
+      const dep = document.getElementById('cc-deposit-wrap');
+      if (dep) dep.hidden = collect !== 'deposit';
+    }
+    const ccPayMethodEl = document.getElementById('cc-pay-method');
+    if (ccPayMethodEl) ccPayMethodEl.addEventListener('change', syncCcPaySettingsUi);
+    const ccPassFeeEl = document.getElementById('cc-pass-card-fee');
+    if (ccPassFeeEl) ccPassFeeEl.addEventListener('change', syncCcPaySettingsUi);
+    const ccCollectEl = document.getElementById('cc-collect-default');
+    if (ccCollectEl) ccCollectEl.addEventListener('change', syncCcPaySettingsUi);
+
+    let payRecvState = null;
+    function closePayReceive() {
+      const box = document.getElementById('pay-receive');
+      if (box) box.hidden = true;
+      payRecvState = null;
+    }
+    function payRecvShowMsg(text, ok) {
+      const el = document.getElementById('pay-recv-msg');
+      if (!el) return;
+      el.classList.toggle('hidden', !text);
+      el.textContent = text || '';
+      el.style.color = ok ? '#34d399' : '#f87171';
+    }
+    async function openPayReceive(customerId, invoiceId) {
+      const customer = (companyCustomers || []).find(function (c) { return String(c.id) === String(customerId); })
+        || (await api('/api/admin/company-customers/' + customerId)).customer;
+      if (!customer) { alert('Customer not found.'); return; }
+      const open = await api('/api/admin/company-customers/' + customerId + '/open-invoices');
+      const invoices = open.invoices || [];
+      payRecvState = { customerId: customer.id, invoiceId: invoiceId || null };
+      document.getElementById('pay-recv-customer-id').value = customer.id;
+      document.getElementById('pay-recv-customer').value = customer.displayName || customer.companyName || '';
+      document.getElementById('pay-recv-date').value = new Date().toISOString().slice(0, 10);
+      document.getElementById('pay-recv-amount').value = '';
+      document.getElementById('pay-recv-method').value = customer.paymentMethod || 'Check';
+      document.getElementById('pay-recv-ref').value = '';
+      document.getElementById('pay-recv-memo').value = '';
+      payRecvShowMsg('');
+      const wrap = document.getElementById('pay-recv-apps');
+      wrap.innerHTML = invoices.length ? invoices.map(function (inv) {
+        const bal = Number(inv.balanceDue != null ? inv.balanceDue : inv.total) || 0;
+        const prefill = invoiceId && String(inv.id) === String(invoiceId) ? bal : '';
+        return '<label class="pay-recv-app"><span>' + esc(inv.number || ('#' + inv.id)) + ' · due ' + moneyText(bal) + '</span><span></span>' +
+          '<input type="number" min="0" step="0.01" max="' + bal + '" data-invoice-id="' + inv.id + '" data-balance="' + bal + '" value="' + prefill + '" placeholder="0.00"></label>';
+      }).join('') : '<p class="mail-note">No open invoices for this customer.</p>';
+      if (invoiceId) {
+        let sum = 0;
+        wrap.querySelectorAll('input[data-invoice-id]').forEach(function (inp) { sum += Number(inp.value) || 0; });
+        document.getElementById('pay-recv-amount').value = sum ? String(sum) : '';
+      }
+      document.getElementById('pay-receive').hidden = false;
+    }
+    async function savePayReceive() {
+      if (!payRecvState) return;
+      const amount = Number(document.getElementById('pay-recv-amount').value) || 0;
+      if (!(amount > 0)) { payRecvShowMsg('Enter a payment amount.'); return; }
+      const applications = [];
+      document.querySelectorAll('#pay-recv-apps input[data-invoice-id]').forEach(function (inp) {
+        const n = Number(inp.value) || 0;
+        if (n > 0) applications.push({ invoiceId: Number(inp.getAttribute('data-invoice-id')), amount: n });
+      });
+      const applied = applications.reduce(function (s, a) { return s + a.amount; }, 0);
+      if (applied - amount > 0.009) { payRecvShowMsg('Applied amount cannot exceed the payment.'); return; }
+      try {
+        await api('/api/admin/customer-payments', {
+          method: 'POST',
+          body: JSON.stringify({
+            customerId: payRecvState.customerId,
+            paymentDate: document.getElementById('pay-recv-date').value,
+            amount: amount,
+            method: document.getElementById('pay-recv-method').value,
+            reference: document.getElementById('pay-recv-ref').value,
+            memo: document.getElementById('pay-recv-memo').value,
+            applications: applications
+          })
+        });
+        closePayReceive();
+        await loadSalesDocs();
+        if (ccDetailId) renderCcDetail(ccDetailId);
+        const soId = document.getElementById('so-id') && document.getElementById('so-id').value;
+        if (soId) {
+          try {
+            const data = await api('/api/admin/sales-docs/' + encodeURIComponent(soId));
+            if (data && data.doc) fillSoForm(data.doc);
+          } catch (e) {}
+        }
+        showSoMsg('Payment saved.', true);
+      } catch (err) {
+        payRecvShowMsg(err.message || 'Could not save payment.');
+      }
+    }
+    document.getElementById('pay-recv-close').addEventListener('click', closePayReceive);
+    document.getElementById('pay-recv-cancel').addEventListener('click', closePayReceive);
+    document.getElementById('pay-recv-save').addEventListener('click', savePayReceive);
+
+
     function fillCcForm(c) {
       const set = function (id, value) {
         const el = document.getElementById(id);
@@ -12785,6 +12975,12 @@
       set('cc-tax-rate', c.taxRate || 0);
       set('cc-terms', c.paymentTerms || 'Net 30');
       set('cc-pay-method', c.paymentMethod || '');
+      check('cc-pass-card-fee', c.passCardFee);
+      set('cc-card-fee-pct', c.cardFeePercent == null ? '' : c.cardFeePercent);
+      set('cc-collect-default', c.invoiceCollectDefault === 'deposit' ? 'deposit' : 'full');
+      set('cc-deposit-kind', c.invoiceDepositKind === 'amount' ? 'amount' : 'percent');
+      set('cc-deposit-value', c.invoiceDepositValue != null ? c.invoiceDepositValue : 30);
+      if (typeof syncCcPaySettingsUi === 'function') syncCcPaySettingsUi();
       set('cc-delivery', c.formDelivery || 'Email');
       set('cc-lang', c.invoiceLanguage || 'English');
       set('cc-open-bal', c.openingBalance || 0);
@@ -12849,6 +13045,15 @@
         taxRate: val('cc-tax-rate'),
         paymentTerms: val('cc-terms') || 'Net 30',
         paymentMethod: val('cc-pay-method'),
+        passCardFee: !!(document.getElementById('cc-pass-card-fee') && document.getElementById('cc-pass-card-fee').checked),
+        cardFeePercent: (function () {
+          const el = document.getElementById('cc-card-fee-pct');
+          if (!el || el.value === '') return null;
+          return Number(el.value);
+        })(),
+        invoiceCollectDefault: val('cc-collect-default') === 'deposit' ? 'deposit' : 'full',
+        invoiceDepositKind: val('cc-deposit-kind') === 'amount' ? 'amount' : 'percent',
+        invoiceDepositValue: Number(val('cc-deposit-value') || 30),
         formDelivery: val('cc-delivery'),
         invoiceLanguage: val('cc-lang'),
         openingBalance: val('cc-open-bal'),
@@ -13141,7 +13346,7 @@
         if (d.type === 'quote' && isOpenQuote(d)) openQuotes += 1;
         if (d.type !== 'invoice') return;
         if (['draft', 'sent', 'overdue'].indexOf(d.status) === -1) return;
-        const amt = Number(d.total) || 0;
+        const amt = d.balanceDue != null ? Number(d.balanceDue) : (Number(d.total) || 0);
         openBalance += amt;
         if (d.status === 'overdue' || (d.dueDate && d.dueDate < today && d.status !== 'paid')) overdue += amt;
       });
@@ -16799,11 +17004,14 @@
       document.getElementById('so-grand').textContent = moneyText(grand);
       const headAmt = document.getElementById('so-head-amount');
       if (headAmt) headAmt.textContent = moneyText(grand);
-      const paid = document.getElementById('so-status').value === 'paid';
       const payEl = document.getElementById('so-payments-applied');
       const dueEl = document.getElementById('so-balance-due');
-      if (payEl) payEl.textContent = moneyText(paid ? grand : 0);
-      if (dueEl) dueEl.textContent = moneyText(paid ? 0 : grand);
+      const amountPaid = (document.getElementById('so-type').value === 'invoice')
+        ? Number(window.soInvoiceAmountPaid || 0)
+        : (document.getElementById('so-status').value === 'paid' ? grand : 0);
+      const balanceDue = Math.max(0, grand - amountPaid);
+      if (payEl) payEl.textContent = moneyText(amountPaid);
+      if (dueEl) dueEl.textContent = moneyText(balanceDue);
     }
 
     function setSoTypeUi(type) {
@@ -17239,6 +17447,7 @@
       document.getElementById('so-to-invoice').classList.toggle('hidden', soReadOnly || !doc.id || type === 'invoice');
       const ribbonDel = document.getElementById('so-ribbon-delete');
       if (ribbonDel) ribbonDel.disabled = soReadOnly || !doc.id;
+      window.soInvoiceAmountPaid = doc.type === 'invoice' ? Number(doc.amountPaid || 0) : 0;
       refreshSoTotals();
       fillSoStatusBadge(doc.status || 'draft');
       fillSoDocSide(soCustomerById(doc.customerId) || (doc.customerName ? {
@@ -17616,6 +17825,12 @@
       document.getElementById('cc-detail-new-menu').classList.toggle('hidden');
     });
     document.getElementById('cc-detail-new-menu').addEventListener('click', function (e) {
+      const payBtn = e.target.closest('button[data-pay-receive]');
+      if (payBtn) {
+        document.getElementById('cc-detail-new-menu').classList.add('hidden');
+        if (ccDetailId) openPayReceive(ccDetailId);
+        return;
+      }
       const btn = e.target.closest('button[data-so-type]');
       if (!btn) return;
       openNewCustomerTransaction(btn.getAttribute('data-so-type'));
@@ -19079,6 +19294,49 @@
       box.classList.remove('is-open');
       box.hidden = true;
     }
+
+    function syncMailPayBox(draft) {
+      const box = document.getElementById('mail-pay-box');
+      if (!box) return;
+      const isInvoice = draft && draft.docKind === 'invoice' && draft.docId;
+      box.hidden = !isInvoice;
+      if (!isInvoice) return;
+      const customer = (companyCustomers || []).find(function (c) {
+        return String(c.id) === String(draft.partyId);
+      }) || null;
+      const method = customer && customer.paymentMethod || '';
+      const online = /^(ACH|Credit card)$/i.test(method);
+      const include = document.getElementById('mail-include-pay');
+      if (include) {
+        include.checked = online;
+        include.disabled = !online;
+      }
+      const mode = document.getElementById('mail-collect-mode');
+      const defaultMode = customer && customer.invoiceCollectDefault === 'deposit' ? 'deposit' : 'full';
+      if (mode) mode.value = defaultMode;
+      const doc = (salesAllDocs || salesDocs || []).find(function (d) { return String(d.id) === String(draft.docId); });
+      const balance = doc ? Number(doc.balanceDue != null ? doc.balanceDue : doc.total) || 0 : 0;
+      let minAmt = balance;
+      if (defaultMode === 'deposit' && customer) {
+        if (customer.invoiceDepositKind === 'amount') minAmt = Number(customer.invoiceDepositValue) || balance;
+        else minAmt = Math.round(balance * ((Number(customer.invoiceDepositValue) || 30) / 100) * 100) / 100;
+      }
+      if (minAmt > balance) minAmt = balance;
+      if (minAmt < 0.01 && balance > 0) minAmt = Math.min(0.01, balance);
+      const depWrap = document.getElementById('mail-deposit-wrap');
+      const depAmt = document.getElementById('mail-deposit-amount');
+      if (depWrap) depWrap.hidden = defaultMode !== 'deposit';
+      if (depAmt) depAmt.value = minAmt ? String(minAmt) : '';
+      if (!online) {
+        const note = document.getElementById('mail-note');
+        // leave as-is; checkbox disabled means no pay link
+      }
+    }
+    document.getElementById('mail-collect-mode') && document.getElementById('mail-collect-mode').addEventListener('change', function () {
+      const depWrap = document.getElementById('mail-deposit-wrap');
+      if (depWrap) depWrap.hidden = this.value !== 'deposit';
+    });
+
     function fillMailFields(draft) {
       document.getElementById('mail-record-id').value = (draft && draft.recordId) || '';
       document.getElementById('mail-to').value = (draft && draft.to) || '';
@@ -19161,6 +19419,7 @@
         ? ('Sent ' + kind + (number ? ' ' + number : ''))
         : ('Email ' + kind + (number ? ' ' + number : ''));
       fillMailFields(mailState);
+      syncMailPayBox(mailState);
       mailSetReadonly(mailState.mode === 'review');
       mailShowMsg('');
       syncMailGmailUi();
@@ -19208,8 +19467,35 @@
       if (!mailState || mailState.mode === 'review') return;
       const to = document.getElementById('mail-to').value.trim();
       const subject = document.getElementById('mail-subject').value.trim();
-      const body = document.getElementById('mail-body').value.trim();
+      let body = document.getElementById('mail-body').value.trim();
       const attach = document.getElementById('mail-attach').checked;
+      const includePay = document.getElementById('mail-include-pay');
+      if (mailState && mailState.docKind === 'invoice' && mailState.docId && includePay && includePay.checked && !includePay.disabled) {
+        try {
+          const collectMode = (document.getElementById('mail-collect-mode') || {}).value || 'full';
+          const minAmount = collectMode === 'deposit'
+            ? Number((document.getElementById('mail-deposit-amount') || {}).value || 0)
+            : undefined;
+          const linkRes = await api('/api/admin/sales-docs/' + encodeURIComponent(mailState.docId) + '/pay-link', {
+            method: 'POST',
+            body: JSON.stringify({ collectMode: collectMode, minAmount: minAmount })
+          });
+          if (linkRes && linkRes.payUrl) {
+            const min = linkRes.link && linkRes.link.minAmount != null ? linkRes.link.minAmount : null;
+            const bal = linkRes.invoice && linkRes.invoice.balanceDue != null ? linkRes.invoice.balanceDue : null;
+            body += '\n\nPay online: ' + linkRes.payUrl;
+            if (min != null && bal != null && min < bal - 0.009) {
+              body += '\nMinimum payment for this email: $' + Number(min).toFixed(2) + ' (you may pay any amount up to the balance of $' + Number(bal).toFixed(2) + ').';
+            } else if (bal != null) {
+              body += '\nBalance due: $' + Number(bal).toFixed(2) + '.';
+            }
+            body += '\nThe attached invoice shows the full invoice amount.';
+          }
+        } catch (payErr) {
+          mailShowMsg(payErr.message || 'Could not create the pay link.');
+          return;
+        }
+      }
       if (!staffGmail.connected) {
         mailShowMsg('Connect Gmail to send from your own inbox.');
         return;

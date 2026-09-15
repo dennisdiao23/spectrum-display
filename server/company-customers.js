@@ -6,9 +6,9 @@ function bool(value) {
   return value === true || value === 1 || value === '1' || value === 'true';
 }
 
-function num(value) {
+function num(value, fallback) {
   const n = Number(value);
-  return Number.isFinite(n) ? n : 0;
+  return Number.isFinite(n) ? n : (fallback != null ? fallback : 0);
 }
 
 function normalizeCustomer(input) {
@@ -63,6 +63,11 @@ function normalizeCustomer(input) {
     taxRate: num(src.taxRate != null ? src.taxRate : src.tax_rate),
     paymentTerms: trim(src.paymentTerms || src.payment_terms, 80) || 'Net 30',
     paymentMethod: trim(src.paymentMethod || src.payment_method, 80),
+    passCardFee: bool(src.passCardFee != null ? src.passCardFee : src.pass_card_fee),
+    invoiceCollectDefault: trim(src.invoiceCollectDefault || src.invoice_collect_default, 20) || 'full',
+    invoiceDepositKind: trim(src.invoiceDepositKind || src.invoice_deposit_kind, 20) || 'percent',
+    invoiceDepositValue: num(src.invoiceDepositValue != null ? src.invoiceDepositValue : src.invoice_deposit_value, 30),
+    cardFeePercent: src.cardFeePercent != null && src.cardFeePercent !== '' ? num(src.cardFeePercent) : (src.card_fee_percent != null && src.card_fee_percent !== '' ? num(src.card_fee_percent) : null),
     formDelivery: trim(src.formDelivery || src.form_delivery, 40) || 'Email',
     invoiceLanguage: trim(src.invoiceLanguage || src.invoice_language, 40) || 'English',
     openingBalance: num(src.openingBalance != null ? src.openingBalance : src.opening_balance),
@@ -126,6 +131,11 @@ function formatCustomer(row) {
     taxRate: num(row.tax_rate),
     paymentTerms: row.payment_terms || 'Net 30',
     paymentMethod: row.payment_method || '',
+    passCardFee: !!(row.pass_card_fee === 1 || row.pass_card_fee === true),
+    invoiceCollectDefault: row.invoice_collect_default || 'full',
+    invoiceDepositKind: row.invoice_deposit_kind || 'percent',
+    invoiceDepositValue: num(row.invoice_deposit_value != null ? row.invoice_deposit_value : 30),
+    cardFeePercent: row.card_fee_percent == null || row.card_fee_percent === '' ? null : num(row.card_fee_percent),
     formDelivery: row.form_delivery || 'Email',
     invoiceLanguage: row.invoice_language || 'English',
     openingBalance: num(row.opening_balance),
@@ -183,6 +193,11 @@ function dbFields(input) {
     tax_rate: input.taxRate,
     payment_terms: input.paymentTerms,
     payment_method: input.paymentMethod,
+    pass_card_fee: input.passCardFee ? 1 : 0,
+    invoice_collect_default: input.invoiceCollectDefault === 'deposit' ? 'deposit' : 'full',
+    invoice_deposit_kind: input.invoiceDepositKind === 'amount' ? 'amount' : 'percent',
+    invoice_deposit_value: num(input.invoiceDepositValue, 30),
+    card_fee_percent: input.cardFeePercent == null || input.cardFeePercent === '' ? null : num(input.cardFeePercent),
     form_delivery: input.formDelivery,
     invoice_language: input.invoiceLanguage,
     opening_balance: input.openingBalance,
@@ -215,7 +230,7 @@ function dbFields(input) {
 
 function forSupabase(fields) {
   const out = Object.assign({}, fields);
-  ['ship_same', 'is_sub', 'email_consent', 'tax_exempt'].forEach(function (key) {
+  ['ship_same', 'is_sub', 'email_consent', 'tax_exempt', 'pass_card_fee'].forEach(function (key) {
     out[key] = !!fields[key];
   });
   return out;
