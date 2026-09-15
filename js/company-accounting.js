@@ -697,7 +697,10 @@
     if (payDate && !payDate.value) payDate.value = new Date().toISOString().slice(0, 10);
 
     var newJe = $('acct-new-journal');
-    if (newJe) newJe.addEventListener('click', openJournalModal);
+    if (newJe) {
+      newJe.classList.toggle('hidden', !H.canEdit('journals'));
+      newJe.addEventListener('click', openJournalModal);
+    }
     var addJeLine = $('acct-add-je-line');
     if (addJeLine) addJeLine.addEventListener('click', function () {
       var cur = Array.from(document.querySelectorAll('#acct-je-lines .acct-je-line')).map(function () { return {}; });
