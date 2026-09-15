@@ -129,6 +129,7 @@ function openDb() {
   seedAdminRoles(db);
   ensureCompanyCustomers(db);
   require('./company-crm').ensureCompanyCrm(db);
+  require('./company-accounting').ensureCompanyAccounting(db);
   require('./dealer-portal').ensureDealerPortal(db);
   require('./site-analytics').ensureSqlite(db);
   ensureCompanySales(db);
