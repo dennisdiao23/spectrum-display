@@ -17,6 +17,20 @@ const STORE_DETAIL_KEYS = [
   'shopify_variants', 'store_collection', 'store_lead', 'store_featured', 'store_icon',
   'store_listed', 'store_sort', 'store_mode'
 ];
+const PHOTO_DETAIL_KEYS = ['photoFit'];
+
+function normalizePhotoFit(value) {
+  return String(value == null ? '' : value).toLowerCase().trim() === 'fill' ? 'fill' : 'fit';
+}
+
+function applyPhotoFit(details, body) {
+  const next = details && typeof details === 'object' ? details : {};
+  if (!body) return next;
+  if (Object.prototype.hasOwnProperty.call(body, 'photoFit') || Object.prototype.hasOwnProperty.call(body, 'photo_fit')) {
+    next.photoFit = normalizePhotoFit(body.photoFit != null ? body.photoFit : body.photo_fit);
+  }
+  return next;
+}
 
 function loadSeedBrands() {
   const brands = JSON.parse(fs.readFileSync(SEED_PATH, 'utf8'));
@@ -50,7 +64,7 @@ function rewriteCabinetCopy(value) {
 function detailsFromSeries(s) {
   const details = {};
   if (!s || typeof s !== 'object') return details;
-  ['cats', 'specTable', 'lead', 'sourceUrl', 'features'].concat(CONTROL_DETAIL_KEYS, STORE_DETAIL_KEYS).forEach(function (k) {
+  ['cats', 'specTable', 'lead', 'sourceUrl', 'features'].concat(CONTROL_DETAIL_KEYS, STORE_DETAIL_KEYS, PHOTO_DETAIL_KEYS).forEach(function (k) {
     if (s[k] != null) details[k] = s[k];
   });
   if (s.type === 'control' || s.subtype) {
@@ -1524,9 +1538,10 @@ function rowToProduct(row, brand) {
     priceLabel: unitPrice ? 'From $' + Number(unitPrice).toLocaleString() : 'Request quote'
   };
   if (control) product.priceEach = unitPrice;
-  ['specTable', 'lead', 'sourceUrl', 'features'].concat(CONTROL_DETAIL_KEYS, STORE_DETAIL_KEYS).forEach(function (k) {
+  ['specTable', 'lead', 'sourceUrl', 'features'].concat(CONTROL_DETAIL_KEYS, STORE_DETAIL_KEYS, PHOTO_DETAIL_KEYS).forEach(function (k) {
     if (details[k] != null) product[k] = details[k];
   });
+  product.photoFit = normalizePhotoFit(details.photoFit != null ? details.photoFit : product.photoFit);
   return product;
 }
 
@@ -1592,6 +1607,9 @@ module.exports = {
   stampCatalogKinds,
   isMissingColumnError,
   CONTROL_DETAIL_KEYS,
+  PHOTO_DETAIL_KEYS,
+  normalizePhotoFit,
+  applyPhotoFit,
   parseDetails,
   mergeProductDetails,
   nowIso,

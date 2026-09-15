@@ -654,6 +654,7 @@ async function main() {
       }
     }
     shopStore.applyStoreFlags(details, body);
+    dbUtil.applyPhotoFit(details, body);
     if (!existing) {
       const bodyHasListed = body && (
         Object.prototype.hasOwnProperty.call(body, 'store_listed') ||
@@ -2818,8 +2819,16 @@ async function main() {
       const item = data.item;
       const existing = { image: item.image || '', gallery: item.gallery || [] };
       const media = await nextProductMedia(existing, req.body || {}, req.files);
+      if (item.photoProductId && (bodyHas(req.body, 'photoFit') || bodyHas(req.body, 'photo_fit'))) {
+        const raw = await store.getRawProduct(item.photoProductId);
+        if (raw) {
+          const details = dbUtil.applyPhotoFit(dbUtil.parseDetails(raw), req.body || {});
+          await store.updateProductDetails(item.photoProductId, details);
+        }
+      }
       if (!media) {
-        return res.json({ ok: true, item: item, moves: data.moves });
+        const unchanged = await store.getInventoryItem(req.params.id);
+        return res.json({ ok: true, item: unchanged.item, moves: unchanged.moves });
       }
       if (item.photoProductId) {
         await store.updateProductMedia(item.photoProductId, media);

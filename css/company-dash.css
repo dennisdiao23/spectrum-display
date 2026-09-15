@@ -3744,6 +3744,10 @@ body.inv-split-dragging .inv-split-resizer::after {
 #ws-form-wrap .wc-shot-tools button {
   color: #334155;
 }
+#ws-form-wrap .wc-photo-fit-label,
+#ws-form-wrap .wc-photo-fit-note {
+  color: #94a3b8;
+}
 #accounts-section:not(.wa-split-on) #wa-split {
   display: block;
 }
@@ -7905,9 +7909,48 @@ body.dash-split-lock #crm-pipe-section .crm-board {
 .wc-shot img {
   width: 112px;
   height: 84px;
-  object-fit: cover;
+  object-fit: contain;
   display: block;
   background: #0b1220;
+}
+.wc-gallery.is-fill .wc-shot img,
+.wc-shot.is-fill img {
+  object-fit: cover;
+}
+.wc-photo-fit {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.4rem;
+  margin: 0 0 0.55rem;
+}
+.wc-photo-fit-label {
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: #475569;
+  margin-right: 0.15rem;
+}
+.wc-photo-fit button {
+  appearance: none;
+  border: 1px solid var(--dash-line);
+  background: #fff;
+  border-radius: 999px;
+  font: inherit;
+  font-size: 0.72rem;
+  font-weight: 700;
+  padding: 0.18rem 0.7rem;
+  cursor: pointer;
+}
+.wc-photo-fit button.is-on {
+  background: #e8f0ff;
+  border-color: #7aa2ff;
+  color: #1d4ed8;
+}
+.wc-photo-fit-note {
+  flex: 1 1 100%;
+  font-size: 0.72rem;
+  color: #64748b;
+  margin: 0;
 }
 .wc-shot-label {
   display: block;

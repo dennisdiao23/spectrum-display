@@ -417,7 +417,7 @@
     return '<article class="shop-card">' +
       '<a class="shop-card-main" href="' + esc(href('/products/' + p.handle)) + '" data-shop-link>' +
         (opts.caption ? '<div class="shop-caption">' + esc(opts.caption) + '</div>' : '') +
-        '<div class="shop-card-media">' +
+        '<div class="shop-card-media' + (window.spectrumPhotoFit && spectrumPhotoFit(p) === 'fill' ? ' is-fill' : '') + '">' +
           (photo ? '<img src="' + esc(photo) + '" alt="">' : '') +
         '</div>' +
         '<h3>' + esc(p.name) + '</h3>' +
@@ -565,8 +565,9 @@
       if (fallback) photos = [fallback];
     }
     var photo = imgSrc(photos[0], 'card');
+    var fill = window.spectrumPhotoFit && spectrumPhotoFit(p) === 'fill';
     var html = '<div class="shop-wrap"><div class="shop-pdp">' +
-      '<div><div class="shop-pdp-photo">' + (photo ? '<img id="pdp-photo" src="' + esc(photo) + '" alt="">' : '') + '</div>' +
+      '<div><div class="shop-pdp-photo' + (fill ? ' is-fill' : '') + '">' + (photo ? '<img id="pdp-photo" src="' + esc(photo) + '" alt="">' : '') + '</div>' +
       (photos.length > 1 ? '<div class="shop-thumbs">' + photos.map(function (src, i) {
         return '<button type="button" data-photo="' + esc(imgSrc(src, 'card')) + '" class="' + (i === 0 ? 'is-on' : '') + '"><img src="' + esc(imgSrc(src, 'thumb')) + '" alt=""></button>';
       }).join('') + '</div>' : '') + '</div>' +

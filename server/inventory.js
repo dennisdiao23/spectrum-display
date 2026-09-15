@@ -164,6 +164,15 @@ function storeListedFromDetails(details) {
   return v === true || v === 1 || v === '1' || v === 'true' || v === 't';
 }
 
+function photoFitFromDetails(details) {
+  let d = details;
+  if (typeof d === 'string') {
+    try { d = JSON.parse(d); } catch (e) { d = {}; }
+  }
+  if (!d || typeof d !== 'object') return 'fit';
+  return String(d.photoFit || '').toLowerCase() === 'fill' ? 'fill' : 'fit';
+}
+
 function photoMapForItem(maps) {
   const list = maps || [];
   for (let i = 0; i < list.length; i++) {
@@ -181,12 +190,14 @@ function applySharedPhotos(item) {
     item.photoSource = 'item';
     item.photoProductId = '';
     item.photoProductName = '';
+    item.photoFit = 'fit';
     item.image = own.image;
     return item;
   }
   item.photoSource = 'product';
   item.photoProductId = mapped.productId != null ? String(mapped.productId) : '';
   item.photoProductName = mapped.productName || '';
+  item.photoFit = mapped.photoFit || 'fit';
   const product = mediaFromUrls(urlsFromMedia(mapped.productImage, mapped.productGallery));
   const use = mediaHasPhotos(product) ? product : own;
   item.image = use.image;
@@ -960,7 +971,8 @@ function mapsByItem(maps) {
       productGallery: parseGallery(
         m.product_gallery != null ? m.product_gallery : (m.productGallery != null ? m.productGallery : '')
       ),
-      storeListed: storeListedFromDetails(m.product_details != null ? m.product_details : m.details)
+      storeListed: storeListedFromDetails(m.product_details != null ? m.product_details : m.details),
+      photoFit: photoFitFromDetails(m.product_details != null ? m.product_details : m.details)
     });
   });
   return out;

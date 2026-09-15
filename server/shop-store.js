@@ -3,6 +3,8 @@
  * Never exposes dealer nets or on-hand integers.
  */
 
+const dbUtil = require('./db');
+
 const COLLECTIONS = [
   { id: 'fine_pitch', slug: 'fine-pitch', label: 'Fine pitch', mode: 'configure' },
   { id: 'poster', slug: 'poster', label: 'Poster', mode: 'configure' },
@@ -330,6 +332,7 @@ function toPublicCard(product, opts) {
     inputs: details.inputs || '',
     features: Array.isArray(details.features) ? details.features : (product.features || []),
     bestFor: details.bestFor || '',
+    photoFit: dbUtil.normalizePhotoFit(details.photoFit != null ? details.photoFit : product.photoFit),
     configureUrl: wwwOrigin() + '/led-wall-calculator?brand=' + encodeURIComponent(product.brandId || '') + '&series=' + encodeURIComponent(product.id || '')
   };
 }
@@ -446,6 +449,7 @@ function toAdminStoreItem(product, opts) {
     features: Array.isArray(details.features) ? details.features.slice() : [],
     image: product.image || '',
     gallery: Array.isArray(product.gallery) ? product.gallery.slice() : [],
+    photoFit: dbUtil.normalizePhotoFit(details.photoFit != null ? details.photoFit : product.photoFit),
     hidden: websiteHidden,
     store_listed: listed,
     store_collection: storedCollection === 'hidden' || COLLECTION_BY_ID[storedCollection] ? storedCollection : '',
@@ -785,11 +789,11 @@ async function saveStoreListing(store, productId, body, media) {
   body = body || {};
   const existing = await store.getRawProduct(productId);
   if (!existing) return null;
-  const dbUtil = require('./db');
   const current = await store.getProduct(productId);
   if (!current) return null;
   let details = applyStoreFlags(Object.assign({}, dbUtil.parseDetails(existing)), body);
   details = applySellFields(details, body);
+  dbUtil.applyPhotoFit(details, body);
   details.store_listed = true;
 
   const name = Object.prototype.hasOwnProperty.call(body, 'name')

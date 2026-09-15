@@ -46,6 +46,13 @@
     return abs(src);
   }
 
+  function photoFit(p) {
+    var raw = '';
+    if (p) raw = p.photoFit || (p.details && p.details.photoFit) || '';
+    return String(raw || '').toLowerCase() === 'fill' ? 'fill' : 'fit';
+  }
+
   global.spectrumProductPhoto = productPhoto;
   global.spectrumProductPhotoFallback = fallbackSrc;
+  global.spectrumPhotoFit = photoFit;
 })(window);

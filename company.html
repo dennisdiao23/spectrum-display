@@ -14,12 +14,12 @@
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
   <title>Company | Spectrum Display</title>
   <meta name="robots" content="noindex, nofollow" />
-  <link rel="stylesheet" href="/css/company-dash.css?v=invimg3" />
+  <link rel="stylesheet" href="/css/company-dash.css?v=photofit1" />
   <script src="/js/address-autocomplete.js"></script>
   <script src="/js/company-chat.js?v=chatcrm3"></script>
   <script src="/js/company-crm.js?v=zoomphone3"></script>
   <script src="/js/company-traffic.js?v=loc1"></script>
-  <script src="/js/company-website-control.js?v=webctrl5"></script>
+  <script src="/js/company-website-control.js?v=webctrl6"></script>
   <script src="/js/print-form.js?v=forms20"></script>
   <script>
     if ('serviceWorker' in navigator && location.pathname.indexOf('/company') === 0) {
@@ -853,7 +853,13 @@
           <div class="sm:col-span-2">
             <p class="block text-xs text-slate-400 mb-1">Photos</p>
             <p class="text-[11px] text-slate-500 mb-2">First photo is the store hero. Hero / reorder / remove here. These are the same pictures on the website product page.</p>
-            <div class="wc-gallery" id="ws-photos-row">
+            <div class="wc-photo-fit" id="ws-photo-fit">
+              <span class="wc-photo-fit-label">Photo crop</span>
+              <button type="button" data-ws-photo-fit="fit" class="is-on">Fit</button>
+              <button type="button" data-ws-photo-fit="fill">Fill</button>
+              <p class="wc-photo-fit-note">Fit shows the whole photo. Fill zooms to fill the box.</p>
+            </div>
+            <div class="wc-gallery is-fit" id="ws-photos-row">
               <div id="ws-gallery" class="ws-gallery-shots"></div>
               <label class="wc-shot wc-shot-add">
                 <input id="ws-gallery-files" type="file" accept="image/jpeg,image/png,image/webp,image/gif" multiple>
@@ -4016,7 +4022,13 @@
           <div class="cc-sec-body">
             <div class="cc-field wide">
               <p class="cc-note inv-photos-lead" id="inv-photos-lead"></p>
-              <div class="wc-gallery" id="inv-photos-row">
+              <div class="wc-photo-fit" id="inv-photo-fit">
+                <span class="wc-photo-fit-label">Photo crop</span>
+                <button type="button" data-inv-photo-fit="fit" class="is-on">Fit</button>
+                <button type="button" data-inv-photo-fit="fill">Fill</button>
+                <p class="wc-photo-fit-note">Fit shows the whole photo. Fill zooms to fill the box.</p>
+              </div>
+              <div class="wc-gallery is-fit" id="inv-photos-row">
                 <div id="inv-gallery" class="ws-gallery-shots"></div>
                 <label class="wc-shot wc-shot-add" id="inv-photos-add">
                   <input id="inv-gallery-files" type="file" accept="image/jpeg,image/png,image/webp,image/gif" multiple>
@@ -4383,7 +4395,7 @@
     </a>
   </nav>
 
-  <link rel="stylesheet" href="/css/company-dash.css?v=invimg3" />
+  <link rel="stylesheet" href="/css/company-dash.css?v=photofit1" />
 
   <script>
     const loginPanel = document.getElementById('login-panel');
@@ -6529,6 +6541,18 @@
       if (/^(https?:|data:|\/)/i.test(s)) return s;
       return '/' + s;
     }
+    function photoFitValue(value) {
+      return String(value || '').toLowerCase() === 'fill' ? 'fill' : 'fit';
+    }
+    function syncPhotoFitButtons(hostId, attr, value) {
+      const fit = photoFitValue(value);
+      const host = document.getElementById(hostId);
+      if (!host) return fit;
+      host.querySelectorAll('[' + attr + ']').forEach(function (btn) {
+        btn.classList.toggle('is-on', btn.getAttribute(attr) === fit);
+      });
+      return fit;
+    }
     function listingThumb(p) {
       if (p && p.image) return p.image;
       const gallery = (p && p.gallery) || [];
@@ -6651,6 +6675,7 @@
         productId: document.getElementById('ws-shopify-product-id').value,
         handle: document.getElementById('ws-shopify-handle').value,
         gallery: wsGallery.slice(),
+        photoFit: photoFitValue(wsPhotoFit),
         pending: wsPendingFiles.slice(),
         _id: wsEditingId,
         _hidden: wsStoreHidden
@@ -6687,6 +6712,7 @@
       wsEditingId = vals._id || null;
       wsStoreHidden = !!vals._hidden;
       if (vals.gallery) wsGallery = vals.gallery.slice();
+      if (vals.photoFit) wsPhotoFit = photoFitValue(vals.photoFit);
       if (vals.pending) wsPendingFiles = vals.pending.slice();
       renderWsGallery();
       syncWsHideButton();
@@ -6738,6 +6764,15 @@
           '<span class="wc-shot-label">' + (blob ? 'New' : (i === 0 ? 'Hero' : String(i + 1))) + '</span>' +
           '<span class="wc-shot-tools">' + tools + '</span></div>';
       }).join('');
+      syncWsPhotoFitUi();
+    }
+    function syncWsPhotoFitUi() {
+      wsPhotoFit = syncPhotoFitButtons('ws-photo-fit', 'data-ws-photo-fit', wsPhotoFit);
+      const row = document.getElementById('ws-photos-row');
+      if (row) {
+        row.classList.toggle('is-fit', wsPhotoFit === 'fit');
+        row.classList.toggle('is-fill', wsPhotoFit === 'fill');
+      }
     }
     function mutateWsGallery(fn) {
       wsGallery = fn(wsGallery.slice());
@@ -6903,6 +6938,7 @@
       });
       revokeWsBlobs();
       wsGallery = storeGalleryFor(item);
+      wsPhotoFit = photoFitValue(item && item.photoFit);
       wsPendingFiles = [];
       renderWsGallery();
       document.getElementById('ws-blocked-note').classList.toggle('hidden', !(item && item.storeBlocked));
@@ -7163,6 +7199,7 @@
       const keep = wsGallery.filter(function (url) { return url && String(url).indexOf('blob:') !== 0; });
       fd.append('galleryKeep', JSON.stringify(keep));
       if (keep[0]) fd.append('heroUrl', keep[0]);
+      fd.append('photoFit', photoFitValue(wsPhotoFit));
       if (!keep.length && !wsPendingFiles.length) fd.append('clearImage', '1');
       wsPendingFiles.forEach(function (file) { fd.append('gallery', file); });
       const data = await api('/api/admin/products/' + encodeURIComponent(wsEditingId) + '/store', {
@@ -8276,6 +8313,7 @@
     let wsStoreHidden = false;
     let wsPane = 'edit';
     let wsGallery = [];
+    let wsPhotoFit = 'fit';
     let wsPendingFiles = [];
     let wsListingItems = [];
     const WA_TAB_MAX = 7;
@@ -11103,6 +11141,15 @@
       const item = invPhotoItem();
       const can = canEdit('inventory');
       if (add) add.classList.toggle('hidden', !can);
+      const fitHost = document.getElementById('inv-photo-fit');
+      if (fitHost) fitHost.classList.toggle('hidden', !(item && item.photoProductId));
+      const row = document.getElementById('inv-photos-row');
+      const fit = photoFitValue(item && item.photoFit);
+      syncPhotoFitButtons('inv-photo-fit', 'data-inv-photo-fit', fit);
+      if (row) {
+        row.classList.toggle('is-fit', fit === 'fit');
+        row.classList.toggle('is-fill', fit === 'fill');
+      }
       if (lead) {
         if (item && item.photoProductId) {
           lead.textContent = 'Same photos as Website and Store' +
@@ -11142,7 +11189,7 @@
       renderInvPhotos();
     }
 
-    async function saveInvPhotos(urls, files) {
+    async function saveInvPhotos(urls, files, photoFit) {
       const item = invPhotoItem();
       if (!item || !item.id || invPhotosBusy) return;
       invPhotosBusy = true;
@@ -11156,6 +11203,7 @@
       const keep = (urls || []).filter(function (url) { return url && String(url).indexOf('blob:') !== 0; });
       fd.append('galleryKeep', JSON.stringify(keep));
       if (keep[0]) fd.append('heroUrl', keep[0]);
+      fd.append('photoFit', photoFitValue(photoFit != null ? photoFit : item.photoFit));
       if (!keep.length && !(files && files.length)) fd.append('clearImage', '1');
       Array.from(files || []).forEach(function (file) {
         if (file && /^image\/(jpeg|png|webp|gif)$/i.test(file.type || '')) fd.append('gallery', file);
@@ -20762,6 +20810,14 @@
     if (invPhotosSec) {
       invPhotosSec.addEventListener('click', function (e) {
         if (!canEdit('inventory')) return;
+        const fitBtn = e.target.closest('[data-inv-photo-fit]');
+        if (fitBtn) {
+          const next = photoFitValue(fitBtn.getAttribute('data-inv-photo-fit'));
+          const item = invPhotoItem();
+          if (item) item.photoFit = next;
+          saveInvPhotos(invPhotoUrls(item), [], next);
+          return;
+        }
         const hero = e.target.closest('[data-inv-shot-hero]');
         if (hero) {
           const hi = Number(hero.getAttribute('data-inv-shot-hero'));
@@ -21360,6 +21416,12 @@
         if (paneBtn && storeSection.contains(paneBtn)) {
           wsPane = paneBtn.getAttribute('data-ws-pane') || 'edit';
           showWsRightPanel((!wsActiveTab || wsActiveTab === 'overview') ? 'overview' : 'item');
+          return;
+        }
+        const fitBtn = e.target.closest('[data-ws-photo-fit]');
+        if (fitBtn) {
+          wsPhotoFit = photoFitValue(fitBtn.getAttribute('data-ws-photo-fit'));
+          syncWsPhotoFitUi();
           return;
         }
         const hero = e.target.closest('[data-ws-shot-hero]');
