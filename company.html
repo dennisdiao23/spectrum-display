@@ -3134,60 +3134,6 @@
         </div>
       </div>
 
-      <div id="settings-pane" class="hidden space-y-6">
-      <div id="company-section" class="hidden cc-list-inner">
-        <div class="page-kpis" id="ca-overview">
-          <button type="button" class="dash-kpi is-on" data-filter="all" aria-pressed="true">
-            <span class="dash-kpi-icon dash-kpi-icon-website" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="5" width="16" height="14" rx="2"/><path d="M8 9h8M8 13h5"/></svg></span>
-            <span class="dash-kpi-label">Total accounts</span>
-            <strong class="dash-kpi-value" id="ca-stat-all">—</strong>
-            <span class="dash-kpi-hint">Logins on file</span>
-          </button>
-          <button type="button" class="dash-kpi" data-filter="billings" aria-pressed="false">
-            <span class="dash-kpi-icon dash-kpi-icon-inventory" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M7 3h8l4 4v14H7z"/><path d="M15 3v5h5"/><path d="M9 13h6M9 17h4"/></svg></span>
-            <span class="dash-kpi-label">Monthly billings</span>
-            <strong class="dash-kpi-value" id="ca-stat-bill">—</strong>
-            <span class="dash-kpi-hint">Accounts that bill monthly</span>
-          </button>
-          <button type="button" class="dash-kpi" data-filter="yearly" aria-pressed="false">
-            <span class="dash-kpi-icon dash-kpi-icon-sales" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M8 3v4M16 3v4M3 11h18"/></svg></span>
-            <span class="dash-kpi-label">Yearly billings</span>
-            <strong class="dash-kpi-value" id="ca-stat-year">—</strong>
-            <span class="dash-kpi-hint">Accounts that bill yearly</span>
-          </button>
-          <button type="button" class="dash-kpi dash-kpi-profile" data-open="profile" aria-pressed="false">
-            <span class="dash-kpi-icon dash-kpi-icon-customers" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20V9l8-5 8 5v11"/><path d="M9 20v-6h6v6"/></svg></span>
-            <span class="dash-kpi-label">Company</span>
-            <strong class="dash-kpi-value ca-profile-name" id="ca-stat-company">Spectrum Display Inc.</strong>
-            <span class="dash-kpi-hint" id="ca-hint-company">Legal name and address</span>
-          </button>
-        </div>
-        <div class="cc-list-toolbar cc-list-tools">
-          <input id="ca-search" type="search" placeholder="Search account, login, website" class="cc-list-search bg-slate-800 border border-slate-700 rounded-full px-3 py-1.5 text-sm">
-          <button id="ca-new-btn" type="button" class="cc-list-add-btn px-4 py-2 rounded-full bg-sky-500 hover:bg-sky-400 text-white text-sm font-semibold">Add account</button>
-        </div>
-        <p id="ca-error" class="hidden text-sm text-red-400 mb-3"></p>
-        <div class="cc-table-card rounded-2xl border border-slate-800">
-          <div class="cc-table-wrap overflow-x-auto">
-          <table class="w-full text-sm dash-cols" data-cols="accounts">
-            <thead class="text-left text-slate-400 border-b border-slate-800">
-              <tr>
-                <th class="py-3 px-4 font-medium" data-col="name">Account <span class="dash-col-caret">▾</span><span class="dash-col-grip" aria-hidden="true"></span></th>
-                <th class="py-3 px-4 font-medium" data-col="login">Login <span class="dash-col-caret">▾</span><span class="dash-col-grip" aria-hidden="true"></span></th>
-                <th class="py-3 px-4 font-medium" data-col="category">Category <span class="dash-col-caret">▾</span><span class="dash-col-grip" aria-hidden="true"></span></th>
-                <th class="py-3 px-4 font-medium" data-col="monthly">Monthly billing <span class="dash-col-caret">▾</span><span class="dash-col-grip" aria-hidden="true"></span></th>
-                <th class="py-3 px-4 font-medium" data-col="yearly">Yearly billing <span class="dash-col-caret">▾</span><span class="dash-col-grip" aria-hidden="true"></span></th>
-                <th class="py-3 px-4 font-medium" data-col="website">Website <span class="dash-col-caret">▾</span><span class="dash-col-grip" aria-hidden="true"></span></th>
-                <th class="py-3 px-4 font-medium" data-col="email">Email <span class="dash-col-caret">▾</span><span class="dash-col-grip" aria-hidden="true"></span></th>
-                <th class="py-3 px-4 font-medium" data-col="notes">Notes <span class="dash-col-caret">▾</span><span class="dash-col-grip" aria-hidden="true"></span></th>
-              </tr>
-            </thead>
-            <tbody id="ca-table" class="text-slate-200"></tbody>
-          </table>
-          </div>
-        </div>
-      </div>
-
       <div id="accounting-section" class="hidden space-y-6">
         <div class="flex flex-wrap items-end justify-between gap-3">
           <div>
@@ -3409,6 +3355,61 @@
             <button type="submit" class="px-4 py-2 rounded-full bg-sky-500 text-white text-sm font-semibold">Post</button>
           </div>
         </form>
+      </div>
+
+
+      <div id="settings-pane" class="hidden space-y-6">
+      <div id="company-section" class="hidden cc-list-inner">
+        <div class="page-kpis" id="ca-overview">
+          <button type="button" class="dash-kpi is-on" data-filter="all" aria-pressed="true">
+            <span class="dash-kpi-icon dash-kpi-icon-website" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="5" width="16" height="14" rx="2"/><path d="M8 9h8M8 13h5"/></svg></span>
+            <span class="dash-kpi-label">Total accounts</span>
+            <strong class="dash-kpi-value" id="ca-stat-all">—</strong>
+            <span class="dash-kpi-hint">Logins on file</span>
+          </button>
+          <button type="button" class="dash-kpi" data-filter="billings" aria-pressed="false">
+            <span class="dash-kpi-icon dash-kpi-icon-inventory" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M7 3h8l4 4v14H7z"/><path d="M15 3v5h5"/><path d="M9 13h6M9 17h4"/></svg></span>
+            <span class="dash-kpi-label">Monthly billings</span>
+            <strong class="dash-kpi-value" id="ca-stat-bill">—</strong>
+            <span class="dash-kpi-hint">Accounts that bill monthly</span>
+          </button>
+          <button type="button" class="dash-kpi" data-filter="yearly" aria-pressed="false">
+            <span class="dash-kpi-icon dash-kpi-icon-sales" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M8 3v4M16 3v4M3 11h18"/></svg></span>
+            <span class="dash-kpi-label">Yearly billings</span>
+            <strong class="dash-kpi-value" id="ca-stat-year">—</strong>
+            <span class="dash-kpi-hint">Accounts that bill yearly</span>
+          </button>
+          <button type="button" class="dash-kpi dash-kpi-profile" data-open="profile" aria-pressed="false">
+            <span class="dash-kpi-icon dash-kpi-icon-customers" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20V9l8-5 8 5v11"/><path d="M9 20v-6h6v6"/></svg></span>
+            <span class="dash-kpi-label">Company</span>
+            <strong class="dash-kpi-value ca-profile-name" id="ca-stat-company">Spectrum Display Inc.</strong>
+            <span class="dash-kpi-hint" id="ca-hint-company">Legal name and address</span>
+          </button>
+        </div>
+        <div class="cc-list-toolbar cc-list-tools">
+          <input id="ca-search" type="search" placeholder="Search account, login, website" class="cc-list-search bg-slate-800 border border-slate-700 rounded-full px-3 py-1.5 text-sm">
+          <button id="ca-new-btn" type="button" class="cc-list-add-btn px-4 py-2 rounded-full bg-sky-500 hover:bg-sky-400 text-white text-sm font-semibold">Add account</button>
+        </div>
+        <p id="ca-error" class="hidden text-sm text-red-400 mb-3"></p>
+        <div class="cc-table-card rounded-2xl border border-slate-800">
+          <div class="cc-table-wrap overflow-x-auto">
+          <table class="w-full text-sm dash-cols" data-cols="accounts">
+            <thead class="text-left text-slate-400 border-b border-slate-800">
+              <tr>
+                <th class="py-3 px-4 font-medium" data-col="name">Account <span class="dash-col-caret">▾</span><span class="dash-col-grip" aria-hidden="true"></span></th>
+                <th class="py-3 px-4 font-medium" data-col="login">Login <span class="dash-col-caret">▾</span><span class="dash-col-grip" aria-hidden="true"></span></th>
+                <th class="py-3 px-4 font-medium" data-col="category">Category <span class="dash-col-caret">▾</span><span class="dash-col-grip" aria-hidden="true"></span></th>
+                <th class="py-3 px-4 font-medium" data-col="monthly">Monthly billing <span class="dash-col-caret">▾</span><span class="dash-col-grip" aria-hidden="true"></span></th>
+                <th class="py-3 px-4 font-medium" data-col="yearly">Yearly billing <span class="dash-col-caret">▾</span><span class="dash-col-grip" aria-hidden="true"></span></th>
+                <th class="py-3 px-4 font-medium" data-col="website">Website <span class="dash-col-caret">▾</span><span class="dash-col-grip" aria-hidden="true"></span></th>
+                <th class="py-3 px-4 font-medium" data-col="email">Email <span class="dash-col-caret">▾</span><span class="dash-col-grip" aria-hidden="true"></span></th>
+                <th class="py-3 px-4 font-medium" data-col="notes">Notes <span class="dash-col-caret">▾</span><span class="dash-col-grip" aria-hidden="true"></span></th>
+              </tr>
+            </thead>
+            <tbody id="ca-table" class="text-slate-200"></tbody>
+          </table>
+          </div>
+        </div>
       </div>
 
       <div id="forms-section" class="hidden pf-page">
