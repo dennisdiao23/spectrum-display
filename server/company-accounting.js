@@ -503,18 +503,20 @@ function ensureCompanyAccounting(db) {
     CREATE INDEX IF NOT EXISTS company_bank_deposit_payments_deposit_idx ON company_bank_deposit_payments (deposit_id);
   `);
 
-  try {
-    db.exec("ALTER TABLE company_customer_payments ADD COLUMN deposited INTEGER NOT NULL DEFAULT 0");
-  } catch (e) { /* already present */ }
-  try {
-    db.exec("ALTER TABLE company_customer_payments ADD COLUMN journal_id INTEGER");
-  } catch (e) { /* already present */ }
-  try {
-    db.exec("ALTER TABLE company_sales_docs ADD COLUMN journal_id INTEGER");
-  } catch (e) { /* already present */ }
-  try {
-    db.exec("ALTER TABLE company_card_fee_entries ADD COLUMN journal_id INTEGER");
-  } catch (e) { /* already present */ }
+  function addColumnIfMissing(table, columnSql) {
+    try {
+      const cols = db.prepare('PRAGMA table_info(' + table + ')').all().map(function (c) { return c.name; });
+      const colName = String(columnSql || '').trim().split(/\s+/)[0];
+      if (!colName || cols.indexOf(colName) !== -1) return;
+      db.exec('ALTER TABLE ' + table + ' ADD COLUMN ' + columnSql);
+    } catch (e) {
+      console.warn('Accounting migrate ' + table + ':', e.message || e);
+    }
+  }
+  addColumnIfMissing('company_customer_payments', 'deposited INTEGER NOT NULL DEFAULT 0');
+  addColumnIfMissing('company_customer_payments', 'journal_id INTEGER');
+  addColumnIfMissing('company_sales_docs', 'journal_id INTEGER');
+  addColumnIfMissing('company_card_fee_entries', 'journal_id INTEGER');
 
   seedDefaultAccounts(db);
 }
@@ -992,9 +994,18 @@ function sqliteApi(db, store) {
     },
 
     listJournalEntries: async function () {
-      const rows = db.prepare('SELECT * FROM company_journal_entries ORDER BY entry_date DESC, id DESC').all();
+      const rows = db.prepare(`
+        SELECT e.*,
+          COALESCE((SELECT SUM(l.debit) FROM company_journal_lines l WHERE l.entry_id = e.id), 0) AS total_debit,
+          COALESCE((SELECT SUM(l.credit) FROM company_journal_lines l WHERE l.entry_id = e.id), 0) AS total_credit
+        FROM company_journal_entries e
+        ORDER BY e.entry_date DESC, e.id DESC
+      `).all();
       return rows.map(function (row) {
-        return formatJournal(row, []);
+        const entry = formatJournal(row, []);
+        entry.totalDebit = money(row.total_debit);
+        entry.totalCredit = money(row.total_credit);
+        return entry;
       });
     },
 
@@ -1405,13 +1416,17 @@ function sqliteApi(db, store) {
     store.createCustomerPayment = async function (payload) {
       const payment = await _createPay(payload);
       if (payment && payment.id) {
-        try { await api.postCustomerPaymentToGl(payment.id); } catch (e) { console.warn('GL payment post:', e.message || e); }
-        // Ensure related invoices were posted
-        (payment.applications || []).forEach(function (app) {
-          if (app && app.invoiceId) {
-            api.postInvoiceToGl(app.invoiceId).catch(function () {});
+        for (const app of (payment.applications || [])) {
+          if (!(app && app.invoiceId)) continue;
+          try {
+            db.prepare(`UPDATE company_sales_docs SET status = 'open', updated_at = ? WHERE id = ? AND status = 'draft'`)
+              .run(dbUtil.nowIso(), app.invoiceId);
+            await api.postInvoiceToGl(app.invoiceId);
+          } catch (e) {
+            console.warn('GL invoice post before payment:', e.message || e);
           }
-        });
+        }
+        try { await api.postCustomerPaymentToGl(payment.id); } catch (e) { console.warn('GL payment post:', e.message || e); }
       }
       return payment;
     };
