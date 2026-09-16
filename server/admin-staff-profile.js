@@ -35,7 +35,8 @@ function ensureStaffProfile(db) {
     ['state', "TEXT NOT NULL DEFAULT ''"],
     ['zip', "TEXT NOT NULL DEFAULT ''"],
     ['country', "TEXT NOT NULL DEFAULT 'United States'"],
-    ['updated_at', "TEXT NOT NULL DEFAULT ''"]
+    ['updated_at', "TEXT NOT NULL DEFAULT ''"],
+    ['manager_id', "TEXT NOT NULL DEFAULT ''"]
   ];
   cols.forEach(function (pair) {
     try {
@@ -87,7 +88,8 @@ function profileFromRow(row) {
     state: row.state || '',
     zip: row.zip || '',
     country: row.country || '',
-    updatedAt: row.updated_at || ''
+    updatedAt: row.updated_at || '',
+    managerId: row.manager_id == null || row.manager_id === '' ? '' : String(row.manager_id)
   };
 }
 
@@ -219,7 +221,8 @@ function enrichPublicAdmin(admin, row) {
     jobTitle: profile.jobTitle,
     phone: profile.phone,
     mobile: profile.mobile,
-    displayName: display || admin.name || admin.email || ''
+    displayName: display || admin.name || admin.email || '',
+    managerId: profile.managerId || ''
   });
 }
 
@@ -269,6 +272,9 @@ function sqliteApi(db) {
       const role = trim(input && input.role, 40) || row.role;
       const email = input && input.email != null ? trim(input.email, 160).toLowerCase() : row.email;
       const hash = input && input.passwordHash ? input.passwordHash : row.password_hash;
+      const managerId = input && Object.prototype.hasOwnProperty.call(input, 'managerId')
+        ? trim(input.managerId, 40)
+        : (row.manager_id == null ? '' : String(row.manager_id));
       const stamp = nowIso();
       db.prepare(`
         UPDATE admins SET
@@ -276,14 +282,14 @@ function sqliteApi(db) {
           first_name = ?, last_name = ?, job_title = ?, phone = ?, mobile = ?,
           personal_email = ?, notes = ?, photo_url = ?,
           street = ?, street2 = ?, city = ?, state = ?, zip = ?, country = ?,
-          updated_at = ?
+          manager_id = ?, updated_at = ?
         WHERE id = ?
       `).run(
         email, name, role, hash,
         profile.first_name, profile.last_name, profile.job_title, profile.phone, profile.mobile,
         profile.personal_email, profile.notes, profile.photo_url || row.photo_url || '',
         profile.street, profile.street2, profile.city, profile.state, profile.zip, profile.country,
-        stamp, id
+        managerId, stamp, id
       );
       return this.getStaffDetail(id);
     },
@@ -448,6 +454,9 @@ function supabaseApi(supabase, throwIf) {
       });
       if (!profile.photo_url) patch.photo_url = current.photo_url || '';
       if (input && input.passwordHash) patch.password_hash = input.passwordHash;
+      if (input && Object.prototype.hasOwnProperty.call(input, 'managerId')) {
+        patch.manager_id = trim(input.managerId, 40);
+      }
       const { error } = await supabase.from('admins').update(patch).eq('id', id);
       throwIf(error);
       return this.getStaffDetail(id);

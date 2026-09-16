@@ -1536,6 +1536,7 @@ function createSupabaseStore() {
         name: input.name,
         password_hash: input.passwordHash,
         role: input.role,
+        manager_id: String((input && input.managerId) || '').trim(),
         created_at: new Date().toISOString(),
         updated_at: new Date().toISOString()
       }, profile)).select('*').single();
