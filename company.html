@@ -13072,8 +13072,8 @@
 
     let ccRepStaff = null;
 
-    async function ensureCcRepStaff() {
-      if (ccRepStaff) return ccRepStaff;
+    async function ensureCcRepStaff(force) {
+      if (ccRepStaff && !force) return ccRepStaff;
       try {
         const data = await api('/api/admin/company-users');
         ccRepStaff = data.users || [];
@@ -14159,7 +14159,7 @@
           full = customer;
         }
       }
-      await ensureCcRepStaff();
+      await ensureCcRepStaff(true);
       if (full && full.id) {
         document.getElementById('cc-title').textContent = full.displayName || full.companyName || 'Customer';
         document.getElementById('cc-delete-btn').classList.remove('hidden');
