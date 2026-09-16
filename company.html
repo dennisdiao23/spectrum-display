@@ -20,7 +20,7 @@
   <script src="/js/company-crm.js?v=zoomphone3"></script>
   <script src="/js/company-staff.js?v=staff4"></script>
   <script src="/js/company-traffic.js?v=loc1"></script>
-  <script src="/js/company-website-control.js?v=webctrl6"></script>
+  <script src="/js/company-website-control.js?v=webctrl7"></script>
   <script src="/js/print-form.js?v=forms20"></script>
   <script>
     if ('serviceWorker' in navigator && location.pathname.indexOf('/company') === 0) {
@@ -17895,7 +17895,9 @@
         void openDocMasterTab(t, 'new', { customerId: opts.customerId });
         return;
       }
+      const paint = soPaintToken;
       const go = function () {
+        if (!soPaintAlive(paint)) return;
         document.getElementById('so-title').textContent = 'New ' + salesTypeLabel(t).toLowerCase();
         showSoMsg('');
         fillSoForm({

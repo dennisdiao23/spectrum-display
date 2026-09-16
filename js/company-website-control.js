@@ -46,7 +46,8 @@
     tabLabels: {},
     inventoryItems: [],
     inventoryLoaded: false,
-    mapGen: 0
+    mapGen: 0,
+    paintToken: 0
   };
 
   var TYPES = ['Fixed', 'Rental', 'Outdoor', 'Poster', 'Creative', 'All-in-one', 'Transparent', 'control'];
@@ -149,6 +150,7 @@
 
   function showOverview() {
     stashActiveTab();
+    S.paintToken += 1;
     S.activeTab = 'overview';
     S.creating = false;
     S.selected = '';
@@ -290,6 +292,7 @@
       return;
     }
     if (sid !== S.activeTab) stashActiveTab();
+    S.paintToken += 1;
     S.mode = 'products';
     S.activeTab = sid;
     if (sid === 'overview') {
@@ -765,12 +768,14 @@
     }
     S.mapGen += 1;
     var gen = S.mapGen;
+    var token = S.paintToken;
+    var tab = String(S.activeTab);
     card.innerHTML = '<h3>Inventory links</h3><p class="wc-note">Loading warehouse SKUs…</p>';
     ensureInventory().then(function () {
-      if (gen !== S.mapGen) return;
+      if (gen !== S.mapGen || token !== S.paintToken || String(S.activeTab) !== tab) return;
       fillInventoryMap(productById(pid) || product);
     }).catch(function () {
-      if (gen !== S.mapGen) return;
+      if (gen !== S.mapGen || token !== S.paintToken || String(S.activeTab) !== tab) return;
       fillInventoryMap(productById(pid) || product);
     });
   }
