@@ -1517,42 +1517,54 @@ function createSupabaseStore() {
     },
     async listAdmins() {
       const { publicAdmin } = require('./admin-roles');
-      const { data, error } = await supabase.from('admins').select('id, email, name, role, created_at').order('name');
+      const { enrichPublicAdmin } = require('./admin-staff-profile');
+      const { data, error } = await supabase.from('admins').select('*').order('name');
       throwIf(error);
       const out = [];
       for (const row of data || []) {
-        out.push(publicAdmin(await this.attachRole(row)));
+        const full = await this.attachRole(row);
+        out.push(enrichPublicAdmin(publicAdmin(full), full));
       }
       return out;
     },
     async createAdmin(input) {
       const { publicAdmin } = require('./admin-roles');
-      const { data, error } = await supabase.from('admins').insert({
+      const { enrichPublicAdmin, normalizeProfile } = require('./admin-staff-profile');
+      const profile = normalizeProfile(input || {});
+      const { data, error } = await supabase.from('admins').insert(Object.assign({
         email: input.email,
         name: input.name,
         password_hash: input.passwordHash,
-        role: input.role
-      }).select('id, email, name, role, created_at').single();
+        role: input.role,
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString()
+      }, profile)).select('*').single();
       throwIf(error);
-      return publicAdmin(await this.attachRole(data));
+      const full = await this.attachRole(data);
+      return enrichPublicAdmin(publicAdmin(full), full);
     },
     async updateAdmin(id, input) {
       const { publicAdmin } = require('./admin-roles');
+      const { enrichPublicAdmin } = require('./admin-staff-profile');
       const { data: current, error: cErr } = await supabase.from('admins').select('*').eq('id', id).maybeSingle();
       throwIf(cErr);
       if (!current) return null;
-      const patch = {};
+      const patch = { updated_at: new Date().toISOString() };
       if (input.name != null) patch.name = input.name;
       if (input.role != null) patch.role = input.role;
+      if (input.email != null) patch.email = input.email;
       if (input.passwordHash) patch.password_hash = input.passwordHash;
       const { data, error } = await supabase.from('admins').update(patch).eq('id', id)
-        .select('id, email, name, role, created_at').single();
+        .select('*').single();
       throwIf(error);
-      return publicAdmin(await this.attachRole(data));
+      const full = await this.attachRole(data);
+      return enrichPublicAdmin(publicAdmin(full), full);
     },
     async deleteAdmin(id) {
       const { error: sErr } = await supabase.from('sessions').delete().eq('admin_id', id);
       throwIf(sErr);
+      await supabase.from('admin_company_accounts').delete().eq('admin_id', id);
+      await supabase.from('admin_staff_files').delete().eq('admin_id', id);
       const { data, error } = await supabase.from('admins').delete().eq('id', id).select('id');
       throwIf(error);
       return !!(data && data.length);
@@ -2957,6 +2969,7 @@ function createSupabaseStore() {
   Object.assign(api, require('./gmail-accounts').supabaseApi(supabase, throwIf));
   Object.assign(api, require('./dealer-portal').supabaseApi(supabase, api));
   Object.assign(api, require('./site-analytics').supabaseApi(supabase));
+  Object.assign(api, require('./admin-staff-profile').supabaseApi(supabase, throwIf));
   require('./store-payments-supabase').attachPaymentMethods(api, supabase, throwIf);
   return api;
 }

@@ -236,6 +236,7 @@ async function main() {
     app.get([route, route + '/'], sendCompany);
   });
   app.get(['/company/customers/:id', '/company/customers/:id/'], sendCompany);
+  app.get(['/company/settings/users/:id', '/company/settings/users/:id/'], sendCompany);
   app.get(['/company/crm/leads/:id', '/company/crm/leads/:id/'], sendCompany);
   app.get(['/company/crm/pipeline/:id', '/company/crm/pipeline/:id/'], sendCompany);
   app.get(['/company/crm/activities/:id', '/company/crm/activities/:id/'], sendCompany);
@@ -2925,9 +2926,28 @@ async function main() {
       email: email,
       name: name,
       role: role,
-      passwordHash: password ? bcrypt.hashSync(password, 10) : ''
+      passwordHash: password ? bcrypt.hashSync(password, 10) : '',
+      firstName: body && body.firstName,
+      lastName: body && body.lastName,
+      jobTitle: body && body.jobTitle,
+      phone: body && body.phone,
+      mobile: body && body.mobile,
+      personalEmail: body && body.personalEmail,
+      notes: body && body.notes,
+      street: body && body.street,
+      street2: body && body.street2,
+      city: body && body.city,
+      state: body && body.state,
+      zip: body && body.zip,
+      country: body && body.country,
+      photoUrl: body && body.photoUrl
     };
   }
+
+  const staffFileUpload = multer({
+    storage: multer.memoryStorage(),
+    limits: { fileSize: 24 * 1024 * 1024, files: 12 }
+  });
 
   function rolePayload(body) {
     const name = String((body && body.name) || '').trim();
@@ -3082,6 +3102,17 @@ async function main() {
     } catch (err) { next(err); }
   });
 
+  app.get('/api/admin/staff/:id', requireAdmin, requirePerm('settings', 'edit'), async function (req, res, next) {
+    try {
+      if (typeof store.getStaffDetail !== 'function') {
+        return res.status(500).json({ ok: false, error: 'Staff profiles are not available.' });
+      }
+      const staff = await store.getStaffDetail(req.params.id);
+      if (!staff) return res.status(404).json({ ok: false, error: 'User not found.' });
+      res.json({ ok: true, staff: staff });
+    } catch (err) { next(err); }
+  });
+
   app.post('/api/admin/staff', requireAdmin, requirePerm('settings', 'edit'), async function (req, res, next) {
     try {
       const input = staffPayload(req.body || {}, { requirePassword: true });
@@ -3098,7 +3129,10 @@ async function main() {
       if (typeof store.enrollChatUser === 'function') {
         try { await store.enrollChatUser(staff, { announce: true }); } catch (e) { console.error('chat enroll', e); }
       }
-      res.json({ ok: true, staff: staff });
+      const detail = typeof store.getStaffDetail === 'function'
+        ? await store.getStaffDetail(staff.id)
+        : staff;
+      res.json({ ok: true, staff: detail || staff });
     } catch (err) {
       const msg = err.message || 'Could not add staff.';
       res.status(400).json({
@@ -3128,11 +3162,113 @@ async function main() {
         const owners = all.filter(isOwnerAdmin).length;
         if (owners <= 1) return res.status(400).json({ ok: false, error: 'Keep at least one Owner login.' });
       }
-      const patch = { name: input.name || undefined, role: input.role };
-      if (input.passwordHash) patch.passwordHash = input.passwordHash;
-      const staff = await store.updateAdmin(id, patch);
+      let staff;
+      if (typeof store.updateStaffProfile === 'function') {
+        staff = await store.updateStaffProfile(id, input);
+      } else {
+        const patch = { name: input.name || undefined, role: input.role, email: input.email || undefined };
+        if (input.passwordHash) patch.passwordHash = input.passwordHash;
+        staff = await store.updateAdmin(id, patch);
+      }
       if (!staff) return res.status(404).json({ ok: false, error: 'Staff login not found.' });
       res.json({ ok: true, staff: staff });
+    } catch (err) {
+      const msg = err.message || 'Could not save user.';
+      res.status(400).json({
+        ok: false,
+        error: /unique|duplicate/i.test(msg) ? 'That email already has an Admin login.' : msg
+      });
+    }
+  });
+
+  app.post('/api/admin/staff/:id/photo', requireAdmin, requirePerm('settings', 'edit'), staffFileUpload.single('photo'), async function (req, res, next) {
+    try {
+      if (typeof store.setStaffPhoto !== 'function') {
+        return res.status(500).json({ ok: false, error: 'Photo upload is not available.' });
+      }
+      if (!req.file) return res.status(400).json({ ok: false, error: 'Choose a photo.' });
+      const staff = await store.setStaffPhoto(req.params.id, req.file);
+      if (!staff) return res.status(404).json({ ok: false, error: 'User not found.' });
+      res.json({ ok: true, staff: staff });
+    } catch (err) {
+      res.status(400).json({ ok: false, error: err.message || 'Could not upload photo.' });
+    }
+  });
+
+  app.delete('/api/admin/staff/:id/photo', requireAdmin, requirePerm('settings', 'edit'), async function (req, res, next) {
+    try {
+      if (typeof store.clearStaffPhoto !== 'function') {
+        return res.status(500).json({ ok: false, error: 'Photo upload is not available.' });
+      }
+      const staff = await store.clearStaffPhoto(req.params.id);
+      if (!staff) return res.status(404).json({ ok: false, error: 'User not found.' });
+      res.json({ ok: true, staff: staff });
+    } catch (err) { next(err); }
+  });
+
+  app.get('/api/admin/staff/:id/accounts', requireAdmin, requirePerm('settings', 'edit'), async function (req, res, next) {
+    try {
+      const accounts = await store.listStaffAccounts(req.params.id);
+      res.json({ ok: true, accounts: accounts || [] });
+    } catch (err) { next(err); }
+  });
+
+  app.post('/api/admin/staff/:id/accounts', requireAdmin, requirePerm('settings', 'edit'), async function (req, res, next) {
+    try {
+      const account = await store.createStaffAccount(req.params.id, req.body || {});
+      if (!account) return res.status(404).json({ ok: false, error: 'User not found.' });
+      res.json({ ok: true, account: account });
+    } catch (err) {
+      res.status(400).json({ ok: false, error: err.message || 'Could not save account.' });
+    }
+  });
+
+  app.put('/api/admin/staff/:id/accounts/:accountId', requireAdmin, requirePerm('settings', 'edit'), async function (req, res, next) {
+    try {
+      const account = await store.updateStaffAccount(req.params.id, req.params.accountId, req.body || {});
+      if (!account) return res.status(404).json({ ok: false, error: 'Account not found.' });
+      res.json({ ok: true, account: account });
+    } catch (err) {
+      res.status(400).json({ ok: false, error: err.message || 'Could not save account.' });
+    }
+  });
+
+  app.delete('/api/admin/staff/:id/accounts/:accountId', requireAdmin, requirePerm('settings', 'edit'), async function (req, res, next) {
+    try {
+      const ok = await store.deleteStaffAccount(req.params.id, req.params.accountId);
+      if (!ok) return res.status(404).json({ ok: false, error: 'Account not found.' });
+      res.json({ ok: true });
+    } catch (err) { next(err); }
+  });
+
+  app.get('/api/admin/staff/:id/files', requireAdmin, requirePerm('settings', 'edit'), async function (req, res, next) {
+    try {
+      const files = await store.listStaffFiles(req.params.id);
+      res.json({ ok: true, files: files || [] });
+    } catch (err) { next(err); }
+  });
+
+  app.post('/api/admin/staff/:id/files', requireAdmin, requirePerm('settings', 'edit'), staffFileUpload.array('files', 12), async function (req, res, next) {
+    try {
+      const uploaded = req.files || [];
+      if (!uploaded.length) return res.status(400).json({ ok: false, error: 'Drop or choose a file.' });
+      const files = [];
+      for (let i = 0; i < uploaded.length; i++) {
+        const file = await store.addStaffFile(req.params.id, uploaded[i]);
+        if (file) files.push(file);
+      }
+      if (!files.length) return res.status(404).json({ ok: false, error: 'User not found.' });
+      res.json({ ok: true, files: files });
+    } catch (err) {
+      res.status(400).json({ ok: false, error: err.message || 'Could not upload file.' });
+    }
+  });
+
+  app.delete('/api/admin/staff/:id/files/:fileId', requireAdmin, requirePerm('settings', 'edit'), async function (req, res, next) {
+    try {
+      const ok = await store.deleteStaffFile(req.params.id, req.params.fileId);
+      if (!ok) return res.status(404).json({ ok: false, error: 'File not found.' });
+      res.json({ ok: true });
     } catch (err) { next(err); }
   });
 

@@ -159,6 +159,7 @@ function openDb() {
   require('./company-emails').ensureCompanyEmails(db);
   require('./gmail-accounts').ensureAdminGmailAccounts(db);
   require('./company-chat').ensureCompanyChat(db);
+  require('./admin-staff-profile').ensureStaffProfile(db);
   db.exec(`
     CREATE TABLE IF NOT EXISTS inventory_stock (
       id INTEGER PRIMARY KEY AUTOINCREMENT,

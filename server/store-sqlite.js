@@ -732,40 +732,60 @@ function createSqliteStore() {
     },
     adminWithRole(id) {
       return db.prepare(`
-        SELECT a.id, a.email, a.name, a.role, a.created_at,
-          r.name AS role_name, r.website_access, r.inventory_access, r.menu_access, r.locked AS role_locked
+        SELECT a.*, r.name AS role_name, r.website_access, r.inventory_access, r.menu_access, r.locked AS role_locked
         FROM admins a LEFT JOIN admin_roles r ON r.slug = a.role
         WHERE a.id = ?
       `).get(id) || null;
     },
     async listAdmins() {
       const { publicAdmin } = require('./admin-roles');
+      const { enrichPublicAdmin } = require('./admin-staff-profile');
       return db.prepare(`
-        SELECT a.id, a.email, a.name, a.role, a.created_at,
-          r.name AS role_name, r.website_access, r.inventory_access, r.menu_access, r.locked AS role_locked
+        SELECT a.*, r.name AS role_name, r.website_access, r.inventory_access, r.menu_access, r.locked AS role_locked
         FROM admins a LEFT JOIN admin_roles r ON r.slug = a.role
         ORDER BY a.name COLLATE NOCASE, a.email
-      `).all().map(publicAdmin);
+      `).all().map(function (row) {
+        return enrichPublicAdmin(publicAdmin(row), row);
+      });
     },
     async createAdmin(input) {
       const { publicAdmin } = require('./admin-roles');
-      const info = db.prepare(
-        'INSERT INTO admins (email, name, password_hash, role, created_at) VALUES (?, ?, ?, ?, ?)'
-      ).run(input.email, input.name, input.passwordHash, input.role, dbUtil.nowIso());
-      return publicAdmin(this.adminWithRole(info.lastInsertRowid));
+      const { enrichPublicAdmin, normalizeProfile } = require('./admin-staff-profile');
+      const profile = normalizeProfile(input || {});
+      const info = db.prepare(`
+        INSERT INTO admins (
+          email, name, password_hash, role, created_at,
+          first_name, last_name, job_title, phone, mobile, personal_email, notes, photo_url,
+          street, street2, city, state, zip, country, updated_at
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+      `).run(
+        input.email, input.name, input.passwordHash, input.role, dbUtil.nowIso(),
+        profile.first_name, profile.last_name, profile.job_title, profile.phone, profile.mobile,
+        profile.personal_email, profile.notes, profile.photo_url,
+        profile.street, profile.street2, profile.city, profile.state, profile.zip, profile.country,
+        dbUtil.nowIso()
+      );
+      const row = this.adminWithRole(info.lastInsertRowid);
+      return enrichPublicAdmin(publicAdmin(row), row);
     },
     async updateAdmin(id, input) {
       const { publicAdmin } = require('./admin-roles');
+      const { enrichPublicAdmin } = require('./admin-staff-profile');
       const current = db.prepare('SELECT * FROM admins WHERE id = ?').get(id);
       if (!current) return null;
       const name = input.name != null ? input.name : current.name;
       const role = input.role != null ? input.role : current.role;
       const hash = input.passwordHash || current.password_hash;
-      db.prepare('UPDATE admins SET name = ?, role = ?, password_hash = ? WHERE id = ?').run(name, role, hash, id);
-      return publicAdmin(this.adminWithRole(id));
+      const email = input.email != null ? input.email : current.email;
+      db.prepare('UPDATE admins SET email = ?, name = ?, role = ?, password_hash = ?, updated_at = ? WHERE id = ?')
+        .run(email, name, role, hash, dbUtil.nowIso(), id);
+      const row = this.adminWithRole(id);
+      return enrichPublicAdmin(publicAdmin(row), row);
     },
     async deleteAdmin(id) {
       db.prepare('DELETE FROM sessions WHERE admin_id = ?').run(id);
+      db.prepare('DELETE FROM admin_company_accounts WHERE admin_id = ?').run(id);
+      db.prepare('DELETE FROM admin_staff_files WHERE admin_id = ?').run(id);
       const info = db.prepare('DELETE FROM admins WHERE id = ?').run(id);
       return info.changes > 0;
     },
@@ -1856,6 +1876,7 @@ function createSqliteStore() {
   Object.assign(api, require('./gmail-accounts').sqliteApi(db));
   Object.assign(api, require('./dealer-portal').sqliteApi(db, api));
   Object.assign(api, require('./site-analytics').sqliteApi(db));
+  Object.assign(api, require('./admin-staff-profile').sqliteApi(db));
   paymentStore.attachPaymentMethods(api, db);
   return api;
 }
