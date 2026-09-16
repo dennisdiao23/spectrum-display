@@ -589,6 +589,7 @@ function ensureCompanyCustomers(db) {
     ['social', "TEXT NOT NULL DEFAULT ''"],
     ['customer_type', "TEXT NOT NULL DEFAULT ''"],
     ['sales_rep', "TEXT NOT NULL DEFAULT ''"],
+    ['sales_rep_id', "TEXT NOT NULL DEFAULT ''"],
     ['pass_card_fee', 'INTEGER NOT NULL DEFAULT 0'],
     ['invoice_collect_default', "TEXT NOT NULL DEFAULT 'full'"],
     ['invoice_deposit_kind', "TEXT NOT NULL DEFAULT 'percent'"],

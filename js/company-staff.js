@@ -5,7 +5,9 @@
     api: null,
     esc: function (s) { return String(s == null ? '' : s); },
     fillStaffRoleSelect: null,
+    fillManagerSelect: null,
     staffRoleLabel: null,
+    openCustomer: null,
     goCompany: null,
     pathForTab: null,
     canEditStaff: function () { return true; },
@@ -92,6 +94,7 @@
         roleSel.value = person.role;
       }
     }
+    if (S.fillManagerSelect) S.fillManagerSelect(S.activeId, person && person.managerId);
     $('su-created').textContent = person && person.created_at
       ? new Date(person.created_at).toLocaleString()
       : '—';
@@ -102,6 +105,7 @@
     setPhoto(person);
     renderAccounts((person && person.accounts) || []);
     renderFiles((person && person.files) || []);
+    renderCustomers((person && person.customers) || []);
     var del = $('su-delete');
     if (del) {
       var canDel = !!S.activeId && !(S.canDeleteStaff && !S.canDeleteStaff(S.activeId));
@@ -129,8 +133,24 @@
       city: $('su-city').value.trim(),
       state: $('su-state').value.trim(),
       zip: $('su-zip').value.trim(),
-      country: $('su-country').value.trim()
+      country: $('su-country').value.trim(),
+      managerId: ($('su-manager') && $('su-manager').value) || ''
     };
+  }
+
+  function renderCustomers(list) {
+    var host = $('su-customers');
+    if (!host) return;
+    if (!list || !list.length) {
+      host.innerHTML = '<p class="su-empty">No customers linked yet. Set this person as Sales rep on a customer.</p>';
+      return;
+    }
+    host.innerHTML = list.map(function (c) {
+      return '<a class="su-customer" href="/company/customers/' + S.esc(c.id) + '" data-customer-id="' + S.esc(c.id) + '">' +
+        '<strong>' + S.esc(c.displayName || c.companyName || 'Customer') + '</strong>' +
+        '<span>' + S.esc(c.email || c.phone || '') + '</span>' +
+      '</a>';
+    }).join('');
   }
 
   function renderAccounts(list) {
@@ -308,6 +328,18 @@
     form.dataset.bound = '1';
 
     form.addEventListener('submit', saveUser);
+
+    var customersHost = $('su-customers');
+    if (customersHost) {
+      customersHost.addEventListener('click', function (e) {
+        var link = e.target.closest('[data-customer-id]');
+        if (!link) return;
+        e.preventDefault();
+        var id = link.getAttribute('data-customer-id');
+        if (S.openCustomer) S.openCustomer(id);
+        else if (S.goCompany) S.goCompany('/company/customers/' + encodeURIComponent(id), false);
+      });
+    }
 
     var del = $('su-delete');
     if (del) del.addEventListener('click', async function () {

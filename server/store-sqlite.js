@@ -752,18 +752,19 @@ function createSqliteStore() {
       const { publicAdmin } = require('./admin-roles');
       const { enrichPublicAdmin, normalizeProfile } = require('./admin-staff-profile');
       const profile = normalizeProfile(input || {});
+      const managerId = String((input && input.managerId) || '').trim().slice(0, 40);
       const info = db.prepare(`
         INSERT INTO admins (
           email, name, password_hash, role, created_at,
           first_name, last_name, job_title, phone, mobile, personal_email, notes, photo_url,
-          street, street2, city, state, zip, country, updated_at
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+          street, street2, city, state, zip, country, manager_id, updated_at
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
       `).run(
         input.email, input.name, input.passwordHash, input.role, dbUtil.nowIso(),
         profile.first_name, profile.last_name, profile.job_title, profile.phone, profile.mobile,
         profile.personal_email, profile.notes, profile.photo_url,
         profile.street, profile.street2, profile.city, profile.state, profile.zip, profile.country,
-        dbUtil.nowIso()
+        managerId, dbUtil.nowIso()
       );
       const row = this.adminWithRole(info.lastInsertRowid);
       return enrichPublicAdmin(publicAdmin(row), row);

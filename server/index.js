@@ -503,6 +503,43 @@ async function main() {
     return (req.admin && (req.admin.name || req.admin.email)) || '';
   }
 
+  async function loadStaffForOwnership() {
+    return store.listAdmins();
+  }
+
+  async function resolveSalesRepFields(body, actingAdmin) {
+    const own = require('./sales-ownership');
+    const staff = await loadStaffForOwnership();
+    const indexes = own.indexStaff(staff);
+    let salesRepId = String((body && (body.salesRepId != null ? body.salesRepId : body.sales_rep_id)) || '').trim();
+    let salesRep = String((body && (body.salesRep != null ? body.salesRep : body.sales_rep)) || '').trim();
+    if (salesRepId) {
+      const person = indexes.byId.get(String(salesRepId));
+      if (!person) throw new Error('Choose a valid sales rep.');
+      salesRep = own.staffLabel(person) || salesRep;
+    } else if (salesRep) {
+      const byName = indexes.byName.get(salesRep.toLowerCase());
+      if (byName) {
+        salesRepId = String(byName.id);
+        salesRep = own.staffLabel(byName) || salesRep;
+      }
+    } else if (actingAdmin && !own.seesAllCustomers(actingAdmin)) {
+      salesRepId = String(actingAdmin.id);
+      salesRep = own.staffLabel(actingAdmin);
+    }
+    return { salesRepId: salesRepId, salesRep: salesRep };
+  }
+
+  async function assertCanViewCustomer(req, customer) {
+    const own = require('./sales-ownership');
+    const staff = await loadStaffForOwnership();
+    if (!own.canViewCustomer(req.admin, customer, staff)) {
+      const err = new Error('You do not have access to this customer.');
+      err.status = 403;
+      throw err;
+    }
+  }
+
   function requireCatalogRead(req, res, next) {
     if (hasPerm(req.admin, 'website', 'view') || hasPerm(req.admin, 'inventory', 'view')) return next();
     return res.status(403).json({ ok: false, error: 'You do not have access to this.' });
@@ -1582,9 +1619,12 @@ async function main() {
     }
   });
 
-  app.get('/api/admin/company-customers', requireAdmin, async function (_req, res, next) {
+  app.get('/api/admin/company-customers', requireAdmin, async function (req, res, next) {
     try {
-      res.json({ ok: true, customers: await store.listCompanyCustomers() });
+      const own = require('./sales-ownership');
+      const staff = await loadStaffForOwnership();
+      const customers = own.filterCustomers(await store.listCompanyCustomers(), req.admin, staff);
+      res.json({ ok: true, customers: customers });
     } catch (err) { next(err); }
   });
 
@@ -1592,62 +1632,110 @@ async function main() {
     try {
       const customer = await store.getCompanyCustomer(req.params.id);
       if (!customer) return res.status(404).json({ ok: false, error: 'Customer not found.' });
+      await assertCanViewCustomer(req, customer);
       res.json({ ok: true, customer: customer });
-    } catch (err) { next(err); }
+    } catch (err) {
+      if (err && err.status === 403) return res.status(403).json({ ok: false, error: err.message });
+      next(err);
+    }
   });
 
   app.post('/api/admin/company-customers', requireAdmin, async function (req, res, next) {
     try {
-      res.json({ ok: true, customer: await store.createCompanyCustomer(req.body || {}) });
+      const rep = await resolveSalesRepFields(req.body || {}, req.admin);
+      const payload = Object.assign({}, req.body || {}, rep);
+      res.json({ ok: true, customer: await store.createCompanyCustomer(payload) });
     } catch (err) { next(err); }
   });
 
   app.put('/api/admin/company-customers/:id', requireAdmin, async function (req, res, next) {
     try {
-      const customer = await store.updateCompanyCustomer(req.params.id, req.body || {});
+      const current = await store.getCompanyCustomer(req.params.id);
+      if (!current) return res.status(404).json({ ok: false, error: 'Customer not found.' });
+      await assertCanViewCustomer(req, current);
+      const body = req.body || {};
+      const hasRep = Object.prototype.hasOwnProperty.call(body, 'salesRepId') ||
+        Object.prototype.hasOwnProperty.call(body, 'sales_rep_id') ||
+        Object.prototype.hasOwnProperty.call(body, 'salesRep') ||
+        Object.prototype.hasOwnProperty.call(body, 'sales_rep');
+      const rep = hasRep
+        ? await resolveSalesRepFields(body, req.admin)
+        : { salesRepId: current.salesRepId || '', salesRep: current.salesRep || '' };
+      const customer = await store.updateCompanyCustomer(req.params.id, Object.assign({}, body, rep));
       if (!customer) return res.status(404).json({ ok: false, error: 'Customer not found.' });
       res.json({ ok: true, customer: customer });
-    } catch (err) { next(err); }
+    } catch (err) {
+      if (err && err.status === 403) return res.status(403).json({ ok: false, error: err.message });
+      next(err);
+    }
   });
 
   app.delete('/api/admin/company-customers/:id', requireAdmin, async function (req, res, next) {
     try {
+      const current = await store.getCompanyCustomer(req.params.id);
+      if (!current) return res.status(404).json({ ok: false, error: 'Customer not found.' });
+      await assertCanViewCustomer(req, current);
       const ok = await store.deleteCompanyCustomer(req.params.id);
       if (!ok) return res.status(404).json({ ok: false, error: 'Customer not found.' });
       res.json({ ok: true });
-    } catch (err) { next(err); }
+    } catch (err) {
+      if (err && err.status === 403) return res.status(403).json({ ok: false, error: err.message });
+      next(err);
+    }
   });
 
   app.get('/api/admin/company-customers/:id/contacts', requireAdmin, async function (req, res, next) {
     try {
       const customer = await store.getCompanyCustomer(req.params.id);
       if (!customer) return res.status(404).json({ ok: false, error: 'Customer not found.' });
+      await assertCanViewCustomer(req, customer);
       res.json({ ok: true, contacts: customer.contacts || [] });
-    } catch (err) { next(err); }
+    } catch (err) {
+      if (err && err.status === 403) return res.status(403).json({ ok: false, error: err.message });
+      next(err);
+    }
   });
 
   app.post('/api/admin/company-customers/:id/contacts', requireAdmin, async function (req, res, next) {
     try {
+      const customer = await store.getCompanyCustomer(req.params.id);
+      if (!customer) return res.status(404).json({ ok: false, error: 'Customer not found.' });
+      await assertCanViewCustomer(req, customer);
       const contact = await store.createCustomerContact(req.params.id, req.body || {});
       if (!contact) return res.status(404).json({ ok: false, error: 'Customer not found.' });
       res.json({ ok: true, contact: contact });
-    } catch (err) { next(err); }
+    } catch (err) {
+      if (err && err.status === 403) return res.status(403).json({ ok: false, error: err.message });
+      next(err);
+    }
   });
 
   app.put('/api/admin/company-customers/:customerId/contacts/:contactId', requireAdmin, async function (req, res, next) {
     try {
+      const customer = await store.getCompanyCustomer(req.params.customerId);
+      if (!customer) return res.status(404).json({ ok: false, error: 'Customer not found.' });
+      await assertCanViewCustomer(req, customer);
       const contact = await store.updateCustomerContact(req.params.customerId, req.params.contactId, req.body || {});
       if (!contact) return res.status(404).json({ ok: false, error: 'Contact not found.' });
       res.json({ ok: true, contact: contact });
-    } catch (err) { next(err); }
+    } catch (err) {
+      if (err && err.status === 403) return res.status(403).json({ ok: false, error: err.message });
+      next(err);
+    }
   });
 
   app.delete('/api/admin/company-customers/:customerId/contacts/:contactId', requireAdmin, async function (req, res, next) {
     try {
+      const customer = await store.getCompanyCustomer(req.params.customerId);
+      if (!customer) return res.status(404).json({ ok: false, error: 'Customer not found.' });
+      await assertCanViewCustomer(req, customer);
       const ok = await store.deleteCustomerContact(req.params.customerId, req.params.contactId);
       if (!ok) return res.status(404).json({ ok: false, error: 'Contact not found.' });
       res.json({ ok: true });
-    } catch (err) { next(err); }
+    } catch (err) {
+      if (err && err.status === 403) return res.status(403).json({ ok: false, error: err.message });
+      next(err);
+    }
   });
 
   app.get('/api/admin/crm/leads.csv', requireAdmin, requireCrmView, async function (_req, res, next) {
@@ -2127,7 +2215,11 @@ async function main() {
     try {
       const type = String(req.query.type || '').trim().toLowerCase();
       const filter = type === 'quote' || type === 'order' || type === 'invoice' ? type : '';
-      res.json({ ok: true, docs: await store.listSalesDocs(filter) });
+      const own = require('./sales-ownership');
+      const staff = await loadStaffForOwnership();
+      const customers = await store.listCompanyCustomers();
+      const docs = own.filterSalesDocs(await store.listSalesDocs(filter), req.admin, staff, customers);
+      res.json({ ok: true, docs: docs });
     } catch (err) { next(err); }
   });
 
@@ -2135,8 +2227,15 @@ async function main() {
     try {
       const doc = await store.getSalesDoc(req.params.id);
       if (!doc) return res.status(404).json({ ok: false, error: 'Document not found.' });
+      if (doc.customerId) {
+        const customer = await store.getCompanyCustomer(doc.customerId);
+        if (customer) await assertCanViewCustomer(req, customer);
+      }
       res.json({ ok: true, doc: doc });
-    } catch (err) { next(err); }
+    } catch (err) {
+      if (err && err.status === 403) return res.status(403).json({ ok: false, error: err.message });
+      next(err);
+    }
   });
 
   app.post('/api/admin/sales-docs', requireAdmin, async function (req, res, next) {
@@ -2940,7 +3039,8 @@ async function main() {
       state: body && body.state,
       zip: body && body.zip,
       country: body && body.country,
-      photoUrl: body && body.photoUrl
+      photoUrl: body && body.photoUrl,
+      managerId: body && body.managerId != null ? String(body.managerId).trim() : ''
     };
   }
 
@@ -3109,7 +3209,18 @@ async function main() {
       }
       const staff = await store.getStaffDetail(req.params.id);
       if (!staff) return res.status(404).json({ ok: false, error: 'User not found.' });
-      res.json({ ok: true, staff: staff });
+      const own = require('./sales-ownership');
+      const allStaff = await loadStaffForOwnership();
+      const customers = own.customersForSalesRep(await store.listCompanyCustomers(), staff.id, allStaff).map(function (c) {
+        return {
+          id: c.id,
+          displayName: c.displayName || c.companyName || c.contactName || c.email || 'Customer',
+          companyName: c.companyName || '',
+          email: c.email || '',
+          phone: c.phone || c.mobile || ''
+        };
+      });
+      res.json({ ok: true, staff: Object.assign({}, staff, { customers: customers }) });
     } catch (err) { next(err); }
   });
 
@@ -3125,6 +3236,9 @@ async function main() {
           return res.status(400).json({ ok: false, error: 'Owner can only be assigned to one user.' });
         }
       }
+      const own = require('./sales-ownership');
+      const allStaff = await loadStaffForOwnership();
+      input.managerId = own.normalizeManagerId(input.managerId, null, allStaff);
       const staff = await store.createAdmin(input);
       if (typeof store.enrollChatUser === 'function') {
         try { await store.enrollChatUser(staff, { announce: true }); } catch (e) { console.error('chat enroll', e); }
@@ -3162,6 +3276,8 @@ async function main() {
         const owners = all.filter(isOwnerAdmin).length;
         if (owners <= 1) return res.status(400).json({ ok: false, error: 'Keep at least one Owner login.' });
       }
+      const own = require('./sales-ownership');
+      input.managerId = own.normalizeManagerId(input.managerId, id, all);
       let staff;
       if (typeof store.updateStaffProfile === 'function') {
         staff = await store.updateStaffProfile(id, input);
@@ -3171,7 +3287,16 @@ async function main() {
         staff = await store.updateAdmin(id, patch);
       }
       if (!staff) return res.status(404).json({ ok: false, error: 'Staff login not found.' });
-      res.json({ ok: true, staff: staff });
+      const customers = own.customersForSalesRep(await store.listCompanyCustomers(), staff.id, all).map(function (c) {
+        return {
+          id: c.id,
+          displayName: c.displayName || c.companyName || c.contactName || c.email || 'Customer',
+          companyName: c.companyName || '',
+          email: c.email || '',
+          phone: c.phone || c.mobile || ''
+        };
+      });
+      res.json({ ok: true, staff: Object.assign({}, staff, { customers: customers }) });
     } catch (err) {
       const msg = err.message || 'Could not save user.';
       res.status(400).json({
