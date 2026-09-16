@@ -527,6 +527,16 @@ body.shop-collection-mode .shop-subnav { display: block; }
   align-items: center;
   justify-content: center;
 }
+.shop-card-media img,
+.shop-pdp-photo img,
+.shop-thumbs img,
+.shop-cart-line img,
+.shop-search-hits img,
+.shop-ed-card img {
+  -webkit-user-drag: none;
+  user-select: none;
+  -webkit-user-select: none;
+}
 .shop-card-media img {
   width: 88%;
   height: 88%;
