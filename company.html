@@ -14,10 +14,11 @@
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
   <title>Company | Spectrum Display</title>
   <meta name="robots" content="noindex, nofollow" />
-  <link rel="stylesheet" href="/css/company-dash.css?v=rolenone1" />
+  <link rel="stylesheet" href="/css/company-dash.css?v=staff1" />
   <script src="/js/address-autocomplete.js"></script>
   <script src="/js/company-chat.js?v=chatcrm3"></script>
   <script src="/js/company-crm.js?v=zoomphone3"></script>
+  <script src="/js/company-staff.js?v=staff2"></script>
   <script src="/js/company-traffic.js?v=loc1"></script>
   <script src="/js/company-website-control.js?v=webctrl6"></script>
   <script src="/js/print-form.js?v=forms20"></script>
@@ -3231,6 +3232,7 @@
       </div>
 
       <div id="staff-section" class="space-y-8">
+        <div id="staff-list-wrap" class="space-y-8">
         <div id="chat-ai-section" class="hidden space-y-4">
           <div>
             <h2 class="text-base font-semibold text-slate-800">Chat / AI</h2>
@@ -3334,15 +3336,134 @@
             <table class="w-full text-sm dash-cols" data-cols="staff">
               <thead class="text-left text-slate-400 border-b border-slate-800">
                 <tr>
+                  <th class="py-3 px-4 font-medium" data-col="photo"> </th>
                   <th class="py-3 px-4 font-medium" data-col="name">Name <span class="dash-col-caret">▾</span><span class="dash-col-grip" aria-hidden="true"></span></th>
                   <th class="py-3 px-4 font-medium" data-col="email">Email <span class="dash-col-caret">▾</span><span class="dash-col-grip" aria-hidden="true"></span></th>
                   <th class="py-3 px-4 font-medium" data-col="role">Role <span class="dash-col-caret">▾</span><span class="dash-col-grip" aria-hidden="true"></span></th>
+                  <th class="py-3 px-4 font-medium" data-col="phone">Phone <span class="dash-col-caret">▾</span><span class="dash-col-grip" aria-hidden="true"></span></th>
                 </tr>
               </thead>
               <tbody id="staff-table" class="text-slate-200"></tbody>
             </table>
             </div>
           </div>
+        </div>
+        </div>
+
+        <div id="staff-detail-pane" class="su-detail hidden" hidden aria-hidden="true">
+          <div class="su-detail-bar">
+            <button type="button" id="su-back" class="cc-detail-btn">← Users</button>
+            <div class="su-detail-bar-copy">
+              <h2 id="su-title">User</h2>
+              <p id="su-sub" class="su-sub">Company staff login</p>
+            </div>
+            <div class="su-detail-bar-actions">
+              <button type="button" id="su-delete" class="cc-detail-btn hidden" style="color:#b91c1c">Remove</button>
+              <button type="submit" form="su-form" id="su-save" class="cc-detail-btn cc-detail-btn-primary">Save user</button>
+            </div>
+          </div>
+          <p id="su-msg" class="hidden text-sm mb-3"></p>
+          <form id="su-form" class="su-form">
+            <input type="hidden" id="su-id">
+            <section class="su-card">
+              <div class="su-photo-row">
+                <div class="su-photo" id="su-photo">
+                  <img id="su-photo-img" class="hidden" alt="">
+                  <span id="su-photo-fallback">?</span>
+                </div>
+                <div>
+                  <h3>Photo</h3>
+                  <p class="su-help">Icon for this user in the list and detail page.</p>
+                  <div class="su-photo-actions">
+                    <input id="su-photo-input" type="file" accept="image/*" class="hidden">
+                    <button type="button" id="su-photo-btn" class="cc-detail-btn">Upload photo</button>
+                    <button type="button" id="su-photo-clear" class="su-link">Remove</button>
+                  </div>
+                </div>
+              </div>
+            </section>
+
+            <section class="su-card">
+              <h3>Profile</h3>
+              <div class="su-grid">
+                <div class="cc-field"><label>Display name</label><input id="su-name" required type="text"></div>
+                <div class="cc-field"><label>Job title</label><input id="su-job" type="text"></div>
+                <div class="cc-field"><label>First name</label><input id="su-first" type="text"></div>
+                <div class="cc-field"><label>Last name</label><input id="su-last" type="text"></div>
+                <div class="cc-field"><label>Phone</label><input id="su-phone" type="text"></div>
+                <div class="cc-field"><label>Mobile</label><input id="su-mobile" type="text"></div>
+                <div class="cc-field wide"><label>Personal email</label><input id="su-personal-email" type="email"></div>
+                <div class="cc-field wide"><label>Notes</label><textarea id="su-notes" rows="3"></textarea></div>
+              </div>
+            </section>
+
+            <section class="su-card">
+              <h3>Address</h3>
+              <div class="su-grid">
+                <div class="cc-field wide"><label>Street address 1</label><input id="su-street" type="text" autocomplete="off" data-places-fields="su-street,su-street2,su-city,su-state,su-zip,su-country"></div>
+                <div class="cc-field wide"><label>Street address 2</label><input id="su-street2" type="text"></div>
+                <div class="cc-field"><label>City</label><input id="su-city" type="text"></div>
+                <div class="cc-field"><label>State</label><input id="su-state" type="text"></div>
+                <div class="cc-field"><label>ZIP code</label><input id="su-zip" type="text"></div>
+                <div class="cc-field"><label>Country</label><input id="su-country" type="text" value="United States"></div>
+              </div>
+            </section>
+
+            <section class="su-card">
+              <h3>Company login</h3>
+              <p class="su-help">Sign-in for /company. Role controls which menus they see.</p>
+              <div class="su-grid">
+                <div class="cc-field"><label>Login email</label><input id="su-email" required type="email"></div>
+                <div class="cc-field"><label>Role</label><select id="su-role"></select></div>
+                <div class="cc-field wide"><label>Password</label>
+                  <input id="su-password" type="password" minlength="8" autocomplete="new-password">
+                  <p class="cc-note" id="su-password-hint">At least 8 characters.</p>
+                </div>
+                <div class="cc-field"><label>Created</label><p id="su-created" class="su-readonly">—</p></div>
+              </div>
+            </section>
+
+            <section class="su-card">
+              <div class="su-card-head">
+                <div>
+                  <h3>Company accounts</h3>
+                  <p class="su-help">Email accounts, company phone, and other logins Spectrum gives this person.</p>
+                </div>
+                <button type="button" id="su-account-add" class="cc-detail-btn cc-detail-btn-primary">Add account</button>
+              </div>
+              <div id="su-account-form" class="su-account-form hidden">
+                <input type="hidden" id="su-acc-id">
+                <div class="su-grid">
+                  <div class="cc-field"><label>Type</label>
+                    <select id="su-acc-type">
+                      <option value="email">Email</option>
+                      <option value="phone">Company phone</option>
+                      <option value="other">Other</option>
+                    </select>
+                  </div>
+                  <div class="cc-field"><label>Label</label><input id="su-acc-label" type="text" placeholder="Work Gmail, Desk phone…"></div>
+                  <div class="cc-field"><label>Username / number</label><input id="su-acc-user" type="text"></div>
+                  <div class="cc-field"><label>Password</label><input id="su-acc-secret" type="password" autocomplete="new-password"></div>
+                  <div class="cc-field wide"><label>Notes</label><textarea id="su-acc-notes" rows="2"></textarea></div>
+                </div>
+                <div class="su-account-form-actions">
+                  <button type="button" id="su-acc-cancel" class="cc-detail-btn">Cancel</button>
+                  <button type="button" id="su-acc-save" class="cc-detail-btn cc-detail-btn-primary">Save account</button>
+                </div>
+              </div>
+              <div id="su-accounts" class="su-accounts"></div>
+            </section>
+
+            <section class="su-card">
+              <h3>Files</h3>
+              <p class="su-help">Drop documents for this user. Click the area or drag files in.</p>
+              <div id="su-file-drop" class="su-file-drop" role="button" tabindex="0">
+                Drop files to upload
+                <input id="su-file-input" type="file" class="hidden" multiple>
+              </div>
+              <div id="su-files" class="su-files"></div>
+            </section>
+          </form>
         </div>
       </div>
       <div id="chat-section" class="hidden"></div>
@@ -4402,7 +4523,7 @@
     </a>
   </nav>
 
-  <link rel="stylesheet" href="/css/company-dash.css?v=rolenone1" />
+  <link rel="stylesheet" href="/css/company-dash.css?v=staff1" />
 
   <script>
     const loginPanel = document.getElementById('login-panel');
@@ -4518,6 +4639,7 @@
       if (p === '/company/settings/company') return 'company';
       if (p === '/company/settings/forms') return 'forms';
       if (p === '/company/settings/roles') return 'staff';
+      if (/^\/company\/settings\/users(\/|$)/.test(p)) return 'staff';
       if (p === '/company/settings') return 'staff';
       if (p === '/company/website/accounts') return 'accounts';
       if (p === '/company/website/dealers') return 'dealers';
@@ -4553,6 +4675,10 @@
       if (name === 'forms') return '/company/settings/forms';
       if (name === 'staff' || name === 'roles') return '/company/settings';
       return '/company/website';
+    }
+    function staffIdFromPath() {
+      const m = companyPath().match(/^\/company\/settings\/users\/([^/]+)$/);
+      return m ? decodeURIComponent(m[1]) : '';
     }
     function customerIdFromPath() {
       const m = companyPath().match(/^\/company\/customers\/(\d+)$/);
@@ -4683,7 +4809,7 @@
         if (p === '/company/inventory') return 'inventory';
         if (p === '/company/settings/company') return 'company';
         if (p === '/company/settings/forms') return 'forms';
-        if (p === '/company/settings/roles' || p === '/company/settings') return 'staff';
+        if (p === '/company/settings/roles' || p === '/company/settings' || /^\/company\/settings\/users(\/|$)/.test(p)) return 'staff';
         if (p === '/company/website/accounts') return 'accounts';
         if (p === '/company/website/dealers') return 'dealers';
         if (p === '/company/website/traffic') return 'traffic';
@@ -8310,9 +8436,11 @@
         { id: 'notes', label: 'Notes' }
       ],
       staff: [
+        { id: 'photo', label: 'Photo' },
         { id: 'name', label: 'Name' },
         { id: 'email', label: 'Email' },
-        { id: 'role', label: 'Role' }
+        { id: 'role', label: 'Role' },
+        { id: 'phone', label: 'Phone' }
       ],
       roles: [
         { id: 'name', label: 'Role' },
@@ -8362,7 +8490,7 @@
       'receipt-shipments': ['number', 'vendor', 'po', 'date', 'qty'],
       vendors: ['vendor', 'company', 'phone', 'email', 'tax1099'],
       accounts: ['name', 'login', 'category', 'monthly', 'yearly'],
-      staff: ['name', 'email', 'role'],
+      staff: ['photo', 'name', 'email', 'role', 'phone'],
       roles: ['name', 'website', 'inventory', 'users'],
       'website-products': ['photo', 'product', 'brand', 'type', 'pitch', 'price', 'website', 'store'],
       'website-store': ['photo', 'product', 'brand', 'collection', 'featured', 'buy', 'onHand', 'sort', 'store'],
@@ -8503,7 +8631,7 @@
         sortDir: '',
         widths: fallbackWidths,
         splitLeftPx: keptSplit,
-        schema: dashColKey(table) === 'warehouses' ? 4 : (dashColKey(table) === 'inventory' ? 5 : (dashColKey(table) === 'po-lines' ? 2 : (dashColKey(table) === 'so-lines' ? 1 : (dashColKey(table) === 'website-store' ? 2 : 0))))
+        schema: dashColKey(table) === 'warehouses' ? 4 : (dashColKey(table) === 'inventory' ? 5 : (dashColKey(table) === 'po-lines' ? 2 : (dashColKey(table) === 'so-lines' ? 1 : (dashColKey(table) === 'website-store' ? 2 : (dashColKey(table) === 'staff' ? 1 : 0)))))
       };
       pinStartLockedInState(table, fallback.order, fallback.hidden);
       if (!saved) {
@@ -8882,7 +9010,11 @@
           item = chatSharePack('Purchase order', chatShareField('po-number') || 'Purchase order', pathForPo(id));
         }
       } else if (tabName === 'staff') {
-        if (document.body.classList.contains('st-drawer-open')) {
+        if (window.SpectrumStaff && SpectrumStaff.isDetailOpen && SpectrumStaff.isDetailOpen()) {
+          const id = chatShareField('su-id');
+          const title = (document.getElementById('su-title') || {}).textContent || 'User';
+          item = chatSharePack('Staff', title, id ? '/company/settings/users/' + id : '/company/settings/users/new');
+        } else if (document.body.classList.contains('st-drawer-open')) {
           const id = chatShareField('staff-id');
           const nameEl = document.getElementById('staff-name') || document.getElementById('st-name');
           item = chatSharePack('Staff', (nameEl && nameEl.value) || 'User', '/company/settings');
@@ -9055,6 +9187,38 @@
         companyPath: companyPath,
         adminName: function () {
           return (currentAdminUser && (currentAdminUser.name || currentAdminUser.email)) || '';
+        }
+      });
+    }
+
+    function bootSpectrumStaff() {
+      if (!window.SpectrumStaff) return;
+      SpectrumStaff.boot({
+        api: api,
+        esc: typeof esc === 'function' ? esc : function (s) { return String(s == null ? '' : s); },
+        fillStaffRoleSelect: fillStaffRoleSelect,
+        staffRoleLabel: staffRoleLabel,
+        goCompany: function (href, replace) {
+          const next = String(href || '/company').replace(/\/+$/, '') || '/company';
+          if (next === companyPath() && !location.hash) return;
+          const state = { tab: 'staff' };
+          if (replace) history.replaceState(state, '', next);
+          else history.pushState(state, '', next);
+        },
+        pathForTab: pathForTab,
+        canEditStaff: function () {
+          return canEdit('staff') || canEdit('settings') || canEdit('roles');
+        },
+        canDeleteStaff: function (id) {
+          return !!(id && currentAdminUser && String(id) !== String(currentAdminUser.id));
+        },
+        onListChanged: async function () {
+          await loadStaff();
+          try {
+            if (window.SpectrumChat && typeof SpectrumChat.refreshContacts === 'function') {
+              SpectrumChat.refreshContacts();
+            }
+          } catch (e) {}
         }
       });
     }
@@ -12908,7 +13072,8 @@
         { street: 'cc-bill-street', line2: 'cc-bill-street2', city: 'cc-bill-city', state: 'cc-bill-state', zip: 'cc-bill-zip', country: 'cc-bill-country' },
         { street: 'cc-ship-street', line2: 'cc-ship-street2', city: 'cc-ship-city', state: 'cc-ship-state', zip: 'cc-ship-zip', country: 'cc-ship-country' },
         { street: 'vn-street', line2: 'vn-street2', city: 'vn-city', state: 'vn-state', zip: 'vn-zip', country: 'vn-country' },
-        { street: 'ci-street', line2: 'ci-street2', city: 'ci-city', state: 'ci-state', zip: 'ci-zip', country: 'ci-country' }
+        { street: 'ci-street', line2: 'ci-street2', city: 'ci-city', state: 'ci-state', zip: 'ci-zip', country: 'ci-country' },
+        { street: 'su-street', line2: 'su-street2', city: 'su-city', state: 'su-state', zip: 'su-zip', country: 'su-country' }
       ].forEach(function (fields) {
         SpectrumPlaces.bind(fields.street, fields);
       });
@@ -17838,6 +18003,12 @@
       if (name === 'staff' || name === 'roles') {
         await loadStaff();
         await loadRoles();
+        if (window.SpectrumStaff) {
+          const sid = staffIdFromPath();
+          if (sid === 'new') await SpectrumStaff.openUser(null, false);
+          else if (sid) await SpectrumStaff.openUser(sid, false);
+          else SpectrumStaff.showList();
+        }
       }
       loaded = true;
       } finally {
@@ -20136,25 +20307,32 @@
     function ownerAssignedToOther() {
       const owner = staffList.find(function (p) { return p.role === 'owner'; });
       if (!owner) return null;
-      if (editingStaffId && String(owner.id) === String(editingStaffId)) return null;
+      const suId = (document.getElementById('su-id') || {}).value;
+      const editingId = editingStaffId || suId;
+      if (editingId && String(owner.id) === String(editingId)) return null;
       return owner;
     }
 
     function fillStaffRoleSelect(selected) {
-      const sel = document.getElementById('staff-role');
+      const sels = [
+        document.getElementById('staff-role'),
+        document.getElementById('su-role')
+      ].filter(Boolean);
+      if (!sels.length) return;
       const blockedOwner = ownerAssignedToOther();
       const roles = adminRoles.filter(function (r) {
         return !(r.slug === 'owner' && blockedOwner);
       });
-      let value = selected || sel.value || '';
+      let value = selected || sels[0].value || '';
       if (!value || (value === 'owner' && blockedOwner)) {
         const fallback = roles.find(function (r) { return r.slug !== 'owner'; }) || roles[0];
         value = fallback ? fallback.slug : '';
       }
-      sel.innerHTML = roles.map(function (r) {
+      const html = roles.map(function (r) {
         const note = r.slug === 'owner' ? ' (1 user only)' : '';
         return '<option value="' + esc(r.slug) + '"' + (r.slug === value ? ' selected' : '') + '>' + esc(r.name) + note + '</option>';
       }).join('');
+      sels.forEach(function (sel) { sel.innerHTML = html; });
     }
 
     function resetStaffForm() {
@@ -20267,7 +20445,9 @@
         return;
       }
       closeRoleDrawer(true);
-      openStaffDrawer(null);
+      closeStaffDrawer(true);
+      if (window.SpectrumStaff) SpectrumStaff.openUser(null, true);
+      else openStaffDrawer(null);
     }
 
     function openNewRole() {
@@ -20283,6 +20463,15 @@
       openRoleDrawer(null);
     }
 
+    function staffListPhotoHtml(p) {
+      if (p && p.photoUrl) {
+        return '<span class="su-list-photo"><img src="' + esc(p.photoUrl) + '" alt=""></span>';
+      }
+      const a = String((p && (p.firstName || p.name || p.email)) || '?').trim().charAt(0);
+      const b = String((p && p.lastName) || '').trim().charAt(0);
+      return '<span class="su-list-photo su-list-photo-fallback">' + esc((a + b).toUpperCase() || '?') + '</span>';
+    }
+
     function renderStaff(list) {
       staffList = list || [];
       const table = document.querySelector('table.dash-cols[data-cols="staff"]');
@@ -20296,14 +20485,18 @@
         if (col === 'name') return p.name || '';
         if (col === 'email') return p.email || '';
         if (col === 'role') return staffRoleLabel(p.role);
+        if (col === 'phone') return p.phone || p.mobile || '';
+        if (col === 'photo') return p.name || p.email || '';
         return '';
       });
       document.getElementById('staff-table').innerHTML = sorted.map(function (p) {
         const mine = String(p.id) === me;
         const cells = {
+          photo: '<td class="py-2.5 px-4 su-list-photo-cell">' + staffListPhotoHtml(p) + '</td>',
           name: '<td class="py-2.5 px-4 font-medium">' + esc(p.name || '') + (mine ? ' <span class="text-xs text-slate-500">(you)</span>' : '') + '</td>',
           email: '<td class="py-2.5 px-4 text-slate-400">' + esc(p.email || '') + '</td>',
-          role: '<td class="py-2.5 px-4"><span class="text-xs px-2 py-0.5 rounded-full bg-sky-500/15 text-sky-300">' + esc(staffRoleLabel(p.role)) + '</span></td>'
+          role: '<td class="py-2.5 px-4"><span class="text-xs px-2 py-0.5 rounded-full bg-sky-500/15 text-sky-300">' + esc(staffRoleLabel(p.role)) + '</span></td>',
+          phone: '<td class="py-2.5 px-4 text-slate-400">' + esc(p.phone || p.mobile || '—') + '</td>'
         };
         return '<tr class="border-b border-slate-800 hover:bg-slate-800/40 cursor-pointer" data-staff-id="' + esc(p.id) + '">' +
           dashOrderedCells(table, cells) +
@@ -20585,9 +20778,15 @@
       const row = e.target.closest('tr[data-staff-id]');
       if (!row) return;
       const id = row.getAttribute('data-staff-id');
-      const person = staffList.find(function (p) { return String(p.id) === String(id); });
-      if (!person) return;
-      const go = function () { openStaffDrawer(person); };
+      const go = function () {
+        closeRoleDrawer(true);
+        closeStaffDrawer(true);
+        if (window.SpectrumStaff) SpectrumStaff.openUser(id, true);
+        else {
+          const person = staffList.find(function (p) { return String(p.id) === String(id); });
+          if (person) openStaffDrawer(person);
+        }
+      };
       if (stDrawerNeedsLeave()) { stAskLeave(go); return; }
       if (rlDrawerNeedsLeave()) { rlAskLeave(go); return; }
       go();
@@ -21370,6 +21569,7 @@
         applyStaffGmail(data.gmail);
         await consumeGmailReturn();
         await loadColumnPrefs();
+        bootSpectrumStaff();
         bootSpectrumChat(data.admin);
         await openRoutedSection(tabFromPath());
         var loginDraft = copilotTokenFromHref(location.href);
@@ -22546,6 +22746,7 @@
         return consumeGmailReturn().then(function () {
           return loadColumnPrefs();
         }).then(function () {
+          bootSpectrumStaff();
           if (window.SpectrumChat) bootSpectrumChat(data.admin);
           return openRoutedSection(tabFromPath()).then(function () {
             var bootDraft = copilotTokenFromHref(location.href);
