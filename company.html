@@ -14,7 +14,7 @@
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
   <title>Company | Spectrum Display</title>
   <meta name="robots" content="noindex, nofollow" />
-  <link rel="stylesheet" href="/css/company-dash.css?v=photofit1" />
+  <link rel="stylesheet" href="/css/company-dash.css?v=rolenone1" />
   <script src="/js/address-autocomplete.js"></script>
   <script src="/js/company-chat.js?v=chatcrm3"></script>
   <script src="/js/company-crm.js?v=zoomphone3"></script>
@@ -3296,35 +3296,41 @@
           <div class="flex items-start justify-between gap-4">
             <div>
               <h2 class="text-base font-semibold text-slate-800">Role Setting</h2>
-              <p class="text-slate-400 text-sm mt-1">Name a role and set access for each menu and sub-menu. Owner is limited to one user and always has full access. Delete a role only when no user is assigned to it.</p>
+              <p class="text-slate-400 text-sm mt-1">Name a role and set access for each menu. None hides that menu for users on this role. Setting a group (like Website) to None hides the whole group. Owner is one user with full access.</p>
             </div>
             <button id="role-new-btn" type="button" class="shrink-0 px-4 py-2 rounded-full bg-sky-500 hover:bg-sky-400 text-white text-sm font-semibold">Add role</button>
           </div>
           <p id="role-error" class="hidden text-sm text-red-400"></p>
-          <div class="overflow-x-auto rounded-2xl border border-slate-800">
+          <div class="cc-table-card rounded-2xl border border-slate-800">
+            <div class="cc-table-wrap overflow-x-auto">
             <table class="w-full text-sm dash-cols" data-cols="roles">
               <thead class="text-left text-slate-400 border-b border-slate-800">
                 <tr>
                   <th class="py-3 px-4 font-medium" data-col="name">Role <span class="dash-col-caret">▾</span><span class="dash-col-grip" aria-hidden="true"></span></th>
                   <th class="py-3 px-4 font-medium" data-col="website">Website <span class="dash-col-caret">▾</span><span class="dash-col-grip" aria-hidden="true"></span></th>
                   <th class="py-3 px-4 font-medium" data-col="inventory">Inventory <span class="dash-col-caret">▾</span><span class="dash-col-grip" aria-hidden="true"></span></th>
+                  <th class="py-3 px-4 font-medium" data-col="crm">CRM <span class="dash-col-caret">▾</span><span class="dash-col-grip" aria-hidden="true"></span></th>
+                  <th class="py-3 px-4 font-medium" data-col="customers">Customer <span class="dash-col-caret">▾</span><span class="dash-col-grip" aria-hidden="true"></span></th>
+                  <th class="py-3 px-4 font-medium" data-col="settings">Settings <span class="dash-col-caret">▾</span><span class="dash-col-grip" aria-hidden="true"></span></th>
                   <th class="py-3 px-4 font-medium" data-col="users">Users <span class="dash-col-caret">▾</span><span class="dash-col-grip" aria-hidden="true"></span></th>
                 </tr>
               </thead>
               <tbody id="role-table" class="text-slate-200"></tbody>
             </table>
+            </div>
           </div>
         </div>
         <div class="space-y-6">
           <div class="flex items-start justify-between gap-4">
             <div>
               <h2 class="text-base font-semibold text-slate-800">Users</h2>
-              <p class="text-slate-400 text-sm mt-1">Admin logins for this page — not website Customer / Dealer / Sales accounts. Owner sees everything. Website can edit product pages and website accounts. Inventory can receive and adjust stock.</p>
+              <p class="text-slate-400 text-sm mt-1">Admin logins for Company — not website Customer / Dealer accounts. Assign a role to control which menus they see.</p>
             </div>
             <button id="staff-new-btn" type="button" class="shrink-0 px-4 py-2 rounded-full bg-sky-500 hover:bg-sky-400 text-white text-sm font-semibold">Add user</button>
           </div>
           <p id="staff-error" class="hidden text-sm text-red-400"></p>
-          <div class="overflow-x-auto rounded-2xl border border-slate-800">
+          <div class="cc-table-card rounded-2xl border border-slate-800">
+            <div class="cc-table-wrap overflow-x-auto">
             <table class="w-full text-sm dash-cols" data-cols="staff">
               <thead class="text-left text-slate-400 border-b border-slate-800">
                 <tr>
@@ -3335,6 +3341,7 @@
               </thead>
               <tbody id="staff-table" class="text-slate-200"></tbody>
             </table>
+            </div>
           </div>
         </div>
       </div>
@@ -4395,7 +4402,7 @@
     </a>
   </nav>
 
-  <link rel="stylesheet" href="/css/company-dash.css?v=photofit1" />
+  <link rel="stylesheet" href="/css/company-dash.css?v=rolenone1" />
 
   <script>
     const loginPanel = document.getElementById('login-panel');
@@ -4600,15 +4607,32 @@
     }
     function firstAllowedTab() {
       if (canUse('dashboard')) return 'dashboard';
-      if (canUse('website')) return 'products';
+      if (canUse('website')) {
+        if (canUse('products')) return 'products';
+        if (canUse('store')) return 'store';
+        if (canUse('accounts')) return 'accounts';
+        if (canUse('dealers')) return 'dealers';
+        if (canUse('traffic')) return 'traffic';
+        return 'products';
+      }
       if (canUse('inventory')) return 'inventory';
+      if (canUse('vendors')) return 'vendors';
+      if (canUse('purchase-orders')) return 'purchase-orders';
       if (canUse('leads')) return 'leads';
       if (canUse('pipeline')) return 'pipeline';
       if (canUse('activities')) return 'activities';
       if (canUseCrmNav()) return 'leads';
       if (canUse('customers')) return 'customers';
       if (canUse('quotes')) return 'quotes';
-      if (canUse('settings')) return 'staff';
+      if (canUse('orders')) return 'orders';
+      if (canUse('invoices')) return 'invoices';
+      if (canUse('chat')) return 'chat';
+      if (canUseSettingsNav()) {
+        if (canUse('staff')) return 'staff';
+        if (canUse('company')) return 'company';
+        if (canUse('forms')) return 'forms';
+        return 'staff';
+      }
       return '';
     }
     function goCompany(href) {
@@ -5413,17 +5437,17 @@
     }
     function canView(mod) {
       if (adminPerms().settings) return true;
-      if (mod === 'settings') return canUse('settings') || canUse('company') || canUse('staff') || canUse('forms');
-      if (mod === 'website') return canUse('website') || canUse('products') || canUse('store') || canUse('accounts') || canUse('dealers');
-      if (mod === 'inventory') return canUse('inventory') || canUse('warehouses') || canUse('vendors') || canUse('purchase-orders') || canUse('receipt-shipments');
+      if (mod === 'settings') return canUseSettingsNav();
+      if (mod === 'website') return canUseWebsiteNav();
+      if (mod === 'inventory') return canUseInventoryNav();
       const v = adminPerms()[mod];
       return v === 'view' || v === 'edit';
     }
     function canEdit(mod) {
       if (adminPerms().settings) return true;
-      if (mod === 'settings') return canUse('staff') && ((adminPerms().menu || {}).staff === 'edit' || (adminPerms().menu || {}).settings === 'edit');
-      if (mod === 'website') return canUse('products') && ((adminPerms().menu || {}).website === 'edit' || (adminPerms().menu || {}).products === 'edit');
-      if (mod === 'inventory') return canUse('inventory') && (adminPerms().menu || {}).inventory === 'edit';
+      if (mod === 'settings') return canEditMenu('staff') || canEditMenu('settings');
+      if (mod === 'website') return canEditMenu('website') || canEditMenu('products');
+      if (mod === 'inventory') return canEditMenu('inventory');
       return adminPerms()[mod] === 'edit';
     }
     function canManageChatAi() {
@@ -5461,50 +5485,78 @@
       staff: 'staff',
       roles: 'staff'
     };
+    const MENU_PARENT = {
+      products: 'website',
+      accounts: 'website',
+      warehouses: 'inventory',
+      'receipt-shipments': 'inventory',
+      'purchase-orders': 'vendors',
+      leads: 'crm',
+      pipeline: 'crm',
+      activities: 'crm',
+      sales: 'customers',
+      quotes: 'customers',
+      orders: 'customers',
+      invoices: 'customers',
+      company: 'settings',
+      staff: 'settings'
+    };
+    function menuKeyLevel(key) {
+      const menu = adminPerms().menu || {};
+      return menu[key] || 'none';
+    }
+    function canUseMenuKey(key) {
+      if (!currentAdminUser) return false;
+      if (adminPerms().settings) return true;
+      const level = menuKeyLevel(key);
+      return level === 'view' || level === 'edit';
+    }
+    function gatedMenuLevel(parentKey, childKey) {
+      if (adminPerms().settings) return 'edit';
+      const parent = menuKeyLevel(parentKey);
+      if (parent !== 'view' && parent !== 'edit') return 'none';
+      const child = menuKeyLevel(childKey);
+      if (child === 'none') return 'none';
+      if (parent === 'view' && child === 'edit') return 'view';
+      return child;
+    }
     function canUse(section) {
       if (!currentAdminUser) return false;
       if (adminPerms().settings) return true;
       const doc = parseDocMasterTab(section);
       if (doc) section = docMasterListTab(doc.kind);
       const key = SECTION_MENU_KEY[section] || section;
-      let level = (adminPerms().menu || {})[key];
-      if ((level !== 'view' && level !== 'edit') && key === 'warehouses') {
-        level = (adminPerms().menu || {}).inventory;
-      }
-      if ((level !== 'view' && level !== 'edit') && (key === 'leads' || key === 'pipeline' || key === 'activities')) {
-        level = (adminPerms().menu || {}).crm;
-      }
-      if ((level !== 'view' && level !== 'edit') && section === 'dealers') {
-        level = (adminPerms().menu || {}).website || (adminPerms().menu || {}).products || (adminPerms().menu || {}).accounts;
-      }
-      if ((level !== 'view' && level !== 'edit') && (section === 'traffic' || section === 'control')) {
-        level = (adminPerms().menu || {}).website || (adminPerms().menu || {}).products;
-      }
+      const parentKey = MENU_PARENT[key];
+      const level = parentKey ? gatedMenuLevel(parentKey, key) : menuKeyLevel(key);
       return level === 'view' || level === 'edit';
     }
     function canUseSalesNav() {
-      return canUse('sales') || canUse('customers') || canUse('quotes') || canUse('orders') || canUse('invoices');
+      return canUse('sales') || canUse('quotes') || canUse('orders') || canUse('invoices');
     }
     function canUseCustomerNav() {
-      return canUseSalesNav();
+      return canUse('customers');
+    }
+    function canUseWebsiteNav() {
+      return canUse('website');
     }
     function canUseInventoryNav() {
-      return canUse('inventory') || canUse('warehouses') || canUse('receipt-shipments');
+      return canUse('inventory');
     }
     function canUseVendorNav() {
-      return canUse('vendors') || canUse('purchase-orders');
+      return canUse('vendors');
     }
     function canUseCrmNav() {
-      return canUse('crm') || canUse('leads') || canUse('pipeline') || canUse('activities');
+      return canUse('crm');
+    }
+    function canUseSettingsNav() {
+      return canUse('settings');
     }
     function canEditMenu(key) {
       if (!currentAdminUser) return false;
       if (adminPerms().settings) return true;
-      const menu = adminPerms().menu || {};
-      if (key === 'crm' || key === 'leads' || key === 'pipeline' || key === 'activities') {
-        return menu[key] === 'edit' || menu.crm === 'edit';
-      }
-      return menu[key] === 'edit';
+      const parentKey = MENU_PARENT[key];
+      if (parentKey) return gatedMenuLevel(parentKey, key) === 'edit';
+      return menuKeyLevel(key) === 'edit';
     }
     function staffRoleLabel(role) {
       const found = adminRoles.find(function (r) { return r.slug === role; });
@@ -5580,6 +5632,52 @@
       window.location.href = gmailConnectHref();
     }
 
+    /** Hide any sidebar / tab-bar menu whose role access is None. */
+    function applyRoleMenuVisibility() {
+      const setHidden = function (id, hide) {
+        const el = document.getElementById(id);
+        if (el) el.classList.toggle('hidden', !!hide);
+      };
+      setHidden('tab-dashboard', !canUse('dashboard'));
+      setHidden('tab-website', !canUseWebsiteNav());
+      setHidden('tab-products', !canUse('products'));
+      setHidden('tab-store', !canUse('store'));
+      setHidden('tab-accounts', !canUse('accounts'));
+      setHidden('tab-dealers', !canUse('dealers'));
+      setHidden('tab-traffic', !canUse('traffic'));
+      setHidden('tab-control', !canUse('control'));
+      setHidden('tab-inventory', !canUseInventoryNav());
+      setHidden('tab-inv-items', !canUse('inventory'));
+      setHidden('tab-warehouses', !canUse('warehouses'));
+      setHidden('tab-receipt-shipments', !canUse('receipt-shipments'));
+      setHidden('tab-vendor', !canUseVendorNav());
+      setHidden('tab-vendors', !canUse('vendors'));
+      setHidden('tab-purchase-orders', !canUse('purchase-orders'));
+      setHidden('tab-customer', !canUseCustomerNav());
+      setHidden('tab-customers', !canUse('customers'));
+      setHidden('tab-quotes', !canUse('quotes'));
+      setHidden('tab-orders', !canUse('orders'));
+      setHidden('tab-invoices', !canUse('invoices'));
+      setHidden('tab-crm', !canUseCrmNav());
+      setHidden('tab-leads', !canUse('leads'));
+      setHidden('tab-pipeline', !canUse('pipeline'));
+      setHidden('tab-activities', !canUse('activities'));
+      setHidden('header-chat', !canUse('chat'));
+      setHidden('tabbar-chat', !canUse('chat'));
+      setHidden('header-settings', !canUseSettingsNav());
+      setHidden('tab-company', !canUse('company'));
+      setHidden('tab-forms', !canUse('forms'));
+      setHidden('tab-staff', !canUse('staff'));
+      // Dashboard, Website, and Settings stay in the desktop sidebar only.
+      setHidden('tabbar-dashboard', true);
+      setHidden('tabbar-website', true);
+      setHidden('tabbar-inventory', !canUseInventoryNav());
+      setHidden('tabbar-vendor', !canUseVendorNav());
+      setHidden('tabbar-crm', !canUseCrmNav());
+      setHidden('tabbar-customer', !canUseCustomerNav());
+      setHidden('tabbar-settings', true);
+    }
+
     function showDash(admin) {
       currentAdminUser = admin;
       try { localStorage.setItem('dash-active-admin-id', String(admin.id)); } catch (err) {}
@@ -5593,30 +5691,7 @@
       document.getElementById('admin-utils').classList.remove('hidden');
       document.getElementById('admin-toolbar').classList.remove('hidden');
       document.getElementById('logout-btn').classList.remove('hidden');
-      document.getElementById('tab-website').classList.toggle('hidden', !canUse('website'));
-      document.getElementById('tab-inventory').classList.toggle('hidden', !canUseInventoryNav());
-      document.getElementById('tab-vendor').classList.toggle('hidden', !canUseVendorNav());
-      document.getElementById('tab-vendors').classList.toggle('hidden', !canUse('vendors'));
-      document.getElementById('tab-purchase-orders').classList.toggle('hidden', !canUse('purchase-orders'));
-      document.getElementById('tab-receipt-shipments').classList.toggle('hidden', !canUse('receipt-shipments'));
-      document.getElementById('tab-warehouses').classList.toggle('hidden', !canUse('warehouses') && !canUse('inventory'));
-      document.getElementById('tab-customers').classList.toggle('hidden', !canUse('customers'));
-      document.getElementById('tab-customer').classList.toggle('hidden', !canUseCustomerNav());
-      document.getElementById('tab-crm').classList.toggle('hidden', !canUseCrmNav());
-      document.getElementById('tab-leads').classList.toggle('hidden', !canUse('leads') && !canUse('crm'));
-      document.getElementById('tab-pipeline').classList.toggle('hidden', !canUse('pipeline') && !canUse('crm'));
-      document.getElementById('tab-activities').classList.toggle('hidden', !canUse('activities') && !canUse('crm'));
-      document.getElementById('header-chat').classList.toggle('hidden', !canUse('chat'));
-      document.getElementById('tabbar-chat').classList.toggle('hidden', !canUse('chat'));
-      document.getElementById('header-settings').classList.toggle('hidden', !canUse('settings'));
-      // Dashboard, Website, and Settings stay in the desktop sidebar only.
-      document.getElementById('tabbar-dashboard').classList.add('hidden');
-      document.getElementById('tabbar-website').classList.add('hidden');
-      document.getElementById('tabbar-inventory').classList.toggle('hidden', !canUseInventoryNav());
-      document.getElementById('tabbar-vendor').classList.toggle('hidden', !canUseVendorNav());
-      document.getElementById('tabbar-crm').classList.toggle('hidden', !canUseCrmNav());
-      document.getElementById('tabbar-customer').classList.toggle('hidden', !canUseCustomerNav());
-      document.getElementById('tabbar-settings').classList.add('hidden');
+      applyRoleMenuVisibility();
       const chatAiSec = document.getElementById('chat-ai-section');
       if (chatAiSec) chatAiSec.classList.toggle('hidden', !canManageChatAi());
       const tabbar = document.getElementById('dash-tabbar');
@@ -7526,24 +7601,24 @@
       document.getElementById('inventory-subnav').classList.toggle('hidden', !onInventory);
       document.getElementById('vendor-subnav').classList.toggle('hidden', !onVendorNav);
       document.getElementById('crm-subnav').classList.toggle('hidden', !onCrmNav);
-      document.getElementById('tab-website').className = navLinkClass(onWebsite, !canUse('website'));
+      document.getElementById('tab-website').className = navLinkClass(onWebsite, !canUseWebsiteNav());
       document.getElementById('tab-inventory').className = navLinkClass(onInventory, !canUseInventoryNav());
       document.getElementById('tab-vendor').className = navLinkClass(onVendorNav, !canUseVendorNav());
       document.getElementById('tab-customers').className = navLinkClass(view === 'customers', !canUse('customers'), 'sub');
       document.getElementById('tab-customer').className = navLinkClass(onCustomerNav, !canUseCustomerNav());
       document.getElementById('tab-crm').className = navLinkClass(onCrmNav, !canUseCrmNav());
-      document.getElementById('tab-leads').className = navLinkClass(view === 'leads' || view === 'crm', !canUse('leads') && !canUse('crm'), 'sub');
-      document.getElementById('tab-pipeline').className = navLinkClass(view === 'pipeline', !canUse('pipeline') && !canUse('crm'), 'sub');
-      document.getElementById('tab-activities').className = navLinkClass(view === 'activities', !canUse('activities') && !canUse('crm'), 'sub');
-      document.getElementById('tab-inv-items').className = navLinkClass(view === 'inventory', false, 'sub');
-      document.getElementById('tab-warehouses').className = navLinkClass(view === 'warehouses', false, 'sub');
-      document.getElementById('tab-vendors').className = navLinkClass(view === 'vendors', false, 'sub');
-      document.getElementById('tab-purchase-orders').className = navLinkClass(view === 'purchase-orders', false, 'sub');
-      document.getElementById('tab-receipt-shipments').className = navLinkClass(view === 'receipt-shipments', false, 'sub');
-      document.getElementById('tab-products').className = navLinkClass(view === 'products', false, 'sub');
+      document.getElementById('tab-leads').className = navLinkClass(view === 'leads' || view === 'crm', !canUse('leads'), 'sub');
+      document.getElementById('tab-pipeline').className = navLinkClass(view === 'pipeline', !canUse('pipeline'), 'sub');
+      document.getElementById('tab-activities').className = navLinkClass(view === 'activities', !canUse('activities'), 'sub');
+      document.getElementById('tab-inv-items').className = navLinkClass(view === 'inventory', !canUse('inventory'), 'sub');
+      document.getElementById('tab-warehouses').className = navLinkClass(view === 'warehouses', !canUse('warehouses'), 'sub');
+      document.getElementById('tab-vendors').className = navLinkClass(view === 'vendors', !canUse('vendors'), 'sub');
+      document.getElementById('tab-purchase-orders').className = navLinkClass(view === 'purchase-orders', !canUse('purchase-orders'), 'sub');
+      document.getElementById('tab-receipt-shipments').className = navLinkClass(view === 'receipt-shipments', !canUse('receipt-shipments'), 'sub');
+      document.getElementById('tab-products').className = navLinkClass(view === 'products', !canUse('products'), 'sub');
       const tabControl = document.getElementById('tab-control');
-      if (tabControl) tabControl.className = navLinkClass(view === 'control', false, 'sub');
-      document.getElementById('tab-store').className = navLinkClass(view === 'store', false, 'sub');
+      if (tabControl) tabControl.className = navLinkClass(view === 'control', !canUse('control'), 'sub');
+      document.getElementById('tab-store').className = navLinkClass(view === 'store', !canUse('store'), 'sub');
       document.getElementById('tab-accounts').className = navLinkClass(view === 'accounts', !canUse('accounts'), 'sub');
       const tabDealers = document.getElementById('tab-dealers');
       if (tabDealers) tabDealers.className = navLinkClass(view === 'dealers', !canUse('dealers'), 'sub');
@@ -7553,9 +7628,10 @@
       document.getElementById('tab-orders').className = navLinkClass(view === 'orders', !canUse('orders'), 'sub');
       document.getElementById('tab-invoices').className = navLinkClass(view === 'invoices', !canUse('invoices'), 'sub');
       document.getElementById('tab-company').className = navLinkClass(view === 'company', !canUse('company'), 'sub');
-      document.getElementById('tab-forms').className = navLinkClass(view === 'forms', !canUse('company'), 'sub');
+      document.getElementById('tab-forms').className = navLinkClass(view === 'forms', !canUse('forms'), 'sub');
       document.getElementById('tab-staff').className = navLinkClass(view === 'staff' || view === 'roles', !canUse('staff'), 'sub');
-      document.getElementById('header-settings').className = navLinkClass(onSettings, !canUse('settings'));
+      document.getElementById('header-settings').className = navLinkClass(onSettings, !canUseSettingsNav());
+      applyRoleMenuVisibility();
       syncTabbarActive(view);
       closeTabbarSub();
       document.body.classList.remove('dash-open');
@@ -19920,39 +19996,49 @@
     const ROLE_MENU_TREE = [
       { key: 'dashboard', label: 'Dashboard' },
       { key: 'chat', label: 'Chat' },
-      { label: 'Website', children: [
-        { key: 'website', label: 'Website' },
+      { key: 'website', label: 'Website', children: [
         { key: 'products', label: 'Products' },
         { key: 'accounts', label: 'Accounts' }
       ]},
-      { label: 'Inventory', children: [
-        { key: 'inventory', label: 'Inventory' },
+      { key: 'inventory', label: 'Inventory', children: [
         { key: 'warehouses', label: 'Location' },
         { key: 'receipt-shipments', label: 'Receipt Shipment' }
       ]},
-      { label: 'Vendor', children: [
-        { key: 'vendors', label: 'Vendor' },
+      { key: 'vendors', label: 'Vendor', children: [
         { key: 'purchase-orders', label: 'Purchase Order' }
       ]},
-      { label: 'CRM', children: [
-        { key: 'crm', label: 'CRM' },
+      { key: 'crm', label: 'CRM', children: [
         { key: 'leads', label: 'Lead' },
         { key: 'pipeline', label: 'Pipeline' },
         { key: 'activities', label: 'Activity' }
       ]},
-      { label: 'Customer', children: [
-        { key: 'customers', label: 'Customer' },
+      { key: 'customers', label: 'Customer', children: [
         { key: 'sales', label: 'Sales' },
         { key: 'quotes', label: 'Sales Quote' },
         { key: 'orders', label: 'Sales Order' },
         { key: 'invoices', label: 'Invoice' }
       ]},
-      { label: 'Settings', children: [
-        { key: 'settings', label: 'Settings' },
+      { key: 'settings', label: 'Settings', children: [
         { key: 'company', label: 'Company' },
         { key: 'staff', label: 'Manage users' }
       ]}
     ];
+    const ROLE_MENU_PARENT = {
+      products: 'website',
+      accounts: 'website',
+      warehouses: 'inventory',
+      'receipt-shipments': 'inventory',
+      'purchase-orders': 'vendors',
+      leads: 'crm',
+      pipeline: 'crm',
+      activities: 'crm',
+      sales: 'customers',
+      quotes: 'customers',
+      orders: 'customers',
+      invoices: 'customers',
+      company: 'settings',
+      staff: 'settings'
+    };
     function roleMenuOptions(selected) {
       const value = selected || 'none';
       return ['none', 'view', 'edit'].map(function (level) {
@@ -19964,6 +20050,22 @@
       return '<div class="cc-field role-menu-row' + (sub ? ' is-sub' : '') + '"><label>' + esc(label) + '</label>' +
         '<select data-role-menu-key="' + esc(key) + '">' + roleMenuOptions('none') + '</select></div>';
     }
+    function syncRoleMenuChildDisabled() {
+      document.querySelectorAll('#role-menu-access [data-role-menu-key]').forEach(function (sel) {
+        const key = sel.getAttribute('data-role-menu-key');
+        const parentKey = ROLE_MENU_PARENT[key];
+        if (!parentKey) return;
+        const parentSel = document.querySelector('#role-menu-access [data-role-menu-key="' + parentKey + '"]');
+        const parentLevel = parentSel ? (parentSel.value || 'none') : 'none';
+        const parentOff = parentLevel !== 'view' && parentLevel !== 'edit';
+        if (parentOff) {
+          sel.value = 'none';
+          sel.disabled = true;
+        } else if (!sel.dataset.locked) {
+          sel.disabled = false;
+        }
+      });
+    }
     function ensureRoleMenuAccessBuilt() {
       const host = document.getElementById('role-menu-access');
       if (!host || host.dataset.built) return;
@@ -19971,21 +20073,45 @@
       ROLE_MENU_TREE.forEach(function (group) {
         if (group.key) {
           html += roleMenuRowHtml(group.key, group.label, false);
-          return;
         }
-        html += '<div class="role-menu-group"><p class="role-menu-group-label">' + esc(group.label) + '</p>';
-        (group.children || []).forEach(function (child) {
-          html += roleMenuRowHtml(child.key, child.label, true);
-        });
-        html += '</div>';
+        if (group.children && group.children.length) {
+          html += '<div class="role-menu-group">';
+          group.children.forEach(function (child) {
+            html += roleMenuRowHtml(child.key, child.label, true);
+          });
+          html += '</div>';
+        }
       });
       host.innerHTML = html;
       host.dataset.built = '1';
+      host.addEventListener('change', function (e) {
+        const sel = e.target && e.target.closest('[data-role-menu-key]');
+        if (!sel) return;
+        const key = sel.getAttribute('data-role-menu-key');
+        const isParent = ROLE_MENU_TREE.some(function (g) { return g.key === key && g.children && g.children.length; });
+        if (isParent) {
+          const level = sel.value || 'none';
+          ROLE_MENU_TREE.forEach(function (g) {
+            if (g.key !== key) return;
+            (g.children || []).forEach(function (child) {
+              const childSel = document.querySelector('#role-menu-access [data-role-menu-key="' + child.key + '"]');
+              if (!childSel) return;
+              if (level === 'none') childSel.value = 'none';
+              else if (childSel.value === 'none') childSel.value = level;
+            });
+          });
+        }
+        syncRoleMenuChildDisabled();
+      });
     }
     function readRoleMenuFromForm() {
       const menu = {};
       document.querySelectorAll('#role-menu-access [data-role-menu-key]').forEach(function (sel) {
         menu[sel.getAttribute('data-role-menu-key')] = sel.value || 'none';
+      });
+      Object.keys(ROLE_MENU_PARENT).forEach(function (childKey) {
+        const parentKey = ROLE_MENU_PARENT[childKey];
+        if (menu[parentKey] !== 'view' && menu[parentKey] !== 'edit') menu[childKey] = 'none';
       });
       return menu;
     }
@@ -19997,7 +20123,10 @@
         sel.innerHTML = roleMenuOptions(locked ? 'edit' : value);
         sel.value = locked ? 'edit' : value;
         sel.disabled = !!locked;
+        if (locked) sel.dataset.locked = '1';
+        else delete sel.dataset.locked;
       });
+      if (!locked) syncRoleMenuChildDisabled();
     }
     function setRoleMenuAccessDisabled(disabled) {
       document.querySelectorAll('#role-menu-access [data-role-menu-key]').forEach(function (sel) {
@@ -20192,10 +20321,17 @@
         applyColOrder(table);
         return;
       }
+      const menuLevelOf = function (r, key) {
+        const menu = (r && r.menu) || {};
+        return accessLabel(menu[key] || (key === 'website' ? r.website : key === 'inventory' ? r.inventory : key === 'settings' ? r.settings : 'none'));
+      };
       const sorted = sortColRows(adminRoles, table, function (r, col) {
         if (col === 'name') return r.name || '';
-        if (col === 'website') return accessLabel(r.website);
-        if (col === 'inventory') return accessLabel(r.inventory);
+        if (col === 'website') return menuLevelOf(r, 'website');
+        if (col === 'inventory') return menuLevelOf(r, 'inventory');
+        if (col === 'crm') return menuLevelOf(r, 'crm');
+        if (col === 'customers') return menuLevelOf(r, 'customers');
+        if (col === 'settings') return menuLevelOf(r, 'settings');
         if (col === 'users') return Number(r.userCount) || 0;
         return '';
       });
@@ -20204,8 +20340,11 @@
           name: '<td class="py-2.5 px-4 font-medium">' + esc(r.name) +
             (r.ownerRole ? ' <span class="text-xs text-slate-500">(1 user · full access)</span>' :
               (r.locked ? ' <span class="text-xs text-slate-500">(locked)</span>' : '')) + '</td>',
-          website: '<td class="py-2.5 px-4 text-slate-400">' + esc(accessLabel(r.website)) + '</td>',
-          inventory: '<td class="py-2.5 px-4 text-slate-400">' + esc(accessLabel(r.inventory)) + '</td>',
+          website: '<td class="py-2.5 px-4 text-slate-400">' + esc(menuLevelOf(r, 'website')) + '</td>',
+          inventory: '<td class="py-2.5 px-4 text-slate-400">' + esc(menuLevelOf(r, 'inventory')) + '</td>',
+          crm: '<td class="py-2.5 px-4 text-slate-400">' + esc(menuLevelOf(r, 'crm')) + '</td>',
+          customers: '<td class="py-2.5 px-4 text-slate-400">' + esc(menuLevelOf(r, 'customers')) + '</td>',
+          settings: '<td class="py-2.5 px-4 text-slate-400">' + esc(menuLevelOf(r, 'settings')) + '</td>',
           users: '<td class="py-2.5 px-4 text-slate-400">' + esc(r.userCount) + (r.singleUser && r.userCount > 1 ? ' <span class="text-xs text-red-400">max 1</span>' : '') + '</td>'
         };
         return '<tr class="border-b border-slate-800 hover:bg-slate-800/40 cursor-pointer" data-role-id="' + esc(r.id) + '">' +
