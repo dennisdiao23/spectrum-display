@@ -183,6 +183,26 @@
     });
   }
 
+  function isLockedProductImage(el) {
+    if (!el) return false;
+    var img = el.tagName === 'IMG' ? el : (el.closest ? el.closest('img') : null);
+    if (!img || img.tagName !== 'IMG' || !img.closest) return false;
+    return !!img.closest('.shop-card-media, .shop-pdp-photo, .shop-thumbs, .shop-cart-line, .shop-search-hits, .shop-ed-card');
+  }
+
+  function bindImageLock() {
+    document.addEventListener('contextmenu', function (e) {
+      if (isLockedProductImage(e.target)) e.preventDefault();
+    });
+    document.addEventListener('dragstart', function (e) {
+      if (isLockedProductImage(e.target)) e.preventDefault();
+    });
+  }
+
+  function productImg(src, attrs) {
+    return '<img src="' + esc(src) + '" alt="" draggable="false"' + (attrs || '') + '>';
+  }
+
   function renderChrome(route) {
     var collectionMode = route.name === 'collection' || route.name === 'product';
     document.body.classList.toggle('shop-collection-mode', collectionMode);
@@ -258,7 +278,7 @@
     body.innerHTML = items.map(function (line) {
       var qty = Math.max(1, Number(line.qty) || 1);
       return '<div class="shop-cart-line">' +
-        (line.image ? '<img src="' + esc(imgSrc(line.image, 'thumb')) + '" alt="">' : '<div class="shop-cart-line-ph"></div>') +
+        (line.image ? productImg(imgSrc(line.image, 'thumb')) : '<div class="shop-cart-line-ph"></div>') +
         '<div><strong>' + esc(line.name) + '</strong>' +
           '<div class="shop-sku">' + esc(line.sku || '') + '</div>' +
           '<div class="shop-cart-qty">' +
@@ -418,7 +438,7 @@
       '<a class="shop-card-main" href="' + esc(href('/products/' + p.handle)) + '" data-shop-link>' +
         (opts.caption ? '<div class="shop-caption">' + esc(opts.caption) + '</div>' : '') +
         '<div class="shop-card-media' + (window.spectrumPhotoFit && spectrumPhotoFit(p) === 'fill' ? ' is-fill' : '') + '">' +
-          (photo ? '<img src="' + esc(photo) + '" alt="">' : '') +
+          (photo ? productImg(photo) : '') +
         '</div>' +
         '<h3>' + esc(p.name) + '</h3>' +
         '<div class="shop-sku">' + esc(p.sku || p.brandName || '') + '</div>' +
@@ -467,7 +487,7 @@
         '<div class="shop-editorial">' + featured.map(function (p) {
           var photo = photoFor(p, 'card');
           return '<a class="shop-ed-card" href="' + esc(href('/products/' + p.handle)) + '" data-shop-link>' +
-            (photo ? '<img src="' + esc(photo) + '" alt="">' : '') +
+            (photo ? productImg(photo) : '') +
             '<div class="shop-ed-copy"><div class="shop-new">' + esc(t('store.new', 'New')) + '</div><h3>' + esc(p.name) + '</h3><p>' +
             esc(p.description || '') + '</p></div></a>';
         }).join('') + '</div></div></section>';
@@ -567,9 +587,9 @@
     var photo = imgSrc(photos[0], 'card');
     var fill = window.spectrumPhotoFit && spectrumPhotoFit(p) === 'fill';
     var html = '<div class="shop-wrap"><div class="shop-pdp">' +
-      '<div><div class="shop-pdp-photo' + (fill ? ' is-fill' : '') + '">' + (photo ? '<img id="pdp-photo" src="' + esc(photo) + '" alt="">' : '') + '</div>' +
+      '<div><div class="shop-pdp-photo' + (fill ? ' is-fill' : '') + '">' + (photo ? productImg(photo, ' id="pdp-photo"') : '') + '</div>' +
       (photos.length > 1 ? '<div class="shop-thumbs">' + photos.map(function (src, i) {
-        return '<button type="button" data-photo="' + esc(imgSrc(src, 'card')) + '" class="' + (i === 0 ? 'is-on' : '') + '"><img src="' + esc(imgSrc(src, 'thumb')) + '" alt=""></button>';
+        return '<button type="button" data-photo="' + esc(imgSrc(src, 'card')) + '" class="' + (i === 0 ? 'is-on' : '') + '">' + productImg(imgSrc(src, 'thumb')) + '</button>';
       }).join('') + '</div>' : '') + '</div>' +
       '<div>' +
         '<h1>' + esc(p.name) + '</h1>' +
@@ -681,7 +701,7 @@
     }).slice(0, 8);
     box.innerHTML = hits.map(function (p) {
       return '<a href="' + esc(href('/products/' + p.handle)) + '" data-shop-link>' +
-        (photoFor(p, 'thumb') ? '<img src="' + esc(photoFor(p, 'thumb')) + '" alt="">' : '') +
+        (photoFor(p, 'thumb') ? productImg(photoFor(p, 'thumb')) : '') +
         '<span><strong>' + esc(p.name) + '</strong><div class="shop-sku">' + esc(p.sku) + '</div></span></a>';
     }).join('') || '<p class="shop-empty">' + esc(t('store.noMatches', 'No matches.')) + '</p>';
     $all('#shop-search-hits a').forEach(function (a) {
@@ -733,6 +753,7 @@
   function boot() {
     if (location.hostname === 'localhost' || location.hostname === '127.0.0.1') WWW = '';
     bindChrome();
+    bindImageLock();
     bindSettings();
     bindCartDrawer();
     window.addEventListener('popstate', render);
