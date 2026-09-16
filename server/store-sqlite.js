@@ -709,7 +709,7 @@ function createSqliteStore() {
     },
     async getAdminByEmail(email) {
       return db.prepare(`
-        SELECT a.*, r.name AS role_name, r.website_access, r.inventory_access, r.locked AS role_locked
+        SELECT a.*, r.name AS role_name, r.website_access, r.inventory_access, r.menu_access, r.locked AS role_locked
         FROM admins a LEFT JOIN admin_roles r ON r.slug = a.role
         WHERE a.email = ?
       `).get(email) || null;
