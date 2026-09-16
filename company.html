@@ -4964,6 +4964,18 @@
     let dashTabCaption = {};
     let soMasterCache = {};
     let poMasterCache = {};
+    let soPaintToken = 0;
+    let poPaintToken = 0;
+    let wpPaintToken = 0;
+    let wsPaintToken = 0;
+    function bumpSoPaint() { soPaintToken += 1; return soPaintToken; }
+    function soPaintAlive(token) { return token === soPaintToken; }
+    function bumpPoPaint() { poPaintToken += 1; return poPaintToken; }
+    function poPaintAlive(token) { return token === poPaintToken; }
+    function bumpWpPaint() { wpPaintToken += 1; return wpPaintToken; }
+    function wpPaintAlive(token) { return token === wpPaintToken; }
+    function bumpWsPaint() { wsPaintToken += 1; return wsPaintToken; }
+    function wsPaintAlive(token) { return token === wsPaintToken; }
     let dashTabDirty = {};
     let dashTabDirtyAt = {};
     let dashTabStaleWarned = {};
@@ -5968,6 +5980,7 @@
     }
     function showWpOverview() {
       stashWpActiveTab();
+      bumpWpPaint();
       wpActiveTab = 'overview';
       editingId = null;
       showWpRightPanel('overview');
@@ -6021,6 +6034,10 @@
     async function activateWpTab(id, opts) {
       opts = opts || {};
       const sid = String(id);
+      if (wpActiveTab && wpActiveTab !== sid && wpActiveTab !== 'overview' && wpOpenTabs.indexOf(String(wpActiveTab)) !== -1) {
+        stashWpActiveTab();
+      }
+      const token = bumpWpPaint();
       wpActiveTab = sid;
       if (sid === 'new') {
         resetForm();
@@ -6034,8 +6051,10 @@
       let product = opts.product || (wpTabCache[sid] && wpTabCache[sid].product);
       if (!product) {
         const data = await api('/api/admin/products/' + encodeURIComponent(sid));
+        if (!wpPaintAlive(token) || String(wpActiveTab) !== sid) return;
         product = data.product;
       }
+      if (!wpPaintAlive(token) || String(wpActiveTab) !== sid) return;
       wpTabCache[sid] = wpTabCache[sid] || {};
       wpTabCache[sid].product = product;
       wpTabLabels[sid] = (product && product.name) || 'Product';
@@ -7102,10 +7121,14 @@
       if (featEl) featEl.value = featuresToText(item && item.features);
       const brandNameEl = document.getElementById('ws-brand-name');
       if (brandNameEl) brandNameEl.value = '';
+      const paint = wsPaintToken;
+      const tabId = String(wsActiveTab);
       ensureWsBrandOptions().then(function (brands) {
+        if (!wsPaintAlive(paint) || String(wsActiveTab) !== tabId) return;
         setSelectOptions(document.getElementById('ws-brand-id'), brands, item && item.brandId, 'Select brand');
       });
       ensureWsInventoryOptions(true).then(function (items) {
+        if (!wsPaintAlive(paint) || String(wsActiveTab) !== tabId) return;
         setSelectOptions(document.getElementById('ws-inventory-id'), items, item && item.inventoryItemId, 'No inventory link');
         const onHand = document.getElementById('ws-onhand');
         if (onHand) {
@@ -7147,6 +7170,7 @@
     }
     function showWsOverview() {
       stashWsActiveTab();
+      bumpWsPaint();
       wsActiveTab = 'overview';
       wsEditingId = null;
       setWsLiveLink('/store');
@@ -7158,13 +7182,19 @@
     async function activateWsTab(id, opts) {
       opts = opts || {};
       const sid = String(id);
+      if (wsActiveTab && wsActiveTab !== sid && wsActiveTab !== 'overview' && wsOpenTabs.indexOf(String(wsActiveTab)) !== -1) {
+        stashWsActiveTab();
+      }
+      const token = bumpWsPaint();
       wsActiveTab = sid;
       let item = opts.item || (wsTabCache[sid] && wsTabCache[sid].item) || storeItemById(sid);
       if (!item) {
         const data = await api('/api/admin/store');
+        if (!wsPaintAlive(token) || String(wsActiveTab) !== sid) return;
         renderStoreItems(data.products || []);
         item = storeItemById(sid);
       }
+      if (!wsPaintAlive(token) || String(wsActiveTab) !== sid) return;
       if (!item) {
         showWsOverview();
         return;
@@ -7667,8 +7697,14 @@
       if (waSec) waSec.classList.toggle('wa-split-on', view === 'accounts' && !isMobileDash());
       const daSec = document.getElementById('dealers-section');
       if (daSec) daSec.classList.toggle('da-split-on', view === 'dealers' && !isMobileDash());
-      if (view !== 'products' && typeof stashWpActiveTab === 'function') stashWpActiveTab();
-      if (view !== 'store' && typeof stashWsActiveTab === 'function') stashWsActiveTab();
+      if (view !== 'products' && typeof stashWpActiveTab === 'function') {
+        stashWpActiveTab();
+        if (typeof bumpWpPaint === 'function') bumpWpPaint();
+      }
+      if (view !== 'store' && typeof stashWsActiveTab === 'function') {
+        stashWsActiveTab();
+        if (typeof bumpWsPaint === 'function') bumpWsPaint();
+      }
       if (view !== 'accounts' && typeof stashWaActiveTab === 'function') stashWaActiveTab();
       const onSalesList = onSales && !doc;
       const onPoList = view === 'purchase-orders' && !doc;
@@ -15944,6 +15980,7 @@
 
     function showPoOverviewPane() {
       stashPoActiveTab();
+      bumpPoPaint();
       poActiveTab = 'overview';
       showPoRightPanel('overview');
       renderPoTabBar();
@@ -15958,14 +15995,17 @@
         return;
       }
       if (poActiveTab && poActiveTab !== sid) stashPoActiveTab();
+      const token = bumpPoPaint();
       poActiveTab = sid;
       showPoRightPanel('item');
       const cached = poTabCache[sid];
       if (cached && (cached.number != null || cached.vendorName != null || cached.lines)) {
+        if (!poPaintAlive(token) || String(poActiveTab) !== sid) return;
         fillPoForm(cached);
       } else {
         try {
           const data = await api('/api/admin/purchase-orders/' + encodeURIComponent(sid));
+          if (!poPaintAlive(token) || String(poActiveTab) !== sid) return;
           if (data && data.order) {
             poTabCache[sid] = data.order;
             fillPoForm(data.order);
@@ -15975,6 +16015,7 @@
           return;
         }
       }
+      if (!poPaintAlive(token) || String(poActiveTab) !== sid) return;
       if (!opts.skipTabBar) renderPoTabBar();
       renderPoTable(purchaseOrders);
       if (opts.push !== false) {
@@ -16031,8 +16072,10 @@
       }
       showPoMsg('');
       showError('po-error', '');
+      const token = opts.paintToken != null ? opts.paintToken : bumpPoPaint();
       try {
         const data = await api('/api/admin/purchase-orders/' + encodeURIComponent(id));
+        if (!poPaintAlive(token)) return;
         if (!data.order) return;
         fillPoForm(data.order);
         const sec = document.getElementById('po-section');
@@ -16543,15 +16586,18 @@
 
     function parkDocMasterWindows(nextName) {
       const cur = parseDocMasterTab(dashActiveGroup);
+      if (dashActiveGroup === nextName) return;
       if (!cur) {
         if (typeof persistSoSplitType === 'function') persistSoSplitType();
         if (typeof stashPoActiveTab === 'function') stashPoActiveTab();
-        return;
+      } else if (cur.kind === 'po') {
+        stashPoMasterForm();
+      } else {
+        stashSalesMasterForm();
       }
-      if (dashActiveGroup === nextName) return;
-      if (cur.kind === 'po') stashPoMasterForm();
-      else stashSalesMasterForm();
-      if (masterTabIsDirty(dashActiveGroup)) {
+      bumpSoPaint();
+      bumpPoPaint();
+      if (cur && masterTabIsDirty(dashActiveGroup)) {
         dashTabDirty[dashActiveGroup] = true;
         if (!dashTabDirtyAt[dashActiveGroup]) dashTabDirtyAt[dashActiveGroup] = Date.now();
       }
@@ -16567,38 +16613,54 @@
     async function restoreDocMasterTab(doc) {
       const tab = docMasterTabName(doc.kind, doc.id);
       if (doc.kind === 'po') {
-        try { await loadPurchaseOrders(); } catch (err) {}
-        applyPoWindowChrome(true);
+        const token = bumpPoPaint();
+        const still = function () { return poPaintAlive(token) && dashActiveGroup === tab; };
         const cached = poMasterCache[tab];
         if (cached) {
+          applyPoWindowChrome(true);
+          if (!still()) return;
           fillPoForm(cached);
           document.getElementById('po-detail').classList.remove('hidden');
-        } else if (doc.id === 'new') {
+          return;
+        }
+        try { await loadPurchaseOrders(); } catch (err) {}
+        if (!still()) return;
+        applyPoWindowChrome(true);
+        if (doc.id === 'new') {
           fillPoNewForm();
         } else {
-          await openPurchaseOrder(doc.id, { inline: true });
+          await openPurchaseOrder(doc.id, { inline: true, paintToken: token });
+          if (!still()) return;
           applyPoWindowChrome(true);
         }
         return;
       }
-      try { await loadSalesDocs(doc.kind); } catch (err) {}
-      applyInvoiceWindowChrome(true);
+      const token = bumpSoPaint();
+      const still = function () { return soPaintAlive(token) && dashActiveGroup === tab; };
       const cached = soMasterCache[tab];
       if (cached) {
+        applyInvoiceWindowChrome(true);
+        if (!still()) return;
         fillSoForm(cached);
         document.getElementById('so-detail').classList.remove('hidden');
         document.getElementById('sales-section').classList.remove('so-doc-open');
-      } else if (doc.id === 'new') {
+        return;
+      }
+      try { await loadSalesDocs(doc.kind, { skipForm: true }); } catch (err) {}
+      if (!still()) return;
+      applyInvoiceWindowChrome(true);
+      if (doc.id === 'new') {
         openNewSale(doc.kind, { inline: true });
         const cid = invoiceCustomerFromQuery();
-        if (cid) {
+        if (cid && still()) {
           fillSoCustomers(cid);
           const c = (salesCustomers || []).find(function (row) { return String(row.id) === String(cid); })
             || (companyCustomers || []).find(function (row) { return String(row.id) === String(cid); });
           applySoCustomer(c);
         }
       } else {
-        await openSalesDoc(doc.id, { inline: true, type: doc.kind });
+        await openSalesDoc(doc.id, { inline: true, type: doc.kind, paintToken: token });
+        if (!still()) return;
         applyInvoiceWindowChrome(true);
       }
     }
@@ -16630,6 +16692,7 @@
       showAdminTab(docTab);
       renderDashTabBar();
       await restoreDocMasterTab({ kind: kind, id: docId });
+      if (dashActiveGroup !== docTab) return true;
       if (opts.customerId && kind !== 'po') {
         fillSoCustomers(opts.customerId);
         const c = (salesCustomers || []).find(function (row) { return String(row.id) === String(opts.customerId); })
@@ -17503,6 +17566,7 @@
 
     function showSoOverviewPane() {
       stashSoActiveTab();
+      bumpSoPaint();
       soActiveTab = 'overview';
       syncSoSplitTypeState();
       showSoRightPanel('overview');
@@ -17520,14 +17584,17 @@
         return;
       }
       if (soActiveTab && soActiveTab !== sid) stashSoActiveTab();
+      const token = bumpSoPaint();
       soActiveTab = sid;
       showSoRightPanel('item');
       const cached = soTabCache[sid];
       if (cached && cached.number != null) {
+        if (!soPaintAlive(token) || String(soActiveTab) !== sid) return;
         fillSoForm(cached);
       } else {
         try {
           const data = await api('/api/admin/sales-docs/' + encodeURIComponent(sid));
+          if (!soPaintAlive(token) || String(soActiveTab) !== sid) return;
           if (data && data.doc) {
             soTabCache[sid] = data.doc;
             fillSoForm(data.doc);
@@ -17537,6 +17604,7 @@
           return;
         }
       }
+      if (!soPaintAlive(token) || String(soActiveTab) !== sid) return;
       syncSoSplitTypeState();
       if (!opts.skipTabBar) renderSoTabBar();
       renderSoTable(salesDocs, currentSoType());
@@ -17670,11 +17738,14 @@
       markPageKpis('so-inv-overview', soInvFilter);
     }
 
-    async function loadSalesDocs(type) {
+    async function loadSalesDocs(type, opts) {
+      opts = opts || {};
       const t = type || salesTypeFromTab(salesSubTab);
-      setSoTypeUi(t);
-      if (!document.getElementById('so-detail').classList.contains('hidden')) {
-        syncSoPageName(t, document.getElementById('so-number').value);
+      if (!opts.skipForm) {
+        setSoTypeUi(t);
+        if (!document.getElementById('so-detail').classList.contains('hidden')) {
+          syncSoPageName(t, document.getElementById('so-number').value);
+        }
       }
       showError('so-error', '');
       try {
@@ -17724,9 +17795,16 @@
       document.getElementById('so-notes').value = doc.notes || '';
       const lines = (doc.lines && doc.lines.length) ? doc.lines : [];
       renderSoLines(lines);
-      requestAnimationFrame(function () { renderSoLines(readSoLines(true)); });
+      const paint = soPaintToken;
+      requestAnimationFrame(function () {
+        if (!soPaintAlive(paint)) return;
+        renderSoLines(readSoLines(true));
+      });
       if (!inventoryItems.length) {
-        loadInventory().then(function () { renderSoLines(readSoLines(true)); }).catch(function () {});
+        loadInventory().then(function () {
+          if (!soPaintAlive(paint)) return;
+          renderSoLines(readSoLines(true));
+        }).catch(function () {});
       }
       document.getElementById('so-delete-btn').classList.toggle('hidden', soReadOnly || !doc.id);
       document.getElementById('so-to-order').classList.toggle('hidden', soReadOnly || !doc.id || type === 'order');
@@ -17853,8 +17931,10 @@
       }
       showSoMsg('');
       showError('so-error', '');
+      const token = opts.paintToken != null ? opts.paintToken : bumpSoPaint();
       try {
         const data = await api('/api/admin/sales-docs/' + id);
+        if (!soPaintAlive(token)) return;
         const doc = data.doc;
         if (!doc) return;
         document.getElementById('so-title').textContent = (doc.number || salesTypeLabel(doc.type)) + ' · ' + (doc.customerName || '');
