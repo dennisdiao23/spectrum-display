@@ -131,6 +131,12 @@ body.company-app {
   cursor: pointer;
   position: relative;
 }
+.dash-nav-link.hidden,
+.dash-sub-link.hidden,
+.dash-nav button.hidden,
+.dash-nav-group:has(> .dash-nav-link.hidden):not(:has(.dash-sub-link:not(.hidden))) {
+  display: none !important;
+}
 .dash-nav-group > .dash-nav-link {
   padding-right: 1.55rem;
 }
