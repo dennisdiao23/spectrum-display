@@ -616,7 +616,11 @@ async function main() {
       gallery = existingGallery.slice();
     }
     gallery = gallery.concat(saved.gallery);
-    if (!image && gallery[0] && !truthyFlag(body.clearImage)) image = gallery[0];
+    if (!image && gallery[0]) image = gallery[0];
+    if (truthyFlag(body.clearImage) && !gallery.length && !saved.imageUrl) image = '';
+    if (image) {
+      gallery = gallery.filter(function (url) { return url && url !== image; });
+    }
     const existingDetails = existing ? dbUtil.parseDetails(existing) : {};
     const cats = String(body.cats || '')
       .split(/[\s,]+/)
