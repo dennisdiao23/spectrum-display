@@ -75,7 +75,17 @@
       : 'At least 8 characters.';
     if (S.fillStaffRoleSelect) S.fillStaffRoleSelect(person && person.role);
     var roleSel = $('su-role');
-    if (roleSel && person && person.role) roleSel.value = person.role;
+    if (roleSel && person && person.role) {
+      roleSel.value = person.role;
+      if (roleSel.value !== person.role) {
+        // Role option missing (e.g. owner filtered) — force it in
+        var opt = document.createElement('option');
+        opt.value = person.role;
+        opt.textContent = (S.staffRoleLabel && S.staffRoleLabel(person.role)) || person.role;
+        roleSel.appendChild(opt);
+        roleSel.value = person.role;
+      }
+    }
     $('su-created').textContent = person && person.created_at
       ? new Date(person.created_at).toLocaleString()
       : '—';
