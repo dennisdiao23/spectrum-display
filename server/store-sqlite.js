@@ -1,12 +1,6 @@
-const fs = require('fs');
-const path = require('path');
-const crypto = require('crypto');
 const dbUtil = require('./db');
 const paymentStore = require('./store-payments-sqlite');
 const img = require('./image');
-
-const ROOT = path.join(__dirname, '..');
-const UPLOAD_DIR = path.join(ROOT, 'uploads', 'products');
 
 function inventoryMapRows(db) {
   return db.prepare(`
@@ -60,6 +54,57 @@ function updateInventoryMediaRow(db, itemId, media) {
   const gallery = JSON.stringify(inv.parseGallery(media && media.gallery));
   db.prepare('UPDATE inventory_items SET image = ?, gallery = ?, updated_at = ? WHERE id = ?')
     .run(image, gallery, dbUtil.nowIso(), itemId);
+}
+
+async function ensurePublicProductPhotos(db) {
+  const inv = require('./inventory');
+  img.ensureUploadDir();
+  let copied = 0;
+  const products = db.prepare('SELECT id, image, gallery, details FROM products').all();
+  for (let i = 0; i < products.length; i += 1) {
+    const row = products[i];
+    const details = dbUtil.parseDetails(row);
+    const gallery = dbUtil.parseJson(row.gallery, []);
+    try {
+      const next = await img.materializeMedia({ image: row.image, gallery: gallery }, { details: details });
+      if (!img.mediaNeedsPersist(row.image, gallery, details, next)) continue;
+      img.applyStorageToDetails(details, next);
+      db.prepare('UPDATE products SET image = ?, gallery = ?, details = ?, updated_at = ? WHERE id = ?')
+        .run(next.image, JSON.stringify(next.gallery), JSON.stringify(details), dbUtil.nowIso(), row.id);
+      syncMappedInventoryMedia(db, row.id, next);
+      copied += 1;
+    } catch (err) {
+      console.error('Could not copy product photo locally:', err.message || err);
+    }
+  }
+  const brands = db.prepare('SELECT id, logo, image FROM brands').all();
+  for (let i = 0; i < brands.length; i += 1) {
+    const row = brands[i];
+    try {
+      const logo = await img.ensureLocalPublicCopy(row.logo || '');
+      const image = await img.ensureLocalPublicCopy(row.image || '');
+      if (img.samePublicUrl(logo.publicUrl, row.logo || '') && img.samePublicUrl(image.publicUrl, row.image || '')) continue;
+      db.prepare('UPDATE brands SET logo = ?, image = ? WHERE id = ?')
+        .run(logo.publicUrl, image.publicUrl, row.id);
+      copied += 1;
+    } catch (err) {
+      console.error('Could not copy brand photo locally:', err.message || err);
+    }
+  }
+  try {
+    const items = db.prepare('SELECT id, image, gallery FROM inventory_items').all();
+    for (let i = 0; i < items.length; i += 1) {
+      const row = items[i];
+      const gallery = inv.parseGallery(row.gallery);
+      const next = await img.materializeMedia({ image: row.image, gallery: gallery }, {});
+      if (img.samePublicUrl(next.image, row.image || '') && img.galleriesEqual(next.gallery, gallery)) continue;
+      updateInventoryMediaRow(db, row.id, next);
+      copied += 1;
+    }
+  } catch (err) {
+    console.error('Could not copy inventory photos locally:', err.message || err);
+  }
+  if (copied) console.log('Copied ' + copied + ' catalog photos to /uploads/products');
 }
 
 function listInventoryItems(db) {
@@ -437,7 +482,7 @@ function getInventoryItemDetail(db, id) {
 }
 
 function createSqliteStore() {
-  fs.mkdirSync(UPLOAD_DIR, { recursive: true });
+  img.ensureUploadDir();
   const db = dbUtil.openDb();
   dbUtil.seedAdmin(db);
   dbUtil.seedCatalog(db);
@@ -457,8 +502,13 @@ function createSqliteStore() {
     console.error('Could not apply Gloshine LA warehouse list:', e.message || e);
   }
 
+  const ready = ensurePublicProductPhotos(db).catch(function (err) {
+    console.error('Could not copy product photos locally:', err.message || err);
+  });
+
   const api = {
     name: 'sqlite',
+    ready: ready,
     async getCatalog() {
       const catalog = dbUtil.getCatalog(db);
       attachInventoryToCatalog(db, catalog);
@@ -642,9 +692,13 @@ function createSqliteStore() {
     async updateProductMedia(id, media) {
       const image = media && media.image != null ? String(media.image) : '';
       const gallery = Array.isArray(media && media.gallery) ? media.gallery : [];
-      const info = db.prepare('UPDATE products SET image = ?, gallery = ?, updated_at = ? WHERE id = ?')
-        .run(image, JSON.stringify(gallery), dbUtil.nowIso(), id);
-      if (!info.changes) return null;
+      const current = db.prepare('SELECT details FROM products WHERE id = ?').get(id);
+      if (!current) return null;
+      let details = dbUtil.parseDetails(current);
+      if (media && media.details && typeof media.details === 'object') details = media.details;
+      else img.applyStorageToDetails(details, media);
+      db.prepare('UPDATE products SET image = ?, gallery = ?, details = ?, updated_at = ? WHERE id = ?')
+        .run(image, JSON.stringify(gallery), JSON.stringify(details), dbUtil.nowIso(), id);
       syncMappedInventoryMedia(db, id, { image: image, gallery: gallery });
       const product = dbUtil.getProduct(db, id);
       if (product) attachMapsToListedProducts(db, [product]);
@@ -1785,9 +1839,11 @@ function createSqliteStore() {
     },
     async saveUpload(file) {
       const prepared = await img.prepareUpload(file);
-      const name = Date.now().toString(36) + '-' + crypto.randomBytes(4).toString('hex') + prepared.ext;
-      fs.writeFileSync(path.join(UPLOAD_DIR, name), prepared.buffer);
-      return '/uploads/products/' + name;
+      const name = img.newUploadName(prepared.ext);
+      return {
+        publicUrl: img.writeLocalUpload(name, prepared.buffer),
+        storageUrl: ''
+      };
     },
     async getDashboardHome(admin) {
       return require('./dashboard-home').getSqliteDashboardHome(db, admin);

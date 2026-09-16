@@ -2,6 +2,7 @@ const fs = require('fs');
 const path = require('path');
 const bcrypt = require('bcryptjs');
 const { DatabaseSync } = require('node:sqlite');
+const imgUtil = require('./image');
 
 const ROOT = path.join(__dirname, '..');
 const DATA_DIR = path.join(ROOT, 'data');
@@ -1468,8 +1469,8 @@ function formatBrand(row, extra) {
     id: row.id,
     name: row.name,
     tagline: row.tagline || '',
-    logo: row.logo || '',
-    image: row.image || '',
+    logo: imgUtil.preferLocalOrRemote(row.logo || ''),
+    image: imgUtil.preferLocalOrRemote(row.image || ''),
     description: row.description || '',
     hidden: isBrandHidden(row),
     productCount: Number(count) || 0
@@ -1480,8 +1481,8 @@ function brandCatalogEntry(row) {
   return {
     name: row.name,
     tagline: row.tagline || '',
-    logo: row.logo || '',
-    image: row.image || '',
+    logo: imgUtil.preferLocalOrRemote(row.logo || ''),
+    image: imgUtil.preferLocalOrRemote(row.image || ''),
     description: row.description || '',
     series: []
   };
@@ -1505,8 +1506,9 @@ function isMissingColumnError(err) {
 
 function rowToProduct(row, brand) {
   const pitches = parseJson(row.pitches, []);
-  const gallery = parseJson(row.gallery, []);
   const details = rewriteCabinetCopy(parseDetails(row));
+  const catalogMedia = imgUtil.catalogMediaUrls(row.image || '', parseJson(row.gallery, []), details);
+  const gallery = catalogMedia.gallery;
   const control = isControlRow(row, details);
   const unitPrice = control
     ? (Number(details.priceEach != null ? details.priceEach : row.price_per_m2) || 0)
@@ -1527,7 +1529,7 @@ function rowToProduct(row, brand) {
     type: control ? 'control' : (row.type || 'Fixed'),
     description: rewriteCabinetCopy(row.description || ''),
     badge: row.badge ? rewriteCabinetCopy(row.badge) : null,
-    image: row.image || '',
+    image: catalogMedia.image || '',
     gallery: gallery,
     details: details,
     hidden: isProductHidden(row),
