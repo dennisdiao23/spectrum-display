@@ -15,41 +15,41 @@ const MENU_GROUPS = [
   { key: 'dashboard', label: 'Dashboard' },
   { key: 'chat', label: 'Chat' },
   {
+    key: 'website',
     label: 'Website',
     children: [
-      { key: 'website', label: 'Website' },
       { key: 'products', label: 'Products' },
       { key: 'accounts', label: 'Accounts' }
     ]
   },
   {
+    key: 'inventory',
     label: 'Inventory',
     children: [
-      { key: 'inventory', label: 'Inventory' },
       { key: 'warehouses', label: 'Location' },
       { key: 'receipt-shipments', label: 'Receipt Shipment' }
     ]
   },
   {
+    key: 'vendors',
     label: 'Vendor',
     children: [
-      { key: 'vendors', label: 'Vendor' },
       { key: 'purchase-orders', label: 'Purchase Order' }
     ]
   },
   {
+    key: 'crm',
     label: 'CRM',
     children: [
-      { key: 'crm', label: 'CRM' },
       { key: 'leads', label: 'Lead' },
       { key: 'pipeline', label: 'Pipeline' },
       { key: 'activities', label: 'Activity' }
     ]
   },
   {
+    key: 'customers',
     label: 'Customer',
     children: [
-      { key: 'customers', label: 'Customer' },
       { key: 'sales', label: 'Sales' },
       { key: 'quotes', label: 'Sales Quote' },
       { key: 'orders', label: 'Sales Order' },
@@ -57,14 +57,31 @@ const MENU_GROUPS = [
     ]
   },
   {
+    key: 'settings',
     label: 'Settings',
     children: [
-      { key: 'settings', label: 'Settings' },
       { key: 'company', label: 'Company' },
       { key: 'staff', label: 'Manage users' }
     ]
   }
 ];
+
+const MENU_PARENT = {
+  products: 'website',
+  accounts: 'website',
+  warehouses: 'inventory',
+  'receipt-shipments': 'inventory',
+  'purchase-orders': 'vendors',
+  leads: 'crm',
+  pipeline: 'crm',
+  activities: 'crm',
+  sales: 'customers',
+  quotes: 'customers',
+  orders: 'customers',
+  invoices: 'customers',
+  company: 'settings',
+  staff: 'settings'
+};
 
 function accessLevel(value) {
   const v = String(value || 'none').toLowerCase().trim();
@@ -86,6 +103,16 @@ function highestAccess() {
     if (accessLevel(arguments[j]) === 'view') return 'view';
   }
   return 'none';
+}
+
+/** Child access cannot exceed parent; parent none hides the whole group. */
+function gatedAccess(parentLevel, childLevel) {
+  const parent = accessLevel(parentLevel);
+  if (!canAccess(parent, 'view')) return 'none';
+  const child = accessLevel(childLevel);
+  if (child === 'none') return 'none';
+  if (parent === 'view' && child === 'edit') return 'view';
+  return child;
 }
 
 function slugifyRole(name) {
@@ -201,9 +228,9 @@ function menuAccessFromRow(row) {
 
 function summaryFromMenu(menu) {
   return {
-    website: highestAccess(menu.website, menu.products, menu.accounts),
-    inventory: highestAccess(menu.inventory, menu.vendors, menu['purchase-orders'], menu['receipt-shipments']),
-    settings: highestAccess(menu.settings, menu.company, menu.staff)
+    website: accessLevel(menu && menu.website),
+    inventory: accessLevel(menu && menu.inventory),
+    settings: accessLevel(menu && menu.settings)
   };
 }
 
@@ -276,11 +303,15 @@ function publicAdmin(row) {
 function menuLevel(perms, key) {
   if (perms.settings) return 'edit';
   const menu = perms.menu || perms;
-  if (key === 'settings') return highestAccess(menu.settings, menu.company, menu.staff);
-  if (key === 'website') return highestAccess(menu.website, menu.products, menu.accounts);
-  if (key === 'inventory') return highestAccess(menu.inventory, menu.warehouses, menu.vendors, menu['purchase-orders'], menu['receipt-shipments']);
-  if (key === 'crm') return highestAccess(menu.crm, menu.leads, menu.pipeline, menu.activities);
-  return accessLevel(menu[key]);
+  const k = String(key || '');
+  const parentKey = MENU_PARENT[k];
+  if (parentKey) return gatedAccess(menu[parentKey], menu[k]);
+  if (k === 'store' || k === 'traffic' || k === 'control' || k === 'dealers') {
+    const childKey = (k === 'dealers') ? 'accounts' : 'products';
+    return gatedAccess(menu.website, menu[childKey]);
+  }
+  if (k === 'forms') return gatedAccess(menu.settings, menu.company);
+  return accessLevel(menu[k]);
 }
 
 function hasPerm(admin, module, need) {
@@ -325,6 +356,11 @@ function roleInputFromBody(body, currentRow) {
     menu['purchase-orders'] = i;
     menu['receipt-shipments'] = i;
   }
+  // Parent None clears children so nav and API stay aligned.
+  Object.keys(MENU_PARENT).forEach(function (childKey) {
+    const parentKey = MENU_PARENT[childKey];
+    if (!canAccess(menu[parentKey], 'view')) menu[childKey] = 'none';
+  });
   const summary = summaryFromMenu(menu);
   return {
     menu: menu,
@@ -338,9 +374,11 @@ module.exports = {
   ACCESS,
   MENU_KEYS,
   MENU_GROUPS,
+  MENU_PARENT,
   accessLevel,
   canAccess,
   highestAccess,
+  gatedAccess,
   slugifyRole,
   defaultMenuAccess,
   legacyPerms,
@@ -348,17 +386,17 @@ module.exports = {
   parseMenuAccess,
   serializeMenuAccess,
   menuAccessFromRow,
-  summaryFromMenu,
-  permsFromRow,
-  normalizeMenuInput,
-  publicRole,
-  publicAdmin,
   menuLevel,
   hasPerm,
   isOwnerAdmin,
+  isOwnerRole,
+  OWNER_ROLE_SLUG,
+  publicAdmin,
+  publicRole,
+  permsFromRow,
+  summaryFromMenu,
+  normalizeMenuInput,
   normalizeRole,
   roleLabel,
   roleInputFromBody,
-  isOwnerRole,
-  OWNER_ROLE_SLUG
 };
