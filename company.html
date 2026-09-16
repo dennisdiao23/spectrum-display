@@ -14,11 +14,11 @@
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
   <title>Company | Spectrum Display</title>
   <meta name="robots" content="noindex, nofollow" />
-  <link rel="stylesheet" href="/css/company-dash.css?v=staff1" />
+  <link rel="stylesheet" href="/css/company-dash.css?v=staff3" />
   <script src="/js/address-autocomplete.js"></script>
   <script src="/js/company-chat.js?v=chatcrm3"></script>
   <script src="/js/company-crm.js?v=zoomphone3"></script>
-  <script src="/js/company-staff.js?v=staff2"></script>
+  <script src="/js/company-staff.js?v=staff3"></script>
   <script src="/js/company-traffic.js?v=loc1"></script>
   <script src="/js/company-website-control.js?v=webctrl6"></script>
   <script src="/js/print-form.js?v=forms20"></script>
@@ -3349,122 +3349,6 @@
           </div>
         </div>
         </div>
-
-        <div id="staff-detail-pane" class="su-detail hidden" hidden aria-hidden="true">
-          <div class="su-detail-bar">
-            <button type="button" id="su-back" class="cc-detail-btn">← Users</button>
-            <div class="su-detail-bar-copy">
-              <h2 id="su-title">User</h2>
-              <p id="su-sub" class="su-sub">Company staff login</p>
-            </div>
-            <div class="su-detail-bar-actions">
-              <button type="button" id="su-delete" class="cc-detail-btn hidden" style="color:#b91c1c">Remove</button>
-              <button type="submit" form="su-form" id="su-save" class="cc-detail-btn cc-detail-btn-primary">Save user</button>
-            </div>
-          </div>
-          <p id="su-msg" class="hidden text-sm mb-3"></p>
-          <form id="su-form" class="su-form">
-            <input type="hidden" id="su-id">
-            <section class="su-card">
-              <div class="su-photo-row">
-                <div class="su-photo" id="su-photo">
-                  <img id="su-photo-img" class="hidden" alt="">
-                  <span id="su-photo-fallback">?</span>
-                </div>
-                <div>
-                  <h3>Photo</h3>
-                  <p class="su-help">Icon for this user in the list and detail page.</p>
-                  <div class="su-photo-actions">
-                    <input id="su-photo-input" type="file" accept="image/*" class="hidden">
-                    <button type="button" id="su-photo-btn" class="cc-detail-btn">Upload photo</button>
-                    <button type="button" id="su-photo-clear" class="su-link">Remove</button>
-                  </div>
-                </div>
-              </div>
-            </section>
-
-            <section class="su-card">
-              <h3>Profile</h3>
-              <div class="su-grid">
-                <div class="cc-field"><label>Display name</label><input id="su-name" required type="text"></div>
-                <div class="cc-field"><label>Job title</label><input id="su-job" type="text"></div>
-                <div class="cc-field"><label>First name</label><input id="su-first" type="text"></div>
-                <div class="cc-field"><label>Last name</label><input id="su-last" type="text"></div>
-                <div class="cc-field"><label>Phone</label><input id="su-phone" type="text"></div>
-                <div class="cc-field"><label>Mobile</label><input id="su-mobile" type="text"></div>
-                <div class="cc-field wide"><label>Personal email</label><input id="su-personal-email" type="email"></div>
-                <div class="cc-field wide"><label>Notes</label><textarea id="su-notes" rows="3"></textarea></div>
-              </div>
-            </section>
-
-            <section class="su-card">
-              <h3>Address</h3>
-              <div class="su-grid">
-                <div class="cc-field wide"><label>Street address 1</label><input id="su-street" type="text" autocomplete="off" data-places-fields="su-street,su-street2,su-city,su-state,su-zip,su-country"></div>
-                <div class="cc-field wide"><label>Street address 2</label><input id="su-street2" type="text"></div>
-                <div class="cc-field"><label>City</label><input id="su-city" type="text"></div>
-                <div class="cc-field"><label>State</label><input id="su-state" type="text"></div>
-                <div class="cc-field"><label>ZIP code</label><input id="su-zip" type="text"></div>
-                <div class="cc-field"><label>Country</label><input id="su-country" type="text" value="United States"></div>
-              </div>
-            </section>
-
-            <section class="su-card">
-              <h3>Company login</h3>
-              <p class="su-help">Sign-in for /company. Role controls which menus they see.</p>
-              <div class="su-grid">
-                <div class="cc-field"><label>Login email</label><input id="su-email" required type="email"></div>
-                <div class="cc-field"><label>Role</label><select id="su-role"></select></div>
-                <div class="cc-field wide"><label>Password</label>
-                  <input id="su-password" type="password" minlength="8" autocomplete="new-password">
-                  <p class="cc-note" id="su-password-hint">At least 8 characters.</p>
-                </div>
-                <div class="cc-field"><label>Created</label><p id="su-created" class="su-readonly">—</p></div>
-              </div>
-            </section>
-
-            <section class="su-card">
-              <div class="su-card-head">
-                <div>
-                  <h3>Company accounts</h3>
-                  <p class="su-help">Email accounts, company phone, and other logins Spectrum gives this person.</p>
-                </div>
-                <button type="button" id="su-account-add" class="cc-detail-btn cc-detail-btn-primary">Add account</button>
-              </div>
-              <div id="su-account-form" class="su-account-form hidden">
-                <input type="hidden" id="su-acc-id">
-                <div class="su-grid">
-                  <div class="cc-field"><label>Type</label>
-                    <select id="su-acc-type">
-                      <option value="email">Email</option>
-                      <option value="phone">Company phone</option>
-                      <option value="other">Other</option>
-                    </select>
-                  </div>
-                  <div class="cc-field"><label>Label</label><input id="su-acc-label" type="text" placeholder="Work Gmail, Desk phone…"></div>
-                  <div class="cc-field"><label>Username / number</label><input id="su-acc-user" type="text"></div>
-                  <div class="cc-field"><label>Password</label><input id="su-acc-secret" type="password" autocomplete="new-password"></div>
-                  <div class="cc-field wide"><label>Notes</label><textarea id="su-acc-notes" rows="2"></textarea></div>
-                </div>
-                <div class="su-account-form-actions">
-                  <button type="button" id="su-acc-cancel" class="cc-detail-btn">Cancel</button>
-                  <button type="button" id="su-acc-save" class="cc-detail-btn cc-detail-btn-primary">Save account</button>
-                </div>
-              </div>
-              <div id="su-accounts" class="su-accounts"></div>
-            </section>
-
-            <section class="su-card">
-              <h3>Files</h3>
-              <p class="su-help">Drop documents for this user. Click the area or drag files in.</p>
-              <div id="su-file-drop" class="su-file-drop" role="button" tabindex="0">
-                Drop files to upload
-                <input id="su-file-input" type="file" class="hidden" multiple>
-              </div>
-              <div id="su-files" class="su-files"></div>
-            </section>
-          </form>
-        </div>
       </div>
       <div id="chat-section" class="hidden"></div>
     </section>
@@ -4425,35 +4309,119 @@
     </div>
   </aside>
   <div id="st-drawer-scrim" class="cc-drawer-scrim"></div>
-  <aside id="st-drawer" class="cc-drawer" aria-hidden="true">
+  <aside id="st-drawer" class="cc-drawer su-drawer" aria-hidden="true">
     <div class="cc-drawer-head">
-      <h2 id="st-title">User</h2>
+      <div class="su-drawer-head-copy">
+        <h2 id="st-title">User</h2>
+        <p id="su-sub" class="su-sub">Company staff login</p>
+      </div>
       <div class="cc-drawer-tools">
         <button type="button" id="st-drawer-close" class="cc-drawer-close" aria-label="Close">×</button>
       </div>
     </div>
-    <form id="staff-form" class="cc-drawer-body">
-      <input type="hidden" id="staff-id">
-      <section class="cc-sec is-open">
-        <button type="button" class="cc-sec-btn"><span class="cc-sec-label"><svg class="cc-sec-ico" viewBox="0 0 24 24"><circle cx="12" cy="8" r="3.25"/><path d="M5 19.2c.9-3.1 3.5-4.7 7-4.7s6.1 1.6 7 4.7"/></svg> Login</span> <span class="cc-sec-chevron">▾</span></button>
-        <div class="cc-sec-body">
-          <div class="cc-field wide"><label>Name</label><input id="staff-name" required type="text"></div>
-          <div class="cc-field wide"><label>Email</label><input id="staff-email" required type="email"></div>
-          <div class="cc-field wide"><label>Role</label><select id="staff-role"></select></div>
-          <div class="cc-field wide"><label id="staff-password-label">Password</label>
-            <div class="ca-secret">
-              <input id="staff-password" type="password" minlength="8" autocomplete="new-password">
-              <button type="button" id="staff-password-toggle" class="ca-secret-btn">Show</button>
+    <p id="su-msg" class="hidden text-sm px-5 pt-3"></p>
+    <form id="su-form" class="cc-drawer-body su-form">
+      <input type="hidden" id="su-id">
+      <section class="su-card">
+        <div class="su-photo-row">
+          <div class="su-photo" id="su-photo">
+            <img id="su-photo-img" class="hidden" alt="">
+            <span id="su-photo-fallback">?</span>
+          </div>
+          <div>
+            <h3>Photo</h3>
+            <p class="su-help">Icon for this user in the list and drawer.</p>
+            <div class="su-photo-actions">
+              <input id="su-photo-input" type="file" accept="image/*" class="hidden">
+              <button type="button" id="su-photo-btn" class="cc-detail-btn">Upload photo</button>
+              <button type="button" id="su-photo-clear" class="su-link">Remove</button>
             </div>
-            <p class="cc-note" id="staff-password-hint">At least 8 characters.</p>
           </div>
         </div>
       </section>
-      <p id="staff-msg" class="hidden text-sm px-5 pt-3"></p>
+      <section class="su-card">
+        <h3>Profile</h3>
+        <div class="su-grid">
+          <div class="cc-field"><label>Display name</label><input id="su-name" required type="text"></div>
+          <div class="cc-field"><label>Job title</label><input id="su-job" type="text"></div>
+          <div class="cc-field"><label>First name</label><input id="su-first" type="text"></div>
+          <div class="cc-field"><label>Last name</label><input id="su-last" type="text"></div>
+          <div class="cc-field"><label>Phone</label><input id="su-phone" type="text"></div>
+          <div class="cc-field"><label>Mobile</label><input id="su-mobile" type="text"></div>
+          <div class="cc-field wide"><label>Personal email</label><input id="su-personal-email" type="email"></div>
+          <div class="cc-field wide"><label>Notes</label><textarea id="su-notes" rows="3"></textarea></div>
+        </div>
+      </section>
+      <section class="su-card">
+        <h3>Address</h3>
+        <div class="su-grid">
+          <div class="cc-field wide"><label>Street address 1</label><input id="su-street" type="text" autocomplete="off" data-places-fields="su-street,su-street2,su-city,su-state,su-zip,su-country"></div>
+          <div class="cc-field wide"><label>Street address 2</label><input id="su-street2" type="text"></div>
+          <div class="cc-field"><label>City</label><input id="su-city" type="text"></div>
+          <div class="cc-field"><label>State</label><input id="su-state" type="text"></div>
+          <div class="cc-field"><label>ZIP code</label><input id="su-zip" type="text"></div>
+          <div class="cc-field"><label>Country</label><input id="su-country" type="text" value="United States"></div>
+        </div>
+      </section>
+      <section class="su-card">
+        <h3>Company login</h3>
+        <p class="su-help">Sign-in for /company. Role controls which menus they see.</p>
+        <div class="su-grid">
+          <div class="cc-field"><label>Login email</label><input id="su-email" required type="email"></div>
+          <div class="cc-field"><label>Role</label><select id="su-role"></select></div>
+          <div class="cc-field wide"><label>Password</label>
+            <div class="ca-secret">
+              <input id="su-password" type="password" minlength="8" autocomplete="new-password">
+              <button type="button" id="su-password-toggle" class="ca-secret-btn">Show</button>
+            </div>
+            <p class="cc-note" id="su-password-hint">At least 8 characters.</p>
+          </div>
+          <div class="cc-field"><label>Created</label><p id="su-created" class="su-readonly">—</p></div>
+        </div>
+      </section>
+      <section class="su-card">
+        <div class="su-card-head">
+          <div>
+            <h3>Company accounts</h3>
+            <p class="su-help">Email accounts, company phone, and other logins Spectrum gives this person.</p>
+          </div>
+          <button type="button" id="su-account-add" class="cc-detail-btn cc-detail-btn-primary">Add account</button>
+        </div>
+        <div id="su-account-form" class="su-account-form hidden">
+          <input type="hidden" id="su-acc-id">
+          <div class="su-grid">
+            <div class="cc-field"><label>Type</label>
+              <select id="su-acc-type">
+                <option value="email">Email</option>
+                <option value="phone">Company phone</option>
+                <option value="other">Other</option>
+              </select>
+            </div>
+            <div class="cc-field"><label>Label</label><input id="su-acc-label" type="text" placeholder="Work Gmail, Desk phone…"></div>
+            <div class="cc-field"><label>Username / number</label><input id="su-acc-user" type="text"></div>
+            <div class="cc-field"><label>Password</label><input id="su-acc-secret" type="password" autocomplete="new-password"></div>
+            <div class="cc-field wide"><label>Notes</label><textarea id="su-acc-notes" rows="2"></textarea></div>
+          </div>
+          <div class="su-account-form-actions">
+            <button type="button" id="su-acc-cancel" class="cc-detail-btn">Cancel</button>
+            <button type="button" id="su-acc-save" class="cc-detail-btn cc-detail-btn-primary">Save account</button>
+          </div>
+        </div>
+        <div id="su-accounts" class="su-accounts"></div>
+      </section>
+      <section class="su-card">
+        <h3>Files</h3>
+        <p class="su-help">Drop documents for this user. Click the area or drag files in.</p>
+        <div id="su-file-drop" class="su-file-drop" role="button" tabindex="0">
+          Drop files to upload
+          <input id="su-file-input" type="file" class="hidden" multiple>
+        </div>
+        <div id="su-files" class="su-files"></div>
+      </section>
     </form>
     <div class="cc-drawer-foot">
-      <button id="staff-delete-btn" type="button" class="hidden px-5 py-2 rounded-full border border-slate-200 text-red-500 hover:border-red-400 text-sm">Remove</button>
-      <button type="submit" form="staff-form" id="staff-save" class="px-5 py-2 rounded-full bg-sky-500 hover:bg-sky-400 text-white text-sm font-semibold">Save user</button>
+      <button id="su-delete" type="button" class="hidden px-5 py-2 rounded-full border border-slate-200 text-red-500 hover:border-red-400 text-sm">Remove</button>
+      <button type="submit" form="su-form" id="su-save" class="px-5 py-2 rounded-full bg-sky-500 hover:bg-sky-400 text-white text-sm font-semibold">Save user</button>
     </div>
   </aside>
   <div id="rl-drawer-scrim" class="cc-drawer-scrim"></div>
@@ -4523,7 +4491,7 @@
     </a>
   </nav>
 
-  <link rel="stylesheet" href="/css/company-dash.css?v=staff1" />
+  <link rel="stylesheet" href="/css/company-dash.css?v=staff3" />
 
   <script>
     const loginPanel = document.getElementById('login-panel');
@@ -5270,7 +5238,7 @@
       }
       if (name === 'staff') {
         if (document.body.classList.contains('st-drawer-open')) {
-          return (typeof editingStaffId !== 'undefined' && editingStaffId) || hiddenFieldValue('staff-id') ? 'edit' : 'create';
+          return (typeof editingStaffId !== 'undefined' && editingStaffId) || hiddenFieldValue('su-id') ? 'edit' : 'create';
         }
         if (document.body.classList.contains('rl-drawer-open')) {
           return (typeof editingRoleId !== 'undefined' && editingRoleId) ? 'edit' : 'create';
@@ -9012,13 +8980,8 @@
       } else if (tabName === 'staff') {
         if (window.SpectrumStaff && SpectrumStaff.isDetailOpen && SpectrumStaff.isDetailOpen()) {
           const id = chatShareField('su-id');
-          const title = (document.getElementById('su-title') || {}).textContent || 'User';
+          const title = (document.getElementById('st-title') || {}).textContent || 'User';
           item = chatSharePack('Staff', title, id ? '/company/settings/users/' + id : '/company/settings/users/new');
-        } else if (document.body.classList.contains('st-drawer-open')) {
-          const id = chatShareField('staff-id');
-          const nameEl = document.getElementById('staff-name') || document.getElementById('st-name');
-          item = chatSharePack('Staff', (nameEl && nameEl.value) || 'User', '/company/settings');
-          if (!id && item) item.label = 'New user';
         } else if (document.body.classList.contains('rl-drawer-open')) {
           item = chatSharePack('Role', 'Role', '/company/settings');
         }
@@ -9211,6 +9174,16 @@
         },
         canDeleteStaff: function (id) {
           return !!(id && currentAdminUser && String(id) !== String(currentAdminUser.id));
+        },
+        markClean: markStClean,
+        onOpen: function (id) {
+          editingStaffId = id || null;
+          lockDashPageScroll();
+          hideCcLeave();
+        },
+        onClose: function () {
+          editingStaffId = null;
+          unlockDashPageScroll();
         },
         onListChanged: async function () {
           await loadStaff();
@@ -20094,7 +20067,7 @@
       el.classList.toggle('hidden', !text);
     }
     function stFormSnapshot() {
-      return Array.prototype.map.call(document.querySelectorAll('#staff-form input, #staff-form select'), function (el) {
+      return Array.prototype.map.call(document.querySelectorAll('#su-form input, #su-form select, #su-form textarea'), function (el) {
         return String(el.value || '');
       }).join('|');
     }
@@ -20117,9 +20090,17 @@
         return;
       }
       hideCcLeave();
-      document.body.classList.remove('st-drawer-open');
-      document.getElementById('st-drawer').setAttribute('aria-hidden', 'true');
+      if (window.SpectrumStaff && typeof SpectrumStaff.close === 'function') {
+        SpectrumStaff.close(false);
+      } else {
+        document.body.classList.remove('st-drawer-open');
+        document.getElementById('st-drawer').setAttribute('aria-hidden', 'true');
+      }
+      editingStaffId = null;
       unlockDashPageScroll();
+      if (typeof goCompany === 'function' && /^\/company\/settings\/users\//.test(companyPath())) {
+        goCompany('/company/settings');
+      }
     }
     function closeRoleDrawer(force) {
       if (!force && rlDrawerNeedsLeave()) {
@@ -20314,41 +20295,26 @@
     }
 
     function fillStaffRoleSelect(selected) {
-      const sels = [
-        document.getElementById('staff-role'),
-        document.getElementById('su-role')
-      ].filter(Boolean);
-      if (!sels.length) return;
+      const sel = document.getElementById('su-role');
+      if (!sel) return;
       const blockedOwner = ownerAssignedToOther();
       const roles = adminRoles.filter(function (r) {
         return !(r.slug === 'owner' && blockedOwner);
       });
-      let value = selected || sels[0].value || '';
+      let value = selected || sel.value || '';
       if (!value || (value === 'owner' && blockedOwner)) {
         const fallback = roles.find(function (r) { return r.slug !== 'owner'; }) || roles[0];
         value = fallback ? fallback.slug : '';
       }
-      const html = roles.map(function (r) {
+      sel.innerHTML = roles.map(function (r) {
         const note = r.slug === 'owner' ? ' (1 user only)' : '';
         return '<option value="' + esc(r.slug) + '"' + (r.slug === value ? ' selected' : '') + '>' + esc(r.name) + note + '</option>';
       }).join('');
-      sels.forEach(function (sel) { sel.innerHTML = html; });
     }
 
     function resetStaffForm() {
       editingStaffId = null;
-      document.getElementById('staff-form').reset();
-      document.getElementById('staff-id').value = '';
-      document.getElementById('staff-email').disabled = false;
-      document.getElementById('staff-password').required = true;
-      document.getElementById('staff-password').type = 'password';
-      document.getElementById('staff-password-toggle').textContent = 'Show';
-      document.getElementById('staff-password-label').textContent = 'Password';
-      document.getElementById('staff-password-hint').textContent = 'At least 8 characters.';
-      document.getElementById('staff-save').textContent = 'Save user';
-      document.getElementById('staff-delete-btn').classList.add('hidden');
       document.getElementById('st-title').textContent = 'User';
-      showStaffMsg('');
       showError('staff-error', '');
     }
 
@@ -20369,38 +20335,16 @@
     }
 
     function openStaffDrawer(person) {
-      showStaffMsg('');
       closeRoleDrawer(true);
-      if (person && person.id) {
-        editingStaffId = person.id;
-        const mine = currentAdminUser && String(person.id) === String(currentAdminUser.id);
-        document.getElementById('st-title').textContent = person.name || 'User';
-        document.getElementById('staff-id').value = person.id;
-        document.getElementById('staff-name').value = person.name || '';
-        document.getElementById('staff-email').value = person.email || '';
-        document.getElementById('staff-email').disabled = true;
-        fillStaffRoleSelect(person.role || 'owner');
-        document.getElementById('staff-password').value = '';
-        document.getElementById('staff-password').required = false;
-        document.getElementById('staff-password').type = 'password';
-        document.getElementById('staff-password-toggle').textContent = 'Show';
-        document.getElementById('staff-password-label').textContent = 'New password';
-        document.getElementById('staff-password-hint').textContent = 'Leave blank to keep the current password.';
-        document.getElementById('staff-save').textContent = 'Save user';
-        document.getElementById('staff-delete-btn').classList.toggle('hidden', !!mine);
-      } else {
-        resetStaffForm();
-        fillStaffRoleSelect();
-        document.getElementById('st-title').textContent = 'User';
+      if (window.SpectrumStaff) {
+        SpectrumStaff.openUser(person && person.id ? person.id : null, true);
+        return;
       }
       document.getElementById('st-drawer').setAttribute('aria-hidden', 'false');
       document.body.classList.add('st-drawer-open');
       lockDashPageScroll();
-      const body = document.getElementById('staff-form');
-      if (body) body.scrollTop = 0;
       hideCcLeave();
       markStClean();
-      document.getElementById('staff-name').focus();
     }
 
     function openRoleDrawer(role) {
@@ -20760,19 +20704,9 @@
     document.getElementById('st-drawer-scrim').addEventListener('click', function () { closeStaffDrawer(); });
     document.getElementById('rl-drawer-close').addEventListener('click', function () { closeRoleDrawer(); });
     document.getElementById('rl-drawer-scrim').addEventListener('click', function () { closeRoleDrawer(); });
-    document.getElementById('staff-form').addEventListener('click', function (e) {
-      const btn = e.target.closest('.cc-sec-btn');
-      if (btn) btn.parentElement.classList.toggle('is-open');
-    });
     document.getElementById('role-form').addEventListener('click', function (e) {
       const btn = e.target.closest('.cc-sec-btn');
       if (btn) btn.parentElement.classList.toggle('is-open');
-    });
-    document.getElementById('staff-password-toggle').addEventListener('click', function () {
-      const input = document.getElementById('staff-password');
-      const show = input.type === 'password';
-      input.type = show ? 'text' : 'password';
-      this.textContent = show ? 'Hide' : 'Show';
     });
     document.getElementById('staff-table').addEventListener('click', function (e) {
       const row = e.target.closest('tr[data-staff-id]');
@@ -20780,12 +20714,8 @@
       const id = row.getAttribute('data-staff-id');
       const go = function () {
         closeRoleDrawer(true);
-        closeStaffDrawer(true);
         if (window.SpectrumStaff) SpectrumStaff.openUser(id, true);
-        else {
-          const person = staffList.find(function (p) { return String(p.id) === String(id); });
-          if (person) openStaffDrawer(person);
-        }
+        else openStaffDrawer({ id: id });
       };
       if (stDrawerNeedsLeave()) { stAskLeave(go); return; }
       if (rlDrawerNeedsLeave()) { rlAskLeave(go); return; }
@@ -20801,56 +20731,6 @@
       if (rlDrawerNeedsLeave()) { rlAskLeave(go); return; }
       if (stDrawerNeedsLeave()) { stAskLeave(go); return; }
       go();
-    });
-
-    document.getElementById('staff-form').addEventListener('submit', async function (e) {
-      e.preventDefault();
-      showStaffMsg('');
-      showError('staff-error', '');
-      const body = {
-        name: document.getElementById('staff-name').value.trim(),
-        email: document.getElementById('staff-email').value.trim(),
-        role: document.getElementById('staff-role').value,
-        password: document.getElementById('staff-password').value
-      };
-      if (editingStaffId && !body.password) delete body.password;
-      try {
-        if (editingStaffId) {
-          await api('/api/admin/staff/' + editingStaffId, {
-            method: 'PUT',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(body)
-          });
-        } else {
-          await api('/api/admin/staff', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(body)
-          });
-        }
-        markStClean();
-        closeStaffDrawer(true);
-        await loadStaff();
-        try {
-          if (window.SpectrumChat && typeof SpectrumChat.refreshContacts === 'function') {
-            SpectrumChat.refreshContacts();
-          }
-        } catch (e) {}
-      } catch (err) {
-        showStaffMsg(err.message || 'Could not save user.');
-      }
-    });
-
-    document.getElementById('staff-delete-btn').addEventListener('click', async function () {
-      if (!editingStaffId) return;
-      if (!confirm('Remove this Admin login? They will not be able to sign in here.')) return;
-      try {
-        await api('/api/admin/staff/' + editingStaffId, { method: 'DELETE' });
-        closeStaffDrawer(true);
-        await loadStaff();
-      } catch (err) {
-        showStaffMsg(err.message || 'Could not remove user.');
-      }
     });
 
     document.getElementById('role-form').addEventListener('submit', async function (e) {

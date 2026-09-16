@@ -9,7 +9,11 @@
     goCompany: null,
     pathForTab: null,
     canEditStaff: function () { return true; },
+    canDeleteStaff: null,
     onListChanged: null,
+    onOpen: null,
+    onClose: null,
+    markClean: null,
     activeId: '',
     detail: null
   };
@@ -20,7 +24,7 @@
     var el = $('su-msg');
     if (!el) return;
     el.textContent = text || '';
-    el.className = 'text-sm ' + (ok ? 'text-sky-600' : 'text-red-500');
+    el.className = 'text-sm px-5 pt-3 ' + (ok ? 'text-sky-600' : 'text-red-500');
     el.classList.toggle('hidden', !text);
   }
 
@@ -70,6 +74,9 @@
     $('su-country').value = (person && person.country) || 'United States';
     $('su-password').value = '';
     $('su-password').required = !S.activeId;
+    $('su-password').type = 'password';
+    var passToggle = $('su-password-toggle');
+    if (passToggle) passToggle.textContent = 'Show';
     $('su-password-hint').textContent = S.activeId
       ? 'Leave blank to keep the current Company login password.'
       : 'At least 8 characters.';
@@ -78,7 +85,6 @@
     if (roleSel && person && person.role) {
       roleSel.value = person.role;
       if (roleSel.value !== person.role) {
-        // Role option missing (e.g. owner filtered) — force it in
         var opt = document.createElement('option');
         opt.value = person.role;
         opt.textContent = (S.staffRoleLabel && S.staffRoleLabel(person.role)) || person.role;
@@ -89,7 +95,7 @@
     $('su-created').textContent = person && person.created_at
       ? new Date(person.created_at).toLocaleString()
       : '—';
-    var title = $('su-title');
+    var title = $('st-title');
     if (title) title.textContent = (person && (person.displayName || person.name)) || 'New user';
     var sub = $('su-sub');
     if (sub) sub.textContent = (person && person.email) || 'Company staff login';
@@ -102,6 +108,7 @@
       del.classList.toggle('hidden', !canDel);
     }
     showMsg('');
+    if (S.markClean) S.markClean();
   }
 
   function formBody() {
@@ -172,43 +179,50 @@
     }).join('');
   }
 
-  function showList() {
-    var list = $('staff-list-wrap');
-    var detail = $('staff-detail-pane');
-    if (list) list.classList.remove('hidden');
-    if (detail) {
-      detail.classList.add('hidden');
-      detail.hidden = true;
-      detail.setAttribute('aria-hidden', 'true');
-    }
+  function showDrawer() {
+    var drawer = $('st-drawer');
+    if (!drawer) return;
+    drawer.setAttribute('aria-hidden', 'false');
+    document.body.classList.add('st-drawer-open');
+    var body = $('su-form');
+    if (body) body.scrollTop = 0;
+    if (S.onOpen) S.onOpen(S.activeId);
+  }
+
+  function hideDrawer(push) {
+    var drawer = $('st-drawer');
+    if (drawer) drawer.setAttribute('aria-hidden', 'true');
+    document.body.classList.remove('st-drawer-open');
     S.activeId = '';
     S.detail = null;
+    if (S.onClose) S.onClose();
+    if (push && S.goCompany) S.goCompany('/company/settings', true);
+  }
+
+  function showList() {
+    hideDrawer(false);
   }
 
   function showDetail() {
-    var list = $('staff-list-wrap');
-    var detail = $('staff-detail-pane');
-    if (list) list.classList.add('hidden');
-    if (detail) {
-      detail.classList.remove('hidden');
-      detail.hidden = false;
-      detail.setAttribute('aria-hidden', 'false');
-    }
+    showDrawer();
   }
 
   async function openUser(id, push) {
     if (!S.api) return;
-    showDetail();
+    showDrawer();
     if (!id) {
       fillForm(null);
-      if (push && S.goCompany) S.goCompany('/company/settings/users/new');
+      if (push && S.goCompany) S.goCompany('/company/settings/users/new', true);
+      var nameEl = $('su-name');
+      if (nameEl) nameEl.focus();
       return;
     }
     showMsg('Loading…', true);
     try {
       var data = await S.api('/api/admin/staff/' + encodeURIComponent(id));
       fillForm(data.staff);
-      if (push && S.goCompany) S.goCompany('/company/settings/users/' + encodeURIComponent(id));
+      if (push && S.goCompany) S.goCompany('/company/settings/users/' + encodeURIComponent(id), true);
+      if (S.onOpen) S.onOpen(S.activeId);
     } catch (err) {
       showMsg(err.message || 'Could not load user.');
     }
@@ -239,6 +253,7 @@
       if (S.goCompany && data.staff && data.staff.id) {
         S.goCompany('/company/settings/users/' + encodeURIComponent(data.staff.id), true);
       }
+      if (S.onOpen) S.onOpen(S.activeId);
       showMsg('Saved.', true);
     } catch (err) {
       showMsg(err.message || 'Could not save user.');
@@ -293,11 +308,7 @@
     form.dataset.bound = '1';
 
     form.addEventListener('submit', saveUser);
-    var back = $('su-back');
-    if (back) back.addEventListener('click', function () {
-      showList();
-      if (S.goCompany) S.goCompany('/company/settings');
-    });
+
     var del = $('su-delete');
     if (del) del.addEventListener('click', async function () {
       if (!S.activeId) return;
@@ -305,12 +316,22 @@
       try {
         await S.api('/api/admin/staff/' + encodeURIComponent(S.activeId), { method: 'DELETE' });
         if (S.onListChanged) await S.onListChanged();
-        showList();
-        if (S.goCompany) S.goCompany('/company/settings');
+        hideDrawer(true);
       } catch (err) {
         showMsg(err.message || 'Could not remove user.');
       }
     });
+
+    var passToggle = $('su-password-toggle');
+    if (passToggle) {
+      passToggle.addEventListener('click', function () {
+        var input = $('su-password');
+        if (!input) return;
+        var show = input.type === 'password';
+        input.type = show ? 'text' : 'password';
+        passToggle.textContent = show ? 'Hide' : 'Show';
+      });
+    }
 
     var photoInput = $('su-photo-input');
     var photoBtn = $('su-photo-btn');
@@ -407,7 +428,7 @@
     if (saveAccount) {
       saveAccount.addEventListener('click', async function () {
         if (!S.activeId) {
-          showMsg('Save the user first, then add company accounts.');
+          showMsg('Save the user first, then add accounts.');
           return;
         }
         var body = {
@@ -497,6 +518,10 @@
     openUser: openUser,
     showList: showList,
     showDetail: showDetail,
-    isDetailOpen: function () { return !!S.activeId || !($('staff-detail-pane') || { classList: { contains: function () { return true; } } }).classList.contains('hidden'); }
+    close: function (push) { hideDrawer(!!push); },
+    isDetailOpen: function () {
+      return document.body.classList.contains('st-drawer-open');
+    },
+    activeId: function () { return S.activeId; }
   };
 })(window);
