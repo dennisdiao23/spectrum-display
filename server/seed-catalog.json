@@ -1154,6 +1154,33 @@
           "assets/products/spectrum/bk-back.jpg",
           "assets/products/spectrum/bk-views.jpg"
         ]
+      },
+      {
+        "id": "fr",
+        "name": "LP FR Series",
+        "pitches": [
+          0.93,
+          1.25,
+          1.56,
+          1.87
+        ],
+        "pricePerM2": 0,
+        "weightPerM2": 22,
+        "powerAvg": 100,
+        "powerMax": 300,
+        "cabinetW": 0.6,
+        "cabinetH": 0.3375,
+        "type": "Fixed",
+        "description": "Spectrum LP FR Flip-Chip COB indoor 16:9 cabinets — 600 × 337.5 × 40 mm or 1200 × 675 × 40 mm, 600 nits, 3,840 Hz, 10,000:1 contrast, front maintenance, optional power and signal redundancy.",
+        "badge": "COB",
+        "image": "assets/products/spectrum/fr-hero.jpg",
+        "gallery": [
+          "assets/products/spectrum/fr-front.jpg",
+          "assets/products/spectrum/fr-back.jpg",
+          "assets/products/spectrum/fr-sizes.jpg",
+          "assets/products/spectrum/fr-side.jpg",
+          "assets/products/spectrum/fr-open.jpg"
+        ]
       }
     ]
   }
