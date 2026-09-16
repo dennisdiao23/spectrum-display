@@ -27,7 +27,7 @@ const PORT = Number(process.env.PORT || 3000);
 
 const upload = multer({
   storage: multer.memoryStorage(),
-  limits: { fileSize: 8 * 1024 * 1024, files: 16 },
+  limits: { fileSize: 24 * 1024 * 1024, files: 16 },
   fileFilter: function (_req, file, cb) {
     const ok = /^image\/(jpeg|png|webp|gif)$/i.test(file.mimetype || '');
     cb(ok ? null : new Error('Only JPG, PNG, WebP, or GIF images are allowed.'), ok);
@@ -365,8 +365,8 @@ async function main() {
   app.get(['/solutions', '/solutions/'], function (_req, res) {
     res.sendFile(path.join(ROOT, 'solutions.html'));
   });
-  app.use('/uploads', express.static(path.join(ROOT, 'uploads')));
   const staticLong = { maxAge: '7d', etag: true, lastModified: true };
+  app.use('/uploads', express.static(path.join(ROOT, 'uploads'), staticLong));
   app.use('/css', express.static(path.join(ROOT, 'css'), staticLong));
   // JS must revalidate with HTML. A 7-day /js cache left calculator pages calling
   // helpers the browser still had from the previous deploy (blank preview/summary).
@@ -522,15 +522,23 @@ async function main() {
     const uploaded = files || {};
     let imageUrl = '';
     const gallery = [];
+    const storageByPublic = {};
+    async function take(file) {
+      const saved = await store.saveUpload(file);
+      const pub = img.publicUploadUrl(saved);
+      const stor = img.storageUploadUrl(saved);
+      if (stor) storageByPublic[pub] = stor;
+      return pub;
+    }
     if (uploaded.image && uploaded.image[0]) {
-      imageUrl = await store.saveUpload(uploaded.image[0]);
+      imageUrl = await take(uploaded.image[0]);
     }
     if (uploaded.gallery) {
       for (const file of uploaded.gallery) {
-        gallery.push(await store.saveUpload(file));
+        gallery.push(await take(file));
       }
     }
-    return { imageUrl, gallery };
+    return { imageUrl, gallery, storageByPublic };
   }
 
   async function nextProductMedia(existing, body, files) {
@@ -561,7 +569,13 @@ async function main() {
     if (image) {
       gallery = gallery.filter(function (url) { return url && url !== image; });
     }
-    return { image: image, gallery: gallery };
+    const details = existing && existing.details
+      ? existing.details
+      : (existing ? dbUtil.parseDetails(existing) : {});
+    return img.materializeMedia({ image: image, gallery: gallery }, {
+      details: details,
+      storageByPublic: saved.storageByPublic
+    });
   }
 
   async function productPayload(body, files, existing) {
@@ -602,7 +616,11 @@ async function main() {
       gallery = existingGallery.slice();
     }
     gallery = gallery.concat(saved.gallery);
-    if (!image && gallery[0] && !truthyFlag(body.clearImage)) image = gallery[0];
+    if (!image && gallery[0]) image = gallery[0];
+    if (truthyFlag(body.clearImage) && !gallery.length && !saved.imageUrl) image = '';
+    if (image) {
+      gallery = gallery.filter(function (url) { return url && url !== image; });
+    }
     const existingDetails = existing ? dbUtil.parseDetails(existing) : {};
     const cats = String(body.cats || '')
       .split(/[\s,]+/)
@@ -661,6 +679,18 @@ async function main() {
         Object.prototype.hasOwnProperty.call(body, 'storeListed')
       );
       if (!bodyHasListed) details.store_listed = false;
+    }
+    const materialized = await img.materializeMedia({ image: image, gallery: gallery }, {
+      details: details,
+      storageByPublic: saved.storageByPublic
+    });
+    image = materialized.image;
+    gallery = materialized.gallery;
+    if (image || gallery.length) {
+      img.applyStorageToDetails(details, materialized);
+    } else {
+      delete details.storageImage;
+      delete details.storageGallery;
     }
     const sortOrder = bodyHas(body, 'sortOrder') || bodyHas(body, 'sort_order')
       ? Number(body.sortOrder != null ? body.sortOrder : body.sort_order) || 0
@@ -1303,12 +1333,14 @@ async function main() {
     const uploaded = files || {};
     let logo = existing ? (existing.logo || '') : '';
     let image = existing ? (existing.image || '') : '';
-    if (uploaded.logo && uploaded.logo[0]) logo = await store.saveUpload(uploaded.logo[0]);
+    if (uploaded.logo && uploaded.logo[0]) logo = img.publicUploadUrl(await store.saveUpload(uploaded.logo[0]));
     else if (body.logoUrl) logo = String(body.logoUrl).trim();
     else if (truthyFlag(body.clearLogo)) logo = '';
-    if (uploaded.image && uploaded.image[0]) image = await store.saveUpload(uploaded.image[0]);
+    if (uploaded.image && uploaded.image[0]) image = img.publicUploadUrl(await store.saveUpload(uploaded.image[0]));
     else if (body.imageUrl) image = String(body.imageUrl).trim();
     else if (truthyFlag(body.clearImage)) image = '';
+    logo = (await img.ensureLocalPublicCopy(logo)).publicUrl;
+    image = (await img.ensureLocalPublicCopy(image)).publicUrl;
     return {
       name,
       tagline: bodyHas(body, 'tagline') ? String(body.tagline || '').trim() : (existing ? existing.tagline : ''),
@@ -2764,7 +2796,7 @@ async function main() {
   async function inventoryPayload(req) {
     const body = Object.assign({}, req.body || {});
     const file = req.files && req.files.image && req.files.image[0];
-    if (file) body.image = await store.saveUpload(file);
+    if (file) body.image = img.publicUploadUrl(await store.saveUpload(file));
     return body;
   }
 
@@ -2818,21 +2850,24 @@ async function main() {
       if (!data) return res.status(404).json({ ok: false, error: 'Inventory item not found.' });
       const item = data.item;
       const existing = { image: item.image || '', gallery: item.gallery || [] };
+      if (item.photoProductId) {
+        const raw = await store.getRawProduct(item.photoProductId);
+        if (raw) existing.details = dbUtil.parseDetails(raw);
+      }
       const media = await nextProductMedia(existing, req.body || {}, req.files);
-      if (item.photoProductId && (bodyHas(req.body, 'photoFit') || bodyHas(req.body, 'photo_fit'))) {
+      const fitTouched = bodyHas(req.body, 'photoFit') || bodyHas(req.body, 'photo_fit');
+      if (item.photoProductId && (fitTouched || media)) {
         const raw = await store.getRawProduct(item.photoProductId);
         if (raw) {
           const details = dbUtil.applyPhotoFit(dbUtil.parseDetails(raw), req.body || {});
-          await store.updateProductDetails(item.photoProductId, details);
+          if (media) {
+            img.applyStorageToDetails(details, media);
+            await store.updateProductMedia(item.photoProductId, Object.assign({}, media, { details: details }));
+          } else {
+            await store.updateProductDetails(item.photoProductId, details);
+          }
         }
-      }
-      if (!media) {
-        const unchanged = await store.getInventoryItem(req.params.id);
-        return res.json({ ok: true, item: unchanged.item, moves: unchanged.moves });
-      }
-      if (item.photoProductId) {
-        await store.updateProductMedia(item.photoProductId, media);
-      } else {
+      } else if (media) {
         await store.updateInventoryMedia(req.params.id, media);
       }
       const next = await store.getInventoryItem(req.params.id);
@@ -3218,6 +3253,9 @@ async function main() {
   app.use(express.static(ROOT));
 
   app.use(function (err, _req, res, _next) {
+    if (err && err.code === 'LIMIT_FILE_SIZE') {
+      return res.status(400).json({ ok: false, error: 'Image must be 24 MB or smaller.' });
+    }
     const status = Number(err && err.status) || 400;
     res.status(status).json({ ok: false, error: (err && err.message) || 'Request failed.' });
   });

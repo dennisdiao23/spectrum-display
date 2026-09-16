@@ -1,6 +1,5 @@
 const fs = require('fs');
 const path = require('path');
-const crypto = require('crypto');
 const bcrypt = require('bcryptjs');
 const { createClient } = require('@supabase/supabase-js');
 const dbUtil = require('./db');
@@ -140,6 +139,11 @@ function createSupabaseStore() {
       await migrateInventoryBinLocations();
     } catch (e) {
       console.error('Could not migrate inventory bin locations:', e.message || e);
+    }
+    try {
+      await ensurePublicProductPhotos();
+    } catch (e) {
+      console.error('Could not copy product photos locally:', e.message || e);
     }
   }
 
@@ -548,6 +552,78 @@ function createSupabaseStore() {
       updated_at: new Date().toISOString()
     }).in('id', ids);
     if (uErr) console.error('Could not sync inventory photos:', uErr.message || uErr);
+  }
+
+  async function ensurePublicProductPhotos() {
+    const inv = require('./inventory');
+    img.ensureUploadDir();
+    let copied = 0;
+    const products = await fetchAllRows('products', 'id, image, gallery, details');
+    if (products.error) throwIf(products.error, 'Could not read products for photo copy.');
+    for (let i = 0; i < (products.rows || []).length; i += 1) {
+      const row = products.rows[i];
+      const details = dbUtil.parseDetails(row);
+      const gallery = inv.parseGallery(row.gallery);
+      try {
+        const next = await img.materializeMedia({ image: row.image, gallery: gallery }, { details: details });
+        if (!img.mediaNeedsPersist(row.image, gallery, details, next)) continue;
+        img.applyStorageToDetails(details, next);
+        const { error } = await supabase.from('products').update({
+          image: next.image,
+          gallery: next.gallery,
+          details: details,
+          updated_at: new Date().toISOString()
+        }).eq('id', row.id);
+        if (error) {
+          console.error('Could not save copied product photo:', error.message || error);
+          continue;
+        }
+        await syncMappedInventoryMedia(row.id, next);
+        copied += 1;
+      } catch (err) {
+        console.error('Could not copy product photo locally:', err.message || err);
+      }
+    }
+    const { data: brands, error: bErr } = await supabase.from('brands').select('id, logo, image');
+    if (!bErr) {
+      for (let i = 0; i < (brands || []).length; i += 1) {
+        const row = brands[i];
+        try {
+          const logo = await img.ensureLocalPublicCopy(row.logo || '');
+          const image = await img.ensureLocalPublicCopy(row.image || '');
+          if (img.samePublicUrl(logo.publicUrl, row.logo || '') && img.samePublicUrl(image.publicUrl, row.image || '')) continue;
+          const { error } = await supabase.from('brands').update({
+            logo: logo.publicUrl,
+            image: image.publicUrl
+          }).eq('id', row.id);
+          if (error) console.error('Could not save copied brand photo:', error.message || error);
+          else copied += 1;
+        } catch (err) {
+          console.error('Could not copy brand photo locally:', err.message || err);
+        }
+      }
+    }
+    const items = await fetchAllRows('inventory_items', 'id, image, gallery');
+    if (!items.error) {
+      for (let i = 0; i < (items.rows || []).length; i += 1) {
+        const row = items.rows[i];
+        const gallery = inv.parseGallery(row.gallery);
+        try {
+          const next = await img.materializeMedia({ image: row.image, gallery: gallery }, {});
+          if (img.samePublicUrl(next.image, row.image || '') && img.galleriesEqual(next.gallery, gallery)) continue;
+          const { error } = await supabase.from('inventory_items').update({
+            image: next.image,
+            gallery: next.gallery,
+            updated_at: new Date().toISOString()
+          }).eq('id', row.id);
+          if (error) console.error('Could not save copied inventory photo:', error.message || error);
+          else copied += 1;
+        } catch (err) {
+          console.error('Could not copy inventory photo locally:', err.message || err);
+        }
+      }
+    }
+    if (copied) console.log('Copied ' + copied + ' catalog photos to /uploads/products');
   }
 
   async function loadInventoryMaps() {
@@ -1362,21 +1438,30 @@ function createSupabaseStore() {
       return this.getProduct(id);
     },
     async updateProductMedia(id, media) {
+      const image = media && media.image != null ? String(media.image) : '';
+      const gallery = Array.isArray(media && media.gallery) ? media.gallery : [];
+      const patch = {
+        image: image,
+        gallery: gallery,
+        updated_at: new Date().toISOString()
+      };
+      if (media && media.details && typeof media.details === 'object') {
+        patch.details = media.details;
+      } else if (media && (Object.prototype.hasOwnProperty.call(media, 'storageImage')
+          || Object.prototype.hasOwnProperty.call(media, 'storageGallery'))) {
+        const { data: raw, error: rErr } = await supabase.from('products').select('details').eq('id', id).maybeSingle();
+        throwIf(rErr);
+        if (!raw) return null;
+        patch.details = img.applyStorageToDetails(dbUtil.parseDetails(raw), media);
+      }
       const { data, error } = await supabase
         .from('products')
-        .update({
-          image: media && media.image != null ? String(media.image) : '',
-          gallery: Array.isArray(media && media.gallery) ? media.gallery : [],
-          updated_at: new Date().toISOString()
-        })
+        .update(patch)
         .eq('id', id)
         .select('id');
       throwIf(error);
       if (!data || !data.length) return null;
-      await syncMappedInventoryMedia(id, {
-        image: media && media.image != null ? String(media.image) : '',
-        gallery: Array.isArray(media && media.gallery) ? media.gallery : []
-      });
+      await syncMappedInventoryMedia(id, { image: image, gallery: gallery });
       return this.getProduct(id);
     },
     async getRawProduct(id) {
@@ -2850,7 +2935,8 @@ function createSupabaseStore() {
     },
     async saveUpload(file) {
       const prepared = await img.prepareUpload(file);
-      const name = Date.now().toString(36) + '-' + crypto.randomBytes(4).toString('hex') + prepared.ext;
+      const name = img.newUploadName(prepared.ext);
+      const publicUrl = img.writeLocalUpload(name, prepared.buffer);
       const objectPath = 'products/' + name;
       const { error } = await supabase.storage.from(BUCKET).upload(objectPath, prepared.buffer, {
         contentType: prepared.contentType,
@@ -2858,7 +2944,7 @@ function createSupabaseStore() {
       });
       throwIf(error, 'Could not upload image to Supabase Storage.');
       const { data } = supabase.storage.from(BUCKET).getPublicUrl(objectPath);
-      return data.publicUrl;
+      return { publicUrl: publicUrl, storageUrl: data.publicUrl };
     },
     async getDashboardHome(admin) {
       return require('./dashboard-home').getSupabaseDashboardHome(supabase, admin);

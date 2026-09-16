@@ -16,6 +16,7 @@ async function getStore() {
     }
     const { createSqliteStore } = require('./store-sqlite');
     const store = createSqliteStore();
+    if (store.ready) await store.ready;
     console.log('Database: local SQLite (add SUPABASE_URL to .env to use Supabase)');
     return store;
   })();
