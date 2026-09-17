@@ -236,7 +236,8 @@ function openDb() {
     "ALTER TABLE inventory_items ADD COLUMN packaging_type TEXT NOT NULL DEFAULT ''",
     "ALTER TABLE inventory_items ADD COLUMN inactive INTEGER NOT NULL DEFAULT 0",
     "ALTER TABLE inventory_items ADD COLUMN category TEXT NOT NULL DEFAULT ''",
-    "ALTER TABLE inventory_items ADD COLUMN gallery TEXT NOT NULL DEFAULT '[]'"
+    "ALTER TABLE inventory_items ADD COLUMN gallery TEXT NOT NULL DEFAULT '[]'",
+    "ALTER TABLE inventory_items ADD COLUMN mpn TEXT NOT NULL DEFAULT ''"
   ].forEach(function (sql) {
     try { db.exec(sql); } catch (e) { /* already present */ }
   });
@@ -1207,6 +1208,7 @@ function ensurePurchaseOrders(db) {
       item_id INTEGER,
       product TEXT NOT NULL DEFAULT '',
       sku TEXT NOT NULL DEFAULT '',
+      mpn TEXT NOT NULL DEFAULT '',
       description TEXT NOT NULL DEFAULT '',
       qty REAL NOT NULL DEFAULT 0,
       unit_cost REAL NOT NULL DEFAULT 0,
@@ -1216,6 +1218,7 @@ function ensurePurchaseOrders(db) {
     CREATE INDEX IF NOT EXISTS purchase_order_lines_po_idx ON purchase_order_lines (po_id, sort_order);
   `);
   try { db.exec("ALTER TABLE purchase_orders ADD COLUMN ship_from TEXT NOT NULL DEFAULT ''"); } catch (e) { /* already present */ }
+  try { db.exec("ALTER TABLE purchase_order_lines ADD COLUMN mpn TEXT NOT NULL DEFAULT ''"); } catch (e) { /* already present */ }
 }
 
 function seedAdmin(db) {

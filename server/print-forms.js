@@ -23,6 +23,7 @@ const HEADER_FIELDS = [
 const COLUMNS = [
   { id: 'item', label: 'Item' },
   { id: 'sku', label: 'SKU' },
+  { id: 'mpn', label: 'Mfr part no.' },
   { id: 'description', label: 'Description' },
   { id: 'qty', label: 'Qty' },
   { id: 'rate', label: 'Rate' },
@@ -150,7 +151,7 @@ function headerDefaults(type) {
   ];
 }
 
-function columnDefaults() {
+function columnDefaults(type) {
   return [
     { id: 'item', title: 'Item', print: true, order: 1, width: 18 },
     { id: 'description', title: 'Description', print: true, order: 2, width: 44 },
@@ -158,8 +159,9 @@ function columnDefaults() {
     { id: 'rate', title: 'Rate', print: true, order: 4, width: 14 },
     { id: 'amount', title: 'Amount', print: true, order: 5, width: 16 },
     { id: 'sku', title: 'SKU', print: false, order: 6, width: 16 },
-    { id: 'onHand', title: 'On hand', print: false, order: 7, width: 10 },
-    { id: 'cost', title: 'Cost', print: false, order: 8, width: 12 }
+    { id: 'mpn', title: 'Mfr part no.', print: type === 'po', order: 7, width: 16 },
+    { id: 'onHand', title: 'On hand', print: false, order: 8, width: 10 },
+    { id: 'cost', title: 'Cost', print: false, order: 9, width: 12 }
   ];
 }
 
@@ -374,7 +376,7 @@ function defaultTemplate(type) {
       contact: true
     },
     headerFields: headerDefaults(t),
-    columns: columnDefaults(),
+    columns: columnDefaults(t),
     layout: defaultLayout(),
     layoutVersion: LAYOUT_VERSION,
     fontFamily: 'arial',
@@ -423,6 +425,7 @@ function mergeList(defs, incoming, extraKeys) {
 const COL_WIDTH_DEFAULTS = {
   item: 18,
   sku: 16,
+  mpn: 16,
   description: 44,
   qty: 8,
   rate: 14,
@@ -446,6 +449,16 @@ function sanitizeColumns(incoming, baseCols) {
   (incoming || []).forEach(function (row) {
     if (row && row.id) byId[String(row.id)] = row;
   });
+  if (!byId.mpn) {
+    const from = list.findIndex(function (row) { return row.id === 'mpn'; });
+    const after = list.findIndex(function (row) { return row.id === 'sku'; });
+    if (from !== -1 && after !== -1 && from !== after + 1) {
+      const row = list.splice(from, 1)[0];
+      const nextAfter = list.findIndex(function (item) { return item.id === 'sku'; });
+      list.splice(nextAfter + 1, 0, row);
+      list.forEach(function (item, i) { item.order = i + 1; });
+    }
+  }
   list.forEach(function (row) {
     const src = byId[row.id] || {};
     const fallback = COL_WIDTH_DEFAULTS[row.id] || 12;

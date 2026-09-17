@@ -21,7 +21,7 @@
   <script src="/js/company-staff.js?v=staff5"></script>
   <script src="/js/company-traffic.js?v=loc1"></script>
   <script src="/js/company-website-control.js?v=webctrl7"></script>
-  <script src="/js/print-form.js?v=forms20"></script>
+  <script src="/js/print-form.js?v=forms21"></script>
   <script>
     if ('serviceWorker' in navigator && location.pathname.indexOf('/company') === 0) {
       navigator.serviceWorker.register('/company/sw.js', { scope: '/company' });
@@ -2063,6 +2063,7 @@
                       <th class="py-2 px-1 font-medium so-line-num-h" data-lock="start">#</th>
                       <th class="py-2 px-3 font-medium" data-col="product">Item <span class="dash-col-caret">▾</span><span class="dash-col-grip" aria-hidden="true"></span></th>
                       <th class="py-2 px-3 font-medium" data-col="sku">SKU <span class="dash-col-caret">▾</span><span class="dash-col-grip" aria-hidden="true"></span></th>
+                      <th class="py-2 px-3 font-medium" data-col="mpn">Mfr part no. <span class="dash-col-caret">▾</span><span class="dash-col-grip" aria-hidden="true"></span></th>
                       <th class="py-2 px-3 font-medium" data-col="description">Description <span class="dash-col-caret">▾</span><span class="dash-col-grip" aria-hidden="true"></span></th>
                       <th class="py-2 px-3 font-medium" data-col="qty">Qty <span class="dash-col-caret">▾</span><span class="dash-col-grip" aria-hidden="true"></span></th>
                       <th class="py-2 px-3 font-medium" data-col="ourHands">Our hands <span class="dash-col-caret">▾</span><span class="dash-col-grip" aria-hidden="true"></span></th>
@@ -3993,6 +3994,7 @@
           <div class="cc-sec-body">
             <div class="cc-field"><label>Name *</label><input id="inv-name" required type="text" placeholder="Discovery P0.93"></div>
             <div class="cc-field"><label>SKU *</label><input id="inv-sku" required type="text" placeholder="TRT-DISCOVERY-P0.93"></div>
+            <div class="cc-field"><label>Manufacturer part number</label><input id="inv-mpn" type="text" maxlength="80" placeholder="Factory / vendor part no."></div>
             <div class="cc-field"><label>Brand</label><select id="inv-brand"></select></div>
             <div class="cc-field"><label>Category</label><select id="inv-category"></select></div>
             <div class="cc-field hidden" id="inv-category-new-wrap"><label>New category</label>
@@ -8396,6 +8398,7 @@
       'po-lines': [
         { id: 'product', label: 'Item' },
         { id: 'sku', label: 'SKU' },
+        { id: 'mpn', label: 'Mfr part no.' },
         { id: 'description', label: 'Description' },
         { id: 'qty', label: 'Qty' },
         { id: 'ourHands', label: 'Our hands' },
@@ -8503,7 +8506,7 @@
       customers: ['company', 'contact', 'email', 'phone', 'balance'],
       sales: ['number', 'customer', 'date', 'status', 'total'],
       'so-lines': ['sku', 'description', 'qty', 'price', 'amount'],
-      'po-lines': ['sku', 'description', 'qty', 'rate', 'amount'],
+      'po-lines': ['sku', 'mpn', 'description', 'qty', 'rate', 'amount'],
       'purchase-orders': ['number', 'vendor', 'date', 'status', 'total'],
       'receipt-shipments': ['number', 'vendor', 'po', 'date', 'qty'],
       vendors: ['vendor', 'company', 'phone', 'email', 'tax1099'],
@@ -8649,7 +8652,7 @@
         sortDir: '',
         widths: fallbackWidths,
         splitLeftPx: keptSplit,
-        schema: dashColKey(table) === 'warehouses' ? 4 : (dashColKey(table) === 'inventory' ? 5 : (dashColKey(table) === 'po-lines' ? 2 : (dashColKey(table) === 'so-lines' ? 1 : (dashColKey(table) === 'website-store' ? 2 : (dashColKey(table) === 'staff' ? 1 : 0)))))
+        schema: dashColKey(table) === 'warehouses' ? 4 : (dashColKey(table) === 'inventory' ? 5 : (dashColKey(table) === 'po-lines' ? 3 : (dashColKey(table) === 'so-lines' ? 1 : (dashColKey(table) === 'website-store' ? 2 : (dashColKey(table) === 'staff' ? 1 : 0)))))
       };
       pinStartLockedInState(table, fallback.order, fallback.hidden);
       if (!saved) {
@@ -8719,6 +8722,15 @@
           order.splice(Math.min(idx, order.length), 0, id);
         });
         schema = 2;
+      }
+      if (dashColKey(table) === 'po-lines' && schema < 3) {
+        const dropMpn = hidden.indexOf('mpn');
+        if (dropMpn !== -1) hidden.splice(dropMpn, 1);
+        const mpnAt = order.indexOf('mpn');
+        if (mpnAt !== -1) order.splice(mpnAt, 1);
+        const skuAt = order.indexOf('sku');
+        order.splice(skuAt === -1 ? 0 : skuAt + 1, 0, 'mpn');
+        schema = 3;
       }
       if (dashColKey(table) === 'warehouses' && schema < 1) {
         if (order.indexOf('tracked') === -1) {
@@ -9828,9 +9840,10 @@
     }
 
     const PO_LINE_COL_PCT = {
-      product: 22,
+      product: 20,
       sku: 12,
-      description: 28,
+      mpn: 12,
+      description: 24,
       qty: 8,
       ourHands: 10,
       vendorHands: 12,
@@ -11372,6 +11385,7 @@
       if (!wrap || !item) return;
       const rows = [
         ['SKU', item.sku || '—'],
+        ['Manufacturer part number', item.mpn || '—'],
         ['Name', item.name || '—'],
         ['Description', item.description || '—'],
         ['Brand', item.brandName || '—'],
@@ -12071,7 +12085,7 @@
     }
 
     function invFormSnapshot() {
-      const ids = ['inv-name', 'inv-sku', 'inv-brand', 'inv-category', 'inv-category-new', 'inv-unit', 'inv-panel-type', 'inv-packaging-type', 'inv-item-pitch', 'inv-qty-init', 'inv-item-low', 'inv-weight', 'inv-panel-w', 'inv-panel-h', 'inv-item-notes', 'inv-description', 'inv-price', 'inv-dealer-net', 'inv-cost', 'inv-local-cost'];
+      const ids = ['inv-name', 'inv-sku', 'inv-mpn', 'inv-brand', 'inv-category', 'inv-category-new', 'inv-unit', 'inv-panel-type', 'inv-packaging-type', 'inv-item-pitch', 'inv-qty-init', 'inv-item-low', 'inv-weight', 'inv-panel-w', 'inv-panel-h', 'inv-item-notes', 'inv-description', 'inv-price', 'inv-dealer-net', 'inv-cost', 'inv-local-cost'];
       const vals = ids.map(function (id) {
         const el = document.getElementById(id);
         return el ? String(el.value || '') : '';
@@ -12190,6 +12204,7 @@
       document.getElementById('inv-title').textContent = (item && (item.sku || item.name)) || 'Add inventory item';
       document.getElementById('inv-name').value = (item && item.name) || '';
       document.getElementById('inv-sku').value = (item && item.sku) || '';
+      document.getElementById('inv-mpn').value = (item && item.mpn) || '';
       fillInvBrands(item && item.brandId);
       fillInvCategories(item && item.category);
       document.getElementById('inv-description').value = (item && item.description) || '';
@@ -12268,6 +12283,9 @@
         const skuEl = lineRow.querySelector('[data-line="sku"]');
         const typed = skuEl && String(skuEl.value || '').trim();
         if (typed && !soInvBySku(typed)) document.getElementById('inv-sku').value = typed;
+        const mpnEl = lineRow.querySelector('[data-line="mpn"]');
+        const typedMpn = mpnEl && String(mpnEl.value || '').trim();
+        if (typedMpn) document.getElementById('inv-mpn').value = typedMpn;
       }
       document.getElementById('inv-adjust-wrap').classList.add('hidden');
       openInventoryDrawer();
@@ -15559,7 +15577,7 @@
     }
 
     function poBlankLine() {
-      return { itemId: '', product: '', sku: '', description: '', qty: '', rate: '' };
+      return { itemId: '', product: '', sku: '', mpn: '', description: '', qty: '', rate: '' };
     }
 
     function poLineHasContent(line) {
@@ -15568,6 +15586,7 @@
         String(line.itemId || '').trim() ||
         String(line.product || '').trim() ||
         String(line.sku || '').trim() ||
+        String(line.mpn || '').trim() ||
         String(line.description || '').trim() ||
         money(line.rate)
       );
@@ -15607,6 +15626,7 @@
       const cells = {
         product: '<td class="py-2 px-2"><input data-line="product" value="' + esc(itemName) + '"></td>',
         sku: '<td class="py-2 px-2"><div class="so-sku-search"><svg class="so-sku-search-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><circle cx="11" cy="11" r="6"/><path d="m20 20-3.5-3.5"/></svg><input data-line="sku" type="search" autocomplete="off" placeholder="Search SKU, name, brand, category" value="' + esc(item.sku || '') + '"></div></td>',
+        mpn: '<td class="py-2 px-2"><input data-line="mpn" value="' + esc(item.mpn || '') + '" placeholder="Mfr part no."></td>',
         description: '<td class="py-2 px-2"><input data-line="description" value="' + esc(item.description || '') + '"></td>',
         qty: '<td class="py-2 px-2"><input data-line="qty" type="number" step="0.01" value="' + esc(qty) + '"></td>',
         ourHands: '<td class="py-2 px-2 tabular-nums so-inv-read" data-line="ourHands">' + poHandsDisplay(hands.ourHands) + '</td>',
@@ -15648,6 +15668,7 @@
         itemId: itemId,
         product: val('product', prev.product || ''),
         sku: val('sku', prev.sku || ''),
+        mpn: val('mpn', prev.mpn || ''),
         description: val('description', prev.description || ''),
         qty: qtyRaw === '' ? '' : money(qtyRaw),
         rate: rateRaw === '' ? '' : money(rateRaw)
@@ -15658,7 +15679,7 @@
       const rows = Array.prototype.map.call(document.querySelectorAll('#po-lines .po-line'), readPoLineRow);
       if (keepBlanks) return rows;
       const content = rows.filter(poLineHasContent);
-      return content.length ? content : [{ product: '', sku: '', description: '', qty: 1, rate: 0 }];
+      return content.length ? content : [{ product: '', sku: '', mpn: '', description: '', qty: 1, rate: 0 }];
     }
 
     function renderPoLines(lines) {
@@ -15669,6 +15690,7 @@
       const sorted = sortColRows(content, table, function (line, col) {
         if (col === 'product') return line.product || '';
         if (col === 'sku') return line.sku || '';
+        if (col === 'mpn') return line.mpn || '';
         if (col === 'description') return line.description || '';
         if (col === 'qty') return Number(line.qty) || 0;
         if (col === 'ourHands') return poLineHands(line.itemId).ourHands || 0;
@@ -15753,9 +15775,11 @@
       const nameEl = row.querySelector('[data-line="product"]');
       if (nameEl) nameEl.value = item.name || item.sku || '';
       const sku = row.querySelector('[data-line="sku"]');
+      const mpn = row.querySelector('[data-line="mpn"]');
       const desc = row.querySelector('[data-line="description"]');
       const rate = row.querySelector('[data-line="rate"]');
       if (sku) sku.value = item.sku || '';
+      if (mpn) mpn.value = item.mpn || '';
       if (desc && !(desc.value || '').trim()) desc.value = item.description || item.name || '';
       if (rate && (rate.value === '' || money(rate.value) === 0)) rate.value = poRateForItem(item, poCurrentShipFrom());
       const hands = poLineHands(item.id);
@@ -15769,6 +15793,7 @@
           itemId: item.id,
           product: (nameEl && nameEl.value) || item.name || item.sku || '',
           sku: item.sku || '',
+          mpn: item.mpn || '',
           description: (desc && desc.value) || item.description || item.name || '',
           rate: rate ? rate.value : poRateForItem(item, poCurrentShipFrom())
         });
@@ -17283,7 +17308,7 @@
       const needle = String(q || '').trim().toLowerCase();
       return invPickableItems().filter(function (item) {
         if (!needle) return true;
-        const blob = ((item.sku || '') + ' ' + (item.name || '') + ' ' + (item.brandName || '') + ' ' + (item.category || '') + ' ' + (item.pitchLabel || '') + ' ' + (item.description || '')).toLowerCase();
+        const blob = ((item.sku || '') + ' ' + (item.mpn || '') + ' ' + (item.name || '') + ' ' + (item.brandName || '') + ' ' + (item.category || '') + ' ' + (item.pitchLabel || '') + ' ' + (item.description || '')).toLowerCase();
         return blob.indexOf(needle) !== -1;
       }).slice(0, 20);
     }
@@ -18805,10 +18830,11 @@
     function poPrintDoc() {
       const form = readPoForm();
       const lines = (form.lines || []).filter(function (line) {
-        return line.sku || line.description || line.product || line.qty || line.rate;
+        return line.sku || line.mpn || line.description || line.product || line.qty || line.rate;
       }).map(function (line) {
         return {
           sku: line.sku,
+          mpn: line.mpn,
           product: line.product,
           description: line.description || line.product,
           qty: line.qty,
@@ -21376,6 +21402,7 @@
       const fd = new FormData();
       fd.append('name', document.getElementById('inv-name').value);
       fd.append('sku', document.getElementById('inv-sku').value);
+      fd.append('mpn', document.getElementById('inv-mpn').value);
       fd.append('brandId', document.getElementById('inv-brand').value);
       fd.append('category', invCategoryFromForm());
       fd.append('description', document.getElementById('inv-description').value);

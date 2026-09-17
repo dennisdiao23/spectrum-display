@@ -76,6 +76,7 @@ function normalizeLine(input, index) {
     itemId: src.itemId != null ? src.itemId : src.item_id || '',
     product: trim(src.product || src.productService || src.product_service, 160),
     sku: trim(src.sku, 80),
+    mpn: trim(src.mpn, 80),
     description: trim(src.description, 400),
     qty: qty,
     rate: rate,
@@ -86,7 +87,7 @@ function normalizeLine(input, index) {
 
 function normalizeLines(list) {
   return (Array.isArray(list) ? list : []).map(normalizeLine).filter(function (line) {
-    return line.product || line.sku || line.description || line.qty || line.rate;
+    return line.product || line.sku || line.mpn || line.description || line.qty || line.rate;
   });
 }
 
@@ -143,6 +144,7 @@ function formatLine(row) {
     itemId: row.item_id == null ? '' : String(row.item_id),
     product: row.product || '',
     sku: row.sku || '',
+    mpn: row.mpn || '',
     description: row.description || '',
     qty: qty,
     rate: rate,

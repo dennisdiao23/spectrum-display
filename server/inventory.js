@@ -541,6 +541,9 @@ function normalizeItemInput(body, opts) {
     out.sku = normalizeSku(src.sku);
     if (src.sku != null && !out.sku) throw new Error('SKU is required.');
   }
+  if (!patch || src.mpn != null) {
+    out.mpn = String(src.mpn || '').trim().slice(0, 80);
+  }
   if (!patch || src.brandId != null || src.brand_id != null) {
     out.brandId = String(src.brandId != null ? src.brandId : (src.brand_id || '')).trim().slice(0, 80);
   }
@@ -645,6 +648,7 @@ function normalizeItemInput(body, opts) {
   if (!patch && out.panelType == null) out.panelType = '';
   if (!patch && out.packagingType == null) out.packagingType = '';
   if (!patch && out.category == null) out.category = '';
+  if (!patch && out.mpn == null) out.mpn = '';
   if (!patch && !out.category) out.category = guessInventoryCategory(out) || '';
   if (!patch && !out.sku) {
     out.sku = suggestedSku({
@@ -661,6 +665,7 @@ function dbFieldsFromInput(input) {
   const row = {};
   if (!input) return row;
   if (input.sku != null) row.sku = input.sku;
+  if (input.mpn != null) row.mpn = input.mpn;
   if (input.name != null) row.name = input.name;
   if (input.brandId != null) row.brand_id = input.brandId;
   if (input.pitch != null) row.pitch = input.pitch;
@@ -826,6 +831,7 @@ function formatItem(row, brandName, maps, locations) {
   const item = {
     id: row && row.id,
     sku: (row && row.sku) || '',
+    mpn: (row && row.mpn) || '',
     name: (row && row.name) || '',
     category: (row && row.category) || '',
     brandId: (row && row.brand_id) || '',

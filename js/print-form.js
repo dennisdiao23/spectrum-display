@@ -68,9 +68,10 @@
 
   function lineCell(line, id) {
     const row = line || {};
-    const empty = !row.sku && !row.item && !row.product && !row.description && !row.qty && !row.unitPrice && !row.rate && !row.amount;
+    const empty = !row.sku && !row.mpn && !row.item && !row.product && !row.description && !row.qty && !row.unitPrice && !row.rate && !row.amount;
     if (id === 'item') return row.item || row.product || row.sku || '';
     if (id === 'sku') return row.sku || '';
+    if (id === 'mpn') return row.mpn || '';
     if (id === 'description') return row.description || row.product || '';
     if (id === 'qty') return row.qty != null && row.qty !== '' ? String(row.qty) : '';
     if (id === 'rate') {
@@ -98,6 +99,7 @@
   const COL_WIDTH_DEFAULTS = {
     item: 18,
     sku: 16,
+    mpn: 16,
     description: 44,
     qty: 8,
     rate: 14,

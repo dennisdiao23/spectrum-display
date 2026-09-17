@@ -1894,6 +1894,7 @@ function createSupabaseStore() {
         if (clash) throw new Error('That SKU is already in use.');
         patch.sku = input.sku;
       }
+      if (input.mpn != null) patch.mpn = input.mpn;
       if (input.name != null) patch.name = input.name;
       if (input.brandId != null) patch.brand_id = input.brandId;
       if (input.pitch != null) patch.pitch = input.pitch;
@@ -2515,6 +2516,7 @@ function createSupabaseStore() {
             item_id: line.itemId || null,
             product: line.product,
             sku: line.sku,
+            mpn: line.mpn || '',
             description: line.description,
             qty: line.qty,
             unit_cost: line.rate,
@@ -2545,6 +2547,7 @@ function createSupabaseStore() {
             item_id: line.itemId || null,
             product: line.product,
             sku: line.sku,
+            mpn: line.mpn || '',
             description: line.description,
             qty: line.qty,
             unit_cost: line.rate,
