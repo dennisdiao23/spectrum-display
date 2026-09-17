@@ -4,7 +4,7 @@ const OWNER_ROLE_SLUG = 'owner';
 const MENU_KEYS = [
   'dashboard', 'chat',
   'website', 'products', 'accounts',
-  'inventory', 'warehouses', 'vendors', 'purchase-orders', 'receipt-shipments',
+  'inventory', 'warehouses', 'vendors', 'purchase-orders', 'receipt-shipments', 'costs',
   'customers',
   'sales', 'quotes', 'orders', 'invoices',
   'crm', 'leads', 'pipeline', 'activities',
@@ -27,7 +27,8 @@ const MENU_GROUPS = [
     label: 'Inventory',
     children: [
       { key: 'warehouses', label: 'Location' },
-      { key: 'receipt-shipments', label: 'Receipt Shipment' }
+      { key: 'receipt-shipments', label: 'Receipt Shipment' },
+      { key: 'costs', label: 'See costs' }
     ]
   },
   {
@@ -71,6 +72,7 @@ const MENU_PARENT = {
   accounts: 'website',
   warehouses: 'inventory',
   'receipt-shipments': 'inventory',
+  costs: 'inventory',
   'purchase-orders': 'vendors',
   leads: 'crm',
   pipeline: 'crm',
@@ -152,6 +154,8 @@ function menuFromLegacy(website, inventory, settings) {
     vendors: i,
     'purchase-orders': i,
     'receipt-shipments': i,
+    // Cost/FOB stays off unless a role explicitly enables See costs.
+    costs: 'none',
     customers: open,
     sales: open,
     quotes: open,
@@ -320,6 +324,31 @@ function hasPerm(admin, module, need) {
   return canAccess(menuLevel(perms, module), need);
 }
 
+function canSeeInventoryCosts(admin) {
+  return hasPerm(admin, 'costs', 'view');
+}
+
+function redactInventoryCosts(item) {
+  if (!item || typeof item !== 'object') return item;
+  const out = Object.assign({}, item);
+  delete out.cost;
+  delete out.localWarehouseCost;
+  delete out.local_warehouse_cost;
+  return out;
+}
+
+function redactInventoryCostList(items) {
+  return (items || []).map(redactInventoryCosts);
+}
+
+function stripInventoryCostWrites(body) {
+  if (!body || typeof body !== 'object') return body;
+  delete body.cost;
+  delete body.localWarehouseCost;
+  delete body.local_warehouse_cost;
+  return body;
+}
+
 function isOwnerAdmin(admin) {
   return !!(admin && isOwnerRole(admin.role));
 }
@@ -388,6 +417,10 @@ module.exports = {
   menuAccessFromRow,
   menuLevel,
   hasPerm,
+  canSeeInventoryCosts,
+  redactInventoryCosts,
+  redactInventoryCostList,
+  stripInventoryCostWrites,
   isOwnerAdmin,
   isOwnerRole,
   OWNER_ROLE_SLUG,

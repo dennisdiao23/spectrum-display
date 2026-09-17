@@ -14,11 +14,11 @@
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
   <title>Company | Spectrum Display</title>
   <meta name="robots" content="noindex, nofollow" />
-  <link rel="stylesheet" href="/css/company-dash.css?v=staff4" />
+  <link rel="stylesheet" href="/css/company-dash.css?v=staff5" />
   <script src="/js/address-autocomplete.js"></script>
   <script src="/js/company-chat.js?v=chatcrm3"></script>
   <script src="/js/company-crm.js?v=zoomphone3"></script>
-  <script src="/js/company-staff.js?v=staff4"></script>
+  <script src="/js/company-staff.js?v=staff5"></script>
   <script src="/js/company-traffic.js?v=loc1"></script>
   <script src="/js/company-website-control.js?v=webctrl7"></script>
   <script src="/js/print-form.js?v=forms20"></script>
@@ -1380,8 +1380,8 @@
                     <div class="cc-detail-block">
                       <h3>Pricing</h3>
                       <dl class="cc-detail-dl">
-                        <div><dt>Cost</dt><dd id="inv-detail-cost">—</dd></div>
-                        <div><dt>Local warehouse cost</dt><dd id="inv-detail-local-cost">—</dd></div>
+                        <div class="inv-cost-only"><dt>Cost</dt><dd id="inv-detail-cost">—</dd></div>
+                        <div class="inv-cost-only"><dt>Local warehouse cost</dt><dd id="inv-detail-local-cost">—</dd></div>
                         <div><dt>Sell price</dt><dd id="inv-detail-price">—</dd></div>
                         <div><dt>Dealer net</dt><dd id="inv-detail-dealer">—</dd></div>
                       </dl>
@@ -4500,7 +4500,7 @@
     </a>
   </nav>
 
-  <link rel="stylesheet" href="/css/company-dash.css?v=staff4" />
+  <link rel="stylesheet" href="/css/company-dash.css?v=staff5" />
 
   <script>
     const loginPanel = document.getElementById('login-panel');
@@ -5605,6 +5605,7 @@
       accounts: 'website',
       warehouses: 'inventory',
       'receipt-shipments': 'inventory',
+      costs: 'inventory',
       'purchase-orders': 'vendors',
       leads: 'crm',
       pipeline: 'crm',
@@ -5644,6 +5645,9 @@
       const parentKey = MENU_PARENT[key];
       const level = parentKey ? gatedMenuLevel(parentKey, key) : menuKeyLevel(key);
       return level === 'view' || level === 'edit';
+    }
+    function canSeeCosts() {
+      return canUse('costs');
     }
     function canUseSalesNav() {
       return canUse('sales') || canUse('quotes') || canUse('orders') || canUse('invoices');
@@ -5807,6 +5811,7 @@
       document.getElementById('admin-toolbar').classList.remove('hidden');
       document.getElementById('logout-btn').classList.remove('hidden');
       applyRoleMenuVisibility();
+      syncCostUiVisibility();
       const chatAiSec = document.getElementById('chat-ai-section');
       if (chatAiSec) chatAiSec.classList.toggle('hidden', !canManageChatAi());
       const tabbar = document.getElementById('dash-tabbar');
@@ -8836,7 +8841,33 @@
     function loadColState(table) {
       const name = dashColKey(table);
       const saved = tableStateFromPrefs(dashColMine, name) || tableStateFromPrefs(dashColOwner, name);
-      return mergeColState(table, saved);
+      const state = mergeColState(table, saved);
+      if (!canSeeCosts()) {
+        const hideIds = name === 'inventory'
+          ? ['cost', 'localCost']
+          : (name === 'so-lines' ? ['cost'] : []);
+        hideIds.forEach(function (id) {
+          if (state.hidden.indexOf(id) === -1) state.hidden.push(id);
+        });
+      }
+      return state;
+    }
+
+    function syncCostUiVisibility() {
+      const show = canSeeCosts();
+      document.querySelectorAll('.inv-cost-only').forEach(function (el) {
+        el.classList.toggle('hidden', !show);
+        el.hidden = !show;
+      });
+      const buy = document.getElementById('inv-sec-buy');
+      if (buy) {
+        buy.classList.toggle('hidden', !show);
+        buy.hidden = !show;
+      }
+      document.querySelectorAll('table.dash-cols[data-cols="inventory"], table.dash-cols[data-cols="so-lines"]').forEach(function (table) {
+        if (typeof applyColOrder === 'function') applyColOrder(table);
+        else if (typeof paintTableCols === 'function') paintTableCols(table);
+      });
     }
 
     function readLegacyLocalCols() {
@@ -9924,7 +9955,13 @@
         return;
       }
       const shown = loadColState(table).order;
-      const catalog = dashColCatalog(table);
+      let catalog = dashColCatalog(table);
+      if (!canSeeCosts()) {
+        const blocked = dashColKey(table) === 'inventory'
+          ? { cost: 1, localCost: 1 }
+          : (dashColKey(table) === 'so-lines' ? { cost: 1 } : {});
+        catalog = catalog.filter(function (col) { return !blocked[col.id]; });
+      }
       if (!catalog.length) {
         list.innerHTML = '<p class="dash-col-add-empty">No columns to add</p>';
       } else {
@@ -11346,13 +11383,17 @@
         ['Inactive', item.inactive ? 'Yes' : 'No'],
         ['Weight', item.weight != null ? String(item.weight) : '—'],
         ['Panel size', item.panelW && item.panelH ? (item.panelW + ' × ' + item.panelH) : '—'],
-        ['Cost', item.cost != null ? moneyText(item.cost) : '—'],
-        ['Local warehouse cost', item.localWarehouseCost != null ? moneyText(item.localWarehouseCost) : '—'],
         ['Sell price', item.price != null ? moneyText(item.price) : '—'],
         ['Dealer net', item.dealerNet != null ? moneyText(item.dealerNet) : '—'],
         ['Location', item.warehouse || '—'],
         ['Untracked qty', item.untrackedQty != null ? String(item.untrackedQty) : (item.partnerQty ? String(item.partnerQty) : '0')]
       ];
+      if (canSeeCosts()) {
+        rows.splice(rows.findIndex(function (pair) { return pair[0] === 'Sell price'; }), 0,
+          ['Cost', item.cost != null ? moneyText(item.cost) : '—'],
+          ['Local warehouse cost', item.localWarehouseCost != null ? moneyText(item.localWarehouseCost) : '—']
+        );
+      }
       wrap.innerHTML = rows.map(function (pair) {
         return '<div><dt>' + esc(pair[0]) + '</dt><dd>' + esc(pair[1]) + '</dd></div>';
       }).join('');
@@ -20260,7 +20301,8 @@
       ]},
       { key: 'inventory', label: 'Inventory', children: [
         { key: 'warehouses', label: 'Location' },
-        { key: 'receipt-shipments', label: 'Receipt Shipment' }
+        { key: 'receipt-shipments', label: 'Receipt Shipment' },
+        { key: 'costs', label: 'See costs' }
       ]},
       { key: 'vendors', label: 'Vendor', children: [
         { key: 'purchase-orders', label: 'Purchase Order' }
@@ -20286,6 +20328,7 @@
       accounts: 'website',
       warehouses: 'inventory',
       'receipt-shipments': 'inventory',
+      costs: 'inventory',
       'purchase-orders': 'vendors',
       leads: 'crm',
       pipeline: 'crm',
@@ -20352,6 +20395,8 @@
           ROLE_MENU_TREE.forEach(function (g) {
             if (g.key !== key) return;
             (g.children || []).forEach(function (child) {
+              // See costs stays off unless set on purpose — turning Inventory on must not reveal FOB.
+              if (child.key === 'costs') return;
               const childSel = document.querySelector('#role-menu-access [data-role-menu-key="' + child.key + '"]');
               if (!childSel) return;
               if (level === 'none') childSel.value = 'none';
@@ -21334,8 +21379,10 @@
       fd.append('brandId', document.getElementById('inv-brand').value);
       fd.append('category', invCategoryFromForm());
       fd.append('description', document.getElementById('inv-description').value);
-      fd.append('cost', document.getElementById('inv-cost').value);
-      fd.append('localWarehouseCost', document.getElementById('inv-local-cost').value);
+      if (canSeeCosts()) {
+        fd.append('cost', document.getElementById('inv-cost').value);
+        fd.append('localWarehouseCost', document.getElementById('inv-local-cost').value);
+      }
       fd.append('dealerNet', document.getElementById('inv-dealer-net').value);
       fd.append('pitch', document.getElementById('inv-item-pitch').value);
       fd.append('unit', document.getElementById('inv-unit').value);

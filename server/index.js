@@ -15,7 +15,7 @@ const { sendContactEmail, sendDealerInquiryEmail, sendStaffEmail, mailConfigured
 const gmail = require('./gmail');
 const { blockedSignupReason } = require('../js/signup-guard');
 const img = require('./image');
-const { publicAdmin, hasPerm, isOwnerAdmin, isOwnerRole, OWNER_ROLE_SLUG, roleInputFromBody } = require('./admin-roles');
+const { publicAdmin, hasPerm, canSeeInventoryCosts, redactInventoryCosts, redactInventoryCostList, stripInventoryCostWrites, isOwnerAdmin, isOwnerRole, OWNER_ROLE_SLUG, roleInputFromBody } = require('./admin-roles');
 const shopStore = require('./shop-store');
 const shopifySync = require('./shopify-sync');
 const dbUtil = require('./db');
@@ -2897,12 +2897,23 @@ async function main() {
     const body = Object.assign({}, req.body || {});
     const file = req.files && req.files.image && req.files.image[0];
     if (file) body.image = img.publicUploadUrl(await store.saveUpload(file));
+    if (!canSeeInventoryCosts(req.admin)) stripInventoryCostWrites(body);
     return body;
   }
 
-  app.get('/api/admin/inventory', requireAdmin, requireCatalogRead, async function (_req, res, next) {
+  function inventoryItemResponse(req, item) {
+    if (canSeeInventoryCosts(req.admin)) return item;
+    return redactInventoryCosts(item);
+  }
+
+  function inventoryListResponse(req, items) {
+    if (canSeeInventoryCosts(req.admin)) return items || [];
+    return redactInventoryCostList(items);
+  }
+
+  app.get('/api/admin/inventory', requireAdmin, requireCatalogRead, async function (req, res, next) {
     try {
-      res.json({ ok: true, items: await store.listInventory() });
+      res.json({ ok: true, items: inventoryListResponse(req, await store.listInventory()) });
     } catch (err) { next(err); }
   });
 
@@ -2924,7 +2935,7 @@ async function main() {
   app.post('/api/admin/inventory', requireAdmin, requirePerm('inventory', 'edit'), inventoryUpload, async function (req, res, next) {
     try {
       const data = await store.createInventoryItem(await inventoryPayload(req));
-      res.json({ ok: true, item: data.item, moves: data.moves || [] });
+      res.json({ ok: true, item: inventoryItemResponse(req, data.item), moves: data.moves || [] });
     } catch (err) { next(err); }
   });
 
@@ -2932,7 +2943,7 @@ async function main() {
     try {
       const data = await store.getInventoryItem(req.params.id);
       if (!data) return res.status(404).json({ ok: false, error: 'Inventory item not found.' });
-      res.json({ ok: true, item: data.item, moves: data.moves });
+      res.json({ ok: true, item: inventoryItemResponse(req, data.item), moves: data.moves });
     } catch (err) { next(err); }
   });
 
@@ -2940,7 +2951,7 @@ async function main() {
     try {
       const data = await store.updateInventoryItem(req.params.id, await inventoryPayload(req));
       if (!data) return res.status(404).json({ ok: false, error: 'Inventory item not found.' });
-      res.json({ ok: true, item: data.item, moves: data.moves });
+      res.json({ ok: true, item: inventoryItemResponse(req, data.item), moves: data.moves });
     } catch (err) { next(err); }
   });
 
@@ -2971,7 +2982,7 @@ async function main() {
         await store.updateInventoryMedia(req.params.id, media);
       }
       const next = await store.getInventoryItem(req.params.id);
-      res.json({ ok: true, item: next.item, moves: next.moves });
+      res.json({ ok: true, item: inventoryItemResponse(req, next.item), moves: next.moves });
     } catch (err) {
       res.status(400).json({ ok: false, error: err.message || 'Could not save photos.' });
     }
@@ -2989,7 +3000,7 @@ async function main() {
     try {
       const data = await store.setInventoryInactive(req.params.id, req.body && req.body.inactive);
       if (!data) return res.status(404).json({ ok: false, error: 'Inventory item not found.' });
-      res.json({ ok: true, item: data.item, moves: data.moves || [] });
+      res.json({ ok: true, item: inventoryItemResponse(req, data.item), moves: data.moves || [] });
     } catch (err) { next(err); }
   });
 
@@ -2997,7 +3008,7 @@ async function main() {
     try {
       const data = await store.adjustInventory(req.params.id, req.body || {}, req.admin && req.admin.email);
       if (!data) return res.status(404).json({ ok: false, error: 'Inventory item not found.' });
-      res.json({ ok: true, item: data.item, moves: data.moves });
+      res.json({ ok: true, item: inventoryItemResponse(req, data.item), moves: data.moves });
     } catch (err) { next(err); }
   });
 
