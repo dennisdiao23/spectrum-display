@@ -14,11 +14,11 @@
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
   <title>Company | Spectrum Display</title>
   <meta name="robots" content="noindex, nofollow" />
-  <link rel="stylesheet" href="/css/company-dash.css?v=staff5" />
+  <link rel="stylesheet" href="/css/company-dash.css?v=staff6" />
   <script src="/js/address-autocomplete.js"></script>
   <script src="/js/company-chat.js?v=chatcrm3"></script>
   <script src="/js/company-crm.js?v=zoomphone3"></script>
-  <script src="/js/company-staff.js?v=staff5"></script>
+  <script src="/js/company-staff.js?v=staff6"></script>
   <script src="/js/company-traffic.js?v=loc1"></script>
   <script src="/js/company-website-control.js?v=webctrl7"></script>
   <script src="/js/print-form.js?v=forms20"></script>
@@ -4500,7 +4500,7 @@
     </a>
   </nav>
 
-  <link rel="stylesheet" href="/css/company-dash.css?v=staff5" />
+  <link rel="stylesheet" href="/css/company-dash.css?v=staff6" />
 
   <script>
     const loginPanel = document.getElementById('login-panel');
@@ -11639,6 +11639,11 @@
       if (el) el.textContent = value == null ? '—' : Number(value).toLocaleString();
     }
 
+    function setHelperCount(id, value) {
+      const el = document.getElementById(id);
+      if (el) el.textContent = String(value == null ? 0 : value);
+    }
+
     function fillInvOverview() {
       const active = inventoryItems.filter(function (i) { return !invIsInactive(i); });
       const low = active.filter(function (i) { return i.status === 'low'; }).length;
@@ -13449,8 +13454,10 @@
     function renderCcTable(rows) {
       const table = document.querySelector('table.dash-cols[data-cols="customers"]');
       const tbody = document.getElementById('cc-table');
+      if (!tbody) return;
       const filtered = ccFilteredCustomers(rows);
-      document.getElementById('cc-total').textContent = String((rows || []).length);
+      if (!document.getElementById('cc-total')) syncPageHelper('customers');
+      setHelperCount('cc-total', (rows || []).length);
       fillCcOverview();
       if (!filtered.length) {
         tbody.innerHTML = '<tr><td class="py-6 px-4 text-slate-500" colspan="' + dashColSpan(table) + '">' +
@@ -14308,12 +14315,16 @@
         ]);
         companyCustomers = data.customers || [];
         salesAllDocs = salesData.docs || [];
+        syncPageHelper('customers');
         renderCcTable(companyCustomers);
         initCcSplitResize();
         restoreCcView({ push: false });
       } catch (err) {
         showError('cc-error', err.message || 'Could not load customers.');
-        document.getElementById('cc-table').innerHTML = '<tr><td class="py-6 px-4 text-slate-500" colspan="7">Could not load customers.</td></tr>';
+        const tbody = document.getElementById('cc-table');
+        if (tbody) {
+          tbody.innerHTML = '<tr><td class="py-6 px-4 text-slate-500" colspan="7">Could not load customers.</td></tr>';
+        }
       }
     }
 
@@ -14475,7 +14486,7 @@
         return [v.displayName, v.companyName, v.email, v.phone, v.mobile, v.contactName]
           .join(' ').toLowerCase().indexOf(q) !== -1;
       });
-      document.getElementById('vn-total').textContent = String((rows || []).length);
+      setHelperCount('vn-total', (rows || []).length);
       fillVnOverview();
       if (!filtered.length) {
         tbody.innerHTML = '<tr><td class="py-6 px-4 text-slate-500" colspan="' + dashColSpan(table) + '">' +
@@ -15078,7 +15089,7 @@
           return [a.name, a.login, a.email, a.website, a.category].join(' ').toLowerCase().indexOf(q) >= 0;
         });
       }
-      document.getElementById('ca-total').textContent = String(rows.length);
+      setHelperCount('ca-total', rows.length);
       const body = document.getElementById('ca-table');
       if (!rows.length) {
         body.innerHTML = '<tr><td class="py-6 px-4 text-slate-500" colspan="' + dashColSpan(table) + '">No accounts yet. Add a login.</td></tr>';
@@ -15803,7 +15814,7 @@
         if (!q) return true;
         return [d.number, d.vendorName, d.status].join(' ').toLowerCase().indexOf(q) !== -1;
       });
-      document.getElementById('po-total').textContent = String((rows || []).length);
+      setHelperCount('po-total', (rows || []).length);
       fillPoOverview();
       if (!filtered.length) {
         tbody.innerHTML = '<tr><td class="py-6 px-4 text-slate-500" colspan="' + dashColSpan(table) + '">' +
@@ -16298,7 +16309,7 @@
         if (num) num.textContent = String(i + 1);
       });
       const total = readRsLines().reduce(function (sum, line) { return sum + (Number(line.qtyReceived) || 0); }, 0);
-      document.getElementById('rs-qty-total').textContent = String(total);
+      setHelperCount('rs-qty-total', total);
     }
 
     function applyRsItemToLine(row, item) {
@@ -16405,7 +16416,7 @@
         if (!q) return true;
         return [d.number, d.vendorName, d.poNumber, d.memo].join(' ').toLowerCase().indexOf(q) !== -1;
       });
-      document.getElementById('rs-total').textContent = String((rows || []).length);
+      setHelperCount('rs-total', (rows || []).length);
       if (!filtered.length) {
         tbody.innerHTML = '<tr><td class="py-6 px-4 text-slate-500" colspan="' + dashColSpan(table) + '">' +
           (q ? 'No receipts match this search.' : 'No receipt shipments yet.') +
