@@ -409,6 +409,7 @@ alter table public.inventory_items add column if not exists packaging_type text 
 alter table public.inventory_items add column if not exists inactive boolean not null default false;
 alter table public.inventory_items add column if not exists category text not null default '';
 alter table public.inventory_items add column if not exists gallery jsonb not null default '[]'::jsonb;
+alter table public.inventory_items add column if not exists mpn text not null default '';
 create unique index if not exists inventory_items_sku_uidx on public.inventory_items (sku);
 
 create table if not exists public.inventory_item_moves (
@@ -716,11 +717,13 @@ create table if not exists public.purchase_order_lines (
   item_id bigint,
   product text not null default '',
   sku text not null default '',
+  mpn text not null default '',
   description text not null default '',
   qty numeric not null default 0,
   unit_cost numeric not null default 0,
   sort_order integer not null default 0
 );
+alter table public.purchase_order_lines add column if not exists mpn text not null default '';
 create index if not exists purchase_order_lines_po_idx on public.purchase_order_lines (po_id, sort_order);
 alter table public.purchase_order_lines enable row level security;
 drop policy if exists purchase_order_lines_admin_all on public.purchase_order_lines;
