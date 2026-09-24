@@ -6,7 +6,7 @@
   <link rel="icon" href="/favicon.ico" sizes="48x48" />
   <title>Dealer Portal | Spectrum Display</title>
   <meta name="robots" content="noindex, nofollow" />
-  <link rel="stylesheet" href="/css/company-dash.css?v=dealer-portal-v3" />
+  <link rel="stylesheet" href="/css/company-dash.css?v=dealer-dash1" />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 </head>
 <body class="company-app antialiased">
@@ -16,23 +16,52 @@
       <img src="/assets/spectrum-logo-company.png" alt="Spectrum" />
     </a>
     <nav class="dash-nav hidden" id="portal-nav">
-      <p class="dash-nav-label">Dealer Portal</p>
-      <a href="/portal/book" data-view="book" class="dash-nav-link"><span>Dealer book</span></a>
-      <a href="/portal/quotes" data-view="quotes" class="dash-nav-link"><span>Quote</span></a>
-      <a href="/portal/orders" data-view="orders" class="dash-nav-link"><span>Order</span></a>
-      <a href="/portal/projects" data-view="projects" class="dash-nav-link"><span>Projects</span></a>
-      <a href="/portal/panels" data-view="panels" class="dash-nav-link"><span>Custom panels</span></a>
-      <a href="/portal/company" data-view="company" class="dash-nav-link"><span>Company</span></a>
+      <div class="dash-nav-label-row">
+        <p class="dash-nav-label">Main</p>
+      </div>
+      <a href="/portal" data-view="home" class="dash-nav-link">
+        <svg class="dash-nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="8" height="8" rx="1.5"/><rect x="13" y="3" width="8" height="8" rx="1.5"/><rect x="3" y="13" width="8" height="8" rx="1.5"/><rect x="13" y="13" width="8" height="8" rx="1.5"/></svg>
+        <span>Dashboard</span>
+      </a>
+      <a href="/portal/book" data-view="book" class="dash-nav-link">
+        <svg class="dash-nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 10 12 4.5 21 10v9.5a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V10z"/><path d="M9 20.5V12h6v8.5"/></svg>
+        <span>Dealer book</span>
+      </a>
+      <a href="/portal/quotes" data-view="quotes" class="dash-nav-link">
+        <svg class="dash-nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 4h8v4H8z"/><path d="M6 8h12v12H6z"/><path d="M9 12h6M9 16h4"/></svg>
+        <span>Quote</span>
+      </a>
+      <a href="/portal/orders" data-view="orders" class="dash-nav-link">
+        <svg class="dash-nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 7h16l-1.5 12H5.5L4 7z"/><path d="M9 7V5a3 3 0 0 1 6 0v2"/></svg>
+        <span>Order</span>
+      </a>
+      <a href="/portal/projects" data-view="projects" class="dash-nav-link">
+        <svg class="dash-nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M3 8h18"/><path d="M8 12h5M8 16h8"/></svg>
+        <span>Projects</span>
+      </a>
+      <a href="/portal/panels" data-view="panels" class="dash-nav-link">
+        <svg class="dash-nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 8.5 12 13 3 8.5 12 4l9 4.5z"/><path d="M3 8.5v7L12 20l9-4.5v-7"/><path d="M12 13v7"/></svg>
+        <span>Custom panels</span>
+      </a>
+      <a href="/portal/company" data-view="company" class="dash-nav-link">
+        <svg class="dash-nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 20V9l8-5 8 5v11"/><path d="M9 20v-6h6v6"/></svg>
+        <span>Company</span>
+      </a>
     </nav>
   </aside>
   <div class="dash-shell">
-    <header class="dash-topbar">
+    <header class="dash-topbar" id="admin-toolbar">
       <button type="button" class="dash-menu-btn" id="dash-menu-btn" aria-label="Open menu">
         <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" d="M4 7h16M4 12h16M4 17h16"/></svg>
       </button>
-      <div class="min-w-0 flex-1">
-        <h1 id="portal-title">Dealer Portal</h1>
-        <p id="portal-sub">Sign in</p>
+      <div class="min-w-0 flex-1 dash-topbar-head">
+        <div class="dash-topbar-title-row" id="dash-title-row">
+          <h1 id="portal-title">Dealer Portal</h1>
+        </div>
+        <p id="admin-page-sub">Sign in</p>
+        <div id="dash-tab-bar" class="dash-master-tabs" hidden>
+          <div id="dash-tab-strip" class="inv-tab-strip" role="tablist" aria-label="Open pages"></div>
+        </div>
       </div>
       <div class="dash-top-user">
         <span id="portal-user"></span>
@@ -55,6 +84,65 @@
           <p id="login-error" class="hidden text-sm text-red-500"></p>
           <button type="submit" class="w-full py-2.5 rounded-full bg-sky-500 hover:bg-sky-400 text-white font-semibold text-sm">Sign in</button>
         </form>
+      </section>
+
+      <section id="dashboard-section" class="hidden">
+        <div id="dash-panel">
+          <div class="dash-home" id="dash-home">
+            <div class="dash-home-head">
+              <h2>Overview</h2>
+              <p>A snapshot of each main menu area.</p>
+            </div>
+            <div class="dash-home-kpis">
+              <button type="button" class="dash-kpi is-on" data-home="book" aria-pressed="true">
+                <span class="dash-kpi-icon dash-kpi-icon-inventory" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M3 10 12 4.5 21 10v9.5a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V10z"/><path d="M9 20.5V12h6v8.5"/></svg></span>
+                <span class="dash-kpi-meta"><span class="dash-kpi-label">Dealer book</span></span>
+                <strong class="dash-kpi-value" id="dash-stat-book">—</strong>
+                <span class="dash-kpi-hint" id="dash-hint-book">Priced SKUs</span>
+              </button>
+              <button type="button" class="dash-kpi" data-home="quotes" aria-pressed="false">
+                <span class="dash-kpi-icon dash-kpi-icon-website" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M8 4h8v4H8z"/><path d="M6 8h12v12H6z"/><path d="M9 12h6M9 16h4"/></svg></span>
+                <span class="dash-kpi-meta"><span class="dash-kpi-label">Quotes</span></span>
+                <strong class="dash-kpi-value" id="dash-stat-quotes">—</strong>
+                <span class="dash-kpi-hint" id="dash-hint-quotes">Sales quotes</span>
+              </button>
+              <button type="button" class="dash-kpi" data-home="orders" aria-pressed="false">
+                <span class="dash-kpi-icon dash-kpi-icon-sales" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h16l-1.5 12H5.5L4 7z"/><path d="M9 7V5a3 3 0 0 1 6 0v2"/></svg></span>
+                <span class="dash-kpi-meta"><span class="dash-kpi-label">Orders</span></span>
+                <strong class="dash-kpi-value" id="dash-stat-orders">—</strong>
+                <span class="dash-kpi-hint" id="dash-hint-orders">Sales orders</span>
+              </button>
+              <button type="button" class="dash-kpi" data-home="projects" aria-pressed="false">
+                <span class="dash-kpi-icon dash-kpi-icon-customers" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M3 8h18"/><path d="M8 12h5M8 16h8"/></svg></span>
+                <span class="dash-kpi-meta"><span class="dash-kpi-label">Projects</span></span>
+                <strong class="dash-kpi-value" id="dash-stat-projects">—</strong>
+                <span class="dash-kpi-hint" id="dash-hint-projects">Saved layouts</span>
+              </button>
+            </div>
+            <div class="dash-home-grid">
+              <section class="dash-home-panel dash-home-detail">
+                <div class="dash-home-panel-head">
+                  <div>
+                    <h3 id="dash-detail-title">Dealer book</h3>
+                    <p id="dash-detail-sub">Priced SKUs and on-hand. Factory cost is not shown.</p>
+                  </div>
+                  <a id="dash-detail-open" href="/portal/book">Open Dealer book →</a>
+                </div>
+                <div class="dash-detail-stats" id="dash-detail-stats"></div>
+                <div class="dash-detail-list" id="dash-detail-list"></div>
+              </section>
+              <section class="dash-home-panel dash-home-lobby">
+                <div class="dash-home-panel-head">
+                  <div>
+                    <h3>Recent</h3>
+                    <p>Latest quotes and orders sent to Spectrum.</p>
+                  </div>
+                </div>
+                <div class="dash-detail-list" id="dash-recent-list"></div>
+              </section>
+            </div>
+          </div>
+        </div>
       </section>
 
       <section id="view-book" class="hidden space-y-4">
@@ -132,6 +220,6 @@
       </section>
     </main>
   </div>
-  <script src="/js/portal.js?v=dealer-portal-v3"></script>
+  <script src="/js/portal.js?v=dealer-dash2"></script>
 </body>
 </html>
