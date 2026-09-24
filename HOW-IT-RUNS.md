@@ -121,8 +121,10 @@ OneDrive does **not** update GitHub. After Cloud Agent changes, pull and review 
 | `brands`, `products` | Public catalog. Panel series, prices, photos, and extra copy (`details` jsonb: cats, spec tables, features, lead) are edited in Admin. Public pages do not load `js/products-data.js`. |
 | `admins`, `sessions` | Company pages at `/company` (not customer Sign in) |
 | `app_config` | Admin secret check |
-| `profiles` | Site accounts. Role is `customer` (default), `dealer`, or `sales`. Only Admin can change type. Approving a dealer application sets Dealer. |
-| `dealer_applications` | Public dealer form. Status `pending` / `approved` / `rejected`. Pending is here, not a profile role. Company → Website → Applications. Header/account can show **Application pending** without changing `profiles.role`. |
+| `profiles` | Site accounts (My Account). Role is `customer` (default), `dealer`, or `sales`. Approving a dealer application does **not** change this role. |
+| `dealer_applications` | Public dealer form. Status `pending` / `approved` / `rejected`. Company → Website → Applications. |
+| `dealer_users`, `dealer_sessions` | Dealer Portal logins. Staff create one after Approve. Cookie `spectrum_dealer`. Separate from website Sign in and from Company `admins`. |
+| `dealer_files` | Files a dealer uploads on the portal Company page. |
 | `price_tiers` | Admin-only markup % by Customer / Dealer / Sales. Signed-in prices = catalog × (1 + %). Default 0%. Users never see this percent. |
 | `account_price_overrides` | Admin-only per-account markup that overwrites the type %. Leave blank on an account to inherit the type %. |
 | `saved_projects`, `custom_panels` | Designer saves (online, per user) |
@@ -167,7 +169,7 @@ Inquiries are also stored in Supabase `contact_inquiries` even if mail fails (if
 
 The **dealer application** on `dealer.html` is stored in `dealer_applications` first (and a CRM lead). Email is best-effort. If Resend is down, the form still succeeds and Company → Website → Applications can approve it.
 
-Approved dealers use **`/portal`** (Dealer Portal): Overview, live net price book (never cost), stock, saved calculator projects, quote requests that create a Company Sales Quote, and a read-only copy of their application. Guests hitting `/portal` are sent to Sign in (`account.html?next=/portal`). Customers who are not dealers see an apply CTA. Pending applicants see “in review.” My Account still shows nets as an alias.
+Approved dealers use **`/portal`** (Dealer Portal) with a login staff create on the application. That page is Company-style and separate from My Account and from `/company`. It shows the dealer book (net and on-hand only when dealer net is above zero; never factory cost), quote drafts and order drafts that land in Company Sales, saved calculator projects and custom panels when the emails match, and a company page for info, files, and the portal password. Website Sign in does not open the portal. My Account does not list orders or nets.
 
 Company quotes / orders / invoices / POs do **not** use Resend. Those send from each staff person’s connected Gmail (next section).
 

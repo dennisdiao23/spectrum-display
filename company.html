@@ -1105,7 +1105,7 @@
       </div>
 
       <div id="dealers-section" class="hidden">
-        <p class="text-slate-400 text-sm mb-4 da-list-head">Dealer applications from the public form. Approve as Authorized to set the matching website account to Dealer and convert the CRM lead to a Customer. Reject leaves them as Customer.</p>
+        <p class="text-slate-400 text-sm mb-4 da-list-head">Dealer applications from the public form. Approve as Authorized converts the CRM lead to a Company customer. The website Sign in stays as it is. After approve, create a Dealer Portal login on the application.</p>
         <div class="flex flex-wrap gap-2 mb-4 da-list-head" id="da-filters">
           <button type="button" class="px-3 py-1.5 rounded-full text-sm font-medium bg-sky-500/20 text-sky-300 is-on" data-da-filter="pending" aria-pressed="true">Pending</button>
           <button type="button" class="px-3 py-1.5 rounded-full text-sm font-medium text-slate-400 border border-slate-700 hover:text-white" data-da-filter="approved" aria-pressed="false">Approved</button>
@@ -1152,6 +1152,22 @@
                   </div>
                   <dl id="da-detail-fields" class="grid sm:grid-cols-2 gap-x-6 gap-y-3 text-sm"></dl>
                   <p id="da-detail-msg" class="hidden text-sm text-sky-400"></p>
+                </div>
+                <div id="da-portal-login" class="hidden rounded-2xl border border-slate-800 bg-slate-900/50 p-5 space-y-4">
+                  <div>
+                    <h4 class="font-semibold">Portal login</h4>
+                    <p class="text-sm text-slate-400 mt-1">This login opens Dealer Portal only. It does not change the website Sign in.</p>
+                  </div>
+                  <ul id="da-login-list" class="text-sm space-y-2"></ul>
+                  <form id="da-login-form" class="grid sm:grid-cols-2 gap-3 text-sm">
+                    <label>Email<input id="da-login-email" type="email" required class="w-full mt-1 bg-slate-800 border border-slate-700 rounded-lg px-3 py-2"></label>
+                    <label>Name<input id="da-login-name" type="text" required class="w-full mt-1 bg-slate-800 border border-slate-700 rounded-lg px-3 py-2"></label>
+                    <label class="sm:col-span-2">Password<input id="da-login-password" type="text" required minlength="8" autocomplete="new-password" class="w-full mt-1 bg-slate-800 border border-slate-700 rounded-lg px-3 py-2" placeholder="At least 8 characters"></label>
+                    <div class="sm:col-span-2">
+                      <button type="submit" class="px-4 py-2 rounded-full bg-sky-500 hover:bg-sky-400 text-white text-sm font-semibold">Create portal login</button>
+                    </div>
+                  </form>
+                  <p id="da-login-msg" class="hidden text-sm"></p>
                 </div>
               </div>
             </div>
@@ -7572,7 +7588,7 @@
       orders: '<span id="so-total">0</span> <span id="so-list-label">sales documents</span>. Pick a company customer, add line items, then save. Website Sign in accounts stay under Website → Accounts.',
       invoices: '<span id="so-total">0</span> <span id="so-list-label">sales documents</span>. Pick a company customer, add line items, then save. Website Sign in accounts stay under Website → Accounts.',
       leads: '<span id="crm-lead-total">0</span> leads from the website, dealer form, or staff. Convert a lead to create a Customer for quotes.',
-      dealers: '<span id="da-total">0</span> dealer applications. Approve as Authorized to set the website account to Dealer.',
+      dealers: '<span id="da-total">0</span> dealer applications. Approve creates the Company customer. Create a portal login after that. Website Sign in stays the same.',
       traffic: 'Anonymous visitors on the website and US Store. Click a row for the pages they opened and where they were.',
       products: 'Edit website products, brands, and pictures — photos, copy, inventory links, US Store, and a live preview.',
       pipeline: '<span id="crm-pipe-total">0</span> deals. Drag a card to change stage. Create a quote after the deal has a customer.',
@@ -12549,7 +12565,82 @@
       const rejectBtn = document.getElementById('da-reject-btn');
       if (approveBtn) approveBtn.addEventListener('click', function () { reviewDealerApplication(app.id, 'approve'); });
       if (rejectBtn) rejectBtn.addEventListener('click', function () { reviewDealerApplication(app.id, 'reject'); });
+      const portalBox = document.getElementById('da-portal-login');
+      const loginForm = document.getElementById('da-login-form');
+      if (portalBox) portalBox.classList.toggle('hidden', app.status !== 'approved');
+      if (app.status === 'approved') {
+        const emailInput = document.getElementById('da-login-email');
+        const nameInput = document.getElementById('da-login-name');
+        if (emailInput) emailInput.value = app.email || '';
+        if (nameInput) nameInput.value = app.contactName || '';
+        loadDealerLogins(app.id);
+      }
+      if (loginForm) {
+        loginForm.onsubmit = function (e) {
+          e.preventDefault();
+          createDealerPortalLogin(app);
+        };
+      }
       renderDealerApplicationsTable(dealerApplications);
+    }
+
+    function renderDealerLoginList(users) {
+      const list = document.getElementById('da-login-list');
+      if (!list) return;
+      const rows = users || [];
+      if (!rows.length) {
+        list.innerHTML = '<li class="text-slate-500">No portal login yet.</li>';
+        return;
+      }
+      list.innerHTML = rows.map(function (user) {
+        return '<li class="flex flex-wrap items-center justify-between gap-2 border border-slate-800 rounded-xl px-3 py-2">' +
+          '<span>' + esc(user.name || '—') + '<span class="text-slate-500"> · ' + esc(user.email || '') + '</span></span>' +
+          '<span class="text-xs px-2 py-0.5 rounded-full ' + (user.active ? 'bg-emerald-500/15 text-emerald-300' : 'bg-slate-700 text-slate-300') + '">' +
+          (user.active ? 'Active' : 'Off') + '</span></li>';
+      }).join('');
+    }
+
+    async function loadDealerLogins(id) {
+      const list = document.getElementById('da-login-list');
+      if (list) list.innerHTML = '<li class="text-slate-500">Loading logins…</li>';
+      try {
+        const data = await api('/api/admin/dealer-applications/' + encodeURIComponent(id) + '/logins');
+        renderDealerLoginList(data.users || []);
+      } catch (err) {
+        if (list) list.innerHTML = '<li class="text-rose-400">' + esc(err.message || 'Could not load portal logins.') + '</li>';
+      }
+    }
+
+    async function createDealerPortalLogin(app) {
+      const msg = document.getElementById('da-login-msg');
+      if (msg) {
+        msg.classList.add('hidden');
+        msg.classList.remove('text-rose-400', 'text-sky-400');
+      }
+      try {
+        await api('/api/admin/dealer-applications/' + encodeURIComponent(app.id) + '/login', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            email: document.getElementById('da-login-email').value,
+            name: document.getElementById('da-login-name').value,
+            password: document.getElementById('da-login-password').value
+          })
+        });
+        document.getElementById('da-login-password').value = '';
+        if (msg) {
+          msg.textContent = 'Portal login created. They sign in at /portal with this email and password.';
+          msg.classList.remove('hidden');
+          msg.classList.add('text-sky-400');
+        }
+        await loadDealerLogins(app.id);
+      } catch (err) {
+        if (msg) {
+          msg.textContent = err.message || 'Could not create the portal login.';
+          msg.classList.remove('hidden');
+          msg.classList.add('text-rose-400');
+        }
+      }
     }
 
     function setDealerAppFilter(next) {
