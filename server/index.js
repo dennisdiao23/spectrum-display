@@ -22,6 +22,7 @@ const dbUtil = require('./db');
 
 const ROOT = path.join(__dirname, '..');
 const COOKIE = 'spectrum_admin';
+const DEALER_COOKIE = 'spectrum_dealer';
 const SESSION_DAYS = 7;
 const PORT = Number(process.env.PORT || 3000);
 
@@ -184,6 +185,11 @@ async function main() {
     res.redirect(301, '/' + qs);
   });
 
+  function sendPortal(_req, res) {
+    res.set('X-Robots-Tag', 'noindex, nofollow');
+    res.set('Cache-Control', 'private, no-store');
+    res.sendFile(path.join(ROOT, 'portal.html'));
+  }
   function sendCompany(_req, res) {
     res.set('X-Robots-Tag', 'noindex, nofollow');
     res.set('Cache-Control', 'private, no-store');
@@ -332,15 +338,15 @@ async function main() {
   app.get(['/control', '/control/', '/control.html'], function (_req, res) {
     res.redirect(301, '/products?cat=control');
   });
-  app.get(['/portal', '/portal/'], function (_req, res) {
-    res.set('X-Robots-Tag', 'noindex, nofollow');
-    res.set('Cache-Control', 'private, no-store');
-    res.sendFile(path.join(ROOT, 'portal.html'));
-  });
+  app.get(['/portal', '/portal/'], sendPortal);
   app.get('/portal.html', function (req, res) {
     const qs = req.url.includes('?') ? req.url.slice(req.url.indexOf('?')) : '';
     res.redirect(301, '/portal' + qs);
   });
+  ['/portal/book', '/portal/quotes', '/portal/orders', '/portal/projects', '/portal/panels', '/portal/company'].forEach(function (route) {
+    app.get([route, route + '/'], sendPortal);
+  });
+  app.get(['/portal/quotes/:id', '/portal/quotes/:id/', '/portal/orders/:id', '/portal/orders/:id/'], sendPortal);
 
   const OLD_SOLUTION_REDIRECTS = [
     ['/solutions/retail-hospitality.html', '/retail-hospitality'],
@@ -543,6 +549,47 @@ async function main() {
   function requireCatalogRead(req, res, next) {
     if (hasPerm(req.admin, 'website', 'view') || hasPerm(req.admin, 'inventory', 'view')) return next();
     return res.status(403).json({ ok: false, error: 'You do not have access to this.' });
+  }
+
+  async function currentDealer(req) {
+    const token = req.cookies[DEALER_COOKIE];
+    if (!token || typeof store.getDealerUserSession !== 'function') return null;
+    const user = await store.getDealerUserSession(token);
+    if (!user) return null;
+    if (new Date(user.expires_at).getTime() < Date.now() || user.active === false) {
+      await store.deleteDealerUserSession(token);
+      return null;
+    }
+    delete user.password_hash;
+    return user;
+  }
+
+  async function requireDealer(req, res, next) {
+    try {
+      const user = await currentDealer(req);
+      if (!user) return res.status(401).json({ ok: false, error: 'Dealer Portal sign-in required.' });
+      req.dealer = user;
+      next();
+    } catch (err) { next(err); }
+  }
+
+  function dealerDocError(err, res, next) {
+    if (err && err.code === 'no_customer') {
+      return res.status(409).json({ ok: false, error: err.message, code: err.code });
+    }
+    if (err && (err.code === 'not_draft' || /Unknown SKU|Add a note|customer|Password|email|Name/i.test(err.message || ''))) {
+      return res.status(400).json({ ok: false, error: err.message, code: err.code || '' });
+    }
+    return next(err);
+  }
+
+  function dealerCookie(res, token) {
+    res.cookie(DEALER_COOKIE, token, {
+      httpOnly: true,
+      sameSite: 'lax',
+      secure: process.env.NODE_ENV === 'production',
+      maxAge: SESSION_DAYS * 86400000
+    });
   }
 
   async function requireAdmin(req, res, next) {
@@ -1058,51 +1105,128 @@ async function main() {
     } catch (err) { next(err); }
   });
 
-  app.get('/api/dealer/me', async function (req, res, next) {
+  app.post('/api/dealer/login', async function (req, res, next) {
     try {
-      const user = await siteAuth.userFromBearer(req);
-      if (!user) return res.status(401).json({ ok: false, error: 'Sign in to see dealer status.' });
-      res.json(Object.assign({ ok: true }, await store.getDealerPortalMe(user)));
+      const email = String((req.body && req.body.email) || '').trim().toLowerCase();
+      const password = String((req.body && req.body.password) || '');
+      const row = await store.getDealerUserByEmail(email);
+      if (!row || row.active === false || row.active === 0 || !bcrypt.compareSync(password, row.password_hash || '')) {
+        return res.status(401).json({ ok: false, error: 'Invalid email or password.' });
+      }
+      const token = crypto.randomBytes(24).toString('hex');
+      const expires = new Date(Date.now() + SESSION_DAYS * 86400000).toISOString();
+      await store.createDealerUserSession(token, row.id, expires);
+      dealerCookie(res, token);
+      const company = await store.getDealerCompany(Object.assign({}, row, { customerId: row.customer_id }));
+      res.json({ ok: true, user: company.user, customer: company.customer });
     } catch (err) { next(err); }
   });
 
-  app.get('/api/dealer/price-book', async function (req, res, next) {
+  app.post('/api/dealer/logout', async function (req, res, next) {
     try {
-      const user = await siteAuth.userFromBearer(req);
-      if (!user || !siteAuth.canSeeStock(user.role)) {
-        return res.status(401).json({ ok: false, error: 'Sign in as dealer or sales to see the price book.' });
+      const token = req.cookies[DEALER_COOKIE];
+      if (token && store.deleteDealerUserSession) await store.deleteDealerUserSession(token);
+      res.clearCookie(DEALER_COOKIE);
+      res.json({ ok: true });
+    } catch (err) { next(err); }
+  });
+
+  app.get('/api/dealer/me', requireDealer, async function (req, res, next) {
+    try {
+      const company = await store.getDealerCompany(req.dealer);
+      res.json({ ok: true, user: company.user, customer: company.customer });
+    } catch (err) { next(err); }
+  });
+
+  app.post('/api/dealer/password', requireDealer, async function (req, res, next) {
+    try {
+      const nextPassword = String((req.body && req.body.password) || '');
+      if (nextPassword.length < 8) return res.status(400).json({ ok: false, error: 'Use at least 8 characters.' });
+      const row = await store.getDealerUser(req.dealer.id);
+      const current = String((req.body && req.body.current) || '');
+      if (!row || !bcrypt.compareSync(current, row.password_hash || '')) {
+        return res.status(400).json({ ok: false, error: 'Current password is wrong.' });
       }
+      await store.updateDealerUserPassword(req.dealer.id, bcrypt.hashSync(nextPassword, 10));
+      res.json({ ok: true });
+    } catch (err) { next(err); }
+  });
+
+  app.get('/api/dealer/book', requireDealer, async function (req, res, next) {
+    try {
       res.json({ ok: true, items: await store.getDealerPriceBook() });
     } catch (err) { next(err); }
   });
 
-  app.get('/api/dealer/quotes', async function (req, res, next) {
+  app.get('/api/dealer/quotes', requireDealer, async function (req, res, next) {
     try {
-      const user = await siteAuth.userFromBearer(req);
-      if (!user || !siteAuth.canSeeStock(user.role)) {
-        return res.status(401).json({ ok: false, error: 'Sign in as dealer or sales to request a quote.' });
-      }
-      res.json({ ok: true, quotes: await store.listDealerQuotes(user) });
+      res.json({ ok: true, quotes: await store.listDealerDocs(req.dealer, 'quote') });
     } catch (err) { next(err); }
   });
 
-  app.post('/api/dealer/quotes', async function (req, res, next) {
+  app.post('/api/dealer/quotes', requireDealer, async function (req, res, next) {
     try {
-      const user = await siteAuth.userFromBearer(req);
-      if (!user || !siteAuth.canSeeStock(user.role)) {
-        return res.status(401).json({ ok: false, error: 'Sign in as dealer or sales to request a quote.' });
-      }
-      const quote = await store.createDealerQuote(user, req.body || {});
-      res.json({ ok: true, quote: quote });
-    } catch (err) {
-      if (err && err.code === 'no_customer') {
-        return res.status(409).json({ ok: false, error: err.message, code: err.code });
-      }
-      if (err && /Unknown SKU|Add a note|customer/i.test(err.message || '')) {
-        return res.status(400).json({ ok: false, error: err.message });
-      }
-      next(err);
-    }
+      res.json({ ok: true, quote: await store.createDealerDoc(req.dealer, 'quote', req.body || {}) });
+    } catch (err) { dealerDocError(err, res, next); }
+  });
+
+  app.get('/api/dealer/orders', requireDealer, async function (req, res, next) {
+    try {
+      res.json({ ok: true, orders: await store.listDealerDocs(req.dealer, 'order') });
+    } catch (err) { next(err); }
+  });
+
+  app.post('/api/dealer/orders', requireDealer, async function (req, res, next) {
+    try {
+      res.json({ ok: true, order: await store.createDealerDoc(req.dealer, 'order', req.body || {}) });
+    } catch (err) { dealerDocError(err, res, next); }
+  });
+
+  app.get('/api/dealer/docs/:id', requireDealer, async function (req, res, next) {
+    try {
+      const doc = await store.getDealerDoc(req.dealer, req.params.id);
+      if (!doc) return res.status(404).json({ ok: false, error: 'Document not found.' });
+      res.json({ ok: true, doc: doc });
+    } catch (err) { next(err); }
+  });
+
+  app.put('/api/dealer/docs/:id', requireDealer, async function (req, res, next) {
+    try {
+      const doc = await store.updateDealerDoc(req.dealer, req.params.id, req.body || {});
+      if (!doc) return res.status(404).json({ ok: false, error: 'Document not found.' });
+      res.json({ ok: true, doc: doc });
+    } catch (err) { dealerDocError(err, res, next); }
+  });
+
+  app.get('/api/dealer/company', requireDealer, async function (req, res, next) {
+    try {
+      res.json(Object.assign({ ok: true }, await store.getDealerCompany(req.dealer)));
+    } catch (err) { next(err); }
+  });
+
+  app.put('/api/dealer/company', requireDealer, async function (req, res, next) {
+    try {
+      res.json({ ok: true, customer: await store.updateDealerCompany(req.dealer, req.body || {}) });
+    } catch (err) { dealerDocError(err, res, next); }
+  });
+
+  app.post('/api/dealer/files', requireDealer, dealerInquiryUpload.single('file'), async function (req, res, next) {
+    try {
+      if (!req.file) return res.status(400).json({ ok: false, error: 'Choose a PDF, JPG, or PNG.' });
+      res.json({ ok: true, file: await store.addDealerFile(req.dealer, req.file) });
+    } catch (err) { dealerDocError(err, res, next); }
+  });
+
+  app.get('/api/dealer/projects', requireDealer, async function (req, res, next) {
+    try {
+      res.json({ ok: true, projects: await store.listDealerProjects(req.dealer) });
+    } catch (err) { next(err); }
+  });
+
+  app.get('/api/dealer/panels', requireDealer, async function (req, res, next) {
+    try {
+      res.json({ ok: true, panels: await store.listDealerCustomPanels(req.dealer) });
+    } catch (err) { next(err); }
   });
 
   app.get('/api/products', async function (_req, res, next) {
@@ -2872,6 +2996,39 @@ async function main() {
       if (!application) return res.status(404).json({ ok: false, error: 'Application not found.' });
       res.json({ ok: true, application: application });
     } catch (err) { next(err); }
+  });
+
+  app.get('/api/admin/dealer-applications/:id/logins', requireAdmin, requirePerm('website', 'view'), async function (req, res, next) {
+    try {
+      const users = await store.listDealerUsersForApplication(req.params.id);
+      res.json({ ok: true, users: users });
+    } catch (err) { next(err); }
+  });
+
+  app.post('/api/admin/dealer-applications/:id/login', requireAdmin, requirePerm('website', 'edit'), async function (req, res, next) {
+    try {
+      const application = await store.getDealerApplication(req.params.id);
+      if (!application) return res.status(404).json({ ok: false, error: 'Application not found.' });
+      if (application.status !== 'approved' || !application.customerId) {
+        return res.status(400).json({ ok: false, error: 'Approve the application first so a Company customer exists.' });
+      }
+      const body = req.body || {};
+      const password = String(body.password || '');
+      if (password.length < 8) return res.status(400).json({ ok: false, error: 'Use at least 8 characters.' });
+      const user = await store.createDealerUser({
+        email: body.email || application.email,
+        name: body.name || application.contactName,
+        passwordHash: bcrypt.hashSync(password, 10),
+        customerId: application.customerId,
+        applicationId: application.id
+      });
+      res.json({ ok: true, user: user });
+    } catch (err) {
+      if (err && /already exists|email|Name|Password/i.test(err.message || '')) {
+        return res.status(400).json({ ok: false, error: err.message });
+      }
+      next(err);
+    }
   });
 
   app.get('/api/admin/price-tiers', requireAdmin, requirePerm('website', 'view'), async function (_req, res, next) {

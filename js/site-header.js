@@ -190,8 +190,7 @@
       if (!session) {
         closeAll();
         closeMegas();
-        var p = (location.pathname || '').toLowerCase().replace(/\/$/, '') || '/';
-        location.href = (p === '/portal') ? '/account.html?next=/portal' : '/account.html';
+        location.href = '/account.html';
         return;
       }
       var open = wrap.classList.contains('is-open');
@@ -888,61 +887,14 @@
       });
     }
     injectWallLink();
-    function injectDealerPortalLink() {
-      var session = window.SpectrumAuth && SpectrumAuth.getSession && SpectrumAuth.getSession();
-      var can = session && (session.role === 'dealer' || session.role === 'sales');
-      $all('.site-drop-list').forEach(function (list) {
-        var existing = list.querySelector('[data-dealer-portal-link], [data-price-book-link]');
-        if (!can) {
-          if (existing) existing.remove();
-          return;
-        }
-        if (existing && existing.getAttribute('data-dealer-portal-link')) return;
-        if (existing) existing.remove();
-        var account = list.querySelector('a[href*="account"]');
-        var a = document.createElement('a');
-        a.href = '/portal';
-        a.setAttribute('data-dealer-portal-link', '1');
-        a.setAttribute('data-i18n', 'nav.dealerPortal');
-        a.textContent = (window.SpectrumI18n && SpectrumI18n.t && SpectrumI18n.t('nav.dealerPortal')) || 'Dealer Portal';
-        if (account && account.nextSibling) list.insertBefore(a, account.nextSibling);
-        else if (account) account.after(a);
-        else list.insertBefore(a, list.firstChild);
-      });
-    }
-    function applyPendingRole() {
-      var roleEl = $('#hdr-user-role');
-      if (!roleEl) return;
-      var session = window.SpectrumAuth && SpectrumAuth.getSession && SpectrumAuth.getSession();
-      if (!session || session.role === 'dealer' || session.role === 'sales') return;
-      var Auth = window.SpectrumAuth;
-      if (!Auth || !Auth.accessToken) return;
-      Promise.resolve(Auth.accessToken()).then(function (token) {
-        if (!token) return;
-        return fetch('/api/dealer/me', { headers: { Authorization: 'Bearer ' + token } })
-          .then(function (res) { return res.json().catch(function () { return {}; }); })
-          .then(function (me) {
-            if (!me || !me.ok) return;
-            if (me.pending || (me.application && me.application.status === 'pending')) {
-              roleEl.textContent = (window.SpectrumI18n && SpectrumI18n.t && SpectrumI18n.t('account.applicationPending')) || 'Application pending';
-            }
-          });
-      }).catch(function () {});
-    }
-    injectDealerPortalLink();
     applyAuth();
-    applyPendingRole();
     applyLangLabel();
     window.addEventListener('spectrum:auth', function () {
       applyAuth();
-      applyPendingRole();
-      injectDealerPortalLink();
     });
     if (window.SpectrumAuth && SpectrumAuth.ready) {
       SpectrumAuth.ready.then(function () {
         applyAuth();
-        applyPendingRole();
-        injectDealerPortalLink();
       });
     }
 
