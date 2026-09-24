@@ -66,7 +66,7 @@
     $('portal-logout').classList.add('hidden');
     views.forEach(function (name) { viewEl(name).classList.add('hidden'); });
     $('portal-title').textContent = 'Dealer Portal';
-    $('admin-page-sub').textContent = 'Sign in';
+    $('admin-page-sub').textContent = 'Dealer sign in';
     document.body.classList.remove('dash-master-on');
     const bar = $('dash-tab-bar');
     if (bar) bar.hidden = true;
