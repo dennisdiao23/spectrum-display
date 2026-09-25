@@ -1820,11 +1820,18 @@ async function main() {
     }
   });
 
+  function customerIsDealer(customer) {
+    return String(customer && customer.customerType || '').trim().toLowerCase() === 'dealer';
+  }
+
   app.get('/api/admin/company-customers/:id/portal-logins', requireAdmin, async function (req, res, next) {
     try {
       const customer = await store.getCompanyCustomer(req.params.id);
       if (!customer) return res.status(404).json({ ok: false, error: 'Customer not found.' });
       await assertCanViewCustomer(req, customer);
+      if (!customerIsDealer(customer)) {
+        return res.status(400).json({ ok: false, error: 'Portal login is only for Dealer customers.' });
+      }
       const users = await store.listDealerUsersForCustomer(customer.id);
       res.json({ ok: true, users: users });
     } catch (err) {
@@ -1838,6 +1845,9 @@ async function main() {
       const customer = await store.getCompanyCustomer(req.params.id);
       if (!customer) return res.status(404).json({ ok: false, error: 'Customer not found.' });
       await assertCanViewCustomer(req, customer);
+      if (!customerIsDealer(customer)) {
+        return res.status(400).json({ ok: false, error: 'Portal login is only for Dealer customers.' });
+      }
       const body = req.body || {};
       const password = String(body.password || '');
       if (password.length < 8) return res.status(400).json({ ok: false, error: 'Use at least 8 characters.' });
