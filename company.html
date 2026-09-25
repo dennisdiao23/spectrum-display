@@ -2702,6 +2702,7 @@
             <button type="button" class="cc-detail-tab" data-cc-tab="contacts" role="tab" aria-selected="false">Contacts</button>
             <button type="button" class="cc-detail-tab" data-cc-tab="details" role="tab" aria-selected="false">Customer details</button>
             <button type="button" class="cc-detail-tab" data-cc-tab="notes" role="tab" aria-selected="false">Notes</button>
+            <button type="button" class="cc-detail-tab" data-cc-tab="portal" role="tab" aria-selected="false">Portal login</button>
           </div>
           <div id="cc-detail-panel-transactions" class="cc-detail-panel" role="tabpanel">
             <div class="cc-detail-filters">
@@ -2785,6 +2786,24 @@
           <div id="cc-detail-panel-notes" class="cc-detail-panel hidden" role="tabpanel" hidden>
             <div class="cc-detail-notes-box" id="cc-detail-notes-text">—</div>
             <p class="cc-detail-meta" id="cc-detail-updated"></p>
+          </div>
+          <div id="cc-detail-panel-portal" class="cc-detail-panel hidden" role="tabpanel" hidden>
+            <div class="rounded-2xl border border-slate-800 p-5 space-y-4 max-w-xl">
+              <div>
+                <h3 class="font-semibold">Portal login</h3>
+                <p class="text-sm text-slate-400 mt-1">This login opens Dealer Portal only. It does not change the website Sign in. No dealer application is required.</p>
+              </div>
+              <ul id="cc-login-list" class="text-sm space-y-2"></ul>
+              <form id="cc-login-form" class="grid sm:grid-cols-2 gap-3 text-sm">
+                <label>Email<input id="cc-login-email" type="email" required class="w-full mt-1 bg-slate-800 border border-slate-700 rounded-lg px-3 py-2"></label>
+                <label>Name<input id="cc-login-name" type="text" required class="w-full mt-1 bg-slate-800 border border-slate-700 rounded-lg px-3 py-2"></label>
+                <label class="sm:col-span-2">Password<input id="cc-login-password" type="text" required minlength="8" autocomplete="new-password" class="w-full mt-1 bg-slate-800 border border-slate-700 rounded-lg px-3 py-2" placeholder="At least 8 characters"></label>
+                <div class="sm:col-span-2">
+                  <button type="submit" class="px-4 py-2 rounded-full bg-sky-500 hover:bg-sky-400 text-white text-sm font-semibold">Create portal login</button>
+                </div>
+              </form>
+              <p id="cc-login-msg" class="hidden text-sm"></p>
+            </div>
           </div>
         </div>
             </div>
@@ -13898,7 +13917,7 @@
         btn.classList.toggle('is-on', on);
         btn.setAttribute('aria-selected', on ? 'true' : 'false');
       });
-      ['transactions', 'emails', 'contacts', 'details', 'notes'].forEach(function (key) {
+      ['transactions', 'emails', 'contacts', 'details', 'notes', 'portal'].forEach(function (key) {
         const panel = document.getElementById('cc-detail-panel-' + key);
         if (!panel) return;
         const on = key === ccDetailTab;
@@ -13906,6 +13925,50 @@
         panel.hidden = !on;
       });
       if (ccDetailTab === 'emails') loadPartyEmails('customer', ccDetailId);
+      if (ccDetailTab === 'portal') loadCcPortalLogins();
+    }
+
+    function ccPortalPersonName(c) {
+      const person = [c && c.contactFirst, c && c.contactLast].filter(Boolean).join(' ');
+      return person || (c && (c.displayName || c.companyName)) || '';
+    }
+
+    function renderCcPortalLoginList(users) {
+      const list = document.getElementById('cc-login-list');
+      if (!list) return;
+      const rows = users || [];
+      if (!rows.length) {
+        list.innerHTML = '<li class="text-slate-500">No portal login yet.</li>';
+        return;
+      }
+      list.innerHTML = rows.map(function (user) {
+        return '<li class="flex flex-wrap items-center justify-between gap-2 border border-slate-800 rounded-xl px-3 py-2">' +
+          '<span>' + esc(user.name || '—') + '<span class="text-slate-500"> · ' + esc(user.email || '') + '</span></span>' +
+          '<span class="text-xs px-2 py-0.5 rounded-full ' + (user.active ? 'bg-emerald-500/15 text-emerald-300' : 'bg-slate-700 text-slate-300') + '">' +
+          (user.active ? 'Active' : 'Off') + '</span></li>';
+      }).join('');
+    }
+
+    async function loadCcPortalLogins() {
+      const list = document.getElementById('cc-login-list');
+      if (!ccDetailId) return;
+      if (list) list.innerHTML = '<li class="text-slate-500">Loading logins…</li>';
+      try {
+        const data = await api('/api/admin/company-customers/' + encodeURIComponent(ccDetailId) + '/portal-logins');
+        renderCcPortalLoginList(data.users || []);
+      } catch (err) {
+        if (list) list.innerHTML = '<li class="text-rose-400">' + esc(err.message || 'Could not load portal logins.') + '</li>';
+      }
+    }
+
+    function fillCcPortalLoginForm() {
+      const c = ccDetailCustomer;
+      const email = document.getElementById('cc-login-email');
+      const name = document.getElementById('cc-login-name');
+      const password = document.getElementById('cc-login-password');
+      if (email) email.value = (c && c.email) || '';
+      if (name) name.value = ccPortalPersonName(c);
+      if (password) password.value = '';
     }
 
     function renderCustomerDetailTransactions() {
@@ -14006,6 +14069,9 @@
       setCcDetailTab(ccDetailTab);
       document.getElementById('cc-detail-edit').classList.toggle('hidden', !canEdit('customers'));
       document.getElementById('cc-contact-add').classList.toggle('hidden', !canEdit('customers'));
+      const portalForm = document.getElementById('cc-login-form');
+      if (portalForm) portalForm.classList.toggle('hidden', !canEdit('customers'));
+      fillCcPortalLoginForm();
       const canTx = canEdit('quotes') || canEdit('orders') || canEdit('invoices');
       document.getElementById('cc-detail-new').classList.toggle('hidden', !canTx);
       renderCustomerDetailTransactions();
@@ -18381,6 +18447,39 @@
       btn.addEventListener('click', function () {
         setCcDetailTab(btn.getAttribute('data-cc-tab'));
       });
+    });
+    document.getElementById('cc-login-form').addEventListener('submit', async function (e) {
+      e.preventDefault();
+      const msg = document.getElementById('cc-login-msg');
+      if (!ccDetailId || !canEdit('customers')) return;
+      if (msg) {
+        msg.classList.add('hidden');
+        msg.classList.remove('text-rose-400', 'text-sky-400');
+      }
+      try {
+        await api('/api/admin/company-customers/' + encodeURIComponent(ccDetailId) + '/portal-login', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            email: document.getElementById('cc-login-email').value,
+            name: document.getElementById('cc-login-name').value,
+            password: document.getElementById('cc-login-password').value
+          })
+        });
+        document.getElementById('cc-login-password').value = '';
+        if (msg) {
+          msg.textContent = 'Portal login created. They sign in at /portal with this email and password.';
+          msg.className = 'text-sm text-sky-400';
+          msg.classList.remove('hidden');
+        }
+        await loadCcPortalLogins();
+      } catch (err) {
+        if (msg) {
+          msg.textContent = err.message || 'Could not create portal login.';
+          msg.className = 'text-sm text-rose-400';
+          msg.classList.remove('hidden');
+        }
+      }
     });
     document.getElementById('cc-contact-add').addEventListener('click', function () {
       ccContactEditingId = '';
