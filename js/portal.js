@@ -2,7 +2,7 @@
   const $ = function (id) { return document.getElementById(id); };
   const viewIds = {
     home: 'dashboard-section',
-    book: 'view-book',
+    book: 'inventory-section',
     quotes: 'view-quotes',
     orders: 'view-orders',
     projects: 'view-projects',
@@ -17,6 +17,8 @@
   let panels = [];
   let dashHome = 'book';
   let openTabs = [];
+  let bookFilter = 'all';
+  let bookSku = '';
   const tabLabel = { home: 'Dashboard', book: 'Dealer book', quotes: 'Quote', orders: 'Order', projects: 'Projects', panels: 'Custom panels', company: 'Company' };
   const tabIcon = {
     home: '<svg class="dash-master-tab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="8" height="8" rx="1.5"/><rect x="13" y="3" width="8" height="8" rx="1.5"/><rect x="3" y="13" width="8" height="8" rx="1.5"/><rect x="13" y="13" width="8" height="8" rx="1.5"/></svg>',
@@ -68,6 +70,7 @@
     $('portal-title').textContent = 'Dealer Portal';
     $('admin-page-sub').textContent = 'Dealer sign in';
     document.body.classList.remove('dash-master-on');
+    document.body.classList.remove('inv-layout-lock');
     const bar = $('dash-tab-bar');
     if (bar) bar.hidden = true;
   }
@@ -144,6 +147,7 @@
     });
     $('portal-title').textContent = tabLabel[name] || 'Dealer Portal';
     $('admin-page-sub').textContent = name === 'home' ? 'Overview' : ((me && me.customer && me.customer.companyName) || '');
+    document.body.classList.toggle('inv-layout-lock', name === 'book' && !isMobileDash());
     if (name === 'home') renderHome();
     if (name === 'book') renderBook();
     if (name === 'quotes') renderDocs('quote');
@@ -170,8 +174,8 @@
     renderHomeDetail();
   }
   function renderHome() {
-    const low = book.filter(function (item) { return item.status === 'low' || (item.qty > 0 && item.qty <= 2); }).length;
-    const out = book.filter(function (item) { return item.status === 'out' || item.qty === 0; }).length;
+    const low = book.filter(function (item) { return item.status === 'low'; }).length;
+    const out = book.filter(function (item) { return item.status === 'out'; }).length;
     const quoteDrafts = docs.quote.filter(function (doc) { return doc.status === 'draft'; }).length;
     const orderDrafts = docs.order.filter(function (doc) { return doc.status === 'draft'; }).length;
     $('dash-stat-book').textContent = String(book.length);
@@ -242,31 +246,153 @@
     sub.textContent = 'Priced SKUs and on-hand. Factory cost is not shown.';
     open.href = '/portal/book';
     open.textContent = 'Open Dealer book →';
-    const low = book.filter(function (item) { return item.status === 'low' || (item.qty > 0 && item.qty <= 2); }).length;
-    const out = book.filter(function (item) { return item.status === 'out' || item.qty === 0; }).length;
+    const low = book.filter(function (item) { return item.status === 'low'; }).length;
+    const out = book.filter(function (item) { return item.status === 'out'; }).length;
     stats.innerHTML = chip(book.length, 'SKUs') + chip(low, 'Low') + chip(out, 'Out');
     list.innerHTML = book.slice(0, 8).map(function (item) {
       return dashRow(item.sku || item.name || 'Item', [item.name, item.brand].filter(Boolean).join(' · '), item.qty + ' on hand');
     }).join('') || '<p class="dash-activity-empty">No priced SKUs yet.</p>';
   }
-  function renderBook() {
-    const q = String(($('book-search') && $('book-search').value) || '').toLowerCase();
-    const rows = book.filter(function (item) {
-      const hay = (item.sku + ' ' + item.name + ' ' + item.brand).toLowerCase();
-      return !q || hay.indexOf(q) !== -1;
+  function stockLabel(status) {
+    if (status === 'out') return 'Out';
+    if (status === 'low') return 'Low';
+    if (status === 'untracked') return 'Vendor';
+    if (status === 'special') return 'Special order';
+    if (status === 'inactive') return 'Inactive';
+    return 'In stock';
+  }
+  function stockDot(status) {
+    if (status === 'out' || status === 'inactive') return 'is-out';
+    if (status === 'low') return 'is-low';
+    if (status === 'untracked') return 'is-untracked';
+    if (status === 'special') return 'is-empty';
+    return 'is-in';
+  }
+  function panelTypeLabel(value) {
+    const map = {
+      'indoor-fixed': 'Indoor Fixed',
+      'outdoor-fixed': 'Outdoor Fixed',
+      'indoor-rental': 'Indoor Rental',
+      'outdoor-rental': 'Outdoor Rental'
+    };
+    return map[value] || value || '';
+  }
+  function bookPrice(n) {
+    return Number(n) ? money(n) : '—';
+  }
+  function fillBookSelect(id, values, current, blank) {
+    const el = $(id);
+    if (!el) return;
+    const options = ['<option value="">' + esc(blank) + '</option>'].concat(values.map(function (value) {
+      return '<option value="' + esc(value) + '"' + (value === current ? ' selected' : '') + '>' + esc(value) + '</option>';
+    }));
+    el.innerHTML = options.join('');
+  }
+  function bookRows() {
+    const q = String(($('inv-search') && $('inv-search').value) || '').trim().toLowerCase();
+    const category = ($('inv-category-filter') && $('inv-category-filter').value) || '';
+    const location = ($('inv-location-filter') && $('inv-location-filter').value) || '';
+    return book.filter(function (item) {
+      if (bookFilter === 'low' && item.status !== 'low') return false;
+      if (bookFilter === 'out' && item.status !== 'out') return false;
+      if (category && item.category !== category) return false;
+      if (location) {
+        const names = [item.warehouse].concat((item.locations || []).map(function (loc) { return loc.name; }));
+        if (names.indexOf(location) === -1) return false;
+      }
+      if (!q) return true;
+      const hay = [item.sku, item.name, item.brand, item.category, item.description].join(' ').toLowerCase();
+      return hay.indexOf(q) !== -1;
     });
-    $('book-empty').classList.toggle('hidden', rows.length > 0);
-    $('book-table').innerHTML = rows.map(function (item) {
-      return '<tr class="border-b cursor-pointer" data-sku="' + esc(item.sku) + '">' +
-        '<td class="py-3 px-4">' + esc(item.name) + '</td>' +
-        '<td class="py-3 px-4">' + esc(item.sku) + '</td>' +
-        '<td class="py-3 px-4">' + esc(item.brand) + '</td>' +
-        '<td class="py-3 px-4">' + esc(item.pitchLabel || item.pitch) + '</td>' +
-        '<td class="py-3 px-4">' + esc(item.qty) + '</td>' +
-        '<td class="py-3 px-4">' + esc(item.warehouse || '') + '</td>' +
-        '<td class="py-3 px-4 text-right">' + money(item.dealerNet) + '</td>' +
-        '<td class="py-3 px-4 text-right">' + money(item.listPrice) + '</td></tr>';
+  }
+  function setBookFilter(name) {
+    bookFilter = name === 'low' || name === 'out' ? name : 'all';
+    document.querySelectorAll('#inv-overview .dash-kpi').forEach(function (btn) {
+      const on = btn.getAttribute('data-filter') === bookFilter;
+      btn.classList.toggle('is-on', on);
+      btn.setAttribute('aria-pressed', on ? 'true' : 'false');
+    });
+    document.querySelectorAll('#inventory-section [data-inv-filter]').forEach(function (btn) {
+      const on = btn.getAttribute('data-inv-filter') === bookFilter;
+      btn.classList.toggle('bg-sky-500/20', on);
+      btn.classList.toggle('text-sky-300', on);
+      btn.classList.toggle('text-slate-400', !on);
+    });
+  }
+  function renderBookDetail(item) {
+    const overview = $('inv-overview-panel');
+    const panel = $('inv-item-panel');
+    if (!item) {
+      overview.classList.remove('hidden');
+      panel.classList.add('hidden');
+      panel.setAttribute('aria-hidden', 'true');
+      return;
+    }
+    overview.classList.add('hidden');
+    panel.classList.remove('hidden');
+    panel.setAttribute('aria-hidden', 'false');
+    const photo = $('inv-detail-photo');
+    photo.innerHTML = item.image ? '<img src="' + esc(item.image) + '" alt="">' : '';
+    $('inv-detail-name').textContent = item.name || item.sku || 'Item';
+    const specBits = [item.sku, panelTypeLabel(item.panelType), item.packagingType ? String(item.packagingType).toUpperCase() : ''].filter(Boolean);
+    $('inv-detail-subname').textContent = specBits.join(' · ');
+    $('inv-detail-qty').textContent = String(item.qty);
+    $('inv-detail-status').textContent = stockLabel(item.status);
+    $('inv-detail-low').textContent = String(item.lowAt || 0);
+    $('inv-detail-price').textContent = bookPrice(item.listPrice);
+    $('inv-detail-dealer').textContent = money(item.dealerNet);
+    $('inv-detail-brand').textContent = item.brand || '—';
+    $('inv-detail-category').textContent = item.category || '—';
+    $('inv-detail-pitch').textContent = item.pitchLabel || item.pitch || '—';
+    $('inv-detail-unit').textContent = item.unit || '—';
+    const locs = item.locations || [];
+    $('inv-detail-locations-body').innerHTML = locs.map(function (loc) {
+      return '<tr><td>' + esc(loc.name) + '</td><td>' + esc(loc.type || '—') + '</td><td>' + esc(loc.qty) + '</td><td>' + (loc.tracked ? 'Yes' : 'No') + '</td></tr>';
     }).join('');
+    $('inv-detail-locations-empty').classList.toggle('hidden', locs.length > 0);
+  }
+  function renderBook() {
+    const categories = [];
+    const locations = [];
+    book.forEach(function (item) {
+      if (item.category && categories.indexOf(item.category) === -1) categories.push(item.category);
+      const names = [item.warehouse].concat((item.locations || []).map(function (loc) { return loc.name; }));
+      names.forEach(function (name) {
+        if (name && locations.indexOf(name) === -1) locations.push(name);
+      });
+    });
+    categories.sort();
+    locations.sort();
+    fillBookSelect('inv-category-filter', categories, ($('inv-category-filter') && $('inv-category-filter').value) || '', 'All categories');
+    fillBookSelect('inv-location-filter', locations, ($('inv-location-filter') && $('inv-location-filter').value) || '', 'All locations');
+    const low = book.filter(function (item) { return item.status === 'low'; }).length;
+    const out = book.filter(function (item) { return item.status === 'out'; }).length;
+    $('inv-stat-skus').textContent = String(book.length);
+    $('inv-stat-low').textContent = String(low);
+    $('inv-stat-out').textContent = String(out);
+    setBookFilter(bookFilter);
+    const rows = bookRows();
+    if (bookSku && !rows.some(function (item) { return item.sku === bookSku; })) bookSku = '';
+    $('inventory-table').innerHTML = rows.length ? rows.map(function (item) {
+      const photo = item.image
+        ? '<img src="' + esc(item.image) + '" alt="" class="dash-col-photo">'
+        : '<span class="text-slate-400">—</span>';
+      return '<tr class="border-b border-slate-800 cursor-pointer' + (item.sku === bookSku ? ' is-selected' : '') + '" data-sku="' + esc(item.sku) + '">' +
+        '<td class="py-3 px-4 font-medium"><span class="cc-acct-cell"><span class="cc-acct-status ' + stockDot(item.status) + '" title="' + esc(stockLabel(item.status)) + '" aria-hidden="true"></span><span class="cc-acct-name">' + esc(item.name || '') + '</span></span></td>' +
+        '<td class="py-3 px-4 font-mono text-xs text-sky-300">' + esc(item.sku || '—') + '</td>' +
+        '<td class="py-3 px-4 text-slate-400">' + esc(item.category || '—') + '</td>' +
+        '<td class="py-3 px-4 text-slate-400">' + esc(item.description || '—') + '</td>' +
+        '<td class="py-3 px-4 text-slate-400">' + esc(item.pitchLabel || item.pitch || '—') + '</td>' +
+        '<td class="py-3 px-4 text-sky-400">' + esc(item.brand || '—') + '</td>' +
+        '<td class="py-3 px-4">' + esc(item.qty) + '</td>' +
+        '<td class="py-3 px-4 text-slate-400">' + esc(item.warehouse || '—') + '</td>' +
+        '<td class="py-3 px-4 text-slate-400">' + esc(item.bin || '—') + '</td>' +
+        '<td class="py-3 px-4">' + bookPrice(item.listPrice) + '</td>' +
+        '<td class="py-3 px-4">' + money(item.dealerNet) + '</td>' +
+        '<td class="py-3 px-4">' + photo + '</td></tr>';
+    }).join('') : '<tr><td class="py-6 px-4 text-slate-500" colspan="12">No priced SKUs yet.</td></tr>';
+    const selected = bookSku ? book.find(function (item) { return item.sku === bookSku; }) : null;
+    renderBookDetail(selected || null);
   }
   function docSection(kind) {
     return $(kind === 'order' ? 'view-orders' : 'view-quotes');
@@ -431,17 +557,45 @@
     if (!kpi) return;
     selectHome(kpi.getAttribute('data-home'));
   });
-  $('book-search').addEventListener('input', renderBook);
-  $('book-table').addEventListener('click', function (e) {
-    const row = e.target.closest('tr[data-sku]');
+  $('inv-search').addEventListener('input', renderBook);
+  $('inv-category-filter').addEventListener('change', renderBook);
+  $('inv-location-filter').addEventListener('change', renderBook);
+  document.getElementById('inventory-section').addEventListener('click', function (e) {
+    const filter = e.target.closest('[data-filter], [data-inv-filter]');
+    if (filter && filter.closest('#inventory-section')) {
+      setBookFilter(filter.getAttribute('data-filter') || filter.getAttribute('data-inv-filter'));
+      renderBook();
+      return;
+    }
+    const row = e.target.closest('#inventory-table tr[data-sku]');
     if (!row) return;
-    const item = book.find(function (entry) { return entry.sku === row.getAttribute('data-sku'); });
-    if (!item) return;
-    $('book-detail').classList.remove('hidden');
-    $('book-detail').innerHTML = '<strong>' + esc(item.name) + '</strong><div class="mt-2">SKU ' + esc(item.sku) +
-      ' · On hand ' + esc(item.qty) + ' · Dealer net ' + money(item.dealerNet) + ' · List ' + money(item.listPrice) + '</div>' +
-      '<div class="mt-1 text-slate-500">' + esc((item.locations || []).join(' · ') || item.warehouse || '') + '</div>';
+    bookSku = row.getAttribute('data-sku') || '';
+    renderBook();
   });
+  (function bindBookResizer() {
+    const bar = $('inv-split-resizer');
+    const split = $('inv-split');
+    if (!bar || !split) return;
+    bar.addEventListener('pointerdown', function (e) {
+      if (isMobileDash()) return;
+      e.preventDefault();
+      const startX = e.clientX;
+      const leftPane = $('inv-split-left');
+      const left = leftPane ? leftPane.getBoundingClientRect().width : 720;
+      document.body.classList.add('inv-split-dragging');
+      function move(ev) {
+        const next = Math.max(280, Math.min(split.getBoundingClientRect().width - 280, left + (ev.clientX - startX)));
+        split.style.setProperty('--inv-left-w', next + 'px');
+      }
+      function up() {
+        document.body.classList.remove('inv-split-dragging');
+        window.removeEventListener('pointermove', move);
+        window.removeEventListener('pointerup', up);
+      }
+      window.addEventListener('pointermove', move);
+      window.addEventListener('pointerup', up);
+    });
+  })();
   $('company-form').onsubmit = async function (e) {
     e.preventDefault();
     const msg = $('company-msg');
@@ -557,7 +711,11 @@
     document.body.classList.remove('dash-open');
     openPortal(name, true);
   });
-  window.addEventListener('resize', function () { if (me) renderMasterTabs(); });
+  window.addEventListener('resize', function () {
+    if (!me) return;
+    renderMasterTabs();
+    document.body.classList.toggle('inv-layout-lock', pathView() === 'book' && !isMobileDash());
+  });
   window.addEventListener('popstate', function () {
     if (!me) return;
     const name = pathView();

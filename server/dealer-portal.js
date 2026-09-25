@@ -439,33 +439,56 @@ async function updateDealerDocFor(store, user, id, payload) {
   return publicDealerDoc(updated);
 }
 
+function publicBookLocation(loc) {
+  if (!loc) return null;
+  const name = loc.locationName || loc.warehouseName || '';
+  if (!name) return null;
+  return {
+    name: name,
+    type: loc.typeLabel || loc.kindLabel || loc.kind || '',
+    qty: Math.max(0, Number(loc.qty) || 0),
+    tracked: !(loc.untracked === true || loc.tracked === false)
+  };
+}
+
+function bookOnHandQty(item) {
+  const ours = Math.max(0, Number(item && item.qty) || 0);
+  if (ours > 0) return ours;
+  const vendor = item && item.untrackedQty != null ? item.untrackedQty : (item && item.partnerQty);
+  return Math.max(0, Number(vendor) || 0);
+}
+
 function publicPriceBookItem(item) {
   if (!item) return null;
   const inactive = item.inactive === true || item.inactive === 1 || item.inactive === '1';
   if (inactive) return null;
-  const qty = item.websiteQty != null ? Number(item.websiteQty) : Number(item.qty) || 0;
-  const locLabels = [];
+  const locations = [];
   (item.locations || []).forEach(function (loc) {
-    const name = loc.warehouseName || loc.locationName || loc.warehouse || '';
-    const city = loc.city || loc.warehouseCity || '';
-    const label = [name, city].filter(Boolean).join(' · ');
-    if (label && locLabels.indexOf(label) === -1) locLabels.push(label);
+    const row = publicBookLocation(loc);
+    if (row) locations.push(row);
   });
-  const warehouse = item.warehouse || item.location || locLabels[0] || '';
+  const gallery = Array.isArray(item.gallery) ? item.gallery : [];
+  const image = item.image || gallery[0] || '';
   return {
     sku: item.sku || '',
     name: item.name || '',
     brand: item.brandName || item.brandId || '',
+    category: item.category || '',
+    description: item.description || '',
     pitch: item.pitch || '',
     pitchLabel: item.pitchLabel || '',
     unit: item.unit || '',
+    panelType: item.panelType || '',
+    packagingType: item.packagingType || '',
     dealerNet: Number(item.dealerNet) || 0,
     listPrice: Number(item.price) || 0,
-    qty: Math.max(0, Number(qty) || 0),
+    qty: bookOnHandQty(item),
+    lowAt: Math.max(0, Number(item.lowAt) || 0),
     status: item.status || '',
-    warehouse: warehouse,
-    locations: locLabels,
-    image: item.image || ''
+    warehouse: item.warehouse || item.location || (locations[0] && locations[0].name) || '',
+    bin: item.bin || '',
+    locations: locations,
+    image: image
   };
 }
 
