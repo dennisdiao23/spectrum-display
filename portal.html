@@ -6,7 +6,13 @@
   <link rel="icon" href="/favicon.ico" sizes="48x48" />
   <title>Dealer Portal | Spectrum Display</title>
   <meta name="robots" content="noindex, nofollow" />
-  <link rel="stylesheet" href="/css/company-dash.css?v=dealer-login1" />
+  <link rel="stylesheet" href="/css/company-dash.css?v=dealer-book1" />
+  <style>
+    #inventory-section .inv-split-left .cc-table-wrap { overflow: auto; }
+    #inventory-section table.dash-cols[data-cols="dealer-book"] { min-width: 1080px; width: max-content; }
+    #inventory-section #inv-item-panel,
+    #inventory-section #inv-overview-panel { overflow: auto; }
+  </style>
   <script src="https://cdn.tailwindcss.com"></script>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
 </head>
@@ -146,28 +152,135 @@
         </div>
       </section>
 
-      <section id="view-book" class="hidden space-y-4">
-        <p class="text-sm text-slate-500">Authorized dealer net and on-hand. Factory cost is not on this page.</p>
-        <input id="book-search" type="search" placeholder="Search SKU or name" class="cc-list-search rounded-full px-3 py-1.5 text-sm">
-        <div class="cc-table-card rounded-2xl border">
-          <div class="cc-table-wrap overflow-auto" style="max-height:70vh">
-            <table class="w-full text-sm dash-cols">
-              <thead><tr>
-                <th class="py-3 px-4">Item</th>
-                <th class="py-3 px-4">SKU</th>
-                <th class="py-3 px-4">Brand</th>
-                <th class="py-3 px-4">Pitch</th>
-                <th class="py-3 px-4">On hand</th>
-                <th class="py-3 px-4">Location</th>
-                <th class="py-3 px-4 text-right">Dealer net</th>
-                <th class="py-3 px-4 text-right">List</th>
-              </tr></thead>
-              <tbody id="book-table"></tbody>
-            </table>
+      <section id="inventory-section" class="hidden">
+        <div id="inv-workspace">
+          <div id="inventory-list-wrap" class="cc-list-inner">
+            <div class="page-kpis page-kpis-3 cc-list-kpis" id="inv-overview">
+              <button type="button" class="dash-kpi is-on" data-filter="all" aria-pressed="true">
+                <span class="dash-kpi-icon dash-kpi-icon-inventory" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M3 10 12 4.5 21 10v9.5a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V10z"/><path d="M9 20.5V12h6v8.5"/></svg></span>
+                <span class="dash-kpi-label">SKUs</span>
+                <strong class="dash-kpi-value" id="inv-stat-skus">—</strong>
+                <span class="dash-kpi-hint">Priced items</span>
+              </button>
+              <button type="button" class="dash-kpi" data-filter="low" aria-pressed="false">
+                <span class="dash-kpi-icon dash-kpi-icon-customers" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 8v5"/><path d="M12 16h.01"/><path d="M10.3 4.3 2.8 17.5A1.8 1.8 0 0 0 4.4 20h15.2a1.8 1.8 0 0 0 1.6-2.5L13.7 4.3a1.8 1.8 0 0 0-3.4 0z"/></svg></span>
+                <span class="dash-kpi-label">Low</span>
+                <strong class="dash-kpi-value" id="inv-stat-low">—</strong>
+                <span class="dash-kpi-hint">Running low</span>
+              </button>
+              <button type="button" class="dash-kpi" data-filter="out" aria-pressed="false">
+                <span class="dash-kpi-icon dash-kpi-icon-sales" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="8"/><path d="m9 9 6 6M15 9l-6 6"/></svg></span>
+                <span class="dash-kpi-label">Out</span>
+                <strong class="dash-kpi-value" id="inv-stat-out">—</strong>
+                <span class="dash-kpi-hint">Zero on hand</span>
+              </button>
+            </div>
+            <div class="cc-list-toolbar cc-list-tools">
+              <input id="inv-search" type="search" placeholder="Search SKU, name, brand, category" class="cc-list-search bg-slate-800 border border-slate-700 rounded-full px-3 py-1.5 text-sm">
+              <select id="inv-category-filter" class="cc-list-select bg-slate-800 border border-slate-700 rounded-full px-3 py-1.5 text-sm" aria-label="Filter by category">
+                <option value="">All categories</option>
+              </select>
+              <select id="inv-location-filter" class="cc-list-select bg-slate-800 border border-slate-700 rounded-full px-3 py-1.5 text-sm" aria-label="Filter by location">
+                <option value="">All locations</option>
+              </select>
+              <div class="cc-list-filters">
+                <button type="button" data-inv-filter="all" class="inv-filter px-3 py-1.5 rounded-full text-xs font-medium bg-sky-500/20 text-sky-300">All</button>
+                <button type="button" data-inv-filter="low" class="inv-filter px-3 py-1.5 rounded-full text-xs font-medium text-slate-400 hover:text-white">Low</button>
+                <button type="button" data-inv-filter="out" class="inv-filter px-3 py-1.5 rounded-full text-xs font-medium text-slate-400 hover:text-white">Out</button>
+              </div>
+            </div>
+            <p id="inventory-error" class="hidden text-sm text-red-400 mb-3"></p>
+            <div id="inv-split" class="inv-split" style="--inv-left-w: min(720px, 58vw)">
+              <div id="inv-split-left" class="inv-split-left">
+                <div class="cc-table-card rounded-2xl border border-slate-800">
+                  <div id="book-table-wrap" class="cc-table-wrap">
+                    <table class="w-full text-sm dash-cols" data-cols="dealer-book">
+                      <thead class="text-left text-slate-400 border-b border-slate-800">
+                        <tr>
+                          <th class="py-3 px-4 font-medium" data-col="name">Item</th>
+                          <th class="py-3 px-4 font-medium" data-col="sku">SKU</th>
+                          <th class="py-3 px-4 font-medium" data-col="category">Category</th>
+                          <th class="py-3 px-4 font-medium" data-col="description">Description</th>
+                          <th class="py-3 px-4 font-medium" data-col="pitch">Pitch</th>
+                          <th class="py-3 px-4 font-medium" data-col="brand">Brand</th>
+                          <th class="py-3 px-4 font-medium" data-col="qty">On hand</th>
+                          <th class="py-3 px-4 font-medium" data-col="warehouse">Location</th>
+                          <th class="py-3 px-4 font-medium" data-col="bin">Bin #</th>
+                          <th class="py-3 px-4 font-medium" data-col="price">Sell price</th>
+                          <th class="py-3 px-4 font-medium" data-col="dealer">Dealer net</th>
+                          <th class="py-3 px-4 font-medium" data-col="photo">Photo</th>
+                        </tr>
+                      </thead>
+                      <tbody id="inventory-table" class="text-slate-200"></tbody>
+                    </table>
+                  </div>
+                </div>
+              </div>
+              <div id="inv-split-resizer" class="inv-split-resizer" role="separator" aria-orientation="vertical" aria-label="Resize inventory panels" tabindex="0"></div>
+              <div id="inv-split-right" class="inv-split-right">
+                <div id="inv-overview-panel" class="inv-right-panel">
+                  <div class="inv-overview-summary">
+                    <p class="inv-overview-lead">Select an item to see stock, sell price, and dealer net. Factory cost is not on this page.</p>
+                  </div>
+                </div>
+                <div id="inv-item-panel" class="inv-right-panel hidden" aria-hidden="true">
+                  <div class="cc-detail-hero">
+                    <div class="cc-detail-hero-main">
+                      <span id="inv-detail-photo" class="cc-detail-avatar cc-detail-photo" aria-hidden="true"></span>
+                      <div class="cc-detail-hero-copy">
+                        <h2 id="inv-detail-name">Item</h2>
+                        <p id="inv-detail-subname" class="cc-detail-subname"></p>
+                      </div>
+                    </div>
+                    <div class="cc-detail-hero-grid">
+                      <div class="cc-detail-block">
+                        <h3>Stock</h3>
+                        <dl class="cc-detail-dl">
+                          <div><dt>On hand</dt><dd id="inv-detail-qty">—</dd></div>
+                          <div><dt>Status</dt><dd id="inv-detail-status">—</dd></div>
+                          <div><dt>Low at</dt><dd id="inv-detail-low">—</dd></div>
+                        </dl>
+                      </div>
+                      <div class="cc-detail-block">
+                        <h3>Pricing</h3>
+                        <dl class="cc-detail-dl">
+                          <div><dt>Sell price</dt><dd id="inv-detail-price">—</dd></div>
+                          <div><dt>Dealer net</dt><dd id="inv-detail-dealer">—</dd></div>
+                        </dl>
+                      </div>
+                      <div class="cc-detail-block">
+                        <h3>Specs</h3>
+                        <dl class="cc-detail-dl">
+                          <div><dt>Brand</dt><dd id="inv-detail-brand">—</dd></div>
+                          <div><dt>Category</dt><dd id="inv-detail-category">—</dd></div>
+                          <div><dt>Pitch</dt><dd id="inv-detail-pitch">—</dd></div>
+                          <div><dt>Unit</dt><dd id="inv-detail-unit">—</dd></div>
+                        </dl>
+                      </div>
+                    </div>
+                    <div class="cc-detail-block inv-locs-block">
+                      <h3>Locations</h3>
+                      <div class="cc-table-wrap inv-locs-wrap overflow-x-auto">
+                        <table class="w-full text-sm inv-locs-table">
+                          <thead>
+                            <tr>
+                              <th>Location</th>
+                              <th>Type</th>
+                              <th>Qty</th>
+                              <th>Tracked</th>
+                            </tr>
+                          </thead>
+                          <tbody id="inv-detail-locations-body"></tbody>
+                        </table>
+                      </div>
+                      <p id="inv-detail-locations-empty" class="cc-detail-empty hidden">No locations yet.</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
-        <p id="book-empty" class="hidden text-sm text-slate-500">No priced SKUs yet.</p>
-        <div id="book-detail" class="hidden rounded-2xl border p-5 text-sm"></div>
       </section>
 
       <section id="view-quotes" class="hidden space-y-4"></section>
@@ -221,6 +334,6 @@
       </section>
     </main>
   </div>
-  <script src="/js/portal.js?v=dealer-login1"></script>
+  <script src="/js/portal.js?v=dealer-book1"></script>
 </body>
 </html>
