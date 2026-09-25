@@ -3,7 +3,7 @@
   const viewIds = {
     home: 'dashboard-section',
     book: 'inventory-section',
-    quotes: 'view-quotes',
+    quotes: 'sales-section',
     orders: 'view-orders',
     projects: 'view-projects',
     panels: 'view-panels',
@@ -71,6 +71,7 @@
     $('admin-page-sub').textContent = 'Dealer sign in';
     document.body.classList.remove('dash-master-on');
     document.body.classList.remove('inv-layout-lock');
+    document.body.classList.remove('so-split-lock');
     const bar = $('dash-tab-bar');
     if (bar) bar.hidden = true;
   }
@@ -148,9 +149,12 @@
     $('portal-title').textContent = tabLabel[name] || 'Dealer Portal';
     $('admin-page-sub').textContent = name === 'home' ? 'Overview' : ((me && me.customer && me.customer.companyName) || '');
     document.body.classList.toggle('inv-layout-lock', name === 'book' && !isMobileDash());
+    document.body.classList.toggle('so-split-lock', name === 'quotes' && !isMobileDash());
+    const sales = $('sales-section');
+    if (sales) sales.classList.toggle('so-split-on', name === 'quotes' && !isMobileDash());
     if (name === 'home') renderHome();
     if (name === 'book') renderBook();
-    if (name === 'quotes') renderDocs('quote');
+    if (name === 'quotes') renderQuotes();
     if (name === 'orders') renderDocs('order');
     if (name === 'projects') loadProjects();
     if (name === 'panels') loadPanels();
@@ -394,8 +398,375 @@
     const selected = bookSku ? book.find(function (item) { return item.sku === bookSku; }) : null;
     renderBookDetail(selected || null);
   }
+  function quoteRoute() {
+    const parts = location.pathname.replace(/\/+$/, '').split('/');
+    if (parts[2] !== 'quotes' || !parts[3]) return '';
+    return parts[3];
+  }
+  function dealerCompanyName() {
+    const c = me && me.customer;
+    return (c && (c.companyName || c.displayName)) || '';
+  }
+  function addressText(src, prefix) {
+    const row = src || {};
+    const street = row[prefix + 'Street'] || '';
+    const city = [row[prefix + 'City'], row[prefix + 'State']].filter(Boolean).join(', ');
+    const tail = [city, row[prefix + 'Zip']].filter(Boolean).join(' ');
+    const lines = [street, tail, row[prefix + 'Country']].filter(Boolean);
+    return lines.join('\n') || '—';
+  }
+  function bookBySku(sku) {
+    const key = String(sku || '').trim().toLowerCase();
+    if (!key) return null;
+    return book.find(function (item) { return String(item.sku || '').trim().toLowerCase() === key; }) || null;
+  }
+  function quoteStatusLabel(status) {
+    const value = status || 'draft';
+    return value.charAt(0).toUpperCase() + value.slice(1);
+  }
+  function ensureSelectValue(select, value) {
+    if (!select) return;
+    const text = value == null ? '' : String(value);
+    let found = false;
+    Array.prototype.forEach.call(select.options, function (opt) {
+      if (opt.value === text) found = true;
+    });
+    if (!found && text) {
+      const opt = document.createElement('option');
+      opt.value = text;
+      opt.textContent = text;
+      select.appendChild(opt);
+    }
+    select.value = text;
+  }
+  function showQuoteMsg(text, ok) {
+    const el = $('so-msg');
+    if (!el) return;
+    el.textContent = text || '';
+    el.className = 'text-sm ' + (ok ? 'text-sky-600' : 'text-red-400');
+    el.classList.toggle('hidden', !text);
+  }
+  function showQuoteError(text) {
+    const el = $('so-error');
+    if (!el) return;
+    el.textContent = text || '';
+    el.classList.toggle('hidden', !text);
+  }
+  function closeSkuMenu() {
+    const menu = $('so-sku-menu');
+    if (!menu) return;
+    menu.hidden = true;
+    menu._input = null;
+  }
+  function blankQuoteLine() {
+    return { item: '', sku: '', description: '', qty: '', unitPrice: '' };
+  }
+  function quoteLineRow(line, index) {
+    const item = line || blankQuoteLine();
+    const inv = bookBySku(item.sku);
+    const qty = item.qty == null || item.qty === '' ? '' : item.qty;
+    const price = item.unitPrice == null || item.unitPrice === '' ? (inv ? inv.dealerNet : '') : item.unitPrice;
+    const amount = (Number(qty) || 0) * (Number(price) || 0);
+    const has = !!(item.sku || item.item || item.description || Number(price));
+    return '<tr class="border-b so-line">' +
+      '<td class="py-2 px-1 so-line-lead"><span class="so-line-num">' + (index + 1) + '</span></td>' +
+      '<td class="py-2 px-2"><input data-line="item" value="' + esc(item.item || (inv && inv.name) || '') + '"></td>' +
+      '<td class="py-2 px-2"><div class="so-sku-search"><svg class="so-sku-search-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><circle cx="11" cy="11" r="6"/><path d="m20 20-3.5-3.5"/></svg><input data-line="sku" type="search" autocomplete="off" placeholder="Search SKU, name, brand" value="' + esc(item.sku || '') + '"></div></td>' +
+      '<td class="py-2 px-2"><input data-line="description" value="' + esc(item.description || '') + '"></td>' +
+      '<td class="py-2 px-2"><input data-line="qty" type="number" min="0" step="1" value="' + esc(qty) + '"></td>' +
+      '<td class="py-2 px-2 tabular-nums so-inv-read" data-line="onHand">' + (inv ? esc(inv.qty) : '—') + '</td>' +
+      '<td class="py-2 px-2 tabular-nums so-inv-read" data-line="dealer">' + (inv ? money(inv.dealerNet) : '—') + '</td>' +
+      '<td class="py-2 px-2"><input data-line="unitPrice" type="number" step="0.01" readonly value="' + esc(price === '' ? '' : price) + '"></td>' +
+      '<td class="py-2 px-2 text-right tabular-nums" data-line-amt>' + (has && (Number(qty) || Number(price)) ? money(amount) : '') + '</td>' +
+      '<td class="py-2 px-1 so-line-acts">' +
+        '<button type="button" data-insert-line class="so-line-act" title="Insert row" aria-label="Insert row">+</button>' +
+        '<button type="button" data-remove-line class="so-line-act so-line-act-del" title="Remove row" aria-label="Remove row">✕</button>' +
+      '</td></tr>';
+  }
+  function paintQuoteLines(lines, locked) {
+    const source = (lines || []).filter(function (line) { return line && (line.sku || line.item); });
+    const rows = source.slice();
+    if (!locked) {
+      while (rows.length < 6) rows.push(blankQuoteLine());
+    }
+    if (!rows.length) rows.push(blankQuoteLine());
+    $('so-lines').innerHTML = rows.map(quoteLineRow).join('');
+    refreshQuoteTotals();
+  }
+  function readQuoteLines() {
+    return Array.prototype.map.call(document.querySelectorAll('#so-lines .so-line'), function (row) {
+      const val = function (key) {
+        const el = row.querySelector('[data-line="' + key + '"]');
+        return el ? String(el.value || '').trim() : '';
+      };
+      return {
+        item: val('item'),
+        sku: val('sku'),
+        description: val('description'),
+        qty: Number(val('qty')) || 0
+      };
+    }).filter(function (line) { return line.sku; });
+  }
+  function refreshQuoteTotals() {
+    let subtotal = 0;
+    document.querySelectorAll('#so-lines .so-line').forEach(function (row, index) {
+      const num = row.querySelector('.so-line-num');
+      if (num) num.textContent = String(index + 1);
+      const sku = (row.querySelector('[data-line="sku"]') || {}).value || '';
+      const inv = bookBySku(sku);
+      const qty = Number((row.querySelector('[data-line="qty"]') || {}).value) || 0;
+      const price = inv ? Number(inv.dealerNet) || 0 : (Number((row.querySelector('[data-line="unitPrice"]') || {}).value) || 0);
+      const priceEl = row.querySelector('[data-line="unitPrice"]');
+      if (priceEl && inv) priceEl.value = String(inv.dealerNet);
+      const onHand = row.querySelector('[data-line="onHand"]');
+      const dealer = row.querySelector('[data-line="dealer"]');
+      if (onHand) onHand.textContent = inv ? String(inv.qty) : '—';
+      if (dealer) dealer.textContent = inv ? money(inv.dealerNet) : '—';
+      const amt = qty * price;
+      if (sku) subtotal += amt;
+      const amtEl = row.querySelector('[data-line-amt]');
+      if (amtEl) amtEl.textContent = sku && qty ? money(amt) : '';
+    });
+    const discount = Math.max(0, Number($('so-discount') && $('so-discount').value) || 0);
+    const rate = Math.max(0, Number($('so-tax-rate') && $('so-tax-rate').value) || 0);
+    const taxable = Math.max(0, subtotal - discount);
+    const tax = taxable * (rate / 100);
+    const total = taxable + tax;
+    $('so-subtotal').textContent = money(subtotal);
+    $('so-tax').textContent = money(tax);
+    $('so-grand').textContent = money(total);
+    $('so-head-amount').textContent = money(total);
+    $('so-payments-applied').textContent = money(0);
+    $('so-balance-due').textContent = money(total);
+  }
+  function applyBookSku(row, sku) {
+    if (!row) return;
+    const inv = bookBySku(sku);
+    if (!inv) return;
+    const item = row.querySelector('[data-line="item"]');
+    const skuEl = row.querySelector('[data-line="sku"]');
+    const desc = row.querySelector('[data-line="description"]');
+    const qty = row.querySelector('[data-line="qty"]');
+    if (item && !item.value) item.value = inv.name || inv.sku;
+    if (skuEl) skuEl.value = inv.sku;
+    if (desc && !desc.value) desc.value = [inv.brand, inv.pitchLabel || inv.pitch, inv.description].filter(Boolean).join(' · ');
+    if (qty && !qty.value) qty.value = '1';
+    refreshQuoteTotals();
+  }
+  function openSkuMenu(input) {
+    const menu = $('so-sku-menu');
+    const list = menu && menu.querySelector('.so-sku-menu-list');
+    if (!menu || !list || !input) return;
+    const q = String(input.value || '').trim().toLowerCase();
+    const hits = book.filter(function (item) {
+      const blob = ((item.sku || '') + ' ' + (item.name || '') + ' ' + (item.brand || '') + ' ' + (item.category || '')).toLowerCase();
+      return !q || blob.indexOf(q) !== -1;
+    }).slice(0, 12);
+    list.innerHTML = hits.length ? hits.map(function (item) {
+      return '<button type="button" class="so-sku-opt" data-sku="' + esc(item.sku) + '"><span class="so-sku-opt-sku">' + esc(item.sku) + '</span><span class="so-sku-opt-name">' + esc(item.name || '') + '</span><span>' + money(item.dealerNet) + '</span></button>';
+    }).join('') : '<p class="px-3 py-2 text-sm text-slate-500">No priced SKU matches.</p>';
+    const rect = input.getBoundingClientRect();
+    menu.hidden = false;
+    menu.style.left = Math.max(8, rect.left) + 'px';
+    menu.style.top = (rect.bottom + 4) + 'px';
+    menu.style.width = Math.max(rect.width, 280) + 'px';
+    menu._input = input;
+  }
+  function setQuoteLocked(locked) {
+    ['so-issue', 'so-po', 'so-due', 'so-so-number', 'so-rep', 'so-account', 'so-ship-date', 'so-ship-via', 'so-tracking', 'so-notes', 'so-discount', 'so-tax-rate'].forEach(function (id) {
+      const el = $(id);
+      if (el) el.readOnly = !!locked;
+    });
+    $('so-terms').disabled = !!locked;
+    $('so-status').disabled = true;
+    const hideSave = !!locked;
+    ['so-save', 'so-save-close', 'so-save-new', 'so-revert', 'so-add-line'].forEach(function (id) {
+      const el = $(id);
+      if (el) el.classList.toggle('hidden', hideSave);
+    });
+    const canDelete = !locked && !!$('so-id').value;
+    $('so-delete-btn').classList.toggle('hidden', !canDelete);
+    $('so-ribbon-delete').disabled = !canDelete;
+    document.querySelectorAll('#so-doc-ribbon [data-so-after]').forEach(function (btn) {
+      btn.disabled = hideSave;
+    });
+    document.querySelectorAll('#so-lines .so-line').forEach(function (row) {
+      row.querySelectorAll('input').forEach(function (input) {
+        if (input.getAttribute('data-line') === 'unitPrice') input.readOnly = true;
+        else input.readOnly = !!locked;
+      });
+      row.querySelectorAll('button').forEach(function (btn) { btn.hidden = !!locked; });
+    });
+  }
+  function fillQuoteSide() {
+    const c = (me && me.customer) || {};
+    $('so-side-name').textContent = dealerCompanyName() || 'Customer';
+    $('so-side-phone').textContent = c.phone || '—';
+    $('so-side-email').textContent = c.email || (me && me.user && me.user.email) || '—';
+    const open = docs.quote.filter(function (doc) { return doc.status === 'draft'; }).length;
+    $('so-side-balance').textContent = String(open);
+    $('so-side-tx-list').innerHTML = docs.quote.slice(0, 8).map(function (doc) {
+      return '<button type="button" class="so-side-tx" data-quote-id="' + esc(doc.id) + '"><b>' + esc(doc.number || 'Draft') + '</b><span>' + esc(quoteStatusLabel(doc.status)) + ' · ' + money(doc.total) + '</span></button>';
+    }).join('') || '<p class="text-sm text-slate-500">No quotes yet.</p>';
+  }
+  function fillQuoteForm(doc) {
+    const customer = (me && me.customer) || {};
+    const locked = !!(doc && doc.status && doc.status !== 'draft');
+    $('so-id').value = (doc && doc.id) || '';
+    $('so-type').value = 'quote';
+    $('so-customer').value = (doc && doc.customerName) || dealerCompanyName();
+    $('so-customer-name').value = (doc && doc.customerName) || dealerCompanyName();
+    $('so-customer-email').value = (doc && doc.customerEmail) || customer.email || (me && me.user && me.user.email) || '';
+    $('so-number').value = (doc && doc.number) || '';
+    $('so-title').textContent = doc && doc.number ? doc.number : 'New sales quote';
+    $('so-caption-title').textContent = doc && doc.number ? doc.number : 'Sales Quote';
+    $('so-kind-label').textContent = 'Quote';
+    $('so-issue').value = (doc && doc.issueDate) || new Date().toISOString().slice(0, 10);
+    $('so-po').value = (doc && doc.poNumber) || '';
+    ensureSelectValue($('so-terms'), (doc && doc.paymentTerms) || '30% deposit / balance before ship');
+    $('so-due').value = (doc && doc.dueDate) || '';
+    const status = (doc && doc.status) || 'draft';
+    ensureSelectValue($('so-status'), status);
+    const badge = $('so-status-badge');
+    badge.hidden = false;
+    badge.textContent = quoteStatusLabel(status);
+    badge.className = 'so-status-badge is-' + status;
+    $('so-so-number').value = (doc && doc.soNumber) || '';
+    $('so-rep').value = (doc && doc.rep) || (me && me.user && me.user.name) || '';
+    $('so-account').value = (doc && doc.accountNo) || '';
+    $('so-ship-date').value = (doc && doc.shipDate) || '';
+    $('so-ship-via').value = (doc && doc.shipVia) || '';
+    $('so-tracking').value = (doc && doc.tracking) || '';
+    $('so-discount').value = doc && doc.discount != null ? doc.discount : 0;
+    $('so-tax-rate').value = doc && doc.taxRate != null ? doc.taxRate : 0;
+    $('so-notes').value = (doc && doc.notes) || '';
+    const billSrc = doc && (doc.billStreet || doc.billCity) ? doc : customer;
+    const shipSrc = doc && (doc.shipStreet || doc.shipCity) ? doc : ((customer.shipSame === false && (customer.shipStreet || customer.shipCity)) ? customer : billSrc);
+    const shipPrefix = (shipSrc.shipStreet || shipSrc.shipCity) ? 'ship' : 'bill';
+    $('so-bill-to').textContent = addressText(billSrc, 'bill');
+    $('so-ship-to').textContent = addressText(shipSrc, shipPrefix);
+    paintQuoteLines((doc && doc.lines) || [], locked);
+    fillQuoteSide();
+    setQuoteLocked(locked);
+    showQuoteMsg(locked ? 'Spectrum already has this quote. Staff finish it in Company.' : '', true);
+  }
+  function showQuoteDoc(open) {
+    $('so-detail').classList.toggle('hidden', !open);
+    $('so-overview-panel').classList.toggle('hidden', open);
+    const desktop = !isMobileDash();
+    $('sales-section').classList.toggle('so-doc-open', open && !desktop);
+  }
+  function renderQuoteTable() {
+    const q = String(($('so-search') && $('so-search').value) || '').trim().toLowerCase();
+    const openId = quoteRoute();
+    const rows = docs.quote.filter(function (doc) {
+      if (!q) return true;
+      const blob = [doc.number, doc.customerName, doc.poNumber, doc.status, doc.notes, doc.paymentTerms].join(' ').toLowerCase();
+      return blob.indexOf(q) !== -1;
+    });
+    const drafts = docs.quote.filter(function (doc) { return doc.status === 'draft'; }).length;
+    $('so-stat-quote').textContent = String(docs.quote.length);
+    $('so-hint-quote').textContent = drafts ? (drafts + ' draft') : 'Sales quotes';
+    $('so-table').innerHTML = rows.length ? rows.map(function (doc) {
+      const on = openId && String(openId) === String(doc.id);
+      return '<tr class="border-b border-slate-800 hover:bg-slate-900/80 cursor-pointer' + (on ? ' is-active' : '') + '" data-quote-id="' + esc(doc.id) + '">' +
+        '<td class="py-3 px-4 font-medium">' + esc(doc.number || 'Draft') + '</td>' +
+        '<td class="py-3 px-4">' + esc(doc.customerName || dealerCompanyName() || '—') + '</td>' +
+        '<td class="py-3 px-4">' + esc(doc.issueDate || '—') + '</td>' +
+        '<td class="py-3 px-4">' + esc(quoteStatusLabel(doc.status)) + '</td>' +
+        '<td class="py-3 px-4">' + money(doc.total) + '</td>' +
+        '<td class="py-3 px-4">' + esc(doc.poNumber || '—') + '</td>' +
+        '<td class="py-3 px-4">' + esc(doc.dueDate || '—') + '</td>' +
+        '<td class="py-3 px-4">' + esc(doc.paymentTerms || '—') + '</td>' +
+        '<td class="py-3 px-4">' + esc(doc.notes || '—') + '</td></tr>';
+    }).join('') : '<tr><td class="py-6 px-4 text-slate-500" colspan="9">No quotes yet.</td></tr>';
+  }
+  function goQuote(id, push) {
+    const path = id ? ('/portal/quotes/' + id) : '/portal/quotes';
+    if (openTabs.indexOf('quotes') === -1) openTabs.push('quotes');
+    if (push !== false && location.pathname.replace(/\/+$/, '') !== path) {
+      history.pushState({ view: 'quotes', id: id || '' }, '', path);
+    }
+    renderView('quotes');
+    renderMasterTabs();
+  }
+  function renderQuotes() {
+    showQuoteError('');
+    renderQuoteTable();
+    const route = quoteRoute();
+    if (!route) {
+      showQuoteDoc(false);
+      return;
+    }
+    if (route === 'new') {
+      showQuoteMsg('');
+      fillQuoteForm(null);
+      showQuoteDoc(true);
+      return;
+    }
+    const found = docs.quote.find(function (doc) { return String(doc.id) === String(route); });
+    if (!found) {
+      showQuoteDoc(false);
+      showQuoteError('That quote is not on your account.');
+      return;
+    }
+    showQuoteMsg('');
+    fillQuoteForm(found);
+    showQuoteDoc(true);
+  }
+  function quotePayload() {
+    return {
+      poNumber: $('so-po').value,
+      soNumber: $('so-so-number').value,
+      rep: $('so-rep').value,
+      accountNo: $('so-account').value,
+      shipDate: $('so-ship-date').value,
+      shipVia: $('so-ship-via').value,
+      tracking: $('so-tracking').value,
+      issueDate: $('so-issue').value,
+      dueDate: $('so-due').value,
+      paymentTerms: $('so-terms').value,
+      discount: $('so-discount').value,
+      taxRate: $('so-tax-rate').value,
+      notes: $('so-notes').value,
+      lines: readQuoteLines()
+    };
+  }
+  async function saveQuote(after) {
+    const id = $('so-id').value;
+    const locked = $('so-status').value && $('so-status').value !== 'draft' && id;
+    if (locked) return;
+    showQuoteMsg('');
+    try {
+      const saved = await api(id ? ('/api/dealer/docs/' + id) : '/api/dealer/quotes', {
+        method: id ? 'PUT' : 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(quotePayload())
+      });
+      await refreshDocs();
+      const next = saved.doc || saved.quote;
+      if (after === 'close') goQuote('', true);
+      else if (after === 'new') goQuote('new', true);
+      else if (next && next.id) goQuote(next.id, true);
+      showQuoteMsg('Draft saved. It is in Company as a sales quote.', true);
+    } catch (err) {
+      showQuoteMsg(err.message, false);
+    }
+  }
+  async function deleteQuote() {
+    const id = $('so-id').value;
+    if (!id) return;
+    if (!window.confirm('Delete this draft quote?')) return;
+    try {
+      await api('/api/dealer/docs/' + id, { method: 'DELETE' });
+      await refreshDocs();
+      goQuote('', true);
+    } catch (err) {
+      showQuoteMsg(err.message, false);
+    }
+  }
   function docSection(kind) {
-    return $(kind === 'order' ? 'view-orders' : 'view-quotes');
+    return $(kind === 'order' ? 'view-orders' : 'sales-section');
   }
   function renderDocs(kind) {
     const list = docs[kind] || [];
@@ -557,6 +928,90 @@
     if (!kpi) return;
     selectHome(kpi.getAttribute('data-home'));
   });
+  $('so-search').addEventListener('input', renderQuoteTable);
+  $('so-new-btn').addEventListener('click', function () { goQuote('new', true); });
+  $('so-ribbon-new').addEventListener('click', function () { goQuote('new', true); });
+  $('so-ribbon-find').addEventListener('click', function () {
+    if (isMobileDash() && quoteRoute()) goQuote('', true);
+    if ($('so-search')) $('so-search').focus();
+  });
+  $('so-back').addEventListener('click', function () { goQuote('', true); });
+  $('so-caption-close').addEventListener('click', function () { goQuote('', true); });
+  ['so-ribbon-print', 'so-ribbon-pdf', 'so-print-btn', 'so-pdf-btn'].forEach(function (id) {
+    $(id).addEventListener('click', function () { window.print(); });
+  });
+  $('so-ribbon-delete').addEventListener('click', deleteQuote);
+  $('so-delete-btn').addEventListener('click', deleteQuote);
+  $('so-revert').addEventListener('click', function () { renderQuotes(); });
+  $('so-form').addEventListener('submit', function (e) {
+    e.preventDefault();
+    const after = (e.submitter && e.submitter.getAttribute('data-so-after')) || 'stay';
+    saveQuote(after);
+  });
+  $('so-discount').addEventListener('input', refreshQuoteTotals);
+  $('so-tax-rate').addEventListener('input', refreshQuoteTotals);
+  $('sales-section').addEventListener('click', function (e) {
+    const side = e.target.closest('[data-so-side]');
+    if (side) {
+      document.querySelectorAll('#so-doc-side [data-so-side]').forEach(function (btn) {
+        btn.classList.toggle('is-on', btn === side);
+      });
+      const which = side.getAttribute('data-so-side');
+      $('so-side-customer').hidden = which !== 'customer';
+      $('so-side-tx').hidden = which !== 'tx';
+      return;
+    }
+    const tx = e.target.closest('#so-side-tx-list [data-quote-id]');
+    if (tx) {
+      goQuote(tx.getAttribute('data-quote-id'), true);
+      return;
+    }
+    const row = e.target.closest('#so-table tr[data-quote-id]');
+    if (row) {
+      goQuote(row.getAttribute('data-quote-id'), true);
+      return;
+    }
+    if (e.target.closest('#so-add-line')) {
+      $('so-lines').insertAdjacentHTML('beforeend', quoteLineRow(blankQuoteLine(), 0));
+      refreshQuoteTotals();
+      return;
+    }
+    const insert = e.target.closest('[data-insert-line]');
+    if (insert) {
+      const line = insert.closest('.so-line');
+      if (line) line.insertAdjacentHTML('afterend', quoteLineRow(blankQuoteLine(), 0));
+      refreshQuoteTotals();
+      return;
+    }
+    const remove = e.target.closest('[data-remove-line]');
+    if (remove) {
+      const line = remove.closest('.so-line');
+      if (line) line.remove();
+      if (!$('so-lines').querySelector('.so-line')) paintQuoteLines([], false);
+      else refreshQuoteTotals();
+    }
+  });
+  $('sales-section').addEventListener('input', function (e) {
+    const sku = e.target.closest('[data-line="sku"]');
+    if (sku) {
+      openSkuMenu(sku);
+      applyBookSku(sku.closest('.so-line'), sku.value);
+      return;
+    }
+    if (e.target.closest('#so-lines')) refreshQuoteTotals();
+  });
+  $('sales-section').addEventListener('focusin', function (e) {
+    const sku = e.target.closest('[data-line="sku"]');
+    if (sku && !sku.readOnly) openSkuMenu(sku);
+  });
+  const skuMenu = $('so-sku-menu');
+  skuMenu.addEventListener('mousedown', function (e) { e.preventDefault(); });
+  skuMenu.addEventListener('click', function (e) {
+    const btn = e.target.closest('[data-sku]');
+    if (!btn || !skuMenu._input) return;
+    applyBookSku(skuMenu._input.closest('.so-line'), btn.getAttribute('data-sku'));
+    closeSkuMenu();
+  });
   $('inv-search').addEventListener('input', renderBook);
   $('inv-category-filter').addEventListener('change', renderBook);
   $('inv-location-filter').addEventListener('change', renderBook);
@@ -687,6 +1142,7 @@
     }
   }
   document.addEventListener('click', function (e) {
+    if (!e.target.closest('#so-sku-menu') && !e.target.closest('[data-line="sku"]')) closeSkuMenu();
     const close = e.target.closest('[data-dash-tab-close]');
     if (close) {
       e.preventDefault();
@@ -705,7 +1161,14 @@
     const path = link.getAttribute('href').split('?')[0].replace(/\/+$/, '');
     const parts = path.split('/');
     if (parts[1] !== 'portal') return;
-    if (parts[3]) return;
+    if (parts[3]) {
+      if (parts[2] === 'quotes') {
+        e.preventDefault();
+        document.body.classList.remove('dash-open');
+        goQuote(parts[3], true);
+      }
+      return;
+    }
     const name = parts[2] && viewIds[parts[2]] ? parts[2] : 'home';
     e.preventDefault();
     document.body.classList.remove('dash-open');
@@ -715,6 +1178,14 @@
     if (!me) return;
     renderMasterTabs();
     document.body.classList.toggle('inv-layout-lock', pathView() === 'book' && !isMobileDash());
+    const onQuotes = pathView() === 'quotes' && !isMobileDash();
+    document.body.classList.toggle('so-split-lock', onQuotes);
+    const sales = $('sales-section');
+    if (sales) {
+      sales.classList.toggle('so-split-on', onQuotes);
+      const open = !!quoteRoute();
+      sales.classList.toggle('so-doc-open', !onQuotes && open);
+    }
   });
   window.addEventListener('popstate', function () {
     if (!me) return;

@@ -171,11 +171,20 @@ function publicDealerDoc(doc) {
     status: doc.status || 'draft',
     issueDate: doc.issueDate || '',
     poNumber: doc.poNumber || '',
+    soNumber: doc.soNumber || '',
+    rep: doc.rep || '',
+    accountNo: doc.accountNo || '',
+    shipDate: doc.shipDate || '',
+    shipVia: doc.shipVia || '',
+    tracking: doc.tracking || '',
+    dueDate: doc.dueDate || '',
     paymentTerms: doc.paymentTerms || '',
+    taxRate: Number(doc.taxRate) || 0,
+    discount: Number(doc.discount) || 0,
     customerId: doc.customerId || '',
     customerName: doc.customerName || '',
     customerEmail: doc.customerEmail || '',
-    notes: doc.notes || '',
+    notes: dealerMemoFromNotes(doc.notes),
     billStreet: doc.billStreet || '',
     billCity: doc.billCity || '',
     billState: doc.billState || '',
@@ -352,31 +361,100 @@ async function getDealerDocFor(store, user, id) {
   return publicDealerDoc(doc);
 }
 
+function dealerMemoFromNotes(notes) {
+  const lines = String(notes || '').split('\n');
+  if (/^(Requested from Dealer Portal|Order from Dealer Portal)/.test(lines[0] || '')) {
+    return lines.slice(1).join('\n').replace(/^\n/, '');
+  }
+  return notes || '';
+}
+
+function withPortalNote(kind, memo, companyName) {
+  const extra = (kind === 'order' ? 'Order from Dealer Portal' : 'Requested from Dealer Portal') +
+    (companyName ? ' (' + companyName + ')' : '');
+  const text = trim(memo, 1800);
+  if (!text) return extra;
+  if (/^(Requested from Dealer Portal|Order from Dealer Portal)/.test(text)) return text;
+  return extra + '\n' + text;
+}
+
+function pickDocField(body, key, max, fallback) {
+  if (!body || body[key] == null) return fallback == null ? '' : fallback;
+  return trim(body[key], max);
+}
+
+async function dealerCustomerSnap(store, user) {
+  const customerId = await resolveDealerCustomerId(store, user);
+  if (!customerId) throw noCustomerError();
+  const customer = store.getCompanyCustomer ? await store.getCompanyCustomer(customerId) : null;
+  const sales = require('./company-sales');
+  const snap = sales.snapshotFromCustomer(customer) || {};
+  snap.customerId = String(customerId);
+  if (!snap.customerEmail) snap.customerEmail = (user && user.email) || '';
+  if (!snap.customerName) snap.customerName = (customer && (customer.companyName || customer.displayName)) || '';
+  return snap;
+}
+
 async function pricedLinesFromPayload(store, payload) {
   const body = payload || {};
   const notes = trim(body.notes, 2000);
   const rawLines = Array.isArray(body.lines) ? body.lines : [];
   const book = {};
   (await store.getDealerPriceBook()).forEach(function (item) {
-    if (item && item.sku) book[item.sku] = item;
+    if (item && item.sku) book[String(item.sku).toLowerCase()] = item;
   });
   const lines = [];
   rawLines.forEach(function (line) {
     const sku = trim(line && line.sku, 80);
     if (!sku) return;
-    const item = book[sku];
+    const item = book[sku.toLowerCase()];
     if (!item) throw new Error('Unknown SKU ' + sku + '.');
     const qty = Number(line && line.qty);
     const n = Number.isFinite(qty) && qty > 0 ? qty : 1;
+    const description = trim(line && line.description, 400);
+    const name = trim(line && line.item, 160);
     lines.push({
-      sku: sku,
-      item: item.name || sku,
-      description: [item.brand, item.pitchLabel || item.pitch].filter(Boolean).join(' · '),
+      sku: item.sku || sku,
+      item: name || item.name || sku,
+      description: description || [item.brand, item.pitchLabel || item.pitch].filter(Boolean).join(' · '),
       qty: n,
       unitPrice: Number(item.dealerNet) || 0
     });
   });
   return { notes: notes, lines: lines };
+}
+
+function dealerDocHeader(kind, user, snap, payload, current) {
+  const body = payload || {};
+  const cur = current || {};
+  const terms = pickDocField(body, 'paymentTerms', 80, cur.paymentTerms || '');
+  return {
+    poNumber: pickDocField(body, 'poNumber', 80, cur.poNumber || ''),
+    soNumber: pickDocField(body, 'soNumber', 80, cur.soNumber || ''),
+    rep: pickDocField(body, 'rep', 80, cur.rep || (user && user.name) || 'Dealer Portal'),
+    accountNo: pickDocField(body, 'accountNo', 80, cur.accountNo || ''),
+    shipDate: pickDocField(body, 'shipDate', 20, cur.shipDate || ''),
+    shipVia: pickDocField(body, 'shipVia', 80, cur.shipVia || ''),
+    tracking: pickDocField(body, 'tracking', 80, cur.tracking || ''),
+    issueDate: pickDocField(body, 'issueDate', 20, cur.issueDate || ''),
+    dueDate: pickDocField(body, 'dueDate', 20, cur.dueDate || ''),
+    paymentTerms: terms || (kind === 'quote' ? '30% deposit / balance before ship' : (cur.paymentTerms || '30% deposit / balance before ship')),
+    discount: body.discount != null ? body.discount : (cur.discount || 0),
+    taxRate: body.taxRate != null ? body.taxRate : (cur.taxRate || 0),
+    customerId: snap.customerId,
+    customerName: snap.customerName || cur.customerName || '',
+    customerEmail: snap.customerEmail || cur.customerEmail || (user && user.email) || '',
+    billStreet: snap.billStreet || '',
+    billCity: snap.billCity || '',
+    billState: snap.billState || '',
+    billZip: snap.billZip || '',
+    billCountry: snap.billCountry || '',
+    shipStreet: snap.shipStreet || '',
+    shipCity: snap.shipCity || '',
+    shipState: snap.shipState || '',
+    shipZip: snap.shipZip || '',
+    shipCountry: snap.shipCountry || ''
+  };
 }
 
 async function createDealerQuoteFor(store, user, payload) {
@@ -385,27 +463,16 @@ async function createDealerQuoteFor(store, user, payload) {
 
 async function createDealerDocFor(store, user, type, payload) {
   const kind = type === 'order' ? 'order' : 'quote';
-  const customerId = await resolveDealerCustomerId(store, user);
-  if (!customerId) throw noCustomerError();
+  const snap = await dealerCustomerSnap(store, user);
   const priced = await pricedLinesFromPayload(store, payload);
   if (!priced.notes && !priced.lines.length) throw new Error('Add a note or at least one SKU.');
-  const app = await store.getDealerApplicationForUser({
-    userId: user && user.websiteUserId,
-    email: user && user.email
-  });
-  const extra = (kind === 'order' ? 'Order from Dealer Portal' : 'Requested from Dealer Portal') +
-    (app && app.companyName ? ' (' + app.companyName + ')' : '');
-  const created = await store.createSalesDoc({
+  const header = dealerDocHeader(kind, user, snap, payload, null);
+  const created = await store.createSalesDoc(Object.assign({
     type: kind,
-    customerId: customerId,
-    customerEmail: (user && user.email) || '',
-    poNumber: trim((payload && payload.poNumber) || '', 80),
-    notes: extra + (priced.notes ? '\n' + priced.notes : ''),
-    paymentTerms: trim((payload && payload.paymentTerms) || '', 80) || '30% deposit / balance before ship',
     status: 'draft',
-    lines: priced.lines,
-    rep: (user && user.name) || 'Dealer Portal'
-  });
+    notes: withPortalNote(kind, priced.notes, header.customerName),
+    lines: priced.lines
+  }, header));
   return publicDealerDoc(created);
 }
 
@@ -419,24 +486,36 @@ async function updateDealerDocFor(store, user, id, payload) {
     err.code = 'not_draft';
     throw err;
   }
-  const priced = await pricedLinesFromPayload(store, payload);
-  if (!priced.notes && !priced.lines.length && !(payload && payload.poNumber)) {
+  const body = payload || {};
+  const snap = await dealerCustomerSnap(store, user);
+  const priced = await pricedLinesFromPayload(store, body);
+  if (!priced.notes && !priced.lines.length && !trim(body.poNumber, 80)) {
     throw new Error('Add a note or at least one SKU.');
   }
-  const updated = await store.updateSalesDoc(id, {
+  const header = dealerDocHeader(current.type, user, snap, body, current);
+  const lines = Array.isArray(body.lines) ? priced.lines : (current.lines || []);
+  const updated = await store.updateSalesDoc(id, Object.assign({
     type: current.type,
     number: current.number,
-    customerId: customerId,
-    customerEmail: current.customerEmail || (user && user.email) || '',
-    poNumber: payload && payload.poNumber != null ? trim(payload.poNumber, 80) : current.poNumber,
-    notes: priced.notes || current.notes,
-    paymentTerms: (payload && payload.paymentTerms != null)
-      ? (trim(payload.paymentTerms, 80) || current.paymentTerms)
-      : current.paymentTerms,
     status: 'draft',
-    lines: priced.lines.length ? priced.lines : current.lines
-  });
+    notes: body.notes != null ? withPortalNote(current.type, priced.notes, header.customerName) : current.notes,
+    lines: lines
+  }, header));
   return publicDealerDoc(updated);
+}
+
+async function deleteDealerDocFor(store, user, id) {
+  const current = await store.getSalesDoc(id);
+  const customerId = await resolveDealerCustomerId(store, user);
+  if (!current || !customerId || String(current.customerId) !== String(customerId)) return null;
+  if (current.type !== 'quote') return null;
+  if (current.status !== 'draft') {
+    const err = new Error('Spectrum already has this document. Staff will finish it in Company.');
+    err.code = 'not_draft';
+    throw err;
+  }
+  const ok = await store.deleteSalesDoc(id);
+  return ok ? { id: String(id) } : null;
 }
 
 function publicBookLocation(loc) {
@@ -985,6 +1064,9 @@ function sqliteApi(db, store) {
     async updateDealerDoc(user, id, payload) {
       return updateDealerDocFor(store, user, id, payload);
     },
+    async deleteDealerDoc(user, id) {
+      return deleteDealerDocFor(store, user, id);
+    },
     async getDealerCompany(user) {
       const customerId = await resolveDealerCustomerId(store, user);
       const customer = customerId && store.getCompanyCustomer ? await store.getCompanyCustomer(customerId) : null;
@@ -1283,6 +1365,9 @@ function supabaseApi(supabase, store) {
     },
     async updateDealerDoc(user, id, payload) {
       return updateDealerDocFor(store, user, id, payload);
+    },
+    async deleteDealerDoc(user, id) {
+      return deleteDealerDocFor(store, user, id);
     },
     async getDealerCompany(user) {
       const customerId = await resolveDealerCustomerId(store, user);

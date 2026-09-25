@@ -1198,6 +1198,14 @@ async function main() {
     } catch (err) { dealerDocError(err, res, next); }
   });
 
+  app.delete('/api/dealer/docs/:id', requireDealer, async function (req, res, next) {
+    try {
+      const gone = await store.deleteDealerDoc(req.dealer, req.params.id);
+      if (!gone) return res.status(404).json({ ok: false, error: 'Document not found.' });
+      res.json({ ok: true });
+    } catch (err) { dealerDocError(err, res, next); }
+  });
+
   app.get('/api/dealer/company', requireDealer, async function (req, res, next) {
     try {
       res.json(Object.assign({ ok: true }, await store.getDealerCompany(req.dealer)));
