@@ -96,6 +96,21 @@
     });
   }
 
+  function esc(s) {
+    return String(s == null ? "" : s).replace(/[&<>"']/g, function (ch) {
+      if (ch === "&") return "&" + "amp;";
+      if (ch === "<") return "&" + "lt;";
+      if (ch === ">") return "&" + "gt;";
+      if (ch === '"') return "&" + "quot;";
+      return "&" + "#39;";
+    });
+  }
+
+  function safeUrl(u) {
+    if (!u || !/^https?:\/\//i.test(u)) return "";
+    return esc(u);
+  }
+
   function fmt(n) {
     if (n < 10) return n.toFixed(1) + " mi";
     return Math.round(n) + " mi";
@@ -112,12 +127,13 @@
       var dist = "";
       var from = place || (follow && map ? { la: map.getCenter().lat, ln: map.getCenter().lng } : null);
       if (from) dist = " · " + fmt(miles(from, p));
-      var web = p.w ? '<a href="' + p.w.replace(/"/g, "") + '" target="_blank" rel="noopener">Website</a>' : "";
-      return '<button type="button" class="find-card' + (selected === p.n ? " is-on" : "") + '" data-name="' + p.n.replace(/"/g, """) + '">' +
-        "<strong>" + p.n + "</strong>" +
-        (tag ? '<span class="find-badge">' + tag + "</span>" : "") +
-        "<span>" + p.c + ", " + p.s + dist + (p.k === "n" && !tag ? " · National" : "") + "</span>" +
-        (p.p ? "<span>" + p.p + "</span>" : "") +
+      var webUrl = safeUrl(p.w);
+      var web = webUrl ? '<a href="' + webUrl + '" target="_blank" rel="noopener">Website</a>' : "";
+      return '<button type="button" class="find-card' + (selected === p._i ? " is-on" : "") + '" data-i="' + p._i + '">' +
+        "<strong>" + esc(p.n) + "</strong>" +
+        (tag ? '<span class="find-badge">' + esc(tag) + "</span>" : "") +
+        "<span>" + esc(p.c) + ", " + esc(p.s) + dist + (p.k === "n" && !tag ? " · National" : "") + "</span>" +
+        (p.p ? "<span>" + esc(p.p) + "</span>" : "") +
         web +
         "</button>";
     }).join("");
@@ -142,7 +158,7 @@
   }
 
   function openPartner(p) {
-    selected = p.n;
+    selected = p._i;
     render();
     if (map) {
       programmatic = true;
@@ -162,6 +178,19 @@
     }
     var b = L.latLngBounds(rows.map(function (p) { return [p.la, p.ln]; }));
     map.fitBounds(b.pad(0.2), { padding: [28, 28], maxZoom: 10 });
+  }
+
+  function loadLeaflet(done) {
+    if (window.L) { done(); return; }
+    var link = document.createElement("link");
+    link.rel = "stylesheet";
+    link.href = "https://unpkg.com/leaflet@1.9.4/dist/leaflet.css";
+    document.head.appendChild(link);
+    var s = document.createElement("script");
+    s.src = "https://unpkg.com/leaflet@1.9.4/dist/leaflet.js";
+    s.onload = function () { done(); };
+    s.onerror = function () {};
+    document.head.appendChild(s);
   }
 
   function bootMap() {
@@ -188,9 +217,8 @@
   listEl.addEventListener("click", function (event) {
     var btn = event.target.closest(".find-card");
     if (!btn) return;
-    if (event.target.tagName === "A") return;
-    var name = btn.getAttribute("data-name");
-    var p = partners.filter(function (row) { return row.n === name; })[0];
+    if (event.target.closest("a")) return;
+    var p = partners[Number(btn.getAttribute("data-i"))];
     if (p) openPartner(p);
   });
 
@@ -214,8 +242,14 @@
     .then(function (res) { return res.json(); })
     .then(function (data) {
       partners = data;
-      bootMap();
+      for (var i = 0; i < partners.length; i++) partners[i]._i = i;
       render();
+      loadLeaflet(function () {
+        try {
+          bootMap();
+          render();
+        } catch (e) {}
+      });
     })
     .catch(function () {
       countEl.textContent = "Could not load the directory.";
