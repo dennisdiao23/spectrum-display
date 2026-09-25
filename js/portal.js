@@ -62,6 +62,45 @@
     }
     return json;
   }
+  function dealerInitials(name) {
+    const parts = String(name || '').trim().split(/\s+/).filter(Boolean);
+    if (!parts.length) return 'D';
+    if (parts.length === 1) return parts[0].slice(0, 2).toUpperCase();
+    return (parts[0].charAt(0) + parts[parts.length - 1].charAt(0)).toUpperCase();
+  }
+  function paintDealerBrand() {
+    const nameEl = $('portal-dealer-name');
+    const img = $('portal-dealer-logo');
+    const mark = $('portal-dealer-mark');
+    const file = $('portal-dealer-logo-file');
+    const btn = $('portal-dealer-logo-btn');
+    const signedIn = !!me;
+    if (file) file.disabled = !signedIn;
+    if (btn) {
+      btn.classList.toggle('is-ready', signedIn);
+      btn.title = signedIn ? 'Upload dealer logo' : 'Dealer logo';
+    }
+    const name = signedIn
+      ? (dealerCompanyName() || (me.user && me.user.name) || 'Dealer')
+      : 'Dealer Portal';
+    if (nameEl) nameEl.textContent = name;
+    const logo = signedIn ? (me.logo || '') : '';
+    if (img && logo) {
+      img.hidden = false;
+      img.src = logo;
+      img.alt = name;
+      if (mark) mark.hidden = true;
+    } else {
+      if (img) {
+        img.hidden = true;
+        img.removeAttribute('src');
+      }
+      if (mark) {
+        mark.hidden = false;
+        mark.textContent = dealerInitials(signedIn ? name : '');
+      }
+    }
+  }
   function showLogin() {
     $('login-panel').classList.remove('hidden');
     $('portal-nav').classList.add('hidden');
@@ -74,6 +113,7 @@
     document.body.classList.remove('so-split-lock');
     const bar = $('dash-tab-bar');
     if (bar) bar.hidden = true;
+    paintDealerBrand();
   }
   function pathFor(name) {
     return name === 'home' ? '/portal' : '/portal/' + name;
@@ -137,6 +177,7 @@
     $('portal-nav').classList.remove('hidden');
     $('portal-logout').classList.remove('hidden');
     $('portal-user').textContent = (me && me.user && (me.user.name || me.user.email)) || '';
+    paintDealerBrand();
     openPortal(pathView(), false);
   }
   function renderView(name) {
@@ -918,6 +959,21 @@
       err.classList.remove('hidden');
     }
   };
+  $('portal-dealer-logo-file').addEventListener('change', async function () {
+    const input = $('portal-dealer-logo-file');
+    const file = input.files && input.files[0];
+    if (!file || !me) return;
+    const body = new FormData();
+    body.append('file', file);
+    try {
+      const saved = await api('/api/dealer/logo', { method: 'POST', body: body });
+      me.logo = (saved.logo && saved.logo.url) || '';
+      paintDealerBrand();
+    } catch (err) {
+      window.alert(err.message || 'Could not save the logo.');
+    }
+    input.value = '';
+  });
   $('portal-logout').onclick = async function () {
     await api('/api/dealer/logout', { method: 'POST' });
     me = null;
@@ -1074,6 +1130,8 @@
         })
       });
       fillCompany(saved.customer);
+      if (me) me.customer = saved.customer;
+      paintDealerBrand();
       msg.textContent = 'Saved. Company customer record updated.';
       msg.className = 'sm:col-span-2 text-sm text-sky-600';
     } catch (err) {

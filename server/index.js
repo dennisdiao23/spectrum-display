@@ -577,7 +577,7 @@ async function main() {
     if (err && err.code === 'no_customer') {
       return res.status(409).json({ ok: false, error: err.message, code: err.code });
     }
-    if (err && (err.code === 'not_draft' || /Unknown SKU|Add a note|customer|Password|email|Name/i.test(err.message || ''))) {
+    if (err && (err.code === 'not_draft' || /Unknown SKU|Add a note|customer|Password|email|Name|Logo/i.test(err.message || ''))) {
       return res.status(400).json({ ok: false, error: err.message, code: err.code || '' });
     }
     return next(err);
@@ -1118,7 +1118,7 @@ async function main() {
       await store.createDealerUserSession(token, row.id, expires);
       dealerCookie(res, token);
       const company = await store.getDealerCompany(Object.assign({}, row, { customerId: row.customer_id }));
-      res.json({ ok: true, user: company.user, customer: company.customer });
+      res.json({ ok: true, user: company.user, customer: company.customer, logo: company.logo || '' });
     } catch (err) { next(err); }
   });
 
@@ -1134,7 +1134,7 @@ async function main() {
   app.get('/api/dealer/me', requireDealer, async function (req, res, next) {
     try {
       const company = await store.getDealerCompany(req.dealer);
-      res.json({ ok: true, user: company.user, customer: company.customer });
+      res.json({ ok: true, user: company.user, customer: company.customer, logo: company.logo || '' });
     } catch (err) { next(err); }
   });
 
@@ -1215,6 +1215,13 @@ async function main() {
   app.put('/api/dealer/company', requireDealer, async function (req, res, next) {
     try {
       res.json({ ok: true, customer: await store.updateDealerCompany(req.dealer, req.body || {}) });
+    } catch (err) { dealerDocError(err, res, next); }
+  });
+
+  app.post('/api/dealer/logo', requireDealer, dealerInquiryUpload.single('file'), async function (req, res, next) {
+    try {
+      if (!req.file) return res.status(400).json({ ok: false, error: 'Choose a JPG or PNG logo.' });
+      res.json({ ok: true, logo: await store.setDealerLogo(req.dealer, req.file) });
     } catch (err) { dealerDocError(err, res, next); }
   });
 

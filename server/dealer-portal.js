@@ -254,6 +254,21 @@ function publicDealerCustomer(row) {
   };
 }
 
+const DEALER_LOGO_NAME = 'Dealer logo';
+
+function dealerLogoUrl(files) {
+  const hit = (files || []).find(function (file) {
+    return file && file.name === DEALER_LOGO_NAME && file.url;
+  });
+  return hit ? hit.url : '';
+}
+
+function publicDealerFiles(files) {
+  return (files || []).filter(function (file) {
+    return file && file.name !== DEALER_LOGO_NAME;
+  });
+}
+
 function formatDealerFile(row) {
   if (!row) return null;
   return {
@@ -1074,7 +1089,13 @@ function sqliteApi(db, store) {
       const files = customerId
         ? db.prepare('SELECT * FROM dealer_files WHERE customer_id = ? ORDER BY datetime(created_at) DESC, id DESC').all(customerId).map(formatDealerFile)
         : [];
-      return { user: formatDealerUser(user), customer: publicDealerCustomer(customer), application: application, files: files };
+      return {
+        user: formatDealerUser(user),
+        customer: publicDealerCustomer(customer),
+        application: application,
+        files: publicDealerFiles(files),
+        logo: dealerLogoUrl(files)
+      };
     },
     async updateDealerCompany(user, payload) {
       const customerId = await resolveDealerCustomerId(store, user);
@@ -1099,6 +1120,17 @@ function sqliteApi(db, store) {
         'INSERT INTO dealer_files (customer_id, dealer_user_id, name, url, created_at) VALUES (?, ?, ?, ?, ?)'
       ).run(customerId, user && user.id || null, saved.name, saved.url, nowIso());
       return formatDealerFile(db.prepare('SELECT * FROM dealer_files WHERE id = ?').get(info.lastInsertRowid));
+    },
+    async setDealerLogo(user, file) {
+      const customerId = await resolveDealerCustomerId(store, user);
+      if (!customerId) throw noCustomerError();
+      const saved = saveResaleFile(file);
+      if (!/\.(png|jpe?g)$/i.test(saved.url || '')) throw new Error('Logo must be a JPG or PNG.');
+      db.prepare('DELETE FROM dealer_files WHERE customer_id = ? AND name = ?').run(customerId, DEALER_LOGO_NAME);
+      db.prepare(
+        'INSERT INTO dealer_files (customer_id, dealer_user_id, name, url, created_at) VALUES (?, ?, ?, ?, ?)'
+      ).run(customerId, user && user.id || null, DEALER_LOGO_NAME, saved.url, nowIso());
+      return { url: saved.url };
     },
     async listDealerProjects(user) {
       const customerId = await resolveDealerCustomerId(store, user);
@@ -1377,11 +1409,13 @@ function supabaseApi(supabase, store) {
         ? await supabase.from('dealer_files').select('*').eq('customer_id', customerId).order('created_at', { ascending: false })
         : { data: [], error: null };
       throwIfMissing(error, 'Could not load company files.');
+      const files = (data || []).map(formatDealerFile);
       return {
         user: formatDealerUser(user),
         customer: publicDealerCustomer(customer),
         application: application,
-        files: (data || []).map(formatDealerFile)
+        files: publicDealerFiles(files),
+        logo: dealerLogoUrl(files)
       };
     },
     async updateDealerCompany(user, payload) {
@@ -1412,6 +1446,23 @@ function supabaseApi(supabase, store) {
       }).select('*').single();
       throwIfMissing(error, 'Could not save the file.');
       return formatDealerFile(data);
+    },
+    async setDealerLogo(user, file) {
+      const customerId = await resolveDealerCustomerId(store, user);
+      if (!customerId) throw noCustomerError();
+      const saved = saveResaleFile(file);
+      if (!/\.(png|jpe?g)$/i.test(saved.url || '')) throw new Error('Logo must be a JPG or PNG.');
+      const removed = await supabase.from('dealer_files').delete().eq('customer_id', customerId).eq('name', DEALER_LOGO_NAME);
+      throwIfMissing(removed.error, 'Could not replace the logo.');
+      const { data, error } = await supabase.from('dealer_files').insert({
+        customer_id: customerId,
+        dealer_user_id: user && user.id || null,
+        name: DEALER_LOGO_NAME,
+        url: saved.url,
+        created_at: nowIso()
+      }).select('*').single();
+      throwIfMissing(error, 'Could not save the logo.');
+      return { url: (data && data.url) || saved.url };
     },
     async listDealerProjects(user) {
       const customerId = await resolveDealerCustomerId(store, user);
