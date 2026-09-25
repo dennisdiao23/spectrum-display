@@ -1820,6 +1820,45 @@ async function main() {
     }
   });
 
+  app.get('/api/admin/company-customers/:id/portal-logins', requireAdmin, async function (req, res, next) {
+    try {
+      const customer = await store.getCompanyCustomer(req.params.id);
+      if (!customer) return res.status(404).json({ ok: false, error: 'Customer not found.' });
+      await assertCanViewCustomer(req, customer);
+      const users = await store.listDealerUsersForCustomer(customer.id);
+      res.json({ ok: true, users: users });
+    } catch (err) {
+      if (err && err.status === 403) return res.status(403).json({ ok: false, error: err.message });
+      next(err);
+    }
+  });
+
+  app.post('/api/admin/company-customers/:id/portal-login', requireAdmin, async function (req, res, next) {
+    try {
+      const customer = await store.getCompanyCustomer(req.params.id);
+      if (!customer) return res.status(404).json({ ok: false, error: 'Customer not found.' });
+      await assertCanViewCustomer(req, customer);
+      const body = req.body || {};
+      const password = String(body.password || '');
+      if (password.length < 8) return res.status(400).json({ ok: false, error: 'Use at least 8 characters.' });
+      const person = [customer.contactFirst, customer.contactLast].filter(Boolean).join(' ');
+      const user = await store.createDealerUser({
+        email: body.email || customer.email,
+        name: body.name || person || customer.displayName || customer.companyName,
+        passwordHash: bcrypt.hashSync(password, 10),
+        customerId: customer.id,
+        applicationId: null
+      });
+      res.json({ ok: true, user: user });
+    } catch (err) {
+      if (err && err.status === 403) return res.status(403).json({ ok: false, error: err.message });
+      if (err && /already exists|email|Name|Password/i.test(err.message || '')) {
+        return res.status(400).json({ ok: false, error: err.message });
+      }
+      next(err);
+    }
+  });
+
   app.post('/api/admin/company-customers/:id/contacts', requireAdmin, async function (req, res, next) {
     try {
       const customer = await store.getCompanyCustomer(req.params.id);

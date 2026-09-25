@@ -929,6 +929,11 @@ function sqliteApi(db, store) {
         'SELECT * FROM dealer_users WHERE application_id = ? ORDER BY datetime(created_at) DESC, id DESC'
       ).all(applicationId).map(formatDealerUser);
     },
+    async listDealerUsersForCustomer(customerId) {
+      return db.prepare(
+        'SELECT * FROM dealer_users WHERE customer_id = ? ORDER BY datetime(created_at) DESC, id DESC'
+      ).all(customerId).map(formatDealerUser);
+    },
     async createDealerUser(input) {
       const email = trim(input && input.email, 160).toLowerCase();
       const name = trim(input && input.name, 120);
@@ -1207,6 +1212,11 @@ function supabaseApi(supabase, store) {
     },
     async listDealerUsersForApplication(applicationId) {
       const { data, error } = await supabase.from('dealer_users').select('*').eq('application_id', applicationId).order('created_at', { ascending: false });
+      throwIfMissing(error, 'Could not list portal logins.');
+      return (data || []).map(formatDealerUser);
+    },
+    async listDealerUsersForCustomer(customerId) {
+      const { data, error } = await supabase.from('dealer_users').select('*').eq('customer_id', customerId).order('created_at', { ascending: false });
       throwIfMissing(error, 'Could not list portal logins.');
       return (data || []).map(formatDealerUser);
     },
