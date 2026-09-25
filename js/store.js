@@ -246,7 +246,7 @@
     var account = $('[data-account]');
     if (account) account.href = www('/account.html');
     var integrator = $('[data-integrator]');
-    if (integrator) integrator.href = www('/contact');
+    if (integrator) integrator.href = www('/find');
     var word = $('[data-home]');
     if (word) word.href = href('/');
     var cart = $('[data-cart]');

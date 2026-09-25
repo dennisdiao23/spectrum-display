@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Find an integrator | Spectrum Display</title>
+  <meta name="description" content="Find an AV integrator or LED installer. Spectrum Authorized Integrators and Dealers are listed first." />
+  <link rel="canonical" href="https://www.spectrumdisplay.com/find" />
+  <link rel="icon" href="/favicon.ico" sizes="48x48" />
+  <link rel="stylesheet" href="/css/site-header.css?v=v2a" />
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <style>
+    body { margin: 0; font-family: Inter, system-ui, sans-serif; color: #121417; background: #f6f7f8; }
+    .find-main { display: flex; flex-direction: column; height: calc(100dvh - 64px); min-height: 520px; }
+    .find-bar { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; padding: 12px 16px; background: #fff; border-bottom: 1px solid #e6e8eb; }
+    .find-bar h1 { font-size: 18px; margin: 0 8px 0 0; font-weight: 650; letter-spacing: -0.02em; }
+    #find-q { height: 40px; border: 1px solid #d5d8de; border-radius: 999px; padding: 0 14px; min-width: 220px; font: inherit; }
+    #find-radii { display: flex; gap: 6px; }
+    #find-radii button, .find-card { font: inherit; cursor: pointer; }
+    #find-radii button { height: 36px; border-radius: 999px; border: 1px solid #d5d8de; background: #fff; padding: 0 12px; }
+    #find-radii button.is-on { background: #111; color: #fff; border-color: #111; }
+    #find-count { margin-left: auto; color: #5c6570; font-size: 14px; }
+    .find-body { display: flex; min-height: 0; flex: 1; }
+    #find-list { width: min(420px, 100%); overflow: auto; padding: 12px; display: flex; flex-direction: column; gap: 8px; }
+    .find-card { text-align: left; border: 1px solid #e6e8eb; background: #fff; border-radius: 12px; padding: 12px 14px; display: flex; flex-direction: column; gap: 4px; }
+    .find-card.is-on { border-color: #111; }
+    .find-card strong { font-size: 15px; }
+    .find-card span, .find-card a { color: #5c6570; font-size: 13px; }
+    .find-badge { align-self: flex-start; background: #111; color: #fff !important; border-radius: 999px; padding: 2px 8px; font-size: 11px !important; font-weight: 600; }
+    #find-map { flex: 1; min-height: 280px; background: #e8eaed; }
+    #find-empty { padding: 8px 4px; color: #5c6570; }
+    .find-note { font-size: 13px; color: #5c6570; padding: 0 16px 10px; background: #fff; }
+    @media (max-width: 800px) {
+      .find-main { height: auto; }
+      .find-body { flex-direction: column-reverse; }
+      #find-list { width: 100%; max-height: 50vh; }
+      #find-map { height: 46vh; }
+      #find-count { margin-left: 0; width: 100%; }
+    }
+  </style>
+</head>
+<body>
+  <header class="site-header" id="site-header">
+    <div class="site-header-inner">
+      <div class="site-header-top">
+        <a href="/" class="site-brand">
+          <img src="/assets/spectrum-logo.png" alt="Spectrum" class="site-brand-logo" />
+        </a>
+        <nav class="site-nav" id="site-nav"></nav>
+        <div class="site-utils"></div>
+      </div>
+    </div>
+  </header>
+  <main class="find-main">
+    <div class="find-bar">
+      <h1>Find an integrator</h1>
+      <input id="find-q" type="search" placeholder="City or shop name" aria-label="Search location" />
+      <div id="find-radii">
+        <button type="button" data-r="50">50 mi</button>
+        <button type="button" data-r="100">100 mi</button>
+        <button type="button" data-r="250">250 mi</button>
+        <button type="button" data-r="500">500 mi</button>
+        <button type="button" data-r="all" class="is-on">National</button>
+      </div>
+      <p id="find-count">Loading directory…</p>
+    </div>
+    <p class="find-note">Spectrum Authorized Integrators and Authorized Dealers stay at the top. Other shops are publicly listed offices, not a Spectrum certification.</p>
+    <div class="find-body">
+      <div>
+        <p id="find-empty" hidden>No shops in this view. Zoom out or clear the city.</p>
+        <div id="find-list"></div>
+      </div>
+      <div id="find-map" role="presentation" aria-label="Map of AV integrators"></div>
+    </div>
+  </main>
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script src="/js/site-header.js?v=find-v1"></script>
+  <script src="/js/find-directory.js?v=find-v1"></script>
+</body>
+</html>
