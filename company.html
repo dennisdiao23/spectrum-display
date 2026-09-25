@@ -2702,7 +2702,7 @@
             <button type="button" class="cc-detail-tab" data-cc-tab="contacts" role="tab" aria-selected="false">Contacts</button>
             <button type="button" class="cc-detail-tab" data-cc-tab="details" role="tab" aria-selected="false">Customer details</button>
             <button type="button" class="cc-detail-tab" data-cc-tab="notes" role="tab" aria-selected="false">Notes</button>
-            <button type="button" class="cc-detail-tab" data-cc-tab="portal" role="tab" aria-selected="false">Portal login</button>
+            <button type="button" class="cc-detail-tab hidden" id="cc-tab-portal" data-cc-tab="portal" role="tab" aria-selected="false" hidden>Portal login</button>
           </div>
           <div id="cc-detail-panel-transactions" class="cc-detail-panel" role="tabpanel">
             <div class="cc-detail-filters">
@@ -13909,9 +13909,20 @@
       }).join('');
     }
 
+    function ccIsDealerCustomer(c) {
+      return String((c && c.customerType) || '').trim().toLowerCase() === 'dealer';
+    }
+
     function setCcDetailTab(name) {
+      if (name === 'portal' && !ccIsDealerCustomer(ccDetailCustomer)) name = 'transactions';
       ccDetailTab = name || 'transactions';
       if (ccDetailId) ccTabDetailTab[ccDetailId] = ccDetailTab;
+      const portalTab = document.getElementById('cc-tab-portal');
+      if (portalTab) {
+        const showPortal = ccIsDealerCustomer(ccDetailCustomer);
+        portalTab.classList.toggle('hidden', !showPortal);
+        portalTab.hidden = !showPortal;
+      }
       document.querySelectorAll('#cc-detail-pane .cc-detail-tab').forEach(function (btn) {
         const on = btn.getAttribute('data-cc-tab') === ccDetailTab;
         btn.classList.toggle('is-on', on);
@@ -18451,7 +18462,7 @@
     document.getElementById('cc-login-form').addEventListener('submit', async function (e) {
       e.preventDefault();
       const msg = document.getElementById('cc-login-msg');
-      if (!ccDetailId || !canEdit('customers')) return;
+      if (!ccDetailId || !canEdit('customers') || !ccIsDealerCustomer(ccDetailCustomer)) return;
       if (msg) {
         msg.classList.add('hidden');
         msg.classList.remove('text-rose-400', 'text-sky-400');
