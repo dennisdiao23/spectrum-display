@@ -4,7 +4,7 @@
     home: 'dashboard-section',
     book: 'inventory-section',
     quotes: 'sales-section',
-    orders: 'view-orders',
+    orders: 'sales-section',
     projects: 'view-projects',
     panels: 'view-panels',
     company: 'view-company'
@@ -181,8 +181,12 @@
     openPortal(pathView(), false);
   }
   function renderView(name) {
+    const seen = {};
     views.forEach(function (view) {
-      viewEl(view).classList.toggle('hidden', view !== name);
+      const el = viewEl(view);
+      if (!el || seen[el.id]) return;
+      seen[el.id] = true;
+      el.classList.toggle('hidden', el !== viewEl(name));
     });
     document.querySelectorAll('#portal-nav a').forEach(function (link) {
       link.classList.toggle('is-active', link.getAttribute('data-view') === name);
@@ -190,13 +194,13 @@
     $('portal-title').textContent = tabLabel[name] || 'Dealer Portal';
     $('admin-page-sub').textContent = name === 'home' ? 'Overview' : ((me && me.customer && me.customer.companyName) || '');
     document.body.classList.toggle('inv-layout-lock', name === 'book' && !isMobileDash());
-    document.body.classList.toggle('so-split-lock', name === 'quotes' && !isMobileDash());
+    const onSales = (name === 'quotes' || name === 'orders') && !isMobileDash();
+    document.body.classList.toggle('so-split-lock', onSales);
     const sales = $('sales-section');
-    if (sales) sales.classList.toggle('so-split-on', name === 'quotes' && !isMobileDash());
+    if (sales) sales.classList.toggle('so-split-on', onSales);
     if (name === 'home') renderHome();
     if (name === 'book') renderBook();
-    if (name === 'quotes') renderQuotes();
-    if (name === 'orders') renderDocs('order');
+    if (name === 'quotes' || name === 'orders') renderQuotes();
     if (name === 'projects') loadProjects();
     if (name === 'panels') loadPanels();
     if (name === 'company') loadCompany();
@@ -439,9 +443,18 @@
     const selected = bookSku ? book.find(function (item) { return item.sku === bookSku; }) : null;
     renderBookDetail(selected || null);
   }
+  function salesKind() {
+    return pathView() === 'orders' ? 'order' : 'quote';
+  }
+  function salesTab() {
+    return salesKind() === 'order' ? 'orders' : 'quotes';
+  }
+  function salesLabel(kind) {
+    return kind === 'order' ? 'Sales Order' : 'Sales Quote';
+  }
   function quoteRoute() {
     const parts = location.pathname.replace(/\/+$/, '').split('/');
-    if (parts[2] !== 'quotes' || !parts[3]) return '';
+    if ((parts[2] !== 'quotes' && parts[2] !== 'orders') || !parts[3]) return '';
     return parts[3];
   }
   function dealerCompanyName() {
@@ -644,24 +657,27 @@
     $('so-side-name').textContent = dealerCompanyName() || 'Customer';
     $('so-side-phone').textContent = c.phone || '—';
     $('so-side-email').textContent = c.email || (me && me.user && me.user.email) || '—';
-    const open = docs.quote.filter(function (doc) { return doc.status === 'draft'; }).length;
+    const list = docs[salesKind()] || [];
+    const open = list.filter(function (doc) { return doc.status === 'draft'; }).length;
     $('so-side-balance').textContent = String(open);
-    $('so-side-tx-list').innerHTML = docs.quote.slice(0, 8).map(function (doc) {
+    $('so-side-tx-list').innerHTML = list.slice(0, 8).map(function (doc) {
       return '<button type="button" class="so-side-tx" data-quote-id="' + esc(doc.id) + '"><b>' + esc(doc.number || 'Draft') + '</b><span>' + esc(quoteStatusLabel(doc.status)) + ' · ' + money(doc.total) + '</span></button>';
-    }).join('') || '<p class="text-sm text-slate-500">No quotes yet.</p>';
+    }).join('') || '<p class="text-sm text-slate-500">No ' + (salesKind() === 'order' ? 'orders' : 'quotes') + ' yet.</p>';
   }
   function fillQuoteForm(doc) {
     const customer = (me && me.customer) || {};
+    const kind = (doc && doc.type) || salesKind();
+    const order = kind === 'order';
     const locked = !!(doc && doc.status && doc.status !== 'draft');
     $('so-id').value = (doc && doc.id) || '';
-    $('so-type').value = 'quote';
+    $('so-type').value = order ? 'order' : 'quote';
     $('so-customer').value = (doc && doc.customerName) || dealerCompanyName();
     $('so-customer-name').value = (doc && doc.customerName) || dealerCompanyName();
     $('so-customer-email').value = (doc && doc.customerEmail) || customer.email || (me && me.user && me.user.email) || '';
     $('so-number').value = (doc && doc.number) || '';
-    $('so-title').textContent = doc && doc.number ? doc.number : 'New sales quote';
-    $('so-caption-title').textContent = doc && doc.number ? doc.number : 'Sales Quote';
-    $('so-kind-label').textContent = 'Quote';
+    $('so-title').textContent = doc && doc.number ? doc.number : (order ? 'New sales order' : 'New sales quote');
+    $('so-caption-title').textContent = doc && doc.number ? doc.number : salesLabel(kind);
+    $('so-kind-label').textContent = order ? 'Sales Order' : 'Quote';
     $('so-issue').value = (doc && doc.issueDate) || new Date().toISOString().slice(0, 10);
     $('so-po').value = (doc && doc.poNumber) || '';
     ensureSelectValue($('so-terms'), (doc && doc.paymentTerms) || '30% deposit / balance before ship');
@@ -689,7 +705,7 @@
     paintQuoteLines((doc && doc.lines) || [], locked);
     fillQuoteSide();
     setQuoteLocked(locked);
-    showQuoteMsg(locked ? 'Spectrum already has this quote. Staff finish it in Company.' : '', true);
+    showQuoteMsg(locked ? ('Spectrum already has this ' + (order ? 'order' : 'quote') + '. Staff finish it in Company.') : '', true);
   }
   function showQuoteDoc(open) {
     $('so-detail').classList.toggle('hidden', !open);
@@ -700,14 +716,16 @@
   function renderQuoteTable() {
     const q = String(($('so-search') && $('so-search').value) || '').trim().toLowerCase();
     const openId = quoteRoute();
-    const rows = docs.quote.filter(function (doc) {
+    const list = docs[salesKind()] || [];
+    const rows = list.filter(function (doc) {
       if (!q) return true;
       const blob = [doc.number, doc.customerName, doc.poNumber, doc.status, doc.notes, doc.paymentTerms].join(' ').toLowerCase();
       return blob.indexOf(q) !== -1;
     });
-    const drafts = docs.quote.filter(function (doc) { return doc.status === 'draft'; }).length;
-    $('so-stat-quote').textContent = String(docs.quote.length);
-    $('so-hint-quote').textContent = drafts ? (drafts + ' draft') : 'Sales quotes';
+    const drafts = list.filter(function (doc) { return doc.status === 'draft'; }).length;
+    const order = salesKind() === 'order';
+    $('so-stat-quote').textContent = String(list.length);
+    $('so-hint-quote').textContent = drafts ? (drafts + ' draft') : (order ? 'Sales orders' : 'Sales quotes');
     $('so-table').innerHTML = rows.length ? rows.map(function (doc) {
       const on = openId && String(openId) === String(doc.id);
       return '<tr class="border-b border-slate-800 hover:bg-slate-900/80 cursor-pointer' + (on ? ' is-active' : '') + '" data-quote-id="' + esc(doc.id) + '">' +
@@ -720,18 +738,55 @@
         '<td class="py-3 px-4">' + esc(doc.dueDate || '—') + '</td>' +
         '<td class="py-3 px-4">' + esc(doc.paymentTerms || '—') + '</td>' +
         '<td class="py-3 px-4">' + esc(doc.notes || '—') + '</td></tr>';
-    }).join('') : '<tr><td class="py-6 px-4 text-slate-500" colspan="9">No quotes yet.</td></tr>';
+    }).join('') : '<tr><td class="py-6 px-4 text-slate-500" colspan="9">No ' + (order ? 'orders' : 'quotes') + ' yet.</td></tr>';
   }
-  function goQuote(id, push) {
-    const path = id ? ('/portal/quotes/' + id) : '/portal/quotes';
-    if (openTabs.indexOf('quotes') === -1) openTabs.push('quotes');
-    if (push !== false && location.pathname.replace(/\/+$/, '') !== path) {
-      history.pushState({ view: 'quotes', id: id || '' }, '', path);
+  function applySalesChrome() {
+    const order = salesKind() === 'order';
+    const label = document.querySelector('#so-overview .dash-kpi-label');
+    if (label) label.textContent = order ? 'Orders' : 'Quotes';
+    const icon = document.querySelector('#so-overview .dash-kpi-icon');
+    if (icon) {
+      icon.classList.toggle('dash-kpi-icon-sales', order);
+      icon.classList.toggle('dash-kpi-icon-website', !order);
+      icon.innerHTML = order
+        ? '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h16l-1.5 12H5.5L4 7z"/><path d="M9 7V5a3 3 0 0 1 6 0v2"/></svg>'
+        : '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M8 4h8v4H8z"/><path d="M6 8h12v12H6z"/><path d="M9 12h6M9 16h4"/></svg>';
     }
-    renderView('quotes');
+    $('so-new-btn').textContent = order ? 'New sales order' : 'New sales quote';
+    $('so-back').textContent = order ? '← All orders' : '← All quotes';
+    $('so-number-label').textContent = order ? 'Sales order no.' : 'Quote no.';
+    const note = document.querySelector('#so-detail .so-doc-note');
+    if (note) {
+      note.textContent = order
+        ? 'Save sends a draft sales order to Spectrum. Price is your dealer net. There is no online checkout.'
+        : 'Save sends a draft sales quote to Spectrum. Price is your dealer net. Factory cost is not shown.';
+    }
+    const lead = document.querySelector('#so-overview-panel .inv-overview-lead');
+    if (lead) {
+      lead.textContent = order
+        ? 'Select an order to view it here. New sales order opens a draft for Spectrum. Factory cost is not on this page.'
+        : 'Select a quote to view it here. New sales quote opens a draft for Spectrum. Factory cost is not on this page.';
+    }
+    const openLabel = $('so-side-open-label');
+    if (openLabel) openLabel.textContent = order ? 'Open orders' : 'Open quotes';
+    const txLabel = document.querySelector('#so-side-tx .so-side-label');
+    if (txLabel) txLabel.textContent = order ? 'Recent orders' : 'Recent quotes';
+  }
+  function goSales(tab, id, push) {
+    const name = tab === 'orders' || tab === 'order' ? 'orders' : 'quotes';
+    const path = id ? ('/portal/' + name + '/' + id) : ('/portal/' + name);
+    if (openTabs.indexOf(name) === -1) openTabs.push(name);
+    if (push !== false && location.pathname.replace(/\/+$/, '') !== path) {
+      history.pushState({ view: name, id: id || '' }, '', path);
+    }
+    renderView(name);
     renderMasterTabs();
   }
+  function goQuote(id, push) {
+    goSales(salesTab(), id, push);
+  }
   function renderQuotes() {
+    applySalesChrome();
     showQuoteError('');
     renderQuoteTable();
     const route = quoteRoute();
@@ -745,10 +800,10 @@
       showQuoteDoc(true);
       return;
     }
-    const found = docs.quote.find(function (doc) { return String(doc.id) === String(route); });
+    const found = (docs[salesKind()] || []).find(function (doc) { return String(doc.id) === String(route); });
     if (!found) {
       showQuoteDoc(false);
-      showQuoteError('That quote is not on your account.');
+      showQuoteError(salesKind() === 'order' ? 'That order is not on your account.' : 'That quote is not on your account.');
       return;
     }
     showQuoteMsg('');
@@ -779,17 +834,18 @@
     if (locked) return;
     showQuoteMsg('');
     try {
-      const saved = await api(id ? ('/api/dealer/docs/' + id) : '/api/dealer/quotes', {
+      const order = salesKind() === 'order' || $('so-type').value === 'order';
+      const saved = await api(id ? ('/api/dealer/docs/' + id) : ('/api/dealer/' + (order ? 'orders' : 'quotes')), {
         method: id ? 'PUT' : 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(quotePayload())
       });
       await refreshDocs();
-      const next = saved.doc || saved.quote;
+      const next = saved.doc || saved.quote || saved.order;
       if (after === 'close') goQuote('', true);
       else if (after === 'new') goQuote('new', true);
       else if (next && next.id) goQuote(next.id, true);
-      showQuoteMsg('Draft saved. It is in Company as a sales quote.', true);
+      showQuoteMsg(order ? 'Draft saved. It is in Company as a sales order.' : 'Draft saved. It is in Company as a sales quote.', true);
     } catch (err) {
       showQuoteMsg(err.message, false);
     }
@@ -797,7 +853,7 @@
   async function deleteQuote() {
     const id = $('so-id').value;
     if (!id) return;
-    if (!window.confirm('Delete this draft quote?')) return;
+    if (!window.confirm(salesKind() === 'order' ? 'Delete this draft order?' : 'Delete this draft quote?')) return;
     try {
       await api('/api/dealer/docs/' + id, { method: 'DELETE' });
       await refreshDocs();
@@ -1220,10 +1276,10 @@
     const parts = path.split('/');
     if (parts[1] !== 'portal') return;
     if (parts[3]) {
-      if (parts[2] === 'quotes') {
+      if (parts[2] === 'quotes' || parts[2] === 'orders') {
         e.preventDefault();
         document.body.classList.remove('dash-open');
-        goQuote(parts[3], true);
+        goSales(parts[2], parts[3], true);
       }
       return;
     }
@@ -1236,7 +1292,7 @@
     if (!me) return;
     renderMasterTabs();
     document.body.classList.toggle('inv-layout-lock', pathView() === 'book' && !isMobileDash());
-    const onQuotes = pathView() === 'quotes' && !isMobileDash();
+    const onQuotes = (pathView() === 'quotes' || pathView() === 'orders') && !isMobileDash();
     document.body.classList.toggle('so-split-lock', onQuotes);
     const sales = $('sales-section');
     if (sales) {
