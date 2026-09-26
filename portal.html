@@ -6,12 +6,79 @@
   <link rel="icon" href="/favicon.ico" sizes="48x48" />
   <title>Dealer Portal | Spectrum Display</title>
   <meta name="robots" content="noindex, nofollow" />
-  <link rel="stylesheet" href="/css/company-dash.css?v=dealer-book1" />
+  <link rel="stylesheet" href="/css/company-dash.css?v=dealer-quote1" />
   <style>
     #inventory-section .inv-split-left .cc-table-wrap { overflow: auto; }
     #inventory-section table.dash-cols[data-cols="dealer-book"] { min-width: 1080px; width: max-content; }
     #inventory-section #inv-item-panel,
     #inventory-section #inv-overview-panel { overflow: auto; }
+    #sales-section .dash-split-left .cc-table-wrap { overflow: auto; }
+    #sales-section table.dash-cols[data-cols="sales"] { min-width: 1100px; width: max-content; }
+    #so-customer[readonly],
+    #so-number[readonly],
+    #so-customer-name[readonly],
+    #so-customer-email[readonly],
+    #so-lines input[readonly] { background: #f4f7fb; }
+    .portal-dealer-brand {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0.55rem;
+      padding: 0.15rem 0.35rem 1rem;
+      text-align: center;
+    }
+    .portal-dealer-logo {
+      width: 4.6rem;
+      height: 4.6rem;
+      border-radius: 0.9rem;
+      background: #fff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+      cursor: default;
+      box-shadow: 0 6px 16px rgba(0, 0, 0, 0.18);
+    }
+    .portal-dealer-logo.is-ready { cursor: pointer; }
+    .portal-dealer-logo img {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+      display: block;
+      background: #fff;
+    }
+    .portal-dealer-mark {
+      font-size: 1.35rem;
+      font-weight: 800;
+      letter-spacing: 0.02em;
+      color: #07153a;
+    }
+    .portal-dealer-name {
+      margin: 0;
+      color: #fff;
+      font-size: 0.95rem;
+      font-weight: 700;
+      line-height: 1.25;
+      max-width: 12rem;
+    }
+    .portal-spectrum-brand {
+      display: flex;
+      justify-content: center;
+      padding: 0.15rem 0.2rem 0.05rem;
+    }
+    .portal-spectrum-brand img {
+      height: 1.65rem;
+      width: auto;
+      max-width: 9.5rem;
+      object-fit: contain;
+      display: block;
+    }
+    @media print {
+      body.company-app * { visibility: hidden; }
+      #so-detail, #so-detail * { visibility: visible; }
+      #so-detail { position: absolute; left: 0; top: 0; width: 100%; background: #fff; }
+      .so-doc-ribbon, .so-doc-actions, .so-doc-tabs, .so-doc-side, .so-line-acts, #so-add-line, .so-doc-close, .so-doc-back { display: none !important; }
+    }
   </style>
   <script src="https://cdn.tailwindcss.com"></script>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
@@ -19,9 +86,14 @@
 <body class="company-app antialiased">
   <div class="dash-scrim" id="dash-scrim"></div>
   <aside class="dash-sidebar" id="dash-sidebar">
-    <a href="/portal" class="dash-brand" title="Dealer Portal">
-      <img src="/assets/spectrum-logo-company.png" alt="Spectrum" />
-    </a>
+    <div class="portal-dealer-brand">
+      <label class="portal-dealer-logo" id="portal-dealer-logo-btn" title="Dealer logo">
+        <img id="portal-dealer-logo" alt="" hidden>
+        <span id="portal-dealer-mark">D</span>
+        <input id="portal-dealer-logo-file" type="file" accept="image/jpeg,image/png,.jpg,.jpeg,.png" hidden disabled>
+      </label>
+      <p id="portal-dealer-name">Dealer Portal</p>
+    </div>
     <nav class="dash-nav hidden" id="portal-nav">
       <div class="dash-nav-label-row">
         <p class="dash-nav-label">Main</p>
@@ -55,6 +127,11 @@
         <span>Company</span>
       </a>
     </nav>
+    <div class="dash-sidebar-foot">
+      <a href="/" class="portal-spectrum-brand" title="Spectrum Display">
+        <img src="/assets/spectrum-logo-company.png" alt="Spectrum" />
+      </a>
+    </div>
   </aside>
   <div class="dash-shell">
     <header class="dash-topbar" id="admin-toolbar">
@@ -283,7 +360,263 @@
         </div>
       </section>
 
-      <section id="view-quotes" class="hidden space-y-4"></section>
+      <section id="sales-section" class="hidden">
+        <div id="sales-list-wrap" class="cc-list-inner">
+          <div class="page-kpis" id="so-overview">
+            <button type="button" class="dash-kpi is-on" aria-pressed="true">
+              <span class="dash-kpi-icon dash-kpi-icon-website" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M8 4h8v4H8z"/><path d="M6 8h12v12H6z"/><path d="M9 12h6M9 16h4"/></svg></span>
+              <span class="dash-kpi-label">Quotes</span>
+              <strong class="dash-kpi-value" id="so-stat-quote">—</strong>
+              <span class="dash-kpi-hint" id="so-hint-quote">Sales quotes</span>
+            </button>
+          </div>
+          <div class="cc-list-toolbar cc-list-tools">
+            <input id="so-search" type="search" placeholder="Search number, customer, PO" class="cc-list-search bg-slate-800 border border-slate-700 rounded-full px-3 py-1.5 text-sm">
+            <button id="so-new-btn" type="button" class="cc-list-add-btn px-4 py-2 rounded-full bg-sky-500 hover:bg-sky-400 text-white text-sm font-semibold">New sales quote</button>
+          </div>
+          <p id="so-error" class="hidden text-sm text-red-400 mb-3"></p>
+          <div id="so-split" class="dash-split so-split" style="--so-left-w: min(720px, 58vw)">
+            <div id="so-split-left" class="dash-split-left">
+              <div class="cc-table-card rounded-2xl border border-slate-800">
+                <div id="so-table-wrap" class="cc-table-wrap overflow-x-auto">
+                  <table class="w-full text-sm dash-cols" data-cols="sales">
+                    <thead class="text-left text-slate-400 border-b border-slate-800">
+                      <tr>
+                        <th class="py-3 px-4 font-medium" data-col="number">Number</th>
+                        <th class="py-3 px-4 font-medium" data-col="customer">Customer</th>
+                        <th class="py-3 px-4 font-medium" data-col="date">Date</th>
+                        <th class="py-3 px-4 font-medium" data-col="status">Status</th>
+                        <th class="py-3 px-4 font-medium" data-col="total">Total</th>
+                        <th class="py-3 px-4 font-medium" data-col="po">PO number</th>
+                        <th class="py-3 px-4 font-medium" data-col="due">Valid until</th>
+                        <th class="py-3 px-4 font-medium" data-col="terms">Terms</th>
+                        <th class="py-3 px-4 font-medium" data-col="notes">Notes</th>
+                      </tr>
+                    </thead>
+                    <tbody id="so-table" class="text-slate-200"></tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+            <div id="so-split-resizer" class="dash-split-resizer" role="separator" aria-orientation="vertical" aria-label="Resize document panels" tabindex="0"></div>
+            <div id="so-split-right" class="dash-split-right">
+              <div id="so-overview-panel" class="inv-right-panel">
+                <div class="inv-overview-summary">
+                  <p class="inv-overview-lead">Select a quote to view it here. New sales quote opens a draft for Spectrum. Factory cost is not on this page.</p>
+                </div>
+              </div>
+              <div id="so-detail" class="hidden so-doc">
+                <button type="button" id="so-back" class="so-doc-back">← All quotes</button>
+                <div class="so-doc-frame">
+                  <div class="so-doc-chrome">
+                    <div class="so-doc-caption" id="so-doc-caption">
+                      <span id="so-caption-title">Sales Quote</span>
+                    </div>
+                    <div class="so-doc-ribbon" id="so-doc-ribbon">
+                      <button type="button" id="so-ribbon-find" class="so-doc-ribbon-btn" title="Find">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="11" cy="11" r="6"/><path d="m20 20-3.5-3.5"/></svg>
+                        <span>Find</span>
+                      </button>
+                      <button type="button" id="so-ribbon-new" class="so-doc-ribbon-btn" title="New">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="5" y="3" width="14" height="18" rx="1.5"/><path d="M8 8h8M8 12h8M8 16h5"/></svg>
+                        <span>New</span>
+                      </button>
+                      <button type="submit" form="so-form" class="so-doc-ribbon-btn" data-so-after="stay" title="Save">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M5 5h11l3 3v11H5z"/><path d="M8 5v5h8V5M8 19v-6h8v6"/></svg>
+                        <span>Save</span>
+                      </button>
+                      <button type="button" id="so-ribbon-delete" class="so-doc-ribbon-btn" title="Delete">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 7h16M9 7V5h6v2M8 7l1 12h6l1-12"/></svg>
+                        <span>Delete</span>
+                      </button>
+                      <button type="button" id="so-ribbon-print" class="so-doc-ribbon-btn" title="Print">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M7 9V4h10v5"/><rect x="6" y="13" width="12" height="7"/><path d="M6 17H4V9h16v8h-2"/></svg>
+                        <span>Print</span>
+                      </button>
+                      <button type="button" id="so-ribbon-pdf" class="so-doc-ribbon-btn" title="PDF">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M7 3h7l5 5v13H7z"/><path d="M14 3v5h5"/><path d="M9 14h6M9 17h4"/></svg>
+                        <span>PDF</span>
+                      </button>
+                    </div>
+                    <button type="button" id="so-caption-close" class="so-doc-close" aria-label="Close">×</button>
+                  </div>
+                  <div class="so-doc-tabs" id="so-doc-tabs">
+                    <button type="button" class="so-doc-tab is-on" data-so-pane="doc">Document</button>
+                  </div>
+                  <div class="so-doc-workspace">
+                    <form id="so-form" class="so-doc-main" data-so-pane-panel="doc">
+                      <input type="hidden" id="so-id">
+                      <input type="hidden" id="so-type" value="quote">
+                      <div class="so-doc-scroll">
+                        <div class="so-doc-legacy-title">
+                          <div class="so-doc-legacy-copy">
+                            <h2 id="so-title" class="font-semibold text-lg">New sales quote</h2>
+                            <p class="so-doc-note">Save sends a draft sales quote to Spectrum. Price is your dealer net. Factory cost is not shown.</p>
+                          </div>
+                          <div class="doc-head-actions">
+                            <button type="button" id="so-print-btn" class="so-doc-btn">Print</button>
+                            <button type="button" id="so-pdf-btn" class="so-doc-btn">PDF</button>
+                          </div>
+                        </div>
+                        <div class="so-doc-headblock">
+                          <div class="so-doc-kind">
+                            <h2 id="so-kind-label">Quote</h2>
+                            <span id="so-status-badge" class="so-status-badge is-draft" hidden></span>
+                          </div>
+                          <div class="so-doc-top">
+                            <div class="so-doc-idline">
+                              <label class="so-field so-f-customer"><span>Customer</span>
+                                <input id="so-customer" type="text" readonly>
+                              </label>
+                              <label class="so-field so-f-number"><span id="so-number-label">Quote no.</span>
+                                <input id="so-number" type="text" placeholder="Assigned when you save" readonly>
+                              </label>
+                            </div>
+                            <div class="so-doc-head-right">
+                              <div class="so-doc-amount">AMOUNT <strong id="so-head-amount">$0.00</strong></div>
+                              <div class="so-doc-meta">
+                                <label class="so-field so-f-date"><span>Date</span>
+                                  <input id="so-issue" type="date">
+                                </label>
+                                <label class="so-field so-f-po"><span>P.O. number</span>
+                                  <input id="so-po" type="text">
+                                </label>
+                                <label class="so-field so-f-terms"><span>Terms</span>
+                                  <select id="so-terms">
+                                    <option value="30% deposit / balance before ship">30% deposit / balance before ship</option>
+                                    <option value="Due on receipt">Due on receipt</option>
+                                    <option value="Net 15">Net 15</option>
+                                    <option value="Net 30">Net 30</option>
+                                    <option value="Net 45">Net 45</option>
+                                    <option value="Net 60">Net 60</option>
+                                  </select>
+                                </label>
+                                <label class="so-field so-f-due"><span id="so-due-label">Valid until</span>
+                                  <input id="so-due" type="date">
+                                </label>
+                                <label class="so-field so-f-status"><span>Status</span>
+                                  <select id="so-status" disabled>
+                                    <option value="draft">Draft</option>
+                                  </select>
+                                </label>
+                                <label class="so-field so-f-so"><span>S.O. No.</span>
+                                  <input id="so-so-number" type="text">
+                                </label>
+                                <label class="so-field so-f-rep"><span>Rep</span>
+                                  <input id="so-rep" type="text">
+                                </label>
+                                <label class="so-field so-f-account"><span>Account #</span>
+                                  <input id="so-account" type="text">
+                                </label>
+                                <label class="so-field so-f-ship-date"><span>Ship date</span>
+                                  <input id="so-ship-date" type="date">
+                                </label>
+                                <label class="so-field so-f-ship-via"><span>Ship via</span>
+                                  <input id="so-ship-via" type="text">
+                                </label>
+                                <label class="so-field so-f-tracking"><span>Tracking</span>
+                                  <input id="so-tracking" type="text">
+                                </label>
+                              </div>
+                            </div>
+                            <label class="so-field so-field-name"><span>Customer name</span>
+                              <input id="so-customer-name" type="text" readonly>
+                            </label>
+                            <label class="so-field so-field-email"><span>Email</span>
+                              <input id="so-customer-email" type="email" readonly>
+                            </label>
+                          </div>
+                          <div class="so-doc-addresses">
+                            <div>
+                              <h3>Bill to</h3>
+                              <pre id="so-bill-to">—</pre>
+                            </div>
+                            <div>
+                              <h3>Ship to</h3>
+                              <pre id="so-ship-to">—</pre>
+                            </div>
+                          </div>
+                        </div>
+                        <div class="so-doc-lines">
+                          <div class="so-doc-lines-head">
+                            <h3>Item details</h3>
+                          </div>
+                          <div class="so-doc-lines-wrap">
+                            <table class="w-full text-sm dash-cols" data-cols="so-lines">
+                              <thead>
+                                <tr>
+                                  <th class="py-2 px-1 font-medium so-line-num-h" data-lock="start">#</th>
+                                  <th class="py-2 px-3 font-medium" data-col="item">Item</th>
+                                  <th class="py-2 px-3 font-medium" data-col="sku">SKU</th>
+                                  <th class="py-2 px-3 font-medium" data-col="description">Description</th>
+                                  <th class="py-2 px-3 font-medium" data-col="qty">Qty</th>
+                                  <th class="py-2 px-3 font-medium" data-col="onHand">On hand</th>
+                                  <th class="py-2 px-3 font-medium" data-col="dealer">Dealer Price</th>
+                                  <th class="py-2 px-3 font-medium" data-col="price">Price</th>
+                                  <th class="py-2 px-3 font-medium" data-col="amount">Amount</th>
+                                  <th class="py-2 px-1 font-medium so-line-acts-h"></th>
+                                </tr>
+                              </thead>
+                              <tbody id="so-lines"></tbody>
+                            </table>
+                          </div>
+                          <button type="button" id="so-add-line" class="po-link">Add lines</button>
+                        </div>
+                        <div class="so-doc-foot">
+                          <div class="so-doc-memo">
+                            <label class="so-field"><span>Customer message / memo</span>
+                              <textarea id="so-notes" rows="3" placeholder="Job, ship date, special terms…"></textarea>
+                            </label>
+                            <p id="so-msg" class="hidden text-sm"></p>
+                          </div>
+                          <div class="so-doc-totals">
+                            <label class="so-field so-field-inline"><span>Discount $</span>
+                              <input id="so-discount" type="number" step="0.01" min="0" value="0">
+                            </label>
+                            <label class="so-field so-field-inline"><span>Tax %</span>
+                              <input id="so-tax-rate" type="number" step="0.01" min="0" value="0">
+                            </label>
+                            <div class="so-doc-total-row"><span>Subtotal</span><span id="so-subtotal">$0.00</span></div>
+                            <div class="so-doc-total-row"><span>Tax</span><span id="so-tax">$0.00</span></div>
+                            <div class="so-doc-total-row is-grand"><span>Total</span><span id="so-grand">$0.00</span></div>
+                            <div class="so-doc-total-row" id="so-payments-row"><span>Payments applied</span><span id="so-payments-applied">$0.00</span></div>
+                            <div class="so-doc-total-row" id="so-balance-row"><span>Balance due</span><span id="so-balance-due">$0.00</span></div>
+                          </div>
+                        </div>
+                      </div>
+                      <div class="so-doc-actions">
+                        <button type="submit" id="so-save" class="so-doc-btn so-doc-btn-primary" data-so-after="stay">Save</button>
+                        <button type="submit" id="so-save-close" class="so-doc-btn so-doc-btn-primary" data-so-after="close">Save &amp; Close</button>
+                        <button type="submit" id="so-save-new" class="so-doc-btn" data-so-after="new">Save &amp; New</button>
+                        <button type="button" id="so-revert" class="so-doc-btn">Revert</button>
+                        <button type="button" id="so-delete-btn" class="so-doc-btn hidden">Delete</button>
+                      </div>
+                    </form>
+                    <aside class="so-doc-side" id="so-doc-side">
+                      <h3 id="so-side-name">Customer</h3>
+                      <div class="so-side-tabs">
+                        <button type="button" class="is-on" data-so-side="customer">Customer</button>
+                        <button type="button" data-so-side="tx">Transaction</button>
+                      </div>
+                      <div id="so-side-customer">
+                        <dl class="so-side-dl">
+                          <div><dt>Phone</dt><dd id="so-side-phone">—</dd></div>
+                          <div><dt>Email</dt><dd id="so-side-email">—</dd></div>
+                          <div><dt>Open quotes</dt><dd id="so-side-balance">—</dd></div>
+                        </dl>
+                      </div>
+                      <div id="so-side-tx" hidden>
+                        <p class="so-side-label">Recent quotes</p>
+                        <div id="so-side-tx-list" class="so-side-tx-list"></div>
+                      </div>
+                    </aside>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
       <section id="view-orders" class="hidden space-y-4"></section>
 
       <section id="view-projects" class="hidden space-y-3">
@@ -334,6 +667,9 @@
       </section>
     </main>
   </div>
-  <script src="/js/portal.js?v=dealer-book1"></script>
+  <div id="so-sku-menu" class="so-sku-menu" hidden>
+    <div class="so-sku-menu-list"></div>
+  </div>
+  <script src="/js/portal.js?v=dealer-brand1"></script>
 </body>
 </html>
