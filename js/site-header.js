@@ -47,11 +47,6 @@
     return p === '/dealer' || pathFile() === 'dealer.html';
   }
 
-  function onFindPath() {
-    var p = pathName();
-    return p === '/find' || pathFile() === 'find.html';
-  }
-
   function spectrumProductHref(brandId, seriesId) {
     var id = String(seriesId == null ? '' : seriesId).replace(/^\/+|\/+$/g, '');
     if (!id) return '/products';
@@ -567,7 +562,6 @@
         '</button>' +
       '</div>' +
       '<a class="site-nav-link' + (onCalculatorPath() ? ' is-active' : '') + '" href="/led-wall-calculator" data-i18n="nav.tabDesigner">Calculator</a>' +
-      '<a class="site-nav-link' + (onFindPath() ? ' is-active' : '') + '" href="/find">Find installer</a>' +
       '<a class="site-nav-link' + (onDealerPath() ? ' is-active' : '') + '" href="/dealer" data-i18n="nav.dealer">Dealer</a>' +
       '<a class="site-nav-phone" href="tel:+18448488899">1.844.848.8899</a>';
 
