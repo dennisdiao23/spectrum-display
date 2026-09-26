@@ -523,7 +523,7 @@ async function deleteDealerDocFor(store, user, id) {
   const current = await store.getSalesDoc(id);
   const customerId = await resolveDealerCustomerId(store, user);
   if (!current || !customerId || String(current.customerId) !== String(customerId)) return null;
-  if (current.type !== 'quote') return null;
+  if (current.type !== 'quote' && current.type !== 'order') return null;
   if (current.status !== 'draft') {
     const err = new Error('Spectrum already has this document. Staff will finish it in Company.');
     err.code = 'not_draft';
