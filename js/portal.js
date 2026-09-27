@@ -21,7 +21,7 @@
   let openTabs = [];
   let bookFilter = 'all';
   let bookSku = '';
-  const tabLabel = { home: 'Dashboard', book: 'Dealer book', quotes: 'Quote', orders: 'Order', projects: 'Projects', panels: 'Custom panels', company: 'Company' };
+  const tabLabel = { home: 'Dashboard', book: 'Dealer book', quotes: 'Quote', orders: 'Order', projects: 'Projects', panels: 'Saved Panel', company: 'Company' };
   const tabIcon = {
     home: '<svg class="dash-master-tab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="8" height="8" rx="1.5"/><rect x="13" y="3" width="8" height="8" rx="1.5"/><rect x="3" y="13" width="8" height="8" rx="1.5"/><rect x="13" y="13" width="8" height="8" rx="1.5"/></svg>',
     book: '<svg class="dash-master-tab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 10 12 4.5 21 10v9.5a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V10z"/><path d="M9 20.5V12h6v8.5"/></svg>',
@@ -195,6 +195,8 @@
     document.querySelectorAll('#dash-sidebar a[data-view]').forEach(function (link) {
       link.classList.toggle('is-active', link.getAttribute('data-view') === name);
     });
+    const calculator = $('portal-calculator');
+    if (calculator) calculator.classList.toggle('is-active', name === 'panels');
     $('portal-title').textContent = tabLabel[name] || 'Dealer Portal';
     $('admin-page-sub').textContent = name === 'home' ? 'Overview' : ((me && me.customer && me.customer.companyName) || '');
     document.body.classList.toggle('inv-layout-lock', (name === 'book' || name === 'projects' || name === 'panels') && !isMobileDash());
