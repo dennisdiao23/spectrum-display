@@ -57,7 +57,8 @@
       font-weight: 700;
       line-height: 1.25;
     }
-    body.inv-layout-lock #projects-section:not(.hidden) {
+    body.inv-layout-lock #projects-section:not(.hidden),
+    body.inv-layout-lock #panels-section:not(.hidden) {
       flex: 1 1 auto;
       min-height: 0;
       overflow: hidden;
@@ -65,18 +66,26 @@
       flex-direction: column;
     }
     body.inv-layout-lock #projects-section .cc-list-kpis,
-    body.inv-layout-lock #projects-section .cc-list-toolbar { flex-shrink: 0; }
+    body.inv-layout-lock #projects-section .cc-list-toolbar,
+    body.inv-layout-lock #panels-section .cc-list-kpis,
+    body.inv-layout-lock #panels-section .cc-list-toolbar { flex-shrink: 0; }
     #proj-workspace,
-    #proj-list-wrap {
+    #proj-list-wrap,
+    #panel-workspace,
+    #panel-list-wrap {
       display: flex;
       flex-direction: column;
       min-height: 0;
       flex: 1 1 auto;
     }
-    #projects-section .inv-split-left .cc-table-wrap { overflow: auto; }
-    #projects-section table.dash-cols[data-cols="projects"] { min-width: 980px; width: max-content; }
+    #projects-section .inv-split-left .cc-table-wrap,
+    #panels-section .inv-split-left .cc-table-wrap { overflow: auto; }
+    #projects-section table.dash-cols[data-cols="projects"],
+    #panels-section table.dash-cols[data-cols="panels"] { min-width: 980px; width: max-content; }
     #projects-section #proj-detail,
-    #projects-section #proj-overview { overflow: auto; }
+    #projects-section #proj-overview,
+    #panels-section #panel-detail,
+    #panels-section #panel-overview { overflow: auto; }
     @media print {
       body.company-app * { visibility: hidden; }
       #so-detail, #so-detail * { visibility: visible; }
@@ -685,10 +694,66 @@
         </div>
       </section>
 
-      <section id="view-panels" class="hidden space-y-3">
-        <p class="text-sm text-slate-500">Custom panels saved on a My Account that uses this same email.</p>
-        <div id="panels-list" class="space-y-3"></div>
-        <p id="panels-empty" class="hidden text-sm text-slate-500">No custom panels yet.</p>
+      <section id="panels-section" class="hidden">
+        <div id="panel-workspace">
+          <div id="panel-list-wrap" class="cc-list-inner">
+            <div class="page-kpis cc-list-kpis">
+              <div class="dash-kpi is-on" aria-pressed="true">
+                <span class="dash-kpi-icon dash-kpi-icon-inventory" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M21 8.5 12 13 3 8.5 12 4l9 4.5z"/><path d="M3 8.5v7L12 20l9-4.5v-7"/><path d="M12 13v7"/></svg></span>
+                <span class="dash-kpi-label">Custom panels</span>
+                <strong class="dash-kpi-value" id="panel-stat">—</strong>
+                <span class="dash-kpi-hint" id="panel-hint">Saved panels</span>
+              </div>
+            </div>
+            <div class="cc-list-toolbar cc-list-tools">
+              <input id="panel-search" type="search" placeholder="Search name, type, pitch" class="cc-list-search bg-slate-800 border border-slate-700 rounded-full px-3 py-1.5 text-sm">
+              <a href="/led-wall-calculator?brand=custom" class="cc-list-add-btn px-4 py-2 rounded-full bg-sky-500 hover:bg-sky-400 text-white text-sm font-semibold">Open calculator</a>
+            </div>
+            <div id="panel-split" class="inv-split" style="--inv-left-w: min(720px, 58vw)">
+              <div id="panel-split-left" class="inv-split-left">
+                <div class="cc-table-card rounded-2xl border border-slate-800">
+                  <div class="cc-table-wrap">
+                    <table class="w-full text-sm dash-cols" data-cols="panels">
+                      <thead class="text-left text-slate-400 border-b border-slate-800">
+                        <tr>
+                          <th class="py-3 px-4 font-medium">Name</th>
+                          <th class="py-3 px-4 font-medium">Size</th>
+                          <th class="py-3 px-4 font-medium">Pitch</th>
+                          <th class="py-3 px-4 font-medium">Type</th>
+                          <th class="py-3 px-4 font-medium">Weight</th>
+                          <th class="py-3 px-4 font-medium">Saved</th>
+                        </tr>
+                      </thead>
+                      <tbody id="panel-table" class="text-slate-200"></tbody>
+                    </table>
+                  </div>
+                </div>
+              </div>
+              <div id="panel-split-resizer" class="inv-split-resizer" role="separator" aria-orientation="vertical" aria-label="Resize panel columns" tabindex="0"></div>
+              <div class="inv-split-right">
+                <div id="panel-overview" class="inv-right-panel">
+                  <div class="inv-overview-summary">
+                    <p class="inv-overview-lead">Select a custom panel to view it here. These are panels saved from the LED Wall Calculator on a website account with this same email.</p>
+                  </div>
+                </div>
+                <div id="panel-detail" class="hidden inv-right-panel" aria-hidden="true">
+                  <h2 id="panel-title" class="font-semibold text-lg">Custom Panel</h2>
+                  <p id="panel-sub" class="text-sm text-slate-500 mt-1"></p>
+                  <dl class="mt-4 grid grid-cols-2 gap-3 text-sm">
+                    <div><dt class="text-slate-500">Size</dt><dd id="panel-size">—</dd></div>
+                    <div><dt class="text-slate-500">Pitch</dt><dd id="panel-pitch">—</dd></div>
+                    <div><dt class="text-slate-500">Type</dt><dd id="panel-type">—</dd></div>
+                    <div><dt class="text-slate-500">Weight</dt><dd id="panel-weight">—</dd></div>
+                    <div><dt class="text-slate-500">Power avg</dt><dd id="panel-pavg">—</dd></div>
+                    <div><dt class="text-slate-500">Power max</dt><dd id="panel-pmax">—</dd></div>
+                    <div class="col-span-2"><dt class="text-slate-500">Saved</dt><dd id="panel-saved">—</dd></div>
+                  </dl>
+                  <a id="panel-open" class="inline-block mt-5 text-sm text-sky-600 font-semibold" href="/led-wall-calculator?brand=custom">Open in calculator</a>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
       </section>
 
       <section id="view-company" class="hidden space-y-6">
@@ -741,6 +806,6 @@
   <div id="so-sku-menu" class="so-sku-menu" hidden>
     <div class="so-sku-menu-list"></div>
   </div>
-  <script src="/js/portal.js?v=dealer-projects1"></script>
+  <script src="/js/portal.js?v=dealer-panels1"></script>
 </body>
 </html>

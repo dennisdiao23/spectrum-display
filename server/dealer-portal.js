@@ -328,6 +328,42 @@ function publicDealerProject(row) {
   };
 }
 
+function publicDealerPanel(row) {
+  const src = row || {};
+  const payload = parseJson(src.payload, {});
+  const name = projectField(src, payload, 'name') || 'Custom Panel';
+  const w = projectField(src, payload, 'w');
+  const h = projectField(src, payload, 'h');
+  const pitch = projectField(src, payload, 'pitch');
+  const type = projectField(src, payload, 'type') || 'Custom';
+  const weight = projectField(src, payload, 'weight');
+  const pavg = projectField(src, payload, 'pavg');
+  const pmax = projectField(src, payload, 'pmax');
+  const qs = new URLSearchParams();
+  qs.set('brand', 'custom');
+  if (name) qs.set('cname', String(name));
+  if (w !== '' && w != null) qs.set('cw', String(w));
+  if (h !== '' && h != null) qs.set('ch', String(h));
+  if (pitch !== '' && pitch != null) qs.set('pitch', String(pitch));
+  if (type) qs.set('ctype', String(type));
+  if (weight !== '' && weight != null) qs.set('wt', String(weight));
+  if (pavg !== '' && pavg != null) qs.set('pavg', String(pavg));
+  if (pmax !== '' && pmax != null) qs.set('pmax', String(pmax));
+  return {
+    id: src.id == null ? '' : String(src.id),
+    name: name,
+    w: w,
+    h: h,
+    pitch: pitch,
+    type: type,
+    weight: weight,
+    pavg: pavg,
+    pmax: pmax,
+    designerUrl: '/led-wall-calculator?' + qs.toString(),
+    savedAt: src.savedAt || src.updated_at || src.created_at || ''
+  };
+}
+
 async function websiteSavedFor(store, email) {
   const empty = { projects: [], panels: [] };
   if (!email || !store.listAccounts || !store.getAccount) return empty;
@@ -342,16 +378,7 @@ async function websiteSavedFor(store, email) {
       return publicDealerProject(row);
     });
     const panels = ((account && account.panels) || []).map(function (row) {
-      return {
-        id: row.id,
-        source: 'account',
-        name: row.name || 'Custom Panel',
-        w: row.w,
-        h: row.h,
-        pitch: row.pitch,
-        type: row.type || '',
-        savedAt: row.updated_at || row.created_at || ''
-      };
+      return publicDealerPanel(row);
     });
     return { projects: projects, panels: panels };
   } catch (_err) {
@@ -1193,7 +1220,13 @@ function sqliteApi(db, store) {
         ? db.prepare('SELECT * FROM dealer_custom_panels WHERE customer_id = ? ORDER BY datetime(updated_at) DESC, id DESC').all(customerId)
         : [];
       const portalRows = rows.map(function (row) {
-        return Object.assign({ id: 'portal-' + row.id, source: 'portal', savedAt: row.updated_at }, parseJson(row.payload, {}), { name: row.name || 'Custom Panel' });
+        const payload = parseJson(row.payload, {});
+        return publicDealerPanel(Object.assign({}, payload, {
+          id: 'portal-' + row.id,
+          name: row.name || payload.name || 'Custom Panel',
+          savedAt: row.updated_at || row.created_at,
+          payload: payload
+        }));
       });
       const site = await websiteSavedFor(store, user && user.email);
       return portalRows.concat(site.panels);
@@ -1533,7 +1566,13 @@ function supabaseApi(supabase, store) {
         : { data: [], error: null };
       throwIfMissing(error, 'Could not load custom panels.');
       const portalRows = (data || []).map(function (row) {
-        return Object.assign({ id: 'portal-' + row.id, source: 'portal', savedAt: row.updated_at }, row.payload || {}, { name: row.name || 'Custom Panel' });
+        const payload = parseJson(row.payload, {});
+        return publicDealerPanel(Object.assign({}, payload, {
+          id: 'portal-' + row.id,
+          name: row.name || payload.name || 'Custom Panel',
+          savedAt: row.updated_at || row.created_at,
+          payload: payload
+        }));
       });
       const site = await websiteSavedFor(store, user && user.email);
       return portalRows.concat(site.panels);

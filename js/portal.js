@@ -6,7 +6,7 @@
     quotes: 'sales-section',
     orders: 'sales-section',
     projects: 'projects-section',
-    panels: 'view-panels',
+    panels: 'panels-section',
     company: 'view-company'
   };
   const views = Object.keys(viewIds);
@@ -16,6 +16,7 @@
   let projects = [];
   let projectId = '';
   let panels = [];
+  let panelId = '';
   let dashHome = 'book';
   let openTabs = [];
   let bookFilter = 'all';
@@ -196,7 +197,7 @@
     });
     $('portal-title').textContent = tabLabel[name] || 'Dealer Portal';
     $('admin-page-sub').textContent = name === 'home' ? 'Overview' : ((me && me.customer && me.customer.companyName) || '');
-    document.body.classList.toggle('inv-layout-lock', (name === 'book' || name === 'projects') && !isMobileDash());
+    document.body.classList.toggle('inv-layout-lock', (name === 'book' || name === 'projects' || name === 'panels') && !isMobileDash());
     const onSales = (name === 'quotes' || name === 'orders') && !isMobileDash();
     document.body.classList.toggle('so-split-lock', onSales);
     const sales = $('sales-section');
@@ -1019,15 +1020,66 @@
     projects = data.projects || [];
     renderProjects();
   }
+  function panelSize(row) {
+    if (!row) return '—';
+    const w = row.w === '' || row.w == null ? '?' : row.w;
+    const h = row.h === '' || row.h == null ? '?' : row.h;
+    return w + ' × ' + h + ' mm';
+  }
+  function panelBlank(value, suffix) {
+    if (value === '' || value == null) return '—';
+    return suffix ? (value + suffix) : String(value);
+  }
+  function renderPanelDetail(row) {
+    const overview = $('panel-overview');
+    const panel = $('panel-detail');
+    if (!row) {
+      overview.classList.remove('hidden');
+      panel.classList.add('hidden');
+      panel.setAttribute('aria-hidden', 'true');
+      return;
+    }
+    overview.classList.add('hidden');
+    panel.classList.remove('hidden');
+    panel.setAttribute('aria-hidden', 'false');
+    $('panel-title').textContent = row.name || 'Custom Panel';
+    $('panel-sub').textContent = [row.type, row.pitch === '' || row.pitch == null ? '' : ('P' + row.pitch)].filter(Boolean).join(' · ');
+    $('panel-size').textContent = panelSize(row);
+    $('panel-pitch').textContent = panelBlank(row.pitch, ' mm');
+    $('panel-type').textContent = row.type || '—';
+    $('panel-weight').textContent = panelBlank(row.weight, ' lb');
+    $('panel-pavg').textContent = panelBlank(row.pavg, ' W');
+    $('panel-pmax').textContent = panelBlank(row.pmax, ' W');
+    $('panel-saved').textContent = projectWhen(row.savedAt);
+    $('panel-open').href = row.designerUrl || '/led-wall-calculator?brand=custom';
+  }
+  function renderPanels() {
+    const q = String(($('panel-search') && $('panel-search').value) || '').trim().toLowerCase();
+    const rows = panels.filter(function (row) {
+      if (!q) return true;
+      const hay = [row.name, row.type, row.pitch].join(' ').toLowerCase();
+      return hay.indexOf(q) !== -1;
+    });
+    if (panelId && !rows.some(function (row) { return String(row.id) === String(panelId); })) panelId = '';
+    $('panel-stat').textContent = String(panels.length);
+    $('panel-hint').textContent = panels.length ? 'Saved panels' : 'None yet';
+    $('panel-table').innerHTML = rows.length ? rows.map(function (row) {
+      const on = String(row.id) === String(panelId);
+      return '<tr class="border-b border-slate-800 hover:bg-slate-900/80 cursor-pointer' + (on ? ' is-selected' : '') + '" data-panel-id="' + esc(row.id) + '">' +
+        '<td class="py-3 px-4 font-medium">' + esc(row.name || 'Custom Panel') + '</td>' +
+        '<td class="py-3 px-4">' + esc(panelSize(row)) + '</td>' +
+        '<td class="py-3 px-4">' + esc(row.pitch === '' || row.pitch == null ? '—' : row.pitch) + '</td>' +
+        '<td class="py-3 px-4">' + esc(row.type || '—') + '</td>' +
+        '<td class="py-3 px-4">' + esc(row.weight === '' || row.weight == null ? '—' : row.weight) + '</td>' +
+        '<td class="py-3 px-4">' + esc(projectWhen(row.savedAt)) + '</td></tr>';
+    }).join('') : '<tr><td class="py-6 px-4 text-slate-500" colspan="6">No custom panels yet. Open the calculator, choose Custom, and save the panel to the website account that uses this email.</td></tr>';
+    const selected = panelId ? panels.find(function (row) { return String(row.id) === String(panelId); }) : null;
+    renderPanelDetail(selected || null);
+  }
   async function loadPanels() {
     const data = await api('/api/dealer/panels');
     panels = data.panels || [];
-    const rows = panels;
-    $('panels-empty').classList.toggle('hidden', rows.length > 0);
-    $('panels-list').innerHTML = rows.map(function (row) {
-      return '<div class="rounded-2xl border p-4"><div class="font-medium">' + esc(row.name || 'Custom Panel') + '</div>' +
-        '<div class="text-xs text-slate-500 mt-1">' + esc((row.w || '?') + ' × ' + (row.h || '?') + ' mm') + '</div></div>';
-    }).join('');
+    renderPanels();
   }
   function fillCompany(customer) {
     const c = customer || {};
@@ -1194,6 +1246,37 @@
       e.preventDefault();
       const startX = e.clientX;
       const leftPane = $('proj-split-left');
+      const left = leftPane ? leftPane.getBoundingClientRect().width : 720;
+      document.body.classList.add('inv-split-dragging');
+      function move(ev) {
+        const next = Math.max(280, Math.min(split.getBoundingClientRect().width - 280, left + (ev.clientX - startX)));
+        split.style.setProperty('--inv-left-w', next + 'px');
+      }
+      function up() {
+        document.body.classList.remove('inv-split-dragging');
+        window.removeEventListener('pointermove', move);
+        window.removeEventListener('pointerup', up);
+      }
+      window.addEventListener('pointermove', move);
+      window.addEventListener('pointerup', up);
+    });
+  })();
+  $('panel-search').addEventListener('input', renderPanels);
+  document.getElementById('panels-section').addEventListener('click', function (e) {
+    const row = e.target.closest('#panel-table tr[data-panel-id]');
+    if (!row) return;
+    panelId = row.getAttribute('data-panel-id') || '';
+    renderPanels();
+  });
+  (function bindPanelResizer() {
+    const bar = $('panel-split-resizer');
+    const split = $('panel-split');
+    if (!bar || !split) return;
+    bar.addEventListener('pointerdown', function (e) {
+      if (isMobileDash()) return;
+      e.preventDefault();
+      const startX = e.clientX;
+      const leftPane = $('panel-split-left');
       const left = leftPane ? leftPane.getBoundingClientRect().width : 720;
       document.body.classList.add('inv-split-dragging');
       function move(ev) {
@@ -1376,7 +1459,7 @@
   window.addEventListener('resize', function () {
     if (!me) return;
     renderMasterTabs();
-    document.body.classList.toggle('inv-layout-lock', (pathView() === 'book' || pathView() === 'projects') && !isMobileDash());
+    document.body.classList.toggle('inv-layout-lock', (pathView() === 'book' || pathView() === 'projects' || pathView() === 'panels') && !isMobileDash());
     const onQuotes = (pathView() === 'quotes' || pathView() === 'orders') && !isMobileDash();
     document.body.classList.toggle('so-split-lock', onQuotes);
     const sales = $('sales-section');
