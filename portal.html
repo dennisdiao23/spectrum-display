@@ -187,11 +187,11 @@
       </a>
       <a href="/portal/quotes" data-view="quotes" class="dash-nav-link">
         <svg class="dash-nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 4h8v4H8z"/><path d="M6 8h12v12H6z"/><path d="M9 12h6M9 16h4"/></svg>
-        <span>Quote</span>
+        <span>Request Quote</span>
       </a>
       <a href="/portal/orders" data-view="orders" class="dash-nav-link">
         <svg class="dash-nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 7h16l-1.5 12H5.5L4 7z"/><path d="M9 7V5a3 3 0 0 1 6 0v2"/></svg>
-        <span>Order</span>
+        <span>Purchase Order</span>
       </a>
       <div class="dash-nav-group">
         <a href="/portal/calculator" id="portal-calculator" data-view="calculator" class="dash-nav-link">
@@ -261,13 +261,13 @@
               </button>
               <button type="button" class="dash-kpi" data-home="quotes" aria-pressed="false">
                 <span class="dash-kpi-icon dash-kpi-icon-website" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M8 4h8v4H8z"/><path d="M6 8h12v12H6z"/><path d="M9 12h6M9 16h4"/></svg></span>
-                <span class="dash-kpi-meta"><span class="dash-kpi-label">Quotes</span></span>
+                <span class="dash-kpi-meta"><span class="dash-kpi-label">Request Quote</span></span>
                 <strong class="dash-kpi-value" id="dash-stat-quotes">—</strong>
                 <span class="dash-kpi-hint" id="dash-hint-quotes">Sales quotes</span>
               </button>
               <button type="button" class="dash-kpi" data-home="orders" aria-pressed="false">
                 <span class="dash-kpi-icon dash-kpi-icon-sales" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h16l-1.5 12H5.5L4 7z"/><path d="M9 7V5a3 3 0 0 1 6 0v2"/></svg></span>
-                <span class="dash-kpi-meta"><span class="dash-kpi-label">Orders</span></span>
+                <span class="dash-kpi-meta"><span class="dash-kpi-label">Purchase Order</span></span>
                 <strong class="dash-kpi-value" id="dash-stat-orders">—</strong>
                 <span class="dash-kpi-hint" id="dash-hint-orders">Sales orders</span>
               </button>
@@ -440,7 +440,7 @@
           <div class="page-kpis" id="so-overview">
             <button type="button" class="dash-kpi is-on" aria-pressed="true">
               <span class="dash-kpi-icon dash-kpi-icon-website" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M8 4h8v4H8z"/><path d="M6 8h12v12H6z"/><path d="M9 12h6M9 16h4"/></svg></span>
-              <span class="dash-kpi-label">Quotes</span>
+              <span class="dash-kpi-label">Request Quote</span>
               <strong class="dash-kpi-value" id="so-stat-quote">—</strong>
               <span class="dash-kpi-hint" id="so-hint-quote">Sales quotes</span>
             </button>
@@ -477,15 +477,15 @@
             <div id="so-split-right" class="dash-split-right">
               <div id="so-overview-panel" class="inv-right-panel">
                 <div class="inv-overview-summary">
-                  <p class="inv-overview-lead">Select a quote to view it here. New sales quote opens a draft for Spectrum. Factory cost is not on this page.</p>
+                  <p class="inv-overview-lead">Select a request quote to view it here. New sales quote opens a draft for Spectrum. Factory cost is not on this page.</p>
                 </div>
               </div>
               <div id="so-detail" class="hidden so-doc">
-                <button type="button" id="so-back" class="so-doc-back">← All quotes</button>
+                <button type="button" id="so-back" class="so-doc-back">← Request Quote</button>
                 <div class="so-doc-frame">
                   <div class="so-doc-chrome">
                     <div class="so-doc-caption" id="so-doc-caption">
-                      <span id="so-caption-title">Sales Quote</span>
+                      <span id="so-caption-title">Request Quote</span>
                     </div>
                     <div class="so-doc-ribbon" id="so-doc-ribbon">
                       <button type="button" id="so-ribbon-find" class="so-doc-ribbon-btn" title="Find">
@@ -535,7 +535,7 @@
                         </div>
                         <div class="so-doc-headblock">
                           <div class="so-doc-kind">
-                            <h2 id="so-kind-label">Quote</h2>
+                            <h2 id="so-kind-label">Request Quote</h2>
                             <span id="so-status-badge" class="so-status-badge is-draft" hidden></span>
                           </div>
                           <div class="so-doc-top">
@@ -872,6 +872,6 @@
   <div id="so-sku-menu" class="so-sku-menu" hidden>
     <div class="so-sku-menu-list"></div>
   </div>
-  <script src="/js/portal.js?v=dealer-signin1"></script>
+  <script src="/js/portal.js?v=dealer-rq1"></script>
 </body>
 </html>
