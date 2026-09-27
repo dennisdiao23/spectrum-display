@@ -14,7 +14,16 @@
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
   <title>Company | Spectrum Display</title>
   <meta name="robots" content="noindex, nofollow" />
-  <link rel="stylesheet" href="/css/company-dash.css?v=staff6" />
+  <link rel="preload" as="image" href="/assets/spectrum-boot.gif" />
+  <style id="company-boot-css">
+    #company-boot{position:fixed;inset:0;z-index:400;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1rem;background:#000;color:#e8eeff;font-family:Inter,system-ui,sans-serif}
+    #company-boot.hidden,#company-boot[hidden]{display:none!important}
+    #company-boot-logo{display:block;width:min(28rem,86vw);height:auto}
+    #company-boot-msg{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
+    #company-boot-err{margin:0;max-width:22rem;text-align:center;font-size:.9rem;color:#fca5a5}
+    #company-boot-err[hidden]{display:none!important}
+  </style>
+  <link rel="stylesheet" href="/css/company-dash.css?v=boot2" />
   <script src="/js/address-autocomplete.js"></script>
   <script src="/js/company-chat.js?v=chatcrm3"></script>
   <script src="/js/company-crm.js?v=zoomphone3"></script>
@@ -64,7 +73,7 @@
       } catch (e) {}
     })();
   </script>
-  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="/css/company-tw.css?v=boot1" />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
   <style id="crm-detail-overrides">
     #crm-lead-detail .crm-detail-facts,
@@ -105,6 +114,11 @@
 </style>
 </head>
 <body class="company-app antialiased">
+  <div id="company-boot" role="status" aria-live="polite">
+    <img id="company-boot-logo" src="/assets/spectrum-boot.gif" alt="" width="1104" height="242" />
+    <p id="company-boot-msg">Loading Company…</p>
+    <p id="company-boot-err" hidden></p>
+  </div>
   <div id="crm-phone-banner" class="crm-phone-banner hidden" hidden>
     <div class="crm-phone-banner-inner">
       <div class="crm-phone-banner-copy">
@@ -4537,7 +4551,8 @@
     </a>
   </nav>
 
-  <link rel="stylesheet" href="/css/company-dash.css?v=staff6" />
+  <link rel="stylesheet" href="/css/company-dash.css?v=boot2" />
+  <link rel="stylesheet" href="/css/company-tw.css?v=boot1" />
 
   <script>
     const loginPanel = document.getElementById('login-panel');
@@ -4555,6 +4570,30 @@
     let settingsSubTab = 'staff';
     let salesSubTab = 'quotes';
     let adminRoles = [];
+
+    function hideCompanyBoot() {
+      const el = document.getElementById('company-boot');
+      if (!el) return;
+      el.classList.add('hidden');
+      el.hidden = true;
+    }
+    function showCompanyBootError(msg) {
+      const el = document.getElementById('company-boot');
+      const err = document.getElementById('company-boot-err');
+      if (err) {
+        err.hidden = false;
+        err.textContent = msg || 'Company could not load. Refresh the page.';
+      }
+      if (el) {
+        el.hidden = false;
+        el.classList.remove('hidden');
+      }
+    }
+    function revealLogin() {
+      hideCompanyBoot();
+      if (dashPanel) dashPanel.classList.add('hidden');
+      if (loginPanel) loginPanel.classList.remove('hidden');
+    }
 
     function companyPath() {
       return String(location.pathname || '/company').replace(/\/+$/, '') || '/company';
@@ -5837,22 +5876,30 @@
     function showDash(admin) {
       currentAdminUser = admin;
       try { localStorage.setItem('dash-active-admin-id', String(admin.id)); } catch (err) {}
-      applyInvSplitFromCache();
-      applyCcSplitFromCache();
-      loginPanel.classList.add('hidden');
-      dashPanel.classList.remove('hidden');
-      const roleBit = admin.roleName && admin.role !== 'owner' ? ' · ' + admin.roleName : '';
-      document.getElementById('admin-name').textContent = (admin.name || admin.email || '') + roleBit;
-      document.getElementById('admin-nav').classList.remove('hidden');
-      document.getElementById('admin-utils').classList.remove('hidden');
-      document.getElementById('admin-toolbar').classList.remove('hidden');
-      document.getElementById('logout-btn').classList.remove('hidden');
-      applyRoleMenuVisibility();
-      syncCostUiVisibility();
+      try { applyInvSplitFromCache(); } catch (err) { console.error('applyInvSplitFromCache', err); }
+      try { applyCcSplitFromCache(); } catch (err) { console.error('applyCcSplitFromCache', err); }
+      if (loginPanel) loginPanel.classList.add('hidden');
+      if (dashPanel) dashPanel.classList.remove('hidden');
+      hideCompanyBoot();
+      const roleBit = admin && admin.roleName && admin.role !== 'owner' ? ' · ' + admin.roleName : '';
+      const nameEl = document.getElementById('admin-name');
+      if (nameEl) nameEl.textContent = ((admin && (admin.name || admin.email)) || '') + roleBit;
+      const nav = document.getElementById('admin-nav');
+      if (nav) nav.classList.remove('hidden');
+      const utils = document.getElementById('admin-utils');
+      if (utils) utils.classList.remove('hidden');
+      const toolbar = document.getElementById('admin-toolbar');
+      if (toolbar) toolbar.classList.remove('hidden');
+      const logoutBtn = document.getElementById('logout-btn');
+      if (logoutBtn) logoutBtn.classList.remove('hidden');
+      try { applyRoleMenuVisibility(); } catch (err) { console.error('applyRoleMenuVisibility', err); }
+      try { syncCostUiVisibility(); } catch (err) { console.error('syncCostUiVisibility', err); }
       const chatAiSec = document.getElementById('chat-ai-section');
-      if (chatAiSec) chatAiSec.classList.toggle('hidden', !canManageChatAi());
+      if (chatAiSec) {
+        try { chatAiSec.classList.toggle('hidden', !canManageChatAi()); } catch (err) { chatAiSec.classList.add('hidden'); }
+      }
       const tabbar = document.getElementById('dash-tabbar');
-      tabbar.hidden = false;
+      if (tabbar) tabbar.hidden = false;
       document.body.classList.add('dash-tabbar-on');
       document.body.classList.remove('dash-tabbar-hidden');
       const fromPath = tabFromPath();
@@ -5866,15 +5913,21 @@
       const bootDoc = parseDocMasterTab(next);
       if (bootDoc) {
         salesSubTab = docMasterListTab(bootDoc.kind) === 'purchase-orders' ? salesSubTab : docMasterListTab(bootDoc.kind);
-        ensureMasterTab(docMasterListTab(bootDoc.kind), pathForTab(docMasterListTab(bootDoc.kind)));
+        try { ensureMasterTab(docMasterListTab(bootDoc.kind), pathForTab(docMasterListTab(bootDoc.kind))); } catch (err) { console.error('ensureMasterTab', err); }
       }
-      rememberMasterTab(next || 'dashboard');
-      bootSpectrumCrm(admin);
-      bootSpectrumTraffic();
-      bootSpectrumWebsiteControl();
-      showAdminTab(next || 'dashboard');
-      renderDashTabBar();
-      startMasterTabWorkWatch();
+      try { rememberMasterTab(next || 'dashboard'); } catch (err) { console.error('rememberMasterTab', err); }
+      try { bootSpectrumCrm(admin); } catch (err) { console.error('bootSpectrumCrm', err); }
+      try { bootSpectrumTraffic(); } catch (err) { console.error('bootSpectrumTraffic', err); }
+      try { bootSpectrumWebsiteControl(); } catch (err) { console.error('bootSpectrumWebsiteControl', err); }
+      try {
+        showAdminTab(next || 'dashboard');
+      } catch (err) {
+        console.error('showAdminTab', err);
+        const dashSec = document.getElementById('dashboard-section');
+        if (dashSec) dashSec.classList.remove('hidden');
+      }
+      try { renderDashTabBar(); } catch (err) { console.error('renderDashTabBar', err); }
+      try { startMasterTabWorkWatch(); } catch (err) { console.error('startMasterTabWorkWatch', err); }
       return true;
     }
 
@@ -21862,17 +21915,24 @@
             password: document.getElementById('login-password').value
           })
         });
+        if (!data || !data.admin) {
+          showError('login-error', (data && data.error) || 'Sign in failed');
+          return;
+        }
         if (!showDash(data.admin)) return;
         applyStaffGmail(data.gmail);
         await consumeGmailReturn();
         await loadColumnPrefs();
-        bootSpectrumStaff();
-        bootSpectrumChat(data.admin);
+        try { bootSpectrumStaff(); } catch (err) { console.error('bootSpectrumStaff', err); }
+        try { bootSpectrumChat(data.admin); } catch (err) { console.error('bootSpectrumChat', err); }
         await openRoutedSection(tabFromPath());
         var loginDraft = copilotTokenFromHref(location.href);
         if (loginDraft) await applyCopilotDraft(loginDraft).catch(function () {});
       } catch (err) {
         showError('login-error', err.message);
+        if (loginPanel && loginPanel.classList.contains('hidden') && dashPanel && dashPanel.classList.contains('hidden')) {
+          revealLogin();
+        }
       }
     });
 
@@ -23038,22 +23098,36 @@
 
     api('/api/admin/me').then(function (data) {
       if (data.ok && data.admin) {
-        if (!showDash(data.admin)) return;
+        try {
+          if (!showDash(data.admin)) return;
+        } catch (err) {
+          console.error('showDash', err);
+          if (loginPanel) loginPanel.classList.add('hidden');
+          if (dashPanel) dashPanel.classList.remove('hidden');
+          hideCompanyBoot();
+          const dashSec = document.getElementById('dashboard-section');
+          if (dashSec) dashSec.classList.remove('hidden');
+          return;
+        }
         applyStaffGmail(data.gmail);
         return consumeGmailReturn().then(function () {
           return loadColumnPrefs();
         }).then(function () {
-          bootSpectrumStaff();
-          if (window.SpectrumChat) bootSpectrumChat(data.admin);
+          try { bootSpectrumStaff(); } catch (err) { console.error('bootSpectrumStaff', err); }
+          try { if (window.SpectrumChat) bootSpectrumChat(data.admin); } catch (err) { console.error('bootSpectrumChat', err); }
           return openRoutedSection(tabFromPath()).then(function () {
             var bootDraft = copilotTokenFromHref(location.href);
             if (bootDraft) return applyCopilotDraft(bootDraft).catch(function () {});
           });
+        }).catch(function (err) {
+          console.error('company post-boot', err);
         });
       }
-      loginPanel.classList.remove('hidden');
+      if (loginPanel) revealLogin();
+      else showCompanyBootError('Company could not load. Refresh the page.');
     }).catch(function () {
-      loginPanel.classList.remove('hidden');
+      if (loginPanel) revealLogin();
+      else showCompanyBootError('Company could not load. Refresh the page.');
     });
     if (window.SpectrumPlaces) SpectrumPlaces.bootFromConfig(bindCompanyAddressPlaces);
   </script>
