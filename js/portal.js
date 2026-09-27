@@ -217,7 +217,7 @@
       link.classList.toggle('is-active', link.getAttribute('data-view') === name);
     });
     const calculator = $('portal-calculator');
-    if (calculator) calculator.classList.toggle('is-active', name === 'calculator' || name === 'panels');
+    if (calculator) calculator.classList.toggle('is-active', name === 'calculator' || name === 'projects' || name === 'panels');
     document.body.classList.toggle('calc-lock', name === 'calculator');
     if (name === 'calculator') ensureCalculator('');
     $('portal-title').textContent = tabLabel[name] || 'Dealer Portal';
