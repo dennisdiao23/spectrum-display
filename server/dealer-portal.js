@@ -279,6 +279,55 @@ function formatDealerFile(row) {
   };
 }
 
+function projectField(row, payload, key, alt) {
+  if (row && row[key] != null && row[key] !== '') return row[key];
+  if (alt && row && row[alt] != null && row[alt] !== '') return row[alt];
+  if (payload && payload[key] != null && payload[key] !== '') return payload[key];
+  return '';
+}
+
+function publicDealerProject(row) {
+  const src = row || {};
+  const payload = parseJson(src.payload, {});
+  const brandName = projectField(src, payload, 'brandName', 'brand_name');
+  const seriesName = projectField(src, payload, 'seriesName', 'series_name');
+  const brand = projectField(src, payload, 'brand');
+  const series = projectField(src, payload, 'series');
+  const pitch = projectField(src, payload, 'pitch');
+  const width = projectField(src, payload, 'width');
+  const height = projectField(src, payload, 'height');
+  const cabinets = projectField(src, payload, 'cabinets');
+  const unit = projectField(src, payload, 'unit') || 'ft';
+  const title = String(src.title || ((brandName + ' ' + (seriesName || 'Design')).trim()) || 'Design').trim();
+  const savedUrl = projectField(src, payload, 'designerUrl', 'designer_url');
+  let designerUrl = savedUrl;
+  if (!designerUrl) {
+    const qs = new URLSearchParams();
+    if (brand) qs.set('brand', brand);
+    if (series) qs.set('series', series);
+    if (pitch !== '' && pitch != null) qs.set('pitch', String(pitch));
+    if (width !== '' && width != null) qs.set('w', String(width));
+    if (height !== '' && height != null) qs.set('h', String(height));
+    if (unit) qs.set('unit', unit);
+    designerUrl = '/led-wall-calculator' + (qs.toString() ? '?' + qs.toString() : '');
+  }
+  return {
+    id: src.id == null ? '' : String(src.id),
+    title: title,
+    brand: brand,
+    brandName: brandName,
+    series: series,
+    seriesName: seriesName,
+    pitch: pitch,
+    width: width,
+    height: height,
+    cabinets: cabinets,
+    unit: unit,
+    designerUrl: designerUrl,
+    savedAt: src.savedAt || src.updated_at || src.created_at || ''
+  };
+}
+
 async function websiteSavedFor(store, email) {
   const empty = { projects: [], panels: [] };
   if (!email || !store.listAccounts || !store.getAccount) return empty;
@@ -290,18 +339,7 @@ async function websiteSavedFor(store, email) {
     if (!hit || !hit.id) return empty;
     const account = await store.getAccount(hit.id);
     const projects = ((account && account.projects) || []).map(function (row) {
-      return {
-        id: row.id,
-        source: 'account',
-        title: ((row.brand_name || row.brandName || '') + ' ' + (row.series_name || row.seriesName || 'Design')).trim(),
-        brand: row.brand || '',
-        series: row.series || '',
-        pitch: row.pitch,
-        width: row.width,
-        height: row.height,
-        cabinets: row.cabinets,
-        savedAt: row.updated_at || row.created_at || ''
-      };
+      return publicDealerProject(row);
     });
     const panels = ((account && account.panels) || []).map(function (row) {
       return {
@@ -1138,7 +1176,13 @@ function sqliteApi(db, store) {
         ? db.prepare('SELECT * FROM dealer_projects WHERE customer_id = ? ORDER BY datetime(updated_at) DESC, id DESC').all(customerId)
         : [];
       const portalRows = rows.map(function (row) {
-        return { id: 'portal-' + row.id, source: 'portal', title: row.title || 'Design', payload: parseJson(row.payload, {}), savedAt: row.updated_at || row.created_at };
+        const payload = parseJson(row.payload, {});
+        return publicDealerProject(Object.assign({}, payload, {
+          id: 'portal-' + row.id,
+          title: row.title || payload.title || '',
+          savedAt: row.updated_at || row.created_at,
+          payload: payload
+        }));
       });
       const site = await websiteSavedFor(store, user && user.email);
       return portalRows.concat(site.projects);
@@ -1471,7 +1515,13 @@ function supabaseApi(supabase, store) {
         : { data: [], error: null };
       throwIfMissing(error, 'Could not load projects.');
       const portalRows = (data || []).map(function (row) {
-        return { id: 'portal-' + row.id, source: 'portal', title: row.title || 'Design', payload: row.payload || {}, savedAt: row.updated_at || row.created_at };
+        const payload = parseJson(row.payload, {});
+        return publicDealerProject(Object.assign({}, payload, {
+          id: 'portal-' + row.id,
+          title: row.title || payload.title || '',
+          savedAt: row.updated_at || row.created_at,
+          payload: payload
+        }));
       });
       const site = await websiteSavedFor(store, user && user.email);
       return portalRows.concat(site.projects);
