@@ -136,11 +136,17 @@
       .controls-scroll-mouse {
         display: block;
         filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.45));
-        animation: controls-scroll-bob 1.6s ease-in-out infinite;
       }
-      @keyframes controls-scroll-bob {
-        0%, 100% { transform: translateY(0); }
-        50% { transform: translateY(5px); }
+      .controls-scroll-wheel {
+        transform-box: fill-box;
+        transform-origin: center;
+        animation: controls-scroll-wheel 0.85s linear infinite;
+      }
+      @keyframes controls-scroll-wheel {
+        0% { transform: translateY(0); opacity: 0; }
+        14% { opacity: 1; }
+        72% { transform: translateY(6.2px); opacity: 1; }
+        100% { transform: translateY(8px); opacity: 0; }
       }
     }
     @media (max-width: 1023px) {
@@ -1126,7 +1132,7 @@
         <span class="controls-scroll-mouse" aria-hidden="true">
           <svg viewBox="0 0 24 40" width="26" height="42" fill="none">
             <rect x="7.25" y="1.5" width="9.5" height="17.5" rx="4.75" stroke="currentColor" stroke-width="1.4"/>
-            <path d="M12 4.8v3.6" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/>
+            <path class="controls-scroll-wheel" d="M12 4.8v3.6" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/>
             <path d="M8.4 28.2 12 32l3.6-3.8" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/>
           </svg>
         </span>
@@ -3595,9 +3601,11 @@
     });
 
     (function setupControlsScrollHint() {
+      const wrap = document.querySelector('.designer-controls-pane');
       const pane = document.querySelector('.designer-controls');
       const hint = document.getElementById('controls-scroll-hint');
-      if (!pane || !hint) return;
+      if (!wrap || !pane || !hint) return;
+      let hovering = false;
       function desktop() {
         return !window.matchMedia || window.matchMedia('(min-width: 1024px)').matches;
       }
@@ -3609,7 +3617,7 @@
         }
         const overflow = pane.scrollHeight - pane.clientHeight > 16;
         const atBottom = pane.scrollTop + pane.clientHeight >= pane.scrollHeight - 16;
-        const show = overflow && !atBottom;
+        const show = hovering && overflow && !atBottom;
         hint.hidden = !show;
         hint.setAttribute('aria-hidden', show ? 'false' : 'true');
         if (!show) return;
@@ -3619,6 +3627,8 @@
         hint.style.width = Math.round(box.width) + 'px';
         hint.style.bottom = Math.round(Math.max(0, window.innerHeight - visBottom)) + 'px';
       }
+      wrap.addEventListener('mouseenter', function () { hovering = true; sync(); });
+      wrap.addEventListener('mouseleave', function () { hovering = false; sync(); });
       pane.addEventListener('scroll', sync, { passive: true });
       window.addEventListener('resize', sync);
       window.addEventListener('load', sync);
