@@ -37,6 +37,11 @@
     #so-customer-name[readonly],
     #so-customer-email[readonly],
     #so-lines input[readonly] { background: #f4f7fb; }
+    .portal-hold:not(.hidden) {
+      padding: 2.5rem 0.25rem;
+      color: #64748b;
+      font-size: 0.95rem;
+    }
     .portal-company-logo {
       display: flex;
       align-items: center;
@@ -209,6 +214,18 @@
           </a>
         </div>
       </div>
+      <a href="/portal/customers" data-view="customers" class="dash-nav-link">
+        <svg class="dash-nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="8" r="3.25"/><path d="M5 19.2c.9-3.1 3.5-4.7 7-4.7s6.1 1.6 7 4.7"/></svg>
+        <span>Customer</span>
+      </a>
+      <a href="/portal/training" data-view="training" class="dash-nav-link">
+        <svg class="dash-nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
+        <span>Training Library</span>
+      </a>
+      <a href="/portal/leads" data-view="leads" class="dash-nav-link">
+        <svg class="dash-nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M19 8v6M22 11h-6"/></svg>
+        <span>Lead Registration</span>
+      </a>
     </nav>
     <div class="dash-sidebar-foot hidden" id="portal-foot">
       <div class="dash-nav-group">
@@ -822,6 +839,16 @@
         <iframe id="portal-calculator-frame" title="LED Wall Calculator"></iframe>
       </section>
 
+      <section id="view-customers" class="hidden portal-hold">
+        <p>This page is a placeholder.</p>
+      </section>
+      <section id="view-training" class="hidden portal-hold">
+        <p>This page is a placeholder.</p>
+      </section>
+      <section id="view-leads" class="hidden portal-hold">
+        <p>This page is a placeholder.</p>
+      </section>
+
       <section id="view-company" class="hidden space-y-6">
         <form id="company-form" class="rounded-2xl border p-5 grid sm:grid-cols-2 gap-4 text-sm">
           <div class="portal-company-logo sm:col-span-2">
@@ -872,6 +899,6 @@
   <div id="so-sku-menu" class="so-sku-menu" hidden>
     <div class="so-sku-menu-list"></div>
   </div>
-  <script src="/js/portal.js?v=dealer-signin1"></script>
+  <script src="/js/portal.js?v=dealer-menu1"></script>
 </body>
 </html>
