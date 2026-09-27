@@ -111,8 +111,22 @@
     el.classList.add('hidden');
     el.hidden = true;
   }
+  function showPortalBoot() {
+    const el = $('company-boot');
+    if (!el) return;
+    el.classList.remove('hidden');
+    el.hidden = false;
+  }
+  function stillBootLogo() {
+    const logo = $('company-boot-logo');
+    if (!logo) return;
+    if (!/spectrum-boot-still\.png/.test(logo.getAttribute('src') || '')) {
+      logo.src = '/assets/spectrum-boot-still.png';
+    }
+  }
   function showLogin() {
-    hidePortalBoot();
+    stillBootLogo();
+    showPortalBoot();
     $('login-panel').classList.remove('hidden');
     $('portal-nav').classList.add('hidden');
     $('portal-foot').classList.add('hidden');
@@ -1149,17 +1163,33 @@
   $('login-form').onsubmit = async function (e) {
     e.preventDefault();
     const err = $('login-error');
+    const btn = e.target.querySelector('button[type="submit"]');
     err.classList.add('hidden');
+    if (btn) btn.disabled = true;
     try {
       await api('/api/dealer/login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email: $('login-email').value, password: $('login-password').value })
       });
-      await boot();
+      $('login-panel').classList.add('hidden');
+      const logo = $('company-boot-logo');
+      if (logo) logo.src = '/assets/spectrum-boot.gif?play=' + Date.now();
+      showPortalBoot();
+      const started = Date.now();
+      const ok = await boot({ holdBoot: true });
+      if (!ok) return;
+      const wait = 1000 - (Date.now() - started);
+      if (wait > 0) await new Promise(function (resolve) { setTimeout(resolve, wait); });
+      showApp();
     } catch (error) {
+      stillBootLogo();
+      showPortalBoot();
+      $('login-panel').classList.remove('hidden');
       err.textContent = error.message;
       err.classList.remove('hidden');
+    } finally {
+      if (btn) btn.disabled = false;
     }
   };
   $('portal-dealer-logo-file').addEventListener('change', async function () {
@@ -1446,7 +1476,8 @@
   const scrim = $('dash-scrim');
   if (scrim) scrim.onclick = function () { document.body.classList.remove('dash-open'); };
 
-  async function boot() {
+  async function boot(opts) {
+    const holdBoot = !!(opts && opts.holdBoot);
     try {
       me = await api('/api/dealer/me');
       const priced = await api('/api/dealer/book');
@@ -1458,10 +1489,11 @@
       ]);
       projects = saved[0].projects || [];
       panels = saved[1].panels || [];
-      showApp();
+      if (!holdBoot) showApp();
+      return true;
     } catch (err) {
-      if (err.status === 401) showLogin();
-      else showLogin();
+      showLogin();
+      return false;
     }
   }
   document.addEventListener('click', function (e) {
