@@ -25,6 +25,7 @@
     (function () {
       var q = new URLSearchParams(location.search);
       if (q.get('embed') === '1') document.documentElement.classList.add('designer-embed');
+      if (q.get('portal') === '1') document.documentElement.classList.add('designer-portal');
     })();
   </script>
   <script src="https://cdn.tailwindcss.com"></script>
@@ -58,6 +59,7 @@
     html.designer-embed body.designer-app { padding-top: var(--designer-bar-h) !important; }
     html.designer-embed .designer-toolbar { top: 0 !important; }
     html.designer-embed #save-project-btn { display: none; }
+    html.designer-portal #save-project-btn { display: inline-flex !important; }
     @media (min-width: 1024px) {
       html {
         overflow: hidden;

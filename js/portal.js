@@ -7,6 +7,7 @@
     orders: 'sales-section',
     projects: 'projects-section',
     panels: 'panels-section',
+    calculator: 'calculator-section',
     company: 'view-company'
   };
   const views = Object.keys(viewIds);
@@ -21,7 +22,7 @@
   let openTabs = [];
   let bookFilter = 'all';
   let bookSku = '';
-  const tabLabel = { home: 'Dashboard', book: 'Dealer book', quotes: 'Quote', orders: 'Order', projects: 'Projects', panels: 'Saved Panel', company: 'Company' };
+  const tabLabel = { home: 'Dashboard', book: 'Dealer book', quotes: 'Quote', orders: 'Order', projects: 'Projects', panels: 'Saved Panel', calculator: 'Calculator', company: 'Company' };
   const tabIcon = {
     home: '<svg class="dash-master-tab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="8" height="8" rx="1.5"/><rect x="13" y="3" width="8" height="8" rx="1.5"/><rect x="3" y="13" width="8" height="8" rx="1.5"/><rect x="13" y="13" width="8" height="8" rx="1.5"/></svg>',
     book: '<svg class="dash-master-tab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 10 12 4.5 21 10v9.5a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V10z"/><path d="M9 20.5V12h6v8.5"/></svg>',
@@ -29,6 +30,7 @@
     orders: '<svg class="dash-master-tab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 7h16l-1.5 12H5.5L4 7z"/><path d="M9 7V5a3 3 0 0 1 6 0v2"/></svg>',
     projects: '<svg class="dash-master-tab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M3 8h18"/><path d="M8 12h5M8 16h8"/></svg>',
     panels: '<svg class="dash-master-tab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 8.5 12 13 3 8.5 12 4l9 4.5z"/><path d="M3 8.5v7L12 20l9-4.5v-7"/><path d="M12 13v7"/></svg>',
+    calculator: '<svg class="dash-master-tab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="5" y="3" width="14" height="18" rx="2"/><path d="M8 7h8M8 12h.01M12 12h.01M16 12h.01M8 16h.01M12 16h.01M16 16h.01"/></svg>',
     company: '<svg class="dash-master-tab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 20V9l8-5 8 5v11"/><path d="M9 20v-6h6v6"/></svg>'
   };
 
@@ -175,6 +177,25 @@
     const next = openTabs[Math.min(idx, openTabs.length - 1)] || 'home';
     openPortal(next, true);
   }
+  function calculatorFrameUrl(raw) {
+    const value = String(raw || '/led-wall-calculator');
+    const qIndex = value.indexOf('?');
+    const path = qIndex === -1 ? value : value.slice(0, qIndex);
+    const params = new URLSearchParams(qIndex === -1 ? '' : value.slice(qIndex + 1));
+    params.set('embed', '1');
+    params.set('portal', '1');
+    const base = path.indexOf('/led-wall-calculator') === 0 ? path : '/led-wall-calculator';
+    return base + '?' + params.toString();
+  }
+  function ensureCalculator(raw) {
+    const frame = $('portal-calculator-frame');
+    if (!frame) return;
+    if (!raw && frame.getAttribute('src')) return;
+    const next = calculatorFrameUrl(raw);
+    if (frame.getAttribute('data-src') === next) return;
+    frame.setAttribute('data-src', next);
+    frame.src = next;
+  }
   function showApp() {
     $('login-panel').classList.add('hidden');
     $('portal-nav').classList.remove('hidden');
@@ -196,7 +217,9 @@
       link.classList.toggle('is-active', link.getAttribute('data-view') === name);
     });
     const calculator = $('portal-calculator');
-    if (calculator) calculator.classList.toggle('is-active', name === 'panels');
+    if (calculator) calculator.classList.toggle('is-active', name === 'calculator' || name === 'panels');
+    document.body.classList.toggle('calc-lock', name === 'calculator');
+    if (name === 'calculator') ensureCalculator('');
     $('portal-title').textContent = tabLabel[name] || 'Dealer Portal';
     $('admin-page-sub').textContent = name === 'home' ? 'Overview' : ((me && me.customer && me.customer.companyName) || '');
     document.body.classList.toggle('inv-layout-lock', (name === 'book' || name === 'projects' || name === 'panels') && !isMobileDash());
@@ -1440,6 +1463,14 @@
       openPortal(tab.getAttribute('data-dash-tab'), true);
       return;
     }
+    const calcLink = e.target.closest('a[href^="/led-wall-calculator"]');
+    if (calcLink && me && !e.metaKey && !e.ctrlKey && !e.shiftKey && !e.altKey && !e.button) {
+      e.preventDefault();
+      document.body.classList.remove('dash-open');
+      ensureCalculator(calcLink.getAttribute('href'));
+      openPortal('calculator', true);
+      return;
+    }
     const link = e.target.closest('a[href^="/portal"]');
     if (!link || !me || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey || e.button) return;
     const path = link.getAttribute('href').split('?')[0].replace(/\/+$/, '');
@@ -1462,6 +1493,7 @@
     if (!me) return;
     renderMasterTabs();
     document.body.classList.toggle('inv-layout-lock', (pathView() === 'book' || pathView() === 'projects' || pathView() === 'panels') && !isMobileDash());
+    document.body.classList.toggle('calc-lock', pathView() === 'calculator');
     const onQuotes = (pathView() === 'quotes' || pathView() === 'orders') && !isMobileDash();
     document.body.classList.toggle('so-split-lock', onQuotes);
     const sales = $('sales-section');

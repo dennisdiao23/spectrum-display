@@ -344,7 +344,7 @@ async function main() {
     const qs = req.url.includes('?') ? req.url.slice(req.url.indexOf('?')) : '';
     res.redirect(301, '/portal' + qs);
   });
-  ['/portal/book', '/portal/quotes', '/portal/orders', '/portal/projects', '/portal/panels', '/portal/company'].forEach(function (route) {
+  ['/portal/book', '/portal/quotes', '/portal/orders', '/portal/projects', '/portal/panels', '/portal/calculator', '/portal/company'].forEach(function (route) {
     app.get([route, route + '/'], sendPortal);
   });
   app.get(['/portal/quotes/:id', '/portal/quotes/:id/', '/portal/orders/:id', '/portal/orders/:id/'], sendPortal);
