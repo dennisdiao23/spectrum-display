@@ -6,6 +6,7 @@
   <link rel="icon" href="/favicon.ico" sizes="48x48" />
   <title>Dealer Portal | Spectrum Display</title>
   <meta name="robots" content="noindex, nofollow" />
+  <link rel="preload" as="image" href="/assets/spectrum-boot-still.png" />
   <link rel="preload" as="image" href="/assets/spectrum-boot.gif" />
   <style id="portal-boot-css">
     #company-boot{position:fixed;inset:0;z-index:400;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1rem;background:#000;color:#e8eeff;font-family:Inter,system-ui,sans-serif}
@@ -14,6 +15,11 @@
     #company-boot-msg{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
     #company-boot-err{margin:0;max-width:22rem;text-align:center;font-size:.9rem;color:#fca5a5}
     #company-boot-err[hidden]{display:none!important}
+    #company-boot .portal-boot-login{width:min(24rem,90vw);margin:0;background:#fff;color:#102047;border-radius:1rem;padding:1.35rem 1.4rem 1.2rem;box-shadow:0 18px 50px rgba(0,0,0,.35)}
+    #company-boot .portal-boot-login h2{margin:0 0 .35rem;color:#102047;font-size:1.25rem;font-weight:800}
+    #company-boot .portal-boot-login>p{margin:0 0 1rem;color:#64748b;font-size:.85rem}
+    #company-boot .portal-boot-login label{color:#64748b}
+    #company-boot .portal-boot-login input{background:#f7f9fc;border:1px solid #e2e8f0;color:#102047}
   </style>
   <link rel="stylesheet" href="/css/company-dash.css?v=dealer-quote1" />
   <style>
@@ -139,8 +145,24 @@
 </head>
 <body class="company-app antialiased">
   <div id="company-boot" role="status" aria-live="polite">
-    <img id="company-boot-logo" src="/assets/spectrum-boot.gif" alt="" width="1104" height="242" />
+    <img id="company-boot-logo" src="/assets/spectrum-boot-still.png" alt="" width="1104" height="242" />
     <p id="company-boot-msg">Loading Dealer Portal…</p>
+    <section id="login-panel" class="dash-login portal-boot-login hidden">
+      <h2>Dealer Portal sign in</h2>
+      <p>Authorized dealers only. This is not My Account and not Company staff sign in. Spectrum creates this login after your application is approved.</p>
+      <form id="login-form" class="space-y-4">
+        <div>
+          <label class="block text-xs mb-1">Email</label>
+          <input id="login-email" type="email" required autocomplete="username" class="w-full rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:border-sky-500" placeholder="you@company.com">
+        </div>
+        <div>
+          <label class="block text-xs mb-1">Password</label>
+          <input id="login-password" type="password" required autocomplete="current-password" class="w-full rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:border-sky-500">
+        </div>
+        <p id="login-error" class="hidden text-sm text-red-500"></p>
+        <button type="submit" class="w-full py-2.5 rounded-full bg-sky-500 hover:bg-sky-400 text-white font-semibold text-sm">Sign in</button>
+      </form>
+    </section>
     <p id="company-boot-err" hidden></p>
   </div>
   <div class="dash-scrim" id="dash-scrim"></div>
@@ -220,23 +242,6 @@
       </div>
     </header>
     <main class="company-main">
-      <section id="login-panel" class="dash-login hidden">
-        <h2>Dealer Portal sign in</h2>
-        <p>Authorized dealers only. This is not My Account and not Company staff sign in. Spectrum creates this login after your application is approved.</p>
-        <form id="login-form" class="rounded-2xl border p-6 space-y-4">
-          <div>
-            <label class="block text-xs text-slate-400 mb-1">Email</label>
-            <input id="login-email" type="email" required autocomplete="username" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:border-sky-500" placeholder="you@company.com">
-          </div>
-          <div>
-            <label class="block text-xs text-slate-400 mb-1">Password</label>
-            <input id="login-password" type="password" required autocomplete="current-password" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:border-sky-500">
-          </div>
-          <p id="login-error" class="hidden text-sm text-red-400"></p>
-          <button type="submit" class="w-full py-2.5 rounded-full bg-sky-500 hover:bg-sky-400 text-white font-semibold text-sm">Sign in</button>
-        </form>
-      </section>
-
       <section id="dashboard-section" class="hidden">
         <div id="dash-panel">
           <div class="dash-home" id="dash-home">
@@ -864,6 +869,6 @@
   <div id="so-sku-menu" class="so-sku-menu" hidden>
     <div class="so-sku-menu-list"></div>
   </div>
-  <script src="/js/portal.js?v=dealer-boot1"></script>
+  <script src="/js/portal.js?v=dealer-signin1"></script>
 </body>
 </html>
