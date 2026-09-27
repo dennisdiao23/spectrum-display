@@ -105,7 +105,14 @@
       }
     }
   }
+  function hidePortalBoot() {
+    const el = $('company-boot');
+    if (!el) return;
+    el.classList.add('hidden');
+    el.hidden = true;
+  }
   function showLogin() {
+    hidePortalBoot();
     $('login-panel').classList.remove('hidden');
     $('portal-nav').classList.add('hidden');
     $('portal-foot').classList.add('hidden');
@@ -204,6 +211,7 @@
     frame.src = next;
   }
   function showApp() {
+    hidePortalBoot();
     $('login-panel').classList.add('hidden');
     $('portal-nav').classList.remove('hidden');
     $('portal-foot').classList.remove('hidden');
