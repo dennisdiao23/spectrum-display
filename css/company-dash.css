@@ -499,6 +499,39 @@ body.dash-tab-reordering #dash-tab-strip {
   overflow: hidden;
 }
 
+body.calc-lock .dash-shell {
+  overflow: hidden;
+}
+body.calc-lock .company-main {
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  padding: 0;
+}
+body.calc-lock .company-main #dash-panel {
+  flex: 1 1 auto;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+body.calc-lock #dash-panel.space-y-8 > :not([hidden]) {
+  margin-top: 0 !important;
+}
+#calculator-section:not(.hidden) {
+  flex: 1 1 auto;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
+#company-calculator-frame {
+  flex: 1 1 auto;
+  width: 100%;
+  min-height: 0;
+  border: 0;
+  background: #020617;
+}
+
 .dash-login {
   max-width: 26rem;
   margin: 3rem auto 0;

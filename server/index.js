@@ -233,7 +233,8 @@ async function main() {
     '/company/settings',
     '/company/settings/company',
     '/company/settings/forms',
-    '/company/chat'
+    '/company/chat',
+    '/company/calculator'
   ];
   app.get(['/company/website/control', '/company/website/control/'], function (_req, res) {
     res.redirect(301, '/company/website');
