@@ -104,6 +104,7 @@
   function showLogin() {
     $('login-panel').classList.remove('hidden');
     $('portal-nav').classList.add('hidden');
+    $('portal-foot').classList.add('hidden');
     $('portal-logout').classList.add('hidden');
     views.forEach(function (name) { viewEl(name).classList.add('hidden'); });
     $('portal-title').textContent = 'Dealer Portal';
@@ -175,6 +176,7 @@
   function showApp() {
     $('login-panel').classList.add('hidden');
     $('portal-nav').classList.remove('hidden');
+    $('portal-foot').classList.remove('hidden');
     $('portal-logout').classList.remove('hidden');
     $('portal-user').textContent = (me && me.user && (me.user.name || me.user.email)) || '';
     paintDealerBrand();
@@ -188,7 +190,7 @@
       seen[el.id] = true;
       el.classList.toggle('hidden', el !== viewEl(name));
     });
-    document.querySelectorAll('#portal-nav a').forEach(function (link) {
+    document.querySelectorAll('#dash-sidebar a[data-view]').forEach(function (link) {
       link.classList.toggle('is-active', link.getAttribute('data-view') === name);
     });
     $('portal-title').textContent = tabLabel[name] || 'Dealer Portal';
