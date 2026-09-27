@@ -14,14 +14,16 @@
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
   <title>Company | Spectrum Display</title>
   <meta name="robots" content="noindex, nofollow" />
+  <link rel="preload" as="image" href="/assets/spectrum-boot.gif" />
   <style id="company-boot-css">
-    #company-boot{position:fixed;inset:0;z-index:400;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:.85rem;background:#07153a;color:#e8eeff;font-family:Inter,system-ui,sans-serif}
+    #company-boot{position:fixed;inset:0;z-index:400;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1rem;background:#000;color:#e8eeff;font-family:Inter,system-ui,sans-serif}
     #company-boot.hidden,#company-boot[hidden]{display:none!important}
-    #company-boot-msg{margin:0;font-size:1.05rem;font-weight:700;letter-spacing:.02em}
+    #company-boot-logo{display:block;width:min(28rem,86vw);height:auto}
+    #company-boot-msg{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
     #company-boot-err{margin:0;max-width:22rem;text-align:center;font-size:.9rem;color:#fca5a5}
     #company-boot-err[hidden]{display:none!important}
   </style>
-  <link rel="stylesheet" href="/css/company-dash.css?v=boot1" />
+  <link rel="stylesheet" href="/css/company-dash.css?v=boot2" />
   <script src="/js/address-autocomplete.js"></script>
   <script src="/js/company-chat.js?v=chatcrm3"></script>
   <script src="/js/company-crm.js?v=zoomphone3"></script>
@@ -113,6 +115,7 @@
 </head>
 <body class="company-app antialiased">
   <div id="company-boot" role="status" aria-live="polite">
+    <img id="company-boot-logo" src="/assets/spectrum-boot.gif" alt="" width="1104" height="242" />
     <p id="company-boot-msg">Loading Company…</p>
     <p id="company-boot-err" hidden></p>
   </div>
@@ -4548,7 +4551,7 @@
     </a>
   </nav>
 
-  <link rel="stylesheet" href="/css/company-dash.css?v=boot1" />
+  <link rel="stylesheet" href="/css/company-dash.css?v=boot2" />
   <link rel="stylesheet" href="/css/company-tw.css?v=boot1" />
 
   <script>
