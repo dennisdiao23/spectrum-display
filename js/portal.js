@@ -22,7 +22,7 @@
   let openTabs = [];
   let bookFilter = 'all';
   let bookSku = '';
-  const tabLabel = { home: 'Dashboard', book: 'Dealer book', quotes: 'Quote', orders: 'Order', projects: 'Projects', panels: 'Saved Panel', calculator: 'Calculator', company: 'Company' };
+  const tabLabel = { home: 'Dashboard', book: 'Dealer book', quotes: 'Request Quote', orders: 'Purchase Order', projects: 'Projects', panels: 'Saved Panel', calculator: 'Calculator', company: 'Company' };
   const tabIcon = {
     home: '<svg class="dash-master-tab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="8" height="8" rx="1.5"/><rect x="13" y="3" width="8" height="8" rx="1.5"/><rect x="3" y="13" width="8" height="8" rx="1.5"/><rect x="13" y="13" width="8" height="8" rx="1.5"/></svg>',
     book: '<svg class="dash-master-tab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 10 12 4.5 21 10v9.5a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V10z"/><path d="M9 20.5V12h6v8.5"/></svg>',
@@ -299,9 +299,9 @@
       return String(b.updatedAt || b.createdAt || '').localeCompare(String(a.updatedAt || a.createdAt || ''));
     }).slice(0, 8);
     $('dash-recent-list').innerHTML = recent.length ? recent.map(function (doc) {
-      const kind = doc.type === 'order' ? 'Sales Order' : 'Sales Quote';
+      const kind = doc.type === 'order' ? 'Purchase Order' : 'Request Quote';
       return dashRow(doc.number || kind, [kind, doc.status].filter(Boolean).join(' · '), money(doc.total));
-    }).join('') : '<p class="dash-activity-empty">No quotes or orders yet.</p>';
+    }).join('') : '<p class="dash-activity-empty">No request quotes or purchase orders yet.</p>';
   }
   function renderHomeDetail() {
     const title = $('dash-detail-title');
@@ -310,29 +310,29 @@
     const stats = $('dash-detail-stats');
     const list = $('dash-detail-list');
     if (dashHome === 'quotes') {
-      title.textContent = 'Quotes';
+      title.textContent = 'Request Quote';
       sub.textContent = 'Sales quote drafts sent to Spectrum.';
       open.href = '/portal/quotes';
-      open.textContent = 'Open Quotes →';
+      open.textContent = 'Open Request Quote →';
       const drafts = docs.quote.filter(function (doc) { return doc.status === 'draft'; }).length;
       const total = docs.quote.reduce(function (sum, doc) { return sum + (Number(doc.total) || 0); }, 0);
-      stats.innerHTML = chip(docs.quote.length, 'Quotes') + chip(drafts, 'Drafts') + chip(money(total), 'Total');
+      stats.innerHTML = chip(docs.quote.length, 'Request Quote') + chip(drafts, 'Drafts') + chip(money(total), 'Total');
       list.innerHTML = docs.quote.slice(0, 8).map(function (doc) {
-        return dashRow(doc.number || 'Quote', doc.status || '', money(doc.total));
-      }).join('') || '<p class="dash-activity-empty">No quotes yet.</p>';
+        return dashRow(doc.number || 'Request Quote', doc.status || '', money(doc.total));
+      }).join('') || '<p class="dash-activity-empty">No request quotes yet.</p>';
       return;
     }
     if (dashHome === 'orders') {
-      title.textContent = 'Orders';
+      title.textContent = 'Purchase Order';
       sub.textContent = 'Sales order drafts sent to Spectrum. There is no online checkout.';
       open.href = '/portal/orders';
-      open.textContent = 'Open Orders →';
+      open.textContent = 'Open Purchase Order →';
       const drafts = docs.order.filter(function (doc) { return doc.status === 'draft'; }).length;
       const total = docs.order.reduce(function (sum, doc) { return sum + (Number(doc.total) || 0); }, 0);
-      stats.innerHTML = chip(docs.order.length, 'Orders') + chip(drafts, 'Drafts') + chip(money(total), 'Total');
+      stats.innerHTML = chip(docs.order.length, 'Purchase Order') + chip(drafts, 'Drafts') + chip(money(total), 'Total');
       list.innerHTML = docs.order.slice(0, 8).map(function (doc) {
-        return dashRow(doc.number || 'Order', doc.status || '', money(doc.total));
-      }).join('') || '<p class="dash-activity-empty">No orders yet.</p>';
+        return dashRow(doc.number || 'Purchase Order', doc.status || '', money(doc.total));
+      }).join('') || '<p class="dash-activity-empty">No purchase orders yet.</p>';
       return;
     }
     if (dashHome === 'projects') {
@@ -509,7 +509,7 @@
     return salesKind() === 'order' ? 'orders' : 'quotes';
   }
   function salesLabel(kind) {
-    return kind === 'order' ? 'Sales Order' : 'Sales Quote';
+    return kind === 'order' ? 'Purchase Order' : 'Request Quote';
   }
   function quoteRoute() {
     const parts = location.pathname.replace(/\/+$/, '').split('/');
@@ -721,7 +721,7 @@
     $('so-side-balance').textContent = String(open);
     $('so-side-tx-list').innerHTML = list.slice(0, 8).map(function (doc) {
       return '<button type="button" class="so-side-tx" data-quote-id="' + esc(doc.id) + '"><b>' + esc(doc.number || 'Draft') + '</b><span>' + esc(quoteStatusLabel(doc.status)) + ' · ' + money(doc.total) + '</span></button>';
-    }).join('') || '<p class="text-sm text-slate-500">No ' + (salesKind() === 'order' ? 'orders' : 'quotes') + ' yet.</p>';
+    }).join('') || '<p class="text-sm text-slate-500">No ' + (salesKind() === 'order' ? 'purchase orders' : 'request quotes') + ' yet.</p>';
   }
   function fillQuoteForm(doc) {
     const customer = (me && me.customer) || {};
@@ -736,7 +736,7 @@
     $('so-number').value = (doc && doc.number) || '';
     $('so-title').textContent = doc && doc.number ? doc.number : (order ? 'New sales order' : 'New sales quote');
     $('so-caption-title').textContent = doc && doc.number ? doc.number : salesLabel(kind);
-    $('so-kind-label').textContent = order ? 'Sales Order' : 'Quote';
+    $('so-kind-label').textContent = order ? 'Purchase Order' : 'Request Quote';
     $('so-issue').value = (doc && doc.issueDate) || new Date().toISOString().slice(0, 10);
     $('so-po').value = (doc && doc.poNumber) || '';
     ensureSelectValue($('so-terms'), (doc && doc.paymentTerms) || '30% deposit / balance before ship');
@@ -797,12 +797,12 @@
         '<td class="py-3 px-4">' + esc(doc.dueDate || '—') + '</td>' +
         '<td class="py-3 px-4">' + esc(doc.paymentTerms || '—') + '</td>' +
         '<td class="py-3 px-4">' + esc(doc.notes || '—') + '</td></tr>';
-    }).join('') : '<tr><td class="py-6 px-4 text-slate-500" colspan="9">No ' + (order ? 'orders' : 'quotes') + ' yet.</td></tr>';
+    }).join('') : '<tr><td class="py-6 px-4 text-slate-500" colspan="9">No ' + (order ? 'purchase orders' : 'request quotes') + ' yet.</td></tr>';
   }
   function applySalesChrome() {
     const order = salesKind() === 'order';
     const label = document.querySelector('#so-overview .dash-kpi-label');
-    if (label) label.textContent = order ? 'Orders' : 'Quotes';
+    if (label) label.textContent = order ? 'Purchase Order' : 'Request Quote';
     const icon = document.querySelector('#so-overview .dash-kpi-icon');
     if (icon) {
       icon.classList.toggle('dash-kpi-icon-sales', order);
@@ -812,7 +812,7 @@
         : '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M8 4h8v4H8z"/><path d="M6 8h12v12H6z"/><path d="M9 12h6M9 16h4"/></svg>';
     }
     $('so-new-btn').textContent = order ? 'New sales order' : 'New sales quote';
-    $('so-back').textContent = order ? '← All orders' : '← All quotes';
+    $('so-back').textContent = order ? '← Purchase Order' : '← Request Quote';
     $('so-number-label').textContent = order ? 'Sales order no.' : 'Quote no.';
     const note = document.querySelector('#so-detail .so-doc-note');
     if (note) {
@@ -823,13 +823,13 @@
     const lead = document.querySelector('#so-overview-panel .inv-overview-lead');
     if (lead) {
       lead.textContent = order
-        ? 'Select an order to view it here. New sales order opens a draft for Spectrum. Factory cost is not on this page.'
-        : 'Select a quote to view it here. New sales quote opens a draft for Spectrum. Factory cost is not on this page.';
+        ? 'Select a purchase order to view it here. New sales order opens a draft for Spectrum. Factory cost is not on this page.'
+        : 'Select a request quote to view it here. New sales quote opens a draft for Spectrum. Factory cost is not on this page.';
     }
     const openLabel = $('so-side-open-label');
-    if (openLabel) openLabel.textContent = order ? 'Open orders' : 'Open quotes';
+    if (openLabel) openLabel.textContent = order ? 'Open purchase orders' : 'Open request quotes';
     const txLabel = document.querySelector('#so-side-tx .so-side-label');
-    if (txLabel) txLabel.textContent = order ? 'Recent orders' : 'Recent quotes';
+    if (txLabel) txLabel.textContent = order ? 'Recent purchase orders' : 'Recent request quotes';
   }
   function goSales(tab, id, push) {
     const name = tab === 'orders' || tab === 'order' ? 'orders' : 'quotes';
