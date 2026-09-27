@@ -101,6 +101,8 @@
         padding-top: var(--content-gap);
         padding-bottom: var(--content-gap);
         box-sizing: border-box;
+        position: relative;
+        height: 100%;
       }
       .designer-controls {
         flex: 1 1 auto;
@@ -115,6 +117,35 @@
         display: none;
         width: 0;
         height: 0;
+      }
+      .controls-scroll-hint {
+        display: none;
+        position: fixed;
+        z-index: 30;
+        pointer-events: none;
+        flex-direction: column;
+        align-items: center;
+        justify-content: flex-end;
+        padding: 2.6rem 0 0.55rem;
+        background: linear-gradient(to top, #020617 40%, rgba(2, 6, 23, 0));
+        color: #f1f5f9;
+      }
+      .controls-scroll-hint:not([hidden]) {
+        display: flex;
+      }
+      .controls-scroll-mouse {
+        display: block;
+        filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.45));
+        animation: controls-scroll-bob 1.6s ease-in-out infinite;
+      }
+      @keyframes controls-scroll-bob {
+        0%, 100% { transform: translateY(0); }
+        50% { transform: translateY(5px); }
+      }
+    }
+    @media (max-width: 1023px) {
+      .controls-scroll-hint {
+        display: none !important;
       }
     }
     @media (min-width: 1024px) {
@@ -1090,6 +1121,16 @@
             Request Quote for This Design
           </a>
         </div>
+      </div>
+      <div id="controls-scroll-hint" class="controls-scroll-hint" hidden aria-hidden="true">
+        <span class="controls-scroll-mouse" aria-hidden="true">
+          <svg viewBox="0 0 24 40" width="26" height="42" fill="none">
+            <rect x="7.25" y="1.5" width="9.5" height="17.5" rx="4.75" stroke="currentColor" stroke-width="1.4"/>
+            <path d="M12 4.8v3.6" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/>
+            <path d="M8.4 28.2 12 32l3.6-3.8" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </span>
+        <span class="sr-only">Scroll for more</span>
       </div>
       </div>
 
@@ -3552,6 +3593,44 @@
       clearTimeout(previewResizeTimer);
       previewResizeTimer = setTimeout(updateDesign, 120);
     });
+
+    (function setupControlsScrollHint() {
+      const pane = document.querySelector('.designer-controls');
+      const hint = document.getElementById('controls-scroll-hint');
+      if (!pane || !hint) return;
+      function desktop() {
+        return !window.matchMedia || window.matchMedia('(min-width: 1024px)').matches;
+      }
+      function sync() {
+        if (!desktop()) {
+          hint.hidden = true;
+          hint.setAttribute('aria-hidden', 'true');
+          return;
+        }
+        const overflow = pane.scrollHeight - pane.clientHeight > 16;
+        const atBottom = pane.scrollTop + pane.clientHeight >= pane.scrollHeight - 16;
+        const show = overflow && !atBottom;
+        hint.hidden = !show;
+        hint.setAttribute('aria-hidden', show ? 'false' : 'true');
+        if (!show) return;
+        const box = pane.getBoundingClientRect();
+        const visBottom = Math.min(box.bottom, window.innerHeight);
+        hint.style.left = Math.round(box.left) + 'px';
+        hint.style.width = Math.round(box.width) + 'px';
+        hint.style.bottom = Math.round(Math.max(0, window.innerHeight - visBottom)) + 'px';
+      }
+      pane.addEventListener('scroll', sync, { passive: true });
+      window.addEventListener('resize', sync);
+      window.addEventListener('load', sync);
+      if (typeof ResizeObserver === 'function') {
+        const ro = new ResizeObserver(sync);
+        ro.observe(pane);
+        Array.prototype.forEach.call(pane.children, function (child) { ro.observe(child); });
+      }
+      sync();
+      setTimeout(sync, 400);
+      setTimeout(sync, 1200);
+    })();
 
   </script>
 </body>
