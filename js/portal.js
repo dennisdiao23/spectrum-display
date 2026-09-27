@@ -118,7 +118,14 @@
     document.body.classList.remove('so-split-lock');
     const bar = $('dash-tab-bar');
     if (bar) bar.hidden = true;
+    syncNavSubs('');
     paintDealerBrand();
+  }
+  function syncNavSubs(name) {
+    const calcSub = $('portal-calculator-sub');
+    const settingsSub = $('portal-settings-sub');
+    if (calcSub) calcSub.classList.toggle('hidden', name !== 'calculator' && name !== 'projects' && name !== 'panels');
+    if (settingsSub) settingsSub.classList.toggle('hidden', name !== 'company');
   }
   function pathFor(name) {
     return name === 'home' ? '/portal' : '/portal/' + name;
@@ -218,6 +225,7 @@
     });
     const calculator = $('portal-calculator');
     if (calculator) calculator.classList.toggle('is-active', name === 'calculator' || name === 'projects' || name === 'panels');
+    syncNavSubs(name);
     document.body.classList.toggle('calc-lock', name === 'calculator');
     if (name === 'calculator') ensureCalculator('');
     $('portal-title').textContent = tabLabel[name] || 'Dealer Portal';
