@@ -23,7 +23,7 @@
     #company-boot-err{margin:0;max-width:22rem;text-align:center;font-size:.9rem;color:#fca5a5}
     #company-boot-err[hidden]{display:none!important}
   </style>
-  <link rel="stylesheet" href="/css/company-dash.css?v=calc1" />
+  <link rel="stylesheet" href="/css/company-dash.css?v=calc2" />
   <script src="/js/address-autocomplete.js"></script>
   <script src="/js/company-chat.js?v=chatcrm3"></script>
   <script src="/js/company-crm.js?v=zoomphone3"></script>
@@ -3405,9 +3405,9 @@
         </div>
       </div>
       <div id="chat-section" class="hidden"></div>
-      <section id="calculator-section" class="hidden">
-        <iframe id="company-calculator-frame" title="LED Wall Calculator"></iframe>
-      </section>
+    </section>
+    <section id="calculator-section" class="hidden">
+      <iframe id="company-calculator-frame" title="LED Wall Calculator"></iframe>
     </section>
   </main>
   </div>
@@ -4562,7 +4562,7 @@
     </a>
   </nav>
 
-  <link rel="stylesheet" href="/css/company-dash.css?v=calc1" />
+  <link rel="stylesheet" href="/css/company-dash.css?v=calc2" />
   <link rel="stylesheet" href="/css/company-tw.css?v=boot1" />
 
   <script>
@@ -7800,6 +7800,8 @@
       document.getElementById('dashboard-section').classList.toggle('hidden', view !== 'dashboard');
       const chatSec = document.getElementById('chat-section');
       if (chatSec) chatSec.classList.toggle('hidden', view !== 'chat');
+      const dashPanelEl = document.getElementById('dash-panel');
+      if (dashPanelEl && currentAdminUser) dashPanelEl.classList.toggle('hidden', view === 'calculator');
       const calcSec = document.getElementById('calculator-section');
       if (calcSec) calcSec.classList.toggle('hidden', view !== 'calculator');
       document.body.classList.toggle('calc-lock', view === 'calculator');
