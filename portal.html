@@ -57,6 +57,26 @@
       font-weight: 700;
       line-height: 1.25;
     }
+    body.inv-layout-lock #projects-section:not(.hidden) {
+      flex: 1 1 auto;
+      min-height: 0;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+    }
+    body.inv-layout-lock #projects-section .cc-list-kpis,
+    body.inv-layout-lock #projects-section .cc-list-toolbar { flex-shrink: 0; }
+    #proj-workspace,
+    #proj-list-wrap {
+      display: flex;
+      flex-direction: column;
+      min-height: 0;
+      flex: 1 1 auto;
+    }
+    #projects-section .inv-split-left .cc-table-wrap { overflow: auto; }
+    #projects-section table.dash-cols[data-cols="projects"] { min-width: 980px; width: max-content; }
+    #projects-section #proj-detail,
+    #projects-section #proj-overview { overflow: auto; }
     @media print {
       body.company-app * { visibility: hidden; }
       #so-detail, #so-detail * { visibility: visible; }
@@ -603,10 +623,66 @@
       </section>
       <section id="view-orders" class="hidden space-y-4"></section>
 
-      <section id="view-projects" class="hidden space-y-3">
-        <p class="text-sm text-slate-500">Layouts saved from the LED Wall Calculator on a My Account that uses this same email.</p>
-        <div id="projects-list" class="space-y-3"></div>
-        <p id="projects-empty" class="hidden text-sm text-slate-500">No saved layouts yet.</p>
+      <section id="projects-section" class="hidden">
+        <div id="proj-workspace">
+          <div id="proj-list-wrap" class="cc-list-inner">
+            <div class="page-kpis cc-list-kpis" id="proj-overview">
+              <div class="dash-kpi is-on" aria-pressed="true">
+                <span class="dash-kpi-icon dash-kpi-icon-customers" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M3 8h18"/><path d="M8 12h5M8 16h8"/></svg></span>
+                <span class="dash-kpi-label">Projects</span>
+                <strong class="dash-kpi-value" id="proj-stat">—</strong>
+                <span class="dash-kpi-hint" id="proj-hint">Saved layouts</span>
+              </div>
+            </div>
+            <div class="cc-list-toolbar cc-list-tools">
+              <input id="proj-search" type="search" placeholder="Search project, brand, series" class="cc-list-search bg-slate-800 border border-slate-700 rounded-full px-3 py-1.5 text-sm">
+              <a href="/led-wall-calculator" class="cc-list-add-btn px-4 py-2 rounded-full bg-sky-500 hover:bg-sky-400 text-white text-sm font-semibold">Open calculator</a>
+            </div>
+            <div id="proj-split" class="inv-split" style="--inv-left-w: min(720px, 58vw)">
+              <div id="proj-split-left" class="inv-split-left">
+                <div class="cc-table-card rounded-2xl border border-slate-800">
+                  <div class="cc-table-wrap">
+                    <table class="w-full text-sm dash-cols" data-cols="projects">
+                      <thead class="text-left text-slate-400 border-b border-slate-800">
+                        <tr>
+                          <th class="py-3 px-4 font-medium">Project</th>
+                          <th class="py-3 px-4 font-medium">Brand</th>
+                          <th class="py-3 px-4 font-medium">Series</th>
+                          <th class="py-3 px-4 font-medium">Size</th>
+                          <th class="py-3 px-4 font-medium">Pitch</th>
+                          <th class="py-3 px-4 font-medium">Panels</th>
+                          <th class="py-3 px-4 font-medium">Saved</th>
+                        </tr>
+                      </thead>
+                      <tbody id="proj-table" class="text-slate-200"></tbody>
+                    </table>
+                  </div>
+                </div>
+              </div>
+              <div id="proj-split-resizer" class="inv-split-resizer" role="separator" aria-orientation="vertical" aria-label="Resize project panels" tabindex="0"></div>
+              <div class="inv-split-right">
+                <div id="proj-overview-panel" class="inv-right-panel">
+                  <div class="inv-overview-summary">
+                    <p class="inv-overview-lead">Select a project to view it here. These are designs saved from the LED Wall Calculator on a website account with this same email.</p>
+                  </div>
+                </div>
+                <div id="proj-detail" class="hidden inv-right-panel" aria-hidden="true">
+                  <h2 id="proj-title" class="font-semibold text-lg">Project</h2>
+                  <p id="proj-sub" class="text-sm text-slate-500 mt-1"></p>
+                  <dl class="mt-4 grid grid-cols-2 gap-3 text-sm">
+                    <div><dt class="text-slate-500">Brand</dt><dd id="proj-brand">—</dd></div>
+                    <div><dt class="text-slate-500">Series</dt><dd id="proj-series">—</dd></div>
+                    <div><dt class="text-slate-500">Size</dt><dd id="proj-size">—</dd></div>
+                    <div><dt class="text-slate-500">Pitch</dt><dd id="proj-pitch">—</dd></div>
+                    <div><dt class="text-slate-500">Panels</dt><dd id="proj-panels">—</dd></div>
+                    <div><dt class="text-slate-500">Saved</dt><dd id="proj-saved">—</dd></div>
+                  </dl>
+                  <a id="proj-open" class="inline-block mt-5 text-sm text-sky-600 font-semibold" href="/led-wall-calculator">Open in calculator</a>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
       </section>
 
       <section id="view-panels" class="hidden space-y-3">
@@ -665,6 +741,6 @@
   <div id="so-sku-menu" class="so-sku-menu" hidden>
     <div class="so-sku-menu-list"></div>
   </div>
-  <script src="/js/portal.js?v=dealer-menu2"></script>
+  <script src="/js/portal.js?v=dealer-projects1"></script>
 </body>
 </html>
