@@ -966,7 +966,6 @@ async function main() {
       }
       if (!app.company_name) return res.status(400).json({ ok: false, error: 'Company name is required.' });
       if (!app.phone) return res.status(400).json({ ok: false, error: 'Phone is required.' });
-      if (!app.tax_id) return res.status(400).json({ ok: false, error: 'Tax ID is required.' });
       if (!companyAddress.line1 || !companyAddress.city || !companyAddress.state || !companyAddress.postal_code) {
         return res.status(400).json({ ok: false, error: 'Full company address is required.' });
       }

@@ -663,7 +663,6 @@ function normalizeApplicationInput(input) {
   if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) throw new Error('A valid email is required.');
   if (!companyName) throw new Error('Company name is required.');
   if (!phone) throw new Error('Phone is required.');
-  if (!taxId) throw new Error('Tax ID is required.');
   if (!addr.line1 || !addr.city || !addr.state || !addr.postal_code) {
     throw new Error('Full company address is required.');
   }
