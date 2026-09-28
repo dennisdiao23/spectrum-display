@@ -8539,3 +8539,45 @@ body.dash-split-lock #crm-pipe-section .crm-board {
 #company-boot-err[hidden] {
   display: none !important;
 }
+#company-boot .boot-login {
+  width: min(24rem, 90vw);
+  margin: 0;
+  background: #000;
+  color: #fff;
+  border: 0;
+  border-radius: 0;
+  padding: 1.35rem 1.4rem 1.2rem;
+  box-shadow: none;
+}
+#company-boot .boot-login h2 {
+  margin: 0 0 0.35rem;
+  color: #fff;
+  font-size: 1.25rem;
+  font-weight: 800;
+}
+#company-boot .boot-login > p {
+  margin: 0 0 1rem;
+  color: #fff;
+  font-size: 0.85rem;
+}
+#company-boot .boot-login label {
+  color: #fff;
+}
+#company-boot .boot-login input {
+  background: #000 !important;
+  border: 0 !important;
+  outline: none !important;
+  box-shadow: none !important;
+  color: #fff !important;
+}
+#company-boot .boot-login input::placeholder {
+  color: rgba(255, 255, 255, 0.55);
+}
+#company-boot .boot-login button[type="submit"] {
+  background: #fff !important;
+  color: #000 !important;
+  border: 0;
+}
+#company-boot .boot-login button[type="submit"]:hover {
+  background: #e8e8e8 !important;
+}
