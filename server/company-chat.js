@@ -226,7 +226,7 @@ function formatRoom(row, extras) {
   } else if (kind === 'dm') {
     const other = extra.otherUser;
     title = other ? (other.name || other.email || 'Direct message') : 'Direct message';
-  } else if (kind === 'order' && String(row.order_status || '') === 'cancelled') {
+  } else if ((kind === 'order' || kind === 'po') && String(row.order_status || '') === 'cancelled') {
     if (title && title.indexOf('(cancelled)') === -1) {
       title = title + ' (cancelled)';
     }
@@ -383,7 +383,7 @@ function unreadTotalsFromRows(rows) {
     const kind = row.kind;
     if (kind === 'lobby') out.lobby += n;
     else if (kind === 'dm') out.direct += n;
-    else if (kind === 'order') out.orders += n;
+    else if (kind === 'order' || kind === 'po') out.orders += n;
     else if (kind === 'copilot') out.copilot += n;
     out.total += n;
   });
@@ -539,6 +539,8 @@ function ensureCompanyChat(db) {
       ON chat_rooms (dm_user_low_id) WHERE kind = 'copilot';
     CREATE UNIQUE INDEX IF NOT EXISTS chat_rooms_order_uidx
       ON chat_rooms (sales_order_id) WHERE kind = 'order';
+    CREATE UNIQUE INDEX IF NOT EXISTS chat_rooms_po_uidx
+      ON chat_rooms (sales_order_id) WHERE kind = 'po';
     CREATE UNIQUE INDEX IF NOT EXISTS chat_rooms_dm_uidx
       ON chat_rooms (dm_user_low_id, dm_user_high_id) WHERE kind = 'dm';
     CREATE INDEX IF NOT EXISTS chat_rooms_kind_last_idx ON chat_rooms (kind, last_message_at);
@@ -896,7 +898,7 @@ function sqliteApi(db) {
       const readMap = loadReadsMap(viewerId);
 
       if (tab === 'orders') {
-        let rows = db.prepare("SELECT * FROM chat_rooms WHERE kind = 'order'").all();
+        let rows = db.prepare("SELECT * FROM chat_rooms WHERE kind IN ('order', 'po')").all();
         if (q) {
           rows = rows.filter(function (row) {
             const hay = (row.title || '') + ' ' + (row.customer_name || '');
@@ -930,6 +932,43 @@ function sqliteApi(db) {
     async getChatRoom(admin, roomId) {
       ensureCompanyChat(db);
       return enrichRoom(assertRoomAccess(getRoomRow(roomId), admin), admin.id);
+    },
+
+    async getChatRoomByPo(admin, poId) {
+      ensureCompanyChat(db);
+      let row = db.prepare(
+        "SELECT * FROM chat_rooms WHERE kind = 'po' AND sales_order_id = ?"
+      ).get(poId);
+      if (!row) {
+        const doc = db.prepare('SELECT * FROM purchase_orders WHERE id = ?').get(poId);
+        if (!doc) return null;
+        row = await this.ensurePoChatRoom(doc);
+      }
+      if (!row) return null;
+      return enrichRoom(assertRoomAccess(row, admin), admin.id);
+    },
+
+    async ensurePoChatRoom(doc) {
+      ensureCompanyChat(db);
+      if (!doc || !doc.id) return null;
+      const existing = db.prepare(
+        "SELECT * FROM chat_rooms WHERE kind = 'po' AND sales_order_id = ?"
+      ).get(doc.id);
+      const title = doc.number || ('PO #' + doc.id);
+      const vendor = doc.vendor_name || doc.vendorName || '';
+      const status = doc.status || 'open';
+      if (existing) {
+        db.prepare(`
+          UPDATE chat_rooms SET title = ?, customer_name = ?, order_status = ? WHERE id = ?
+        `).run(title, vendor, status, existing.id);
+        return getRoomRow(existing.id);
+      }
+      const info = db.prepare(`
+        INSERT INTO chat_rooms (
+          kind, sales_order_id, title, customer_name, order_status, created_at
+        ) VALUES ('po', ?, ?, ?, ?, ?)
+      `).run(doc.id, title, vendor, status, nowIso());
+      return getRoomRow(info.lastInsertRowid);
     },
 
     async getChatRoomByOrder(admin, orderId) {
@@ -1148,6 +1187,7 @@ function sqliteApi(db) {
            OR (r.kind = 'dm' AND (r.dm_user_low_id = ? OR r.dm_user_high_id = ?))
            OR (r.kind = 'copilot' AND r.dm_user_low_id = ?)
            OR r.kind = 'order'
+           OR r.kind = 'po'
         GROUP BY r.kind
       `).all(viewerId, viewerId, viewerId, viewerId, viewerId);
       return unreadTotalsFromRows(rows);
@@ -1835,7 +1875,7 @@ function supabaseApi(supabase) {
       const readMap = await loadReadsMap(viewerId);
 
       if (tab === 'orders') {
-        const { data } = await supabase.from('chat_rooms').select('*').eq('kind', 'order');
+        const { data } = await supabase.from('chat_rooms').select('*').in('kind', ['order', 'po']);
         let rows = data || [];
         if (q) {
           rows = rows.filter(function (row) {
@@ -1877,6 +1917,60 @@ function supabaseApi(supabase) {
     async getChatRoom(admin, roomId) {
       await ensureReady();
       return enrichRoom(assertRoomAccess(await getRoomRow(roomId), admin), admin.id);
+    },
+
+    async getChatRoomByPo(admin, poId) {
+      await ensureReady();
+      let { data } = await supabase
+        .from('chat_rooms')
+        .select('*')
+        .eq('kind', 'po')
+        .eq('sales_order_id', poId)
+        .maybeSingle();
+      if (!data) {
+        const { data: doc } = await supabase
+          .from('purchase_orders')
+          .select('*')
+          .eq('id', poId)
+          .maybeSingle();
+        if (!doc) return null;
+        data = await this.ensurePoChatRoom(doc);
+      }
+      if (!data) return null;
+      return enrichRoom(assertRoomAccess(data, admin), admin.id);
+    },
+
+    async ensurePoChatRoom(doc) {
+      await ensureReady();
+      if (!doc || !doc.id) return null;
+      const title = doc.number || ('PO #' + doc.id);
+      const vendor = doc.vendor_name || doc.vendorName || '';
+      const status = doc.status || 'open';
+      const { data: existing } = await supabase
+        .from('chat_rooms')
+        .select('*')
+        .eq('kind', 'po')
+        .eq('sales_order_id', doc.id)
+        .maybeSingle();
+      if (existing) {
+        await supabase.from('chat_rooms').update({
+          title: title,
+          customer_name: vendor,
+          order_status: status
+        }).eq('id', existing.id);
+        return getRoomRow(existing.id);
+      }
+      const { data, error } = await supabase.from('chat_rooms').insert({
+        kind: 'po',
+        sales_order_id: doc.id,
+        title: title,
+        customer_name: vendor,
+        order_status: status,
+        last_message_preview: '',
+        created_at: nowIso()
+      }).select('*').single();
+      if (error) throw error;
+      return data;
     },
 
     async getChatRoomByOrder(admin, orderId) {
@@ -2162,7 +2256,7 @@ function supabaseApi(supabase) {
       const { data: orderRows } = await supabase
         .from('chat_rooms')
         .select('id, kind, last_message_at')
-        .eq('kind', 'order');
+        .in('kind', ['order', 'po']);
       const rooms = [].concat(lobbyRows || [], dmRows || [], copilotRows || [], orderRows || []);
       const readMap = await loadReadsMap(viewerId);
       const unreadMap = await loadUnreadMap(viewerId, rooms, readMap);

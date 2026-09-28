@@ -2537,6 +2537,14 @@ async function main() {
     } catch (err) { next(err); }
   });
 
+  app.get('/api/admin/chat/rooms/po/:poId', requireAdmin, requireChat, async function (req, res, next) {
+    try {
+      const room = await store.getChatRoomByPo(req.admin, req.params.poId);
+      if (!room) return res.status(404).json({ ok: false, error: 'Purchase order chat not found.' });
+      res.json({ ok: true, room: room });
+    } catch (err) { next(err); }
+  });
+
   app.get('/api/admin/chat/rooms/:id', requireAdmin, requireChat, async function (req, res, next) {
     try {
       const room = await store.getChatRoom(req.admin, req.params.id);
