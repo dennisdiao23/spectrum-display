@@ -34,7 +34,7 @@
   </style>
   <link rel="stylesheet" href="/css/company-dash.css?v=login1" />
   <script src="/js/address-autocomplete.js"></script>
-  <script src="/js/company-chat.js?v=chatcrm3"></script>
+  <script src="/js/company-chat.js?v=chatcrm4"></script>
   <script src="/js/company-crm.js?v=zoomphone3"></script>
   <script src="/js/company-staff.js?v=staff6"></script>
   <script src="/js/company-traffic.js?v=loc1"></script>
@@ -4624,6 +4624,41 @@
       if (dashPanel) dashPanel.classList.add('hidden');
       if (loginPanel) loginPanel.classList.remove('hidden');
     }
+    function companyBootOnDashboard() {
+      const route = tabFromPath();
+      return !route || route === 'dashboard';
+    }
+    async function finishCompanySession(admin, opts) {
+      const started = (opts && opts.started) || Date.now();
+      const minMs = (opts && opts.minBootMs) || 0;
+      applyStaffGmail(opts && opts.gmail);
+      const onDash = companyBootOnDashboard();
+      if (onDash) void loadDashboardHome();
+      const prefsP = consumeGmailReturn().then(function () {
+        return loadColumnPrefs();
+      }).catch(function (err) {
+        console.error('company boot prefs', err);
+      });
+      try { bootSpectrumStaff(); } catch (err) { console.error('bootSpectrumStaff', err); }
+      let lobbyP = Promise.resolve();
+      try {
+        const chatP = bootSpectrumChat(admin);
+        if (chatP && typeof chatP.then === 'function') lobbyP = chatP;
+      } catch (err) { console.error('bootSpectrumChat', err); }
+      if (!onDash) await prefsP;
+      else void prefsP;
+      await openRoutedSection(tabFromPath());
+      if (onDash) {
+        await lobbyP.catch(function (err) {
+          console.error('company boot lobby', err);
+        });
+      }
+      var bootDraft = copilotTokenFromHref(location.href);
+      if (bootDraft) await applyCopilotDraft(bootDraft).catch(function () {});
+      const wait = minMs - (Date.now() - started);
+      if (wait > 0) await new Promise(function (resolve) { setTimeout(resolve, wait); });
+      hideCompanyBoot();
+    }
 
     function companyPath() {
       return String(location.pathname || '/company').replace(/\/+$/, '') || '/company';
@@ -6805,55 +6840,57 @@
       list.innerHTML = (docRows + custRows) || '<p class="dash-activity-empty">No customers or sales documents yet.</p>';
     }
 
-    let dashHomeLoading = false;
-    async function loadDashboardHome() {
-      if (dashHomeLoading) return;
-      dashHomeLoading = true;
-      const refreshBtn = document.getElementById('dash-traffic-refresh');
-      if (refreshBtn) {
-        refreshBtn.disabled = true;
-        refreshBtn.textContent = 'Refreshing…';
-      }
-      document.querySelectorAll('#dash-home .dash-kpi').forEach(function (el) {
-        el.classList.toggle('hidden', !canDashOverview(el.getAttribute('data-home')));
-      });
-      try {
-        const data = await api('/api/admin/dashboard');
-        dashCounts = Object.assign({}, dashCounts, data.counts || {});
-        dashProducts = data.products || [];
-        dashInventory = data.inventory || [];
-        dashCustomers = data.customers || [];
-        dashSales = data.sales || [];
-        dashVendors = data.vendors || [];
-        dashPos = data.purchaseOrders || [];
-        dashReceipts = data.receipts || [];
-        dashLeads = data.leads || [];
-        dashDeals = data.deals || [];
-        dashReminders = data.reminders || [];
-        dashTraffic = data.traffic || { timezone: 'America/Los_Angeles', days: [], pages: [] };
-      } catch (err) {
-        dashProducts = [];
-        dashInventory = [];
-        dashCustomers = [];
-        dashSales = [];
-        dashVendors = [];
-        dashPos = [];
-        dashReceipts = [];
-        dashLeads = [];
-        dashDeals = [];
-        dashReminders = [];
-        dashTraffic = { timezone: 'America/Los_Angeles', days: [], pages: [] };
-      } finally {
-        dashHomeLoading = false;
+    let dashHomePromise = null;
+    function loadDashboardHome() {
+      if (dashHomePromise) return dashHomePromise;
+      dashHomePromise = (async function () {
+        const refreshBtn = document.getElementById('dash-traffic-refresh');
         if (refreshBtn) {
-          refreshBtn.disabled = false;
-          refreshBtn.textContent = 'Refresh';
+          refreshBtn.disabled = true;
+          refreshBtn.textContent = 'Refreshing…';
         }
-      }
-      if (!canDashOverview(dashOverview)) dashOverview = firstDashOverview();
-      renderDashKpis();
-      selectDashOverview(dashOverview);
-      if (window.SpectrumChat && SpectrumChat.refreshLobby) SpectrumChat.refreshLobby();
+        document.querySelectorAll('#dash-home .dash-kpi').forEach(function (el) {
+          el.classList.toggle('hidden', !canDashOverview(el.getAttribute('data-home')));
+        });
+        try {
+          const data = await api('/api/admin/dashboard');
+          dashCounts = Object.assign({}, dashCounts, data.counts || {});
+          dashProducts = data.products || [];
+          dashInventory = data.inventory || [];
+          dashCustomers = data.customers || [];
+          dashSales = data.sales || [];
+          dashVendors = data.vendors || [];
+          dashPos = data.purchaseOrders || [];
+          dashReceipts = data.receipts || [];
+          dashLeads = data.leads || [];
+          dashDeals = data.deals || [];
+          dashReminders = data.reminders || [];
+          dashTraffic = data.traffic || { timezone: 'America/Los_Angeles', days: [], pages: [] };
+        } catch (err) {
+          dashProducts = [];
+          dashInventory = [];
+          dashCustomers = [];
+          dashSales = [];
+          dashVendors = [];
+          dashPos = [];
+          dashReceipts = [];
+          dashLeads = [];
+          dashDeals = [];
+          dashReminders = [];
+          dashTraffic = { timezone: 'America/Los_Angeles', days: [], pages: [] };
+        } finally {
+          if (refreshBtn) {
+            refreshBtn.disabled = false;
+            refreshBtn.textContent = 'Refresh';
+          }
+        }
+        if (!canDashOverview(dashOverview)) dashOverview = firstDashOverview();
+        renderDashKpis();
+        selectDashOverview(dashOverview);
+      })().finally(function () {
+        dashHomePromise = null;
+      });
+      return dashHomePromise;
     }
 
     async function loadWebsiteCatalog() {
@@ -9455,8 +9492,8 @@
     }
 
     function bootSpectrumChat(admin) {
-      if (!window.SpectrumChat || !admin) return;
-      SpectrumChat.boot({
+      if (!window.SpectrumChat || !admin) return Promise.resolve();
+      return Promise.resolve(SpectrumChat.boot({
         api: api,
         admin: admin,
         canUse: canUse,
@@ -9472,7 +9509,7 @@
         onPageClose: function () {
           if (typeof closeMasterTab === 'function') closeMasterTab('chat');
         }
-      });
+      }));
     }
 
     function saveColState(table, state) {
@@ -22004,17 +22041,11 @@
         showCompanyBoot();
         const started = Date.now();
         if (!showDash(data.admin, { holdBoot: true })) return;
-        applyStaffGmail(data.gmail);
-        await consumeGmailReturn();
-        await loadColumnPrefs();
-        try { bootSpectrumStaff(); } catch (err) { console.error('bootSpectrumStaff', err); }
-        try { bootSpectrumChat(data.admin); } catch (err) { console.error('bootSpectrumChat', err); }
-        await openRoutedSection(tabFromPath());
-        var loginDraft = copilotTokenFromHref(location.href);
-        if (loginDraft) await applyCopilotDraft(loginDraft).catch(function () {});
-        const wait = 1000 - (Date.now() - started);
-        if (wait > 0) await new Promise(function (resolve) { setTimeout(resolve, wait); });
-        hideCompanyBoot();
+        await finishCompanySession(data.admin, {
+          gmail: data.gmail,
+          started: started,
+          minBootMs: 1000
+        });
       } catch (err) {
         showError('login-error', err.message);
         revealLogin();
@@ -23184,7 +23215,7 @@
     api('/api/admin/me').then(function (data) {
       if (data.ok && data.admin) {
         try {
-          if (!showDash(data.admin)) return;
+          if (!showDash(data.admin, { holdBoot: true })) return;
         } catch (err) {
           console.error('showDash', err);
           if (loginPanel) loginPanel.classList.add('hidden');
@@ -23194,18 +23225,9 @@
           if (dashSec) dashSec.classList.remove('hidden');
           return;
         }
-        applyStaffGmail(data.gmail);
-        return consumeGmailReturn().then(function () {
-          return loadColumnPrefs();
-        }).then(function () {
-          try { bootSpectrumStaff(); } catch (err) { console.error('bootSpectrumStaff', err); }
-          try { if (window.SpectrumChat) bootSpectrumChat(data.admin); } catch (err) { console.error('bootSpectrumChat', err); }
-          return openRoutedSection(tabFromPath()).then(function () {
-            var bootDraft = copilotTokenFromHref(location.href);
-            if (bootDraft) return applyCopilotDraft(bootDraft).catch(function () {});
-          });
-        }).catch(function (err) {
+        return finishCompanySession(data.admin, { gmail: data.gmail }).catch(function (err) {
           console.error('company post-boot', err);
+          hideCompanyBoot();
         });
       }
       if (loginPanel) revealLogin();
