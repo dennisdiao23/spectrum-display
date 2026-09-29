@@ -7,6 +7,7 @@ const MENU_KEYS = [
   'inventory', 'warehouses', 'vendors', 'purchase-orders', 'receipt-shipments', 'costs',
   'customers',
   'sales', 'quotes', 'orders', 'invoices',
+  'dealer', 'dealer-applications',
   'crm', 'leads', 'pipeline', 'activities',
   'settings', 'company', 'staff'
 ];
@@ -58,6 +59,13 @@ const MENU_GROUPS = [
     ]
   },
   {
+    key: 'dealer',
+    label: 'Dealer',
+    children: [
+      { key: 'dealer-applications', label: 'Applications' }
+    ]
+  },
+  {
     key: 'settings',
     label: 'Settings',
     children: [
@@ -81,9 +89,16 @@ const MENU_PARENT = {
   quotes: 'customers',
   orders: 'customers',
   invoices: 'customers',
+  'dealer-applications': 'dealer',
   company: 'settings',
   staff: 'settings'
 };
+
+function inheritedDealerApplications(raw) {
+  const website = accessLevel(raw && raw.website);
+  const accounts = raw && raw.accounts == null ? website : accessLevel(raw && raw.accounts);
+  return gatedAccess(website, accounts);
+}
 
 function accessLevel(value) {
   const v = String(value || 'none').toLowerCase().trim();
@@ -161,6 +176,8 @@ function menuFromLegacy(website, inventory, settings) {
     quotes: open,
     orders: open,
     invoices: open,
+    dealer: open,
+    'dealer-applications': w,
     crm: open,
     leads: open,
     pipeline: open,
@@ -194,6 +211,12 @@ function parseMenuAccess(raw) {
         menu.pipeline = inherit;
         menu.activities = inherit;
       }
+    }
+    if (raw.dealer == null || raw['dealer-applications'] == null) {
+      const fromCustomers = raw.customers == null ? 'edit' : accessLevel(raw.customers);
+      const fromApps = inheritedDealerApplications(raw);
+      if (raw.dealer == null) menu.dealer = highestAccess(fromCustomers, fromApps);
+      if (raw['dealer-applications'] == null) menu['dealer-applications'] = fromApps;
     }
     return menu;
   }
@@ -307,12 +330,12 @@ function publicAdmin(row) {
 function menuLevel(perms, key) {
   if (perms.settings) return 'edit';
   const menu = perms.menu || perms;
-  const k = String(key || '');
+  let k = String(key || '');
+  if (k === 'dealers') k = 'dealer-applications';
   const parentKey = MENU_PARENT[k];
   if (parentKey) return gatedAccess(menu[parentKey], menu[k]);
-  if (k === 'store' || k === 'traffic' || k === 'control' || k === 'dealers') {
-    const childKey = (k === 'dealers') ? 'accounts' : 'products';
-    return gatedAccess(menu.website, menu[childKey]);
+  if (k === 'store' || k === 'traffic' || k === 'control') {
+    return gatedAccess(menu.website, menu.products);
   }
   if (k === 'forms') return gatedAccess(menu.settings, menu.company);
   return accessLevel(menu[k]);

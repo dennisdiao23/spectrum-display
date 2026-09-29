@@ -131,6 +131,7 @@
     $('portal-nav').classList.add('hidden');
     $('portal-foot').classList.add('hidden');
     $('portal-logout').classList.add('hidden');
+    if (window.SpectrumHelp) SpectrumHelp.stop();
     views.forEach(function (name) { viewEl(name).classList.add('hidden'); });
     $('portal-title').textContent = 'Dealer Portal';
     $('admin-page-sub').textContent = 'Dealer sign in';
@@ -233,6 +234,13 @@
     $('portal-user').textContent = (me && me.user && (me.user.name || me.user.email)) || '';
     paintDealerBrand();
     openPortal(pathView(), false);
+    if (window.SpectrumHelp) {
+      SpectrumHelp.start({
+        app: 'portal',
+        userId: me && me.user && me.user.id,
+        page: pathView()
+      });
+    }
   }
   function renderView(name) {
     const seen = {};
@@ -263,6 +271,7 @@
     if (name === 'projects') loadProjects();
     if (name === 'panels') loadPanels();
     if (name === 'company') loadCompany();
+    if (window.SpectrumHelp) SpectrumHelp.setPage(name);
   }
   function chip(value, label) {
     return '<div class="dash-detail-chip"><strong>' + esc(value) + '</strong><span>' + esc(label) + '</span></div>';
