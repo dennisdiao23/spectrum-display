@@ -175,10 +175,6 @@
             <svg class="dash-nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="8" r="3.25"/><path d="M5 19.2c.9-3.1 3.5-4.7 7-4.7s6.1 1.6 7 4.7"/></svg>
             <span>Accounts</span>
           </a>
-          <a href="/company/website/dealers" id="tab-dealers" class="dash-sub-link">
-            <svg class="dash-nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 7V5a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><rect x="4" y="7" width="16" height="14" rx="2"/><path d="M9 12h6M9 16h4"/></svg>
-            <span>Applications</span>
-          </a>
           <a href="/company/website/traffic" id="tab-traffic" class="dash-sub-link">
             <svg class="dash-nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 19V5"/><path d="M4 19h16"/><path d="M8 15l3.2-4.2 2.6 2.4L18 8"/></svg>
             <span>Traffic</span>
@@ -263,6 +259,22 @@
           <a href="/company/sales/invoices" id="tab-invoices" class="dash-sub-link">
             <svg class="dash-nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="5" y="3" width="14" height="18" rx="1.5"/><path d="M8 8h8M8 12h8M8 16h5"/></svg>
             <span>Invoice</span>
+          </a>
+        </div>
+      </div>
+      <div class="dash-nav-group">
+        <a href="/company/dealers" id="tab-dealer" class="dash-nav-link">
+          <svg class="dash-nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 7V5a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><rect x="4" y="7" width="16" height="14" rx="2"/><path d="M9 12h6M9 16h4"/></svg>
+          <span>Dealer</span>
+        </a>
+        <div id="dealer-subnav" class="dash-sub hidden">
+          <a href="/company/dealers" id="tab-dealer-list" class="dash-sub-link">
+            <svg class="dash-nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="8" r="3.25"/><path d="M5 19.2c.9-3.1 3.5-4.7 7-4.7s6.1 1.6 7 4.7"/></svg>
+            <span>Dealer</span>
+          </a>
+          <a href="/company/dealers/applications" id="tab-dealers" class="dash-sub-link">
+            <svg class="dash-nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 3h8l4 4v14a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1z"/><path d="M15 3v5h5"/><path d="M9 13h6M9 17h4"/></svg>
+            <span>Applications</span>
           </a>
         </div>
       </div>
@@ -2592,9 +2604,9 @@
           <div class="page-kpis cc-list-kpis" id="cc-overview">
             <button type="button" class="dash-kpi is-on" data-filter="all" aria-pressed="true">
               <span class="dash-kpi-icon dash-kpi-icon-customers" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="3.25"/><path d="M5 19.2c.9-3.1 3.5-4.7 7-4.7s6.1 1.6 7 4.7"/></svg></span>
-              <span class="dash-kpi-label">Customers</span>
+              <span class="dash-kpi-label" id="cc-kpi-all-label">Customers</span>
               <strong class="dash-kpi-value" id="cc-stat-all">—</strong>
-              <span class="dash-kpi-hint">All records</span>
+              <span class="dash-kpi-hint" id="cc-kpi-all-hint">All records</span>
             </button>
             <button type="button" class="dash-kpi" data-filter="quote" aria-pressed="false">
               <span class="dash-kpi-icon dash-kpi-icon-website" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M8 4h8v4H8z"/><path d="M6 8h12v12H6z"/><path d="M9 12h6M9 16h4"/></svg></span>
@@ -4551,6 +4563,10 @@
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="8" r="3.25"/><path d="M5 19.2c.9-3.1 3.5-4.7 7-4.7s6.1 1.6 7 4.7"/></svg>
       <span>Customer</span>
     </a>
+    <a href="/company/dealers" id="tabbar-dealer" data-tabbar-group="dealer" class="hidden">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 7V5a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><rect x="4" y="7" width="16" height="14" rx="2"/><path d="M9 12h6M9 16h4"/></svg>
+      <span>Dealer</span>
+    </a>
     <a href="/company/chat" id="tabbar-chat" class="hidden">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 15a2 2 0 0 1-2 2H8l-4 4V5a2 2 0 0 1 2-2h13a2 2 0 0 1 2 2z"/></svg>
       <span>Chat</span>
@@ -4578,6 +4594,7 @@
     let editingStaffId = null;
     let editingRoleId = null;
     let websiteSubTab = 'products';
+    let ccListScope = 'customer';
     let settingsSubTab = 'staff';
     let salesSubTab = 'quotes';
     let adminRoles = [];
@@ -4658,7 +4675,8 @@
       if (hash === 'settings/roles' || hash === 'roles') return 'staff';
       if (hash === 'settings' || hash === 'settings/staff') return 'staff';
       if (hash === 'website/accounts' || hash === 'accounts') return 'accounts';
-      if (hash === 'website/dealers' || hash === 'dealers') return 'dealers';
+      if (hash === 'dealers/applications' || hash === 'website/dealers') return 'dealers';
+      if (hash === 'dealers' || hash === 'dealer') return 'dealer';
       if (hash === 'website/traffic' || hash === 'traffic') return 'traffic';
       if (hash === 'website/control' || hash === 'control') return 'products';
       if (hash === 'website/store' || hash === 'store') return 'store';
@@ -4677,6 +4695,8 @@
       if (p === '/company/chat') return 'chat';
       if (p === '/company/calculator') return 'calculator';
       if (p === '/company' || p === '/company/dashboard') return 'dashboard';
+      if (p === '/company/dealers/applications' || p === '/company/website/dealers') return 'dealers';
+      if (p === '/company/dealers' || /^\/company\/dealers\/\d+$/.test(p)) return 'dealer';
       if (p === '/company/customers') return 'customers';
       if (/^\/company\/customers\/\d+$/.test(p)) return 'customers';
       if (p === '/company/crm' || p === '/company/crm/leads') return 'leads';
@@ -4708,7 +4728,6 @@
       if (/^\/company\/settings\/users(\/|$)/.test(p)) return 'staff';
       if (p === '/company/settings') return 'staff';
       if (p === '/company/website/accounts') return 'accounts';
-      if (p === '/company/website/dealers') return 'dealers';
       if (p === '/company/website/traffic') return 'traffic';
       if (p === '/company/website/control') return 'products';
       if (p === '/company/website/store') return 'store';
@@ -4725,6 +4744,7 @@
       if (name === 'purchase-orders') return '/company/inventory/purchase-orders';
       if (name === 'receipt-shipments') return '/company/inventory/receipt-shipments';
       if (name === 'customers') return '/company/customers';
+      if (name === 'dealer') return '/company/dealers';
       if (name === 'crm' || name === 'leads') return '/company/crm/leads';
       if (name === 'pipeline') return '/company/crm/pipeline';
       if (name === 'activities') return '/company/crm/activities';
@@ -4734,7 +4754,7 @@
       const doc = parseDocMasterTab(name);
       if (doc) return pathForDocMaster(doc.kind, doc.id);
       if (name === 'accounts') return '/company/website/accounts';
-      if (name === 'dealers') return '/company/website/dealers';
+      if (name === 'dealers') return '/company/dealers/applications';
       if (name === 'traffic') return '/company/website/traffic';
       if (name === 'control') return '/company/website';
       if (name === 'store') return '/company/website/store';
@@ -4748,11 +4768,15 @@
       return m ? decodeURIComponent(m[1]) : '';
     }
     function customerIdFromPath() {
-      const m = companyPath().match(/^\/company\/customers\/(\d+)$/);
+      const p = companyPath();
+      let m = p.match(/^\/company\/customers\/(\d+)$/);
+      if (m) return m[1];
+      m = p.match(/^\/company\/dealers\/(\d+)$/);
       return m ? m[1] : '';
     }
     function pathForCustomer(id) {
-      return id ? '/company/customers/' + id : '/company/customers';
+      const base = ccListScope === 'dealer' ? '/company/dealers' : '/company/customers';
+      return id ? base + '/' + id : base;
     }
     function inventoryIdFromPath() {
       const m = companyPath().match(/^\/company\/inventory\/(\d+)$/);
@@ -4804,7 +4828,6 @@
         if (canUse('products')) return 'products';
         if (canUse('store')) return 'store';
         if (canUse('accounts')) return 'accounts';
-        if (canUse('dealers')) return 'dealers';
         if (canUse('traffic')) return 'traffic';
         return 'products';
       }
@@ -4816,6 +4839,8 @@
       if (canUse('activities')) return 'activities';
       if (canUseCrmNav()) return 'leads';
       if (canUse('customers')) return 'customers';
+      if (canUse('dealer')) return 'dealer';
+      if (canUse('dealers')) return 'dealers';
       if (canUse('quotes')) return 'quotes';
       if (canUse('orders')) return 'orders';
       if (canUse('invoices')) return 'invoices';
@@ -4839,6 +4864,8 @@
     function tabFromHref(href) {
       try {
         const p = new URL(href, location.origin).pathname.replace(/\/+$/, '') || '/company';
+        if (p === '/company/dealers/applications' || p === '/company/website/dealers') return 'dealers';
+        if (p === '/company/dealers' || /^\/company\/dealers\/\d+$/.test(p)) return 'dealer';
         if (p === '/company/customers') return 'customers';
         if (/^\/company\/customers\/\d+$/.test(p)) return 'customers';
         if (p === '/company/crm' || p === '/company/crm/leads') return 'leads';
@@ -4879,7 +4906,6 @@
         if (p === '/company/settings/forms') return 'forms';
         if (p === '/company/settings/roles' || p === '/company/settings' || /^\/company\/settings\/users(\/|$)/.test(p)) return 'staff';
         if (p === '/company/website/accounts') return 'accounts';
-        if (p === '/company/website/dealers') return 'dealers';
         if (p === '/company/website/traffic') return 'traffic';
         if (p === '/company/website/control') return 'products';
         if (p === '/company/website/store') return 'store';
@@ -4962,6 +4988,7 @@
       products: 'Website',
       store: 'Store',
       accounts: 'Accounts',
+      dealer: 'Dealer',
       dealers: 'Applications',
       traffic: 'Traffic',
       control: 'Control',
@@ -5011,7 +5038,8 @@
     MASTER_TAB_ICON.products = MASTER_TAB_ICON.website;
     MASTER_TAB_ICON.store = MASTER_TAB_ICON.website;
     MASTER_TAB_ICON.accounts = MASTER_TAB_ICON.customer;
-    MASTER_TAB_ICON.dealers = MASTER_TAB_ICON.customer;
+    MASTER_TAB_ICON.dealer = '<svg class="dash-master-tab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 7V5a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><rect x="4" y="7" width="16" height="14" rx="2"/><path d="M9 12h6M9 16h4"/></svg>';
+    MASTER_TAB_ICON.dealers = MASTER_TAB_ICON.dealer;
     MASTER_TAB_ICON.traffic = MASTER_TAB_ICON.website;
     MASTER_TAB_ICON.control = MASTER_TAB_ICON.website;
     MASTER_TAB_ICON.vendors = MASTER_TAB_ICON.vendor;
@@ -5036,7 +5064,8 @@
       products: '/company/website',
       store: '/company/website/store',
       accounts: '/company/website/accounts',
-      dealers: '/company/website/dealers',
+      dealer: '/company/dealers',
+      dealers: '/company/dealers/applications',
       traffic: '/company/website/traffic',
       control: '/company/website',
       inventory: '/company/inventory',
@@ -5085,7 +5114,8 @@
       if (name === 'dashboard') return 'dashboard';
       if (name === 'calculator') return 'calculator';
       if (name === 'chat') return 'chat';
-      if (name === 'products' || name === 'store' || name === 'accounts' || name === 'dealers' || name === 'traffic' || name === 'website') return 'website';
+      if (name === 'products' || name === 'store' || name === 'accounts' || name === 'traffic' || name === 'website') return 'website';
+      if (name === 'dealer' || name === 'dealers') return 'dealer';
       if (name === 'inventory' || name === 'warehouses' || name === 'receipt-shipments') return 'inventory';
       if (name === 'vendors' || name === 'purchase-orders') return 'vendor';
       if (name === 'leads' || name === 'pipeline' || name === 'activities' || name === 'crm') return 'crm';
@@ -5098,6 +5128,7 @@
       if (group === 'chat') return 'chat';
       if (group === 'calculator') return 'calculator';
       if (group === 'website') return 'products';
+      if (group === 'dealer') return 'dealer';
       if (group === 'inventory') return 'inventory';
       if (group === 'vendor') return 'vendors';
       if (group === 'crm') return 'leads';
@@ -5109,7 +5140,8 @@
     function masterInnersFor(group) {
       if (group === 'chat') return ['chat'];
       if (group === 'calculator') return ['calculator'];
-      if (group === 'website') return ['products', 'store', 'accounts', 'dealers', 'traffic'];
+      if (group === 'website') return ['products', 'store', 'accounts', 'traffic'];
+      if (group === 'dealer') return ['dealer', 'dealers'];
       if (group === 'inventory') return ['inventory', 'warehouses', 'receipt-shipments'];
       if (group === 'vendor') return ['vendors', 'purchase-orders'];
       if (group === 'crm') return ['leads', 'pipeline', 'activities'];
@@ -5675,7 +5707,8 @@
       products: 'products',
       store: 'products',
       accounts: 'accounts',
-      dealers: 'accounts',
+      dealer: 'dealer',
+      dealers: 'dealer-applications',
       traffic: 'products',
       control: 'products',
       inventory: 'inventory',
@@ -5712,6 +5745,7 @@
       quotes: 'customers',
       orders: 'customers',
       invoices: 'customers',
+      'dealer-applications': 'dealer',
       company: 'settings',
       staff: 'settings'
     };
@@ -5753,6 +5787,9 @@
     }
     function canUseCustomerNav() {
       return canUse('customers');
+    }
+    function canUseDealerNav() {
+      return canUse('dealer') || canUse('dealers');
     }
     function canUseWebsiteNav() {
       return canUse('website');
@@ -5862,7 +5899,14 @@
       setHidden('tab-products', !canUse('products'));
       setHidden('tab-store', !canUse('store'));
       setHidden('tab-accounts', !canUse('accounts'));
+      setHidden('tab-dealer', !canUseDealerNav());
+      setHidden('tab-dealer-list', !canUse('dealer'));
       setHidden('tab-dealers', !canUse('dealers'));
+      const dealerNav = document.getElementById('tab-dealer');
+      const dealerBar = document.getElementById('tabbar-dealer');
+      const dealerHref = canUse('dealer') ? '/company/dealers' : '/company/dealers/applications';
+      if (dealerNav) dealerNav.setAttribute('href', dealerHref);
+      if (dealerBar) dealerBar.setAttribute('href', dealerHref);
       setHidden('tab-traffic', !canUse('traffic'));
       setHidden('tab-control', !canUse('control'));
       setHidden('tab-inventory', !canUseInventoryNav());
@@ -5895,6 +5939,7 @@
       setHidden('tabbar-vendor', !canUseVendorNav());
       setHidden('tabbar-crm', !canUseCrmNav());
       setHidden('tabbar-customer', !canUseCustomerNav());
+      setHidden('tabbar-dealer', !canUseDealerNav());
       setHidden('tabbar-settings', true);
     }
 
@@ -5932,7 +5977,7 @@
       if (!fromPath || !canUse(fromPath)) {
         if (goCompany(next ? pathForTab(next) : '/company')) return false;
       }
-      websiteSubTab = next === 'dealers' ? 'dealers' : next === 'accounts' ? 'accounts' : next === 'store' ? 'store' : next === 'traffic' ? 'traffic' : 'products';
+      websiteSubTab = next === 'accounts' ? 'accounts' : next === 'store' ? 'store' : next === 'traffic' ? 'traffic' : 'products';
       settingsSubTab = next === 'company' ? 'company' : next === 'forms' ? 'forms' : 'staff';
       if (next === 'quotes' || next === 'orders' || next === 'invoices') salesSubTab = next;
       const bootDoc = parseDocMasterTab(next);
@@ -7681,11 +7726,12 @@
       'purchase-orders': '<span id="po-total">0</span> purchase orders.',
       'receipt-shipments': '<span id="rs-total">0</span> receipt shipments.',
       customers: '<span id="cc-total">0</span> customers for quotes and invoices. This is not the website Sign in list — those stay under Website → Accounts.',
+      dealer: '<span id="cc-total">0</span> dealers — company customers whose type is Dealer.',
       quotes: '<span id="so-total">0</span> <span id="so-list-label">sales documents</span>. Pick a company customer, add line items, then save. Website Sign in accounts stay under Website → Accounts.',
       orders: '<span id="so-total">0</span> <span id="so-list-label">sales documents</span>. Pick a company customer, add line items, then save. Website Sign in accounts stay under Website → Accounts.',
       invoices: '<span id="so-total">0</span> <span id="so-list-label">sales documents</span>. Pick a company customer, add line items, then save. Website Sign in accounts stay under Website → Accounts.',
       leads: '<span id="crm-lead-total">0</span> leads from the website, dealer form, or staff. Convert a lead to create a Customer for quotes.',
-      dealers: '<span id="da-total">0</span> dealer applications. Approve creates the Company customer. Create a portal login after that. Website Sign in stays the same.',
+      dealers: '<span id="da-total">0</span> dealer applications. Approve creates the Company customer with type Dealer. Create a portal login after that.',
       traffic: 'Anonymous visitors on the website and US Store. Click a row for the pages they opened and where they were.',
       products: 'Edit website products, brands, and pictures — photos, copy, inventory links, US Store, and a live preview.',
       pipeline: '<span id="crm-pipe-total">0</span> deals. Drag a card to change stage. Create a quote after the deal has a customer.',
@@ -7773,9 +7819,10 @@
       if (typeof closeRoleDrawer === 'function') closeRoleDrawer(true);
       const doc = parseDocMasterTab(name);
       const view = viewTabForMaster(name);
-      const onWebsite = view === 'products' || view === 'store' || view === 'accounts' || view === 'dealers' || view === 'traffic';
+      const onWebsite = view === 'products' || view === 'store' || view === 'accounts' || view === 'traffic';
       const onSettings = view === 'staff' || view === 'roles' || view === 'company' || view === 'forms';
       const onCustomerNav = view === 'quotes' || view === 'orders' || view === 'invoices' || view === 'sales' || view === 'customers';
+      const onDealerNav = view === 'dealer' || view === 'dealers';
       const onCrmNav = view === 'leads' || view === 'pipeline' || view === 'activities' || view === 'crm';
       const onSales = view === 'quotes' || view === 'orders' || view === 'invoices' || view === 'sales';
       const onInventory = view === 'inventory' || view === 'warehouses' || view === 'receipt-shipments';
@@ -7817,7 +7864,7 @@
       document.getElementById('tab-dashboard').className = navLinkClass(view === 'dashboard', !canUse('dashboard'));
       const tabCalc = document.getElementById('tab-calculator');
       if (tabCalc) tabCalc.className = navLinkClass(view === 'calculator', !canUse('calculator'));
-      document.getElementById('website-pane').classList.toggle('hidden', !onWebsite);
+      document.getElementById('website-pane').classList.toggle('hidden', !onWebsite && view !== 'dealers');
       document.getElementById('settings-pane').classList.toggle('hidden', !onSettings);
       const productsSection = document.getElementById('products-section');
       productsSection.classList.add('hidden');
@@ -7832,7 +7879,7 @@
       if (whSec) whSec.classList.toggle('wh-split-on', view === 'warehouses' && !isMobileDash());
       document.body.classList.toggle('inv-layout-lock', view === 'inventory' && !isMobileDash());
       document.body.classList.toggle('dash-split-lock',
-        (view === 'customers' || view === 'vendors' || view === 'warehouses' || view === 'products' || view === 'store' || view === 'accounts' || view === 'dealers' || view === 'leads' || view === 'pipeline' || view === 'activities') && !isMobileDash());
+        (view === 'customers' || view === 'dealer' || view === 'vendors' || view === 'warehouses' || view === 'products' || view === 'store' || view === 'accounts' || view === 'dealers' || view === 'leads' || view === 'pipeline' || view === 'activities') && !isMobileDash());
       const vnSec = document.getElementById('vendors-section');
       if (vnSec) vnSec.classList.toggle('vn-split-on', view === 'vendors' && !isMobileDash());
       const wpSec = document.getElementById('products-section');
@@ -7865,7 +7912,11 @@
       document.getElementById('vendors-section').classList.toggle('hidden', view !== 'vendors');
       document.getElementById('po-section').classList.toggle('hidden', view !== 'purchase-orders');
       document.getElementById('rs-section').classList.toggle('hidden', view !== 'receipt-shipments');
-      document.getElementById('customers-section').classList.toggle('hidden', view !== 'customers');
+      document.getElementById('customers-section').classList.toggle('hidden', view !== 'customers' && view !== 'dealer');
+      if (view === 'dealer' || view === 'customers') {
+        ccListScope = view === 'dealer' ? 'dealer' : 'customer';
+        if (typeof syncCcScopeView === 'function') syncCcScopeView();
+      }
       document.getElementById('crm-lead-section').classList.toggle('hidden', view !== 'leads' && view !== 'crm');
       document.getElementById('crm-pipe-section').classList.toggle('hidden', view !== 'pipeline');
       document.getElementById('crm-act-section').classList.toggle('hidden', view !== 'activities');
@@ -7885,6 +7936,8 @@
       document.getElementById('website-subnav').classList.toggle('hidden', !onWebsite);
       document.getElementById('settings-subnav').classList.toggle('hidden', !onSettings);
       document.getElementById('customer-subnav').classList.toggle('hidden', !onCustomerNav);
+      const dealerSub = document.getElementById('dealer-subnav');
+      if (dealerSub) dealerSub.classList.toggle('hidden', !onDealerNav);
       document.getElementById('inventory-subnav').classList.toggle('hidden', !onInventory);
       document.getElementById('vendor-subnav').classList.toggle('hidden', !onVendorNav);
       document.getElementById('crm-subnav').classList.toggle('hidden', !onCrmNav);
@@ -7893,6 +7946,10 @@
       document.getElementById('tab-vendor').className = navLinkClass(onVendorNav, !canUseVendorNav());
       document.getElementById('tab-customers').className = navLinkClass(view === 'customers', !canUse('customers'), 'sub');
       document.getElementById('tab-customer').className = navLinkClass(onCustomerNav, !canUseCustomerNav());
+      const tabDealer = document.getElementById('tab-dealer');
+      if (tabDealer) tabDealer.className = navLinkClass(onDealerNav, !canUseDealerNav());
+      const tabDealerList = document.getElementById('tab-dealer-list');
+      if (tabDealerList) tabDealerList.className = navLinkClass(view === 'dealer', !canUse('dealer'), 'sub');
       document.getElementById('tab-crm').className = navLinkClass(onCrmNav, !canUseCrmNav());
       document.getElementById('tab-leads').className = navLinkClass(view === 'leads' || view === 'crm', !canUse('leads'), 'sub');
       document.getElementById('tab-pipeline').className = navLinkClass(view === 'pipeline', !canUse('pipeline'), 'sub');
@@ -7930,7 +7987,8 @@
         products: ['Website', 'Products'],
         store: ['Website', 'US Store'],
         accounts: ['Website', 'Website accounts'],
-        dealers: ['Website', 'Dealer applications'],
+        dealer: ['Dealer', ''],
+        dealers: ['Dealer', 'Applications'],
         traffic: ['Website', 'Traffic'],
         inventory: ['Inventory', ''],
         warehouses: ['Inventory', 'Location'],
@@ -13101,10 +13159,11 @@
     }
 
     function syncTabbarActive(name) {
-      const onWebsite = name === 'products' || name === 'store' || name === 'accounts' || name === 'dealers' || name === 'traffic';
+      const onWebsite = name === 'products' || name === 'store' || name === 'accounts' || name === 'traffic';
       const onInventory = name === 'inventory' || name === 'warehouses' || name === 'receipt-shipments';
       const onVendorNav = name === 'vendors' || name === 'purchase-orders';
       const onCustomerNav = name === 'sales' || name === 'quotes' || name === 'orders' || name === 'invoices' || name === 'customers';
+      const onDealerNav = name === 'dealer' || name === 'dealers';
       const onCrmNav = name === 'leads' || name === 'pipeline' || name === 'activities' || name === 'crm';
       const onSettings = name === 'staff' || name === 'roles' || name === 'company' || name === 'forms';
       const map = {
@@ -13115,6 +13174,7 @@
         'tabbar-vendor': onVendorNav,
         'tabbar-crm': onCrmNav,
         'tabbar-customer': onCustomerNav,
+        'tabbar-dealer': onDealerNav,
         'tabbar-chat': name === 'chat',
         'tabbar-settings': onSettings
       };
@@ -13143,6 +13203,7 @@
       vendor: 'vendor-subnav',
       crm: 'crm-subnav',
       customer: 'customer-subnav',
+      dealer: 'dealer-subnav',
       settings: 'settings-subnav'
     };
 
@@ -13692,12 +13753,16 @@
       const tbody = document.getElementById('cc-table');
       if (!tbody) return;
       const filtered = ccFilteredCustomers(rows);
-      if (!document.getElementById('cc-total')) syncPageHelper('customers');
+      if (!document.getElementById('cc-total')) syncPageHelper(ccHelperName());
       setHelperCount('cc-total', (rows || []).length);
       fillCcOverview();
       if (!filtered.length) {
+        const dealerList = ccListScope === 'dealer';
+        const emptyCopy = document.getElementById('cc-search').value || ccFilter !== 'all'
+          ? (dealerList ? 'No dealers match this view.' : 'No customers match this view.')
+          : (dealerList ? 'No dealers yet. Add a customer and set the type to Dealer, or approve an application.' : 'No customers yet. Add a customer to use on quotes and invoices.');
         tbody.innerHTML = '<tr><td class="py-6 px-4 text-slate-500" colspan="' + dashColSpan(table) + '">' +
-          (document.getElementById('cc-search').value || ccFilter !== 'all' ? 'No customers match this view.' : 'No customers yet. Add a customer to use on quotes and invoices.') +
+          emptyCopy +
           '</td></tr>';
         applyColOrder(table);
         renderCcSideList(filtered);
@@ -13892,13 +13957,64 @@
       } else tel.classList.add('hidden');
     }
 
+    function ccHelperName() {
+      return ccListScope === 'dealer' ? 'dealer' : 'customers';
+    }
+    function ccPartyTab() {
+      return ccListScope === 'dealer' ? 'dealer' : 'customers';
+    }
+    function applyCcScopeChrome() {
+      const dealer = ccListScope === 'dealer';
+      const label = document.getElementById('cc-kpi-all-label');
+      const hint = document.getElementById('cc-kpi-all-hint');
+      const addBtn = document.getElementById('cc-new-btn');
+      const lead = document.querySelector('#cc-overview-panel .inv-overview-lead');
+      const side = document.getElementById('cc-side-list');
+      const save = document.getElementById('cc-save');
+      if (label) label.textContent = dealer ? 'Dealers' : 'Customers';
+      if (hint) hint.textContent = dealer ? 'Customer type Dealer' : 'All records';
+      if (addBtn) addBtn.textContent = dealer ? 'Add dealer' : 'Add customer';
+      if (lead) {
+        lead.textContent = dealer
+          ? 'Dealers are company customers whose type is Dealer. Open one for transactions, contacts, and notes.'
+          : 'Customer records for quotes and invoices — not website Sign in accounts. Open a customer to see transactions, contacts, and notes.';
+      }
+      if (side) side.setAttribute('aria-label', dealer ? 'Dealers' : 'Customers');
+      if (save && !(document.getElementById('cc-id') && document.getElementById('cc-id').value)) {
+        save.textContent = dealer ? 'Save dealer' : 'Save customer';
+      }
+    }
+    function syncCcScopeView() {
+      applyCcScopeChrome();
+      if (!Array.isArray(companyCustomers)) return;
+      ccOpenTabs = ccOpenTabs.filter(function (id) {
+        return ccScopedCustomers(companyCustomers).some(function (c) { return String(c.id) === String(id); });
+      });
+      const visible = ccScopedCustomers(companyCustomers);
+      const detailOk = ccDetailId && visible.some(function (c) { return String(c.id) === String(ccDetailId); });
+      if (ccDetailId && !detailOk) {
+        ccDetailId = '';
+        ccDetailCustomer = null;
+        ccActiveTab = 'overview';
+        if (typeof showCcRightPanel === 'function') showCcRightPanel('overview');
+        if (typeof syncDetailOpenBodyClass === 'function') syncDetailOpenBodyClass();
+      }
+      renderCcTable(companyCustomers);
+      if (typeof renderCcTabBar === 'function') renderCcTabBar();
+      syncPageHelper(ccHelperName());
+    }
+    function ccScopedCustomers(rows) {
+      const list = rows || [];
+      if (ccListScope !== 'dealer') return list;
+      return list.filter(ccIsDealerCustomer);
+    }
     function ccFilteredCustomers(rows) {
       const q = (document.getElementById('cc-search').value || '').toLowerCase();
       const matchIds = customerIdsForFilter(ccFilter);
-      return (rows || []).filter(function (c) {
+      return ccScopedCustomers(rows).filter(function (c) {
         if (ccFilter !== 'all' && !matchIds[String(c.id)]) return false;
         if (!q) return true;
-        return [c.companyName, c.contactFirst, c.contactLast, c.email, c.phone, c.mobile, c.billCity, c.paymentTerms]
+        return [c.companyName, c.contactFirst, c.contactLast, c.email, c.phone, c.mobile, c.billCity, c.paymentTerms, c.customerType]
           .join(' ').toLowerCase().indexOf(q) !== -1;
       });
     }
@@ -14000,7 +14116,7 @@
       if (!wrap) return;
       const rows = filtered || ccFilteredCustomers(companyCustomers);
       if (!rows.length) {
-        wrap.innerHTML = '<p class="cc-detail-empty">No customers match.</p>';
+        wrap.innerHTML = '<p class="cc-detail-empty">' + (ccListScope === 'dealer' ? 'No dealers match.' : 'No customers match.') + '</p>';
         return;
       }
       wrap.innerHTML = rows.map(function (c) {
@@ -14293,10 +14409,10 @@
       document.getElementById('cc-detail-new-menu').classList.add('hidden');
       showCcRightPanel('overview');
       syncDetailOpenBodyClass();
-      syncPageHelper('customers');
+      syncPageHelper(ccHelperName());
       renderCcTabBar();
       renderCcTable(companyCustomers);
-      if (opts.push !== false) history.pushState({ tab: 'customers' }, '', '/company/customers');
+      if (opts.push !== false) history.pushState({ tab: ccPartyTab() }, '', pathForCustomer(''));
     }
 
     function closeCustomerDetail(push) {
@@ -14343,14 +14459,15 @@
       opts = opts || {};
       const push = opts.push !== false;
       ccOpenTabs = ccOpenTabs.filter(function (id) {
-        return companyCustomers.some(function (c) { return String(c.id) === String(id); });
+        return ccScopedCustomers(companyCustomers).some(function (c) { return String(c.id) === String(id); });
       });
       Object.keys(ccTabDetailTab).forEach(function (id) {
         if (ccOpenTabs.indexOf(id) === -1) delete ccTabDetailTab[id];
       });
       const pathId = customerIdFromPath();
-      if (pathId && canUse('customers')) {
-        const found = companyCustomers.find(function (c) { return String(c.id) === String(pathId); });
+      const canOpenParty = ccListScope === 'dealer' ? canUse('dealer') : canUse('customers');
+      if (pathId && canOpenParty) {
+        const found = ccScopedCustomers(companyCustomers).find(function (c) { return String(c.id) === String(pathId); });
         if (found) {
           openCcTab(pathId, { push: push });
           return;
@@ -14389,9 +14506,9 @@
         document.getElementById('cc-detail-new-menu').classList.add('hidden');
         showCcRightPanel('item');
         syncDetailOpenBodyClass();
-        syncPageHelper('customers');
+        syncPageHelper(ccHelperName());
         if (opts.push !== false) {
-          history.pushState({ tab: 'customers', customerId: id }, '', pathForCustomer(id));
+          history.pushState({ tab: ccPartyTab(), customerId: id }, '', pathForCustomer(id));
         }
         renderCustomerDetail();
         if (!opts.skipTabBar) renderCcTabBar();
@@ -14543,15 +14660,21 @@
         document.getElementById('cc-delete-btn').classList.remove('hidden');
         fillCcForm(full);
       } else {
-        document.getElementById('cc-title').textContent = 'Customer';
+        const dealerNew = ccListScope === 'dealer';
+        document.getElementById('cc-title').textContent = dealerNew ? 'Dealer' : 'Customer';
         document.getElementById('cc-delete-btn').classList.add('hidden');
         fillCcForm({
+          customerType: dealerNew ? 'Dealer' : '',
           paymentTerms: 'Net 30',
           billCountry: 'United States',
           shipCountry: 'United States',
           shipSame: true
         });
+        const saveBtn = document.getElementById('cc-save');
+        if (saveBtn) saveBtn.textContent = dealerNew ? 'Save dealer' : 'Save customer';
       }
+      const ccSaveBtn = document.getElementById('cc-save');
+      if (ccSaveBtn) ccSaveBtn.textContent = ccListScope === 'dealer' ? 'Save dealer' : 'Save customer';
       document.getElementById('cc-display').dataset.touched = full && full.displayName ? '1' : '';
       document.querySelectorAll('#cc-form .cc-sec').forEach(function (sec) {
         sec.classList.add('is-open');
@@ -14586,13 +14709,16 @@
       return ids;
     }
     function fillCcOverview() {
+      const scopeIds = {};
+      ccScopedCustomers(companyCustomers).forEach(function (c) { scopeIds[String(c.id)] = true; });
+      const inScope = function (id) { return !!scopeIds[String(id)]; };
       const quoteIds = customerIdsForFilter('quote');
       const orderIds = customerIdsForFilter('order');
       const invoiceIds = customerIdsForFilter('invoice');
-      setText('cc-stat-all', (companyCustomers || []).length);
-      setText('cc-stat-quote', Object.keys(quoteIds).length);
-      setText('cc-stat-order', Object.keys(orderIds).length);
-      setText('cc-stat-invoice', Object.keys(invoiceIds).length);
+      setText('cc-stat-all', Object.keys(scopeIds).length);
+      setText('cc-stat-quote', Object.keys(quoteIds).filter(inScope).length);
+      setText('cc-stat-order', Object.keys(orderIds).filter(inScope).length);
+      setText('cc-stat-invoice', Object.keys(invoiceIds).filter(inScope).length);
       markPageKpis('cc-overview', ccFilter);
     }
     function setCcFilter(name) {
@@ -14609,7 +14735,7 @@
         ]);
         companyCustomers = data.customers || [];
         salesAllDocs = salesData.docs || [];
-        syncPageHelper('customers');
+        syncPageHelper(ccHelperName());
         renderCcTable(companyCustomers);
         initCcSplitResize();
         restoreCcView({ push: false });
@@ -18406,7 +18532,9 @@
         showRsList();
         await loadReceiptShipments();
       }
-      if (name === 'customers') {
+      if (name === 'dealer' || name === 'customers') {
+        ccListScope = name === 'dealer' ? 'dealer' : 'customer';
+        applyCcScopeChrome();
         showCcList();
         await loadCompanyCustomers();
       }
@@ -20669,6 +20797,9 @@
         { key: 'orders', label: 'Sales Order' },
         { key: 'invoices', label: 'Invoice' }
       ]},
+      { key: 'dealer', label: 'Dealer', children: [
+        { key: 'dealer-applications', label: 'Applications' }
+      ]},
       { key: 'settings', label: 'Settings', children: [
         { key: 'company', label: 'Company' },
         { key: 'staff', label: 'Manage users' }
@@ -20688,6 +20819,7 @@
       quotes: 'customers',
       orders: 'customers',
       invoices: 'customers',
+      'dealer-applications': 'dealer',
       company: 'settings',
       staff: 'settings'
     };
