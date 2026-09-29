@@ -304,6 +304,10 @@
             <span>Applications</span>
             <span class="dash-nav-unread" id="dealer-app-nav-badge" hidden></span>
           </a>
+          <a href="/company/dealers/registrations" id="tab-deal-registrations" class="dash-sub-link">
+            <svg class="dash-nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="3" width="16" height="18" rx="2"/><path d="M8 8h8M8 12h8M8 16h5"/></svg>
+            <span>Deal registration</span>
+          </a>
         </div>
       </div>
     </nav>
@@ -2610,6 +2614,58 @@
         </div>
       </div>
 
+      <div id="deal-registrations-section" class="hidden">
+        <div class="cc-list-inner">
+          <p class="text-sm text-slate-500 mb-3">Named jobs dealers registered. Accept sets the protection end date. Decline needs a reason the dealer can read. Protection is one job, not a territory.</p>
+          <p id="dreg-error" class="hidden text-sm text-red-400 mb-3"></p>
+          <div class="dash-split">
+            <div class="dash-split-left">
+              <div class="cc-table-card rounded-2xl border border-slate-800">
+                <div class="cc-table-wrap overflow-x-auto">
+                  <table class="w-full text-sm">
+                    <thead class="text-left text-slate-400 border-b border-slate-800">
+                      <tr>
+                        <th class="py-3 px-4 font-medium">Number</th>
+                        <th class="py-3 px-4 font-medium">Dealer</th>
+                        <th class="py-3 px-4 font-medium">End customer</th>
+                        <th class="py-3 px-4 font-medium">Job</th>
+                        <th class="py-3 px-4 font-medium">Status</th>
+                      </tr>
+                    </thead>
+                    <tbody id="dreg-table" class="text-slate-200"></tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+            <div class="dash-split-resizer" role="separator" aria-orientation="vertical" aria-label="Resize registration panels" tabindex="0"></div>
+            <div class="dash-split-right">
+              <div id="dreg-overview" class="inv-right-panel">
+                <p class="inv-overview-lead">Select a registration to accept or decline it.</p>
+              </div>
+              <div id="dreg-detail" class="inv-right-panel hidden" style="padding:1.25rem;overflow:auto">
+                <h2 id="dreg-title" class="font-semibold text-lg">Registration</h2>
+                <p id="dreg-status" class="text-sm text-slate-500 mt-1"></p>
+                <p id="dreg-match" class="hidden text-sm mt-2" style="color:#b45309"></p>
+                <dl id="dreg-fields" class="grid sm:grid-cols-2 gap-x-6 gap-y-3 text-sm mt-4"></dl>
+                <div id="dreg-actions" class="mt-4 space-y-3">
+                  <label class="text-sm block">Protection end date
+                    <input id="dreg-until" type="date" class="mt-1 bg-slate-800 border border-slate-700 rounded-lg px-3 py-2">
+                  </label>
+                  <div class="flex flex-wrap gap-2">
+                    <button type="button" id="dreg-accept" class="px-4 py-2 rounded-full bg-sky-500 hover:bg-sky-400 text-white text-sm font-semibold">Accept</button>
+                    <button type="button" id="dreg-decline" class="px-4 py-2 rounded-full border border-slate-600 text-sm">Decline</button>
+                  </div>
+                  <label class="text-sm block">Decline reason
+                    <textarea id="dreg-reason" rows="2" class="w-full mt-1 bg-slate-800 border border-slate-700 rounded-lg px-3 py-2" placeholder="The dealer sees this"></textarea>
+                  </label>
+                </div>
+                <p id="dreg-msg" class="hidden text-sm mt-3"></p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
       <div id="customers-section" class="hidden">
         <div id="cc-workspace" class="cc-workspace">
         <div id="customers-list-wrap" class="cc-list-inner">
@@ -3003,6 +3059,7 @@
                   </div>
                 </div>
                 <div class="so-doc-headblock">
+                  <p id="so-deal-warn" class="hidden" style="margin:0 0 12px;padding:10px 12px;border-radius:12px;background:#fff6d8;color:#92400e;font-size:13px;line-height:1.45"></p>
                   <div class="so-doc-kind">
                     <h2 id="so-kind-label">Invoice</h2>
                     <span id="so-status-badge" class="so-status-badge" hidden></span>
@@ -4735,6 +4792,7 @@
       if (hash === 'settings/roles' || hash === 'roles') return 'staff';
       if (hash === 'settings' || hash === 'settings/staff') return 'staff';
       if (hash === 'website/accounts' || hash === 'accounts') return 'accounts';
+      if (hash === 'dealers/registrations' || hash === 'registrations') return 'deal-registrations';
       if (hash === 'dealers/applications' || hash === 'website/dealers') return 'dealers';
       if (hash === 'dealers' || hash === 'dealer') return 'dealer';
       if (hash === 'website/traffic' || hash === 'traffic') return 'traffic';
@@ -4755,6 +4813,7 @@
       if (p === '/company/chat') return 'chat';
       if (p === '/company/calculator') return 'calculator';
       if (p === '/company' || p === '/company/dashboard') return 'dashboard';
+      if (p === '/company/dealers/registrations') return 'deal-registrations';
       if (p === '/company/dealers/applications' || p === '/company/website/dealers') return 'dealers';
       if (p === '/company/dealers' || /^\/company\/dealers\/\d+$/.test(p)) return 'dealer';
       if (p === '/company/customers') return 'customers';
@@ -4815,6 +4874,7 @@
       if (doc) return pathForDocMaster(doc.kind, doc.id);
       if (name === 'accounts') return '/company/website/accounts';
       if (name === 'dealers') return '/company/dealers/applications';
+      if (name === 'deal-registrations') return '/company/dealers/registrations';
       if (name === 'traffic') return '/company/website/traffic';
       if (name === 'control') return '/company/website';
       if (name === 'store') return '/company/website/store';
@@ -4924,6 +4984,7 @@
     function tabFromHref(href) {
       try {
         const p = new URL(href, location.origin).pathname.replace(/\/+$/, '') || '/company';
+        if (p === '/company/dealers/registrations') return 'deal-registrations';
         if (p === '/company/dealers/applications' || p === '/company/website/dealers') return 'dealers';
         if (p === '/company/dealers' || /^\/company\/dealers\/\d+$/.test(p)) return 'dealer';
         if (p === '/company/customers') return 'customers';
@@ -5050,6 +5111,7 @@
       accounts: 'Accounts',
       dealer: 'Dealer',
       dealers: 'Applications',
+      'deal-registrations': 'Deal registration',
       traffic: 'Traffic',
       control: 'Control',
       inventory: 'Inventory',
@@ -5126,6 +5188,7 @@
       accounts: '/company/website/accounts',
       dealer: '/company/dealers',
       dealers: '/company/dealers/applications',
+      'deal-registrations': '/company/dealers/registrations',
       traffic: '/company/website/traffic',
       control: '/company/website',
       inventory: '/company/inventory',
@@ -5175,7 +5238,7 @@
       if (name === 'calculator') return 'calculator';
       if (name === 'chat') return 'chat';
       if (name === 'products' || name === 'store' || name === 'accounts' || name === 'traffic' || name === 'website') return 'website';
-      if (name === 'dealer' || name === 'dealers') return 'dealer';
+      if (name === 'dealer' || name === 'dealers' || name === 'deal-registrations') return 'dealer';
       if (name === 'inventory' || name === 'warehouses' || name === 'receipt-shipments') return 'inventory';
       if (name === 'vendors' || name === 'purchase-orders') return 'vendor';
       if (name === 'leads' || name === 'pipeline' || name === 'activities' || name === 'crm') return 'crm';
@@ -5201,7 +5264,7 @@
       if (group === 'chat') return ['chat'];
       if (group === 'calculator') return ['calculator'];
       if (group === 'website') return ['products', 'store', 'accounts', 'traffic'];
-      if (group === 'dealer') return ['dealer', 'dealers'];
+      if (group === 'dealer') return ['dealer', 'dealers', 'deal-registrations'];
       if (group === 'inventory') return ['inventory', 'warehouses', 'receipt-shipments'];
       if (group === 'vendor') return ['vendors', 'purchase-orders'];
       if (group === 'crm') return ['leads', 'pipeline', 'activities'];
@@ -5769,6 +5832,7 @@
       accounts: 'accounts',
       dealer: 'dealer',
       dealers: 'dealer-applications',
+      'deal-registrations': 'dealer',
       traffic: 'products',
       control: 'products',
       inventory: 'inventory',
@@ -5962,6 +6026,7 @@
       setHidden('tab-dealer', !canUseDealerNav());
       setHidden('tab-dealer-list', !canUse('dealer'));
       setHidden('tab-dealers', !canUse('dealers'));
+      setHidden('tab-deal-registrations', !canUse('dealer'));
       const dealerNav = document.getElementById('tab-dealer');
       const dealerBar = document.getElementById('tabbar-dealer');
       const dealerHref = canUse('dealer') ? '/company/dealers' : '/company/dealers/applications';
@@ -7937,7 +8002,7 @@
       const onWebsite = view === 'products' || view === 'store' || view === 'accounts' || view === 'traffic';
       const onSettings = view === 'staff' || view === 'roles' || view === 'company' || view === 'forms';
       const onCustomerNav = view === 'quotes' || view === 'orders' || view === 'invoices' || view === 'sales' || view === 'customers';
-      const onDealerNav = view === 'dealer' || view === 'dealers';
+      const onDealerNav = view === 'dealer' || view === 'dealers' || view === 'deal-registrations';
       const onCrmNav = view === 'leads' || view === 'pipeline' || view === 'activities' || view === 'crm';
       const onSales = view === 'quotes' || view === 'orders' || view === 'invoices' || view === 'sales';
       const onInventory = view === 'inventory' || view === 'warehouses' || view === 'receipt-shipments';
@@ -7994,7 +8059,7 @@
       if (whSec) whSec.classList.toggle('wh-split-on', view === 'warehouses' && !isMobileDash());
       document.body.classList.toggle('inv-layout-lock', view === 'inventory' && !isMobileDash());
       document.body.classList.toggle('dash-split-lock',
-        (view === 'customers' || view === 'dealer' || view === 'vendors' || view === 'warehouses' || view === 'products' || view === 'store' || view === 'accounts' || view === 'dealers' || view === 'leads' || view === 'pipeline' || view === 'activities') && !isMobileDash());
+        (view === 'customers' || view === 'dealer' || view === 'deal-registrations' || view === 'vendors' || view === 'warehouses' || view === 'products' || view === 'store' || view === 'accounts' || view === 'dealers' || view === 'leads' || view === 'pipeline' || view === 'activities') && !isMobileDash());
       const vnSec = document.getElementById('vendors-section');
       if (vnSec) vnSec.classList.toggle('vn-split-on', view === 'vendors' && !isMobileDash());
       const wpSec = document.getElementById('products-section');
@@ -8043,6 +8108,8 @@
       document.getElementById('accounts-section').classList.toggle('hidden', view !== 'accounts');
       const dealersSec = document.getElementById('dealers-section');
       if (dealersSec) dealersSec.classList.toggle('hidden', view !== 'dealers');
+      const dregSec = document.getElementById('deal-registrations-section');
+      if (dregSec) dregSec.classList.toggle('hidden', view !== 'deal-registrations');
       const trafficSec = document.getElementById('traffic-section');
       if (trafficSec) trafficSec.classList.toggle('hidden', view !== 'traffic');
       document.getElementById('company-section').classList.toggle('hidden', view !== 'company');
@@ -8081,6 +8148,8 @@
       document.getElementById('tab-accounts').className = navLinkClass(view === 'accounts', !canUse('accounts'), 'sub');
       const tabDealers = document.getElementById('tab-dealers');
       if (tabDealers) tabDealers.className = navLinkClass(view === 'dealers', !canUse('dealers'), 'sub');
+      const tabDreg = document.getElementById('tab-deal-registrations');
+      if (tabDreg) tabDreg.className = navLinkClass(view === 'deal-registrations', !canUse('dealer'), 'sub');
       const tabTraffic = document.getElementById('tab-traffic');
       if (tabTraffic) tabTraffic.className = navLinkClass(view === 'traffic', !canUse('traffic'), 'sub');
       document.getElementById('tab-quotes').className = navLinkClass(view === 'quotes', !canUse('quotes'), 'sub');
@@ -8104,6 +8173,7 @@
         accounts: ['Website', 'Website accounts'],
         dealer: ['Dealer', ''],
         dealers: ['Dealer', 'Applications'],
+        'deal-registrations': ['Dealer', 'Deal registration'],
         traffic: ['Website', 'Traffic'],
         inventory: ['Inventory', ''],
         warehouses: ['Inventory', 'Location'],
@@ -13281,7 +13351,7 @@
       const onInventory = name === 'inventory' || name === 'warehouses' || name === 'receipt-shipments';
       const onVendorNav = name === 'vendors' || name === 'purchase-orders';
       const onCustomerNav = name === 'sales' || name === 'quotes' || name === 'orders' || name === 'invoices' || name === 'customers';
-      const onDealerNav = name === 'dealer' || name === 'dealers';
+      const onDealerNav = name === 'dealer' || name === 'dealers' || name === 'deal-registrations';
       const onCrmNav = name === 'leads' || name === 'pipeline' || name === 'activities' || name === 'crm';
       const onSettings = name === 'staff' || name === 'roles' || name === 'company' || name === 'forms';
       const map = {
@@ -18395,6 +18465,7 @@
       document.getElementById('so-discount').value = doc.discount || 0;
       document.getElementById('so-tax-rate').value = doc.taxRate || 0;
       document.getElementById('so-notes').value = doc.notes || '';
+      if (typeof refreshDealRegWarning === 'function') refreshDealRegWarning();
       const lines = (doc.lines && doc.lines.length) ? doc.lines : [];
       renderSoLines(lines);
       const paint = soPaintToken;
@@ -18557,6 +18628,159 @@
       }
     }
 
+    let dregRows = [];
+    let dregOpenId = '';
+    function dregStatusLabel(row) {
+      if (!row) return '';
+      if (row.status === 'protected') return 'Protected until ' + (row.protectUntil || '');
+      if (row.status === 'declined') return 'Declined';
+      if (row.status === 'expired') return 'Expired';
+      return 'Waiting for Spectrum';
+    }
+    function dregPlus90() {
+      const d = new Date();
+      d.setDate(d.getDate() + 90);
+      const m = String(d.getMonth() + 1).padStart(2, '0');
+      const day = String(d.getDate()).padStart(2, '0');
+      return d.getFullYear() + '-' + m + '-' + day;
+    }
+    function renderDealRegistrations() {
+      const tbody = document.getElementById('dreg-table');
+      if (!tbody) return;
+      if (!dregRows.length) {
+        tbody.innerHTML = '<tr><td class="py-6 px-4 text-slate-500" colspan="5">No deal registrations yet.</td></tr>';
+        return;
+      }
+      tbody.innerHTML = dregRows.map(function (row) {
+        const on = String(row.id) === String(dregOpenId);
+        return '<tr class="border-b border-slate-800 hover:bg-slate-900/80 cursor-pointer' + (on ? ' is-active' : '') + '" data-dreg-id="' + esc(row.id) + '">' +
+          '<td class="py-3 px-4 font-medium">' + esc(row.number || '') + '</td>' +
+          '<td class="py-3 px-4">' + esc(row.dealerName || '—') + '</td>' +
+          '<td class="py-3 px-4">' + esc(row.endCustomer || '—') + '</td>' +
+          '<td class="py-3 px-4">' + esc(row.jobName || '—') + '</td>' +
+          '<td class="py-3 px-4">' + esc(dregStatusLabel(row)) + '</td></tr>';
+      }).join('');
+    }
+    function showDealRegistration(row) {
+      dregOpenId = row ? String(row.id) : '';
+      const overview = document.getElementById('dreg-overview');
+      const detail = document.getElementById('dreg-detail');
+      if (overview) overview.classList.toggle('hidden', !!row);
+      if (detail) detail.classList.toggle('hidden', !row);
+      renderDealRegistrations();
+      if (!row) return;
+      document.getElementById('dreg-title').textContent = row.number + ' · ' + (row.endCustomer || 'Job');
+      document.getElementById('dreg-status').textContent = dregStatusLabel(row) + (row.dealerName ? ' · ' + row.dealerName : '');
+      const match = document.getElementById('dreg-match');
+      if (match) {
+        match.classList.toggle('hidden', !row.possibleMatch);
+        match.textContent = row.possibleMatch ? 'Possible match with another dealer’s registration. Accept only one named job.' : '';
+      }
+      const fields = [
+        ['End customer', row.endCustomer],
+        ['Job', row.jobName],
+        ['Site', [row.siteStreet, row.siteCity, row.siteState].filter(Boolean).join(', ')],
+        ['Selling', row.selling],
+        ['Expected', row.expectedDate],
+        ['Contact', [row.contactName, row.contactEmail, row.contactPhone].filter(Boolean).join(' · ')],
+        ['Notes', row.notes],
+        ['Decline reason', row.declineReason]
+      ];
+      document.getElementById('dreg-fields').innerHTML = fields.filter(function (pair) { return pair[1]; }).map(function (pair) {
+        return '<div><dt class="text-slate-400">' + esc(pair[0]) + '</dt><dd>' + esc(pair[1]) + '</dd></div>';
+      }).join('');
+      const until = document.getElementById('dreg-until');
+      if (until) until.value = row.protectUntil || dregPlus90();
+      const open = row.status === 'submitted' || row.status === 'expired';
+      document.getElementById('dreg-actions').classList.toggle('hidden', !open && row.status === 'declined' ? false : !open && row.status === 'protected');
+      document.getElementById('dreg-actions').classList.toggle('hidden', row.status === 'protected' || row.status === 'declined');
+      showError('dreg-msg', '');
+    }
+    async function loadDealRegistrations() {
+      showError('dreg-error', '');
+      try {
+        const data = await api('/api/admin/deal-registrations');
+        dregRows = data.registrations || [];
+        const open = dregRows.find(function (row) { return String(row.id) === String(dregOpenId); });
+        if (open) showDealRegistration(open);
+        else {
+          dregOpenId = '';
+          showDealRegistration(null);
+        }
+      } catch (err) {
+        showError('dreg-error', err.message || 'Could not load deal registrations.');
+      }
+    }
+    async function refreshDealRegWarning() {
+      const box = document.getElementById('so-deal-warn');
+      if (!box) return;
+      const customerId = (document.getElementById('so-customer') || {}).value || '';
+      if (!customerId || customerId === '__new__') {
+        box.classList.add('hidden');
+        box.textContent = '';
+        return;
+      }
+      const customer = typeof soCustomerById === 'function' ? soCustomerById(customerId) : null;
+      const name = (document.getElementById('so-customer-name') || {}).value || (customer && (customer.displayName || customer.companyName)) || '';
+      const ship = (document.getElementById('so-ship-to') || {}).textContent || '';
+      const notes = (document.getElementById('so-notes') || {}).value || '';
+      try {
+        const data = await api('/api/admin/deal-registrations/check', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ customerId: customerId, customerName: name, shipText: ship, notes: notes })
+        });
+        const matches = data.matches || [];
+        if (!matches.length) {
+          box.classList.add('hidden');
+          box.textContent = '';
+          return;
+        }
+        box.classList.remove('hidden');
+        box.textContent = matches.map(function (hit) {
+          return hit.number + ' is protected for ' + (hit.dealerName || 'a dealer') + ' until ' + (hit.protectUntil || 'the confirmed date') + ' (' + (hit.endCustomer || '') + (hit.jobName ? ' · ' + hit.jobName : '') + '). Do not quote another dealer a lower net on this named job, and do not take it direct.';
+        }).join(' ');
+      } catch (err) {
+        box.classList.add('hidden');
+      }
+    }
+    document.getElementById('dreg-table').addEventListener('click', function (e) {
+      const tr = e.target.closest('[data-dreg-id]');
+      if (!tr) return;
+      const row = dregRows.find(function (item) { return String(item.id) === tr.getAttribute('data-dreg-id'); });
+      showDealRegistration(row || null);
+    });
+    document.getElementById('dreg-accept').addEventListener('click', async function () {
+      if (!dregOpenId) return;
+      showError('dreg-msg', '');
+      try {
+        const data = await api('/api/admin/deal-registrations/' + encodeURIComponent(dregOpenId) + '/accept', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ protectUntil: document.getElementById('dreg-until').value })
+        });
+        await loadDealRegistrations();
+        const next = (data && data.registration) || dregRows.find(function (row) { return String(row.id) === String(dregOpenId); });
+        if (next) showDealRegistration(next);
+      } catch (err) {
+        showError('dreg-msg', err.message || 'Could not accept this job.');
+      }
+    });
+    document.getElementById('dreg-decline').addEventListener('click', async function () {
+      if (!dregOpenId) return;
+      showError('dreg-msg', '');
+      try {
+        await api('/api/admin/deal-registrations/' + encodeURIComponent(dregOpenId) + '/decline', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ reason: document.getElementById('dreg-reason').value })
+        });
+        await loadDealRegistrations();
+      } catch (err) {
+        showError('dreg-msg', err.message || 'Could not decline this job.');
+      }
+    });
+
     async function openRoutedSection(name) {
       let loaded = false;
       try {
@@ -18612,6 +18836,9 @@
       if (name === 'dealers') {
         await loadDealerApplications();
         if (isDaSplitOn()) initDaSplitResize();
+      }
+      if (name === 'deal-registrations') {
+        await loadDealRegistrations();
       }
       if (name === 'traffic') {
         if (window.SpectrumTraffic) await SpectrumTraffic.load();
@@ -19286,6 +19513,7 @@
         return;
       }
       applySoCustomer(soCustomerById(id));
+      if (typeof refreshDealRegWarning === 'function') refreshDealRegWarning();
     });
     document.getElementById('so-status').addEventListener('change', function () {
       fillSoStatusBadge(this.value);

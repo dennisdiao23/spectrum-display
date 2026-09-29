@@ -2972,6 +2972,7 @@ function createSupabaseStore() {
   Object.assign(api, require('./company-emails').supabaseApi(supabase, throwIf));
   Object.assign(api, require('./gmail-accounts').supabaseApi(supabase, throwIf));
   Object.assign(api, require('./dealer-portal').supabaseApi(supabase, api));
+  Object.assign(api, require('./deal-registrations').supabaseApi(supabase, api));
   Object.assign(api, require('./site-analytics').supabaseApi(supabase));
   Object.assign(api, require('./admin-staff-profile').supabaseApi(supabase, throwIf));
   require('./store-payments-supabase').attachPaymentMethods(api, supabase, throwIf);
