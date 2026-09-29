@@ -1011,35 +1011,6 @@ async function main() {
         console.error('Could not store dealer application:', err.message || err);
         return res.status(502).json({ ok: false, error: 'Could not save the application. Please try again.' });
       }
-      try {
-        const addr = app.company_address || {};
-        const extra = [
-          app.tax_id ? 'Tax ID: ' + app.tax_id : '',
-          app.years_in_business ? 'Years in business: ' + app.years_in_business : '',
-          app.company_size ? 'Company size: ' + app.company_size : '',
-          app.business_type && app.business_type.length ? 'Business type: ' + app.business_type.join(', ') : '',
-          app.primary_verticals && app.primary_verticals.length ? 'Verticals: ' + app.primary_verticals.join(', ') : '',
-          addr.line1 ? 'Address: ' + [addr.line1, addr.city, addr.state, addr.postal_code].filter(Boolean).join(', ') : '',
-          app.references_text ? 'References: ' + app.references_text : ''
-        ].filter(Boolean).join('\n');
-        const lead = await store.upsertCrmLeadFromInquiry({
-          source: 'dealer',
-          sourceKey: app.email ? 'dealer:' + app.email : '',
-          name: app.contact_name,
-          company: app.company_name,
-          email: app.email,
-          phone: app.phone,
-          website: app.website,
-          city: addr.city || '',
-          state: addr.state || '',
-          notes: extra
-        });
-        if (lead && lead.id && savedApp && savedApp.id) {
-          await store.attachDealerApplicationCrmLead(savedApp.id, lead.id);
-        }
-      } catch (err) {
-        console.error('Could not store CRM lead from dealer:', err.message || err);
-      }
       let emailed = false;
       if (mailConfigured()) {
         try {
@@ -3041,9 +3012,14 @@ async function main() {
   app.get('/api/admin/dealer-applications', requireAdmin, requirePerm('dealer-applications', 'view'), async function (req, res, next) {
     try {
       const status = String((req.query && req.query.status) || '').trim();
+      const applications = await store.listDealerApplications(status ? { status: status } : {});
+      const pendingCount = typeof store.countPendingDealerApplications === 'function'
+        ? await store.countPendingDealerApplications()
+        : applications.filter(function (row) { return row && row.status === 'pending'; }).length;
       res.json({
         ok: true,
-        applications: await store.listDealerApplications(status ? { status: status } : {}),
+        applications: applications,
+        pendingCount: pendingCount,
         source: hasSupabase() ? 'supabase' : 'sqlite'
       });
     } catch (err) { next(err); }

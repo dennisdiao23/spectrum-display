@@ -802,7 +802,7 @@ async function linkApprovedDealer(store, app) {
   }
 
   try {
-    const leads = await store.listCrmLeads();
+    const leads = await store.listCrmLeads({ includeApplicationLeads: true });
     const lead = (leads || []).find(function (row) {
       const key = String(row.sourceKey || '').toLowerCase();
       const leadEmail = String(row.email || '').toLowerCase();
@@ -995,6 +995,10 @@ function sqliteApi(db, store) {
         ? db.prepare('SELECT * FROM dealer_applications WHERE status = ? ORDER BY datetime(created_at) DESC, id DESC').all(want)
         : db.prepare('SELECT * FROM dealer_applications ORDER BY datetime(created_at) DESC, id DESC').all();
       return rows.map(function (row) { return formatApplication(row, { admin: true }); });
+    },
+    async countPendingDealerApplications() {
+      const row = db.prepare("SELECT COUNT(*) AS n FROM dealer_applications WHERE status = 'pending'").get();
+      return Number(row && row.n) || 0;
     },
     async getDealerApplication(id) {
       return formatApplication(getRow(id), { admin: true });
@@ -1280,6 +1284,14 @@ function supabaseApi(supabase, store) {
       const { data, error } = await query;
       throwIfMissing(error, 'Could not list dealer applications.');
       return (data || []).map(function (row) { return formatApplication(row, { admin: true }); });
+    },
+    async countPendingDealerApplications() {
+      const { count, error } = await supabase
+        .from('dealer_applications')
+        .select('id', { count: 'exact', head: true })
+        .eq('status', 'pending');
+      throwIfMissing(error, 'Could not count dealer applications.');
+      return Number(count) || 0;
     },
     async getDealerApplication(id) {
       return formatApplication(await fetchRow(id), { admin: true });

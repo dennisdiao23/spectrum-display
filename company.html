@@ -266,6 +266,7 @@
         <a href="/company/dealers" id="tab-dealer" class="dash-nav-link">
           <svg class="dash-nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 7V5a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><rect x="4" y="7" width="16" height="14" rx="2"/><path d="M9 12h6M9 16h4"/></svg>
           <span>Dealer</span>
+          <span class="dash-nav-unread" id="dealer-nav-badge" hidden></span>
         </a>
         <div id="dealer-subnav" class="dash-sub hidden">
           <a href="/company/dealers" id="tab-dealer-list" class="dash-sub-link">
@@ -275,6 +276,7 @@
           <a href="/company/dealers/applications" id="tab-dealers" class="dash-sub-link">
             <svg class="dash-nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 3h8l4 4v14a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1z"/><path d="M15 3v5h5"/><path d="M9 13h6M9 17h4"/></svg>
             <span>Applications</span>
+            <span class="dash-nav-unread" id="dealer-app-nav-badge" hidden></span>
           </a>
         </div>
       </div>
@@ -1135,7 +1137,7 @@
       </div>
 
       <div id="dealers-section" class="hidden">
-        <p class="text-slate-400 text-sm mb-4 da-list-head">Dealer applications from the public form. Approve as Authorized converts the CRM lead to a Company customer. The website Sign in stays as it is. After approve, create a Dealer Portal login on the application.</p>
+        <p class="text-slate-400 text-sm mb-4 da-list-head">Dealer applications from the public form. Approve as Authorized creates a Company customer with type Dealer. The website Sign in stays as it is. After approve, create a Dealer Portal login on the application. Applications do not appear in CRM Leads.</p>
         <div class="flex flex-wrap gap-2 mb-4 da-list-head" id="da-filters">
           <button type="button" class="px-3 py-1.5 rounded-full text-sm font-medium bg-sky-500/20 text-sky-300 is-on" data-da-filter="pending" aria-pressed="true">Pending</button>
           <button type="button" class="px-3 py-1.5 rounded-full text-sm font-medium text-slate-400 border border-slate-700 hover:text-white" data-da-filter="approved" aria-pressed="false">Approved</button>
@@ -2314,7 +2316,7 @@
             <div class="dash-split-right">
               <div id="crm-lead-overview-panel" class="inv-right-panel">
                 <div class="inv-overview-summary">
-                  <p class="inv-overview-lead">Leads from the website, dealer form, or staff. Convert a lead to create a Customer record for quotes.</p>
+                  <p class="inv-overview-lead">Leads from the website contact form or staff. Convert a lead to create a Customer record for quotes. Dealer applications stay under Dealer → Applications.</p>
                 </div>
               </div>
               <div id="crm-lead-detail" class="cc-detail-pane inv-right-panel hidden" hidden>
@@ -4566,6 +4568,7 @@
     <a href="/company/dealers" id="tabbar-dealer" data-tabbar-group="dealer" class="hidden">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 7V5a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><rect x="4" y="7" width="16" height="14" rx="2"/><path d="M9 12h6M9 16h4"/></svg>
       <span>Dealer</span>
+      <span class="dash-nav-unread dash-tabbar-unread" id="tabbar-dealer-badge" hidden></span>
     </a>
     <a href="/company/chat" id="tabbar-chat" class="hidden">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 15a2 2 0 0 1-2 2H8l-4 4V5a2 2 0 0 1 2-2h13a2 2 0 0 1 2 2z"/></svg>
@@ -5998,6 +6001,7 @@
       }
       try { renderDashTabBar(); } catch (err) { console.error('renderDashTabBar', err); }
       try { startMasterTabWorkWatch(); } catch (err) { console.error('startMasterTabWorkWatch', err); }
+      try { startDealerAppBadgePoll(); } catch (err) { console.error('startDealerAppBadgePoll', err); }
       return true;
     }
 
@@ -6380,7 +6384,7 @@
       vendors: 0, vendorsWithEmail: 0, pos: 0, openPos: 0,
       customers: 0, quotes: 0, orders: 0, invoices: 0, sales: 0,
       leads: 0, openLeads: 0, deals: 0, openDeals: 0, pipelineValue: 0, weightedForecast: 0,
-      activities: 0, overdueActivities: 0
+      activities: 0, overdueActivities: 0, pendingDealerApplications: 0
     };
 
     function trafficTodayUniques() {
@@ -6697,6 +6701,7 @@
           badge.textContent = '';
         }
       });
+      setDealerAppBadge(dashCounts.pendingDealerApplications);
       const custHint = document.getElementById('dash-hint-customer');
       if (custHint) {
         const quotes = dashCounts.quotes;
@@ -6831,6 +6836,48 @@
       list.innerHTML = (docRows + custRows) || '<p class="dash-activity-empty">No customers or sales documents yet.</p>';
     }
 
+    function setDealerAppBadge(raw) {
+      const n = Math.max(0, Number(raw) || 0);
+      dashCounts.pendingDealerApplications = n;
+      const label = n > 9 ? '9+' : String(n);
+      ['dealer-nav-badge', 'dealer-app-nav-badge', 'tabbar-dealer-badge'].forEach(function (id) {
+        const badge = document.getElementById(id);
+        if (!badge) return;
+        if (n && canUse('dealers')) {
+          badge.hidden = false;
+          badge.textContent = label;
+        } else {
+          badge.hidden = true;
+          badge.textContent = '';
+        }
+      });
+      const pendingBtn = document.querySelector('#da-filters [data-da-filter="pending"]');
+      if (pendingBtn) pendingBtn.textContent = n ? ('Pending (' + n + ')') : 'Pending';
+      if (document.body.getAttribute('data-tabbar-sub-group') === 'dealer') {
+        showTabbarSub('dealer');
+      }
+    }
+
+    async function refreshDealerAppBadge() {
+      if (!currentAdminUser || !canUse('dealers')) {
+        setDealerAppBadge(0);
+        return;
+      }
+      try {
+        const data = await api('/api/admin/dealer-applications?status=pending');
+        const count = data.pendingCount != null
+          ? data.pendingCount
+          : ((data.applications || []).length);
+        setDealerAppBadge(count);
+      } catch (err) { /* stay quiet while signed out */ }
+    }
+
+    function startDealerAppBadgePoll() {
+      if (startDealerAppBadgePoll.timer) return;
+      refreshDealerAppBadge();
+      startDealerAppBadgePoll.timer = setInterval(refreshDealerAppBadge, 15000);
+    }
+
     let dashHomeLoading = false;
     async function loadDashboardHome() {
       if (dashHomeLoading) return;
@@ -6880,6 +6927,7 @@
       renderDashKpis();
       selectDashOverview(dashOverview);
       if (window.SpectrumChat && SpectrumChat.refreshLobby) SpectrumChat.refreshLobby();
+      startDealerAppBadgePoll();
     }
 
     async function loadWebsiteCatalog() {
@@ -7730,7 +7778,7 @@
       quotes: '<span id="so-total">0</span> <span id="so-list-label">sales documents</span>. Pick a company customer, add line items, then save. Website Sign in accounts stay under Website → Accounts.',
       orders: '<span id="so-total">0</span> <span id="so-list-label">sales documents</span>. Pick a company customer, add line items, then save. Website Sign in accounts stay under Website → Accounts.',
       invoices: '<span id="so-total">0</span> <span id="so-list-label">sales documents</span>. Pick a company customer, add line items, then save. Website Sign in accounts stay under Website → Accounts.',
-      leads: '<span id="crm-lead-total">0</span> leads from the website, dealer form, or staff. Convert a lead to create a Customer for quotes.',
+      leads: '<span id="crm-lead-total">0</span> leads from the website contact form or staff. Convert a lead to create a Customer for quotes. Dealer applications stay under Applications.',
       dealers: '<span id="da-total">0</span> dealer applications. Approve creates the Company customer with type Dealer. Create a portal login after that.',
       traffic: 'Anonymous visitors on the website and US Store. Click a row for the pages they opened and where they were.',
       products: 'Edit website products, brands, and pictures — photos, copy, inventory links, US Store, and a live preview.',
@@ -12899,6 +12947,8 @@
         const q = dealerAppFilter && dealerAppFilter !== 'all' ? ('?status=' + encodeURIComponent(dealerAppFilter)) : '';
         const data = await api('/api/admin/dealer-applications' + q);
         dealerApplications = data.applications || [];
+        if (data.pendingCount != null) setDealerAppBadge(data.pendingCount);
+        else if (dealerAppFilter === 'pending') setDealerAppBadge(dealerApplications.length);
         renderDealerApplicationsTable(dealerApplications);
       } catch (err) {
         if (errEl) {
@@ -13214,11 +13264,16 @@
         const tab = tabFromHref(a.getAttribute('href'));
         return tab && canUse(tab) && !a.classList.contains('hidden');
       }).map(function (a) {
+        const badge = a.querySelector('.dash-nav-unread');
+        const labelSpan = Array.from(a.querySelectorAll('span')).find(function (el) {
+          return !el.classList.contains('dash-nav-unread');
+        });
         return {
           tab: tabFromHref(a.getAttribute('href')),
           href: a.getAttribute('href'),
-          label: (a.querySelector('span') && a.querySelector('span').textContent) || '',
-          icon: (a.querySelector('svg') && a.querySelector('svg').outerHTML) || ''
+          label: (labelSpan && labelSpan.textContent) || '',
+          icon: (a.querySelector('svg') && a.querySelector('svg').outerHTML) || '',
+          badge: badge && !badge.hidden && badge.textContent ? badge.outerHTML : ''
         };
       });
     }
@@ -13238,7 +13293,7 @@
       if (!items.length) return;
       const inner = document.getElementById('dash-tabbar-sub-inner');
       inner.innerHTML = items.map(function (item) {
-        return '<a href="' + item.href + '">' + item.icon + '<span>' + item.label + '</span></a>';
+        return '<a href="' + item.href + '">' + item.icon + '<span>' + item.label + '</span>' + (item.badge || '') + '</a>';
       }).join('');
       document.body.classList.add('dash-tabbar-sub-open');
       document.body.setAttribute('data-tabbar-sub-group', group);

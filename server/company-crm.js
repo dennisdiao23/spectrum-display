@@ -110,6 +110,38 @@ function kindFromSource(source) {
   return leadSource(source) === 'dealer' ? 'dealer' : 'project';
 }
 
+function isDealerApplicationLead(row) {
+  if (!row) return false;
+  const key = String(row.source_key || row.sourceKey || '').toLowerCase();
+  if (key.indexOf('dealer:') === 0) return true;
+  const source = String(row.source || '').toLowerCase();
+  const kind = String(row.kind || '').toLowerCase();
+  return source === 'dealer' && kind === 'dealer';
+}
+
+function dealerApplicationLeadSql(alias) {
+  const col = alias ? alias + '.' : '';
+  return '(' +
+    "lower(coalesce(" + col + "source_key, '')) like 'dealer:%'" +
+    " or (lower(coalesce(" + col + "source, '')) = 'dealer' and lower(coalesce(" + col + "kind, '')) = 'dealer')" +
+    ')';
+}
+
+function visibleCrmLeads(rows) {
+  return (rows || []).filter(function (row) { return !isDealerApplicationLead(row); });
+}
+
+function hideDealerApplicationActivities(activities, leads) {
+  const hide = {};
+  (leads || []).forEach(function (row) {
+    if (isDealerApplicationLead(row) && row.id) hide[row.id] = true;
+  });
+  return (activities || []).filter(function (row) {
+    const leadId = row.leadId != null ? row.leadId : row.lead_id;
+    return !leadId || !hide[leadId];
+  });
+}
+
 function stageProbability(stage) {
   const key = dealStage(stage);
   return STAGE_PROBABILITY[key] != null ? STAGE_PROBABILITY[key] : 10;
@@ -1231,10 +1263,12 @@ function sqliteFindZoomActivity(db, payload) {
 
 function sqliteApi(db, store) {
   return {
-    async listCrmLeads() {
-      return db.prepare(
+    async listCrmLeads(opts) {
+      const rows = db.prepare(
         'SELECT * FROM company_crm_leads ORDER BY datetime(updated_at) DESC, id DESC'
       ).all().map(formatLead);
+      if (opts && opts.includeApplicationLeads) return rows;
+      return visibleCrmLeads(rows);
     },
     async getCrmLead(id) {
       const lead = formatLead(db.prepare('SELECT * FROM company_crm_leads WHERE id = ?').get(id));
@@ -1245,8 +1279,8 @@ function sqliteApi(db, store) {
       ).all(id).map(formatActivity);
       lead.messages = sqliteListMessages(db, id);
       lead.enrollments = sqliteLeadEnrollments(db, id);
-      lead.duplicates = db.prepare('SELECT * FROM company_crm_leads ORDER BY id DESC').all()
-        .map(formatLead)
+      lead.duplicates = visibleCrmLeads(db.prepare('SELECT * FROM company_crm_leads ORDER BY id DESC').all()
+        .map(formatLead))
         .filter(function (row) {
           return leadMatchesDuplicate(row, lead.email, lead.companyName, lead.id);
         });
@@ -1297,8 +1331,8 @@ function sqliteApi(db, store) {
       const companyName = trim(src.companyName || src.company_name, 160);
       const excludeId = idOrNull(src.excludeId != null ? src.excludeId : src.exclude_id);
       if (!email && !companyName) return [];
-      return db.prepare('SELECT * FROM company_crm_leads ORDER BY datetime(updated_at) DESC, id DESC').all()
-        .map(formatLead)
+      return visibleCrmLeads(db.prepare('SELECT * FROM company_crm_leads ORDER BY datetime(updated_at) DESC, id DESC').all()
+        .map(formatLead))
         .filter(function (row) {
           return leadMatchesDuplicate(row, email, companyName, excludeId);
         });
@@ -1427,9 +1461,11 @@ function sqliteApi(db, store) {
       return info.changes > 0;
     },
     async listCrmActivities() {
-      return db.prepare(
+      const leads = db.prepare('SELECT id, source, kind, source_key FROM company_crm_leads').all();
+      const rows = db.prepare(
         'SELECT * FROM company_crm_activities ORDER BY CASE WHEN done_at = \'\' THEN 0 ELSE 1 END, due_at, datetime(created_at) DESC, id DESC'
       ).all().map(formatActivity);
+      return hideDealerApplicationActivities(rows, leads);
     },
     async getCrmActivity(id) {
       return formatActivity(db.prepare('SELECT * FROM company_crm_activities WHERE id = ?').get(id));
@@ -1573,6 +1609,7 @@ function sqliteApi(db, store) {
         LEFT JOIN company_crm_deals d ON d.id = a.deal_id
         WHERE (a.done_at IS NULL OR a.done_at = '')
           AND a.due_at IS NOT NULL AND a.due_at != ''
+          AND (a.lead_id IS NULL OR a.lead_id = 0 OR NOT ${dealerApplicationLeadSql('l')})
         ORDER BY datetime(a.due_at) ASC, a.id ASC
         LIMIT 20
       `).all().map(formatActivity);
@@ -1655,7 +1692,7 @@ function sqliteApi(db, store) {
         return parts.join(' ').toLowerCase().indexOf(q) !== -1;
       }
       const mentions = [];
-      leads.forEach(function (lead) {
+      visibleCrmLeads(leads).forEach(function (lead) {
         const name = lead.displayName || lead.companyName || 'Lead';
         if (!matches([name, lead.email, lead.companyName, 'lead'])) return;
         mentions.push({ kind: 'lead', id: lead.id, name: name, hint: 'Lead', path: '/company/crm/leads/' + lead.id });
@@ -1818,14 +1855,16 @@ function supabaseApi(supabase, store) {
   }
 
   return {
-    async listCrmLeads() {
+    async listCrmLeads(opts) {
       const { data, error } = await supabase
         .from('company_crm_leads')
         .select('*')
         .order('updated_at', { ascending: false })
         .order('id', { ascending: false });
       throwIf(error, 'Could not list leads.');
-      return (data || []).map(formatLead);
+      const rows = (data || []).map(formatLead);
+      if (opts && opts.includeApplicationLeads) return rows;
+      return visibleCrmLeads(rows);
     },
     async getCrmLead(id) {
       const data = await fetchLeadRow(id);
@@ -1846,7 +1885,7 @@ function supabaseApi(supabase, store) {
       lead.activities = (activities.data || []).map(formatActivity);
       lead.messages = (messages.data || []).map(formatMessage);
       lead.enrollments = enrollments;
-      lead.duplicates = (allLeads.data || []).map(formatLead).filter(function (row) {
+      lead.duplicates = visibleCrmLeads((allLeads.data || []).map(formatLead)).filter(function (row) {
         return leadMatchesDuplicate(row, lead.email, lead.companyName, lead.id);
       });
       return lead;
@@ -1918,7 +1957,7 @@ function supabaseApi(supabase, store) {
       if (!email && !companyName) return [];
       const { data, error } = await supabase.from('company_crm_leads').select('*').order('updated_at', { ascending: false });
       throwIf(error, 'Could not list leads.');
-      return (data || []).map(formatLead).filter(function (row) {
+      return visibleCrmLeads((data || []).map(formatLead)).filter(function (row) {
         return leadMatchesDuplicate(row, email, companyName, excludeId);
       });
     },
@@ -2077,12 +2116,13 @@ function supabaseApi(supabase, store) {
       return !!(data && data.length);
     },
     async listCrmActivities() {
-      const { data, error } = await supabase
-        .from('company_crm_activities')
-        .select('*')
-        .order('created_at', { ascending: false });
-      throwIf(error, 'Could not list activities.');
-      return (data || []).map(formatActivity);
+      const [acts, leads] = await Promise.all([
+        supabase.from('company_crm_activities').select('*').order('created_at', { ascending: false }),
+        supabase.from('company_crm_leads').select('id, source, kind, source_key')
+      ]);
+      throwIf(acts.error, 'Could not list activities.');
+      throwIf(leads.error, 'Could not list leads.');
+      return hideDealerApplicationActivities((acts.data || []).map(formatActivity), leads.data || []);
     },
     async getCrmActivity(id) {
       const { data, error } = await supabase.from('company_crm_activities').select('*').eq('id', id).maybeSingle();
@@ -2320,7 +2360,7 @@ function supabaseApi(supabase, store) {
         .eq('done_at', '')
         .neq('due_at', '')
         .order('due_at', { ascending: true })
-        .limit(20);
+        .limit(40);
       throwIf(error, 'Could not list reminders.');
       const acts = (data || []).map(formatActivity);
       const leadIds = [];
@@ -2331,7 +2371,7 @@ function supabaseApi(supabase, store) {
       });
       const [leads, deals] = await Promise.all([
         leadIds.length
-          ? supabase.from('company_crm_leads').select('id, display_name').in('id', leadIds)
+          ? supabase.from('company_crm_leads').select('id, display_name, source, kind, source_key').in('id', leadIds)
           : Promise.resolve({ data: [], error: null }),
         dealIds.length
           ? supabase.from('company_crm_deals').select('id, title').in('id', dealIds)
@@ -2343,11 +2383,11 @@ function supabaseApi(supabase, store) {
       const dealMap = {};
       (leads.data || []).forEach(function (row) { leadMap[row.id] = row.display_name; });
       (deals.data || []).forEach(function (row) { dealMap[row.id] = row.title; });
-      acts.forEach(function (act) {
+      return hideDealerApplicationActivities(acts, leads.data || []).slice(0, 20).map(function (act) {
         act.leadName = act.leadId ? (leadMap[act.leadId] || '') : '';
         act.dealTitle = act.dealId ? (dealMap[act.dealId] || '') : '';
+        return act;
       });
-      return acts;
     },
     async listCrmAssignees() {
       const admins = await store.listAdmins();
@@ -2456,7 +2496,7 @@ function supabaseApi(supabase, store) {
         return parts.join(' ').toLowerCase().indexOf(q) !== -1;
       }
       const mentions = [];
-      (leads.data || []).map(formatLead).forEach(function (lead) {
+      visibleCrmLeads((leads.data || []).map(formatLead)).forEach(function (lead) {
         if (lead.mergedIntoId) return;
         const name = lead.displayName || lead.companyName || 'Lead';
         if (!matches([name, lead.email, lead.companyName, 'lead'])) return;
@@ -2557,5 +2597,9 @@ module.exports = {
   ensureCompanyCrm,
   sqliteApi,
   supabaseApi,
-  crmDashboardCounts
+  crmDashboardCounts,
+  isDealerApplicationLead,
+  dealerApplicationLeadSql,
+  visibleCrmLeads,
+  hideDealerApplicationActivities
 };
