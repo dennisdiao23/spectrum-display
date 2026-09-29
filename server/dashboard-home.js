@@ -58,6 +58,10 @@ function canSeeSales(admin) {
   return canSee(admin, 'sales') || canSee(admin, 'quotes') || canSee(admin, 'orders') || canSee(admin, 'invoices');
 }
 
+function canSeeCrm(admin) {
+  return canSee(admin, 'crm') || canSee(admin, 'leads') || canSee(admin, 'pipeline') || canSee(admin, 'activities');
+}
+
 function canSeeDealerApplications(admin) {
   return canSee(admin, 'dealer-applications') || canSee(admin, 'dealer');
 }
