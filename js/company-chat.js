@@ -39,6 +39,7 @@
       userKey: '',
       sending: false
     },
+    lobbyReady: null,
     soOrderId: null,
     soRoomId: null,
     soLastMsgId: 0,
@@ -2284,7 +2285,7 @@
   }
 
   async function boot(opts) {
-    if (S.booted) return;
+    if (S.booted) return S.lobbyReady || Promise.resolve();
     S.api = opts.api;
     S.admin = opts.admin;
     S.canUse = opts.canUse;
@@ -2312,12 +2313,12 @@
     var tabbar = $('tabbar-chat');
     S.booted = true;
     touchPresence(true);
+    S.lobbyReady = loadDashLobby(true).catch(function (err) {
+      showDashLobbyError((err && err.message) || 'Could not load Lobby.');
+    });
     S.api('/api/admin/chat/ai').then(function (data) {
       if (data && data.aiName) setAiName(data.aiName);
     }).catch(function () {});
-    loadDashLobby(true).catch(function (err) {
-      showDashLobbyError((err && err.message) || 'Could not load Lobby.');
-    });
     S.timers.dashPoll = setInterval(pollDashLobby, 3000);
     S.timers.presence = setInterval(function () {
       if (document.hidden) return;
@@ -2337,7 +2338,7 @@
       if (root) root.hidden = true;
       if (nav) nav.classList.add('hidden');
       if (tabbar) tabbar.classList.add('hidden');
-      return;
+      return S.lobbyReady;
     }
     if (nav) nav.classList.remove('hidden');
     if (tabbar) tabbar.classList.remove('hidden');
@@ -2367,8 +2368,9 @@
         syncIdle();
       }
     });
-    await refreshUnread();
-    await handleDeepLink();
+    void refreshUnread().then(function () {
+      return handleDeepLink();
+    }).catch(function () {});
     S.timers.poll = setInterval(pollOpenRoom, 3000);
     S.timers.unread = setInterval(function () {
       if (!document.hidden) refreshUnread();
@@ -2383,6 +2385,7 @@
         }
       }
     });
+    return S.lobbyReady;
   }
 
   function onSalesDocOpened(doc) {
@@ -2424,8 +2427,8 @@
       }).catch(function () {});
     },
     refreshLobby: function () {
-      if (!S.booted) return;
-      loadDashLobby(true).catch(function () {});
+      if (!S.booted) return S.lobbyReady || Promise.resolve();
+      return loadDashLobby(true).catch(function () {});
     },
     setAiName: setAiName,
     aiName: aiName

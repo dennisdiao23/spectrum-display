@@ -14,6 +14,7 @@
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
   <title>Company | Spectrum Display</title>
   <meta name="robots" content="noindex, nofollow" />
+  <link rel="preload" as="image" href="/assets/spectrum-boot-still.png" />
   <link rel="preload" as="image" href="/assets/spectrum-boot.gif" />
   <style id="company-boot-css">
     #company-boot{position:fixed;inset:0;z-index:400;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1rem;background:#000;color:#e8eeff;font-family:Inter,system-ui,sans-serif}
@@ -22,15 +23,24 @@
     #company-boot-msg{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
     #company-boot-err{margin:0;max-width:22rem;text-align:center;font-size:.9rem;color:#fca5a5}
     #company-boot-err[hidden]{display:none!important}
+    #company-boot .boot-login{width:min(24rem,90vw);margin:0;background:#000;color:#fff;border:0;border-radius:0;padding:1.35rem 1.4rem 1.2rem;box-shadow:none}
+    #company-boot .boot-login h2{margin:0 0 .35rem;color:#fff;font-size:1.25rem;font-weight:800}
+    #company-boot .boot-login>p{margin:0 0 1rem;color:#fff;font-size:.85rem}
+    #company-boot .boot-login label{color:#fff}
+    #company-boot .boot-login input{background:#000!important;border:0!important;outline:none!important;box-shadow:none!important;color:#fff!important}
+    #company-boot .boot-login input::placeholder{color:rgba(255,255,255,.55)}
+    #company-boot .boot-login button[type="submit"]{background:#fff!important;color:#000!important;border:0}
+    #company-boot .boot-login button[type="submit"]:hover{background:#e8e8e8!important}
   </style>
-  <link rel="stylesheet" href="/css/company-dash.css?v=calc2" />
+  <link rel="stylesheet" href="/css/company-dash.css?v=login2" />
   <script src="/js/address-autocomplete.js"></script>
-  <script src="/js/company-chat.js?v=chatcrm3"></script>
+  <script src="/js/company-chat.js?v=chatcrm4"></script>
   <script src="/js/company-crm.js?v=zoomphone3"></script>
   <script src="/js/company-staff.js?v=staff6"></script>
   <script src="/js/company-traffic.js?v=loc1"></script>
   <script src="/js/company-website-control.js?v=webctrl7"></script>
   <script src="/js/print-form.js?v=forms21"></script>
+  <script src="/js/app-help.js?v=help1"></script>
   <script>
     if ('serviceWorker' in navigator && location.pathname.indexOf('/company') === 0) {
       navigator.serviceWorker.register('/company/sw.js', { scope: '/company' });
@@ -117,6 +127,22 @@
   <div id="company-boot" role="status" aria-live="polite">
     <img id="company-boot-logo" src="/assets/spectrum-boot.gif" alt="" width="1104" height="242" />
     <p id="company-boot-msg">Loading Company…</p>
+    <section id="login-panel" class="dash-login boot-login hidden">
+      <h2>Company sign in</h2>
+      <p>Company staff only.</p>
+      <form id="login-form" class="space-y-4">
+        <div>
+          <label class="block text-xs mb-1">Email</label>
+          <input id="login-email" type="email" required autocomplete="username" class="w-full rounded-lg px-3 py-2.5 text-sm" placeholder="admin@spectrumdisplay.com">
+        </div>
+        <div>
+          <label class="block text-xs mb-1">Password</label>
+          <input id="login-password" type="password" required autocomplete="current-password" class="w-full rounded-lg px-3 py-2.5 text-sm">
+        </div>
+        <p id="login-error" class="hidden text-sm text-red-500"></p>
+        <button type="submit" class="w-full py-2.5 rounded-full font-semibold text-sm">Sign in</button>
+      </form>
+    </section>
     <p id="company-boot-err" hidden></p>
   </div>
   <div id="crm-phone-banner" class="crm-phone-banner hidden" hidden>
@@ -331,28 +357,12 @@
     </div>
     <div class="dash-top-user">
       <span id="admin-name"></span>
+      <button type="button" id="app-help-btn" class="app-help-btn hidden" aria-label="Help for this page" aria-expanded="false" aria-controls="app-help-card">?</button>
       <button type="button" id="logout-btn" class="hidden">Sign out</button>
     </div>
   </header>
 
   <main class="company-main">
-    <section id="login-panel" class="dash-login hidden">
-      <h2>Company sign in</h2>
-      <p>Spectrum staff only. Website pages, inventory, and customer accounts. This is not a dealer or customer login.</p>
-      <form id="login-form" class="rounded-2xl border p-6 space-y-4">
-        <div>
-          <label class="block text-xs text-slate-400 mb-1">Email</label>
-          <input id="login-email" type="email" required class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:border-sky-500" placeholder="admin@spectrumdisplay.com">
-        </div>
-        <div>
-          <label class="block text-xs text-slate-400 mb-1">Password</label>
-          <input id="login-password" type="password" required class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:border-sky-500">
-        </div>
-        <p id="login-error" class="hidden text-sm text-red-400"></p>
-        <button type="submit" class="w-full py-2.5 rounded-full bg-sky-500 hover:bg-sky-400 text-white font-semibold text-sm">Sign in</button>
-      </form>
-    </section>
-
     <section id="dash-panel" class="hidden space-y-8">
       <div id="dashboard-section" class="hidden">
         <div class="dash-home" id="dash-home">
@@ -4638,7 +4648,7 @@
     </a>
   </nav>
 
-  <link rel="stylesheet" href="/css/company-dash.css?v=calc2" />
+  <link rel="stylesheet" href="/css/company-dash.css?v=login2" />
   <link rel="stylesheet" href="/css/company-tw.css?v=boot1" />
 
   <script>
@@ -4665,6 +4675,19 @@
       el.classList.add('hidden');
       el.hidden = true;
     }
+    function showCompanyBoot() {
+      const el = document.getElementById('company-boot');
+      if (!el) return;
+      el.classList.remove('hidden');
+      el.hidden = false;
+    }
+    function stillBootLogo() {
+      const logo = document.getElementById('company-boot-logo');
+      if (!logo) return;
+      if (!/spectrum-boot-still\.png/.test(logo.getAttribute('src') || '')) {
+        logo.src = '/assets/spectrum-boot-still.png';
+      }
+    }
     function showCompanyBootError(msg) {
       const el = document.getElementById('company-boot');
       const err = document.getElementById('company-boot-err');
@@ -4672,15 +4695,49 @@
         err.hidden = false;
         err.textContent = msg || 'Company could not load. Refresh the page.';
       }
-      if (el) {
-        el.hidden = false;
-        el.classList.remove('hidden');
-      }
+      showCompanyBoot();
     }
     function revealLogin() {
-      hideCompanyBoot();
+      stillBootLogo();
+      showCompanyBoot();
+      if (window.SpectrumHelp) SpectrumHelp.stop();
       if (dashPanel) dashPanel.classList.add('hidden');
       if (loginPanel) loginPanel.classList.remove('hidden');
+    }
+    function companyBootOnDashboard() {
+      const route = tabFromPath();
+      return !route || route === 'dashboard';
+    }
+    async function finishCompanySession(admin, opts) {
+      const started = (opts && opts.started) || Date.now();
+      const minMs = (opts && opts.minBootMs) || 0;
+      applyStaffGmail(opts && opts.gmail);
+      const onDash = companyBootOnDashboard();
+      if (onDash) void loadDashboardHome();
+      const prefsP = consumeGmailReturn().then(function () {
+        return loadColumnPrefs();
+      }).catch(function (err) {
+        console.error('company boot prefs', err);
+      });
+      try { bootSpectrumStaff(); } catch (err) { console.error('bootSpectrumStaff', err); }
+      let lobbyP = Promise.resolve();
+      try {
+        const chatP = bootSpectrumChat(admin);
+        if (chatP && typeof chatP.then === 'function') lobbyP = chatP;
+      } catch (err) { console.error('bootSpectrumChat', err); }
+      if (!onDash) await prefsP;
+      else void prefsP;
+      await openRoutedSection(tabFromPath());
+      if (onDash) {
+        await lobbyP.catch(function (err) {
+          console.error('company boot lobby', err);
+        });
+      }
+      var bootDraft = copilotTokenFromHref(location.href);
+      if (bootDraft) await applyCopilotDraft(bootDraft).catch(function () {});
+      const wait = minMs - (Date.now() - started);
+      if (wait > 0) await new Promise(function (resolve) { setTimeout(resolve, wait); });
+      hideCompanyBoot();
     }
 
     function companyPath() {
@@ -6011,14 +6068,14 @@
       setHidden('tabbar-settings', true);
     }
 
-    function showDash(admin) {
+    function showDash(admin, opts) {
       currentAdminUser = admin;
       try { localStorage.setItem('dash-active-admin-id', String(admin.id)); } catch (err) {}
       try { applyInvSplitFromCache(); } catch (err) { console.error('applyInvSplitFromCache', err); }
       try { applyCcSplitFromCache(); } catch (err) { console.error('applyCcSplitFromCache', err); }
       if (loginPanel) loginPanel.classList.add('hidden');
       if (dashPanel) dashPanel.classList.remove('hidden');
-      hideCompanyBoot();
+      if (!(opts && opts.holdBoot)) hideCompanyBoot();
       const roleBit = admin && admin.roleName && admin.role !== 'owner' ? ' · ' + admin.roleName : '';
       const nameEl = document.getElementById('admin-name');
       if (nameEl) nameEl.textContent = ((admin && (admin.name || admin.email)) || '') + roleBit;
@@ -6067,6 +6124,14 @@
       try { renderDashTabBar(); } catch (err) { console.error('renderDashTabBar', err); }
       try { startMasterTabWorkWatch(); } catch (err) { console.error('startMasterTabWorkWatch', err); }
       try { startDealerAppBadgePoll(); } catch (err) { console.error('startDealerAppBadgePoll', err); }
+      try {
+        if (window.SpectrumHelp) {
+          SpectrumHelp.start({
+            app: 'company',
+            userId: admin && admin.id
+          });
+        }
+      } catch (err) { console.error('SpectrumHelp', err); }
       return true;
     }
 
@@ -6943,56 +7008,58 @@
       startDealerAppBadgePoll.timer = setInterval(refreshDealerAppBadge, 15000);
     }
 
-    let dashHomeLoading = false;
-    async function loadDashboardHome() {
-      if (dashHomeLoading) return;
-      dashHomeLoading = true;
-      const refreshBtn = document.getElementById('dash-traffic-refresh');
-      if (refreshBtn) {
-        refreshBtn.disabled = true;
-        refreshBtn.textContent = 'Refreshing…';
-      }
-      document.querySelectorAll('#dash-home .dash-kpi').forEach(function (el) {
-        el.classList.toggle('hidden', !canDashOverview(el.getAttribute('data-home')));
-      });
-      try {
-        const data = await api('/api/admin/dashboard');
-        dashCounts = Object.assign({}, dashCounts, data.counts || {});
-        dashProducts = data.products || [];
-        dashInventory = data.inventory || [];
-        dashCustomers = data.customers || [];
-        dashSales = data.sales || [];
-        dashVendors = data.vendors || [];
-        dashPos = data.purchaseOrders || [];
-        dashReceipts = data.receipts || [];
-        dashLeads = data.leads || [];
-        dashDeals = data.deals || [];
-        dashReminders = data.reminders || [];
-        dashTraffic = data.traffic || { timezone: 'America/Los_Angeles', days: [], pages: [] };
-      } catch (err) {
-        dashProducts = [];
-        dashInventory = [];
-        dashCustomers = [];
-        dashSales = [];
-        dashVendors = [];
-        dashPos = [];
-        dashReceipts = [];
-        dashLeads = [];
-        dashDeals = [];
-        dashReminders = [];
-        dashTraffic = { timezone: 'America/Los_Angeles', days: [], pages: [] };
-      } finally {
-        dashHomeLoading = false;
+    let dashHomePromise = null;
+    function loadDashboardHome() {
+      if (dashHomePromise) return dashHomePromise;
+      dashHomePromise = (async function () {
+        const refreshBtn = document.getElementById('dash-traffic-refresh');
         if (refreshBtn) {
-          refreshBtn.disabled = false;
-          refreshBtn.textContent = 'Refresh';
+          refreshBtn.disabled = true;
+          refreshBtn.textContent = 'Refreshing…';
         }
-      }
-      if (!canDashOverview(dashOverview)) dashOverview = firstDashOverview();
-      renderDashKpis();
-      selectDashOverview(dashOverview);
-      if (window.SpectrumChat && SpectrumChat.refreshLobby) SpectrumChat.refreshLobby();
-      startDealerAppBadgePoll();
+        document.querySelectorAll('#dash-home .dash-kpi').forEach(function (el) {
+          el.classList.toggle('hidden', !canDashOverview(el.getAttribute('data-home')));
+        });
+        try {
+          const data = await api('/api/admin/dashboard');
+          dashCounts = Object.assign({}, dashCounts, data.counts || {});
+          dashProducts = data.products || [];
+          dashInventory = data.inventory || [];
+          dashCustomers = data.customers || [];
+          dashSales = data.sales || [];
+          dashVendors = data.vendors || [];
+          dashPos = data.purchaseOrders || [];
+          dashReceipts = data.receipts || [];
+          dashLeads = data.leads || [];
+          dashDeals = data.deals || [];
+          dashReminders = data.reminders || [];
+          dashTraffic = data.traffic || { timezone: 'America/Los_Angeles', days: [], pages: [] };
+        } catch (err) {
+          dashProducts = [];
+          dashInventory = [];
+          dashCustomers = [];
+          dashSales = [];
+          dashVendors = [];
+          dashPos = [];
+          dashReceipts = [];
+          dashLeads = [];
+          dashDeals = [];
+          dashReminders = [];
+          dashTraffic = { timezone: 'America/Los_Angeles', days: [], pages: [] };
+        } finally {
+          if (refreshBtn) {
+            refreshBtn.disabled = false;
+            refreshBtn.textContent = 'Refresh';
+          }
+        }
+        if (!canDashOverview(dashOverview)) dashOverview = firstDashOverview();
+        renderDashKpis();
+        selectDashOverview(dashOverview);
+        startDealerAppBadgePoll();
+      })().finally(function () {
+        dashHomePromise = null;
+      });
+      return dashHomePromise;
     }
 
     async function loadWebsiteCatalog() {
@@ -8132,6 +8199,7 @@
       pageSub.textContent = bits[1];
       pageSub.hidden = !bits[1];
       syncPageHelper(view);
+      if (window.SpectrumHelp) SpectrumHelp.setPage(view);
       document.title = (bits[0] ? bits[0] + ' | ' : '') + 'Company | Spectrum Display';
       const newBtn = document.getElementById('new-btn');
       if (newBtn) newBtn.classList.toggle('hidden', !canEdit('website'));
@@ -9612,8 +9680,8 @@
     }
 
     function bootSpectrumChat(admin) {
-      if (!window.SpectrumChat || !admin) return;
-      SpectrumChat.boot({
+      if (!window.SpectrumChat || !admin) return Promise.resolve();
+      return Promise.resolve(SpectrumChat.boot({
         api: api,
         admin: admin,
         canUse: canUse,
@@ -9629,7 +9697,7 @@
         onPageClose: function () {
           if (typeof closeMasterTab === 'function') closeMasterTab('chat');
         }
-      });
+      }));
     }
 
     function saveColState(table, state) {
@@ -22394,20 +22462,20 @@
           showError('login-error', (data && data.error) || 'Sign in failed');
           return;
         }
-        if (!showDash(data.admin)) return;
-        applyStaffGmail(data.gmail);
-        await consumeGmailReturn();
-        await loadColumnPrefs();
-        try { bootSpectrumStaff(); } catch (err) { console.error('bootSpectrumStaff', err); }
-        try { bootSpectrumChat(data.admin); } catch (err) { console.error('bootSpectrumChat', err); }
-        await openRoutedSection(tabFromPath());
-        var loginDraft = copilotTokenFromHref(location.href);
-        if (loginDraft) await applyCopilotDraft(loginDraft).catch(function () {});
+        if (loginPanel) loginPanel.classList.add('hidden');
+        const logo = document.getElementById('company-boot-logo');
+        if (logo) logo.src = '/assets/spectrum-boot.gif?play=' + Date.now();
+        showCompanyBoot();
+        const started = Date.now();
+        if (!showDash(data.admin, { holdBoot: true })) return;
+        await finishCompanySession(data.admin, {
+          gmail: data.gmail,
+          started: started,
+          minBootMs: 1000
+        });
       } catch (err) {
         showError('login-error', err.message);
-        if (loginPanel && loginPanel.classList.contains('hidden') && dashPanel && dashPanel.classList.contains('hidden')) {
-          revealLogin();
-        }
+        revealLogin();
       }
     });
 
@@ -23574,7 +23642,7 @@
     api('/api/admin/me').then(function (data) {
       if (data.ok && data.admin) {
         try {
-          if (!showDash(data.admin)) return;
+          if (!showDash(data.admin, { holdBoot: true })) return;
         } catch (err) {
           console.error('showDash', err);
           if (loginPanel) loginPanel.classList.add('hidden');
@@ -23584,18 +23652,9 @@
           if (dashSec) dashSec.classList.remove('hidden');
           return;
         }
-        applyStaffGmail(data.gmail);
-        return consumeGmailReturn().then(function () {
-          return loadColumnPrefs();
-        }).then(function () {
-          try { bootSpectrumStaff(); } catch (err) { console.error('bootSpectrumStaff', err); }
-          try { if (window.SpectrumChat) bootSpectrumChat(data.admin); } catch (err) { console.error('bootSpectrumChat', err); }
-          return openRoutedSection(tabFromPath()).then(function () {
-            var bootDraft = copilotTokenFromHref(location.href);
-            if (bootDraft) return applyCopilotDraft(bootDraft).catch(function () {});
-          });
-        }).catch(function (err) {
+        return finishCompanySession(data.admin, { gmail: data.gmail }).catch(function (err) {
           console.error('company post-boot', err);
+          hideCompanyBoot();
         });
       }
       if (loginPanel) revealLogin();
