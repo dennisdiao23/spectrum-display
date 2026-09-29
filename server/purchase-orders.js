@@ -126,8 +126,11 @@ function normalizePo(input) {
     shipFrom: normalizeShipFrom(src.shipFrom != null ? src.shipFrom : src.ship_from),
     permitNo: trim(src.permitNo || src.permit_no, 80),
     mailingAddress: trim(src.mailingAddress || src.mailing_address, 800),
-    shipToCustomerId: src.shipToCustomerId != null ? String(src.shipToCustomerId) : String(src.ship_to_customer_id || ''),
-    shipToName: trim(src.shipToName || src.ship_to_name, 160),
+    shipToMode: shipToModeFrom(src),
+    shipToCustomerId: shipToModeFrom(src) === 'dropship'
+      ? (src.shipToCustomerId != null ? String(src.shipToCustomerId) : String(src.ship_to_customer_id || ''))
+      : '',
+    shipToName: shipToModeFrom(src) === 'dropship' ? trim(src.shipToName || src.ship_to_name, 160) : '',
     shippingAddress: trim(src.shippingAddress || src.shipping_address, 800),
     notes: trim(src.notes || src.memo, 2000),
     lines: lines,
@@ -152,6 +155,14 @@ function formatLine(row) {
   };
 }
 
+function shipToModeFrom(src) {
+  const row = src || {};
+  const raw = String(row.shipToMode || row.ship_to_mode || '').toLowerCase();
+  if (raw === 'dropship') return 'dropship';
+  if (raw === 'warehouse') return 'warehouse';
+  return (row.shipToCustomerId || row.ship_to_customer_id) ? 'dropship' : 'warehouse';
+}
+
 function formatPo(row, lines, extra) {
   if (!row) return null;
   const items = (lines || []).map(formatLine).filter(Boolean);
@@ -173,8 +184,9 @@ function formatPo(row, lines, extra) {
     shipFromLocationId: locationIdFromShipFrom(shipFrom),
     permitNo: row.permit_no || '',
     mailingAddress: row.mailing_address || '',
-    shipToCustomerId: row.ship_to_customer_id == null ? '' : String(row.ship_to_customer_id),
-    shipToName: row.ship_to_name || '',
+    shipToMode: shipToModeFrom(row),
+    shipToCustomerId: shipToModeFrom(row) === 'dropship' && row.ship_to_customer_id != null ? String(row.ship_to_customer_id) : '',
+    shipToName: shipToModeFrom(row) === 'dropship' ? (row.ship_to_name || '') : '',
     shippingAddress: row.shipping_address || '',
     notes: row.notes || '',
     lines: items,
@@ -197,6 +209,7 @@ function dbPoFields(input) {
     ship_from: input.shipFrom,
     permit_no: input.permitNo,
     mailing_address: input.mailingAddress,
+    ship_to_mode: input.shipToMode === 'dropship' ? 'dropship' : 'warehouse',
     ship_to_customer_id: input.shipToCustomerId ? Number(input.shipToCustomerId) : null,
     ship_to_name: input.shipToName,
     shipping_address: input.shippingAddress,

@@ -2121,7 +2121,11 @@
                 </div>
                 <div class="po-field">
                   <label>Ship to</label>
-                  <select id="po-ship-to"><option value="">Select customer for address</option></select>
+                  <select id="po-ship-mode">
+                    <option value="warehouse">Spectrum warehouse</option>
+                    <option value="dropship">Dropship</option>
+                  </select>
+                  <select id="po-ship-to" class="hidden"><option value="">Select customer for address</option></select>
                   <textarea id="po-ship" rows="4" placeholder="Shipping address"></textarea>
                 </div>
               </div>
@@ -15918,6 +15922,50 @@
         }).join('');
     }
 
+    function poShipIsDropship() {
+      const el = document.getElementById('po-ship-mode');
+      return !!(el && el.value === 'dropship');
+    }
+
+    function spectrumWarehouseRecord() {
+      const list = inventoryWarehouses || [];
+      const named = list.find(function (wh) {
+        return locKind(wh) === 'warehouse' && !wh.untracked && /spectrum/i.test(wh.name || '');
+      });
+      if (named) return named;
+      const id = typeof defaultSpectrumWarehouseId === 'function' ? defaultSpectrumWarehouseId() : '';
+      return list.find(function (wh) { return String(wh.id) === String(id); }) || null;
+    }
+
+    function spectrumWarehouseAddressText() {
+      const wh = spectrumWarehouseRecord();
+      const addr = wh && String(wh.address || '').trim();
+      const name = String((wh && wh.name) || 'Spectrum Warehouse').trim();
+      if (addr && (wh.street || wh.city)) {
+        return addr.indexOf(name) === 0 ? addr : (name + '\n' + addr);
+      }
+      const p = companyProfile || {};
+      if (p.street) {
+        const city = [p.city, [p.state, p.zip].filter(Boolean).join(' ')].filter(Boolean).join(', ');
+        return [p.legalName || 'Spectrum Display Inc.', p.street, p.street2, city, p.country].filter(Boolean).join('\n');
+      }
+      return 'Spectrum Display Inc.\n517 N. Virginia Ave.\nAzusa, CA 91702';
+    }
+
+    function applyPoShipMode(mode, opts) {
+      opts = opts || {};
+      const drop = mode === 'dropship';
+      const modeEl = document.getElementById('po-ship-mode');
+      const sel = document.getElementById('po-ship-to');
+      if (modeEl) modeEl.value = drop ? 'dropship' : 'warehouse';
+      if (sel) sel.classList.toggle('hidden', !drop);
+      if (!drop && !opts.keepAddress) {
+        if (sel) sel.value = '';
+        const ship = document.getElementById('po-ship');
+        if (ship) ship.value = spectrumWarehouseAddressText();
+      }
+    }
+
     function fillPoShipTo(selected) {
       const sel = document.getElementById('po-ship-to');
       sel.innerHTML = '<option value="">Select customer for address</option>' +
@@ -15926,6 +15974,7 @@
             esc(c.displayName || c.companyName || [c.contactFirst, c.contactLast].filter(Boolean).join(' ') || c.email) +
             '</option>';
         }).join('');
+      sel.classList.toggle('hidden', !poShipIsDropship());
     }
 
     function applyPoVendor(v) {
@@ -16334,14 +16383,16 @@
       document.getElementById('po-id').value = src.id || '';
       document.getElementById('po-number').value = src.number || '';
       fillPoVendors(src.vendorId || '');
-      fillPoShipTo(src.shipToCustomerId || '');
       document.getElementById('po-email').value = src.vendorEmail || '';
       const vendor = (inventoryVendors || []).find(function (row) { return String(row.id) === String(src.vendorId || ''); });
       document.getElementById('po-cc').value = (vendor && vendor.emailCc) || '';
       document.getElementById('po-bcc').value = (vendor && vendor.emailBcc) || '';
       document.getElementById('po-status').value = src.status || 'open';
       document.getElementById('po-mail').value = src.mailingAddress || '';
-      document.getElementById('po-ship').value = src.shippingAddress || '';
+      const dropship = src.shipToMode === 'dropship' || !!src.shipToCustomerId;
+      applyPoShipMode(dropship ? 'dropship' : 'warehouse', { keepAddress: true });
+      fillPoShipTo(dropship ? (src.shipToCustomerId || '') : '');
+      document.getElementById('po-ship').value = src.shippingAddress || (dropship ? '' : spectrumWarehouseAddressText());
       document.getElementById('po-issue').value = src.issueDate || new Date().toISOString().slice(0, 10);
       document.getElementById('po-due').value = src.dueDate || '';
       document.getElementById('po-via').value = src.shipVia || '';
@@ -16364,8 +16415,9 @@
     function readPoForm() {
       const vendorId = document.getElementById('po-vendor').value;
       const vendor = (inventoryVendors || []).find(function (v) { return String(v.id) === String(vendorId); });
-      const shipId = document.getElementById('po-ship-to').value;
-      const ship = (poCustomers || []).find(function (c) { return String(c.id) === String(shipId); });
+      const dropship = poShipIsDropship();
+      const shipId = dropship ? document.getElementById('po-ship-to').value : '';
+      const ship = dropship ? (poCustomers || []).find(function (c) { return String(c.id) === String(shipId); }) : null;
       const emails = [
         document.getElementById('po-email').value.trim(),
         document.getElementById('po-cc').value.trim(),
@@ -16378,6 +16430,7 @@
         vendorEmail: emails.join(', '),
         status: document.getElementById('po-status').value,
         mailingAddress: document.getElementById('po-mail').value.trim(),
+        shipToMode: dropship ? 'dropship' : 'warehouse',
         shipToCustomerId: shipId,
         shipToName: ship ? (ship.displayName || ship.companyName || '') : '',
         shippingAddress: document.getElementById('po-ship').value.trim(),
@@ -16607,18 +16660,20 @@
     async function loadPurchaseOrders() {
       showError('po-error', '');
       try {
-        const [poData, vnData, ccData, invData, whData] = await Promise.all([
+        const [poData, vnData, ccData, invData, whData, profData] = await Promise.all([
           api('/api/admin/purchase-orders'),
           api('/api/admin/inventory-vendors'),
           api('/api/admin/company-customers'),
           inventoryItems.length ? Promise.resolve({ items: inventoryItems }) : api('/api/admin/inventory'),
-          inventoryWarehouses.length ? Promise.resolve({ warehouses: inventoryWarehouses }) : api('/api/admin/inventory-warehouses').catch(function () { return { warehouses: inventoryWarehouses }; })
+          inventoryWarehouses.length ? Promise.resolve({ warehouses: inventoryWarehouses }) : api('/api/admin/inventory-warehouses').catch(function () { return { warehouses: inventoryWarehouses }; }),
+          companyProfile ? Promise.resolve({ profile: companyProfile }) : api('/api/admin/company-profile').catch(function () { return { profile: companyProfile }; })
         ]);
         purchaseOrders = poData.orders || [];
         inventoryVendors = vnData.vendors || [];
         poCustomers = ccData.customers || [];
         if (!inventoryItems.length) inventoryItems = invData.items || [];
         inventoryWarehouses = whData.warehouses || inventoryWarehouses || [];
+        if (profData && profData.profile) companyProfile = profData.profile;
         fillPoShipFromSelect(document.getElementById('po-ship-from').value);
         const keepVendor = document.getElementById('po-vendor').value;
         const keepShip = document.getElementById('po-ship-to').value;
@@ -23030,6 +23085,10 @@
       const v = (inventoryVendors || []).find(function (row) { return String(row.id) === String(id); });
       applyPoVendor(v);
       renderPoLines();
+    });
+    document.getElementById('po-ship-mode').addEventListener('change', function () {
+      if (poReadOnly) return;
+      applyPoShipMode(this.value === 'dropship' ? 'dropship' : 'warehouse');
     });
     document.getElementById('po-ship-to').addEventListener('change', function () {
       if (poReadOnly) return;
