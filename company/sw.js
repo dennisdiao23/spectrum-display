@@ -1,5 +1,5 @@
 /* Spectrum Company PWA — /company only. Network-first. Do not cache APIs. */
-var CACHE = 'spectrum-company-pwa-v-boot2';
+var CACHE = 'spectrum-company-pwa-v-help1';
 
 self.addEventListener('install', function () {
   self.skipWaiting();
@@ -29,6 +29,7 @@ function isCompanyChrome(url) {
     || url.pathname.indexOf('/js/company-chat') === 0
     || url.pathname.indexOf('/js/company-crm') === 0
     || url.pathname.indexOf('/js/print-form') === 0
+    || url.pathname.indexOf('/js/app-help') === 0
     || url.pathname.indexOf('/js/address-autocomplete') === 0
     || url.pathname.indexOf('/assets/favicon-') === 0
     || url.pathname === '/assets/spectrum-boot.gif'
