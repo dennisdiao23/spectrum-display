@@ -214,8 +214,9 @@ async function main() {
     '/company/website',
     '/company/website/store',
     '/company/website/accounts',
-    '/company/website/dealers',
     '/company/website/traffic',
+    '/company/dealers',
+    '/company/dealers/applications',
     '/company/inventory',
     '/company/inventory/locations',
     '/company/inventory/vendors',
@@ -239,10 +240,19 @@ async function main() {
   app.get(['/company/website/control', '/company/website/control/'], function (_req, res) {
     res.redirect(301, '/company/website');
   });
+  app.get(['/company/website/dealers', '/company/website/dealers/'], function (_req, res) {
+    res.redirect(301, '/company/dealers/applications');
+  });
   COMPANY_PAGES.forEach(function (route) {
     app.get([route, route + '/'], sendCompany);
   });
   app.get(['/company/customers/:id', '/company/customers/:id/'], sendCompany);
+  app.get(['/company/dealers/:id', '/company/dealers/:id/'], function (req, res) {
+    if (!/^\d+$/.test(String(req.params.id || ''))) {
+      return res.redirect(302, '/company/dealers');
+    }
+    sendCompany(req, res);
+  });
   app.get(['/company/settings/users/:id', '/company/settings/users/:id/'], sendCompany);
   app.get(['/company/crm/leads/:id', '/company/crm/leads/:id/'], sendCompany);
   app.get(['/company/crm/pipeline/:id', '/company/crm/pipeline/:id/'], sendCompany);
@@ -3028,7 +3038,7 @@ async function main() {
     } catch (err) { next(err); }
   });
 
-  app.get('/api/admin/dealer-applications', requireAdmin, requirePerm('website', 'view'), async function (req, res, next) {
+  app.get('/api/admin/dealer-applications', requireAdmin, requirePerm('dealer-applications', 'view'), async function (req, res, next) {
     try {
       const status = String((req.query && req.query.status) || '').trim();
       res.json({
@@ -3039,7 +3049,7 @@ async function main() {
     } catch (err) { next(err); }
   });
 
-  app.get('/api/admin/dealer-applications/:id', requireAdmin, requirePerm('website', 'view'), async function (req, res, next) {
+  app.get('/api/admin/dealer-applications/:id', requireAdmin, requirePerm('dealer-applications', 'view'), async function (req, res, next) {
     try {
       const application = await store.getDealerApplication(req.params.id);
       if (!application) return res.status(404).json({ ok: false, error: 'Application not found.' });
@@ -3047,7 +3057,7 @@ async function main() {
     } catch (err) { next(err); }
   });
 
-  app.post('/api/admin/dealer-applications/:id/approve', requireAdmin, requirePerm('website', 'edit'), async function (req, res, next) {
+  app.post('/api/admin/dealer-applications/:id/approve', requireAdmin, requirePerm('dealer-applications', 'edit'), async function (req, res, next) {
     try {
       const application = await store.approveDealerApplication(req.params.id, req.admin);
       if (!application) return res.status(404).json({ ok: false, error: 'Application not found.' });
@@ -3055,7 +3065,7 @@ async function main() {
     } catch (err) { next(err); }
   });
 
-  app.post('/api/admin/dealer-applications/:id/reject', requireAdmin, requirePerm('website', 'edit'), async function (req, res, next) {
+  app.post('/api/admin/dealer-applications/:id/reject', requireAdmin, requirePerm('dealer-applications', 'edit'), async function (req, res, next) {
     try {
       const notes = req.body && req.body.notes != null ? req.body.notes : '';
       const application = await store.rejectDealerApplication(req.params.id, req.admin, notes);
@@ -3064,14 +3074,14 @@ async function main() {
     } catch (err) { next(err); }
   });
 
-  app.get('/api/admin/dealer-applications/:id/logins', requireAdmin, requirePerm('website', 'view'), async function (req, res, next) {
+  app.get('/api/admin/dealer-applications/:id/logins', requireAdmin, requirePerm('dealer-applications', 'view'), async function (req, res, next) {
     try {
       const users = await store.listDealerUsersForApplication(req.params.id);
       res.json({ ok: true, users: users });
     } catch (err) { next(err); }
   });
 
-  app.post('/api/admin/dealer-applications/:id/login', requireAdmin, requirePerm('website', 'edit'), async function (req, res, next) {
+  app.post('/api/admin/dealer-applications/:id/login', requireAdmin, requirePerm('dealer-applications', 'edit'), async function (req, res, next) {
     try {
       const application = await store.getDealerApplication(req.params.id);
       if (!application) return res.status(404).json({ ok: false, error: 'Application not found.' });
