@@ -23,7 +23,7 @@
     #company-boot-err{margin:0;max-width:22rem;text-align:center;font-size:.9rem;color:#fca5a5}
     #company-boot-err[hidden]{display:none!important}
   </style>
-  <link rel="stylesheet" href="/css/company-dash.css?v=calc2" />
+  <link rel="stylesheet" href="/css/company-dash.css?v=help1" />
   <script src="/js/address-autocomplete.js"></script>
   <script src="/js/company-chat.js?v=chatcrm3"></script>
   <script src="/js/company-crm.js?v=zoomphone3"></script>
@@ -31,6 +31,7 @@
   <script src="/js/company-traffic.js?v=loc1"></script>
   <script src="/js/company-website-control.js?v=webctrl7"></script>
   <script src="/js/print-form.js?v=forms21"></script>
+  <script src="/js/app-help.js?v=help1"></script>
   <script>
     if ('serviceWorker' in navigator && location.pathname.indexOf('/company') === 0) {
       navigator.serviceWorker.register('/company/sw.js', { scope: '/company' });
@@ -327,6 +328,7 @@
     </div>
     <div class="dash-top-user">
       <span id="admin-name"></span>
+      <button type="button" id="app-help-btn" class="app-help-btn hidden" aria-label="Help for this page" aria-expanded="false" aria-controls="app-help-card">?</button>
       <button type="button" id="logout-btn" class="hidden">Sign out</button>
     </div>
   </header>
@@ -4581,7 +4583,7 @@
     </a>
   </nav>
 
-  <link rel="stylesheet" href="/css/company-dash.css?v=calc2" />
+  <link rel="stylesheet" href="/css/company-dash.css?v=help1" />
   <link rel="stylesheet" href="/css/company-tw.css?v=boot1" />
 
   <script>
@@ -4622,6 +4624,7 @@
     }
     function revealLogin() {
       hideCompanyBoot();
+      if (window.SpectrumHelp) SpectrumHelp.stop();
       if (dashPanel) dashPanel.classList.add('hidden');
       if (loginPanel) loginPanel.classList.remove('hidden');
     }
@@ -6002,6 +6005,14 @@
       try { renderDashTabBar(); } catch (err) { console.error('renderDashTabBar', err); }
       try { startMasterTabWorkWatch(); } catch (err) { console.error('startMasterTabWorkWatch', err); }
       try { startDealerAppBadgePoll(); } catch (err) { console.error('startDealerAppBadgePoll', err); }
+      try {
+        if (window.SpectrumHelp) {
+          SpectrumHelp.start({
+            app: 'company',
+            userId: admin && admin.id
+          });
+        }
+      } catch (err) { console.error('SpectrumHelp', err); }
       return true;
     }
 
@@ -8062,6 +8073,7 @@
       pageSub.textContent = bits[1];
       pageSub.hidden = !bits[1];
       syncPageHelper(view);
+      if (window.SpectrumHelp) SpectrumHelp.setPage(view);
       document.title = (bits[0] ? bits[0] + ' | ' : '') + 'Company | Spectrum Display';
       const newBtn = document.getElementById('new-btn');
       if (newBtn) newBtn.classList.toggle('hidden', !canEdit('website'));
