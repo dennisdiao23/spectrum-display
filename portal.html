@@ -197,6 +197,10 @@
         <svg class="dash-nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 7h16l-1.5 12H5.5L4 7z"/><path d="M9 7V5a3 3 0 0 1 6 0v2"/></svg>
         <span>Purchase Order</span>
       </a>
+      <a href="/portal/rmas" data-view="rmas" class="dash-nav-link">
+        <svg class="dash-nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 12a9 9 0 1 0 3-6.7"/><path d="M3 4v5h5"/><path d="M9 12h6"/></svg>
+        <span>RMA</span>
+      </a>
       <div class="dash-nav-group">
         <a href="/portal/calculator" id="portal-calculator" data-view="calculator" class="dash-nav-link">
           <svg class="dash-nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="5" y="3" width="14" height="18" rx="2"/><path d="M8 7h8M8 12h.01M12 12h.01M16 12h.01M8 16h.01M12 16h.01M16 16h.01"/></svg>
@@ -493,6 +497,68 @@
                   <button id="dr-quote" type="button" class="hidden px-4 py-2 rounded-full border border-slate-600 text-sm">Request quote for this job</button>
                 </div>
                 <p id="dr-msg" class="hidden text-sm"></p>
+              </form>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section id="rmas-section" class="hidden">
+        <div class="cc-list-inner">
+          <div class="cc-list-toolbar cc-list-tools">
+            <p class="text-sm text-slate-500" style="margin:0">Request a return. Spectrum reviews it. This does not create a credit or a replacement order.</p>
+            <button id="rma-new-btn" type="button" class="cc-list-add-btn px-4 py-2 rounded-full bg-sky-500 hover:bg-sky-400 text-white text-sm font-semibold">New RMA</button>
+          </div>
+          <p id="rma-error" class="hidden text-sm text-red-400 mb-3"></p>
+          <div class="dash-split" id="rma-split">
+            <div class="dash-split-left">
+              <div class="cc-table-card rounded-2xl border border-slate-800">
+                <div class="cc-table-wrap overflow-x-auto">
+                  <table class="w-full text-sm">
+                    <thead class="text-left text-slate-400 border-b border-slate-800">
+                      <tr>
+                        <th class="py-3 px-4 font-medium">Number</th>
+                        <th class="py-3 px-4 font-medium">Date</th>
+                        <th class="py-3 px-4 font-medium">Order or PO</th>
+                        <th class="py-3 px-4 font-medium">Reason</th>
+                        <th class="py-3 px-4 font-medium">Status</th>
+                      </tr>
+                    </thead>
+                    <tbody id="rma-table" class="text-slate-200"></tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+            <div class="dash-split-resizer" role="separator" aria-orientation="vertical" aria-label="Resize RMA panels" tabindex="0"></div>
+            <div class="dash-split-right">
+              <div id="rma-overview" class="inv-right-panel">
+                <p class="inv-overview-lead">Select an RMA, or start a new return.</p>
+              </div>
+              <form id="rma-form" class="inv-right-panel hidden space-y-4" style="padding:1.25rem;overflow:auto">
+                <input type="hidden" id="rma-id">
+                <h2 id="rma-form-title" class="font-semibold text-lg">New RMA</h2>
+                <p id="rma-status" class="text-sm text-slate-500"></p>
+                <div class="grid sm:grid-cols-2 gap-3 text-sm">
+                  <label class="sm:col-span-2">Order or PO number<input id="rma-order" class="w-full mt-1 bg-slate-800 border border-slate-700 rounded-lg px-3 py-2" placeholder="SO-1001 or your PO"></label>
+                  <label class="sm:col-span-2">Reason
+                    <select id="rma-reason" class="w-full mt-1 bg-slate-800 border border-slate-700 rounded-lg px-3 py-2">
+                      <option value="defective">Defective</option>
+                      <option value="wrong">Wrong item</option>
+                      <option value="damaged">Damaged</option>
+                      <option value="other">Other</option>
+                    </select>
+                  </label>
+                </div>
+                <div>
+                  <div class="flex items-center justify-between mb-2">
+                    <p class="text-sm font-semibold" style="margin:0">Items</p>
+                    <button id="rma-add-line" type="button" class="text-sm text-sky-400">Add line</button>
+                  </div>
+                  <div id="rma-lines" class="space-y-2"></div>
+                </div>
+                <label class="block text-sm">Notes<textarea id="rma-notes" rows="3" class="w-full mt-1 bg-slate-800 border border-slate-700 rounded-lg px-3 py-2"></textarea></label>
+                <button id="rma-save" type="submit" class="px-4 py-2 rounded-full bg-sky-500 hover:bg-sky-400 text-white text-sm font-semibold">Submit</button>
+                <p id="rma-msg" class="hidden text-sm"></p>
               </form>
             </div>
           </div>
@@ -937,6 +1003,6 @@
     <div class="so-sku-menu-list"></div>
   </div>
   <script src="/js/app-help.js?v=help1"></script>
-  <script src="/js/portal.js?v=deal-reg2"></script>
+  <script src="/js/portal.js?v=dealer-rma1"></script>
 </body>
 </html>

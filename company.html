@@ -308,6 +308,10 @@
             <svg class="dash-nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="3" width="16" height="18" rx="2"/><path d="M8 8h8M8 12h8M8 16h5"/></svg>
             <span>Deal registration</span>
           </a>
+          <a href="/company/dealers/rmas" id="tab-dealer-rmas" class="dash-sub-link">
+            <svg class="dash-nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 12a9 9 0 1 0 3-6.7"/><path d="M3 4v5h5"/><path d="M9 12h6"/></svg>
+            <span>RMA</span>
+          </a>
         </div>
       </div>
     </nav>
@@ -2666,6 +2670,47 @@
         </div>
       </div>
 
+      <div id="dealer-rmas-section" class="hidden">
+        <div class="cc-list-inner">
+          <p class="text-sm text-slate-500 mb-3">Returns dealers submitted. This list is for review. It does not create a credit or a replacement order.</p>
+          <p id="rma-admin-error" class="hidden text-sm text-red-400 mb-3"></p>
+          <div class="dash-split">
+            <div class="dash-split-left">
+              <div class="cc-table-card rounded-2xl border border-slate-800">
+                <div class="cc-table-wrap overflow-x-auto">
+                  <table class="w-full text-sm">
+                    <thead class="text-left text-slate-400 border-b border-slate-800">
+                      <tr>
+                        <th class="py-3 px-4 font-medium">Number</th>
+                        <th class="py-3 px-4 font-medium">Dealer</th>
+                        <th class="py-3 px-4 font-medium">Date</th>
+                        <th class="py-3 px-4 font-medium">Order or PO</th>
+                        <th class="py-3 px-4 font-medium">Reason</th>
+                        <th class="py-3 px-4 font-medium">Status</th>
+                      </tr>
+                    </thead>
+                    <tbody id="rma-admin-table" class="text-slate-200"></tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+            <div class="dash-split-resizer" role="separator" aria-orientation="vertical" aria-label="Resize RMA panels" tabindex="0"></div>
+            <div class="dash-split-right">
+              <div id="rma-admin-overview" class="inv-right-panel">
+                <p class="inv-overview-lead">Select an RMA to read it.</p>
+              </div>
+              <div id="rma-admin-detail" class="inv-right-panel hidden" style="padding:1.25rem;overflow:auto">
+                <h2 id="rma-admin-title" class="font-semibold text-lg">RMA</h2>
+                <p id="rma-admin-status" class="text-sm text-slate-500 mt-1"></p>
+                <dl id="rma-admin-fields" class="grid sm:grid-cols-2 gap-x-6 gap-y-3 text-sm mt-4"></dl>
+                <div id="rma-admin-lines" class="mt-4 text-sm"></div>
+                <p id="rma-admin-notes" class="text-sm mt-4"></p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
       <div id="customers-section" class="hidden">
         <div id="cc-workspace" class="cc-workspace">
         <div id="customers-list-wrap" class="cc-list-inner">
@@ -4792,6 +4837,7 @@
       if (hash === 'settings/roles' || hash === 'roles') return 'staff';
       if (hash === 'settings' || hash === 'settings/staff') return 'staff';
       if (hash === 'website/accounts' || hash === 'accounts') return 'accounts';
+      if (hash === 'dealers/rmas' || hash === 'rmas') return 'dealer-rmas';
       if (hash === 'dealers/registrations' || hash === 'registrations') return 'deal-registrations';
       if (hash === 'dealers/applications' || hash === 'website/dealers') return 'dealers';
       if (hash === 'dealers' || hash === 'dealer') return 'dealer';
@@ -4813,6 +4859,7 @@
       if (p === '/company/chat') return 'chat';
       if (p === '/company/calculator') return 'calculator';
       if (p === '/company' || p === '/company/dashboard') return 'dashboard';
+      if (p === '/company/dealers/rmas') return 'dealer-rmas';
       if (p === '/company/dealers/registrations') return 'deal-registrations';
       if (p === '/company/dealers/applications' || p === '/company/website/dealers') return 'dealers';
       if (p === '/company/dealers' || /^\/company\/dealers\/\d+$/.test(p)) return 'dealer';
@@ -4875,6 +4922,7 @@
       if (name === 'accounts') return '/company/website/accounts';
       if (name === 'dealers') return '/company/dealers/applications';
       if (name === 'deal-registrations') return '/company/dealers/registrations';
+      if (name === 'dealer-rmas') return '/company/dealers/rmas';
       if (name === 'traffic') return '/company/website/traffic';
       if (name === 'control') return '/company/website';
       if (name === 'store') return '/company/website/store';
@@ -4984,6 +5032,7 @@
     function tabFromHref(href) {
       try {
         const p = new URL(href, location.origin).pathname.replace(/\/+$/, '') || '/company';
+        if (p === '/company/dealers/rmas') return 'dealer-rmas';
         if (p === '/company/dealers/registrations') return 'deal-registrations';
         if (p === '/company/dealers/applications' || p === '/company/website/dealers') return 'dealers';
         if (p === '/company/dealers' || /^\/company\/dealers\/\d+$/.test(p)) return 'dealer';
@@ -5112,6 +5161,7 @@
       dealer: 'Dealer',
       dealers: 'Applications',
       'deal-registrations': 'Deal registration',
+      'dealer-rmas': 'RMA',
       traffic: 'Traffic',
       control: 'Control',
       inventory: 'Inventory',
@@ -5189,6 +5239,7 @@
       dealer: '/company/dealers',
       dealers: '/company/dealers/applications',
       'deal-registrations': '/company/dealers/registrations',
+      'dealer-rmas': '/company/dealers/rmas',
       traffic: '/company/website/traffic',
       control: '/company/website',
       inventory: '/company/inventory',
@@ -5238,7 +5289,7 @@
       if (name === 'calculator') return 'calculator';
       if (name === 'chat') return 'chat';
       if (name === 'products' || name === 'store' || name === 'accounts' || name === 'traffic' || name === 'website') return 'website';
-      if (name === 'dealer' || name === 'dealers' || name === 'deal-registrations') return 'dealer';
+      if (name === 'dealer' || name === 'dealers' || name === 'deal-registrations' || name === 'dealer-rmas') return 'dealer';
       if (name === 'inventory' || name === 'warehouses' || name === 'receipt-shipments') return 'inventory';
       if (name === 'vendors' || name === 'purchase-orders') return 'vendor';
       if (name === 'leads' || name === 'pipeline' || name === 'activities' || name === 'crm') return 'crm';
@@ -5264,7 +5315,7 @@
       if (group === 'chat') return ['chat'];
       if (group === 'calculator') return ['calculator'];
       if (group === 'website') return ['products', 'store', 'accounts', 'traffic'];
-      if (group === 'dealer') return ['dealer', 'dealers', 'deal-registrations'];
+      if (group === 'dealer') return ['dealer', 'dealers', 'deal-registrations', 'dealer-rmas'];
       if (group === 'inventory') return ['inventory', 'warehouses', 'receipt-shipments'];
       if (group === 'vendor') return ['vendors', 'purchase-orders'];
       if (group === 'crm') return ['leads', 'pipeline', 'activities'];
@@ -5833,6 +5884,7 @@
       dealer: 'dealer',
       dealers: 'dealer-applications',
       'deal-registrations': 'dealer',
+      'dealer-rmas': 'dealer',
       traffic: 'products',
       control: 'products',
       inventory: 'inventory',
@@ -6027,6 +6079,7 @@
       setHidden('tab-dealer-list', !canUse('dealer'));
       setHidden('tab-dealers', !canUse('dealers'));
       setHidden('tab-deal-registrations', !canUse('dealer'));
+      setHidden('tab-dealer-rmas', !canUse('dealer'));
       const dealerNav = document.getElementById('tab-dealer');
       const dealerBar = document.getElementById('tabbar-dealer');
       const dealerHref = canUse('dealer') ? '/company/dealers' : '/company/dealers/applications';
@@ -8002,7 +8055,7 @@
       const onWebsite = view === 'products' || view === 'store' || view === 'accounts' || view === 'traffic';
       const onSettings = view === 'staff' || view === 'roles' || view === 'company' || view === 'forms';
       const onCustomerNav = view === 'quotes' || view === 'orders' || view === 'invoices' || view === 'sales' || view === 'customers';
-      const onDealerNav = view === 'dealer' || view === 'dealers' || view === 'deal-registrations';
+      const onDealerNav = view === 'dealer' || view === 'dealers' || view === 'deal-registrations' || view === 'dealer-rmas';
       const onCrmNav = view === 'leads' || view === 'pipeline' || view === 'activities' || view === 'crm';
       const onSales = view === 'quotes' || view === 'orders' || view === 'invoices' || view === 'sales';
       const onInventory = view === 'inventory' || view === 'warehouses' || view === 'receipt-shipments';
@@ -8059,7 +8112,7 @@
       if (whSec) whSec.classList.toggle('wh-split-on', view === 'warehouses' && !isMobileDash());
       document.body.classList.toggle('inv-layout-lock', view === 'inventory' && !isMobileDash());
       document.body.classList.toggle('dash-split-lock',
-        (view === 'customers' || view === 'dealer' || view === 'deal-registrations' || view === 'vendors' || view === 'warehouses' || view === 'products' || view === 'store' || view === 'accounts' || view === 'dealers' || view === 'leads' || view === 'pipeline' || view === 'activities') && !isMobileDash());
+        (view === 'customers' || view === 'dealer' || view === 'deal-registrations' || view === 'dealer-rmas' || view === 'vendors' || view === 'warehouses' || view === 'products' || view === 'store' || view === 'accounts' || view === 'dealers' || view === 'leads' || view === 'pipeline' || view === 'activities') && !isMobileDash());
       const vnSec = document.getElementById('vendors-section');
       if (vnSec) vnSec.classList.toggle('vn-split-on', view === 'vendors' && !isMobileDash());
       const wpSec = document.getElementById('products-section');
@@ -8110,6 +8163,8 @@
       if (dealersSec) dealersSec.classList.toggle('hidden', view !== 'dealers');
       const dregSec = document.getElementById('deal-registrations-section');
       if (dregSec) dregSec.classList.toggle('hidden', view !== 'deal-registrations');
+      const rmaSec = document.getElementById('dealer-rmas-section');
+      if (rmaSec) rmaSec.classList.toggle('hidden', view !== 'dealer-rmas');
       const trafficSec = document.getElementById('traffic-section');
       if (trafficSec) trafficSec.classList.toggle('hidden', view !== 'traffic');
       document.getElementById('company-section').classList.toggle('hidden', view !== 'company');
@@ -8150,6 +8205,8 @@
       if (tabDealers) tabDealers.className = navLinkClass(view === 'dealers', !canUse('dealers'), 'sub');
       const tabDreg = document.getElementById('tab-deal-registrations');
       if (tabDreg) tabDreg.className = navLinkClass(view === 'deal-registrations', !canUse('dealer'), 'sub');
+      const tabRma = document.getElementById('tab-dealer-rmas');
+      if (tabRma) tabRma.className = navLinkClass(view === 'dealer-rmas', !canUse('dealer'), 'sub');
       const tabTraffic = document.getElementById('tab-traffic');
       if (tabTraffic) tabTraffic.className = navLinkClass(view === 'traffic', !canUse('traffic'), 'sub');
       document.getElementById('tab-quotes').className = navLinkClass(view === 'quotes', !canUse('quotes'), 'sub');
@@ -8174,6 +8231,7 @@
         dealer: ['Dealer', ''],
         dealers: ['Dealer', 'Applications'],
         'deal-registrations': ['Dealer', 'Deal registration'],
+        'dealer-rmas': ['Dealer', 'RMA'],
         traffic: ['Website', 'Traffic'],
         inventory: ['Inventory', ''],
         warehouses: ['Inventory', 'Location'],
@@ -13351,7 +13409,7 @@
       const onInventory = name === 'inventory' || name === 'warehouses' || name === 'receipt-shipments';
       const onVendorNav = name === 'vendors' || name === 'purchase-orders';
       const onCustomerNav = name === 'sales' || name === 'quotes' || name === 'orders' || name === 'invoices' || name === 'customers';
-      const onDealerNav = name === 'dealer' || name === 'dealers' || name === 'deal-registrations';
+      const onDealerNav = name === 'dealer' || name === 'dealers' || name === 'deal-registrations' || name === 'dealer-rmas';
       const onCrmNav = name === 'leads' || name === 'pipeline' || name === 'activities' || name === 'crm';
       const onSettings = name === 'staff' || name === 'roles' || name === 'company' || name === 'forms';
       const map = {
@@ -18711,6 +18769,80 @@
         showError('dreg-error', err.message || 'Could not load deal registrations.');
       }
     }
+    let rmaAdminRows = [];
+    let rmaAdminOpenId = '';
+    function rmaAdminDate(value) {
+      return String(value || '').slice(0, 10) || '—';
+    }
+    function showDealerRma(row) {
+      const overview = document.getElementById('rma-admin-overview');
+      const detail = document.getElementById('rma-admin-detail');
+      if (!overview || !detail) return;
+      if (!row) {
+        overview.classList.remove('hidden');
+        detail.classList.add('hidden');
+        renderDealerRmaTable();
+        return;
+      }
+      overview.classList.add('hidden');
+      detail.classList.remove('hidden');
+      document.getElementById('rma-admin-title').textContent = row.number || 'RMA';
+      document.getElementById('rma-admin-status').textContent = 'Submitted' + (row.dealerName ? ' · ' + row.dealerName : '') + ' · ' + rmaAdminDate(row.createdAt);
+      document.getElementById('rma-admin-fields').innerHTML =
+        '<div><dt class="text-slate-500">Order or PO</dt><dd>' + esc(row.orderRef || '—') + '</dd></div>' +
+        '<div><dt class="text-slate-500">Reason</dt><dd>' + esc(row.reasonLabel || '—') + '</dd></div>';
+      const lines = row.lines || [];
+      document.getElementById('rma-admin-lines').innerHTML = lines.length
+        ? '<p class="font-semibold mb-2">Items</p>' + lines.map(function (line) {
+          return '<div>' + esc(line.sku) + ' · ' + esc(line.qty) + '</div>';
+        }).join('')
+        : '';
+      document.getElementById('rma-admin-notes').textContent = row.notes || '';
+      renderDealerRmaTable();
+    }
+    function renderDealerRmaTable() {
+      const tbody = document.getElementById('rma-admin-table');
+      if (!tbody) return;
+      if (!rmaAdminRows.length) {
+        tbody.innerHTML = '<tr><td class="py-6 px-4 text-slate-500" colspan="6">No RMAs yet.</td></tr>';
+        return;
+      }
+      tbody.innerHTML = rmaAdminRows.map(function (row) {
+        const on = String(row.id) === String(rmaAdminOpenId);
+        return '<tr class="border-b border-slate-800 hover:bg-slate-900/80 cursor-pointer' + (on ? ' is-active' : '') + '" data-rma-admin-id="' + esc(row.id) + '">' +
+          '<td class="py-3 px-4 font-medium">' + esc(row.number || '') + '</td>' +
+          '<td class="py-3 px-4">' + esc(row.dealerName || '—') + '</td>' +
+          '<td class="py-3 px-4">' + esc(rmaAdminDate(row.createdAt)) + '</td>' +
+          '<td class="py-3 px-4">' + esc(row.orderRef || '—') + '</td>' +
+          '<td class="py-3 px-4">' + esc(row.reasonLabel || '—') + '</td>' +
+          '<td class="py-3 px-4">Submitted</td></tr>';
+      }).join('');
+    }
+    async function loadDealerRmas() {
+      showError('rma-admin-error', '');
+      try {
+        const data = await api('/api/admin/rmas');
+        rmaAdminRows = data.rmas || [];
+        const open = rmaAdminRows.find(function (row) { return String(row.id) === String(rmaAdminOpenId); });
+        if (open) showDealerRma(open);
+        else {
+          rmaAdminOpenId = '';
+          showDealerRma(null);
+        }
+      } catch (err) {
+        showError('rma-admin-error', err.message || 'Could not load RMAs.');
+      }
+    }
+    const rmaAdminTable = document.getElementById('rma-admin-table');
+    if (rmaAdminTable) {
+      rmaAdminTable.addEventListener('click', function (e) {
+        const tr = e.target.closest('[data-rma-admin-id]');
+        if (!tr) return;
+        rmaAdminOpenId = tr.getAttribute('data-rma-admin-id');
+        const row = rmaAdminRows.find(function (item) { return String(item.id) === String(rmaAdminOpenId); });
+        showDealerRma(row || null);
+      });
+    }
     async function refreshDealRegWarning() {
       const box = document.getElementById('so-deal-warn');
       if (!box) return;
@@ -18839,6 +18971,9 @@
       }
       if (name === 'deal-registrations') {
         await loadDealRegistrations();
+      }
+      if (name === 'dealer-rmas') {
+        await loadDealerRmas();
       }
       if (name === 'traffic') {
         if (window.SpectrumTraffic) await SpectrumTraffic.load();

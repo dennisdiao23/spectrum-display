@@ -218,6 +218,7 @@ async function main() {
     '/company/dealers',
     '/company/dealers/applications',
     '/company/dealers/registrations',
+    '/company/dealers/rmas',
     '/company/inventory',
     '/company/inventory/locations',
     '/company/inventory/vendors',
@@ -356,10 +357,10 @@ async function main() {
     const qs = req.url.includes('?') ? req.url.slice(req.url.indexOf('?')) : '';
     res.redirect(301, '/portal' + qs);
   });
-  ['/portal/book', '/portal/quotes', '/portal/orders', '/portal/registrations', '/portal/projects', '/portal/panels', '/portal/calculator', '/portal/company'].forEach(function (route) {
+  ['/portal/book', '/portal/quotes', '/portal/orders', '/portal/registrations', '/portal/rmas', '/portal/projects', '/portal/panels', '/portal/calculator', '/portal/company'].forEach(function (route) {
     app.get([route, route + '/'], sendPortal);
   });
-  app.get(['/portal/quotes/:id', '/portal/quotes/:id/', '/portal/orders/:id', '/portal/orders/:id/', '/portal/registrations/:id', '/portal/registrations/:id/'], sendPortal);
+  app.get(['/portal/quotes/:id', '/portal/quotes/:id/', '/portal/orders/:id', '/portal/orders/:id/', '/portal/registrations/:id', '/portal/registrations/:id/', '/portal/rmas/:id', '/portal/rmas/:id/'], sendPortal);
 
   const OLD_SOLUTION_REDIRECTS = [
     ['/solutions/retail-hospitality.html', '/retail-hospitality'],
@@ -1251,6 +1252,26 @@ async function main() {
   app.post('/api/dealer/registrations', requireDealer, async function (req, res, next) {
     try {
       res.json({ ok: true, registration: await store.createDealRegistration(req.dealer, req.body || {}) });
+    } catch (err) { dealerDocError(err, res, next); }
+  });
+
+  app.get('/api/dealer/rmas', requireDealer, async function (req, res, next) {
+    try {
+      res.json({ ok: true, rmas: await store.listPortalRmas(req.dealer) });
+    } catch (err) { next(err); }
+  });
+
+  app.get('/api/dealer/rmas/:id', requireDealer, async function (req, res, next) {
+    try {
+      const rma = await store.getPortalRma(req.dealer, req.params.id);
+      if (!rma) return res.status(404).json({ ok: false, error: 'RMA not found.' });
+      res.json({ ok: true, rma: rma });
+    } catch (err) { next(err); }
+  });
+
+  app.post('/api/dealer/rmas', requireDealer, async function (req, res, next) {
+    try {
+      res.json({ ok: true, rma: await store.createPortalRma(req.dealer, req.body || {}) });
     } catch (err) { dealerDocError(err, res, next); }
   });
 
@@ -3081,6 +3102,12 @@ async function main() {
     try {
       const users = await store.listDealerUsersForApplication(req.params.id);
       res.json({ ok: true, users: users });
+    } catch (err) { next(err); }
+  });
+
+  app.get('/api/admin/rmas', requireAdmin, requirePerm('dealer', 'view'), async function (_req, res, next) {
+    try {
+      res.json({ ok: true, rmas: await store.listDealerRmas() });
     } catch (err) { next(err); }
   });
 
