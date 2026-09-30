@@ -1220,6 +1220,10 @@ function ensurePurchaseOrders(db) {
     CREATE INDEX IF NOT EXISTS purchase_order_lines_po_idx ON purchase_order_lines (po_id, sort_order);
   `);
   try { db.exec("ALTER TABLE purchase_orders ADD COLUMN ship_from TEXT NOT NULL DEFAULT ''"); } catch (e) { /* already present */ }
+  try { db.exec("ALTER TABLE purchase_orders ADD COLUMN ship_to_mode TEXT NOT NULL DEFAULT 'warehouse'"); } catch (e) { /* already present */ }
+  try {
+    db.exec("UPDATE purchase_orders SET ship_to_mode = 'dropship' WHERE ship_to_customer_id IS NOT NULL AND COALESCE(ship_to_mode, '') != 'dropship'");
+  } catch (e) { /* table not ready */ }
   try { db.exec("ALTER TABLE purchase_order_lines ADD COLUMN mpn TEXT NOT NULL DEFAULT ''"); } catch (e) { /* already present */ }
 }
 

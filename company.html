@@ -32,9 +32,9 @@
     #company-boot .boot-login button[type="submit"]{background:#fff!important;color:#000!important;border:0}
     #company-boot .boot-login button[type="submit"]:hover{background:#e8e8e8!important}
   </style>
-  <link rel="stylesheet" href="/css/company-dash.css?v=login2" />
+  <link rel="stylesheet" href="/css/company-dash.css?v=po-ship1" />
   <script src="/js/address-autocomplete.js"></script>
-  <script src="/js/company-chat.js?v=chatcrm4"></script>
+  <script src="/js/company-chat.js?v=po-ship1"></script>
   <script src="/js/company-crm.js?v=zoomphone3"></script>
   <script src="/js/company-staff.js?v=staff6"></script>
   <script src="/js/company-traffic.js?v=loc1"></script>
@@ -2033,11 +2033,54 @@
               </div>
         <div id="po-detail" class="hidden">
           <button type="button" id="po-back" class="text-sm text-sky-400 hover:text-sky-300 mb-3">← All purchase orders</button>
-          <form id="po-form" class="po-sheet po-inv-layout">
+          <div class="so-doc-frame" id="po-doc-frame">
+            <div class="so-doc-chrome">
+              <div class="so-doc-caption" id="po-doc-caption">
+                <span id="po-caption-title">Purchase Order</span>
+              </div>
+              <div class="so-doc-ribbon" id="po-doc-ribbon">
+                <button type="button" id="po-ribbon-find" class="so-doc-ribbon-btn" title="Find">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="11" cy="11" r="6"/><path d="m20 20-3.5-3.5"/></svg>
+                  <span>Find</span>
+                </button>
+                <button type="button" id="po-ribbon-new" class="so-doc-ribbon-btn" title="New">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="5" y="3" width="14" height="18" rx="1.5"/><path d="M8 8h8M8 12h8M8 16h5"/></svg>
+                  <span>New</span>
+                </button>
+                <button type="submit" form="po-form" class="so-doc-ribbon-btn" data-po-after="stay" title="Save">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M5 5h11l3 3v11H5z"/><path d="M8 5v5h8V5M8 19v-6h8v6"/></svg>
+                  <span>Save</span>
+                </button>
+                <button type="button" id="po-ribbon-delete" class="so-doc-ribbon-btn" title="Delete">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 7h16M9 7V5h6v2M8 7l1 12h6l1-12"/></svg>
+                  <span>Delete</span>
+                </button>
+                <button type="button" id="po-ribbon-print" class="so-doc-ribbon-btn" title="Print">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M7 9V4h10v5"/><rect x="6" y="13" width="12" height="7"/><path d="M6 17H4V9h16v8h-2"/></svg>
+                  <span>Print</span>
+                </button>
+                <button type="button" id="po-ribbon-pdf" class="so-doc-ribbon-btn" title="PDF">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M7 3h7l5 5v13H7z"/><path d="M14 3v5h5"/><path d="M9 14h6M9 17h4"/></svg>
+                  <span>PDF</span>
+                </button>
+                <button type="button" id="po-ribbon-email" class="so-doc-ribbon-btn" title="Email">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="6" width="18" height="12" rx="1.5"/><path d="m3 8 9 6 9-6"/></svg>
+                  <span>Email</span>
+                </button>
+              </div>
+              <button type="button" id="po-caption-close" class="so-doc-close" aria-label="Close">×</button>
+            </div>
+            <div class="so-doc-tabs" id="po-doc-tabs">
+              <button type="button" class="so-doc-tab is-on" data-po-pane="doc">Document</button>
+              <button type="button" class="so-doc-tab" data-po-pane="chat" id="po-chat-tab">Chat</button>
+            </div>
+            <div class="so-doc-workspace">
+          <form id="po-form" class="po-sheet po-inv-layout" data-po-pane-panel="doc">
             <input type="hidden" id="po-id">
             <div class="po-headblock">
               <div class="po-kind">
                 <h2>Purchase Order</h2>
+                <span id="po-status-badge" class="so-status-badge is-draft">OPEN</span>
               </div>
               <div class="po-idline">
                 <div class="po-field po-f-number">
@@ -2110,7 +2153,11 @@
                 </div>
                 <div class="po-field">
                   <label>Ship to</label>
-                  <select id="po-ship-to"><option value="">Select customer for address</option></select>
+                  <select id="po-ship-mode">
+                    <option value="warehouse">Spectrum warehouse</option>
+                    <option value="dropship">Dropship</option>
+                  </select>
+                  <select id="po-ship-to" class="hidden"><option value="">Select customer for address</option></select>
                   <textarea id="po-ship" rows="4" placeholder="Shipping address"></textarea>
                 </div>
               </div>
@@ -2156,9 +2203,50 @@
             <div class="po-foot">
               <button type="button" id="po-cancel" class="px-4 py-2 rounded-full border border-slate-700 text-sm">Cancel</button>
               <button type="button" id="po-delete-btn" class="hidden px-4 py-2 rounded-full border border-slate-700 text-red-400 text-sm">Delete</button>
-              <button type="submit" id="po-save" class="px-5 py-2 rounded-full bg-sky-500 hover:bg-sky-400 text-white text-sm font-semibold">Save</button>
+              <button type="submit" id="po-save" class="px-5 py-2 rounded-full bg-sky-500 hover:bg-sky-400 text-white text-sm font-semibold" data-po-after="stay">Save</button>
+              <button type="submit" id="po-save-close" class="so-doc-btn so-doc-btn-primary" data-po-after="close">Save &amp; Close</button>
+              <button type="submit" id="po-save-new" class="so-doc-btn" data-po-after="new">Save &amp; New</button>
+              <button type="button" id="po-revert" class="so-doc-btn">Revert</button>
             </div>
           </form>
+              <aside class="so-doc-side" id="po-doc-side">
+                <h3 id="po-side-name">Vendor</h3>
+                <div class="so-side-tabs" id="po-side-tabs">
+                  <button type="button" class="is-on" data-po-side="vendor">Vendor</button>
+                  <button type="button" data-po-side="tx">Purchase orders</button>
+                </div>
+                <div id="po-side-vendor">
+                  <dl class="so-side-dl">
+                    <div><dt>Phone</dt><dd id="po-side-phone">—</dd></div>
+                    <div><dt>Email</dt><dd id="po-side-email">—</dd></div>
+                    <div><dt>Open purchase orders</dt><dd id="po-side-open">—</dd></div>
+                  </dl>
+                </div>
+                <div id="po-side-tx" hidden>
+                  <p class="so-side-label">Open purchase orders</p>
+                  <div id="po-side-tx-list" class="so-side-tx-list"></div>
+                </div>
+              </aside>
+              <div class="so-chat-pane" id="po-chat-pane" data-po-pane-panel="chat" hidden>
+                <div class="co-chat-main so-chat-embed">
+                  <div class="co-chat-main-head">
+                    <div>
+                      <strong id="po-chat-title">Purchase order chat</strong>
+                      <p id="po-chat-sub">Staff only · vendor cannot see this.</p>
+                    </div>
+                  </div>
+                  <div class="co-chat-messages" id="po-chat-messages"></div>
+                  <form class="co-chat-composer" id="po-chat-composer">
+                    <input type="file" id="po-chat-file" class="co-chat-file" accept=".jpg,.jpeg,.png,.webp,.gif,.pdf,.csv,.txt,.xlsx,.docx,image/*,application/pdf,text/plain,text/csv">
+                    <button type="button" class="co-chat-attach" id="po-chat-attach" title="Attach">Attach</button>
+                    <textarea id="po-chat-input" rows="1" placeholder="Message about this purchase order…"></textarea>
+                    <button type="submit" class="co-chat-send">Send</button>
+                  </form>
+                  <p class="co-chat-attach-name" id="po-chat-attach-name" hidden></p>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
             </div>
           </div>
@@ -4693,7 +4781,7 @@
     </a>
   </nav>
 
-  <link rel="stylesheet" href="/css/company-dash.css?v=login2" />
+  <link rel="stylesheet" href="/css/company-dash.css?v=po-ship1" />
   <link rel="stylesheet" href="/css/company-tw.css?v=boot1" />
 
   <script>
@@ -16116,9 +16204,82 @@
       });
       const del = document.getElementById('po-delete-btn');
       if (del && poReadOnly) del.classList.add('hidden');
+      const ribbonDel = document.getElementById('po-ribbon-delete');
+      if (ribbonDel) ribbonDel.disabled = poReadOnly || !id;
       form.querySelectorAll('[data-remove-line], [data-insert-line], [data-line-drag]').forEach(function (el) {
         el.classList.toggle('hidden', poReadOnly);
       });
+    }
+
+    function fillPoStatusBadge(status) {
+      const badge = document.getElementById('po-status-badge');
+      if (!badge) return;
+      const s = status || 'open';
+      badge.textContent = String(s).toUpperCase();
+      badge.className = 'so-status-badge is-' + (s === 'closed' ? 'paid' : s === 'cancelled' ? 'void' : 'draft');
+    }
+
+    let poSavedSnapshot = '';
+
+    function markPoClean() {
+      try {
+        const snap = readPoForm();
+        snap.id = document.getElementById('po-id').value;
+        poSavedSnapshot = JSON.stringify(snap);
+      } catch (err) { poSavedSnapshot = ''; }
+    }
+
+    function showPoDocumentPane() {
+      document.querySelectorAll('#po-doc-tabs [data-po-pane]').forEach(function (btn) {
+        btn.classList.toggle('is-on', btn.getAttribute('data-po-pane') === 'doc');
+      });
+      const doc = document.querySelector('#po-doc-frame [data-po-pane-panel="doc"]');
+      const chat = document.getElementById('po-chat-pane');
+      const side = document.getElementById('po-doc-side');
+      if (doc) doc.hidden = false;
+      if (side) side.hidden = false;
+      if (chat) chat.hidden = true;
+    }
+
+    function fillPoSide() {
+      const sel = document.getElementById('po-vendor');
+      const id = sel ? sel.value : '';
+      const vendor = (inventoryVendors || []).find(function (row) { return String(row.id) === String(id); });
+      const nameEl = document.getElementById('po-side-name');
+      const phoneEl = document.getElementById('po-side-phone');
+      const emailEl = document.getElementById('po-side-email');
+      const openEl = document.getElementById('po-side-open');
+      const listEl = document.getElementById('po-side-tx-list');
+      const currentId = (document.getElementById('po-id') || {}).value;
+      const name = vendor ? (vendor.displayName || vendor.companyName || 'Vendor') : 'Vendor';
+      if (nameEl) nameEl.textContent = name;
+      if (phoneEl) phoneEl.textContent = vendor ? (vendor.phone || vendor.otherPhone || '—') : '—';
+      if (emailEl) emailEl.textContent = vendor ? (vendor.email || '—') : '—';
+      const open = (purchaseOrders || []).filter(function (doc) {
+        return vendor && String(doc.vendorId) === String(vendor.id) && (doc.status || 'open') === 'open';
+      });
+      if (openEl) openEl.textContent = vendor ? String(open.length) : '—';
+      if (!listEl) return;
+      const rows = open.filter(function (doc) { return String(doc.id) !== String(currentId); });
+      listEl.innerHTML = rows.length ? rows.map(function (doc) {
+        return '<button type="button" class="so-side-tx" data-po-open="' + esc(doc.id) + '"><b>' +
+          esc(doc.number || 'PO') + '</b><span>' + esc((doc.status || 'open').toUpperCase()) +
+          ' · ' + esc(moneyText(doc.total)) + '</span></button>';
+      }).join('') : '<p class="so-detail-empty">' + (vendor ? 'No other open purchase orders.' : 'Choose a vendor.') + '</p>';
+    }
+
+    function closePoWindow() {
+      const poTab = parseDocMasterTab(dashActiveGroup);
+      if (poTab && poTab.kind === 'po') {
+        closeMasterTab(dashActiveGroup);
+        return;
+      }
+      if (isPoSplitOn() && poActiveTab && poActiveTab !== 'overview') {
+        closePoTab(poActiveTab);
+        return;
+      }
+      showPoList();
+      loadPurchaseOrders();
     }
 
     function editCurrentPo() {
@@ -16138,6 +16299,50 @@
         }).join('');
     }
 
+    function poShipIsDropship() {
+      const el = document.getElementById('po-ship-mode');
+      return !!(el && el.value === 'dropship');
+    }
+
+    function spectrumWarehouseRecord() {
+      const list = inventoryWarehouses || [];
+      const named = list.find(function (wh) {
+        return locKind(wh) === 'warehouse' && !wh.untracked && /spectrum/i.test(wh.name || '');
+      });
+      if (named) return named;
+      const id = typeof defaultSpectrumWarehouseId === 'function' ? defaultSpectrumWarehouseId() : '';
+      return list.find(function (wh) { return String(wh.id) === String(id); }) || null;
+    }
+
+    function spectrumWarehouseAddressText() {
+      const wh = spectrumWarehouseRecord();
+      const addr = wh && String(wh.address || '').trim();
+      const name = String((wh && wh.name) || 'Spectrum Warehouse').trim();
+      if (addr && (wh.street || wh.city)) {
+        return addr.indexOf(name) === 0 ? addr : (name + '\n' + addr);
+      }
+      const p = companyProfile || {};
+      if (p.street) {
+        const city = [p.city, [p.state, p.zip].filter(Boolean).join(' ')].filter(Boolean).join(', ');
+        return [p.legalName || 'Spectrum Display Inc.', p.street, p.street2, city, p.country].filter(Boolean).join('\n');
+      }
+      return 'Spectrum Display Inc.\n517 N. Virginia Ave.\nAzusa, CA 91702';
+    }
+
+    function applyPoShipMode(mode, opts) {
+      opts = opts || {};
+      const drop = mode === 'dropship';
+      const modeEl = document.getElementById('po-ship-mode');
+      const sel = document.getElementById('po-ship-to');
+      if (modeEl) modeEl.value = drop ? 'dropship' : 'warehouse';
+      if (sel) sel.classList.toggle('hidden', !drop);
+      if (!drop && !opts.keepAddress) {
+        if (sel) sel.value = '';
+        const ship = document.getElementById('po-ship');
+        if (ship) ship.value = spectrumWarehouseAddressText();
+      }
+    }
+
     function fillPoShipTo(selected) {
       const sel = document.getElementById('po-ship-to');
       sel.innerHTML = '<option value="">Select customer for address</option>' +
@@ -16146,6 +16351,7 @@
             esc(c.displayName || c.companyName || [c.contactFirst, c.contactLast].filter(Boolean).join(' ') || c.email) +
             '</option>';
         }).join('');
+      sel.classList.toggle('hidden', !poShipIsDropship());
     }
 
     function applyPoVendor(v) {
@@ -16154,6 +16360,7 @@
       document.getElementById('po-cc').value = v.emailCc || '';
       document.getElementById('po-bcc').value = v.emailBcc || '';
       document.getElementById('po-mail').value = v.mailingAddress || '';
+      fillPoSide();
     }
 
     function formatCustomerShip(c) {
@@ -16553,14 +16760,16 @@
       document.getElementById('po-id').value = src.id || '';
       document.getElementById('po-number').value = src.number || '';
       fillPoVendors(src.vendorId || '');
-      fillPoShipTo(src.shipToCustomerId || '');
       document.getElementById('po-email').value = src.vendorEmail || '';
       const vendor = (inventoryVendors || []).find(function (row) { return String(row.id) === String(src.vendorId || ''); });
       document.getElementById('po-cc').value = (vendor && vendor.emailCc) || '';
       document.getElementById('po-bcc').value = (vendor && vendor.emailBcc) || '';
       document.getElementById('po-status').value = src.status || 'open';
       document.getElementById('po-mail').value = src.mailingAddress || '';
-      document.getElementById('po-ship').value = src.shippingAddress || '';
+      const dropship = src.shipToMode === 'dropship' || !!src.shipToCustomerId;
+      applyPoShipMode(dropship ? 'dropship' : 'warehouse', { keepAddress: true });
+      fillPoShipTo(dropship ? (src.shipToCustomerId || '') : '');
+      document.getElementById('po-ship').value = src.shippingAddress || (dropship ? '' : spectrumWarehouseAddressText());
       document.getElementById('po-issue').value = src.issueDate || new Date().toISOString().slice(0, 10);
       document.getElementById('po-due').value = src.dueDate || '';
       document.getElementById('po-via').value = src.shipVia || '';
@@ -16568,16 +16777,24 @@
       document.getElementById('po-permit').value = src.permitNo || '';
       document.getElementById('po-notes').value = src.notes || '';
       document.getElementById('po-delete-btn').classList.toggle('hidden', !src.id || poReadOnly);
+      fillPoStatusBadge(src.status || 'open');
+      const caption = document.getElementById('po-caption-title');
+      if (caption) caption.textContent = src.number || 'Purchase Order';
       renderPoLines(src.lines && src.lines.length ? src.lines : []);
       showPoMsg('');
+      fillPoSide();
+      showPoDocumentPane();
       applyPoFormReadOnly();
+      markPoClean();
+      if (window.SpectrumChat && src.id) SpectrumChat.onPoOpened(src);
     }
 
     function readPoForm() {
       const vendorId = document.getElementById('po-vendor').value;
       const vendor = (inventoryVendors || []).find(function (v) { return String(v.id) === String(vendorId); });
-      const shipId = document.getElementById('po-ship-to').value;
-      const ship = (poCustomers || []).find(function (c) { return String(c.id) === String(shipId); });
+      const dropship = poShipIsDropship();
+      const shipId = dropship ? document.getElementById('po-ship-to').value : '';
+      const ship = dropship ? (poCustomers || []).find(function (c) { return String(c.id) === String(shipId); }) : null;
       const emails = [
         document.getElementById('po-email').value.trim(),
         document.getElementById('po-cc').value.trim(),
@@ -16590,6 +16807,7 @@
         vendorEmail: emails.join(', '),
         status: document.getElementById('po-status').value,
         mailingAddress: document.getElementById('po-mail').value.trim(),
+        shipToMode: dropship ? 'dropship' : 'warehouse',
         shipToCustomerId: shipId,
         shipToName: ship ? (ship.displayName || ship.companyName || '') : '',
         shippingAddress: document.getElementById('po-ship').value.trim(),
@@ -16819,18 +17037,20 @@
     async function loadPurchaseOrders() {
       showError('po-error', '');
       try {
-        const [poData, vnData, ccData, invData, whData] = await Promise.all([
+        const [poData, vnData, ccData, invData, whData, profData] = await Promise.all([
           api('/api/admin/purchase-orders'),
           api('/api/admin/inventory-vendors'),
           api('/api/admin/company-customers'),
           inventoryItems.length ? Promise.resolve({ items: inventoryItems }) : api('/api/admin/inventory'),
-          inventoryWarehouses.length ? Promise.resolve({ warehouses: inventoryWarehouses }) : api('/api/admin/inventory-warehouses').catch(function () { return { warehouses: inventoryWarehouses }; })
+          inventoryWarehouses.length ? Promise.resolve({ warehouses: inventoryWarehouses }) : api('/api/admin/inventory-warehouses').catch(function () { return { warehouses: inventoryWarehouses }; }),
+          companyProfile ? Promise.resolve({ profile: companyProfile }) : api('/api/admin/company-profile').catch(function () { return { profile: companyProfile }; })
         ]);
         purchaseOrders = poData.orders || [];
         inventoryVendors = vnData.vendors || [];
         poCustomers = ccData.customers || [];
         if (!inventoryItems.length) inventoryItems = invData.items || [];
         inventoryWarehouses = whData.warehouses || inventoryWarehouses || [];
+        if (profData && profData.profile) companyProfile = profData.profile;
         fillPoShipFromSelect(document.getElementById('po-ship-from').value);
         const keepVendor = document.getElementById('po-vendor').value;
         const keepShip = document.getElementById('po-ship-to').value;
@@ -23484,6 +23704,10 @@
       applyPoVendor(v);
       renderPoLines();
     });
+    document.getElementById('po-ship-mode').addEventListener('change', function () {
+      if (poReadOnly) return;
+      applyPoShipMode(this.value === 'dropship' ? 'dropship' : 'warehouse');
+    });
     document.getElementById('po-ship-to').addEventListener('change', function () {
       if (poReadOnly) return;
       const id = this.value;
@@ -23572,10 +23796,56 @@
       soLineDrag = { row: row, kind: 'po', startY: e.clientY, pointerId: e.pointerId, moved: false };
       try { handle.setPointerCapture(e.pointerId); } catch (err) {}
     });
+    document.getElementById('po-status').addEventListener('change', function () {
+      fillPoStatusBadge(this.value);
+    });
+    document.getElementById('po-ribbon-find').addEventListener('click', function () {
+      const sel = document.getElementById('po-vendor');
+      if (!sel) return;
+      sel.focus();
+      if (typeof sel.showPicker === 'function') sel.showPicker();
+    });
+    document.getElementById('po-ribbon-new').addEventListener('click', function () {
+      openNewPo();
+    });
+    document.getElementById('po-ribbon-delete').addEventListener('click', function () {
+      document.getElementById('po-delete-btn').click();
+    });
+    document.getElementById('po-ribbon-print').addEventListener('click', function () {
+      printPoLetter();
+    });
+    document.getElementById('po-ribbon-pdf').addEventListener('click', function () {
+      downloadPoPdf();
+    });
+    document.getElementById('po-ribbon-email').addEventListener('click', emailPoDoc);
+    document.getElementById('po-caption-close').addEventListener('click', closePoWindow);
+    document.getElementById('po-revert').addEventListener('click', function () {
+      if (!poSavedSnapshot) return;
+      try { fillPoForm(JSON.parse(poSavedSnapshot)); }
+      catch (err) {}
+      setMasterTabDirty(dashActiveGroup, false);
+    });
+    document.getElementById('po-side-tabs').addEventListener('click', function (e) {
+      const btn = e.target.closest('button[data-po-side]');
+      if (!btn) return;
+      const tab = btn.getAttribute('data-po-side');
+      this.querySelectorAll('button').forEach(function (b) { b.classList.toggle('is-on', b === btn); });
+      document.getElementById('po-side-vendor').hidden = tab !== 'vendor';
+      document.getElementById('po-side-tx').hidden = tab !== 'tx';
+    });
+    document.getElementById('po-side-tx-list').addEventListener('click', function (e) {
+      const btn = e.target.closest('[data-po-open]');
+      if (!btn) return;
+      const id = btn.getAttribute('data-po-open');
+      if (masterTabIsOpen('po-' + id)) activateMasterTab('po-' + id);
+      else openDocMasterTab('po', id);
+    });
     document.getElementById('po-form').addEventListener('submit', async function (e) {
       e.preventDefault();
       if (poReadOnly) return;
       showPoMsg('');
+      const afterBtn = e.submitter && e.submitter.getAttribute('data-po-after');
+      const after = afterBtn || 'stay';
       const id = document.getElementById('po-id').value;
       try {
         const payload = readPoForm();
@@ -23611,6 +23881,9 @@
           }
         }
         await loadPurchaseOrders();
+        fillPoSide();
+        if (after === 'close') closePoWindow();
+        else if (after === 'new') openNewPo();
       } catch (err) {
         showPoMsg(err.message || 'Could not save purchase order.');
       }

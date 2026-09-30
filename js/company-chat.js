@@ -46,6 +46,12 @@
     soFile: null,
     soMessages: [],
     soSending: false,
+    poId: null,
+    poRoomId: null,
+    poLastMsgId: 0,
+    poFile: null,
+    poMessages: [],
+    poSending: false,
     baseTitle: document.title || 'Company | Spectrum Display',
     booted: false,
     windowOpen: false,
@@ -771,6 +777,10 @@
       S.soMessages = mergeMessages(S.soMessages, [temp]);
       renderMessages('so-chat-messages', S.soMessages);
     }
+    if (Number(S.poRoomId) === Number(roomId)) {
+      S.poMessages = mergeMessages(S.poMessages, [temp]);
+      renderMessages('po-chat-messages', S.poMessages);
+    }
   }
 
   function finishOptimistic(tempId, real, roomId) {
@@ -800,6 +810,11 @@
       S.soLastMsgId = maxMsgId(S.soMessages, S.soLastMsgId);
       renderMessages('so-chat-messages', S.soMessages);
     }
+    if (Number(S.poRoomId) === Number(roomId)) {
+      S.poMessages = real ? replaceTemp(S.poMessages, tempId, real) : dropTemp(S.poMessages, tempId);
+      S.poLastMsgId = maxMsgId(S.poMessages, S.poLastMsgId);
+      renderMessages('po-chat-messages', S.poMessages);
+    }
   }
 
   function restoreComposer(inputId, body) {
@@ -823,10 +838,10 @@
     if (room.kind === 'dm' && room.otherUser) {
       return 'Only you and ' + (room.otherUser.name || 'them') + ' can see this.';
     }
-    if (room.kind === 'order') {
+    if (room.kind === 'order' || room.kind === 'po') {
       var parts = [];
       if (room.customerName) parts.push(room.customerName);
-      parts.push('Staff only · customer cannot see this.');
+      parts.push(room.kind === 'po' ? 'Staff only · vendor cannot see this.' : 'Staff only · customer cannot see this.');
       if (room.orderStatus) parts.push(room.orderStatus);
       return parts.join(' · ');
     }
@@ -1364,6 +1379,112 @@
     }
   }
 
+  function bindPoTabs() {
+    document.querySelectorAll('#po-doc-tabs [data-po-pane]').forEach(function (btn) {
+      btn.addEventListener('click', function () {
+        var pane = btn.getAttribute('data-po-pane');
+        document.querySelectorAll('#po-doc-tabs [data-po-pane]').forEach(function (b) {
+          b.classList.toggle('is-on', b === btn);
+        });
+        var doc = document.querySelector('#po-doc-frame [data-po-pane-panel="doc"]');
+        var chat = document.getElementById('po-chat-pane');
+        var side = document.getElementById('po-doc-side');
+        if (doc) doc.hidden = pane !== 'doc';
+        if (side) side.hidden = pane !== 'doc';
+        if (chat) chat.hidden = pane !== 'chat';
+        if (pane === 'chat') {
+          var poId = ($('po-id') && $('po-id').value) || S.poId;
+          if (poId) openPoChat(poId);
+          else if ($('po-chat-messages')) {
+            $('po-chat-title').textContent = 'Purchase order chat';
+            $('po-chat-sub').textContent = 'Save this purchase order to start chat.';
+            $('po-chat-messages').innerHTML = '<p class="dash-activity-empty">Save this purchase order to start chat.</p>';
+          }
+        }
+      });
+    });
+  }
+
+  async function openPoChat(poId) {
+    if (!hasChat() || !poId) return;
+    S.poId = poId;
+    var data = await S.api('/api/admin/chat/rooms/po/' + poId);
+    if (!data.room) return;
+    S.poRoomId = data.room.id;
+    $('po-chat-title').textContent = roomTitle(data.room);
+    $('po-chat-sub').textContent = roomSub(data.room);
+    var msgs = await S.api('/api/admin/chat/rooms/' + S.poRoomId + '/messages?limit=100');
+    S.poMessages = msgs.messages || [];
+    S.poLastMsgId = maxMsgId(S.poMessages, 0);
+    renderMessages('po-chat-messages', S.poMessages);
+    try { await S.api('/api/admin/chat/rooms/' + S.poRoomId + '/read', { method: 'POST' }); } catch (e) { /* ignore */ }
+    var tab = $('po-chat-tab');
+    if (tab) tab.textContent = 'Chat';
+    startPoPoll();
+  }
+
+  function startPoPoll() {
+    if (S.timers.poPoll) clearInterval(S.timers.poPoll);
+    S.timers.poPoll = setInterval(async function () {
+      if (document.hidden || !S.poRoomId) return;
+      var pane = $('po-chat-pane');
+      if (!pane || pane.hidden) return;
+      try {
+        var data = await S.api('/api/admin/chat/rooms/' + S.poRoomId + '/messages?afterId=' + S.poLastMsgId + '&limit=50');
+        var msgs = data.messages || [];
+        if (!msgs.length) return;
+        S.poMessages = mergeMessages(S.poMessages, msgs);
+        S.poLastMsgId = maxMsgId(S.poMessages, S.poLastMsgId);
+        renderMessages('po-chat-messages', S.poMessages);
+        await S.api('/api/admin/chat/rooms/' + S.poRoomId + '/read', { method: 'POST' });
+      } catch (e) { /* ignore */ }
+    }, 3000);
+  }
+
+  async function sendPo(ev) {
+    ev.preventDefault();
+    if (S.poSending || !S.poRoomId) return;
+    var body = String(($('po-chat-input') && $('po-chat-input').value) || '').trim();
+    if (!body && !S.poFile) return;
+    S.poSending = true;
+    setComposerBusy('po-chat-composer', true);
+    var roomId = S.poRoomId;
+    var heldFile = S.poFile;
+    var temp = optimisticMessage(body, heldFile, roomId);
+    if ($('po-chat-input')) $('po-chat-input').value = '';
+    S.poFile = null;
+    if ($('po-chat-file')) $('po-chat-file').value = '';
+    if ($('po-chat-attach-name')) {
+      $('po-chat-attach-name').hidden = true;
+      $('po-chat-attach-name').textContent = '';
+    }
+    appendOptimistic(temp, roomId);
+    try {
+      var data = await postChatMessage(roomId, body, heldFile);
+      finishOptimistic(temp.id, data && data.message, roomId);
+    } catch (err) {
+      finishOptimistic(temp.id, null, roomId);
+      restoreComposer('po-chat-input', body);
+      throw err;
+    } finally {
+      S.poSending = false;
+      setComposerBusy('po-chat-composer', false);
+    }
+  }
+
+  function onPoOpened(doc) {
+    if (!doc || !doc.id || !hasChat()) return;
+    S.poId = doc.id;
+    var tab = $('po-chat-tab');
+    if (tab) tab.textContent = 'Chat';
+    S.api('/api/admin/chat/rooms/po/' + doc.id).then(function (data) {
+      if (data.room && tab) {
+        var n = data.room.unreadCount || 0;
+        tab.textContent = n ? ('Chat (' + n + ')') : 'Chat';
+      }
+    }).catch(function () {});
+  }
+
   function bindSoTabs() {
     document.querySelectorAll('#so-doc-tabs [data-so-pane]').forEach(function (btn) {
       btn.addEventListener('click', function () {
@@ -1651,7 +1772,7 @@
       if (ev.key !== 'Enter' || ev.shiftKey || ev.altKey || ev.metaKey || ev.ctrlKey) return;
       if (!S.windowOpen || pageIsEditing()) return;
       var el = document.activeElement;
-      if (el && (el.id === 'co-chat-input' || el.id === 'so-chat-input' || el.id === 'co-chat-search')) return;
+      if (el && (el.id === 'co-chat-input' || el.id === 'so-chat-input' || el.id === 'po-chat-input' || el.id === 'co-chat-search')) return;
       var tag = el && el.tagName;
       if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT' || (el && el.isContentEditable)) return;
       ev.preventDefault();
@@ -1721,7 +1842,31 @@
         if (share && S.openSharePath) S.openSharePath(share.getAttribute('data-chat-path'));
       });
     }
+    if ($('po-chat-composer')) {
+      $('po-chat-composer').addEventListener('submit', function (ev) {
+        sendPo(ev).catch(function (err) { alert(err.message || 'Could not send.'); });
+      });
+      $('po-chat-attach').addEventListener('click', function () { $('po-chat-file').click(); });
+      $('po-chat-file').addEventListener('change', function () {
+        S.poFile = $('po-chat-file').files && $('po-chat-file').files[0];
+        if (S.poFile) {
+          $('po-chat-attach-name').hidden = false;
+          $('po-chat-attach-name').textContent = S.poFile.name;
+        } else {
+          $('po-chat-attach-name').hidden = true;
+          $('po-chat-attach-name').textContent = '';
+        }
+      });
+      $('po-chat-input').addEventListener('keydown', function (ev) {
+        if (ev.key === 'Enter' && !ev.shiftKey) {
+          ev.preventDefault();
+          if (S.poSending) return;
+          $('po-chat-composer').requestSubmit();
+        }
+      });
+    }
     bindSoTabs();
+    bindPoTabs();
     bindWindow();
     bindResize();
     bindSplit();
@@ -2413,7 +2558,9 @@
   global.SpectrumChat = {
     boot: boot,
     onSalesDocOpened: onSalesDocOpened,
+    onPoOpened: onPoOpened,
     openOrderChat: openOrderChat,
+    openPoChat: openPoChat,
     open: openChatWindow,
     openPage: openChatPage,
     closePage: closeChatPage,

@@ -1466,13 +1466,13 @@ function createSqliteStore() {
       const info = db.prepare(`
         INSERT INTO purchase_orders (
           number, vendor_id, vendor_name, vendor_email, status, issue_date, due_date,
-          ship_via, ship_from, permit_no, mailing_address, ship_to_customer_id, ship_to_name, shipping_address,
+          ship_via, ship_from, permit_no, mailing_address, ship_to_mode, ship_to_customer_id, ship_to_name, shipping_address,
           notes, created_at, updated_at
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
       `).run(
         fields.number, fields.vendor_id, fields.vendor_name, fields.vendor_email, fields.status,
         fields.issue_date, fields.due_date, fields.ship_via, fields.ship_from, fields.permit_no, fields.mailing_address,
-        fields.ship_to_customer_id, fields.ship_to_name, fields.shipping_address, fields.notes, stamp, stamp
+        fields.ship_to_mode, fields.ship_to_customer_id, fields.ship_to_name, fields.shipping_address, fields.notes, stamp, stamp
       );
       const insertLine = db.prepare(
         'INSERT INTO purchase_order_lines (po_id, item_id, product, sku, mpn, description, qty, unit_cost, sort_order) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)'
@@ -1494,12 +1494,12 @@ function createSqliteStore() {
         UPDATE purchase_orders SET
           number = ?, vendor_id = ?, vendor_name = ?, vendor_email = ?, status = ?,
           issue_date = ?, due_date = ?, ship_via = ?, ship_from = ?, permit_no = ?, mailing_address = ?,
-          ship_to_customer_id = ?, ship_to_name = ?, shipping_address = ?, notes = ?, updated_at = ?
+          ship_to_mode = ?, ship_to_customer_id = ?, ship_to_name = ?, shipping_address = ?, notes = ?, updated_at = ?
         WHERE id = ?
       `).run(
         fields.number, fields.vendor_id, fields.vendor_name, fields.vendor_email, fields.status,
         fields.issue_date, fields.due_date, fields.ship_via, fields.ship_from, fields.permit_no, fields.mailing_address,
-        fields.ship_to_customer_id, fields.ship_to_name, fields.shipping_address, fields.notes,
+        fields.ship_to_mode, fields.ship_to_customer_id, fields.ship_to_name, fields.shipping_address, fields.notes,
         dbUtil.nowIso(), id
       );
       db.prepare('DELETE FROM purchase_order_lines WHERE po_id = ?').run(id);
