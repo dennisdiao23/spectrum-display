@@ -644,6 +644,26 @@ async function main() {
     return user;
   }
 
+  function requireCustomerOrDealer(need) {
+    return function (req, res, next) {
+      if (hasPerm(req.admin, 'customers', need) || hasPerm(req.admin, 'dealer', need)) return next();
+      return res.status(403).json({ ok: false, error: 'You do not have access to this.' });
+    };
+  }
+
+  async function requireDealerCustomer(req, res) {
+    const customer = await store.getCompanyCustomer(req.params.id);
+    if (!customer) {
+      res.status(404).json({ ok: false, error: 'Customer not found.' });
+      return null;
+    }
+    if (String(customer.customerType || '').trim().toLowerCase() !== 'dealer') {
+      res.status(400).json({ ok: false, error: 'Files and logo are for dealers.' });
+      return null;
+    }
+    return customer;
+  }
+
   async function requireDealer(req, res, next) {
     try {
       const user = await currentDealer(req);
@@ -1285,6 +1305,45 @@ async function main() {
     try {
       if (!req.file) return res.status(400).json({ ok: false, error: 'Choose a PDF, JPG, or PNG.' });
       res.json({ ok: true, file: await store.addDealerFile(req.dealer, req.file) });
+    } catch (err) { dealerDocError(err, res, next); }
+  });
+
+  app.get('/api/admin/company-customers/:id/dealer-files', requireAdmin, requireCustomerOrDealer('view'), async function (req, res, next) {
+    try {
+      const customer = await requireDealerCustomer(req, res);
+      if (!customer) return;
+      const assets = await store.listDealerAssets(customer.id);
+      res.json({ ok: true, files: assets.files, logo: assets.logo });
+    } catch (err) { next(err); }
+  });
+
+  app.post('/api/admin/company-customers/:id/dealer-files', requireAdmin, requireCustomerOrDealer('edit'), dealerInquiryUpload.single('file'), async function (req, res, next) {
+    try {
+      const customer = await requireDealerCustomer(req, res);
+      if (!customer) return;
+      if (!req.file) return res.status(400).json({ ok: false, error: 'Choose a PDF, JPG, or PNG.' });
+      const file = await store.addDealerFileForCustomer(customer.id, req.file, req.admin);
+      res.json({ ok: true, file: file });
+    } catch (err) { dealerDocError(err, res, next); }
+  });
+
+  app.delete('/api/admin/company-customers/:id/dealer-files/:fileId', requireAdmin, requireCustomerOrDealer('edit'), async function (req, res, next) {
+    try {
+      const customer = await requireDealerCustomer(req, res);
+      if (!customer) return;
+      const gone = await store.deleteDealerFileForCustomer(customer.id, req.params.fileId);
+      if (!gone) return res.status(404).json({ ok: false, error: 'File not found.' });
+      res.json({ ok: true });
+    } catch (err) { dealerDocError(err, res, next); }
+  });
+
+  app.post('/api/admin/company-customers/:id/dealer-logo', requireAdmin, requireCustomerOrDealer('edit'), dealerInquiryUpload.single('file'), async function (req, res, next) {
+    try {
+      const customer = await requireDealerCustomer(req, res);
+      if (!customer) return;
+      if (!req.file) return res.status(400).json({ ok: false, error: 'Choose a JPG or PNG logo.' });
+      const logo = await store.setDealerLogoForCustomer(customer.id, req.file, req.admin);
+      res.json({ ok: true, logo: logo });
     } catch (err) { dealerDocError(err, res, next); }
   });
 
