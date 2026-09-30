@@ -528,6 +528,183 @@ function resolveItemCategory(incoming, current, guessSrc) {
   return guessInventoryCategory(guessSrc) || '';
 }
 
+function itemKindOf(value) {
+  return String(value || '').toLowerCase() === 'kit' ? 'kit' : 'item';
+}
+
+function isKitItem(item) {
+  if (!item) return false;
+  return itemKindOf(item.itemKind != null ? item.itemKind : item.item_kind) === 'kit';
+}
+
+function kitPartQty(item) {
+  if (!item) return 0;
+  const tracked = Math.max(0, Number(item.qty) || 0);
+  const extra = Math.max(0, Number(item.untrackedQty != null ? item.untrackedQty : item.partnerQty) || 0);
+  return tracked + extra;
+}
+
+function kitAvailableFromLines(lines) {
+  if (!lines || !lines.length) return 0;
+  let n = Infinity;
+  for (let i = 0; i < lines.length; i++) {
+    const need = Math.max(0, Number(lines[i].qty) || 0);
+    if (need <= 0) return 0;
+    const have = Math.max(0, Number(lines[i].onHand) || 0);
+    n = Math.min(n, Math.floor(have / need));
+  }
+  return isFinite(n) ? Math.max(0, n) : 0;
+}
+
+function kitBuildCost(lines) {
+  return (lines || []).reduce(function (sum, line) {
+    return sum + (Number(line.cost) || 0) * (Number(line.qty) || 0);
+  }, 0);
+}
+
+function kitContentsDescription(item) {
+  return ((item && item.kitLines) || []).map(function (line) {
+    const qty = Math.max(0, Number(line.qty) || 0);
+    const sku = String(line.sku || '').trim();
+    const name = String(line.name || '').trim();
+    const label = sku && name ? (sku + ' ' + name) : (sku || name || 'Item');
+    return qty + ' × ' + label;
+  }).join('; ');
+}
+
+function formatKitLine(row, component) {
+  const qty = Math.max(0, Math.round(Number(row && (row.qty != null ? row.qty : row.quantity)) || 0));
+  const comp = component || {};
+  const itemId = row && (row.component_item_id != null ? row.component_item_id
+    : (row.itemId != null ? row.itemId : row.componentItemId));
+  return {
+    itemId: itemId,
+    sku: comp.sku || row.sku || '',
+    name: comp.name || row.name || '',
+    qty: qty,
+    unit: comp.unit || row.unit || '',
+    cost: Number(comp.cost) || 0,
+    onHand: kitPartQty(comp)
+  };
+}
+
+function applyKitFields(item, kitLines) {
+  if (!item) return item;
+  item.itemKind = itemKindOf(item.itemKind != null ? item.itemKind : item.item_kind);
+  item.kitLines = Array.isArray(kitLines) ? kitLines : [];
+  if (item.itemKind !== 'kit') {
+    item.buildCost = 0;
+    return item;
+  }
+  item.unit = 'each';
+  item.pitch = '';
+  item.pitchLabel = 'Each';
+  item.buildCost = kitBuildCost(item.kitLines);
+  item.qty = kitAvailableFromLines(item.kitLines);
+  item.untrackedQty = 0;
+  item.partnerQty = 0;
+  item.websiteQty = item.qty;
+  item.locations = [];
+  item.warehouseId = '';
+  item.locationId = '';
+  item.warehouse = '';
+  item.location = '';
+  item.bin = '';
+  item.warehouseType = '';
+  item.locationKind = '';
+  if (itemIsInactive(item)) item.status = 'inactive';
+  else if (item.qty <= 0) item.status = 'out';
+  else item.status = itemStatus(item);
+  return item;
+}
+
+function attachKitsToItems(items, kitRows) {
+  const list = items || [];
+  const byId = {};
+  list.forEach(function (item) {
+    if (item && item.id != null) byId[String(item.id)] = item;
+  });
+  const linesByKit = {};
+  (kitRows || []).forEach(function (row) {
+    const kitId = String(row.kit_item_id != null ? row.kit_item_id : row.kitItemId);
+    const compId = String(row.component_item_id != null ? row.component_item_id : (row.componentItemId != null ? row.componentItemId : row.itemId));
+    (linesByKit[kitId] = linesByKit[kitId] || []).push(formatKitLine(row, byId[compId]));
+  });
+  list.forEach(function (item) {
+    applyKitFields(item, isKitItem(item) ? (linesByKit[String(item.id)] || []) : []);
+  });
+  return list;
+}
+
+function parseKitLinesInput(raw) {
+  if (raw == null || raw === '') return [];
+  let list = raw;
+  if (typeof list === 'string') {
+    try { list = JSON.parse(list); } catch (e) {
+      throw new Error('Kit contents are invalid.');
+    }
+  }
+  if (!Array.isArray(list)) throw new Error('Kit contents are invalid.');
+  const seen = {};
+  const out = [];
+  list.forEach(function (row) {
+    if (!row) return;
+    const itemId = Number(row.itemId != null ? row.itemId
+      : (row.component_item_id != null ? row.component_item_id : row.componentItemId));
+    if (!isFinite(itemId) || itemId <= 0) throw new Error('Pick a valid item for kit contents.');
+    const qty = Math.round(Number(row.qty != null ? row.qty : row.quantity));
+    if (!isFinite(qty) || qty <= 0) throw new Error('Each kit part needs a quantity of 1 or more.');
+    const key = String(itemId);
+    if (seen[key]) throw new Error('Each kit part can only be listed once.');
+    seen[key] = true;
+    out.push({ itemId: itemId, qty: qty });
+  });
+  return out;
+}
+
+function assertKitLinesValid(kitItemId, lines, lookup) {
+  if (!lines || !lines.length) throw new Error('Add at least one item to the kit.');
+  lines.forEach(function (line) {
+    if (kitItemId != null && String(line.itemId) === String(kitItemId)) {
+      throw new Error('A kit cannot include itself.');
+    }
+    const row = lookup ? lookup(line.itemId) : null;
+    if (!row) throw new Error('Kit part not found.');
+    if (isKitItem(row)) throw new Error('Kit contents cannot include another kit.');
+  });
+}
+
+function assertNotKitStock(item) {
+  if (isKitItem(item)) {
+    throw new Error('Kits do not hold warehouse stock. Receive the parts instead.');
+  }
+}
+
+function assertNotKitPurchase(item) {
+  if (isKitItem(item)) {
+    throw new Error('Kits cannot be purchased. Order the parts instead.');
+  }
+}
+
+function assertNotKitWebsiteMap(item) {
+  if (isKitItem(item)) {
+    throw new Error('Kits cannot be linked to a website product.');
+  }
+}
+
+function applyKitCreateDefaults(input) {
+  if (!input || itemKindOf(input.itemKind) !== 'kit') return input;
+  input.unit = 'each';
+  input.qty = 0;
+  input.pitch = '';
+  input.panelType = '';
+  input.packagingType = '';
+  input.weight = 0;
+  input.panelW = 0;
+  input.panelH = 0;
+  return input;
+}
+
 function normalizeItemInput(body, opts) {
   const patch = !!(opts && opts.patch);
   const src = body || {};
@@ -543,6 +720,12 @@ function normalizeItemInput(body, opts) {
   }
   if (!patch || src.mpn != null) {
     out.mpn = String(src.mpn || '').trim().slice(0, 80);
+  }
+  if (!patch || src.itemKind != null || src.item_kind != null) {
+    out.itemKind = itemKindOf(src.itemKind != null ? src.itemKind : src.item_kind);
+  }
+  if (!patch || src.kitLines != null || src.kit_lines != null) {
+    out.kitLines = parseKitLinesInput(src.kitLines != null ? src.kitLines : src.kit_lines);
   }
   if (!patch || src.brandId != null || src.brand_id != null) {
     out.brandId = String(src.brandId != null ? src.brandId : (src.brand_id || '')).trim().slice(0, 80);
@@ -649,7 +832,9 @@ function normalizeItemInput(body, opts) {
   if (!patch && out.packagingType == null) out.packagingType = '';
   if (!patch && out.category == null) out.category = '';
   if (!patch && out.mpn == null) out.mpn = '';
+  if (!patch && out.itemKind == null) out.itemKind = 'item';
   if (!patch && !out.category) out.category = guessInventoryCategory(out) || '';
+  applyKitCreateDefaults(out);
   if (!patch && !out.sku) {
     out.sku = suggestedSku({
       brandId: out.brandId,
@@ -666,6 +851,7 @@ function dbFieldsFromInput(input) {
   if (!input) return row;
   if (input.sku != null) row.sku = input.sku;
   if (input.mpn != null) row.mpn = input.mpn;
+  if (input.itemKind != null) row.item_kind = itemKindOf(input.itemKind);
   if (input.name != null) row.name = input.name;
   if (input.brandId != null) row.brand_id = input.brandId;
   if (input.pitch != null) row.pitch = input.pitch;
@@ -832,6 +1018,9 @@ function formatItem(row, brandName, maps, locations) {
     id: row && row.id,
     sku: (row && row.sku) || '',
     mpn: (row && row.mpn) || '',
+    itemKind: itemKindOf(row && row.item_kind),
+    kitLines: [],
+    buildCost: 0,
     name: (row && row.name) || '',
     category: (row && row.category) || '',
     brandId: (row && row.brand_id) || '',
@@ -993,15 +1182,22 @@ function attachMapsToProducts(products, maps) {
 }
 
 function assertCanInactivate(item) {
+  if (isKitItem(item)) return;
   if (itemHasAvailableStock(item)) {
     throw new Error('Cannot mark this SKU inactive while stock is on hand.');
   }
 }
 
 function assertCanDelete(item, moves) {
+  const history = Array.isArray(moves) ? moves.length : (Number(moves) || 0);
+  if (isKitItem(item)) {
+    if (history > 0) {
+      throw new Error('Cannot delete this SKU after stock has been received. Deleting would erase stock history.');
+    }
+    return;
+  }
   const qty = Math.max(0, Number(item && (item.qty != null ? item.qty : item)) || 0);
   const extra = Math.max(0, Number(item && (item.untrackedQty != null ? item.untrackedQty : item.partnerQty)) || 0);
-  const history = Array.isArray(moves) ? moves.length : (Number(moves) || 0);
   if (qty > 0 || extra > 0 || history > 0) {
     throw new Error('Cannot delete this SKU after stock has been received. Deleting would erase stock history.');
   }
@@ -1055,6 +1251,19 @@ module.exports = {
   normalizeCategory,
   guessInventoryCategory,
   resolveItemCategory,
+  itemKindOf,
+  isKitItem,
+  kitPartQty,
+  kitContentsDescription,
+  parseKitLinesInput,
+  assertKitLinesValid,
+  assertNotKitStock,
+  assertNotKitPurchase,
+  assertNotKitWebsiteMap,
+  applyKitCreateDefaults,
+  applyKitFields,
+  attachKitsToItems,
+  formatKitLine,
   normalizeItemInput,
   dbFieldsFromInput,
   defaultLowAt,

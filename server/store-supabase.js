@@ -689,6 +689,92 @@ function createSupabaseStore() {
     return inv.formatItem(row, brandName, maps || [], locations || []);
   }
 
+  async function loadKitLineRows(kitId) {
+    let q = supabase.from('inventory_kit_lines').select('*');
+    if (kitId != null && kitId !== '') q = q.eq('kit_item_id', kitId);
+    const { data, error } = await q;
+    if (error) return [];
+    return data || [];
+  }
+
+  async function lookupInventoryKindRow(id) {
+    const { data, error } = await supabase
+      .from('inventory_items')
+      .select('id, item_kind, sku, name, qty')
+      .eq('id', id)
+      .maybeSingle();
+    throwIf(error, 'Could not read inventory.');
+    return data || null;
+  }
+
+  async function replaceKitLines(kitId, lines) {
+    const { error: dErr } = await supabase.from('inventory_kit_lines').delete().eq('kit_item_id', kitId);
+    throwIf(dErr, 'Could not save kit contents.');
+    if (!lines || !lines.length) return;
+    const { error } = await supabase.from('inventory_kit_lines').insert(lines.map(function (line) {
+      return {
+        kit_item_id: Number(kitId),
+        component_item_id: Number(line.itemId),
+        qty: line.qty
+      };
+    }));
+    throwIf(error, 'Could not save kit contents.');
+  }
+
+  async function saveInventoryKitLines(itemId, input, currentKind) {
+    const inv = require('./inventory');
+    const nextKind = inv.itemKindOf(input && input.itemKind != null ? input.itemKind : currentKind);
+    if (nextKind !== 'kit') {
+      const { error } = await supabase.from('inventory_kit_lines').delete().eq('kit_item_id', itemId);
+      throwIf(error, 'Could not save kit contents.');
+      return;
+    }
+    if (input && input.kitLines) {
+      const lookups = {};
+      for (let i = 0; i < input.kitLines.length; i++) {
+        lookups[String(input.kitLines[i].itemId)] = await lookupInventoryKindRow(input.kitLines[i].itemId);
+      }
+      inv.assertKitLinesValid(itemId, input.kitLines, function (id) {
+        return lookups[String(id)] || null;
+      });
+      await replaceKitLines(itemId, input.kitLines);
+      return;
+    }
+    const existing = await loadKitLineRows(itemId);
+    if (!existing.length) throw new Error('Add at least one item to the kit.');
+  }
+
+  async function assertItemNotKitComponent(id) {
+    const { data, error } = await supabase
+      .from('inventory_kit_lines')
+      .select('kit_item_id')
+      .eq('component_item_id', id)
+      .limit(1)
+      .maybeSingle();
+    throwIf(error, 'Could not read kit contents.');
+    if (data) throw new Error('This SKU is used in a kit. Remove it from the kit first.');
+  }
+
+  async function decorateInventoryItem(item) {
+    const inv = require('./inventory');
+    if (!inv.isKitItem(item)) {
+      return inv.applyKitFields(item, []);
+    }
+    const kitRows = await loadKitLineRows(item.id);
+    const extras = [];
+    for (let i = 0; i < kitRows.length; i++) {
+      const { data: crow } = await supabase
+        .from('inventory_items')
+        .select('*')
+        .eq('id', kitRows[i].component_item_id)
+        .maybeSingle();
+      if (!crow) continue;
+      extras.push(await formatInventoryRow(crow, [], await locationsForItem(crow.id)));
+    }
+    inv.attachKitsToItems([item].concat(extras), kitRows);
+    return item;
+  }
+
   async function loadLocationRows() {
     const { data, error } = await supabase.from('inventory_item_locations').select('*');
     if (error) return [];
@@ -896,6 +982,7 @@ function createSupabaseStore() {
     const { data: current, error: cErr } = await supabase.from('inventory_items').select('*').eq('id', itemId).maybeSingle();
     throwIf(cErr, 'Could not read inventory.');
     if (!current) return null;
+    inv.assertNotKitStock(current);
     const warehouse = await resolveWarehouse(payload && payload.warehouseId, {
       spectrumOnly: !!(payload && payload.spectrumOnly)
     });
@@ -1201,8 +1288,9 @@ function createSupabaseStore() {
       .order('created_at', { ascending: false })
       .limit(40);
     throwIf(mErr, 'Could not read inventory history.');
+    const item = await formatInventoryRow(row, byItem[String(row.id)] || [], await locationsForItem(id));
     return {
-      item: await formatInventoryRow(row, byItem[String(row.id)] || [], await locationsForItem(id)),
+      item: await decorateInventoryItem(item),
       moves: moves || []
     };
   }
@@ -1827,7 +1915,7 @@ function createSupabaseStore() {
         brandNames[b.id] = b.name;
       });
       const byItem = inv.mapsByItem(maps);
-      return (items || []).map(function (row) {
+      const formatted = (items || []).map(function (row) {
         return inv.formatItem(
           row,
           brandNames[row.brand_id] || row.brand_id || '',
@@ -1835,6 +1923,7 @@ function createSupabaseStore() {
           locMap[String(row.id)] || []
         );
       });
+      return inv.attachKitsToItems(formatted, await loadKitLineRows());
     },
     async listInventoryActivity(limit) {
       return fetchInventoryActivity(limit);
@@ -1859,9 +1948,19 @@ function createSupabaseStore() {
         pitch: input.pitch
       }), taken);
       const stamp = new Date().toISOString();
-      const warehouse = await resolveLocationTarget(input.warehouseId, input.bin);
-      const locQty = Math.max(0, Number(input.qty) || 0);
-      const itemQty = (await warehouseIsUntracked(warehouse)) ? 0 : locQty;
+      const isKit = inv.itemKindOf(input.itemKind) === 'kit';
+      if (isKit) {
+        const lookups = {};
+        for (let i = 0; i < (input.kitLines || []).length; i++) {
+          lookups[String(input.kitLines[i].itemId)] = await lookupInventoryKindRow(input.kitLines[i].itemId);
+        }
+        inv.assertKitLinesValid(null, input.kitLines || [], function (cid) {
+          return lookups[String(cid)] || null;
+        });
+      }
+      const warehouse = isKit ? null : await resolveLocationTarget(input.warehouseId, input.bin);
+      const locQty = isKit ? 0 : Math.max(0, Number(input.qty) || 0);
+      const itemQty = isKit || (warehouse && (await warehouseIsUntracked(warehouse))) ? 0 : locQty;
       const fields = Object.assign(inv.dbFieldsFromInput(input), {
         qty: itemQty,
         created_at: stamp,
@@ -1869,17 +1968,21 @@ function createSupabaseStore() {
       });
       const { data, error } = await supabase.from('inventory_items').insert(fields).select('id').single();
       throwIf(error, 'Could not create inventory item.');
-      await upsertItemLocation(data.id, warehouse.id, '', locQty);
-      if (locQty) {
-        const { error: mErr } = await supabase.from('inventory_item_moves').insert({
-          item_id: data.id,
-          kind: 'count',
-          qty_delta: locQty,
-          qty_after: locQty,
-          note: warehouse.name + ' · Opening qty',
-          admin_email: ''
-        });
-        throwIf(mErr, 'Could not save inventory history.');
+      if (isKit) {
+        await saveInventoryKitLines(data.id, input, 'kit');
+      } else {
+        await upsertItemLocation(data.id, warehouse.id, '', locQty);
+        if (locQty) {
+          const { error: mErr } = await supabase.from('inventory_item_moves').insert({
+            item_id: data.id,
+            kind: 'count',
+            qty_delta: locQty,
+            qty_after: locQty,
+            note: warehouse.name + ' · Opening qty',
+            admin_email: ''
+          });
+          throwIf(mErr, 'Could not save inventory history.');
+        }
       }
       return getInventoryItemDetail(data.id);
     },
@@ -1903,6 +2006,7 @@ function createSupabaseStore() {
         patch.sku = input.sku;
       }
       if (input.mpn != null) patch.mpn = input.mpn;
+      if (input.itemKind != null) patch.item_kind = inv.itemKindOf(input.itemKind);
       if (input.name != null) patch.name = input.name;
       if (input.brandId != null) patch.brand_id = input.brandId;
       if (input.pitch != null) patch.pitch = input.pitch;
@@ -1929,9 +2033,40 @@ function createSupabaseStore() {
           unit: input.unit != null ? input.unit : current.unit
         });
       }
+      const nextKind = inv.itemKindOf(input.itemKind != null ? input.itemKind : current.item_kind);
+      if (nextKind === 'kit') {
+        inv.applyKitCreateDefaults(Object.assign(input, { itemKind: 'kit' }));
+        patch.item_kind = 'kit';
+        patch.unit = 'each';
+        patch.pitch = '';
+        patch.panel_type = '';
+        patch.packaging_type = '';
+        patch.weight = 0;
+        patch.panel_w = 0;
+        patch.panel_h = 0;
+        patch.qty = 0;
+        const locs = await locationsForItem(id);
+        const locQty = locs.reduce(function (sum, loc) {
+          return sum + Math.max(0, Number(loc.qty) || 0);
+        }, 0);
+        if (locQty > 0 || (Number(current.qty) || 0) > 0) {
+          throw new Error('Clear stock before converting this SKU to a kit.');
+        }
+        const { data: usedAsPart, error: usedErr } = await supabase
+          .from('inventory_kit_lines')
+          .select('kit_item_id')
+          .eq('component_item_id', id)
+          .limit(1)
+          .maybeSingle();
+        throwIf(usedErr, 'Could not read kit contents.');
+        if (usedAsPart) throw new Error('This SKU is already a part in another kit.');
+        const { error: locDelErr } = await supabase.from('inventory_item_locations').delete().eq('item_id', id);
+        throwIf(locDelErr, 'Could not clear kit locations.');
+      }
       const { error } = await supabase.from('inventory_items').update(patch).eq('id', id);
       throwIf(error, 'Could not save inventory item.');
-      if (input.warehouseId || input.bin != null) {
+      await saveInventoryKitLines(id, Object.assign({}, input, { itemKind: nextKind }), current.item_kind);
+      if (nextKind !== 'kit' && (input.warehouseId || input.bin != null)) {
         const locs = await locationsForItem(id);
         const primary = inv.pickPrimaryLocation(locs);
         const warehouse = await resolveLocationTarget(
@@ -1983,6 +2118,7 @@ function createSupabaseStore() {
         .eq('item_id', id);
       throwIf(mErr, 'Could not read inventory history.');
       inv.assertCanDelete(detail.item, count || 0);
+      await assertItemNotKitComponent(id);
       const { data, error } = await supabase.from('inventory_items').delete().eq('id', id).select('id');
       throwIf(error, 'Could not delete inventory item.');
       return !!(data && data.length);
@@ -2026,6 +2162,11 @@ function createSupabaseStore() {
       const { error: dErr } = await supabase.from('product_inventory_map').delete().eq('product_id', productId);
       throwIf(dErr, 'Could not update inventory links.');
       if (rows.length) {
+        for (let i = 0; i < rows.length; i++) {
+          const mapped = await lookupInventoryKindRow(rows[i].itemId);
+          if (!mapped) throw new Error('Inventory item not found.');
+          inv.assertNotKitWebsiteMap(mapped);
+        }
         const { error: iErr } = await supabase.from('product_inventory_map').insert(rows.map(function (row) {
           return { product_id: Number(productId), pitch: row.pitch, item_id: row.itemId };
         }));
@@ -2494,6 +2635,7 @@ function createSupabaseStore() {
     },
     async createPurchaseOrder(payload) {
       const po = require('./purchase-orders');
+      const inv = require('./inventory');
       const input = po.normalizePo(payload);
       if (input.vendorId) {
         const vendor = await this.getVendor(input.vendorId);
@@ -2518,6 +2660,11 @@ function createSupabaseStore() {
       const { data, error } = await supabase.from('purchase_orders').insert(fields).select('*').single();
       throwIf(error, 'Could not create purchase order.');
       if (input.lines.length) {
+        for (let i = 0; i < input.lines.length; i++) {
+          if (input.lines[i].itemId) {
+            inv.assertNotKitPurchase(await lookupInventoryKindRow(input.lines[i].itemId));
+          }
+        }
         const { error: lErr } = await supabase.from('purchase_order_lines').insert(input.lines.map(function (line, i) {
           return {
             po_id: data.id,
@@ -2537,6 +2684,7 @@ function createSupabaseStore() {
     },
     async updatePurchaseOrder(id, payload) {
       const po = require('./purchase-orders');
+      const inv = require('./inventory');
       const current = await this.getPurchaseOrder(id);
       if (!current) return null;
       const input = po.normalizePo(Object.assign({}, payload, { number: payload.number || current.number }));
@@ -2549,6 +2697,11 @@ function createSupabaseStore() {
       const { error: dErr } = await supabase.from('purchase_order_lines').delete().eq('po_id', id);
       throwIf(dErr, 'Could not replace line items.');
       if (input.lines.length) {
+        for (let i = 0; i < input.lines.length; i++) {
+          if (input.lines[i].itemId) {
+            inv.assertNotKitPurchase(await lookupInventoryKindRow(input.lines[i].itemId));
+          }
+        }
         const { error: lErr } = await supabase.from('purchase_order_lines').insert(input.lines.map(function (line, i) {
           return {
             po_id: Number(id),
@@ -2799,6 +2952,7 @@ function createSupabaseStore() {
       return !!(data && data.length);
     },
     async transferWarehouseStock(fromId, payload, adminEmail) {
+      const inv = require('./inventory');
       const { data: from, error: fErr } = await supabase.from('inventory_warehouses').select('*').eq('id', fromId).maybeSingle();
       throwIf(fErr, 'Could not read location.');
       if (!from) return null;
@@ -2809,6 +2963,7 @@ function createSupabaseStore() {
       if (!to) throw new Error('Destination location not found.');
       const itemId = payload && (payload.itemId != null ? payload.itemId : payload.item_id);
       if (!itemId) throw new Error('Pick an item.');
+      inv.assertNotKitStock(await lookupInventoryKindRow(itemId));
       const qty = Math.round(Number(payload && payload.qty));
       if (!isFinite(qty) || qty <= 0) throw new Error('Quantity must be a whole number greater than 0.');
       const { data: src } = await supabase

@@ -114,10 +114,62 @@ function listInventoryItems(db) {
   const items = db.prepare('SELECT * FROM inventory_items ORDER BY name COLLATE NOCASE, pitch').all();
   const byItem = inv.mapsByItem(inventoryMapRows(db));
   const locs = locationsByItem(db);
-  return items.map(function (row) {
+  const formatted = items.map(function (row) {
     return inv.formatItem(row, brands[row.brand_id], byItem[String(row.id)] || [], locs[String(row.id)] || []);
   });
+  return inv.attachKitsToItems(formatted, loadKitLineRows(db));
 }
+
+function loadKitLineRows(db, kitId) {
+  try {
+    if (kitId != null && kitId !== '') {
+      return db.prepare('SELECT * FROM inventory_kit_lines WHERE kit_item_id = ?').all(kitId);
+    }
+    return db.prepare('SELECT * FROM inventory_kit_lines').all();
+  } catch (e) {
+    return [];
+  }
+}
+
+function lookupInventoryKindRow(db, id) {
+  return db.prepare('SELECT id, item_kind, sku, name, qty FROM inventory_items WHERE id = ?').get(id);
+}
+
+function replaceKitLines(db, kitId, lines) {
+  db.prepare('DELETE FROM inventory_kit_lines WHERE kit_item_id = ?').run(kitId);
+  const insert = db.prepare(
+    'INSERT INTO inventory_kit_lines (kit_item_id, component_item_id, qty) VALUES (?, ?, ?)'
+  );
+  (lines || []).forEach(function (line) {
+    insert.run(kitId, line.itemId, line.qty);
+  });
+}
+
+function saveInventoryKitLines(db, itemId, input, currentKind) {
+  const inv = require('./inventory');
+  const nextKind = inv.itemKindOf(input && input.itemKind != null ? input.itemKind : currentKind);
+  if (nextKind !== 'kit') {
+    db.prepare('DELETE FROM inventory_kit_lines WHERE kit_item_id = ?').run(itemId);
+    return;
+  }
+  if (input && input.kitLines) {
+    inv.assertKitLinesValid(itemId, input.kitLines, function (id) {
+      return lookupInventoryKindRow(db, id);
+    });
+    replaceKitLines(db, itemId, input.kitLines);
+    return;
+  }
+  const existing = loadKitLineRows(db, itemId);
+  if (!existing.length) throw new Error('Add at least one item to the kit.');
+}
+
+function assertItemNotKitComponent(db, id) {
+  const used = db.prepare(
+    'SELECT kit_item_id FROM inventory_kit_lines WHERE component_item_id = ? LIMIT 1'
+  ).get(id);
+  if (used) throw new Error('This SKU is used in a kit. Remove it from the kit first.');
+}
+
 
 function locationJoinSql() {
   return `
@@ -250,6 +302,7 @@ function applyLocationChange(db, itemId, payload, adminEmail) {
   const inv = require('./inventory');
   const current = db.prepare('SELECT * FROM inventory_items WHERE id = ?').get(itemId);
   if (!current) return null;
+  inv.assertNotKitStock(current);
   const warehouse = resolveWarehouse(db, payload && payload.warehouseId, {
     spectrumOnly: !!(payload && payload.spectrumOnly)
   });
@@ -475,8 +528,23 @@ function getInventoryItemDetail(db, id) {
   const moves = db.prepare(
     'SELECT * FROM inventory_item_moves WHERE item_id = ? ORDER BY datetime(created_at) DESC, id DESC LIMIT 40'
   ).all(id);
+  const item = inv.formatItem(row, brand && brand.name, byItem[String(row.id)] || [], locationsForItem(db, id));
+  if (inv.isKitItem(item)) {
+    const kitRows = loadKitLineRows(db, id);
+    const extras = kitRows.map(function (line) {
+      const crow = db.prepare('SELECT * FROM inventory_items WHERE id = ?').get(line.component_item_id);
+      if (!crow) return null;
+      const cbrand = crow.brand_id
+        ? db.prepare('SELECT name FROM brands WHERE id = ?').get(crow.brand_id)
+        : null;
+      return inv.formatItem(crow, cbrand && cbrand.name, [], locationsForItem(db, crow.id));
+    }).filter(Boolean);
+    inv.attachKitsToItems([item].concat(extras), kitRows);
+  } else {
+    inv.applyKitFields(item, []);
+  }
   return {
-    item: inv.formatItem(row, brand && brand.name, byItem[String(row.id)] || [], locationsForItem(db, id)),
+    item: item,
     moves: moves
   };
 }
@@ -923,16 +991,22 @@ function createSqliteStore() {
       }), taken);
       const stamp = dbUtil.nowIso();
       const fields = inv.dbFieldsFromInput(input);
-      const warehouse = resolveLocationTarget(db, input.warehouseId, input.bin);
-      const locQty = Math.max(0, Number(input.qty) || 0);
-      const itemQty = warehouseIsUntracked(db, warehouse) ? 0 : locQty;
+      const isKit = inv.itemKindOf(fields.item_kind) === 'kit';
+      if (isKit) {
+        inv.assertKitLinesValid(null, input.kitLines || [], function (cid) {
+          return lookupInventoryKindRow(db, cid);
+        });
+      }
+      const warehouse = isKit ? null : resolveLocationTarget(db, input.warehouseId, input.bin);
+      const locQty = isKit ? 0 : Math.max(0, Number(input.qty) || 0);
+      const itemQty = isKit || warehouseIsUntracked(db, warehouse) ? 0 : locQty;
       const info = db.prepare(`
         INSERT INTO inventory_items (
-          sku, mpn, name, brand_id, category, pitch, unit, panel_type, packaging_type, qty, low_at, price, cost, dealer_net,
+          sku, mpn, item_kind, name, brand_id, category, pitch, unit, panel_type, packaging_type, qty, low_at, price, cost, dealer_net,
           local_warehouse_cost, weight, panel_w, panel_h, description, image, gallery, notes, created_at, updated_at
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
       `).run(
-        fields.sku, fields.mpn || '', fields.name, fields.brand_id, fields.category || '', fields.pitch, fields.unit, fields.panel_type || '',
+        fields.sku, fields.mpn || '', fields.item_kind || 'item', fields.name, fields.brand_id, fields.category || '', fields.pitch, fields.unit, fields.panel_type || '',
         fields.packaging_type || '', itemQty,
         fields.low_at, fields.price, fields.cost, fields.dealer_net,
         fields.local_warehouse_cost != null ? fields.local_warehouse_cost : 0, fields.weight,
@@ -940,13 +1014,17 @@ function createSqliteStore() {
         JSON.stringify(inv.parseGallery(fields.gallery)), fields.notes,
         stamp, stamp
       );
-      upsertItemLocation(db, info.lastInsertRowid, warehouse.id, '', locQty, stamp);
-      if (locQty) {
-        db.prepare(`
-          INSERT INTO inventory_item_moves (
-            item_id, kind, qty_delta, qty_after, note, admin_email, created_at
-          ) VALUES (?, 'count', ?, ?, ?, '', ?)
-        `).run(info.lastInsertRowid, locQty, locQty, warehouse.name + ' · Opening qty', stamp);
+      if (isKit) {
+        saveInventoryKitLines(db, info.lastInsertRowid, input, 'kit');
+      } else {
+        upsertItemLocation(db, info.lastInsertRowid, warehouse.id, '', locQty, stamp);
+        if (locQty) {
+          db.prepare(`
+            INSERT INTO inventory_item_moves (
+              item_id, kind, qty_delta, qty_after, note, admin_email, created_at
+            ) VALUES (?, 'count', ?, ?, ?, '', ?)
+          `).run(info.lastInsertRowid, locQty, locQty, warehouse.name + ' · Opening qty', stamp);
+        }
       }
       return getInventoryItemDetail(db, info.lastInsertRowid);
     },
@@ -958,6 +1036,7 @@ function createSqliteStore() {
       const next = {
         sku: input.sku != null && input.sku !== '' ? input.sku : (current.sku || ''),
         mpn: input.mpn != null ? input.mpn : (current.mpn || ''),
+        itemKind: input.itemKind != null ? input.itemKind : inv.itemKindOf(current.item_kind),
         name: input.name != null ? input.name : current.name,
         brandId: input.brandId != null ? input.brandId : (current.brand_id || ''),
         pitch: input.pitch != null ? input.pitch : inv.pitchKey(current.pitch),
@@ -986,20 +1065,37 @@ function createSqliteStore() {
       if (!next.sku) throw new Error('SKU is required.');
       const clash = db.prepare('SELECT id FROM inventory_items WHERE sku = ? AND id != ?').get(next.sku, id);
       if (clash) throw new Error('That SKU is already in use.');
+      const becomingKit = next.itemKind === 'kit';
+      if (becomingKit) {
+        inv.applyKitCreateDefaults(next);
+        const locQty = locationsForItem(db, id).reduce(function (sum, loc) {
+          return sum + Math.max(0, Number(loc.qty) || 0);
+        }, 0);
+        if (locQty > 0 || (Number(current.qty) || 0) > 0) {
+          throw new Error('Clear stock before converting this SKU to a kit.');
+        }
+        const usedAsPart = db.prepare(
+          'SELECT kit_item_id FROM inventory_kit_lines WHERE component_item_id = ? LIMIT 1'
+        ).get(id);
+        if (usedAsPart) throw new Error('This SKU is already a part in another kit.');
+        db.prepare('DELETE FROM inventory_item_locations WHERE item_id = ?').run(id);
+      }
       db.prepare(`
         UPDATE inventory_items SET
-          sku = ?, mpn = ?, name = ?, brand_id = ?, category = ?, pitch = ?, unit = ?, panel_type = ?, packaging_type = ?,
-          low_at = ?, price = ?,
+          sku = ?, mpn = ?, item_kind = ?, name = ?, brand_id = ?, category = ?, pitch = ?, unit = ?, panel_type = ?, packaging_type = ?,
+          qty = ?, low_at = ?, price = ?,
           cost = ?, dealer_net = ?, local_warehouse_cost = ?, weight = ?, panel_w = ?, panel_h = ?,
           description = ?, image = ?, gallery = ?, notes = ?, updated_at = ?
         WHERE id = ?
       `).run(
-        next.sku, next.mpn, next.name, next.brandId, next.category, next.pitch, next.unit, next.panelType, next.packagingType,
+        next.sku, next.mpn, next.itemKind, next.name, next.brandId, next.category, next.pitch, next.unit, next.panelType, next.packagingType,
+        becomingKit ? 0 : current.qty,
         next.lowAt, next.price,
         next.cost, next.dealerNet, next.localWarehouseCost, next.weight, next.panelW, next.panelH,
         next.description, next.image, JSON.stringify(inv.parseGallery(next.gallery)), next.notes, dbUtil.nowIso(), id
       );
-      if (input.warehouseId || input.bin != null) {
+      saveInventoryKitLines(db, id, Object.assign({}, input, { itemKind: next.itemKind }), current.item_kind);
+      if (!becomingKit && (input.warehouseId || input.bin != null)) {
         const stamp = dbUtil.nowIso();
         const locs = locationsForItem(db, id);
         const primary = inv.pickPrimaryLocation(locs);
@@ -1033,6 +1129,7 @@ function createSqliteStore() {
       if (!detail) return false;
       const history = db.prepare('SELECT COUNT(*) AS n FROM inventory_item_moves WHERE item_id = ?').get(id).n;
       inv.assertCanDelete(detail.item, history);
+      assertItemNotKitComponent(db, id);
       const info = db.prepare('DELETE FROM inventory_items WHERE id = ?').run(id);
       return info.changes > 0;
     },
@@ -1079,8 +1176,9 @@ function createSqliteStore() {
           'INSERT INTO product_inventory_map (product_id, pitch, item_id) VALUES (?, ?, ?)'
         );
         rows.forEach(function (row) {
-          const item = db.prepare('SELECT id FROM inventory_items WHERE id = ?').get(row.itemId);
+          const item = db.prepare('SELECT id, item_kind FROM inventory_items WHERE id = ?').get(row.itemId);
           if (!item) throw new Error('Inventory item not found.');
+          inv.assertNotKitWebsiteMap(item);
           insert.run(productId, row.pitch, row.itemId);
         });
         db.exec('COMMIT');
@@ -1466,6 +1564,7 @@ function createSqliteStore() {
     },
     async createPurchaseOrder(payload) {
       const po = require('./purchase-orders');
+      const inv = require('./inventory');
       const input = po.normalizePo(payload);
       if (input.vendorId) {
         const vendor = await this.getVendor(input.vendorId);
@@ -1498,12 +1597,14 @@ function createSqliteStore() {
         'INSERT INTO purchase_order_lines (po_id, item_id, product, sku, mpn, description, qty, unit_cost, sort_order) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)'
       );
       input.lines.forEach(function (line, i) {
+        if (line.itemId) inv.assertNotKitPurchase(lookupInventoryKindRow(db, line.itemId));
         insertLine.run(info.lastInsertRowid, line.itemId || null, line.product, line.sku, line.mpn || '', line.description, line.qty, line.rate, i);
       });
       return this.getPurchaseOrder(info.lastInsertRowid);
     },
     async updatePurchaseOrder(id, payload) {
       const po = require('./purchase-orders');
+      const inv = require('./inventory');
       const current = db.prepare('SELECT * FROM purchase_orders WHERE id = ?').get(id);
       if (!current) return null;
       const input = po.normalizePo(Object.assign({}, payload, { number: payload.number || current.number }));
@@ -1527,6 +1628,7 @@ function createSqliteStore() {
         'INSERT INTO purchase_order_lines (po_id, item_id, product, sku, mpn, description, qty, unit_cost, sort_order) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)'
       );
       input.lines.forEach(function (line, i) {
+        if (line.itemId) inv.assertNotKitPurchase(lookupInventoryKindRow(db, line.itemId));
         insertLine.run(id, line.itemId || null, line.product, line.sku, line.mpn || '', line.description, line.qty, line.rate, i);
       });
       return this.getPurchaseOrder(id);
@@ -1728,6 +1830,7 @@ function createSqliteStore() {
       return info.changes > 0;
     },
     async transferWarehouseStock(fromId, payload, adminEmail) {
+      const inv = require('./inventory');
       const from = db.prepare('SELECT * FROM inventory_warehouses WHERE id = ?').get(fromId);
       if (!from) return null;
       const toId = payload && (payload.toLocationId != null ? payload.toLocationId : payload.toWarehouseId);
@@ -1736,6 +1839,7 @@ function createSqliteStore() {
       if (!to) throw new Error('Destination location not found.');
       const itemId = payload && (payload.itemId != null ? payload.itemId : payload.item_id);
       if (!itemId) throw new Error('Pick an item.');
+      inv.assertNotKitStock(lookupInventoryKindRow(db, itemId));
       const qty = Math.round(Number(payload && payload.qty));
       if (!isFinite(qty) || qty <= 0) throw new Error('Quantity must be a whole number greater than 0.');
       const src = db.prepare(

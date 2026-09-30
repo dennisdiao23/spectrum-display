@@ -240,10 +240,24 @@ function openDb() {
     "ALTER TABLE inventory_items ADD COLUMN inactive INTEGER NOT NULL DEFAULT 0",
     "ALTER TABLE inventory_items ADD COLUMN category TEXT NOT NULL DEFAULT ''",
     "ALTER TABLE inventory_items ADD COLUMN gallery TEXT NOT NULL DEFAULT '[]'",
-    "ALTER TABLE inventory_items ADD COLUMN mpn TEXT NOT NULL DEFAULT ''"
+    "ALTER TABLE inventory_items ADD COLUMN mpn TEXT NOT NULL DEFAULT ''",
+    "ALTER TABLE inventory_items ADD COLUMN item_kind TEXT NOT NULL DEFAULT 'item'"
   ].forEach(function (sql) {
     try { db.exec(sql); } catch (e) { /* already present */ }
   });
+  db.exec(`
+    CREATE TABLE IF NOT EXISTS inventory_kit_lines (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      kit_item_id INTEGER NOT NULL,
+      component_item_id INTEGER NOT NULL,
+      qty INTEGER NOT NULL DEFAULT 1,
+      UNIQUE (kit_item_id, component_item_id),
+      FOREIGN KEY (kit_item_id) REFERENCES inventory_items(id) ON DELETE CASCADE,
+      FOREIGN KEY (component_item_id) REFERENCES inventory_items(id) ON DELETE RESTRICT
+    );
+    CREATE INDEX IF NOT EXISTS inventory_kit_lines_kit_idx ON inventory_kit_lines (kit_item_id);
+    CREATE INDEX IF NOT EXISTS inventory_kit_lines_component_idx ON inventory_kit_lines (component_item_id);
+  `);
   ensureInventoryWarehouses(db);
   migrateLegacyInventory(db);
   applySchemaPatches(db);
