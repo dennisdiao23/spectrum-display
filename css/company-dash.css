@@ -9283,6 +9283,58 @@ body.app-help-on .dash-sidebar {
   padding: 0.35rem 0.9rem;
   cursor: pointer;
 }
+.app-notes-infobar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  margin: 0 0 0.85rem;
+  padding: 0.15rem 0.45rem 0.15rem 0.95rem;
+  background: #fff;
+  border: 1px solid var(--dash-line, #e7ecf5);
+  border-radius: 999px;
+  box-shadow: 0 8px 22px rgba(16, 32, 71, 0.05);
+}
+.app-notes-infobar[hidden] { display: none !important; }
+.app-notes-infobar.is-open {
+  border-radius: 1rem;
+  padding: 0.55rem 0.85rem 0.8rem;
+}
+.app-notes-infobar-line {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  width: 100%;
+  min-height: 2.15rem;
+  cursor: pointer;
+}
+.app-notes-infobar-title {
+  flex: 1;
+  font-size: 0.92rem;
+  font-weight: 750;
+  color: #102047;
+}
+.app-notes-infobar-close {
+  border: 0;
+  background: transparent;
+  color: #5c6b8a;
+  font-size: 1.2rem;
+  line-height: 1;
+  cursor: pointer;
+  padding: 0.2rem 0.35rem;
+}
+.app-notes-infobar-body {
+  flex: 1 1 100%;
+  padding: 0.15rem 0.35rem 0.2rem;
+  cursor: default;
+}
+.app-notes-steps {
+  margin: 0 0 0.65rem;
+  padding-left: 1.15rem;
+  color: #243056;
+  font-size: 0.9rem;
+  line-height: 1.45;
+}
+.app-notes-infobar .app-notes-title { margin-top: 0; }
 body.app-help-on .dash-nav-link.is-help-target,
 body.app-help-on .dash-sub-link.is-help-target,
 body.app-help-on #header-chat.is-help-target {

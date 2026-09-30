@@ -11,7 +11,67 @@
       "added": [
         "A checklist in the main Dashboard card for a new dealer."
       ],
-      "how": "Sign in and open Dashboard. The large card on the left is Start here: Dealer book, Calculator, Deal registration, and Request Quote. Open a step to do it. The box checks itself when that thing is saved. Dealer book checks when a price is on your book. Calculator checks when you save a wall or a panel. Deal registration checks when you submit a job. Request Quote checks when you send a request. When those last three are done, the card goes back to the usual snapshot. If you already saved a wall, a registration, and a quote, you will not see the list."
+      "how": "Sign in and open Dashboard. The large card on the left is Start here: Dealer book, Calculator, Deal registration, and Request Quote. Open a step to do it. The box checks itself when that thing is saved. Dealer book checks when a price is on your book. Calculator checks when you save a wall or a panel. Deal registration checks when you submit a job. Request Quote checks when you send a request. When those last three are done, the card goes back to the usual snapshot. If you already saved a wall, a registration, and a quote, you will not see the list.",
+      "kind": "feature"
+    },
+    {
+      "id": "2026-09-30-install-computer",
+      "date": "2026-09-30",
+      "kind": "update",
+      "desktop": true,
+      "apps": [
+        "portal"
+      ],
+      "title": "Install on this computer",
+      "steps": [
+        {
+          "label": "Chrome",
+          "lines": [
+            "Click the install icon at the right of the address bar.",
+            "Click Install.",
+            "If the icon is missing, click the three dots, then Cast, save, and share, then Install page as app."
+          ]
+        },
+        {
+          "label": "Edge",
+          "lines": [
+            "Click the three dots.",
+            "Click Apps, then Install Dealer Portal.",
+            "Click Install."
+          ]
+        }
+      ],
+      "how": "Safari on a Mac does not install this app. Use Chrome or Edge. The app opens in its own window."
+    },
+    {
+      "id": "2026-09-30-install-phone",
+      "date": "2026-09-30",
+      "kind": "update",
+      "desktop": true,
+      "apps": [
+        "portal"
+      ],
+      "title": "Install the phone app",
+      "steps": [
+        {
+          "label": "iPhone",
+          "lines": [
+            "Open this page in Safari.",
+            "Tap Share.",
+            "Tap Add to Home Screen.",
+            "Tap Add. The icon says Dealer Portal."
+          ]
+        },
+        {
+          "label": "Android",
+          "lines": [
+            "Open this page in Chrome.",
+            "Tap the three dots.",
+            "Tap Install app. If you do not see it, tap Add to Home screen.",
+            "Tap Install. The icon says Dealer Portal."
+          ]
+        }
+      ]
     },
     {
       "id": "2026-09-30d-menu-order",

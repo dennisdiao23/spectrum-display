@@ -10,6 +10,8 @@
   let dim = null;
   let card = null;
   let bar = null;
+  let info = null;
+  let infoOpen = false;
 
   function esc(value) {
     return String(value == null ? '' : value)
@@ -79,12 +81,57 @@
     });
   }
 
-  function latestUnseen() {
-    const list = appNotes();
+  function isFeature(note) {
+    if (!note) return false;
+    if (note.kind === 'update') return false;
+    if (note.kind === 'feature') return true;
+    return !!(note.added && note.added.length);
+  }
+
+  function latestFeatureUnseen() {
+    const list = appNotes().filter(isFeature);
     if (!list.length) return null;
     const seen = getSeen();
     if (seen && list[0].id === seen) return null;
     return list[0];
+  }
+
+  function barSeenKey() {
+    return 'spectrum-notes-bar-' + appName + '-' + (userId || 'anon');
+  }
+
+  function getBarSeen() {
+    try {
+      const parsed = JSON.parse(localStorage.getItem(barSeenKey()) || '[]');
+      return Array.isArray(parsed) ? parsed : [];
+    } catch (err) {
+      return [];
+    }
+  }
+
+  function rememberBar(id) {
+    const ids = getBarSeen();
+    if (ids.indexOf(id) === -1) ids.push(id);
+    try { localStorage.setItem(barSeenKey(), JSON.stringify(ids)); } catch (err) {}
+  }
+
+  function desktopWide() {
+    return window.matchMedia('(min-width: 960px)').matches;
+  }
+
+  function nextBarNote() {
+    const seen = getBarSeen();
+    const wide = desktopWide();
+    const list = appNotes().filter(function (note) { return !isFeature(note); });
+    list.sort(function (a, b) {
+      return String(a.date || '').localeCompare(String(b.date || '')) || String(a.id || '').localeCompare(String(b.id || ''));
+    });
+    for (let i = 0; i < list.length; i++) {
+      if (seen.indexOf(list[i].id) !== -1) continue;
+      if (list[i].desktop && !wide) continue;
+      return list[i];
+    }
+    return null;
   }
 
   function listBlock(label, items) {
@@ -102,6 +149,15 @@
     html += listBlock('Added', note.added);
     html += listBlock('Changed', note.changed);
     html += listBlock('Removed', note.removed);
+    if (note.steps && note.steps.length) {
+      note.steps.forEach(function (group) {
+        const lines = (group && group.lines) || [];
+        if (!lines.length) return;
+        html += '<p class="app-notes-kicker">' + esc(group.label || '') + '</p><ol class="app-notes-steps">' +
+          lines.map(function (line) { return '<li>' + esc(line) + '</li>'; }).join('') +
+          '</ol>';
+      });
+    }
     if (note.how) {
       html += '<p class="app-notes-kicker">How it works</p><p class="app-notes-how">' + esc(note.how) + '</p>';
     }
@@ -152,6 +208,28 @@
     document.body.appendChild(dim);
     document.body.appendChild(card);
     document.body.appendChild(bar);
+    info = document.createElement('div');
+    info.id = 'app-notes-infobar';
+    info.className = 'app-notes-infobar';
+    info.hidden = true;
+    const main = document.querySelector('.company-main');
+    if (main) main.insertBefore(info, main.firstChild);
+    else document.body.appendChild(info);
+    info.addEventListener('click', function (event) {
+      const close = event.target.closest('.app-notes-infobar-close');
+      const noteId = info.getAttribute('data-note-id');
+      if (close) {
+        event.preventDefault();
+        if (noteId) rememberBar(noteId);
+        infoOpen = false;
+        paintBar();
+        return;
+      }
+      if (event.target.closest('.app-notes-infobar-body')) return;
+      infoOpen = !infoOpen;
+      paintBar();
+    });
+    window.addEventListener('resize', function () { paintBar(); });
     document.getElementById('app-notes-reload-btn').addEventListener('click', function () {
       window.location.reload();
     });
@@ -164,14 +242,16 @@
   }
 
   function dismissPopup() {
-    const note = latestUnseen();
-    if (note) setSeen(note.id);
+    const id = card && card.getAttribute('data-note-id');
+    if (id) setSeen(id);
     if (card) card.hidden = true;
     if (dim) dim.hidden = true;
+    paintBar();
   }
 
   function showPopup(note) {
     if (!card || !note || !appReady() || tourOpen()) return false;
+    card.setAttribute('data-note-id', note.id);
     card.innerHTML = '<p class="app-notes-kicker" id="app-notes-card-title">What’s new</p>' +
       noteInner(note, { noDate: false }) +
       '<div class="app-notes-actions">' +
@@ -180,6 +260,7 @@
       '</div>';
     dim.hidden = false;
     card.hidden = false;
+    if (info) info.hidden = true;
     const all = document.getElementById('app-notes-all');
     const got = document.getElementById('app-notes-got');
     if (got) got.addEventListener('click', dismissPopup);
@@ -193,20 +274,47 @@
     return true;
   }
 
+  function paintBar() {
+    if (!info) return;
+    if (!appReady() || (card && !card.hidden)) {
+      info.hidden = true;
+      return;
+    }
+    const note = nextBarNote();
+    if (!note) {
+      info.hidden = true;
+      info.removeAttribute('data-note-id');
+      infoOpen = false;
+      return;
+    }
+    if (info.getAttribute('data-note-id') !== note.id) infoOpen = false;
+    info.hidden = false;
+    info.setAttribute('data-note-id', note.id);
+    info.classList.toggle('is-open', infoOpen);
+    const body = infoOpen
+      ? '<div class="app-notes-infobar-body">' + noteInner(note, { noDate: true }) + '</div>'
+      : '';
+    info.innerHTML = '<div class="app-notes-infobar-line">' +
+      '<span class="app-notes-infobar-title">' + esc(note.title || 'Update') + '</span>' +
+      '<button type="button" class="app-notes-infobar-close" aria-label="Close">×</button>' +
+      '</div>' + body;
+  }
+
   function maybePopup(tries) {
     tries = tries || 0;
     try {
-      const note = latestUnseen();
-      if (!note) return;
+      const note = latestFeatureUnseen();
       if (!appReady() || tourBlocking()) {
         if (tries >= 80) {
-          if (appReady() && !tourOpen()) showPopup(note);
+          if (appReady() && !tourOpen() && note) showPopup(note);
+          else paintBar();
           return;
         }
         window.setTimeout(function () { maybePopup(tries + 1); }, 250);
         return;
       }
-      showPopup(note);
+      if (note) showPopup(note);
+      else paintBar();
     } catch (err) {
       console.error('SpectrumNotes popup', err);
     }
@@ -264,6 +372,7 @@
     hide: function () {
       if (card) card.hidden = true;
       if (dim) dim.hidden = true;
+      if (info) info.hidden = true;
     }
   };
 })();
