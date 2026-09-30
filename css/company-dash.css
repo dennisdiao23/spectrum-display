@@ -2046,6 +2046,46 @@ html.dash-scroll-lock body.company-app {
   text-decoration: none;
 }
 .dash-home-panel-head a:hover { text-decoration: underline; }
+.dash-home-detail.is-start-here .dash-detail-list { border-top: 0; }
+.start-here-row {
+  display: grid;
+  grid-template-columns: 1.15rem minmax(0, 1fr) auto;
+  gap: 0.75rem;
+  align-items: center;
+  padding: 0.85rem 0;
+  border-bottom: 1px solid var(--dash-line);
+}
+.start-here-row:last-child { border-bottom: 0; }
+.start-here-check {
+  width: 1.15rem;
+  height: 1.15rem;
+  border: 1.5px solid #c5cede;
+  border-radius: 999px;
+  box-sizing: border-box;
+}
+.start-here-row.is-done .start-here-check {
+  border-color: #1f8a4c;
+  background: #1f8a4c url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath fill='none' stroke='%23fff' stroke-width='2' stroke-linecap='round' stroke-linejoin='round' d='M3.5 8.2 6.4 11 12.5 4.8'/%3E%3C/svg%3E") center / 0.85rem no-repeat;
+}
+.start-here-row strong {
+  display: block;
+  font-size: 0.9rem;
+  font-weight: 750;
+  color: #122046;
+}
+.start-here-row div span {
+  display: block;
+  margin-top: 0.15rem;
+  font-size: 0.78rem;
+  color: var(--dash-muted);
+}
+.start-here-row a {
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: #2f6bff;
+  text-decoration: none;
+}
+.start-here-row a:hover { text-decoration: underline; }
 .dash-user-split {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));

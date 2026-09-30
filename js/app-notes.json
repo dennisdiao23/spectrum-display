@@ -1,12 +1,27 @@
 {
-  "build": "2026-09-30-newsbar",
+  "build": "2026-09-30-portal-start",
   "notes": [
+    {
+      "id": "2026-09-30e-portal-start",
+      "date": "2026-09-30",
+      "apps": [
+        "portal"
+      ],
+      "title": "Start here on the Dashboard",
+      "added": [
+        "A checklist in the main Dashboard card for a new dealer."
+      ],
+      "how": "Sign in and open Dashboard. The large card on the left is Start here: Dealer book, Calculator, Deal registration, and Request Quote. Open a step to do it. The box checks itself when that thing is saved. Dealer book checks when a price is on your book. Calculator checks when you save a wall or a panel. Deal registration checks when you submit a job. Request Quote checks when you send a request. When those last three are done, the card goes back to the usual snapshot. If you already saved a wall, a registration, and a quote, you will not see the list.",
+      "kind": "feature"
+    },
     {
       "id": "2026-09-30-install-computer",
       "date": "2026-09-30",
       "kind": "update",
       "desktop": true,
-      "apps": ["portal"],
+      "apps": [
+        "portal"
+      ],
       "title": "Install on this computer",
       "steps": [
         {
@@ -33,7 +48,9 @@
       "date": "2026-09-30",
       "kind": "update",
       "desktop": true,
-      "apps": ["portal"],
+      "apps": [
+        "portal"
+      ],
       "title": "Install the phone app",
       "steps": [
         {
@@ -350,7 +367,7 @@
     "portal": [
       {
         "title": "Dashboard",
-        "text": "Your start page. See counts for the price book, quote requests, orders, and saved projects, then open one."
+        "text": "Your start page. A new account sees Start here in the main card: price book, a saved wall, a registered job, and a quote request. Each step checks itself when it is saved."
       },
       {
         "title": "Dealer book",
