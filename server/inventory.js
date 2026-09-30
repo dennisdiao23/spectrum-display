@@ -569,7 +569,7 @@ function kitContentsDescription(item) {
     const name = String(line.name || '').trim();
     const label = sku && name ? (sku + ' ' + name) : (sku || name || 'Item');
     return qty + ' × ' + label;
-  }).join('\n');
+  }).join('; ');
 }
 
 function formatKitLine(row, component) {
