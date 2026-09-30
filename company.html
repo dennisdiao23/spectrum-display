@@ -8957,13 +8957,14 @@
       const existing = Array.prototype.find.call(document.querySelectorAll('#inv-kit-lines .inv-kit-line'), function (r) {
         return r !== row && String(r.getAttribute('data-kit-item-id')) === String(item.id);
       });
-      if (existing && existing !== row) {
+      if (existing) {
         const qty = existing.querySelector('[data-kit-qty]');
         if (qty) qty.focus();
         if (!(row.getAttribute('data-kit-item-id') || '')) row.remove();
         if (!document.querySelector('#inv-kit-lines .inv-kit-line')) renderInvKitLines([{}]);
         return;
       }
+      const wasEmpty = !(row.getAttribute('data-kit-item-id') || '');
       row.setAttribute('data-kit-item-id', item.id);
       const idEl = row.querySelector('[data-line="itemId"]');
       if (idEl) idEl.value = item.id || '';
@@ -8972,7 +8973,7 @@
       const name = row.querySelector('[data-kit-name]');
       if (name) name.textContent = item.name || item.sku || '—';
       const qty = row.querySelector('[data-kit-qty]');
-      if (qty && (!qty.value || Number(qty.value) < 1)) qty.value = 1;
+      if (qty && (wasEmpty || !qty.value || Number(qty.value) < 1)) qty.value = 1;
     }
     function syncInvItemKindUi() {
       const isKit = invItemKindFromForm() === 'kit';
@@ -22832,6 +22833,10 @@
         if (row) row.remove();
         if (!body.querySelector('.inv-kit-line')) renderInvKitLines([{}]);
       });
+      body.addEventListener('wheel', function (e) {
+        if (!e.target.closest('[data-kit-qty]')) return;
+        e.preventDefault();
+      }, { passive: false });
       body.addEventListener('focusin', function (e) {
         const sku = e.target.closest('[data-line="sku"]');
         if (!sku) return;

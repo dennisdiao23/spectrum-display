@@ -7624,6 +7624,10 @@ body.dash-split-lock #crm-pipe-section .crm-board {
   border-radius: 0.55rem;
   background: #fff;
 }
+.inv-kit-table,
+.inv-kit-detail-table {
+  table-layout: auto;
+}
 .inv-kit-table thead th,
 .inv-kit-detail-table thead th {
   position: sticky;
@@ -7641,15 +7645,28 @@ body.dash-split-lock #crm-pipe-section .crm-board {
   font-size: 0.8125rem;
   vertical-align: middle;
 }
+.inv-kit-table th:nth-child(3),
 .inv-kit-table td:nth-child(3),
+.inv-kit-table th:nth-child(4),
 .inv-kit-table td:nth-child(4),
+.inv-kit-detail-table th:nth-child(3),
 .inv-kit-detail-table td:nth-child(3),
+.inv-kit-detail-table th:nth-child(4),
 .inv-kit-detail-table td:nth-child(4) {
   white-space: nowrap;
-  width: 1%;
+  width: 7rem;
+  min-width: 6.5rem;
+  text-align: right;
 }
 .inv-kit-qty {
-  width: 4.5rem;
+  width: 5.5rem;
+  min-width: 5.5rem;
+  box-sizing: border-box;
+  padding: 0.3rem 0.45rem;
+  border: 1px solid var(--dash-line);
+  border-radius: 0.35rem;
+  font: inherit;
+  text-align: right;
 }
 .inv-kit-remove {
   border: 0;
