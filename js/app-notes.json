@@ -1,6 +1,116 @@
 {
-  "build": "2026-09-30-whats-new",
+  "build": "2026-09-30-recent",
   "notes": [
+    {
+      "id": "2026-09-30c-phone-bar",
+      "date": "2026-09-30",
+      "apps": ["company"],
+      "title": "Phone bar holds five menus",
+      "added": [
+        "Press and hold the bottom bar to choose which menus sit there."
+      ],
+      "changed": [
+        "The phone bar shows five menus: Calculator, Inventory, CRM, Dealer, and Chat."
+      ],
+      "how": "Press and hold any icon on the bottom bar until they wiggle. Drag to change the order. Tap the red minus to take one off. Tap a name in the row above to add it. Five is the max. Done saves it on this phone for your login. Reset puts the original five back. The side menu still has every page."
+    },
+    {
+      "id": "2026-09-30b-walls",
+      "date": "2026-09-30",
+      "apps": ["company", "portal"],
+      "title": "Installed walls",
+      "added": [
+        "Company has Installed walls, next to Customer.",
+        "Dealers can open their own walls after Purchase Order."
+      ],
+      "how": "Open a shipped sales order and click Create installed wall. The wall copies the order, the customer, and the ship address. Warranty end is the ship date plus 3 years. Selected COB also keeps a 5-year support date. Staff can set the site, installer, end customer, pitch, serials, and the spare kit on site. A dealer can read the wall. They cannot change serials or dates."
+    },
+    {
+      "id": "2026-09-30-kits",
+      "date": "2026-09-30",
+      "apps": ["company"],
+      "title": "Inventory kits",
+      "added": [
+        "A kit is one sellable SKU made of parts."
+      ],
+      "how": "In Inventory, set Type to Kit under the name. Add each part SKU and how many of that part the kit uses. On a quote you pick the kit, not each part. On-hand is how many complete kits the parts can make. You do not receive or warehouse the kit itself. Purchase orders do not list kits."
+    },
+    {
+      "id": "2026-09-30-dash-loop",
+      "date": "2026-09-30",
+      "apps": ["company"],
+      "title": "Dashboard cards cycle",
+      "changed": [
+        "The main pane moves through Website, Inventory, Vendor, CRM, and Customer."
+      ],
+      "how": "The active card is highlighted while the pane is moving. Hover the cards or the main pane to pause. Click a card to hold that view, then the cycle starts again. Leave Dashboard and it stops."
+    },
+    {
+      "id": "2026-09-30-dealer-files",
+      "date": "2026-09-30",
+      "apps": ["company", "portal"],
+      "title": "Dealer logo and files",
+      "added": [
+        "A dealer logo, shared by Company and the dealer portal.",
+        "A Files tab on the dealer."
+      ],
+      "how": "Open a dealer in Company. Click the logo to upload a JPG or PNG. The portal Company page shows that same logo. On Files, staff can view, download, upload, and delete. On the portal, the dealer can view, download, and upload. They cannot delete."
+    },
+    {
+      "id": "2026-09-30-dash-kpi",
+      "date": "2026-09-30",
+      "apps": ["company"],
+      "title": "Dashboard numbers",
+      "changed": [
+        "Inventory shows this month’s movement in dollars, with on-hand value under it.",
+        "Vendor shows how many purchase orders are still open, and their dollars.",
+        "Each overview card has a 30-day line."
+      ],
+      "how": "Open Dashboard. The Inventory card is dollars moved this month, not a SKU count. The line under it is what is on hand. The Vendor card is open purchase orders. The small line on each card is the last 30 days."
+    },
+    {
+      "id": "2026-09-30-calc-scroll",
+      "date": "2026-09-30",
+      "apps": ["company", "portal"],
+      "title": "Calculator scroll hint",
+      "added": [
+        "A wheel and three arrows when the calculator’s left side can scroll."
+      ],
+      "how": "Hover the left side of the calculator. The wheel rolls and the three arrows light in order. Move the pointer away and the hint hides."
+    },
+    {
+      "id": "2026-09-30-rma",
+      "date": "2026-09-30",
+      "apps": ["company", "portal"],
+      "title": "RMA",
+      "added": [
+        "Dealers can submit a return from the portal.",
+        "Company → Dealer → RMA is where staff read those returns."
+      ],
+      "how": "On the portal, open RMA and click New RMA. Enter an order or purchase order number, a reason, the SKU lines, and notes. Submit assigns a number and sets the status to Submitted. The dealer can open it again. They cannot approve or close it. This does not create a credit or a shipping label."
+    },
+    {
+      "id": "2026-09-29-deal-reg",
+      "date": "2026-09-29",
+      "apps": ["company", "portal"],
+      "title": "Deal registration",
+      "added": [
+        "A dealer can register one named job.",
+        "Company → Dealer → Deal registration is where staff accept or decline it."
+      ],
+      "how": "On the portal, open Deal registration. Submit the end customer, job name, site, and what they are selling. Company accepts it until a date, or declines it with a reason the dealer can read. Protection is that job only. From a protected job, Request quote for this job opens a quote tied to that registration."
+    },
+    {
+      "id": "2026-09-29-help",
+      "date": "2026-09-29",
+      "apps": ["company", "portal"],
+      "title": "Help on each page",
+      "added": [
+        "A ? beside Sign out that explains the page you are on.",
+        "A short menu tour the first time you sign in."
+      ],
+      "how": "Click ? beside Sign out. The card says what this page is for. The first sign-in walks the main menu. Skip or Done remembers you on this browser. Show menu tour on that card plays it again."
+    },
     {
       "id": "2026-09-30-whats-new",
       "date": "2026-09-30",
@@ -11,20 +121,18 @@
         "A guide that lists what each Company and Dealer Portal menu is for.",
         "A refresh bar if you left a tab open while we updated."
       ],
-      "changed": [],
-      "removed": [],
       "how": "After you sign in, a card appears if there is a note you have not seen. Click Got it to dismiss it, or See all updates to open the full log. You can reopen it any time: Settings → What’s new. Settings → Company guide (or Dealer guide) explains every menu. If you keep this tab open and we ship a change, a bar at the top asks you to refresh when you are ready. It does not refresh by itself, so a quote you are still typing is not wiped."
     }
   ],
   "guides": {
     "company": [
-      { "title": "Dashboard", "text": "Your start page. See a count for each area, then open the one you need." },
-      { "title": "Calculator", "text": "Size an LED wall for a job. Enter the screen size, pick a panel, and save the layout when you are ready to quote it." },
+      { "title": "Dashboard", "text": "Your start page. The main pane cycles through Website, Inventory, Vendor, CRM, and Customer. Hover or click a card to hold that view. Inventory shows this month’s movement in dollars, with on-hand value under it. Vendor shows open purchase orders and their dollars. Each card has a 30-day line." },
+      { "title": "Calculator", "text": "Size an LED wall for a job. Enter the screen size, pick a panel, and save the layout when you are ready to quote it. Hover the left side to see that the pane scrolls." },
       { "title": "Website → Products", "text": "The panel series on the public product pages. Change photos, specs, and which series are live." },
       { "title": "Website → Store", "text": "What shoppers can buy on the US Store. Set the street price and the qty that can sell, then sync those items so checkout works." },
       { "title": "Website → Accounts", "text": "People who created a website login. Look someone up when they cannot sign in or you need to see their account." },
       { "title": "Website → Traffic", "text": "Who visited the site and which pages they opened. Use it to see what is getting attention." },
-      { "title": "Inventory", "text": "What is in the warehouse. Look up an item and see how many you have, then open it to change the qty or the details." },
+      { "title": "Inventory", "text": "What is in the warehouse. Look up an item and see how many you have, then open it to change the qty or the details. A kit is one sellable SKU made of parts. On a quote you pick the kit. On-hand is how many complete kits the parts can make." },
       { "title": "Inventory → Location", "text": "Your warehouses and bins. Use this when the same item sits in more than one place." },
       { "title": "Inventory → Receipt Shipment", "text": "A shipment that arrived. Match it to the purchase order so the on-hand qty goes up." },
       { "title": "Vendor", "text": "Companies you buy from. Open a supplier to see their contact, terms, and the products you buy from them." },
@@ -36,12 +144,13 @@
       { "title": "Customer → Sales Quote", "text": "A price you send before they buy. Build it, email it, and turn it into an order when they say yes." },
       { "title": "Customer → Sales Order", "text": "A confirmed sale. What they are buying, where it ships, and where the order stands." },
       { "title": "Customer → Invoice", "text": "What they owe. Send it, then mark it paid when the money comes in." },
-      { "title": "Installed walls", "text": "A wall that has shipped. Open one for the site, serials, spare kit, and warranty dates." },
-      { "title": "Dealer", "text": "Dealers you already work with. Open one for contacts, a portal login, and what you have sold them." },
+      { "title": "Installed walls", "text": "A wall that has shipped. Create one from a shipped sales order. Open it for the site, serials, spare kit, and warranty dates. Warranty end is the ship date plus 3 years. Selected COB also keeps a 5-year support date." },
+      { "title": "Dealer", "text": "Dealers you already work with. Open one for contacts, a portal login, the logo, files, and what you have sold them. Click the logo to upload a JPG or PNG. On Files you can view, download, upload, or delete." },
       { "title": "Dealer → Applications", "text": "Dealer applications that came in from the site. Open one, then approve or decline it." },
-      { "title": "Dealer → Deal registration", "text": "Jobs a dealer registered so you can protect the opportunity. Open one to review it." },
-      { "title": "Dealer → RMA", "text": "Return requests from dealers. Open one to see what they sent back and where it stands." },
+      { "title": "Dealer → Deal registration", "text": "A named job a dealer registered. Accept it until a date, or decline it with a reason. Protection is that job only." },
+      { "title": "Dealer → RMA", "text": "Return requests from dealers. Open one to see the order, the reason, and where it stands. This does not create a credit or a shipping label." },
       { "title": "Chat", "text": "A message to other staff. Use it while you are still on the quote, order, or customer you are talking about." },
+      { "title": "Phone bar", "text": "On a phone, the bottom bar holds five menus: Calculator, Inventory, CRM, Dealer, and Chat. Press and hold an icon to change which five, or their order. The side menu still has every page." },
       { "title": "Settings → Company", "text": "Your company name, address, and logo. This is what prints on quotes, orders, and invoices." },
       { "title": "Settings → Forms", "text": "The layout of quotes, orders, and invoices. Change it here when a document should look different." },
       { "title": "Settings → Manage users", "text": "Staff logins. Add a person, choose what they can open, and turn off someone who left." },
@@ -53,13 +162,13 @@
       { "title": "Dealer book", "text": "Your price list. Search a SKU to see your price and what is on hand. Factory cost is not on this page." },
       { "title": "Request Quote", "text": "Ask Spectrum to price a job. Send the request here, then come back to read the quote they return." },
       { "title": "Purchase Order", "text": "Orders you have placed with Spectrum. Open one to see what you ordered and where it stands." },
-      { "title": "Installed walls", "text": "Walls you installed. Open one for the site, serials, spare kit, and warranty dates." },
-      { "title": "Deal registration", "text": "Register a named job so Spectrum can protect the opportunity. Open one to see if it was accepted." },
-      { "title": "RMA", "text": "Ask to return goods. Open a request to see what you sent and where it stands." },
-      { "title": "Calculator", "text": "Size a wall for your customer. Pick a panel and see the cabinet count at your price." },
+      { "title": "Installed walls", "text": "Walls you installed. Open one for the site, serials, spare kit, and warranty dates. You can read the wall. Spectrum sets the serials and dates." },
+      { "title": "Deal registration", "text": "Register one named job so Spectrum can protect it until a date, or decline it with a reason. Protection is that job only. Open one to see if it was accepted." },
+      { "title": "RMA", "text": "Ask to return goods from an order or purchase order. Submit a reason and the lines. Open a request to see the number and where it stands. This does not create a credit or a shipping label." },
+      { "title": "Calculator", "text": "Size a wall for your customer. Pick a panel and see the cabinet count at your price. Hover the left side to see that the pane scrolls." },
       { "title": "Projects", "text": "Wall layouts you saved. Open one to keep working, or send it as a quote request." },
       { "title": "Saved Panel", "text": "Panels you use often. Pick one so the calculator starts on that series." },
-      { "title": "Settings → Company", "text": "Your dealer company on the portal. Name, address, and the people who can sign in on this account." },
+      { "title": "Settings → Company", "text": "Your dealer company on the portal. Name, address, logo, and files. You can view, download, and upload. Spectrum staff can also delete a file." },
       { "title": "Settings → What’s new", "text": "The log of portal screen changes, in plain language." },
       { "title": "Settings → Dealer guide", "text": "This list. What each menu is for." }
     ]
