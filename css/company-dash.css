@@ -2947,7 +2947,19 @@ html.dash-scroll-lock body.company-app {
   place-items: center;
   font-weight: 700;
   font-size: 0.95rem;
+  border: 0;
+  padding: 0;
+  overflow: hidden;
+  position: relative;
 }
+button.cc-detail-avatar { font: inherit; }
+.cc-detail-avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+.cc-detail-avatar.is-editable { cursor: pointer; }
 .cc-detail-hero-copy h2,
 .cc-detail-name-row {
   font-size: 1.35rem;

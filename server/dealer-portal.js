@@ -1180,25 +1180,50 @@ function sqliteApi(db, store) {
       });
       return publicDealerCustomer(await store.updateCompanyCustomer(customerId, next));
     },
-    async addDealerFile(user, file) {
-      const customerId = await resolveDealerCustomerId(store, user);
+    async listDealerAssets(customerId) {
+      if (!customerId) return { files: [], logo: '' };
+      const rows = db.prepare(
+        'SELECT * FROM dealer_files WHERE customer_id = ? ORDER BY datetime(created_at) DESC, id DESC'
+      ).all(customerId).map(formatDealerFile);
+      return { files: publicDealerFiles(rows), logo: dealerLogoUrl(rows) };
+    },
+    async addDealerFileForCustomer(customerId, file, user) {
       if (!customerId) throw noCustomerError();
       const saved = saveResaleFile(file);
+      if (!saved.url) throw Object.assign(new Error('Choose a PDF, JPG, or PNG.'), { code: 'invalid' });
       const info = db.prepare(
         'INSERT INTO dealer_files (customer_id, dealer_user_id, name, url, created_at) VALUES (?, ?, ?, ?, ?)'
       ).run(customerId, user && user.id || null, saved.name, saved.url, nowIso());
       return formatDealerFile(db.prepare('SELECT * FROM dealer_files WHERE id = ?').get(info.lastInsertRowid));
     },
-    async setDealerLogo(user, file) {
-      const customerId = await resolveDealerCustomerId(store, user);
+    async deleteDealerFileForCustomer(customerId, fileId) {
+      const row = db.prepare('SELECT * FROM dealer_files WHERE id = ? AND customer_id = ?').get(fileId, customerId);
+      if (!row) return false;
+      if (row.name === DEALER_LOGO_NAME) {
+        throw Object.assign(new Error('Upload a new logo to replace this one.'), { code: 'invalid' });
+      }
+      db.prepare('DELETE FROM dealer_files WHERE id = ?').run(row.id);
+      return true;
+    },
+    async setDealerLogoForCustomer(customerId, file, user) {
       if (!customerId) throw noCustomerError();
       const saved = saveResaleFile(file);
-      if (!/\.(png|jpe?g)$/i.test(saved.url || '')) throw new Error('Logo must be a JPG or PNG.');
+      if (!/\.(png|jpe?g)$/i.test(saved.url || '')) {
+        throw Object.assign(new Error('Logo must be a JPG or PNG.'), { code: 'invalid' });
+      }
       db.prepare('DELETE FROM dealer_files WHERE customer_id = ? AND name = ?').run(customerId, DEALER_LOGO_NAME);
       db.prepare(
         'INSERT INTO dealer_files (customer_id, dealer_user_id, name, url, created_at) VALUES (?, ?, ?, ?, ?)'
       ).run(customerId, user && user.id || null, DEALER_LOGO_NAME, saved.url, nowIso());
       return { url: saved.url };
+    },
+    async addDealerFile(user, file) {
+      const customerId = await resolveDealerCustomerId(store, user);
+      return this.addDealerFileForCustomer(customerId, file, user);
+    },
+    async setDealerLogo(user, file) {
+      const customerId = await resolveDealerCustomerId(store, user);
+      return this.setDealerLogoForCustomer(customerId, file, user);
     },
     async listDealerProjects(user) {
       const customerId = await resolveDealerCustomerId(store, user);
@@ -1521,10 +1546,17 @@ function supabaseApi(supabase, store) {
       });
       return publicDealerCustomer(await store.updateCompanyCustomer(customerId, next));
     },
-    async addDealerFile(user, file) {
-      const customerId = await resolveDealerCustomerId(store, user);
+    async listDealerAssets(customerId) {
+      if (!customerId) return { files: [], logo: '' };
+      const { data, error } = await supabase.from('dealer_files').select('*').eq('customer_id', customerId).order('created_at', { ascending: false });
+      throwIfMissing(error, 'Could not load dealer files.');
+      const rows = (data || []).map(formatDealerFile);
+      return { files: publicDealerFiles(rows), logo: dealerLogoUrl(rows) };
+    },
+    async addDealerFileForCustomer(customerId, file, user) {
       if (!customerId) throw noCustomerError();
       const saved = saveResaleFile(file);
+      if (!saved.url) throw Object.assign(new Error('Choose a PDF, JPG, or PNG.'), { code: 'invalid' });
       const { data, error } = await supabase.from('dealer_files').insert({
         customer_id: customerId,
         dealer_user_id: user && user.id || null,
@@ -1535,11 +1567,23 @@ function supabaseApi(supabase, store) {
       throwIfMissing(error, 'Could not save the file.');
       return formatDealerFile(data);
     },
-    async setDealerLogo(user, file) {
-      const customerId = await resolveDealerCustomerId(store, user);
+    async deleteDealerFileForCustomer(customerId, fileId) {
+      const { data, error } = await supabase.from('dealer_files').select('*').eq('id', fileId).eq('customer_id', customerId).maybeSingle();
+      throwIfMissing(error, 'Could not load the file.');
+      if (!data) return false;
+      if (data.name === DEALER_LOGO_NAME) {
+        throw Object.assign(new Error('Upload a new logo to replace this one.'), { code: 'invalid' });
+      }
+      const removed = await supabase.from('dealer_files').delete().eq('id', data.id);
+      throwIfMissing(removed.error, 'Could not delete the file.');
+      return true;
+    },
+    async setDealerLogoForCustomer(customerId, file, user) {
       if (!customerId) throw noCustomerError();
       const saved = saveResaleFile(file);
-      if (!/\.(png|jpe?g)$/i.test(saved.url || '')) throw new Error('Logo must be a JPG or PNG.');
+      if (!/\.(png|jpe?g)$/i.test(saved.url || '')) {
+        throw Object.assign(new Error('Logo must be a JPG or PNG.'), { code: 'invalid' });
+      }
       const removed = await supabase.from('dealer_files').delete().eq('customer_id', customerId).eq('name', DEALER_LOGO_NAME);
       throwIfMissing(removed.error, 'Could not replace the logo.');
       const { data, error } = await supabase.from('dealer_files').insert({
@@ -1551,6 +1595,14 @@ function supabaseApi(supabase, store) {
       }).select('*').single();
       throwIfMissing(error, 'Could not save the logo.');
       return { url: (data && data.url) || saved.url };
+    },
+    async addDealerFile(user, file) {
+      const customerId = await resolveDealerCustomerId(store, user);
+      return this.addDealerFileForCustomer(customerId, file, user);
+    },
+    async setDealerLogo(user, file) {
+      const customerId = await resolveDealerCustomerId(store, user);
+      return this.setDealerLogoForCustomer(customerId, file, user);
     },
     async listDealerProjects(user) {
       const customerId = await resolveDealerCustomerId(store, user);
