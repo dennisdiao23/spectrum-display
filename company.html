@@ -40,7 +40,7 @@
   <script src="/js/company-traffic.js?v=loc1"></script>
   <script src="/js/company-website-control.js?v=webctrl7"></script>
   <script src="/js/print-form.js?v=forms21"></script>
-  <script src="/js/app-help.js?v=help4"></script>
+  <script src="/js/app-help.js?v=help5"></script>
   <script src="/js/app-notes.js?v=notes3"></script>
   <script>
     if ('serviceWorker' in navigator && location.pathname.indexOf('/company') === 0) {
@@ -180,70 +180,6 @@
         <svg class="dash-nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="8" height="8" rx="1.5"/><rect x="13" y="3" width="8" height="8" rx="1.5"/><rect x="3" y="13" width="8" height="8" rx="1.5"/><rect x="13" y="13" width="8" height="8" rx="1.5"/></svg>
         <span>Dashboard</span>
       </a>
-      <a href="/company/calculator" id="tab-calculator" class="dash-nav-link">
-        <svg class="dash-nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="5" y="3" width="14" height="18" rx="2"/><path d="M8 7h8M8 12h.01M12 12h.01M16 12h.01M8 16h.01M12 16h.01M16 16h.01"/></svg>
-        <span>Calculator</span>
-      </a>
-      <div class="dash-nav-group">
-        <a href="/company/website" id="tab-website" class="dash-nav-link">
-          <svg class="dash-nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M3 8h18"/><path d="M8 12h5M8 16h8"/></svg>
-          <span>Website</span>
-        </a>
-        <div id="website-subnav" class="dash-sub hidden">
-          <a href="/company/website" id="tab-products" class="dash-sub-link">
-            <svg class="dash-nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 8.5 12 13 3 8.5 12 4l9 4.5z"/><path d="M3 8.5v7L12 20l9-4.5v-7"/><path d="M12 13v7"/></svg>
-            <span>Products</span>
-          </a>
-          <a href="/company/website/store" id="tab-store" class="dash-sub-link">
-            <svg class="dash-nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9h15l-1.4 8.2A2 2 0 0 1 17.6 19H8.4a2 2 0 0 1-2-1.8L5 4H3"/><circle cx="9" cy="21" r="1"/><circle cx="18" cy="21" r="1"/></svg>
-            <span>Store</span>
-          </a>
-          <a href="/company/website/accounts" id="tab-accounts" class="dash-sub-link">
-            <svg class="dash-nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="8" r="3.25"/><path d="M5 19.2c.9-3.1 3.5-4.7 7-4.7s6.1 1.6 7 4.7"/></svg>
-            <span>Accounts</span>
-          </a>
-          <a href="/company/website/traffic" id="tab-traffic" class="dash-sub-link">
-            <svg class="dash-nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 19V5"/><path d="M4 19h16"/><path d="M8 15l3.2-4.2 2.6 2.4L18 8"/></svg>
-            <span>Traffic</span>
-          </a>
-        </div>
-      </div>
-      <div class="dash-nav-group">
-        <a href="/company/inventory" id="tab-inventory" class="dash-nav-link">
-          <svg class="dash-nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 10 12 4.5 21 10v9.5a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V10z"/><path d="M9 20.5V12h6v8.5"/></svg>
-          <span>Inventory</span>
-        </a>
-        <div id="inventory-subnav" class="dash-sub hidden">
-          <a href="/company/inventory" id="tab-inv-items" class="dash-sub-link">
-            <svg class="dash-nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 10 12 4.5 21 10v9.5a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V10z"/><path d="M9 20.5V12h6v8.5"/></svg>
-            <span>Inventory</span>
-          </a>
-          <a href="/company/inventory/locations" id="tab-warehouses" class="dash-sub-link">
-            <svg class="dash-nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 21V8l9-5 9 5v13"/><path d="M9 21v-8h6v8"/></svg>
-            <span>Location</span>
-          </a>
-          <a href="/company/inventory/receipt-shipments" id="tab-receipt-shipments" class="dash-sub-link">
-            <svg class="dash-nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 7h16l-1.5 12H5.5L4 7z"/><path d="M9 7V5a3 3 0 0 1 6 0v2"/><path d="M9 14h6M9 18h4"/></svg>
-            <span>Receipt Shipment</span>
-          </a>
-        </div>
-      </div>
-      <div class="dash-nav-group">
-        <a href="/company/inventory/vendors" id="tab-vendor" class="dash-nav-link">
-          <svg class="dash-nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="8" r="3.25"/><path d="M5 19.2c.9-3.1 3.5-4.7 7-4.7s6.1 1.6 7 4.7"/></svg>
-          <span>Vendor</span>
-        </a>
-        <div id="vendor-subnav" class="dash-sub hidden">
-          <a href="/company/inventory/vendors" id="tab-vendors" class="dash-sub-link">
-            <svg class="dash-nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="8" r="3.25"/><path d="M5 19.2c.9-3.1 3.5-4.7 7-4.7s6.1 1.6 7 4.7"/></svg>
-            <span>Vendor</span>
-          </a>
-          <a href="/company/inventory/purchase-orders" id="tab-purchase-orders" class="dash-sub-link">
-            <svg class="dash-nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 3h8l4 4v14a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1z"/><path d="M15 3v5h5"/><path d="M9 13h6M9 17h4"/></svg>
-            <span>Purchase Order</span>
-          </a>
-        </div>
-      </div>
       <div class="dash-nav-group">
         <a href="/company/crm/leads" id="tab-crm" class="dash-nav-link">
           <svg class="dash-nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 4h16l-6.5 8.2V20l-3-1.5v-6.3L4 4z"/></svg>
@@ -287,12 +223,12 @@
             <svg class="dash-nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="5" y="3" width="14" height="18" rx="1.5"/><path d="M8 8h8M8 12h8M8 16h5"/></svg>
             <span>Invoice</span>
           </a>
+          <a href="/company/installed-walls" id="tab-installed-walls" class="dash-sub-link">
+            <svg class="dash-nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4" width="18" height="12" rx="1.5"/><path d="M8 20h8M12 16v4"/></svg>
+            <span>Installed walls</span>
+          </a>
         </div>
       </div>
-      <a href="/company/installed-walls" id="tab-installed-walls" class="dash-nav-link">
-        <svg class="dash-nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4" width="18" height="12" rx="1.5"/><path d="M8 20h8M12 16v4"/></svg>
-        <span>Installed walls</span>
-      </a>
       <div class="dash-nav-group">
         <a href="/company/dealers" id="tab-dealer" class="dash-nav-link">
           <svg class="dash-nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 7V5a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><rect x="4" y="7" width="16" height="14" rx="2"/><path d="M9 12h6M9 16h4"/></svg>
@@ -319,6 +255,70 @@
           </a>
         </div>
       </div>
+      <div class="dash-nav-group">
+        <a href="/company/inventory" id="tab-inventory" class="dash-nav-link">
+          <svg class="dash-nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 10 12 4.5 21 10v9.5a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V10z"/><path d="M9 20.5V12h6v8.5"/></svg>
+          <span>Inventory</span>
+        </a>
+        <div id="inventory-subnav" class="dash-sub hidden">
+          <a href="/company/inventory" id="tab-inv-items" class="dash-sub-link">
+            <svg class="dash-nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 10 12 4.5 21 10v9.5a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V10z"/><path d="M9 20.5V12h6v8.5"/></svg>
+            <span>Inventory</span>
+          </a>
+          <a href="/company/inventory/locations" id="tab-warehouses" class="dash-sub-link">
+            <svg class="dash-nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 21V8l9-5 9 5v13"/><path d="M9 21v-8h6v8"/></svg>
+            <span>Location</span>
+          </a>
+          <a href="/company/inventory/receipt-shipments" id="tab-receipt-shipments" class="dash-sub-link">
+            <svg class="dash-nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 7h16l-1.5 12H5.5L4 7z"/><path d="M9 7V5a3 3 0 0 1 6 0v2"/><path d="M9 14h6M9 18h4"/></svg>
+            <span>Receipt Shipment</span>
+          </a>
+        </div>
+      </div>
+      <div class="dash-nav-group">
+        <a href="/company/inventory/vendors" id="tab-vendor" class="dash-nav-link">
+          <svg class="dash-nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="8" r="3.25"/><path d="M5 19.2c.9-3.1 3.5-4.7 7-4.7s6.1 1.6 7 4.7"/></svg>
+          <span>Vendor</span>
+        </a>
+        <div id="vendor-subnav" class="dash-sub hidden">
+          <a href="/company/inventory/vendors" id="tab-vendors" class="dash-sub-link">
+            <svg class="dash-nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="8" r="3.25"/><path d="M5 19.2c.9-3.1 3.5-4.7 7-4.7s6.1 1.6 7 4.7"/></svg>
+            <span>Vendor</span>
+          </a>
+          <a href="/company/inventory/purchase-orders" id="tab-purchase-orders" class="dash-sub-link">
+            <svg class="dash-nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 3h8l4 4v14a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1z"/><path d="M15 3v5h5"/><path d="M9 13h6M9 17h4"/></svg>
+            <span>Purchase Order</span>
+          </a>
+        </div>
+      </div>
+      <a href="/company/calculator" id="tab-calculator" class="dash-nav-link">
+        <svg class="dash-nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="5" y="3" width="14" height="18" rx="2"/><path d="M8 7h8M8 12h.01M12 12h.01M16 12h.01M8 16h.01M12 16h.01M16 16h.01"/></svg>
+        <span>Calculator</span>
+      </a>
+      <div class="dash-nav-group">
+        <a href="/company/website" id="tab-website" class="dash-nav-link">
+          <svg class="dash-nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M3 8h18"/><path d="M8 12h5M8 16h8"/></svg>
+          <span>Website</span>
+        </a>
+        <div id="website-subnav" class="dash-sub hidden">
+          <a href="/company/website" id="tab-products" class="dash-sub-link">
+            <svg class="dash-nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 8.5 12 13 3 8.5 12 4l9 4.5z"/><path d="M3 8.5v7L12 20l9-4.5v-7"/><path d="M12 13v7"/></svg>
+            <span>Products</span>
+          </a>
+          <a href="/company/website/store" id="tab-store" class="dash-sub-link">
+            <svg class="dash-nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9h15l-1.4 8.2A2 2 0 0 1 17.6 19H8.4a2 2 0 0 1-2-1.8L5 4H3"/><circle cx="9" cy="21" r="1"/><circle cx="18" cy="21" r="1"/></svg>
+            <span>Store</span>
+          </a>
+          <a href="/company/website/accounts" id="tab-accounts" class="dash-sub-link">
+            <svg class="dash-nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="8" r="3.25"/><path d="M5 19.2c.9-3.1 3.5-4.7 7-4.7s6.1 1.6 7 4.7"/></svg>
+            <span>Accounts</span>
+          </a>
+          <a href="/company/website/traffic" id="tab-traffic" class="dash-sub-link">
+            <svg class="dash-nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 19V5"/><path d="M4 19h16"/><path d="M8 15l3.2-4.2 2.6 2.4L18 8"/></svg>
+            <span>Traffic</span>
+          </a>
+        </div>
+      </div>
     </nav>
     <div class="dash-sidebar-foot hidden" id="admin-utils">
       <button type="button" id="header-chat" class="dash-nav-link hidden" aria-pressed="false">
@@ -327,19 +327,11 @@
         <span class="dash-nav-unread" id="nav-chat-unread" hidden></span>
       </button>
       <div class="dash-nav-group">
-        <a href="/company/settings/updates" id="header-settings" class="dash-nav-link">
+        <a href="/company/settings/company" id="header-settings" class="dash-nav-link">
           <svg class="dash-nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
           <span>Settings</span>
         </a>
         <div id="settings-subnav" class="dash-sub hidden">
-          <a href="/company/settings/updates" id="tab-updates" class="dash-sub-link">
-            <svg class="dash-nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 6v6l3.5 2"/><circle cx="12" cy="12" r="9"/></svg>
-            <span>What’s new</span>
-          </a>
-          <a href="/company/settings/guide" id="tab-guide" class="dash-sub-link">
-            <svg class="dash-nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 4h9a3 3 0 0 1 3 3v13H8a3 3 0 0 0-3 3V4z"/><path d="M5 4v16"/><path d="M19 7h-5"/></svg>
-            <span>Company guide</span>
-          </a>
           <a href="/company/settings/company" id="tab-company" class="dash-sub-link">
             <svg class="dash-nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 20V9l8-5 8 5v11"/><path d="M9 20v-6h6v6"/><path d="M9 10h.01M15 10h.01"/></svg>
             <span>Company</span>
@@ -351,6 +343,14 @@
           <a href="/company/settings" id="tab-staff" class="dash-sub-link">
             <svg class="dash-nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="9" cy="8" r="3"/><path d="M3 19c.7-3 2.8-4.5 6-4.5s5.3 1.5 6 4.5"/><circle cx="17" cy="8.5" r="2.3"/><path d="M16.2 14.6c2.2.4 3.8 1.6 4.3 4.4"/></svg>
             <span>Manage users</span>
+          </a>
+          <a href="/company/settings/updates" id="tab-updates" class="dash-sub-link">
+            <svg class="dash-nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 6v6l3.5 2"/><circle cx="12" cy="12" r="9"/></svg>
+            <span>What’s new</span>
+          </a>
+          <a href="/company/settings/guide" id="tab-guide" class="dash-sub-link">
+            <svg class="dash-nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 4h9a3 3 0 0 1 3 3v13H8a3 3 0 0 0-3 3V4z"/><path d="M5 4v16"/><path d="M19 7h-5"/></svg>
+            <span>Company guide</span>
           </a>
         </div>
       </div>
@@ -5592,13 +5592,13 @@
       if (name === 'calculator') return 'calculator';
       if (name === 'chat') return 'chat';
       if (name === 'products' || name === 'store' || name === 'accounts' || name === 'traffic' || name === 'website') return 'website';
-      if (name === 'installed-walls') return 'installed';
+      if (name === 'installed-walls') return 'customer';
       if (name === 'dealer' || name === 'dealers' || name === 'deal-registrations' || name === 'dealer-rmas') return 'dealer';
       if (name === 'inventory' || name === 'warehouses' || name === 'receipt-shipments') return 'inventory';
       if (name === 'vendors' || name === 'purchase-orders') return 'vendor';
       if (name === 'leads' || name === 'pipeline' || name === 'activities' || name === 'crm') return 'crm';
       if (name === 'customers' || name === 'quotes' || name === 'orders' || name === 'invoices' || name === 'sales') return 'customer';
-      if (name === 'staff' || name === 'roles' || name === 'company' || name === 'forms') return 'settings';
+      if (name === 'staff' || name === 'roles' || name === 'company' || name === 'forms' || name === 'updates' || name === 'guide') return 'settings';
       return '';
     }
 
@@ -5606,13 +5606,13 @@
       if (group === 'chat') return 'chat';
       if (group === 'calculator') return 'calculator';
       if (group === 'website') return 'products';
-      if (group === 'installed') return 'installed-walls';
+      if (group === 'installed') return 'customers';
       if (group === 'dealer') return 'dealer';
       if (group === 'inventory') return 'inventory';
       if (group === 'vendor') return 'vendors';
       if (group === 'crm') return 'leads';
       if (group === 'customer') return 'customers';
-      if (group === 'settings') return 'staff';
+      if (group === 'settings') return 'company';
       return 'dashboard';
     }
 
@@ -5620,13 +5620,13 @@
       if (group === 'chat') return ['chat'];
       if (group === 'calculator') return ['calculator'];
       if (group === 'website') return ['products', 'store', 'accounts', 'traffic'];
-      if (group === 'installed') return ['installed-walls'];
+      if (group === 'installed') return ['customers', 'quotes', 'orders', 'invoices', 'sales', 'installed-walls'];
       if (group === 'dealer') return ['dealer', 'dealers', 'deal-registrations', 'dealer-rmas'];
       if (group === 'inventory') return ['inventory', 'warehouses', 'receipt-shipments'];
       if (group === 'vendor') return ['vendors', 'purchase-orders'];
       if (group === 'crm') return ['leads', 'pipeline', 'activities'];
-      if (group === 'customer') return ['customers', 'quotes', 'orders', 'invoices', 'sales'];
-      if (group === 'settings') return ['staff', 'roles', 'company', 'forms'];
+      if (group === 'customer') return ['customers', 'quotes', 'orders', 'invoices', 'sales', 'installed-walls'];
+      if (group === 'settings') return ['company', 'forms', 'staff', 'roles', 'updates', 'guide'];
       return ['dashboard'];
     }
 
@@ -6269,7 +6269,7 @@
       return canUse('sales') || canUse('quotes') || canUse('orders') || canUse('invoices');
     }
     function canUseCustomerNav() {
-      return canUse('customers');
+      return canUse('customers') || canUse('orders');
     }
     function canUseDealerNav() {
       return canUse('dealer') || canUse('dealers');
@@ -6508,6 +6508,11 @@
       setHidden('tab-vendors', !canUse('vendors'));
       setHidden('tab-purchase-orders', !canUse('purchase-orders'));
       setHidden('tab-customer', !canUseCustomerNav());
+      const customerNav = document.getElementById('tab-customer');
+      const customerBar = document.getElementById('tabbar-customer');
+      const customerHref = canUse('customers') ? '/company/customers' : '/company/installed-walls';
+      if (customerNav) customerNav.setAttribute('href', customerHref);
+      if (customerBar) customerBar.setAttribute('href', customerHref);
       setHidden('tab-customers', !canUse('customers'));
       setHidden('tab-quotes', !canUse('quotes'));
       setHidden('tab-orders', !canUse('orders'));
@@ -8601,7 +8606,7 @@
       const view = viewTabForMaster(name);
       const onWebsite = view === 'products' || view === 'store' || view === 'accounts' || view === 'traffic';
       const onSettings = view === 'staff' || view === 'roles' || view === 'company' || view === 'forms' || view === 'updates' || view === 'guide';
-      const onCustomerNav = view === 'quotes' || view === 'orders' || view === 'invoices' || view === 'sales' || view === 'customers';
+      const onCustomerNav = view === 'quotes' || view === 'orders' || view === 'invoices' || view === 'sales' || view === 'customers' || view === 'installed-walls';
       const onDealerNav = view === 'dealer' || view === 'dealers' || view === 'deal-registrations' || view === 'dealer-rmas';
       const onCrmNav = view === 'leads' || view === 'pipeline' || view === 'activities' || view === 'crm';
       const onSales = view === 'quotes' || view === 'orders' || view === 'invoices' || view === 'sales';
@@ -8740,7 +8745,7 @@
       document.getElementById('tab-customers').className = navLinkClass(view === 'customers', !canUse('customers'), 'sub');
       document.getElementById('tab-customer').className = navLinkClass(onCustomerNav, !canUseCustomerNav());
       const tabWalls = document.getElementById('tab-installed-walls');
-      if (tabWalls) tabWalls.className = navLinkClass(view === 'installed-walls', !canUse('orders'));
+      if (tabWalls) tabWalls.className = navLinkClass(view === 'installed-walls', !canUse('orders'), 'sub');
       const tabDealer = document.getElementById('tab-dealer');
       if (tabDealer) tabDealer.className = navLinkClass(onDealerNav, !canUseDealerNav());
       const tabDealerList = document.getElementById('tab-dealer-list');
@@ -8793,7 +8798,7 @@
         dealer: ['Dealer', ''],
         dealers: ['Dealer', 'Applications'],
         'deal-registrations': ['Dealer', 'Deal registration'],
-        'installed-walls': ['Installed walls', ''],
+        'installed-walls': ['Customer', 'Installed walls'],
         'dealer-rmas': ['Dealer', 'RMA'],
         traffic: ['Website', 'Traffic'],
         inventory: ['Inventory', ''],
@@ -14153,7 +14158,7 @@
       const onWebsite = name === 'products' || name === 'store' || name === 'accounts' || name === 'traffic';
       const onInventory = name === 'inventory' || name === 'warehouses' || name === 'receipt-shipments';
       const onVendorNav = name === 'vendors' || name === 'purchase-orders';
-      const onCustomerNav = name === 'sales' || name === 'quotes' || name === 'orders' || name === 'invoices' || name === 'customers';
+      const onCustomerNav = name === 'sales' || name === 'quotes' || name === 'orders' || name === 'invoices' || name === 'customers' || name === 'installed-walls';
       const onDealerNav = name === 'dealer' || name === 'dealers' || name === 'deal-registrations' || name === 'dealer-rmas';
       const onCrmNav = name === 'leads' || name === 'pipeline' || name === 'activities' || name === 'crm';
       const onSettings = name === 'staff' || name === 'roles' || name === 'company' || name === 'forms' || name === 'updates' || name === 'guide';

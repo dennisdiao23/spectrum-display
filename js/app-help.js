@@ -56,13 +56,13 @@
       pages: COMPANY_PAGES,
       tour: [
         ['#tab-dashboard', 'Dashboard', 'Your start page. See a count for each area, then open the one you need.'],
-        ['#tab-calculator', 'Calculator', 'Size an LED wall for a job. Enter the screen size, pick a panel, and save the layout when you are ready to quote it.'],
-        ['#tab-website', 'Website', 'What visitors see on the public site. Open this when you are changing the catalog, the store, or website accounts.'],
+        ['#tab-crm', 'CRM', 'People who might buy, before they are a customer. Work new inquiries and deals in progress from here.'],
+        ['#tab-customer', 'Customer', 'Companies you already sell to. Open this for the account, a quote, an order, an invoice, or an installed wall.'],
+        ['#tab-dealer', 'Dealer', 'Dealers who buy from Spectrum. Open the dealer list, or review applications that came in from the site.'],
         ['#tab-inventory', 'Inventory', 'What is in the warehouse. Open this to check a SKU, a location, or a shipment that just arrived.'],
         ['#tab-vendor', 'Vendor', 'Companies you buy from. Open this to find a supplier or to write them a purchase order.'],
-        ['#tab-crm', 'CRM', 'People who might buy, before they are a customer. Work new inquiries and deals in progress from here.'],
-        ['#tab-customer', 'Customer', 'Companies you already sell to. Open this for the account, or for a quote, order, or invoice.'],
-        ['#tab-dealer', 'Dealer', 'Dealers who buy from Spectrum. Open the dealer list, or review applications that came in from the site.'],
+        ['#tab-calculator', 'Calculator', 'Size an LED wall for a job. Enter the screen size, pick a panel, and save the layout when you are ready to quote it.'],
+        ['#tab-website', 'Website', 'What visitors see on the public site. Open this when you are changing the catalog, the store, or website accounts.'],
         ['#header-chat', 'Chat', 'A message to other staff. Use it while you are still on the quote, order, or customer you are talking about.'],
         ['#header-settings', 'Settings', 'Spectrum’s own setup. Company details, the paperwork layout, and who can sign in.']
       ]
@@ -72,9 +72,12 @@
       tour: [
         ['a[data-view="home"]', 'Dashboard', 'Your start page. See counts for the price book, quote requests, orders, and saved projects, then open one.'],
         ['a[data-view="book"]', 'Dealer book', 'Your price list. Search a SKU to see your price and what is on hand. Factory cost is not on this page.'],
+        ['#portal-calculator', 'Calculator', 'Size a wall for your customer. Pick a panel and see the cabinet count at your price.'],
+        ['a[data-view="registrations"]', 'Deal registration', 'Register a named job so Spectrum can protect the opportunity. Open one to see if it was accepted.'],
         ['a[data-view="quotes"]', 'Request Quote', 'Ask Spectrum to price a job. Send the request here, then come back to read the quote they return.'],
         ['a[data-view="orders"]', 'Purchase Order', 'Orders you have placed with Spectrum. Open one to see what you ordered and where it stands.'],
-        ['#portal-calculator', 'Calculator', 'Size a wall for your customer. Pick a panel and see the cabinet count at your price.'],
+        ['a[data-view="walls"]', 'Installed walls', 'Walls you installed. Open one for the site, serials, spare kit, and warranty dates.'],
+        ['a[data-view="rmas"]', 'RMA', 'Ask to return goods. Open a request to see what you sent and where it stands.'],
         ['#portal-settings', 'Settings', 'Your dealer company on the portal. Name, address, and the people who can sign in on this account.']
       ]
     }
