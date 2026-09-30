@@ -4,8 +4,21 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <link rel="icon" href="/favicon.ico" sizes="48x48" />
+  <link rel="icon" type="image/png" href="/assets/favicon-32.png" sizes="32x32" />
+  <link rel="apple-touch-icon" href="/assets/apple-touch-icon.png" />
+  <link rel="manifest" href="/portal/manifest.webmanifest" />
+  <meta name="theme-color" content="#070B14" />
+  <meta name="mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-title" content="Dealer Portal" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
   <title>Dealer Portal | Spectrum Display</title>
   <meta name="robots" content="noindex, nofollow" />
+  <script>
+    if ('serviceWorker' in navigator && location.pathname.indexOf('/portal') === 0) {
+      navigator.serviceWorker.register('/portal/sw.js', { scope: '/portal' });
+    }
+  </script>
   <link rel="preload" as="image" href="/assets/spectrum-boot-still.png" />
   <link rel="preload" as="image" href="/assets/spectrum-boot.gif" />
   <style id="portal-boot-css">

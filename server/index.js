@@ -286,6 +286,19 @@ async function main() {
     res.set('X-Robots-Tag', 'noindex, nofollow');
     res.sendFile(path.join(ROOT, 'company', 'sw.js'));
   });
+  app.get('/portal/manifest.webmanifest', function (_req, res) {
+    res.set('Content-Type', 'application/manifest+json; charset=utf-8');
+    res.set('Cache-Control', 'no-cache');
+    res.set('X-Robots-Tag', 'noindex, nofollow');
+    res.sendFile(path.join(ROOT, 'portal', 'manifest.webmanifest'));
+  });
+  app.get('/portal/sw.js', function (_req, res) {
+    res.set('Content-Type', 'application/javascript; charset=utf-8');
+    res.set('Cache-Control', 'no-cache');
+    res.set('Service-Worker-Allowed', '/portal');
+    res.set('X-Robots-Tag', 'noindex, nofollow');
+    res.sendFile(path.join(ROOT, 'portal', 'sw.js'));
+  });
   const COMPANY_PAGES = [
     '/company',
     '/company/dashboard',
