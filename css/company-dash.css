@@ -2412,6 +2412,14 @@ html.dash-scroll-lock body.company-app {
     padding-bottom: 0;
   }
 
+  body.company-app.dash-tabbar-on .dash-shell {
+    height: calc(100% - var(--dash-chrome));
+  }
+
+  body.company-app.dash-tabbar-on .company-main {
+    padding-bottom: calc(var(--dash-tabbar-h) + 1.25rem);
+  }
+
   body.company-app.dash-tabbar-sub-open {
     --dash-tabbar-sub-h: 3.25rem;
   }
@@ -2498,7 +2506,7 @@ html.dash-scroll-lock body.company-app {
     box-sizing: border-box;
     height: var(--dash-tabbar-pill);
     padding: 0.15rem 0.35rem;
-    background: rgba(255, 255, 255, 0.72);
+    background: rgba(255, 255, 255, 0.78);
     -webkit-backdrop-filter: blur(22px) saturate(1.6);
     backdrop-filter: blur(22px) saturate(1.6);
     border: 1px solid rgba(255, 255, 255, 0.75);
