@@ -1,0 +1,67 @@
+{
+  "build": "2026-09-30-whats-new",
+  "notes": [
+    {
+      "id": "2026-09-30-whats-new",
+      "date": "2026-09-30",
+      "apps": ["company", "portal"],
+      "title": "What’s new, and a guide you can reopen",
+      "added": [
+        "A What’s new log of screen changes, in plain language.",
+        "A guide that lists what each Company and Dealer Portal menu is for.",
+        "A refresh bar if you left a tab open while we updated."
+      ],
+      "changed": [],
+      "removed": [],
+      "how": "After you sign in, a card appears if there is a note you have not seen. Click Got it to dismiss it, or See all updates to open the full log. You can reopen it any time: Settings → What’s new. Settings → Company guide (or Dealer guide) explains every menu. If you keep this tab open and we ship a change, a bar at the top asks you to refresh when you are ready. It does not refresh by itself, so a quote you are still typing is not wiped."
+    }
+  ],
+  "guides": {
+    "company": [
+      { "title": "Dashboard", "text": "Your start page. See a count for each area, then open the one you need." },
+      { "title": "Calculator", "text": "Size an LED wall for a job. Enter the screen size, pick a panel, and save the layout when you are ready to quote it." },
+      { "title": "Website → Products", "text": "The panel series on the public product pages. Change photos, specs, and which series are live." },
+      { "title": "Website → Store", "text": "What shoppers can buy on the US Store. Set the street price and the qty that can sell, then sync those items so checkout works." },
+      { "title": "Website → Accounts", "text": "People who created a website login. Look someone up when they cannot sign in or you need to see their account." },
+      { "title": "Website → Traffic", "text": "Who visited the site and which pages they opened. Use it to see what is getting attention." },
+      { "title": "Inventory", "text": "What is in the warehouse. Look up an item and see how many you have, then open it to change the qty or the details." },
+      { "title": "Inventory → Location", "text": "Your warehouses and bins. Use this when the same item sits in more than one place." },
+      { "title": "Inventory → Receipt Shipment", "text": "A shipment that arrived. Match it to the purchase order so the on-hand qty goes up." },
+      { "title": "Vendor", "text": "Companies you buy from. Open a supplier to see their contact, terms, and the products you buy from them." },
+      { "title": "Vendor → Purchase Order", "text": "An order you send to a vendor. Write it, email it, and keep it here until the goods arrive." },
+      { "title": "CRM → Lead", "text": "A new inquiry. Open it, assign it, and turn it into a customer when they are ready to buy." },
+      { "title": "CRM → Pipeline", "text": "Deals in progress, stage by stage. Move a deal forward when the next step happens." },
+      { "title": "CRM → Activity", "text": "Calls, emails, and tasks that are due. Use this so a follow-up does not sit." },
+      { "title": "Customer", "text": "Companies you already sell to. Open an account for contacts, addresses, and what you have sold them." },
+      { "title": "Customer → Sales Quote", "text": "A price you send before they buy. Build it, email it, and turn it into an order when they say yes." },
+      { "title": "Customer → Sales Order", "text": "A confirmed sale. What they are buying, where it ships, and where the order stands." },
+      { "title": "Customer → Invoice", "text": "What they owe. Send it, then mark it paid when the money comes in." },
+      { "title": "Installed walls", "text": "A wall that has shipped. Open one for the site, serials, spare kit, and warranty dates." },
+      { "title": "Dealer", "text": "Dealers you already work with. Open one for contacts, a portal login, and what you have sold them." },
+      { "title": "Dealer → Applications", "text": "Dealer applications that came in from the site. Open one, then approve or decline it." },
+      { "title": "Dealer → Deal registration", "text": "Jobs a dealer registered so you can protect the opportunity. Open one to review it." },
+      { "title": "Dealer → RMA", "text": "Return requests from dealers. Open one to see what they sent back and where it stands." },
+      { "title": "Chat", "text": "A message to other staff. Use it while you are still on the quote, order, or customer you are talking about." },
+      { "title": "Settings → Company", "text": "Your company name, address, and logo. This is what prints on quotes, orders, and invoices." },
+      { "title": "Settings → Forms", "text": "The layout of quotes, orders, and invoices. Change it here when a document should look different." },
+      { "title": "Settings → Manage users", "text": "Staff logins. Add a person, choose what they can open, and turn off someone who left." },
+      { "title": "Settings → What’s new", "text": "The log of screen changes. Added, changed, or removed, in plain language. New functions also say where to click." },
+      { "title": "Settings → Company guide", "text": "This list. What each menu is for, so someone new can find their way." }
+    ],
+    "portal": [
+      { "title": "Dashboard", "text": "Your start page. See counts for the price book, quote requests, orders, and saved projects, then open one." },
+      { "title": "Dealer book", "text": "Your price list. Search a SKU to see your price and what is on hand. Factory cost is not on this page." },
+      { "title": "Request Quote", "text": "Ask Spectrum to price a job. Send the request here, then come back to read the quote they return." },
+      { "title": "Purchase Order", "text": "Orders you have placed with Spectrum. Open one to see what you ordered and where it stands." },
+      { "title": "Installed walls", "text": "Walls you installed. Open one for the site, serials, spare kit, and warranty dates." },
+      { "title": "Deal registration", "text": "Register a named job so Spectrum can protect the opportunity. Open one to see if it was accepted." },
+      { "title": "RMA", "text": "Ask to return goods. Open a request to see what you sent and where it stands." },
+      { "title": "Calculator", "text": "Size a wall for your customer. Pick a panel and see the cabinet count at your price." },
+      { "title": "Projects", "text": "Wall layouts you saved. Open one to keep working, or send it as a quote request." },
+      { "title": "Saved Panel", "text": "Panels you use often. Pick one so the calculator starts on that series." },
+      { "title": "Settings → Company", "text": "Your dealer company on the portal. Name, address, and the people who can sign in on this account." },
+      { "title": "Settings → What’s new", "text": "The log of portal screen changes, in plain language." },
+      { "title": "Settings → Dealer guide", "text": "This list. What each menu is for." }
+    ]
+  }
+}

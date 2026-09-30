@@ -32,7 +32,7 @@
     #company-boot .boot-login button[type="submit"]{background:#fff!important;color:#000!important;border:0}
     #company-boot .boot-login button[type="submit"]:hover{background:#e8e8e8!important}
   </style>
-  <link rel="stylesheet" href="/css/company-dash.css?v=dealer-files3" />
+  <link rel="stylesheet" href="/css/company-dash.css?v=notes4" />
   <script src="/js/address-autocomplete.js"></script>
   <script src="/js/company-chat.js?v=po-ship1"></script>
   <script src="/js/company-crm.js?v=zoomphone3"></script>
@@ -40,7 +40,8 @@
   <script src="/js/company-traffic.js?v=loc1"></script>
   <script src="/js/company-website-control.js?v=webctrl7"></script>
   <script src="/js/print-form.js?v=forms21"></script>
-  <script src="/js/app-help.js?v=help1"></script>
+  <script src="/js/app-help.js?v=help4"></script>
+  <script src="/js/app-notes.js?v=notes3"></script>
   <script>
     if ('serviceWorker' in navigator && location.pathname.indexOf('/company') === 0) {
       navigator.serviceWorker.register('/company/sw.js', { scope: '/company' });
@@ -326,11 +327,19 @@
         <span class="dash-nav-unread" id="nav-chat-unread" hidden></span>
       </button>
       <div class="dash-nav-group">
-        <a href="/company/settings" id="header-settings" class="dash-nav-link">
+        <a href="/company/settings/updates" id="header-settings" class="dash-nav-link">
           <svg class="dash-nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
           <span>Settings</span>
         </a>
         <div id="settings-subnav" class="dash-sub hidden">
+          <a href="/company/settings/updates" id="tab-updates" class="dash-sub-link">
+            <svg class="dash-nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 6v6l3.5 2"/><circle cx="12" cy="12" r="9"/></svg>
+            <span>What’s new</span>
+          </a>
+          <a href="/company/settings/guide" id="tab-guide" class="dash-sub-link">
+            <svg class="dash-nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 4h9a3 3 0 0 1 3 3v13H8a3 3 0 0 0-3 3V4z"/><path d="M5 4v16"/><path d="M19 7h-5"/></svg>
+            <span>Company guide</span>
+          </a>
           <a href="/company/settings/company" id="tab-company" class="dash-sub-link">
             <svg class="dash-nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 20V9l8-5 8 5v11"/><path d="M9 20v-6h6v6"/><path d="M9 10h.01M15 10h.01"/></svg>
             <span>Company</span>
@@ -3481,6 +3490,12 @@
       </div>
 
       <div id="settings-pane" class="hidden space-y-6">
+      <div id="updates-section" class="hidden app-notes-page">
+        <div id="updates-list"></div>
+      </div>
+      <div id="guide-section" class="hidden app-notes-page">
+        <div id="guide-list"></div>
+      </div>
       <div id="company-section" class="hidden cc-list-inner">
         <div class="page-kpis" id="ca-overview">
           <button type="button" class="dash-kpi is-on" data-filter="all" aria-pressed="true">
@@ -4889,7 +4904,7 @@
     </a>
   </nav>
 
-  <link rel="stylesheet" href="/css/company-dash.css?v=dealer-files3" />
+  <link rel="stylesheet" href="/css/company-dash.css?v=notes4" />
   <link rel="stylesheet" href="/css/company-tw.css?v=boot1" />
 
   <script>
@@ -4942,6 +4957,7 @@
       stillBootLogo();
       showCompanyBoot();
       if (window.SpectrumHelp) SpectrumHelp.stop();
+      if (window.SpectrumNotes) SpectrumNotes.hide();
       if (dashPanel) dashPanel.classList.add('hidden');
       if (loginPanel) loginPanel.classList.remove('hidden');
     }
@@ -4979,6 +4995,20 @@
       const wait = minMs - (Date.now() - started);
       if (wait > 0) await new Promise(function (resolve) { setTimeout(resolve, wait); });
       hideCompanyBoot();
+      try {
+        if (window.SpectrumNotes) {
+          SpectrumNotes.start({
+            app: 'company',
+            userId: admin && admin.id,
+            goUpdates: function () {
+              try {
+                history.pushState({ tab: 'updates' }, '', '/company/settings/updates');
+                showAdminTab('updates');
+              } catch (err) { console.error('notes go', err); }
+            }
+          });
+        }
+      } catch (err) { console.error('SpectrumNotes', err); }
     }
 
     function companyPath() {
@@ -5028,6 +5058,8 @@
       if (hash === 'inventory/warehouses' || hash === 'warehouses' || hash === 'inventory/locations' || hash === 'locations') return 'warehouses';
       if (hash === 'inventory/receipt-shipments' || hash === 'receipt-shipments') return 'receipt-shipments';
       if (hash === 'inventory') return 'inventory';
+      if (hash === 'settings/updates' || hash === 'updates') return 'updates';
+      if (hash === 'settings/guide' || hash === 'guide') return 'guide';
       if (hash === 'settings/company' || hash === 'company') return 'company';
       if (hash === 'settings/forms' || hash === 'forms') return 'forms';
       if (hash === 'settings/roles' || hash === 'roles') return 'staff';
@@ -5086,6 +5118,8 @@
       if (p === '/company/inventory/purchase-orders') return 'purchase-orders';
       if (p === '/company/inventory/receipt-shipments') return 'receipt-shipments';
       if (p === '/company/inventory') return 'inventory';
+      if (p === '/company/settings/updates') return 'updates';
+      if (p === '/company/settings/guide') return 'guide';
       if (p === '/company/settings/company') return 'company';
       if (p === '/company/settings/forms') return 'forms';
       if (p === '/company/settings/roles') return 'staff';
@@ -5125,6 +5159,8 @@
       if (name === 'traffic') return '/company/website/traffic';
       if (name === 'control') return '/company/website';
       if (name === 'store') return '/company/website/store';
+      if (name === 'updates') return '/company/settings/updates';
+      if (name === 'guide') return '/company/settings/guide';
       if (name === 'company') return '/company/settings/company';
       if (name === 'forms') return '/company/settings/forms';
       if (name === 'staff' || name === 'roles') return '/company/settings';
@@ -5272,6 +5308,8 @@
         if (p === '/company/inventory/purchase-orders') return 'purchase-orders';
         if (p === '/company/inventory/receipt-shipments') return 'receipt-shipments';
         if (p === '/company/inventory') return 'inventory';
+        if (p === '/company/settings/updates') return 'updates';
+        if (p === '/company/settings/guide') return 'guide';
         if (p === '/company/settings/company') return 'company';
         if (p === '/company/settings/forms') return 'forms';
         if (p === '/company/settings/roles' || p === '/company/settings' || /^\/company\/settings\/users(\/|$)/.test(p)) return 'staff';
@@ -5389,7 +5427,9 @@
       company: 'Company',
       forms: 'Forms',
       staff: 'Manage users',
-      roles: 'Manage users'
+      roles: 'Manage users',
+      updates: 'What’s new',
+      guide: 'Company guide'
     };
     const MASTER_TAB_ICON = {
       dashboard: '<svg class="dash-master-tab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="8" height="8" rx="1.5"/><rect x="13" y="3" width="8" height="8" rx="1.5"/><rect x="3" y="13" width="8" height="8" rx="1.5"/><rect x="13" y="13" width="8" height="8" rx="1.5"/></svg>',
@@ -5424,6 +5464,8 @@
     MASTER_TAB_ICON.forms = MASTER_TAB_ICON.settings;
     MASTER_TAB_ICON.staff = MASTER_TAB_ICON.settings;
     MASTER_TAB_ICON.roles = MASTER_TAB_ICON.settings;
+    MASTER_TAB_ICON.updates = MASTER_TAB_ICON.settings;
+    MASTER_TAB_ICON.guide = MASTER_TAB_ICON.settings;
     MASTER_TAB_ICON.sales = MASTER_TAB_ICON.quotes;
     MASTER_TAB_ICON['quote-new'] = MASTER_TAB_ICON.quotes;
     MASTER_TAB_ICON['order-new'] = MASTER_TAB_ICON.orders;
@@ -5458,7 +5500,9 @@
       invoices: '/company/sales/invoices',
       company: '/company/settings/company',
       forms: '/company/settings/forms',
-      staff: '/company/settings'
+      staff: '/company/settings',
+      updates: '/company/settings/updates',
+      guide: '/company/settings/guide'
     };
     let dashLoadedInner = {};
     let dashTabCaption = {};
@@ -6152,7 +6196,7 @@
     }
     function canUse(section) {
       if (!currentAdminUser) return false;
-      if (section === 'calculator') return true;
+      if (section === 'calculator' || section === 'updates' || section === 'guide') return true;
       if (adminPerms().settings) return true;
       const doc = parseDocMasterTab(section);
       if (doc) section = docMasterListTab(doc.kind);
@@ -6312,7 +6356,9 @@
       setHidden('tab-activities', !canUse('activities'));
       setHidden('header-chat', !canUse('chat'));
       setHidden('tabbar-chat', !canUse('chat'));
-      setHidden('header-settings', !canUseSettingsNav());
+      setHidden('header-settings', false);
+      setHidden('tab-updates', false);
+      setHidden('tab-guide', false);
       setHidden('tab-company', !canUse('company'));
       setHidden('tab-forms', !canUse('forms'));
       setHidden('tab-staff', !canUse('staff'));
@@ -8391,7 +8437,7 @@
       const doc = parseDocMasterTab(name);
       const view = viewTabForMaster(name);
       const onWebsite = view === 'products' || view === 'store' || view === 'accounts' || view === 'traffic';
-      const onSettings = view === 'staff' || view === 'roles' || view === 'company' || view === 'forms';
+      const onSettings = view === 'staff' || view === 'roles' || view === 'company' || view === 'forms' || view === 'updates' || view === 'guide';
       const onCustomerNav = view === 'quotes' || view === 'orders' || view === 'invoices' || view === 'sales' || view === 'customers';
       const onDealerNav = view === 'dealer' || view === 'dealers' || view === 'deal-registrations' || view === 'dealer-rmas';
       const onCrmNav = view === 'leads' || view === 'pipeline' || view === 'activities' || view === 'crm';
@@ -8512,6 +8558,11 @@
       document.getElementById('company-section').classList.toggle('hidden', view !== 'company');
       document.getElementById('forms-section').classList.toggle('hidden', view !== 'forms');
       document.getElementById('staff-section').classList.toggle('hidden', view !== 'staff' && view !== 'roles');
+      const updatesSec = document.getElementById('updates-section');
+      if (updatesSec) updatesSec.classList.toggle('hidden', view !== 'updates');
+      const guideSec = document.getElementById('guide-section');
+      if (guideSec) guideSec.classList.toggle('hidden', view !== 'guide');
+      if ((view === 'updates' || view === 'guide') && window.SpectrumNotes) SpectrumNotes.paint();
       document.getElementById('website-subnav').classList.toggle('hidden', !onWebsite);
       document.getElementById('settings-subnav').classList.toggle('hidden', !onSettings);
       document.getElementById('customer-subnav').classList.toggle('hidden', !onCustomerNav);
@@ -8559,6 +8610,10 @@
       document.getElementById('tab-company').className = navLinkClass(view === 'company', !canUse('company'), 'sub');
       document.getElementById('tab-forms').className = navLinkClass(view === 'forms', !canUse('forms'), 'sub');
       document.getElementById('tab-staff').className = navLinkClass(view === 'staff' || view === 'roles', !canUse('staff'), 'sub');
+      const tabUpdates = document.getElementById('tab-updates');
+      if (tabUpdates) tabUpdates.className = navLinkClass(view === 'updates', false, 'sub');
+      const tabGuide = document.getElementById('tab-guide');
+      if (tabGuide) tabGuide.className = navLinkClass(view === 'guide', false, 'sub');
       document.getElementById('header-settings').className = navLinkClass(onSettings, !canUseSettingsNav());
       applyRoleMenuVisibility();
       syncTabbarActive(view);
@@ -8594,7 +8649,9 @@
         company: ['Settings', 'Company accounts'],
         forms: ['Settings', 'Forms'],
         staff: ['Settings', 'Manage users'],
-        roles: ['Settings', 'Manage users']
+        roles: ['Settings', 'Manage users'],
+        updates: ['Settings', 'What’s new'],
+        guide: ['Settings', 'Company guide']
       };
       const bits = titles[view] || titles[name] || ['Company', ''];
       document.getElementById('admin-page-title').textContent = bits[0];
@@ -13756,7 +13813,7 @@
       const onCustomerNav = name === 'sales' || name === 'quotes' || name === 'orders' || name === 'invoices' || name === 'customers';
       const onDealerNav = name === 'dealer' || name === 'dealers' || name === 'deal-registrations' || name === 'dealer-rmas';
       const onCrmNav = name === 'leads' || name === 'pipeline' || name === 'activities' || name === 'crm';
-      const onSettings = name === 'staff' || name === 'roles' || name === 'company' || name === 'forms';
+      const onSettings = name === 'staff' || name === 'roles' || name === 'company' || name === 'forms' || name === 'updates' || name === 'guide';
       const map = {
         'tabbar-dashboard': name === 'dashboard',
         'tabbar-calculator': name === 'calculator',

@@ -8,6 +8,8 @@
     accounts: ['Accounts', 'People who created a website login. Look someone up when they cannot sign in or you need to see their account.'],
     dealer: ['Dealer', 'Dealers you already work with. Open one for contacts, a portal login, and what you have sold them.'],
     dealers: ['Applications', 'Dealer applications that came in from the site. Open one, then approve or decline it.'],
+    'deal-registrations': ['Deal registration', 'Jobs a dealer registered so you can protect the opportunity. Open one to review it.'],
+    'dealer-rmas': ['RMA', 'Return requests from dealers. Open one to see what they sent back and where it stands.'],
     traffic: ['Traffic', 'Who visited the site and which pages they opened. Use it to see what is getting attention.'],
     inventory: ['Inventory', 'What is in the warehouse. Look up an item and see how many you have, then open it to change the qty or the details.'],
     warehouses: ['Location', 'Your warehouses and bins. Use this when the same item sits in more than one place.'],
@@ -22,12 +24,15 @@
     quotes: ['Sales Quote', 'A price you send before they buy. Build it, email it, and turn it into an order when they say yes.'],
     orders: ['Sales Order', 'A confirmed sale. What they are buying, where it ships, and where the order stands.'],
     invoices: ['Invoice', 'What they owe. Send it, then mark it paid when the money comes in.'],
+    'installed-walls': ['Installed walls', 'A wall that has shipped. Open one for the site, serials, spare kit, and warranty dates.'],
     sales: ['Sales Quote', 'A price you send before they buy. Build it, email it, and turn it into an order when they say yes.'],
     chat: ['Chat', 'A message to other staff. Use it while you are still on the quote, order, or customer you are talking about.'],
     company: ['Company', 'Your company name, address, and logo. This is what prints on quotes, orders, and invoices.'],
     forms: ['Forms', 'The layout of quotes, orders, and invoices. Change it here when a document should look different.'],
     staff: ['Manage users', 'Staff logins. Add a person, choose what they can open, and turn off someone who left.'],
-    roles: ['Manage users', 'Staff logins. Add a person, choose what they can open, and turn off someone who left.']
+    roles: ['Manage users', 'Staff logins. Add a person, choose what they can open, and turn off someone who left.'],
+    updates: ['What’s new', 'The log of screen changes. Added, changed, or removed, in plain language.'],
+    guide: ['Company guide', 'What each menu is for. Use this when you are new or looking for a page.']
   };
 
   const PORTAL_PAGES = {
@@ -35,10 +40,15 @@
     book: ['Dealer book', 'Your price list. Search a SKU to see your price and what is on hand. Factory cost is not on this page.'],
     quotes: ['Request Quote', 'Ask Spectrum to price a job. Send the request here, then come back to read the quote they return.'],
     orders: ['Purchase Order', 'Orders you have placed with Spectrum. Open one to see what you ordered and where it stands.'],
+    walls: ['Installed walls', 'Walls you installed. Open one for the site, serials, spare kit, and warranty dates.'],
+    registrations: ['Deal registration', 'Register a named job so Spectrum can protect the opportunity. Open one to see if it was accepted.'],
+    rmas: ['RMA', 'Ask to return goods. Open a request to see what you sent and where it stands.'],
     calculator: ['Calculator', 'Size a wall for your customer. Pick a panel and see the cabinet count at your price.'],
     projects: ['Projects', 'Wall layouts you saved. Open one to keep working, or send it as a quote request.'],
     panels: ['Saved Panel', 'Panels you use often. Pick one so the calculator starts on that series.'],
-    company: ['Company', 'Your dealer company on the portal. Name, address, and the people who can sign in on this account.']
+    company: ['Company', 'Your dealer company on the portal. Name, address, and the people who can sign in on this account.'],
+    updates: ['What’s new', 'The log of portal screen changes, in plain language.'],
+    guide: ['Dealer guide', 'What each menu is for. Use this when you are new or looking for a page.']
   };
 
   const APPS = {
@@ -87,6 +97,7 @@
   let card = null;
   let tour = null;
   let wired = false;
+  let tourEndFns = [];
 
   function seenKey() {
     return 'spectrum-help-tour-' + state.app + '-' + (state.userId || 'anon');
@@ -227,7 +238,11 @@
   function beginTour() {
     closeCard();
     state.steps = visibleSteps();
-    if (!state.steps.length) return;
+    if (!state.steps.length) {
+      markSeen();
+      fireTourEnd();
+      return;
+    }
     state.openedSidebar = false;
     if (window.matchMedia('(max-width: 900px)').matches && !document.body.classList.contains('dash-open')) {
       document.body.classList.add('dash-open');
@@ -254,6 +269,16 @@
     if (remember) markSeen();
     const btn = button();
     if (remember && btn && !btn.hidden && !btn.classList.contains('hidden')) btn.focus();
+    if (remember) fireTourEnd();
+    else tourEndFns = [];
+  }
+
+  function fireTourEnd() {
+    const fns = tourEndFns.slice();
+    tourEndFns = [];
+    fns.forEach(function (fn) {
+      try { fn(); } catch (err) {}
+    });
   }
 
   function onDocClick(event) {
@@ -372,7 +397,10 @@
       fillCard();
       if (state.booted) return;
       state.booted = true;
-      if (hasSeen()) return;
+      if (hasSeen()) {
+        window.setTimeout(fireTourEnd, 0);
+        return;
+      }
       const gen = ++state.bootGen;
       window.setTimeout(function () {
         if (gen !== state.bootGen || state.tourOpen || hasSeen()) return;
@@ -392,6 +420,17 @@
       closeCard();
       if (state.tourOpen) endTour(false);
       hideButton();
+    },
+    isTourOpen: function () {
+      return !!state.tourOpen;
+    },
+    onTourEnd: function (fn) {
+      if (typeof fn !== 'function') return;
+      if (state.booted && hasSeen() && !state.tourOpen) {
+        window.setTimeout(fn, 0);
+        return;
+      }
+      tourEndFns.push(fn);
     }
   };
 })();
