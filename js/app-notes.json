@@ -1,6 +1,61 @@
 {
-  "build": "2026-09-30-menu",
+  "build": "2026-09-30-newsbar",
   "notes": [
+    {
+      "id": "2026-09-30-install-computer",
+      "date": "2026-09-30",
+      "kind": "update",
+      "desktop": true,
+      "apps": ["portal"],
+      "title": "Install on this computer",
+      "steps": [
+        {
+          "label": "Chrome",
+          "lines": [
+            "Click the install icon at the right of the address bar.",
+            "Click Install.",
+            "If the icon is missing, click the three dots, then Cast, save, and share, then Install page as app."
+          ]
+        },
+        {
+          "label": "Edge",
+          "lines": [
+            "Click the three dots.",
+            "Click Apps, then Install Dealer Portal.",
+            "Click Install."
+          ]
+        }
+      ],
+      "how": "Safari on a Mac does not install this app. Use Chrome or Edge. The app opens in its own window."
+    },
+    {
+      "id": "2026-09-30-install-phone",
+      "date": "2026-09-30",
+      "kind": "update",
+      "desktop": true,
+      "apps": ["portal"],
+      "title": "Install the phone app",
+      "steps": [
+        {
+          "label": "iPhone",
+          "lines": [
+            "Open this page in Safari.",
+            "Tap Share.",
+            "Tap Add to Home Screen.",
+            "Tap Add. The icon says Dealer Portal."
+          ]
+        },
+        {
+          "label": "Android",
+          "lines": [
+            "Open this page in Chrome.",
+            "Tap the three dots.",
+            "Tap Install app. If you do not see it, tap Add to Home screen.",
+            "Tap Install. The icon says Dealer Portal."
+          ]
+        }
+      ]
+    },
     {
       "id": "2026-09-30d-menu-order",
       "date": "2026-09-30",
