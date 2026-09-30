@@ -40,7 +40,7 @@
   <script src="/js/company-traffic.js?v=loc1"></script>
   <script src="/js/company-website-control.js?v=webctrl7"></script>
   <script src="/js/print-form.js?v=forms21"></script>
-  <script src="/js/app-help.js?v=help3"></script>
+  <script src="/js/app-help.js?v=help4"></script>
   <script src="/js/app-notes.js?v=notes3"></script>
   <script>
     if ('serviceWorker' in navigator && location.pathname.indexOf('/company') === 0) {
@@ -289,6 +289,10 @@
           </a>
         </div>
       </div>
+      <a href="/company/installed-walls" id="tab-installed-walls" class="dash-nav-link">
+        <svg class="dash-nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4" width="18" height="12" rx="1.5"/><path d="M8 20h8M12 16v4"/></svg>
+        <span>Installed walls</span>
+      </a>
       <div class="dash-nav-group">
         <a href="/company/dealers" id="tab-dealer" class="dash-nav-link">
           <svg class="dash-nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 7V5a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><rect x="4" y="7" width="16" height="14" rx="2"/><path d="M9 12h6M9 16h4"/></svg>
@@ -2813,6 +2817,77 @@
         </div>
       </div>
 
+      <div id="installed-walls-section" class="hidden">
+        <div class="cc-list-inner">
+          <p class="text-sm text-slate-500 mb-3">A wall that has shipped. Warranty end is the ship date plus 3 years. Selected COB also keeps a 5-year support date.</p>
+          <p id="iw-error" class="hidden text-sm text-red-400 mb-3"></p>
+          <div class="dash-split">
+            <div class="dash-split-left">
+              <div class="cc-table-card rounded-2xl border border-slate-800">
+                <div class="cc-table-wrap overflow-x-auto">
+                  <table class="w-full text-sm">
+                    <thead class="text-left text-slate-400 border-b border-slate-800">
+                      <tr>
+                        <th class="py-3 px-4 font-medium">Wall</th>
+                        <th class="py-3 px-4 font-medium">End customer</th>
+                        <th class="py-3 px-4 font-medium">Site</th>
+                        <th class="py-3 px-4 font-medium">Pitch</th>
+                        <th class="py-3 px-4 font-medium">Ship date</th>
+                        <th class="py-3 px-4 font-medium">Warranty end</th>
+                        <th class="py-3 px-4 font-medium">Spares</th>
+                      </tr>
+                    </thead>
+                    <tbody id="iw-table" class="text-slate-200"></tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+            <div class="dash-split-resizer" role="separator" aria-orientation="vertical" aria-label="Resize wall panels" tabindex="0"></div>
+            <div class="dash-split-right">
+              <div id="iw-overview" class="inv-right-panel">
+                <p class="inv-overview-lead">Select a wall, or create one from a shipped sales order.</p>
+              </div>
+              <form id="iw-form" class="inv-right-panel hidden space-y-4" style="padding:1.25rem;overflow:auto">
+                <input type="hidden" id="iw-id">
+                <h2 id="iw-title" class="font-semibold text-lg">Installed wall</h2>
+                <p id="iw-order" class="text-sm text-slate-500"></p>
+                <div class="grid sm:grid-cols-2 gap-3 text-sm">
+                  <label class="sm:col-span-2">Wall name<input id="iw-name" class="w-full mt-1 bg-slate-800 border border-slate-700 rounded-lg px-3 py-2"></label>
+                  <label>End customer<input id="iw-end" class="w-full mt-1 bg-slate-800 border border-slate-700 rounded-lg px-3 py-2"></label>
+                  <label>Installer<input id="iw-installer" class="w-full mt-1 bg-slate-800 border border-slate-700 rounded-lg px-3 py-2"></label>
+                  <label>Pitch<input id="iw-pitch" class="w-full mt-1 bg-slate-800 border border-slate-700 rounded-lg px-3 py-2" placeholder="1.56"></label>
+                  <label>Ship date<input id="iw-ship" type="date" class="w-full mt-1 bg-slate-800 border border-slate-700 rounded-lg px-3 py-2"></label>
+                  <label class="sm:col-span-2 flex items-center gap-2"><input id="iw-cob" type="checkbox"> Selected COB (5-year support)</label>
+                  <p class="text-sm text-slate-500">Warranty end <strong id="iw-warranty" class="text-slate-200"></strong></p>
+                  <p id="iw-support-wrap" class="text-sm text-slate-500 hidden">Support end <strong id="iw-support" class="text-slate-200"></strong></p>
+                  <label class="sm:col-span-2">Site street<input id="iw-street" class="w-full mt-1 bg-slate-800 border border-slate-700 rounded-lg px-3 py-2"></label>
+                  <label>City<input id="iw-city" class="w-full mt-1 bg-slate-800 border border-slate-700 rounded-lg px-3 py-2"></label>
+                  <label>State<input id="iw-state" class="w-full mt-1 bg-slate-800 border border-slate-700 rounded-lg px-3 py-2"></label>
+                  <label>ZIP<input id="iw-zip" class="w-full mt-1 bg-slate-800 border border-slate-700 rounded-lg px-3 py-2"></label>
+                  <label>Country<input id="iw-country" class="w-full mt-1 bg-slate-800 border border-slate-700 rounded-lg px-3 py-2"></label>
+                </div>
+                <div>
+                  <div class="flex items-center justify-between mb-2">
+                    <p class="text-sm font-semibold" style="margin:0">Serials</p>
+                    <button id="iw-add-serial" type="button" class="text-sm text-sky-400">Add serial</button>
+                  </div>
+                  <div id="iw-serials" class="space-y-2"></div>
+                </div>
+                <div>
+                  <div class="flex items-center justify-between mb-2">
+                    <p class="text-sm font-semibold" style="margin:0">Spare kit on site</p>
+                    <button id="iw-add-spare" type="button" class="text-sm text-sky-400">Add spare</button>
+                  </div>
+                  <div id="iw-spares" class="space-y-2"></div>
+                </div>
+                <button type="submit" class="px-4 py-2 rounded-full bg-sky-500 hover:bg-sky-400 text-white text-sm font-semibold">Save wall</button>
+                <p id="iw-msg" class="hidden text-sm"></p>
+              </form>
+            </div>
+          </div>
+        </div>
+      </div>
+
       <div id="customers-section" class="hidden">
         <div id="cc-workspace" class="cc-workspace">
         <div id="customers-list-wrap" class="cc-list-inner">
@@ -3366,6 +3441,7 @@
                   <button type="button" id="so-revert" class="so-doc-btn">Revert</button>
                   <button type="button" id="so-to-order" class="so-doc-btn hidden">Create sales order</button>
                   <button type="button" id="so-to-invoice" class="so-doc-btn hidden">Create invoice</button>
+                  <button type="button" id="so-to-wall" class="so-doc-btn hidden">Create installed wall</button>
                   <button type="button" id="so-delete-btn" class="so-doc-btn hidden">Delete</button>
                 </div>
               </form>
@@ -4989,6 +5065,7 @@
       if (hash === 'settings/roles' || hash === 'roles') return 'staff';
       if (hash === 'settings' || hash === 'settings/staff') return 'staff';
       if (hash === 'website/accounts' || hash === 'accounts') return 'accounts';
+      if (hash === 'installed-walls') return 'installed-walls';
       if (hash === 'dealers/rmas' || hash === 'rmas') return 'dealer-rmas';
       if (hash === 'dealers/registrations' || hash === 'registrations') return 'deal-registrations';
       if (hash === 'dealers/applications' || hash === 'website/dealers') return 'dealers';
@@ -5011,6 +5088,7 @@
       if (p === '/company/chat') return 'chat';
       if (p === '/company/calculator') return 'calculator';
       if (p === '/company' || p === '/company/dashboard') return 'dashboard';
+      if (p === '/company/installed-walls' || /^\/company\/installed-walls\/\d+$/.test(p)) return 'installed-walls';
       if (p === '/company/dealers/rmas') return 'dealer-rmas';
       if (p === '/company/dealers/registrations') return 'deal-registrations';
       if (p === '/company/dealers/applications' || p === '/company/website/dealers') return 'dealers';
@@ -5074,6 +5152,7 @@
       const doc = parseDocMasterTab(name);
       if (doc) return pathForDocMaster(doc.kind, doc.id);
       if (name === 'accounts') return '/company/website/accounts';
+      if (name === 'installed-walls') return '/company/installed-walls';
       if (name === 'dealers') return '/company/dealers/applications';
       if (name === 'deal-registrations') return '/company/dealers/registrations';
       if (name === 'dealer-rmas') return '/company/dealers/rmas';
@@ -5188,6 +5267,7 @@
     function tabFromHref(href) {
       try {
         const p = new URL(href, location.origin).pathname.replace(/\/+$/, '') || '/company';
+        if (p === '/company/installed-walls' || /^\/company\/installed-walls\/\d+$/.test(p)) return 'installed-walls';
         if (p === '/company/dealers/rmas') return 'dealer-rmas';
         if (p === '/company/dealers/registrations') return 'deal-registrations';
         if (p === '/company/dealers/applications' || p === '/company/website/dealers') return 'dealers';
@@ -5317,6 +5397,7 @@
       store: 'Store',
       accounts: 'Accounts',
       dealer: 'Dealer',
+      'installed-walls': 'Installed walls',
       dealers: 'Applications',
       'deal-registrations': 'Deal registration',
       'dealer-rmas': 'RMA',
@@ -5399,6 +5480,7 @@
       store: '/company/website/store',
       accounts: '/company/website/accounts',
       dealer: '/company/dealers',
+      'installed-walls': '/company/installed-walls',
       dealers: '/company/dealers/applications',
       'deal-registrations': '/company/dealers/registrations',
       'dealer-rmas': '/company/dealers/rmas',
@@ -5453,6 +5535,7 @@
       if (name === 'calculator') return 'calculator';
       if (name === 'chat') return 'chat';
       if (name === 'products' || name === 'store' || name === 'accounts' || name === 'traffic' || name === 'website') return 'website';
+      if (name === 'installed-walls') return 'installed';
       if (name === 'dealer' || name === 'dealers' || name === 'deal-registrations' || name === 'dealer-rmas') return 'dealer';
       if (name === 'inventory' || name === 'warehouses' || name === 'receipt-shipments') return 'inventory';
       if (name === 'vendors' || name === 'purchase-orders') return 'vendor';
@@ -5466,6 +5549,7 @@
       if (group === 'chat') return 'chat';
       if (group === 'calculator') return 'calculator';
       if (group === 'website') return 'products';
+      if (group === 'installed') return 'installed-walls';
       if (group === 'dealer') return 'dealer';
       if (group === 'inventory') return 'inventory';
       if (group === 'vendor') return 'vendors';
@@ -5479,6 +5563,7 @@
       if (group === 'chat') return ['chat'];
       if (group === 'calculator') return ['calculator'];
       if (group === 'website') return ['products', 'store', 'accounts', 'traffic'];
+      if (group === 'installed') return ['installed-walls'];
       if (group === 'dealer') return ['dealer', 'dealers', 'deal-registrations', 'dealer-rmas'];
       if (group === 'inventory') return ['inventory', 'warehouses', 'receipt-shipments'];
       if (group === 'vendor') return ['vendors', 'purchase-orders'];
@@ -6049,6 +6134,7 @@
       dealers: 'dealer-applications',
       'deal-registrations': 'dealer',
       'dealer-rmas': 'dealer',
+      'installed-walls': 'orders',
       traffic: 'products',
       control: 'products',
       inventory: 'inventory',
@@ -6239,6 +6325,7 @@
       setHidden('tab-products', !canUse('products'));
       setHidden('tab-store', !canUse('store'));
       setHidden('tab-accounts', !canUse('accounts'));
+      setHidden('tab-installed-walls', !canUse('orders'));
       setHidden('tab-dealer', !canUseDealerNav());
       setHidden('tab-dealer-list', !canUse('dealer'));
       setHidden('tab-dealers', !canUse('dealers'));
@@ -8462,6 +8549,8 @@
       if (dealersSec) dealersSec.classList.toggle('hidden', view !== 'dealers');
       const dregSec = document.getElementById('deal-registrations-section');
       if (dregSec) dregSec.classList.toggle('hidden', view !== 'deal-registrations');
+      const iwSec = document.getElementById('installed-walls-section');
+      if (iwSec) iwSec.classList.toggle('hidden', view !== 'installed-walls');
       const rmaSec = document.getElementById('dealer-rmas-section');
       if (rmaSec) rmaSec.classList.toggle('hidden', view !== 'dealer-rmas');
       const trafficSec = document.getElementById('traffic-section');
@@ -8487,6 +8576,8 @@
       document.getElementById('tab-vendor').className = navLinkClass(onVendorNav, !canUseVendorNav());
       document.getElementById('tab-customers').className = navLinkClass(view === 'customers', !canUse('customers'), 'sub');
       document.getElementById('tab-customer').className = navLinkClass(onCustomerNav, !canUseCustomerNav());
+      const tabWalls = document.getElementById('tab-installed-walls');
+      if (tabWalls) tabWalls.className = navLinkClass(view === 'installed-walls', !canUse('orders'));
       const tabDealer = document.getElementById('tab-dealer');
       if (tabDealer) tabDealer.className = navLinkClass(onDealerNav, !canUseDealerNav());
       const tabDealerList = document.getElementById('tab-dealer-list');
@@ -8539,6 +8630,7 @@
         dealer: ['Dealer', ''],
         dealers: ['Dealer', 'Applications'],
         'deal-registrations': ['Dealer', 'Deal registration'],
+        'installed-walls': ['Installed walls', ''],
         'dealer-rmas': ['Dealer', 'RMA'],
         traffic: ['Website', 'Traffic'],
         inventory: ['Inventory', ''],
@@ -18070,7 +18162,7 @@
         if (el) el.classList.toggle('hidden', soReadOnly);
       });
       if (soReadOnly) {
-        ['so-to-order', 'so-to-invoice', 'so-delete-btn'].forEach(function (nid) {
+        ['so-to-order', 'so-to-invoice', 'so-to-wall', 'so-delete-btn'].forEach(function (nid) {
           const el = document.getElementById(nid);
           if (el) el.classList.add('hidden');
         });
@@ -19079,6 +19171,8 @@
       document.getElementById('so-delete-btn').classList.toggle('hidden', soReadOnly || !doc.id);
       document.getElementById('so-to-order').classList.toggle('hidden', soReadOnly || !doc.id || type === 'order');
       document.getElementById('so-to-invoice').classList.toggle('hidden', soReadOnly || !doc.id || type === 'invoice');
+      const wallBtn = document.getElementById('so-to-wall');
+      if (wallBtn) wallBtn.classList.toggle('hidden', soReadOnly || !doc.id || type !== 'order');
       const ribbonDel = document.getElementById('so-ribbon-delete');
       if (ribbonDel) ribbonDel.disabled = soReadOnly || !doc.id;
       window.soInvoiceAmountPaid = doc.type === 'invoice' ? Number(doc.amountPaid || 0) : 0;
@@ -19224,6 +19318,185 @@
         showError('so-error', err.message || 'Could not open this document.');
       }
     }
+
+    let iwRows = [];
+    let iwOpenId = '';
+    function iwIdFromPath() {
+      const m = String(companyPath() || '').match(/\/installed-walls\/(\d+)/);
+      return m ? m[1] : '';
+    }
+    function iwAddYears(ymd, years) {
+      if (!/^\d{4}-\d{2}-\d{2}$/.test(ymd || '')) return '';
+      const parts = ymd.split('-').map(Number);
+      const d = new Date(Date.UTC(parts[0] + years, parts[1] - 1, 1));
+      const last = new Date(Date.UTC(d.getUTCFullYear(), d.getUTCMonth() + 1, 0)).getUTCDate();
+      d.setUTCDate(Math.min(parts[2], last));
+      return d.getUTCFullYear() + '-' + String(d.getUTCMonth() + 1).padStart(2, '0') + '-' + String(d.getUTCDate()).padStart(2, '0');
+    }
+    function iwSite(row) {
+      return [row.siteCity, row.siteState].filter(Boolean).join(', ') || '—';
+    }
+    function iwSerialRow(row) {
+      const kind = (row && row.kind) || 'cabinet';
+      const opts = ['cabinet', 'module', 'processor'].map(function (value) {
+        const label = value === 'cabinet' ? 'Cabinet' : (value === 'module' ? 'Module' : 'Processor');
+        return '<option value="' + value + '"' + (value === kind ? ' selected' : '') + '>' + label + '</option>';
+      }).join('');
+      return '<div class="iw-serial grid grid-cols-[8rem_1fr_auto] gap-2">' +
+        '<select class="iw-kind bg-slate-800 border border-slate-700 rounded-lg px-2 py-2 text-sm">' + opts + '</select>' +
+        '<input class="iw-serial-no bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm" placeholder="Serial" value="' + esc(row && row.serial || '') + '">' +
+        '<button type="button" class="iw-serial-remove text-sm text-slate-400">Remove</button></div>';
+    }
+    function iwSpareRow(row) {
+      return '<div class="iw-spare grid grid-cols-[1fr_5rem_auto] gap-2">' +
+        '<input class="iw-sku bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm" placeholder="SKU" value="' + esc(row && row.sku || '') + '">' +
+        '<input class="iw-qty bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm" type="number" min="1" step="1" placeholder="Qty" value="' + esc(row && row.qty ? String(row.qty) : '') + '">' +
+        '<button type="button" class="iw-spare-remove text-sm text-slate-400">Remove</button></div>';
+    }
+    function paintIwDates() {
+      const ship = (document.getElementById('iw-ship') || {}).value || '';
+      const cob = !!(document.getElementById('iw-cob') || {}).checked;
+      document.getElementById('iw-warranty').textContent = iwAddYears(ship, 3) || '—';
+      const wrap = document.getElementById('iw-support-wrap');
+      wrap.classList.toggle('hidden', !cob);
+      document.getElementById('iw-support').textContent = cob ? (iwAddYears(ship, 5) || '—') : '';
+    }
+    function renderIwTable() {
+      const tbody = document.getElementById('iw-table');
+      if (!tbody) return;
+      if (!iwRows.length) {
+        tbody.innerHTML = '<tr><td class="py-6 px-4 text-slate-500" colspan="7">No installed walls yet.</td></tr>';
+        return;
+      }
+      tbody.innerHTML = iwRows.map(function (row) {
+        const on = String(row.id) === String(iwOpenId);
+        return '<tr class="border-b border-slate-800 hover:bg-slate-900/80 cursor-pointer' + (on ? ' is-active' : '') + '" data-iw-id="' + esc(row.id) + '">' +
+          '<td class="py-3 px-4 font-medium">' + esc(row.wallName || row.number) + '</td>' +
+          '<td class="py-3 px-4">' + esc(row.endCustomer || '—') + '</td>' +
+          '<td class="py-3 px-4">' + esc(iwSite(row)) + '</td>' +
+          '<td class="py-3 px-4">' + esc(row.pitch || '—') + '</td>' +
+          '<td class="py-3 px-4">' + esc(row.shipDate || '—') + '</td>' +
+          '<td class="py-3 px-4">' + esc(row.warrantyEnd || '—') + '</td>' +
+          '<td class="py-3 px-4">' + esc(row.spareQty || 0) + '</td></tr>';
+      }).join('');
+    }
+    function showInstalledWall(row) {
+      const overview = document.getElementById('iw-overview');
+      const form = document.getElementById('iw-form');
+      if (!row) {
+        overview.classList.remove('hidden');
+        form.classList.add('hidden');
+        renderIwTable();
+        return;
+      }
+      overview.classList.add('hidden');
+      form.classList.remove('hidden');
+      document.getElementById('iw-id').value = row.id;
+      document.getElementById('iw-title').textContent = row.number || 'Installed wall';
+      document.getElementById('iw-order').textContent = row.orderNumber ? ('Sales order ' + row.orderNumber) : '';
+      document.getElementById('iw-name').value = row.wallName || '';
+      document.getElementById('iw-end').value = row.endCustomer || '';
+      document.getElementById('iw-installer').value = row.installer || '';
+      document.getElementById('iw-pitch').value = row.pitch || '';
+      document.getElementById('iw-ship').value = row.shipDate || '';
+      document.getElementById('iw-cob').checked = !!row.selectedCob;
+      document.getElementById('iw-street').value = row.siteStreet || '';
+      document.getElementById('iw-city').value = row.siteCity || '';
+      document.getElementById('iw-state').value = row.siteState || '';
+      document.getElementById('iw-zip').value = row.siteZip || '';
+      document.getElementById('iw-country').value = row.siteCountry || '';
+      document.getElementById('iw-serials').innerHTML = (row.serials || []).map(iwSerialRow).join('');
+      document.getElementById('iw-spares').innerHTML = (row.spares || []).map(iwSpareRow).join('');
+      paintIwDates();
+      showError('iw-msg', '');
+      renderIwTable();
+      const dest = '/company/installed-walls/' + row.id;
+      if (companyPath() !== dest) history.pushState({ tab: 'installed-walls' }, '', dest);
+    }
+    async function loadInstalledWalls() {
+      showError('iw-error', '');
+      try {
+        const data = await api('/api/admin/installed-walls');
+        iwRows = data.walls || [];
+        const wanted = iwOpenId || iwIdFromPath();
+        const open = iwRows.find(function (row) { return String(row.id) === String(wanted); });
+        iwOpenId = open ? open.id : '';
+        showInstalledWall(open || null);
+      } catch (err) {
+        showError('iw-error', err.message || 'Could not load installed walls.');
+      }
+    }
+    function readIwBody() {
+      return {
+        wallName: document.getElementById('iw-name').value,
+        endCustomer: document.getElementById('iw-end').value,
+        installer: document.getElementById('iw-installer').value,
+        pitch: document.getElementById('iw-pitch').value,
+        shipDate: document.getElementById('iw-ship').value,
+        selectedCob: document.getElementById('iw-cob').checked,
+        siteStreet: document.getElementById('iw-street').value,
+        siteCity: document.getElementById('iw-city').value,
+        siteState: document.getElementById('iw-state').value,
+        siteZip: document.getElementById('iw-zip').value,
+        siteCountry: document.getElementById('iw-country').value,
+        serials: Array.from(document.querySelectorAll('#iw-serials .iw-serial')).map(function (row) {
+          return { kind: row.querySelector('.iw-kind').value, serial: row.querySelector('.iw-serial-no').value };
+        }),
+        spares: Array.from(document.querySelectorAll('#iw-spares .iw-spare')).map(function (row) {
+          return { sku: row.querySelector('.iw-sku').value, qty: row.querySelector('.iw-qty').value };
+        })
+      };
+    }
+    document.getElementById('iw-table').addEventListener('click', function (e) {
+      const tr = e.target.closest('[data-iw-id]');
+      if (!tr) return;
+      iwOpenId = tr.getAttribute('data-iw-id');
+      showInstalledWall(iwRows.find(function (row) { return String(row.id) === String(iwOpenId); }) || null);
+    });
+    document.getElementById('iw-add-serial').addEventListener('click', function () {
+      document.getElementById('iw-serials').insertAdjacentHTML('beforeend', iwSerialRow({ kind: 'cabinet', serial: '' }));
+    });
+    document.getElementById('iw-add-spare').addEventListener('click', function () {
+      document.getElementById('iw-spares').insertAdjacentHTML('beforeend', iwSpareRow({ sku: '', qty: '' }));
+    });
+    document.getElementById('iw-serials').addEventListener('click', function (e) {
+      const btn = e.target.closest('.iw-serial-remove');
+      if (btn) btn.closest('.iw-serial').remove();
+    });
+    document.getElementById('iw-spares').addEventListener('click', function (e) {
+      const btn = e.target.closest('.iw-spare-remove');
+      if (btn) btn.closest('.iw-spare').remove();
+    });
+    document.getElementById('iw-ship').addEventListener('change', paintIwDates);
+    document.getElementById('iw-cob').addEventListener('change', paintIwDates);
+    document.getElementById('iw-form').addEventListener('submit', async function (e) {
+      e.preventDefault();
+      const id = document.getElementById('iw-id').value;
+      if (!id) return;
+      showError('iw-msg', '');
+      try {
+        const data = await api('/api/admin/installed-walls/' + encodeURIComponent(id), {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(readIwBody())
+        });
+        const saved = data.wall;
+        iwRows = iwRows.map(function (row) { return String(row.id) === String(saved.id) ? saved : row; });
+        if (!iwRows.some(function (row) { return String(row.id) === String(saved.id); })) iwRows.unshift(saved);
+        iwOpenId = saved.id;
+        showInstalledWall(saved);
+        showError('iw-msg', '');
+        const msg = document.getElementById('iw-msg');
+        msg.textContent = 'Saved.';
+        msg.className = 'text-sm text-sky-400';
+        msg.classList.remove('hidden');
+      } catch (err) {
+        const msg = document.getElementById('iw-msg');
+        msg.textContent = err.message || 'Could not save this wall.';
+        msg.className = 'text-sm text-red-400';
+        msg.classList.remove('hidden');
+      }
+    });
 
     let dregRows = [];
     let dregOpenId = '';
@@ -19507,6 +19780,9 @@
       if (name === 'dealers') {
         await loadDealerApplications();
         if (isDaSplitOn()) initDaSplitResize();
+      }
+      if (name === 'installed-walls') {
+        await loadInstalledWalls();
       }
       if (name === 'deal-registrations') {
         await loadDealRegistrations();
@@ -21748,6 +22024,21 @@
     }
     document.getElementById('so-to-order').addEventListener('click', function () { convertCurrentSale('order'); });
     document.getElementById('so-to-invoice').addEventListener('click', function () { convertCurrentSale('invoice'); });
+    document.getElementById('so-to-wall').addEventListener('click', async function () {
+      const id = (document.getElementById('so-id') || {}).value;
+      if (!id) return;
+      try {
+        const data = await api('/api/admin/installed-walls', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ salesDocId: id })
+        });
+        const wallId = data.wall && data.wall.id;
+        if (wallId) location.assign('/company/installed-walls/' + wallId);
+      } catch (err) {
+        showError('so-msg', err.message || 'Could not create this wall.');
+      }
+    });
 
     let staffList = [];
     let stSavedSnapshot = '';

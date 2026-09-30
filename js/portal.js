@@ -7,6 +7,7 @@
     orders: 'sales-section',
     registrations: 'registrations-section',
     rmas: 'rmas-section',
+    walls: 'walls-section',
     projects: 'projects-section',
     panels: 'panels-section',
     calculator: 'calculator-section',
@@ -26,16 +27,18 @@
   let registrations = [];
   let pendingRegistrationId = '';
   let rmas = [];
+  let walls = [];
   let openTabs = [];
   let bookFilter = 'all';
   let bookSku = '';
-  const tabLabel = { home: 'Dashboard', book: 'Dealer book', quotes: 'Request Quote', orders: 'Purchase Order', registrations: 'Deal registration', rmas: 'RMA', projects: 'Projects', panels: 'Saved Panel', calculator: 'Calculator', company: 'Company', updates: 'What’s new', guide: 'Dealer guide' };
+  const tabLabel = { home: 'Dashboard', book: 'Dealer book', quotes: 'Request Quote', orders: 'Purchase Order', walls: 'Installed walls', registrations: 'Deal registration', rmas: 'RMA', projects: 'Projects', panels: 'Saved Panel', calculator: 'Calculator', company: 'Company', updates: 'What’s new', guide: 'Dealer guide' };
   const tabIcon = {
     home: '<svg class="dash-master-tab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="8" height="8" rx="1.5"/><rect x="13" y="3" width="8" height="8" rx="1.5"/><rect x="3" y="13" width="8" height="8" rx="1.5"/><rect x="13" y="13" width="8" height="8" rx="1.5"/></svg>',
     book: '<svg class="dash-master-tab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 10 12 4.5 21 10v9.5a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V10z"/><path d="M9 20.5V12h6v8.5"/></svg>',
     quotes: '<svg class="dash-master-tab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 4h8v4H8z"/><path d="M6 8h12v12H6z"/><path d="M9 12h6M9 16h4"/></svg>',
     registrations: '<svg class="dash-master-tab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="3" width="16" height="18" rx="2"/><path d="M8 8h8M8 12h8M8 16h5"/></svg>',
     rmas: '<svg class="dash-master-tab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 12a9 9 0 1 0 3-6.7"/><path d="M3 4v5h5"/><path d="M9 12h6"/></svg>',
+    walls: '<svg class="dash-master-tab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4" width="18" height="12" rx="1.5"/><path d="M8 20h8M12 16v4"/></svg>',
     orders: '<svg class="dash-master-tab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 7h16l-1.5 12H5.5L4 7z"/><path d="M9 7V5a3 3 0 0 1 6 0v2"/></svg>',
     projects: '<svg class="dash-master-tab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M3 8h18"/><path d="M8 12h5M8 16h8"/></svg>',
     panels: '<svg class="dash-master-tab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 8.5 12 13 3 8.5 12 4l9 4.5z"/><path d="M3 8.5v7L12 20l9-4.5v-7"/><path d="M12 13v7"/></svg>',
@@ -285,8 +288,8 @@
     $('admin-page-sub').textContent = name === 'home' ? 'Overview' : ((me && me.customer && me.customer.companyName) || '');
     document.body.classList.toggle('inv-layout-lock', (name === 'book' || name === 'projects' || name === 'panels') && !isMobileDash());
     const onSales = (name === 'quotes' || name === 'orders') && !isMobileDash();
-    document.body.classList.toggle('so-split-lock', onSales || ((name === 'registrations' || name === 'rmas') && !isMobileDash()));
-    document.body.classList.toggle('dash-split-lock', (name === 'registrations' || name === 'rmas') && !isMobileDash());
+    document.body.classList.toggle('so-split-lock', onSales || ((name === 'registrations' || name === 'rmas' || name === 'walls') && !isMobileDash()));
+    document.body.classList.toggle('dash-split-lock', (name === 'registrations' || name === 'rmas' || name === 'walls') && !isMobileDash());
     const sales = $('sales-section');
     if (sales) sales.classList.toggle('so-split-on', onSales);
     if (name === 'home') renderHome();
@@ -294,6 +297,7 @@
     if (name === 'quotes' || name === 'orders') renderQuotes();
     if (name === 'registrations') renderRegistrations();
     if (name === 'rmas') renderRmas();
+    if (name === 'walls') renderWalls();
     if (name === 'projects') loadProjects();
     if (name === 'panels') loadPanels();
     if (name === 'company') loadCompany();
@@ -1840,6 +1844,91 @@
     }
   });
 
+  function wallIdFromPath() {
+    const parts = location.pathname.replace(/\/+$/, '').split('/');
+    if (parts[2] === 'walls' && parts[3]) return parts[3];
+    return '';
+  }
+  function wallSite(row) {
+    return [row.siteCity, row.siteState].filter(Boolean).join(', ') || '—';
+  }
+  function goWall(id, push) {
+    const path = id ? ('/portal/walls/' + id) : '/portal/walls';
+    if (openTabs.indexOf('walls') === -1) openTabs.push('walls');
+    if (push !== false && location.pathname.replace(/\/+$/, '') !== path) {
+      history.pushState({ view: 'walls', id: id || '' }, '', path);
+    }
+    renderView('walls');
+    renderMasterTabs();
+  }
+  function showWall(row) {
+    if (!row) {
+      $('wall-detail').classList.add('hidden');
+      $('wall-overview').classList.remove('hidden');
+      return;
+    }
+    $('wall-overview').classList.add('hidden');
+    $('wall-detail').classList.remove('hidden');
+    $('wall-title').textContent = row.wallName || row.number || 'Installed wall';
+    const support = row.selectedCob && row.supportEnd ? (' · Support end ' + row.supportEnd) : '';
+    $('wall-sub').textContent = (row.number || '') + (row.orderNumber ? (' · Order ' + row.orderNumber) : '') + support;
+    const site = [row.siteStreet, [row.siteCity, row.siteState].filter(Boolean).join(', '), row.siteZip, row.siteCountry].filter(Boolean).join('\n');
+    $('wall-fields').innerHTML =
+      '<div><dt class="text-slate-500">End customer</dt><dd>' + esc(row.endCustomer || '—') + '</dd></div>' +
+      '<div><dt class="text-slate-500">Installer</dt><dd>' + esc(row.installer || '—') + '</dd></div>' +
+      '<div><dt class="text-slate-500">Pitch</dt><dd>' + esc(row.pitch || '—') + '</dd></div>' +
+      '<div><dt class="text-slate-500">Ship date</dt><dd>' + esc(row.shipDate || '—') + '</dd></div>' +
+      '<div><dt class="text-slate-500">Warranty end</dt><dd>' + esc(row.warrantyEnd || '—') + '</dd></div>' +
+      '<div class="sm:col-span-2"><dt class="text-slate-500">Site</dt><dd style="white-space:pre-line">' + esc(site || '—') + '</dd></div>';
+    $('wall-serials').innerHTML = (row.serials || []).length
+      ? '<p class="font-semibold mb-2">Serials</p>' + row.serials.map(function (line) {
+        return '<div>' + esc(line.kindLabel || line.kind) + ' · ' + esc(line.serial) + '</div>';
+      }).join('')
+      : '<p class="text-slate-500">No serials yet.</p>';
+    $('wall-spares').innerHTML = (row.spares || []).length
+      ? '<p class="font-semibold mb-2">Spare kit on site</p>' + row.spares.map(function (line) {
+        return '<div>' + esc(line.sku) + ' · ' + esc(line.qty) + '</div>';
+      }).join('')
+      : '<p class="text-slate-500">No spare kit on site.</p>';
+  }
+  function renderWallTable() {
+    const openId = wallIdFromPath();
+    $('wall-table').innerHTML = walls.length ? walls.map(function (row) {
+      const on = openId && String(openId) === String(row.id);
+      return '<tr class="border-b border-slate-800 hover:bg-slate-900/80 cursor-pointer' + (on ? ' is-active' : '') + '" data-wall-id="' + esc(row.id) + '">' +
+        '<td class="py-3 px-4 font-medium">' + esc(row.wallName || row.number) + '</td>' +
+        '<td class="py-3 px-4">' + esc(row.endCustomer || '—') + '</td>' +
+        '<td class="py-3 px-4">' + esc(wallSite(row)) + '</td>' +
+        '<td class="py-3 px-4">' + esc(row.pitch || '—') + '</td>' +
+        '<td class="py-3 px-4">' + esc(row.shipDate || '—') + '</td>' +
+        '<td class="py-3 px-4">' + esc(row.warrantyEnd || '—') + '</td>' +
+        '<td class="py-3 px-4">' + esc(row.spareQty || 0) + '</td></tr>';
+    }).join('') : '<tr><td class="py-6 px-4 text-slate-500" colspan="7">No installed walls yet.</td></tr>';
+  }
+  async function renderWalls() {
+    const err = $('wall-error');
+    if (err) { err.textContent = ''; err.classList.add('hidden'); }
+    try {
+      const data = await api('/api/dealer/walls');
+      walls = data.walls || [];
+    } catch (e) {
+      walls = [];
+      if (err) {
+        err.textContent = e.message || 'Could not load walls.';
+        err.classList.remove('hidden');
+      }
+    }
+    renderWallTable();
+    const route = wallIdFromPath();
+    const row = walls.find(function (item) { return String(item.id) === String(route); });
+    showWall(row || null);
+  }
+  $('wall-table').addEventListener('click', function (e) {
+    const tr = e.target.closest('[data-wall-id]');
+    if (!tr) return;
+    goWall(tr.getAttribute('data-wall-id'), true);
+  });
+
   document.addEventListener('click', function (e) {
     if (!e.target.closest('#so-sku-menu') && !e.target.closest('[data-line="sku"]')) closeSkuMenu();
     const close = e.target.closest('[data-dash-tab-close]');
@@ -1881,6 +1970,10 @@
         e.preventDefault();
         document.body.classList.remove('dash-open');
         goRma(parts[3], true);
+      } else if (parts[2] === 'walls') {
+        e.preventDefault();
+        document.body.classList.remove('dash-open');
+        goWall(parts[3], true);
       }
       return;
     }
@@ -1895,7 +1988,7 @@
     document.body.classList.toggle('inv-layout-lock', (pathView() === 'book' || pathView() === 'projects' || pathView() === 'panels') && !isMobileDash());
     document.body.classList.toggle('calc-lock', pathView() === 'calculator');
     const onQuotes = (pathView() === 'quotes' || pathView() === 'orders') && !isMobileDash();
-    const onSplit = (pathView() === 'registrations' || pathView() === 'rmas') && !isMobileDash();
+    const onSplit = (pathView() === 'registrations' || pathView() === 'rmas' || pathView() === 'walls') && !isMobileDash();
     document.body.classList.toggle('so-split-lock', onQuotes || onSplit);
     document.body.classList.toggle('dash-split-lock', onSplit);
     const sales = $('sales-section');

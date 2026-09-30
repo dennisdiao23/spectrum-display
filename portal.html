@@ -197,6 +197,10 @@
         <svg class="dash-nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 7h16l-1.5 12H5.5L4 7z"/><path d="M9 7V5a3 3 0 0 1 6 0v2"/></svg>
         <span>Purchase Order</span>
       </a>
+      <a href="/portal/walls" data-view="walls" class="dash-nav-link">
+        <svg class="dash-nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4" width="18" height="12" rx="1.5"/><path d="M8 20h8M12 16v4"/></svg>
+        <span>Installed walls</span>
+      </a>
       <a href="/portal/rmas" data-view="rmas" class="dash-nav-link">
         <svg class="dash-nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 12a9 9 0 1 0 3-6.7"/><path d="M3 4v5h5"/><path d="M9 12h6"/></svg>
         <span>RMA</span>
@@ -506,6 +510,48 @@
                 </div>
                 <p id="dr-msg" class="hidden text-sm"></p>
               </form>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section id="walls-section" class="hidden">
+        <div class="cc-list-inner">
+          <p class="text-sm text-slate-500 mb-3">Walls Spectrum has shipped for your company. Serials and warranty dates are set by Spectrum.</p>
+          <p id="wall-error" class="hidden text-sm text-red-400 mb-3"></p>
+          <div class="dash-split">
+            <div class="dash-split-left">
+              <div class="cc-table-card rounded-2xl border border-slate-800">
+                <div class="cc-table-wrap overflow-x-auto">
+                  <table class="w-full text-sm">
+                    <thead class="text-left text-slate-400 border-b border-slate-800">
+                      <tr>
+                        <th class="py-3 px-4 font-medium">Wall</th>
+                        <th class="py-3 px-4 font-medium">End customer</th>
+                        <th class="py-3 px-4 font-medium">Site</th>
+                        <th class="py-3 px-4 font-medium">Pitch</th>
+                        <th class="py-3 px-4 font-medium">Ship date</th>
+                        <th class="py-3 px-4 font-medium">Warranty end</th>
+                        <th class="py-3 px-4 font-medium">Spares</th>
+                      </tr>
+                    </thead>
+                    <tbody id="wall-table" class="text-slate-200"></tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+            <div class="dash-split-resizer" role="separator" aria-orientation="vertical" aria-label="Resize wall panels" tabindex="0"></div>
+            <div class="dash-split-right">
+              <div id="wall-overview" class="inv-right-panel">
+                <p class="inv-overview-lead">Select a wall to see the site, serials, and spare kit.</p>
+              </div>
+              <div id="wall-detail" class="inv-right-panel hidden" style="padding:1.25rem;overflow:auto">
+                <h2 id="wall-title" class="font-semibold text-lg">Installed wall</h2>
+                <p id="wall-sub" class="text-sm text-slate-500 mt-1"></p>
+                <dl id="wall-fields" class="grid sm:grid-cols-2 gap-x-6 gap-y-3 text-sm mt-4"></dl>
+                <div id="wall-serials" class="mt-4 text-sm"></div>
+                <div id="wall-spares" class="mt-4 text-sm"></div>
+              </div>
             </div>
           </div>
         </div>
@@ -1016,8 +1062,8 @@
   <div id="so-sku-menu" class="so-sku-menu" hidden>
     <div class="so-sku-menu-list"></div>
   </div>
-  <script src="/js/app-help.js?v=help3"></script>
+  <script src="/js/app-help.js?v=help4"></script>
   <script src="/js/app-notes.js?v=notes3"></script>
-  <script src="/js/portal.js?v=notes4"></script>
+  <script src="/js/portal.js?v=notes5"></script>
 </body>
 </html>
