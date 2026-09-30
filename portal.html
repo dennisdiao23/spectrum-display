@@ -36,16 +36,6 @@
     #company-boot .portal-boot-login input::placeholder{color:rgba(255,255,255,.55)}
     #company-boot .portal-boot-login button[type="submit"]{background:#fff;color:#000;border:0}
     #company-boot .portal-boot-login button[type="submit"]:hover{background:#e8e8e8}
-    .portal-boot-row{display:flex;flex-direction:column;align-items:center}
-    .portal-install-phones{display:none}
-    @media (min-width:960px){
-      #company-boot .portal-boot-row{flex-direction:row;align-items:flex-start;gap:3rem}
-      #company-boot #login-panel:not(.hidden)+.portal-install-phones{display:block;width:18rem;color:#fff;font-size:.85rem;line-height:1.45}
-      .portal-install-phones h2{margin:0 0 .8rem;color:#fff;font-size:1.05rem;font-weight:800}
-      .portal-install-phones h3{margin:0 0 .3rem;color:#fff;font-size:.72rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase}
-      .portal-install-phones ol{margin:0 0 1.1rem;padding-left:1.15rem}
-      .portal-install-phones li{margin:.15rem 0}
-    }
   </style>
   <link rel="stylesheet" href="/css/company-dash.css?v=notes4" />
   <style>
@@ -60,6 +50,58 @@
     #so-customer-name[readonly],
     #so-customer-email[readonly],
     #so-lines input[readonly] { background: #f4f7fb; }
+    .portal-install-card { display: none; }
+    @media (min-width: 960px) {
+      .portal-install-card:not([hidden]) {
+        display: block;
+        margin-bottom: 1rem;
+        position: relative;
+      }
+    }
+    .portal-install-card h2 {
+      margin: 0 2rem 0.85rem 0;
+      font-size: 1.05rem;
+      font-weight: 800;
+      color: #102047;
+    }
+    .portal-install-card h3 {
+      margin: 0 0 0.35rem;
+      font-size: 0.95rem;
+      font-weight: 800;
+      color: #102047;
+    }
+    .portal-install-card h4 {
+      margin: 0.7rem 0 0.25rem;
+      font-size: 0.72rem;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: #5c6b8a;
+    }
+    .portal-install-card ol {
+      margin: 0;
+      padding-left: 1.15rem;
+      color: #243056;
+      font-size: 0.9rem;
+      line-height: 1.45;
+    }
+    .portal-install-card li { margin: 0.15rem 0; }
+    .portal-install-card p {
+      margin: 0.45rem 0 0;
+      color: #5c6b8a;
+      font-size: 0.82rem;
+    }
+    .portal-install-close {
+      position: absolute;
+      top: 0.85rem;
+      right: 0.9rem;
+      border: 0;
+      background: transparent;
+      color: #5c6b8a;
+      font-size: 1.25rem;
+      line-height: 1;
+      cursor: pointer;
+    }
     .portal-company-logo {
       display: flex;
       align-items: center;
@@ -173,7 +215,6 @@
   <div id="company-boot" role="status" aria-live="polite">
     <img id="company-boot-logo" src="/assets/spectrum-boot.gif" alt="" width="1104" height="242" />
     <p id="company-boot-msg">Loading Dealer Portal…</p>
-    <div class="portal-boot-row">
     <section id="login-panel" class="dash-login portal-boot-login hidden">
       <h2>Dealer Portal sign in</h2>
       <p>Authorized dealers only. This is not My Account and not Company staff sign in. Spectrum creates this login after your application is approved.</p>
@@ -190,24 +231,6 @@
         <button type="submit" class="w-full py-2.5 rounded-full font-semibold text-sm">Sign in</button>
       </form>
     </section>
-    <aside class="portal-install-phones" aria-label="Install the phone app">
-      <h2>Install the phone app</h2>
-      <h3>iPhone</h3>
-      <ol>
-        <li>Open this page in Safari.</li>
-        <li>Tap Share.</li>
-        <li>Tap Add to Home Screen.</li>
-        <li>Tap Add. The icon says Dealer Portal.</li>
-      </ol>
-      <h3>Android</h3>
-      <ol>
-        <li>Open this page in Chrome.</li>
-        <li>Tap the three dots.</li>
-        <li>Tap Install app. If you do not see it, tap Add to Home screen.</li>
-        <li>Tap Install. The icon says Dealer Portal.</li>
-      </ol>
-    </aside>
-    </div>
     <p id="company-boot-err" hidden></p>
   </div>
   <div class="dash-scrim" id="dash-scrim"></div>
@@ -311,6 +334,39 @@
       <section id="dashboard-section" class="hidden">
         <div id="dash-panel">
           <div class="dash-home" id="dash-home">
+            <section id="portal-install-card" class="dash-home-panel portal-install-card" hidden>
+              <button type="button" id="portal-install-close" class="portal-install-close" aria-label="Close">×</button>
+              <h2>Install Dealer Portal</h2>
+              <h3>Install on this computer</h3>
+              <h4>Chrome</h4>
+              <ol>
+                <li>Click the install icon at the right of the address bar.</li>
+                <li>Click Install.</li>
+                <li>If the icon is missing, click the three dots, then Cast, save, and share, then Install page as app.</li>
+              </ol>
+              <h4>Edge</h4>
+              <ol>
+                <li>Click the three dots.</li>
+                <li>Click Apps, then Install Dealer Portal.</li>
+                <li>Click Install.</li>
+              </ol>
+              <p>Safari on a Mac does not install this app. Use Chrome or Edge. The app opens in its own window.</p>
+              <h3 style="margin-top:1.15rem">Install the phone app</h3>
+              <h4>iPhone</h4>
+              <ol>
+                <li>Open this page in Safari.</li>
+                <li>Tap Share.</li>
+                <li>Tap Add to Home Screen.</li>
+                <li>Tap Add. The icon says Dealer Portal.</li>
+              </ol>
+              <h4>Android</h4>
+              <ol>
+                <li>Open this page in Chrome.</li>
+                <li>Tap the three dots.</li>
+                <li>Tap Install app. If you do not see it, tap Add to Home screen.</li>
+                <li>Tap Install. The icon says Dealer Portal.</li>
+              </ol>
+            </section>
             <div class="dash-home-head">
               <h2>Overview</h2>
               <p>A snapshot of each main menu area.</p>
@@ -1106,6 +1162,6 @@
   </div>
   <script src="/js/app-help.js?v=help4"></script>
   <script src="/js/app-notes.js?v=notes3"></script>
-  <script src="/js/portal.js?v=notes5"></script>
+  <script src="/js/portal.js?v=install-howto1"></script>
 </body>
 </html>
