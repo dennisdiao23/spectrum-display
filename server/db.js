@@ -146,6 +146,7 @@ function openDb() {
   require('./company-crm').ensureCompanyCrm(db);
   require('./dealer-portal').ensureDealerPortal(db);
   require('./deal-registrations').ensureDealRegistrations(db);
+  require('./dealer-rmas').ensureDealerRmas(db);
   require('./site-analytics').ensureSqlite(db);
   ensureCompanySales(db);
   ensureCompanyPayments(db);
