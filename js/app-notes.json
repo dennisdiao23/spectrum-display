@@ -1,6 +1,16 @@
 {
-  "build": "2026-09-30-recent",
+  "build": "2026-09-30-glass-bar",
   "notes": [
+    {
+      "id": "2026-09-30-glass-bar",
+      "date": "2026-09-30",
+      "apps": ["company"],
+      "title": "Phone bar is a glass pill",
+      "changed": [
+        "The bottom bar floats above the screen with rounded corners and a frosted glass look."
+      ],
+      "how": "The five menus stay the same. Press and hold still lets you change which ones sit there. The row that opens above Inventory, CRM, or Dealer uses the same glass."
+    },
     {
       "id": "2026-09-30c-phone-bar",
       "date": "2026-09-30",
