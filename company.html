@@ -14390,6 +14390,13 @@
       btn.className = 'dash-tabbar-minus';
       btn.setAttribute('aria-label', 'Remove from bar');
       btn.textContent = '−';
+      btn.addEventListener('click', function (ev) {
+        ev.preventDefault();
+        ev.stopPropagation();
+        if (!document.body.classList.contains('dash-tabbar-editing')) return;
+        const link = btn.closest('a');
+        if (link) removeTabbarPin(link.id.replace(/^tabbar-/, ''));
+      });
       a.appendChild(btn);
     });
 
@@ -14419,6 +14426,7 @@
           tabbarSuppressClick = true;
           tabbarHold = null;
           setTabbarEditing(true);
+          setTimeout(function () { tabbarSuppressClick = false; }, 350);
         }, 480)
       };
     });
@@ -14479,12 +14487,17 @@
     });
     document.addEventListener('click', function (e) {
       if (!tabbarEditing) return;
-      if (e.target.closest('#dash-tabbar') || e.target.closest('#dash-tabbar-edit')) return;
+      const path = e.composedPath ? e.composedPath() : [];
+      const inside = path.some(function (node) {
+        return node && node.id && (node.id === 'dash-tabbar' || node.id === 'dash-tabbar-edit');
+      });
+      if (inside) return;
+      if (e.target.closest && (e.target.closest('#dash-tabbar') || e.target.closest('#dash-tabbar-edit'))) return;
       setTabbarEditing(false);
     });
 
     document.getElementById('dash-tabbar').addEventListener('click', function (e) {
-      if (tabbarSuppressClick) {
+      if (tabbarSuppressClick && !e.target.closest('.dash-tabbar-minus')) {
         e.preventDefault();
         e.stopPropagation();
         tabbarSuppressClick = false;
