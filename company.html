@@ -32,7 +32,7 @@
     #company-boot .boot-login button[type="submit"]{background:#fff!important;color:#000!important;border:0}
     #company-boot .boot-login button[type="submit"]:hover{background:#e8e8e8!important}
   </style>
-  <link rel="stylesheet" href="/css/company-dash.css?v=dealer-files1" />
+  <link rel="stylesheet" href="/css/company-dash.css?v=dealer-files2" />
   <script src="/js/address-autocomplete.js"></script>
   <script src="/js/company-chat.js?v=po-ship1"></script>
   <script src="/js/company-crm.js?v=zoomphone3"></script>
@@ -383,7 +383,8 @@
                 <span class="dash-kpi-label">Website</span>
               </span>
               <strong class="dash-kpi-value" id="dash-stat-website">—</strong>
-              <span class="dash-kpi-hint" id="dash-hint-website">Product pages</span>
+              <span class="dash-kpi-hint" id="dash-hint-website">Unique visitors today</span>
+              <svg class="dash-kpi-spark" id="dash-spark-website" viewBox="0 0 120 28" preserveAspectRatio="none" aria-hidden="true"></svg>
             </button>
             <button type="button" class="dash-kpi" data-home="inventory" aria-pressed="false">
               <span class="dash-kpi-icon dash-kpi-icon-inventory" aria-hidden="true">
@@ -393,7 +394,8 @@
                 <span class="dash-kpi-label">Inventory</span>
               </span>
               <strong class="dash-kpi-value" id="dash-stat-inventory">—</strong>
-              <span class="dash-kpi-hint" id="dash-hint-inventory">SKUs</span>
+              <span class="dash-kpi-hint" id="dash-hint-inventory">On hand</span>
+              <svg class="dash-kpi-spark" id="dash-spark-inventory" viewBox="0 0 120 28" preserveAspectRatio="none" aria-hidden="true"></svg>
             </button>
             <button type="button" class="dash-kpi" data-home="vendor" aria-pressed="false">
               <span class="dash-kpi-icon dash-kpi-icon-vendor" aria-hidden="true">
@@ -403,7 +405,8 @@
                 <span class="dash-kpi-label">Vendor</span>
               </span>
               <strong class="dash-kpi-value" id="dash-stat-vendor">—</strong>
-              <span class="dash-kpi-hint" id="dash-hint-vendor">Vendors</span>
+              <span class="dash-kpi-hint" id="dash-hint-vendor">Pending PO</span>
+              <svg class="dash-kpi-spark" id="dash-spark-vendor" viewBox="0 0 120 28" preserveAspectRatio="none" aria-hidden="true"></svg>
             </button>
             <button type="button" class="dash-kpi" data-home="crm" aria-pressed="false">
               <span class="dash-kpi-icon dash-kpi-icon-crm" aria-hidden="true">
@@ -413,7 +416,8 @@
                 <span class="dash-kpi-label">CRM</span>
               </span>
               <strong class="dash-kpi-value" id="dash-stat-crm">—</strong>
-              <span class="dash-kpi-hint" id="dash-hint-crm">Leads and pipeline</span>
+              <span class="dash-kpi-hint" id="dash-hint-crm">Open leads</span>
+              <svg class="dash-kpi-spark" id="dash-spark-crm" viewBox="0 0 120 28" preserveAspectRatio="none" aria-hidden="true"></svg>
             </button>
             <button type="button" class="dash-kpi" data-home="customer" aria-pressed="false">
               <span class="dash-kpi-icon dash-kpi-icon-customers" aria-hidden="true">
@@ -424,6 +428,7 @@
               </span>
               <strong class="dash-kpi-value" id="dash-stat-customer">—</strong>
               <span class="dash-kpi-hint" id="dash-hint-customer">Quotes, orders, invoices</span>
+              <svg class="dash-kpi-spark" id="dash-spark-customer" viewBox="0 0 120 28" preserveAspectRatio="none" aria-hidden="true"></svg>
             </button>
           </div>
           <div class="dash-home-grid">
@@ -4808,7 +4813,7 @@
     </a>
   </nav>
 
-  <link rel="stylesheet" href="/css/company-dash.css?v=dealer-files1" />
+  <link rel="stylesheet" href="/css/company-dash.css?v=dealer-files2" />
   <link rel="stylesheet" href="/css/company-tw.css?v=boot1" />
 
   <script>
@@ -6676,10 +6681,11 @@
     let dashTraffic = { timezone: 'America/Los_Angeles', days: [], pages: [] };
     let dashTrafficChannel = 'website';
     let dashTrafficRange = '30d';
+    let dashSeries = { website: [], inventory: [], vendor: [], crm: [], customer: [] };
     let dashCounts = {
       products: 0, productsShown: 0, accounts: 0,
-      inventory: 0, inventoryLow: 0, inventoryOut: 0, receipts: 0,
-      vendors: 0, vendorsWithEmail: 0, pos: 0, openPos: 0,
+      inventory: 0, inventoryLow: 0, inventoryOut: 0, inventoryMoveMonth: 0, inventoryValue: 0, receipts: 0,
+      vendors: 0, vendorsWithEmail: 0, pos: 0, openPos: 0, pendingPoValue: 0,
       customers: 0, quotes: 0, orders: 0, invoices: 0, sales: 0,
       leads: 0, openLeads: 0, deals: 0, openDeals: 0, pipelineValue: 0, weightedForecast: 0,
       activities: 0, overdueActivities: 0, pendingDealerApplications: 0
@@ -6908,6 +6914,52 @@
       return n == null ? '—' : Number(n).toLocaleString();
     }
 
+    function dashMoney(n) {
+      const v = Math.round(Number(n) || 0);
+      const abs = Math.abs(v);
+      if (abs >= 1000000) {
+        const m = v / 1000000;
+        return '$' + m.toFixed(m >= 10 ? 0 : 1).replace(/\.0$/, '') + 'M';
+      }
+      return '$' + v.toLocaleString();
+    }
+
+    function kpiSeriesValues(key) {
+      return ((dashSeries && dashSeries[key]) || []).map(function (row) {
+        return Number(row && row.value) || 0;
+      });
+    }
+
+    function drawKpiSpark(id, values, color) {
+      const svg = document.getElementById(id);
+      if (!svg) return;
+      const nums = (values && values.length) ? values : [0];
+      const w = 120;
+      const h = 28;
+      const pad = 2.4;
+      const min = Math.min.apply(null, nums);
+      const max = Math.max.apply(null, nums);
+      function xAt(i) {
+        if (nums.length <= 1) return w / 2;
+        return pad + (i / (nums.length - 1)) * (w - pad * 2);
+      }
+      function yAt(v) {
+        if (max === min) return h / 2;
+        return pad + (1 - (v - min) / (max - min)) * (h - pad * 2);
+      }
+      let d = '';
+      nums.forEach(function (v, i) {
+        d += (i ? ' L ' : 'M ') + xAt(i).toFixed(1) + ' ' + yAt(v).toFixed(1);
+      });
+      const lastX = xAt(nums.length - 1);
+      const lastY = yAt(nums[nums.length - 1]);
+      const stroke = color || '#2f6bff';
+      svg.setAttribute('viewBox', '0 0 ' + w + ' ' + h);
+      svg.innerHTML = '<path d="' + d + '" fill="none" stroke="' + stroke +
+        '" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"></path>' +
+        '<circle cx="' + lastX.toFixed(1) + '" cy="' + lastY.toFixed(1) + '" r="2.2" fill="' + stroke + '"></circle>';
+    }
+
     function dashChip(value, label) {
       return '<div class="dash-detail-chip"><strong>' + esc(dashCount(value)) + '</strong><span>' + esc(label) + '</span></div>';
     }
@@ -6938,53 +6990,46 @@
     }
 
     function renderDashKpis() {
-      const websiteN = dashCounts.products;
-      const accountsN = dashCounts.accounts;
-      const invN = dashCounts.inventory;
-      const custN = dashCounts.customers;
-      const salesN = dashCounts.sales;
-      const vendorN = dashCounts.vendors;
-      const openPoN = dashCounts.openPos;
-      const receiptN = dashCounts.receipts;
       const webEl = document.getElementById('dash-stat-website');
       const invEl = document.getElementById('dash-stat-inventory');
       const vendorEl = document.getElementById('dash-stat-vendor');
       const crmEl = document.getElementById('dash-stat-crm');
       const custEl = document.getElementById('dash-stat-customer');
       if (webEl) webEl.textContent = canUse('website') ? dashCount(trafficTodayUniques()) : '—';
-      if (invEl) invEl.textContent = canUse('inventory') ? dashCount(invN) : '—';
-      if (vendorEl) vendorEl.textContent = canUse('vendors') ? dashCount(vendorN) : (canUse('purchase-orders') ? dashCount(openPoN) : '—');
+      if (invEl) invEl.textContent = canUse('inventory') ? dashMoney(dashCounts.inventoryMoveMonth) : '—';
+      if (vendorEl) {
+        vendorEl.textContent = canUseVendorNav()
+          ? dashCount(dashCounts.openPos)
+          : '—';
+      }
       if (crmEl) crmEl.textContent = canUseCrmNav() ? dashCount(dashCounts.openLeads) : '—';
       if (custEl) {
-        if (canUse('customers')) custEl.textContent = dashCount(custN);
-        else if (canUseSalesDocs()) custEl.textContent = dashCount(salesN);
+        if (canUse('customers')) custEl.textContent = dashCount(dashCounts.customers);
+        else if (canUseSalesDocs()) custEl.textContent = dashCount(dashCounts.sales);
         else custEl.textContent = '—';
       }
       const webHint = document.getElementById('dash-hint-website');
-      if (webHint) {
-        webHint.textContent = 'Today · last 30 days';
-      }
+      if (webHint) webHint.textContent = 'Unique visitors today';
       const invHint = document.getElementById('dash-hint-inventory');
       if (invHint) {
-        const bits = [];
-        if (canUse('inventory')) bits.push('SKUs');
-        if (canUse('receipt-shipments') && receiptN) bits.push(receiptN + ' receipts');
-        invHint.textContent = bits.join(' · ') || 'SKUs';
+        invHint.textContent = canUse('inventory')
+          ? ('On hand ' + dashMoney(dashCounts.inventoryValue))
+          : 'On hand';
       }
       const vendorHint = document.getElementById('dash-hint-vendor');
       if (vendorHint) {
-        const bits = [];
-        if (canUse('vendors')) bits.push(vendorN + ' vendors');
-        if (canUse('purchase-orders')) bits.push(openPoN + ' open POs');
-        vendorHint.textContent = bits.join(' · ') || 'Vendors';
+        if (canUseVendorNav()) {
+          vendorHint.textContent = 'Pending PO · ' + dashMoney(dashCounts.pendingPoValue);
+        } else {
+          vendorHint.textContent = 'Pending PO';
+        }
       }
       const crmHint = document.getElementById('dash-hint-crm');
       if (crmHint) {
         const bits = [];
-        if (dashCounts.openLeads) bits.push(dashCounts.openLeads + ' open');
-        if (dashCounts.pipelineValue) bits.push('$' + dashCount(dashCounts.pipelineValue) + ' pipeline');
+        if (dashCounts.pipelineValue) bits.push(dashMoney(dashCounts.pipelineValue) + ' pipeline');
         if (dashCounts.overdueActivities) bits.push(dashCounts.overdueActivities + ' overdue');
-        crmHint.textContent = bits.join(' · ') || 'Leads and pipeline';
+        crmHint.textContent = bits.join(' · ') || 'Open leads';
       }
       const overdue = Number(dashCounts.overdueActivities) || 0;
       ['crm-nav-badge', 'tabbar-crm-badge'].forEach(function (id) {
@@ -7002,18 +7047,19 @@
       setDealerAppBadge(dashCounts.pendingDealerApplications);
       const custHint = document.getElementById('dash-hint-customer');
       if (custHint) {
-        const quotes = dashCounts.quotes;
-        const orders = dashCounts.orders;
-        const invoices = dashCounts.invoices;
         const bits = [];
-        if (canUse('customers') && custN) bits.push(custN + ' records');
         if (canUseSalesDocs()) {
-          if (quotes) bits.push(quotes + ' quotes');
-          if (orders) bits.push(orders + ' orders');
-          if (invoices) bits.push(invoices + ' invoices');
+          if (dashCounts.quotes) bits.push(dashCounts.quotes + ' quotes');
+          if (dashCounts.orders) bits.push(dashCounts.orders + ' orders');
+          if (dashCounts.invoices) bits.push(dashCounts.invoices + ' invoices');
         }
         custHint.textContent = bits.join(' · ') || 'Quotes, orders, invoices';
       }
+      drawKpiSpark('dash-spark-website', kpiSeriesValues('website'), '#2f6bff');
+      drawKpiSpark('dash-spark-inventory', kpiSeriesValues('inventory'), '#e67a2e');
+      drawKpiSpark('dash-spark-vendor', kpiSeriesValues('vendor'), '#8b5cf6');
+      drawKpiSpark('dash-spark-crm', kpiSeriesValues('crm'), '#0e7490');
+      drawKpiSpark('dash-spark-customer', kpiSeriesValues('customer'), '#d39b12');
     }
 
     function renderDashOverview() {
@@ -7202,6 +7248,7 @@
           dashDeals = data.deals || [];
           dashReminders = data.reminders || [];
           dashTraffic = data.traffic || { timezone: 'America/Los_Angeles', days: [], pages: [] };
+          dashSeries = data.series || { website: [], inventory: [], vendor: [], crm: [], customer: [] };
         } catch (err) {
           dashProducts = [];
           dashInventory = [];
@@ -7214,6 +7261,7 @@
           dashDeals = [];
           dashReminders = [];
           dashTraffic = { timezone: 'America/Los_Angeles', days: [], pages: [] };
+          dashSeries = { website: [], inventory: [], vendor: [], crm: [], customer: [] };
         } finally {
           if (refreshBtn) {
             refreshBtn.disabled = false;

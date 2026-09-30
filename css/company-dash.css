@@ -7037,6 +7037,26 @@ body.is-pf-dragging.is-pf-col-dragging * {
 
 .dash-kpi-icon-crm { background: #e6f7fb; color: #0e7490; }
 .dash-home-kpis { grid-template-columns: repeat(5, minmax(0, 1fr)); }
+.dash-home-kpis .dash-kpi {
+  grid-template-rows: auto auto auto auto;
+  min-height: 8.4rem;
+  align-items: start;
+}
+.dash-home-kpis .dash-kpi-icon { grid-row: 1 / span 4; }
+.dash-home-kpis .dash-kpi-spark {
+  grid-column: 2;
+  grid-row: 4;
+  display: block;
+  width: 100%;
+  height: 1.7rem;
+  margin-top: 0.2rem;
+}
+.dash-home-kpis .dash-kpi-value {
+  font-size: 1.45rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
 .page-kpis-6 { grid-template-columns: repeat(6, minmax(0, 1fr)); }
 .page-kpis-5 { grid-template-columns: repeat(5, minmax(0, 1fr)); }
 @media (max-width: 1400px) {
