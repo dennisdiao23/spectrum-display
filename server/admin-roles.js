@@ -357,6 +357,15 @@ function redactInventoryCosts(item) {
   delete out.cost;
   delete out.localWarehouseCost;
   delete out.local_warehouse_cost;
+  delete out.buildCost;
+  if (Array.isArray(out.kitLines)) {
+    out.kitLines = out.kitLines.map(function (line) {
+      if (!line || typeof line !== 'object') return line;
+      const next = Object.assign({}, line);
+      delete next.cost;
+      return next;
+    });
+  }
   return out;
 }
 
