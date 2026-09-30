@@ -31,10 +31,34 @@
     try { localStorage.setItem(seenKey(), String(id || '')); } catch (err) {}
   }
 
+  function bootHidden() {
+    const el = document.getElementById('company-boot');
+    if (!el) return true;
+    return el.hidden === true || el.classList.contains('hidden');
+  }
+
+  function tourOpen() {
+    return !!(window.SpectrumHelp && typeof SpectrumHelp.isTourOpen === 'function' && SpectrumHelp.isTourOpen());
+  }
+
+  function helpTourSeen() {
+    try {
+      return localStorage.getItem('spectrum-help-tour-' + appName + '-' + (userId || 'anon')) === '1';
+    } catch (err) {
+      return false;
+    }
+  }
+
+  function tourBlocking() {
+    if (tourOpen()) return true;
+    if (window.SpectrumHelp && !helpTourSeen()) return true;
+    return false;
+  }
+
   function appReady() {
     if (!bootHidden()) return false;
     const login = document.getElementById('login-panel');
-    if (login && !login.classList.contains('hidden')) return false;
+    if (login && !login.classList.contains('hidden') && !login.hidden) return false;
     return true;
   }
 
@@ -147,8 +171,7 @@
   }
 
   function showPopup(note) {
-    if (!card || !note || !appReady()) return;
-    if (window.SpectrumHelp && typeof SpectrumHelp.isTourOpen === 'function' && SpectrumHelp.isTourOpen()) return;
+    if (!card || !note || !appReady() || tourOpen()) return false;
     card.innerHTML = '<p class="app-notes-kicker" id="app-notes-card-title">What’s new</p>' +
       noteInner(note, { noDate: false }) +
       '<div class="app-notes-actions">' +
@@ -167,16 +190,26 @@
       });
     }
     if (got) got.focus();
+    return true;
   }
 
-  function maybePopup() {
-    if (!appReady()) {
-      window.setTimeout(maybePopup, 200);
-      return;
+  function maybePopup(tries) {
+    tries = tries || 0;
+    try {
+      const note = latestUnseen();
+      if (!note) return;
+      if (!appReady() || tourBlocking()) {
+        if (tries >= 80) {
+          if (appReady() && !tourOpen()) showPopup(note);
+          return;
+        }
+        window.setTimeout(function () { maybePopup(tries + 1); }, 250);
+        return;
+      }
+      showPopup(note);
+    } catch (err) {
+      console.error('SpectrumNotes popup', err);
     }
-    const note = latestUnseen();
-    if (!note) return;
-    showPopup(note);
   }
 
   function showReloadBar() {
@@ -217,14 +250,10 @@
         pack = data;
         paintPages();
         startPoll();
-        function afterTour() {
-          maybePopup();
-        }
         if (window.SpectrumHelp && typeof SpectrumHelp.onTourEnd === 'function') {
-          SpectrumHelp.onTourEnd(afterTour);
-        } else {
-          window.setTimeout(afterTour, 500);
+          SpectrumHelp.onTourEnd(function () { maybePopup(); });
         }
+        maybePopup();
       }).catch(function (err) {
         console.error('SpectrumNotes', err);
       });

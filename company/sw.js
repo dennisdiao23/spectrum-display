@@ -1,5 +1,5 @@
 /* Spectrum Company PWA — /company only. Network-first. Do not cache APIs. */
-var CACHE = 'spectrum-company-pwa-v-notes1';
+var CACHE = 'spectrum-company-pwa-v-notes3';
 
 self.addEventListener('install', function () {
   self.skipWaiting();

@@ -236,7 +236,11 @@
   function beginTour() {
     closeCard();
     state.steps = visibleSteps();
-    if (!state.steps.length) return;
+    if (!state.steps.length) {
+      markSeen();
+      fireTourEnd();
+      return;
+    }
     state.openedSidebar = false;
     if (window.matchMedia('(max-width: 900px)').matches && !document.body.classList.contains('dash-open')) {
       document.body.classList.add('dash-open');
