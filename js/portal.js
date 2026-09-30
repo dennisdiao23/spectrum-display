@@ -1195,8 +1195,13 @@
     fillCompany(data.customer);
     $('login-email-label').textContent = (data.user && data.user.email) || '';
     $('file-list').innerHTML = (data.files || []).map(function (file) {
-      return '<li><a class="text-sky-600" href="' + esc(file.url) + '" target="_blank" rel="noopener">' + esc(file.name || 'File') + '</a></li>';
-    }).join('');
+      const when = file.createdAt ? new Date(file.createdAt).toLocaleString() : '';
+      return '<li class="flex flex-wrap items-center gap-x-3 gap-y-1">' +
+        '<span>' + esc(file.name || 'File') + '</span>' +
+        (when ? '<span class="text-slate-500">' + esc(when) + '</span>' : '') +
+        '<a class="text-sky-600" href="' + esc(file.url) + '" target="_blank" rel="noopener">View</a>' +
+        '<a class="text-sky-600" href="' + esc(file.url) + '" download>Download</a></li>';
+    }).join('') || '<li class="text-slate-500">No files yet.</li>';
   }
 
   $('login-form').onsubmit = async function (e) {
