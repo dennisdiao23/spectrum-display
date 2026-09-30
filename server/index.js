@@ -288,7 +288,7 @@ async function main() {
     '/company/inventory/vendors',
     '/company/inventory/purchase-orders',
     '/company/inventory/receipt-shipments',
-    '/company/customers',
+    '/company/installed-walls',
     '/company/crm',
     '/company/crm/leads',
     '/company/crm/pipeline',
@@ -313,6 +313,7 @@ async function main() {
     app.get([route, route + '/'], sendCompany);
   });
   app.get(['/company/customers/:id', '/company/customers/:id/'], sendCompany);
+  app.get(['/company/installed-walls/:id', '/company/installed-walls/:id/'], sendCompany);
   app.get(['/company/dealers/:id', '/company/dealers/:id/'], function (req, res) {
     if (!/^\d+$/.test(String(req.params.id || ''))) {
       return res.redirect(302, '/company/dealers');
@@ -421,10 +422,10 @@ async function main() {
     const qs = req.url.includes('?') ? req.url.slice(req.url.indexOf('?')) : '';
     res.redirect(301, '/portal' + qs);
   });
-  ['/portal/book', '/portal/quotes', '/portal/orders', '/portal/registrations', '/portal/rmas', '/portal/projects', '/portal/panels', '/portal/calculator', '/portal/company'].forEach(function (route) {
+  ['/portal/book', '/portal/quotes', '/portal/orders', '/portal/walls', '/portal/registrations', '/portal/rmas', '/portal/projects', '/portal/panels', '/portal/calculator', '/portal/company'].forEach(function (route) {
     app.get([route, route + '/'], sendPortal);
   });
-  app.get(['/portal/quotes/:id', '/portal/quotes/:id/', '/portal/orders/:id', '/portal/orders/:id/', '/portal/registrations/:id', '/portal/registrations/:id/', '/portal/rmas/:id', '/portal/rmas/:id/'], sendPortal);
+  app.get(['/portal/quotes/:id', '/portal/quotes/:id/', '/portal/orders/:id', '/portal/orders/:id/', '/portal/registrations/:id', '/portal/registrations/:id/', '/portal/rmas/:id', '/portal/rmas/:id/', '/portal/walls/:id', '/portal/walls/:id/'], sendPortal);
 
   const OLD_SOLUTION_REDIRECTS = [
     ['/solutions/retail-hospitality.html', '/retail-hospitality'],
@@ -1337,6 +1338,20 @@ async function main() {
     try {
       res.json({ ok: true, rma: await store.createPortalRma(req.dealer, req.body || {}) });
     } catch (err) { dealerDocError(err, res, next); }
+  });
+
+  app.get('/api/dealer/walls', requireDealer, async function (req, res, next) {
+    try {
+      res.json({ ok: true, walls: await store.listPortalInstalledWalls(req.dealer) });
+    } catch (err) { next(err); }
+  });
+
+  app.get('/api/dealer/walls/:id', requireDealer, async function (req, res, next) {
+    try {
+      const wall = await store.getPortalInstalledWall(req.dealer, req.params.id);
+      if (!wall) return res.status(404).json({ ok: false, error: 'Wall not found.' });
+      res.json({ ok: true, wall: wall });
+    } catch (err) { next(err); }
   });
 
   app.get('/api/products', async function (_req, res, next) {
@@ -3175,6 +3190,35 @@ async function main() {
       const users = await store.listDealerUsersForApplication(req.params.id);
       res.json({ ok: true, users: users });
     } catch (err) { next(err); }
+  });
+
+  app.get('/api/admin/installed-walls', requireAdmin, requirePerm('orders', 'view'), async function (_req, res, next) {
+    try {
+      res.json({ ok: true, walls: await store.listInstalledWalls() });
+    } catch (err) { next(err); }
+  });
+
+  app.get('/api/admin/installed-walls/:id', requireAdmin, requirePerm('orders', 'view'), async function (req, res, next) {
+    try {
+      const wall = await store.getInstalledWall(req.params.id);
+      if (!wall) return res.status(404).json({ ok: false, error: 'Wall not found.' });
+      res.json({ ok: true, wall: wall });
+    } catch (err) { next(err); }
+  });
+
+  app.post('/api/admin/installed-walls', requireAdmin, requirePerm('orders', 'edit'), async function (req, res, next) {
+    try {
+      const wall = await store.createInstalledWallFromOrder((req.body || {}).salesDocId);
+      res.json({ ok: true, wall: wall });
+    } catch (err) { dealerDocError(err, res, next); }
+  });
+
+  app.post('/api/admin/installed-walls/:id', requireAdmin, requirePerm('orders', 'edit'), async function (req, res, next) {
+    try {
+      const wall = await store.updateInstalledWall(req.params.id, req.body || {});
+      if (!wall) return res.status(404).json({ ok: false, error: 'Wall not found.' });
+      res.json({ ok: true, wall: wall });
+    } catch (err) { dealerDocError(err, res, next); }
   });
 
   app.get('/api/admin/rmas', requireAdmin, requirePerm('dealer', 'view'), async function (_req, res, next) {
