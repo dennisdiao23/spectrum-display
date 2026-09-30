@@ -240,6 +240,14 @@
     frame.setAttribute('data-src', next);
     frame.src = next;
   }
+  function syncInstallCard() {
+    const card = $('portal-install-card');
+    if (!card) return;
+    let dismissed = false;
+    try { dismissed = localStorage.getItem('portal-install-dismissed') === '1'; } catch (err) { dismissed = false; }
+    if (dismissed) card.hidden = true;
+    else card.hidden = false;
+  }
   function showApp() {
     hidePortalBoot();
     $('login-panel').classList.add('hidden');
@@ -248,6 +256,7 @@
     $('portal-logout').classList.remove('hidden');
     $('portal-user').textContent = (me && me.user && (me.user.name || me.user.email)) || '';
     paintDealerBrand();
+    syncInstallCard();
     openPortal(pathView(), false);
     if (window.SpectrumHelp) {
       SpectrumHelp.start({
@@ -1260,6 +1269,11 @@
     me = null;
     showLogin();
   };
+  $('portal-install-close').addEventListener('click', function () {
+    const card = $('portal-install-card');
+    if (card) card.hidden = true;
+    try { localStorage.setItem('portal-install-dismissed', '1'); } catch (err) {}
+  });
   document.getElementById('dash-home').addEventListener('click', function (e) {
     const kpi = e.target.closest('.dash-kpi');
     if (!kpi) return;
