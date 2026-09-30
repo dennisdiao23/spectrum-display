@@ -214,8 +214,11 @@ async function main() {
     '/company/website',
     '/company/website/store',
     '/company/website/accounts',
-    '/company/website/dealers',
     '/company/website/traffic',
+    '/company/dealers',
+    '/company/dealers/applications',
+    '/company/dealers/registrations',
+    '/company/dealers/rmas',
     '/company/inventory',
     '/company/inventory/locations',
     '/company/inventory/vendors',
@@ -239,10 +242,19 @@ async function main() {
   app.get(['/company/website/control', '/company/website/control/'], function (_req, res) {
     res.redirect(301, '/company/website');
   });
+  app.get(['/company/website/dealers', '/company/website/dealers/'], function (_req, res) {
+    res.redirect(301, '/company/dealers/applications');
+  });
   COMPANY_PAGES.forEach(function (route) {
     app.get([route, route + '/'], sendCompany);
   });
   app.get(['/company/customers/:id', '/company/customers/:id/'], sendCompany);
+  app.get(['/company/dealers/:id', '/company/dealers/:id/'], function (req, res) {
+    if (!/^\d+$/.test(String(req.params.id || ''))) {
+      return res.redirect(302, '/company/dealers');
+    }
+    sendCompany(req, res);
+  });
   app.get(['/company/settings/users/:id', '/company/settings/users/:id/'], sendCompany);
   app.get(['/company/crm/leads/:id', '/company/crm/leads/:id/'], sendCompany);
   app.get(['/company/crm/pipeline/:id', '/company/crm/pipeline/:id/'], sendCompany);
@@ -345,10 +357,10 @@ async function main() {
     const qs = req.url.includes('?') ? req.url.slice(req.url.indexOf('?')) : '';
     res.redirect(301, '/portal' + qs);
   });
-  ['/portal/book', '/portal/quotes', '/portal/orders', '/portal/projects', '/portal/panels', '/portal/calculator', '/portal/company'].forEach(function (route) {
+  ['/portal/book', '/portal/quotes', '/portal/orders', '/portal/registrations', '/portal/rmas', '/portal/projects', '/portal/panels', '/portal/calculator', '/portal/company'].forEach(function (route) {
     app.get([route, route + '/'], sendPortal);
   });
-  app.get(['/portal/quotes/:id', '/portal/quotes/:id/', '/portal/orders/:id', '/portal/orders/:id/'], sendPortal);
+  app.get(['/portal/quotes/:id', '/portal/quotes/:id/', '/portal/orders/:id', '/portal/orders/:id/', '/portal/registrations/:id', '/portal/registrations/:id/', '/portal/rmas/:id', '/portal/rmas/:id/'], sendPortal);
 
   const OLD_SOLUTION_REDIRECTS = [
     ['/solutions/retail-hospitality.html', '/retail-hospitality'],
@@ -580,7 +592,7 @@ async function main() {
     if (err && err.code === 'no_customer') {
       return res.status(409).json({ ok: false, error: err.message, code: err.code });
     }
-    if (err && (err.code === 'not_draft' || /Unknown SKU|Add a note|customer|Password|email|Name|Logo/i.test(err.message || ''))) {
+    if (err && (err.code === 'protected' || err.code === 'invalid' || err.code === 'not_draft' || /Unknown SKU|Add a note|already registered|customer|Password|email|Name|Logo/i.test(err.message || ''))) {
       return res.status(400).json({ ok: false, error: err.message, code: err.code || '' });
     }
     return next(err);
@@ -1001,35 +1013,6 @@ async function main() {
         console.error('Could not store dealer application:', err.message || err);
         return res.status(502).json({ ok: false, error: 'Could not save the application. Please try again.' });
       }
-      try {
-        const addr = app.company_address || {};
-        const extra = [
-          app.tax_id ? 'Tax ID: ' + app.tax_id : '',
-          app.years_in_business ? 'Years in business: ' + app.years_in_business : '',
-          app.company_size ? 'Company size: ' + app.company_size : '',
-          app.business_type && app.business_type.length ? 'Business type: ' + app.business_type.join(', ') : '',
-          app.primary_verticals && app.primary_verticals.length ? 'Verticals: ' + app.primary_verticals.join(', ') : '',
-          addr.line1 ? 'Address: ' + [addr.line1, addr.city, addr.state, addr.postal_code].filter(Boolean).join(', ') : '',
-          app.references_text ? 'References: ' + app.references_text : ''
-        ].filter(Boolean).join('\n');
-        const lead = await store.upsertCrmLeadFromInquiry({
-          source: 'dealer',
-          sourceKey: app.email ? 'dealer:' + app.email : '',
-          name: app.contact_name,
-          company: app.company_name,
-          email: app.email,
-          phone: app.phone,
-          website: app.website,
-          city: addr.city || '',
-          state: addr.state || '',
-          notes: extra
-        });
-        if (lead && lead.id && savedApp && savedApp.id) {
-          await store.attachDealerApplicationCrmLead(savedApp.id, lead.id);
-        }
-      } catch (err) {
-        console.error('Could not store CRM lead from dealer:', err.message || err);
-      }
       let emailed = false;
       if (mailConfigured()) {
         try {
@@ -1168,7 +1151,13 @@ async function main() {
 
   app.post('/api/dealer/quotes', requireDealer, async function (req, res, next) {
     try {
-      res.json({ ok: true, quote: await store.createDealerDoc(req.dealer, 'quote', req.body || {}) });
+      const body = req.body || {};
+      const quote = await store.createDealerDoc(req.dealer, 'quote', body);
+      const registrationId = body.registrationId;
+      if (registrationId && store.attachDealRegistrationQuote) {
+        await store.attachDealRegistrationQuote(req.dealer, registrationId, quote && quote.id);
+      }
+      res.json({ ok: true, quote: quote });
     } catch (err) { dealerDocError(err, res, next); }
   });
 
@@ -1244,6 +1233,46 @@ async function main() {
     try {
       res.json({ ok: true, panels: await store.listDealerCustomPanels(req.dealer) });
     } catch (err) { next(err); }
+  });
+
+  app.get('/api/dealer/registrations', requireDealer, async function (req, res, next) {
+    try {
+      res.json({ ok: true, registrations: await store.listDealerDealRegistrations(req.dealer) });
+    } catch (err) { next(err); }
+  });
+
+  app.get('/api/dealer/registrations/:id', requireDealer, async function (req, res, next) {
+    try {
+      const registration = await store.getDealerDealRegistration(req.dealer, req.params.id);
+      if (!registration) return res.status(404).json({ ok: false, error: 'Registration not found.' });
+      res.json({ ok: true, registration: registration });
+    } catch (err) { next(err); }
+  });
+
+  app.post('/api/dealer/registrations', requireDealer, async function (req, res, next) {
+    try {
+      res.json({ ok: true, registration: await store.createDealRegistration(req.dealer, req.body || {}) });
+    } catch (err) { dealerDocError(err, res, next); }
+  });
+
+  app.get('/api/dealer/rmas', requireDealer, async function (req, res, next) {
+    try {
+      res.json({ ok: true, rmas: await store.listPortalRmas(req.dealer) });
+    } catch (err) { next(err); }
+  });
+
+  app.get('/api/dealer/rmas/:id', requireDealer, async function (req, res, next) {
+    try {
+      const rma = await store.getPortalRma(req.dealer, req.params.id);
+      if (!rma) return res.status(404).json({ ok: false, error: 'RMA not found.' });
+      res.json({ ok: true, rma: rma });
+    } catch (err) { next(err); }
+  });
+
+  app.post('/api/dealer/rmas', requireDealer, async function (req, res, next) {
+    try {
+      res.json({ ok: true, rma: await store.createPortalRma(req.dealer, req.body || {}) });
+    } catch (err) { dealerDocError(err, res, next); }
   });
 
   app.get('/api/products', async function (_req, res, next) {
@@ -3036,18 +3065,23 @@ async function main() {
     } catch (err) { next(err); }
   });
 
-  app.get('/api/admin/dealer-applications', requireAdmin, requirePerm('website', 'view'), async function (req, res, next) {
+  app.get('/api/admin/dealer-applications', requireAdmin, requirePerm('dealer-applications', 'view'), async function (req, res, next) {
     try {
       const status = String((req.query && req.query.status) || '').trim();
+      const applications = await store.listDealerApplications(status ? { status: status } : {});
+      const pendingCount = typeof store.countPendingDealerApplications === 'function'
+        ? await store.countPendingDealerApplications()
+        : applications.filter(function (row) { return row && row.status === 'pending'; }).length;
       res.json({
         ok: true,
-        applications: await store.listDealerApplications(status ? { status: status } : {}),
+        applications: applications,
+        pendingCount: pendingCount,
         source: hasSupabase() ? 'supabase' : 'sqlite'
       });
     } catch (err) { next(err); }
   });
 
-  app.get('/api/admin/dealer-applications/:id', requireAdmin, requirePerm('website', 'view'), async function (req, res, next) {
+  app.get('/api/admin/dealer-applications/:id', requireAdmin, requirePerm('dealer-applications', 'view'), async function (req, res, next) {
     try {
       const application = await store.getDealerApplication(req.params.id);
       if (!application) return res.status(404).json({ ok: false, error: 'Application not found.' });
@@ -3055,7 +3089,7 @@ async function main() {
     } catch (err) { next(err); }
   });
 
-  app.post('/api/admin/dealer-applications/:id/approve', requireAdmin, requirePerm('website', 'edit'), async function (req, res, next) {
+  app.post('/api/admin/dealer-applications/:id/approve', requireAdmin, requirePerm('dealer-applications', 'edit'), async function (req, res, next) {
     try {
       const application = await store.approveDealerApplication(req.params.id, req.admin);
       if (!application) return res.status(404).json({ ok: false, error: 'Application not found.' });
@@ -3063,7 +3097,7 @@ async function main() {
     } catch (err) { next(err); }
   });
 
-  app.post('/api/admin/dealer-applications/:id/reject', requireAdmin, requirePerm('website', 'edit'), async function (req, res, next) {
+  app.post('/api/admin/dealer-applications/:id/reject', requireAdmin, requirePerm('dealer-applications', 'edit'), async function (req, res, next) {
     try {
       const notes = req.body && req.body.notes != null ? req.body.notes : '';
       const application = await store.rejectDealerApplication(req.params.id, req.admin, notes);
@@ -3072,14 +3106,56 @@ async function main() {
     } catch (err) { next(err); }
   });
 
-  app.get('/api/admin/dealer-applications/:id/logins', requireAdmin, requirePerm('website', 'view'), async function (req, res, next) {
+  app.get('/api/admin/dealer-applications/:id/logins', requireAdmin, requirePerm('dealer-applications', 'view'), async function (req, res, next) {
     try {
       const users = await store.listDealerUsersForApplication(req.params.id);
       res.json({ ok: true, users: users });
     } catch (err) { next(err); }
   });
 
-  app.post('/api/admin/dealer-applications/:id/login', requireAdmin, requirePerm('website', 'edit'), async function (req, res, next) {
+  app.get('/api/admin/rmas', requireAdmin, requirePerm('dealer', 'view'), async function (_req, res, next) {
+    try {
+      res.json({ ok: true, rmas: await store.listDealerRmas() });
+    } catch (err) { next(err); }
+  });
+
+  app.get('/api/admin/deal-registrations', requireAdmin, requirePerm('dealer', 'view'), async function (_req, res, next) {
+    try {
+      res.json({ ok: true, registrations: await store.listDealRegistrations() });
+    } catch (err) { next(err); }
+  });
+
+  app.post('/api/admin/deal-registrations/check', requireAdmin, requirePerm('dealer', 'view'), async function (req, res, next) {
+    try {
+      const body = req.body || {};
+      const matches = await store.matchDealRegistrations({
+        customerId: body.customerId || '',
+        customerName: body.customerName || '',
+        shipText: body.shipText || '',
+        billText: body.billText || '',
+        notes: body.notes || ''
+      });
+      res.json({ ok: true, matches: matches });
+    } catch (err) { next(err); }
+  });
+
+  app.post('/api/admin/deal-registrations/:id/accept', requireAdmin, requirePerm('dealer', 'edit'), async function (req, res, next) {
+    try {
+      const registration = await store.acceptDealRegistration(req.params.id, req.admin, req.body || {});
+      if (!registration) return res.status(404).json({ ok: false, error: 'Registration not found.' });
+      res.json({ ok: true, registration: registration });
+    } catch (err) { dealerDocError(err, res, next); }
+  });
+
+  app.post('/api/admin/deal-registrations/:id/decline', requireAdmin, requirePerm('dealer', 'edit'), async function (req, res, next) {
+    try {
+      const registration = await store.declineDealRegistration(req.params.id, req.admin, req.body || {});
+      if (!registration) return res.status(404).json({ ok: false, error: 'Registration not found.' });
+      res.json({ ok: true, registration: registration });
+    } catch (err) { dealerDocError(err, res, next); }
+  });
+
+  app.post('/api/admin/dealer-applications/:id/login', requireAdmin, requirePerm('dealer-applications', 'edit'), async function (req, res, next) {
     try {
       const application = await store.getDealerApplication(req.params.id);
       if (!application) return res.status(404).json({ ok: false, error: 'Application not found.' });

@@ -27,7 +27,8 @@ function emptyCounts() {
     pipelineValue: 0,
     activities: 0,
     overdueActivities: 0,
-    weightedForecast: 0
+    weightedForecast: 0,
+    pendingDealerApplications: 0
   };
 }
 
@@ -59,6 +60,10 @@ function canSeeSales(admin) {
 
 function canSeeCrm(admin) {
   return canSee(admin, 'crm') || canSee(admin, 'leads') || canSee(admin, 'pipeline') || canSee(admin, 'activities');
+}
+
+function canSeeDealerApplications(admin) {
+  return canSee(admin, 'dealer-applications') || canSee(admin, 'dealer');
 }
 
 function productPitchLabel(pitchesRaw, type) {
@@ -299,11 +304,15 @@ function getSqliteDashboardHome(db, admin) {
     `).map(mapCustomerPreview);
   }
 
+  const crm = require('./company-crm');
+  const notDealerApp = 'NOT ' + crm.dealerApplicationLeadSql('');
+
   if (canSeeCrm(admin)) {
-    counts.leads = sqliteCount(db, 'SELECT COUNT(*) AS n FROM company_crm_leads');
+    counts.leads = sqliteCount(db, 'SELECT COUNT(*) AS n FROM company_crm_leads WHERE ' + notDealerApp);
     counts.openLeads = sqliteCount(db, `
       SELECT COUNT(*) AS n FROM company_crm_leads
       WHERE status IN ('new', 'working', 'qualified')
+        AND ${notDealerApp}
     `);
     counts.deals = sqliteCount(db, 'SELECT COUNT(*) AS n FROM company_crm_deals');
     counts.openDeals = sqliteCount(db, `
@@ -327,16 +336,23 @@ function getSqliteDashboardHome(db, admin) {
       ), 0) AS n FROM company_crm_deals
       WHERE stage IN ('new', 'qualified', 'quoted', 'negotiation')
     `));
-    counts.activities = sqliteCount(db, 'SELECT COUNT(*) AS n FROM company_crm_activities');
+    counts.activities = sqliteCount(db, `
+      SELECT COUNT(*) AS n FROM company_crm_activities a
+      LEFT JOIN company_crm_leads l ON l.id = a.lead_id
+      WHERE a.lead_id IS NULL OR a.lead_id = 0 OR NOT ${crm.dealerApplicationLeadSql('l')}
+    `);
     counts.overdueActivities = sqliteCount(db, `
-      SELECT COUNT(*) AS n FROM company_crm_activities
-      WHERE (done_at IS NULL OR done_at = '')
-        AND due_at IS NOT NULL AND due_at != ''
-        AND datetime(due_at) < datetime('now')
+      SELECT COUNT(*) AS n FROM company_crm_activities a
+      LEFT JOIN company_crm_leads l ON l.id = a.lead_id
+      WHERE (a.done_at IS NULL OR a.done_at = '')
+        AND a.due_at IS NOT NULL AND a.due_at != ''
+        AND datetime(a.due_at) < datetime('now')
+        AND (a.lead_id IS NULL OR a.lead_id = 0 OR NOT ${crm.dealerApplicationLeadSql('l')})
     `);
     out.leads = sqliteAll(db, `
       SELECT display_name, company_name, contact_first, contact_last, email, phone, status, source
       FROM company_crm_leads
+      WHERE ${notDealerApp}
       ORDER BY datetime(updated_at) DESC, id DESC
       LIMIT 8
     `).map(mapLeadPreview);
@@ -355,9 +371,16 @@ function getSqliteDashboardHome(db, admin) {
       LEFT JOIN company_crm_deals d ON d.id = a.deal_id
       WHERE (a.done_at IS NULL OR a.done_at = '')
         AND a.due_at IS NOT NULL AND a.due_at != ''
+        AND (a.lead_id IS NULL OR a.lead_id = 0 OR NOT ${crm.dealerApplicationLeadSql('l')})
       ORDER BY datetime(a.due_at) ASC, a.id ASC
       LIMIT 12
     `).map(mapReminderPreview);
+  }
+
+  if (canSeeDealerApplications(admin)) {
+    counts.pendingDealerApplications = sqliteCount(db, `
+      SELECT COUNT(*) AS n FROM dealer_applications WHERE status = 'pending'
+    `);
   }
 
   if (canSeeSales(admin)) {
@@ -567,18 +590,15 @@ async function getSupabaseDashboardHome(supabase, admin) {
 
   if (canSeeCrm(admin)) {
     tasks.push((async function () {
-      const openLead = function (q) { return q.in('status', ['new', 'working', 'qualified']); };
+      const crm = require('./company-crm');
       const openDeal = function (q) { return q.in('stage', ['new', 'qualified', 'quoted', 'negotiation']); };
-      const [leads, openLeads, deals, openDeals, activities, leadPreview, dealPreview, openDealRows, dueActs, reminderPreview] = await Promise.all([
-        countSupabase(supabase, 'company_crm_leads'),
-        countSupabase(supabase, 'company_crm_leads', openLead),
+      const [leadRows, deals, openDeals, actRows, dealPreview, openDealRows, reminderPreview] = await Promise.all([
+        supabase.from('company_crm_leads')
+          .select('id, display_name, company_name, contact_first, contact_last, email, phone, status, source, kind, source_key')
+          .order('updated_at', { ascending: false }),
         countSupabase(supabase, 'company_crm_deals'),
         countSupabase(supabase, 'company_crm_deals', openDeal),
-        countSupabase(supabase, 'company_crm_activities'),
-        supabase.from('company_crm_leads')
-          .select('display_name, company_name, contact_first, contact_last, email, phone, status, source')
-          .order('updated_at', { ascending: false })
-          .limit(8),
+        supabase.from('company_crm_activities').select('id, lead_id, due_at, done_at'),
         supabase.from('company_crm_deals')
           .select('title, company_name, stage, value, expected_close')
           .in('stage', ['new', 'qualified', 'quoted', 'negotiation'])
@@ -588,21 +608,23 @@ async function getSupabaseDashboardHome(supabase, admin) {
           .select('value, stage, probability')
           .in('stage', ['new', 'qualified', 'quoted', 'negotiation']),
         supabase.from('company_crm_activities')
-          .select('due_at, done_at')
-          .eq('done_at', '')
-          .neq('due_at', ''),
-        supabase.from('company_crm_activities')
           .select('id, subject, due_at, assigned_to, lead_id, deal_id, done_at')
           .eq('done_at', '')
           .neq('due_at', '')
           .order('due_at', { ascending: true })
-          .limit(12)
+          .limit(24)
       ]);
-      counts.leads = leads;
-      counts.openLeads = openLeads;
+      const visibleLeads = crm.visibleCrmLeads((leadRows && leadRows.data) || []);
+      const visibleActs = crm.hideDealerApplicationActivities
+        ? crm.hideDealerApplicationActivities((actRows && actRows.data) || [], (leadRows && leadRows.data) || [])
+        : ((actRows && actRows.data) || []);
+      counts.leads = visibleLeads.length;
+      counts.openLeads = visibleLeads.filter(function (row) {
+        return row.status === 'new' || row.status === 'working' || row.status === 'qualified';
+      }).length;
       counts.deals = deals;
       counts.openDeals = openDeals;
-      counts.activities = activities;
+      counts.activities = visibleActs.length;
       let pipelineValue = 0;
       let weightedForecast = 0;
       ((openDealRows && openDealRows.data) || []).forEach(function (row) {
@@ -617,13 +639,25 @@ async function getSupabaseDashboardHome(supabase, admin) {
       counts.pipelineValue = pipelineValue;
       counts.weightedForecast = weightedForecast;
       const now = Date.now();
-      counts.overdueActivities = ((dueActs && dueActs.data) || []).filter(function (row) {
+      counts.overdueActivities = visibleActs.filter(function (row) {
+        if (row.done_at) return false;
         const due = Date.parse(row.due_at);
         return Number.isFinite(due) && due < now;
       }).length;
-      out.leads = ((leadPreview && leadPreview.data) || []).map(mapLeadPreview);
+      out.leads = visibleLeads.slice(0, 8).map(mapLeadPreview);
       out.deals = ((dealPreview && dealPreview.data) || []).map(mapDealPreview);
-      out.reminders = ((reminderPreview && reminderPreview.data) || []).map(mapReminderPreview);
+      const reminderRows = crm.hideDealerApplicationActivities
+        ? crm.hideDealerApplicationActivities((reminderPreview && reminderPreview.data) || [], (leadRows && leadRows.data) || [])
+        : ((reminderPreview && reminderPreview.data) || []);
+      out.reminders = reminderRows.slice(0, 12).map(mapReminderPreview);
+    })().catch(function () {}));
+  }
+
+  if (canSeeDealerApplications(admin)) {
+    tasks.push((async function () {
+      counts.pendingDealerApplications = await countSupabase(supabase, 'dealer_applications', function (q) {
+        return q.eq('status', 'pending');
+      });
     })().catch(function () {}));
   }
 

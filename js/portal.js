@@ -5,6 +5,8 @@
     book: 'inventory-section',
     quotes: 'sales-section',
     orders: 'sales-section',
+    registrations: 'registrations-section',
+    rmas: 'rmas-section',
     projects: 'projects-section',
     panels: 'panels-section',
     calculator: 'calculator-section',
@@ -19,14 +21,19 @@
   let panels = [];
   let panelId = '';
   let dashHome = 'book';
+  let registrations = [];
+  let pendingRegistrationId = '';
+  let rmas = [];
   let openTabs = [];
   let bookFilter = 'all';
   let bookSku = '';
-  const tabLabel = { home: 'Dashboard', book: 'Dealer book', quotes: 'Request Quote', orders: 'Purchase Order', projects: 'Projects', panels: 'Saved Panel', calculator: 'Calculator', company: 'Company' };
+  const tabLabel = { home: 'Dashboard', book: 'Dealer book', quotes: 'Request Quote', orders: 'Purchase Order', registrations: 'Deal registration', rmas: 'RMA', projects: 'Projects', panels: 'Saved Panel', calculator: 'Calculator', company: 'Company' };
   const tabIcon = {
     home: '<svg class="dash-master-tab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="8" height="8" rx="1.5"/><rect x="13" y="3" width="8" height="8" rx="1.5"/><rect x="3" y="13" width="8" height="8" rx="1.5"/><rect x="13" y="13" width="8" height="8" rx="1.5"/></svg>',
     book: '<svg class="dash-master-tab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 10 12 4.5 21 10v9.5a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V10z"/><path d="M9 20.5V12h6v8.5"/></svg>',
     quotes: '<svg class="dash-master-tab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 4h8v4H8z"/><path d="M6 8h12v12H6z"/><path d="M9 12h6M9 16h4"/></svg>',
+    registrations: '<svg class="dash-master-tab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="3" width="16" height="18" rx="2"/><path d="M8 8h8M8 12h8M8 16h5"/></svg>',
+    rmas: '<svg class="dash-master-tab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 12a9 9 0 1 0 3-6.7"/><path d="M3 4v5h5"/><path d="M9 12h6"/></svg>',
     orders: '<svg class="dash-master-tab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 7h16l-1.5 12H5.5L4 7z"/><path d="M9 7V5a3 3 0 0 1 6 0v2"/></svg>',
     projects: '<svg class="dash-master-tab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M3 8h18"/><path d="M8 12h5M8 16h8"/></svg>',
     panels: '<svg class="dash-master-tab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 8.5 12 13 3 8.5 12 4l9 4.5z"/><path d="M3 8.5v7L12 20l9-4.5v-7"/><path d="M12 13v7"/></svg>',
@@ -131,6 +138,7 @@
     $('portal-nav').classList.add('hidden');
     $('portal-foot').classList.add('hidden');
     $('portal-logout').classList.add('hidden');
+    if (window.SpectrumHelp) SpectrumHelp.stop();
     views.forEach(function (name) { viewEl(name).classList.add('hidden'); });
     $('portal-title').textContent = 'Dealer Portal';
     $('admin-page-sub').textContent = 'Dealer sign in';
@@ -233,6 +241,13 @@
     $('portal-user').textContent = (me && me.user && (me.user.name || me.user.email)) || '';
     paintDealerBrand();
     openPortal(pathView(), false);
+    if (window.SpectrumHelp) {
+      SpectrumHelp.start({
+        app: 'portal',
+        userId: me && me.user && me.user.id,
+        page: pathView()
+      });
+    }
   }
   function renderView(name) {
     const seen = {};
@@ -254,15 +269,19 @@
     $('admin-page-sub').textContent = name === 'home' ? 'Overview' : ((me && me.customer && me.customer.companyName) || '');
     document.body.classList.toggle('inv-layout-lock', (name === 'book' || name === 'projects' || name === 'panels') && !isMobileDash());
     const onSales = (name === 'quotes' || name === 'orders') && !isMobileDash();
-    document.body.classList.toggle('so-split-lock', onSales);
+    document.body.classList.toggle('so-split-lock', onSales || ((name === 'registrations' || name === 'rmas') && !isMobileDash()));
+    document.body.classList.toggle('dash-split-lock', (name === 'registrations' || name === 'rmas') && !isMobileDash());
     const sales = $('sales-section');
     if (sales) sales.classList.toggle('so-split-on', onSales);
     if (name === 'home') renderHome();
     if (name === 'book') renderBook();
     if (name === 'quotes' || name === 'orders') renderQuotes();
+    if (name === 'registrations') renderRegistrations();
+    if (name === 'rmas') renderRmas();
     if (name === 'projects') loadProjects();
     if (name === 'panels') loadPanels();
     if (name === 'company') loadCompany();
+    if (window.SpectrumHelp) SpectrumHelp.setPage(name);
   }
   function chip(value, label) {
     return '<div class="dash-detail-chip"><strong>' + esc(value) + '</strong><span>' + esc(label) + '</span></div>';
@@ -856,6 +875,7 @@
     if (route === 'new') {
       showQuoteMsg('');
       fillQuoteForm(null);
+      applyPendingRegistration();
       showQuoteDoc(true);
       return;
     }
@@ -884,7 +904,8 @@
       discount: $('so-discount').value,
       taxRate: $('so-tax-rate').value,
       notes: $('so-notes').value,
-      lines: readQuoteLines()
+      lines: readQuoteLines(),
+      registrationId: !$('so-id').value && pendingRegistrationId ? pendingRegistrationId : ''
     };
   }
   async function saveQuote(after) {
@@ -900,6 +921,7 @@
         body: JSON.stringify(quotePayload())
       });
       await refreshDocs();
+      pendingRegistrationId = '';
       const next = saved.doc || saved.quote || saved.order;
       if (after === 'close') goQuote('', true);
       else if (after === 'new') goQuote('new', true);
@@ -1496,6 +1518,306 @@
       return false;
     }
   }
+  function regIdFromPath() {
+    const parts = location.pathname.replace(/\/+$/, '').split('/');
+    if (parts[2] === 'registrations' && parts[3]) return parts[3];
+    return '';
+  }
+  function drStatusLabel(row) {
+    if (!row) return '';
+    if (row.status === 'protected') return 'Protected until ' + (row.protectUntil || '');
+    if (row.status === 'declined') return 'Declined' + (row.declineReason ? ' — ' + row.declineReason : '');
+    if (row.status === 'expired') return 'Expired';
+    return 'Waiting for Spectrum';
+  }
+  function goRegistration(id, push) {
+    const path = id ? ('/portal/registrations/' + id) : '/portal/registrations';
+    if (openTabs.indexOf('registrations') === -1) openTabs.push('registrations');
+    if (push !== false && location.pathname.replace(/\/+$/, '') !== path) {
+      history.pushState({ view: 'registrations', id: id || '' }, '', path);
+    }
+    renderView('registrations');
+    renderMasterTabs();
+  }
+  function setDrMsg(text, ok) {
+    const el = $('dr-msg');
+    if (!el) return;
+    el.textContent = text || '';
+    el.className = 'text-sm ' + (ok ? 'text-sky-400' : 'text-red-400');
+    el.classList.toggle('hidden', !text);
+  }
+  function fillRegistrationForm(row) {
+    const editing = !row;
+    $('dr-id').value = row ? row.id : '';
+    $('dr-form-title').textContent = row ? (row.number || 'Registration') : 'Register a deal';
+    $('dr-status').textContent = row ? drStatusLabel(row) : 'Submit this named job. It is not protected until Spectrum accepts it.';
+    $('dr-end').value = row ? row.endCustomer : '';
+    $('dr-job').value = row ? row.jobName : '';
+    $('dr-street').value = row ? row.siteStreet : '';
+    $('dr-city').value = row ? row.siteCity : '';
+    $('dr-state').value = row ? row.siteState : '';
+    $('dr-selling').value = row ? row.selling : '';
+    $('dr-date').value = row ? row.expectedDate : '';
+    $('dr-contact').value = row ? row.contactName : '';
+    $('dr-email').value = row ? row.contactEmail : '';
+    $('dr-phone').value = row ? row.contactPhone : '';
+    $('dr-notes').value = row ? row.notes : '';
+    const locked = !!(row && row.status && row.status !== 'submitted');
+    ['dr-end', 'dr-job', 'dr-street', 'dr-city', 'dr-state', 'dr-selling', 'dr-date', 'dr-contact', 'dr-email', 'dr-phone', 'dr-notes'].forEach(function (id) {
+      const el = $(id);
+      if (el) el.readOnly = !editing && !!row;
+      if (el && el.type !== 'date') el.readOnly = !!row;
+    });
+    $('dr-date').readOnly = !!row;
+    $('dr-save').classList.toggle('hidden', !!row);
+    $('dr-quote').classList.toggle('hidden', !(row && row.status === 'protected'));
+    $('dr-form').classList.remove('hidden');
+    $('dr-overview').classList.add('hidden');
+    setDrMsg('', true);
+  }
+  function renderRegistrationTable() {
+    const openId = regIdFromPath();
+    $('dr-table').innerHTML = registrations.length ? registrations.map(function (row) {
+      const on = openId && String(openId) === String(row.id);
+      const site = [row.siteCity, row.siteState].filter(Boolean).join(', ');
+      return '<tr class="border-b border-slate-800 hover:bg-slate-900/80 cursor-pointer' + (on ? ' is-active' : '') + '" data-dr-id="' + esc(row.id) + '">' +
+        '<td class="py-3 px-4 font-medium">' + esc(row.number || '') + '</td>' +
+        '<td class="py-3 px-4">' + esc(row.endCustomer || '—') + '</td>' +
+        '<td class="py-3 px-4">' + esc(row.jobName || '—') + '</td>' +
+        '<td class="py-3 px-4">' + esc(site || '—') + '</td>' +
+        '<td class="py-3 px-4">' + esc(drStatusLabel(row)) + '</td></tr>';
+    }).join('') : '<tr><td class="py-6 px-4 text-slate-500" colspan="5">No registrations yet.</td></tr>';
+  }
+  async function renderRegistrations() {
+    const err = $('dr-error');
+    if (err) { err.textContent = ''; err.classList.add('hidden'); }
+    try {
+      const data = await api('/api/dealer/registrations');
+      registrations = data.registrations || [];
+    } catch (e) {
+      registrations = [];
+      if (err) {
+        err.textContent = e.message || 'Could not load registrations.';
+        err.classList.remove('hidden');
+      }
+    }
+    renderRegistrationTable();
+    const route = regIdFromPath();
+    if (!route) {
+      $('dr-form').classList.add('hidden');
+      $('dr-overview').classList.remove('hidden');
+      return;
+    }
+    if (route === 'new') {
+      fillRegistrationForm(null);
+      return;
+    }
+    const row = registrations.find(function (item) { return String(item.id) === String(route); });
+    if (row) fillRegistrationForm(row);
+  }
+  function applyPendingRegistration() {
+    let id = '';
+    try { id = sessionStorage.getItem('portal-quote-registration') || ''; } catch (err) { id = ''; }
+    if (!id) return;
+    try { sessionStorage.removeItem('portal-quote-registration'); } catch (err) {}
+    api('/api/dealer/registrations/' + encodeURIComponent(id)).then(function (data) {
+      const row = data.registration;
+      if (!row || row.status !== 'protected') return;
+      pendingRegistrationId = row.id;
+      const note = 'Deal registration ' + row.number +
+        '\nEnd customer: ' + row.endCustomer +
+        '\nJob: ' + row.jobName +
+        '\nSite: ' + [row.siteStreet, row.siteCity, row.siteState].filter(Boolean).join(', ');
+      if ($('so-notes') && !$('so-notes').value) $('so-notes').value = note;
+    }).catch(function () {});
+  }
+  $('dr-new-btn').addEventListener('click', function () { goRegistration('new', true); });
+  $('dr-table').addEventListener('click', function (e) {
+    const tr = e.target.closest('[data-dr-id]');
+    if (!tr) return;
+    goRegistration(tr.getAttribute('data-dr-id'), true);
+  });
+  $('dr-form').addEventListener('submit', async function (e) {
+    e.preventDefault();
+    setDrMsg('');
+    try {
+      const saved = await api('/api/dealer/registrations', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          endCustomer: $('dr-end').value,
+          jobName: $('dr-job').value,
+          siteStreet: $('dr-street').value,
+          siteCity: $('dr-city').value,
+          siteState: $('dr-state').value,
+          selling: $('dr-selling').value,
+          expectedDate: $('dr-date').value,
+          contactName: $('dr-contact').value,
+          contactEmail: $('dr-email').value,
+          contactPhone: $('dr-phone').value,
+          notes: $('dr-notes').value
+        })
+      });
+      const id = saved.registration && saved.registration.id;
+      if (id) goRegistration(id, true);
+    } catch (err) {
+      setDrMsg(err.message || 'Could not submit this job.', false);
+    }
+  });
+  $('dr-quote').addEventListener('click', function () {
+    const id = $('dr-id').value;
+    if (!id) return;
+    try { sessionStorage.setItem('portal-quote-registration', id); } catch (err) {}
+    goSales('quotes', 'new', true);
+  });
+
+  function rmaIdFromPath() {
+    const parts = location.pathname.replace(/\/+$/, '').split('/');
+    if (parts[2] === 'rmas' && parts[3]) return parts[3];
+    return '';
+  }
+  function rmaDate(value) {
+    return String(value || '').slice(0, 10) || '—';
+  }
+  function goRma(id, push) {
+    const path = id ? ('/portal/rmas/' + id) : '/portal/rmas';
+    if (openTabs.indexOf('rmas') === -1) openTabs.push('rmas');
+    if (push !== false && location.pathname.replace(/\/+$/, '') !== path) {
+      history.pushState({ view: 'rmas', id: id || '' }, '', path);
+    }
+    renderView('rmas');
+    renderMasterTabs();
+  }
+  function setRmaMsg(text, ok) {
+    const el = $('rma-msg');
+    if (!el) return;
+    el.textContent = text || '';
+    el.className = 'text-sm ' + (ok ? 'text-sky-400' : 'text-red-400');
+    el.classList.toggle('hidden', !text);
+  }
+  function rmaLineRow(line, locked) {
+    const sku = esc(line && line.sku || '');
+    const qty = line && line.qty ? String(line.qty) : '';
+    if (locked) {
+      return '<div class="text-sm">' + sku + ' · ' + esc(qty) + '</div>';
+    }
+    return '<div class="rma-line grid grid-cols-[1fr_5rem_auto] gap-2">' +
+      '<input class="rma-sku bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm" placeholder="SKU" value="' + sku + '">' +
+      '<input class="rma-qty bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm" type="number" min="1" step="1" placeholder="Qty" value="' + esc(qty) + '">' +
+      '<button type="button" class="rma-line-remove text-sm text-slate-400">Remove</button></div>';
+  }
+  function paintRmaLines(lines, locked) {
+    const box = $('rma-lines');
+    const rows = (lines && lines.length) ? lines : (locked ? [] : [{ sku: '', qty: '' }]);
+    box.innerHTML = rows.map(function (line) { return rmaLineRow(line, locked); }).join('') || '<p class="text-sm text-slate-500">No items.</p>';
+    $('rma-add-line').classList.toggle('hidden', !!locked);
+  }
+  function readRmaLines() {
+    return Array.from(document.querySelectorAll('#rma-lines .rma-line')).map(function (row) {
+      return {
+        sku: (row.querySelector('.rma-sku') || {}).value || '',
+        qty: (row.querySelector('.rma-qty') || {}).value || ''
+      };
+    });
+  }
+  function fillRmaForm(row) {
+    const locked = !!row;
+    $('rma-id').value = row ? row.id : '';
+    $('rma-form-title').textContent = row ? (row.number || 'RMA') : 'New RMA';
+    $('rma-status').textContent = row ? ('Submitted ' + rmaDate(row.createdAt)) : 'Submit this return. Spectrum reviews it.';
+    $('rma-order').value = row ? (row.orderRef || '') : '';
+    $('rma-reason').value = row && row.reason ? row.reason : 'defective';
+    $('rma-notes').value = row ? (row.notes || '') : '';
+    $('rma-order').readOnly = locked;
+    $('rma-notes').readOnly = locked;
+    $('rma-reason').disabled = locked;
+    $('rma-save').classList.toggle('hidden', locked);
+    paintRmaLines(row ? row.lines : [], locked);
+    $('rma-form').classList.remove('hidden');
+    $('rma-overview').classList.add('hidden');
+    setRmaMsg('', true);
+  }
+  function renderRmaTable() {
+    const openId = rmaIdFromPath();
+    $('rma-table').innerHTML = rmas.length ? rmas.map(function (row) {
+      const on = openId && String(openId) === String(row.id);
+      return '<tr class="border-b border-slate-800 hover:bg-slate-900/80 cursor-pointer' + (on ? ' is-active' : '') + '" data-rma-id="' + esc(row.id) + '">' +
+        '<td class="py-3 px-4 font-medium">' + esc(row.number || '') + '</td>' +
+        '<td class="py-3 px-4">' + esc(rmaDate(row.createdAt)) + '</td>' +
+        '<td class="py-3 px-4">' + esc(row.orderRef || '—') + '</td>' +
+        '<td class="py-3 px-4">' + esc(row.reasonLabel || '—') + '</td>' +
+        '<td class="py-3 px-4">Submitted</td></tr>';
+    }).join('') : '<tr><td class="py-6 px-4 text-slate-500" colspan="5">No RMAs yet.</td></tr>';
+  }
+  async function renderRmas() {
+    const err = $('rma-error');
+    if (err) { err.textContent = ''; err.classList.add('hidden'); }
+    try {
+      const data = await api('/api/dealer/rmas');
+      rmas = data.rmas || [];
+    } catch (e) {
+      rmas = [];
+      if (err) {
+        err.textContent = e.message || 'Could not load RMAs.';
+        err.classList.remove('hidden');
+      }
+    }
+    renderRmaTable();
+    const route = rmaIdFromPath();
+    if (!route) {
+      $('rma-form').classList.add('hidden');
+      $('rma-overview').classList.remove('hidden');
+      return;
+    }
+    if (route === 'new') {
+      fillRmaForm(null);
+      return;
+    }
+    const row = rmas.find(function (item) { return String(item.id) === String(route); });
+    if (row) fillRmaForm(row);
+    else {
+      $('rma-form').classList.add('hidden');
+      $('rma-overview').classList.remove('hidden');
+      setRmaMsg('', true);
+    }
+  }
+  $('rma-new-btn').addEventListener('click', function () { goRma('new', true); });
+  $('rma-table').addEventListener('click', function (e) {
+    const tr = e.target.closest('[data-rma-id]');
+    if (!tr) return;
+    goRma(tr.getAttribute('data-rma-id'), true);
+  });
+  $('rma-add-line').addEventListener('click', function () {
+    $('rma-lines').insertAdjacentHTML('beforeend', rmaLineRow({ sku: '', qty: '' }, false));
+  });
+  $('rma-lines').addEventListener('click', function (e) {
+    const btn = e.target.closest('.rma-line-remove');
+    if (!btn) return;
+    const row = btn.closest('.rma-line');
+    if (row) row.remove();
+    if (!$('rma-lines').querySelector('.rma-line')) paintRmaLines([], false);
+  });
+  $('rma-form').addEventListener('submit', async function (e) {
+    e.preventDefault();
+    setRmaMsg('');
+    try {
+      const saved = await api('/api/dealer/rmas', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          orderRef: $('rma-order').value,
+          reason: $('rma-reason').value,
+          lines: readRmaLines(),
+          notes: $('rma-notes').value
+        })
+      });
+      const id = saved.rma && saved.rma.id;
+      if (id) goRma(id, true);
+    } catch (err) {
+      setRmaMsg(err.message || 'Could not submit this RMA.', false);
+    }
+  });
+
   document.addEventListener('click', function (e) {
     if (!e.target.closest('#so-sku-menu') && !e.target.closest('[data-line="sku"]')) closeSkuMenu();
     const close = e.target.closest('[data-dash-tab-close]');
@@ -1529,6 +1851,14 @@
         e.preventDefault();
         document.body.classList.remove('dash-open');
         goSales(parts[2], parts[3], true);
+      } else if (parts[2] === 'registrations') {
+        e.preventDefault();
+        document.body.classList.remove('dash-open');
+        goRegistration(parts[3], true);
+      } else if (parts[2] === 'rmas') {
+        e.preventDefault();
+        document.body.classList.remove('dash-open');
+        goRma(parts[3], true);
       }
       return;
     }
@@ -1543,7 +1873,9 @@
     document.body.classList.toggle('inv-layout-lock', (pathView() === 'book' || pathView() === 'projects' || pathView() === 'panels') && !isMobileDash());
     document.body.classList.toggle('calc-lock', pathView() === 'calculator');
     const onQuotes = (pathView() === 'quotes' || pathView() === 'orders') && !isMobileDash();
-    document.body.classList.toggle('so-split-lock', onQuotes);
+    const onSplit = (pathView() === 'registrations' || pathView() === 'rmas') && !isMobileDash();
+    document.body.classList.toggle('so-split-lock', onQuotes || onSplit);
+    document.body.classList.toggle('dash-split-lock', onSplit);
     const sales = $('sales-section');
     if (sales) {
       sales.classList.toggle('so-split-on', onQuotes);
