@@ -292,7 +292,10 @@
     document.body.classList.toggle('dash-split-lock', (name === 'registrations' || name === 'rmas' || name === 'walls') && !isMobileDash());
     const sales = $('sales-section');
     if (sales) sales.classList.toggle('so-split-on', onSales);
-    if (name === 'home') renderHome();
+    if (name === 'home') {
+      renderHome();
+      refreshStartHere();
+    }
     if (name === 'book') renderBook();
     if (name === 'quotes' || name === 'orders') renderQuotes();
     if (name === 'registrations') renderRegistrations();
@@ -343,12 +346,85 @@
       return dashRow(doc.number || kind, [kind, doc.status].filter(Boolean).join(' · '), money(doc.total));
     }).join('') : '<p class="dash-activity-empty">No request quotes or purchase orders yet.</p>';
   }
+  function startHereSteps() {
+    return [
+      {
+        title: 'Dealer book',
+        text: 'Your prices and what is on hand.',
+        href: '/portal/book',
+        done: book.length > 0
+      },
+      {
+        title: 'Calculator',
+        text: 'Size a wall and save it.',
+        href: '/portal/calculator',
+        done: projects.length > 0 || panels.length > 0
+      },
+      {
+        title: 'Deal registration',
+        text: 'Register one named job.',
+        href: '/portal/registrations',
+        done: registrations.length > 0
+      },
+      {
+        title: 'Request Quote',
+        text: 'Ask Spectrum to price a job.',
+        href: '/portal/quotes',
+        done: (docs.quote || []).length > 0
+      }
+    ];
+  }
+  function startHereOpen() {
+    return startHereSteps().some(function (step) {
+      return step.title !== 'Dealer book' && !step.done;
+    });
+  }
+  function refreshStartHere() {
+    Promise.all([
+      api('/api/dealer/book').catch(function () { return null; }),
+      api('/api/dealer/registrations').catch(function () { return { registrations: [] }; }),
+      api('/api/dealer/projects').catch(function () { return { projects: [] }; }),
+      api('/api/dealer/panels').catch(function () { return { panels: [] }; }),
+      refreshDocs().catch(function () {})
+    ]).then(function (saved) {
+      if (saved[0] && saved[0].items) book = saved[0].items;
+      registrations = (saved[1] && saved[1].registrations) || [];
+      projects = (saved[2] && saved[2].projects) || [];
+      panels = (saved[3] && saved[3].panels) || [];
+      if (pathView() === 'home') renderHome();
+    }).catch(function () {});
+  }
+  function renderStartHere(title, sub, open, stats, list) {
+    const steps = startHereSteps();
+    const doneCount = steps.filter(function (step) { return step.done; }).length;
+    title.textContent = 'Start here';
+    sub.textContent = doneCount + ' of ' + steps.length + ' done. A step checks itself when it is saved.';
+    open.hidden = true;
+    stats.hidden = true;
+    stats.innerHTML = '';
+    list.innerHTML = steps.map(function (step) {
+      return '<div class="start-here-row' + (step.done ? ' is-done' : '') + '">' +
+        '<span class="start-here-check" aria-hidden="true"></span>' +
+        '<div><strong>' + esc(step.title) + '</strong><span>' + esc(step.text) + '</span></div>' +
+        '<a href="' + esc(step.href) + '">Open</a>' +
+        '</div>';
+    }).join('');
+  }
   function renderHomeDetail() {
     const title = $('dash-detail-title');
     const sub = $('dash-detail-sub');
     const open = $('dash-detail-open');
     const stats = $('dash-detail-stats');
     const list = $('dash-detail-list');
+    const panel = document.querySelector('.dash-home-detail');
+    if (startHereOpen()) {
+      if (panel) panel.classList.add('is-start-here');
+      renderStartHere(title, sub, open, stats, list);
+      return;
+    }
+    if (panel) panel.classList.remove('is-start-here');
+    open.hidden = false;
+    stats.hidden = false;
     if (dashHome === 'quotes') {
       title.textContent = 'Request Quote';
       sub.textContent = 'Sales quote drafts sent to Spectrum.';
@@ -1533,10 +1609,12 @@
       await refreshDocs();
       const saved = await Promise.all([
         api('/api/dealer/projects').catch(function () { return { projects: [] }; }),
-        api('/api/dealer/panels').catch(function () { return { panels: [] }; })
+        api('/api/dealer/panels').catch(function () { return { panels: [] }; }),
+        api('/api/dealer/registrations').catch(function () { return { registrations: [] }; })
       ]);
       projects = saved[0].projects || [];
       panels = saved[1].panels || [];
+      registrations = saved[2].registrations || [];
       if (!holdBoot) showApp();
       return true;
     } catch (err) {
