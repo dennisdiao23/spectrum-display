@@ -1,0 +1,7 @@
+# Existing Railway services still honor this until Config as Code is retired.
+# Also set Healthcheck Path to /ready in Railway → spectrum-display → web → Settings.
+# /healthz = process up. /ready = database connected (do not point the healthcheck at /healthz).
+[deploy]
+healthcheckPath = "/ready"
+healthcheckTimeout = 300
+restartPolicyType = "ON_FAILURE"

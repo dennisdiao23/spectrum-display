@@ -82,6 +82,18 @@ flowchart TB
 
 `ADMIN_PASSWORD` is **not** required on Railway (admin user already exists in Supabase).
 
+**Do not set `BOOT_MAINTENANCE` on Railway** unless you want one deploy to re-run catalog/photo/inventory backfills. Leave it unset so boot is “connect and listen.”
+
+**Deploy health (so a Company merge does not 502 the homepage):** the process opens `PORT` first. `GET /healthz` returns `ok` as soon as the box is up. `GET /ready` returns `starting` (503) until the database is connected and routes are live, then `ready` (200). Railway must use **Healthcheck Path `/ready`**, not “port is open.” That keeps the old box serving https://www.spectrumdisplay.com until the new one can do catalog + Company too.
+
+`railway.toml` in this repo sets the same path. Existing Railway services may still read it; Config as Code is being retired, so also set it in the dashboard:
+
+1. Open https://railway.com/project/0417ceae-d2ed-4a51-b2d1-64a31db5b8b9 (account `dennisdiao@diaoinc.com`).
+2. Click service **web**.
+3. Open **Settings** (or **Deploy**).
+4. Find **Healthcheck Path**. Set it to `/ready` (exactly that, with the slash).
+5. Save. The next deploy waits for `/ready` before moving traffic.
+
 ---
 
 ### 3. GitHub — code
@@ -303,7 +315,7 @@ Click-by-click for Client ID / Client secret and turning off the Shopify passwor
 
 | Symptom | Look at first |
 |---|---|
-| www does not load / 502 | Railway deployments + logs |
+| www does not load / 502 | Railway deployments + logs. After a merge, `/ready` must be 200 before traffic moves. Healthcheck Path should be `/ready`. |
 | No-www does not jump to www | GoDaddy Forwarding + `@` A records |
 | Not secure in Chrome only | Chrome cache / HSTS (`chrome://net-internals/#hsts`) — Edge was fine before |
 | Catalog empty / no products | Supabase tables `products` / `brands`; Railway `SUPABASE_*` vars |

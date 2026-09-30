@@ -58,11 +58,6 @@ function createSupabaseStore() {
   async function seedIfEmpty() {
     const { error } = await supabase.from('products').select('id', { count: 'exact', head: true });
     throwIf(error, 'Could not read products. Run server/supabase-schema.sql in the Supabase SQL editor.');
-    try {
-      await upsertMissingCatalog();
-    } catch (e) {
-      console.error('Could not backfill missing catalog series:', e.message || e);
-    }
 
     const { count: adminCount, error: aErr } = await supabase.from('admins').select('id', { count: 'exact', head: true });
     throwIf(aErr, 'Could not read admins table.');
@@ -90,6 +85,19 @@ function createSupabaseStore() {
       await supabase.storage.createBucket(BUCKET, { public: true });
     } catch (e) { /* bucket may already exist */ }
 
+    try {
+      await upsertMissingCatalog();
+    } catch (e) {
+      console.error('Could not backfill missing catalog series:', e.message || e);
+    }
+
+    const maintain = /^(1|true|yes)$/i.test(String(process.env.BOOT_MAINTENANCE || '').trim());
+    if (!maintain) return;
+    console.log('BOOT_MAINTENANCE: running catalog/photo backfill');
+    await runBootMaintenance();
+  }
+
+  async function runBootMaintenance() {
     try {
       await fillMissingProductDetails();
     } catch (e) {
