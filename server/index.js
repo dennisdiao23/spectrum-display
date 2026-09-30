@@ -26,6 +26,52 @@ const DEALER_COOKIE = 'spectrum_dealer';
 const SESSION_DAYS = 7;
 const PORT = Number(process.env.PORT || 3000);
 
+function healthNoCache(res) {
+  res.set('Cache-Control', 'no-store');
+  res.set('X-Robots-Tag', 'noindex, nofollow');
+}
+
+function createBootApp() {
+  const boot = express();
+  boot.set('trust proxy', 1);
+  boot.use(compression());
+  boot.get(['/healthz', '/health'], function (_req, res) {
+    healthNoCache(res);
+    res.status(200).type('text/plain; charset=utf-8').send('ok');
+  });
+  boot.get('/ready', function (_req, res) {
+    healthNoCache(res);
+    res.status(503).type('text/plain; charset=utf-8').send('starting');
+  });
+  boot.use('/api', function (_req, res) {
+    healthNoCache(res);
+    res.status(503).json({ ok: false, error: 'starting' });
+  });
+  boot.use(express.static(ROOT, { index: 'index.html' }));
+  return boot;
+}
+
+let appHandler = createBootApp();
+
+function dispatch(req, res) {
+  appHandler(req, res);
+}
+
+function listenOn(host, extra) {
+  return new Promise(function (resolve) {
+    const server = http.createServer(dispatch);
+    server.on('error', function (err) {
+      console.log('Skip ' + host + ':' + PORT + ' (' + err.code + ')');
+      resolve(null);
+    });
+    const opts = Object.assign({ port: PORT, host: host }, extra || {});
+    server.listen(opts, function () {
+      console.log('Listening on ' + host + ':' + PORT);
+      resolve(server);
+    });
+  });
+}
+
 const upload = multer({
   storage: multer.memoryStorage(),
   limits: { fileSize: 24 * 1024 * 1024, files: 16 },
@@ -155,11 +201,29 @@ function mmToMeters(value) {
 }
 
 async function main() {
+  const servers = await Promise.all([
+    listenOn('0.0.0.0'),
+    listenOn('::', { ipv6Only: true })
+  ]);
+  if (!servers.some(Boolean)) {
+    console.error('Port ' + PORT + ' is already in use. In PowerShell: taskkill /F /IM node.exe   then   npm start');
+    process.exit(1);
+  }
+  console.log('Health: /healthz up, /ready starting');
+
   const store = await getStore();
 
   const app = express();
   app.set('trust proxy', 1);
   app.use(compression());
+  app.get(['/healthz', '/health'], function (_req, res) {
+    healthNoCache(res);
+    res.status(200).type('text/plain; charset=utf-8').send('ok');
+  });
+  app.get('/ready', function (_req, res) {
+    healthNoCache(res);
+    res.status(200).type('text/plain; charset=utf-8').send('ready');
+  });
   app.use(express.json({
     limit: '2mb',
     verify: function (req, buf) {
@@ -3839,37 +3903,15 @@ async function main() {
     res.status(status).json({ ok: false, error: (err && err.message) || 'Request failed.' });
   });
 
-  function listenOn(host, extra) {
-    return new Promise(function (resolve) {
-      const server = http.createServer(app);
-      server.on('error', function (err) {
-        console.log('Skip ' + host + ':' + PORT + ' (' + err.code + ')');
-        resolve(null);
-      });
-      const opts = Object.assign({ port: PORT, host: host }, extra || {});
-      server.listen(opts, function () {
-        console.log('Listening on ' + host + ':' + PORT);
-        resolve(server);
-      });
-    });
-  }
-
-  Promise.all([
-    listenOn('0.0.0.0'),
-    listenOn('::', { ipv6Only: true })
-  ]).then(function (servers) {
-    if (!servers.some(Boolean)) {
-      console.error('Port ' + PORT + ' is already in use. In PowerShell: taskkill /F /IM node.exe   then   npm start');
-      process.exit(1);
-    }
-    console.log('Spectrum Display');
-    console.log('Site:    http://localhost:' + PORT + '/');
-    console.log('Store:   http://localhost:' + PORT + '/store');
-    console.log('Company: http://localhost:' + PORT + '/company');
-    console.log('Customer: http://localhost:' + PORT + '/company/customers');
-    console.log('CRM: http://localhost:' + PORT + '/company/crm/leads');
-    console.log('Sales:    http://localhost:' + PORT + '/company/sales');
-  });
+  appHandler = app;
+  console.log('Ready');
+  console.log('Spectrum Display');
+  console.log('Site:    http://localhost:' + PORT + '/');
+  console.log('Store:   http://localhost:' + PORT + '/store');
+  console.log('Company: http://localhost:' + PORT + '/company');
+  console.log('Customer: http://localhost:' + PORT + '/company/customers');
+  console.log('CRM: http://localhost:' + PORT + '/company/crm/leads');
+  console.log('Sales:    http://localhost:' + PORT + '/company/sales');
 }
 
 main().catch(function (err) {

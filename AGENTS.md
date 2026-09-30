@@ -29,9 +29,11 @@ catalog API and a cookie-session company login used by `/company`, `/company/web
 
 ### Running the app (single service)
 
-- Start the dev server with `npm start` (`node server/index.js`). It listens on `PORT` (default `3000`)
-  and serves both the static site and the `/api/*` endpoints. There is no separate frontend build/dev
-  server — the HTML files are served as-is.
+- Start the dev server with `npm start` (`node server/index.js`). It **listens on `PORT` first** (default
+  `3000`), then connects the store. Static pages work with no DB. `/healthz` = process up. `/ready` = store
+  connected and app routes live. Railway **Healthcheck Path** must be `/ready` so the old replica keeps
+  serving until the new one can do catalog + Company. `/api/*` returns 503 until then.
+- There is no separate frontend build/dev server — the HTML files are served as-is.
 - Visit `http://localhost:3000`. Company UI is at `/company` (`/company/website`, `/company/inventory`).
 - Local US Store preview: `http://localhost:3000/store`. Production hostname is `https://store.spectrumdisplay.com`
   (same Express app; add the custom domain on Railway and CNAME `store` to the same Railway target as `www`).
@@ -54,6 +56,9 @@ catalog API and a cookie-session company login used by `/company`, `/company/web
   `ExperimentalWarning` is printed and is harmless). No native/compiled sqlite package is installed.
 - `data/` and `uploads/products/` are gitignored and created at runtime; deleting `data/spectrum.db`
   resets the local DB and re-seeds on next start.
+- Do **not** run the full photo/catalog/inventory walk on every restart. After the first seed, boot is
+  ping + listen. Set `BOOT_MAINTENANCE=1` only for a one-shot backfill (photos, product-details fill,
+  NovaStar/Gloshine lists). Leave it unset on Railway.
 
 ### Admin credentials (local SQLite mode)
 

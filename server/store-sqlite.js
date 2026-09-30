@@ -484,31 +484,51 @@ function getInventoryItemDetail(db, id) {
 function createSqliteStore() {
   img.ensureUploadDir();
   const db = dbUtil.openDb();
+  const hadProducts = db.prepare('SELECT COUNT(*) AS n FROM products').get().n;
   dbUtil.seedAdmin(db);
   dbUtil.seedCatalog(db);
-  dbUtil.fillMissingProductDetails(db);
-  dbUtil.refreshSeedProductMedia(db);
-  dbUtil.rewriteExistingCabinetCopy(db);
-  dbUtil.ensureCatalogSkus(db);
   dbUtil.ensureInventoryWarehouses(db);
-  try {
-    require('./novastar-price-inventory').applySqlite(db);
-  } catch (e) {
-    console.error('Could not apply NovaStar price list:', e.message || e);
+  const maintain = /^(1|true|yes)$/i.test(String(process.env.BOOT_MAINTENANCE || '').trim());
+  if (!hadProducts) {
+    dbUtil.fillMissingProductDetails(db);
+    dbUtil.ensureCatalogSkus(db);
+    try {
+      require('./novastar-price-inventory').applySqlite(db);
+    } catch (e) {
+      console.error('Could not apply NovaStar price list:', e.message || e);
+    }
+    try {
+      require('./gloshine-price-inventory').applySqlite(db);
+    } catch (e) {
+      console.error('Could not apply Gloshine LA warehouse list:', e.message || e);
+    }
   }
-  try {
-    require('./gloshine-price-inventory').applySqlite(db);
-  } catch (e) {
-    console.error('Could not apply Gloshine LA warehouse list:', e.message || e);
+  if (maintain) {
+    console.log('BOOT_MAINTENANCE: running catalog/photo backfill');
+    dbUtil.fillMissingProductDetails(db);
+    dbUtil.refreshSeedProductMedia(db);
+    dbUtil.rewriteExistingCabinetCopy(db);
+    dbUtil.ensureCatalogSkus(db);
+    try {
+      require('./novastar-price-inventory').applySqlite(db);
+    } catch (e) {
+      console.error('Could not apply NovaStar price list:', e.message || e);
+    }
+    try {
+      require('./gloshine-price-inventory').applySqlite(db);
+    } catch (e) {
+      console.error('Could not apply Gloshine LA warehouse list:', e.message || e);
+    }
   }
-
-  const ready = ensurePublicProductPhotos(db).catch(function (err) {
-    console.error('Could not copy product photos locally:', err.message || err);
-  });
+  if (!hadProducts || maintain) {
+    void ensurePublicProductPhotos(db).catch(function (err) {
+      console.error('Could not copy product photos locally:', err.message || err);
+    });
+  }
 
   const api = {
     name: 'sqlite',
-    ready: ready,
+    ready: Promise.resolve(),
     async getCatalog() {
       const catalog = dbUtil.getCatalog(db);
       attachInventoryToCatalog(db, catalog);
