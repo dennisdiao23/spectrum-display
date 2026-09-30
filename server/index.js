@@ -224,6 +224,20 @@ async function main() {
     healthNoCache(res);
     res.status(200).type('text/plain; charset=utf-8').send('ready');
   });
+  app.get('/api/app-notes', function (_req, res) {
+    healthNoCache(res);
+    try {
+      const data = JSON.parse(require('fs').readFileSync(path.join(ROOT, 'js', 'app-notes.json'), 'utf8'));
+      res.json({
+        ok: true,
+        build: data.build || '',
+        notes: data.notes || [],
+        guides: data.guides || {}
+      });
+    } catch (err) {
+      res.status(500).json({ ok: false, error: 'Notes unavailable.' });
+    }
+  });
   app.use(express.json({
     limit: '2mb',
     verify: function (req, buf) {
@@ -300,6 +314,8 @@ async function main() {
     '/company/settings',
     '/company/settings/company',
     '/company/settings/forms',
+    '/company/settings/updates',
+    '/company/settings/guide',
     '/company/chat',
     '/company/calculator'
   ];
@@ -421,7 +437,7 @@ async function main() {
     const qs = req.url.includes('?') ? req.url.slice(req.url.indexOf('?')) : '';
     res.redirect(301, '/portal' + qs);
   });
-  ['/portal/book', '/portal/quotes', '/portal/orders', '/portal/registrations', '/portal/rmas', '/portal/projects', '/portal/panels', '/portal/calculator', '/portal/company'].forEach(function (route) {
+  ['/portal/book', '/portal/quotes', '/portal/orders', '/portal/registrations', '/portal/rmas', '/portal/projects', '/portal/panels', '/portal/calculator', '/portal/company', '/portal/updates', '/portal/guide'].forEach(function (route) {
     app.get([route, route + '/'], sendPortal);
   });
   app.get(['/portal/quotes/:id', '/portal/quotes/:id/', '/portal/orders/:id', '/portal/orders/:id/', '/portal/registrations/:id', '/portal/registrations/:id/', '/portal/rmas/:id', '/portal/rmas/:id/'], sendPortal);

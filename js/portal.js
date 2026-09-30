@@ -10,7 +10,9 @@
     projects: 'projects-section',
     panels: 'panels-section',
     calculator: 'calculator-section',
-    company: 'view-company'
+    company: 'view-company',
+    updates: 'view-updates',
+    guide: 'view-guide'
   };
   const views = Object.keys(viewIds);
   let me = null;
@@ -27,7 +29,7 @@
   let openTabs = [];
   let bookFilter = 'all';
   let bookSku = '';
-  const tabLabel = { home: 'Dashboard', book: 'Dealer book', quotes: 'Request Quote', orders: 'Purchase Order', registrations: 'Deal registration', rmas: 'RMA', projects: 'Projects', panels: 'Saved Panel', calculator: 'Calculator', company: 'Company' };
+  const tabLabel = { home: 'Dashboard', book: 'Dealer book', quotes: 'Request Quote', orders: 'Purchase Order', registrations: 'Deal registration', rmas: 'RMA', projects: 'Projects', panels: 'Saved Panel', calculator: 'Calculator', company: 'Company', updates: 'What’s new', guide: 'Dealer guide' };
   const tabIcon = {
     home: '<svg class="dash-master-tab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="8" height="8" rx="1.5"/><rect x="13" y="3" width="8" height="8" rx="1.5"/><rect x="3" y="13" width="8" height="8" rx="1.5"/><rect x="13" y="13" width="8" height="8" rx="1.5"/></svg>',
     book: '<svg class="dash-master-tab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 10 12 4.5 21 10v9.5a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V10z"/><path d="M9 20.5V12h6v8.5"/></svg>',
@@ -38,7 +40,9 @@
     projects: '<svg class="dash-master-tab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M3 8h18"/><path d="M8 12h5M8 16h8"/></svg>',
     panels: '<svg class="dash-master-tab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 8.5 12 13 3 8.5 12 4l9 4.5z"/><path d="M3 8.5v7L12 20l9-4.5v-7"/><path d="M12 13v7"/></svg>',
     calculator: '<svg class="dash-master-tab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="5" y="3" width="14" height="18" rx="2"/><path d="M8 7h8M8 12h.01M12 12h.01M16 12h.01M8 16h.01M12 16h.01M16 16h.01"/></svg>',
-    company: '<svg class="dash-master-tab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 20V9l8-5 8 5v11"/><path d="M9 20v-6h6v6"/></svg>'
+    company: '<svg class="dash-master-tab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 20V9l8-5 8 5v11"/><path d="M9 20v-6h6v6"/></svg>',
+    updates: '<svg class="dash-master-tab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 6v6l3.5 2"/><circle cx="12" cy="12" r="9"/></svg>',
+    guide: '<svg class="dash-master-tab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 4h9a3 3 0 0 1 3 3v13H8a3 3 0 0 0-3 3V4z"/><path d="M5 4v16"/><path d="M19 7h-5"/></svg>'
   };
 
   function esc(value) {
@@ -139,6 +143,7 @@
     $('portal-foot').classList.add('hidden');
     $('portal-logout').classList.add('hidden');
     if (window.SpectrumHelp) SpectrumHelp.stop();
+    if (window.SpectrumNotes) SpectrumNotes.hide();
     views.forEach(function (name) { viewEl(name).classList.add('hidden'); });
     $('portal-title').textContent = 'Dealer Portal';
     $('admin-page-sub').textContent = 'Dealer sign in';
@@ -154,7 +159,7 @@
     const calcSub = $('portal-calculator-sub');
     const settingsSub = $('portal-settings-sub');
     if (calcSub) calcSub.classList.toggle('hidden', name !== 'calculator' && name !== 'projects' && name !== 'panels');
-    if (settingsSub) settingsSub.classList.toggle('hidden', name !== 'company');
+    if (settingsSub) settingsSub.classList.toggle('hidden', name !== 'company' && name !== 'updates' && name !== 'guide');
   }
   function pathFor(name) {
     return name === 'home' ? '/portal' : '/portal/' + name;
@@ -248,6 +253,15 @@
         page: pathView()
       });
     }
+    if (window.SpectrumNotes) {
+      SpectrumNotes.start({
+        app: 'portal',
+        userId: me && me.user && me.user.id,
+        goUpdates: function () {
+          openPortal('updates', true);
+        }
+      });
+    }
   }
   function renderView(name) {
     const seen = {};
@@ -262,6 +276,8 @@
     });
     const calculator = $('portal-calculator');
     if (calculator) calculator.classList.toggle('is-active', name === 'calculator' || name === 'projects' || name === 'panels');
+    const settings = $('portal-settings');
+    if (settings) settings.classList.toggle('is-active', name === 'company' || name === 'updates' || name === 'guide');
     syncNavSubs(name);
     document.body.classList.toggle('calc-lock', name === 'calculator');
     if (name === 'calculator') ensureCalculator('');
@@ -281,6 +297,7 @@
     if (name === 'projects') loadProjects();
     if (name === 'panels') loadPanels();
     if (name === 'company') loadCompany();
+    if ((name === 'updates' || name === 'guide') && window.SpectrumNotes) SpectrumNotes.paint();
     if (window.SpectrumHelp) SpectrumHelp.setPage(name);
   }
   function chip(value, label) {
@@ -290,7 +307,7 @@
     return '<div class="dash-detail-row"><div><strong>' + esc(title) + '</strong><span>' + esc(meta) + '</span></div><em>' + esc(side) + '</em></div>';
   }
   function selectHome(name) {
-    if (!viewIds[name] || name === 'home' || name === 'panels' || name === 'company') name = 'book';
+    if (!viewIds[name] || name === 'home' || name === 'panels' || name === 'company' || name === 'updates' || name === 'guide') name = 'book';
     if (name !== 'book' && name !== 'quotes' && name !== 'orders' && name !== 'projects') name = 'book';
     dashHome = name;
     document.querySelectorAll('#dash-home .dash-kpi').forEach(function (btn) {
