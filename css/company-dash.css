@@ -2554,6 +2554,137 @@ html.dash-scroll-lock body.company-app {
     display: none;
   }
 
+  body.company-app.dash-tabbar-on .dash-tabbar:not([hidden]) {
+    justify-content: space-evenly;
+  }
+
+  .dash-tabbar a {
+    flex: 1 1 0;
+    max-width: 5.5rem;
+  }
+
+  body.dash-tabbar-editing .dash-tabbar {
+    -webkit-touch-callout: none;
+    user-select: none;
+  }
+
+  .dash-tabbar-minus {
+    display: none;
+  }
+
+  .dash-tabbar-edit {
+    display: none;
+  }
+
+  body.dash-tabbar-editing .dash-tabbar-edit:not([hidden]) {
+    display: block;
+    position: fixed;
+    left: 0;
+    right: 0;
+    bottom: var(--dash-tabbar-h);
+    z-index: 72;
+    background: #0c204f;
+    border-top: 1px solid rgba(255, 255, 255, 0.08);
+    box-shadow: 0 -10px 24px rgba(7, 21, 58, 0.28);
+    padding: 0.7rem 0.75rem 0.55rem;
+  }
+
+  .dash-tabbar-edit-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.6rem;
+    margin-bottom: 0.55rem;
+  }
+
+  .dash-tabbar-edit-head p {
+    margin: 0;
+    color: #9aabc8;
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-align: center;
+  }
+
+  .dash-tabbar-edit-head button,
+  .dash-tabbar-add {
+    min-height: 2.75rem;
+    border: 0;
+    border-radius: 999px;
+    font: inherit;
+    font-size: 0.85rem;
+    font-weight: 700;
+    cursor: pointer;
+    touch-action: manipulation;
+  }
+
+  #dash-tabbar-reset,
+  .dash-tabbar-add {
+    background: rgba(255, 255, 255, 0.08);
+    color: #e8eeff;
+    padding: 0 0.9rem;
+  }
+
+  #dash-tabbar-done {
+    background: #2f6bff;
+    color: #fff;
+    padding: 0 1rem;
+  }
+
+  .dash-tabbar-add:disabled {
+    opacity: 0.35;
+  }
+
+  .dash-tabbar-edit-add {
+    display: flex;
+    gap: 0.4rem;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+  }
+
+  .dash-tabbar-edit-add::-webkit-scrollbar { display: none; }
+
+  .dash-tabbar-edit-empty {
+    margin: 0;
+    color: #9aabc8;
+    font-size: 0.8rem;
+  }
+
+  body.dash-tabbar-editing .dash-tabbar a:not(.hidden) {
+    animation: dash-tabbar-wiggle 0.28s ease-in-out infinite;
+  }
+
+  body.dash-tabbar-editing .dash-tabbar a.is-dragging {
+    animation: none;
+    z-index: 3;
+    opacity: 0.72;
+  }
+
+  body.dash-tabbar-editing .dash-tabbar-minus {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: absolute;
+    top: -0.15rem;
+    left: 0.05rem;
+    width: 1.35rem;
+    height: 1.35rem;
+    border: 0;
+    border-radius: 999px;
+    background: #ef4444;
+    color: #fff;
+    font-size: 1rem;
+    font-weight: 700;
+    line-height: 1;
+    z-index: 2;
+    touch-action: manipulation;
+  }
+
+  @keyframes dash-tabbar-wiggle {
+    0%, 100% { transform: rotate(-2.5deg); }
+    50% { transform: rotate(2.5deg); }
+  }
+
   .dash-sidebar {
     transform: translateX(-105%) !important;
     transition: transform 0.2s ease;
