@@ -1,6 +1,7 @@
 const { hasPerm } = require('./admin-roles');
 const inv = require('./inventory');
 const dbUtil = require('./db');
+const analytics = require('./site-analytics');
 
 function emptyCounts() {
   return {
@@ -10,11 +11,14 @@ function emptyCounts() {
     inventory: 0,
     inventoryLow: 0,
     inventoryOut: 0,
+    inventoryMoveMonth: 0,
+    inventoryValue: 0,
     receipts: 0,
     vendors: 0,
     vendorsWithEmail: 0,
     pos: 0,
     openPos: 0,
+    pendingPoValue: 0,
     customers: 0,
     quotes: 0,
     orders: 0,
@@ -32,10 +36,34 @@ function emptyCounts() {
   };
 }
 
+function lastDays(n) {
+  const today = analytics.dayStamp();
+  const out = [];
+  for (let i = n - 1; i >= 0; i--) out.push(analytics.addDays(today, -i));
+  return out;
+}
+
+function emptyDaySeries() {
+  return lastDays(30).map(function (day) {
+    return { day: day, value: 0 };
+  });
+}
+
+function emptySeries() {
+  return {
+    website: emptyDaySeries(),
+    inventory: emptyDaySeries(),
+    vendor: emptyDaySeries(),
+    crm: emptyDaySeries(),
+    customer: emptyDaySeries()
+  };
+}
+
 function emptyDashboard(source) {
   return {
     source: source || 'sqlite',
     counts: emptyCounts(),
+    series: emptySeries(),
     products: [],
     inventory: [],
     purchaseOrders: [],
@@ -46,8 +74,104 @@ function emptyDashboard(source) {
     leads: [],
     deals: [],
     reminders: [],
-    traffic: require('./site-analytics').emptyTraffic()
+    traffic: analytics.emptyTraffic()
   };
+}
+
+function monthStartStamp() {
+  return analytics.dayStamp().slice(0, 7) + '-01';
+}
+
+function kpiRange() {
+  const days = lastDays(30);
+  const month = monthStartStamp();
+  const start = month < days[0] ? month : days[0];
+  return {
+    days: days,
+    month: month,
+    start: start,
+    fetchStart: analytics.addDays(start, -1)
+  };
+}
+
+function stampDay(value) {
+  const s = String(value || '').trim();
+  if (!s) return '';
+  if (/^\d{4}-\d{2}-\d{2}$/.test(s)) return s;
+  if (s.length > 10) {
+    const d = new Date(s);
+    if (!Number.isNaN(d.getTime())) return analytics.dayStamp(d);
+  }
+  const iso = s.match(/^(\d{4}-\d{2}-\d{2})/);
+  return iso ? iso[1] : '';
+}
+
+function addToMap(map, day, amount) {
+  if (!day) return;
+  map[day] = (map[day] || 0) + (Number(amount) || 0);
+}
+
+function mergeSeries(series, key, map) {
+  if (!series || !series[key]) return;
+  series[key] = series[key].map(function (row) {
+    return { day: row.day, value: Number(map[row.day]) || 0 };
+  });
+}
+
+function fillWebsiteSeries(series, traffic) {
+  const map = {};
+  ((traffic && traffic.days) || []).forEach(function (row) {
+    map[row.day] = (Number(row.website && row.website.uniques) || 0)
+      + (Number(row.store && row.store.uniques) || 0);
+  });
+  mergeSeries(series, 'website', map);
+}
+
+function applyInventoryMoves(rows, counts, series) {
+  const range = kpiRange();
+  let month = 0;
+  const map = {};
+  (rows || []).forEach(function (row) {
+    if (String(row.kind || '').toLowerCase() === 'transfer') return;
+    const day = stampDay(row.created_at || row.createdAt);
+    const dollars = Math.abs(Number(row.qty_delta != null ? row.qty_delta : row.qtyDelta) || 0)
+      * (Number(row.cost) || 0);
+    if (!day) return;
+    if (day >= range.month) month += dollars;
+    if (day >= range.days[0]) addToMap(map, day, dollars);
+  });
+  counts.inventoryMoveMonth = month;
+  mergeSeries(series, 'inventory', map);
+}
+
+function applyPoIssueSeries(rows, series) {
+  const range = kpiRange();
+  const map = {};
+  (rows || []).forEach(function (row) {
+    const day = stampDay(row.issue_date || row.issueDate || row.day);
+    if (day && day >= range.days[0]) addToMap(map, day, row.n != null ? row.n : row.value);
+  });
+  mergeSeries(series, 'vendor', map);
+}
+
+function applySalesIssueSeries(rows, series) {
+  const range = kpiRange();
+  const map = {};
+  (rows || []).forEach(function (row) {
+    const day = stampDay(row.issue_date || row.issueDate || row.day);
+    if (day && day >= range.days[0]) addToMap(map, day, row.n != null ? row.n : row.value);
+  });
+  mergeSeries(series, 'customer', map);
+}
+
+function applyLeadCreatedSeries(rows, series) {
+  const range = kpiRange();
+  const map = {};
+  (rows || []).forEach(function (row) {
+    const day = stampDay(row.created_at || row.createdAt);
+    if (day && day >= range.days[0]) addToMap(map, day, 1);
+  });
+  mergeSeries(series, 'crm', map);
 }
 
 function canSee(admin, module) {
@@ -202,12 +326,68 @@ function sqliteCount(db, sql) {
   }
 }
 
-function sqliteAll(db, sql) {
+function sqliteAll(db, sql, params) {
   try {
-    return db.prepare(sql).all();
+    const stmt = db.prepare(sql);
+    return params && params.length ? stmt.all(...params) : stmt.all();
   } catch (err) {
     return [];
   }
+}
+
+function sqliteInventoryKpis(db, counts, series) {
+  const range = kpiRange();
+  counts.inventoryValue = sqliteCount(db, 'SELECT COALESCE(SUM(qty * COALESCE(cost, 0)), 0) AS n FROM inventory_items');
+  applyInventoryMoves(sqliteAll(db, `
+    SELECT m.qty_delta, m.kind, m.created_at, COALESCE(i.cost, 0) AS cost
+    FROM inventory_item_moves m
+    JOIN inventory_items i ON i.id = m.item_id
+    WHERE substr(m.created_at, 1, 10) >= ?
+  `, [range.fetchStart]), counts, series);
+}
+
+function sqliteVendorKpis(db, counts, series) {
+  const range = kpiRange();
+  counts.openPos = sqliteCount(db, `
+    SELECT COUNT(*) AS n FROM purchase_orders WHERE lower(status) = 'open'
+  `);
+  counts.pendingPoValue = sqliteCount(db, `
+    SELECT COALESCE(SUM(l.qty * l.unit_cost), 0) AS n
+    FROM purchase_order_lines l
+    JOIN purchase_orders p ON p.id = l.po_id
+    WHERE lower(p.status) = 'open'
+  `);
+  applyPoIssueSeries(sqliteAll(db, `
+    SELECT p.issue_date, SUM(l.qty * l.unit_cost) AS n
+    FROM purchase_orders p
+    JOIN purchase_order_lines l ON l.po_id = p.id
+    WHERE lower(p.status) != 'cancelled'
+      AND p.issue_date >= ?
+    GROUP BY p.issue_date
+  `, [range.days[0]]), series);
+}
+
+function sqliteCustomerKpis(db, series) {
+  const range = kpiRange();
+  applySalesIssueSeries(sqliteAll(db, `
+    SELECT d.issue_date, SUM(l.qty * l.unit_price) AS n
+    FROM company_sales_docs d
+    JOIN company_sales_lines l ON l.doc_id = d.id
+    WHERE d.type IN ('order', 'invoice')
+      AND lower(d.status) NOT IN ('cancelled', 'void')
+      AND d.issue_date >= ?
+    GROUP BY d.issue_date
+  `, [range.days[0]]), series);
+}
+
+function sqliteCrmKpis(db, series) {
+  const range = kpiRange();
+  const crm = require('./company-crm');
+  applyLeadCreatedSeries(sqliteAll(db, `
+    SELECT created_at FROM company_crm_leads
+    WHERE NOT ${crm.dealerApplicationLeadSql('')}
+      AND substr(created_at, 1, 10) >= ?
+  `, [range.fetchStart]), series);
 }
 
 function getSqliteDashboardHome(db, admin) {
@@ -267,6 +447,7 @@ function getSqliteDashboardHome(db, admin) {
     `).map(function (row) {
       return mapInventoryPreview(row, row.brand_name);
     });
+    sqliteInventoryKpis(db, counts, out.series);
   }
 
   if (canSee(admin, 'receipt-shipments')) {
@@ -281,11 +462,12 @@ function getSqliteDashboardHome(db, admin) {
     `);
   }
 
+  if (canSee(admin, 'purchase-orders') || canSee(admin, 'vendors')) {
+    sqliteVendorKpis(db, counts, out.series);
+  }
+
   if (canSee(admin, 'purchase-orders')) {
     counts.pos = sqliteCount(db, 'SELECT COUNT(*) AS n FROM purchase_orders');
-    counts.openPos = sqliteCount(db, `
-      SELECT COUNT(*) AS n FROM purchase_orders WHERE lower(status) = 'open'
-    `);
     out.purchaseOrders = sqliteAll(db, `
       SELECT number, vendor_name, status, issue_date
       FROM purchase_orders
@@ -375,6 +557,7 @@ function getSqliteDashboardHome(db, admin) {
       ORDER BY datetime(a.due_at) ASC, a.id ASC
       LIMIT 12
     `).map(mapReminderPreview);
+    sqliteCrmKpis(db, out.series);
   }
 
   if (canSeeDealerApplications(admin)) {
@@ -398,8 +581,10 @@ function getSqliteDashboardHome(db, admin) {
       ORDER BY id DESC
       LIMIT 5
     `).map(mapSalesPreview);
+    sqliteCustomerKpis(db, out.series);
   }
 
+  fillWebsiteSeries(out.series, out.traffic);
   return out;
 }
 
@@ -421,6 +606,117 @@ async function brandNameMap(supabase) {
   const map = {};
   (data || []).forEach(function (b) { map[b.id] = b.name; });
   return map;
+}
+
+async function supabaseInventoryKpis(supabase, counts, series) {
+  const range = kpiRange();
+  const since = range.fetchStart + 'T00:00:00.000Z';
+  const [itemsRes, movesRes] = await Promise.all([
+    supabase.from('inventory_items').select('id, qty, cost'),
+    supabase.from('inventory_item_moves')
+      .select('item_id, kind, qty_delta, created_at')
+      .gte('created_at', since)
+  ]);
+  const costById = {};
+  let value = 0;
+  ((itemsRes && itemsRes.data) || []).forEach(function (row) {
+    const cost = Number(row.cost) || 0;
+    costById[row.id] = cost;
+    value += (Number(row.qty) || 0) * cost;
+  });
+  counts.inventoryValue = value;
+  const moves = ((movesRes && movesRes.data) || []).map(function (row) {
+    return {
+      kind: row.kind,
+      qty_delta: row.qty_delta,
+      created_at: row.created_at,
+      cost: costById[row.item_id] || 0
+    };
+  });
+  applyInventoryMoves(moves, counts, series);
+}
+
+async function supabaseVendorKpis(supabase, counts, series, withPreview) {
+  const range = kpiRange();
+  const [posRes, openRes, previewRes, recentRes] = await Promise.all([
+    withPreview ? countSupabase(supabase, 'purchase_orders') : Promise.resolve(counts.pos),
+    countSupabase(supabase, 'purchase_orders', function (q) { return q.ilike('status', 'open'); }),
+    withPreview
+      ? supabase.from('purchase_orders')
+        .select('number, vendor_name, status, issue_date')
+        .order('id', { ascending: false })
+        .limit(8)
+      : Promise.resolve({ data: [] }),
+    supabase.from('purchase_orders')
+      .select('id, status, issue_date')
+      .gte('issue_date', range.days[0])
+  ]);
+  if (withPreview) {
+    counts.pos = posRes;
+    counts.openPos = openRes;
+  } else {
+    counts.openPos = openRes;
+  }
+  const openRows = await supabase.from('purchase_orders').select('id').ilike('status', 'open');
+  const openIds = ((openRows && openRows.data) || []).map(function (row) { return row.id; });
+  let pending = 0;
+  if (openIds.length) {
+    const { data: openLines } = await supabase
+      .from('purchase_order_lines')
+      .select('po_id, qty, unit_cost')
+      .in('po_id', openIds);
+    (openLines || []).forEach(function (line) {
+      pending += (Number(line.qty) || 0) * (Number(line.unit_cost) || 0);
+    });
+  }
+  counts.pendingPoValue = pending;
+  const recent = ((recentRes && recentRes.data) || []).filter(function (row) {
+    return String(row.status || '').toLowerCase() !== 'cancelled';
+  });
+  const recentIds = recent.map(function (row) { return row.id; });
+  const byPo = {};
+  if (recentIds.length) {
+    const { data: lines } = await supabase
+      .from('purchase_order_lines')
+      .select('po_id, qty, unit_cost')
+      .in('po_id', recentIds);
+    (lines || []).forEach(function (line) {
+      const key = String(line.po_id);
+      byPo[key] = (byPo[key] || 0) + (Number(line.qty) || 0) * (Number(line.unit_cost) || 0);
+    });
+  }
+  applyPoIssueSeries(recent.map(function (row) {
+    return { issue_date: row.issue_date, n: byPo[String(row.id)] || 0 };
+  }), series);
+  return ((previewRes && previewRes.data) || []).map(mapPoPreview);
+}
+
+async function supabaseCustomerKpis(supabase, series) {
+  const range = kpiRange();
+  const { data: docs } = await supabase
+    .from('company_sales_docs')
+    .select('id, type, issue_date, status')
+    .in('type', ['order', 'invoice'])
+    .gte('issue_date', range.days[0]);
+  const usable = (docs || []).filter(function (row) {
+    const status = String(row.status || '').toLowerCase();
+    return status !== 'cancelled' && status !== 'void';
+  });
+  const ids = usable.map(function (row) { return row.id; });
+  const byDoc = {};
+  if (ids.length) {
+    const { data: lines } = await supabase
+      .from('company_sales_lines')
+      .select('doc_id, qty, unit_price')
+      .in('doc_id', ids);
+    (lines || []).forEach(function (line) {
+      const key = String(line.doc_id);
+      byDoc[key] = (byDoc[key] || 0) + (Number(line.qty) || 0) * (Number(line.unit_price) || 0);
+    });
+  }
+  applySalesIssueSeries(usable.map(function (row) {
+    return { issue_date: row.issue_date, n: byDoc[String(row.id)] || 0 };
+  }), series);
 }
 
 async function getSupabaseDashboardHome(supabase, admin) {
@@ -504,6 +800,7 @@ async function getSupabaseDashboardHome(supabase, admin) {
       out.inventory = ((preview && preview.data) || []).map(function (row) {
         return mapInventoryPreview(row, brandNames[row.brand_id] || '');
       });
+      await supabaseInventoryKpis(supabase, counts, out.series);
     })().catch(function () {}));
   }
 
@@ -522,19 +819,15 @@ async function getSupabaseDashboardHome(supabase, admin) {
     })().catch(function () {}));
   }
 
-  if (canSee(admin, 'purchase-orders')) {
+  if (canSee(admin, 'purchase-orders') || canSee(admin, 'vendors')) {
     tasks.push((async function () {
-      const [pos, openPos, preview] = await Promise.all([
-        countSupabase(supabase, 'purchase_orders'),
-        countSupabase(supabase, 'purchase_orders', function (q) { return q.ilike('status', 'open'); }),
-        supabase.from('purchase_orders')
-          .select('number, vendor_name, status, issue_date')
-          .order('id', { ascending: false })
-          .limit(8)
-      ]);
-      counts.pos = pos;
-      counts.openPos = openPos;
-      out.purchaseOrders = ((preview && preview.data) || []).map(mapPoPreview);
+      const preview = await supabaseVendorKpis(
+        supabase,
+        counts,
+        out.series,
+        canSee(admin, 'purchase-orders')
+      );
+      if (canSee(admin, 'purchase-orders')) out.purchaseOrders = preview;
     })().catch(function () {}));
   }
 
@@ -585,6 +878,7 @@ async function getSupabaseDashboardHome(supabase, admin) {
       out.sales = rows.map(function (row) {
         return mapSalesPreview(Object.assign({}, row, { total: totals[String(row.id)] || 0 }));
       });
+      await supabaseCustomerKpis(supabase, out.series);
     })().catch(function () {}));
   }
 
@@ -594,7 +888,7 @@ async function getSupabaseDashboardHome(supabase, admin) {
       const openDeal = function (q) { return q.in('stage', ['new', 'qualified', 'quoted', 'negotiation']); };
       const [leadRows, deals, openDeals, actRows, dealPreview, openDealRows, reminderPreview] = await Promise.all([
         supabase.from('company_crm_leads')
-          .select('id, display_name, company_name, contact_first, contact_last, email, phone, status, source, kind, source_key')
+          .select('id, display_name, company_name, contact_first, contact_last, email, phone, status, source, kind, source_key, created_at')
           .order('updated_at', { ascending: false }),
         countSupabase(supabase, 'company_crm_deals'),
         countSupabase(supabase, 'company_crm_deals', openDeal),
@@ -650,6 +944,7 @@ async function getSupabaseDashboardHome(supabase, admin) {
         ? crm.hideDealerApplicationActivities((reminderPreview && reminderPreview.data) || [], (leadRows && leadRows.data) || [])
         : ((reminderPreview && reminderPreview.data) || []);
       out.reminders = reminderRows.slice(0, 12).map(mapReminderPreview);
+      applyLeadCreatedSeries(visibleLeads, out.series);
     })().catch(function () {}));
   }
 
@@ -662,6 +957,7 @@ async function getSupabaseDashboardHome(supabase, admin) {
   }
 
   await Promise.all(tasks);
+  fillWebsiteSeries(out.series, out.traffic);
   return out;
 }
 
