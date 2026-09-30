@@ -32,7 +32,7 @@
     #company-boot .boot-login button[type="submit"]{background:#fff!important;color:#000!important;border:0}
     #company-boot .boot-login button[type="submit"]:hover{background:#e8e8e8!important}
   </style>
-  <link rel="stylesheet" href="/css/company-dash.css?v=notes4" />
+  <link rel="stylesheet" href="/css/company-dash.css?v=tabbarpins1" />
   <script src="/js/address-autocomplete.js"></script>
   <script src="/js/company-chat.js?v=po-ship1"></script>
   <script src="/js/company-crm.js?v=zoomphone3"></script>
@@ -4907,6 +4907,14 @@
   <div class="dash-tabbar-sub" id="dash-tabbar-sub" hidden>
     <div class="dash-tabbar-sub-inner" id="dash-tabbar-sub-inner"></div>
   </div>
+  <div class="dash-tabbar-edit" id="dash-tabbar-edit" hidden>
+    <div class="dash-tabbar-edit-head">
+      <button type="button" id="dash-tabbar-reset">Reset</button>
+      <p>Hold and drag. Five max.</p>
+      <button type="button" id="dash-tabbar-done">Done</button>
+    </div>
+    <div class="dash-tabbar-edit-add" id="dash-tabbar-edit-add"></div>
+  </div>
   <nav class="dash-tabbar" id="dash-tabbar" aria-label="Main" hidden>
     <a href="/company" id="tabbar-dashboard" class="hidden">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="8" height="8" rx="1.5"/><rect x="13" y="3" width="8" height="8" rx="1.5"/><rect x="3" y="13" width="8" height="8" rx="1.5"/><rect x="13" y="13" width="8" height="8" rx="1.5"/></svg>
@@ -4953,7 +4961,7 @@
     </a>
   </nav>
 
-  <link rel="stylesheet" href="/css/company-dash.css?v=notes4" />
+  <link rel="stylesheet" href="/css/company-dash.css?v=tabbarpins1" />
   <link rel="stylesheet" href="/css/company-tw.css?v=boot1" />
 
   <script>
@@ -6363,6 +6371,111 @@
     }
 
     /** Hide any sidebar / tab-bar menu whose role access is None. */
+    const TABBAR_PIN_MAX = 5;
+    const TABBAR_PIN_DEFAULT = ['calculator', 'inventory', 'crm', 'dealer', 'chat'];
+    const TABBAR_PIN_ALL = ['calculator', 'inventory', 'crm', 'dealer', 'chat', 'vendor', 'customer', 'website', 'dashboard', 'settings'];
+
+    function tabbarPinAllowed(key) {
+      if (key === 'dashboard') return canUse('dashboard');
+      if (key === 'calculator') return canUse('calculator');
+      if (key === 'website') return canUseWebsiteNav();
+      if (key === 'inventory') return canUseInventoryNav();
+      if (key === 'vendor') return canUseVendorNav();
+      if (key === 'crm') return canUseCrmNav();
+      if (key === 'customer') return canUseCustomerNav();
+      if (key === 'dealer') return canUseDealerNav();
+      if (key === 'chat') return canUse('chat');
+      if (key === 'settings') return true;
+      return false;
+    }
+
+    function tabbarPinsStorageKey() {
+      const id = (currentAdminUser && currentAdminUser.id) || 'anon';
+      return 'dash-tabbar-pins-' + id;
+    }
+
+    function readTabbarPins() {
+      try {
+        const raw = JSON.parse(localStorage.getItem(tabbarPinsStorageKey()) || 'null');
+        return Array.isArray(raw) ? raw : null;
+      } catch (e) { return null; }
+    }
+
+    function writeTabbarPins(list) {
+      try { localStorage.setItem(tabbarPinsStorageKey(), JSON.stringify(list)); } catch (e) {}
+    }
+
+    function clearTabbarPins() {
+      try { localStorage.removeItem(tabbarPinsStorageKey()); } catch (e) {}
+    }
+
+    function resolveTabbarPins() {
+      const saved = readTabbarPins();
+      const source = saved ? saved : TABBAR_PIN_DEFAULT.slice();
+      const out = [];
+      source.forEach(function (key) {
+        if (out.length >= TABBAR_PIN_MAX) return;
+        if (TABBAR_PIN_ALL.indexOf(key) === -1) return;
+        if (!tabbarPinAllowed(key)) return;
+        if (out.indexOf(key) !== -1) return;
+        out.push(key);
+      });
+      return out;
+    }
+
+    function tabbarPinLabel(key) {
+      const el = document.getElementById('tabbar-' + key);
+      if (!el) return key;
+      const span = el.querySelector('span:not(.dash-nav-unread)');
+      return (span && span.textContent) || key;
+    }
+
+    function renderTabbarEditAdd() {
+      const box = document.getElementById('dash-tabbar-edit-add');
+      if (!box) return;
+      const pins = resolveTabbarPins();
+      const full = pins.length >= TABBAR_PIN_MAX;
+      const extras = TABBAR_PIN_ALL.filter(function (key) {
+        return tabbarPinAllowed(key) && pins.indexOf(key) === -1;
+      });
+      if (!extras.length) {
+        box.innerHTML = '<p class="dash-tabbar-edit-empty">Every menu you can open is already on the bar.</p>';
+        return;
+      }
+      box.innerHTML = extras.map(function (key) {
+        return '<button type="button" class="dash-tabbar-add" data-tabbar-add="' + key + '"' + (full ? ' disabled' : '') + '>' + tabbarPinLabel(key) + '</button>';
+      }).join('');
+    }
+
+    function applyTabbarPins() {
+      const bar = document.getElementById('dash-tabbar');
+      if (!bar) return;
+      const pins = resolveTabbarPins();
+      TABBAR_PIN_ALL.forEach(function (key) {
+        const el = document.getElementById('tabbar-' + key);
+        if (!el) return;
+        el.classList.toggle('hidden', pins.indexOf(key) === -1);
+      });
+      pins.forEach(function (key) {
+        const el = document.getElementById('tabbar-' + key);
+        if (el) bar.appendChild(el);
+      });
+      renderTabbarEditAdd();
+    }
+
+    function removeTabbarPin(key) {
+      writeTabbarPins(resolveTabbarPins().filter(function (k) { return k !== key; }));
+      applyTabbarPins();
+    }
+
+    function addTabbarPin(key) {
+      const pins = resolveTabbarPins();
+      if (pins.length >= TABBAR_PIN_MAX || pins.indexOf(key) !== -1 || !tabbarPinAllowed(key)) return;
+      pins.push(key);
+      writeTabbarPins(pins);
+      applyTabbarPins();
+    }
+
     function applyRoleMenuVisibility() {
       const setHidden = function (id, hide) {
         const el = document.getElementById(id);
@@ -6421,6 +6534,7 @@
       setHidden('tabbar-customer', !canUseCustomerNav());
       setHidden('tabbar-dealer', !canUseDealerNav());
       setHidden('tabbar-settings', true);
+      applyTabbarPins();
     }
 
     function showDash(admin, opts) {
@@ -14252,7 +14366,139 @@
     window.addEventListener('resize', function () {
       if (currentAdminUser) fitDashTabWidths();
     });
+    let tabbarEditing = false;
+    let tabbarSuppressClick = false;
+    let tabbarHold = null;
+    let tabbarDrag = null;
+
+    function setTabbarEditing(on) {
+      tabbarEditing = !!on;
+      document.body.classList.toggle('dash-tabbar-editing', tabbarEditing);
+      const sheet = document.getElementById('dash-tabbar-edit');
+      if (sheet) sheet.hidden = !tabbarEditing;
+      if (tabbarEditing) {
+        document.body.classList.remove('dash-tabbar-hidden');
+        closeTabbarSub();
+        renderTabbarEditAdd();
+      }
+    }
+
+    document.querySelectorAll('#dash-tabbar > a').forEach(function (a) {
+      if (a.querySelector('.dash-tabbar-minus')) return;
+      const btn = document.createElement('button');
+      btn.type = 'button';
+      btn.className = 'dash-tabbar-minus';
+      btn.setAttribute('aria-label', 'Remove from bar');
+      btn.textContent = '−';
+      a.appendChild(btn);
+    });
+
+    document.getElementById('dash-tabbar').addEventListener('contextmenu', function (e) {
+      if (tabbarEditing || tabbarHold) e.preventDefault();
+    });
+    document.getElementById('dash-tabbar').addEventListener('pointerdown', function (e) {
+      if (!isMobileDash() || e.button) return;
+      if (e.target.closest('.dash-tabbar-minus')) return;
+      const a = e.target.closest('#dash-tabbar > a');
+      if (!a || a.classList.contains('hidden')) return;
+      if (tabbarEditing) {
+        tabbarDrag = {
+          pointerId: e.pointerId,
+          key: a.id.replace(/^tabbar-/, ''),
+          startX: e.clientX,
+          moved: false
+        };
+        a.classList.add('is-dragging');
+        return;
+      }
+      tabbarHold = {
+        pointerId: e.pointerId,
+        x: e.clientX,
+        y: e.clientY,
+        timer: setTimeout(function () {
+          tabbarSuppressClick = true;
+          tabbarHold = null;
+          setTabbarEditing(true);
+        }, 480)
+      };
+    });
+    document.addEventListener('pointermove', function (e) {
+      if (tabbarHold && e.pointerId === tabbarHold.pointerId) {
+        if (Math.abs(e.clientX - tabbarHold.x) > 10 || Math.abs(e.clientY - tabbarHold.y) > 10) {
+          clearTimeout(tabbarHold.timer);
+          tabbarHold = null;
+        }
+      }
+      if (!tabbarDrag || e.pointerId !== tabbarDrag.pointerId) return;
+      if (Math.abs(e.clientX - tabbarDrag.startX) > 8) tabbarDrag.moved = true;
+      if (!tabbarDrag.moved) return;
+      const links = Array.prototype.slice.call(document.querySelectorAll('#dash-tabbar > a:not(.hidden)'));
+      let target = null;
+      links.forEach(function (el) {
+        const r = el.getBoundingClientRect();
+        if (e.clientX >= r.left && e.clientX <= r.right) target = el.id.replace(/^tabbar-/, '');
+      });
+      if (!target || target === tabbarDrag.key) return;
+      const pins = resolveTabbarPins();
+      const from = pins.indexOf(tabbarDrag.key);
+      const to = pins.indexOf(target);
+      if (from < 0 || to < 0) return;
+      pins.splice(from, 1);
+      pins.splice(to, 0, tabbarDrag.key);
+      writeTabbarPins(pins);
+      applyTabbarPins();
+      const el = document.getElementById('tabbar-' + tabbarDrag.key);
+      if (el) el.classList.add('is-dragging');
+    });
+    function endTabbarPointer(e) {
+      if (tabbarHold && (!e || e.pointerId === tabbarHold.pointerId)) {
+        clearTimeout(tabbarHold.timer);
+        tabbarHold = null;
+      }
+      if (tabbarDrag && (!e || e.pointerId === tabbarDrag.pointerId)) {
+        if (tabbarDrag.moved) tabbarSuppressClick = true;
+        const el = document.getElementById('tabbar-' + tabbarDrag.key);
+        if (el) el.classList.remove('is-dragging');
+        tabbarDrag = null;
+      }
+    }
+    document.addEventListener('pointerup', endTabbarPointer);
+    document.addEventListener('pointercancel', endTabbarPointer);
+    document.getElementById('dash-tabbar-edit').addEventListener('click', function (e) {
+      if (e.target.closest('#dash-tabbar-done')) {
+        setTabbarEditing(false);
+        return;
+      }
+      if (e.target.closest('#dash-tabbar-reset')) {
+        clearTabbarPins();
+        applyTabbarPins();
+        return;
+      }
+      const add = e.target.closest('[data-tabbar-add]');
+      if (add && !add.disabled) addTabbarPin(add.getAttribute('data-tabbar-add'));
+    });
+    document.addEventListener('click', function (e) {
+      if (!tabbarEditing) return;
+      if (e.target.closest('#dash-tabbar') || e.target.closest('#dash-tabbar-edit')) return;
+      setTabbarEditing(false);
+    });
+
     document.getElementById('dash-tabbar').addEventListener('click', function (e) {
+      if (tabbarSuppressClick) {
+        e.preventDefault();
+        e.stopPropagation();
+        tabbarSuppressClick = false;
+        return;
+      }
+      if (tabbarEditing) {
+        e.preventDefault();
+        const minus = e.target.closest('.dash-tabbar-minus');
+        if (minus) {
+          const a = minus.closest('a');
+          if (a) removeTabbarPin(a.id.replace(/^tabbar-/, ''));
+        }
+        return;
+      }
       if (!currentAdminUser || e.defaultPrevented) return;
       if (e.metaKey || e.ctrlKey || e.shiftKey || e.altKey || e.button !== 0) return;
       const a = e.target.closest('#dash-tabbar > a[href]');
@@ -14298,7 +14544,7 @@
       const TOP = 48;
 
       function onScroll() {
-        if (!document.body.classList.contains('dash-tabbar-on')) {
+        if (!document.body.classList.contains('dash-tabbar-on') || document.body.classList.contains('dash-tabbar-editing')) {
           ticking = false;
           return;
         }

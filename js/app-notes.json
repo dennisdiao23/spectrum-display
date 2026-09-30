@@ -1,6 +1,20 @@
 {
-  "build": "2026-09-30-whats-new",
+  "build": "2026-09-30-tabbar-pins",
   "notes": [
+    {
+      "id": "2026-09-30-tabbar-pins",
+      "date": "2026-09-30",
+      "apps": ["company"],
+      "title": "Phone bar holds five menus",
+      "added": [
+        "Press and hold the bottom bar to choose which menus sit there."
+      ],
+      "changed": [
+        "The phone bar shows five menus: Calculator, Inventory, CRM, Dealer, and Chat."
+      ],
+      "removed": [],
+      "how": "Press and hold any icon on the bottom bar until they wiggle. Drag to change the order. Tap the red minus to take one off. Tap a name in the row above to add it. You can keep five. Tap Done when it looks right, or Reset to put the original five back. The side menu still has every page."
+    },
     {
       "id": "2026-09-30-whats-new",
       "date": "2026-09-30",
