@@ -1627,6 +1627,10 @@ html.dash-scroll-lock body.company-app {
   border-color: #c5d2ea;
   background: #f7f9ff;
 }
+#dash-home .dash-kpi[aria-pressed="true"] {
+  border-color: #c5d2ea;
+  background: #f7f9ff;
+}
 .dash-kpi.hidden { display: none; }
 .dash-kpi {
   -webkit-appearance: none;
@@ -7056,6 +7060,57 @@ body.is-pf-dragging.is-pf-col-dragging * {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+}
+.dash-home-kpis {
+  --dash-loop-ms: 8s;
+}
+.dash-home-kpis .dash-kpi {
+  position: relative;
+  overflow: hidden;
+}
+.dash-home-kpis .dash-kpi.is-on::after,
+.dash-home-kpis .dash-kpi[aria-pressed="true"]::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 3px;
+  transform: scaleX(0);
+  transform-origin: left center;
+  background: #2f6bff;
+  pointer-events: none;
+}
+.dash-home-kpis .dash-kpi[data-home="inventory"].is-on::after,
+.dash-home-kpis .dash-kpi[data-home="inventory"][aria-pressed="true"]::after { background: #e67a2e; }
+.dash-home-kpis .dash-kpi[data-home="vendor"].is-on::after,
+.dash-home-kpis .dash-kpi[data-home="vendor"][aria-pressed="true"]::after { background: #8b5cf6; }
+.dash-home-kpis .dash-kpi[data-home="crm"].is-on::after,
+.dash-home-kpis .dash-kpi[data-home="crm"][aria-pressed="true"]::after { background: #0e7490; }
+.dash-home-kpis .dash-kpi[data-home="customer"].is-on::after,
+.dash-home-kpis .dash-kpi[data-home="customer"][aria-pressed="true"]::after { background: #d39b12; }
+.dash-home-kpis.is-looping .dash-kpi.is-on::after,
+.dash-home-kpis.is-looping .dash-kpi[aria-pressed="true"]::after {
+  animation: dash-kpi-loop var(--dash-loop-ms) linear;
+}
+.dash-home-kpis.is-paused .dash-kpi.is-on::after,
+.dash-home-kpis.is-paused .dash-kpi[aria-pressed="true"]::after {
+  animation: none;
+  transform: scaleX(1);
+}
+@keyframes dash-kpi-loop {
+  from { transform: scaleX(0); }
+  to { transform: scaleX(1); }
+}
+.dash-home-detail.is-in .dash-home-panel-head,
+.dash-home-detail.is-in .dash-detail-stats,
+.dash-home-detail.is-in .dash-traffic,
+.dash-home-detail.is-in .dash-detail-list {
+  animation: dash-detail-in 0.32s ease;
+}
+@keyframes dash-detail-in {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: none; }
 }
 .page-kpis-6 { grid-template-columns: repeat(6, minmax(0, 1fr)); }
 .page-kpis-5 { grid-template-columns: repeat(5, minmax(0, 1fr)); }

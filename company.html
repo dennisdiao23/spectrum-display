@@ -32,7 +32,7 @@
     #company-boot .boot-login button[type="submit"]{background:#fff!important;color:#000!important;border:0}
     #company-boot .boot-login button[type="submit"]:hover{background:#e8e8e8!important}
   </style>
-  <link rel="stylesheet" href="/css/company-dash.css?v=dealer-files2" />
+  <link rel="stylesheet" href="/css/company-dash.css?v=dealer-files3" />
   <script src="/js/address-autocomplete.js"></script>
   <script src="/js/company-chat.js?v=po-ship1"></script>
   <script src="/js/company-crm.js?v=zoomphone3"></script>
@@ -375,7 +375,7 @@
             <p>A snapshot of each main menu area.</p>
           </div>
           <div class="dash-home-kpis">
-            <button type="button" class="dash-kpi" data-home="website" aria-pressed="true">
+            <button type="button" class="dash-kpi is-on" data-home="website" aria-pressed="true">
               <span class="dash-kpi-icon dash-kpi-icon-website" aria-hidden="true">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M3 8h18"/><path d="M8 12h5M8 16h8"/></svg>
               </span>
@@ -4813,7 +4813,7 @@
     </a>
   </nav>
 
-  <link rel="stylesheet" href="/css/company-dash.css?v=dealer-files2" />
+  <link rel="stylesheet" href="/css/company-dash.css?v=dealer-files3" />
   <link rel="stylesheet" href="/css/company-tw.css?v=boot1" />
 
   <script>
@@ -6668,6 +6668,13 @@
     }
 
     let dashOverview = 'website';
+    const DASH_OVERVIEW_ORDER = ['website', 'inventory', 'vendor', 'crm', 'customer'];
+    const DASH_LOOP_MS = 8000;
+    const DASH_LOOP_RESUME_MS = 18000;
+    let dashLoopTimer = null;
+    let dashLoopResumeTimer = null;
+    let dashLoopHold = 0;
+    let dashLoopClickUntil = 0;
     let dashProducts = [];
     let dashInventory = [];
     let dashCustomers = [];
@@ -6971,22 +6978,102 @@
     }
 
     function firstDashOverview() {
-      if (canUse('website')) return 'website';
-      if (canUseInventoryNav()) return 'inventory';
-      if (canUseVendorNav()) return 'vendor';
-      if (canUseCrmNav()) return 'crm';
-      if (canUseCustomerNav()) return 'customer';
-      return 'website';
+      return dashOverviewNames()[0] || 'website';
     }
 
-    function selectDashOverview(name) {
-      if (!name || !canDashOverview(name)) return;
-      dashOverview = name;
-      document.querySelectorAll('#dash-home .dash-kpi').forEach(function (btn) {
+    function dashOverviewNames() {
+      return DASH_OVERVIEW_ORDER.filter(canDashOverview);
+    }
+
+    function markDashOverview(name) {
+      document.querySelectorAll('#dash-home .dash-kpi[data-home]').forEach(function (btn) {
         const on = btn.getAttribute('data-home') === name;
         btn.setAttribute('aria-pressed', on ? 'true' : 'false');
+        btn.classList.toggle('is-on', on);
       });
-      renderDashOverview();
+      syncDashLoopClass();
+    }
+
+    function dashLoopHeld() {
+      return dashLoopHold > 0 || Date.now() < dashLoopClickUntil;
+    }
+
+    function syncDashLoopClass() {
+      const kpis = document.querySelector('#dash-home .dash-home-kpis');
+      if (!kpis) return;
+      const held = dashLoopHeld();
+      kpis.classList.toggle('is-looping', !!dashLoopTimer && !held);
+      kpis.classList.toggle('is-paused', !!dashLoopTimer && held);
+    }
+
+    function stopDashOverviewLoop() {
+      if (dashLoopTimer) {
+        clearInterval(dashLoopTimer);
+        dashLoopTimer = null;
+      }
+      syncDashLoopClass();
+    }
+
+    function startDashOverviewLoop() {
+      stopDashOverviewLoop();
+      const section = document.getElementById('dashboard-section');
+      if (section && section.classList.contains('hidden')) return;
+      if (dashOverviewNames().length < 2) return;
+      dashLoopTimer = window.setInterval(tickDashOverviewLoop, DASH_LOOP_MS);
+      syncDashLoopClass();
+    }
+
+    function tickDashOverviewLoop() {
+      if (dashLoopHeld()) {
+        syncDashLoopClass();
+        return;
+      }
+      const names = dashOverviewNames();
+      if (names.length < 2) return;
+      const i = names.indexOf(dashOverview);
+      const next = names[(i + 1 + names.length) % names.length];
+      if (next && next !== dashOverview) selectDashOverview(next, { fromLoop: true });
+    }
+
+    function pauseDashOverviewLoop() {
+      dashLoopClickUntil = Date.now() + DASH_LOOP_RESUME_MS;
+      if (dashLoopResumeTimer) clearTimeout(dashLoopResumeTimer);
+      dashLoopResumeTimer = window.setTimeout(function () {
+        dashLoopClickUntil = 0;
+        dashLoopResumeTimer = null;
+        startDashOverviewLoop();
+      }, DASH_LOOP_RESUME_MS);
+      syncDashLoopClass();
+    }
+
+    function holdDashOverviewLoop() {
+      dashLoopHold += 1;
+      syncDashLoopClass();
+    }
+
+    function releaseDashOverviewLoop() {
+      dashLoopHold = Math.max(0, dashLoopHold - 1);
+      syncDashLoopClass();
+    }
+
+    function selectDashOverview(name, opts) {
+      opts = opts || {};
+      if (!name || !canDashOverview(name)) return;
+      const same = name === dashOverview;
+      dashOverview = name;
+      markDashOverview(name);
+      if (!same || opts.force || !opts.fromLoop) {
+        const pane = document.getElementById('dash-detail');
+        if (pane && !opts.fromLoad) {
+          pane.classList.remove('is-in');
+          void pane.offsetWidth;
+          renderDashOverview();
+          pane.classList.add('is-in');
+        } else {
+          renderDashOverview();
+        }
+      }
+      if (!opts.fromLoop && !opts.fromLoad) pauseDashOverviewLoop();
     }
 
     function renderDashKpis() {
@@ -7270,7 +7357,8 @@
         }
         if (!canDashOverview(dashOverview)) dashOverview = firstDashOverview();
         renderDashKpis();
-        selectDashOverview(dashOverview);
+        selectDashOverview(dashOverview, { fromLoad: true, force: true });
+        startDashOverviewLoop();
         startDealerAppBadgePoll();
       })().finally(function () {
         dashHomePromise = null;
@@ -8241,6 +8329,8 @@
       if (onSales && !doc && typeof refreshSalesListView === 'function') refreshSalesListView(view);
       if (typeof syncDocWindowChrome === 'function') syncDocWindowChrome(name);
       document.getElementById('dashboard-section').classList.toggle('hidden', view !== 'dashboard');
+      if (view === 'dashboard') startDashOverviewLoop();
+      else stopDashOverviewLoop();
       const chatSec = document.getElementById('chat-section');
       if (chatSec) chatSec.classList.toggle('hidden', view !== 'chat');
       const dashPanelEl = document.getElementById('dash-panel');
@@ -13668,17 +13758,20 @@
     document.getElementById('dash-home').addEventListener('click', function (e) {
       const refreshBtn = e.target.closest('#dash-traffic-refresh');
       if (refreshBtn) {
+        pauseDashOverviewLoop();
         loadDashboardHome();
         return;
       }
       const chBtn = e.target.closest('[data-traffic-ch]');
       if (chBtn) {
+        pauseDashOverviewLoop();
         dashTrafficChannel = chBtn.getAttribute('data-traffic-ch') === 'store' ? 'store' : 'website';
         renderDashTraffic();
         return;
       }
       const rangeBtn = e.target.closest('[data-traffic-range]');
       if (rangeBtn) {
+        pauseDashOverviewLoop();
         dashTrafficRange = rangeBtn.getAttribute('data-traffic-range') || '30d';
         renderDashTraffic();
         return;
@@ -13695,6 +13788,24 @@
       e.preventDefault();
       openCompanyTab(name, true);
     });
+    (function bindDashOverviewLoopHold() {
+      ['dash-detail', 'dash-home'].forEach(function (id) {
+        const el = id === 'dash-home'
+          ? document.querySelector('#dash-home .dash-home-kpis')
+          : document.getElementById(id);
+        if (!el) return;
+        el.addEventListener('mouseenter', holdDashOverviewLoop);
+        el.addEventListener('mouseleave', releaseDashOverviewLoop);
+      });
+      document.addEventListener('visibilitychange', function () {
+        const dashSec = document.getElementById('dashboard-section');
+        if (document.hidden) holdDashOverviewLoop();
+        else {
+          releaseDashOverviewLoop();
+          if (dashSec && !dashSec.classList.contains('hidden')) startDashOverviewLoop();
+        }
+      });
+    })();
     document.getElementById('dash-menu-btn').addEventListener('click', function () {
       if (isTabletDash()) {
         setSidebarCollapsed(false);
