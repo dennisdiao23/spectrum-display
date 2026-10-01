@@ -692,10 +692,26 @@ function assertNotKitWebsiteMap(item) {
   }
 }
 
+function isLedPanelCategory(value) {
+  return normalizeCategory(value).toLowerCase() === 'led panel';
+}
+
 function applyKitCreateDefaults(input) {
   if (!input || itemKindOf(input.itemKind) !== 'kit') return input;
   input.unit = 'each';
   input.qty = 0;
+  input.pitch = '';
+  input.panelType = '';
+  input.packagingType = '';
+  input.weight = 0;
+  input.panelW = 0;
+  input.panelH = 0;
+  return input;
+}
+
+function applyNonPanelDefaults(input) {
+  if (!input || itemKindOf(input.itemKind) === 'kit') return input;
+  if (input.category == null || isLedPanelCategory(input.category)) return input;
   input.pitch = '';
   input.panelType = '';
   input.packagingType = '';
@@ -835,6 +851,7 @@ function normalizeItemInput(body, opts) {
   if (!patch && out.itemKind == null) out.itemKind = 'item';
   if (!patch && !out.category) out.category = guessInventoryCategory(out) || '';
   applyKitCreateDefaults(out);
+  applyNonPanelDefaults(out);
   if (!patch && !out.sku) {
     out.sku = suggestedSku({
       brandId: out.brandId,
@@ -1250,6 +1267,7 @@ module.exports = {
   DEFAULT_CATEGORIES,
   normalizeCategory,
   guessInventoryCategory,
+  isLedPanelCategory,
   resolveItemCategory,
   itemKindOf,
   isKitItem,
