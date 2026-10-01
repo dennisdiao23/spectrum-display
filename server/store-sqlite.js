@@ -282,19 +282,24 @@ function syncItemSpectrumQty(db, itemId, stamp) {
 }
 
 function upsertItemLocation(db, itemId, warehouseId, bin, qty, stamp) {
+  const nextQty = Math.max(0, Number(qty) || 0);
   const existing = db.prepare(
     'SELECT * FROM inventory_item_locations WHERE item_id = ? AND warehouse_id = ?'
   ).get(itemId, warehouseId);
+  if (nextQty <= 0) {
+    if (existing) db.prepare('DELETE FROM inventory_item_locations WHERE id = ?').run(existing.id);
+    return existing ? existing.id : null;
+  }
   if (existing) {
     db.prepare(
       'UPDATE inventory_item_locations SET bin = ?, qty = ?, updated_at = ? WHERE id = ?'
-    ).run(bin == null ? existing.bin : bin, qty, stamp, existing.id);
+    ).run(bin == null ? existing.bin : bin, nextQty, stamp, existing.id);
     return existing.id;
   }
   const info = db.prepare(`
     INSERT INTO inventory_item_locations (item_id, warehouse_id, bin, qty, created_at, updated_at)
     VALUES (?, ?, ?, ?, ?, ?)
-  `).run(itemId, warehouseId, bin || '', qty, stamp, stamp);
+  `).run(itemId, warehouseId, bin || '', nextQty, stamp, stamp);
   return info.lastInsertRowid;
 }
 
@@ -309,14 +314,7 @@ function applyLocationChange(db, itemId, payload, adminEmail) {
   let loc = db.prepare(
     'SELECT * FROM inventory_item_locations WHERE item_id = ? AND warehouse_id = ?'
   ).get(itemId, warehouse.id);
-  if (!loc) {
-    const stamp0 = dbUtil.nowIso();
-    upsertItemLocation(db, itemId, warehouse.id, '', 0, stamp0);
-    loc = db.prepare(
-      'SELECT * FROM inventory_item_locations WHERE item_id = ? AND warehouse_id = ?'
-    ).get(itemId, warehouse.id);
-  }
-  const curQty = Math.max(0, Number(loc.qty) || 0);
+  const curQty = loc ? Math.max(0, Number(loc.qty) || 0) : 0;
   const nextLow = payload && payload.lowAt != null && payload.lowAt !== ''
     ? Math.max(0, Math.round(Number(payload.lowAt)))
     : Number(current.low_at);
@@ -325,9 +323,7 @@ function applyLocationChange(db, itemId, payload, adminEmail) {
   const stamp = dbUtil.nowIso();
   const noteBits = [String((payload && payload.note) || '').trim()].filter(Boolean);
   if (warehouse.name) noteBits.unshift(warehouse.name);
-  db.prepare(
-    'UPDATE inventory_item_locations SET qty = ?, updated_at = ? WHERE id = ?'
-  ).run(change.next, stamp, loc.id);
+  upsertItemLocation(db, itemId, warehouse.id, loc ? loc.bin : '', change.next, stamp);
   db.prepare('UPDATE inventory_items SET low_at = ?, updated_at = ? WHERE id = ?')
     .run(nextLow, stamp, itemId);
   syncItemSpectrumQty(db, itemId, stamp);
