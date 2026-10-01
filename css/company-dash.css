@@ -9285,10 +9285,32 @@ body.app-help-on .dash-sidebar {
 }
 .app-notes-kicker:first-child { margin-top: 0; }
 .app-notes-title {
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+  flex-wrap: wrap;
   margin: 0 0 0.45rem;
   font-size: 1.05rem;
   font-weight: 800;
   color: #122046;
+}
+.app-notes-mobile {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.28rem;
+  margin-left: auto;
+  padding: 0.15rem 0.45rem;
+  border-radius: 999px;
+  background: #eef3fb;
+  color: #3d4d6e;
+  font-size: 0.68rem;
+  font-weight: 750;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+.app-notes-mobile svg {
+  width: 0.85rem;
+  height: 0.85rem;
 }
 .app-notes-list {
   margin: 0;
