@@ -539,6 +539,170 @@
       return hay.indexOf(q) !== -1;
     });
   }
+  const BOOK_COLS = [
+    { id: 'name', label: 'Item' },
+    { id: 'sku', label: 'SKU' },
+    { id: 'category', label: 'Category' },
+    { id: 'description', label: 'Description' },
+    { id: 'pitch', label: 'Pitch' },
+    { id: 'brand', label: 'Brand' },
+    { id: 'qty', label: 'On hand' },
+    { id: 'price', label: 'Sell price' },
+    { id: 'dealer', label: 'Dealer net' },
+    { id: 'photo', label: 'Photo' }
+  ];
+  function bookTable() {
+    return document.querySelector('table.dash-cols[data-cols="dealer-book"]');
+  }
+  function bookColKey() {
+    const id = me && me.user && me.user.id;
+    return 'portal-book-cols-' + (id || 'anon');
+  }
+  function bookColState() {
+    const known = BOOK_COLS.map(function (col) { return col.id; });
+    let saved = null;
+    try { saved = JSON.parse(localStorage.getItem(bookColKey()) || 'null'); } catch (err) { saved = null; }
+    if (!saved || typeof saved !== 'object') {
+      return { order: known.slice(), hidden: [], sortCol: '', sortDir: '', widths: {} };
+    }
+    const hidden = (saved.hidden || []).filter(function (id) {
+      return known.indexOf(id) !== -1 && id !== 'name';
+    });
+    const order = ['name'];
+    (saved.order || []).forEach(function (id) {
+      if (id === 'name' || known.indexOf(id) === -1 || hidden.indexOf(id) !== -1 || order.indexOf(id) !== -1) return;
+      order.push(id);
+    });
+    known.forEach(function (id) {
+      if (order.indexOf(id) === -1 && hidden.indexOf(id) === -1) order.push(id);
+    });
+    return {
+      order: order,
+      hidden: hidden,
+      sortCol: known.indexOf(saved.sortCol) !== -1 ? saved.sortCol : '',
+      sortDir: saved.sortDir === 'asc' || saved.sortDir === 'desc' ? saved.sortDir : '',
+      widths: saved.widths && typeof saved.widths === 'object' ? saved.widths : {}
+    };
+  }
+  function saveBookCols(state) {
+    try { localStorage.setItem(bookColKey(), JSON.stringify(state)); } catch (err) {}
+  }
+  function applyBookCols() {
+    const table = bookTable();
+    if (!table) return;
+    const state = bookColState();
+    const row = table.querySelector('thead tr');
+    const nameTh = row.querySelector('th[data-col="name"]');
+    if (nameTh) row.appendChild(nameTh);
+    state.order.forEach(function (id) {
+      if (id === 'name') return;
+      const th = row.querySelector('th[data-col="' + id + '"]');
+      if (th) row.appendChild(th);
+    });
+    state.hidden.forEach(function (id) {
+      const th = row.querySelector('th[data-col="' + id + '"]');
+      if (th) row.appendChild(th);
+    });
+    Array.prototype.forEach.call(row.querySelectorAll('th[data-col]'), function (th) {
+      const col = th.getAttribute('data-col');
+      th.hidden = col !== 'name' && state.hidden.indexOf(col) !== -1;
+      th.style.width = state.widths[col] || '';
+      const caret = th.querySelector('.dash-col-caret');
+      if (caret) {
+        caret.textContent = state.sortCol === col && state.sortDir === 'asc' ? '▴' : '▾';
+        caret.classList.toggle('is-on', state.sortCol === col);
+      }
+    });
+  }
+  function bookSortValue(item, col) {
+    if (col === 'name') return item.name || '';
+    if (col === 'sku') return item.sku || '';
+    if (col === 'category') return item.category || '';
+    if (col === 'description') return item.description || '';
+    if (col === 'pitch') return item.pitchLabel || item.pitch || '';
+    if (col === 'brand') return item.brand || '';
+    if (col === 'qty') return Number(item.qty) || 0;
+    if (col === 'price') return Number(item.listPrice) || 0;
+    if (col === 'dealer') return Number(item.dealerNet) || 0;
+    if (col === 'photo') return item.image || '';
+    return '';
+  }
+  function sortBookRows(rows) {
+    const state = bookColState();
+    if (!state.sortCol || !state.sortDir) return rows;
+    const dir = state.sortDir === 'desc' ? -1 : 1;
+    return rows.slice().sort(function (a, b) {
+      const av = bookSortValue(a, state.sortCol);
+      const bv = bookSortValue(b, state.sortCol);
+      if (typeof av === 'number' && typeof bv === 'number') return (av - bv) * dir;
+      return String(av).localeCompare(String(bv), undefined, { numeric: true, sensitivity: 'base' }) * dir;
+    });
+  }
+  function closeBookColAdd() {
+    const panel = $('dash-col-add');
+    if (panel) panel.hidden = true;
+    const addBtn = document.querySelector('#dash-col-menu [data-col-act="add"]');
+    if (addBtn) addBtn.classList.remove('is-on');
+  }
+  function closeBookColMenu() {
+    closeBookColAdd();
+    const menu = $('dash-col-menu');
+    if (!menu) return;
+    menu.hidden = true;
+    menu._col = '';
+  }
+  function placeBookColAdd() {
+    const menu = $('dash-col-menu');
+    const panel = $('dash-col-add');
+    if (!menu || !panel || panel.hidden) return;
+    const box = menu.getBoundingClientRect();
+    const pw = panel.offsetWidth || 184;
+    const ph = panel.offsetHeight || 0;
+    let left = box.right + 6;
+    if (left + pw > window.innerWidth - 8) left = box.left - pw - 6;
+    let top = box.top;
+    if (top + ph > window.innerHeight - 8) top = window.innerHeight - ph - 8;
+    panel.style.left = Math.max(8, left) + 'px';
+    panel.style.top = Math.max(8, top) + 'px';
+  }
+  function openBookColAdd() {
+    const menu = $('dash-col-menu');
+    const panel = $('dash-col-add');
+    const list = $('dash-col-add-list');
+    const addBtn = menu.querySelector('[data-col-act="add"]');
+    if (!panel.hidden) {
+      closeBookColAdd();
+      return;
+    }
+    const shown = bookColState().order;
+    list.innerHTML = BOOK_COLS.map(function (col) {
+      const on = shown.indexOf(col.id) !== -1;
+      return '<button type="button" data-add-col="' + esc(col.id) + '"' +
+        (on ? ' disabled class="is-on"' : '') + '>' +
+        (on ? '✓ ' : '') + esc(col.label) + '</button>';
+    }).join('');
+    panel.hidden = false;
+    addBtn.classList.add('is-on');
+    placeBookColAdd();
+  }
+  function openBookColMenu(th) {
+    if (window.matchMedia('(max-width: 900px)').matches) return;
+    closeBookColAdd();
+    const menu = $('dash-col-menu');
+    const col = th.getAttribute('data-col');
+    const state = bookColState();
+    const i = state.order.indexOf(col);
+    const locked = th.getAttribute('data-lock') === 'start';
+    menu.querySelector('[data-col-act="left"]').disabled = locked || i <= 0;
+    menu.querySelector('[data-col-act="right"]').disabled = locked || i === -1 || i >= state.order.length - 1;
+    menu.querySelector('[data-col-act="hide"]').disabled = locked || state.order.length <= 1;
+    menu._col = col;
+    menu.hidden = false;
+    const box = th.getBoundingClientRect();
+    const left = Math.min(box.left, window.innerWidth - menu.offsetWidth - 8);
+    menu.style.left = Math.max(8, left) + 'px';
+    menu.style.top = (box.bottom + 4) + 'px';
+  }
   function setBookFilter(name) {
     bookFilter = name === 'low' || name === 'out' ? name : 'all';
     document.querySelectorAll('#inv-overview .dash-kpi').forEach(function (btn) {
@@ -605,26 +769,30 @@
     $('inv-stat-low').textContent = String(low);
     $('inv-stat-out').textContent = String(out);
     setBookFilter(bookFilter);
-    const rows = bookRows();
+    applyBookCols();
+    const state = bookColState();
+    let rows = bookRows();
     if (bookSku && !rows.some(function (item) { return item.sku === bookSku; })) bookSku = '';
+    rows = sortBookRows(rows);
     $('inventory-table').innerHTML = rows.length ? rows.map(function (item) {
       const photo = item.image
         ? '<img src="' + esc(item.image) + '" alt="" class="dash-col-photo">'
         : '<span class="text-slate-400">—</span>';
+      const cells = {
+        name: '<td class="py-3 px-4 font-medium"><span class="cc-acct-cell"><span class="cc-acct-status ' + stockDot(item.status) + '" title="' + esc(stockLabel(item.status)) + '" aria-hidden="true"></span><span class="cc-acct-name">' + esc(item.name || '') + '</span></span></td>',
+        sku: '<td class="py-3 px-4 font-mono text-xs text-sky-300">' + esc(item.sku || '—') + '</td>',
+        category: '<td class="py-3 px-4 text-slate-400">' + esc(item.category || '—') + '</td>',
+        description: '<td class="py-3 px-4 text-slate-400">' + esc(item.description || '—') + '</td>',
+        pitch: '<td class="py-3 px-4 text-slate-400">' + esc(item.pitchLabel || item.pitch || '—') + '</td>',
+        brand: '<td class="py-3 px-4 text-sky-400">' + esc(item.brand || '—') + '</td>',
+        qty: '<td class="py-3 px-4">' + esc(item.qty) + '</td>',
+        price: '<td class="py-3 px-4">' + bookPrice(item.listPrice) + '</td>',
+        dealer: '<td class="py-3 px-4">' + money(item.dealerNet) + '</td>',
+        photo: '<td class="py-3 px-4">' + photo + '</td>'
+      };
       return '<tr class="border-b border-slate-800 cursor-pointer' + (item.sku === bookSku ? ' is-selected' : '') + '" data-sku="' + esc(item.sku) + '">' +
-        '<td class="py-3 px-4 font-medium"><span class="cc-acct-cell"><span class="cc-acct-status ' + stockDot(item.status) + '" title="' + esc(stockLabel(item.status)) + '" aria-hidden="true"></span><span class="cc-acct-name">' + esc(item.name || '') + '</span></span></td>' +
-        '<td class="py-3 px-4 font-mono text-xs text-sky-300">' + esc(item.sku || '—') + '</td>' +
-        '<td class="py-3 px-4 text-slate-400">' + esc(item.category || '—') + '</td>' +
-        '<td class="py-3 px-4 text-slate-400">' + esc(item.description || '—') + '</td>' +
-        '<td class="py-3 px-4 text-slate-400">' + esc(item.pitchLabel || item.pitch || '—') + '</td>' +
-        '<td class="py-3 px-4 text-sky-400">' + esc(item.brand || '—') + '</td>' +
-        '<td class="py-3 px-4">' + esc(item.qty) + '</td>' +
-        '<td class="py-3 px-4 text-slate-400">' + esc(item.warehouse || '—') + '</td>' +
-        '<td class="py-3 px-4 text-slate-400">' + esc(item.bin || '—') + '</td>' +
-        '<td class="py-3 px-4">' + bookPrice(item.listPrice) + '</td>' +
-        '<td class="py-3 px-4">' + money(item.dealerNet) + '</td>' +
-        '<td class="py-3 px-4">' + photo + '</td></tr>';
-    }).join('') : '<tr><td class="py-6 px-4 text-slate-500" colspan="12">No priced SKUs yet.</td></tr>';
+        state.order.map(function (id) { return cells[id] || ''; }).join('') + '</tr>';
+    }).join('') : '<tr><td class="py-6 px-4 text-slate-500" colspan="' + state.order.length + '">No priced SKUs yet.</td></tr>';
     const selected = bookSku ? book.find(function (item) { return item.sku === bookSku; }) : null;
     renderBookDetail(selected || null);
   }
@@ -1499,7 +1667,119 @@
   })();
   $('inv-search').addEventListener('input', renderBook);
   $('inv-category-filter').addEventListener('change', renderBook);
-  $('inv-location-filter').addEventListener('change', renderBook);
+  if ($('inv-location-filter')) $('inv-location-filter').addEventListener('change', renderBook);
+  (function bindBookCols() {
+    const table = bookTable();
+    if (!table || table.dataset.colsReady === '1') return;
+    table.dataset.colsReady = '1';
+    applyBookCols();
+    table.querySelectorAll('thead th[data-col]').forEach(function (th) {
+      const grip = th.querySelector('.dash-col-grip');
+      if (grip) {
+        grip.addEventListener('mousedown', function (e) {
+          e.preventDefault();
+          e.stopPropagation();
+          closeBookColMenu();
+          const startX = e.clientX;
+          const startW = th.getBoundingClientRect().width;
+          grip.classList.add('is-drag');
+          document.body.classList.add('dash-col-resizing');
+          function move(ev) {
+            th.style.width = Math.max(64, Math.round(startW + ev.clientX - startX)) + 'px';
+          }
+          function up() {
+            grip.classList.remove('is-drag');
+            document.body.classList.remove('dash-col-resizing');
+            document.removeEventListener('mousemove', move);
+            document.removeEventListener('mouseup', up);
+            const state = bookColState();
+            const col = th.getAttribute('data-col');
+            if (col) state.widths[col] = th.style.width || Math.round(th.getBoundingClientRect().width) + 'px';
+            saveBookCols(state);
+          }
+          document.addEventListener('mousemove', move);
+          document.addEventListener('mouseup', up);
+        });
+      }
+      th.addEventListener('click', function (e) {
+        if (e.target.closest('.dash-col-grip')) return;
+        const menu = $('dash-col-menu');
+        if (menu && !menu.hidden && menu._col === th.getAttribute('data-col')) {
+          closeBookColMenu();
+          return;
+        }
+        openBookColMenu(th);
+      });
+    });
+    const menu = $('dash-col-menu');
+    const add = $('dash-col-add');
+    if (menu) {
+      menu.addEventListener('click', function (e) {
+        const btn = e.target.closest('[data-col-act]');
+        if (!btn || btn.disabled) return;
+        const col = menu._col;
+        if (!col) return;
+        const act = btn.getAttribute('data-col-act');
+        if (act === 'add') {
+          openBookColAdd();
+          return;
+        }
+        const state = bookColState();
+        if (act === 'asc' || act === 'desc') {
+          state.sortCol = col;
+          state.sortDir = act;
+        } else if (act === 'left' || act === 'right') {
+          const i = state.order.indexOf(col);
+          const j = act === 'left' ? i - 1 : i + 1;
+          if (i <= 0 || j <= 0 || j >= state.order.length) return;
+          const next = state.order.slice();
+          const swap = next[i];
+          next[i] = next[j];
+          next[j] = swap;
+          state.order = next;
+        } else if (act === 'hide') {
+          if (col === 'name' || state.order.length <= 1) return;
+          state.order = state.order.filter(function (id) { return id !== col; });
+          if (state.hidden.indexOf(col) === -1) state.hidden.push(col);
+          if (state.sortCol === col) {
+            state.sortCol = '';
+            state.sortDir = '';
+          }
+        }
+        saveBookCols(state);
+        closeBookColMenu();
+        renderBook();
+      });
+    }
+    if (add) {
+      add.addEventListener('click', function (e) {
+        const btn = e.target.closest('[data-add-col]');
+        if (!btn || btn.disabled) return;
+        const addId = btn.getAttribute('data-add-col');
+        const state = bookColState();
+        const at = menu._col;
+        const i = state.order.indexOf(at);
+        state.hidden = state.hidden.filter(function (id) { return id !== addId; });
+        if (state.order.indexOf(addId) === -1) {
+          if (i < 0 || at === 'name') state.order.splice(1, 0, addId);
+          else state.order.splice(i, 0, addId);
+        }
+        saveBookCols(state);
+        closeBookColMenu();
+        renderBook();
+      });
+    }
+    document.addEventListener('pointerdown', function (e) {
+      if (!menu || menu.hidden) return;
+      if (menu.contains(e.target)) {
+        if (add && !add.hidden && !e.target.closest('[data-col-act="add"]')) closeBookColAdd();
+        return;
+      }
+      if (add && !add.hidden && add.contains(e.target)) return;
+      if (e.target.closest && e.target.closest('table.dash-cols[data-cols="dealer-book"] th[data-col]')) return;
+      closeBookColMenu();
+    });
+  })();
   document.getElementById('inventory-section').addEventListener('click', function (e) {
     const filter = e.target.closest('[data-filter], [data-inv-filter]');
     if (filter && filter.closest('#inventory-section')) {
