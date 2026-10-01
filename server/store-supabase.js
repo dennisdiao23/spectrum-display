@@ -91,6 +91,12 @@ function createSupabaseStore() {
       console.error('Could not backfill missing catalog series:', e.message || e);
     }
 
+    try {
+      await require('./trt-discovery-price-inventory').applySupabase(supabase);
+    } catch (e) {
+      console.error('Could not apply Transtech Discovery price list:', e.message || e);
+    }
+
     const maintain = /^(1|true|yes)$/i.test(String(process.env.BOOT_MAINTENANCE || '').trim());
     if (!maintain) return;
     console.log('BOOT_MAINTENANCE: running catalog/photo backfill');

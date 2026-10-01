@@ -1694,3 +1694,14 @@ create table if not exists company_invoice_pay_links (
   updated_at timestamptz not null default now()
 );
 create index if not exists company_invoice_pay_links_invoice_idx on company_invoice_pay_links (invoice_id, status);
+
+-- One-shot data imports. Service role writes these on boot.
+create table if not exists public.schema_patches (
+  id text primary key,
+  applied_at timestamptz not null default now()
+);
+alter table public.schema_patches enable row level security;
+drop policy if exists schema_patches_admin_all on public.schema_patches;
+create policy schema_patches_admin_all on public.schema_patches
+for all using (public.is_spectrum_admin()) with check (public.is_spectrum_admin());
+grant all on public.schema_patches to service_role;
