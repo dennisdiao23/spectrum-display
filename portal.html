@@ -387,18 +387,16 @@
                     <table class="w-full text-sm dash-cols" data-cols="dealer-book">
                       <thead class="text-left text-slate-400 border-b border-slate-800">
                         <tr>
-                          <th class="py-3 px-4 font-medium" data-col="name">Item</th>
-                          <th class="py-3 px-4 font-medium" data-col="sku">SKU</th>
-                          <th class="py-3 px-4 font-medium" data-col="category">Category</th>
-                          <th class="py-3 px-4 font-medium" data-col="description">Description</th>
-                          <th class="py-3 px-4 font-medium" data-col="pitch">Pitch</th>
-                          <th class="py-3 px-4 font-medium" data-col="brand">Brand</th>
-                          <th class="py-3 px-4 font-medium" data-col="qty">On hand</th>
-                          <th class="py-3 px-4 font-medium" data-col="warehouse">Location</th>
-                          <th class="py-3 px-4 font-medium" data-col="bin">Bin #</th>
-                          <th class="py-3 px-4 font-medium" data-col="price">Sell price</th>
-                          <th class="py-3 px-4 font-medium" data-col="dealer">Dealer net</th>
-                          <th class="py-3 px-4 font-medium" data-col="photo">Photo</th>
+                          <th class="py-3 px-4 font-medium" data-col="name" data-lock="start">Item <span class="dash-col-caret">▾</span><span class="dash-col-grip" aria-hidden="true"></span></th>
+                          <th class="py-3 px-4 font-medium" data-col="sku">SKU <span class="dash-col-caret">▾</span><span class="dash-col-grip" aria-hidden="true"></span></th>
+                          <th class="py-3 px-4 font-medium" data-col="category">Category <span class="dash-col-caret">▾</span><span class="dash-col-grip" aria-hidden="true"></span></th>
+                          <th class="py-3 px-4 font-medium" data-col="description">Description <span class="dash-col-caret">▾</span><span class="dash-col-grip" aria-hidden="true"></span></th>
+                          <th class="py-3 px-4 font-medium" data-col="pitch">Pitch <span class="dash-col-caret">▾</span><span class="dash-col-grip" aria-hidden="true"></span></th>
+                          <th class="py-3 px-4 font-medium" data-col="brand">Brand <span class="dash-col-caret">▾</span><span class="dash-col-grip" aria-hidden="true"></span></th>
+                          <th class="py-3 px-4 font-medium" data-col="qty">On hand <span class="dash-col-caret">▾</span><span class="dash-col-grip" aria-hidden="true"></span></th>
+                          <th class="py-3 px-4 font-medium" data-col="price">Sell price <span class="dash-col-caret">▾</span><span class="dash-col-grip" aria-hidden="true"></span></th>
+                          <th class="py-3 px-4 font-medium" data-col="dealer">Dealer net <span class="dash-col-caret">▾</span><span class="dash-col-grip" aria-hidden="true"></span></th>
+                          <th class="py-3 px-4 font-medium" data-col="photo">Photo <span class="dash-col-caret">▾</span><span class="dash-col-grip" aria-hidden="true"></span></th>
                         </tr>
                       </thead>
                       <tbody id="inventory-table" class="text-slate-200"></tbody>
@@ -1151,11 +1149,42 @@
     <a href="/portal/panels" id="tabbar-panels" data-view="panels" class="hidden"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 8.5 12 13 3 8.5 12 4l9 4.5z"/><path d="M3 8.5v7L12 20l9-4.5v-7"/><path d="M12 13v7"/></svg><span>Panels</span></a>
     <a href="/portal/company" id="tabbar-settings" data-view="company" data-tabbar-group="settings" class="hidden"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M12 3v2M12 19v2M3 12h2M19 12h2"/></svg><span>Settings</span></a>
   </nav>
+  <div id="dash-col-menu" class="dash-col-menu" hidden>
+    <button type="button" data-col-act="asc">
+      <svg class="dash-col-ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M8 16V5M8 5 4.8 8.2M8 5l3.2 3.2"/><path d="M13 8h7M13 12h5M13 16h3"/></svg>
+      Sort ascending
+    </button>
+    <button type="button" data-col-act="desc">
+      <svg class="dash-col-ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M8 8v11M8 19l3.2-3.2M8 19l-3.2-3.2"/><path d="M13 8h3M13 12h5M13 16h7"/></svg>
+      Sort descending
+    </button>
+    <button type="button" data-col-act="left">
+      <svg class="dash-col-ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M19 12H6M10.5 7.5 6 12l4.5 4.5"/></svg>
+      Move left
+    </button>
+    <button type="button" data-col-act="right">
+      <svg class="dash-col-ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h13M13.5 7.5 18 12l-4.5 4.5"/></svg>
+      Move right
+    </button>
+    <div class="dash-col-menu-rule"></div>
+    <button type="button" data-col-act="hide">
+      <svg class="dash-col-ico" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="8.2"/><path d="M8.2 12h7.6"/></svg>
+      Hide column
+    </button>
+    <button type="button" data-col-act="add">
+      <svg class="dash-col-ico" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="8.2"/><path d="M12 8.2v7.6M8.2 12h7.6"/></svg>
+      Add column
+    </button>
+  </div>
+  <div id="dash-col-add" class="dash-col-add" hidden>
+    <p class="dash-col-add-title">Add column</p>
+    <div id="dash-col-add-list"></div>
+  </div>
   <div id="so-sku-menu" class="so-sku-menu" hidden>
     <div class="so-sku-menu-list"></div>
   </div>
   <script src="/js/app-help.js?v=help6"></script>
   <script src="/js/app-notes.js?v=newsbar2"></script>
-  <script src="/js/portal.js?v=leads1"></script>
+  <script src="/js/portal.js?v=bookcols1"></script>
 </body>
 </html>
