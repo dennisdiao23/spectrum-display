@@ -1,17 +1,6 @@
 {
-  "build": "2026-10-01-discovery-inventory",
+  "build": "2026-10-01-portal-bar",
   "notes": [
-    {
-      "id": "2026-10-01-discovery-inventory",
-      "date": "2026-10-01",
-      "apps": ["company"],
-      "title": "Discovery cabinets and modules are in Inventory",
-      "added": [
-        "Discovery V1 COB and Discovery M SMD from the August 11 Transtech price list."
-      ],
-      "how": "Open Inventory and search Discovery. Each cabinet is its own item. Cost is the cabinet price per square meter. Each module is a separate item. Cost on a module is the price per piece. Sell price is left blank. These items are not on the website.",
-      "kind": "feature"
-    },
     {
       "id": "2026-10-01-z-leads-inbox",
       "date": "2026-10-01",
