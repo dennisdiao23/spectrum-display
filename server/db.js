@@ -153,6 +153,7 @@ function openDb() {
   ensureCompanySales(db);
   ensureCompanyPayments(db);
   ensurePrintForms(db);
+  require('./price-levels').ensureSqlite(db);
   ensureInventoryVendors(db);
   ensurePartyContacts(db);
   ensurePurchaseOrders(db);
@@ -825,7 +826,9 @@ function ensureInventoryWarehouses(db) {
       db.exec('BEGIN');
       try {
         items.forEach(function (item) {
-          insert.run(item.id, home.id, Math.max(0, Number(item.qty) || 0), stamp, stamp);
+          const qty = Math.max(0, Number(item.qty) || 0);
+          if (qty <= 0) return;
+          insert.run(item.id, home.id, qty, stamp, stamp);
         });
         db.exec('COMMIT');
       } catch (err) {
@@ -835,6 +838,9 @@ function ensureInventoryWarehouses(db) {
     }
   }
   migrateInventoryBinLocations(db, stamp);
+  try {
+    db.prepare('DELETE FROM inventory_item_locations WHERE qty IS NULL OR qty <= 0').run();
+  } catch (e) { /* ignore */ }
 }
 
 function sqliteFindOrCreateBin(db, parentId, name, stamp) {

@@ -155,6 +155,11 @@ function createSupabaseStore() {
       console.error('Could not migrate inventory bin locations:', e.message || e);
     }
     try {
+      await pruneEmptyItemLocations();
+    } catch (e) {
+      console.error('Could not clear empty inventory locations:', e.message || e);
+    }
+    try {
       await ensurePublicProductPhotos();
     } catch (e) {
       console.error('Could not copy product photos locally:', e.message || e);
@@ -168,7 +173,9 @@ function createSupabaseStore() {
     if (lErr) return;
     const have = {};
     (locs || []).forEach(function (row) { have[String(row.item_id)] = true; });
-    const missing = (items || []).filter(function (item) { return !have[String(item.id)]; });
+    const missing = (items || []).filter(function (item) {
+      return !have[String(item.id)] && Math.max(0, Number(item.qty) || 0) > 0;
+    });
     if (!missing.length) return;
     const spectrum = await defaultSpectrumWarehouse();
     const stamp = new Date().toISOString();
@@ -184,6 +191,11 @@ function createSupabaseStore() {
     });
     const { error } = await supabase.from('inventory_item_locations').insert(rows);
     throwIf(error, 'Could not backfill inventory locations.');
+  }
+
+  async function pruneEmptyItemLocations() {
+    const { error } = await supabase.from('inventory_item_locations').delete().lte('qty', 0);
+    if (error) throwIf(error, 'Could not clear empty inventory locations.');
   }
 
   async function rememberCatalogTombstone(brandId, seriesId) {
@@ -955,6 +967,7 @@ function createSupabaseStore() {
 
   async function upsertItemLocation(itemId, warehouseId, bin, qty) {
     const stamp = new Date().toISOString();
+    const nextQty = Math.max(0, Number(qty) || 0);
     const { data: existing, error: eErr } = await supabase
       .from('inventory_item_locations')
       .select('*')
@@ -962,10 +975,18 @@ function createSupabaseStore() {
       .eq('warehouse_id', warehouseId)
       .maybeSingle();
     throwIf(eErr, 'Could not read item location.');
+    if (nextQty <= 0) {
+      if (existing) {
+        const { error } = await supabase.from('inventory_item_locations').delete().eq('id', existing.id);
+        throwIf(error, 'Could not clear empty item location.');
+        return existing.id;
+      }
+      return null;
+    }
     if (existing) {
       const { error } = await supabase.from('inventory_item_locations').update({
         bin: bin == null ? existing.bin : bin,
-        qty: qty,
+        qty: nextQty,
         updated_at: stamp
       }).eq('id', existing.id);
       throwIf(error, 'Could not update item location.');
@@ -975,7 +996,7 @@ function createSupabaseStore() {
       item_id: Number(itemId),
       warehouse_id: Number(warehouseId),
       bin: bin || '',
-      qty: qty,
+      qty: nextQty,
       created_at: stamp,
       updated_at: stamp
     }).select('id').single();
@@ -998,17 +1019,7 @@ function createSupabaseStore() {
       .eq('item_id', itemId)
       .eq('warehouse_id', warehouse.id)
       .maybeSingle();
-    if (!loc) {
-      await upsertItemLocation(itemId, warehouse.id, '', 0);
-      const again = await supabase
-        .from('inventory_item_locations')
-        .select('*')
-        .eq('item_id', itemId)
-        .eq('warehouse_id', warehouse.id)
-        .maybeSingle();
-      loc = again.data;
-    }
-    const curQty = Math.max(0, Number(loc.qty) || 0);
+    const curQty = loc ? Math.max(0, Number(loc.qty) || 0) : 0;
     const nextLow = payload && payload.lowAt != null && payload.lowAt !== ''
       ? Math.max(0, Math.round(Number(payload.lowAt)))
       : Number(current.low_at);
@@ -1017,11 +1028,7 @@ function createSupabaseStore() {
     const stamp = new Date().toISOString();
     const noteBits = [String((payload && payload.note) || '').trim()].filter(Boolean);
     if (warehouse.name) noteBits.unshift(warehouse.name);
-    const { error: lErr } = await supabase.from('inventory_item_locations').update({
-      qty: change.next,
-      updated_at: stamp
-    }).eq('id', loc.id);
-    throwIf(lErr, 'Could not save location qty.');
+    await upsertItemLocation(itemId, warehouse.id, loc ? loc.bin : '', change.next);
     const { error: uErr } = await supabase.from('inventory_items').update({
       low_at: nextLow,
       updated_at: stamp
@@ -2471,6 +2478,18 @@ function createSupabaseStore() {
       const { data, error } = await supabase.from('company_print_forms').select('template_json').eq('type', t).maybeSingle();
       throwIf(error, 'Could not load print form.');
       return pf.parseStored(t, data && data.template_json);
+    },
+    async listPriceLevels() {
+      return require('./price-levels').listSupabase(supabase);
+    },
+    async getPriceLevel(id) {
+      return require('./price-levels').getSupabase(supabase, id);
+    },
+    async savePriceLevel(id, input) {
+      return require('./price-levels').saveSupabase(supabase, id, input);
+    },
+    async deletePriceLevel(id) {
+      return require('./price-levels').deleteSupabase(supabase, id);
     },
     async savePrintForm(type, template) {
       const pf = require('./print-forms');
