@@ -1,6 +1,16 @@
 {
-  "build": "2026-10-01-calc-dark-glass",
+  "build": "2026-10-01-glass-see-through",
   "notes": [
+    {
+      "id": "2026-10-01-glass-see-through",
+      "date": "2026-10-01",
+      "apps": ["company"],
+      "title": "Phone bar shows the page through it",
+      "changed": [
+        "On iPhone the bottom bar is see-through glass again."
+      ],
+      "how": "Open Company on your phone. The bar should blur the page behind it, on Inventory and on Calculator."
+    },
     {
       "id": "2026-10-01-calc-dark-glass",
       "date": "2026-10-01",
