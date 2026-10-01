@@ -1,6 +1,16 @@
 {
-  "build": "2026-10-01-glass-bar",
+  "build": "2026-10-01-glass-clear",
   "notes": [
+    {
+      "id": "2026-10-01-glass-clear",
+      "date": "2026-10-01",
+      "apps": ["company"],
+      "title": "Phone bar glass is clearer",
+      "changed": [
+        "The bottom bar is clearer glass, so the page shows through it."
+      ],
+      "how": "On Calculator the wall runs full screen under the bar. The bar blurs whatever is behind it, the same on every phone page."
+    },
     {
       "id": "2026-10-01-glass-bar",
       "date": "2026-10-01",

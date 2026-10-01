@@ -55,7 +55,9 @@
       position: sticky;
       top: var(--nav-h);
     }
-    html.designer-embed .site-header { display: none !important; }
+    html.designer-embed .site-header,
+    html.designer-embed .site-tabbar { display: none !important; }
+    html.designer-embed { --site-tabbar-h: 0px; }
     html.designer-embed body.designer-app { padding-top: var(--designer-bar-h) !important; }
     html.designer-embed .designer-toolbar { top: 0 !important; }
     html.designer-embed #save-project-btn { display: none; }
