@@ -373,18 +373,23 @@ function ensureWarehouseSqlite(db, vendorId, stamp) {
 }
 
 function upsertItemLocationSqlite(db, itemId, warehouseId, qty, stamp) {
+  const nextQty = Math.max(0, Number(qty) || 0);
   const existing = db.prepare(
     'SELECT * FROM inventory_item_locations WHERE item_id = ? AND warehouse_id = ?'
   ).get(itemId, warehouseId);
+  if (nextQty <= 0) {
+    if (existing) db.prepare('DELETE FROM inventory_item_locations WHERE id = ?').run(existing.id);
+    return;
+  }
   if (existing) {
     db.prepare(
       'UPDATE inventory_item_locations SET qty = ?, updated_at = ? WHERE id = ?'
-    ).run(qty, stamp, existing.id);
+    ).run(nextQty, stamp, existing.id);
   } else {
     db.prepare(`
       INSERT INTO inventory_item_locations (item_id, warehouse_id, bin, qty, created_at, updated_at)
       VALUES (?, ?, '', ?, ?, ?)
-    `).run(itemId, warehouseId, qty, stamp, stamp);
+    `).run(itemId, warehouseId, nextQty, stamp, stamp);
   }
   const inv = require('./inventory');
   const locs = db.prepare(`
@@ -607,6 +612,7 @@ async function ensureWarehouseSupabase(supabase, vendorId) {
 async function upsertItemLocationSupabase(supabase, itemId, warehouseId, qty) {
   const inv = require('./inventory');
   const stamp = new Date().toISOString();
+  const nextQty = Math.max(0, Number(qty) || 0);
   const { data: existing, error: eErr } = await supabase
     .from('inventory_item_locations')
     .select('*')
@@ -614,9 +620,14 @@ async function upsertItemLocationSupabase(supabase, itemId, warehouseId, qty) {
     .eq('warehouse_id', warehouseId)
     .maybeSingle();
   throwIf(eErr, 'Could not read NovaStar warehouse qty.');
-  if (existing) {
+  if (nextQty <= 0) {
+    if (existing) {
+      const { error } = await supabase.from('inventory_item_locations').delete().eq('id', existing.id);
+      throwIf(error, 'Could not clear NovaStar warehouse qty.');
+    }
+  } else if (existing) {
     const { error } = await supabase.from('inventory_item_locations').update({
-      qty: qty,
+      qty: nextQty,
       updated_at: stamp
     }).eq('id', existing.id);
     throwIf(error, 'Could not update NovaStar warehouse qty.');
@@ -625,7 +636,7 @@ async function upsertItemLocationSupabase(supabase, itemId, warehouseId, qty) {
       item_id: Number(itemId),
       warehouse_id: Number(warehouseId),
       bin: '',
-      qty: qty,
+      qty: nextQty,
       created_at: stamp,
       updated_at: stamp
     });
