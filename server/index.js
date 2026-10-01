@@ -4112,6 +4112,15 @@ async function main() {
 
   app.use(express.static(ROOT));
 
+  app.get('/uploads/products/:name', function (req, res) {
+    const remote = img.preferLocalOrRemote('/uploads/products/' + req.params.name);
+    if (remote && /^https?:/i.test(remote)) {
+      res.set('Cache-Control', 'public, max-age=3600');
+      return res.redirect(302, remote);
+    }
+    res.status(404).type('text/plain').send('Image not found.');
+  });
+
   app.use(function (err, _req, res, _next) {
     if (err && err.code === 'LIMIT_FILE_SIZE') {
       return res.status(400).json({ ok: false, error: 'Image must be 24 MB or smaller.' });
