@@ -2481,7 +2481,6 @@ html.dash-scroll-lock body.company-app {
     border: 1px solid rgba(255, 255, 255, 0.55);
     border-radius: 1.35rem;
     box-shadow: 0 8px 30px rgba(7, 21, 58, 0.16), inset 0 1px 0 rgba(255, 255, 255, 0.7);
-    transform: translateY(0);
     transition: transform 0.24s ease;
   }
 
@@ -2556,9 +2555,7 @@ html.dash-scroll-lock body.company-app {
     border: 1px solid rgba(255, 255, 255, 0.55);
     border-radius: 1.85rem;
     box-shadow: 0 10px 32px rgba(7, 21, 58, 0.18), inset 0 1px 0 rgba(255, 255, 255, 0.72);
-    transform: translateY(0);
     transition: transform 0.24s ease;
-    will-change: transform;
   }
 
   body.company-app.dash-tabbar-on.dash-tabbar-hidden .dash-tabbar:not([hidden]) {
