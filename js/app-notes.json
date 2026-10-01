@@ -1,6 +1,17 @@
 {
-  "build": "2026-10-01-portal-bar",
+  "build": "2026-10-01-price-level",
   "notes": [
+    {
+      "id": "2026-10-01-price-level",
+      "date": "2026-10-01",
+      "apps": ["company"],
+      "title": "Price levels are in Settings",
+      "added": [
+        "A Price level page under Settings."
+      ],
+      "how": "Open Settings, then Price level. Add a level. Choose customers, then all products, a product type, or specific items. Pick Sell price, Dealer price, or Net price, then a percent up or down. Add a brand line when one brand needs a different percent. The list shows the adjusted price. You can type over a row. Save keeps the level.",
+      "kind": "feature"
+    },
     {
       "id": "2026-10-01-z-leads-inbox",
       "date": "2026-10-01",
@@ -453,6 +464,10 @@
       {
         "title": "Settings → Forms",
         "text": "The layout of quotes, orders, and invoices. Change it here when a document should look different."
+      },
+      {
+        "title": "Settings → Price level",
+        "text": "A named percent for a group of customers and products. Pick sell price, dealer price, or net price, then raise or lower it. A brand line can use a different percent. Inventory prices stay as they are."
       },
       {
         "title": "Settings → Manage users",

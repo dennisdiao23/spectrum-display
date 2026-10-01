@@ -153,6 +153,7 @@ function openDb() {
   ensureCompanySales(db);
   ensureCompanyPayments(db);
   ensurePrintForms(db);
+  require('./price-levels').ensureSqlite(db);
   ensureInventoryVendors(db);
   ensurePartyContacts(db);
   ensurePurchaseOrders(db);

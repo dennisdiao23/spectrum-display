@@ -40,6 +40,7 @@
   <script src="/js/company-traffic.js?v=loc1"></script>
   <script src="/js/company-website-control.js?v=webctrl7"></script>
   <script src="/js/print-form.js?v=forms21"></script>
+  <script src="/js/price-levels.js?v=pl1"></script>
   <script src="/js/app-help.js?v=help6"></script>
   <script src="/js/app-notes.js?v=newsbar2"></script>
   <script>
@@ -343,6 +344,10 @@
           <a href="/company/settings/forms" id="tab-forms" class="dash-sub-link">
             <svg class="dash-nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="5" y="3" width="14" height="18" rx="1.5"/><path d="M8 8h8M8 12h8M8 16h5"/></svg>
             <span>Forms</span>
+          </a>
+          <a href="/company/settings/price-levels" id="tab-price-levels" class="dash-sub-link">
+            <svg class="dash-nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 7h16M4 12h10M4 17h7"/><path d="M17 14v6M14 17h6"/></svg>
+            <span>Price level</span>
           </a>
           <a href="/company/settings" id="tab-staff" class="dash-sub-link">
             <svg class="dash-nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="9" cy="8" r="3"/><path d="M3 19c.7-3 2.8-4.5 6-4.5s5.3 1.5 6 4.5"/><circle cx="17" cy="8.5" r="2.3"/><path d="M16.2 14.6c2.2.4 3.8 1.6 4.3 4.4"/></svg>
@@ -3632,6 +3637,123 @@
         </div>
       </div>
 
+      <div id="price-levels-section" class="hidden cc-list-inner">
+        <div id="pl-list">
+          <div class="cc-list-toolbar cc-list-tools">
+            <input id="pl-search" type="search" placeholder="Search price levels" class="cc-list-search bg-slate-800 border border-slate-700 rounded-full px-3 py-1.5 text-sm">
+            <button id="pl-new-btn" type="button" class="cc-list-add-btn px-4 py-2 rounded-full bg-sky-500 hover:bg-sky-400 text-white text-sm font-semibold">Add price level</button>
+          </div>
+          <div class="cc-table-card rounded-2xl border border-slate-800">
+            <div class="cc-table-wrap overflow-x-auto">
+              <table class="w-full text-sm">
+                <thead class="text-left text-slate-400 border-b border-slate-800">
+                  <tr>
+                    <th class="py-3 px-4 font-medium">Name</th>
+                    <th class="py-3 px-4 font-medium">Customers</th>
+                    <th class="py-3 px-4 font-medium">Products</th>
+                    <th class="py-3 px-4 font-medium">Adjustment</th>
+                    <th class="py-3 px-4 font-medium">Dates</th>
+                  </tr>
+                </thead>
+                <tbody id="pl-table" class="text-slate-200"></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+        <div id="pl-editor" class="hidden space-y-4">
+          <div class="flex items-center justify-between gap-3 flex-wrap">
+            <button type="button" id="pl-back" class="text-sm text-sky-400 hover:text-sky-300">← Price levels</button>
+            <div class="flex items-center gap-2">
+              <button type="button" id="pl-delete" class="hidden px-4 py-2 rounded-full border border-slate-200 text-red-500 text-sm">Delete</button>
+              <button type="button" id="pl-save" class="px-4 py-2 rounded-full border border-slate-200 text-sm font-semibold">Save</button>
+              <button type="button" id="pl-save-close" class="px-4 py-2 rounded-full bg-sky-500 hover:bg-sky-400 text-white text-sm font-semibold">Save and close</button>
+            </div>
+          </div>
+          <h2 id="pl-title" class="text-base font-semibold text-slate-800">Price level</h2>
+          <div class="grid gap-3 md:grid-cols-2">
+            <label class="so-field"><span>Name</span><input id="pl-name" type="text" maxlength="120"></label>
+            <label class="so-field"><span>Customer</span>
+              <select id="pl-customer-mode">
+                <option value="all">All customers</option>
+                <option value="type">Customer type</option>
+                <option value="specific">Specific customers</option>
+              </select>
+            </label>
+            <label class="so-field"><span>Products</span>
+              <select id="pl-product-mode">
+                <option value="all">All products</option>
+                <option value="type">Product type</option>
+                <option value="specific">Specific inventory items</option>
+              </select>
+            </label>
+            <label class="so-field"><span>Price type</span>
+              <select id="pl-price-type">
+                <option value="sell">Sell price</option>
+                <option value="dealer">Dealer price</option>
+                <option value="net">Net price</option>
+              </select>
+            </label>
+            <div class="so-field"><span>Percentage</span>
+              <div class="flex gap-2">
+                <select id="pl-adjust-dir">
+                  <option value="decrease">Decrease by</option>
+                  <option value="increase">Increase by</option>
+                </select>
+                <input id="pl-adjust-pct" type="number" min="0" step="0.01" value="0">
+              </div>
+            </div>
+            <label class="so-field"><span>Rounding</span>
+              <select id="pl-rounding">
+                <option value="none">No rounding</option>
+                <option value="dime">Nearest 10 cents</option>
+                <option value="dollar">Nearest dollar</option>
+              </select>
+            </label>
+            <label class="so-field"><span>Start date</span><input id="pl-start" type="date"></label>
+            <label class="so-field"><span>End date</span><input id="pl-end" type="date"></label>
+          </div>
+          <p id="pl-net-note" class="hidden text-sm text-slate-500">Net price uses Dealer net.</p>
+          <div id="pl-customer-types" class="hidden flex flex-wrap gap-3"></div>
+          <div id="pl-product-types" class="hidden flex flex-wrap gap-3"></div>
+          <div>
+            <div class="flex items-center justify-between gap-3 mb-2">
+              <p class="text-sm font-medium text-slate-700">Brand adjustment</p>
+              <button type="button" id="pl-add-brand" class="text-sm text-sky-400 hover:text-sky-300">Add brand</button>
+            </div>
+            <div id="pl-brands"></div>
+          </div>
+          <div class="pf-type-tabs" role="tablist">
+            <button type="button" id="pl-tab-customers">Customers</button>
+            <button type="button" id="pl-tab-products" class="is-on">Products</button>
+          </div>
+          <div id="pl-customers-panel" class="hidden"></div>
+          <div id="pl-products-panel">
+            <div class="flex items-center justify-between gap-3 mb-2">
+              <input id="pl-product-search" type="search" placeholder="Search SKU or description" class="cc-list-search bg-slate-800 border border-slate-700 rounded-full px-3 py-1.5 text-sm">
+              <span id="pl-product-count" class="text-sm text-slate-500"></span>
+            </div>
+            <div class="cc-table-card rounded-2xl border border-slate-800">
+              <div class="cc-table-wrap overflow-auto" style="max-height:28rem">
+                <table class="w-full text-sm">
+                  <thead class="text-left text-slate-400 border-b border-slate-800">
+                    <tr>
+                      <th id="pl-item-col" class="py-3 px-4 font-medium hidden"></th>
+                      <th class="py-3 px-4 font-medium">SKU</th>
+                      <th class="py-3 px-4 font-medium">Description</th>
+                      <th class="py-3 px-4 font-medium">Cost</th>
+                      <th class="py-3 px-4 font-medium" id="pl-price-head">Sell price</th>
+                      <th class="py-3 px-4 font-medium">Adjusted price</th>
+                    </tr>
+                  </thead>
+                  <tbody id="pl-products" class="text-slate-200"></tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+          <p id="pl-msg" class="hidden text-sm"></p>
+        </div>
+      </div>
+
       <div id="forms-section" class="hidden pf-page">
         <div class="pf-page-head">
           <div>
@@ -5099,6 +5221,7 @@
         console.error('company boot prefs', err);
       });
       try { bootSpectrumStaff(); } catch (err) { console.error('bootSpectrumStaff', err); }
+      try { bootSpectrumPriceLevels(); } catch (err) { console.error('bootSpectrumPriceLevels', err); }
       let lobbyP = Promise.resolve();
       try {
         const chatP = bootSpectrumChat(admin);
@@ -5184,6 +5307,7 @@
       if (hash === 'settings/guide' || hash === 'guide') return 'guide';
       if (hash === 'settings/company' || hash === 'company') return 'company';
       if (hash === 'settings/forms' || hash === 'forms') return 'forms';
+      if (hash === 'settings/price-levels' || hash === 'price-levels') return 'price-levels';
       if (hash === 'settings/roles' || hash === 'roles') return 'staff';
       if (hash === 'settings' || hash === 'settings/staff') return 'staff';
       if (hash === 'website/accounts' || hash === 'accounts') return 'accounts';
@@ -5246,6 +5370,7 @@
       if (p === '/company/settings/guide') return 'guide';
       if (p === '/company/settings/company') return 'company';
       if (p === '/company/settings/forms') return 'forms';
+      if (p === '/company/settings/price-levels' || /^\/company\/settings\/price-levels\/[^/]+$/.test(p)) return 'price-levels';
       if (p === '/company/settings/roles') return 'staff';
       if (/^\/company\/settings\/users(\/|$)/.test(p)) return 'staff';
       if (p === '/company/settings') return 'staff';
@@ -5288,6 +5413,7 @@
       if (name === 'guide') return '/company/settings/guide';
       if (name === 'company') return '/company/settings/company';
       if (name === 'forms') return '/company/settings/forms';
+      if (name === 'price-levels') return '/company/settings/price-levels';
       if (name === 'staff' || name === 'roles') return '/company/settings';
       return '/company/website';
     }
@@ -5377,6 +5503,7 @@
         if (canUse('staff')) return 'staff';
         if (canUse('company')) return 'company';
         if (canUse('forms')) return 'forms';
+        if (canUse('price-levels')) return 'price-levels';
         return 'staff';
       }
       if (canUse('calculator')) return 'calculator';
@@ -5438,6 +5565,7 @@
         if (p === '/company/settings/guide') return 'guide';
         if (p === '/company/settings/company') return 'company';
         if (p === '/company/settings/forms') return 'forms';
+        if (p === '/company/settings/price-levels' || /^\/company\/settings\/price-levels\/[^/]+$/.test(p)) return 'price-levels';
         if (p === '/company/settings/roles' || p === '/company/settings' || /^\/company\/settings\/users(\/|$)/.test(p)) return 'staff';
         if (p === '/company/website/accounts') return 'accounts';
         if (p === '/company/website/traffic') return 'traffic';
@@ -5553,6 +5681,7 @@
       settings: 'Settings',
       company: 'Company',
       forms: 'Forms',
+      'price-levels': 'Price level',
       staff: 'Manage users',
       roles: 'Manage users',
       updates: 'What’s new',
@@ -5590,6 +5719,7 @@
     MASTER_TAB_ICON.activities = MASTER_TAB_ICON.crm;
     MASTER_TAB_ICON.company = MASTER_TAB_ICON.settings;
     MASTER_TAB_ICON.forms = MASTER_TAB_ICON.settings;
+    MASTER_TAB_ICON['price-levels'] = MASTER_TAB_ICON.settings;
     MASTER_TAB_ICON.staff = MASTER_TAB_ICON.settings;
     MASTER_TAB_ICON.roles = MASTER_TAB_ICON.settings;
     MASTER_TAB_ICON.updates = MASTER_TAB_ICON.settings;
@@ -5629,6 +5759,7 @@
       invoices: '/company/sales/invoices',
       company: '/company/settings/company',
       forms: '/company/settings/forms',
+      'price-levels': '/company/settings/price-levels',
       staff: '/company/settings',
       updates: '/company/settings/updates',
       guide: '/company/settings/guide'
@@ -5670,7 +5801,7 @@
       if (name === 'vendors' || name === 'purchase-orders') return 'vendor';
       if (name === 'leads' || name === 'pipeline' || name === 'activities' || name === 'crm') return 'crm';
       if (name === 'customers' || name === 'quotes' || name === 'orders' || name === 'invoices' || name === 'sales') return 'customer';
-      if (name === 'staff' || name === 'roles' || name === 'company' || name === 'forms' || name === 'updates' || name === 'guide') return 'settings';
+      if (name === 'staff' || name === 'roles' || name === 'company' || name === 'forms' || name === 'price-levels' || name === 'updates' || name === 'guide') return 'settings';
       return '';
     }
 
@@ -5698,7 +5829,7 @@
       if (group === 'vendor') return ['vendors', 'purchase-orders'];
       if (group === 'crm') return ['leads', 'pipeline', 'activities'];
       if (group === 'customer') return ['customers', 'quotes', 'orders', 'invoices', 'sales', 'installed-walls'];
-      if (group === 'settings') return ['company', 'forms', 'staff', 'roles', 'updates', 'guide'];
+      if (group === 'settings') return ['company', 'forms', 'price-levels', 'staff', 'roles', 'updates', 'guide'];
       return ['dashboard'];
     }
 
@@ -6284,6 +6415,7 @@
       settings: 'settings',
       company: 'company',
       forms: 'company',
+      'price-levels': 'company',
       staff: 'staff',
       roles: 'staff'
     };
@@ -6602,6 +6734,7 @@
       setHidden('tab-guide', false);
       setHidden('tab-company', !canUse('company'));
       setHidden('tab-forms', !canUse('forms'));
+      setHidden('tab-price-levels', !canUse('price-levels'));
       setHidden('tab-staff', !canUse('staff'));
       // Dashboard, Website, and Settings stay in the desktop sidebar only.
       setHidden('tabbar-dashboard', true);
@@ -6651,7 +6784,7 @@
         if (goCompany(next ? pathForTab(next) : '/company')) return false;
       }
       websiteSubTab = next === 'accounts' ? 'accounts' : next === 'store' ? 'store' : next === 'traffic' ? 'traffic' : 'products';
-      settingsSubTab = next === 'company' ? 'company' : next === 'forms' ? 'forms' : 'staff';
+      settingsSubTab = next === 'company' ? 'company' : next === 'forms' ? 'forms' : next === 'price-levels' ? 'price-levels' : 'staff';
       if (next === 'quotes' || next === 'orders' || next === 'invoices') salesSubTab = next;
       const bootDoc = parseDocMasterTab(next);
       if (bootDoc) {
@@ -8596,7 +8729,8 @@
       pipeline: '<span id="crm-pipe-total">0</span> deals. Drag a card to change stage. Create a quote after the deal has a customer.',
       activities: '<span id="crm-act-total">0</span> activities — notes, calls, emails, meetings, and tasks.',
       company: '<span id="ca-total">0</span> company accounts — logins and passwords.',
-      forms: 'Letter print for Quote, Sales Order, Invoice, and PO. Save a template per type. Print uses that layout, not the editor.'
+      forms: 'Letter print for Quote, Sales Order, Invoice, and PO. Save a template per type. Print uses that layout, not the editor.',
+      'price-levels': 'A named percent on sell price, dealer price, or net price. Inventory prices stay as they are.'
     };
 
     function syncDetailOpenBodyClass() {
@@ -8679,7 +8813,7 @@
       const doc = parseDocMasterTab(name);
       const view = viewTabForMaster(name);
       const onWebsite = view === 'products' || view === 'store' || view === 'accounts' || view === 'traffic';
-      const onSettings = view === 'staff' || view === 'roles' || view === 'company' || view === 'forms' || view === 'updates' || view === 'guide';
+      const onSettings = view === 'staff' || view === 'roles' || view === 'company' || view === 'forms' || view === 'price-levels' || view === 'updates' || view === 'guide';
       const onCustomerNav = view === 'quotes' || view === 'orders' || view === 'invoices' || view === 'sales' || view === 'customers' || view === 'installed-walls';
       const onDealerNav = view === 'dealer' || view === 'dealers' || view === 'deal-registrations' || view === 'dealer-leads' || view === 'dealer-rmas';
       const onCrmNav = view === 'leads' || view === 'pipeline' || view === 'activities' || view === 'crm';
@@ -8801,6 +8935,9 @@
       if (trafficSec) trafficSec.classList.toggle('hidden', view !== 'traffic');
       document.getElementById('company-section').classList.toggle('hidden', view !== 'company');
       document.getElementById('forms-section').classList.toggle('hidden', view !== 'forms');
+      const priceLevelsSec = document.getElementById('price-levels-section');
+      if (priceLevelsSec) priceLevelsSec.classList.toggle('hidden', view !== 'price-levels');
+      if (view === 'price-levels' && window.SpectrumPriceLevels) SpectrumPriceLevels.syncRoute();
       document.getElementById('staff-section').classList.toggle('hidden', view !== 'staff' && view !== 'roles');
       const updatesSec = document.getElementById('updates-section');
       if (updatesSec) updatesSec.classList.toggle('hidden', view !== 'updates');
@@ -8855,6 +8992,8 @@
       document.getElementById('tab-invoices').className = navLinkClass(view === 'invoices', !canUse('invoices'), 'sub');
       document.getElementById('tab-company').className = navLinkClass(view === 'company', !canUse('company'), 'sub');
       document.getElementById('tab-forms').className = navLinkClass(view === 'forms', !canUse('forms'), 'sub');
+      const tabPriceLevels = document.getElementById('tab-price-levels');
+      if (tabPriceLevels) tabPriceLevels.className = navLinkClass(view === 'price-levels', !canUse('price-levels'), 'sub');
       document.getElementById('tab-staff').className = navLinkClass(view === 'staff' || view === 'roles', !canUse('staff'), 'sub');
       const tabUpdates = document.getElementById('tab-updates');
       if (tabUpdates) tabUpdates.className = navLinkClass(view === 'updates', false, 'sub');
@@ -8895,6 +9034,7 @@
         invoices: ['Customer', 'Invoice'],
         company: ['Settings', 'Company accounts'],
         forms: ['Settings', 'Forms'],
+        'price-levels': ['Settings', 'Price level'],
         staff: ['Settings', 'Manage users'],
         roles: ['Settings', 'Manage users'],
         updates: ['Settings', 'What’s new'],
@@ -10447,6 +10587,22 @@
         companyPath: companyPath,
         adminName: function () {
           return (currentAdminUser && (currentAdminUser.name || currentAdminUser.email)) || '';
+        }
+      });
+    }
+
+    function bootSpectrumPriceLevels() {
+      if (!window.SpectrumPriceLevels) return;
+      SpectrumPriceLevels.boot({
+        api: api,
+        esc: esc,
+        canEdit: function () { return canEditMenu('company'); },
+        go: function (href) {
+          const next = String(href || '/company/settings/price-levels').replace(/\/+$/, '') || '/company/settings/price-levels';
+          if (next !== companyPath() || location.hash) {
+            history.pushState({ tab: 'price-levels' }, '', next);
+          }
+          SpectrumPriceLevels.syncRoute();
         }
       });
     }
@@ -14276,7 +14432,7 @@
       const onCustomerNav = name === 'sales' || name === 'quotes' || name === 'orders' || name === 'invoices' || name === 'customers' || name === 'installed-walls';
       const onDealerNav = name === 'dealer' || name === 'dealers' || name === 'deal-registrations' || name === 'dealer-leads' || name === 'dealer-rmas';
       const onCrmNav = name === 'leads' || name === 'pipeline' || name === 'activities' || name === 'crm';
-      const onSettings = name === 'staff' || name === 'roles' || name === 'company' || name === 'forms' || name === 'updates' || name === 'guide';
+      const onSettings = name === 'staff' || name === 'roles' || name === 'company' || name === 'forms' || name === 'price-levels' || name === 'updates' || name === 'guide';
       const map = {
         'tabbar-dashboard': name === 'dashboard',
         'tabbar-calculator': name === 'calculator',
@@ -20660,6 +20816,7 @@
       }
       if (name === 'company') await loadCompanyAccounts();
       if (name === 'forms') await loadPrintFormsEditor();
+      if (name === 'price-levels' && window.SpectrumPriceLevels) await SpectrumPriceLevels.syncRoute();
       if (name === 'staff' || name === 'roles') {
         await loadStaff();
         await loadRoles();
