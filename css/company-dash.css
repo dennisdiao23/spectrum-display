@@ -2445,9 +2445,19 @@ html.dash-scroll-lock body.company-app {
   }
 
   body.company-app.dash-tabbar-on {
-    --dash-tabbar-h: calc(3.65rem + env(safe-area-inset-bottom, 0px));
+    --dash-tabbar-pill: 3.45rem;
+    --dash-tabbar-gap: 0.45rem;
+    --dash-tabbar-h: calc(var(--dash-tabbar-pill) + var(--dash-tabbar-gap) + env(safe-area-inset-bottom, 0px));
     --dash-tabbar-sub-h: 0px;
     padding-bottom: 0;
+  }
+
+  body.company-app.dash-tabbar-on .dash-shell {
+    height: calc(100% - var(--dash-chrome));
+  }
+
+  body.company-app.dash-tabbar-on .company-main {
+    padding-bottom: calc(var(--dash-tabbar-h) + 1.25rem);
   }
 
   body.company-app.dash-tabbar-sub-open {
@@ -2457,13 +2467,16 @@ html.dash-scroll-lock body.company-app {
   body.company-app.dash-tabbar-on .dash-tabbar-sub:not([hidden]) {
     display: block;
     position: fixed;
-    left: 0;
-    right: 0;
-    bottom: var(--dash-tabbar-h);
+    left: 0.7rem;
+    right: 0.7rem;
+    bottom: calc(var(--dash-tabbar-h) + 0.35rem);
     z-index: 71;
-    background: linear-gradient(180deg, #0c204f 0%, #0a1b46 100%);
-    border-top: 1px solid rgba(255, 255, 255, 0.08);
-    box-shadow: 0 -6px 20px rgba(7, 21, 58, 0.2);
+    background: rgba(255, 255, 255, 0.78);
+    -webkit-backdrop-filter: blur(18px) saturate(1.5);
+    backdrop-filter: blur(18px) saturate(1.5);
+    border: 1px solid rgba(255, 255, 255, 0.75);
+    border-radius: 1.35rem;
+    box-shadow: 0 8px 24px rgba(7, 21, 58, 0.12);
     transform: translateY(0);
     transition: transform 0.24s ease;
   }
@@ -2492,8 +2505,8 @@ html.dash-scroll-lock body.company-app {
     min-height: 2.1rem;
     padding: 0.4rem 0.8rem;
     border-radius: 999px;
-    background: rgba(255, 255, 255, 0.06);
-    color: #c9d3ea;
+    background: rgba(7, 21, 58, 0.05);
+    color: #243056;
     text-decoration: none;
     font-size: 0.75rem;
     font-weight: 600;
@@ -2509,8 +2522,8 @@ html.dash-scroll-lock body.company-app {
   }
 
   .dash-tabbar-sub-inner a.is-active {
-    color: #fff;
-    background: rgba(47, 107, 255, 0.28);
+    color: #2f6bff;
+    background: rgba(47, 107, 255, 0.14);
   }
 
   body.company-app.dash-tabbar-on .dash-tabbar-sub-scrim:not([hidden]) {
@@ -2523,26 +2536,29 @@ html.dash-scroll-lock body.company-app {
 
   body.company-app.dash-tabbar-on .dash-tabbar:not([hidden]) {
     display: flex !important;
-    align-items: stretch;
-    justify-content: space-around;
+    align-items: center;
+    justify-content: space-evenly;
     position: fixed;
-    left: 0;
-    right: 0;
-    bottom: 0;
+    left: 0.7rem;
+    right: 0.7rem;
+    bottom: calc(var(--dash-tabbar-gap) + env(safe-area-inset-bottom, 0px));
     z-index: 70;
     box-sizing: border-box;
-    height: var(--dash-tabbar-h);
-    padding: 0.35rem 0.15rem calc(0.35rem + env(safe-area-inset-bottom, 0px));
-    background: linear-gradient(180deg, #0a1b46 0%, #07153a 100%);
-    border-top: 1px solid rgba(255, 255, 255, 0.08);
-    box-shadow: 0 -8px 24px rgba(7, 21, 58, 0.28);
+    height: var(--dash-tabbar-pill);
+    padding: 0.15rem 0.35rem;
+    background: rgba(255, 255, 255, 0.78);
+    -webkit-backdrop-filter: blur(22px) saturate(1.6);
+    backdrop-filter: blur(22px) saturate(1.6);
+    border: 1px solid rgba(255, 255, 255, 0.75);
+    border-radius: 1.85rem;
+    box-shadow: 0 10px 28px rgba(7, 21, 58, 0.16), inset 0 1px 0 rgba(255, 255, 255, 0.9);
     transform: translateY(0);
     transition: transform 0.24s ease;
     will-change: transform;
   }
 
   body.company-app.dash-tabbar-on.dash-tabbar-hidden .dash-tabbar:not([hidden]) {
-    transform: translateY(100%);
+    transform: translateY(calc(100% + var(--dash-tabbar-gap) + env(safe-area-inset-bottom, 0px) + 0.6rem));
     pointer-events: none;
   }
 
@@ -2557,7 +2573,7 @@ html.dash-scroll-lock body.company-app {
     min-height: 0;
     padding: 0.1rem 0.15rem 0;
     position: relative;
-    color: #7f8db3;
+    color: #3d4d6e;
     text-decoration: none;
     font-size: 0.625rem;
     font-weight: 600;
@@ -2572,21 +2588,16 @@ html.dash-scroll-lock body.company-app {
     flex-shrink: 0;
   }
 
-  .dash-tabbar a.is-active {
-    color: #fff;
-  }
-
-  .dash-tabbar a.is-active svg {
-    color: #5b8cff;
-    stroke-width: 2;
-  }
-
+  .dash-tabbar a.is-active,
   .dash-tabbar a.is-expanded {
-    color: #fff;
+    color: #2f6bff;
+    background: rgba(47, 107, 255, 0.12);
+    border-radius: 1.15rem;
   }
 
+  .dash-tabbar a.is-active svg,
   .dash-tabbar a.is-expanded svg {
-    color: #5b8cff;
+    color: #2f6bff;
     stroke-width: 2;
   }
 
@@ -2601,6 +2612,8 @@ html.dash-scroll-lock body.company-app {
   .dash-tabbar a {
     flex: 1 1 0;
     max-width: 5.5rem;
+    justify-content: center;
+    align-self: stretch;
   }
 
   body.dash-tabbar-editing .dash-tabbar {
@@ -2619,13 +2632,16 @@ html.dash-scroll-lock body.company-app {
   body.dash-tabbar-editing .dash-tabbar-edit:not([hidden]) {
     display: block;
     position: fixed;
-    left: 0;
-    right: 0;
-    bottom: var(--dash-tabbar-h);
+    left: 0.7rem;
+    right: 0.7rem;
+    bottom: calc(var(--dash-tabbar-h) + 0.35rem);
     z-index: 72;
-    background: #0c204f;
-    border-top: 1px solid rgba(255, 255, 255, 0.08);
-    box-shadow: 0 -10px 24px rgba(7, 21, 58, 0.28);
+    background: rgba(255, 255, 255, 0.82);
+    -webkit-backdrop-filter: blur(18px) saturate(1.5);
+    backdrop-filter: blur(18px) saturate(1.5);
+    border: 1px solid rgba(255, 255, 255, 0.75);
+    border-radius: 1.35rem;
+    box-shadow: 0 8px 24px rgba(7, 21, 58, 0.12);
     padding: 0.7rem 0.75rem 0.55rem;
   }
 
@@ -2639,7 +2655,7 @@ html.dash-scroll-lock body.company-app {
 
   .dash-tabbar-edit-head p {
     margin: 0;
-    color: #9aabc8;
+    color: #5c6b88;
     font-size: 0.75rem;
     font-weight: 600;
     text-align: center;
@@ -2659,8 +2675,8 @@ html.dash-scroll-lock body.company-app {
 
   #dash-tabbar-reset,
   .dash-tabbar-add {
-    background: rgba(255, 255, 255, 0.08);
-    color: #e8eeff;
+    background: rgba(7, 21, 58, 0.06);
+    color: #243056;
     padding: 0 0.9rem;
   }
 
@@ -2686,7 +2702,7 @@ html.dash-scroll-lock body.company-app {
 
   .dash-tabbar-edit-empty {
     margin: 0;
-    color: #9aabc8;
+    color: #5c6b88;
     font-size: 0.8rem;
   }
 
