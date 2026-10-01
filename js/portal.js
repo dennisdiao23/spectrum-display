@@ -738,7 +738,7 @@
     $('inv-detail-category').textContent = item.category || '—';
     $('inv-detail-pitch').textContent = item.pitchLabel || item.pitch || '—';
     $('inv-detail-unit').textContent = item.unit || '—';
-    const locs = (item.locations || []).filter(function (loc) { return Number(loc.qty) > 0; });
+    const locs = item.locations || [];
     $('inv-detail-locations-body').innerHTML = locs.map(function (loc) {
       return '<tr><td>' + esc(loc.name) + '</td><td>' + esc(loc.type || '—') + '</td><td>' + esc(loc.qty) + '</td><td>' + (loc.tracked ? 'Yes' : 'No') + '</td></tr>';
     }).join('');

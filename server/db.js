@@ -826,9 +826,7 @@ function ensureInventoryWarehouses(db) {
       db.exec('BEGIN');
       try {
         items.forEach(function (item) {
-          const qty = Math.max(0, Number(item.qty) || 0);
-          if (qty <= 0) return;
-          insert.run(item.id, home.id, qty, stamp, stamp);
+          insert.run(item.id, home.id, Math.max(0, Number(item.qty) || 0), stamp, stamp);
         });
         db.exec('COMMIT');
       } catch (err) {
@@ -838,9 +836,6 @@ function ensureInventoryWarehouses(db) {
     }
   }
   migrateInventoryBinLocations(db, stamp);
-  try {
-    db.prepare('DELETE FROM inventory_item_locations WHERE qty IS NULL OR qty <= 0').run();
-  } catch (e) { /* ignore */ }
 }
 
 function sqliteFindOrCreateBin(db, parentId, name, stamp) {
