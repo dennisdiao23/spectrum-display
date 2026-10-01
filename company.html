@@ -1479,7 +1479,7 @@
                       <dl class="cc-detail-dl">
                         <div><dt>Brand</dt><dd id="inv-detail-brand">—</dd></div>
                         <div><dt>Category</dt><dd id="inv-detail-category">—</dd></div>
-                        <div><dt>Pitch</dt><dd id="inv-detail-pitch">—</dd></div>
+                        <div id="inv-detail-pitch-row"><dt>Pitch</dt><dd id="inv-detail-pitch">—</dd></div>
                         <div><dt>Unit</dt><dd id="inv-detail-unit">—</dd></div>
                       </dl>
                     </div>
@@ -4488,7 +4488,7 @@
             <div class="cc-field"><label>Unit</label>
               <select id="inv-unit"><option value="panels">Panels</option><option value="each">Each</option></select>
             </div>
-            <div class="cc-field inv-item-only"><label>Panel type</label>
+            <div class="cc-field inv-item-only inv-panel-only"><label>Panel type</label>
               <select id="inv-panel-type">
                 <option value="">Select type</option>
                 <option value="indoor-fixed">Indoor Fixed</option>
@@ -4497,7 +4497,7 @@
                 <option value="outdoor-rental">Outdoor Rental</option>
               </select>
             </div>
-            <div class="cc-field inv-item-only"><label>Packaging type</label>
+            <div class="cc-field inv-item-only inv-panel-only"><label>Packaging type</label>
               <select id="inv-packaging-type">
                 <option value="">Select type</option>
                 <option value="cob">COB</option>
@@ -4506,9 +4506,9 @@
                 <option value="smd">SMD</option>
               </select>
             </div>
-            <div class="cc-field inv-item-only"><label>Pitch (mm)</label><input id="inv-item-pitch" type="text" placeholder="Leave blank for each"></div>
-            <div class="cc-field inv-item-only"><label>Panel weight (kg)</label><input id="inv-weight" type="number" min="0" step="0.01"></div>
-            <div class="cc-field wide inv-item-only"><label>Panel size W × H (mm)</label>
+            <div class="cc-field inv-item-only inv-panel-only"><label>Pitch (mm)</label><input id="inv-item-pitch" type="text" placeholder="Leave blank for each"></div>
+            <div class="cc-field inv-item-only inv-panel-only"><label>Panel weight (kg)</label><input id="inv-weight" type="number" min="0" step="0.01"></div>
+            <div class="cc-field wide inv-item-only inv-panel-only"><label>Panel size W × H (mm)</label>
               <div class="grid grid-cols-2 gap-2">
                 <input id="inv-panel-w" type="number" min="0" step="0.5" placeholder="500">
                 <input id="inv-panel-h" type="number" min="0" step="0.5" placeholder="500">
@@ -9487,8 +9487,13 @@
       const qty = row.querySelector('[data-kit-qty]');
       if (qty && (wasEmpty || !qty.value || Number(qty.value) < 1)) qty.value = 1;
     }
+    function invCategoryIsLedPanel(value) {
+      const name = value != null ? String(value) : invCategoryFromForm();
+      return String(name || '').trim().toLowerCase() === 'led panel';
+    }
     function syncInvItemKindUi() {
       const isKit = invItemKindFromForm() === 'kit';
+      const showPanel = !isKit && invCategoryIsLedPanel();
       const unit = document.getElementById('inv-unit');
       if (unit) {
         if (isKit) unit.value = 'each';
@@ -9496,6 +9501,9 @@
       }
       document.querySelectorAll('.inv-item-only').forEach(function (el) {
         el.classList.toggle('hidden', isKit);
+      });
+      document.querySelectorAll('.inv-panel-only').forEach(function (el) {
+        el.classList.toggle('hidden', !showPanel);
       });
       document.querySelectorAll('.inv-stock-item-only').forEach(function (el) {
         el.classList.toggle('hidden', isKit);
@@ -12628,7 +12636,7 @@
         ['Sell price', item.price != null ? moneyText(item.price) : '—'],
         ['Dealer net', item.dealerNet != null ? moneyText(item.dealerNet) : '—']
       ];
-      if (!kit) {
+      if (!kit && invCategoryIsLedPanel(item.category)) {
         rows.splice(7, 0,
           ['Pitch', item.pitchLabel || item.pitch || '—'],
           ['Panel type', panelTypeLabel(item.panelType)],
@@ -12636,6 +12644,8 @@
           ['Weight', item.weight != null ? String(item.weight) : '—'],
           ['Panel size', item.panelW && item.panelH ? (item.panelW + ' × ' + item.panelH) : '—']
         );
+      }
+      if (!kit) {
         rows.push(
           ['Location', item.warehouse || '—'],
           ['Untracked qty', item.untrackedQty != null ? String(item.untrackedQty) : (item.partnerQty ? String(item.partnerQty) : '0')]
@@ -12889,7 +12899,10 @@
       document.getElementById('inv-detail-dealer').textContent = money(item.dealerNet);
       document.getElementById('inv-detail-brand').textContent = item.brandName || '—';
       document.getElementById('inv-detail-category').textContent = item.category || '—';
-      document.getElementById('inv-detail-pitch').textContent = kit ? '—' : (item.pitchLabel || item.pitch || '—');
+      const showPitch = !kit && invCategoryIsLedPanel(item.category);
+      const pitchRow = document.getElementById('inv-detail-pitch-row');
+      if (pitchRow) pitchRow.classList.toggle('hidden', !showPitch);
+      document.getElementById('inv-detail-pitch').textContent = showPitch ? (item.pitchLabel || item.pitch || '—') : '—';
       document.getElementById('inv-detail-unit').textContent = item.unit || '—';
       document.getElementById('inv-detail-edit').classList.toggle('hidden', !canEdit('inventory'));
       setInvDetailTab(invDetailTab);
@@ -23948,7 +23961,9 @@
         const inp = document.getElementById('inv-category-new');
         if (inp) inp.focus();
       }
+      syncInvItemKindUi();
     });
+    document.getElementById('inv-category-new').addEventListener('input', syncInvItemKindUi);
     document.querySelectorAll('.inv-filter').forEach(function (btn) {
       btn.addEventListener('click', function () {
         setInvFilter(btn.getAttribute('data-inv-filter') || 'all');
@@ -24086,14 +24101,15 @@
         fd.append('localWarehouseCost', document.getElementById('inv-local-cost').value);
       }
       fd.append('dealerNet', document.getElementById('inv-dealer-net').value);
-      fd.append('pitch', document.getElementById('inv-item-pitch').value);
+      const isPanel = invItemKindFromForm() !== 'kit' && invCategoryIsLedPanel();
+      fd.append('pitch', isPanel ? document.getElementById('inv-item-pitch').value : '');
       fd.append('unit', invItemKindFromForm() === 'kit' ? 'each' : document.getElementById('inv-unit').value);
-      fd.append('panelType', document.getElementById('inv-panel-type').value);
-      fd.append('packagingType', document.getElementById('inv-packaging-type').value);
+      fd.append('panelType', isPanel ? document.getElementById('inv-panel-type').value : '');
+      fd.append('packagingType', isPanel ? document.getElementById('inv-packaging-type').value : '');
       fd.append('price', document.getElementById('inv-price').value);
-      fd.append('weight', document.getElementById('inv-weight').value);
-      fd.append('panelW', document.getElementById('inv-panel-w').value);
-      fd.append('panelH', document.getElementById('inv-panel-h').value);
+      fd.append('weight', isPanel ? document.getElementById('inv-weight').value : '');
+      fd.append('panelW', isPanel ? document.getElementById('inv-panel-w').value : '');
+      fd.append('panelH', isPanel ? document.getElementById('inv-panel-h').value : '');
       fd.append('lowAt', document.getElementById('inv-item-low').value);
       fd.append('notes', document.getElementById('inv-item-notes').value);
       fd.append('warehouseId', document.getElementById('inv-warehouse').value);
