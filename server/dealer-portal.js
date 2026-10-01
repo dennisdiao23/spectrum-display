@@ -600,14 +600,12 @@ async function deleteDealerDocFor(store, user, id) {
 
 function publicBookLocation(loc) {
   if (!loc) return null;
-  const qty = Math.max(0, Number(loc.qty) || 0);
-  if (qty <= 0) return null;
   const name = loc.locationName || loc.warehouseName || '';
   if (!name) return null;
   return {
     name: name,
     type: loc.typeLabel || loc.kindLabel || loc.kind || '',
-    qty: qty,
+    qty: Math.max(0, Number(loc.qty) || 0),
     tracked: !(loc.untracked === true || loc.tracked === false)
   };
 }

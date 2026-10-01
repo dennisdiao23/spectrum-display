@@ -13016,9 +13016,7 @@
       document.getElementById('inv-detail-qty').textContent = invQtyDisplay(item);
       const locBody = document.getElementById('inv-detail-locations-body');
       const locEmpty = document.getElementById('inv-detail-locations-empty');
-      const locs = (item.locations || []).filter(function (loc) {
-        return Number(loc.qty) > 0;
-      }).slice().sort(function (a, b) {
+      const locs = (item.locations || []).slice().sort(function (a, b) {
         return String(a.typeLabel || a.locationName || '').localeCompare(String(b.typeLabel || b.locationName || ''), undefined, { numeric: true, sensitivity: 'base' });
       });
       if (locBody) {

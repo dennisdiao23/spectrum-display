@@ -1008,7 +1008,7 @@ function applyLocations(item, locations) {
     return row && (row.kind || row.warehouseType || row.locationName) ? (
       row.kind ? row : formatLocation(row)
     ) : formatLocation(row);
-  }).filter(function (loc) { return loc && Number(loc.qty) > 0; });
+  }).filter(Boolean);
   item.locations = locs;
   item.untrackedQty = untrackedQtyFromLocations(locs);
   item.partnerQty = item.untrackedQty;
