@@ -1,5 +1,5 @@
 /* Spectrum Dealer Portal PWA — /portal only. Network-first. Do not cache APIs. */
-var CACHE = 'spectrum-portal-pwa-v1';
+var CACHE = 'spectrum-portal-pwa-v-icon1';
 
 self.addEventListener('install', function () {
   self.skipWaiting();
@@ -28,6 +28,7 @@ function isPortalChrome(url) {
     || url.pathname.indexOf('/js/portal.js') === 0
     || url.pathname.indexOf('/js/app-help.js') === 0
     || url.pathname.indexOf('/assets/favicon-') === 0
+    || url.pathname.indexOf('/assets/app-icon-') === 0
     || url.pathname === '/assets/apple-touch-icon.png'
     || url.pathname === '/assets/spectrum-boot.gif'
     || url.pathname === '/assets/spectrum-boot-still.png'
