@@ -1443,6 +1443,18 @@ function createSqliteStore() {
       const row = db.prepare('SELECT template_json FROM company_print_forms WHERE type = ?').get(t);
       return pf.parseStored(t, row && row.template_json);
     },
+    async listPriceLevels() {
+      return require('./price-levels').listSqlite(db);
+    },
+    async getPriceLevel(id) {
+      return require('./price-levels').getSqlite(db, id);
+    },
+    async savePriceLevel(id, input) {
+      return require('./price-levels').saveSqlite(db, id, input);
+    },
+    async deletePriceLevel(id) {
+      return require('./price-levels').deleteSqlite(db, id);
+    },
     async savePrintForm(type, template) {
       const pf = require('./print-forms');
       const t = pf.normalizeType(type);

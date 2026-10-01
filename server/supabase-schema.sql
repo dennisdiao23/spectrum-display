@@ -1705,3 +1705,69 @@ drop policy if exists schema_patches_admin_all on public.schema_patches;
 create policy schema_patches_admin_all on public.schema_patches
 for all using (public.is_spectrum_admin()) with check (public.is_spectrum_admin());
 grant all on public.schema_patches to service_role;
+
+-- Settings → Price level. Does not change inventory prices.
+create table if not exists public.price_levels (
+  id bigint generated always as identity primary key,
+  name text not null default '',
+  customer_mode text not null default 'all',
+  customer_types jsonb not null default '[]'::jsonb,
+  product_mode text not null default 'all',
+  product_types jsonb not null default '[]'::jsonb,
+  price_type text not null default 'sell',
+  adjust_dir text not null default 'decrease',
+  adjust_pct double precision not null default 0,
+  rounding text not null default 'none',
+  start_date text not null default '',
+  end_date text not null default '',
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now()
+);
+create table if not exists public.price_level_customers (
+  level_id bigint not null references public.price_levels(id) on delete cascade,
+  customer_id bigint not null,
+  primary key (level_id, customer_id)
+);
+create table if not exists public.price_level_items (
+  level_id bigint not null references public.price_levels(id) on delete cascade,
+  item_id bigint not null,
+  primary key (level_id, item_id)
+);
+create table if not exists public.price_level_brands (
+  id bigint generated always as identity primary key,
+  level_id bigint not null references public.price_levels(id) on delete cascade,
+  brand_id text not null default '',
+  adjust_dir text not null default 'decrease',
+  adjust_pct double precision not null default 0
+);
+create table if not exists public.price_level_overrides (
+  level_id bigint not null references public.price_levels(id) on delete cascade,
+  item_id bigint not null,
+  adjusted_price double precision not null default 0,
+  primary key (level_id, item_id)
+);
+alter table public.price_levels enable row level security;
+alter table public.price_level_customers enable row level security;
+alter table public.price_level_items enable row level security;
+alter table public.price_level_brands enable row level security;
+alter table public.price_level_overrides enable row level security;
+drop policy if exists price_levels_admin_all on public.price_levels;
+create policy price_levels_admin_all on public.price_levels
+for all using (public.is_spectrum_admin()) with check (public.is_spectrum_admin());
+drop policy if exists price_level_customers_admin_all on public.price_level_customers;
+create policy price_level_customers_admin_all on public.price_level_customers
+for all using (public.is_spectrum_admin()) with check (public.is_spectrum_admin());
+drop policy if exists price_level_items_admin_all on public.price_level_items;
+create policy price_level_items_admin_all on public.price_level_items
+for all using (public.is_spectrum_admin()) with check (public.is_spectrum_admin());
+drop policy if exists price_level_brands_admin_all on public.price_level_brands;
+create policy price_level_brands_admin_all on public.price_level_brands
+for all using (public.is_spectrum_admin()) with check (public.is_spectrum_admin());
+drop policy if exists price_level_overrides_admin_all on public.price_level_overrides;
+create policy price_level_overrides_admin_all on public.price_level_overrides
+for all using (public.is_spectrum_admin()) with check (public.is_spectrum_admin());
+grant all on public.price_levels to service_role;
+grant all on public.price_level_customers to service_role;
+grant all on public.price_level_items to service_role;
+grant all on public.price_level_brands to service_role;
+grant all on public.price_level_overrides to service_role;

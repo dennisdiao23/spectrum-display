@@ -9410,3 +9410,28 @@ body.app-help-on #header-chat.is-help-target {
     min-height: 2.75rem;
   }
 }
+.pl-brand-line {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  align-items: center;
+  margin-bottom: 0.5rem;
+}
+.pl-brand-line select,
+.pl-brand-line input,
+.pl-adjusted {
+  background: #fff;
+  border: 1px solid #d5dcea;
+  border-radius: 0.5rem;
+  color: inherit;
+  padding: 0.35rem 0.6rem;
+  font-size: 0.875rem;
+}
+.pl-brand-line button {
+  color: #dc2626;
+  font-size: 0.875rem;
+}
+.pl-check-list {
+  display: grid;
+  gap: 0.35rem;
+}

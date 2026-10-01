@@ -328,6 +328,7 @@ async function main() {
     '/company/settings',
     '/company/settings/company',
     '/company/settings/forms',
+    '/company/settings/price-levels',
     '/company/settings/updates',
     '/company/settings/guide',
     '/company/chat',
@@ -351,6 +352,7 @@ async function main() {
     sendCompany(req, res);
   });
   app.get(['/company/settings/users/:id', '/company/settings/users/:id/'], sendCompany);
+  app.get(['/company/settings/price-levels/:id', '/company/settings/price-levels/:id/'], sendCompany);
   app.get(['/company/crm/leads/:id', '/company/crm/leads/:id/'], sendCompany);
   app.get(['/company/crm/pipeline/:id', '/company/crm/pipeline/:id/'], sendCompany);
   app.get(['/company/crm/activities/:id', '/company/crm/activities/:id/'], sendCompany);
@@ -3655,6 +3657,46 @@ async function main() {
     try {
       res.json({ ok: true, profile: await store.getCompanyProfile() });
     } catch (err) { next(err); }
+  });
+
+  app.get('/api/admin/price-levels', requireAdmin, requirePerm('settings', 'view'), async function (_req, res, next) {
+    try {
+      res.json({ ok: true, levels: await store.listPriceLevels() });
+    } catch (err) { next(err); }
+  });
+
+  app.get('/api/admin/price-levels/:id', requireAdmin, requirePerm('settings', 'view'), async function (req, res, next) {
+    try {
+      const level = await store.getPriceLevel(req.params.id);
+      if (!level) return res.status(404).json({ ok: false, error: 'Price level not found.' });
+      res.json({ ok: true, level: level });
+    } catch (err) { next(err); }
+  });
+
+  app.post('/api/admin/price-levels', requireAdmin, requirePerm('settings', 'edit'), async function (req, res, next) {
+    try {
+      res.json({ ok: true, level: await store.savePriceLevel(null, req.body || {}) });
+    } catch (err) {
+      res.status(400).json({ ok: false, error: err.message || 'Could not save the price level.' });
+    }
+  });
+
+  app.put('/api/admin/price-levels/:id', requireAdmin, requirePerm('settings', 'edit'), async function (req, res, next) {
+    try {
+      res.json({ ok: true, level: await store.savePriceLevel(req.params.id, req.body || {}) });
+    } catch (err) {
+      res.status(400).json({ ok: false, error: err.message || 'Could not save the price level.' });
+    }
+  });
+
+  app.delete('/api/admin/price-levels/:id', requireAdmin, requirePerm('settings', 'edit'), async function (req, res, next) {
+    try {
+      const ok = await store.deletePriceLevel(req.params.id);
+      if (!ok) return res.status(404).json({ ok: false, error: 'Price level not found.' });
+      res.json({ ok: true });
+    } catch (err) {
+      res.status(400).json({ ok: false, error: err.message || 'Could not delete the price level.' });
+    }
   });
 
   app.get('/api/admin/print-forms', requireAdmin, async function (_req, res, next) {

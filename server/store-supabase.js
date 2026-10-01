@@ -2472,6 +2472,18 @@ function createSupabaseStore() {
       throwIf(error, 'Could not load print form.');
       return pf.parseStored(t, data && data.template_json);
     },
+    async listPriceLevels() {
+      return require('./price-levels').listSupabase(supabase);
+    },
+    async getPriceLevel(id) {
+      return require('./price-levels').getSupabase(supabase, id);
+    },
+    async savePriceLevel(id, input) {
+      return require('./price-levels').saveSupabase(supabase, id, input);
+    },
+    async deletePriceLevel(id) {
+      return require('./price-levels').deleteSupabase(supabase, id);
+    },
     async savePrintForm(type, template) {
       const pf = require('./print-forms');
       const t = pf.normalizeType(type);
