@@ -525,15 +525,10 @@
   function bookRows() {
     const q = String(($('inv-search') && $('inv-search').value) || '').trim().toLowerCase();
     const category = ($('inv-category-filter') && $('inv-category-filter').value) || '';
-    const location = ($('inv-location-filter') && $('inv-location-filter').value) || '';
     return book.filter(function (item) {
       if (bookFilter === 'low' && item.status !== 'low') return false;
       if (bookFilter === 'out' && item.status !== 'out') return false;
       if (category && item.category !== category) return false;
-      if (location) {
-        const names = [item.warehouse].concat((item.locations || []).map(function (loc) { return loc.name; }));
-        if (names.indexOf(location) === -1) return false;
-      }
       if (!q) return true;
       const hay = [item.sku, item.name, item.brand, item.category, item.description].join(' ').toLowerCase();
       return hay.indexOf(q) !== -1;
@@ -751,18 +746,11 @@
   }
   function renderBook() {
     const categories = [];
-    const locations = [];
     book.forEach(function (item) {
       if (item.category && categories.indexOf(item.category) === -1) categories.push(item.category);
-      const names = [item.warehouse].concat((item.locations || []).map(function (loc) { return loc.name; }));
-      names.forEach(function (name) {
-        if (name && locations.indexOf(name) === -1) locations.push(name);
-      });
     });
     categories.sort();
-    locations.sort();
     fillBookSelect('inv-category-filter', categories, ($('inv-category-filter') && $('inv-category-filter').value) || '', 'All categories');
-    fillBookSelect('inv-location-filter', locations, ($('inv-location-filter') && $('inv-location-filter').value) || '', 'All locations');
     const low = book.filter(function (item) { return item.status === 'low'; }).length;
     const out = book.filter(function (item) { return item.status === 'out'; }).length;
     $('inv-stat-skus').textContent = String(book.length);
@@ -1667,7 +1655,6 @@
   })();
   $('inv-search').addEventListener('input', renderBook);
   $('inv-category-filter').addEventListener('change', renderBook);
-  if ($('inv-location-filter')) $('inv-location-filter').addEventListener('change', renderBook);
   (function bindBookCols() {
     const table = bookTable();
     if (!table || table.dataset.colsReady === '1') return;
