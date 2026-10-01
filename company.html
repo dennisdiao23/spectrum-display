@@ -40,7 +40,7 @@
   <script src="/js/company-traffic.js?v=loc1"></script>
   <script src="/js/company-website-control.js?v=webctrl7"></script>
   <script src="/js/print-form.js?v=forms21"></script>
-  <script src="/js/app-help.js?v=help5"></script>
+  <script src="/js/app-help.js?v=help6"></script>
   <script src="/js/app-notes.js?v=newsbar2"></script>
   <script>
     if ('serviceWorker' in navigator && location.pathname.indexOf('/company') === 0) {
@@ -248,6 +248,10 @@
           <a href="/company/dealers/registrations" id="tab-deal-registrations" class="dash-sub-link">
             <svg class="dash-nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="3" width="16" height="18" rx="2"/><path d="M8 8h8M8 12h8M8 16h5"/></svg>
             <span>Deal registration</span>
+          </a>
+          <a href="/company/dealers/leads" id="tab-dealer-leads" class="dash-sub-link">
+            <svg class="dash-nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 6h16v12H4z"/><path d="m4 7 8 6 8-6"/></svg>
+            <span>Leads</span>
           </a>
           <a href="/company/dealers/rmas" id="tab-dealer-rmas" class="dash-sub-link">
             <svg class="dash-nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 12a9 9 0 1 0 3-6.7"/><path d="M3 4v5h5"/><path d="M9 12h6"/></svg>
@@ -2794,6 +2798,67 @@
         </div>
       </div>
 
+      <div id="dealer-leads-section" class="hidden">
+        <div class="cc-list-inner">
+          <div class="cc-list-toolbar cc-list-tools">
+            <p class="text-sm text-slate-500" style="margin:0">A lead you send to one dealer. They accept or decline it. They cannot add their own jobs on this page.</p>
+            <button id="dlead-new-btn" type="button" class="cc-list-add-btn px-4 py-2 rounded-full bg-sky-500 hover:bg-sky-400 text-white text-sm font-semibold">Send a lead</button>
+          </div>
+          <p id="dlead-error" class="hidden text-sm text-red-400 mb-3"></p>
+          <div class="dash-split">
+            <div class="dash-split-left">
+              <div class="cc-table-card rounded-2xl border border-slate-800">
+                <div class="cc-table-wrap overflow-x-auto">
+                  <table class="w-full text-sm">
+                    <thead class="text-left text-slate-400 border-b border-slate-800">
+                      <tr>
+                        <th class="py-3 px-4 font-medium">Number</th>
+                        <th class="py-3 px-4 font-medium">Dealer</th>
+                        <th class="py-3 px-4 font-medium">Project</th>
+                        <th class="py-3 px-4 font-medium">City</th>
+                        <th class="py-3 px-4 font-medium">Status</th>
+                      </tr>
+                    </thead>
+                    <tbody id="dlead-table" class="text-slate-200"></tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+            <div class="dash-split-resizer" role="separator" aria-orientation="vertical" aria-label="Resize lead panels" tabindex="0"></div>
+            <div class="dash-split-right">
+              <div id="dlead-overview" class="inv-right-panel">
+                <p class="inv-overview-lead">Select a lead, or send one to a dealer.</p>
+              </div>
+              <form id="dlead-form" class="inv-right-panel hidden space-y-4" style="padding:1.25rem;overflow:auto">
+                <h2 class="font-semibold text-lg">Send a lead</h2>
+                <div class="grid sm:grid-cols-2 gap-3 text-sm">
+                  <label class="sm:col-span-2">Dealer
+                    <select id="dlead-dealer" required class="w-full mt-1 bg-slate-800 border border-slate-700 rounded-lg px-3 py-2"></select>
+                  </label>
+                  <label class="sm:col-span-2">Project<input id="dlead-project" required class="w-full mt-1 bg-slate-800 border border-slate-700 rounded-lg px-3 py-2"></label>
+                  <label>Contact name<input id="dlead-contact" class="w-full mt-1 bg-slate-800 border border-slate-700 rounded-lg px-3 py-2"></label>
+                  <label>Email<input id="dlead-email" type="email" class="w-full mt-1 bg-slate-800 border border-slate-700 rounded-lg px-3 py-2"></label>
+                  <label>Phone<input id="dlead-phone" class="w-full mt-1 bg-slate-800 border border-slate-700 rounded-lg px-3 py-2"></label>
+                  <label>City<input id="dlead-city" class="w-full mt-1 bg-slate-800 border border-slate-700 rounded-lg px-3 py-2"></label>
+                  <label>State<input id="dlead-state" class="w-full mt-1 bg-slate-800 border border-slate-700 rounded-lg px-3 py-2"></label>
+                  <label class="sm:col-span-2">What they want<input id="dlead-interest" class="w-full mt-1 bg-slate-800 border border-slate-700 rounded-lg px-3 py-2" placeholder="Indoor wall, size, pitch"></label>
+                  <label class="sm:col-span-2">Notes<textarea id="dlead-notes" rows="3" class="w-full mt-1 bg-slate-800 border border-slate-700 rounded-lg px-3 py-2"></textarea></label>
+                </div>
+                <button type="submit" class="px-4 py-2 rounded-full bg-sky-500 hover:bg-sky-400 text-white text-sm font-semibold">Send</button>
+                <p id="dlead-msg" class="hidden text-sm"></p>
+              </form>
+              <div id="dlead-detail" class="inv-right-panel hidden" style="padding:1.25rem;overflow:auto">
+                <h2 id="dlead-title" class="font-semibold text-lg">Lead</h2>
+                <p id="dlead-status" class="text-sm text-slate-500 mt-1"></p>
+                <dl id="dlead-fields" class="grid sm:grid-cols-2 gap-x-6 gap-y-3 text-sm mt-4"></dl>
+                <p id="dlead-notes-view" class="text-sm mt-4"></p>
+                <p id="dlead-reply" class="hidden text-sm mt-4"></p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
       <div id="dealer-rmas-section" class="hidden">
         <div class="cc-list-inner">
           <p class="text-sm text-slate-500 mb-3">Returns dealers submitted. This list is for review. It does not create a credit or a replacement order.</p>
@@ -5124,6 +5189,7 @@
       if (hash === 'website/accounts' || hash === 'accounts') return 'accounts';
       if (hash === 'installed-walls') return 'installed-walls';
       if (hash === 'dealers/rmas' || hash === 'rmas') return 'dealer-rmas';
+      if (hash === 'dealers/leads') return 'dealer-leads';
       if (hash === 'dealers/registrations' || hash === 'registrations') return 'deal-registrations';
       if (hash === 'dealers/applications' || hash === 'website/dealers') return 'dealers';
       if (hash === 'dealers' || hash === 'dealer') return 'dealer';
@@ -5147,6 +5213,7 @@
       if (p === '/company' || p === '/company/dashboard') return 'dashboard';
       if (p === '/company/installed-walls' || /^\/company\/installed-walls\/\d+$/.test(p)) return 'installed-walls';
       if (p === '/company/dealers/rmas') return 'dealer-rmas';
+      if (p === '/company/dealers/leads') return 'dealer-leads';
       if (p === '/company/dealers/registrations') return 'deal-registrations';
       if (p === '/company/dealers/applications' || p === '/company/website/dealers') return 'dealers';
       if (p === '/company/dealers' || /^\/company\/dealers\/\d+$/.test(p)) return 'dealer';
@@ -5212,6 +5279,7 @@
       if (name === 'installed-walls') return '/company/installed-walls';
       if (name === 'dealers') return '/company/dealers/applications';
       if (name === 'deal-registrations') return '/company/dealers/registrations';
+      if (name === 'dealer-leads') return '/company/dealers/leads';
       if (name === 'dealer-rmas') return '/company/dealers/rmas';
       if (name === 'traffic') return '/company/website/traffic';
       if (name === 'control') return '/company/website';
@@ -5326,6 +5394,7 @@
         const p = new URL(href, location.origin).pathname.replace(/\/+$/, '') || '/company';
         if (p === '/company/installed-walls' || /^\/company\/installed-walls\/\d+$/.test(p)) return 'installed-walls';
         if (p === '/company/dealers/rmas') return 'dealer-rmas';
+        if (p === '/company/dealers/leads') return 'dealer-leads';
         if (p === '/company/dealers/registrations') return 'deal-registrations';
         if (p === '/company/dealers/applications' || p === '/company/website/dealers') return 'dealers';
         if (p === '/company/dealers' || /^\/company\/dealers\/\d+$/.test(p)) return 'dealer';
@@ -5457,6 +5526,7 @@
       'installed-walls': 'Installed walls',
       dealers: 'Applications',
       'deal-registrations': 'Deal registration',
+      'dealer-leads': 'Leads',
       'dealer-rmas': 'RMA',
       traffic: 'Traffic',
       control: 'Control',
@@ -5510,6 +5580,7 @@
     MASTER_TAB_ICON.accounts = MASTER_TAB_ICON.customer;
     MASTER_TAB_ICON.dealer = '<svg class="dash-master-tab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 7V5a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><rect x="4" y="7" width="16" height="14" rx="2"/><path d="M9 12h6M9 16h4"/></svg>';
     MASTER_TAB_ICON.dealers = MASTER_TAB_ICON.dealer;
+    MASTER_TAB_ICON['dealer-leads'] = '<svg class="dash-master-tab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 6h16v12H4z"/><path d="m4 7 8 6 8-6"/></svg>';
     MASTER_TAB_ICON.traffic = MASTER_TAB_ICON.website;
     MASTER_TAB_ICON.control = MASTER_TAB_ICON.website;
     MASTER_TAB_ICON.vendors = MASTER_TAB_ICON.vendor;
@@ -5540,6 +5611,7 @@
       'installed-walls': '/company/installed-walls',
       dealers: '/company/dealers/applications',
       'deal-registrations': '/company/dealers/registrations',
+      'dealer-leads': '/company/dealers/leads',
       'dealer-rmas': '/company/dealers/rmas',
       traffic: '/company/website/traffic',
       control: '/company/website',
@@ -5593,7 +5665,7 @@
       if (name === 'chat') return 'chat';
       if (name === 'products' || name === 'store' || name === 'accounts' || name === 'traffic' || name === 'website') return 'website';
       if (name === 'installed-walls') return 'customer';
-      if (name === 'dealer' || name === 'dealers' || name === 'deal-registrations' || name === 'dealer-rmas') return 'dealer';
+      if (name === 'dealer' || name === 'dealers' || name === 'deal-registrations' || name === 'dealer-leads' || name === 'dealer-rmas') return 'dealer';
       if (name === 'inventory' || name === 'warehouses' || name === 'receipt-shipments') return 'inventory';
       if (name === 'vendors' || name === 'purchase-orders') return 'vendor';
       if (name === 'leads' || name === 'pipeline' || name === 'activities' || name === 'crm') return 'crm';
@@ -5621,7 +5693,7 @@
       if (group === 'calculator') return ['calculator'];
       if (group === 'website') return ['products', 'store', 'accounts', 'traffic'];
       if (group === 'installed') return ['customers', 'quotes', 'orders', 'invoices', 'sales', 'installed-walls'];
-      if (group === 'dealer') return ['dealer', 'dealers', 'deal-registrations', 'dealer-rmas'];
+      if (group === 'dealer') return ['dealer', 'dealers', 'deal-registrations', 'dealer-leads', 'dealer-rmas'];
       if (group === 'inventory') return ['inventory', 'warehouses', 'receipt-shipments'];
       if (group === 'vendor') return ['vendors', 'purchase-orders'];
       if (group === 'crm') return ['leads', 'pipeline', 'activities'];
@@ -6190,6 +6262,7 @@
       dealer: 'dealer',
       dealers: 'dealer-applications',
       'deal-registrations': 'dealer',
+      'dealer-leads': 'dealer',
       'dealer-rmas': 'dealer',
       'installed-walls': 'orders',
       traffic: 'products',
@@ -6492,6 +6565,7 @@
       setHidden('tab-dealer-list', !canUse('dealer'));
       setHidden('tab-dealers', !canUse('dealers'));
       setHidden('tab-deal-registrations', !canUse('dealer'));
+      setHidden('tab-dealer-leads', !canUse('dealer'));
       setHidden('tab-dealer-rmas', !canUse('dealer'));
       const dealerNav = document.getElementById('tab-dealer');
       const dealerBar = document.getElementById('tabbar-dealer');
@@ -8607,7 +8681,7 @@
       const onWebsite = view === 'products' || view === 'store' || view === 'accounts' || view === 'traffic';
       const onSettings = view === 'staff' || view === 'roles' || view === 'company' || view === 'forms' || view === 'updates' || view === 'guide';
       const onCustomerNav = view === 'quotes' || view === 'orders' || view === 'invoices' || view === 'sales' || view === 'customers' || view === 'installed-walls';
-      const onDealerNav = view === 'dealer' || view === 'dealers' || view === 'deal-registrations' || view === 'dealer-rmas';
+      const onDealerNav = view === 'dealer' || view === 'dealers' || view === 'deal-registrations' || view === 'dealer-leads' || view === 'dealer-rmas';
       const onCrmNav = view === 'leads' || view === 'pipeline' || view === 'activities' || view === 'crm';
       const onSales = view === 'quotes' || view === 'orders' || view === 'invoices' || view === 'sales';
       const onInventory = view === 'inventory' || view === 'warehouses' || view === 'receipt-shipments';
@@ -8666,7 +8740,7 @@
       if (whSec) whSec.classList.toggle('wh-split-on', view === 'warehouses' && !isMobileDash());
       document.body.classList.toggle('inv-layout-lock', view === 'inventory' && !isMobileDash());
       document.body.classList.toggle('dash-split-lock',
-        (view === 'customers' || view === 'dealer' || view === 'deal-registrations' || view === 'dealer-rmas' || view === 'vendors' || view === 'warehouses' || view === 'products' || view === 'store' || view === 'accounts' || view === 'dealers' || view === 'leads' || view === 'pipeline' || view === 'activities') && !isMobileDash());
+        (view === 'customers' || view === 'dealer' || view === 'deal-registrations' || view === 'dealer-leads' || view === 'dealer-rmas' || view === 'vendors' || view === 'warehouses' || view === 'products' || view === 'store' || view === 'accounts' || view === 'dealers' || view === 'leads' || view === 'pipeline' || view === 'activities') && !isMobileDash());
       const vnSec = document.getElementById('vendors-section');
       if (vnSec) vnSec.classList.toggle('vn-split-on', view === 'vendors' && !isMobileDash());
       const wpSec = document.getElementById('products-section');
@@ -8719,6 +8793,8 @@
       if (dregSec) dregSec.classList.toggle('hidden', view !== 'deal-registrations');
       const iwSec = document.getElementById('installed-walls-section');
       if (iwSec) iwSec.classList.toggle('hidden', view !== 'installed-walls');
+      const leadSec = document.getElementById('dealer-leads-section');
+      if (leadSec) leadSec.classList.toggle('hidden', view !== 'dealer-leads');
       const rmaSec = document.getElementById('dealer-rmas-section');
       if (rmaSec) rmaSec.classList.toggle('hidden', view !== 'dealer-rmas');
       const trafficSec = document.getElementById('traffic-section');
@@ -8768,6 +8844,8 @@
       if (tabDealers) tabDealers.className = navLinkClass(view === 'dealers', !canUse('dealers'), 'sub');
       const tabDreg = document.getElementById('tab-deal-registrations');
       if (tabDreg) tabDreg.className = navLinkClass(view === 'deal-registrations', !canUse('dealer'), 'sub');
+      const tabDlead = document.getElementById('tab-dealer-leads');
+      if (tabDlead) tabDlead.className = navLinkClass(view === 'dealer-leads', !canUse('dealer'), 'sub');
       const tabRma = document.getElementById('tab-dealer-rmas');
       if (tabRma) tabRma.className = navLinkClass(view === 'dealer-rmas', !canUse('dealer'), 'sub');
       const tabTraffic = document.getElementById('tab-traffic');
@@ -8798,6 +8876,7 @@
         dealer: ['Dealer', ''],
         dealers: ['Dealer', 'Applications'],
         'deal-registrations': ['Dealer', 'Deal registration'],
+        'dealer-leads': ['Dealer', 'Leads'],
         'installed-walls': ['Customer', 'Installed walls'],
         'dealer-rmas': ['Dealer', 'RMA'],
         traffic: ['Website', 'Traffic'],
@@ -14159,7 +14238,7 @@
       const onInventory = name === 'inventory' || name === 'warehouses' || name === 'receipt-shipments';
       const onVendorNav = name === 'vendors' || name === 'purchase-orders';
       const onCustomerNav = name === 'sales' || name === 'quotes' || name === 'orders' || name === 'invoices' || name === 'customers' || name === 'installed-walls';
-      const onDealerNav = name === 'dealer' || name === 'dealers' || name === 'deal-registrations' || name === 'dealer-rmas';
+      const onDealerNav = name === 'dealer' || name === 'dealers' || name === 'deal-registrations' || name === 'dealer-leads' || name === 'dealer-rmas';
       const onCrmNav = name === 'leads' || name === 'pipeline' || name === 'activities' || name === 'crm';
       const onSettings = name === 'staff' || name === 'roles' || name === 'company' || name === 'forms' || name === 'updates' || name === 'guide';
       const map = {
@@ -20097,6 +20176,8 @@
     }
     let rmaAdminRows = [];
     let rmaAdminOpenId = '';
+    let leadAdminRows = [];
+    let leadAdminOpenId = '';
     function rmaAdminDate(value) {
       return String(value || '').slice(0, 10) || '—';
     }
@@ -20167,6 +20248,167 @@
         rmaAdminOpenId = tr.getAttribute('data-rma-admin-id');
         const row = rmaAdminRows.find(function (item) { return String(item.id) === String(rmaAdminOpenId); });
         showDealerRma(row || null);
+      });
+    }
+    function leadPlace(row) {
+      return [row.city, row.state].filter(Boolean).join(', ') || '—';
+    }
+    function setLeadAdminMsg(text, ok) {
+      const el = document.getElementById('dlead-msg');
+      if (!el) return;
+      el.textContent = text || '';
+      el.classList.toggle('hidden', !text);
+      el.classList.toggle('text-red-400', !!(text && ok === false));
+      el.classList.toggle('text-emerald-400', !!(text && ok !== false));
+    }
+    function showDealerLeadForm() {
+      leadAdminOpenId = '';
+      const overview = document.getElementById('dlead-overview');
+      const detail = document.getElementById('dlead-detail');
+      const form = document.getElementById('dlead-form');
+      if (overview) overview.classList.add('hidden');
+      if (detail) detail.classList.add('hidden');
+      if (form) form.classList.remove('hidden');
+      setLeadAdminMsg('');
+      renderDealerLeadTable();
+    }
+    function showDealerLead(row) {
+      const overview = document.getElementById('dlead-overview');
+      const detail = document.getElementById('dlead-detail');
+      const form = document.getElementById('dlead-form');
+      if (!overview || !detail || !form) return;
+      if (!row) {
+        overview.classList.remove('hidden');
+        detail.classList.add('hidden');
+        form.classList.add('hidden');
+        renderDealerLeadTable();
+        return;
+      }
+      overview.classList.add('hidden');
+      form.classList.add('hidden');
+      detail.classList.remove('hidden');
+      document.getElementById('dlead-title').textContent = row.project || row.number || 'Lead';
+      document.getElementById('dlead-status').textContent = (row.number || '') + (row.dealerName ? (' · ' + row.dealerName) : '') + ' · ' + (row.statusLabel || 'New');
+      document.getElementById('dlead-fields').innerHTML =
+        '<div><dt class="text-slate-500">Contact</dt><dd>' + esc(row.contactName || '—') + '</dd></div>' +
+        '<div><dt class="text-slate-500">Email</dt><dd>' + esc(row.contactEmail || '—') + '</dd></div>' +
+        '<div><dt class="text-slate-500">Phone</dt><dd>' + esc(row.contactPhone || '—') + '</dd></div>' +
+        '<div><dt class="text-slate-500">City</dt><dd>' + esc(leadPlace(row)) + '</dd></div>' +
+        '<div class="sm:col-span-2"><dt class="text-slate-500">What they want</dt><dd>' + esc(row.interest || '—') + '</dd></div>';
+      document.getElementById('dlead-notes-view').textContent = row.notes || '';
+      const reply = document.getElementById('dlead-reply');
+      if (row.status === 'sent') {
+        reply.classList.add('hidden');
+        reply.textContent = '';
+      } else {
+        reply.classList.remove('hidden');
+        reply.textContent = (row.statusLabel || '') + (row.replyNote ? (' · ' + row.replyNote) : '');
+      }
+      renderDealerLeadTable();
+    }
+    function renderDealerLeadTable() {
+      const tbody = document.getElementById('dlead-table');
+      if (!tbody) return;
+      if (!leadAdminRows.length) {
+        tbody.innerHTML = '<tr><td class="py-6 px-4 text-slate-500" colspan="5">No leads sent yet.</td></tr>';
+        return;
+      }
+      tbody.innerHTML = leadAdminRows.map(function (row) {
+        const on = String(row.id) === String(leadAdminOpenId);
+        return '<tr class="border-b border-slate-800 hover:bg-slate-900/80 cursor-pointer' + (on ? ' is-active' : '') + '" data-dlead-id="' + esc(row.id) + '">' +
+          '<td class="py-3 px-4 font-medium">' + esc(row.number || '') + '</td>' +
+          '<td class="py-3 px-4">' + esc(row.dealerName || '—') + '</td>' +
+          '<td class="py-3 px-4">' + esc(row.project || '—') + '</td>' +
+          '<td class="py-3 px-4">' + esc(leadPlace(row)) + '</td>' +
+          '<td class="py-3 px-4">' + esc(row.statusLabel || 'New') + '</td></tr>';
+      }).join('');
+    }
+    async function fillLeadDealers() {
+      const select = document.getElementById('dlead-dealer');
+      if (!select) return;
+      const data = await api('/api/admin/company-customers');
+      const dealers = (data.customers || []).filter(function (row) {
+        return String(row.customerType || '').trim().toLowerCase() === 'dealer';
+      }).sort(function (a, b) {
+        return String(a.displayName || a.companyName || '').localeCompare(String(b.displayName || b.companyName || ''));
+      });
+      select.innerHTML = dealers.length
+        ? dealers.map(function (row) {
+          const name = row.displayName || row.companyName || 'Dealer';
+          return '<option value="' + esc(row.id) + '">' + esc(name) + '</option>';
+        }).join('')
+        : '<option value="">No dealers yet</option>';
+    }
+    async function loadDealerLeads() {
+      showError('dlead-error', '');
+      try {
+        const data = await api('/api/admin/dealer-leads');
+        leadAdminRows = data.leads || [];
+        const open = leadAdminRows.find(function (row) { return String(row.id) === String(leadAdminOpenId); });
+        if (open) showDealerLead(open);
+        else if (!document.getElementById('dlead-form').classList.contains('hidden') && !leadAdminOpenId) renderDealerLeadTable();
+        else {
+          leadAdminOpenId = '';
+          showDealerLead(null);
+        }
+      } catch (err) {
+        showError('dlead-error', err.message || 'Could not load leads.');
+      }
+    }
+    const dleadTable = document.getElementById('dlead-table');
+    if (dleadTable) {
+      dleadTable.addEventListener('click', function (e) {
+        const tr = e.target.closest('[data-dlead-id]');
+        if (!tr) return;
+        leadAdminOpenId = tr.getAttribute('data-dlead-id');
+        const row = leadAdminRows.find(function (item) { return String(item.id) === String(leadAdminOpenId); });
+        showDealerLead(row || null);
+      });
+    }
+    const dleadNew = document.getElementById('dlead-new-btn');
+    if (dleadNew) {
+      dleadNew.addEventListener('click', async function () {
+        showDealerLeadForm();
+        try {
+          await fillLeadDealers();
+        } catch (err) {
+          setLeadAdminMsg(err.message || 'Could not load dealers.', false);
+        }
+      });
+    }
+    const dleadForm = document.getElementById('dlead-form');
+    if (dleadForm) {
+      dleadForm.addEventListener('submit', async function (e) {
+        e.preventDefault();
+        setLeadAdminMsg('');
+        const dealerId = (document.getElementById('dlead-dealer') || {}).value || '';
+        if (!dealerId) {
+          setLeadAdminMsg('Choose a dealer.', false);
+          return;
+        }
+        try {
+          const saved = await api('/api/admin/dealer-leads', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              customerId: dealerId,
+              project: document.getElementById('dlead-project').value,
+              contactName: document.getElementById('dlead-contact').value,
+              contactEmail: document.getElementById('dlead-email').value,
+              contactPhone: document.getElementById('dlead-phone').value,
+              city: document.getElementById('dlead-city').value,
+              state: document.getElementById('dlead-state').value,
+              interest: document.getElementById('dlead-interest').value,
+              notes: document.getElementById('dlead-notes').value
+            })
+          });
+          dleadForm.reset();
+          const lead = saved.lead;
+          if (lead) leadAdminOpenId = lead.id;
+          await loadDealerLeads();
+        } catch (err) {
+          setLeadAdminMsg(err.message || 'Could not send this lead.', false);
+        }
       });
     }
     async function refreshDealRegWarning() {
@@ -20300,6 +20542,9 @@
       }
       if (name === 'deal-registrations') {
         await loadDealRegistrations();
+      }
+      if (name === 'dealer-leads') {
+        await loadDealerLeads();
       }
       if (name === 'dealer-rmas') {
         await loadDealerRmas();
@@ -25272,10 +25517,12 @@
         const onStore = !!(storeSec && !storeSec.classList.contains('hidden'));
         const onAccounts = !!(accounts && !accounts.classList.contains('hidden'));
         const onDealers = !!(dealers && !dealers.classList.contains('hidden'));
+        const dealerLeads = document.getElementById('dealer-leads-section');
+        const onDealerLeads = !!(dealerLeads && !dealerLeads.classList.contains('hidden'));
         const onCrm = !!((crmLead && !crmLead.classList.contains('hidden')) ||
           (crmPipe && !crmPipe.classList.contains('hidden')) ||
           (crmAct && !crmAct.classList.contains('hidden')));
-        document.body.classList.toggle('dash-split-lock', (onCustomers || onVendors || onWarehouses || onProducts || onControl || onStore || onAccounts || onDealers || onCrm) && desktop);
+        document.body.classList.toggle('dash-split-lock', (onCustomers || onVendors || onWarehouses || onProducts || onControl || onStore || onAccounts || onDealers || onDealerLeads || onCrm) && desktop);
         if (vn) vn.classList.toggle('vn-split-on', onVendors && desktop);
         if (warehouses) warehouses.classList.toggle('wh-split-on', onWarehouses && desktop);
         if (products) products.classList.remove('wp-split-on');

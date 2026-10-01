@@ -147,6 +147,7 @@ function openDb() {
   require('./dealer-portal').ensureDealerPortal(db);
   require('./deal-registrations').ensureDealRegistrations(db);
   require('./dealer-rmas').ensureDealerRmas(db);
+  require('./dealer-leads').ensureDealerLeads(db);
   require('./installed-walls').ensureInstalledWalls(db);
   require('./site-analytics').ensureSqlite(db);
   ensureCompanySales(db);

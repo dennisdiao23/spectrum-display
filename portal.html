@@ -218,6 +218,10 @@
         <svg class="dash-nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 3h8l4 4v14a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1z"/><path d="M15 3v5h5"/><path d="M9 13h6M9 17h4"/></svg>
         <span>Deal registration</span>
       </a>
+      <a href="/portal/leads" data-view="leads" class="dash-nav-link">
+        <svg class="dash-nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 6h16v12H4z"/><path d="m4 7 8 6 8-6"/></svg>
+        <span>Leads</span>
+      </a>
       <a href="/portal/quotes" data-view="quotes" class="dash-nav-link">
         <svg class="dash-nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 4h8v4H8z"/><path d="M6 8h12v12H6z"/><path d="M9 12h6M9 16h4"/></svg>
         <span>Request Quote</span>
@@ -523,6 +527,56 @@
                 </div>
                 <p id="dr-msg" class="hidden text-sm"></p>
               </form>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section id="leads-section" class="hidden">
+        <div class="cc-list-inner">
+          <p class="text-sm text-slate-500 mb-3">Leads Spectrum sends you. Accept or decline each one. You cannot add your own jobs here. Those stay in Deal registration.</p>
+          <p id="lead-error" class="hidden text-sm text-red-400 mb-3"></p>
+          <div class="dash-split" id="lead-split">
+            <div class="dash-split-left">
+              <div class="cc-table-card rounded-2xl border border-slate-800">
+                <div class="cc-table-wrap overflow-x-auto">
+                  <table class="w-full text-sm">
+                    <thead class="text-left text-slate-400 border-b border-slate-800">
+                      <tr>
+                        <th class="py-3 px-4 font-medium">Number</th>
+                        <th class="py-3 px-4 font-medium">Project</th>
+                        <th class="py-3 px-4 font-medium">Contact</th>
+                        <th class="py-3 px-4 font-medium">City</th>
+                        <th class="py-3 px-4 font-medium">Status</th>
+                      </tr>
+                    </thead>
+                    <tbody id="lead-table" class="text-slate-200"></tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+            <div class="dash-split-resizer" role="separator" aria-orientation="vertical" aria-label="Resize lead panels" tabindex="0"></div>
+            <div class="dash-split-right">
+              <div id="lead-overview" class="inv-right-panel">
+                <p class="inv-overview-lead">Select a lead Spectrum sent you.</p>
+              </div>
+              <div id="lead-detail" class="inv-right-panel hidden" style="padding:1.25rem;overflow:auto">
+                <h2 id="lead-title" class="font-semibold text-lg">Lead</h2>
+                <p id="lead-status" class="text-sm text-slate-500 mt-1"></p>
+                <dl id="lead-fields" class="grid sm:grid-cols-2 gap-x-6 gap-y-3 text-sm mt-4"></dl>
+                <p id="lead-notes" class="text-sm mt-4"></p>
+                <div id="lead-actions" class="mt-4 space-y-3">
+                  <label class="text-sm block">Note for Spectrum
+                    <textarea id="lead-note" rows="2" class="w-full mt-1 bg-slate-800 border border-slate-700 rounded-lg px-3 py-2"></textarea>
+                  </label>
+                  <div class="flex flex-wrap gap-2">
+                    <button type="button" id="lead-accept" class="px-4 py-2 rounded-full bg-sky-500 hover:bg-sky-400 text-white text-sm font-semibold">Accept</button>
+                    <button type="button" id="lead-decline" class="px-4 py-2 rounded-full border border-slate-600 text-sm">Decline</button>
+                  </div>
+                </div>
+                <p id="lead-reply" class="hidden text-sm mt-4"></p>
+                <p id="lead-msg" class="hidden text-sm mt-3"></p>
+              </div>
             </div>
           </div>
         </div>
@@ -1100,8 +1154,8 @@
   <div id="so-sku-menu" class="so-sku-menu" hidden>
     <div class="so-sku-menu-list"></div>
   </div>
-  <script src="/js/app-help.js?v=help5"></script>
+  <script src="/js/app-help.js?v=help6"></script>
   <script src="/js/app-notes.js?v=newsbar2"></script>
-  <script src="/js/portal.js?v=portalbar1"></script>
+  <script src="/js/portal.js?v=leads1"></script>
 </body>
 </html>

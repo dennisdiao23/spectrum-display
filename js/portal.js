@@ -6,6 +6,7 @@
     quotes: 'sales-section',
     orders: 'sales-section',
     registrations: 'registrations-section',
+    leads: 'leads-section',
     rmas: 'rmas-section',
     walls: 'walls-section',
     projects: 'projects-section',
@@ -26,17 +27,19 @@
   let dashHome = 'book';
   let registrations = [];
   let pendingRegistrationId = '';
+  let leads = [];
   let rmas = [];
   let walls = [];
   let openTabs = [];
   let bookFilter = 'all';
   let bookSku = '';
-  const tabLabel = { home: 'Dashboard', book: 'Dealer book', quotes: 'Request Quote', orders: 'Purchase Order', walls: 'Installed walls', registrations: 'Deal registration', rmas: 'RMA', projects: 'Projects', panels: 'Saved Panel', calculator: 'Calculator', company: 'Company', updates: 'What’s new', guide: 'Dealer guide' };
+  const tabLabel = { home: 'Dashboard', book: 'Dealer book', quotes: 'Request Quote', orders: 'Purchase Order', walls: 'Installed walls', registrations: 'Deal registration', leads: 'Leads', rmas: 'RMA', projects: 'Projects', panels: 'Saved Panel', calculator: 'Calculator', company: 'Company', updates: 'What’s new', guide: 'Dealer guide' };
   const tabIcon = {
     home: '<svg class="dash-master-tab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="8" height="8" rx="1.5"/><rect x="13" y="3" width="8" height="8" rx="1.5"/><rect x="3" y="13" width="8" height="8" rx="1.5"/><rect x="13" y="13" width="8" height="8" rx="1.5"/></svg>',
     book: '<svg class="dash-master-tab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 10 12 4.5 21 10v9.5a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V10z"/><path d="M9 20.5V12h6v8.5"/></svg>',
     quotes: '<svg class="dash-master-tab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 4h8v4H8z"/><path d="M6 8h12v12H6z"/><path d="M9 12h6M9 16h4"/></svg>',
     registrations: '<svg class="dash-master-tab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="3" width="16" height="18" rx="2"/><path d="M8 8h8M8 12h8M8 16h5"/></svg>',
+    leads: '<svg class="dash-master-tab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 6h16v12H4z"/><path d="m4 7 8 6 8-6"/></svg>',
     rmas: '<svg class="dash-master-tab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 12a9 9 0 1 0 3-6.7"/><path d="M3 4v5h5"/><path d="M9 12h6"/></svg>',
     walls: '<svg class="dash-master-tab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4" width="18" height="12" rx="1.5"/><path d="M8 20h8M12 16v4"/></svg>',
     orders: '<svg class="dash-master-tab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 7h16l-1.5 12H5.5L4 7z"/><path d="M9 7V5a3 3 0 0 1 6 0v2"/></svg>',
@@ -294,8 +297,8 @@
     $('admin-page-sub').textContent = name === 'home' ? 'Overview' : ((me && me.customer && me.customer.companyName) || '');
     document.body.classList.toggle('inv-layout-lock', (name === 'book' || name === 'projects' || name === 'panels') && !isMobileDash());
     const onSales = (name === 'quotes' || name === 'orders') && !isMobileDash();
-    document.body.classList.toggle('so-split-lock', onSales || ((name === 'registrations' || name === 'rmas' || name === 'walls') && !isMobileDash()));
-    document.body.classList.toggle('dash-split-lock', (name === 'registrations' || name === 'rmas' || name === 'walls') && !isMobileDash());
+    document.body.classList.toggle('so-split-lock', onSales || ((name === 'registrations' || name === 'leads' || name === 'rmas' || name === 'walls') && !isMobileDash()));
+    document.body.classList.toggle('dash-split-lock', (name === 'registrations' || name === 'leads' || name === 'rmas' || name === 'walls') && !isMobileDash());
     const sales = $('sales-section');
     if (sales) sales.classList.toggle('so-split-on', onSales);
     if (name === 'home') {
@@ -305,6 +308,7 @@
     if (name === 'book') renderBook();
     if (name === 'quotes' || name === 'orders') renderQuotes();
     if (name === 'registrations') renderRegistrations();
+    if (name === 'leads') renderLeads();
     if (name === 'rmas') renderRmas();
     if (name === 'walls') renderWalls();
     if (name === 'projects') loadProjects();
@@ -2249,6 +2253,119 @@
     }
   });
 
+  function leadIdFromPath() {
+    const parts = location.pathname.replace(/\/+$/, '').split('/');
+    if (parts[2] === 'leads' && parts[3]) return parts[3];
+    return '';
+  }
+  function goLead(id, push) {
+    const path = id ? ('/portal/leads/' + id) : '/portal/leads';
+    if (openTabs.indexOf('leads') === -1) openTabs.push('leads');
+    if (push !== false && location.pathname.replace(/\/+$/, '') !== path) {
+      history.pushState({ view: 'leads', id: id || '' }, '', path);
+    }
+    renderView('leads');
+    renderMasterTabs();
+  }
+  function leadPlace(row) {
+    return [row.city, row.state].filter(Boolean).join(', ') || '—';
+  }
+  function setLeadMsg(text, ok) {
+    const el = $('lead-msg');
+    if (!el) return;
+    el.textContent = text || '';
+    el.classList.toggle('hidden', !text);
+    el.classList.toggle('text-red-400', text && ok === false);
+    el.classList.toggle('text-emerald-400', !!(text && ok !== false));
+  }
+  function showLead(row) {
+    if (!row) {
+      $('lead-detail').classList.add('hidden');
+      $('lead-overview').classList.remove('hidden');
+      return;
+    }
+    $('lead-overview').classList.add('hidden');
+    $('lead-detail').classList.remove('hidden');
+    $('lead-title').textContent = row.project || row.number || 'Lead';
+    $('lead-status').textContent = (row.number || '') + ' · ' + (row.statusLabel || 'New');
+    $('lead-fields').innerHTML =
+      '<div><dt class="text-slate-500">Contact</dt><dd>' + esc(row.contactName || '—') + '</dd></div>' +
+      '<div><dt class="text-slate-500">Email</dt><dd>' + esc(row.contactEmail || '—') + '</dd></div>' +
+      '<div><dt class="text-slate-500">Phone</dt><dd>' + esc(row.contactPhone || '—') + '</dd></div>' +
+      '<div><dt class="text-slate-500">City</dt><dd>' + esc(leadPlace(row)) + '</dd></div>' +
+      '<div class="sm:col-span-2"><dt class="text-slate-500">What they want</dt><dd>' + esc(row.interest || '—') + '</dd></div>';
+    $('lead-notes').textContent = row.notes || '';
+    const open = row.status === 'sent';
+    $('lead-actions').classList.toggle('hidden', !open);
+    $('lead-note').value = '';
+    const reply = $('lead-reply');
+    if (open) {
+      reply.classList.add('hidden');
+      reply.textContent = '';
+    } else {
+      reply.classList.remove('hidden');
+      reply.textContent = (row.statusLabel || '') + (row.replyNote ? (' · ' + row.replyNote) : '');
+    }
+    setLeadMsg('', true);
+  }
+  function renderLeadTable() {
+    const openId = leadIdFromPath();
+    $('lead-table').innerHTML = leads.length ? leads.map(function (row) {
+      const on = openId && String(openId) === String(row.id);
+      return '<tr class="border-b border-slate-800 hover:bg-slate-900/80 cursor-pointer' + (on ? ' is-active' : '') + '" data-lead-id="' + esc(row.id) + '">' +
+        '<td class="py-3 px-4 font-medium">' + esc(row.number || '') + '</td>' +
+        '<td class="py-3 px-4">' + esc(row.project || '—') + '</td>' +
+        '<td class="py-3 px-4">' + esc(row.contactName || '—') + '</td>' +
+        '<td class="py-3 px-4">' + esc(leadPlace(row)) + '</td>' +
+        '<td class="py-3 px-4">' + esc(row.statusLabel || 'New') + '</td></tr>';
+    }).join('') : '<tr><td class="py-6 px-4 text-slate-500" colspan="5">No leads yet. Spectrum sends these.</td></tr>';
+  }
+  async function renderLeads() {
+    const err = $('lead-error');
+    if (err) { err.textContent = ''; err.classList.add('hidden'); }
+    try {
+      const data = await api('/api/dealer/leads');
+      leads = data.leads || [];
+    } catch (e) {
+      leads = [];
+      if (err) {
+        err.textContent = e.message || 'Could not load leads.';
+        err.classList.remove('hidden');
+      }
+    }
+    renderLeadTable();
+    const route = leadIdFromPath();
+    const row = leads.find(function (item) { return String(item.id) === String(route); });
+    showLead(row || null);
+  }
+  async function answerLead(status) {
+    const id = leadIdFromPath();
+    if (!id) return;
+    setLeadMsg('');
+    try {
+      const saved = await api('/api/dealer/leads/' + encodeURIComponent(id) + '/' + status, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ note: $('lead-note').value })
+      });
+      const lead = saved.lead;
+      if (lead) {
+        leads = leads.map(function (row) { return String(row.id) === String(lead.id) ? lead : row; });
+        showLead(lead);
+        renderLeadTable();
+      }
+    } catch (err) {
+      setLeadMsg(err.message || 'Could not save this lead.', false);
+    }
+  }
+  $('lead-table').addEventListener('click', function (e) {
+    const tr = e.target.closest('[data-lead-id]');
+    if (!tr) return;
+    goLead(tr.getAttribute('data-lead-id'), true);
+  });
+  $('lead-accept').addEventListener('click', function () { answerLead('accept'); });
+  $('lead-decline').addEventListener('click', function () { answerLead('decline'); });
+
   function wallIdFromPath() {
     const parts = location.pathname.replace(/\/+$/, '').split('/');
     if (parts[2] === 'walls' && parts[3]) return parts[3];
@@ -2371,6 +2488,10 @@
         e.preventDefault();
         document.body.classList.remove('dash-open');
         goRegistration(parts[3], true);
+      } else if (parts[2] === 'leads') {
+        e.preventDefault();
+        document.body.classList.remove('dash-open');
+        goLead(parts[3], true);
       } else if (parts[2] === 'rmas') {
         e.preventDefault();
         document.body.classList.remove('dash-open');
@@ -2393,7 +2514,7 @@
     document.body.classList.toggle('inv-layout-lock', (pathView() === 'book' || pathView() === 'projects' || pathView() === 'panels') && !isMobileDash());
     document.body.classList.toggle('calc-lock', pathView() === 'calculator');
     const onQuotes = (pathView() === 'quotes' || pathView() === 'orders') && !isMobileDash();
-    const onSplit = (pathView() === 'registrations' || pathView() === 'rmas' || pathView() === 'walls') && !isMobileDash();
+    const onSplit = (pathView() === 'registrations' || pathView() === 'leads' || pathView() === 'rmas' || pathView() === 'walls') && !isMobileDash();
     document.body.classList.toggle('so-split-lock', onQuotes || onSplit);
     document.body.classList.toggle('dash-split-lock', onSplit);
     const sales = $('sales-section');
