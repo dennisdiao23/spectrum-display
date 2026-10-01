@@ -1,5 +1,5 @@
 {
-  "build": "2026-10-01-price-level",
+  "build": "2026-10-01-notes-split",
   "notes": [
     {
       "id": "2026-10-01-price-level",
@@ -15,7 +15,9 @@
     {
       "id": "2026-10-01-z-leads-inbox",
       "date": "2026-10-01",
-      "apps": ["portal"],
+      "apps": [
+        "portal"
+      ],
       "title": "Leads from Spectrum",
       "added": [
         "A Leads inbox for jobs Spectrum sends you."
@@ -26,7 +28,9 @@
     {
       "id": "2026-10-01-z-leads-send",
       "date": "2026-10-01",
-      "apps": ["company"],
+      "apps": [
+        "company"
+      ],
       "title": "Send a lead to a dealer",
       "added": [
         "A Leads page under Dealer."
@@ -37,42 +41,54 @@
     {
       "id": "2026-10-01-portal-bar",
       "date": "2026-10-01",
-      "apps": ["portal"],
+      "apps": [
+        "portal"
+      ],
       "title": "Dealer Portal has a phone bar",
       "added": [
         "A glass bar at the bottom of the Dealer Portal on your phone."
       ],
-      "how": "The first five are Book, Calculator, Deals, Quote, and Orders. Tap Calculator to open Projects and Saved Panel. Press and hold the bar to change which pages sit there. Five is the max. Done saves it on this phone. Reset puts the original five back. The side menu still has every page. On Calculator the bar turns dark so the words stay white."
+      "how": "The first five are Book, Calculator, Deals, Quote, and Orders. Tap Calculator to open Projects and Saved Panel. Press and hold the bar to change which pages sit there. Five is the max. Done saves it on this phone. Reset puts the original five back. The side menu still has every page. On Calculator the bar turns dark so the words stay white.",
+      "mobile": true
     },
     {
       "id": "2026-10-01-glass-see-through",
       "date": "2026-10-01",
-      "apps": ["company"],
+      "apps": [
+        "company"
+      ],
       "title": "Phone bar shows the page through it",
       "changed": [
         "On iPhone the bottom bar is see-through glass again."
       ],
-      "how": "Open Company on your phone. The bar should blur the page behind it, on Inventory and on Calculator."
+      "how": "Open Company on your phone. The bar should blur the page behind it, on Inventory and on Calculator.",
+      "mobile": true
     },
     {
       "id": "2026-10-01-calc-dark-glass",
       "date": "2026-10-01",
-      "apps": ["company"],
+      "apps": [
+        "company"
+      ],
       "title": "Calculator bar stays readable",
       "changed": [
         "On Calculator the phone bar turns dark glass with white labels."
       ],
-      "how": "Open Calculator on your phone. The bar stays glass, and the words stay white so you can read them on the dark wall. Other pages keep the light glass bar."
+      "how": "Open Calculator on your phone. The bar stays glass, and the words stay white so you can read them on the dark wall. Other pages keep the light glass bar.",
+      "mobile": true
     },
     {
       "id": "2026-10-01-glass-clear",
       "date": "2026-10-01",
-      "apps": ["company"],
+      "apps": [
+        "company"
+      ],
       "title": "Phone bar glass is clearer",
       "changed": [
         "The bottom bar is clearer glass, so the page shows through it."
       ],
-      "how": "On Calculator the wall runs full screen under the bar. The bar blurs whatever is behind it, the same on every phone page."
+      "how": "On Calculator the wall runs full screen under the bar. The bar blurs whatever is behind it, the same on every phone page.",
+      "mobile": true
     },
     {
       "id": "2026-10-01-glass-bar",
@@ -84,7 +100,8 @@
       "changed": [
         "The bottom bar floats above the screen with rounded corners and a frosted glass look."
       ],
-      "how": "The five menus stay the same. Press and hold still lets you change which ones sit there. The row that opens above Inventory, CRM, or Dealer uses the same glass."
+      "how": "The five menus stay the same. Press and hold still lets you change which ones sit there. The row that opens above Inventory, CRM, or Dealer uses the same glass.",
+      "mobile": true
     },
     {
       "id": "2026-09-30e-portal-start",
@@ -188,20 +205,30 @@
       ]
     },
     {
-      "id": "2026-09-30d-menu-order",
+      "id": "2026-09-30d-menu-company",
       "date": "2026-09-30",
       "apps": [
-        "company",
-        "portal"
+        "company"
       ],
       "title": "Menu follows the job",
       "changed": [
         "Company menu order is CRM, Customer, Dealer, then Inventory, Vendor, Calculator, and Website.",
         "Installed walls is under Customer.",
-        "Settings opens Company. What’s new and Company guide sit at the bottom of Settings.",
-        "Dealer Portal menu follows the job: price book, calculator, registration, quote, purchase order, installed wall, then RMA."
+        "Settings opens Company. What’s new and Company guide sit at the bottom of Settings."
       ],
-      "how": "The pages are the same, and the addresses did not change. In Company, open Customer to find Installed walls. Click Settings to land on Company. In Dealer Portal, size the wall, register the job, request the quote, then open the purchase order."
+      "how": "The pages are the same, and the addresses did not change. Open Customer to find Installed walls. Click Settings to land on Company."
+    },
+    {
+      "id": "2026-09-30d-menu-portal",
+      "date": "2026-09-30",
+      "apps": [
+        "portal"
+      ],
+      "title": "Menu follows the job",
+      "changed": [
+        "The menu follows the job: price book, calculator, registration, quote, purchase order, installed wall, then RMA."
+      ],
+      "how": "The pages are the same, and the addresses did not change. Size the wall, register the job, request the quote, then open the purchase order."
     },
     {
       "id": "2026-09-30c-phone-bar",
@@ -216,7 +243,8 @@
       "changed": [
         "The phone bar shows five menus: Calculator, Inventory, CRM, Dealer, and Chat."
       ],
-      "how": "Press and hold any icon on the bottom bar until they wiggle. Drag to change the order. Tap the red minus to take one off. Tap a name in the row above to add it. Five is the max. Done saves it on this phone for your login. Reset puts the original five back. The side menu still has every page."
+      "how": "Press and hold any icon on the bottom bar until they wiggle. Drag to change the order. Tap the red minus to take one off. Tap a name in the row above to add it. Five is the max. Done saves it on this phone for your login. Reset puts the original five back. The side menu still has every page.",
+      "mobile": true
     },
     {
       "id": "2026-09-30b-walls",

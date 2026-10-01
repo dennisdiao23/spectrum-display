@@ -152,7 +152,13 @@
     opts = opts || {};
     let html = '';
     if (!opts.noDate) html += '<p class="app-notes-date">' + esc(formatDate(note.date)) + '</p>';
-    if (!opts.noTitle) html += '<p class="app-notes-title">' + esc(note.title || 'What’s new') + '</p>';
+    if (!opts.noTitle) {
+      html += '<p class="app-notes-title">' + esc(note.title || 'What’s new');
+      if (note.mobile) {
+        html += '<span class="app-notes-mobile" title="Phone only"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="7" y="2.5" width="10" height="19" rx="2"/><path d="M11 18.5h2"/></svg>Mobile</span>';
+      }
+      html += '</p>';
+    }
     html += listBlock('Added', note.added);
     html += listBlock('Changed', note.changed);
     html += listBlock('Removed', note.removed);
