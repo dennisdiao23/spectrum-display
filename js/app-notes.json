@@ -1,6 +1,16 @@
 {
-  "build": "2026-10-01-glass-clear",
+  "build": "2026-10-01-calc-dark-glass",
   "notes": [
+    {
+      "id": "2026-10-01-calc-dark-glass",
+      "date": "2026-10-01",
+      "apps": ["company"],
+      "title": "Calculator bar stays readable",
+      "changed": [
+        "On Calculator the phone bar turns dark glass with white labels."
+      ],
+      "how": "Open Calculator on your phone. The bar stays glass, and the words stay white so you can read them on the dark wall. Other pages keep the light glass bar."
+    },
     {
       "id": "2026-10-01-glass-clear",
       "date": "2026-10-01",

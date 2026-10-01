@@ -2607,6 +2607,49 @@ html.dash-scroll-lock body.company-app {
     stroke-width: 2;
   }
 
+  body.company-app.dash-tabbar-on.calc-lock .dash-tabbar:not([hidden]) {
+    background: rgba(8, 12, 28, 0.46);
+    border-color: rgba(255, 255, 255, 0.22);
+    box-shadow: 0 10px 32px rgba(0, 0, 0, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.22);
+  }
+
+  body.company-app.dash-tabbar-on.calc-lock .dash-tabbar a {
+    color: #f4f7ff;
+    text-shadow: none;
+  }
+
+  body.company-app.dash-tabbar-on.calc-lock .dash-tabbar a svg {
+    filter: none;
+  }
+
+  body.company-app.dash-tabbar-on.calc-lock .dash-tabbar a.is-active,
+  body.company-app.dash-tabbar-on.calc-lock .dash-tabbar a.is-expanded {
+    color: #8eb0ff;
+    background: rgba(47, 107, 255, 0.32);
+  }
+
+  body.company-app.dash-tabbar-on.calc-lock .dash-tabbar a.is-active svg,
+  body.company-app.dash-tabbar-on.calc-lock .dash-tabbar a.is-expanded svg {
+    color: #8eb0ff;
+  }
+
+  body.company-app.dash-tabbar-on.calc-lock .dash-tabbar-edit:not([hidden]) {
+    background: rgba(8, 12, 28, 0.55);
+    border-color: rgba(255, 255, 255, 0.22);
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.18);
+  }
+
+  body.company-app.dash-tabbar-on.calc-lock .dash-tabbar-edit-head p,
+  body.company-app.dash-tabbar-on.calc-lock .dash-tabbar-edit-empty {
+    color: #d5def2;
+  }
+
+  body.company-app.dash-tabbar-on.calc-lock #dash-tabbar-reset,
+  body.company-app.dash-tabbar-on.calc-lock .dash-tabbar-add {
+    background: rgba(255, 255, 255, 0.12);
+    color: #f4f7ff;
+  }
+
   .dash-tabbar a.hidden {
     display: none;
   }
