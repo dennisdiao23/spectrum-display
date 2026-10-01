@@ -81,9 +81,16 @@
     });
   }
 
+  function barKindLabel(note) {
+    if (!note) return 'Update';
+    if (note.kind === 'tip') return 'Tip';
+    if (note.kind === 'feature' || (note.added && note.added.length)) return 'New feature';
+    return 'Update';
+  }
+
   function isFeature(note) {
     if (!note) return false;
-    if (note.kind === 'update') return false;
+    if (note.kind === 'tip' || note.kind === 'update') return false;
     if (note.kind === 'feature') return true;
     return !!(note.added && note.added.length);
   }
@@ -145,7 +152,7 @@
     opts = opts || {};
     let html = '';
     if (!opts.noDate) html += '<p class="app-notes-date">' + esc(formatDate(note.date)) + '</p>';
-    html += '<p class="app-notes-title">' + esc(note.title || 'What’s new') + '</p>';
+    if (!opts.noTitle) html += '<p class="app-notes-title">' + esc(note.title || 'What’s new') + '</p>';
     html += listBlock('Added', note.added);
     html += listBlock('Changed', note.changed);
     html += listBlock('Removed', note.removed);
@@ -252,7 +259,7 @@
   function showPopup(note) {
     if (!card || !note || !appReady() || tourOpen()) return false;
     card.setAttribute('data-note-id', note.id);
-    card.innerHTML = '<p class="app-notes-kicker" id="app-notes-card-title">What’s new</p>' +
+    card.innerHTML = '<p class="app-notes-kicker" id="app-notes-card-title">' + esc(barKindLabel(note)) + '</p>' +
       noteInner(note, { noDate: false }) +
       '<div class="app-notes-actions">' +
       '<button type="button" class="app-help-text-btn" id="app-notes-all">See all updates</button>' +
@@ -292,10 +299,10 @@
     info.setAttribute('data-note-id', note.id);
     info.classList.toggle('is-open', infoOpen);
     const body = infoOpen
-      ? '<div class="app-notes-infobar-body">' + noteInner(note, { noDate: true }) + '</div>'
+      ? '<div class="app-notes-infobar-body">' + noteInner(note, { noDate: true, noTitle: true }) + '</div>'
       : '';
     info.innerHTML = '<div class="app-notes-infobar-line">' +
-      '<span class="app-notes-infobar-title">' + esc(note.title || 'Update') + '</span>' +
+      '<span class="app-notes-infobar-title">' + esc(barKindLabel(note) + ': ' + (note.title || 'Update')) + '</span>' +
       '<button type="button" class="app-notes-infobar-close" aria-label="Close">×</button>' +
       '</div>' + body;
   }

@@ -1,5 +1,5 @@
 {
-  "build": "2026-10-01-glass-bar",
+  "build": "2026-10-01-install-names",
   "notes": [
     {
       "id": "2026-10-01-glass-bar",
@@ -29,12 +29,12 @@
     {
       "id": "2026-09-30-install-computer",
       "date": "2026-09-30",
-      "kind": "update",
+      "kind": "tip",
       "desktop": true,
       "apps": [
         "portal"
       ],
-      "title": "Install on this computer",
+      "title": "Install Spectrum Dealer Portal on this computer",
       "steps": [
         {
           "label": "Chrome",
@@ -48,7 +48,36 @@
           "label": "Edge",
           "lines": [
             "Click the three dots.",
-            "Click Apps, then Install Dealer Portal.",
+            "Click Apps, then Install Spectrum Dealer Portal.",
+            "Click Install."
+          ]
+        }
+      ],
+      "how": "Safari on a Mac does not install this app. Use Chrome or Edge. The app opens in its own window."
+    },
+    {
+      "id": "2026-10-01-install-company",
+      "date": "2026-10-01",
+      "kind": "tip",
+      "desktop": true,
+      "apps": [
+        "company"
+      ],
+      "title": "Install Spectrum Company App on this computer",
+      "steps": [
+        {
+          "label": "Chrome",
+          "lines": [
+            "Click the install icon at the right of the address bar.",
+            "Click Install.",
+            "If the icon is missing, click the three dots, then Cast, save, and share, then Install page as app."
+          ]
+        },
+        {
+          "label": "Edge",
+          "lines": [
+            "Click the three dots.",
+            "Click Apps, then Install Spectrum Company App.",
             "Click Install."
           ]
         }
@@ -58,7 +87,7 @@
     {
       "id": "2026-09-30-install-phone",
       "date": "2026-09-30",
-      "kind": "update",
+      "kind": "tip",
       "desktop": true,
       "apps": [
         "portal"
