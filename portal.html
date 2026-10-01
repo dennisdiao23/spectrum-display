@@ -37,7 +37,7 @@
     #company-boot .portal-boot-login button[type="submit"]{background:#fff;color:#000;border:0}
     #company-boot .portal-boot-login button[type="submit"]:hover{background:#e8e8e8}
   </style>
-  <link rel="stylesheet" href="/css/company-dash.css?v=start2" />
+  <link rel="stylesheet" href="/css/company-dash.css?v=portalbar1" />
   <style>
     #inventory-section .inv-split-left .cc-table-wrap { overflow: auto; }
     #inventory-section table.dash-cols[data-cols="dealer-book"] { min-width: 1080px; width: max-content; }
@@ -1072,11 +1072,36 @@
       </section>
     </main>
   </div>
+  <div class="dash-tabbar-sub-scrim" id="dash-tabbar-sub-scrim" hidden></div>
+  <div class="dash-tabbar-sub" id="dash-tabbar-sub" hidden>
+    <div class="dash-tabbar-sub-inner" id="dash-tabbar-sub-inner"></div>
+  </div>
+  <div class="dash-tabbar-edit" id="dash-tabbar-edit" hidden>
+    <div class="dash-tabbar-edit-head">
+      <button type="button" id="dash-tabbar-reset">Reset</button>
+      <p>Hold and drag. Five max.</p>
+      <button type="button" id="dash-tabbar-done">Done</button>
+    </div>
+    <div class="dash-tabbar-edit-add" id="dash-tabbar-edit-add"></div>
+  </div>
+  <nav class="dash-tabbar" id="dash-tabbar" aria-label="Main" hidden>
+    <a href="/portal/book" id="tabbar-book" data-view="book" class="hidden"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 10 12 4.5 21 10v9.5a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V10z"/><path d="M9 20.5V12h6v8.5"/></svg><span>Book</span></a>
+    <a href="/portal/calculator" id="tabbar-calculator" data-view="calculator" data-tabbar-group="calculator" class="hidden"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="5" y="3" width="14" height="18" rx="2"/><path d="M8 7h8M8 12h.01M12 12h.01M16 12h.01M8 16h.01M12 16h.01M16 16h.01"/></svg><span>Calculator</span></a>
+    <a href="/portal/registrations" id="tabbar-registrations" data-view="registrations" class="hidden"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 3h8l4 4v14a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1z"/><path d="M15 3v5h5"/><path d="M9 13h6M9 17h4"/></svg><span>Deals</span></a>
+    <a href="/portal/quotes" id="tabbar-quotes" data-view="quotes" class="hidden"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 4h8v4H8z"/><path d="M6 8h12v12H6z"/><path d="M9 12h6M9 16h4"/></svg><span>Quote</span></a>
+    <a href="/portal/orders" id="tabbar-orders" data-view="orders" class="hidden"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 7h16l-1.5 12H5.5L4 7z"/><path d="M9 7V5a3 3 0 0 1 6 0v2"/></svg><span>Orders</span></a>
+    <a href="/portal" id="tabbar-home" data-view="home" class="hidden"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="8" height="8" rx="1.5"/><rect x="13" y="3" width="8" height="8" rx="1.5"/><rect x="3" y="13" width="8" height="8" rx="1.5"/><rect x="13" y="13" width="8" height="8" rx="1.5"/></svg><span>Dashboard</span></a>
+    <a href="/portal/walls" id="tabbar-walls" data-view="walls" class="hidden"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4" width="18" height="12" rx="1.5"/><path d="M8 20h8M12 16v4"/></svg><span>Walls</span></a>
+    <a href="/portal/rmas" id="tabbar-rmas" data-view="rmas" class="hidden"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 12a9 9 0 1 0 3-6.7"/><path d="M3 4v5h5"/><path d="M9 12h6"/></svg><span>RMA</span></a>
+    <a href="/portal/projects" id="tabbar-projects" data-view="projects" class="hidden"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M3 8h18"/><path d="M8 12h5M8 16h8"/></svg><span>Projects</span></a>
+    <a href="/portal/panels" id="tabbar-panels" data-view="panels" class="hidden"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 8.5 12 13 3 8.5 12 4l9 4.5z"/><path d="M3 8.5v7L12 20l9-4.5v-7"/><path d="M12 13v7"/></svg><span>Panels</span></a>
+    <a href="/portal/company" id="tabbar-settings" data-view="company" data-tabbar-group="settings" class="hidden"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M12 3v2M12 19v2M3 12h2M19 12h2"/></svg><span>Settings</span></a>
+  </nav>
   <div id="so-sku-menu" class="so-sku-menu" hidden>
     <div class="so-sku-menu-list"></div>
   </div>
   <script src="/js/app-help.js?v=help5"></script>
   <script src="/js/app-notes.js?v=newsbar2"></script>
-  <script src="/js/portal.js?v=start2"></script>
+  <script src="/js/portal.js?v=portalbar1"></script>
 </body>
 </html>

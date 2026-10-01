@@ -151,6 +151,10 @@
     $('portal-title').textContent = 'Dealer Portal';
     $('admin-page-sub').textContent = 'Dealer sign in';
     document.body.classList.remove('dash-master-on');
+    document.body.classList.remove('dash-tabbar-on');
+    document.body.classList.remove('dash-tabbar-editing');
+    const phoneBar = $('dash-tabbar');
+    if (phoneBar) phoneBar.hidden = true;
     document.body.classList.remove('inv-layout-lock');
     document.body.classList.remove('so-split-lock');
     const bar = $('dash-tab-bar');
@@ -249,6 +253,7 @@
     $('portal-user').textContent = (me && me.user && (me.user.name || me.user.email)) || '';
     paintDealerBrand();
     openPortal(pathView(), false);
+    applyPortalTabbar();
     if (window.SpectrumHelp) {
       SpectrumHelp.start({
         app: 'portal',
@@ -281,6 +286,7 @@
     if (calculator) calculator.classList.toggle('is-active', name === 'calculator' || name === 'projects' || name === 'panels');
     const settings = $('portal-settings');
     if (settings) settings.classList.toggle('is-active', name === 'company' || name === 'updates' || name === 'guide');
+    syncPortalTabbarActive(name);
     syncNavSubs(name);
     document.body.classList.toggle('calc-lock', name === 'calculator');
     if (name === 'calculator') ensureCalculator('');
@@ -1594,6 +1600,327 @@
       msg.className = 'text-sm text-red-500';
     }
   };
+  const PORTAL_PIN_MAX = 5;
+  const PORTAL_PIN_DEFAULT = ['book', 'calculator', 'registrations', 'quotes', 'orders'];
+  const PORTAL_PIN_ALL = ['book', 'calculator', 'registrations', 'quotes', 'orders', 'home', 'walls', 'rmas', 'projects', 'panels', 'settings'];
+  const PORTAL_PIN_LABEL = {
+    book: 'Book',
+    calculator: 'Calculator',
+    registrations: 'Deals',
+    quotes: 'Quote',
+    orders: 'Orders',
+    home: 'Dashboard',
+    walls: 'Walls',
+    rmas: 'RMA',
+    projects: 'Projects',
+    panels: 'Panels',
+    settings: 'Settings'
+  };
+  const PORTAL_TAB_SUB = {
+    calculator: [
+      { view: 'calculator', label: 'Calculator' },
+      { view: 'projects', label: 'Projects' },
+      { view: 'panels', label: 'Saved Panel' }
+    ],
+    settings: [
+      { view: 'company', label: 'Company' },
+      { view: 'updates', label: 'What’s new' },
+      { view: 'guide', label: 'Dealer guide' }
+    ]
+  };
+  let portalTabEditing = false;
+  let portalTabSuppress = false;
+  let portalTabHold = null;
+  let portalTabDrag = null;
+
+  function portalPinKey() {
+    const id = (me && me.user && (me.user.id || me.user.email)) || 'anon';
+    return 'portal-tabbar-pins-' + id;
+  }
+  function readPortalPins() {
+    try {
+      const raw = JSON.parse(localStorage.getItem(portalPinKey()) || 'null');
+      return Array.isArray(raw) ? raw : null;
+    } catch (err) { return null; }
+  }
+  function writePortalPins(list) {
+    try { localStorage.setItem(portalPinKey(), JSON.stringify(list)); } catch (err) {}
+  }
+  function clearPortalPins() {
+    try { localStorage.removeItem(portalPinKey()); } catch (err) {}
+  }
+  function resolvePortalPins() {
+    const source = readPortalPins() || PORTAL_PIN_DEFAULT.slice();
+    const out = [];
+    source.forEach(function (key) {
+      if (out.length >= PORTAL_PIN_MAX) return;
+      if (PORTAL_PIN_ALL.indexOf(key) === -1 || out.indexOf(key) !== -1) return;
+      out.push(key);
+    });
+    return out;
+  }
+  function applyPortalTabbar() {
+    const bar = $('dash-tabbar');
+    if (!bar) return;
+    const pins = resolvePortalPins();
+    PORTAL_PIN_ALL.forEach(function (key) {
+      const el = $('tabbar-' + key);
+      if (!el) return;
+      el.classList.toggle('hidden', pins.indexOf(key) === -1);
+    });
+    pins.forEach(function (key) {
+      const el = $('tabbar-' + key);
+      if (el) bar.appendChild(el);
+    });
+    bar.hidden = false;
+    document.body.classList.add('dash-tabbar-on');
+    renderPortalTabAdd();
+    syncPortalTabbarActive(pathView());
+  }
+  function renderPortalTabAdd() {
+    const box = $('dash-tabbar-edit-add');
+    if (!box) return;
+    const pins = resolvePortalPins();
+    const full = pins.length >= PORTAL_PIN_MAX;
+    const extras = PORTAL_PIN_ALL.filter(function (key) { return pins.indexOf(key) === -1; });
+    if (!extras.length) {
+      box.innerHTML = '<p class="dash-tabbar-edit-empty">Every page is already on the bar.</p>';
+      return;
+    }
+    box.innerHTML = extras.map(function (key) {
+      return '<button type="button" class="dash-tabbar-add" data-tabbar-add="' + key + '"' + (full ? ' disabled' : '') + '>' + PORTAL_PIN_LABEL[key] + '</button>';
+    }).join('');
+  }
+  function removePortalPin(key) {
+    writePortalPins(resolvePortalPins().filter(function (k) { return k !== key; }));
+    applyPortalTabbar();
+  }
+  function addPortalPin(key) {
+    const pins = resolvePortalPins();
+    if (pins.length >= PORTAL_PIN_MAX || pins.indexOf(key) !== -1) return;
+    pins.push(key);
+    writePortalPins(pins);
+    applyPortalTabbar();
+  }
+  function closePortalTabSub() {
+    document.body.classList.remove('dash-tabbar-sub-open');
+    document.body.removeAttribute('data-tabbar-sub-group');
+    const sub = $('dash-tabbar-sub');
+    const scrim = $('dash-tabbar-sub-scrim');
+    if (sub) sub.hidden = true;
+    if (scrim) scrim.hidden = true;
+    document.querySelectorAll('#dash-tabbar [data-tabbar-group]').forEach(function (el) {
+      el.classList.remove('is-expanded');
+    });
+  }
+  function showPortalTabSub(group) {
+    const items = PORTAL_TAB_SUB[group] || [];
+    const inner = $('dash-tabbar-sub-inner');
+    if (!inner || !items.length) return;
+    inner.innerHTML = items.map(function (item) {
+      const icon = (tabIcon[item.view] || '').replace('dash-master-tab-icon', '');
+      return '<a href="' + pathFor(item.view) + '" data-view="' + item.view + '">' + icon + '<span>' + item.label + '</span></a>';
+    }).join('');
+    document.body.classList.add('dash-tabbar-sub-open');
+    document.body.setAttribute('data-tabbar-sub-group', group);
+    $('dash-tabbar-sub').hidden = false;
+    $('dash-tabbar-sub-scrim').hidden = false;
+    document.body.classList.remove('dash-tabbar-hidden');
+    document.querySelectorAll('#dash-tabbar [data-tabbar-group]').forEach(function (el) {
+      el.classList.toggle('is-expanded', el.getAttribute('data-tabbar-group') === group);
+    });
+    syncPortalTabbarActive(pathView());
+  }
+  function syncPortalTabbarActive(name) {
+    const onCalc = name === 'calculator' || name === 'projects' || name === 'panels';
+    const onSettings = name === 'company' || name === 'updates' || name === 'guide';
+    PORTAL_PIN_ALL.forEach(function (key) {
+      const el = $('tabbar-' + key);
+      if (!el) return;
+      const on = key === 'calculator' ? onCalc : key === 'settings' ? onSettings : key === name;
+      el.classList.toggle('is-active', on && !el.classList.contains('hidden'));
+    });
+    const inner = $('dash-tabbar-sub-inner');
+    if (inner) {
+      inner.querySelectorAll('a[data-view]').forEach(function (a) {
+        a.classList.toggle('is-active', a.getAttribute('data-view') === name);
+      });
+    }
+  }
+  function setPortalTabEditing(on) {
+    portalTabEditing = !!on;
+    document.body.classList.toggle('dash-tabbar-editing', portalTabEditing);
+    const sheet = $('dash-tabbar-edit');
+    if (sheet) sheet.hidden = !portalTabEditing;
+    if (portalTabEditing) {
+      document.body.classList.remove('dash-tabbar-hidden');
+      closePortalTabSub();
+      renderPortalTabAdd();
+    }
+  }
+  function bindPortalTabbar() {
+    const bar = $('dash-tabbar');
+    if (!bar || bar.getAttribute('data-ready') === '1') return;
+    bar.setAttribute('data-ready', '1');
+    bar.querySelectorAll(':scope > a').forEach(function (a) {
+      if (a.querySelector('.dash-tabbar-minus')) return;
+      const btn = document.createElement('button');
+      btn.type = 'button';
+      btn.className = 'dash-tabbar-minus';
+      btn.setAttribute('aria-label', 'Remove from bar');
+      btn.textContent = '−';
+      btn.addEventListener('click', function (ev) {
+        ev.preventDefault();
+        ev.stopPropagation();
+        if (!document.body.classList.contains('dash-tabbar-editing')) return;
+        const link = btn.closest('a');
+        if (link) removePortalPin(link.id.replace(/^tabbar-/, ''));
+      });
+      a.appendChild(btn);
+    });
+    bar.addEventListener('contextmenu', function (e) {
+      if (portalTabEditing || portalTabHold) e.preventDefault();
+    });
+    bar.addEventListener('pointerdown', function (e) {
+      if (!isMobileDash() || e.button) return;
+      if (e.target.closest('.dash-tabbar-minus')) return;
+      const a = e.target.closest('#dash-tabbar > a');
+      if (!a || a.classList.contains('hidden')) return;
+      if (portalTabEditing) {
+        portalTabDrag = { pointerId: e.pointerId, key: a.id.replace(/^tabbar-/, ''), startX: e.clientX, moved: false };
+        a.classList.add('is-dragging');
+        return;
+      }
+      portalTabHold = {
+        pointerId: e.pointerId,
+        x: e.clientX,
+        y: e.clientY,
+        timer: setTimeout(function () {
+          portalTabSuppress = true;
+          portalTabHold = null;
+          setPortalTabEditing(true);
+          setTimeout(function () { portalTabSuppress = false; }, 350);
+        }, 480)
+      };
+    });
+    document.addEventListener('pointermove', function (e) {
+      if (portalTabHold && e.pointerId === portalTabHold.pointerId) {
+        if (Math.abs(e.clientX - portalTabHold.x) > 10 || Math.abs(e.clientY - portalTabHold.y) > 10) {
+          clearTimeout(portalTabHold.timer);
+          portalTabHold = null;
+        }
+      }
+      if (!portalTabDrag || e.pointerId !== portalTabDrag.pointerId) return;
+      if (Math.abs(e.clientX - portalTabDrag.startX) > 8) portalTabDrag.moved = true;
+      if (!portalTabDrag.moved) return;
+      const links = Array.prototype.slice.call(bar.querySelectorAll(':scope > a:not(.hidden)'));
+      let target = null;
+      links.forEach(function (el) {
+        const r = el.getBoundingClientRect();
+        if (e.clientX >= r.left && e.clientX <= r.right) target = el.id.replace(/^tabbar-/, '');
+      });
+      if (!target || target === portalTabDrag.key) return;
+      const pins = resolvePortalPins();
+      const from = pins.indexOf(portalTabDrag.key);
+      const to = pins.indexOf(target);
+      if (from < 0 || to < 0) return;
+      pins.splice(from, 1);
+      pins.splice(to, 0, portalTabDrag.key);
+      writePortalPins(pins);
+      applyPortalTabbar();
+      const el = $('tabbar-' + portalTabDrag.key);
+      if (el) el.classList.add('is-dragging');
+    });
+    function endDrag(e) {
+      if (portalTabHold && (!e || e.pointerId === portalTabHold.pointerId)) {
+        clearTimeout(portalTabHold.timer);
+        portalTabHold = null;
+      }
+      if (portalTabDrag && (!e || e.pointerId === portalTabDrag.pointerId)) {
+        if (portalTabDrag.moved) portalTabSuppress = true;
+        const el = $('tabbar-' + portalTabDrag.key);
+        if (el) el.classList.remove('is-dragging');
+        portalTabDrag = null;
+      }
+    }
+    document.addEventListener('pointerup', endDrag);
+    document.addEventListener('pointercancel', endDrag);
+    bar.addEventListener('click', function (e) {
+      if (portalTabSuppress && !e.target.closest('.dash-tabbar-minus')) {
+        e.preventDefault();
+        e.stopPropagation();
+        portalTabSuppress = false;
+        return;
+      }
+      if (portalTabEditing) {
+        e.preventDefault();
+        e.stopPropagation();
+        return;
+      }
+      const a = e.target.closest('#dash-tabbar > a[href]');
+      if (!a || a.classList.contains('hidden')) return;
+      e.preventDefault();
+      e.stopPropagation();
+      document.body.classList.remove('dash-open');
+      const group = a.getAttribute('data-tabbar-group');
+      if (group) {
+        if (document.body.classList.contains('dash-tabbar-sub-open') && document.body.getAttribute('data-tabbar-sub-group') === group) closePortalTabSub();
+        else showPortalTabSub(group);
+        return;
+      }
+      closePortalTabSub();
+      openPortal(a.getAttribute('data-view') || 'home', true);
+    });
+    const edit = $('dash-tabbar-edit');
+    if (edit) {
+      edit.addEventListener('click', function (e) {
+        e.stopPropagation();
+        if (e.target.closest('#dash-tabbar-done')) { setPortalTabEditing(false); return; }
+        if (e.target.closest('#dash-tabbar-reset')) { clearPortalPins(); applyPortalTabbar(); return; }
+        const add = e.target.closest('[data-tabbar-add]');
+        if (add && !add.disabled) addPortalPin(add.getAttribute('data-tabbar-add'));
+      });
+    }
+    const subInner = $('dash-tabbar-sub-inner');
+    if (subInner) {
+      subInner.addEventListener('click', function (e) {
+        const a = e.target.closest('a[data-view]');
+        if (!a) return;
+        e.preventDefault();
+        e.stopPropagation();
+        closePortalTabSub();
+        document.body.classList.remove('dash-open');
+        openPortal(a.getAttribute('data-view'), true);
+      });
+    }
+    const subScrim = $('dash-tabbar-sub-scrim');
+    if (subScrim) subScrim.addEventListener('click', closePortalTabSub);
+    document.addEventListener('click', function (e) {
+      if (!portalTabEditing) return;
+      const path = e.composedPath ? e.composedPath() : [];
+      const inside = path.some(function (node) {
+        return node && node.id && (node.id === 'dash-tabbar' || node.id === 'dash-tabbar-edit');
+      });
+      if (inside) return;
+      setPortalTabEditing(false);
+    });
+    const main = document.querySelector('.company-main');
+    if (main) {
+      let lastY = main.scrollTop;
+      main.addEventListener('scroll', function () {
+        if (!document.body.classList.contains('dash-tabbar-on') || portalTabEditing) return;
+        const y = main.scrollTop;
+        const delta = y - lastY;
+        if (y <= 48) document.body.classList.remove('dash-tabbar-hidden');
+        else if (delta > 8) {
+          document.body.classList.add('dash-tabbar-hidden');
+          closePortalTabSub();
+        } else if (delta < -8) document.body.classList.remove('dash-tabbar-hidden');
+        lastY = y;
+      }, { passive: true });
+    }
+  }
+
   $('dash-menu-btn').onclick = function () {
     document.body.classList.toggle('dash-open');
   };
@@ -2083,5 +2410,6 @@
     renderView(name);
     renderMasterTabs();
   });
+  bindPortalTabbar();
   boot();
 })();
