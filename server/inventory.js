@@ -1,3 +1,5 @@
+const imgLib = require('./image');
+
 function isControlProduct(p) {
   const t = String((p && p.type) || '').toLowerCase();
   return t === 'control' || (p && p.brandId === 'novastar') || !!(p && p.subtype);
@@ -191,7 +193,10 @@ function applySharedPhotos(item) {
     item.photoProductId = '';
     item.photoProductName = '';
     item.photoFit = 'fit';
-    item.image = own.image;
+    item.image = imgLib.preferLocalOrRemote(own.image);
+    item.gallery = (own.gallery || []).map(function (url) {
+      return imgLib.preferLocalOrRemote(url);
+    }).filter(Boolean);
     return item;
   }
   item.photoSource = 'product';
@@ -200,8 +205,10 @@ function applySharedPhotos(item) {
   item.photoFit = mapped.photoFit || 'fit';
   const product = mediaFromUrls(urlsFromMedia(mapped.productImage, mapped.productGallery));
   const use = mediaHasPhotos(product) ? product : own;
-  item.image = use.image;
-  item.gallery = use.gallery;
+  item.image = imgLib.preferLocalOrRemote(use.image);
+  item.gallery = (use.gallery || []).map(function (url) {
+    return imgLib.preferLocalOrRemote(url);
+  }).filter(Boolean);
   return item;
 }
 
