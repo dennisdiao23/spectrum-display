@@ -10334,10 +10334,10 @@
         try { await loadInventory(); } catch (err) {}
         if (payload.id) {
           await openInventory(payload.id);
-          fillInventoryForm(Object.assign({}, inventoryDetail && inventoryDetail.item || {}, payload));
+          await fillInventoryForm(Object.assign({}, inventoryDetail && inventoryDetail.item || {}, payload));
         } else {
-          openNewInventory('list');
-          fillInventoryForm(payload);
+          await openNewInventory('list');
+          await fillInventoryForm(payload);
         }
         return;
       }
@@ -11507,11 +11507,32 @@
       selectInventoryItem(itemId, { push: true });
     }
 
+    async function ensureInvBrands() {
+      if (brands.length) return brands;
+      try {
+        const data = await api('/api/admin/brands');
+        brands = data.brands || [];
+      } catch (err) {
+        brands = brands || [];
+      }
+      return brands;
+    }
+
     function fillInvBrands(selected) {
       const sel = document.getElementById('inv-brand');
-      sel.innerHTML = '<option value="">—</option>' + brands.map(function (b) {
-        return '<option value="' + esc(b.id) + '"' + (b.id === selected ? ' selected' : '') + '>' + esc(b.name) + '</option>';
-      }).join('');
+      if (!sel) return Promise.resolve();
+      const selectedId = selected == null ? '' : String(selected);
+      function paint() {
+        sel.innerHTML = '<option value="">—</option>' + brands.map(function (b) {
+          return '<option value="' + esc(b.id) + '"' +
+            (String(b.id) === selectedId ? ' selected' : '') + '>' + esc(b.name) + '</option>';
+        }).join('');
+      }
+      if (brands.length) {
+        paint();
+        return Promise.resolve();
+      }
+      return ensureInvBrands().then(paint);
     }
 
     const INV_DEFAULT_CATEGORIES = ['LED Panel', 'Control', 'Receiving Card', 'Processor', 'Accessory', 'Service', 'Spare'];
@@ -12949,18 +12970,20 @@
       const errEl = document.getElementById('inventory-error');
       errEl.classList.add('hidden');
       try {
-        const [data, poData, actData, movesData, whData] = await Promise.all([
+        const [data, poData, actData, movesData, whData, brandData] = await Promise.all([
           api('/api/admin/inventory'),
           api('/api/admin/purchase-orders').catch(function () { return { orders: purchaseOrders }; }),
           api('/api/admin/inventory/activity?limit=25').catch(function () { return { activity: [] }; }),
           api('/api/admin/inventory/recent-moves?limit=400').catch(function () { return { moves: [] }; }),
-          api('/api/admin/inventory-warehouses').catch(function () { return { warehouses: inventoryWarehouses }; })
+          api('/api/admin/inventory-warehouses').catch(function () { return { warehouses: inventoryWarehouses }; }),
+          api('/api/admin/brands').catch(function () { return { brands: brands }; })
         ]);
         inventoryItems = data.items || [];
         purchaseOrders = poData.orders || purchaseOrders || [];
         inventoryRecentActivity = actData.activity || [];
         inventoryMovesCache = movesData.moves || [];
         inventoryWarehouses = whData.warehouses || inventoryWarehouses || [];
+        if (brandData && Array.isArray(brandData.brands)) brands = brandData.brands;
         fillInvWarehouseSelects();
         renderInventoryTable();
         renderInvActivity();
@@ -13469,14 +13492,14 @@
       document.getElementById('inv-name').focus();
     }
 
-    function fillInventoryForm(item) {
+    async function fillInventoryForm(item) {
       document.getElementById('inv-item-id').value = item && item.id ? item.id : '';
       document.getElementById('inv-title').textContent = (item && (item.sku || item.name)) || 'Add inventory item';
       document.getElementById('inv-name').value = (item && item.name) || '';
       document.getElementById('inv-item-kind').value = invIsKit(item) ? 'kit' : 'item';
       document.getElementById('inv-sku').value = (item && item.sku) || '';
       document.getElementById('inv-mpn').value = (item && item.mpn) || '';
-      fillInvBrands(item && item.brandId);
+      await fillInvBrands(item && item.brandId);
       fillInvCategories(item && item.category);
       document.getElementById('inv-description').value = (item && item.description) || '';
       document.getElementById('inv-cost').value = item && item.cost != null ? item.cost : '';
@@ -13524,10 +13547,10 @@
       renderInvPhotos();
     }
 
-    function renderInventoryDetail(data) {
+    async function renderInventoryDetail(data) {
       inventoryDetail = data;
       const item = data && data.item;
-      fillInventoryForm(item);
+      await fillInventoryForm(item);
       const adjustWrap = document.getElementById('inv-adjust-wrap');
       if (!item || !item.id) {
         adjustWrap.classList.add('hidden');
@@ -13543,7 +13566,7 @@
       renderInvMoves(data.moves || []);
     }
 
-    function openNewInventory(source, lineRow) {
+    async function openNewInventory(source, lineRow) {
       if (invDrawerNeedsLeave()) {
         invAskLeave(function () { openNewInventory(source, lineRow); });
         return;
@@ -13551,7 +13574,7 @@
       invDrawerSource = source || 'list';
       invPoLineRow = lineRow || null;
       inventoryDetail = { item: null, moves: [] };
-      fillInventoryForm(null);
+      await fillInventoryForm(null);
       if (lineRow) {
         const skuEl = lineRow.querySelector('[data-line="sku"]');
         const typed = skuEl && String(skuEl.value || '').trim();
@@ -13572,14 +13595,14 @@
       } else {
         data = await api('/api/admin/inventory/' + encodeURIComponent(id));
       }
-      renderInventoryDetail(data);
+      await renderInventoryDetail(data);
       invDrawerSource = 'list';
       openInventoryDrawer();
     }
 
-    function openInventoryFromDetail() {
+    async function openInventoryFromDetail() {
       if (!invDetailData || !invDetailData.item) return;
-      renderInventoryDetail(invDetailData);
+      await renderInventoryDetail(invDetailData);
       invDrawerSource = 'detail';
       openInventoryDrawer();
     }
@@ -24089,7 +24112,7 @@
         const data = id
           ? await api('/api/admin/inventory/' + encodeURIComponent(id), { method: 'PUT', body: fd })
           : await api('/api/admin/inventory', { method: 'POST', body: fd });
-        renderInventoryDetail(data);
+        await renderInventoryDetail(data);
         markInvClean();
         await loadInventory();
         if (invDrawerSource === 'po' && invPoLineRow) {
@@ -24142,7 +24165,7 @@
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ inactive: turningOff })
         });
-        renderInventoryDetail(data);
+        await renderInventoryDetail(data);
         markInvClean();
         await loadInventory();
         if (String(invDetailId) === String(id)) {
@@ -24187,7 +24210,7 @@
             note: document.getElementById('inv-note').value
           })
         });
-        renderInventoryDetail(data);
+        await renderInventoryDetail(data);
         markInvClean();
         await loadInventory();
         if (String(invDetailId) === String(id)) {
