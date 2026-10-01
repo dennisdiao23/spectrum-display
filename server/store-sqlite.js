@@ -556,6 +556,11 @@ function createSqliteStore() {
   dbUtil.seedAdmin(db);
   dbUtil.seedCatalog(db);
   dbUtil.ensureInventoryWarehouses(db);
+  try {
+    require('./trt-discovery-price-inventory').applySqlite(db);
+  } catch (e) {
+    console.error('Could not apply Transtech Discovery price list:', e.message || e);
+  }
   const maintain = /^(1|true|yes)$/i.test(String(process.env.BOOT_MAINTENANCE || '').trim());
   if (!hadProducts) {
     dbUtil.fillMissingProductDetails(db);
