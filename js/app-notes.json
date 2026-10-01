@@ -2,6 +2,28 @@
   "build": "2026-10-01-portal-bar",
   "notes": [
     {
+      "id": "2026-10-01-z-leads-inbox",
+      "date": "2026-10-01",
+      "apps": ["portal"],
+      "title": "Leads from Spectrum",
+      "added": [
+        "A Leads inbox for jobs Spectrum sends you."
+      ],
+      "how": "Open Leads. Accept or decline the one we sent. There is no button to add your own. Your own jobs stay in Deal registration.",
+      "kind": "feature"
+    },
+    {
+      "id": "2026-10-01-z-leads-send",
+      "date": "2026-10-01",
+      "apps": ["company"],
+      "title": "Send a lead to a dealer",
+      "added": [
+        "A Leads page under Dealer."
+      ],
+      "how": "Open Dealer, then Leads. Send a lead to one dealer. They accept or decline it in the portal. They cannot add their own list on that page.",
+      "kind": "feature"
+    },
+    {
       "id": "2026-10-01-portal-bar",
       "date": "2026-10-01",
       "apps": ["portal"],

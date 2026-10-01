@@ -309,6 +309,7 @@ async function main() {
     '/company/dealers',
     '/company/dealers/applications',
     '/company/dealers/registrations',
+    '/company/dealers/leads',
     '/company/dealers/rmas',
     '/company/inventory',
     '/company/inventory/locations',
@@ -451,10 +452,10 @@ async function main() {
     const qs = req.url.includes('?') ? req.url.slice(req.url.indexOf('?')) : '';
     res.redirect(301, '/portal' + qs);
   });
-  ['/portal/book', '/portal/quotes', '/portal/orders', '/portal/walls', '/portal/registrations', '/portal/rmas', '/portal/projects', '/portal/panels', '/portal/calculator', '/portal/company', '/portal/updates', '/portal/guide'].forEach(function (route) {
+  ['/portal/book', '/portal/quotes', '/portal/orders', '/portal/walls', '/portal/registrations', '/portal/leads', '/portal/rmas', '/portal/projects', '/portal/panels', '/portal/calculator', '/portal/company', '/portal/updates', '/portal/guide'].forEach(function (route) {
     app.get([route, route + '/'], sendPortal);
   });
-  app.get(['/portal/quotes/:id', '/portal/quotes/:id/', '/portal/orders/:id', '/portal/orders/:id/', '/portal/registrations/:id', '/portal/registrations/:id/', '/portal/rmas/:id', '/portal/rmas/:id/', '/portal/walls/:id', '/portal/walls/:id/'], sendPortal);
+  app.get(['/portal/quotes/:id', '/portal/quotes/:id/', '/portal/orders/:id', '/portal/orders/:id/', '/portal/registrations/:id', '/portal/registrations/:id/', '/portal/leads/:id', '/portal/leads/:id/', '/portal/rmas/:id', '/portal/rmas/:id/', '/portal/walls/:id', '/portal/walls/:id/'], sendPortal);
 
   const OLD_SOLUTION_REDIRECTS = [
     ['/solutions/retail-hospitality.html', '/retail-hospitality'],
@@ -1425,6 +1426,36 @@ async function main() {
   app.post('/api/dealer/rmas', requireDealer, async function (req, res, next) {
     try {
       res.json({ ok: true, rma: await store.createPortalRma(req.dealer, req.body || {}) });
+    } catch (err) { dealerDocError(err, res, next); }
+  });
+
+  app.get('/api/dealer/leads', requireDealer, async function (req, res, next) {
+    try {
+      res.json({ ok: true, leads: await store.listPortalLeads(req.dealer) });
+    } catch (err) { next(err); }
+  });
+
+  app.get('/api/dealer/leads/:id', requireDealer, async function (req, res, next) {
+    try {
+      const lead = await store.getPortalLead(req.dealer, req.params.id);
+      if (!lead) return res.status(404).json({ ok: false, error: 'Lead not found.' });
+      res.json({ ok: true, lead: lead });
+    } catch (err) { next(err); }
+  });
+
+  app.post('/api/dealer/leads/:id/accept', requireDealer, async function (req, res, next) {
+    try {
+      const lead = await store.acceptPortalLead(req.dealer, req.params.id, req.body || {});
+      if (!lead) return res.status(404).json({ ok: false, error: 'Lead not found.' });
+      res.json({ ok: true, lead: lead });
+    } catch (err) { dealerDocError(err, res, next); }
+  });
+
+  app.post('/api/dealer/leads/:id/decline', requireDealer, async function (req, res, next) {
+    try {
+      const lead = await store.declinePortalLead(req.dealer, req.params.id, req.body || {});
+      if (!lead) return res.status(404).json({ ok: false, error: 'Lead not found.' });
+      res.json({ ok: true, lead: lead });
     } catch (err) { dealerDocError(err, res, next); }
   });
 
@@ -3313,6 +3344,18 @@ async function main() {
     try {
       res.json({ ok: true, rmas: await store.listDealerRmas() });
     } catch (err) { next(err); }
+  });
+
+  app.get('/api/admin/dealer-leads', requireAdmin, requirePerm('dealer', 'view'), async function (_req, res, next) {
+    try {
+      res.json({ ok: true, leads: await store.listDealerLeads() });
+    } catch (err) { next(err); }
+  });
+
+  app.post('/api/admin/dealer-leads', requireAdmin, requirePerm('dealer', 'edit'), async function (req, res, next) {
+    try {
+      res.json({ ok: true, lead: await store.createDealerLead(req.body || {}) });
+    } catch (err) { dealerDocError(err, res, next); }
   });
 
   app.get('/api/admin/deal-registrations', requireAdmin, requirePerm('dealer', 'view'), async function (_req, res, next) {
