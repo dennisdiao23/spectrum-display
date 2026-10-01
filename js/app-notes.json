@@ -1,6 +1,16 @@
 {
-  "build": "2026-10-01-glass-see-through",
+  "build": "2026-10-01-portal-bar",
   "notes": [
+    {
+      "id": "2026-10-01-portal-bar",
+      "date": "2026-10-01",
+      "apps": ["portal"],
+      "title": "Dealer Portal has a phone bar",
+      "added": [
+        "A glass bar at the bottom of the Dealer Portal on your phone."
+      ],
+      "how": "The first five are Book, Calculator, Deals, Quote, and Orders. Tap Calculator to open Projects and Saved Panel. Press and hold the bar to change which pages sit there. Five is the max. Done saves it on this phone. Reset puts the original five back. The side menu still has every page. On Calculator the bar turns dark so the words stay white."
+    },
     {
       "id": "2026-10-01-glass-see-through",
       "date": "2026-10-01",
