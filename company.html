@@ -10334,10 +10334,10 @@
         try { await loadInventory(); } catch (err) {}
         if (payload.id) {
           await openInventory(payload.id);
-          fillInventoryForm(Object.assign({}, inventoryDetail && inventoryDetail.item || {}, payload));
+          await fillInventoryForm(Object.assign({}, inventoryDetail && inventoryDetail.item || {}, payload));
         } else {
-          openNewInventory('list');
-          fillInventoryForm(payload);
+          await openNewInventory('list');
+          await fillInventoryForm(payload);
         }
         return;
       }
@@ -11520,7 +11520,7 @@
 
     function fillInvBrands(selected) {
       const sel = document.getElementById('inv-brand');
-      if (!sel) return;
+      if (!sel) return Promise.resolve();
       const selectedId = selected == null ? '' : String(selected);
       function paint() {
         sel.innerHTML = '<option value="">—</option>' + brands.map(function (b) {
@@ -11528,9 +11528,11 @@
             (String(b.id) === selectedId ? ' selected' : '') + '>' + esc(b.name) + '</option>';
         }).join('');
       }
-      paint();
-      if (brands.length) return;
-      ensureInvBrands().then(paint);
+      if (brands.length) {
+        paint();
+        return Promise.resolve();
+      }
+      return ensureInvBrands().then(paint);
     }
 
     const INV_DEFAULT_CATEGORIES = ['LED Panel', 'Control', 'Receiving Card', 'Processor', 'Accessory', 'Service', 'Spare'];
@@ -13490,14 +13492,14 @@
       document.getElementById('inv-name').focus();
     }
 
-    function fillInventoryForm(item) {
+    async function fillInventoryForm(item) {
       document.getElementById('inv-item-id').value = item && item.id ? item.id : '';
       document.getElementById('inv-title').textContent = (item && (item.sku || item.name)) || 'Add inventory item';
       document.getElementById('inv-name').value = (item && item.name) || '';
       document.getElementById('inv-item-kind').value = invIsKit(item) ? 'kit' : 'item';
       document.getElementById('inv-sku').value = (item && item.sku) || '';
       document.getElementById('inv-mpn').value = (item && item.mpn) || '';
-      fillInvBrands(item && item.brandId);
+      await fillInvBrands(item && item.brandId);
       fillInvCategories(item && item.category);
       document.getElementById('inv-description').value = (item && item.description) || '';
       document.getElementById('inv-cost').value = item && item.cost != null ? item.cost : '';
@@ -13545,10 +13547,10 @@
       renderInvPhotos();
     }
 
-    function renderInventoryDetail(data) {
+    async function renderInventoryDetail(data) {
       inventoryDetail = data;
       const item = data && data.item;
-      fillInventoryForm(item);
+      await fillInventoryForm(item);
       const adjustWrap = document.getElementById('inv-adjust-wrap');
       if (!item || !item.id) {
         adjustWrap.classList.add('hidden');
@@ -13564,7 +13566,7 @@
       renderInvMoves(data.moves || []);
     }
 
-    function openNewInventory(source, lineRow) {
+    async function openNewInventory(source, lineRow) {
       if (invDrawerNeedsLeave()) {
         invAskLeave(function () { openNewInventory(source, lineRow); });
         return;
@@ -13572,7 +13574,7 @@
       invDrawerSource = source || 'list';
       invPoLineRow = lineRow || null;
       inventoryDetail = { item: null, moves: [] };
-      fillInventoryForm(null);
+      await fillInventoryForm(null);
       if (lineRow) {
         const skuEl = lineRow.querySelector('[data-line="sku"]');
         const typed = skuEl && String(skuEl.value || '').trim();
@@ -13593,14 +13595,14 @@
       } else {
         data = await api('/api/admin/inventory/' + encodeURIComponent(id));
       }
-      renderInventoryDetail(data);
+      await renderInventoryDetail(data);
       invDrawerSource = 'list';
       openInventoryDrawer();
     }
 
-    function openInventoryFromDetail() {
+    async function openInventoryFromDetail() {
       if (!invDetailData || !invDetailData.item) return;
-      renderInventoryDetail(invDetailData);
+      await renderInventoryDetail(invDetailData);
       invDrawerSource = 'detail';
       openInventoryDrawer();
     }
@@ -24110,7 +24112,7 @@
         const data = id
           ? await api('/api/admin/inventory/' + encodeURIComponent(id), { method: 'PUT', body: fd })
           : await api('/api/admin/inventory', { method: 'POST', body: fd });
-        renderInventoryDetail(data);
+        await renderInventoryDetail(data);
         markInvClean();
         await loadInventory();
         if (invDrawerSource === 'po' && invPoLineRow) {
@@ -24163,7 +24165,7 @@
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ inactive: turningOff })
         });
-        renderInventoryDetail(data);
+        await renderInventoryDetail(data);
         markInvClean();
         await loadInventory();
         if (String(invDetailId) === String(id)) {
@@ -24208,7 +24210,7 @@
             note: document.getElementById('inv-note').value
           })
         });
-        renderInventoryDetail(data);
+        await renderInventoryDetail(data);
         markInvClean();
         await loadInventory();
         if (String(invDetailId) === String(id)) {
