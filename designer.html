@@ -878,29 +878,52 @@
       border-radius: 8px;
       background: #fff;
     }
+    html.calc-viewonly,
+    html.calc-viewonly body.designer-app {
+      height: 100% !important;
+      margin: 0 !important;
+      padding: 0 !important;
+      overflow: hidden !important;
+      background: #020617 !important;
+    }
+    html.calc-viewonly body {
+      pointer-events: none;
+    }
     html.calc-viewonly .site-header,
     html.calc-viewonly .designer-toolbar,
     html.calc-viewonly .designer-controls-pane,
     html.calc-viewonly .preview-extras,
+    html.calc-viewonly .preview-meta,
     html.calc-viewonly .zoom-controls,
     html.calc-viewonly .preview-foot,
     html.calc-viewonly #designer-deal-bar,
     html.calc-viewonly .finder-handle {
       display: none !important;
     }
-    html.calc-viewonly body {
-      overflow: hidden;
-      pointer-events: none;
-    }
+    html.calc-viewonly .designer-main,
+    html.calc-viewonly .designer-main > .site-wrap,
     html.calc-viewonly .designer-layout,
     html.calc-viewonly .preview-pane,
     html.calc-viewonly .preview-sticky,
     html.calc-viewonly .preview-frame {
-      display: block;
-      height: 100%;
+      display: block !important;
+      position: relative !important;
+      height: 100% !important;
+      min-height: 0 !important;
+      max-height: none !important;
+      margin: 0 !important;
+      padding: 0 !important;
+      border: 0 !important;
+      border-radius: 0 !important;
+      box-shadow: none !important;
+      overflow: hidden !important;
+      top: auto !important;
     }
     html.calc-viewonly .preview-viewport {
-      height: 100vh;
+      position: absolute !important;
+      inset: 0 !important;
+      height: auto !important;
+      width: auto !important;
       pointer-events: none;
     }
   </style>
