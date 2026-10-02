@@ -565,6 +565,8 @@ function formatLead(row) {
     state: row.state || '',
     country: row.country || '',
     notes: row.notes || '',
+    calculatorQuery: row.calculator_query || row.calculatorQuery || '',
+    calculatorSummary: parseCalculatorSummary(row.calculator_summary || row.calculatorSummary),
     convertedCustomerId: row.converted_customer_id || null,
     mergedIntoId: row.merged_into_id || null,
     createdAt: row.created_at || '',
@@ -1010,6 +1012,8 @@ function ensureCompanyCrm(db) {
     "ALTER TABLE company_crm_deals ADD COLUMN lost_reason TEXT NOT NULL DEFAULT ''",
     "ALTER TABLE company_crm_deals ADD COLUMN kind TEXT NOT NULL DEFAULT 'project'",
     'ALTER TABLE company_crm_deals ADD COLUMN probability INTEGER NOT NULL DEFAULT -1',
+    "ALTER TABLE company_crm_leads ADD COLUMN calculator_query TEXT NOT NULL DEFAULT ''",
+    "ALTER TABLE company_crm_leads ADD COLUMN calculator_summary TEXT NOT NULL DEFAULT ''",
     "ALTER TABLE company_crm_deals ADD COLUMN calculator_query TEXT NOT NULL DEFAULT ''",
     "ALTER TABLE company_crm_deals ADD COLUMN calculator_summary TEXT NOT NULL DEFAULT ''",
     "ALTER TABLE company_crm_activities ADD COLUMN assigned_to TEXT NOT NULL DEFAULT ''",
@@ -1727,6 +1731,16 @@ function sqliteApi(db, store) {
         mentions.push({ kind: 'deal', id: deal.id, name: name, hint: 'Deal', path: '/company/crm/pipeline/' + deal.id });
       });
       return mentions.slice(0, 24);
+    },
+    async saveCrmLeadCalculator(id, payload) {
+      const current = formatLead(db.prepare('SELECT * FROM company_crm_leads WHERE id = ?').get(id));
+      if (!current) return null;
+      const src = payload || {};
+      const query = trim(src.query || src.calculatorQuery || current.calculatorQuery, 2000);
+      const summary = calculatorSummaryText(src.summary != null ? src.summary : (src.calculatorSummary != null ? src.calculatorSummary : current.calculatorSummary));
+      db.prepare('UPDATE company_crm_leads SET calculator_query = ?, calculator_summary = ?, updated_at = ? WHERE id = ?')
+        .run(query, summary, nowIso(), id);
+      return this.getCrmLead(id);
     },
     async saveCrmDealCalculator(id, payload) {
       const current = formatDeal(db.prepare('SELECT * FROM company_crm_deals WHERE id = ?').get(id));
@@ -2534,6 +2548,21 @@ function supabaseApi(supabase, store) {
         mentions.push({ kind: 'deal', id: deal.id, name: name, hint: 'Deal', path: '/company/crm/pipeline/' + deal.id });
       });
       return mentions.slice(0, 24);
+    },
+    async saveCrmLeadCalculator(id, payload) {
+      const row = await fetchLeadRow(id);
+      const current = formatLead(row);
+      if (!current) return null;
+      const src = payload || {};
+      const query = trim(src.query || src.calculatorQuery || current.calculatorQuery, 2000);
+      const summary = calculatorSummaryText(src.summary != null ? src.summary : (src.calculatorSummary != null ? src.calculatorSummary : current.calculatorSummary));
+      const { error } = await supabase.from('company_crm_leads').update({
+        calculator_query: query,
+        calculator_summary: summary,
+        updated_at: nowIso()
+      }).eq('id', id);
+      throwIf(error, 'Could not save this wall.');
+      return this.getCrmLead(id);
     },
     async saveCrmDealCalculator(id, payload) {
       const current = formatDeal(await supabase.from('company_crm_deals').select('*').eq('id', id).maybeSingle().then(function (r) {

@@ -513,6 +513,29 @@
   function selectHome(name) {
     selectDashOverview(name);
   }
+  function acceptedLeads() {
+    return (leads || []).filter(function (row) { return row && row.status === 'accepted'; });
+  }
+  function waitingLeads() {
+    return (leads || []).filter(function (row) { return row && row.status === 'sent'; });
+  }
+  function paintIncomingBadge() {
+    const link = document.querySelector('#portal-nav a[data-view="leads"]');
+    if (!link) return;
+    let badge = link.querySelector('.dash-nav-count');
+    const n = waitingLeads().length;
+    if (!n) {
+      if (badge) badge.hidden = true;
+      return;
+    }
+    if (!badge) {
+      badge = document.createElement('span');
+      badge.className = 'dash-nav-count';
+      link.appendChild(badge);
+    }
+    badge.hidden = false;
+    badge.textContent = String(n);
+  }
   function renderHome() {
     const openLeads = boardLeads();
     const quoteDrafts = docs.quote.filter(function (doc) { return doc.status === 'draft'; }).length;
@@ -782,13 +805,14 @@
       ]
     },
     'so-lines': {
-      lock: 'item',
+      lock: 'sku',
       cols: [
-        { id: 'item', label: 'Item' },
         { id: 'sku', label: 'SKU' },
+        { id: 'item', label: 'Item' },
         { id: 'description', label: 'Description' },
         { id: 'qty', label: 'Qty' },
         { id: 'onHand', label: 'On hand' },
+        { id: 'sell', label: 'Sell Price' },
         { id: 'dealer', label: 'Dealer Price' },
         { id: 'price', label: 'Price' },
         { id: 'amount', label: 'Amount' }
@@ -866,6 +890,7 @@
   function colKey(name) {
     const id = me && me.user && me.user.id;
     if (name === 'dealer-book') return 'portal-book-cols-' + (id || 'anon');
+    if (name === 'so-lines') return 'portal-cols-so-lines-sku-' + (id || 'anon');
     return 'portal-cols-' + name + '-' + (id || 'anon');
   }
   function colKnown(name) {
@@ -1235,13 +1260,15 @@
     const price = item.unitPrice == null || item.unitPrice === '' ? (inv ? inv.dealerNet : '') : item.unitPrice;
     const amount = (Number(qty) || 0) * (Number(price) || 0);
     const has = !!(item.sku || item.item || item.description || Number(price));
+    const sell = inv && Number(inv.listPrice) ? money(inv.listPrice) : '—';
     return '<tr class="border-b so-line">' +
       '<td class="py-2 px-1 so-line-lead"><span class="so-line-num">' + (index + 1) + '</span></td>' +
-      '<td class="py-2 px-2" data-col="item"><input data-line="item" value="' + esc(item.item || (inv && inv.name) || '') + '"></td>' +
       '<td class="py-2 px-2" data-col="sku"><div class="so-sku-search"><svg class="so-sku-search-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><circle cx="11" cy="11" r="6"/><path d="m20 20-3.5-3.5"/></svg><input data-line="sku" type="search" autocomplete="off" placeholder="Search SKU, name, brand" value="' + esc(item.sku || '') + '"></div></td>' +
+      '<td class="py-2 px-2" data-col="item"><input data-line="item" value="' + esc(item.item || (inv && inv.name) || '') + '"></td>' +
       '<td class="py-2 px-2" data-col="description"><input data-line="description" value="' + esc(item.description || '') + '"></td>' +
       '<td class="py-2 px-2" data-col="qty"><input data-line="qty" type="number" min="0" step="1" value="' + esc(qty) + '"></td>' +
       '<td class="py-2 px-2 tabular-nums so-inv-read" data-col="onHand" data-line="onHand">' + (inv ? esc(inv.qty) : '—') + '</td>' +
+      '<td class="py-2 px-2 tabular-nums so-inv-read" data-col="sell" data-line="sell">' + sell + '</td>' +
       '<td class="py-2 px-2 tabular-nums so-inv-read" data-col="dealer" data-line="dealer">' + (inv ? money(inv.dealerNet) : '—') + '</td>' +
       '<td class="py-2 px-2" data-col="price"><input data-line="unitPrice" type="number" step="0.01" readonly value="' + esc(price === '' ? '' : price) + '"></td>' +
       '<td class="py-2 px-2 text-right tabular-nums" data-col="amount" data-line-amt>' + (has && (Number(qty) || Number(price)) ? money(amount) : '') + '</td>' +
@@ -1267,7 +1294,7 @@
     const input = td.querySelector('input, select, textarea');
     if (input && (col === 'qty' || col === 'price')) return Number(input.value) || 0;
     if (input) return input.value || '';
-    if (col === 'onHand' || col === 'amount') {
+    if (col === 'onHand' || col === 'amount' || col === 'sell' || col === 'dealer') {
       const n = Number(String(td.textContent || '').replace(/[^0-9.-]/g, ''));
       return isNaN(n) ? 0 : n;
     }
@@ -1336,8 +1363,10 @@
       const priceEl = row.querySelector('[data-line="unitPrice"]');
       if (priceEl && inv) priceEl.value = String(inv.dealerNet);
       const onHand = row.querySelector('[data-line="onHand"]');
+      const sell = row.querySelector('[data-line="sell"]');
       const dealer = row.querySelector('[data-line="dealer"]');
       if (onHand) onHand.textContent = inv ? String(inv.qty) : '—';
+      if (sell) sell.textContent = inv && Number(inv.listPrice) ? money(inv.listPrice) : '—';
       if (dealer) dealer.textContent = inv ? money(inv.dealerNet) : '—';
       const amt = qty * price;
       if (sku) subtotal += amt;
@@ -2003,13 +2032,44 @@
     paintCompanyRequest(data);
     paintAccount(data);
     $('file-list').innerHTML = (data.files || []).map(function (file) {
-      const when = file.createdAt ? new Date(file.createdAt).toLocaleString() : '';
-      return '<li>' +
-        '<span>' + esc(file.name || 'File') + '</span>' +
-        (when ? ' <span class="portal-co-help">' + esc(when) + '</span>' : '') +
-        ' <a class="text-sky-600" href="' + esc(file.url) + '" target="_blank" rel="noopener">View</a>' +
-        ' <a class="text-sky-600" href="' + esc(file.url) + '" download>Download</a></li>';
-    }).join('') || '<li class="portal-co-help">No files yet.</li>';
+      const name = file.name || 'File';
+      const url = file.url || '';
+      let when = '<span>—</span>';
+      if (file.createdAt) {
+        const date = new Date(file.createdAt);
+        if (!isNaN(date.getTime())) {
+          when = '<span>' + esc(date.toLocaleDateString(undefined, { month: 'numeric', day: 'numeric', year: 'numeric' })) + '</span>' +
+            '<span>' + esc(date.toLocaleTimeString(undefined, { hour: 'numeric', minute: '2-digit' })) + '</span>';
+        }
+      }
+      return '<tr>' +
+        '<td class="portal-co-file-name" title="' + esc(name) + '">' + esc(name) + '</td>' +
+        '<td class="portal-co-file-when">' + when + '</td>' +
+        '<td class="portal-co-file-actions">' +
+          '<button type="button" class="portal-co-btn" data-file-view data-file-name="' + esc(name) + '" data-file-url="' + esc(url) + '">View</button>' +
+          '<a class="portal-co-btn" href="' + esc(url) + '" download>Download</a>' +
+        '</td></tr>';
+    }).join('') || '<tr><td colspan="3">No files yet.</td></tr>';
+  }
+  function closeFilePreview() {
+    const box = $('file-preview');
+    const body = $('file-preview-body');
+    if (box) box.hidden = true;
+    if (body) body.innerHTML = '';
+  }
+  function openFilePreview(name, url) {
+    const box = $('file-preview');
+    const body = $('file-preview-body');
+    const title = $('file-preview-title');
+    if (!box || !body) return;
+    if (title) title.textContent = name || 'File';
+    const ext = String(url || '').split('?')[0].split('.').pop().toLowerCase();
+    if (ext === 'pdf') {
+      body.innerHTML = '<iframe src="' + esc(url) + '" title="' + esc(name || 'File') + '"></iframe>';
+    } else {
+      body.innerHTML = '<img src="' + esc(url) + '" alt="' + esc(name || 'File') + '">';
+    }
+    box.hidden = false;
   }
 
   $('login-form').onsubmit = async function (e) {
@@ -2477,6 +2537,49 @@
       setCoStatus(msg, err.message, 'declined');
     }
   };
+  $('file-list').addEventListener('click', function (e) {
+    const btn = e.target.closest('[data-file-view]');
+    if (!btn) return;
+    openFilePreview(btn.getAttribute('data-file-name') || 'File', btn.getAttribute('data-file-url') || '');
+  });
+  $('file-preview').addEventListener('click', function (e) {
+    if (e.target === $('file-preview')) closeFilePreview();
+  });
+  $('file-preview-close').addEventListener('click', closeFilePreview);
+  document.addEventListener('keydown', function (e) {
+    if (e.key === 'Escape' && $('file-preview') && !$('file-preview').hidden) closeFilePreview();
+  });
+  (function bindFileDrop() {
+    const drop = $('file-drop');
+    const input = $('file-input');
+    const form = $('file-form');
+    if (!drop || !input || !form) return;
+    ['dragenter', 'dragover'].forEach(function (name) {
+      drop.addEventListener(name, function (e) {
+        e.preventDefault();
+        drop.classList.add('is-over');
+      });
+    });
+    ['dragleave', 'drop'].forEach(function (name) {
+      drop.addEventListener(name, function (e) {
+        e.preventDefault();
+        drop.classList.remove('is-over');
+      });
+    });
+    drop.addEventListener('drop', function (e) {
+      const file = e.dataTransfer && e.dataTransfer.files && e.dataTransfer.files[0];
+      if (!file) return;
+      if (!/\.(pdf|png|jpe?g)$/i.test(file.name || '')) {
+        setCoStatus($('file-msg'), 'Choose a PDF, JPG, or PNG.', 'declined');
+        return;
+      }
+      const list = new DataTransfer();
+      list.items.add(file);
+      input.files = list.files;
+      if (form.requestSubmit) form.requestSubmit();
+      else form.dispatchEvent(new Event('submit', { cancelable: true }));
+    });
+  })();
   $('file-form').onsubmit = async function (e) {
     e.preventDefault();
     const msg = $('file-msg');
@@ -3209,6 +3312,17 @@
   function leadPlace(row) {
     return [row.city, row.state].filter(Boolean).join(', ') || '—';
   }
+  function calcSummaryText(row) {
+    const sum = row && row.calculatorSummary;
+    if (!sum) return '';
+    const bits = [];
+    if (sum.seriesName || sum.series || sum.brand) bits.push([sum.brand, sum.seriesName || sum.series].filter(Boolean).join(' '));
+    if (sum.sizeLabel) bits.push(sum.sizeLabel);
+    else if (sum.width && sum.height) bits.push(sum.width + ' × ' + sum.height + (sum.unit ? ' ' + sum.unit : ''));
+    if (sum.pitch) bits.push('P' + sum.pitch);
+    if (sum.cabinets) bits.push(sum.cabinets + ' panels');
+    return bits.join(' · ');
+  }
   function leadFieldsHtml(row) {
     return '<div><dt class="text-slate-500">Contact</dt><dd>' + esc(row.contactName || '—') + '</dd></div>' +
       '<div><dt class="text-slate-500">Email</dt><dd>' + esc(row.contactEmail || '—') + '</dd></div>' +
@@ -3253,6 +3367,18 @@
     $('plead-meta').textContent = (row.number || '') + ' · ' + (row.stageLabel || 'New');
     $('plead-fields').innerHTML = leadFieldsHtml(row);
     $('plead-notes').textContent = row.notes || '';
+    const wall = calcSummaryText(row);
+    const wallEl = $('plead-calc');
+    if (wallEl) wallEl.textContent = wall || '';
+    const openCalc = $('plead-calc-open');
+    if (openCalc) {
+      openCalc.classList.toggle('hidden', !(row.calculatorQuery));
+      openCalc.onclick = function () {
+        const q = String(row.calculatorQuery || '').replace(/^\?/, '');
+        ensureCalculator('/led-wall-calculator' + (q ? '?' + q : ''));
+        openPortal('calculator', true);
+      };
+    }
     $('plead-stage').value = row.stage || 'new';
     setBoxMsg('plead-msg', '', true);
   }

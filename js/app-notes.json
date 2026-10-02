@@ -16,6 +16,31 @@
       "kind": "feature"
     },
     {
+      "id": "2026-10-02-phone-dashboard-scroll",
+      "date": "2026-10-02",
+      "apps": ["portal", "company"],
+      "title": "The phone dashboard scrolls",
+      "removed": [
+        "The Overview title above the dashboard cards."
+      ],
+      "changed": [
+        "On a phone, swipe the dashboard. The cards stay under the top bar. The detail, then Recent or Lobby, move underneath.",
+        "The last panel stops above the bottom bar."
+      ],
+      "kind": "update"
+    },
+    {
+      "id": "2026-10-02-quote-line-cols",
+      "date": "2026-10-02",
+      "apps": ["portal"],
+      "title": "Quote lines show sell price",
+      "changed": [
+        "On a Request Quote, SKU is the first column and Item is next to it.",
+        "Sell price sits in front of Dealer price."
+      ],
+      "kind": "update"
+    },
+    {
       "id": "2026-10-02-new-request-quote",
       "date": "2026-10-02",
       "apps": ["portal"],
@@ -610,7 +635,7 @@
       },
       {
         "title": "Request Quote",
-        "text": "Ask Spectrum to price a job. Click New Request Quote and add the lines. Customer, terms, and tax stay off this page until Spectrum sends the quote back.",
+        "text": "Ask Spectrum to price a job. Click New Request Quote. SKU is first, then the item. Sell price is shown before your dealer price.",
         "video": "/assets/portal-guide/quotes.mp4"
       },
       {
@@ -630,7 +655,7 @@
       },
       {
         "title": "Settings → Company",
-        "text": "Your company on the portal. The lines are read-only. Update sends a card for Spectrum to review. Account user shows your name and login. Change password is there. Add user sends a name and email for Spectrum to review. You can still upload files."
+        "text": "Your company on the portal. The lines are read-only. Update sends a card for Spectrum to review. Account user shows your name and login. Change password is there. Add user sends a name and email for Spectrum to review. Files are in a table. Drop a file or choose one. View opens a preview. Download saves it."
       },
       {
         "title": "Settings → What’s new",

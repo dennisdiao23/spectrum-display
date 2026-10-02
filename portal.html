@@ -37,7 +37,7 @@
     #company-boot .portal-boot-login button[type="submit"]{background:#fff;color:#000;border:0}
     #company-boot .portal-boot-login button[type="submit"]:hover{background:#e8e8e8}
   </style>
-  <link rel="stylesheet" href="/css/company-dash.css?v=starthere4" />
+  <link rel="stylesheet" href="/css/company-dash.css?v=starthere5" />
   <style>
     /* Dealer is writing a Request Quote. Spectrum fills these when the quote comes back. */
     #so-detail.is-request .so-request-back { display: none !important; }
@@ -157,10 +157,11 @@
     .portal-co-facts dd { margin: 0; color: #0f172a; min-width: 0; overflow-wrap: anywhere; }
     .portal-co-actions {
       display: grid;
-      grid-template-columns: 1fr 1fr;
+      grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
       gap: 0.85rem;
       align-items: start;
     }
+    .portal-co-side { min-width: 0; }
     .portal-co-side h2 {
       margin: 0 0 0.25rem;
       font-size: 1.15rem;
@@ -201,7 +202,141 @@
       flex-wrap: wrap;
       margin-top: 0.55rem;
     }
-    .portal-co-file-row input[type="file"] { font-size: 0.95rem; max-width: 100%; }
+    .portal-co-file-row input[type="file"] {
+      font-size: 0.95rem;
+      flex: 1 1 12rem;
+      max-width: 16rem;
+      min-width: 0;
+    }
+    .portal-co-drop {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 100%;
+      min-height: 7.5rem;
+      margin-top: 0.65rem;
+      padding: 1.25rem 1rem;
+      border: 1.5px dashed #94a3b8;
+      border-radius: 0.75rem;
+      color: #334155;
+      font-size: 1.15rem;
+      font-weight: 700;
+      text-align: center;
+      background: #f8fafc;
+    }
+    .portal-co-drop.is-over {
+      border-color: #0ea5e9;
+      background: #e0f2fe;
+      color: #0369a1;
+    }
+    .portal-co-table-wrap {
+      margin-top: 0.75rem;
+      max-height: 16rem;
+      overflow-x: hidden;
+      overflow-y: auto;
+      border: 1px solid #e2e8f0;
+      border-radius: 0.55rem;
+    }
+    .portal-co-files {
+      width: 100%;
+      table-layout: fixed;
+      border-collapse: collapse;
+      font-size: 0.95rem;
+    }
+    .portal-co-files th:nth-child(2),
+    .portal-co-files td:nth-child(2) { width: 7rem; }
+    .portal-co-files th:nth-child(3),
+    .portal-co-files td:nth-child(3) { width: 11.25rem; }
+    .portal-co-files th {
+      position: sticky;
+      top: 0;
+      z-index: 1;
+      background: #f8fafc;
+      text-align: left;
+      font-weight: 600;
+      color: #64748b;
+      padding: 0.5rem 0.65rem;
+      border-bottom: 1px solid #e2e8f0;
+    }
+    .portal-co-files td {
+      padding: 0.45rem 0.65rem;
+      border-bottom: 1px solid #eef2f6;
+      vertical-align: middle;
+      color: #0f172a;
+    }
+    .portal-co-files tr:last-child td { border-bottom: 0; }
+    .portal-co-file-name {
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+    .portal-co-file-when span {
+      display: block;
+      white-space: nowrap;
+      line-height: 1.25;
+    }
+    .portal-co-file-actions {
+      white-space: nowrap;
+      text-align: right;
+    }
+    .portal-co-file-actions .portal-co-btn {
+      margin-left: 0.3rem;
+      padding: 0.35rem 0.6rem;
+      text-decoration: none;
+    }
+    .portal-file-preview {
+      position: fixed;
+      inset: 0;
+      z-index: 80;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 1.25rem;
+      background: rgba(15, 23, 42, 0.55);
+    }
+    .portal-file-preview[hidden] { display: none !important; }
+    .portal-file-preview-card {
+      width: min(52rem, 100%);
+      max-height: min(40rem, calc(100vh - 2.5rem));
+      display: flex;
+      flex-direction: column;
+      background: #fff;
+      border-radius: 0.85rem;
+      overflow: hidden;
+      box-shadow: 0 18px 50px rgba(15, 23, 42, 0.28);
+    }
+    .portal-file-preview-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 0.75rem;
+      padding: 0.7rem 0.85rem;
+      border-bottom: 1px solid #e2e8f0;
+    }
+    .portal-file-preview-head p {
+      margin: 0;
+      font-size: 1rem;
+      font-weight: 700;
+      color: #0f172a;
+    }
+    .portal-file-preview-body {
+      min-height: 16rem;
+      overflow: auto;
+      background: #f8fafc;
+    }
+    .portal-file-preview-body img {
+      display: block;
+      max-width: 100%;
+      height: auto;
+      margin: 0 auto;
+    }
+    .portal-file-preview-body iframe {
+      display: block;
+      width: 100%;
+      height: min(32rem, calc(100vh - 8rem));
+      border: 0;
+      background: #fff;
+    }
     .portal-co-form {
       margin-top: 0.75rem;
       padding-top: 0.75rem;
@@ -454,10 +589,6 @@
       <section id="dashboard-section" class="hidden">
         <div id="dash-panel">
           <div class="dash-home" id="dash-home">
-            <div class="dash-home-head">
-              <h2>Overview</h2>
-              <p>A snapshot of each main menu area.</p>
-            </div>
             <div class="dash-home-kpis dash-home-kpis-4">
               <button type="button" class="dash-kpi is-on" data-home="leads" aria-pressed="true">
                 <span class="dash-kpi-icon dash-kpi-icon-crm" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16l-6.5 8.2V20l-3-1.5v-6.3L4 4z"/></svg></span>
@@ -744,6 +875,8 @@
                 <p id="plead-meta" class="text-sm text-slate-500 mt-1"></p>
                 <dl id="plead-fields" class="grid sm:grid-cols-2 gap-x-6 gap-y-3 text-sm mt-4"></dl>
                 <p id="plead-notes" class="text-sm mt-4"></p>
+                <p id="plead-calc" class="text-sm mt-3"></p>
+                <button type="button" id="plead-calc-open" class="hidden px-4 py-2 rounded-full bg-sky-500 hover:bg-sky-400 text-white text-sm font-semibold mt-2">Open in calculator</button>
                 <label class="text-sm block" style="margin-top:0.75rem">Stage
                   <select id="plead-stage" class="w-full mt-1 bg-slate-800 border border-slate-700 rounded-lg px-3 py-2">
                     <option value="new">New</option>
@@ -1055,11 +1188,12 @@
                               <thead>
                                 <tr>
                                   <th class="py-2 px-1 font-medium so-line-num-h" data-lock="start">#</th>
-                                  <th class="py-2 px-3 font-medium" data-col="item" data-lock="start">Item <span class="dash-col-caret">▾</span><span class="dash-col-grip" aria-hidden="true"></span></th>
-                                  <th class="py-2 px-3 font-medium" data-col="sku">SKU <span class="dash-col-caret">▾</span><span class="dash-col-grip" aria-hidden="true"></span></th>
+                                  <th class="py-2 px-3 font-medium" data-col="sku" data-lock="start">SKU <span class="dash-col-caret">▾</span><span class="dash-col-grip" aria-hidden="true"></span></th>
+                                  <th class="py-2 px-3 font-medium" data-col="item">Item <span class="dash-col-caret">▾</span><span class="dash-col-grip" aria-hidden="true"></span></th>
                                   <th class="py-2 px-3 font-medium" data-col="description">Description <span class="dash-col-caret">▾</span><span class="dash-col-grip" aria-hidden="true"></span></th>
                                   <th class="py-2 px-3 font-medium" data-col="qty">Qty <span class="dash-col-caret">▾</span><span class="dash-col-grip" aria-hidden="true"></span></th>
                                   <th class="py-2 px-3 font-medium" data-col="onHand">On hand <span class="dash-col-caret">▾</span><span class="dash-col-grip" aria-hidden="true"></span></th>
+                                  <th class="py-2 px-3 font-medium" data-col="sell">Sell Price <span class="dash-col-caret">▾</span><span class="dash-col-grip" aria-hidden="true"></span></th>
                                   <th class="py-2 px-3 font-medium" data-col="dealer">Dealer Price <span class="dash-col-caret">▾</span><span class="dash-col-grip" aria-hidden="true"></span></th>
                                   <th class="py-2 px-3 font-medium" data-col="price">Price <span class="dash-col-caret">▾</span><span class="dash-col-grip" aria-hidden="true"></span></th>
                                   <th class="py-2 px-3 font-medium" data-col="amount">Amount <span class="dash-col-caret">▾</span><span class="dash-col-grip" aria-hidden="true"></span></th>
@@ -1315,7 +1449,19 @@
               <input id="file-input" type="file" accept=".pdf,.jpg,.jpeg,.png,application/pdf,image/jpeg,image/png">
               <button type="submit" class="portal-co-btn">Upload</button>
             </div>
-            <ul id="file-list"></ul>
+            <div id="file-drop" class="portal-co-drop">Drop file</div>
+            <div class="portal-co-table-wrap">
+              <table class="portal-co-files">
+                <thead>
+                  <tr>
+                    <th>File</th>
+                    <th>Date</th>
+                    <th></th>
+                  </tr>
+                </thead>
+                <tbody id="file-list"></tbody>
+              </table>
+            </div>
             <p id="file-msg" class="portal-co-status" hidden></p>
           </form>
           <div class="portal-co-card portal-co-side">
@@ -1408,6 +1554,15 @@
   </div>
   <script src="/js/app-help.js?v=guidevid1"></script>
   <script src="/js/app-notes.js?v=guidevid1"></script>
-  <script src="/js/portal.js?v=starthere3"></script>
+  <div id="file-preview" class="portal-file-preview" hidden>
+    <div class="portal-file-preview-card" role="dialog" aria-modal="true" aria-labelledby="file-preview-title">
+      <div class="portal-file-preview-head">
+        <p id="file-preview-title">File</p>
+        <button type="button" id="file-preview-close" class="portal-co-btn">Close</button>
+      </div>
+      <div id="file-preview-body" class="portal-file-preview-body"></div>
+    </div>
+  </div>
+  <script src="/js/portal.js?v=starthere5"></script>
 </body>
 </html>
