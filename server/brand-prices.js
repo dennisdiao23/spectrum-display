@@ -53,8 +53,13 @@ function priceLabel(key) {
 }
 
 function lockedBasis(priceKey, basis) {
-  if (priceKey === 'sell') return { basis: 'cost', adjustDir: 'increase' };
-  if (String(basis || '').toLowerCase() === 'sell') return { basis: 'sell', adjustDir: 'decrease' };
+  const v = String(basis || '').toLowerCase();
+  if (priceKey === 'sell') {
+    if (v === 'local') return { basis: 'local', adjustDir: 'increase' };
+    return { basis: 'cost', adjustDir: 'increase' };
+  }
+  if (v === 'sell') return { basis: 'sell', adjustDir: 'decrease' };
+  if (v === 'local') return { basis: 'local', adjustDir: 'increase' };
   return { basis: 'cost', adjustDir: 'increase' };
 }
 
@@ -135,17 +140,22 @@ function priceChanges(items, rules, brandId, brandName) {
   (items || []).forEach(function (item) {
     if (!item || String(item.brandId || item.brand_id || '') !== id) return;
     const cost = money(item.cost);
-    if (!(cost > 0)) {
-      const sellRule = activeRule(stamped, id, item.category || '', 'sell');
-      const dealerRule = activeRule(stamped, id, item.category || '', 'dealer');
-      const integratorRule = activeRule(stamped, id, item.category || '', 'integrator');
-      const needsCost = (sellRule && sellRule.basis !== 'sell') || (dealerRule && dealerRule.basis !== 'sell') || (integratorRule && integratorRule.basis !== 'sell');
-      if (needsCost) skippedNoCost += 1;
-    }
+    const local = money(item.localWarehouseCost != null ? item.localWarehouseCost : item.local_warehouse_cost);
+    const sellRule = activeRule(stamped, id, item.category || '', 'sell');
+    const dealerRule = activeRule(stamped, id, item.category || '', 'dealer');
+    const integratorRule = activeRule(stamped, id, item.category || '', 'integrator');
+    const needsBase = [sellRule, dealerRule, integratorRule].some(function (rule) {
+      if (!rule) return false;
+      if (rule.basis === 'local') return !(local > 0);
+      if (rule.basis === 'sell') return false;
+      return !(cost > 0);
+    });
+    if (needsBase && !(cost > 0)) skippedNoCost += 1;
     const current = {
       sell: item.price,
       dealer: item.dealerNet != null ? item.dealerNet : item.dealer_net,
-      integrator: item.integratorPrice != null ? item.integratorPrice : item.integrator_price
+      integrator: item.integratorPrice != null ? item.integratorPrice : item.integrator_price,
+      local: local
     };
     const sellOld = money(current.sell);
     const dealerOld = money(current.dealer);
@@ -189,24 +199,30 @@ function pricesFromCost(rules, brandId, productType, cost, pctByKey, current) {
   const sellOld = money(cur.sell != null ? cur.sell : cur.price);
   const dealerOld = money(cur.dealer != null ? cur.dealer : (cur.dealerNet != null ? cur.dealerNet : cur.dealer_net));
   const integratorOld = money(cur.integrator != null ? cur.integrator : (cur.integratorPrice != null ? cur.integratorPrice : cur.integrator_price));
+  const localOld = money(cur.local != null ? cur.local : (cur.localWarehouseCost != null ? cur.localWarehouseCost : cur.local_warehouse_cost));
   const overrides = pctByKey || {};
   function hitFor(key) {
     if (overrides[key] != null && Number(overrides[key]) > 0) {
       const rule = activeRule(rules, brandId, productType, key);
-      const basis = rule ? rule.basis : (key === 'sell' ? 'cost' : 'sell');
-      return { pct: Number(overrides[key]), basis: key === 'sell' ? 'cost' : basis };
+      const basis = rule && (rule.basis === 'local' || rule.basis === 'sell') ? rule.basis : (key === 'sell' ? 'cost' : (rule ? rule.basis : 'cost'));
+      return { pct: Number(overrides[key]), basis: basis };
     }
     const rule = activeRule(rules, brandId, productType, key);
     if (!rule) return null;
-    return { pct: Number(rule.adjustPct), basis: key === 'sell' ? 'cost' : rule.basis };
+    return { pct: Number(rule.adjustPct), basis: rule.basis };
   }
   const sellHit = hitFor('sell');
-  const sell = sellHit && Number(cost) > 0 ? applyPct(cost, 'increase', sellHit.pct) : sellOld;
+  const sell = (function () {
+    if (!sellHit) return sellOld;
+    if (sellHit.basis === 'local') return Number(localOld) > 0 ? applyPct(localOld, 'increase', sellHit.pct) : sellOld;
+    return Number(cost) > 0 ? applyPct(cost, 'increase', sellHit.pct) : sellOld;
+  })();
   function side(key, old) {
     const hit = hitFor(key);
     if (!hit) return old;
-    if (!(Number(cost) > 0) && hit.basis !== 'sell') return old;
     if (hit.basis === 'sell') return applyPct(sell, 'decrease', hit.pct);
+    if (hit.basis === 'local') return Number(localOld) > 0 ? applyPct(localOld, 'increase', hit.pct) : old;
+    if (!(Number(cost) > 0)) return old;
     return applyPct(cost, 'increase', hit.pct);
   }
   return { sell: sell, dealer: side('dealer', dealerOld), integrator: side('integrator', integratorOld) };
@@ -215,6 +231,7 @@ function pricesFromCost(rules, brandId, productType, cost, pctByKey, current) {
 function describeRule(rule) {
   if (!rule || !(Number(rule.adjustPct) > 0)) return 'Leave unchanged';
   const pct = Number(rule.adjustPct) || 0;
+  if (rule.basis === 'local') return 'Local cost, increase ' + pct + '%';
   if (rule.priceKey === 'sell' || rule.basis === 'cost') return 'Cost, increase ' + pct + '%';
   return 'Sell price, decrease ' + pct + '%';
 }
@@ -237,10 +254,11 @@ function unitPriceForCustomer(item, customer, rules) {
   if (hit && brandHasRules(rules, brandId)) {
     const pctByKey = {};
     pctByKey[key] = hit.adjustPct;
-    return pricesFromCost(rules, brandId, item.category || '', item.cost, pctByKey, {
+      return pricesFromCost(rules, brandId, item.category || '', item.cost, pctByKey, {
       sell: item.price,
       dealer: item.dealerNet != null ? item.dealerNet : item.dealer_net,
-      integrator: item.integratorPrice != null ? item.integratorPrice : item.integrator_price
+      integrator: item.integratorPrice != null ? item.integratorPrice : item.integrator_price,
+      local: item.localWarehouseCost != null ? item.localWarehouseCost : item.local_warehouse_cost
     })[key];
   }
   if (key === 'dealer') return money(item.dealerNet != null ? item.dealerNet : item.dealer_net);

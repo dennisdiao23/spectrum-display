@@ -505,6 +505,24 @@ function nonNegNumber(value, label) {
   return n;
 }
 
+function panelCostFromPerM2(perM2, panelW, panelH) {
+  const rate = Number(perM2) || 0;
+  const w = Number(panelW) || 0;
+  const h = Number(panelH) || 0;
+  if (rate <= 0 || w <= 0 || h <= 0) return 0;
+  return Math.round(rate * (w / 1000) * (h / 1000) * 100) / 100;
+}
+
+function applyPerM2PanelCost(input) {
+  if (!input || input.costPerM2 == null || input.cost == null) return input;
+  if (Number(input.cost) > 0) return input;
+  const rate = Number(input.costPerM2) || 0;
+  if (rate <= 0) return input;
+  if (input.panelW == null || input.panelH == null) return input;
+  input.cost = panelCostFromPerM2(rate, input.panelW, input.panelH);
+  return input;
+}
+
 function panelTypeOf(value) {
   const raw = String(value || '').trim().toLowerCase().replace(/[\s_]+/g, '-');
   if (!raw) return '';
@@ -830,6 +848,12 @@ function normalizeItemInput(body, opts) {
   if (!patch || src.cost != null) {
     out.cost = nonNegNumber(src.cost, 'Cost');
   }
+  if (!patch || src.costPerM2 != null || src.cost_per_m2 != null) {
+    out.costPerM2 = nonNegNumber(
+      src.costPerM2 != null ? src.costPerM2 : src.cost_per_m2,
+      'Per m² cost'
+    );
+  }
   if (!patch || src.localWarehouseCost != null || src.local_warehouse_cost != null) {
     out.localWarehouseCost = nonNegNumber(
       src.localWarehouseCost != null ? src.localWarehouseCost : src.local_warehouse_cost,
@@ -872,6 +896,7 @@ function normalizeItemInput(body, opts) {
   if (!patch && out.notes == null) out.notes = '';
   if (!patch && out.description == null) out.description = '';
   if (!patch && out.cost == null) out.cost = 0;
+  if (!patch && out.costPerM2 == null) out.costPerM2 = 0;
   if (!patch && out.localWarehouseCost == null) out.localWarehouseCost = 0;
   if (!patch && out.dealerNet == null) out.dealerNet = 0;
   if (!patch && out.integratorPrice == null) out.integratorPrice = 0;
@@ -892,6 +917,7 @@ function normalizeItemInput(body, opts) {
   if (!patch && !out.category) out.category = guessInventoryCategory(out) || '';
   applyKitCreateDefaults(out);
   applyNonPanelDefaults(out);
+  applyPerM2PanelCost(out);
   if (!patch && !out.sku) {
     out.sku = suggestedSku({
       brandId: out.brandId,
@@ -919,6 +945,7 @@ function dbFieldsFromInput(input) {
   if (input.lowAt != null) row.low_at = input.lowAt;
   if (input.price != null) row.price = input.price;
   if (input.cost != null) row.cost = input.cost;
+  if (input.costPerM2 != null) row.cost_per_m2 = input.costPerM2;
   if (input.localWarehouseCost != null) row.local_warehouse_cost = input.localWarehouseCost;
   if (input.dealerNet != null) row.dealer_net = input.dealerNet;
   if (input.integratorPrice != null) row.integrator_price = input.integratorPrice;
@@ -1094,6 +1121,7 @@ function formatItem(row, brandName, maps, locations) {
     lowAt: lowAt,
     price: Number(row && row.price) || 0,
     cost: Number(row && row.cost) || 0,
+    costPerM2: Number(row && row.cost_per_m2) || 0,
     localWarehouseCost: Number(row && row.local_warehouse_cost) || 0,
     dealerNet: Number(row && row.dealer_net) || 0,
     integratorPrice: Number(row && row.integrator_price) || 0,
@@ -1313,6 +1341,7 @@ module.exports = {
   normalizeCategory,
   guessInventoryCategory,
   isLedPanelCategory,
+  panelCostFromPerM2,
   resolveItemCategory,
   itemKindOf,
   isKitItem,

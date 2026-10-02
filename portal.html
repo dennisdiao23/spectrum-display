@@ -589,10 +589,6 @@
       <section id="dashboard-section" class="hidden">
         <div id="dash-panel">
           <div class="dash-home" id="dash-home">
-            <div class="dash-home-head">
-              <h2>Overview</h2>
-              <p>A snapshot of each main menu area.</p>
-            </div>
             <div class="dash-home-kpis dash-home-kpis-4">
               <button type="button" class="dash-kpi is-on" data-home="leads" aria-pressed="true">
                 <span class="dash-kpi-icon dash-kpi-icon-crm" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16l-6.5 8.2V20l-3-1.5v-6.3L4 4z"/></svg></span>
@@ -635,15 +631,26 @@
                 <div class="dash-detail-stats" id="dash-detail-stats"></div>
                 <div class="dash-detail-list" id="dash-detail-list"></div>
               </section>
-              <section class="dash-home-panel dash-home-lobby">
-                <div class="dash-home-panel-head">
-                  <div>
-                    <h3>Recent</h3>
-                    <p>Latest leads, quotes, orders, and walls.</p>
+              <div class="dash-home-right" id="dash-home-right">
+                <section class="dash-home-panel dash-start-here hidden" id="dash-start-here">
+                  <div class="dash-home-panel-head">
+                    <div>
+                      <h3>Start here</h3>
+                      <p id="dash-start-sub">A step checks itself when it is saved.</p>
+                    </div>
                   </div>
-                </div>
-                <div class="dash-detail-list" id="dash-recent-list"></div>
-              </section>
+                  <div class="dash-detail-list" id="dash-start-list"></div>
+                </section>
+                <section class="dash-home-panel dash-home-recent" id="dash-lobby">
+                  <div class="dash-home-panel-head">
+                    <div>
+                      <h3>Recent</h3>
+                      <p>Latest leads, quotes, orders, and walls.</p>
+                    </div>
+                  </div>
+                  <div class="dash-detail-list" id="dash-recent-list"></div>
+                </section>
+              </div>
             </div>
           </div>
         </div>
@@ -1556,6 +1563,6 @@
       <div id="file-preview-body" class="portal-file-preview-body"></div>
     </div>
   </div>
-  <script src="/js/portal.js?v=portalfiles4"></script>
+  <script src="/js/portal.js?v=starthere5"></script>
 </body>
 </html>

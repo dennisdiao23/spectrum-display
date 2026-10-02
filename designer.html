@@ -878,7 +878,33 @@
       border-radius: 8px;
       background: #fff;
     }
+    html.calc-viewonly .site-header,
+    html.calc-viewonly .designer-toolbar,
+    html.calc-viewonly .designer-controls-pane,
+    html.calc-viewonly .preview-extras,
+    html.calc-viewonly .zoom-controls,
+    html.calc-viewonly .preview-foot,
+    html.calc-viewonly #designer-deal-bar,
+    html.calc-viewonly .finder-handle {
+      display: none !important;
+    }
+    html.calc-viewonly body {
+      overflow: hidden;
+      pointer-events: none;
+    }
+    html.calc-viewonly .designer-layout,
+    html.calc-viewonly .preview-pane,
+    html.calc-viewonly .preview-sticky,
+    html.calc-viewonly .preview-frame {
+      display: block;
+      height: 100%;
+    }
+    html.calc-viewonly .preview-viewport {
+      height: 100vh;
+      pointer-events: none;
+    }
   </style>
+  <script>if (location.search.indexOf('viewonly=1') !== -1) document.documentElement.classList.add('calc-viewonly');</script>
 </head>
 <body class="designer-app bg-slate-950 text-slate-100 antialiased">
   <header class="site-header" id="site-header">

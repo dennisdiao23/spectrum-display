@@ -111,7 +111,7 @@ function formatApplication(row, opts) {
     agreeTermsPrivacy: truthy(row.agree_terms_privacy),
     marketingOptIn: truthy(row.marketing_opt_in),
     resaleCertificateName: row.resale_certificate_name || '',
-    resaleCertificateUrl: reveal ? (row.resale_certificate_url || '') : '',
+    resaleCertificateUrl: reveal && row.resale_certificate_url ? '/api/admin/dealer-applications/' + row.id + '/certificate' : '',
     userId: admin ? (row.user_id || '') : '',
     crmLeadId: admin ? (row.crm_lead_id || null) : undefined,
     status: statusOf(row.status),
@@ -789,17 +789,124 @@ function supabaseFields(input) {
   };
 }
 
-function saveResaleFile(file) {
-  if (!file || !file.buffer) return { name: '', url: '' };
-  fs.mkdirSync(DEALER_UPLOAD_DIR, { recursive: true });
-  const ext = path.extname(file.originalname || '').toLowerCase();
-  const safeExt = ['.pdf', '.jpg', '.jpeg', '.png'].indexOf(ext) !== -1 ? ext : '.pdf';
-  const name = Date.now().toString(36) + '-' + crypto.randomBytes(4).toString('hex') + safeExt;
-  fs.writeFileSync(path.join(DEALER_UPLOAD_DIR, name), file.buffer);
+const DEALER_BUCKET = 'dealer-files';
+const DEALER_PRIVATE_DIR = path.join(ROOT, 'data', 'dealer-files');
+
+function dealerContentType(name) {
+  const ext = path.extname(String(name || '')).toLowerCase();
+  if (ext === '.png') return 'image/png';
+  if (ext === '.jpg' || ext === '.jpeg') return 'image/jpeg';
+  if (ext === '.pdf') return 'application/pdf';
+  return 'application/octet-stream';
+}
+
+function dealerDownloadName(name) {
+  const cleaned = String(name || 'file').replace(/[\r\n"]/g, '').slice(0, 180);
+  return cleaned || 'file';
+}
+
+function portalFileHref(file) {
+  return '/api/dealer/files/' + file.id;
+}
+
+function staffFileHref(customerId, file) {
+  return '/api/admin/company-customers/' + customerId + '/dealer-files/' + file.id + '/file';
+}
+
+function presentDealerBundle(files, href) {
+  const rows = files || [];
+  const logo = rows.find(function (file) {
+    return file && file.name === DEALER_LOGO_NAME && file.id;
+  });
   return {
-    name: trim(file.originalname, 200) || ('resale-certificate' + safeExt),
-    url: '/uploads/dealer/' + name
+    files: publicDealerFiles(rows).map(function (file) {
+      return Object.assign({}, file, { url: href(file) });
+    }),
+    logo: logo ? href(logo) : ''
   };
+}
+
+function parsePrivateRef(url) {
+  const raw = String(url || '');
+  if (raw.indexOf('private:') === 0) {
+    const rest = raw.slice('private:'.length);
+    const slash = rest.indexOf('/');
+    if (slash < 1) return null;
+    return { customerId: rest.slice(0, slash), storedName: rest.slice(slash + 1), legacy: false };
+  }
+  const storedName = raw.split('?')[0].split('/').filter(Boolean).pop() || '';
+  if (!storedName) return null;
+  return { customerId: '', storedName: storedName, legacy: true };
+}
+
+async function ensureDealerBucket(supabase) {
+  try {
+    await supabase.storage.createBucket(DEALER_BUCKET, { public: false });
+  } catch (err) { /* bucket may already exist */ }
+}
+
+async function saveDealerUpload(file, customerId, supabase) {
+  if (!file || !file.buffer || !customerId) return null;
+  const ext = path.extname(file.originalname || '').toLowerCase();
+  const safeExt = ['.pdf', '.jpg', '.jpeg', '.png'].indexOf(ext) !== -1 ? ext : '';
+  if (!safeExt) return null;
+  const storedName = Date.now().toString(36) + '-' + crypto.randomBytes(4).toString('hex') + safeExt;
+  const dir = path.join(DEALER_PRIVATE_DIR, String(customerId));
+  fs.mkdirSync(dir, { recursive: true });
+  fs.writeFileSync(path.join(dir, storedName), file.buffer);
+  if (supabase) {
+    const objectPath = String(customerId) + '/' + storedName;
+    const contentType = dealerContentType(storedName);
+    let uploaded = await supabase.storage.from(DEALER_BUCKET).upload(objectPath, file.buffer, {
+      contentType: contentType,
+      upsert: false
+    });
+    if (uploaded.error) {
+      await ensureDealerBucket(supabase);
+      uploaded = await supabase.storage.from(DEALER_BUCKET).upload(objectPath, file.buffer, {
+        contentType: contentType,
+        upsert: false
+      });
+    }
+    if (uploaded.error) {
+      try { fs.unlinkSync(path.join(dir, storedName)); } catch (err) { /* ignore */ }
+      throw Object.assign(new Error('Could not store the file.'), { code: 'invalid' });
+    }
+  }
+  return {
+    name: trim(file.originalname, 200) || ('file' + safeExt),
+    url: 'private:' + customerId + '/' + storedName
+  };
+}
+
+async function readDealerBytes(url, supabase) {
+  const ref = parsePrivateRef(url);
+  if (!ref || !ref.storedName || ref.storedName.indexOf('..') !== -1) return null;
+  if (supabase && ref.customerId && !ref.legacy) {
+    const downloaded = await supabase.storage.from(DEALER_BUCKET).download(ref.customerId + '/' + ref.storedName);
+    if (!downloaded.error && downloaded.data) {
+      return Buffer.from(await downloaded.data.arrayBuffer());
+    }
+  }
+  const local = [];
+  if (ref.customerId) local.push(path.join(DEALER_PRIVATE_DIR, ref.customerId, ref.storedName));
+  local.push(path.join(DEALER_UPLOAD_DIR, ref.storedName));
+  for (let i = 0; i < local.length; i++) {
+    if (fs.existsSync(local[i])) return fs.readFileSync(local[i]);
+  }
+  return null;
+}
+
+function removeDealerBytes(url, supabase) {
+  const ref = parsePrivateRef(url);
+  if (!ref || !ref.storedName) return;
+  if (ref.customerId) {
+    try { fs.unlinkSync(path.join(DEALER_PRIVATE_DIR, ref.customerId, ref.storedName)); } catch (err) { /* ignore */ }
+  }
+  try { fs.unlinkSync(path.join(DEALER_UPLOAD_DIR, ref.storedName)); } catch (err) { /* ignore */ }
+  if (supabase && ref.customerId && !ref.legacy) {
+    supabase.storage.from(DEALER_BUCKET).remove([ref.customerId + '/' + ref.storedName]).catch(function () {});
+  }
 }
 
 async function findWebsiteAccount(store, email) {
@@ -1219,12 +1326,13 @@ function sqliteApi(db, store) {
         : [];
       const users = customerId ? await this.listDealerUsersForCustomer(customerId) : [];
       const requests = customerId ? await this.listDealerRequestCards(customerId) : { company: null, user: null };
+      const shown = presentDealerBundle(files, portalFileHref);
       return {
         user: formatDealerUser(user),
         customer: publicDealerCustomer(customer),
         application: application,
-        files: publicDealerFiles(files),
-        logo: dealerLogoUrl(files),
+        files: shown.files,
+        logo: shown.logo,
         users: users,
         requests: requests
       };
@@ -1286,16 +1394,42 @@ function sqliteApi(db, store) {
       const rows = db.prepare(
         'SELECT * FROM dealer_files WHERE customer_id = ? ORDER BY datetime(created_at) DESC, id DESC'
       ).all(customerId).map(formatDealerFile);
-      return { files: publicDealerFiles(rows), logo: dealerLogoUrl(rows) };
+      return presentDealerBundle(rows, function (file) { return staffFileHref(customerId, file); });
+    },
+    async getDealerFileForCustomer(customerId, fileId) {
+      return formatDealerFile(db.prepare('SELECT * FROM dealer_files WHERE id = ? AND customer_id = ?').get(fileId, customerId));
+    },
+    async getDealerOwnedFile(user, fileId) {
+      const customerId = await resolveDealerCustomerId(store, user);
+      if (!customerId) return null;
+      return this.getDealerFileForCustomer(customerId, fileId);
+    },
+    async saveApplicationCertificate(file) {
+      const saved = await saveDealerUpload(file, 'applications', null);
+      if (!saved) throw Object.assign(new Error('Choose a PDF, JPG, or PNG.'), { code: 'invalid' });
+      return saved;
+    },
+    async readApplicationCertificate(id) {
+      const row = db.prepare('SELECT resale_certificate_name, resale_certificate_url FROM dealer_applications WHERE id = ?').get(id);
+      if (!row || !row.resale_certificate_url) return null;
+      return {
+        name: row.resale_certificate_name || 'file',
+        url: row.resale_certificate_url,
+        buffer: await readDealerBytes(row.resale_certificate_url, null)
+      };
+    },
+    async readDealerFile(row) {
+      return readDealerBytes(row && row.url, null);
     },
     async addDealerFileForCustomer(customerId, file, user) {
       if (!customerId) throw noCustomerError();
-      const saved = saveResaleFile(file);
-      if (!saved.url) throw Object.assign(new Error('Choose a PDF, JPG, or PNG.'), { code: 'invalid' });
+      const saved = await saveDealerUpload(file, customerId, null);
+      if (!saved) throw Object.assign(new Error('Choose a PDF, JPG, or PNG.'), { code: 'invalid' });
       const info = db.prepare(
         'INSERT INTO dealer_files (customer_id, dealer_user_id, name, url, created_at) VALUES (?, ?, ?, ?, ?)'
       ).run(customerId, user && user.id || null, saved.name, saved.url, nowIso());
-      return formatDealerFile(db.prepare('SELECT * FROM dealer_files WHERE id = ?').get(info.lastInsertRowid));
+      const row = formatDealerFile(db.prepare('SELECT * FROM dealer_files WHERE id = ?').get(info.lastInsertRowid));
+      return Object.assign({}, row, { url: portalFileHref(row) });
     },
     async deleteDealerFileForCustomer(customerId, fileId) {
       const row = db.prepare('SELECT * FROM dealer_files WHERE id = ? AND customer_id = ?').get(fileId, customerId);
@@ -1304,19 +1438,23 @@ function sqliteApi(db, store) {
         throw Object.assign(new Error('Upload a new logo to replace this one.'), { code: 'invalid' });
       }
       db.prepare('DELETE FROM dealer_files WHERE id = ?').run(row.id);
+      removeDealerBytes(row.url, null);
       return true;
     },
     async setDealerLogoForCustomer(customerId, file, user) {
       if (!customerId) throw noCustomerError();
-      const saved = saveResaleFile(file);
-      if (!/\.(png|jpe?g)$/i.test(saved.url || '')) {
+      const saved = await saveDealerUpload(file, customerId, null);
+      if (!saved || !/\.(png|jpe?g)$/i.test(saved.url || '')) {
         throw Object.assign(new Error('Logo must be a JPG or PNG.'), { code: 'invalid' });
       }
+      const previous = db.prepare('SELECT * FROM dealer_files WHERE customer_id = ? AND name = ?').all(customerId, DEALER_LOGO_NAME);
       db.prepare('DELETE FROM dealer_files WHERE customer_id = ? AND name = ?').run(customerId, DEALER_LOGO_NAME);
-      db.prepare(
+      previous.forEach(function (old) { removeDealerBytes(old.url, null); });
+      const info = db.prepare(
         'INSERT INTO dealer_files (customer_id, dealer_user_id, name, url, created_at) VALUES (?, ?, ?, ?, ?)'
       ).run(customerId, user && user.id || null, DEALER_LOGO_NAME, saved.url, nowIso());
-      return { url: saved.url };
+      const row = formatDealerFile(db.prepare('SELECT * FROM dealer_files WHERE id = ?').get(info.lastInsertRowid));
+      return { url: staffFileHref(customerId, row), id: row.id };
     },
     async addDealerFile(user, file) {
       const customerId = await resolveDealerCustomerId(store, user);
@@ -1625,12 +1763,13 @@ function supabaseApi(supabase, store) {
       const files = (data || []).map(formatDealerFile);
       const users = customerId ? await this.listDealerUsersForCustomer(customerId) : [];
       const requests = customerId ? await this.listDealerRequestCards(customerId) : { company: null, user: null };
+      const shown = presentDealerBundle(files, portalFileHref);
       return {
         user: formatDealerUser(user),
         customer: publicDealerCustomer(customer),
         application: application,
-        files: publicDealerFiles(files),
-        logo: dealerLogoUrl(files),
+        files: shown.files,
+        logo: shown.logo,
         users: users,
         requests: requests
       };
@@ -1705,12 +1844,40 @@ function supabaseApi(supabase, store) {
       const { data, error } = await supabase.from('dealer_files').select('*').eq('customer_id', customerId).order('created_at', { ascending: false });
       throwIfMissing(error, 'Could not load dealer files.');
       const rows = (data || []).map(formatDealerFile);
-      return { files: publicDealerFiles(rows), logo: dealerLogoUrl(rows) };
+      return presentDealerBundle(rows, function (file) { return staffFileHref(customerId, file); });
+    },
+    async getDealerFileForCustomer(customerId, fileId) {
+      const { data, error } = await supabase.from('dealer_files').select('*').eq('id', fileId).eq('customer_id', customerId).maybeSingle();
+      throwIfMissing(error, 'Could not load the file.');
+      return formatDealerFile(data);
+    },
+    async getDealerOwnedFile(user, fileId) {
+      const customerId = await resolveDealerCustomerId(store, user);
+      if (!customerId) return null;
+      return this.getDealerFileForCustomer(customerId, fileId);
+    },
+    async saveApplicationCertificate(file) {
+      const saved = await saveDealerUpload(file, 'applications', supabase);
+      if (!saved) throw Object.assign(new Error('Choose a PDF, JPG, or PNG.'), { code: 'invalid' });
+      return saved;
+    },
+    async readApplicationCertificate(id) {
+      const { data, error } = await supabase.from('dealer_applications').select('resale_certificate_name, resale_certificate_url').eq('id', id).maybeSingle();
+      throwIfMissing(error, 'Could not load the application.');
+      if (!data || !data.resale_certificate_url) return null;
+      return {
+        name: data.resale_certificate_name || 'file',
+        url: data.resale_certificate_url,
+        buffer: await readDealerBytes(data.resale_certificate_url, supabase)
+      };
+    },
+    async readDealerFile(row) {
+      return readDealerBytes(row && row.url, supabase);
     },
     async addDealerFileForCustomer(customerId, file, user) {
       if (!customerId) throw noCustomerError();
-      const saved = saveResaleFile(file);
-      if (!saved.url) throw Object.assign(new Error('Choose a PDF, JPG, or PNG.'), { code: 'invalid' });
+      const saved = await saveDealerUpload(file, customerId, supabase);
+      if (!saved) throw Object.assign(new Error('Choose a PDF, JPG, or PNG.'), { code: 'invalid' });
       const { data, error } = await supabase.from('dealer_files').insert({
         customer_id: customerId,
         dealer_user_id: user && user.id || null,
@@ -1719,7 +1886,8 @@ function supabaseApi(supabase, store) {
         created_at: nowIso()
       }).select('*').single();
       throwIfMissing(error, 'Could not save the file.');
-      return formatDealerFile(data);
+      const row = formatDealerFile(data);
+      return Object.assign({}, row, { url: portalFileHref(row) });
     },
     async deleteDealerFileForCustomer(customerId, fileId) {
       const { data, error } = await supabase.from('dealer_files').select('*').eq('id', fileId).eq('customer_id', customerId).maybeSingle();
@@ -1730,16 +1898,20 @@ function supabaseApi(supabase, store) {
       }
       const removed = await supabase.from('dealer_files').delete().eq('id', data.id);
       throwIfMissing(removed.error, 'Could not delete the file.');
+      removeDealerBytes(data.url, supabase);
       return true;
     },
     async setDealerLogoForCustomer(customerId, file, user) {
       if (!customerId) throw noCustomerError();
-      const saved = saveResaleFile(file);
-      if (!/\.(png|jpe?g)$/i.test(saved.url || '')) {
+      const saved = await saveDealerUpload(file, customerId, supabase);
+      if (!saved || !/\.(png|jpe?g)$/i.test(saved.url || '')) {
         throw Object.assign(new Error('Logo must be a JPG or PNG.'), { code: 'invalid' });
       }
+      const previous = await supabase.from('dealer_files').select('*').eq('customer_id', customerId).eq('name', DEALER_LOGO_NAME);
+      throwIfMissing(previous.error, 'Could not replace the logo.');
       const removed = await supabase.from('dealer_files').delete().eq('customer_id', customerId).eq('name', DEALER_LOGO_NAME);
       throwIfMissing(removed.error, 'Could not replace the logo.');
+      (previous.data || []).forEach(function (old) { removeDealerBytes(old.url, supabase); });
       const { data, error } = await supabase.from('dealer_files').insert({
         customer_id: customerId,
         dealer_user_id: user && user.id || null,
@@ -1748,7 +1920,8 @@ function supabaseApi(supabase, store) {
         created_at: nowIso()
       }).select('*').single();
       throwIfMissing(error, 'Could not save the logo.');
-      return { url: (data && data.url) || saved.url };
+      const row = formatDealerFile(data);
+      return { url: staffFileHref(customerId, row), id: row.id };
     },
     async addDealerFile(user, file) {
       const customerId = await resolveDealerCustomerId(store, user);
@@ -1802,6 +1975,7 @@ module.exports = {
   supabaseApi,
   formatApplication,
   publicPriceBookItem,
-  saveResaleFile,
+  dealerContentType,
+  dealerDownloadName,
   alreadyDealerError
 };

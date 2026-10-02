@@ -575,6 +575,7 @@
     drawKpiSpark('dash-spark-walls', dashSeriesFrom(walls, ['shipDate', 'createdAt']), '#d39b12');
     markDashOverview(dashHome);
     renderHomeDetail();
+    renderStartHere();
     const recent = []
       .concat(docs.quote.map(function (doc) {
         return { at: doc.updatedAt || doc.createdAt, title: doc.number || 'Request Quote', meta: 'Request Quote · ' + (doc.status || ''), side: money(doc.total) };
@@ -599,14 +600,73 @@
       }).join('') : '<p class="dash-activity-empty">No recent leads, quotes, orders, or walls yet.</p>';
     }
   }
+  function startHereSteps() {
+    return [
+      {
+        title: 'Dealer book',
+        text: 'Your prices and what is on hand.',
+        href: '/portal/book',
+        done: book.length > 0
+      },
+      {
+        title: 'Calculator',
+        text: 'Size a wall and save it.',
+        href: '/portal/calculator',
+        done: projects.length > 0 || panels.length > 0
+      },
+      {
+        title: 'Deal registration',
+        text: 'Register one named job.',
+        href: '/portal/registrations',
+        done: registrations.length > 0
+      },
+      {
+        title: 'Request Quote',
+        text: 'Ask Spectrum to price a job.',
+        href: '/portal/quotes',
+        done: (docs.quote || []).length > 0
+      }
+    ];
+  }
+  function startHereOpen() {
+    return startHereSteps().some(function (step) { return !step.done; });
+  }
+  function renderStartHere() {
+    const col = $('dash-home-right') || document.querySelector('.dash-home-right');
+    const wrap = $('dash-start-here');
+    const list = $('dash-start-list');
+    const sub = $('dash-start-sub');
+    const open = startHereOpen();
+    if (col) col.classList.toggle('is-start-here', open);
+    if (wrap) wrap.classList.toggle('hidden', !open);
+    if (!open || !list) return;
+    const steps = startHereSteps();
+    const doneCount = steps.filter(function (step) { return step.done; }).length;
+    if (sub) sub.textContent = doneCount + ' of ' + steps.length + ' done. A step checks itself when it is saved.';
+    list.innerHTML = steps.map(function (step) {
+      return '<div class="start-here-row' + (step.done ? ' is-done' : '') + '">' +
+        '<span class="start-here-check" aria-hidden="true"></span>' +
+        '<div><strong>' + esc(step.title) + '</strong><span>' + esc(step.text) + '</span></div>' +
+        '<a href="' + esc(step.href) + '">Open</a>' +
+        '</div>';
+    }).join('');
+  }
   function refreshHomeData() {
     Promise.all([
+      api('/api/dealer/book').catch(function () { return null; }),
+      api('/api/dealer/registrations').catch(function () { return { registrations: [] }; }),
+      api('/api/dealer/projects').catch(function () { return { projects: [] }; }),
+      api('/api/dealer/panels').catch(function () { return { panels: [] }; }),
       api('/api/dealer/leads').catch(function () { return { leads: [] }; }),
       api('/api/dealer/walls').catch(function () { return { walls: [] }; }),
       refreshDocs().catch(function () {})
     ]).then(function (saved) {
-      leads = (saved[0] && saved[0].leads) || [];
-      walls = (saved[1] && saved[1].walls) || [];
+      if (saved[0] && saved[0].items) book = saved[0].items;
+      registrations = (saved[1] && saved[1].registrations) || [];
+      projects = (saved[2] && saved[2].projects) || [];
+      panels = (saved[3] && saved[3].panels) || [];
+      leads = (saved[4] && saved[4].leads) || [];
+      walls = (saved[5] && saved[5].walls) || [];
       if (pathView() === 'home') renderHome();
     }).catch(function () {});
   }
@@ -2063,7 +2123,7 @@
     selectDashOverview(kpi.getAttribute('data-home'));
   });
   (function bindDashOverviewLoopHold() {
-    ['dash-detail', 'dash-home'].forEach(function (id) {
+    ['dash-detail', 'dash-home-right', 'dash-home'].forEach(function (id) {
       const el = id === 'dash-home'
         ? document.querySelector('#dash-home .dash-home-kpis')
         : document.getElementById(id);

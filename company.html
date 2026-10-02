@@ -35,13 +35,13 @@
   <link rel="stylesheet" href="/css/company-dash.css?v=invfilters2" />
   <script src="/js/address-autocomplete.js"></script>
   <script src="/js/company-chat.js?v=po-ship1"></script>
-  <script src="/js/company-crm.js?v=leadcalc1"></script>
+  <script src="/js/company-crm.js?v=leadview1"></script>
   <script src="/js/company-staff.js?v=staff6"></script>
   <script src="/js/company-traffic.js?v=loc1"></script>
   <script src="/js/company-website-control.js?v=webctrl7"></script>
   <script src="/js/print-form.js?v=forms21"></script>
-  <script src="/js/brand-prices.js?v=brands3"></script>
-  <script src="/js/settings-brands.js?v=brands4"></script>
+  <script src="/js/brand-prices.js?v=brands7"></script>
+  <script src="/js/settings-brands.js?v=brands7"></script>
   <script src="/js/app-help.js?v=help6"></script>
   <script src="/js/app-notes.js?v=guidevid1"></script>
   <script>
@@ -393,10 +393,6 @@
     <section id="dash-panel" class="hidden space-y-8">
       <div id="dashboard-section" class="hidden">
         <div class="dash-home" id="dash-home">
-          <div class="dash-home-head">
-            <h2>Overview</h2>
-            <p>A snapshot of each main menu area.</p>
-          </div>
           <div class="dash-home-kpis">
             <button type="button" class="dash-kpi is-on" data-home="website" aria-pressed="true">
               <span class="dash-kpi-icon dash-kpi-icon-website" aria-hidden="true">
@@ -1614,6 +1610,12 @@
                   <dl class="cc-detail-read-grid" id="inv-detail-read"></dl>
                 </div>
                 <div id="inv-detail-panel-specs" class="cc-detail-panel hidden" role="tabpanel" hidden>
+                  <label class="inv-spec-drop" id="inv-detail-spec-drop">
+                    <strong>Drop a PDF here</strong>
+                    <span>or click to browse</span>
+                    <input id="inv-detail-spec-files" type="file" accept="application/pdf,.pdf" multiple>
+                  </label>
+                  <p id="inv-detail-specs-msg" class="hidden text-sm mt-2"></p>
                   <ul id="inv-detail-specs" class="inv-spec-list"></ul>
                   <p id="inv-detail-specs-empty" class="cc-detail-empty hidden">No spec sheets yet.</p>
                 </div>
@@ -2608,10 +2610,13 @@
                 </div>
                 <div id="crm-lead-panel-calculator" class="cc-detail-panel hidden" role="tabpanel" hidden>
                   <div id="crm-lead-calc-summary" class="crm-calc-summary">No wall on this lead yet.</div>
-                  <div class="crm-seq-actions">
-                    <a id="crm-lead-calc-open" class="cc-detail-btn cc-detail-btn-primary" href="/led-wall-calculator" target="_blank" rel="noopener">Open live calculator</a>
+                  <div class="crm-lead-preview">
+                    <iframe id="crm-lead-calc-frame" class="crm-lead-preview-frame" title="Wall preview" tabindex="-1"></iframe>
+                    <div class="crm-lead-preview-lock" aria-hidden="true"></div>
                   </div>
-                  <iframe id="crm-lead-calc-frame" class="crm-calc-frame" title="LED wall calculator" hidden></iframe>
+                  <div class="crm-seq-actions">
+                    <button type="button" id="crm-lead-calc-open" class="cc-detail-btn cc-detail-btn-primary">Open live calculator</button>
+                  </div>
                 </div>
                 <div id="crm-lead-panel-deals" class="cc-detail-panel hidden" role="tabpanel" hidden>
                   <div class="overflow-x-auto rounded-2xl border border-slate-800">
@@ -3739,7 +3744,7 @@
                 <label class="so-field"><span>Name</span><input id="sb-name" type="text" maxlength="120"></label>
               </div>
               <div id="sb-pane-price" class="hidden mt-4">
-                <p class="text-sm text-slate-500 mb-3">A percent of 0 leaves that price unchanged. Click Edit to change one percent. Sell price is cost increased by a percent. Retail and Residential use Sell price. Dealer price is for customer type Dealer. Integrator price is for customer type AV Integrator. Those two can be cost increased by a percent, or Sell price decreased by a percent. A product type left at 0 uses the All products percent.</p>
+                <p class="text-sm text-slate-500 mb-3">A percent of 0 leaves that price unchanged. Click Edit to change one percent. Sell price can be Cost increased by a percent, or Local Cost increased by a percent. Retail and Residential use Sell price. Dealer and Integrator can use Cost, Local Cost, or Sell price. Local Cost uses Local warehouse cost. A product type left at 0 uses the All products percent.</p>
                 <div class="cc-table-card rounded-2xl border border-slate-800">
                   <div class="cc-table-wrap overflow-auto" style="max-height:28rem">
                     <table class="w-full text-sm">
@@ -3997,6 +4002,9 @@
     </section>
     <section id="calculator-section" class="hidden">
       <iframe id="company-calculator-frame" title="LED Wall Calculator"></iframe>
+    </section>
+    <section id="lead-wall-section" class="hidden">
+      <iframe id="lead-wall-frame" title="Lead calculator"></iframe>
     </section>
   </main>
   </div>
@@ -4767,9 +4775,10 @@
               <p class="cc-note">Manufacturer spec sheets for this SKU. Save item to keep them.</p>
               <ul id="inv-spec-edit-list" class="inv-spec-list"></ul>
               <p id="inv-spec-edit-empty" class="cc-detail-empty">No spec sheets yet.</p>
-              <label class="cc-detail-btn inv-spec-add">
-                Add PDF
-                <input id="inv-spec-files" type="file" accept="application/pdf,.pdf" multiple hidden>
+              <label class="inv-spec-drop" id="inv-spec-drop">
+                <strong>Drop a PDF here</strong>
+                <span>or click to browse</span>
+                <input id="inv-spec-files" type="file" accept="application/pdf,.pdf" multiple>
               </label>
               <p id="inv-spec-msg" class="hidden text-sm mt-2"></p>
             </div>
@@ -4820,7 +4829,10 @@
             <div class="cc-field">
               <label>Cost ($)</label>
               <input id="inv-cost" form="inv-item-form" type="number" min="0" step="0.01">
-              <p class="cc-note" style="margin-top:0.35rem">China factory FOB.</p>
+              <p class="cc-note" style="margin-top:0.35rem">China factory FOB. Per panel.</p>
+              <label style="margin-top:0.85rem">Per m² cost ($)</label>
+              <input id="inv-cost-m2" form="inv-item-form" type="number" min="0" step="0.01">
+              <p class="cc-note" style="margin-top:0.35rem">Fills Cost when Cost is empty, using panel size W × H.</p>
             </div>
             <div class="cc-field">
               <label>Local warehouse cost ($)</label>
@@ -5438,6 +5450,8 @@
       if (p === '/company/customers') return 'customers';
       if (/^\/company\/customers\/\d+$/.test(p)) return 'customers';
       if (p === '/company/crm' || p === '/company/crm/leads') return 'leads';
+      var leadWall = p.match(/^\/company\/crm\/leads\/(\d+)\/wall$/);
+      if (leadWall) return 'leadcalc-' + leadWall[1];
       if (/^\/company\/crm\/leads\/\d+$/.test(p)) return 'leads';
       if (p === '/company/crm/pipeline') return 'pipeline';
       if (/^\/company\/crm\/pipeline\/\d+$/.test(p)) return 'pipeline';
@@ -5487,6 +5501,8 @@
       if (name === 'customers') return '/company/customers';
       if (name === 'dealer') return '/company/dealers';
       if (name === 'crm' || name === 'leads') return '/company/crm/leads';
+      var leadCalc = String(name || '').match(/^leadcalc-(\d+)$/);
+      if (leadCalc) return '/company/crm/leads/' + leadCalc[1] + '/wall';
       if (name === 'pipeline') return '/company/crm/pipeline';
       if (name === 'activities') return '/company/crm/activities';
       if (name === 'orders') return '/company/sales/orders';
@@ -5887,6 +5903,7 @@
       if (doc) return doc.kind === 'po' ? 'vendor' : 'customer';
       if (name === 'dashboard') return 'dashboard';
       if (name === 'calculator') return 'calculator';
+      if (/^leadcalc-\d+$/.test(name)) return 'leadwall';
       if (name === 'chat') return 'chat';
       if (name === 'products' || name === 'store' || name === 'accounts' || name === 'traffic' || name === 'website') return 'website';
       if (name === 'installed-walls') return 'customer';
@@ -6350,6 +6367,7 @@
     }
 
     function masterTabIcon(name) {
+      if (/^leadcalc-\d+$/.test(String(name || ''))) return MASTER_TAB_ICON.calculator;
       const doc = parseDocMasterTab(name);
       if (doc) {
         if (doc.kind === 'po') return MASTER_TAB_ICON['purchase-orders'];
@@ -8860,10 +8878,53 @@
       if (!frame) return;
       if (!raw && frame.getAttribute('src')) return;
       const next = calculatorFrameUrl(raw);
+      if (frame.getAttribute('data-src') !== next) {
+        frame.setAttribute('data-src', next);
+        frame.src = next;
+      }
+    }
+    async function loadLeadWallFrame(id) {
+      const frame = document.getElementById('lead-wall-frame');
+      if (!frame) return;
+      let query = '';
+      try {
+        const res = await fetch('/api/admin/crm/leads/' + encodeURIComponent(id), { credentials: 'include' });
+        const data = await res.json();
+        const lead = data && data.lead;
+        query = lead && lead.calculatorQuery ? String(lead.calculatorQuery).replace(/^\?/, '') : '';
+        if (lead) setMasterTabCaption('leadcalc-' + id, lead.companyName || lead.displayName || ('Lead ' + id));
+      } catch (err) {}
+      const next = '/led-wall-calculator?lead=' + encodeURIComponent(id) + '&embed=1' + (query ? '&' + query : '');
       if (frame.getAttribute('data-src') === next) return;
       frame.setAttribute('data-src', next);
       frame.src = next;
     }
+    window.openLeadCalculatorTab = function (lead) {
+      if (!lead || !lead.id) return;
+      const name = 'leadcalc-' + lead.id;
+      setMasterTabCaption(name, lead.companyName || lead.displayName || ('Lead ' + lead.id));
+      openCompanyTab(name, true);
+    };
+    window.addEventListener('message', function (event) {
+      if (event.origin !== window.location.origin) return;
+      const data = event.data || {};
+      if (!data || data.type !== 'spectrum-lead-wall') return;
+      const shot = document.getElementById('crm-lead-calc-shot');
+      if (shot && data.preview) {
+        shot.src = data.preview;
+        shot.classList.remove('hidden');
+      }
+      const summary = document.getElementById('crm-lead-calc-summary');
+      const sum = data.summary;
+      if (summary && sum) {
+        const bits = [];
+        if (sum.seriesName || sum.series || sum.brand) bits.push([sum.brand, sum.seriesName || sum.series].filter(Boolean).join(' '));
+        if (sum.sizeLabel) bits.push(sum.sizeLabel);
+        if (sum.pitch) bits.push('P' + sum.pitch);
+        if (sum.cabinets) bits.push(sum.cabinets + ' panels');
+        if (bits.length) summary.textContent = bits.join(' · ');
+      }
+    });
 
     function showAdminTab(name) {
       if (typeof ccDrawerNeedsLeave === 'function' && ccDrawerNeedsLeave()) {
@@ -8937,12 +8998,16 @@
       else stopDashOverviewLoop();
       const chatSec = document.getElementById('chat-section');
       if (chatSec) chatSec.classList.toggle('hidden', view !== 'chat');
+      const leadWallId = String(name || '').match(/^leadcalc-(\d+)$/);
       const dashPanelEl = document.getElementById('dash-panel');
-      if (dashPanelEl && currentAdminUser) dashPanelEl.classList.toggle('hidden', view === 'calculator');
+      if (dashPanelEl && currentAdminUser) dashPanelEl.classList.toggle('hidden', view === 'calculator' || !!leadWallId);
       const calcSec = document.getElementById('calculator-section');
       if (calcSec) calcSec.classList.toggle('hidden', view !== 'calculator');
-      document.body.classList.toggle('calc-lock', view === 'calculator');
+      const wallSec = document.getElementById('lead-wall-section');
+      if (wallSec) wallSec.classList.toggle('hidden', !leadWallId);
+      document.body.classList.toggle('calc-lock', view === 'calculator' || !!leadWallId);
       if (view === 'calculator') ensureCalculator('');
+      if (leadWallId) loadLeadWallFrame(leadWallId[1]);
       document.body.classList.toggle('chat-page-on', view === 'chat' && isMobileDash());
       if (view === 'chat') {
         if (isMobileDash() && window.SpectrumChat && typeof SpectrumChat.openPage === 'function') {
@@ -13013,8 +13078,10 @@
     function renderInvDetailSpecs() {
       const list = document.getElementById('inv-detail-specs');
       const empty = document.getElementById('inv-detail-specs-empty');
+      const drop = document.getElementById('inv-detail-spec-drop');
       const item = invDetailData && invDetailData.item;
       const docs = (item && item.docs) || [];
+      if (drop) drop.classList.toggle('hidden', !item || !item.id || !canEdit('inventory'));
       if (!list) return;
       list.innerHTML = docs.map(function (doc) {
         return '<li class="inv-spec-row"><a href="' + esc(doc.url) + '" target="_blank" rel="noopener">' + esc(doc.name || 'Spec sheet') + '</a></li>';
@@ -13754,7 +13821,7 @@
     }
 
     function invFormSnapshot() {
-      const ids = ['inv-item-kind', 'inv-name', 'inv-sku', 'inv-mpn', 'inv-brand', 'inv-category', 'inv-category-new', 'inv-unit', 'inv-panel-type', 'inv-packaging-type', 'inv-item-pitch', 'inv-qty-init', 'inv-item-low', 'inv-weight', 'inv-panel-w', 'inv-panel-h', 'inv-item-notes', 'inv-description', 'inv-price', 'inv-dealer-net', 'inv-integrator', 'inv-cost', 'inv-local-cost'];
+      const ids = ['inv-item-kind', 'inv-name', 'inv-sku', 'inv-mpn', 'inv-brand', 'inv-category', 'inv-category-new', 'inv-unit', 'inv-panel-type', 'inv-packaging-type', 'inv-item-pitch', 'inv-qty-init', 'inv-item-low', 'inv-weight', 'inv-panel-w', 'inv-panel-h', 'inv-item-notes', 'inv-description', 'inv-price', 'inv-dealer-net', 'inv-integrator', 'inv-cost', 'inv-cost-m2', 'inv-local-cost'];
       const vals = ids.map(function (id) {
         const el = document.getElementById(id);
         return el ? String(el.value || '') : '';
@@ -13881,6 +13948,8 @@
       fillInvCategories(item && item.category);
       document.getElementById('inv-description').value = (item && item.description) || '';
       document.getElementById('inv-cost').value = item && item.cost != null ? item.cost : '';
+      const costM2 = document.getElementById('inv-cost-m2');
+      if (costM2) costM2.value = item && item.costPerM2 != null ? item.costPerM2 : '';
       document.getElementById('inv-local-cost').value = item && item.localWarehouseCost != null ? item.localWarehouseCost : '';
       document.getElementById('inv-dealer-net').value = item && item.dealerNet != null ? item.dealerNet : '';
       const invIntegrator = document.getElementById('inv-integrator');
@@ -24664,31 +24733,124 @@
       });
     }
 
-    document.getElementById('inv-spec-files').addEventListener('change', function () {
+    function isSpecPdf(file) {
+      return !!(file && (file.type === 'application/pdf' || /\.pdf$/i.test(file.name || '')));
+    }
+    function queueInvSpecFiles(files) {
       const msg = document.getElementById('inv-spec-msg');
-      const files = Array.prototype.slice.call(this.files || []);
-      this.value = '';
+      const list = Array.prototype.slice.call(files || []);
       let rejected = false;
-      files.forEach(function (file) {
-        const pdf = file.type === 'application/pdf' || /\.pdf$/i.test(file.name || '');
-        if (!pdf) {
+      let message = 'Spec sheets must be PDF.';
+      list.forEach(function (file) {
+        if (!isSpecPdf(file)) {
           rejected = true;
+          message = 'Spec sheets must be PDF.';
           return;
         }
         if (invSpecDocs.length + invSpecNew.length >= 20) {
           rejected = true;
-          if (msg) msg.textContent = 'You can keep up to 20 spec sheets.';
+          message = 'You can keep up to 20 spec sheets.';
           return;
         }
         invSpecNew.push({ name: specDocName(file), file: file });
       });
       if (msg) {
-        if (rejected && msg.textContent !== 'You can keep up to 20 spec sheets.') msg.textContent = 'Spec sheets must be PDF.';
+        if (rejected) msg.textContent = message;
         msg.className = 'text-sm mt-2 text-red-500';
         msg.classList.toggle('hidden', !rejected);
       }
       renderInvSpecEditor();
+    }
+    function bindSpecDrop(zone, onFiles) {
+      if (!zone || zone.getAttribute('data-spec-drop') === '1') return;
+      zone.setAttribute('data-spec-drop', '1');
+      let depth = 0;
+      zone.addEventListener('dragenter', function (e) {
+        e.preventDefault();
+        e.stopPropagation();
+        depth += 1;
+        if (e.dataTransfer) e.dataTransfer.dropEffect = 'copy';
+        zone.classList.add('is-over');
+      });
+      zone.addEventListener('dragover', function (e) {
+        e.preventDefault();
+        e.stopPropagation();
+        if (e.dataTransfer) e.dataTransfer.dropEffect = 'copy';
+      });
+      zone.addEventListener('dragleave', function (e) {
+        e.preventDefault();
+        depth = Math.max(0, depth - 1);
+        if (!depth) zone.classList.remove('is-over');
+      });
+      zone.addEventListener('drop', function (e) {
+        e.preventDefault();
+        e.stopPropagation();
+        depth = 0;
+        zone.classList.remove('is-over');
+        const files = e.dataTransfer && e.dataTransfer.files;
+        if (files && files.length) onFiles(files);
+      });
+    }
+    async function saveDetailSpecFiles(files) {
+      const item = invDetailData && invDetailData.item;
+      const msg = document.getElementById('inv-detail-specs-msg');
+      const list = Array.prototype.slice.call(files || []);
+      if (!item || !item.id || !canEdit('inventory')) return;
+      const pdfs = [];
+      let bad = false;
+      list.forEach(function (file) {
+        if (isSpecPdf(file)) pdfs.push(file);
+        else bad = true;
+      });
+      function showMsg(text, badMsg) {
+        if (!msg) return;
+        msg.textContent = text;
+        msg.className = 'text-sm mt-2 ' + (badMsg ? 'text-red-500' : 'text-slate-500');
+        msg.classList.remove('hidden');
+      }
+      if (bad) showMsg('Spec sheets must be PDF.', true);
+      if (!pdfs.length) return;
+      if (((item.docs || []).length + pdfs.length) > 20) {
+        showMsg('You can keep up to 20 spec sheets.', true);
+        return;
+      }
+      const fd = new FormData();
+      fd.append('docs', JSON.stringify(item.docs || []));
+      pdfs.forEach(function (file) { fd.append('docFiles', file, file.name); });
+      showMsg('Saving…', false);
+      try {
+        const data = await api('/api/admin/inventory/' + encodeURIComponent(item.id), { method: 'PUT', body: fd });
+        if (data && data.item) {
+          invDetailData = data;
+          const idx = inventoryItems.findIndex(function (row) { return String(row.id) === String(item.id); });
+          if (idx >= 0) inventoryItems[idx] = Object.assign({}, inventoryItems[idx], data.item);
+          if (String((document.getElementById('inv-item-id') || {}).value || '') === String(item.id)) {
+            invSpecDocs = (data.item.docs || []).map(function (doc) {
+              return { name: doc.name || 'Spec sheet', url: doc.url || '' };
+            }).filter(function (doc) { return doc.url; });
+            renderInvSpecEditor();
+          }
+        }
+        renderInvDetailSpecs();
+        if (bad) showMsg('Spec sheets must be PDF.', true);
+        else if (msg && msg.textContent === 'Saving…') msg.classList.add('hidden');
+      } catch (err) {
+        showMsg(err.message || 'Could not save the spec sheet.', true);
+      }
+    }
+
+    document.getElementById('inv-spec-files').addEventListener('change', function () {
+      const files = Array.prototype.slice.call(this.files || []);
+      this.value = '';
+      queueInvSpecFiles(files);
     });
+    bindSpecDrop(document.getElementById('inv-spec-drop'), queueInvSpecFiles);
+    document.getElementById('inv-detail-spec-files').addEventListener('change', function () {
+      const files = Array.prototype.slice.call(this.files || []);
+      this.value = '';
+      saveDetailSpecFiles(files);
+    });
+    bindSpecDrop(document.getElementById('inv-detail-spec-drop'), saveDetailSpecFiles);
     document.getElementById('inv-spec-edit-list').addEventListener('click', function (e) {
       const btn = e.target.closest('[data-spec-remove]');
       if (!btn) return;
@@ -24696,6 +24858,29 @@
       if (btn.getAttribute('data-spec-remove') === 'new') invSpecNew.splice(i, 1);
       else invSpecDocs.splice(i, 1);
       renderInvSpecEditor();
+    });
+    function syncCostFromPerM2() {
+      const costEl = document.getElementById('inv-cost');
+      const perEl = document.getElementById('inv-cost-m2');
+      const wEl = document.getElementById('inv-panel-w');
+      const hEl = document.getElementById('inv-panel-h');
+      if (!costEl || !perEl) return;
+      const raw = String(costEl.value || '').trim();
+      const cost = raw === '' ? 0 : Number(raw);
+      if (cost > 0) return;
+      const per = Number(perEl.value) || 0;
+      if (per <= 0) return;
+      const w = Number(wEl && wEl.value) || 0;
+      const h = Number(hEl && hEl.value) || 0;
+      const next = (per > 0 && w > 0 && h > 0)
+        ? Math.round(per * (w / 1000) * (h / 1000) * 100) / 100
+        : 0;
+      costEl.value = String(next);
+    }
+    ['inv-cost-m2', 'inv-panel-w', 'inv-panel-h'].forEach(function (id) {
+      const el = document.getElementById(id);
+      if (!el) return;
+      el.addEventListener('input', syncCostFromPerM2);
     });
     document.getElementById('inv-item-form').addEventListener('submit', async function (e) {
       e.preventDefault();
@@ -24709,7 +24894,8 @@
         const preview = SpectrumBrandPrices.pricesFromCost(brandId, invCategoryFromForm(), nextCost, null, {
           sell: Number(document.getElementById('inv-price').value),
           dealer: Number(document.getElementById('inv-dealer-net').value),
-          integrator: Number((document.getElementById('inv-integrator') || {}).value)
+          integrator: Number((document.getElementById('inv-integrator') || {}).value),
+          local: Number((document.getElementById('inv-local-cost') || {}).value)
         });
         const sellNow = Number(document.getElementById('inv-price').value) || 0;
         const dealerNow = Number(document.getElementById('inv-dealer-net').value) || 0;
@@ -24738,7 +24924,9 @@
       fd.append('category', invCategoryFromForm());
       fd.append('description', document.getElementById('inv-description').value);
       if (canSeeCosts()) {
+        syncCostFromPerM2();
         fd.append('cost', document.getElementById('inv-cost').value);
+        fd.append('costPerM2', document.getElementById('inv-cost-m2').value);
         fd.append('localWarehouseCost', document.getElementById('inv-local-cost').value);
       }
       fd.append('dealerNet', document.getElementById('inv-dealer-net').value);

@@ -811,9 +811,10 @@
     }).join('');
   }
 
-  function leadCalcUrl(lead) {
+  function leadCalcUrl(lead, locked) {
     var q = lead && lead.calculatorQuery ? String(lead.calculatorQuery).replace(/^\?/, '') : '';
     var url = '/led-wall-calculator?lead=' + encodeURIComponent(lead && lead.id || '') + '&embed=1';
+    if (locked) url += '&viewonly=1';
     if (q) url += '&' + q;
     return url;
   }
@@ -823,18 +824,19 @@
     var open = $('crm-lead-calc-open');
     var frame = $('crm-lead-calc-frame');
     var text = calcSummaryHtml(lead);
-    if (summary) summary.textContent = text || 'No wall on this lead yet. Open the calculator to size it. It saves on this lead and goes with Send to dealer.';
-    if (open && lead) open.href = leadCalcUrl(lead).replace('&embed=1', '').replace('embed=1&', '');
-    if (frame) {
-      var show = S.leadTab === 'calculator';
-      frame.hidden = !show;
-      if (show && lead && lead.id) {
-        var next = leadCalcUrl(lead);
-        if (frame.getAttribute('data-src') !== next) {
-          frame.setAttribute('data-src', next);
-          frame.src = next;
-        }
+    if (summary) summary.textContent = text || 'No wall on this lead yet. Open the live calculator to size it. It saves on this lead.';
+    if (frame && S.leadTab === 'calculator' && lead && lead.id) {
+      var next = leadCalcUrl(lead, true);
+      if (frame.getAttribute('data-src') !== next) {
+        frame.setAttribute('data-src', next);
+        frame.src = next;
       }
+    }
+    if (open) {
+      open.onclick = function (ev) {
+        ev.preventDefault();
+        if (lead && window.openLeadCalculatorTab) window.openLeadCalculatorTab(lead);
+      };
     }
   }
 

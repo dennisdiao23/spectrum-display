@@ -1007,13 +1007,13 @@ function createSqliteStore() {
       const itemQty = isKit || warehouseIsUntracked(db, warehouse) ? 0 : locQty;
       const info = db.prepare(`
         INSERT INTO inventory_items (
-          sku, mpn, item_kind, name, brand_id, category, pitch, unit, panel_type, packaging_type, qty, low_at, price, cost, dealer_net,
+          sku, mpn, item_kind, name, brand_id, category, pitch, unit, panel_type, packaging_type, qty, low_at, price, cost, cost_per_m2, dealer_net,
           integrator_price, local_warehouse_cost, weight, panel_w, panel_h, description, image, gallery, docs, notes, created_at, updated_at
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
       `).run(
         fields.sku, fields.mpn || '', fields.item_kind || 'item', fields.name, fields.brand_id, fields.category || '', fields.pitch, fields.unit, fields.panel_type || '',
         fields.packaging_type || '', itemQty,
-        fields.low_at, fields.price, fields.cost, fields.dealer_net, fields.integrator_price || 0,
+        fields.low_at, fields.price, fields.cost, fields.cost_per_m2 || 0, fields.dealer_net, fields.integrator_price || 0,
         fields.local_warehouse_cost != null ? fields.local_warehouse_cost : 0, fields.weight,
         fields.panel_w, fields.panel_h, fields.description, fields.image,
         JSON.stringify(inv.parseGallery(fields.gallery)), JSON.stringify(inv.parseDocs(fields.docs)), fields.notes,
@@ -1051,6 +1051,7 @@ function createSqliteStore() {
         lowAt: input.lowAt != null ? input.lowAt : Number(current.low_at),
         price: input.price != null ? input.price : Number(current.price) || 0,
         cost: input.cost != null ? input.cost : Number(current.cost) || 0,
+        costPerM2: input.costPerM2 != null ? input.costPerM2 : Number(current.cost_per_m2) || 0,
         localWarehouseCost: input.localWarehouseCost != null ? input.localWarehouseCost : Number(current.local_warehouse_cost) || 0,
         dealerNet: input.dealerNet != null ? input.dealerNet : Number(current.dealer_net) || 0,
         integratorPrice: input.integratorPrice != null ? input.integratorPrice : Number(current.integrator_price) || 0,
@@ -1091,14 +1092,14 @@ function createSqliteStore() {
         UPDATE inventory_items SET
           sku = ?, mpn = ?, item_kind = ?, name = ?, brand_id = ?, category = ?, pitch = ?, unit = ?, panel_type = ?, packaging_type = ?,
           qty = ?, low_at = ?, price = ?,
-          cost = ?, dealer_net = ?, integrator_price = ?, local_warehouse_cost = ?, weight = ?, panel_w = ?, panel_h = ?,
+          cost = ?, cost_per_m2 = ?, dealer_net = ?, integrator_price = ?, local_warehouse_cost = ?, weight = ?, panel_w = ?, panel_h = ?,
           description = ?, image = ?, gallery = ?, docs = ?, notes = ?, updated_at = ?
         WHERE id = ?
       `).run(
         next.sku, next.mpn, next.itemKind, next.name, next.brandId, next.category, next.pitch, next.unit, next.panelType, next.packagingType,
         becomingKit ? 0 : current.qty,
         next.lowAt, next.price,
-        next.cost, next.dealerNet, next.integratorPrice, next.localWarehouseCost, next.weight, next.panelW, next.panelH,
+        next.cost, next.costPerM2, next.dealerNet, next.integratorPrice, next.localWarehouseCost, next.weight, next.panelW, next.panelH,
         next.description, next.image, JSON.stringify(inv.parseGallery(next.gallery)), JSON.stringify(inv.parseDocs(next.docs)), next.notes, dbUtil.nowIso(), id
       );
       saveInventoryKitLines(db, id, Object.assign({}, input, { itemKind: next.itemKind }), current.item_kind);
@@ -1478,7 +1479,7 @@ function createSqliteStore() {
     async brandPriceChanges(brandId, brandName, rules) {
       const bp = require('./brand-prices');
       const items = db.prepare(
-        'SELECT id, sku, name, brand_id, category, cost, price, dealer_net, integrator_price FROM inventory_items WHERE brand_id = ?'
+        'SELECT id, sku, name, brand_id, category, cost, local_warehouse_cost, price, dealer_net, integrator_price FROM inventory_items WHERE brand_id = ?'
       ).all(brandId);
       return bp.priceChanges(items, rules, brandId, brandName);
     },
