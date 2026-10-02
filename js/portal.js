@@ -487,6 +487,29 @@
   function selectHome(name) {
     selectDashOverview(name);
   }
+  function acceptedLeads() {
+    return (leads || []).filter(function (row) { return row && row.status === 'accepted'; });
+  }
+  function waitingLeads() {
+    return (leads || []).filter(function (row) { return row && row.status === 'sent'; });
+  }
+  function paintIncomingBadge() {
+    const link = document.querySelector('#portal-nav a[data-view="leads"]');
+    if (!link) return;
+    let badge = link.querySelector('.dash-nav-count');
+    const n = waitingLeads().length;
+    if (!n) {
+      if (badge) badge.hidden = true;
+      return;
+    }
+    if (!badge) {
+      badge = document.createElement('span');
+      badge.className = 'dash-nav-count';
+      link.appendChild(badge);
+    }
+    badge.hidden = false;
+    badge.textContent = String(n);
+  }
   function renderHome() {
     const openLeads = acceptedLeads();
     const waiting = waitingLeads();
