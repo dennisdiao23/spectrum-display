@@ -9809,6 +9809,7 @@ body.dash-split-lock #settings-pane.space-y-6 > :not([hidden]) {
   body.company-app .company-main:has(#dashboard-section:not(.hidden)) {
     overflow: auto;
     display: block;
+    padding-top: 0;
     padding-bottom: calc(var(--dash-tabbar-h, 0px) + 1.5rem);
   }
 
@@ -9861,7 +9862,7 @@ body.dash-split-lock #settings-pane.space-y-6 > :not([hidden]) {
     top: 0;
     z-index: 5;
     background: var(--dash-bg);
-    padding-top: 0.15rem;
-    padding-bottom: 0.35rem;
+    padding-top: 0.85rem;
+    padding-bottom: 0.65rem;
   }
 }
