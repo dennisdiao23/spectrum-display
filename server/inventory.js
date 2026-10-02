@@ -1255,11 +1255,160 @@ function mapsByItem(maps) {
       productGallery: parseGallery(
         m.product_gallery != null ? m.product_gallery : (m.productGallery != null ? m.productGallery : '')
       ),
+      productDetails: m.product_details != null ? m.product_details : (m.details || null),
       storeListed: storeListedFromDetails(m.product_details != null ? m.product_details : m.details),
       photoFit: photoFitFromDetails(m.product_details != null ? m.product_details : m.details)
     });
   });
   return out;
+}
+
+function detailsObject(details) {
+  if (details && typeof details === 'object' && !Array.isArray(details)) return details;
+  if (typeof details === 'string') {
+    try {
+      const parsed = JSON.parse(details);
+      return parsed && typeof parsed === 'object' && !Array.isArray(parsed) ? parsed : {};
+    } catch (e) {
+      return {};
+    }
+  }
+  return {};
+}
+
+function pdfDocsFromDetails(details) {
+  const d = detailsObject(details);
+  const downloads = Array.isArray(d.downloads) ? d.downloads : [];
+  const out = [];
+  downloads.forEach(function (file) {
+    if (!file || typeof file !== 'object') return;
+    const url = String(file.url || file.href || '').trim();
+    if (!/\.pdf(\?|#|$)/i.test(url)) return;
+    const name = String(file.label || file.name || 'Spec sheet').replace(/\s+/g, ' ').trim().slice(0, 160) || 'Spec sheet';
+    out.push({ name: name, url: url.slice(0, 500) });
+  });
+  return out;
+}
+
+function specMatchKey(value) {
+  return String(value || '').toLowerCase().replace(/[^a-z0-9]+/g, '');
+}
+
+function mergeSpecDocs(existing, extra) {
+  const out = [];
+  const seen = {};
+  (existing || []).concat(extra || []).forEach(function (doc) {
+    if (!doc || !doc.url) return;
+    const url = String(doc.url);
+    if (seen[url]) return;
+    seen[url] = true;
+    out.push({ name: String(doc.name || 'Spec sheet'), url: url });
+  });
+  return out;
+}
+
+function seedSpecDocsBySeries() {
+  const bySeries = {};
+  function add(seriesId, details) {
+    const docs = pdfDocsFromDetails(details);
+    if (!seriesId || !docs.length) return;
+    bySeries[String(seriesId)] = docs;
+  }
+  try {
+    (require('./product-details.json') || []).forEach(function (row) {
+      add(row && row.series_id, row && row.details);
+    });
+  } catch (e) { /* seed file is optional at runtime */ }
+  try {
+    const seed = require('./novastar-seed.json');
+    ((seed && seed.series) || []).forEach(function (series) {
+      add(series && series.id, series);
+    });
+  } catch (e) { /* seed file is optional at runtime */ }
+  return bySeries;
+}
+
+function spectrumOwnDocs(item, seeds) {
+  const blob = specMatchKey([
+    item.brandId, item.brandName, item.brand, item.name, item.sku, item.mpn, item.category
+  ].filter(Boolean).join(' '));
+  const brand = specMatchKey(item.brandId || item.brandName || item.brand || '');
+  if (brand !== 'spectrum' && blob.indexOf('spectrum') === -1) return [];
+  const rules = [
+    ['xp', /xpseries|spectrumxp/],
+    ['mk', /mkseries|spectrummk/],
+    ['bk', /bkseries|spectrumbk|bkcob/]
+  ];
+  for (let i = 0; i < rules.length; i++) {
+    if (rules[i][1].test(blob) && seeds[rules[i][0]]) return seeds[rules[i][0]];
+  }
+  return [];
+}
+
+function attachWebsiteSpecs(items, products) {
+  const seeds = seedSpecDocsBySeries();
+  const byProductId = {};
+  const byKey = {};
+  function remember(keys, docs) {
+    (keys || []).forEach(function (bit) {
+      const key = specMatchKey(bit);
+      if (key.length >= 5 && docs && docs.length) byKey[key] = docs;
+    });
+  }
+  (products || []).forEach(function (p) {
+    if (!p) return;
+    const seriesId = p.seriesId || p.series_id || p.id;
+    let docs = pdfDocsFromDetails(p.details);
+    if (!docs.length && p.downloads) docs = pdfDocsFromDetails({ downloads: p.downloads });
+    if (!docs.length && seriesId && seeds[String(seriesId)]) docs = seeds[String(seriesId)];
+    if (!docs.length) return;
+    const pid = p.dbId != null ? p.dbId : (p.productId != null ? p.productId : p.id);
+    if (pid != null && pid !== '' && String(pid) !== String(seriesId)) byProductId[String(pid)] = docs;
+    if (p.dbId != null) byProductId[String(p.dbId)] = docs;
+    remember([p.name, p.model, seriesId], docs);
+  });
+  (items || []).forEach(function (item) {
+    if (!item) return;
+    let extra = [];
+    (item.maps || []).forEach(function (m) {
+      let docs = pdfDocsFromDetails(m.productDetails);
+      if (!docs.length && m.productId != null) docs = byProductId[String(m.productId)] || [];
+      if (!docs.length && m.seriesId && seeds[String(m.seriesId)]) docs = seeds[String(m.seriesId)];
+      extra = extra.concat(docs);
+    });
+    extra = extra.concat(spectrumOwnDocs(item, seeds));
+    if (!extra.length) {
+      const keys = [specMatchKey(item.name), specMatchKey(item.sku), specMatchKey(item.mpn)].filter(function (key) {
+        return key.length >= 5;
+      });
+      keys.forEach(function (key) {
+        if (byKey[key]) extra = extra.concat(byKey[key]);
+      });
+      if (!extra.length) {
+        Object.keys(byKey).forEach(function (key) {
+          keys.forEach(function (itemKey) {
+            if (itemKey.length < 5) return;
+            if (key === itemKey || key.endsWith(itemKey) || itemKey.endsWith(key)) extra = extra.concat(byKey[key]);
+          });
+        });
+      }
+    }
+    const before = (item.docs || []).map(function (doc) { return doc && doc.url; }).join('\n');
+    item.docs = mergeSpecDocs(item.docs, extra);
+    const after = (item.docs || []).map(function (doc) { return doc && doc.url; }).join('\n');
+    if (before !== after) item._specsDirty = true;
+  });
+  return items;
+}
+
+function takeWebsiteSpecWrites(items) {
+  const writes = [];
+  (items || []).forEach(function (item) {
+    if (!item) return;
+    if (item._specsDirty) writes.push({ id: item.id, docs: item.docs || [] });
+    delete item._specsDirty;
+  });
+  return writes;
 }
 
 function attachMapsToProducts(products, maps) {
@@ -1378,6 +1527,8 @@ module.exports = {
   catalogStock,
   mapsByProduct,
   mapsByItem,
+  attachWebsiteSpecs,
+  takeWebsiteSpecWrites,
   attachMapsToProducts,
   normalizeMaps,
   assertCanDelete,

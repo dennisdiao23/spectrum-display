@@ -1,5 +1,20 @@
 (function () {
   const $ = function (id) { return document.getElementById(id); };
+  function specFileHref(url) {
+    const raw = String(url || '').trim();
+    if (!raw || raw.charAt(0) === '/') return raw;
+    try {
+      const parsed = new URL(raw);
+      const host = parsed.hostname.toLowerCase();
+      const nova = host === 'oss.novastar.tech'
+        || host === 'en-website001.oss-us-east-1.aliyuncs.com'
+        || host === 'en-website001.oss-accelerate.aliyuncs.com';
+      if (parsed.protocol === 'https:' && nova && /\.pdf$/i.test(parsed.pathname)) {
+        return '/api/spec-pdf?url=' + encodeURIComponent(raw);
+      }
+    } catch (e) { /* keep the original link */ }
+    return raw;
+  }
   const viewIds = {
     home: 'dashboard-section',
     book: 'inventory-section',
@@ -40,6 +55,7 @@
   let openTabs = [];
   let bookFilter = 'all';
   let bookSku = '';
+  let drFilter = 'all';
   let bookDetailTab = 'details';
   const tabLabel = { home: 'Dashboard', book: 'Dealer book', quotes: 'Request Quote', orders: 'Purchase Order', walls: 'Installed walls', registrations: 'Deal registration', leads: 'Leads', rmas: 'RMA', projects: 'Projects', panels: 'Saved Panel', calculator: 'Calculator', company: 'Company', updates: 'What’s new', guide: 'Dealer guide' };
   const tabIcon = {
@@ -1254,7 +1270,7 @@
     const specList = $('book-detail-specs');
     if (specList) {
       specList.innerHTML = docs.map(function (doc) {
-        return '<li class="inv-spec-row"><a href="' + esc(doc.url) + '" target="_blank" rel="noopener">' + esc(doc.name || 'Spec sheet') + '</a></li>';
+        return '<li class="inv-spec-row"><a href="' + esc(specFileHref(doc.url)) + '" target="_blank" rel="noopener">' + esc(doc.name || 'Spec sheet') + '</a></li>';
       }).join('');
     }
     const specEmpty = $('book-detail-specs-empty');
@@ -3189,10 +3205,33 @@
     $('dr-overview').classList.add('hidden');
     setDrMsg('', true);
   }
+  function drBucket(row) {
+    if (!row) return '';
+    if (row.status === 'protected') return 'protected';
+    if (row.status === 'declined' || row.status === 'expired') return row.status;
+    return 'waiting';
+  }
+  function setDrFilter(name) {
+    drFilter = name === 'waiting' || name === 'protected' ? name : 'all';
+    document.querySelectorAll('#dr-overview-kpis .dash-kpi').forEach(function (btn) {
+      const on = btn.getAttribute('data-dr-filter') === drFilter;
+      btn.classList.toggle('is-on', on);
+      btn.setAttribute('aria-pressed', on ? 'true' : 'false');
+    });
+  }
   function renderRegistrationTable() {
     const openId = regIdFromPath();
+    const waiting = registrations.filter(function (row) { return drBucket(row) === 'waiting'; }).length;
+    const protectedCount = registrations.filter(function (row) { return drBucket(row) === 'protected'; }).length;
+    const allEl = $('dr-stat-all');
+    const waitEl = $('dr-stat-waiting');
+    const protEl = $('dr-stat-protected');
+    if (allEl) allEl.textContent = String(registrations.length);
+    if (waitEl) waitEl.textContent = String(waiting);
+    if (protEl) protEl.textContent = String(protectedCount);
     applyCols('registrations');
-    const sorted = colSort('registrations', registrations, function (row, col) {
+    const visible = drFilter === 'all' ? registrations : registrations.filter(function (row) { return drBucket(row) === drFilter; });
+    const sorted = colSort('registrations', visible, function (row, col) {
       if (col === 'number') return row.number || '';
       if (col === 'customer') return row.endCustomer || '';
       if (col === 'job') return row.jobName || '';
@@ -3211,7 +3250,9 @@
           site: '<td class="py-3 px-4">' + esc(site || '—') + '</td>',
           status: '<td class="py-3 px-4">' + esc(drStatusLabel(row)) + '</td>'
         }) + '</tr>';
-    }).join('') : '<tr><td class="py-6 px-4 text-slate-500" colspan="' + colSpan('registrations') + '">No registrations yet.</td></tr>';
+    }).join('') : '<tr><td class="py-6 px-4 text-slate-500" colspan="' + colSpan('registrations') + '">' +
+      (drFilter === 'waiting' ? 'No registrations waiting.' : drFilter === 'protected' ? 'No protected registrations.' : 'No registrations yet.') +
+      '</td></tr>';
   }
   async function renderRegistrations() {
     const err = $('dr-error');
@@ -3255,6 +3296,15 @@
         '\nSite: ' + [row.siteStreet, row.siteCity, row.siteState].filter(Boolean).join(', ');
       if ($('so-notes') && !$('so-notes').value) $('so-notes').value = note;
     }).catch(function () {});
+  }
+  const drKpis = $('dr-overview-kpis');
+  if (drKpis) {
+    drKpis.addEventListener('click', function (e) {
+      const btn = e.target.closest('[data-dr-filter]');
+      if (!btn) return;
+      setDrFilter(btn.getAttribute('data-dr-filter'));
+      renderRegistrationTable();
+    });
   }
   $('dr-new-btn').addEventListener('click', function () { goRegistration('new', true); });
   $('dr-table').addEventListener('click', function (e) {

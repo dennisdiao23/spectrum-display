@@ -37,7 +37,7 @@
     #company-boot .portal-boot-login button[type="submit"]{background:#fff;color:#000;border:0}
     #company-boot .portal-boot-login button[type="submit"]:hover{background:#e8e8e8}
   </style>
-  <link rel="stylesheet" href="/css/company-dash.css?v=booktabs1" />
+  <link rel="stylesheet" href="/css/company-dash.css?v=regcards1" />
   <style>
     /* Dealer is writing a Request Quote. Spectrum fills these when the quote comes back. */
     #so-detail.is-request .so-request-back { display: none !important; }
@@ -880,12 +880,32 @@
 
       <section id="registrations-section" class="hidden">
         <div class="cc-list-inner">
+          <div class="page-kpis page-kpis-3 cc-list-kpis" id="dr-overview-kpis">
+            <button type="button" class="dash-kpi is-on" data-dr-filter="all" aria-pressed="true">
+              <span class="dash-kpi-icon dash-kpi-icon-customers" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="3" width="16" height="18" rx="2"/><path d="M8 8h8M8 12h8M8 16h5"/></svg></span>
+              <span class="dash-kpi-label">All</span>
+              <strong class="dash-kpi-value" id="dr-stat-all">—</strong>
+              <span class="dash-kpi-hint">Registrations</span>
+            </button>
+            <button type="button" class="dash-kpi" data-dr-filter="waiting" aria-pressed="false">
+              <span class="dash-kpi-icon dash-kpi-icon-website" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="8"/><path d="M12 8v4l3 2"/></svg></span>
+              <span class="dash-kpi-label">Waiting</span>
+              <strong class="dash-kpi-value" id="dr-stat-waiting">—</strong>
+              <span class="dash-kpi-hint">With Spectrum</span>
+            </button>
+            <button type="button" class="dash-kpi" data-dr-filter="protected" aria-pressed="false">
+              <span class="dash-kpi-icon dash-kpi-icon-inventory" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3 5 6v6c0 4.2 2.8 7.4 7 9 4.2-1.6 7-4.8 7-9V6l-7-3z"/></svg></span>
+              <span class="dash-kpi-label">Protected</span>
+              <strong class="dash-kpi-value" id="dr-stat-protected">—</strong>
+              <span class="dash-kpi-hint">Accepted jobs</span>
+            </button>
+          </div>
           <div class="cc-list-toolbar cc-list-tools">
             <p class="text-sm text-slate-500" style="margin:0">Register one end-customer job. Spectrum protects it only after we accept it, and only until the date we confirm. This is not a territory.</p>
             <button id="dr-new-btn" type="button" class="cc-list-add-btn px-4 py-2 rounded-full bg-sky-500 hover:bg-sky-400 text-white text-sm font-semibold">Register a deal</button>
           </div>
           <p id="dr-error" class="hidden text-sm text-red-400 mb-3"></p>
-          <div class="dash-split" id="dr-split">
+          <div class="dash-split" id="dr-split" style="--dash-left-w: min(920px, 66vw)">
             <div class="dash-split-left">
               <div class="cc-table-card rounded-2xl border border-slate-800">
                 <div class="cc-table-wrap overflow-x-auto">

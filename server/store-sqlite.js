@@ -117,7 +117,23 @@ function listInventoryItems(db) {
   const formatted = items.map(function (row) {
     return inv.formatItem(row, brands[row.brand_id], byItem[String(row.id)] || [], locs[String(row.id)] || []);
   });
-  return inv.attachKitsToItems(formatted, loadKitLineRows(db));
+  const withKits = inv.attachKitsToItems(formatted, loadKitLineRows(db));
+  saveWebsiteSpecsSqlite(db, withKits);
+  return withKits;
+}
+
+function saveWebsiteSpecsSqlite(db, items) {
+  const inv = require('./inventory');
+  let products = [];
+  try { products = dbUtil.listProducts(db); } catch (e) { products = []; }
+  inv.attachWebsiteSpecs(items, products);
+  const writes = inv.takeWebsiteSpecWrites(items);
+  if (!writes.length) return;
+  const stmt = db.prepare('UPDATE inventory_items SET docs = ?, updated_at = ? WHERE id = ?');
+  const stamp = dbUtil.nowIso();
+  writes.forEach(function (row) {
+    stmt.run(JSON.stringify(row.docs), stamp, row.id);
+  });
 }
 
 function loadKitLineRows(db, kitId) {
@@ -543,6 +559,7 @@ function getInventoryItemDetail(db, id) {
   } else {
     inv.applyKitFields(item, []);
   }
+  saveWebsiteSpecsSqlite(db, [item]);
   return {
     item: item,
     moves: moves
