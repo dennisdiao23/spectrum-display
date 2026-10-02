@@ -11771,20 +11771,18 @@
         return ids[String(row.warehouseId)] ? sum + (Number(row.qty) || 0) : sum;
       }, 0);
     }
-    function invVendorLocationLine(item) {
-      const vendorQty = invVendorQty(item);
-      if (!vendorQty) return '';
-      const vendorLoc = ((item && item.locations) || []).find(function (loc) {
-        return loc.untracked || loc.tracked === false;
-      });
-      const name = (vendorLoc && (vendorLoc.vendorName || vendorLoc.warehouseName || vendorLoc.locationName)) || 'Vendor';
-      return name + ' · ' + vendorQty.toLocaleString();
-    }
     function invLocationCellHtml(item) {
-      const primary = esc((item && item.warehouse) || '—');
-      const vendorLine = invVendorLocationLine(item);
-      if (!vendorLine) return primary;
-      return primary + '<span class="inv-loc-vendor">' + esc(vendorLine) + '</span>';
+      const trackedQty = Math.max(0, Number(item && item.qty) || 0);
+      const trackedName = (item && item.warehouse) || '—';
+      if (trackedQty > 0) return esc(trackedName);
+      const others = ((item && item.locations) || []).filter(function (loc) {
+        return (loc.untracked || loc.tracked === false) && Number(loc.qty) > 0;
+      });
+      if (!others.length) return esc(trackedName);
+      others.sort(function (a, b) { return (Number(b.qty) || 0) - (Number(a.qty) || 0); });
+      const loc = others[0];
+      const name = loc.vendorName || loc.warehouseName || loc.locationName || 'Vendor';
+      return esc(name + ' · ' + Number(loc.qty || 0).toLocaleString());
     }
     function invVendorHands(item, vendorId) {
       if (!item || vendorId == null || vendorId === '') return 0;
