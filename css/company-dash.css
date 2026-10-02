@@ -2274,8 +2274,21 @@ html.dash-scroll-lock body.company-app {
   box-shadow: 0 10px 30px rgba(16, 32, 71, 0.04);
   border-color: var(--dash-line);
 }
+.dash-home-panel.dash-start-here {
+  padding: 0.75rem 1.15rem 0.5rem;
+}
+.dash-start-here .dash-home-panel-head {
+  margin-bottom: 0.3rem;
+}
 .dash-start-here .start-here-row {
-  padding: 0.5rem 0;
+  padding: 0.38rem 0;
+}
+.dash-start-here .start-here-row strong {
+  font-size: 0.86rem;
+}
+.dash-start-here .start-here-row div span {
+  font-size: 0.74rem;
+  margin-top: 0.04rem;
 }
 .dash-home-lobby {
   padding: 0;
