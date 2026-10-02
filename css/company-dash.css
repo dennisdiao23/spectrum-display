@@ -9432,6 +9432,11 @@ body.app-help-on #header-chat.is-help-target {
     min-height: 2.75rem;
   }
 }
+.pl-percent-row select,
+.pl-percent-row input {
+  width: auto;
+  min-width: 8rem;
+}
 .pl-brand-line {
   display: flex;
   flex-wrap: wrap;

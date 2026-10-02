@@ -40,7 +40,7 @@
   <script src="/js/company-traffic.js?v=loc1"></script>
   <script src="/js/company-website-control.js?v=webctrl7"></script>
   <script src="/js/print-form.js?v=forms21"></script>
-  <script src="/js/price-levels.js?v=pl1"></script>
+  <script src="/js/price-levels.js?v=pl2"></script>
   <script src="/js/app-help.js?v=help6"></script>
   <script src="/js/app-notes.js?v=newsbar3"></script>
   <script>
@@ -3686,20 +3686,19 @@
                 <option value="specific">Specific inventory items</option>
               </select>
             </label>
-            <label class="so-field"><span>Price type</span>
-              <select id="pl-price-type">
-                <option value="sell">Sell price</option>
-                <option value="dealer">Dealer price</option>
-                <option value="net">Net price</option>
-              </select>
-            </label>
-            <div class="so-field"><span>Percentage</span>
-              <div class="flex gap-2">
+            <div class="so-field md:col-span-2"><span>Percentage</span>
+              <div class="flex gap-2 flex-wrap pl-percent-row">
                 <select id="pl-adjust-dir">
                   <option value="decrease">Decrease by</option>
                   <option value="increase">Increase by</option>
                 </select>
                 <input id="pl-adjust-pct" type="number" min="0" step="0.01" value="0">
+                <select id="pl-price-type" aria-label="From">
+                  <option value="cost">Cost</option>
+                  <option value="sell" selected>Sell price</option>
+                  <option value="dealer">Dealer price</option>
+                  <option value="net">Net price</option>
+                </select>
               </div>
             </div>
             <label class="so-field"><span>Rounding</span>
@@ -8730,7 +8729,7 @@
       activities: '<span id="crm-act-total">0</span> activities — notes, calls, emails, meetings, and tasks.',
       company: '<span id="ca-total">0</span> company accounts — logins and passwords.',
       forms: 'Letter print for Quote, Sales Order, Invoice, and PO. Save a template per type. Print uses that layout, not the editor.',
-      'price-levels': 'A named percent on sell price, dealer price, or net price. Inventory prices stay as they are.'
+      'price-levels': 'A named percent from cost, sell price, dealer price, or net price. Inventory prices stay as they are.'
     };
 
     function syncDetailOpenBodyClass() {

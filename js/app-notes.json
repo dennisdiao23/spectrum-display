@@ -1,6 +1,17 @@
 {
-  "build": "2026-10-01-notes-split",
+  "build": "2026-10-02-price-from",
   "notes": [
+    {
+      "id": "2026-10-02-price-from",
+      "date": "2026-10-02",
+      "apps": ["company"],
+      "title": "Price level percent can start from cost",
+      "changed": [
+        "On a price level, the percent can start from Cost, Sell price, Dealer price, or Net price."
+      ],
+      "how": "Open Settings, then Price level. On Percentage, pick Decrease by or Increase by, enter the percent, then pick From. Cost uses the item cost. Sell price uses the sell price.",
+      "kind": "feature"
+    },
     {
       "id": "2026-10-01-price-level",
       "date": "2026-10-01",
@@ -495,7 +506,7 @@
       },
       {
         "title": "Settings → Price level",
-        "text": "A named percent for a group of customers and products. Pick sell price, dealer price, or net price, then raise or lower it. A brand line can use a different percent. Inventory prices stay as they are."
+        "text": "A named percent for a group of customers and products. On Percentage, pick up or down, then From: Cost, Sell price, Dealer price, or Net price. A brand line can use a different percent. Inventory prices stay as they are."
       },
       {
         "title": "Settings → Manage users",

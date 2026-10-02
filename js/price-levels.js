@@ -47,6 +47,7 @@
   }
 
   function basePrice(item, priceType) {
+    if (priceType === 'cost') return Number(item && item.cost) || 0;
     if (priceType === 'sell') return Number(item && item.price) || 0;
     return Number(item && item.dealerNet) || 0;
   }
@@ -165,9 +166,8 @@
   }
 
   function summaryAdjust(level) {
-    var type = level.priceType === 'sell' ? 'Sell price' : (level.priceType === 'dealer' ? 'Dealer price' : 'Net price');
     var dir = level.adjustDir === 'increase' ? 'Increase' : 'Decrease';
-    return type + ' · ' + dir + ' ' + (Number(level.adjustPct) || 0) + '%';
+    return dir + ' ' + (Number(level.adjustPct) || 0) + '% from ' + priceTypeLabel(level.priceType);
   }
 
   function summaryDates(level) {
@@ -223,6 +223,7 @@
   }
 
   function priceTypeLabel(type) {
+    if (type === 'cost') return 'Cost';
     if (type === 'dealer') return 'Dealer price';
     if (type === 'net') return 'Net price';
     return 'Sell price';
