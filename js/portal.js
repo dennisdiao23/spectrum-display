@@ -1,5 +1,20 @@
 (function () {
   const $ = function (id) { return document.getElementById(id); };
+  function specFileHref(url) {
+    const raw = String(url || '').trim();
+    if (!raw || raw.charAt(0) === '/') return raw;
+    try {
+      const parsed = new URL(raw);
+      const host = parsed.hostname.toLowerCase();
+      const nova = host === 'oss.novastar.tech'
+        || host === 'en-website001.oss-us-east-1.aliyuncs.com'
+        || host === 'en-website001.oss-accelerate.aliyuncs.com';
+      if (parsed.protocol === 'https:' && nova && /\.pdf$/i.test(parsed.pathname)) {
+        return '/api/spec-pdf?url=' + encodeURIComponent(raw);
+      }
+    } catch (e) { /* keep the original link */ }
+    return raw;
+  }
   const viewIds = {
     home: 'dashboard-section',
     book: 'inventory-section',
@@ -326,10 +341,10 @@
     if (name === 'calculator') ensureCalculator('');
     $('portal-title').textContent = tabLabel[name] || 'Dealer Portal';
     $('admin-page-sub').textContent = name === 'home' ? 'Overview' : ((me && me.customer && me.customer.companyName) || '');
-    document.body.classList.toggle('inv-layout-lock', (name === 'book' || name === 'projects' || name === 'panels') && !isMobileDash());
+    document.body.classList.toggle('inv-layout-lock', (name === 'book' || name === 'projects' || name === 'panels' || name === 'walls') && !isMobileDash());
     const onSales = (name === 'quotes' || name === 'orders') && !isMobileDash();
-    document.body.classList.toggle('so-split-lock', onSales || ((name === 'registrations' || name === 'rmas' || name === 'walls') && !isMobileDash()));
-    document.body.classList.toggle('dash-split-lock', (name === 'registrations' || name === 'rmas' || name === 'walls') && !isMobileDash());
+    document.body.classList.toggle('so-split-lock', onSales || ((name === 'registrations' || name === 'rmas') && !isMobileDash()));
+    document.body.classList.toggle('dash-split-lock', (name === 'registrations' || name === 'rmas') && !isMobileDash());
     const sales = $('sales-section');
     if (sales) sales.classList.toggle('so-split-on', onSales);
     if (name === 'home') {
@@ -853,6 +868,7 @@
       lock: 'wall',
       cols: [
         { id: 'wall', label: 'Wall' },
+        { id: 'number', label: 'Number' },
         { id: 'customer', label: 'End customer' },
         { id: 'site', label: 'Site' },
         { id: 'pitch', label: 'Pitch' },
@@ -970,6 +986,7 @@
       el.style.setProperty(prop, px + 'px');
     }
     place('inv-split', '--inv-left-w', colState('dealer-book').splitLeftPx);
+    place('wall-split', '--inv-left-w', colState('walls').splitLeftPx);
     place('proj-split', '--inv-left-w', colState('projects').splitLeftPx);
     place('panel-split', '--inv-left-w', colState('panels').splitLeftPx);
     place('lead-split', '--lead-left-w', colState('leads').splitLeftPx);
@@ -1254,7 +1271,7 @@
     const specList = $('book-detail-specs');
     if (specList) {
       specList.innerHTML = docs.map(function (doc) {
-        return '<li class="inv-spec-row"><a href="' + esc(doc.url) + '" target="_blank" rel="noopener">' + esc(doc.name || 'Spec sheet') + '</a></li>';
+        return '<li class="inv-spec-row"><a href="' + esc(specFileHref(doc.url)) + '" target="_blank" rel="noopener">' + esc(doc.name || 'Spec sheet') + '</a></li>';
       }).join('');
     }
     const specEmpty = $('book-detail-specs-empty');
@@ -3837,11 +3854,27 @@
       }).join('')
       : '<p class="text-slate-500">No spare kit on site.</p>';
   }
+  function wallWarrantySoon(row) {
+    if (!row || !row.warrantyEnd) return false;
+    const end = new Date(String(row.warrantyEnd) + 'T12:00:00');
+    if (Number.isNaN(end.getTime())) return false;
+    return (end.getTime() - Date.now()) / 86400000 < 90;
+  }
   function renderWallTable() {
     const openId = wallIdFromPath();
+    const q = String(($('wall-search') && $('wall-search').value) || '').trim().toLowerCase();
+    const list = walls.filter(function (row) {
+      if (!q) return true;
+      const blob = [row.wallName, row.number, row.endCustomer, row.pitch, wallSite(row), row.siteStreet, row.shipDate, row.warrantyEnd].join(' ').toLowerCase();
+      return blob.indexOf(q) !== -1;
+    });
+    const soon = walls.filter(wallWarrantySoon).length;
+    if ($('wall-stat')) $('wall-stat').textContent = String(walls.length);
+    if ($('wall-hint')) $('wall-hint').textContent = soon ? (soon + (soon === 1 ? ' warranty ending' : ' warranties ending')) : 'On site';
     applyCols('walls');
-    const sorted = colSort('walls', walls, function (row, col) {
+    const sorted = colSort('walls', list, function (row, col) {
       if (col === 'wall') return row.wallName || row.number || '';
+      if (col === 'number') return row.number || '';
       if (col === 'customer') return row.endCustomer || '';
       if (col === 'site') return wallSite(row);
       if (col === 'pitch') return row.pitch || '';
@@ -3854,7 +3887,8 @@
       const on = openId && String(openId) === String(row.id);
       return '<tr class="border-b border-slate-800 hover:bg-slate-900/80 cursor-pointer' + (on ? ' is-active' : '') + '" data-wall-id="' + esc(row.id) + '">' +
         colCells('walls', {
-          wall: '<td class="py-3 px-4 font-medium">' + esc(row.wallName || row.number) + '</td>',
+          wall: '<td class="py-3 px-4 font-medium">' + esc(row.wallName || row.number || 'Installed wall') + '</td>',
+          number: '<td class="py-3 px-4">' + esc(row.number || '—') + '</td>',
           customer: '<td class="py-3 px-4">' + esc(row.endCustomer || '—') + '</td>',
           site: '<td class="py-3 px-4">' + esc(wallSite(row)) + '</td>',
           pitch: '<td class="py-3 px-4">' + esc(row.pitch || '—') + '</td>',
@@ -3862,7 +3896,7 @@
           warranty: '<td class="py-3 px-4">' + esc(row.warrantyEnd || '—') + '</td>',
           spares: '<td class="py-3 px-4">' + esc(row.spareQty || 0) + '</td>'
         }) + '</tr>';
-    }).join('') : '<tr><td class="py-6 px-4 text-slate-500" colspan="' + colSpan('walls') + '">No installed walls yet.</td></tr>';
+    }).join('') : '<tr><td class="py-6 px-4 text-slate-500" colspan="' + colSpan('walls') + '">' + (q ? 'No walls match that search.' : 'No installed walls yet.') + '</td></tr>';
   }
   async function renderWalls() {
     const err = $('wall-error');
@@ -3882,6 +3916,33 @@
     const row = walls.find(function (item) { return String(item.id) === String(route); });
     showWall(row || null);
   }
+  if ($('wall-search')) $('wall-search').addEventListener('input', renderWallTable);
+  (function bindWallResizer() {
+    const bar = $('wall-split-resizer');
+    const split = $('wall-split');
+    if (!bar || !split) return;
+    bar.addEventListener('pointerdown', function (e) {
+      if (isMobileDash()) return;
+      e.preventDefault();
+      const startX = e.clientX;
+      const leftPane = $('wall-split-left');
+      const left = leftPane ? leftPane.getBoundingClientRect().width : 720;
+      document.body.classList.add('inv-split-dragging');
+      function move(ev) {
+        const next = Math.max(280, Math.min(split.getBoundingClientRect().width - 280, left + (ev.clientX - startX)));
+        split.style.setProperty('--inv-left-w', next + 'px');
+      }
+      function up() {
+        document.body.classList.remove('inv-split-dragging');
+        window.removeEventListener('pointermove', move);
+        window.removeEventListener('pointerup', up);
+        const width = parseInt(split.style.getPropertyValue('--inv-left-w'), 10);
+        if (width) savePortalSplit('walls', width);
+      }
+      window.addEventListener('pointermove', move);
+      window.addEventListener('pointerup', up);
+    });
+  })();
   $('wall-table').addEventListener('click', function (e) {
     const tr = e.target.closest('[data-wall-id]');
     if (!tr) return;
@@ -3948,10 +4009,10 @@
   window.addEventListener('resize', function () {
     if (!me) return;
     renderMasterTabs();
-    document.body.classList.toggle('inv-layout-lock', (pathView() === 'book' || pathView() === 'projects' || pathView() === 'panels') && !isMobileDash());
+    document.body.classList.toggle('inv-layout-lock', (pathView() === 'book' || pathView() === 'projects' || pathView() === 'panels' || pathView() === 'walls') && !isMobileDash());
     document.body.classList.toggle('calc-lock', pathView() === 'calculator');
     const onQuotes = (pathView() === 'quotes' || pathView() === 'orders') && !isMobileDash();
-    const onSplit = (pathView() === 'registrations' || pathView() === 'rmas' || pathView() === 'walls') && !isMobileDash();
+    const onSplit = (pathView() === 'registrations' || pathView() === 'rmas') && !isMobileDash();
     document.body.classList.toggle('so-split-lock', onQuotes || onSplit);
     document.body.classList.toggle('dash-split-lock', onSplit);
     const sales = $('sales-section');
