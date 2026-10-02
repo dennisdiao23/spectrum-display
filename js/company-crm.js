@@ -618,6 +618,8 @@
       pane.hidden = false;
     }
     setCrmDetailOpen('crm-lead-section', true);
+    var leadIdx = S.leads.findIndex(function (row) { return String(row.id) === String(lead.id); });
+    if (leadIdx >= 0) S.leads[leadIdx] = Object.assign({}, S.leads[leadIdx], lead);
     setLeadTab(S.leadTab || 'details');
     renderLeadTable();
     var convertBtn = $('crm-lead-convert');
@@ -809,20 +811,49 @@
     }).join('');
   }
 
+  function leadCalcUrl(lead) {
+    var q = lead && lead.calculatorQuery ? String(lead.calculatorQuery).replace(/^\?/, '') : '';
+    var url = '/led-wall-calculator?lead=' + encodeURIComponent(lead && lead.id || '') + '&embed=1';
+    if (q) url += '&' + q;
+    return url;
+  }
+
+  function fillLeadCalculator(lead) {
+    var summary = $('crm-lead-calc-summary');
+    var open = $('crm-lead-calc-open');
+    var frame = $('crm-lead-calc-frame');
+    var text = calcSummaryHtml(lead);
+    if (summary) summary.textContent = text || 'No wall on this lead yet. Open the calculator to size it. It saves on this lead and goes with Send to dealer.';
+    if (open && lead) open.href = leadCalcUrl(lead).replace('&embed=1', '').replace('embed=1&', '');
+    if (frame) {
+      var show = S.leadTab === 'calculator';
+      frame.hidden = !show;
+      if (show && lead && lead.id) {
+        var next = leadCalcUrl(lead);
+        if (frame.getAttribute('data-src') !== next) {
+          frame.setAttribute('data-src', next);
+          frame.src = next;
+        }
+      }
+    }
+  }
+
   function setLeadTab(name) {
-    S.leadTab = name;
-    ['details', 'email', 'activity', 'deals'].forEach(function (tab) {
+    S.leadTab = name === 'calculator' || name === 'email' || name === 'activity' || name === 'deals' ? name : 'details';
+    ['details', 'email', 'activity', 'deals', 'calculator'].forEach(function (tab) {
       var btn = document.querySelector('#crm-lead-detail [data-crm-lead-tab="' + tab + '"]');
       var panel = $('crm-lead-panel-' + tab);
       if (btn) {
-        btn.classList.toggle('is-on', tab === name);
-        btn.setAttribute('aria-selected', tab === name ? 'true' : 'false');
+        btn.classList.toggle('is-on', tab === S.leadTab);
+        btn.setAttribute('aria-selected', tab === S.leadTab ? 'true' : 'false');
       }
       if (panel) {
-        panel.classList.toggle('hidden', tab !== name);
-        panel.hidden = tab !== name;
+        panel.classList.toggle('hidden', tab !== S.leadTab);
+        panel.hidden = tab !== S.leadTab;
       }
     });
+    var lead = S.leads.find(function (row) { return String(row.id) === String(S.leadId); });
+    if (lead) fillLeadCalculator(lead);
   }
 
   async function loadAll() {

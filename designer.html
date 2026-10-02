@@ -1643,6 +1643,7 @@
     const incomingQuery = window.location.search;
     const incomingParams = new URLSearchParams(incomingQuery);
     const crmDealId = String(incomingParams.get('deal') || '').trim();
+    const crmLeadId = String(incomingParams.get('lead') || '').trim();
     const crmEmbed = incomingParams.get('embed') === '1';
     let crmDealCanSave = false;
     let crmDealTimer = 0;
@@ -3140,6 +3141,7 @@
       if (!qs) return;
       const params = new URLSearchParams(qs);
       if (crmDealId) params.set('deal', crmDealId);
+      if (crmLeadId) params.set('lead', crmLeadId);
       if (crmEmbed) params.set('embed', '1');
       const newUrl = window.location.pathname + '?' + params.toString();
       history.replaceState(null, '', newUrl);
@@ -3152,11 +3154,15 @@
 
     async function saveDealCalculator(opts) {
       opts = opts || {};
-      if (!crmDealId || !crmDealCanSave || !lastDealCalc) return false;
+      if ((!crmDealId && !crmLeadId) || !crmDealCanSave || !lastDealCalc) return false;
       crmDealSaving = true;
-      setDealStatus(opts.manual ? 'Saving…' : 'Saving to deal…');
+      const savingLabel = crmLeadId && !crmDealId ? 'Saving to lead…' : 'Saving to deal…';
+      setDealStatus(opts.manual ? 'Saving…' : savingLabel);
+      const savePath = crmDealId
+        ? ('/api/admin/crm/deals/' + encodeURIComponent(crmDealId) + '/calculator')
+        : ('/api/admin/crm/leads/' + encodeURIComponent(crmLeadId) + '/calculator');
       try {
-        const res = await fetch('/api/admin/crm/deals/' + encodeURIComponent(crmDealId) + '/calculator', {
+        const res = await fetch(savePath, {
           method: 'POST',
           credentials: 'include',
           headers: { 'Content-Type': 'application/json' },
@@ -3168,7 +3174,7 @@
         });
         const data = await res.json().catch(function () { return {}; });
         if (!res.ok || !data.ok) throw new Error(data.error || 'Could not save to deal.');
-        setDealStatus('Saved to deal');
+        setDealStatus(crmLeadId && !crmDealId ? 'Saved to lead' : 'Saved to deal');
         return true;
       } catch (err) {
         setDealStatus(err.message || 'Could not save');
@@ -3179,7 +3185,7 @@
     }
 
     function scheduleDealSave() {
-      if (!crmDealId || !crmDealCanSave) return;
+      if ((!crmDealId && !crmLeadId) || !crmDealCanSave) return;
       if (crmDealTimer) clearTimeout(crmDealTimer);
       crmDealTimer = setTimeout(function () {
         saveDealCalculator();
@@ -3189,7 +3195,7 @@
     async function bootDealLink() {
       const bar = document.getElementById('designer-deal-bar');
       const saveBtn = document.getElementById('designer-deal-save');
-      if (!crmDealId) return;
+      if (!crmDealId && !crmLeadId) return;
       if (bar) {
         bar.hidden = false;
         bar.style.display = 'inline-flex';
@@ -3211,8 +3217,12 @@
       const hasBrand = incomingParams.has('brand');
       if (!hasBrand) {
         try {
-          const data = await fetch('/api/admin/crm/deals/' + encodeURIComponent(crmDealId), { credentials: 'include' }).then(function (r) { return r.json(); });
-          const q = data && data.deal && data.deal.calculatorQuery;
+          const loadUrl = crmDealId
+            ? ('/api/admin/crm/deals/' + encodeURIComponent(crmDealId))
+            : ('/api/admin/crm/leads/' + encodeURIComponent(crmLeadId));
+          const data = await fetch(loadUrl, { credentials: 'include' }).then(function (r) { return r.json(); });
+          const loaded = crmDealId ? (data && data.deal) : (data && data.lead);
+          const q = loaded && loaded.calculatorQuery;
           if (q) {
             const search = String(q).indexOf('?') === 0 ? q : ('?' + String(q).replace(/^\?/, ''));
             loadFromUrl(search);
@@ -3228,7 +3238,7 @@
           saveDealCalculator({ manual: true });
         });
       }
-      setDealStatus('Live on deal #' + crmDealId);
+      setDealStatus(crmDealId ? ('Live on deal #' + crmDealId) : ('Live on lead #' + crmLeadId));
     }
 
     function applyProjectState(state) {
