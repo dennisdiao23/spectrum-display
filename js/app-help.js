@@ -9,7 +9,7 @@
     dealer: ['Dealer', 'Dealers you already work with. Open one for contacts, a portal login, and what you have sold them.'],
     dealers: ['Applications', 'Dealer applications that came in from the site. Open one, then approve or decline it.'],
     'deal-registrations': ['Deal registration', 'Jobs a dealer registered so you can protect the opportunity. Open one to review it.'],
-    'dealer-leads': ['Leads', 'A lead you send to one dealer. They accept or decline it, then move it on their pipeline. You can also send a company CRM lead from the lead itself.'],
+    'dealer-leads': ['Leads', 'A lead you send to one dealer. It shows on their Leads board in New. They move it as the job moves. To turn it down they call or email you.'],
     'dealer-rmas': ['RMA', 'Return requests from dealers. Open one to see what they sent back and where it stands.'],
     traffic: ['Traffic', 'Who visited the site and which pages they opened. Use it to see what is getting attention.'],
     inventory: ['Inventory', 'What is in the warehouse. Look up an item and see how many you have, then open it to change the qty or the details.'],
@@ -37,21 +37,20 @@
   };
 
   const PORTAL_PAGES = {
-    home: ['Dashboard', 'Your start page. See counts for the price book, quote requests, orders, and saved projects, then open one.'],
-    book: ['Dealer book', 'Your price list. Search a SKU to see your price and what is on hand. Factory cost is not on this page.'],
-    quotes: ['Request Quote', 'Ask Spectrum to price a job. Send the request here, then come back to read the quote they return.'],
-    orders: ['Purchase Order', 'Orders you have placed with Spectrum. Open one to see what you ordered and where it stands.'],
-    walls: ['Installed walls', 'Walls you installed. Open one for the site, serials, spare kit, and warranty dates.'],
-    registrations: ['Deal registration', 'Register a named job so Spectrum can protect the opportunity. Open one to see if it was accepted.'],
-    incoming: ['Incoming', 'Leads Spectrum sent you. Accept one to put it on your Leads board, or decline it.'],
-    leads: ['Leads', 'Accepted leads on a pipeline. Drag a card to the next stage. Spectrum sees the same move.'],
-    rmas: ['RMA', 'Ask to return goods. Open a request to see what you sent and where it stands.'],
-    calculator: ['Calculator', 'Size a wall for your customer. Pick a panel and see the cabinet count at your price.'],
-    projects: ['Projects', 'Wall layouts you saved. Open one to keep working, or send it as a quote request.'],
-    panels: ['Saved Panel', 'Panels you use often. Pick one so the calculator starts on that series.'],
-    company: ['Company', 'Your dealer company on the portal. Name, address, and the people who can sign in on this account.'],
-    updates: ['What’s new', 'The log of portal screen changes, in plain language.'],
-    guide: ['Dealer guide', 'What each menu is for. Use this when you are new or looking for a page.']
+    home: ['Dashboard', 'Your home page. See how many prices, quotes, orders, and saved walls you have. A new login shows Start here. Finish a step and it checks itself.'],
+    book: ['Dealer book', 'Look up what you can buy and what you pay. Search a SKU, then open the row for your price and how many are on hand.'],
+    quotes: ['Request Quote', 'Send Spectrum a job to price. Open it later to read the price that comes back.'],
+    orders: ['Purchase Order', 'Orders you have placed. Open one for the lines, ship date, and tracking.'],
+    walls: ['Installed walls', 'Walls you installed. Open one for the address, serials, spare parts, and when the warranty ends.'],
+    registrations: ['Deal registration', 'Tell Spectrum about one job before you quote it. Open it later to see if it was accepted, and the date that protection ends.'],
+    leads: ['Leads', 'Jobs Spectrum sends you. A new one starts in New. Move a card as the job moves. To turn one down, call or email Spectrum.'],
+    rmas: ['RMA', 'Start a return on something you ordered. Choose a reason and the items. Open it later for the return number and where it stands.'],
+    calculator: ['Calculator', 'Size a wall for a job. Enter the screen, pick a panel, and see how many cabinets you need at your price. Save it when you want to quote it.'],
+    projects: ['Projects', 'Walls you already sized. Open one to keep editing, or send it as a quote request.'],
+    panels: ['Saved Panel', 'Panels you use on more than one job. Pick one so the calculator opens on that panel.'],
+    company: ['Company', 'Your company on the portal. Keep the name, address, and logo here, and upload files such as your resale certificate.'],
+    updates: ['What’s new', 'What changed in the portal. Read it when a screen looks different.'],
+    guide: ['Dealer guide', 'What each menu is for, and a short video of how to use it.']
   };
 
   const APPS = {
@@ -73,16 +72,16 @@
     portal: {
       pages: PORTAL_PAGES,
       tour: [
-        ['a[data-view="home"]', 'Dashboard', 'Your start page. See counts for the price book, quote requests, orders, and saved projects, then open one.'],
-        ['a[data-view="book"]', 'Dealer book', 'Your price list. Search a SKU to see your price and what is on hand. Factory cost is not on this page.'],
-        ['#portal-calculator', 'Calculator', 'Size a wall for your customer. Pick a panel and see the cabinet count at your price.'],
-        ['a[data-view="registrations"]', 'Deal registration', 'Register a named job so Spectrum can protect the opportunity. Open one to see if it was accepted.'],
-        ['a[data-view="leads"]', 'Leads', 'Jobs Spectrum sends you. Open one to accept or decline it. You cannot add your own jobs here.'],
-        ['a[data-view="quotes"]', 'Request Quote', 'Ask Spectrum to price a job. Send the request here, then come back to read the quote they return.'],
-        ['a[data-view="orders"]', 'Purchase Order', 'Orders you have placed with Spectrum. Open one to see what you ordered and where it stands.'],
-        ['a[data-view="walls"]', 'Installed walls', 'Walls you installed. Open one for the site, serials, spare kit, and warranty dates.'],
-        ['a[data-view="rmas"]', 'RMA', 'Ask to return goods. Open a request to see what you sent and where it stands.'],
-        ['#portal-settings', 'Settings', 'Your dealer company on the portal. Name, address, and the people who can sign in on this account.']
+        ['a[data-view="home"]', 'Dashboard', 'Your home page. See how many prices, quotes, orders, and saved walls you have.'],
+        ['a[data-view="book"]', 'Dealer book', 'Look up what you can buy and what you pay. Search a SKU, then open the row.'],
+        ['#portal-calculator', 'Calculator', 'Size a wall for a job and see how many cabinets you need at your price.'],
+        ['a[data-view="registrations"]', 'Deal registration', 'Tell Spectrum about one job before you quote it.'],
+        ['a[data-view="leads"]', 'Leads', 'Jobs Spectrum sends you. A new one starts in New. Move the card as the job moves.'],
+        ['a[data-view="quotes"]', 'Request Quote', 'Send Spectrum a job to price.'],
+        ['a[data-view="orders"]', 'Purchase Order', 'Orders you have placed. Open one for the lines and tracking.'],
+        ['a[data-view="walls"]', 'Installed walls', 'Walls you installed. Open one for the address, serials, and warranty.'],
+        ['a[data-view="rmas"]', 'RMA', 'Start a return on something you ordered.'],
+        ['#portal-settings', 'Settings', 'Your company name, address, logo, and files.']
       ]
     }
   };

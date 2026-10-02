@@ -6,7 +6,6 @@
     quotes: 'sales-section',
     orders: 'sales-section',
     registrations: 'registrations-section',
-    incoming: 'incoming-section',
     leads: 'leads-section',
     rmas: 'rmas-section',
     walls: 'walls-section',
@@ -34,13 +33,12 @@
   let openTabs = [];
   let bookFilter = 'all';
   let bookSku = '';
-  const tabLabel = { home: 'Dashboard', book: 'Dealer book', quotes: 'Request Quote', orders: 'Purchase Order', walls: 'Installed walls', registrations: 'Deal registration', incoming: 'Incoming', leads: 'Leads', rmas: 'RMA', projects: 'Projects', panels: 'Saved Panel', calculator: 'Calculator', company: 'Company', updates: 'What’s new', guide: 'Dealer guide' };
+  const tabLabel = { home: 'Dashboard', book: 'Dealer book', quotes: 'Request Quote', orders: 'Purchase Order', walls: 'Installed walls', registrations: 'Deal registration', leads: 'Leads', rmas: 'RMA', projects: 'Projects', panels: 'Saved Panel', calculator: 'Calculator', company: 'Company', updates: 'What’s new', guide: 'Dealer guide' };
   const tabIcon = {
     home: '<svg class="dash-master-tab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="8" height="8" rx="1.5"/><rect x="13" y="3" width="8" height="8" rx="1.5"/><rect x="3" y="13" width="8" height="8" rx="1.5"/><rect x="13" y="13" width="8" height="8" rx="1.5"/></svg>',
     book: '<svg class="dash-master-tab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 10 12 4.5 21 10v9.5a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V10z"/><path d="M9 20.5V12h6v8.5"/></svg>',
     quotes: '<svg class="dash-master-tab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 4h8v4H8z"/><path d="M6 8h12v12H6z"/><path d="M9 12h6M9 16h4"/></svg>',
     registrations: '<svg class="dash-master-tab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="3" width="16" height="18" rx="2"/><path d="M8 8h8M8 12h8M8 16h5"/></svg>',
-    incoming: '<svg class="dash-master-tab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 6h16v12H4z"/><path d="m4 7 8 6 8-6"/></svg>',
     leads: '<svg class="dash-master-tab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 6h16M4 12h16M4 18h10"/></svg>',
     rmas: '<svg class="dash-master-tab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 12a9 9 0 1 0 3-6.7"/><path d="M3 4v5h5"/><path d="M9 12h6"/></svg>',
     walls: '<svg class="dash-master-tab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4" width="18" height="12" rx="1.5"/><path d="M8 20h8M12 16v4"/></svg>',
@@ -62,6 +60,7 @@
   function pathView() {
     const parts = location.pathname.replace(/\/+$/, '').split('/');
     if (parts[1] !== 'portal' || !parts[2]) return 'home';
+    if (parts[2] === 'incoming') return 'leads';
     if (parts[2] === 'quotes') return 'quotes';
     if (parts[2] === 'orders') return 'orders';
     if (views.indexOf(parts[2]) !== -1) return parts[2];
@@ -292,8 +291,8 @@
     $('admin-page-sub').textContent = name === 'home' ? 'Overview' : ((me && me.customer && me.customer.companyName) || '');
     document.body.classList.toggle('inv-layout-lock', (name === 'book' || name === 'projects' || name === 'panels') && !isMobileDash());
     const onSales = (name === 'quotes' || name === 'orders') && !isMobileDash();
-    document.body.classList.toggle('so-split-lock', onSales || ((name === 'registrations' || name === 'incoming' || name === 'rmas' || name === 'walls') && !isMobileDash()));
-    document.body.classList.toggle('dash-split-lock', (name === 'registrations' || name === 'incoming' || name === 'rmas' || name === 'walls') && !isMobileDash());
+    document.body.classList.toggle('so-split-lock', onSales || ((name === 'registrations' || name === 'rmas' || name === 'walls') && !isMobileDash()));
+    document.body.classList.toggle('dash-split-lock', (name === 'registrations' || name === 'rmas' || name === 'walls') && !isMobileDash());
     const sales = $('sales-section');
     if (sales) sales.classList.toggle('so-split-on', onSales);
     if (name === 'home') {
@@ -303,7 +302,6 @@
     if (name === 'book') renderBook();
     if (name === 'quotes' || name === 'orders') renderQuotes();
     if (name === 'registrations') renderRegistrations();
-    if (name === 'incoming') renderIncoming();
     if (name === 'leads') paintLeadBoard();
     if (name === 'rmas') renderRmas();
     if (name === 'walls') renderWalls();
@@ -473,7 +471,7 @@
       return;
     }
     title.textContent = 'Dealer book';
-    sub.textContent = 'Priced SKUs and on-hand. Factory cost is not shown.';
+    sub.textContent = 'Your prices and how many are on hand.';
     open.href = '/portal/book';
     open.textContent = 'Open Dealer book →';
     const low = book.filter(function (item) { return item.status === 'low'; }).length;
@@ -843,7 +841,7 @@
     else if (name === 'sales') renderQuoteTable();
     else if (name === 'so-lines') applySoLineCols();
     else if (name === 'registrations') renderRegistrationTable();
-    else if (name === 'leads') renderIncomingTable();
+    else if (name === 'leads') renderLeadTable();
     else if (name === 'walls') renderWallTable();
     else if (name === 'rmas') renderRmaTable();
     else if (name === 'projects') renderProjects();
@@ -1318,14 +1316,14 @@
     const note = document.querySelector('#so-detail .so-doc-note');
     if (note) {
       note.textContent = order
-        ? 'Save sends a draft sales order to Spectrum. Price is your dealer net. There is no online checkout.'
-        : 'Save sends a draft sales quote to Spectrum. Price is your dealer net. Factory cost is not shown.';
+        ? 'Save sends this order to Spectrum. The price is your dealer price.'
+        : 'Save sends this quote to Spectrum. The price is your dealer price.';
     }
     const lead = document.querySelector('#so-overview-panel .inv-overview-lead');
     if (lead) {
       lead.textContent = order
-        ? 'Select a purchase order to view it here. New sales order opens a draft for Spectrum. Factory cost is not on this page.'
-        : 'Select a request quote to view it here. New Request Quote opens a draft for Spectrum. Factory cost is not on this page.';
+        ? 'Select a purchase order to see the lines and where it stands. New sales order starts an order with Spectrum.'
+        : 'Select a request quote to read it. New Request Quote starts a request for Spectrum to price.';
     }
     const openLabel = $('so-side-open-label');
     if (openLabel) openLabel.textContent = order ? 'Open purchase orders' : 'Open request quotes';
@@ -1435,7 +1433,7 @@
     const host = docSection(kind);
     host.innerHTML =
       '<div class="flex items-center justify-between gap-3">' +
-        '<p class="text-sm text-slate-500">Send creates a draft ' + (kind === 'order' ? 'Sales Order' : 'Sales Quote') + ' in Company. There is no online checkout. Factory cost is not shown.</p>' +
+        '<p class="text-sm text-slate-500">Send this ' + noun + ' to Spectrum. The price is your dealer price.</p>' +
         '<a class="px-4 py-2 rounded-full bg-sky-500 text-white text-sm font-semibold" href="/portal/' + (kind === 'order' ? 'orders' : 'quotes') + '/new">New ' + noun + '</a>' +
       '</div>' +
       '<div class="cc-table-card rounded-2xl border"><div class="cc-table-wrap overflow-auto" style="max-height:40vh"><table class="w-full text-sm"><thead><tr>' +
@@ -2794,107 +2792,30 @@
     el.classList.toggle('text-red-400', text && ok === false);
     el.classList.toggle('text-emerald-400', !!(text && ok !== false));
   }
-  function waitingLeads() {
-    return leads.filter(function (row) { return row.status === 'sent'; });
-  }
-  function acceptedLeads() {
-    return leads.filter(function (row) { return row.status === 'accepted'; });
-  }
-  function paintIncomingBadge() {
-    const badge = $('portal-incoming-badge');
-    if (!badge) return;
-    const n = waitingLeads().length;
-    badge.textContent = n ? String(n) : '';
-    badge.classList.toggle('hidden', !n);
+  function boardLeads() {
+    return leads.filter(function (row) {
+      return row.status === 'accepted' || row.status === 'sent';
+    }).map(function (row) {
+      if (row.status === 'sent' && !row.stage) {
+        return Object.assign({}, row, { stage: 'new', stageLabel: 'New' });
+      }
+      return row;
+    });
   }
   async function loadPortalLeads() {
     const data = await api('/api/dealer/leads');
     leads = data.leads || [];
-    paintIncomingBadge();
-  }
-  function showIncoming(row) {
-    if (!row || row.status !== 'sent') {
-      $('incoming-detail').classList.add('hidden');
-      $('incoming-overview').classList.remove('hidden');
-      return;
-    }
-    $('incoming-overview').classList.add('hidden');
-    $('incoming-detail').classList.remove('hidden');
-    $('incoming-title').textContent = row.project || row.number || 'Lead';
-    $('incoming-status').textContent = (row.number || '') + ' · Waiting';
-    $('incoming-fields').innerHTML = leadFieldsHtml(row);
-    $('incoming-notes').textContent = row.notes || '';
-    $('incoming-note').value = '';
-    $('incoming-reply').classList.add('hidden');
-    setBoxMsg('incoming-msg', '', true);
-  }
-  function renderIncomingTable() {
-    const openId = pathId('incoming');
-    const rows = waitingLeads();
-    applyCols('leads');
-    const sorted = colSort('leads', rows, function (row, col) {
-      if (col === 'number') return row.number || '';
-      if (col === 'project') return row.project || '';
-      if (col === 'contact') return row.contactName || '';
-      if (col === 'city') return leadPlace(row);
-      if (col === 'status') return 'Waiting';
-      return '';
-    });
-    $('incoming-table').innerHTML = sorted.length ? sorted.map(function (row) {
-      const on = openId && String(openId) === String(row.id);
-      return '<tr class="border-b border-slate-800 hover:bg-slate-900/80 cursor-pointer' + (on ? ' is-active' : '') + '" data-incoming-id="' + esc(row.id) + '">' +
-        colCells('leads', {
-          number: '<td class="py-3 px-4 font-medium">' + esc(row.number || '') + '</td>',
-          project: '<td class="py-3 px-4">' + esc(row.project || '—') + '</td>',
-          contact: '<td class="py-3 px-4">' + esc(row.contactName || '—') + '</td>',
-          city: '<td class="py-3 px-4">' + esc(leadPlace(row)) + '</td>',
-          status: '<td class="py-3 px-4">Waiting</td>'
-        }) + '</tr>';
-    }).join('') : '<tr><td class="py-6 px-4 text-slate-500" colspan="' + colSpan('leads') + '">No leads waiting. Spectrum sends these.</td></tr>';
-  }
-  async function renderIncoming() {
-    const err = $('incoming-error');
-    if (err) { err.textContent = ''; err.classList.add('hidden'); }
-    try {
-      await loadPortalLeads();
-    } catch (e) {
-      leads = [];
-      if (err) {
-        err.textContent = e.message || 'Could not load leads.';
-        err.classList.remove('hidden');
-      }
-    }
-    renderIncomingTable();
-    const row = waitingLeads().find(function (item) { return String(item.id) === String(pathId('incoming')); });
-    showIncoming(row || null);
-  }
-  async function answerLead(status) {
-    const id = pathId('incoming');
-    if (!id) return;
-    setBoxMsg('incoming-msg', '', true);
-    try {
-      const saved = await api('/api/dealer/leads/' + encodeURIComponent(id) + '/' + status, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ note: $('incoming-note').value })
-      });
-      const lead = saved.lead;
-      if (lead && lead.status === 'accepted') {
-        goPortalLead('leads', lead.id, true);
-        return;
-      }
-      await renderIncoming();
-    } catch (err) {
-      setBoxMsg('incoming-msg', err.message || 'Could not save this lead.', false);
-    }
   }
   function showBoardLead(row) {
     const box = $('plead-detail');
+    const overview = $('plead-overview');
     if (!box) return;
     if (!row) {
       box.classList.add('hidden');
+      if (overview) overview.classList.remove('hidden');
       return;
     }
+    if (overview) overview.classList.add('hidden');
     box.classList.remove('hidden');
     $('plead-title').textContent = row.project || row.number || 'Lead';
     $('plead-meta').textContent = (row.number || '') + ' · ' + (row.stageLabel || 'New');
@@ -2903,11 +2824,37 @@
     $('plead-stage').value = row.stage || 'new';
     setBoxMsg('plead-msg', '', true);
   }
+  function renderLeadTable() {
+    const body = $('lead-table');
+    if (!body) return;
+    const openId = pathId('leads');
+    const rows = boardLeads();
+    applyCols('leads');
+    const sorted = colSort('leads', rows, function (row, col) {
+      if (col === 'number') return row.number || '';
+      if (col === 'project') return row.project || '';
+      if (col === 'contact') return row.contactName || '';
+      if (col === 'city') return leadPlace(row);
+      if (col === 'status') return row.stageLabel || 'New';
+      return '';
+    });
+    body.innerHTML = sorted.length ? sorted.map(function (row) {
+      const on = openId && String(openId) === String(row.id);
+      return '<tr class="border-b border-slate-800 hover:bg-slate-900/80 cursor-pointer' + (on ? ' is-active' : '') + '" data-lead-id="' + esc(row.id) + '">' +
+        colCells('leads', {
+          number: '<td class="py-3 px-4 font-medium">' + esc(row.number || '') + '</td>',
+          project: '<td class="py-3 px-4">' + esc(row.project || '—') + '</td>',
+          contact: '<td class="py-3 px-4">' + esc(row.contactName || '—') + '</td>',
+          city: '<td class="py-3 px-4">' + esc(leadPlace(row)) + '</td>',
+          status: '<td class="py-3 px-4">' + esc(row.stageLabel || 'New') + '</td>'
+        }) + '</tr>';
+    }).join('') : '<tr><td class="py-6 px-4 text-slate-500" colspan="' + colSpan('leads') + '">No leads yet. Spectrum sends these.</td></tr>';
+  }
   function renderLeadBoard() {
     const board = $('plead-board');
     if (!board) return;
     const openId = pathId('leads');
-    const rows = acceptedLeads();
+    const rows = boardLeads();
     board.innerHTML = LEAD_STAGES.map(function (stage) {
       const cards = rows.filter(function (row) { return (row.stage || 'new') === stage.id; });
       return '<section class="crm-col" data-stage="' + esc(stage.id) + '">' +
@@ -2922,6 +2869,7 @@
         }).join('') : '<p class="crm-col-empty">None</p>') +
         '</div></section>';
     }).join('');
+    renderLeadTable();
     const row = rows.find(function (item) { return String(item.id) === String(openId); });
     showBoardLead(row || null);
   }
@@ -2958,15 +2906,13 @@
       renderLeadBoard();
     }
   }
-  if ($('incoming-table')) {
-    $('incoming-table').addEventListener('click', function (e) {
-      const tr = e.target.closest('[data-incoming-id]');
+  if ($('lead-table')) {
+    $('lead-table').addEventListener('click', function (e) {
+      const tr = e.target.closest('[data-lead-id]');
       if (!tr) return;
-      goPortalLead('incoming', tr.getAttribute('data-incoming-id'), true);
+      goPortalLead('leads', tr.getAttribute('data-lead-id'), true);
     });
   }
-  if ($('incoming-accept')) $('incoming-accept').addEventListener('click', function () { answerLead('accept'); });
-  if ($('incoming-decline')) $('incoming-decline').addEventListener('click', function () { answerLead('decline'); });
   if ($('plead-board')) {
     $('plead-board').addEventListener('click', function (e) {
       const card = e.target.closest('[data-plead-id]');
@@ -3137,11 +3083,7 @@
         e.preventDefault();
         document.body.classList.remove('dash-open');
         goRegistration(parts[3], true);
-      } else if (parts[2] === 'incoming') {
-        e.preventDefault();
-        document.body.classList.remove('dash-open');
-        goPortalLead('incoming', parts[3], true);
-      } else if (parts[2] === 'leads') {
+      } else if (parts[2] === 'incoming' || parts[2] === 'leads') {
         e.preventDefault();
         document.body.classList.remove('dash-open');
         goPortalLead('leads', parts[3], true);
@@ -3167,7 +3109,7 @@
     document.body.classList.toggle('inv-layout-lock', (pathView() === 'book' || pathView() === 'projects' || pathView() === 'panels') && !isMobileDash());
     document.body.classList.toggle('calc-lock', pathView() === 'calculator');
     const onQuotes = (pathView() === 'quotes' || pathView() === 'orders') && !isMobileDash();
-    const onSplit = (pathView() === 'registrations' || pathView() === 'incoming' || pathView() === 'rmas' || pathView() === 'walls') && !isMobileDash();
+    const onSplit = (pathView() === 'registrations' || pathView() === 'rmas' || pathView() === 'walls') && !isMobileDash();
     document.body.classList.toggle('so-split-lock', onQuotes || onSplit);
     document.body.classList.toggle('dash-split-lock', onSplit);
     const sales = $('sales-section');

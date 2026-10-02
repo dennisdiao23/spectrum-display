@@ -1475,6 +1475,23 @@ function createSqliteStore() {
     async saveBrandPriceRules(brandId, rules) {
       return require('./brand-prices').saveSqlite(db, brandId, rules);
     },
+    async brandPriceChanges(brandId, brandName, rules) {
+      const bp = require('./brand-prices');
+      const items = db.prepare(
+        'SELECT id, sku, name, brand_id, category, cost, price, dealer_net, integrator_price FROM inventory_items WHERE brand_id = ?'
+      ).all(brandId);
+      return bp.priceChanges(items, rules, brandId, brandName);
+    },
+    async applyBrandPriceChanges(changes) {
+      const stamp = dbUtil.nowIso();
+      const upd = db.prepare(
+        'UPDATE inventory_items SET price = ?, dealer_net = ?, integrator_price = ?, updated_at = ? WHERE id = ?'
+      );
+      (changes || []).forEach(function (row) {
+        upd.run(row.sellNew, row.dealerNew, row.integratorNew, stamp, row.id);
+      });
+      return changes || [];
+    },
     async savePrintForm(type, template) {
       const pf = require('./print-forms');
       const t = pf.normalizeType(type);

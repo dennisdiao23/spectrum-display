@@ -121,6 +121,49 @@ function brandHasRules(rules, brandId) {
   return (rules || []).some(function (row) { return String(row.brandId) === String(brandId); });
 }
 
+function sameMoney(a, b) {
+  return Math.round(money(a) * 100) === Math.round(money(b) * 100);
+}
+
+function priceChanges(items, rules, brandId, brandName) {
+  const id = cleanText(brandId, 40);
+  const stamped = normalizeRules(rules).map(function (rule) {
+    return Object.assign({ brandId: id }, rule);
+  });
+  const changes = [];
+  let skippedNoCost = 0;
+  (items || []).forEach(function (item) {
+    if (!item || String(item.brandId || item.brand_id || '') !== id) return;
+    const cost = money(item.cost);
+    if (!(cost > 0)) {
+      skippedNoCost += 1;
+      return;
+    }
+    const next = pricesFromCost(stamped, id, item.category || '', cost);
+    const sellOld = money(item.price);
+    const dealerOld = money(item.dealerNet != null ? item.dealerNet : item.dealer_net);
+    const integratorOld = money(item.integratorPrice != null ? item.integratorPrice : item.integrator_price);
+    if (sameMoney(sellOld, next.sell) && sameMoney(dealerOld, next.dealer) && sameMoney(integratorOld, next.integrator)) return;
+    changes.push({
+      id: item.id,
+      name: item.name || '',
+      sku: item.sku || '',
+      brand: brandName || id,
+      cost: cost,
+      sellOld: sellOld,
+      sellNew: next.sell,
+      dealerOld: dealerOld,
+      dealerNew: next.dealer,
+      integratorOld: integratorOld,
+      integratorNew: next.integrator
+    });
+  });
+  changes.sort(function (a, b) {
+    return String(a.sku).localeCompare(String(b.sku)) || String(a.name).localeCompare(String(b.name));
+  });
+  return { changes: changes, skippedNoCost: skippedNoCost };
+}
+
 function pricesFromCost(rules, brandId, productType, cost, pctByKey) {
   const overrides = pctByKey || {};
   const sellRule = ruleFor(rules, brandId, productType, 'sell') || defaultRule('sell', '');
@@ -326,6 +369,7 @@ module.exports = {
   normalizeOverrides: normalizeOverrides,
   ruleFor: ruleFor,
   brandHasRules: brandHasRules,
+  priceChanges: priceChanges,
   pricesFromCost: pricesFromCost,
   describeRule: describeRule,
   customerPriceNote: customerPriceNote,

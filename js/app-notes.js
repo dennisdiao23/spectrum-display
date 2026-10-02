@@ -192,10 +192,34 @@
       const rows = (pack && pack.guides && pack.guides[appName]) || [];
       guide.innerHTML = rows.length
         ? rows.map(function (row) {
+          const video = row.video
+            ? '<button type="button" class="app-notes-watch">Watch</button>' +
+              '<video class="app-notes-guide-video" hidden controls playsinline preload="none" src="' + esc(row.video) + '"></video>'
+            : '';
           return '<article class="app-notes-entry"><p class="app-notes-title">' + esc(row.title) +
-            '</p><p class="app-notes-how">' + esc(row.text) + '</p></article>';
+            '</p><p class="app-notes-how">' + esc(row.text) + '</p>' + video + '</article>';
         }).join('')
         : '<p class="app-notes-empty">No guide yet.</p>';
+      if (!guide.dataset.watchBound) {
+        guide.dataset.watchBound = '1';
+        guide.addEventListener('click', function (e) {
+          const btn = e.target.closest('.app-notes-watch');
+          if (!btn || !guide.contains(btn)) return;
+          const video = btn.parentElement.querySelector('video');
+          if (!video) return;
+          guide.querySelectorAll('video').forEach(function (other) {
+            if (other !== video) {
+              other.pause();
+              other.hidden = true;
+              const otherBtn = other.parentElement.querySelector('.app-notes-watch');
+              if (otherBtn) otherBtn.hidden = false;
+            }
+          });
+          btn.hidden = true;
+          video.hidden = false;
+          video.play();
+        });
+      }
     }
   }
 

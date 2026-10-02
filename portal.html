@@ -37,7 +37,7 @@
     #company-boot .portal-boot-login button[type="submit"]{background:#fff;color:#000;border:0}
     #company-boot .portal-boot-login button[type="submit"]:hover{background:#e8e8e8}
   </style>
-  <link rel="stylesheet" href="/css/company-dash.css?v=notesplit1" />
+  <link rel="stylesheet" href="/css/company-dash.css?v=guidevid1" />
   <style>
     /* Dealer is writing a Request Quote. Spectrum fills these when the quote comes back. */
     #so-detail.is-request .so-request-back { display: none !important; }
@@ -323,11 +323,6 @@
         <svg class="dash-nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 3h8l4 4v14a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1z"/><path d="M15 3v5h5"/><path d="M9 13h6M9 17h4"/></svg>
         <span>Deal registration</span>
       </a>
-      <a href="/portal/incoming" data-view="incoming" class="dash-nav-link">
-        <svg class="dash-nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 6h16v12H4z"/><path d="m4 7 8 6 8-6"/></svg>
-        <span>Incoming</span>
-        <span id="portal-incoming-badge" class="dash-nav-unread hidden"></span>
-      </a>
       <a href="/portal/leads" data-view="leads" class="dash-nav-link">
         <svg class="dash-nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 6h16M4 12h16M4 18h10"/></svg>
         <span>Leads</span>
@@ -431,7 +426,7 @@
                 <div class="dash-home-panel-head">
                   <div>
                     <h3 id="dash-detail-title">Dealer book</h3>
-                    <p id="dash-detail-sub">Priced SKUs and on-hand. Factory cost is not shown.</p>
+                    <p id="dash-detail-sub">Your prices and how many are on hand.</p>
                   </div>
                   <a id="dash-detail-open" href="/portal/book">Open Dealer book →</a>
                 </div>
@@ -515,7 +510,7 @@
               <div id="inv-split-right" class="inv-split-right">
                 <div id="inv-overview-panel" class="inv-right-panel">
                   <div class="inv-overview-summary">
-                    <p class="inv-overview-lead">Select an item to see stock, sell price, and dealer net. Factory cost is not on this page.</p>
+                    <p class="inv-overview-lead">Select an item to see your price and how many are on hand.</p>
                   </div>
                 </div>
                 <div id="inv-item-panel" class="inv-right-panel hidden" aria-hidden="true">
@@ -637,14 +632,15 @@
         </div>
       </section>
 
-      <section id="incoming-section" class="hidden">
+      <section id="leads-section" class="hidden">
         <div class="cc-list-inner">
-          <p class="text-sm text-slate-500 mb-3">Leads Spectrum sent you. Accept to put one on your Leads board, or decline it. You cannot add your own jobs here.</p>
-          <p id="incoming-error" class="hidden text-sm text-red-400 mb-3"></p>
-          <div class="dash-split" id="incoming-split">
+          <p class="text-sm text-slate-500 mb-3">Leads Spectrum sends you. A new one starts in New. Drag a card to update the stage. Spectrum sees the same move. To turn a lead down, call or email Spectrum.</p>
+          <p id="lead-error" class="hidden text-sm text-red-400 mb-3"></p>
+          <div class="crm-board" id="plead-board"></div>
+          <div class="dash-split" id="lead-split" style="margin-top:1rem;min-height:18rem">
             <div class="dash-split-left">
               <div class="cc-table-card rounded-2xl border border-slate-800">
-                <div class="cc-table-wrap overflow-x-auto">
+                <div class="cc-table-wrap overflow-x-auto" style="max-height:22rem;overflow:auto">
                   <table class="w-full text-sm dash-cols" data-cols="leads">
                     <thead class="text-left text-slate-400 border-b border-slate-800">
                       <tr>
@@ -652,69 +648,45 @@
                         <th class="py-3 px-4 font-medium" data-col="project">Project <span class="dash-col-caret">▾</span><span class="dash-col-grip" aria-hidden="true"></span></th>
                         <th class="py-3 px-4 font-medium" data-col="contact">Contact <span class="dash-col-caret">▾</span><span class="dash-col-grip" aria-hidden="true"></span></th>
                         <th class="py-3 px-4 font-medium" data-col="city">City <span class="dash-col-caret">▾</span><span class="dash-col-grip" aria-hidden="true"></span></th>
-                        <th class="py-3 px-4 font-medium" data-col="status">Status <span class="dash-col-caret">▾</span><span class="dash-col-grip" aria-hidden="true"></span></th>
+                        <th class="py-3 px-4 font-medium" data-col="status">Stage <span class="dash-col-caret">▾</span><span class="dash-col-grip" aria-hidden="true"></span></th>
                       </tr>
                     </thead>
-                    <tbody id="incoming-table" class="text-slate-200"></tbody>
+                    <tbody id="lead-table" class="text-slate-200"></tbody>
                   </table>
                 </div>
               </div>
             </div>
-            <div class="dash-split-resizer" role="separator" aria-orientation="vertical" aria-label="Resize incoming panels" tabindex="0"></div>
+            <div class="dash-split-resizer" role="separator" aria-orientation="vertical" aria-label="Resize lead panels" tabindex="0"></div>
             <div class="dash-split-right">
-              <div id="incoming-overview" class="inv-right-panel">
-                <p class="inv-overview-lead">Select a lead Spectrum sent you.</p>
+              <div id="plead-overview" class="inv-right-panel">
+                <p class="inv-overview-lead">Select a lead. To turn one down, call or email Spectrum.</p>
               </div>
-              <div id="incoming-detail" class="inv-right-panel hidden" style="padding:1.25rem;overflow:auto">
-                <h2 id="incoming-title" class="font-semibold text-lg">Lead</h2>
-                <p id="incoming-status" class="text-sm text-slate-500 mt-1"></p>
-                <dl id="incoming-fields" class="grid sm:grid-cols-2 gap-x-6 gap-y-3 text-sm mt-4"></dl>
-                <p id="incoming-notes" class="text-sm mt-4"></p>
-                <div id="incoming-actions" class="mt-4 space-y-3">
-                  <label class="text-sm block">Note for Spectrum
-                    <textarea id="incoming-note" rows="2" class="w-full mt-1 bg-slate-800 border border-slate-700 rounded-lg px-3 py-2"></textarea>
-                  </label>
-                  <div class="flex flex-wrap gap-2">
-                    <button type="button" id="incoming-accept" class="px-4 py-2 rounded-full bg-sky-500 hover:bg-sky-400 text-white text-sm font-semibold">Accept</button>
-                    <button type="button" id="incoming-decline" class="px-4 py-2 rounded-full border border-slate-600 text-sm">Decline</button>
-                  </div>
-                </div>
-                <p id="incoming-reply" class="hidden text-sm mt-4"></p>
-                <p id="incoming-msg" class="hidden text-sm mt-3"></p>
+              <div id="plead-detail" class="inv-right-panel hidden" style="padding:1.25rem;overflow:auto">
+                <h2 id="plead-title" class="font-semibold text-lg">Lead</h2>
+                <p id="plead-meta" class="text-sm text-slate-500 mt-1"></p>
+                <dl id="plead-fields" class="grid sm:grid-cols-2 gap-x-6 gap-y-3 text-sm mt-4"></dl>
+                <p id="plead-notes" class="text-sm mt-4"></p>
+                <label class="text-sm block" style="margin-top:0.75rem">Stage
+                  <select id="plead-stage" class="w-full mt-1 bg-slate-800 border border-slate-700 rounded-lg px-3 py-2">
+                    <option value="new">New</option>
+                    <option value="qualified">Qualified</option>
+                    <option value="quoted">Quoted</option>
+                    <option value="negotiation">Negotiation</option>
+                    <option value="won">Won</option>
+                    <option value="lost">Lost</option>
+                  </select>
+                </label>
+                <p class="text-sm text-slate-500 mt-3">To turn this lead down, call or email Spectrum.</p>
+                <p id="plead-msg" class="hidden text-sm mt-3"></p>
               </div>
             </div>
-          </div>
-        </div>
-      </section>
-
-      <section id="leads-section" class="hidden">
-        <div class="cc-list-inner">
-          <p class="text-sm text-slate-500 mb-3">Accepted leads. Drag a card to the next stage. Spectrum sees the same move on the company lead.</p>
-          <p id="lead-error" class="hidden text-sm text-red-400 mb-3"></p>
-          <div class="crm-board" id="plead-board"></div>
-          <div id="plead-detail" class="hidden" style="margin-top:1rem;padding:1rem;border:1px solid #1e293b;border-radius:1rem;max-width:36rem">
-            <h2 id="plead-title" class="font-semibold text-lg">Lead</h2>
-            <p id="plead-meta" class="text-sm text-slate-500 mt-1"></p>
-            <dl id="plead-fields" class="grid sm:grid-cols-2 gap-x-6 gap-y-3 text-sm mt-4"></dl>
-            <p id="plead-notes" class="text-sm mt-4"></p>
-            <label class="text-sm block" style="margin-top:0.75rem">Stage
-              <select id="plead-stage" class="w-full mt-1 bg-slate-800 border border-slate-700 rounded-lg px-3 py-2">
-                <option value="new">New</option>
-                <option value="qualified">Qualified</option>
-                <option value="quoted">Quoted</option>
-                <option value="negotiation">Negotiation</option>
-                <option value="won">Won</option>
-                <option value="lost">Lost</option>
-              </select>
-            </label>
-            <p id="plead-msg" class="hidden text-sm mt-3"></p>
           </div>
         </div>
       </section>
 
       <section id="walls-section" class="hidden">
         <div class="cc-list-inner">
-          <p class="text-sm text-slate-500 mb-3">Walls Spectrum has shipped for your company. Serials and warranty dates are set by Spectrum.</p>
+          <p class="text-sm text-slate-500 mb-3">Walls you installed. Open one for the address, serials, spare parts, and when the warranty ends.</p>
           <p id="wall-error" class="hidden text-sm text-red-400 mb-3"></p>
           <div class="dash-split">
             <div class="dash-split-left">
@@ -858,7 +830,7 @@
             <div id="so-split-right" class="dash-split-right">
               <div id="so-overview-panel" class="inv-right-panel">
                 <div class="inv-overview-summary">
-                  <p class="inv-overview-lead">Select a request quote to view it here. New Request Quote opens a draft for Spectrum. Factory cost is not on this page.</p>
+                  <p class="inv-overview-lead">Select a request quote to read it. New Request Quote starts a request for Spectrum to price.</p>
                 </div>
               </div>
               <div id="so-detail" class="hidden so-doc">
@@ -907,7 +879,7 @@
                         <div class="so-doc-legacy-title">
                           <div class="so-doc-legacy-copy">
                             <h2 id="so-title" class="font-semibold text-lg">New Request Quote</h2>
-                            <p class="so-doc-note">Save sends a draft sales quote to Spectrum. Price is your dealer net. Factory cost is not shown.</p>
+                            <p class="so-doc-note">Save sends this quote to Spectrum. The price is your dealer price.</p>
                           </div>
                           <div class="doc-head-actions">
                             <button type="button" id="so-print-btn" class="so-doc-btn">Print</button>
@@ -1317,8 +1289,8 @@
   <div id="so-sku-menu" class="so-sku-menu" hidden>
     <div class="so-sku-menu-list"></div>
   </div>
-  <script src="/js/app-help.js?v=help6"></script>
-  <script src="/js/app-notes.js?v=newsbar3"></script>
-  <script src="/js/portal.js?v=portalco3"></script>
+  <script src="/js/app-help.js?v=guidevid1"></script>
+  <script src="/js/app-notes.js?v=guidevid1"></script>
+  <script src="/js/portal.js?v=requestquote1"></script>
 </body>
 </html>
