@@ -2113,6 +2113,11 @@
           '<a class="portal-co-btn" href="' + esc(url) + '" download>Download</a>' +
         '</td></tr>';
     }).join('') || '<tr><td colspan="3">No files yet.</td></tr>';
+    const demoCard = $('demo-reset-card');
+    if (demoCard) {
+      const email = String((data.user && data.user.email) || '').trim().toLowerCase();
+      demoCard.hidden = email !== 'demo@spectrumdisplay.com' && email !== 'demo.sales@spectrumdisplay.com' && email !== 'demo.pm@spectrumdisplay.com';
+    }
   }
   function closeFilePreview() {
     const box = $('file-preview');
@@ -2667,6 +2672,30 @@
       setCoStatus(msg, err.message, 'declined');
     }
   };
+  const demoResetBtn = $('demo-reset-btn');
+  if (demoResetBtn) {
+    demoResetBtn.onclick = async function () {
+      if (!window.confirm('Put this portal back to the demo data?')) return;
+      const msg = $('demo-reset-msg');
+      demoResetBtn.disabled = true;
+      if (msg) {
+        msg.hidden = false;
+        msg.textContent = 'Resetting…';
+        msg.className = 'portal-co-status';
+      }
+      try {
+        await api('/api/dealer/demo-reset', { method: 'POST' });
+        window.location.href = '/portal';
+      } catch (err) {
+        demoResetBtn.disabled = false;
+        if (msg) {
+          msg.hidden = false;
+          msg.textContent = err.message || 'Could not reset.';
+          msg.className = 'portal-co-status is-declined';
+        }
+      }
+    };
+  }
   $('password-form').onsubmit = async function (e) {
     e.preventDefault();
     const msg = $('pw-msg');
