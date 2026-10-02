@@ -1,6 +1,18 @@
 {
-  "build": "2026-10-02-new-request-quote",
+  "build": "2026-10-02-phone-new-docs",
   "notes": [
+    {
+      "id": "2026-10-02-phone-new-docs",
+      "date": "2026-10-02",
+      "apps": ["portal"],
+      "title": "New quote and purchase order on a phone",
+      "changed": [
+        "On a phone, New Request Quote and New Purchase Order are gray and do not open a new document.",
+        "A line under the button says: Only available on the desktop app or a tablet.",
+        "The button that starts an order is named New Purchase Order."
+      ],
+      "kind": "update"
+    },
     {
       "id": "2026-10-02-new-request-quote",
       "date": "2026-10-02",

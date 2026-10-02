@@ -2985,6 +2985,25 @@ html.dash-scroll-lock body.company-app {
   margin-left: auto;
   flex-shrink: 0;
 }
+.so-new-slot {
+  margin-left: auto;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 0.3rem;
+  flex: 0 0 auto;
+}
+.so-new-slot .cc-list-add-btn {
+  margin-left: 0;
+}
+.so-new-phone-note {
+  display: none;
+  margin: 0;
+  max-width: 16rem;
+  font-size: 0.78rem;
+  line-height: 1.35;
+  color: #5c6b8a;
+}
 .inv-adv-toggle.is-on {
   background: rgba(14, 165, 233, 0.2);
   color: #7dd3fc;
@@ -9646,6 +9665,26 @@ body.dash-split-lock #settings-pane.space-y-6 > :not([hidden]) {
 
   body.portal-app .cc-list-toolbar .cc-list-add-btn {
     margin-left: 0;
+  }
+
+  body.portal-app .so-new-slot {
+    margin-left: 0;
+    align-items: flex-start;
+    flex: 1 1 100%;
+  }
+
+  body.portal-app .so-new-phone-note {
+    display: block;
+    max-width: none;
+  }
+
+  body.portal-app #so-new-btn.is-phone-off,
+  body.portal-app #so-new-btn:disabled {
+    background: #c5cedd !important;
+    color: #4b5875 !important;
+    cursor: not-allowed;
+    box-shadow: none;
+    pointer-events: none;
   }
 
   body.portal-app .so-doc-main,

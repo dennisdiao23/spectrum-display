@@ -37,7 +37,7 @@
     #company-boot .portal-boot-login button[type="submit"]{background:#fff;color:#000;border:0}
     #company-boot .portal-boot-login button[type="submit"]:hover{background:#e8e8e8}
   </style>
-  <link rel="stylesheet" href="/css/company-dash.css?v=portalmobile5" />
+  <link rel="stylesheet" href="/css/company-dash.css?v=portalnew1" />
   <style>
     /* Dealer is writing a Request Quote. Spectrum fills these when the quote comes back. */
     #so-detail.is-request .so-request-back { display: none !important; }
@@ -847,7 +847,10 @@
           </div>
           <div class="cc-list-toolbar cc-list-tools">
             <input id="so-search" type="search" placeholder="Search number, customer, PO" class="cc-list-search bg-slate-800 border border-slate-700 rounded-full px-3 py-1.5 text-sm">
-            <button id="so-new-btn" type="button" class="cc-list-add-btn px-4 py-2 rounded-full bg-sky-500 hover:bg-sky-400 text-white text-sm font-semibold">New Request Quote</button>
+            <div class="so-new-slot">
+              <button id="so-new-btn" type="button" class="cc-list-add-btn px-4 py-2 rounded-full bg-sky-500 hover:bg-sky-400 text-white text-sm font-semibold" aria-describedby="so-new-phone-note">New Request Quote</button>
+              <p id="so-new-phone-note" class="so-new-phone-note">Only available on the desktop app or a tablet.</p>
+            </div>
           </div>
           <p id="so-error" class="hidden text-sm text-red-400 mb-3"></p>
           <div id="so-split" class="dash-split so-split" style="--so-left-w: min(720px, 58vw)">
@@ -1374,6 +1377,6 @@
   </div>
   <script src="/js/app-help.js?v=guidevid1"></script>
   <script src="/js/app-notes.js?v=guidevid1"></script>
-  <script src="/js/portal.js?v=portalreq2"></script>
+  <script src="/js/portal.js?v=portalnew1"></script>
 </body>
 </html>
