@@ -973,6 +973,7 @@
     place('proj-split', '--inv-left-w', colState('projects').splitLeftPx);
     place('panel-split', '--inv-left-w', colState('panels').splitLeftPx);
     place('lead-split', '--lead-left-w', colState('leads').splitLeftPx);
+    place('dr-split', '--dash-left-w', colState('registrations').splitLeftPx);
   }
   function savePortalSplit(name, px) {
     const state = colState(name);
@@ -2562,6 +2563,32 @@
     bookSku = row.getAttribute('data-sku') || '';
     renderBook();
   });
+  (function bindRegistrationResizer() {
+    const split = $('dr-split');
+    const bar = split && split.querySelector('.dash-split-resizer');
+    if (!bar || !split) return;
+    bar.addEventListener('pointerdown', function (e) {
+      if (isMobileDash()) return;
+      e.preventDefault();
+      const startX = e.clientX;
+      const leftPane = split.querySelector('.dash-split-left');
+      const left = leftPane ? leftPane.getBoundingClientRect().width : 720;
+      document.body.classList.add('dash-col-resizing');
+      function move(ev) {
+        const next = Math.max(360, Math.min(split.getBoundingClientRect().width - 280, left + (ev.clientX - startX)));
+        split.style.setProperty('--dash-left-w', next + 'px');
+      }
+      function up() {
+        document.body.classList.remove('dash-col-resizing');
+        window.removeEventListener('pointermove', move);
+        window.removeEventListener('pointerup', up);
+        const width = parseInt(split.style.getPropertyValue('--dash-left-w'), 10);
+        if (width) savePortalSplit('registrations', width);
+      }
+      window.addEventListener('pointermove', move);
+      window.addEventListener('pointerup', up);
+    });
+  })();
   (function bindLeadResizer() {
     const bar = document.querySelector('#lead-split .dash-split-resizer');
     const split = $('lead-split');
