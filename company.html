@@ -1632,7 +1632,7 @@
                     <input id="inv-detail-spec-files" type="file" accept="application/pdf,.pdf" multiple>
                   </label>
                   <p id="inv-detail-specs-msg" class="hidden text-sm mt-2"></p>
-                  <ul id="inv-detail-specs" class="inv-spec-list"></ul>
+                  <ul id="inv-detail-specs" class="inv-spec-list inv-spec-cards"></ul>
                   <p id="inv-detail-specs-empty" class="cc-detail-empty hidden">No spec sheets yet.</p>
                 </div>
                 <div id="inv-detail-panel-image" class="cc-detail-panel hidden" role="tabpanel" hidden>
@@ -13118,6 +13118,17 @@
       } catch (e) { /* keep the original link */ }
       return raw;
     }
+    function specPreviewCard(name, href) {
+      const label = name || 'Spec sheet';
+      const preview = href + (href.indexOf('#') === -1 ? '#' : '&') + 'toolbar=0&navpanes=0&scrollbar=0&view=FitH';
+      return '<li class="inv-spec-card">' +
+        '<div class="inv-spec-preview">' +
+          '<iframe src="' + esc(preview) + '" title="' + esc(label) + '" tabindex="-1"></iframe>' +
+          '<a class="inv-spec-card-hit" href="' + esc(href) + '" target="_blank" rel="noopener" aria-label="Open ' + esc(label) + '"></a>' +
+        '</div>' +
+        '<a class="inv-spec-card-name" href="' + esc(href) + '" target="_blank" rel="noopener">' + esc(label) + '</a>' +
+      '</li>';
+    }
     function specDocName(file) {
       const raw = String((file && file.name) || 'Spec sheet').replace(/\.pdf$/i, '').trim();
       return raw.slice(0, 160) || 'Spec sheet';
@@ -13145,7 +13156,7 @@
       if (drop) drop.classList.toggle('hidden', !item || !item.id || !canEdit('inventory'));
       if (!list) return;
       list.innerHTML = docs.map(function (doc) {
-        return '<li class="inv-spec-row"><a href="' + esc(specFileHref(doc.url)) + '" target="_blank" rel="noopener">' + esc(doc.name || 'Spec sheet') + '</a></li>';
+        return specPreviewCard(doc.name, specFileHref(doc.url));
       }).join('');
       if (empty) empty.classList.toggle('hidden', docs.length > 0);
     }

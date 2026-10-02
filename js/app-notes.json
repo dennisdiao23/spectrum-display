@@ -1,17 +1,6 @@
 {
-  "build": "2026-10-02-rma-picture",
+  "build": "2026-10-02-new-installed-wall",
   "notes": [
-    {
-      "id": "2026-10-02-rma-picture",
-      "date": "2026-10-02",
-      "apps": ["portal", "company"],
-      "title": "Picture on a new RMA",
-      "added": [
-        "Drop a picture on New RMA. Spectrum sees it with the return."
-      ],
-      "how": "Open RMA and click New RMA. Drop a JPG or PNG in Drop picture, or click the box to choose one. Submit sends the picture with the return.",
-      "kind": "feature"
-    },
     {
       "id": "2026-10-02-new-installed-wall",
       "date": "2026-10-02",
