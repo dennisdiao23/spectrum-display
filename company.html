@@ -32,7 +32,7 @@
     #company-boot .boot-login button[type="submit"]{background:#fff!important;color:#000!important;border:0}
     #company-boot .boot-login button[type="submit"]:hover{background:#e8e8e8!important}
   </style>
-  <link rel="stylesheet" href="/css/company-dash.css?v=dealerreq2" />
+  <link rel="stylesheet" href="/css/company-dash.css?v=brands3" />
   <script src="/js/address-autocomplete.js"></script>
   <script src="/js/company-chat.js?v=po-ship1"></script>
   <script src="/js/company-crm.js?v=dealerpipe1"></script>
@@ -40,8 +40,8 @@
   <script src="/js/company-traffic.js?v=loc1"></script>
   <script src="/js/company-website-control.js?v=webctrl7"></script>
   <script src="/js/print-form.js?v=forms21"></script>
-  <script src="/js/brand-prices.js?v=brands1"></script>
-  <script src="/js/settings-brands.js?v=brands2"></script>
+  <script src="/js/brand-prices.js?v=brands3"></script>
+  <script src="/js/settings-brands.js?v=brands3"></script>
   <script src="/js/app-help.js?v=help6"></script>
   <script src="/js/app-notes.js?v=guidevid1"></script>
   <script>
@@ -3731,7 +3731,7 @@
                 <label class="so-field"><span>Name</span><input id="sb-name" type="text" maxlength="120"></label>
               </div>
               <div id="sb-pane-price" class="hidden mt-4">
-                <p class="text-sm text-slate-500 mb-3">Sell price is the first price. It is cost increased by a percent. Retail and Residential use Sell price. Dealer price is for customer type Dealer. Integrator price is for customer type AV Integrator. Those two can be cost increased by a percent, or Sell price decreased by a percent. Add a product type when that type needs its own percent.</p>
+                <p class="text-sm text-slate-500 mb-3">A percent of 0 leaves that price unchanged. Click Edit to change one percent. Sell price is cost increased by a percent. Retail and Residential use Sell price. Dealer price is for customer type Dealer. Integrator price is for customer type AV Integrator. Those two can be cost increased by a percent, or Sell price decreased by a percent. A product type left at 0 uses the All products percent.</p>
                 <div class="cc-table-card rounded-2xl border border-slate-800">
                   <div class="cc-table-wrap overflow-auto" style="max-height:28rem">
                     <table class="w-full text-sm">
@@ -3764,9 +3764,9 @@
           <div class="mail-card-head">
             <p id="sb-review-title" class="mail-card-title">Review price changes</p>
           </div>
-          <div class="mail-card-body">
-            <p id="sb-review-note" class="text-sm text-slate-600 mb-3"></p>
-            <div class="cc-table-wrap overflow-auto" style="max-height:24rem">
+          <p id="sb-review-note" class="sb-review-note"></p>
+          <div class="mail-card-body sb-review-body">
+            <div class="cc-table-wrap overflow-auto sb-review-table">
               <table class="w-full text-sm">
                 <thead class="text-left text-slate-500">
                   <tr>
@@ -3780,6 +3780,7 @@
                     <th class="py-2 px-2">Dealer price new</th>
                     <th class="py-2 px-2">Integrator price old</th>
                     <th class="py-2 px-2">Integrator price new</th>
+                    <th class="py-2 px-2"></th>
                   </tr>
                 </thead>
                 <tbody id="sb-review-rows"></tbody>
@@ -5234,7 +5235,7 @@
     </a>
   </nav>
 
-  <link rel="stylesheet" href="/css/company-dash.css?v=dealerreq2" />
+  <link rel="stylesheet" href="/css/company-dash.css?v=brands3" />
   <link rel="stylesheet" href="/css/company-tw.css?v=boot1" />
 
   <script>
@@ -24698,13 +24699,25 @@
         if (!SpectrumBrandPrices.brandHasRules(brandId)) await loadBrandPriceRules();
       }
       if (costChanged && window.SpectrumBrandPrices && SpectrumBrandPrices.brandHasRules(brandId)) {
-        const preview = SpectrumBrandPrices.pricesFromCost(brandId, invCategoryFromForm(), nextCost);
+        const preview = SpectrumBrandPrices.pricesFromCost(brandId, invCategoryFromForm(), nextCost, null, {
+          sell: Number(document.getElementById('inv-price').value),
+          dealer: Number(document.getElementById('inv-dealer-net').value),
+          integrator: Number((document.getElementById('inv-integrator') || {}).value)
+        });
+        const sellNow = Number(document.getElementById('inv-price').value) || 0;
+        const dealerNow = Number(document.getElementById('inv-dealer-net').value) || 0;
+        const integratorNow = Number((document.getElementById('inv-integrator') || {}).value) || 0;
+        const same = Math.round(preview.sell * 100) === Math.round(sellNow * 100)
+          && Math.round(preview.dealer * 100) === Math.round(dealerNow * 100)
+          && Math.round(preview.integrator * 100) === Math.round(integratorNow * 100);
+        if (!same) {
         const choice = await askInvCostPrices(preview);
         if (choice === 'update') {
           document.getElementById('inv-price').value = preview.sell;
           document.getElementById('inv-dealer-net').value = preview.dealer;
           const integratorEl = document.getElementById('inv-integrator');
           if (integratorEl) integratorEl.value = preview.integrator;
+        }
         }
       }
       const id = document.getElementById('inv-item-id').value;
