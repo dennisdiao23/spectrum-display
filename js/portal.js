@@ -325,10 +325,10 @@
     if (name === 'calculator') ensureCalculator('');
     $('portal-title').textContent = tabLabel[name] || 'Dealer Portal';
     $('admin-page-sub').textContent = name === 'home' ? 'Overview' : ((me && me.customer && me.customer.companyName) || '');
-    document.body.classList.toggle('inv-layout-lock', (name === 'book' || name === 'projects' || name === 'panels') && !isMobileDash());
+    document.body.classList.toggle('inv-layout-lock', (name === 'book' || name === 'projects' || name === 'panels' || name === 'walls') && !isMobileDash());
     const onSales = (name === 'quotes' || name === 'orders') && !isMobileDash();
-    document.body.classList.toggle('so-split-lock', onSales || ((name === 'registrations' || name === 'rmas' || name === 'walls') && !isMobileDash()));
-    document.body.classList.toggle('dash-split-lock', (name === 'registrations' || name === 'rmas' || name === 'walls') && !isMobileDash());
+    document.body.classList.toggle('so-split-lock', onSales || ((name === 'registrations' || name === 'rmas') && !isMobileDash()));
+    document.body.classList.toggle('dash-split-lock', (name === 'registrations' || name === 'rmas') && !isMobileDash());
     const sales = $('sales-section');
     if (sales) sales.classList.toggle('so-split-on', onSales);
     if (name === 'home') {
@@ -970,6 +970,7 @@
       el.style.setProperty(prop, px + 'px');
     }
     place('inv-split', '--inv-left-w', colState('dealer-book').splitLeftPx);
+    place('wall-split', '--inv-left-w', colState('walls').splitLeftPx);
     place('proj-split', '--inv-left-w', colState('projects').splitLeftPx);
     place('panel-split', '--inv-left-w', colState('panels').splitLeftPx);
     place('lead-split', '--lead-left-w', colState('leads').splitLeftPx);
@@ -3839,6 +3840,32 @@
     showWall(row || null);
   }
   if ($('wall-search')) $('wall-search').addEventListener('input', renderWallTable);
+  (function bindWallResizer() {
+    const bar = $('wall-split-resizer');
+    const split = $('wall-split');
+    if (!bar || !split) return;
+    bar.addEventListener('pointerdown', function (e) {
+      if (isMobileDash()) return;
+      e.preventDefault();
+      const startX = e.clientX;
+      const leftPane = $('wall-split-left');
+      const left = leftPane ? leftPane.getBoundingClientRect().width : 720;
+      document.body.classList.add('inv-split-dragging');
+      function move(ev) {
+        const next = Math.max(280, Math.min(split.getBoundingClientRect().width - 280, left + (ev.clientX - startX)));
+        split.style.setProperty('--inv-left-w', next + 'px');
+      }
+      function up() {
+        document.body.classList.remove('inv-split-dragging');
+        window.removeEventListener('pointermove', move);
+        window.removeEventListener('pointerup', up);
+        const width = parseInt(split.style.getPropertyValue('--inv-left-w'), 10);
+        if (width) savePortalSplit('walls', width);
+      }
+      window.addEventListener('pointermove', move);
+      window.addEventListener('pointerup', up);
+    });
+  })();
   $('wall-table').addEventListener('click', function (e) {
     const tr = e.target.closest('[data-wall-id]');
     if (!tr) return;
@@ -3905,10 +3932,10 @@
   window.addEventListener('resize', function () {
     if (!me) return;
     renderMasterTabs();
-    document.body.classList.toggle('inv-layout-lock', (pathView() === 'book' || pathView() === 'projects' || pathView() === 'panels') && !isMobileDash());
+    document.body.classList.toggle('inv-layout-lock', (pathView() === 'book' || pathView() === 'projects' || pathView() === 'panels' || pathView() === 'walls') && !isMobileDash());
     document.body.classList.toggle('calc-lock', pathView() === 'calculator');
     const onQuotes = (pathView() === 'quotes' || pathView() === 'orders') && !isMobileDash();
-    const onSplit = (pathView() === 'registrations' || pathView() === 'rmas' || pathView() === 'walls') && !isMobileDash();
+    const onSplit = (pathView() === 'registrations' || pathView() === 'rmas') && !isMobileDash();
     document.body.classList.toggle('so-split-lock', onQuotes || onSplit);
     document.body.classList.toggle('dash-split-lock', onSplit);
     const sales = $('sales-section');

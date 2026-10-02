@@ -10,9 +10,9 @@
         "A card at the top of Installed walls that shows how many walls you have."
       ],
       "changed": [
-        "The wall list is a full table you can search. Column names stay readable."
+        "The wall list fills the page the same way Dealer book does. You can search it, and the column names stay readable."
       ],
-      "how": "Open Installed walls. The card shows the count. Search a wall, customer, or site, then open a row for the address, serials, and spare kit.",
+      "how": "Open Installed walls. The card shows the count. The table fills the left side. Drag the divider to make it wider. Search a wall, customer, or site, then open a row for the address, serials, and spare kit.",
       "kind": "feature"
     },
     {
