@@ -439,6 +439,14 @@
     return hooks.fmtFtIn(mW) + ' × ' + hooks.fmtFtIn(mH);
   }
 
+  function cardTitle(item) {
+    var n = String(item.name || '');
+    var b = String(item.brandName || '');
+    var title = n;
+    if (b && n.toLowerCase().indexOf(b.toLowerCase()) !== 0) title = b + ' ' + n;
+    return title + ' · P' + item.pitch;
+  }
+
   function whyText(item) {
     var bits = [];
     bits.push(item.reason || '');
@@ -555,7 +563,7 @@
         '<span class="text-[10px] uppercase tracking-wide text-sky-300">' + item.badge + '</span>' +
         '<span class="text-xs font-semibold text-sky-400">' + (item.cost ? money(item.cost) : 'Request quote') + '</span>' +
         '</div>' +
-        '<div class="font-medium text-sm text-slate-100">' + item.brandName + ' ' + item.name + ' · P' + item.pitch + '</div>' +
+        '<div class="font-medium text-sm text-slate-100">' + cardTitle(item) + '</div>' +
         '<div class="text-xs text-slate-400">' + item.panels + ' panels · ' + item.cols + '×' + item.rows +
         ' · ' + sizeLabel(item.w, item.h) + ' · ' + item.pxW.toLocaleString() + ' × ' + item.pxH.toLocaleString() + ' px</div>' +
         '<p class="text-xs text-slate-500">' + whyText(item) + '</p>' +
@@ -577,7 +585,7 @@
       var cur = selected();
       var save = cur && cur.cost && item.cost ? cur.cost - item.cost : 0;
       return '<button type="button" class="finder-card w-full text-left p-3 rounded-xl border border-slate-800 hover:border-sky-500/60 space-y-1" data-finder-key="' + item.key + '">' +
-        '<div class="flex justify-between gap-2 text-sm"><span class="text-slate-200">' + item.brandName + ' ' + item.name + ' · P' + item.pitch + '</span>' +
+        '<div class="flex justify-between gap-2 text-sm"><span class="text-slate-200">' + cardTitle(item) + '</span>' +
         '<span class="text-sky-400 font-medium">' + (item.cost ? money(item.cost) : '—') + '</span></div>' +
         '<div class="text-xs text-slate-500">' + item.reason + (save > 0 ? ' Saves ' + money(save) + '.' : '') + '</div>' +
         '</button>';
