@@ -1,26 +1,6 @@
 {
-  "build": "2026-10-02-spec-cards",
+  "build": "2026-10-02-installed-walls-card",
   "notes": [
-    {
-      "id": "2026-10-02-spec-cards-company",
-      "date": "2026-10-02",
-      "apps": ["company"],
-      "title": "Spec sheets show a page preview",
-      "changed": [
-        "Product Spec shows each PDF as a card with a preview of the page, not only the name.",
-        "Product photos are smaller."
-      ]
-    },
-    {
-      "id": "2026-10-02-spec-cards-portal",
-      "date": "2026-10-02",
-      "apps": ["portal"],
-      "title": "Spec sheets show a page preview",
-      "changed": [
-        "Product Spec shows each PDF as a card with a preview of the page, not only the name.",
-        "Product photos are smaller."
-      ]
-    },
     {
       "id": "2026-10-02-installed-walls-card",
       "date": "2026-10-02",
