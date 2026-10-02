@@ -107,6 +107,10 @@
   var rankTimer = 0;
   var drag = null;
 
+  function shrinkK() {
+    return Math.max(0.2, Math.min(1, (Number(state.shrink) || 100) / 100));
+  }
+
   function clampedScreen() {
     return {
       w: Math.min(state.openingW, Math.max(0.3, state.screenW || state.openingW)),
@@ -115,18 +119,18 @@
   }
 
   function targetScreen() {
+    var k = shrinkK();
     if (state.fill === 'custom') {
       var s = clampedScreen();
-      var k = Math.max(0.2, Math.min(1, (Number(state.shrink) || 100) / 100));
       return { w: s.w * k, h: s.h * k };
     }
-    return { w: state.openingW, h: state.openingH };
+    return { w: state.openingW * k, h: state.openingH * k };
   }
 
   function paintFillUi() {
     paintChipGroup(document.getElementById('finder-fill'), 'data-fill', state.fill);
     var box = document.getElementById('finder-custom-box');
-    if (box) box.classList.toggle('hidden', state.fill !== 'custom');
+    if (box) box.classList.remove('hidden');
     var val = document.getElementById('finder-shrink-val');
     if (val) val.textContent = Math.round(state.shrink) + '%';
     var slider = document.getElementById('finder-shrink');
@@ -549,21 +553,27 @@
     var ftBox = document.getElementById('finder-screen-ft');
     if (mBox) mBox.classList.toggle('hidden', unit !== 'm');
     if (ftBox) ftBox.classList.toggle('hidden', unit !== 'ft');
-    var s = clampedScreen();
-    state.screenW = s.w;
-    state.screenH = s.h;
+    if (state.fill === 'fill') {
+      state.screenW = state.openingW;
+      state.screenH = state.openingH;
+    } else {
+      var s = clampedScreen();
+      state.screenW = s.w;
+      state.screenH = s.h;
+    }
+    var t = targetScreen();
     var wM = document.getElementById('finder-sw');
     var hM = document.getElementById('finder-sh');
-    if (wM) wM.value = state.screenW.toFixed(2);
-    if (hM) hM.value = state.screenH.toFixed(2);
-    var W = hooks.ftInFromMeters(state.screenW);
-    var H = hooks.ftInFromMeters(state.screenH);
+    if (wM) wM.value = t.w.toFixed(2);
+    if (hM) hM.value = t.h.toFixed(2);
+    var W = hooks.ftInFromMeters(t.w);
+    var H = hooks.ftInFromMeters(t.h);
     setVal('finder-sw-ft', W.ft);
     setVal('finder-sw-in', W.inch);
     setVal('finder-sh-ft', H.ft);
     setVal('finder-sh-in', H.inch);
     var hint = document.getElementById('finder-screen-hint');
-    if (hint) hint.textContent = '≈ ' + state.screenW.toFixed(2) + ' m × ' + state.screenH.toFixed(2) + ' m';
+    if (hint) hint.textContent = '≈ ' + t.w.toFixed(2) + ' m × ' + t.h.toFixed(2) + ' m';
   }
 
   function setVal(id, v) {
@@ -586,7 +596,10 @@
         document.getElementById('finder-h-in').value
       ));
     }
-    if (state.fill === 'custom') {
+    if (state.fill === 'fill') {
+      state.screenW = state.openingW;
+      state.screenH = state.openingH;
+    } else {
       state.screenW = Math.min(state.screenW, state.openingW);
       state.screenH = Math.min(state.screenH, state.openingH);
     }
@@ -802,11 +815,16 @@
       if (!btn) return;
       var next = btn.getAttribute('data-fill');
       if (next === 'custom' && state.fill !== 'custom') {
+        var cur = targetScreen();
+        state.screenW = cur.w / shrinkK();
+        state.screenH = cur.h / shrinkK();
+      }
+      state.fill = next === 'custom' ? 'custom' : 'fill';
+      if (state.fill === 'fill') {
+        state.shrink = 100;
         state.screenW = state.openingW;
         state.screenH = state.openingH;
       }
-      state.fill = next === 'custom' ? 'custom' : 'fill';
-      if (state.fill === 'fill') state.shrink = 100;
       paintFillUi();
       syncScreenFields();
       scheduleRank();
@@ -833,7 +851,7 @@
         readOpeningFromDom();
         var hint = document.getElementById('finder-ft-hint');
         if (hint) hint.textContent = '≈ ' + state.openingW.toFixed(2) + ' m × ' + state.openingH.toFixed(2) + ' m';
-        if (state.fill === 'custom') syncScreenFields();
+        syncScreenFields();
         scheduleRank();
       });
     });
@@ -841,7 +859,9 @@
       var el = document.getElementById(id);
       if (!el) return;
       el.addEventListener('input', function () {
-        ensureCustomFromOpening();
+        state.fill = 'custom';
+        state.shrink = 100;
+        paintFillUi();
         readScreenFromDom();
         var hint = document.getElementById('finder-screen-hint');
         if (hint) hint.textContent = '≈ ' + state.screenW.toFixed(2) + ' m × ' + state.screenH.toFixed(2) + ' m';
@@ -850,9 +870,10 @@
     });
     var shrinkEl = document.getElementById('finder-shrink');
     if (shrinkEl) shrinkEl.addEventListener('input', function () {
-      ensureCustomFromOpening();
       state.shrink = Math.max(20, Math.min(100, parseFloat(shrinkEl.value) || 100));
       paintFillUi();
+      syncScreenFields();
+      if (typeof global.updateDesign === 'function') global.updateDesign();
       scheduleRank();
     });
     ['finder-view-m', 'finder-view-ft', 'finder-view-in', 'finder-view-slider'].forEach(function (id) {
@@ -922,7 +943,10 @@
     if (drag.kind === 'wall') {
       state.openingW = Math.max(0.5, Math.min(80, drag.ow + dlt.dw));
       state.openingH = Math.max(0.5, Math.min(60, drag.oh + dlt.dh));
-      if (state.fill === 'custom') {
+      if (state.fill === 'fill') {
+        state.screenW = state.openingW;
+        state.screenH = state.openingH;
+      } else {
         state.screenW = Math.min(state.screenW, state.openingW);
         state.screenH = Math.min(state.screenH, state.openingH);
       }
