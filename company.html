@@ -32,7 +32,7 @@
     #company-boot .boot-login button[type="submit"]{background:#fff!important;color:#000!important;border:0}
     #company-boot .boot-login button[type="submit"]:hover{background:#e8e8e8!important}
   </style>
-  <link rel="stylesheet" href="/css/company-dash.css?v=listcols2" />
+  <link rel="stylesheet" href="/css/company-dash.css?v=imgsize1" />
   <script src="/js/address-autocomplete.js"></script>
   <script src="/js/company-chat.js?v=po-ship1"></script>
   <script src="/js/company-crm.js?v=leadview1"></script>
@@ -5280,7 +5280,7 @@
     </a>
   </nav>
 
-  <link rel="stylesheet" href="/css/company-dash.css?v=listcols2" />
+  <link rel="stylesheet" href="/css/company-dash.css?v=imgsize1" />
   <link rel="stylesheet" href="/css/company-tw.css?v=boot1" />
 
   <script>
@@ -13224,9 +13224,34 @@
         if (url && urls.indexOf(url) === -1) urls.push(url);
       });
       wrap.innerHTML = urls.map(function (url) {
-        return '<img src="' + esc(url) + '" alt="">';
+        return '<a href="' + esc(url) + '"><img src="' + esc(url) + '" alt="Product photo"></a>';
       }).join('');
       if (empty) empty.classList.toggle('hidden', urls.length > 0);
+    }
+    if (!window.__invImageFullBound) {
+      window.__invImageFullBound = true;
+      document.addEventListener('click', function (e) {
+        const link = e.target.closest('.inv-detail-images a');
+        if (!link) return;
+        e.preventDefault();
+        let box = document.getElementById('inv-image-full');
+        if (!box) {
+          box = document.createElement('div');
+          box.id = 'inv-image-full';
+          box.className = 'inv-image-full';
+          box.hidden = true;
+          box.innerHTML = '<button type="button" class="inv-image-full-close" aria-label="Close">×</button><img alt="Product photo">';
+          document.body.appendChild(box);
+          box.addEventListener('click', function (ev) {
+            if (ev.target === box || ev.target.closest('.inv-image-full-close')) box.hidden = true;
+          });
+          document.addEventListener('keydown', function (ev) {
+            if (ev.key === 'Escape') box.hidden = true;
+          });
+        }
+        box.querySelector('img').src = link.getAttribute('href');
+        box.hidden = false;
+      });
     }
 
     function renderInvDetailContents() {
