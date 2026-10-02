@@ -2031,6 +2031,7 @@ function createSupabaseStore() {
       if (input.image != null) patch.image = input.image;
       if (input.gallery != null) patch.gallery = inv.parseGallery(input.gallery);
       if (input.notes != null) patch.notes = input.notes;
+      if (input.docs != null) patch.docs = inv.parseDocs(input.docs);
       if (input.category != null) {
         patch.category = inv.resolveItemCategory(input.category, current.category, {
           sku: input.sku != null ? input.sku : current.sku,
@@ -3140,6 +3141,19 @@ function createSupabaseStore() {
         upsert: false
       });
       throwIf(error, 'Could not upload image to Supabase Storage.');
+      const { data } = supabase.storage.from(BUCKET).getPublicUrl(objectPath);
+      return { publicUrl: publicUrl, storageUrl: data.publicUrl };
+    },
+    async saveSpecUpload(file) {
+      const prepared = img.prepareSpecUpload(file);
+      const name = img.newUploadName(prepared.ext);
+      const publicUrl = img.writeLocalUpload(name, prepared.buffer);
+      const objectPath = 'products/' + name;
+      const { error } = await supabase.storage.from(BUCKET).upload(objectPath, prepared.buffer, {
+        contentType: prepared.contentType,
+        upsert: false
+      });
+      throwIf(error, 'Could not upload spec sheet.');
       const { data } = supabase.storage.from(BUCKET).getPublicUrl(objectPath);
       return { publicUrl: publicUrl, storageUrl: data.publicUrl };
     },
