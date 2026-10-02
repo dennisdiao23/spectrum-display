@@ -1,17 +1,6 @@
 {
-  "build": "2026-10-02-deal-reg-cols",
+  "build": "2026-10-02-start-here-card",
   "notes": [
-    {
-      "id": "2026-10-02-deal-reg-cols",
-      "date": "2026-10-02",
-      "apps": ["company"],
-      "title": "Deal registration columns can be arranged",
-      "changed": [
-        "The Deal registration list works like the other Company lists."
-      ],
-      "how": "Open Dealer, then Deal registration. Click a column header to sort, move, hide, or resize it. The list stays that way the next time you sign in.",
-      "kind": "update"
-    },
     {
       "id": "2026-10-02-start-here",
       "date": "2026-10-02",
