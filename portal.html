@@ -37,7 +37,7 @@
     #company-boot .portal-boot-login button[type="submit"]{background:#fff;color:#000;border:0}
     #company-boot .portal-boot-login button[type="submit"]:hover{background:#e8e8e8}
   </style>
-  <link rel="stylesheet" href="/css/company-dash.css?v=pillbtns1" />
+  <link rel="stylesheet" href="/css/company-dash.css?v=booktabs1" />
   <style>
     /* Dealer is writing a Request Quote. Spectrum fills these when the quote comes back. */
     #so-detail.is-request .so-request-back { display: none !important; }
@@ -791,6 +791,22 @@
                         </table>
                       </div>
                       <p id="inv-detail-locations-empty" class="cc-detail-empty hidden">No locations yet.</p>
+                    </div>
+                    <div class="cc-detail-tabs" id="book-detail-tabs" role="tablist">
+                      <button type="button" class="cc-detail-tab is-on" data-book-tab="details" role="tab" aria-selected="true">Item details</button>
+                      <button type="button" class="cc-detail-tab" data-book-tab="specs" role="tab" aria-selected="false">Product Spec</button>
+                      <button type="button" class="cc-detail-tab" data-book-tab="image" role="tab" aria-selected="false">Product Image</button>
+                    </div>
+                    <div id="book-panel-details" class="cc-detail-panel" role="tabpanel">
+                      <dl class="cc-detail-read-grid" id="book-detail-read"></dl>
+                    </div>
+                    <div id="book-panel-specs" class="cc-detail-panel hidden" role="tabpanel" hidden>
+                      <ul id="book-detail-specs" class="inv-spec-list"></ul>
+                      <p id="book-detail-specs-empty" class="cc-detail-empty hidden">No spec sheets yet.</p>
+                    </div>
+                    <div id="book-panel-image" class="cc-detail-panel hidden" role="tabpanel" hidden>
+                      <div id="book-detail-images" class="inv-detail-images"></div>
+                      <p id="book-detail-images-empty" class="cc-detail-empty hidden">No product image yet.</p>
                     </div>
                   </div>
                 </div>
@@ -1585,6 +1601,6 @@
       <div id="file-preview-body" class="portal-file-preview-body"></div>
     </div>
   </div>
-  <script src="/js/portal.js?v=baropen2"></script>
+  <script src="/js/portal.js?v=booktabs1"></script>
 </body>
 </html>
