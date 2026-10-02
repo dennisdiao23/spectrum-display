@@ -275,6 +275,32 @@
       });
     }
   }
+  function showPageProblem(name, err) {
+    const section = viewEl(name);
+    if (!section) return;
+    let box = section.querySelector('[data-page-problem]');
+    if (!box) {
+      box = document.createElement('p');
+      box.setAttribute('data-page-problem', '1');
+      box.className = 'text-sm text-red-400';
+      box.style.margin = '0.75rem 1rem';
+      section.insertBefore(box, section.firstChild);
+    }
+    box.textContent = (err && err.message) ? err.message : 'This page could not open.';
+  }
+  function runPage(name, fn) {
+    const section = viewEl(name);
+    const old = section && section.querySelector('[data-page-problem]');
+    if (old) old.remove();
+    try {
+      const result = fn();
+      if (result && typeof result.then === 'function') {
+        result.catch(function (err) { showPageProblem(name, err); });
+      }
+    } catch (err) {
+      showPageProblem(name, err);
+    }
+  }
   function renderView(name) {
     const seen = {};
     views.forEach(function (view) {
@@ -303,21 +329,21 @@
     const sales = $('sales-section');
     if (sales) sales.classList.toggle('so-split-on', onSales);
     if (name === 'home') {
-      renderHome();
+      runPage(name, function () { renderHome(); });
       refreshHomeData();
       startDashOverviewLoop();
     } else {
       stopDashOverviewLoop();
     }
-    if (name === 'book') renderBook();
-    if (name === 'quotes' || name === 'orders') renderQuotes();
-    if (name === 'registrations') renderRegistrations();
-    if (name === 'leads') paintLeadBoard();
-    if (name === 'rmas') renderRmas();
-    if (name === 'walls') renderWalls();
-    if (name === 'projects') loadProjects();
-    if (name === 'panels') loadPanels();
-    if (name === 'company') loadCompany();
+    if (name === 'book') runPage(name, function () { renderBook(); });
+    if (name === 'quotes' || name === 'orders') runPage(name, function () { renderQuotes(); });
+    if (name === 'registrations') runPage(name, function () { renderRegistrations(); });
+    if (name === 'leads') runPage(name, function () { paintLeadBoard(); });
+    if (name === 'rmas') runPage(name, function () { renderRmas(); });
+    if (name === 'walls') runPage(name, function () { renderWalls(); });
+    if (name === 'projects') runPage(name, function () { loadProjects(); });
+    if (name === 'panels') runPage(name, function () { loadPanels(); });
+    if (name === 'company') runPage(name, function () { loadCompany(); });
     if ((name === 'updates' || name === 'guide') && window.SpectrumNotes) SpectrumNotes.paint();
     if (window.SpectrumHelp) SpectrumHelp.setPage(name);
   }
@@ -488,8 +514,7 @@
     selectDashOverview(name);
   }
   function renderHome() {
-    const openLeads = acceptedLeads();
-    const waiting = waitingLeads();
+    const openLeads = boardLeads();
     const quoteDrafts = docs.quote.filter(function (doc) { return doc.status === 'draft'; }).length;
     const orderDrafts = docs.order.filter(function (doc) { return doc.status === 'draft'; }).length;
     const quoteTotal = docsTotal(docs.quote);
@@ -503,9 +528,7 @@
     if (orderEl) orderEl.textContent = dashMoney(orderTotal);
     if (wallEl) wallEl.textContent = dashCount(walls.length);
     const leadHint = $('dash-hint-leads');
-    if (leadHint) {
-      leadHint.textContent = waiting.length ? (waiting.length + ' waiting') : 'Accepted leads';
-    }
+    if (leadHint) leadHint.textContent = 'On your board';
     const quoteHint = $('dash-hint-quotes');
     if (quoteHint) {
       const bits = [docs.quote.length ? (docs.quote.length + ' quotes') : 'Sales quotes'];
@@ -561,7 +584,6 @@
     ]).then(function (saved) {
       leads = (saved[0] && saved[0].leads) || [];
       walls = (saved[1] && saved[1].walls) || [];
-      paintIncomingBadge();
       if (pathView() === 'home') renderHome();
     }).catch(function () {});
   }
@@ -613,15 +635,14 @@
       return;
     }
     title.textContent = 'Leads';
-    sub.textContent = 'Accepted leads on your board. Incoming waits on Incoming.';
+    sub.textContent = 'Leads Spectrum sent you. A new one starts in New.';
     open.href = '/portal/leads';
     open.textContent = 'Open Leads →';
-    const openLeads = acceptedLeads();
-    const waiting = waitingLeads();
-    stats.innerHTML = chip(dashCount(openLeads.length), 'On board') + chip(dashCount(waiting.length), 'Waiting');
+    const openLeads = boardLeads();
+    stats.innerHTML = chip(dashCount(openLeads.length), 'On board');
     list.innerHTML = openLeads.slice(0, 8).map(function (row) {
       return dashRow(row.project || row.number || 'Lead', [row.stageLabel || 'New', leadPlace(row)].filter(Boolean).join(' · '), row.contactName || '');
-    }).join('') || '<p class="dash-activity-empty">No accepted leads yet. Incoming is where Spectrum sends new jobs.</p>';
+    }).join('') || '<p class="dash-activity-empty">No leads yet. Spectrum sends these.</p>';
   }
   function stockLabel(status) {
     if (status === 'out') return 'Out';
@@ -1865,15 +1886,23 @@
       if (!ok) return;
       const wait = 1000 - (Date.now() - started);
       if (wait > 0) await new Promise(function (resolve) { setTimeout(resolve, wait); });
-      showApp();
     } catch (error) {
       stillBootLogo();
       showPortalBoot();
       $('login-panel').classList.remove('hidden');
       err.textContent = error.message;
       err.classList.remove('hidden');
+      return;
     } finally {
       if (btn) btn.disabled = false;
+    }
+    try {
+      showApp();
+    } catch (error) {
+      hidePortalBoot();
+      $('login-panel').classList.add('hidden');
+      $('portal-nav').classList.remove('hidden');
+      showPageProblem(pathView(), error);
     }
   };
   $('portal-logout').onclick = async function () {
