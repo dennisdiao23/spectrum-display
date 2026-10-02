@@ -10,9 +10,9 @@
         "Dashboard counts stay two per row, and the full name shows.",
         "Your name is off the top row on a phone.",
         "Search and Add sit on their own lines.",
-        "Quote, order, and company forms use one column."
+        "Deals, Installed walls, and RMA keep the full column names and slide sideways."
       ],
-      "how": "Open the Dealer Portal on your phone. The Dashboard counts stay two per row, and Request Quote and Purchase Order show their full names. On Book, Quote, and Orders, the search and buttons wrap. A quote or company form stacks down the page."
+      "how": "Open the Dealer Portal on your phone. The Dashboard counts stay two per row, and Request Quote and Purchase Order show their full names. On Book, Quote, and Orders, the search and buttons wrap. A quote or company form stacks down the page. On Deals, Installed walls, and RMA, slide the list sideways to read every column."
     },
     {
       "id": "2026-10-02-brands-prices",

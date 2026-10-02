@@ -9533,5 +9533,26 @@ body.dash-split-lock #settings-pane.space-y-6 > :not([hidden]) {
   body.portal-app .grid.sm\:grid-cols-2 {
     grid-template-columns: 1fr;
   }
+
+  body.portal-app .cc-table-wrap {
+    overflow-x: auto;
+    max-width: 100%;
+  }
+
+  body.portal-app table.dash-cols[data-cols="registrations"],
+  body.portal-app table.dash-cols[data-cols="walls"],
+  body.portal-app table.dash-cols[data-cols="rmas"] {
+    table-layout: auto;
+    width: max-content;
+    min-width: 100%;
+  }
+
+  body.portal-app table.dash-cols[data-cols="registrations"] th,
+  body.portal-app table.dash-cols[data-cols="walls"] th,
+  body.portal-app table.dash-cols[data-cols="rmas"] th {
+    overflow: visible;
+    text-overflow: clip;
+    width: auto;
+  }
 }
 
