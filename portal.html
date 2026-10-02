@@ -39,6 +39,10 @@
   </style>
   <link rel="stylesheet" href="/css/company-dash.css?v=notesplit1" />
   <style>
+    /* Dealer is writing a Request Quote. Spectrum fills these when the quote comes back. */
+    #so-detail.is-request .so-request-back { display: none !important; }
+  </style>
+  <style>
     #inventory-section .inv-split-left .cc-table-wrap { overflow: auto; }
     #inventory-section table.dash-cols[data-cols="dealer-book"] { min-width: 1080px; width: max-content; }
     #inventory-section #inv-item-panel,
@@ -917,7 +921,7 @@
                           </div>
                           <div class="so-doc-top">
                             <div class="so-doc-idline">
-                              <label class="so-field so-f-customer"><span>Customer</span>
+                              <label class="so-field so-f-customer so-request-back"><span>Customer</span>
                                 <input id="so-customer" type="text" readonly>
                               </label>
                               <label class="so-field so-f-number"><span id="so-number-label">Quote no.</span>
@@ -930,10 +934,10 @@
                                 <label class="so-field so-f-date"><span>Date</span>
                                   <input id="so-issue" type="date">
                                 </label>
-                                <label class="so-field so-f-po"><span>P.O. number</span>
+                                <label class="so-field so-f-po so-request-back"><span>P.O. number</span>
                                   <input id="so-po" type="text">
                                 </label>
-                                <label class="so-field so-f-terms"><span>Terms</span>
+                                <label class="so-field so-f-terms so-request-back"><span>Terms</span>
                                   <select id="so-terms">
                                     <option value="30% deposit / balance before ship">30% deposit / balance before ship</option>
                                     <option value="Due on receipt">Due on receipt</option>
@@ -943,7 +947,7 @@
                                     <option value="Net 60">Net 60</option>
                                   </select>
                                 </label>
-                                <label class="so-field so-f-due"><span id="so-due-label">Valid until</span>
+                                <label class="so-field so-f-due so-request-back"><span id="so-due-label">Valid until</span>
                                   <input id="so-due" type="date">
                                 </label>
                                 <label class="so-field so-f-status"><span>Status</span>
@@ -951,7 +955,7 @@
                                     <option value="draft">Draft</option>
                                   </select>
                                 </label>
-                                <label class="so-field so-f-so"><span>S.O. No.</span>
+                                <label class="so-field so-f-so so-request-back"><span>S.O. No.</span>
                                   <input id="so-so-number" type="text">
                                 </label>
                                 <label class="so-field so-f-rep"><span>Rep</span>
@@ -966,15 +970,15 @@
                                 <label class="so-field so-f-ship-via"><span>Ship via</span>
                                   <input id="so-ship-via" type="text">
                                 </label>
-                                <label class="so-field so-f-tracking"><span>Tracking</span>
+                                <label class="so-field so-f-tracking so-request-back"><span>Tracking</span>
                                   <input id="so-tracking" type="text">
                                 </label>
                               </div>
                             </div>
-                            <label class="so-field so-field-name"><span>Customer name</span>
+                            <label class="so-field so-field-name so-request-back"><span>Customer name</span>
                               <input id="so-customer-name" type="text" readonly>
                             </label>
-                            <label class="so-field so-field-email"><span>Email</span>
+                            <label class="so-field so-field-email so-request-back"><span>Email</span>
                               <input id="so-customer-email" type="email" readonly>
                             </label>
                           </div>
@@ -1022,14 +1026,14 @@
                             <p id="so-msg" class="hidden text-sm"></p>
                           </div>
                           <div class="so-doc-totals">
-                            <label class="so-field so-field-inline"><span>Discount $</span>
+                            <label class="so-field so-field-inline so-request-back"><span>Discount $</span>
                               <input id="so-discount" type="number" step="0.01" min="0" value="0">
                             </label>
-                            <label class="so-field so-field-inline"><span>Tax %</span>
+                            <label class="so-field so-field-inline so-request-back"><span>Tax %</span>
                               <input id="so-tax-rate" type="number" step="0.01" min="0" value="0">
                             </label>
                             <div class="so-doc-total-row"><span>Subtotal</span><span id="so-subtotal">$0.00</span></div>
-                            <div class="so-doc-total-row"><span>Tax</span><span id="so-tax">$0.00</span></div>
+                            <div class="so-doc-total-row so-request-back"><span>Tax</span><span id="so-tax">$0.00</span></div>
                             <div class="so-doc-total-row is-grand"><span>Total</span><span id="so-grand">$0.00</span></div>
                             <div class="so-doc-total-row" id="so-payments-row"><span>Payments applied</span><span id="so-payments-applied">$0.00</span></div>
                             <div class="so-doc-total-row" id="so-balance-row"><span>Balance due</span><span id="so-balance-due">$0.00</span></div>
@@ -1315,6 +1319,6 @@
   </div>
   <script src="/js/app-help.js?v=help6"></script>
   <script src="/js/app-notes.js?v=newsbar3"></script>
-  <script src="/js/portal.js?v=portalco2"></script>
+  <script src="/js/portal.js?v=portalco3"></script>
 </body>
 </html>

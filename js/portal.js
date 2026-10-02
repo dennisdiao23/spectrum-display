@@ -1169,6 +1169,9 @@
     menu._input = input;
   }
   function setQuoteLocked(locked) {
+    const detail = $('so-detail');
+    const writingRequest = $('so-type').value !== 'order' && !locked;
+    if (detail) detail.classList.toggle('is-request', writingRequest);
     ['so-issue', 'so-po', 'so-due', 'so-so-number', 'so-rep', 'so-account', 'so-ship-date', 'so-ship-via', 'so-tracking', 'so-notes', 'so-discount', 'so-tax-rate'].forEach(function (id) {
       const el = $(id);
       if (el) el.readOnly = !!locked;
