@@ -531,55 +531,75 @@
     "portal": [
       {
         "title": "Dashboard",
-        "text": "Your start page. A new account sees Start here in the main card: price book, a saved wall, a registered job, and a quote request. Each step checks itself when it is saved."
+        "text": "Your home page. See how many prices, quotes, orders, and saved walls you have. A new login shows Start here. Finish a step and it checks itself.",
+        "video": "/assets/portal-guide/dashboard.mp4"
       },
       {
         "title": "Dealer book",
-        "text": "Your price list. Search a SKU to see your price and what is on hand. Factory cost is not on this page."
+        "text": "Look up what you can buy and what you pay. Search a SKU, then open the row for your price and how many are on hand. Click a column header to sort, hide, or resize the list.",
+        "video": "/assets/portal-guide/book.mp4"
       },
       {
         "title": "Calculator",
-        "text": "Size a wall for your customer. Pick a panel and see the cabinet count at your price. Hover the left side to see that the pane scrolls."
+        "text": "Size a wall for a job. Enter the screen, pick a panel, and see how many cabinets you need at your price. Save it when you want to quote it.",
+        "video": "/assets/portal-guide/calculator.mp4"
       },
       {
         "title": "Projects",
-        "text": "Wall layouts you saved. Open one to keep working, or send it as a quote request."
+        "text": "Walls you already sized. Open one to keep editing, or send it as a quote request.",
+        "video": "/assets/portal-guide/projects.mp4"
       },
       {
         "title": "Saved Panel",
-        "text": "Panels you use often. Pick one so the calculator starts on that series."
+        "text": "Panels you use on more than one job. Pick one so the calculator opens on that panel.",
+        "video": "/assets/portal-guide/panels.mp4"
       },
       {
         "title": "Deal registration",
-        "text": "Register one named job so Spectrum can protect it until a date, or decline it with a reason. Protection is that job only. Open one to see if it was accepted."
+        "text": "Tell Spectrum about one job before you quote it. Open it later to see if it was accepted, and the date that protection ends. Protection is that job only.",
+        "video": "/assets/portal-guide/registrations.mp4"
+      },
+      {
+        "title": "Incoming",
+        "text": "Jobs Spectrum sends you. Open one and accept or decline it. Accept puts it on your Leads board. Your own jobs stay in Deal registration.",
+        "video": "/assets/portal-guide/incoming.mp4"
+      },
+      {
+        "title": "Leads",
+        "text": "Jobs you accepted. Move a card forward as the job moves. Spectrum sees the same board.",
+        "video": "/assets/portal-guide/leads.mp4"
       },
       {
         "title": "Request Quote",
-        "text": "Ask Spectrum to price a job. Send the request here, then come back to read the quote they return."
+        "text": "Send Spectrum a job to price. Open it later to read the price that comes back.",
+        "video": "/assets/portal-guide/quotes.mp4"
       },
       {
         "title": "Purchase Order",
-        "text": "Orders you have placed with Spectrum. Open one to see what you ordered and where it stands."
+        "text": "Orders you have placed. Open one for the lines, ship date, and tracking.",
+        "video": "/assets/portal-guide/orders.mp4"
       },
       {
         "title": "Installed walls",
-        "text": "Walls you installed. Open one for the site, serials, spare kit, and warranty dates. You can read the wall. Spectrum sets the serials and dates."
+        "text": "Walls you installed. Open one for the address, serials, spare parts, and when the warranty ends.",
+        "video": "/assets/portal-guide/walls.mp4"
       },
       {
         "title": "RMA",
-        "text": "Ask to return goods from an order or purchase order. Submit a reason and the lines. Open a request to see the number and where it stands. This does not create a credit or a shipping label."
+        "text": "Start a return on something you ordered. Choose a reason and the items. Open it later for the return number and where it stands.",
+        "video": "/assets/portal-guide/rma.mp4"
       },
       {
         "title": "Settings → Company",
-        "text": "Your dealer company on the portal. Name, address, tax ID, and logo are text. Spectrum changes those in Company. You can upload a file and change your portal password."
+        "text": "Your company on the portal. Keep the name, address, and logo here, and upload files such as your resale certificate."
       },
       {
         "title": "Settings → What’s new",
-        "text": "The log of portal screen changes, in plain language."
+        "text": "What changed in the portal. Read it when a screen looks different."
       },
       {
         "title": "Settings → Dealer guide",
-        "text": "This list. What each menu is for."
+        "text": "This page. What each menu is for, and a short video of how to use it."
       }
     ]
   }
