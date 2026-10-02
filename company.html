@@ -32,7 +32,7 @@
     #company-boot .boot-login button[type="submit"]{background:#fff!important;color:#000!important;border:0}
     #company-boot .boot-login button[type="submit"]:hover{background:#e8e8e8!important}
   </style>
-  <link rel="stylesheet" href="/css/company-dash.css?v=dealercols1" />
+  <link rel="stylesheet" href="/css/company-dash.css?v=dealercols2" />
   <script src="/js/address-autocomplete.js"></script>
   <script src="/js/company-chat.js?v=po-ship1"></script>
   <script src="/js/company-crm.js?v=leadview1"></script>
@@ -5279,7 +5279,7 @@
     </a>
   </nav>
 
-  <link rel="stylesheet" href="/css/company-dash.css?v=dealercols1" />
+  <link rel="stylesheet" href="/css/company-dash.css?v=dealercols2" />
   <link rel="stylesheet" href="/css/company-tw.css?v=boot1" />
 
   <script>
@@ -10968,7 +10968,7 @@
           px = saved ? parseInt(saved, 10) : 0;
         } catch (err) {}
       }
-      const MIN_LEFT = 400;
+      const MIN_LEFT = 520;
       const target = px >= MIN_LEFT ? px : 0;
       if (!target) return;
       split.style.setProperty('--dash-left-w', target + 'px');
@@ -11329,17 +11329,18 @@
       const hasPx = visibleCols.some(function (col) {
         return state.widths[col] && String(state.widths[col]).indexOf('px') !== -1;
       });
+      const CC_COL_MIN_PX = 140;
       const widths = visibleCols.map(function (col) {
         const saved = state.widths[col];
         if (hasPx && saved && String(saved).indexOf('px') !== -1) {
           const n = Math.round(parseFloat(saved));
-          if (n > 0) return Math.max(64, n);
+          if (n > 0) return Math.max(CC_COL_MIN_PX, n);
         }
         if (saved && String(saved).indexOf('%') !== -1) {
           const pct = parseFloat(saved);
-          if (pct > 0) return Math.max(64, Math.round(paneWidth * pct / 100));
+          if (pct > 0) return Math.max(CC_COL_MIN_PX, Math.round(paneWidth * pct / 100));
         }
-        return Math.max(64, Math.round(paneWidth / visibleCols.length));
+        return Math.max(CC_COL_MIN_PX, Math.round(paneWidth / visibleCols.length));
       });
       Array.prototype.forEach.call(table.querySelectorAll('thead th[data-col]'), function (th) {
         const col = th.getAttribute('data-col');
@@ -12552,8 +12553,8 @@
       const split = document.getElementById('cc-split');
       const resizer = document.getElementById('cc-split-resizer');
       if (!split || !resizer) return;
-      const MIN_LEFT = 400;
-      const MIN_RIGHT = 600;
+      const MIN_LEFT = 520;
+      const MIN_RIGHT = 480;
       const RESIZER_W = 14;
       function effectiveMins(total) {
         if (total >= MIN_LEFT + MIN_RIGHT + RESIZER_W) {

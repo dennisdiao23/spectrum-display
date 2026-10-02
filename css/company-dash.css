@@ -3972,7 +3972,7 @@ body.po-split-lock #po-section #po-error {
   grid-template-columns: var(--dash-left-w, 400px) 14px minmax(0, 1fr);
 }
 #cc-split {
-  grid-template-columns: var(--dash-left-w, var(--cc-split-left-boot, 400px)) 14px minmax(0, 1fr);
+  grid-template-columns: var(--dash-left-w, var(--cc-split-left-boot, 560px)) 14px minmax(0, 1fr);
 }
 #so-split {
   grid-template-columns: var(--so-left-w, var(--so-split-left-boot, 400px)) 14px minmax(0, 1fr);
@@ -4102,7 +4102,14 @@ body.po-split-lock .po-split {
 }
 #cc-split-left table.dash-cols[data-cols="customers"] th[data-col],
 #cc-split-left table.dash-cols[data-cols="customers"] td {
-  min-width: 5.5rem;
+  min-width: 8.5rem;
+}
+#cc-split-left table.dash-cols[data-cols="customers"] th[data-col] {
+  overflow: visible;
+  text-overflow: unset;
+  white-space: nowrap;
+}
+#cc-split-left table.dash-cols[data-cols="customers"] td {
   overflow: hidden;
   text-overflow: ellipsis;
 }
