@@ -1207,6 +1207,29 @@ html.dash-scroll-lock body.company-app {
   background: #f8fafc;
   color: #334155;
 }
+#sb-review .mail-card.sb-review-card {
+  width: calc(100vw - 1.25rem);
+  max-width: none;
+  height: calc(100vh - 1.25rem);
+  max-height: calc(100vh - 1.25rem);
+}
+#sb-review .sb-review-table {
+  max-height: calc(100vh - 10.5rem);
+}
+#sb-review .sb-review-table th,
+#sb-review .sb-review-table td {
+  white-space: nowrap;
+}
+#sb-review input.is-under {
+  color: #dc2626;
+  border-color: #dc2626;
+  font-weight: 650;
+}
+#sb-review-confirm.is-locked,
+#sb-review-confirm:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
 .cc-leave.is-open {
   display: flex;
 }
