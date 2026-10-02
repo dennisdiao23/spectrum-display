@@ -687,6 +687,9 @@ function publicPriceBookItem(item) {
     unit: item.unit || '',
     panelType: item.panelType || '',
     packagingType: item.packagingType || '',
+    weight: Number(item.weight) || 0,
+    panelW: Number(item.panelW) || 0,
+    panelH: Number(item.panelH) || 0,
     dealerNet: Number(item.dealerNet) || 0,
     listPrice: Number(item.price) || 0,
     qty: bookOnHandQty(item),
@@ -695,7 +698,12 @@ function publicPriceBookItem(item) {
     warehouse: item.warehouse || item.location || (locations[0] && locations[0].name) || '',
     bin: item.bin || '',
     locations: locations,
-    image: image
+    image: image,
+    gallery: gallery.map(function (url) { return String(url || ''); }).filter(Boolean),
+    docs: (Array.isArray(item.docs) ? item.docs : []).map(function (doc) {
+      if (!doc || !doc.url) return null;
+      return { name: String(doc.name || 'Spec sheet'), url: String(doc.url) };
+    }).filter(Boolean)
   };
 }
 

@@ -32,7 +32,7 @@
     #company-boot .boot-login button[type="submit"]{background:#fff!important;color:#000!important;border:0}
     #company-boot .boot-login button[type="submit"]:hover{background:#e8e8e8!important}
   </style>
-  <link rel="stylesheet" href="/css/company-dash.css?v=sparkdot2" />
+  <link rel="stylesheet" href="/css/company-dash.css?v=booktabs1" />
   <script src="/js/address-autocomplete.js"></script>
   <script src="/js/company-chat.js?v=po-ship1"></script>
   <script src="/js/company-crm.js?v=leadview1"></script>
@@ -1582,7 +1582,8 @@
                   <button type="button" class="cc-detail-tab is-on" data-inv-tab="moves" role="tab" aria-selected="true">Stock history</button>
                   <button type="button" class="cc-detail-tab hidden" data-inv-tab="contents" role="tab" aria-selected="false">Contents</button>
                   <button type="button" class="cc-detail-tab" data-inv-tab="details" role="tab" aria-selected="false">Item details</button>
-                  <button type="button" class="cc-detail-tab" data-inv-tab="specs" role="tab" aria-selected="false">Product details</button>
+                  <button type="button" class="cc-detail-tab" data-inv-tab="specs" role="tab" aria-selected="false">Product Spec</button>
+                  <button type="button" class="cc-detail-tab" data-inv-tab="image" role="tab" aria-selected="false">Product Image</button>
                   <button type="button" class="cc-detail-tab" data-inv-tab="website" role="tab" aria-selected="false">Website</button>
                   <button type="button" class="cc-detail-tab" data-inv-tab="notes" role="tab" aria-selected="false">Notes</button>
                 </div>
@@ -1633,6 +1634,10 @@
                   <p id="inv-detail-specs-msg" class="hidden text-sm mt-2"></p>
                   <ul id="inv-detail-specs" class="inv-spec-list"></ul>
                   <p id="inv-detail-specs-empty" class="cc-detail-empty hidden">No spec sheets yet.</p>
+                </div>
+                <div id="inv-detail-panel-image" class="cc-detail-panel hidden" role="tabpanel" hidden>
+                  <div id="inv-detail-images" class="inv-detail-images"></div>
+                  <p id="inv-detail-images-empty" class="cc-detail-empty hidden">No product image yet.</p>
                 </div>
                 <div id="inv-detail-panel-website" class="cc-detail-panel hidden" role="tabpanel" hidden>
                   <div id="inv-detail-maps" class="cc-detail-notes-box"></div>
@@ -5269,7 +5274,7 @@
     </a>
   </nav>
 
-  <link rel="stylesheet" href="/css/company-dash.css?v=sparkdot2" />
+  <link rel="stylesheet" href="/css/company-dash.css?v=booktabs1" />
   <link rel="stylesheet" href="/css/company-tw.css?v=boot1" />
 
   <script>
@@ -12983,7 +12988,7 @@
     function setInvDetailTab(name) {
       const item = invDetailData && invDetailData.item;
       const kit = invIsKit(item);
-      const allowed = kit ? ['contents', 'details', 'specs', 'notes'] : ['moves', 'details', 'specs', 'website', 'notes'];
+      const allowed = kit ? ['contents', 'details', 'specs', 'image', 'notes'] : ['moves', 'details', 'specs', 'image', 'website', 'notes'];
       invDetailTab = name || (kit ? 'contents' : 'moves');
       if (allowed.indexOf(invDetailTab) === -1) invDetailTab = kit ? 'contents' : 'moves';
       if (invDetailId) invTabDetailTab[invDetailId] = invDetailTab;
@@ -12995,7 +13000,7 @@
         btn.classList.toggle('is-on', on);
         btn.setAttribute('aria-selected', on ? 'true' : 'false');
       });
-      ['moves', 'contents', 'details', 'specs', 'website', 'notes'].forEach(function (key) {
+      ['moves', 'contents', 'details', 'specs', 'image', 'website', 'notes'].forEach(function (key) {
         const panel = document.getElementById('inv-detail-panel-' + key);
         if (!panel) return;
         const on = key === invDetailTab;
@@ -13108,6 +13113,22 @@
         return '<li class="inv-spec-row"><a href="' + esc(doc.url) + '" target="_blank" rel="noopener">' + esc(doc.name || 'Spec sheet') + '</a></li>';
       }).join('');
       if (empty) empty.classList.toggle('hidden', docs.length > 0);
+    }
+
+    function renderInvDetailImages() {
+      const wrap = document.getElementById('inv-detail-images');
+      const empty = document.getElementById('inv-detail-images-empty');
+      const item = invDetailData && invDetailData.item;
+      if (!wrap) return;
+      const urls = [];
+      if (item && item.image) urls.push(item.image);
+      ((item && item.gallery) || []).forEach(function (url) {
+        if (url && urls.indexOf(url) === -1) urls.push(url);
+      });
+      wrap.innerHTML = urls.map(function (url) {
+        return '<img src="' + esc(url) + '" alt="">';
+      }).join('');
+      if (empty) empty.classList.toggle('hidden', urls.length > 0);
     }
 
     function renderInvDetailContents() {
@@ -13361,6 +13382,7 @@
       renderInvDetailDetails();
       renderInvDetailWebsite();
       renderInvDetailSpecs();
+      renderInvDetailImages();
       renderInvDetailNotes();
     }
 
