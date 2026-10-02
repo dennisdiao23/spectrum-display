@@ -35,7 +35,7 @@
   <link rel="stylesheet" href="/css/company-dash.css?v=brands1" />
   <script src="/js/address-autocomplete.js"></script>
   <script src="/js/company-chat.js?v=po-ship1"></script>
-  <script src="/js/company-crm.js?v=zoomphone3"></script>
+  <script src="/js/company-crm.js?v=dealerpipe1"></script>
   <script src="/js/company-staff.js?v=staff6"></script>
   <script src="/js/company-traffic.js?v=loc1"></script>
   <script src="/js/company-website-control.js?v=webctrl7"></script>
@@ -1529,6 +1529,7 @@
                   <button type="button" class="cc-detail-tab is-on" data-inv-tab="moves" role="tab" aria-selected="true">Stock history</button>
                   <button type="button" class="cc-detail-tab hidden" data-inv-tab="contents" role="tab" aria-selected="false">Contents</button>
                   <button type="button" class="cc-detail-tab" data-inv-tab="details" role="tab" aria-selected="false">Item details</button>
+                  <button type="button" class="cc-detail-tab" data-inv-tab="specs" role="tab" aria-selected="false">Product details</button>
                   <button type="button" class="cc-detail-tab" data-inv-tab="website" role="tab" aria-selected="false">Website</button>
                   <button type="button" class="cc-detail-tab" data-inv-tab="notes" role="tab" aria-selected="false">Notes</button>
                 </div>
@@ -1569,6 +1570,10 @@
                 </div>
                 <div id="inv-detail-panel-details" class="cc-detail-panel hidden" role="tabpanel" hidden>
                   <dl class="cc-detail-read-grid" id="inv-detail-read"></dl>
+                </div>
+                <div id="inv-detail-panel-specs" class="cc-detail-panel hidden" role="tabpanel" hidden>
+                  <ul id="inv-detail-specs" class="inv-spec-list"></ul>
+                  <p id="inv-detail-specs-empty" class="cc-detail-empty hidden">No spec sheets yet.</p>
                 </div>
                 <div id="inv-detail-panel-website" class="cc-detail-panel hidden" role="tabpanel" hidden>
                   <div id="inv-detail-maps" class="cc-detail-notes-box"></div>
@@ -2482,10 +2487,21 @@
                     </div>
                     <div class="cc-detail-toolbar-actions inv-detail-hero-actions">
                       <button type="button" id="crm-lead-convert" class="cc-detail-btn cc-detail-btn-primary">Convert to customer</button>
+                      <button type="button" id="crm-lead-send-dealer" class="cc-detail-btn">Send to dealer</button>
                       <button type="button" id="crm-lead-deal" class="cc-detail-btn">New deal</button>
                       <button type="button" id="crm-lead-act" class="cc-detail-btn">Log activity</button>
                       <button type="button" id="crm-lead-edit" class="cc-detail-btn">Edit</button>
                     </div>
+                  </div>
+                  <div id="crm-lead-dealer-box" class="hidden" style="margin:0.75rem 0 0;max-width:28rem">
+                    <label class="text-sm block">Dealer
+                      <select id="crm-lead-dealer" class="w-full mt-1 bg-slate-800 border border-slate-700 rounded-lg px-3 py-2"></select>
+                    </label>
+                    <label class="text-sm block" style="margin-top:0.5rem">Note for the dealer
+                      <textarea id="crm-lead-dealer-note" rows="2" class="w-full mt-1 bg-slate-800 border border-slate-700 rounded-lg px-3 py-2" placeholder="What should the dealer know?"></textarea>
+                    </label>
+                    <button type="button" id="crm-lead-dealer-go" class="cc-detail-btn cc-detail-btn-primary" style="margin-top:0.6rem">Send</button>
+                    <p id="crm-lead-dealer-msg" class="hidden text-sm" style="margin-top:0.4rem"></p>
                   </div>
                   <div class="crm-detail-facts">
                     <div class="cc-detail-block">
@@ -2500,6 +2516,7 @@
                       <h3>Lead</h3>
                       <dl class="cc-detail-dl">
                         <div><dt>Status</dt><dd id="crm-lead-detail-status">—</dd></div>
+                        <div class="sm:col-span-2"><dt>Dealer</dt><dd id="crm-lead-dealer-line">—</dd></div>
                         <div><dt>Type</dt><dd id="crm-lead-detail-kind">—</dd></div>
                         <div><dt>Source</dt><dd id="crm-lead-detail-source">—</dd></div>
                         <div><dt>Project</dt><dd id="crm-lead-detail-project">—</dd></div>
@@ -4655,6 +4672,21 @@
                 </label>
               </div>
               <p id="inv-photos-msg" class="hidden text-sm mt-2"></p>
+            </div>
+          </div>
+        </section>
+        <section class="cc-sec is-open" id="inv-sec-specs">
+          <button type="button" class="cc-sec-btn"><span class="cc-sec-label"><svg class="cc-sec-ico" viewBox="0 0 24 24"><path d="M7 3h7l5 5v13a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1z"/><path d="M14 3v5h5"/><path d="M8 13h8M8 17h6"/></svg> Spec sheets</span> <span class="cc-sec-chevron">▾</span></button>
+          <div class="cc-sec-body">
+            <div class="cc-field wide">
+              <p class="cc-note">Manufacturer spec sheets for this SKU. Save item to keep them.</p>
+              <ul id="inv-spec-edit-list" class="inv-spec-list"></ul>
+              <p id="inv-spec-edit-empty" class="cc-detail-empty">No spec sheets yet.</p>
+              <label class="cc-detail-btn inv-spec-add">
+                Add PDF
+                <input id="inv-spec-files" type="file" accept="application/pdf,.pdf" multiple hidden>
+              </label>
+              <p id="inv-spec-msg" class="hidden text-sm mt-2"></p>
             </div>
           </div>
         </section>
@@ -9096,6 +9128,8 @@
     let poTabCache = {};
     let poReadOnly = false;
     let invSavedSnapshot = '';
+    let invSpecDocs = [];
+    let invSpecNew = [];
     let invDrawerSource = '';
     let invOpenedCost = 0;
     let invPoLineRow = null;
@@ -12721,7 +12755,7 @@
     function setInvDetailTab(name) {
       const item = invDetailData && invDetailData.item;
       const kit = invIsKit(item);
-      const allowed = kit ? ['contents', 'details', 'notes'] : ['moves', 'details', 'website', 'notes'];
+      const allowed = kit ? ['contents', 'details', 'specs', 'notes'] : ['moves', 'details', 'specs', 'website', 'notes'];
       invDetailTab = name || (kit ? 'contents' : 'moves');
       if (allowed.indexOf(invDetailTab) === -1) invDetailTab = kit ? 'contents' : 'moves';
       if (invDetailId) invTabDetailTab[invDetailId] = invDetailTab;
@@ -12733,7 +12767,7 @@
         btn.classList.toggle('is-on', on);
         btn.setAttribute('aria-selected', on ? 'true' : 'false');
       });
-      ['moves', 'contents', 'details', 'website', 'notes'].forEach(function (key) {
+      ['moves', 'contents', 'details', 'specs', 'website', 'notes'].forEach(function (key) {
         const panel = document.getElementById('inv-detail-panel-' + key);
         if (!panel) return;
         const on = key === invDetailTab;
@@ -12814,6 +12848,36 @@
       wrap.innerHTML = rows.map(function (pair) {
         return '<div><dt>' + esc(pair[0]) + '</dt><dd>' + esc(pair[1]) + '</dd></div>';
       }).join('');
+    }
+
+    function specDocName(file) {
+      const raw = String((file && file.name) || 'Spec sheet').replace(/\.pdf$/i, '').trim();
+      return raw.slice(0, 160) || 'Spec sheet';
+    }
+    function renderInvSpecEditor() {
+      const list = document.getElementById('inv-spec-edit-list');
+      const empty = document.getElementById('inv-spec-edit-empty');
+      if (!list) return;
+      const rows = invSpecDocs.map(function (doc, i) {
+        return '<li class="inv-spec-row"><a href="' + esc(doc.url) + '" target="_blank" rel="noopener">' + esc(doc.name) + '</a>' +
+          '<button type="button" class="inv-spec-remove" data-spec-remove="saved" data-spec-i="' + i + '">Remove</button></li>';
+      }).concat(invSpecNew.map(function (doc, i) {
+        return '<li class="inv-spec-row"><span class="inv-spec-name">' + esc(doc.name) + '</span>' +
+          '<button type="button" class="inv-spec-remove" data-spec-remove="new" data-spec-i="' + i + '">Remove</button></li>';
+      }));
+      list.innerHTML = rows.join('');
+      if (empty) empty.classList.toggle('hidden', rows.length > 0);
+    }
+    function renderInvDetailSpecs() {
+      const list = document.getElementById('inv-detail-specs');
+      const empty = document.getElementById('inv-detail-specs-empty');
+      const item = invDetailData && invDetailData.item;
+      const docs = (item && item.docs) || [];
+      if (!list) return;
+      list.innerHTML = docs.map(function (doc) {
+        return '<li class="inv-spec-row"><a href="' + esc(doc.url) + '" target="_blank" rel="noopener">' + esc(doc.name || 'Spec sheet') + '</a></li>';
+      }).join('');
+      if (empty) empty.classList.toggle('hidden', docs.length > 0);
     }
 
     function renderInvDetailContents() {
@@ -13066,6 +13130,7 @@
       renderInvDetailContents();
       renderInvDetailDetails();
       renderInvDetailWebsite();
+      renderInvDetailSpecs();
       renderInvDetailNotes();
     }
 
@@ -13552,7 +13617,9 @@
         const el = document.getElementById(id);
         return el ? String(el.value || '') : '';
       });
-      return vals.join('|') + '|' + JSON.stringify(kitLinesFromForm());
+      return vals.join('|') + '|' + JSON.stringify(kitLinesFromForm()) + '|' +
+        JSON.stringify(invSpecDocs.map(function (doc) { return doc.url; })) + '|' +
+        JSON.stringify(invSpecNew.map(function (doc) { return doc.name; }));
     }
 
     function markInvClean() {
@@ -13715,6 +13782,15 @@
       if (photosSec) photosSec.classList.toggle('hidden', !hasId);
       if (photosJump) photosJump.classList.toggle('hidden', !hasId);
       renderInvKitLines(invIsKit(item) ? ((item && item.kitLines) || []) : [{}]);
+      invSpecDocs = ((item && item.docs) || []).map(function (doc) {
+        return { name: doc.name || 'Spec sheet', url: doc.url || '' };
+      }).filter(function (doc) { return doc.url; });
+      invSpecNew = [];
+      const specMsg = document.getElementById('inv-spec-msg');
+      if (specMsg) specMsg.classList.add('hidden');
+      const specInput = document.getElementById('inv-spec-files');
+      if (specInput) specInput.value = '';
+      renderInvSpecEditor();
       syncInvItemKindUi();
       renderInvPhotos();
     }
@@ -20520,7 +20596,7 @@
       form.classList.add('hidden');
       detail.classList.remove('hidden');
       document.getElementById('dlead-title').textContent = row.project || row.number || 'Lead';
-      document.getElementById('dlead-status').textContent = (row.number || '') + (row.dealerName ? (' · ' + row.dealerName) : '') + ' · ' + (row.statusLabel || 'New');
+      document.getElementById('dlead-status').textContent = (row.number || '') + (row.dealerName ? (' · ' + row.dealerName) : '') + ' · ' + (row.status === 'accepted' && row.stageLabel ? row.stageLabel : (row.statusLabel || 'Waiting'));
       document.getElementById('dlead-fields').innerHTML =
         '<div><dt class="text-slate-500">Contact</dt><dd>' + esc(row.contactName || '—') + '</dd></div>' +
         '<div><dt class="text-slate-500">Email</dt><dd>' + esc(row.contactEmail || '—') + '</dd></div>' +
@@ -20552,7 +20628,7 @@
           '<td class="py-3 px-4">' + esc(row.dealerName || '—') + '</td>' +
           '<td class="py-3 px-4">' + esc(row.project || '—') + '</td>' +
           '<td class="py-3 px-4">' + esc(leadPlace(row)) + '</td>' +
-          '<td class="py-3 px-4">' + esc(row.statusLabel || 'New') + '</td></tr>';
+          '<td class="py-3 px-4">' + esc(row.status === 'accepted' && row.stageLabel ? row.stageLabel : (row.statusLabel || 'Waiting')) + '</td></tr>';
       }).join('');
     }
     async function fillLeadDealers() {
@@ -24313,6 +24389,39 @@
       });
     }
 
+    document.getElementById('inv-spec-files').addEventListener('change', function () {
+      const msg = document.getElementById('inv-spec-msg');
+      const files = Array.prototype.slice.call(this.files || []);
+      this.value = '';
+      let rejected = false;
+      files.forEach(function (file) {
+        const pdf = file.type === 'application/pdf' || /\.pdf$/i.test(file.name || '');
+        if (!pdf) {
+          rejected = true;
+          return;
+        }
+        if (invSpecDocs.length + invSpecNew.length >= 20) {
+          rejected = true;
+          if (msg) msg.textContent = 'You can keep up to 20 spec sheets.';
+          return;
+        }
+        invSpecNew.push({ name: specDocName(file), file: file });
+      });
+      if (msg) {
+        if (rejected && msg.textContent !== 'You can keep up to 20 spec sheets.') msg.textContent = 'Spec sheets must be PDF.';
+        msg.className = 'text-sm mt-2 text-red-500';
+        msg.classList.toggle('hidden', !rejected);
+      }
+      renderInvSpecEditor();
+    });
+    document.getElementById('inv-spec-edit-list').addEventListener('click', function (e) {
+      const btn = e.target.closest('[data-spec-remove]');
+      if (!btn) return;
+      const i = Number(btn.getAttribute('data-spec-i'));
+      if (btn.getAttribute('data-spec-remove') === 'new') invSpecNew.splice(i, 1);
+      else invSpecDocs.splice(i, 1);
+      renderInvSpecEditor();
+    });
     document.getElementById('inv-item-form').addEventListener('submit', async function (e) {
       e.preventDefault();
       const nextCost = Number(document.getElementById('inv-cost').value);
@@ -24359,6 +24468,10 @@
       fd.append('panelH', isPanel ? document.getElementById('inv-panel-h').value : '');
       fd.append('lowAt', document.getElementById('inv-item-low').value);
       fd.append('notes', document.getElementById('inv-item-notes').value);
+      fd.append('docs', JSON.stringify(invSpecDocs));
+      invSpecNew.forEach(function (doc) {
+        if (doc.file) fd.append('docFiles', doc.file, doc.file.name);
+      });
       fd.append('warehouseId', document.getElementById('inv-warehouse').value);
       if (!id && invItemKindFromForm() !== 'kit') fd.append('qty', document.getElementById('inv-qty-init').value || '0');
       if (invItemKindFromForm() === 'kit') {

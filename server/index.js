@@ -457,10 +457,10 @@ async function main() {
     const qs = req.url.includes('?') ? req.url.slice(req.url.indexOf('?')) : '';
     res.redirect(301, '/portal' + qs);
   });
-  ['/portal/book', '/portal/quotes', '/portal/orders', '/portal/walls', '/portal/registrations', '/portal/leads', '/portal/rmas', '/portal/projects', '/portal/panels', '/portal/calculator', '/portal/company', '/portal/updates', '/portal/guide'].forEach(function (route) {
+  ['/portal/book', '/portal/quotes', '/portal/orders', '/portal/walls', '/portal/registrations', '/portal/incoming', '/portal/leads', '/portal/rmas', '/portal/projects', '/portal/panels', '/portal/calculator', '/portal/company', '/portal/updates', '/portal/guide'].forEach(function (route) {
     app.get([route, route + '/'], sendPortal);
   });
-  app.get(['/portal/quotes/:id', '/portal/quotes/:id/', '/portal/orders/:id', '/portal/orders/:id/', '/portal/registrations/:id', '/portal/registrations/:id/', '/portal/leads/:id', '/portal/leads/:id/', '/portal/rmas/:id', '/portal/rmas/:id/', '/portal/walls/:id', '/portal/walls/:id/'], sendPortal);
+  app.get(['/portal/quotes/:id', '/portal/quotes/:id/', '/portal/orders/:id', '/portal/orders/:id/', '/portal/registrations/:id', '/portal/registrations/:id/', '/portal/incoming/:id', '/portal/incoming/:id/', '/portal/leads/:id', '/portal/leads/:id/', '/portal/rmas/:id', '/portal/rmas/:id/', '/portal/walls/:id', '/portal/walls/:id/'], sendPortal);
 
   const OLD_SOLUTION_REDIRECTS = [
     ['/solutions/retail-hospitality.html', '/retail-hospitality'],
@@ -1464,6 +1464,14 @@ async function main() {
     } catch (err) { dealerDocError(err, res, next); }
   });
 
+  app.post('/api/dealer/leads/:id/stage', requireDealer, async function (req, res, next) {
+    try {
+      const lead = await store.setPortalLeadStage(req.dealer, req.params.id, req.body || {});
+      if (!lead) return res.status(404).json({ ok: false, error: 'Lead not found.' });
+      res.json({ ok: true, lead: lead });
+    } catch (err) { dealerDocError(err, res, next); }
+  });
+
   app.get('/api/dealer/walls', requireDealer, async function (req, res, next) {
     try {
       res.json({ ok: true, walls: await store.listPortalInstalledWalls(req.dealer) });
@@ -2274,6 +2282,14 @@ async function main() {
       if (!ok) return res.status(404).json({ ok: false, error: 'Lead not found.' });
       res.json({ ok: true });
     } catch (err) { next(err); }
+  });
+
+  app.post('/api/admin/crm/leads/:id/send-dealer', requireAdmin, requireCrmEdit('leads'), async function (req, res, next) {
+    try {
+      const lead = await store.sendCrmLeadToDealer(req.params.id, req.body || {}, req.admin);
+      if (!lead) return res.status(404).json({ ok: false, error: 'Lead not found.' });
+      res.json({ ok: true, lead: lead });
+    } catch (err) { dealerDocError(err, res, next); }
   });
 
   app.post('/api/admin/crm/leads/:id/convert', requireAdmin, requireCrmEdit('leads'), async function (req, res, next) {
@@ -3439,15 +3455,44 @@ async function main() {
     } catch (err) { next(err); }
   });
 
-  const inventoryUpload = upload.fields([
+  const inventoryUpload = multer({
+    storage: multer.memoryStorage(),
+    limits: { fileSize: 24 * 1024 * 1024, files: 24 },
+    fileFilter: function (_req, file, cb) {
+      const mime = String(file.mimetype || '').toLowerCase();
+      const name = String(file.originalname || '').toLowerCase();
+      if (file.fieldname === 'docFiles') {
+        const ok = mime === 'application/pdf' || name.endsWith('.pdf');
+        cb(ok ? null : new Error('Spec sheets must be PDF.'), ok);
+        return;
+      }
+      const ok = /^image\/(jpeg|png|webp|gif)$/i.test(mime);
+      cb(ok ? null : new Error('Only JPG, PNG, WebP, or GIF images are allowed.'), ok);
+    }
+  }).fields([
     { name: 'image', maxCount: 1 },
-    { name: 'gallery', maxCount: 12 }
+    { name: 'gallery', maxCount: 12 },
+    { name: 'docFiles', maxCount: 12 }
   ]);
 
   async function inventoryPayload(req) {
+    const invMod = require('./inventory');
     const body = Object.assign({}, req.body || {});
     const file = req.files && req.files.image && req.files.image[0];
     if (file) body.image = img.publicUploadUrl(await store.saveUpload(file));
+    if (body.docs != null || (req.files && req.files.docFiles && req.files.docFiles.length)) {
+      const docs = invMod.parseDocs(body.docs);
+      const uploads = (req.files && req.files.docFiles) || [];
+      for (let i = 0; i < uploads.length; i++) {
+        if (docs.length >= 20) throw new Error('You can keep up to 20 spec sheets.');
+        const saved = await store.saveSpecUpload(uploads[i]);
+        const url = img.publicUploadUrl(saved);
+        let name = String(uploads[i].originalname || 'Spec sheet').replace(/\.pdf$/i, '').trim().slice(0, 160);
+        if (!name) name = 'Spec sheet';
+        docs.push({ name: name, url: url });
+      }
+      body.docs = JSON.stringify(docs);
+    }
     if (!canSeeInventoryCosts(req.admin)) stripInventoryCostWrites(body);
     return body;
   }
@@ -4160,7 +4205,7 @@ async function main() {
 
   app.use(function (err, _req, res, _next) {
     if (err && err.code === 'LIMIT_FILE_SIZE') {
-      return res.status(400).json({ ok: false, error: 'Image must be 24 MB or smaller.' });
+      return res.status(400).json({ ok: false, error: 'File must be 24 MB or smaller.' });
     }
     const status = Number(err && err.status) || 400;
     res.status(status).json({ ok: false, error: (err && err.message) || 'Request failed.' });

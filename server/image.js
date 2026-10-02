@@ -232,6 +232,18 @@ async function prepareUpload(file) {
   };
 }
 
+function prepareSpecUpload(file) {
+  const buffer = file && file.buffer;
+  if (!buffer || !buffer.length) throw new Error('Missing spec sheet.');
+  const head = buffer.slice(0, 5).toString('utf8');
+  if (head !== '%PDF-') throw new Error('Spec sheets must be PDF.');
+  return {
+    buffer: buffer,
+    ext: '.pdf',
+    contentType: 'application/pdf'
+  };
+}
+
 function knownStorageMap(details, storageByPublic) {
   const map = Object.assign({}, storageByPublic || {});
   const d = details && typeof details === 'object' ? details : {};
@@ -420,6 +432,7 @@ module.exports = {
   hasSharp,
   toWebp,
   prepareUpload,
+  prepareSpecUpload,
   displayBuffer,
   allowedRemoteUrl,
   allowedLocalPath,

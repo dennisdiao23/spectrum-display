@@ -113,6 +113,28 @@ function normalizeSku(value) {
     .slice(0, 64);
 }
 
+function parseDocs(value) {
+  let raw = value;
+  if (raw == null || raw === '') return [];
+  if (typeof raw === 'string') {
+    const text = raw.trim();
+    if (!text) return [];
+    try { raw = JSON.parse(text); } catch (e) { return []; }
+  }
+  if (!Array.isArray(raw)) return [];
+  const out = [];
+  raw.forEach(function (row) {
+    if (!row || out.length >= 20) return;
+    const url = String(row.url || row.href || '').trim().slice(0, 500);
+    let name = String(row.name || row.label || '').trim().slice(0, 160);
+    if (!url) return;
+    if (!name) name = 'Spec sheet';
+    if (out.some(function (doc) { return doc.url === url; })) return;
+    out.push({ name: name, url: url });
+  });
+  return out;
+}
+
 function parseGallery(value) {
   if (Array.isArray(value)) {
     return value.map(function (url) { return String(url || '').trim(); }).filter(Boolean);
@@ -838,6 +860,9 @@ function normalizeItemInput(body, opts) {
   if (!patch || src.gallery != null) {
     out.gallery = parseGallery(src.gallery);
   }
+  if (!patch || src.docs != null) {
+    out.docs = parseDocs(src.docs);
+  }
   if (!patch || src.category != null) {
     out.category = normalizeCategory(src.category);
   }
@@ -855,6 +880,7 @@ function normalizeItemInput(body, opts) {
   if (!patch && out.panelH == null) out.panelH = 0;
   if (!patch && out.image == null) out.image = '';
   if (!patch && out.gallery == null) out.gallery = [];
+  if (!patch && out.docs == null) out.docs = [];
   if (!patch && out.brandId == null) out.brandId = '';
   if (!patch && out.pitch == null) out.pitch = '';
   if (!patch && out.unit == null) out.unit = 'panels';
@@ -902,6 +928,7 @@ function dbFieldsFromInput(input) {
   if (input.description != null) row.description = input.description;
   if (input.image != null) row.image = input.image;
   if (input.gallery != null) row.gallery = parseGallery(input.gallery);
+  if (input.docs != null) row.docs = parseDocs(input.docs);
   if (input.notes != null) row.notes = input.notes;
   if (input.category != null) row.category = input.category;
   return row;
@@ -1076,6 +1103,7 @@ function formatItem(row, brandName, maps, locations) {
     description: (row && row.description) || '',
     image: (row && row.image) || '',
     gallery: parseGallery(row && row.gallery),
+    docs: parseDocs(row && row.docs),
     notes: (row && row.notes) || '',
     status: binStatus(qty, lowAt),
     updatedAt: row && row.updated_at,
@@ -1266,6 +1294,7 @@ module.exports = {
   skuNameFromProduct,
   skuToken,
   normalizeSku,
+  parseDocs,
   parseGallery,
   urlsFromMedia,
   mediaFromUrls,

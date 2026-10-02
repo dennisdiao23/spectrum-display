@@ -1,5 +1,6 @@
 /**
  * A lead Spectrum sends to one dealer. The dealer can accept or decline it.
+ * After they accept, both sides share the same pipeline stage.
  * The dealer cannot add their own jobs here. Those stay in deal registration.
  */
 
@@ -27,10 +28,43 @@ function asId(value) {
   return Number.isFinite(n) ? n : value;
 }
 
+const PIPELINE = [
+  { id: 'new', label: 'New' },
+  { id: 'qualified', label: 'Qualified' },
+  { id: 'quoted', label: 'Quoted' },
+  { id: 'negotiation', label: 'Negotiation' },
+  { id: 'won', label: 'Won' },
+  { id: 'lost', label: 'Lost' }
+];
+
 function statusLabel(status) {
   if (status === 'accepted') return 'Accepted';
   if (status === 'declined') return 'Declined';
-  return 'New';
+  if (status === 'reassigned') return 'Reassigned';
+  return 'Waiting';
+}
+
+function stageLabel(stage) {
+  const hit = PIPELINE.find(function (item) { return item.id === stage; });
+  return hit ? hit.label : '';
+}
+
+function pipelineStage(value) {
+  const v = String(value || '').toLowerCase().trim();
+  const hit = PIPELINE.find(function (item) { return item.id === v; });
+  if (!hit) throw Object.assign(new Error('Choose a stage.'), { code: 'invalid' });
+  return hit.id;
+}
+
+function leadStatusForStage(stage) {
+  if (stage === 'lost') return 'lost';
+  if (stage === 'won') return 'converted';
+  if (stage === 'new') return 'working';
+  return 'qualified';
+}
+
+function actorName(actor) {
+  return trim((actor && (actor.name || actor.email)) || '', 120);
 }
 
 function readInput(body) {
@@ -75,6 +109,11 @@ function formatRow(row, extras) {
     statusLabel: statusLabel(status),
     replyNote: row.reply_note || '',
     repliedAt: row.replied_at || '',
+    crmLeadId: row.crm_lead_id ? String(row.crm_lead_id) : '',
+    crmDealId: row.crm_deal_id ? String(row.crm_deal_id) : '',
+    stage: row.stage || '',
+    stageLabel: stageLabel(row.stage || ''),
+    stageUpdatedAt: row.stage_updated_at || '',
     createdAt: row.created_at || '',
     updatedAt: row.updated_at || ''
   };
@@ -112,6 +151,89 @@ async function assertDealer(store, customerId) {
   return customer;
 }
 
+async function assertDealerLogin(store, customerId) {
+  if (!store || typeof store.listDealerUsersForCustomer !== 'function') return;
+  const users = await store.listDealerUsersForCustomer(customerId);
+  const active = (users || []).some(function (user) { return user && user.active !== false; });
+  if (!active) {
+    throw Object.assign(new Error('This dealer cannot sign in yet. Add a portal login on the dealer first.'), { code: 'invalid' });
+  }
+}
+
+async function dealerLabel(store, customerId) {
+  if (!store || typeof store.getCompanyCustomer !== 'function') return 'Dealer';
+  const customer = await store.getCompanyCustomer(customerId);
+  return (customer && (customer.displayName || customer.companyName)) || 'Dealer';
+}
+
+async function syncAcceptedLead(store, saved) {
+  if (!saved || !saved.crmLeadId || !store || typeof store.getCrmLead !== 'function') return null;
+  const lead = await store.getCrmLead(saved.crmLeadId);
+  if (!lead) return null;
+  const open = (lead.deals || []).find(function (deal) { return deal.stage !== 'won' && deal.stage !== 'lost'; });
+  let deal = open || null;
+  if (deal) {
+    if (deal.stage !== 'new') deal = await store.updateCrmDeal(deal.id, { stage: 'new' });
+  } else if (typeof store.createCrmDeal === 'function') {
+    deal = await store.createCrmDeal({
+      leadId: lead.id,
+      stage: 'new',
+      title: (lead.companyName || lead.displayName || saved.project || 'Lead') + ' deal'
+    });
+  }
+  if (typeof store.updateCrmLead === 'function') {
+    await store.updateCrmLead(lead.id, { status: 'working' });
+  }
+  const name = await dealerLabel(store, saved.customerId);
+  if (typeof store.createCrmActivity === 'function') {
+    await store.createCrmActivity({
+      type: 'note',
+      subject: name + ' accepted this lead',
+      body: saved.replyNote || '',
+      leadId: lead.id,
+      dealId: deal && deal.id,
+      done: true,
+      createdByName: name
+    });
+  }
+  return deal && deal.id;
+}
+
+async function syncDeclinedLead(store, saved) {
+  if (!saved || !saved.crmLeadId || !store || typeof store.createCrmActivity !== 'function') return;
+  const name = await dealerLabel(store, saved.customerId);
+  await store.createCrmActivity({
+    type: 'note',
+    subject: name + ' declined this lead',
+    body: saved.replyNote || '',
+    leadId: saved.crmLeadId,
+    done: true,
+    createdByName: name
+  });
+}
+
+async function syncMovedLead(store, saved, stage) {
+  if (!saved || !saved.crmLeadId || !store) return;
+  if (saved.crmDealId && typeof store.getCrmDeal === 'function' && typeof store.updateCrmDeal === 'function') {
+    const deal = await store.getCrmDeal(saved.crmDealId);
+    if (deal && deal.stage !== stage) await store.updateCrmDeal(saved.crmDealId, { stage: stage });
+  }
+  if (typeof store.updateCrmLead === 'function') {
+    await store.updateCrmLead(saved.crmLeadId, { status: leadStatusForStage(stage) });
+  }
+  if (typeof store.createCrmActivity === 'function') {
+    const name = await dealerLabel(store, saved.customerId);
+    await store.createCrmActivity({
+      type: 'note',
+      subject: name + ' moved this to ' + stageLabel(stage),
+      leadId: saved.crmLeadId,
+      dealId: saved.crmDealId || null,
+      done: true,
+      createdByName: name
+    });
+  }
+}
+
 function ensureDealerLeads(db) {
   db.exec(`
     CREATE TABLE IF NOT EXISTS dealer_leads (
@@ -134,6 +256,10 @@ function ensureDealerLeads(db) {
     );
     CREATE INDEX IF NOT EXISTS dealer_leads_customer_idx ON dealer_leads (customer_id, created_at);
   `);
+  ['crm_lead_id INTEGER', 'crm_deal_id INTEGER', "stage TEXT NOT NULL DEFAULT ''", "stage_updated_at TEXT NOT NULL DEFAULT ''"].forEach(function (column) {
+    try { db.exec('ALTER TABLE dealer_leads ADD COLUMN ' + column); } catch (err) { /* already present */ }
+  });
+  db.exec('CREATE INDEX IF NOT EXISTS dealer_leads_crm_lead_idx ON dealer_leads (crm_lead_id);');
 }
 
 function sqliteApi(db, store) {
@@ -147,17 +273,18 @@ function sqliteApi(db, store) {
       throw Object.assign(new Error('This lead is already answered.'), { code: 'invalid' });
     }
     const stamp = nowIso();
+    const nextStage = status === 'accepted' ? 'new' : '';
     db.prepare(`
       UPDATE dealer_leads
-      SET status = ?, reply_note = ?, replied_at = ?, updated_at = ?
+      SET status = ?, reply_note = ?, replied_at = ?, stage = ?, stage_updated_at = ?, updated_at = ?
       WHERE id = ?
-    `).run(status, readReply(body), stamp, stamp, id);
+    `).run(status, readReply(body), stamp, nextStage, nextStage ? stamp : '', stamp, id);
     return formatRow(getRow(id));
   }
   return {
     async listDealerLeads() {
       const names = await dealerNames(store);
-      return db.prepare('SELECT * FROM dealer_leads ORDER BY datetime(created_at) DESC, id DESC').all().map(function (row) {
+      return db.prepare("SELECT * FROM dealer_leads WHERE status != 'reassigned' ORDER BY datetime(created_at) DESC, id DESC").all().map(function (row) {
         return formatRow(row, { admin: true, dealerName: names[String(row.customer_id)] || '' });
       });
     },
@@ -193,19 +320,127 @@ function sqliteApi(db, store) {
       const customerId = dealerCustomerId(user);
       if (!customerId) return [];
       return db.prepare(
-        'SELECT * FROM dealer_leads WHERE customer_id = ? ORDER BY datetime(created_at) DESC, id DESC'
+        "SELECT * FROM dealer_leads WHERE customer_id = ? AND status != 'reassigned' ORDER BY datetime(created_at) DESC, id DESC"
       ).all(customerId).map(function (row) { return formatRow(row); });
     },
     async getPortalLead(user, id) {
       const row = getRow(id);
-      if (!row || String(row.customer_id) !== dealerCustomerId(user)) return null;
+      if (!row || String(row.customer_id) !== dealerCustomerId(user) || row.status === 'reassigned') return null;
       return formatRow(row);
     },
     async acceptPortalLead(user, id, body) {
-      return reply(user, id, 'accepted', body);
+      const saved = reply(user, id, 'accepted', body);
+      if (!saved) return null;
+      const dealId = await syncAcceptedLead(store, saved);
+      if (dealId) {
+        db.prepare('UPDATE dealer_leads SET crm_deal_id = ?, updated_at = ? WHERE id = ?').run(asId(dealId), nowIso(), id);
+      }
+      return formatRow(getRow(id));
     },
     async declinePortalLead(user, id, body) {
-      return reply(user, id, 'declined', body);
+      const saved = reply(user, id, 'declined', body);
+      if (!saved) return null;
+      await syncDeclinedLead(store, saved);
+      return saved;
+    },
+    async setPortalLeadStage(user, id, body) {
+      const row = getRow(id);
+      if (!row || String(row.customer_id) !== dealerCustomerId(user) || row.status === 'reassigned') return null;
+      if (row.status !== 'accepted') {
+        throw Object.assign(new Error('Accept the lead before you move it.'), { code: 'invalid' });
+      }
+      const stage = pipelineStage(body && body.stage);
+      if (row.stage === stage) return formatRow(row);
+      const stamp = nowIso();
+      db.prepare('UPDATE dealer_leads SET stage = ?, stage_updated_at = ?, updated_at = ? WHERE id = ?').run(stage, stamp, stamp, id);
+      const saved = formatRow(getRow(id));
+      await syncMovedLead(store, saved, stage);
+      return formatRow(getRow(id));
+    },
+    async sendCrmLeadToDealer(leadId, body, actor) {
+      const lead = typeof store.getCrmLead === 'function' ? await store.getCrmLead(leadId) : null;
+      if (!lead) return null;
+      const customerId = trim(body && (body.customerId || body.customer_id), 40);
+      await assertDealer(store, customerId);
+      await assertDealerLogin(store, customerId);
+      const stamp = nowIso();
+      db.prepare(
+        "UPDATE dealer_leads SET status = 'reassigned', updated_at = ? WHERE crm_lead_id = ? AND status IN ('sent', 'accepted')"
+      ).run(stamp, asId(lead.id));
+      const numbers = db.prepare('SELECT number FROM dealer_leads').all().map(function (row) { return row.number; });
+      const project = trim(lead.companyName || lead.displayName || lead.projectType || 'Lead', 160) || 'Lead';
+      const note = trim(body && (body.notes || body.note), 4000);
+      const info = db.prepare(`
+        INSERT INTO dealer_leads (
+          number, customer_id, project, contact_name, contact_email, contact_phone,
+          city, state, interest, notes, status, reply_note, replied_at,
+          crm_lead_id, crm_deal_id, stage, stage_updated_at, created_at, updated_at
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'sent', '', '', ?, NULL, '', '', ?, ?)
+      `).run(
+        nextNumberFrom(numbers),
+        asId(customerId),
+        project,
+        trim(lead.contactName || [lead.contactFirst, lead.contactLast].filter(Boolean).join(' '), 120),
+        trim(lead.email, 160),
+        trim(lead.phone || lead.mobile, 40),
+        trim(lead.city, 80),
+        trim(lead.state, 40),
+        trim(lead.projectType, 240),
+        note,
+        asId(lead.id),
+        stamp,
+        stamp
+      );
+      const name = await dealerLabel(store, customerId);
+      if (typeof store.createCrmActivity === 'function') {
+        await store.createCrmActivity({
+          type: 'note',
+          subject: 'Sent to ' + name,
+          body: note,
+          leadId: lead.id,
+          done: true,
+          createdByName: actorName(actor) || 'Company'
+        });
+      }
+      return store.getCrmLead(lead.id);
+    },
+    async attachCrmDealerHandoffs(leads) {
+      const list = Array.isArray(leads) ? leads : (leads ? [leads] : []);
+      const names = await dealerNames(store);
+      const map = {};
+      db.prepare(
+        "SELECT * FROM dealer_leads WHERE crm_lead_id IS NOT NULL AND status != 'reassigned' ORDER BY datetime(created_at) DESC, id DESC"
+      ).all().forEach(function (row) {
+        const key = String(row.crm_lead_id);
+        if (map[key]) return;
+        map[key] = formatRow(row, { admin: true, dealerName: names[String(row.customer_id)] || '' });
+      });
+      list.forEach(function (lead) {
+        if (!lead) return;
+        lead.dealerHandoff = map[String(lead.id)] || null;
+      });
+      return Array.isArray(leads) ? list : (list[0] || null);
+    },
+    async mirrorCrmDealStage(deal) {
+      if (!deal || deal.id == null) return;
+      const row = db.prepare(
+        "SELECT * FROM dealer_leads WHERE crm_deal_id = ? AND status = 'accepted' ORDER BY id DESC LIMIT 1"
+      ).get(asId(deal.id));
+      if (!row || (row.stage || '') === (deal.stage || '')) return;
+      const stamp = nowIso();
+      db.prepare('UPDATE dealer_leads SET stage = ?, stage_updated_at = ?, updated_at = ? WHERE id = ?').run(deal.stage || '', stamp, stamp, row.id);
+      if (!row.crm_lead_id || typeof store.updateCrmLead !== 'function') return;
+      await store.updateCrmLead(row.crm_lead_id, { status: leadStatusForStage(deal.stage) });
+      if (typeof store.createCrmActivity === 'function') {
+        await store.createCrmActivity({
+          type: 'note',
+          subject: 'Moved to ' + (stageLabel(deal.stage) || 'New'),
+          leadId: row.crm_lead_id,
+          dealId: deal.id,
+          done: true,
+          createdByName: 'Company'
+        });
+      }
     }
   };
 }
@@ -223,10 +458,13 @@ function supabaseApi(supabase, store) {
       throw Object.assign(new Error('This lead is already answered.'), { code: 'invalid' });
     }
     const stamp = nowIso();
+    const nextStage = status === 'accepted' ? 'new' : '';
     const { data, error } = await supabase.from('dealer_leads').update({
       status: status,
       reply_note: readReply(body),
       replied_at: stamp,
+      stage: nextStage,
+      stage_updated_at: nextStage ? stamp : '',
       updated_at: stamp
     }).eq('id', id).select('*').single();
     throwIf(error, 'Could not save this lead.');
@@ -235,7 +473,7 @@ function supabaseApi(supabase, store) {
   return {
     async listDealerLeads() {
       const names = await dealerNames(store);
-      const { data, error } = await supabase.from('dealer_leads').select('*').order('created_at', { ascending: false });
+      const { data, error } = await supabase.from('dealer_leads').select('*').neq('status', 'reassigned').order('created_at', { ascending: false });
       throwIf(error, 'Could not load leads.');
       return (data || []).map(function (row) {
         return formatRow(row, { admin: true, dealerName: names[String(row.customer_id)] || '' });
@@ -272,20 +510,147 @@ function supabaseApi(supabase, store) {
     async listPortalLeads(user) {
       const customerId = dealerCustomerId(user);
       if (!customerId) return [];
-      const { data, error } = await supabase.from('dealer_leads').select('*').eq('customer_id', customerId).order('created_at', { ascending: false });
+      const { data, error } = await supabase.from('dealer_leads').select('*').eq('customer_id', customerId).neq('status', 'reassigned').order('created_at', { ascending: false });
       throwIf(error, 'Could not load your leads.');
       return (data || []).map(function (row) { return formatRow(row); });
     },
     async getPortalLead(user, id) {
       const row = await getRow(id);
-      if (!row || String(row.customer_id) !== dealerCustomerId(user)) return null;
+      if (!row || String(row.customer_id) !== dealerCustomerId(user) || row.status === 'reassigned') return null;
       return formatRow(row);
     },
     async acceptPortalLead(user, id, body) {
-      return reply(user, id, 'accepted', body);
+      const saved = await reply(user, id, 'accepted', body);
+      if (!saved) return null;
+      const dealId = await syncAcceptedLead(store, saved);
+      if (dealId) {
+        const { data, error } = await supabase.from('dealer_leads').update({
+          crm_deal_id: asId(dealId),
+          updated_at: nowIso()
+        }).eq('id', id).select('*').single();
+        throwIf(error, 'Could not save this lead.');
+        return formatRow(data);
+      }
+      return saved;
     },
     async declinePortalLead(user, id, body) {
-      return reply(user, id, 'declined', body);
+      const saved = await reply(user, id, 'declined', body);
+      if (!saved) return null;
+      await syncDeclinedLead(store, saved);
+      return saved;
+    },
+    async setPortalLeadStage(user, id, body) {
+      const row = await getRow(id);
+      if (!row || String(row.customer_id) !== dealerCustomerId(user) || row.status === 'reassigned') return null;
+      if (row.status !== 'accepted') {
+        throw Object.assign(new Error('Accept the lead before you move it.'), { code: 'invalid' });
+      }
+      const stage = pipelineStage(body && body.stage);
+      if ((row.stage || '') === stage) return formatRow(row);
+      const stamp = nowIso();
+      const { data, error } = await supabase.from('dealer_leads').update({
+        stage: stage,
+        stage_updated_at: stamp,
+        updated_at: stamp
+      }).eq('id', id).select('*').single();
+      throwIf(error, 'Could not save this lead.');
+      const saved = formatRow(data);
+      await syncMovedLead(store, saved, stage);
+      return saved;
+    },
+    async sendCrmLeadToDealer(leadId, body, actor) {
+      const lead = typeof store.getCrmLead === 'function' ? await store.getCrmLead(leadId) : null;
+      if (!lead) return null;
+      const customerId = trim(body && (body.customerId || body.customer_id), 40);
+      await assertDealer(store, customerId);
+      await assertDealerLogin(store, customerId);
+      const stamp = nowIso();
+      const { error: closeError } = await supabase.from('dealer_leads').update({
+        status: 'reassigned',
+        updated_at: stamp
+      }).eq('crm_lead_id', asId(lead.id)).in('status', ['sent', 'accepted']);
+      throwIf(closeError, 'Could not send this lead.');
+      const { data: existing, error: listError } = await supabase.from('dealer_leads').select('number');
+      throwIf(listError, 'Could not send this lead.');
+      const project = trim(lead.companyName || lead.displayName || lead.projectType || 'Lead', 160) || 'Lead';
+      const note = trim(body && (body.notes || body.note), 4000);
+      const fields = {
+        number: nextNumberFrom((existing || []).map(function (row) { return row.number; })),
+        customer_id: asId(customerId),
+        project: project,
+        contact_name: trim(lead.contactName || [lead.contactFirst, lead.contactLast].filter(Boolean).join(' '), 120),
+        contact_email: trim(lead.email, 160),
+        contact_phone: trim(lead.phone || lead.mobile, 40),
+        city: trim(lead.city, 80),
+        state: trim(lead.state, 40),
+        interest: trim(lead.projectType, 240),
+        notes: note,
+        status: 'sent',
+        reply_note: '',
+        replied_at: '',
+        crm_lead_id: asId(lead.id),
+        stage: '',
+        stage_updated_at: '',
+        created_at: stamp,
+        updated_at: stamp
+      };
+      const { error } = await supabase.from('dealer_leads').insert(fields).select('*').single();
+      throwIf(error, 'Could not send this lead.');
+      const name = await dealerLabel(store, customerId);
+      if (typeof store.createCrmActivity === 'function') {
+        await store.createCrmActivity({
+          type: 'note',
+          subject: 'Sent to ' + name,
+          body: note,
+          leadId: lead.id,
+          done: true,
+          createdByName: actorName(actor) || 'Company'
+        });
+      }
+      return store.getCrmLead(lead.id);
+    },
+    async attachCrmDealerHandoffs(leads) {
+      const list = Array.isArray(leads) ? leads : (leads ? [leads] : []);
+      const names = await dealerNames(store);
+      const { data, error } = await supabase.from('dealer_leads').select('*').not('crm_lead_id', 'is', null).neq('status', 'reassigned').order('created_at', { ascending: false });
+      throwIf(error, 'Could not load leads.');
+      const map = {};
+      (data || []).forEach(function (row) {
+        const key = String(row.crm_lead_id);
+        if (map[key]) return;
+        map[key] = formatRow(row, { admin: true, dealerName: names[String(row.customer_id)] || '' });
+      });
+      list.forEach(function (lead) {
+        if (!lead) return;
+        lead.dealerHandoff = map[String(lead.id)] || null;
+      });
+      return Array.isArray(leads) ? list : (list[0] || null);
+    },
+    async mirrorCrmDealStage(deal) {
+      if (!deal || deal.id == null) return;
+      const { data, error } = await supabase.from('dealer_leads').select('*').eq('crm_deal_id', asId(deal.id)).eq('status', 'accepted').order('id', { ascending: false }).limit(1);
+      throwIf(error, 'Could not save this lead.');
+      const row = data && data[0];
+      if (!row || (row.stage || '') === (deal.stage || '')) return;
+      const stamp = nowIso();
+      const saved = await supabase.from('dealer_leads').update({
+        stage: deal.stage || '',
+        stage_updated_at: stamp,
+        updated_at: stamp
+      }).eq('id', row.id);
+      throwIf(saved.error, 'Could not save this lead.');
+      if (!row.crm_lead_id || typeof store.updateCrmLead !== 'function') return;
+      await store.updateCrmLead(row.crm_lead_id, { status: leadStatusForStage(deal.stage) });
+      if (typeof store.createCrmActivity === 'function') {
+        await store.createCrmActivity({
+          type: 'note',
+          subject: 'Moved to ' + (stageLabel(deal.stage) || 'New'),
+          leadId: row.crm_lead_id,
+          dealId: deal.id,
+          done: true,
+          createdByName: 'Company'
+        });
+      }
     }
   };
 }

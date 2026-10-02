@@ -6,6 +6,7 @@
     quotes: 'sales-section',
     orders: 'sales-section',
     registrations: 'registrations-section',
+    incoming: 'incoming-section',
     leads: 'leads-section',
     rmas: 'rmas-section',
     walls: 'walls-section',
@@ -33,13 +34,14 @@
   let openTabs = [];
   let bookFilter = 'all';
   let bookSku = '';
-  const tabLabel = { home: 'Dashboard', book: 'Dealer book', quotes: 'Request Quote', orders: 'Purchase Order', walls: 'Installed walls', registrations: 'Deal registration', leads: 'Leads', rmas: 'RMA', projects: 'Projects', panels: 'Saved Panel', calculator: 'Calculator', company: 'Company', updates: 'What’s new', guide: 'Dealer guide' };
+  const tabLabel = { home: 'Dashboard', book: 'Dealer book', quotes: 'Request Quote', orders: 'Purchase Order', walls: 'Installed walls', registrations: 'Deal registration', incoming: 'Incoming', leads: 'Leads', rmas: 'RMA', projects: 'Projects', panels: 'Saved Panel', calculator: 'Calculator', company: 'Company', updates: 'What’s new', guide: 'Dealer guide' };
   const tabIcon = {
     home: '<svg class="dash-master-tab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="8" height="8" rx="1.5"/><rect x="13" y="3" width="8" height="8" rx="1.5"/><rect x="3" y="13" width="8" height="8" rx="1.5"/><rect x="13" y="13" width="8" height="8" rx="1.5"/></svg>',
     book: '<svg class="dash-master-tab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 10 12 4.5 21 10v9.5a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V10z"/><path d="M9 20.5V12h6v8.5"/></svg>',
     quotes: '<svg class="dash-master-tab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 4h8v4H8z"/><path d="M6 8h12v12H6z"/><path d="M9 12h6M9 16h4"/></svg>',
     registrations: '<svg class="dash-master-tab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="3" width="16" height="18" rx="2"/><path d="M8 8h8M8 12h8M8 16h5"/></svg>',
-    leads: '<svg class="dash-master-tab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 6h16v12H4z"/><path d="m4 7 8 6 8-6"/></svg>',
+    incoming: '<svg class="dash-master-tab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 6h16v12H4z"/><path d="m4 7 8 6 8-6"/></svg>',
+    leads: '<svg class="dash-master-tab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 6h16M4 12h16M4 18h10"/></svg>',
     rmas: '<svg class="dash-master-tab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 12a9 9 0 1 0 3-6.7"/><path d="M3 4v5h5"/><path d="M9 12h6"/></svg>',
     walls: '<svg class="dash-master-tab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4" width="18" height="12" rx="1.5"/><path d="M8 20h8M12 16v4"/></svg>',
     orders: '<svg class="dash-master-tab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 7h16l-1.5 12H5.5L4 7z"/><path d="M9 7V5a3 3 0 0 1 6 0v2"/></svg>',
@@ -297,8 +299,8 @@
     $('admin-page-sub').textContent = name === 'home' ? 'Overview' : ((me && me.customer && me.customer.companyName) || '');
     document.body.classList.toggle('inv-layout-lock', (name === 'book' || name === 'projects' || name === 'panels') && !isMobileDash());
     const onSales = (name === 'quotes' || name === 'orders') && !isMobileDash();
-    document.body.classList.toggle('so-split-lock', onSales || ((name === 'registrations' || name === 'leads' || name === 'rmas' || name === 'walls') && !isMobileDash()));
-    document.body.classList.toggle('dash-split-lock', (name === 'registrations' || name === 'leads' || name === 'rmas' || name === 'walls') && !isMobileDash());
+    document.body.classList.toggle('so-split-lock', onSales || ((name === 'registrations' || name === 'incoming' || name === 'rmas' || name === 'walls') && !isMobileDash()));
+    document.body.classList.toggle('dash-split-lock', (name === 'registrations' || name === 'incoming' || name === 'rmas' || name === 'walls') && !isMobileDash());
     const sales = $('sales-section');
     if (sales) sales.classList.toggle('so-split-on', onSales);
     if (name === 'home') {
@@ -308,7 +310,8 @@
     if (name === 'book') renderBook();
     if (name === 'quotes' || name === 'orders') renderQuotes();
     if (name === 'registrations') renderRegistrations();
-    if (name === 'leads') renderLeads();
+    if (name === 'incoming') renderIncoming();
+    if (name === 'leads') paintLeadBoard();
     if (name === 'rmas') renderRmas();
     if (name === 'walls') renderWalls();
     if (name === 'projects') loadProjects();
@@ -534,38 +537,146 @@
       return hay.indexOf(q) !== -1;
     });
   }
-  const BOOK_COLS = [
-    { id: 'name', label: 'Item' },
-    { id: 'sku', label: 'SKU' },
-    { id: 'category', label: 'Category' },
-    { id: 'description', label: 'Description' },
-    { id: 'pitch', label: 'Pitch' },
-    { id: 'brand', label: 'Brand' },
-    { id: 'qty', label: 'On hand' },
-    { id: 'price', label: 'Sell price' },
-    { id: 'dealer', label: 'Dealer net' },
-    { id: 'photo', label: 'Photo' }
-  ];
-  function bookTable() {
-    return document.querySelector('table.dash-cols[data-cols="dealer-book"]');
+  const PORTAL_COLS = {
+    'dealer-book': {
+      lock: 'name',
+      cols: [
+        { id: 'name', label: 'Item' },
+        { id: 'sku', label: 'SKU' },
+        { id: 'category', label: 'Category' },
+        { id: 'description', label: 'Description' },
+        { id: 'pitch', label: 'Pitch' },
+        { id: 'brand', label: 'Brand' },
+        { id: 'qty', label: 'On hand' },
+        { id: 'price', label: 'Sell price' },
+        { id: 'dealer', label: 'Dealer net' },
+        { id: 'photo', label: 'Photo' }
+      ]
+    },
+    sales: {
+      lock: 'number',
+      cols: [
+        { id: 'number', label: 'Number' },
+        { id: 'customer', label: 'Customer' },
+        { id: 'date', label: 'Date' },
+        { id: 'status', label: 'Status' },
+        { id: 'total', label: 'Total' },
+        { id: 'po', label: 'PO number' },
+        { id: 'due', label: 'Valid until' },
+        { id: 'terms', label: 'Terms' },
+        { id: 'notes', label: 'Notes' }
+      ]
+    },
+    'so-lines': {
+      lock: 'item',
+      cols: [
+        { id: 'item', label: 'Item' },
+        { id: 'sku', label: 'SKU' },
+        { id: 'description', label: 'Description' },
+        { id: 'qty', label: 'Qty' },
+        { id: 'onHand', label: 'On hand' },
+        { id: 'dealer', label: 'Dealer Price' },
+        { id: 'price', label: 'Price' },
+        { id: 'amount', label: 'Amount' }
+      ]
+    },
+    registrations: {
+      lock: 'number',
+      cols: [
+        { id: 'number', label: 'Number' },
+        { id: 'customer', label: 'End customer' },
+        { id: 'job', label: 'Job' },
+        { id: 'site', label: 'Site' },
+        { id: 'status', label: 'Status' }
+      ]
+    },
+    leads: {
+      lock: 'number',
+      cols: [
+        { id: 'number', label: 'Number' },
+        { id: 'project', label: 'Project' },
+        { id: 'contact', label: 'Contact' },
+        { id: 'city', label: 'City' },
+        { id: 'status', label: 'Status' }
+      ]
+    },
+    walls: {
+      lock: 'wall',
+      cols: [
+        { id: 'wall', label: 'Wall' },
+        { id: 'customer', label: 'End customer' },
+        { id: 'site', label: 'Site' },
+        { id: 'pitch', label: 'Pitch' },
+        { id: 'ship', label: 'Ship date' },
+        { id: 'warranty', label: 'Warranty end' },
+        { id: 'spares', label: 'Spares' }
+      ]
+    },
+    rmas: {
+      lock: 'number',
+      cols: [
+        { id: 'number', label: 'Number' },
+        { id: 'date', label: 'Date' },
+        { id: 'order', label: 'Order or PO' },
+        { id: 'reason', label: 'Reason' },
+        { id: 'status', label: 'Status' }
+      ]
+    },
+    projects: {
+      lock: 'title',
+      cols: [
+        { id: 'title', label: 'Project' },
+        { id: 'brand', label: 'Brand' },
+        { id: 'series', label: 'Series' },
+        { id: 'size', label: 'Size' },
+        { id: 'pitch', label: 'Pitch' },
+        { id: 'panels', label: 'Panels' },
+        { id: 'saved', label: 'Saved' }
+      ]
+    },
+    panels: {
+      lock: 'name',
+      cols: [
+        { id: 'name', label: 'Name' },
+        { id: 'size', label: 'Size' },
+        { id: 'pitch', label: 'Pitch' },
+        { id: 'type', label: 'Type' },
+        { id: 'weight', label: 'Weight' },
+        { id: 'saved', label: 'Saved' }
+      ]
+    }
+  };
+  function portalTable(name) {
+    return document.querySelector('table.dash-cols[data-cols="' + name + '"]');
   }
-  function bookColKey() {
+  function colKey(name) {
     const id = me && me.user && me.user.id;
-    return 'portal-book-cols-' + (id || 'anon');
+    if (name === 'dealer-book') return 'portal-book-cols-' + (id || 'anon');
+    return 'portal-cols-' + name + '-' + (id || 'anon');
   }
-  function bookColState() {
-    const known = BOOK_COLS.map(function (col) { return col.id; });
+  function colKnown(name) {
+    const spec = PORTAL_COLS[name];
+    return spec ? spec.cols.map(function (col) { return col.id; }) : [];
+  }
+  function colLock(name) {
+    const spec = PORTAL_COLS[name];
+    return spec ? spec.lock : '';
+  }
+  function colState(name) {
+    const known = colKnown(name);
+    const lock = colLock(name);
     let saved = null;
-    try { saved = JSON.parse(localStorage.getItem(bookColKey()) || 'null'); } catch (err) { saved = null; }
-    if (!saved || typeof saved !== 'object') {
+    try { saved = JSON.parse(localStorage.getItem(colKey(name)) || 'null'); } catch (err) { saved = null; }
+    if (!saved || typeof saved !== 'object' || !known.length) {
       return { order: known.slice(), hidden: [], sortCol: '', sortDir: '', widths: {} };
     }
     const hidden = (saved.hidden || []).filter(function (id) {
-      return known.indexOf(id) !== -1 && id !== 'name';
+      return known.indexOf(id) !== -1 && id !== lock;
     });
-    const order = ['name'];
+    const order = [];
+    if (lock && known.indexOf(lock) !== -1) order.push(lock);
     (saved.order || []).forEach(function (id) {
-      if (id === 'name' || known.indexOf(id) === -1 || hidden.indexOf(id) !== -1 || order.indexOf(id) !== -1) return;
+      if (known.indexOf(id) === -1 || hidden.indexOf(id) !== -1 || order.indexOf(id) !== -1) return;
       order.push(id);
     });
     known.forEach(function (id) {
@@ -579,28 +690,42 @@
       widths: saved.widths && typeof saved.widths === 'object' ? saved.widths : {}
     };
   }
-  function saveBookCols(state) {
-    try { localStorage.setItem(bookColKey(), JSON.stringify(state)); } catch (err) {}
+  function saveColState(name, state) {
+    try { localStorage.setItem(colKey(name), JSON.stringify(state)); } catch (err) {}
   }
-  function applyBookCols() {
-    const table = bookTable();
+  function applyCols(name) {
+    const table = portalTable(name);
     if (!table) return;
-    const state = bookColState();
+    const state = colState(name);
     const row = table.querySelector('thead tr');
-    const nameTh = row.querySelector('th[data-col="name"]');
-    if (nameTh) row.appendChild(nameTh);
+    if (!row) return;
+    const startLocked = Array.prototype.filter.call(row.children, function (th) {
+      return th.getAttribute('data-lock') === 'start';
+    });
+    const endLocked = Array.prototype.filter.call(row.children, function (th) {
+      return !th.getAttribute('data-col') && th.getAttribute('data-lock') !== 'start';
+    });
+    const lockedIds = {};
+    startLocked.forEach(function (th) {
+      row.appendChild(th);
+      const id = th.getAttribute('data-col');
+      if (id) lockedIds[id] = true;
+    });
     state.order.forEach(function (id) {
-      if (id === 'name') return;
+      if (lockedIds[id]) return;
       const th = row.querySelector('th[data-col="' + id + '"]');
       if (th) row.appendChild(th);
     });
     state.hidden.forEach(function (id) {
+      if (lockedIds[id]) return;
       const th = row.querySelector('th[data-col="' + id + '"]');
       if (th) row.appendChild(th);
     });
+    endLocked.forEach(function (th) { row.appendChild(th); });
     Array.prototype.forEach.call(row.querySelectorAll('th[data-col]'), function (th) {
       const col = th.getAttribute('data-col');
-      th.hidden = col !== 'name' && state.hidden.indexOf(col) !== -1;
+      const locked = th.getAttribute('data-lock') === 'start';
+      th.hidden = locked ? false : state.hidden.indexOf(col) !== -1;
       th.style.width = state.widths[col] || '';
       const caret = th.querySelector('.dash-col-caret');
       if (caret) {
@@ -609,6 +734,25 @@
       }
     });
   }
+  function colSort(name, rows, getValue) {
+    const state = colState(name);
+    if (!state.sortCol || !state.sortDir || !getValue) return rows;
+    const dir = state.sortDir === 'desc' ? -1 : 1;
+    return rows.slice().sort(function (a, b) {
+      const av = getValue(a, state.sortCol);
+      const bv = getValue(b, state.sortCol);
+      if (typeof av === 'number' && typeof bv === 'number') return (av - bv) * dir;
+      return String(av == null ? '' : av).localeCompare(String(bv == null ? '' : bv), undefined, { numeric: true, sensitivity: 'base' }) * dir;
+    });
+  }
+  function colCells(name, cells) {
+    return colState(name).order.map(function (id) { return cells[id] || ''; }).join('');
+  }
+  function colSpan(name) {
+    return colState(name).order.length || 1;
+  }
+  function applyBookCols() { applyCols('dealer-book'); }
+  function bookColState() { return colState('dealer-book'); }
   function bookSortValue(item, col) {
     if (col === 'name') return item.name || '';
     if (col === 'sku') return item.sku || '';
@@ -633,20 +777,21 @@
       return String(av).localeCompare(String(bv), undefined, { numeric: true, sensitivity: 'base' }) * dir;
     });
   }
-  function closeBookColAdd() {
+  function closeColAdd() {
     const panel = $('dash-col-add');
     if (panel) panel.hidden = true;
     const addBtn = document.querySelector('#dash-col-menu [data-col-act="add"]');
     if (addBtn) addBtn.classList.remove('is-on');
   }
-  function closeBookColMenu() {
-    closeBookColAdd();
+  function closeColMenu() {
+    closeColAdd();
     const menu = $('dash-col-menu');
     if (!menu) return;
     menu.hidden = true;
     menu._col = '';
+    menu._name = '';
   }
-  function placeBookColAdd() {
+  function placeColAdd() {
     const menu = $('dash-col-menu');
     const panel = $('dash-col-add');
     if (!menu || !panel || panel.hidden) return;
@@ -660,17 +805,18 @@
     panel.style.left = Math.max(8, left) + 'px';
     panel.style.top = Math.max(8, top) + 'px';
   }
-  function openBookColAdd() {
+  function openColAdd(name) {
     const menu = $('dash-col-menu');
     const panel = $('dash-col-add');
     const list = $('dash-col-add-list');
+    const spec = PORTAL_COLS[name];
     const addBtn = menu.querySelector('[data-col-act="add"]');
     if (!panel.hidden) {
-      closeBookColAdd();
+      closeColAdd();
       return;
     }
-    const shown = bookColState().order;
-    list.innerHTML = BOOK_COLS.map(function (col) {
+    const shown = colState(name).order;
+    list.innerHTML = (spec ? spec.cols : []).map(function (col) {
       const on = shown.indexOf(col.id) !== -1;
       return '<button type="button" data-add-col="' + esc(col.id) + '"' +
         (on ? ' disabled class="is-on"' : '') + '>' +
@@ -678,25 +824,37 @@
     }).join('');
     panel.hidden = false;
     addBtn.classList.add('is-on');
-    placeBookColAdd();
+    placeColAdd();
   }
-  function openBookColMenu(th) {
+  function openColMenu(name, th) {
     if (window.matchMedia('(max-width: 900px)').matches) return;
-    closeBookColAdd();
+    closeColAdd();
     const menu = $('dash-col-menu');
     const col = th.getAttribute('data-col');
-    const state = bookColState();
+    const state = colState(name);
     const i = state.order.indexOf(col);
     const locked = th.getAttribute('data-lock') === 'start';
     menu.querySelector('[data-col-act="left"]').disabled = locked || i <= 0;
     menu.querySelector('[data-col-act="right"]').disabled = locked || i === -1 || i >= state.order.length - 1;
     menu.querySelector('[data-col-act="hide"]').disabled = locked || state.order.length <= 1;
     menu._col = col;
+    menu._name = name;
     menu.hidden = false;
     const box = th.getBoundingClientRect();
     const left = Math.min(box.left, window.innerWidth - menu.offsetWidth - 8);
     menu.style.left = Math.max(8, left) + 'px';
     menu.style.top = (box.bottom + 4) + 'px';
+  }
+  function refreshPortalTable(name) {
+    if (name === 'dealer-book') renderBook();
+    else if (name === 'sales') renderQuoteTable();
+    else if (name === 'so-lines') applySoLineCols();
+    else if (name === 'registrations') renderRegistrationTable();
+    else if (name === 'leads') renderIncomingTable();
+    else if (name === 'walls') renderWallTable();
+    else if (name === 'rmas') renderRmaTable();
+    else if (name === 'projects') renderProjects();
+    else if (name === 'panels') renderPanels();
   }
   function setBookFilter(name) {
     bookFilter = name === 'low' || name === 'out' ? name : 'all';
@@ -865,14 +1023,14 @@
     const has = !!(item.sku || item.item || item.description || Number(price));
     return '<tr class="border-b so-line">' +
       '<td class="py-2 px-1 so-line-lead"><span class="so-line-num">' + (index + 1) + '</span></td>' +
-      '<td class="py-2 px-2"><input data-line="item" value="' + esc(item.item || (inv && inv.name) || '') + '"></td>' +
-      '<td class="py-2 px-2"><div class="so-sku-search"><svg class="so-sku-search-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><circle cx="11" cy="11" r="6"/><path d="m20 20-3.5-3.5"/></svg><input data-line="sku" type="search" autocomplete="off" placeholder="Search SKU, name, brand" value="' + esc(item.sku || '') + '"></div></td>' +
-      '<td class="py-2 px-2"><input data-line="description" value="' + esc(item.description || '') + '"></td>' +
-      '<td class="py-2 px-2"><input data-line="qty" type="number" min="0" step="1" value="' + esc(qty) + '"></td>' +
-      '<td class="py-2 px-2 tabular-nums so-inv-read" data-line="onHand">' + (inv ? esc(inv.qty) : '—') + '</td>' +
-      '<td class="py-2 px-2 tabular-nums so-inv-read" data-line="dealer">' + (inv ? money(inv.dealerNet) : '—') + '</td>' +
-      '<td class="py-2 px-2"><input data-line="unitPrice" type="number" step="0.01" readonly value="' + esc(price === '' ? '' : price) + '"></td>' +
-      '<td class="py-2 px-2 text-right tabular-nums" data-line-amt>' + (has && (Number(qty) || Number(price)) ? money(amount) : '') + '</td>' +
+      '<td class="py-2 px-2" data-col="item"><input data-line="item" value="' + esc(item.item || (inv && inv.name) || '') + '"></td>' +
+      '<td class="py-2 px-2" data-col="sku"><div class="so-sku-search"><svg class="so-sku-search-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><circle cx="11" cy="11" r="6"/><path d="m20 20-3.5-3.5"/></svg><input data-line="sku" type="search" autocomplete="off" placeholder="Search SKU, name, brand" value="' + esc(item.sku || '') + '"></div></td>' +
+      '<td class="py-2 px-2" data-col="description"><input data-line="description" value="' + esc(item.description || '') + '"></td>' +
+      '<td class="py-2 px-2" data-col="qty"><input data-line="qty" type="number" min="0" step="1" value="' + esc(qty) + '"></td>' +
+      '<td class="py-2 px-2 tabular-nums so-inv-read" data-col="onHand" data-line="onHand">' + (inv ? esc(inv.qty) : '—') + '</td>' +
+      '<td class="py-2 px-2 tabular-nums so-inv-read" data-col="dealer" data-line="dealer">' + (inv ? money(inv.dealerNet) : '—') + '</td>' +
+      '<td class="py-2 px-2" data-col="price"><input data-line="unitPrice" type="number" step="0.01" readonly value="' + esc(price === '' ? '' : price) + '"></td>' +
+      '<td class="py-2 px-2 text-right tabular-nums" data-col="amount" data-line-amt>' + (has && (Number(qty) || Number(price)) ? money(amount) : '') + '</td>' +
       '<td class="py-2 px-1 so-line-acts">' +
         '<button type="button" data-insert-line class="so-line-act" title="Insert row" aria-label="Insert row">+</button>' +
         '<button type="button" data-remove-line class="so-line-act so-line-act-del" title="Remove row" aria-label="Remove row">✕</button>' +
@@ -886,7 +1044,57 @@
     }
     if (!rows.length) rows.push(blankQuoteLine());
     $('so-lines').innerHTML = rows.map(quoteLineRow).join('');
+    applySoLineCols();
     refreshQuoteTotals();
+  }
+  function soLineSortValue(tr, col) {
+    const td = tr.querySelector('td[data-col="' + col + '"]');
+    if (!td) return '';
+    const input = td.querySelector('input, select, textarea');
+    if (input && (col === 'qty' || col === 'price')) return Number(input.value) || 0;
+    if (input) return input.value || '';
+    if (col === 'onHand' || col === 'amount') {
+      const n = Number(String(td.textContent || '').replace(/[^0-9.-]/g, ''));
+      return isNaN(n) ? 0 : n;
+    }
+    return td.textContent || '';
+  }
+  function applySoLineCols() {
+    applyCols('so-lines');
+    const state = colState('so-lines');
+    const body = $('so-lines');
+    if (!body) return;
+    Array.prototype.forEach.call(body.querySelectorAll('.so-line'), function (tr) {
+      const byCol = {};
+      Array.prototype.forEach.call(tr.querySelectorAll('td[data-col]'), function (td) {
+        byCol[td.getAttribute('data-col')] = td;
+      });
+      const lead = tr.querySelector('td.so-line-lead');
+      const acts = tr.querySelector('td.so-line-acts');
+      if (lead) tr.appendChild(lead);
+      state.order.forEach(function (id) {
+        if (!byCol[id]) return;
+        byCol[id].hidden = false;
+        tr.appendChild(byCol[id]);
+      });
+      state.hidden.forEach(function (id) {
+        if (!byCol[id]) return;
+        byCol[id].hidden = true;
+        tr.appendChild(byCol[id]);
+      });
+      if (acts) tr.appendChild(acts);
+    });
+    if (state.sortCol && state.sortDir) {
+      const dir = state.sortDir === 'desc' ? -1 : 1;
+      const rows = Array.prototype.slice.call(body.querySelectorAll('.so-line'));
+      rows.sort(function (a, b) {
+        const av = soLineSortValue(a, state.sortCol);
+        const bv = soLineSortValue(b, state.sortCol);
+        if (typeof av === 'number' && typeof bv === 'number') return (av - bv) * dir;
+        return String(av).localeCompare(String(bv), undefined, { numeric: true, sensitivity: 'base' }) * dir;
+      });
+      rows.forEach(function (tr) { body.appendChild(tr); });
+    }
   }
   function readQuoteLines() {
     return Array.prototype.map.call(document.querySelectorAll('#so-lines .so-line'), function (row) {
@@ -1067,19 +1275,34 @@
     const order = salesKind() === 'order';
     $('so-stat-quote').textContent = String(list.length);
     $('so-hint-quote').textContent = drafts ? (drafts + ' draft') : (order ? 'Sales orders' : 'Sales quotes');
-    $('so-table').innerHTML = rows.length ? rows.map(function (doc) {
+    applyCols('sales');
+    const sorted = colSort('sales', rows, function (doc, col) {
+      if (col === 'number') return doc.number || '';
+      if (col === 'customer') return doc.customerName || dealerCompanyName() || '';
+      if (col === 'date') return doc.issueDate || '';
+      if (col === 'status') return doc.status || '';
+      if (col === 'total') return Number(doc.total) || 0;
+      if (col === 'po') return doc.poNumber || '';
+      if (col === 'due') return doc.dueDate || '';
+      if (col === 'terms') return doc.paymentTerms || '';
+      if (col === 'notes') return doc.notes || '';
+      return '';
+    });
+    $('so-table').innerHTML = sorted.length ? sorted.map(function (doc) {
       const on = openId && String(openId) === String(doc.id);
       return '<tr class="border-b border-slate-800 hover:bg-slate-900/80 cursor-pointer' + (on ? ' is-active' : '') + '" data-quote-id="' + esc(doc.id) + '">' +
-        '<td class="py-3 px-4 font-medium">' + esc(doc.number || 'Draft') + '</td>' +
-        '<td class="py-3 px-4">' + esc(doc.customerName || dealerCompanyName() || '—') + '</td>' +
-        '<td class="py-3 px-4">' + esc(doc.issueDate || '—') + '</td>' +
-        '<td class="py-3 px-4">' + esc(quoteStatusLabel(doc.status)) + '</td>' +
-        '<td class="py-3 px-4">' + money(doc.total) + '</td>' +
-        '<td class="py-3 px-4">' + esc(doc.poNumber || '—') + '</td>' +
-        '<td class="py-3 px-4">' + esc(doc.dueDate || '—') + '</td>' +
-        '<td class="py-3 px-4">' + esc(doc.paymentTerms || '—') + '</td>' +
-        '<td class="py-3 px-4">' + esc(doc.notes || '—') + '</td></tr>';
-    }).join('') : '<tr><td class="py-6 px-4 text-slate-500" colspan="9">No ' + (order ? 'purchase orders' : 'request quotes') + ' yet.</td></tr>';
+        colCells('sales', {
+          number: '<td class="py-3 px-4 font-medium">' + esc(doc.number || 'Draft') + '</td>',
+          customer: '<td class="py-3 px-4">' + esc(doc.customerName || dealerCompanyName() || '—') + '</td>',
+          date: '<td class="py-3 px-4">' + esc(doc.issueDate || '—') + '</td>',
+          status: '<td class="py-3 px-4">' + esc(quoteStatusLabel(doc.status)) + '</td>',
+          total: '<td class="py-3 px-4">' + money(doc.total) + '</td>',
+          po: '<td class="py-3 px-4">' + esc(doc.poNumber || '—') + '</td>',
+          due: '<td class="py-3 px-4">' + esc(doc.dueDate || '—') + '</td>',
+          terms: '<td class="py-3 px-4">' + esc(doc.paymentTerms || '—') + '</td>',
+          notes: '<td class="py-3 px-4">' + esc(doc.notes || '—') + '</td>'
+        }) + '</tr>';
+    }).join('') : '<tr><td class="py-6 px-4 text-slate-500" colspan="' + colSpan('sales') + '">No ' + (order ? 'purchase orders' : 'request quotes') + ' yet.</td></tr>';
   }
   function applySalesChrome() {
     const order = salesKind() === 'order';
@@ -1341,17 +1564,30 @@
     if (projectId && !rows.some(function (row) { return String(row.id) === String(projectId); })) projectId = '';
     $('proj-stat').textContent = String(projects.length);
     $('proj-hint').textContent = projects.length ? 'Saved layouts' : 'None yet';
-    $('proj-table').innerHTML = rows.length ? rows.map(function (row) {
+    applyCols('projects');
+    const sorted = colSort('projects', rows, function (row, col) {
+      if (col === 'title') return row.title || '';
+      if (col === 'brand') return row.brandName || row.brand || '';
+      if (col === 'series') return row.seriesName || row.series || '';
+      if (col === 'size') return projectSize(row);
+      if (col === 'pitch') return row.pitch === '' || row.pitch == null ? '' : Number(row.pitch) || row.pitch;
+      if (col === 'panels') return row.cabinets === '' || row.cabinets == null ? '' : Number(row.cabinets) || row.cabinets;
+      if (col === 'saved') return row.savedAt || '';
+      return '';
+    });
+    $('proj-table').innerHTML = sorted.length ? sorted.map(function (row) {
       const on = String(row.id) === String(projectId);
       return '<tr class="border-b border-slate-800 hover:bg-slate-900/80 cursor-pointer' + (on ? ' is-selected' : '') + '" data-project-id="' + esc(row.id) + '">' +
-        '<td class="py-3 px-4 font-medium">' + esc(row.title || 'Design') + '</td>' +
-        '<td class="py-3 px-4">' + esc(row.brandName || row.brand || '—') + '</td>' +
-        '<td class="py-3 px-4">' + esc(row.seriesName || row.series || '—') + '</td>' +
-        '<td class="py-3 px-4">' + esc(projectSize(row)) + '</td>' +
-        '<td class="py-3 px-4">' + esc(row.pitch === '' || row.pitch == null ? '—' : row.pitch) + '</td>' +
-        '<td class="py-3 px-4">' + esc(row.cabinets === '' || row.cabinets == null ? '—' : row.cabinets) + '</td>' +
-        '<td class="py-3 px-4">' + esc(projectWhen(row.savedAt)) + '</td></tr>';
-    }).join('') : '<tr><td class="py-6 px-4 text-slate-500" colspan="7">No saved projects yet. Open the calculator and save a design to the website account that uses this email.</td></tr>';
+        colCells('projects', {
+          title: '<td class="py-3 px-4 font-medium">' + esc(row.title || 'Design') + '</td>',
+          brand: '<td class="py-3 px-4">' + esc(row.brandName || row.brand || '—') + '</td>',
+          series: '<td class="py-3 px-4">' + esc(row.seriesName || row.series || '—') + '</td>',
+          size: '<td class="py-3 px-4">' + esc(projectSize(row)) + '</td>',
+          pitch: '<td class="py-3 px-4">' + esc(row.pitch === '' || row.pitch == null ? '—' : row.pitch) + '</td>',
+          panels: '<td class="py-3 px-4">' + esc(row.cabinets === '' || row.cabinets == null ? '—' : row.cabinets) + '</td>',
+          saved: '<td class="py-3 px-4">' + esc(projectWhen(row.savedAt)) + '</td>'
+        }) + '</tr>';
+    }).join('') : '<tr><td class="py-6 px-4 text-slate-500" colspan="' + colSpan('projects') + '">No saved projects yet. Open the calculator and save a design to the website account that uses this email.</td></tr>';
     const selected = projectId ? projects.find(function (row) { return String(row.id) === String(projectId); }) : null;
     renderProjectDetail(selected || null);
   }
@@ -1403,16 +1639,28 @@
     if (panelId && !rows.some(function (row) { return String(row.id) === String(panelId); })) panelId = '';
     $('panel-stat').textContent = String(panels.length);
     $('panel-hint').textContent = panels.length ? 'Saved panels' : 'None yet';
-    $('panel-table').innerHTML = rows.length ? rows.map(function (row) {
+    applyCols('panels');
+    const sorted = colSort('panels', rows, function (row, col) {
+      if (col === 'name') return row.name || '';
+      if (col === 'size') return panelSize(row);
+      if (col === 'pitch') return row.pitch === '' || row.pitch == null ? '' : Number(row.pitch) || row.pitch;
+      if (col === 'type') return row.type || '';
+      if (col === 'weight') return row.weight === '' || row.weight == null ? '' : Number(row.weight) || row.weight;
+      if (col === 'saved') return row.savedAt || '';
+      return '';
+    });
+    $('panel-table').innerHTML = sorted.length ? sorted.map(function (row) {
       const on = String(row.id) === String(panelId);
       return '<tr class="border-b border-slate-800 hover:bg-slate-900/80 cursor-pointer' + (on ? ' is-selected' : '') + '" data-panel-id="' + esc(row.id) + '">' +
-        '<td class="py-3 px-4 font-medium">' + esc(row.name || 'Custom Panel') + '</td>' +
-        '<td class="py-3 px-4">' + esc(panelSize(row)) + '</td>' +
-        '<td class="py-3 px-4">' + esc(row.pitch === '' || row.pitch == null ? '—' : row.pitch) + '</td>' +
-        '<td class="py-3 px-4">' + esc(row.type || '—') + '</td>' +
-        '<td class="py-3 px-4">' + esc(row.weight === '' || row.weight == null ? '—' : row.weight) + '</td>' +
-        '<td class="py-3 px-4">' + esc(projectWhen(row.savedAt)) + '</td></tr>';
-    }).join('') : '<tr><td class="py-6 px-4 text-slate-500" colspan="6">No custom panels yet. Open the calculator, choose Custom, and save the panel to the website account that uses this email.</td></tr>';
+        colCells('panels', {
+          name: '<td class="py-3 px-4 font-medium">' + esc(row.name || 'Custom Panel') + '</td>',
+          size: '<td class="py-3 px-4">' + esc(panelSize(row)) + '</td>',
+          pitch: '<td class="py-3 px-4">' + esc(row.pitch === '' || row.pitch == null ? '—' : row.pitch) + '</td>',
+          type: '<td class="py-3 px-4">' + esc(row.type || '—') + '</td>',
+          weight: '<td class="py-3 px-4">' + esc(row.weight === '' || row.weight == null ? '—' : row.weight) + '</td>',
+          saved: '<td class="py-3 px-4">' + esc(projectWhen(row.savedAt)) + '</td>'
+        }) + '</tr>';
+    }).join('') : '<tr><td class="py-6 px-4 text-slate-500" colspan="' + colSpan('panels') + '">No custom panels yet. Open the calculator, choose Custom, and save the panel to the website account that uses this email.</td></tr>';
     const selected = panelId ? panels.find(function (row) { return String(row.id) === String(panelId); }) : null;
     renderPanelDetail(selected || null);
   }
@@ -1655,47 +1903,49 @@
   })();
   $('inv-search').addEventListener('input', renderBook);
   $('inv-category-filter').addEventListener('change', renderBook);
-  (function bindBookCols() {
-    const table = bookTable();
-    if (!table || table.dataset.colsReady === '1') return;
-    table.dataset.colsReady = '1';
-    applyBookCols();
-    table.querySelectorAll('thead th[data-col]').forEach(function (th) {
-      const grip = th.querySelector('.dash-col-grip');
-      if (grip) {
-        grip.addEventListener('mousedown', function (e) {
-          e.preventDefault();
-          e.stopPropagation();
-          closeBookColMenu();
-          const startX = e.clientX;
-          const startW = th.getBoundingClientRect().width;
-          grip.classList.add('is-drag');
-          document.body.classList.add('dash-col-resizing');
-          function move(ev) {
-            th.style.width = Math.max(64, Math.round(startW + ev.clientX - startX)) + 'px';
-          }
-          function up() {
-            grip.classList.remove('is-drag');
-            document.body.classList.remove('dash-col-resizing');
-            document.removeEventListener('mousemove', move);
-            document.removeEventListener('mouseup', up);
-            const state = bookColState();
-            const col = th.getAttribute('data-col');
-            if (col) state.widths[col] = th.style.width || Math.round(th.getBoundingClientRect().width) + 'px';
-            saveBookCols(state);
-          }
-          document.addEventListener('mousemove', move);
-          document.addEventListener('mouseup', up);
-        });
-      }
-      th.addEventListener('click', function (e) {
-        if (e.target.closest('.dash-col-grip')) return;
-        const menu = $('dash-col-menu');
-        if (menu && !menu.hidden && menu._col === th.getAttribute('data-col')) {
-          closeBookColMenu();
-          return;
+  (function bindPortalCols() {
+    document.querySelectorAll('table.dash-cols[data-cols]').forEach(function (table) {
+      const name = table.getAttribute('data-cols');
+      if (!PORTAL_COLS[name] || table.dataset.colsReady === '1') return;
+      table.dataset.colsReady = '1';
+      applyCols(name);
+      table.querySelectorAll('thead th[data-col]').forEach(function (th) {
+        const grip = th.querySelector('.dash-col-grip');
+        if (grip) {
+          grip.addEventListener('mousedown', function (e) {
+            e.preventDefault();
+            e.stopPropagation();
+            closeColMenu();
+            const startX = e.clientX;
+            const startW = th.getBoundingClientRect().width;
+            grip.classList.add('is-drag');
+            document.body.classList.add('dash-col-resizing');
+            function move(ev) {
+              th.style.width = Math.max(64, Math.round(startW + ev.clientX - startX)) + 'px';
+            }
+            function up() {
+              grip.classList.remove('is-drag');
+              document.body.classList.remove('dash-col-resizing');
+              document.removeEventListener('mousemove', move);
+              document.removeEventListener('mouseup', up);
+              const state = colState(name);
+              const col = th.getAttribute('data-col');
+              if (col) state.widths[col] = th.style.width || Math.round(th.getBoundingClientRect().width) + 'px';
+              saveColState(name, state);
+            }
+            document.addEventListener('mousemove', move);
+            document.addEventListener('mouseup', up);
+          });
         }
-        openBookColMenu(th);
+        th.addEventListener('click', function (e) {
+          if (e.target.closest('.dash-col-grip')) return;
+          const menu = $('dash-col-menu');
+          if (menu && !menu.hidden && menu._name === name && menu._col === th.getAttribute('data-col')) {
+            closeColMenu();
+            return;
+          }
+          openColMenu(name, th);
+        });
       });
     });
     const menu = $('dash-col-menu');
@@ -1704,14 +1954,16 @@
       menu.addEventListener('click', function (e) {
         const btn = e.target.closest('[data-col-act]');
         if (!btn || btn.disabled) return;
+        const name = menu._name;
         const col = menu._col;
-        if (!col) return;
+        if (!name || !col) return;
         const act = btn.getAttribute('data-col-act');
         if (act === 'add') {
-          openBookColAdd();
+          openColAdd(name);
           return;
         }
-        const state = bookColState();
+        const state = colState(name);
+        const lock = colLock(name);
         if (act === 'asc' || act === 'desc') {
           state.sortCol = col;
           state.sortDir = act;
@@ -1725,7 +1977,7 @@
           next[j] = swap;
           state.order = next;
         } else if (act === 'hide') {
-          if (col === 'name' || state.order.length <= 1) return;
+          if (col === lock || state.order.length <= 1) return;
           state.order = state.order.filter(function (id) { return id !== col; });
           if (state.hidden.indexOf(col) === -1) state.hidden.push(col);
           if (state.sortCol === col) {
@@ -1733,38 +1985,39 @@
             state.sortDir = '';
           }
         }
-        saveBookCols(state);
-        closeBookColMenu();
-        renderBook();
+        saveColState(name, state);
+        closeColMenu();
+        refreshPortalTable(name);
       });
     }
     if (add) {
       add.addEventListener('click', function (e) {
         const btn = e.target.closest('[data-add-col]');
-        if (!btn || btn.disabled) return;
+        if (!btn || btn.disabled || !menu) return;
+        const name = menu._name;
         const addId = btn.getAttribute('data-add-col');
-        const state = bookColState();
+        if (!name || !addId) return;
+        const state = colState(name);
         const at = menu._col;
         const i = state.order.indexOf(at);
         state.hidden = state.hidden.filter(function (id) { return id !== addId; });
         if (state.order.indexOf(addId) === -1) {
-          if (i < 0 || at === 'name') state.order.splice(1, 0, addId);
-          else state.order.splice(i, 0, addId);
+          state.order.splice(i < 0 ? state.order.length : i + 1, 0, addId);
         }
-        saveBookCols(state);
-        closeBookColMenu();
-        renderBook();
+        saveColState(name, state);
+        closeColMenu();
+        refreshPortalTable(name);
       });
     }
     document.addEventListener('pointerdown', function (e) {
       if (!menu || menu.hidden) return;
       if (menu.contains(e.target)) {
-        if (add && !add.hidden && !e.target.closest('[data-col-act="add"]')) closeBookColAdd();
+        if (add && !add.hidden && !e.target.closest('[data-col-act="add"]')) closeColAdd();
         return;
       }
       if (add && !add.hidden && add.contains(e.target)) return;
-      if (e.target.closest && e.target.closest('table.dash-cols[data-cols="dealer-book"] th[data-col]')) return;
-      closeBookColMenu();
+      if (e.target.closest && e.target.closest('table.dash-cols th[data-col]')) return;
+      closeColMenu();
     });
   })();
   document.getElementById('inventory-section').addEventListener('click', function (e) {
@@ -2279,16 +2532,27 @@
   }
   function renderRegistrationTable() {
     const openId = regIdFromPath();
-    $('dr-table').innerHTML = registrations.length ? registrations.map(function (row) {
+    applyCols('registrations');
+    const sorted = colSort('registrations', registrations, function (row, col) {
+      if (col === 'number') return row.number || '';
+      if (col === 'customer') return row.endCustomer || '';
+      if (col === 'job') return row.jobName || '';
+      if (col === 'site') return [row.siteCity, row.siteState].filter(Boolean).join(', ');
+      if (col === 'status') return drStatusLabel(row);
+      return '';
+    });
+    $('dr-table').innerHTML = sorted.length ? sorted.map(function (row) {
       const on = openId && String(openId) === String(row.id);
       const site = [row.siteCity, row.siteState].filter(Boolean).join(', ');
       return '<tr class="border-b border-slate-800 hover:bg-slate-900/80 cursor-pointer' + (on ? ' is-active' : '') + '" data-dr-id="' + esc(row.id) + '">' +
-        '<td class="py-3 px-4 font-medium">' + esc(row.number || '') + '</td>' +
-        '<td class="py-3 px-4">' + esc(row.endCustomer || '—') + '</td>' +
-        '<td class="py-3 px-4">' + esc(row.jobName || '—') + '</td>' +
-        '<td class="py-3 px-4">' + esc(site || '—') + '</td>' +
-        '<td class="py-3 px-4">' + esc(drStatusLabel(row)) + '</td></tr>';
-    }).join('') : '<tr><td class="py-6 px-4 text-slate-500" colspan="5">No registrations yet.</td></tr>';
+        colCells('registrations', {
+          number: '<td class="py-3 px-4 font-medium">' + esc(row.number || '') + '</td>',
+          customer: '<td class="py-3 px-4">' + esc(row.endCustomer || '—') + '</td>',
+          job: '<td class="py-3 px-4">' + esc(row.jobName || '—') + '</td>',
+          site: '<td class="py-3 px-4">' + esc(site || '—') + '</td>',
+          status: '<td class="py-3 px-4">' + esc(drStatusLabel(row)) + '</td>'
+        }) + '</tr>';
+    }).join('') : '<tr><td class="py-6 px-4 text-slate-500" colspan="' + colSpan('registrations') + '">No registrations yet.</td></tr>';
   }
   async function renderRegistrations() {
     const err = $('dr-error');
@@ -2441,15 +2705,26 @@
   }
   function renderRmaTable() {
     const openId = rmaIdFromPath();
-    $('rma-table').innerHTML = rmas.length ? rmas.map(function (row) {
+    applyCols('rmas');
+    const sorted = colSort('rmas', rmas, function (row, col) {
+      if (col === 'number') return row.number || '';
+      if (col === 'date') return row.createdAt || '';
+      if (col === 'order') return row.orderRef || '';
+      if (col === 'reason') return row.reasonLabel || '';
+      if (col === 'status') return 'Submitted';
+      return '';
+    });
+    $('rma-table').innerHTML = sorted.length ? sorted.map(function (row) {
       const on = openId && String(openId) === String(row.id);
       return '<tr class="border-b border-slate-800 hover:bg-slate-900/80 cursor-pointer' + (on ? ' is-active' : '') + '" data-rma-id="' + esc(row.id) + '">' +
-        '<td class="py-3 px-4 font-medium">' + esc(row.number || '') + '</td>' +
-        '<td class="py-3 px-4">' + esc(rmaDate(row.createdAt)) + '</td>' +
-        '<td class="py-3 px-4">' + esc(row.orderRef || '—') + '</td>' +
-        '<td class="py-3 px-4">' + esc(row.reasonLabel || '—') + '</td>' +
-        '<td class="py-3 px-4">Submitted</td></tr>';
-    }).join('') : '<tr><td class="py-6 px-4 text-slate-500" colspan="5">No RMAs yet.</td></tr>';
+        colCells('rmas', {
+          number: '<td class="py-3 px-4 font-medium">' + esc(row.number || '') + '</td>',
+          date: '<td class="py-3 px-4">' + esc(rmaDate(row.createdAt)) + '</td>',
+          order: '<td class="py-3 px-4">' + esc(row.orderRef || '—') + '</td>',
+          reason: '<td class="py-3 px-4">' + esc(row.reasonLabel || '—') + '</td>',
+          status: '<td class="py-3 px-4">Submitted</td>'
+        }) + '</tr>';
+    }).join('') : '<tr><td class="py-6 px-4 text-slate-500" colspan="' + colSpan('rmas') + '">No RMAs yet.</td></tr>';
   }
   async function renderRmas() {
     const err = $('rma-error');
@@ -2520,79 +2795,109 @@
     }
   });
 
-  function leadIdFromPath() {
+  const LEAD_STAGES = [
+    { id: 'new', label: 'New' },
+    { id: 'qualified', label: 'Qualified' },
+    { id: 'quoted', label: 'Quoted' },
+    { id: 'negotiation', label: 'Negotiation' },
+    { id: 'won', label: 'Won' },
+    { id: 'lost', label: 'Lost' }
+  ];
+  function pathId(section) {
     const parts = location.pathname.replace(/\/+$/, '').split('/');
-    if (parts[2] === 'leads' && parts[3]) return parts[3];
+    if (parts[2] === section && parts[3]) return parts[3];
     return '';
   }
-  function goLead(id, push) {
-    const path = id ? ('/portal/leads/' + id) : '/portal/leads';
-    if (openTabs.indexOf('leads') === -1) openTabs.push('leads');
+  function goPortalLead(section, id, push) {
+    const path = id ? ('/portal/' + section + '/' + id) : ('/portal/' + section);
+    if (openTabs.indexOf(section) === -1) openTabs.push(section);
     if (push !== false && location.pathname.replace(/\/+$/, '') !== path) {
-      history.pushState({ view: 'leads', id: id || '' }, '', path);
+      history.pushState({ view: section, id: id || '' }, '', path);
     }
-    renderView('leads');
+    renderView(section);
     renderMasterTabs();
   }
   function leadPlace(row) {
     return [row.city, row.state].filter(Boolean).join(', ') || '—';
   }
-  function setLeadMsg(text, ok) {
-    const el = $('lead-msg');
+  function leadFieldsHtml(row) {
+    return '<div><dt class="text-slate-500">Contact</dt><dd>' + esc(row.contactName || '—') + '</dd></div>' +
+      '<div><dt class="text-slate-500">Email</dt><dd>' + esc(row.contactEmail || '—') + '</dd></div>' +
+      '<div><dt class="text-slate-500">Phone</dt><dd>' + esc(row.contactPhone || '—') + '</dd></div>' +
+      '<div><dt class="text-slate-500">City</dt><dd>' + esc(leadPlace(row)) + '</dd></div>' +
+      '<div class="sm:col-span-2"><dt class="text-slate-500">What they want</dt><dd>' + esc(row.interest || '—') + '</dd></div>';
+  }
+  function setBoxMsg(id, text, ok) {
+    const el = $(id);
     if (!el) return;
     el.textContent = text || '';
     el.classList.toggle('hidden', !text);
     el.classList.toggle('text-red-400', text && ok === false);
     el.classList.toggle('text-emerald-400', !!(text && ok !== false));
   }
-  function showLead(row) {
-    if (!row) {
-      $('lead-detail').classList.add('hidden');
-      $('lead-overview').classList.remove('hidden');
+  function waitingLeads() {
+    return leads.filter(function (row) { return row.status === 'sent'; });
+  }
+  function acceptedLeads() {
+    return leads.filter(function (row) { return row.status === 'accepted'; });
+  }
+  function paintIncomingBadge() {
+    const badge = $('portal-incoming-badge');
+    if (!badge) return;
+    const n = waitingLeads().length;
+    badge.textContent = n ? String(n) : '';
+    badge.classList.toggle('hidden', !n);
+  }
+  async function loadPortalLeads() {
+    const data = await api('/api/dealer/leads');
+    leads = data.leads || [];
+    paintIncomingBadge();
+  }
+  function showIncoming(row) {
+    if (!row || row.status !== 'sent') {
+      $('incoming-detail').classList.add('hidden');
+      $('incoming-overview').classList.remove('hidden');
       return;
     }
-    $('lead-overview').classList.add('hidden');
-    $('lead-detail').classList.remove('hidden');
-    $('lead-title').textContent = row.project || row.number || 'Lead';
-    $('lead-status').textContent = (row.number || '') + ' · ' + (row.statusLabel || 'New');
-    $('lead-fields').innerHTML =
-      '<div><dt class="text-slate-500">Contact</dt><dd>' + esc(row.contactName || '—') + '</dd></div>' +
-      '<div><dt class="text-slate-500">Email</dt><dd>' + esc(row.contactEmail || '—') + '</dd></div>' +
-      '<div><dt class="text-slate-500">Phone</dt><dd>' + esc(row.contactPhone || '—') + '</dd></div>' +
-      '<div><dt class="text-slate-500">City</dt><dd>' + esc(leadPlace(row)) + '</dd></div>' +
-      '<div class="sm:col-span-2"><dt class="text-slate-500">What they want</dt><dd>' + esc(row.interest || '—') + '</dd></div>';
-    $('lead-notes').textContent = row.notes || '';
-    const open = row.status === 'sent';
-    $('lead-actions').classList.toggle('hidden', !open);
-    $('lead-note').value = '';
-    const reply = $('lead-reply');
-    if (open) {
-      reply.classList.add('hidden');
-      reply.textContent = '';
-    } else {
-      reply.classList.remove('hidden');
-      reply.textContent = (row.statusLabel || '') + (row.replyNote ? (' · ' + row.replyNote) : '');
-    }
-    setLeadMsg('', true);
+    $('incoming-overview').classList.add('hidden');
+    $('incoming-detail').classList.remove('hidden');
+    $('incoming-title').textContent = row.project || row.number || 'Lead';
+    $('incoming-status').textContent = (row.number || '') + ' · Waiting';
+    $('incoming-fields').innerHTML = leadFieldsHtml(row);
+    $('incoming-notes').textContent = row.notes || '';
+    $('incoming-note').value = '';
+    $('incoming-reply').classList.add('hidden');
+    setBoxMsg('incoming-msg', '', true);
   }
-  function renderLeadTable() {
-    const openId = leadIdFromPath();
-    $('lead-table').innerHTML = leads.length ? leads.map(function (row) {
+  function renderIncomingTable() {
+    const openId = pathId('incoming');
+    const rows = waitingLeads();
+    applyCols('leads');
+    const sorted = colSort('leads', rows, function (row, col) {
+      if (col === 'number') return row.number || '';
+      if (col === 'project') return row.project || '';
+      if (col === 'contact') return row.contactName || '';
+      if (col === 'city') return leadPlace(row);
+      if (col === 'status') return 'Waiting';
+      return '';
+    });
+    $('incoming-table').innerHTML = sorted.length ? sorted.map(function (row) {
       const on = openId && String(openId) === String(row.id);
-      return '<tr class="border-b border-slate-800 hover:bg-slate-900/80 cursor-pointer' + (on ? ' is-active' : '') + '" data-lead-id="' + esc(row.id) + '">' +
-        '<td class="py-3 px-4 font-medium">' + esc(row.number || '') + '</td>' +
-        '<td class="py-3 px-4">' + esc(row.project || '—') + '</td>' +
-        '<td class="py-3 px-4">' + esc(row.contactName || '—') + '</td>' +
-        '<td class="py-3 px-4">' + esc(leadPlace(row)) + '</td>' +
-        '<td class="py-3 px-4">' + esc(row.statusLabel || 'New') + '</td></tr>';
-    }).join('') : '<tr><td class="py-6 px-4 text-slate-500" colspan="5">No leads yet. Spectrum sends these.</td></tr>';
+      return '<tr class="border-b border-slate-800 hover:bg-slate-900/80 cursor-pointer' + (on ? ' is-active' : '') + '" data-incoming-id="' + esc(row.id) + '">' +
+        colCells('leads', {
+          number: '<td class="py-3 px-4 font-medium">' + esc(row.number || '') + '</td>',
+          project: '<td class="py-3 px-4">' + esc(row.project || '—') + '</td>',
+          contact: '<td class="py-3 px-4">' + esc(row.contactName || '—') + '</td>',
+          city: '<td class="py-3 px-4">' + esc(leadPlace(row)) + '</td>',
+          status: '<td class="py-3 px-4">Waiting</td>'
+        }) + '</tr>';
+    }).join('') : '<tr><td class="py-6 px-4 text-slate-500" colspan="' + colSpan('leads') + '">No leads waiting. Spectrum sends these.</td></tr>';
   }
-  async function renderLeads() {
-    const err = $('lead-error');
+  async function renderIncoming() {
+    const err = $('incoming-error');
     if (err) { err.textContent = ''; err.classList.add('hidden'); }
     try {
-      const data = await api('/api/dealer/leads');
-      leads = data.leads || [];
+      await loadPortalLeads();
     } catch (e) {
       leads = [];
       if (err) {
@@ -2600,38 +2905,143 @@
         err.classList.remove('hidden');
       }
     }
-    renderLeadTable();
-    const route = leadIdFromPath();
-    const row = leads.find(function (item) { return String(item.id) === String(route); });
-    showLead(row || null);
+    renderIncomingTable();
+    const row = waitingLeads().find(function (item) { return String(item.id) === String(pathId('incoming')); });
+    showIncoming(row || null);
   }
   async function answerLead(status) {
-    const id = leadIdFromPath();
+    const id = pathId('incoming');
     if (!id) return;
-    setLeadMsg('');
+    setBoxMsg('incoming-msg', '', true);
     try {
       const saved = await api('/api/dealer/leads/' + encodeURIComponent(id) + '/' + status, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ note: $('lead-note').value })
+        body: JSON.stringify({ note: $('incoming-note').value })
       });
       const lead = saved.lead;
-      if (lead) {
-        leads = leads.map(function (row) { return String(row.id) === String(lead.id) ? lead : row; });
-        showLead(lead);
-        renderLeadTable();
+      if (lead && lead.status === 'accepted') {
+        goPortalLead('leads', lead.id, true);
+        return;
       }
+      await renderIncoming();
     } catch (err) {
-      setLeadMsg(err.message || 'Could not save this lead.', false);
+      setBoxMsg('incoming-msg', err.message || 'Could not save this lead.', false);
     }
   }
-  $('lead-table').addEventListener('click', function (e) {
-    const tr = e.target.closest('[data-lead-id]');
-    if (!tr) return;
-    goLead(tr.getAttribute('data-lead-id'), true);
-  });
-  $('lead-accept').addEventListener('click', function () { answerLead('accept'); });
-  $('lead-decline').addEventListener('click', function () { answerLead('decline'); });
+  function showBoardLead(row) {
+    const box = $('plead-detail');
+    if (!box) return;
+    if (!row) {
+      box.classList.add('hidden');
+      return;
+    }
+    box.classList.remove('hidden');
+    $('plead-title').textContent = row.project || row.number || 'Lead';
+    $('plead-meta').textContent = (row.number || '') + ' · ' + (row.stageLabel || 'New');
+    $('plead-fields').innerHTML = leadFieldsHtml(row);
+    $('plead-notes').textContent = row.notes || '';
+    $('plead-stage').value = row.stage || 'new';
+    setBoxMsg('plead-msg', '', true);
+  }
+  function renderLeadBoard() {
+    const board = $('plead-board');
+    if (!board) return;
+    const openId = pathId('leads');
+    const rows = acceptedLeads();
+    board.innerHTML = LEAD_STAGES.map(function (stage) {
+      const cards = rows.filter(function (row) { return (row.stage || 'new') === stage.id; });
+      return '<section class="crm-col" data-stage="' + esc(stage.id) + '">' +
+        '<header class="crm-col-head"><strong>' + esc(stage.label) + '</strong><span>' + cards.length + '</span></header>' +
+        '<div class="crm-col-cards">' +
+        (cards.length ? cards.map(function (row) {
+          const on = String(row.id) === String(openId);
+          return '<button type="button" class="crm-card' + (on ? ' is-on' : '') + '" draggable="true" data-plead-id="' + esc(row.id) + '">' +
+            '<strong>' + esc(row.project || row.number || 'Lead') + '</strong>' +
+            '<span>' + esc(row.contactName || row.contactEmail || '') + '</span>' +
+            '<span>' + esc(leadPlace(row)) + '</span></button>';
+        }).join('') : '<p class="crm-col-empty">None</p>') +
+        '</div></section>';
+    }).join('');
+    const row = rows.find(function (item) { return String(item.id) === String(openId); });
+    showBoardLead(row || null);
+  }
+  async function paintLeadBoard() {
+    const err = $('lead-error');
+    if (err) { err.textContent = ''; err.classList.add('hidden'); }
+    try {
+      await loadPortalLeads();
+    } catch (e) {
+      leads = [];
+      if (err) {
+        err.textContent = e.message || 'Could not load leads.';
+        err.classList.remove('hidden');
+      }
+    }
+    renderLeadBoard();
+  }
+  async function movePortalLead(id, stage) {
+    const row = leads.find(function (item) { return String(item.id) === String(id); });
+    if (!row || (row.stage || 'new') === stage) return;
+    setBoxMsg('plead-msg', '', true);
+    try {
+      const saved = await api('/api/dealer/leads/' + encodeURIComponent(id) + '/stage', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ stage: stage })
+      });
+      if (saved.lead) {
+        leads = leads.map(function (item) { return String(item.id) === String(saved.lead.id) ? saved.lead : item; });
+      }
+      renderLeadBoard();
+    } catch (err) {
+      setBoxMsg('plead-msg', err.message || 'Could not move this lead.', false);
+      renderLeadBoard();
+    }
+  }
+  if ($('incoming-table')) {
+    $('incoming-table').addEventListener('click', function (e) {
+      const tr = e.target.closest('[data-incoming-id]');
+      if (!tr) return;
+      goPortalLead('incoming', tr.getAttribute('data-incoming-id'), true);
+    });
+  }
+  if ($('incoming-accept')) $('incoming-accept').addEventListener('click', function () { answerLead('accept'); });
+  if ($('incoming-decline')) $('incoming-decline').addEventListener('click', function () { answerLead('decline'); });
+  if ($('plead-board')) {
+    $('plead-board').addEventListener('click', function (e) {
+      const card = e.target.closest('[data-plead-id]');
+      if (!card) return;
+      goPortalLead('leads', card.getAttribute('data-plead-id'), true);
+    });
+    $('plead-board').addEventListener('dragstart', function (e) {
+      const card = e.target.closest('[data-plead-id]');
+      if (!card) return;
+      e.dataTransfer.setData('text/plain', card.getAttribute('data-plead-id'));
+      card.classList.add('is-dragging');
+    });
+    $('plead-board').addEventListener('dragend', function (e) {
+      const card = e.target.closest('[data-plead-id]');
+      if (card) card.classList.remove('is-dragging');
+    });
+    $('plead-board').addEventListener('dragover', function (e) {
+      if (e.target.closest('.crm-col')) e.preventDefault();
+    });
+    $('plead-board').addEventListener('drop', function (e) {
+      const col = e.target.closest('.crm-col');
+      if (!col) return;
+      e.preventDefault();
+      const id = e.dataTransfer.getData('text/plain');
+      movePortalLead(id, col.getAttribute('data-stage'));
+    });
+  }
+  if ($('plead-stage')) {
+    $('plead-stage').addEventListener('change', function () {
+      const id = pathId('leads');
+      if (!id) return;
+      movePortalLead(id, $('plead-stage').value);
+    });
+  }
 
   function wallIdFromPath() {
     const parts = location.pathname.replace(/\/+$/, '').split('/');
@@ -2682,17 +3092,30 @@
   }
   function renderWallTable() {
     const openId = wallIdFromPath();
-    $('wall-table').innerHTML = walls.length ? walls.map(function (row) {
+    applyCols('walls');
+    const sorted = colSort('walls', walls, function (row, col) {
+      if (col === 'wall') return row.wallName || row.number || '';
+      if (col === 'customer') return row.endCustomer || '';
+      if (col === 'site') return wallSite(row);
+      if (col === 'pitch') return row.pitch || '';
+      if (col === 'ship') return row.shipDate || '';
+      if (col === 'warranty') return row.warrantyEnd || '';
+      if (col === 'spares') return Number(row.spareQty) || 0;
+      return '';
+    });
+    $('wall-table').innerHTML = sorted.length ? sorted.map(function (row) {
       const on = openId && String(openId) === String(row.id);
       return '<tr class="border-b border-slate-800 hover:bg-slate-900/80 cursor-pointer' + (on ? ' is-active' : '') + '" data-wall-id="' + esc(row.id) + '">' +
-        '<td class="py-3 px-4 font-medium">' + esc(row.wallName || row.number) + '</td>' +
-        '<td class="py-3 px-4">' + esc(row.endCustomer || '—') + '</td>' +
-        '<td class="py-3 px-4">' + esc(wallSite(row)) + '</td>' +
-        '<td class="py-3 px-4">' + esc(row.pitch || '—') + '</td>' +
-        '<td class="py-3 px-4">' + esc(row.shipDate || '—') + '</td>' +
-        '<td class="py-3 px-4">' + esc(row.warrantyEnd || '—') + '</td>' +
-        '<td class="py-3 px-4">' + esc(row.spareQty || 0) + '</td></tr>';
-    }).join('') : '<tr><td class="py-6 px-4 text-slate-500" colspan="7">No installed walls yet.</td></tr>';
+        colCells('walls', {
+          wall: '<td class="py-3 px-4 font-medium">' + esc(row.wallName || row.number) + '</td>',
+          customer: '<td class="py-3 px-4">' + esc(row.endCustomer || '—') + '</td>',
+          site: '<td class="py-3 px-4">' + esc(wallSite(row)) + '</td>',
+          pitch: '<td class="py-3 px-4">' + esc(row.pitch || '—') + '</td>',
+          ship: '<td class="py-3 px-4">' + esc(row.shipDate || '—') + '</td>',
+          warranty: '<td class="py-3 px-4">' + esc(row.warrantyEnd || '—') + '</td>',
+          spares: '<td class="py-3 px-4">' + esc(row.spareQty || 0) + '</td>'
+        }) + '</tr>';
+    }).join('') : '<tr><td class="py-6 px-4 text-slate-500" colspan="' + colSpan('walls') + '">No installed walls yet.</td></tr>';
   }
   async function renderWalls() {
     const err = $('wall-error');
@@ -2755,10 +3178,14 @@
         e.preventDefault();
         document.body.classList.remove('dash-open');
         goRegistration(parts[3], true);
+      } else if (parts[2] === 'incoming') {
+        e.preventDefault();
+        document.body.classList.remove('dash-open');
+        goPortalLead('incoming', parts[3], true);
       } else if (parts[2] === 'leads') {
         e.preventDefault();
         document.body.classList.remove('dash-open');
-        goLead(parts[3], true);
+        goPortalLead('leads', parts[3], true);
       } else if (parts[2] === 'rmas') {
         e.preventDefault();
         document.body.classList.remove('dash-open');
@@ -2781,7 +3208,7 @@
     document.body.classList.toggle('inv-layout-lock', (pathView() === 'book' || pathView() === 'projects' || pathView() === 'panels') && !isMobileDash());
     document.body.classList.toggle('calc-lock', pathView() === 'calculator');
     const onQuotes = (pathView() === 'quotes' || pathView() === 'orders') && !isMobileDash();
-    const onSplit = (pathView() === 'registrations' || pathView() === 'leads' || pathView() === 'rmas' || pathView() === 'walls') && !isMobileDash();
+    const onSplit = (pathView() === 'registrations' || pathView() === 'incoming' || pathView() === 'rmas' || pathView() === 'walls') && !isMobileDash();
     document.body.classList.toggle('so-split-lock', onQuotes || onSplit);
     document.body.classList.toggle('dash-split-lock', onSplit);
     const sales = $('sales-section');

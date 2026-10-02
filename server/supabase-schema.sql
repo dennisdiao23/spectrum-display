@@ -411,6 +411,7 @@ alter table public.inventory_items add column if not exists category text not nu
 alter table public.inventory_items add column if not exists gallery jsonb not null default '[]'::jsonb;
 alter table public.inventory_items add column if not exists mpn text not null default '';
 alter table public.inventory_items add column if not exists item_kind text not null default 'item';
+alter table public.inventory_items add column if not exists docs jsonb not null default '[]'::jsonb;
 create unique index if not exists inventory_items_sku_uidx on public.inventory_items (sku);
 
 create table if not exists public.inventory_kit_lines (
