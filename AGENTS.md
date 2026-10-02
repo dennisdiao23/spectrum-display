@@ -8,7 +8,17 @@ Dennis wants a plan before any implementation — even when he did not ask for o
 - Do this on every task, including follow-ups and “just do it” requests.
 - Present the plan, then wait for Dennis to say **Go**. Do not start coding until he says Go.
 - Keep the plan concrete (screens, clicks, files). Do not estimate calendar time.
-- If the task changes a Company or Dealer Portal screen, the plan must include the exact What’s new card (see the next section). Wait for him to approve that copy. **Go** on a plan that omitted the card is not approval of the card.
+- If the task changes a Company or Dealer Portal screen, the plan must include the exact What’s new card (see **What’s new — required before you build or merge**). Wait for him to approve that copy. **Go** on a plan that omitted the card is not approval of the card.
+- Company and Dealer Portal visuals must keep the existing shape. See **Design — keep the rounded bars**.
+
+## Design — keep the rounded bars
+
+Company (`/company`) and Dealer Portal (`/portal`) already have a shape. Match it. Do not invent a new one.
+
+- Bars, search fields, and buttons stay fully rounded: `border-radius: 999px` (the `rounded-full` class).
+- Cards stay at `1rem`.
+- The styles live in `css/company-dash.css`. Copy the radius from the control you are sitting next to. Do not replace a pill with a square.
+- A new bar, filter, tab, or button that comes out square is a mistake. Fix it in the same change.
 
 ## What’s new — required before you build or merge
 
