@@ -1084,6 +1084,12 @@ function ensureDealerPortal(db) {
       expires_at TEXT NOT NULL,
       FOREIGN KEY (dealer_user_id) REFERENCES dealer_users(id)
     );
+    CREATE TABLE IF NOT EXISTS dealer_column_prefs (
+      dealer_user_id INTEGER PRIMARY KEY,
+      prefs TEXT NOT NULL DEFAULT '{}',
+      updated_at TEXT NOT NULL,
+      FOREIGN KEY (dealer_user_id) REFERENCES dealer_users(id) ON DELETE CASCADE
+    );
     CREATE TABLE IF NOT EXISTS dealer_files (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       customer_id INTEGER NOT NULL,
@@ -1252,6 +1258,21 @@ function sqliteApi(db, store) {
     },
     async getDealerUser(id) {
       return db.prepare('SELECT * FROM dealer_users WHERE id = ?').get(id) || null;
+    },
+    async getDealerColumnPrefs(userId) {
+      const { parseColPrefs } = require('./column-prefs');
+      const row = db.prepare('SELECT prefs FROM dealer_column_prefs WHERE dealer_user_id = ?').get(userId);
+      return parseColPrefs(row && row.prefs);
+    },
+    async saveDealerColumnPrefs(userId, prefs) {
+      const { sanitizeColPrefs, parseColPrefs } = require('./column-prefs');
+      const json = JSON.stringify(sanitizeColPrefs(prefs));
+      db.prepare(`
+        INSERT INTO dealer_column_prefs (dealer_user_id, prefs, updated_at)
+        VALUES (?, ?, ?)
+        ON CONFLICT(dealer_user_id) DO UPDATE SET prefs = excluded.prefs, updated_at = excluded.updated_at
+      `).run(userId, json, nowIso());
+      return parseColPrefs(json);
     },
     async listDealerUsersForApplication(applicationId) {
       return db.prepare(
@@ -1674,6 +1695,23 @@ function supabaseApi(supabase, store) {
       const { data, error } = await supabase.from('dealer_users').select('*').eq('id', id).maybeSingle();
       throwIfMissing(error, 'Could not load portal login.');
       return data || null;
+    },
+    async getDealerColumnPrefs(userId) {
+      const { parseColPrefs } = require('./column-prefs');
+      const { data, error } = await supabase.from('dealer_column_prefs').select('prefs').eq('dealer_user_id', userId).maybeSingle();
+      throwIfMissing(error, 'Could not load table layout.');
+      return parseColPrefs(data && data.prefs);
+    },
+    async saveDealerColumnPrefs(userId, prefs) {
+      const { sanitizeColPrefs, parseColPrefs } = require('./column-prefs');
+      const clean = sanitizeColPrefs(prefs);
+      const { error } = await supabase.from('dealer_column_prefs').upsert({
+        dealer_user_id: userId,
+        prefs: JSON.stringify(clean),
+        updated_at: nowIso()
+      }, { onConflict: 'dealer_user_id' });
+      throwIfMissing(error, 'Could not save table layout.');
+      return clean;
     },
     async listDealerUsersForApplication(applicationId) {
       const { data, error } = await supabase.from('dealer_users').select('*').eq('application_id', applicationId).order('created_at', { ascending: false });
