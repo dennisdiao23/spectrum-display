@@ -80,9 +80,9 @@
     }
     #walls-section .inv-split-left .cc-table-wrap { overflow: auto; }
     #walls-section table.dash-cols[data-cols="walls"] { min-width: 980px; width: max-content; }
-    #walls-section #wall-detail,
+    #walls-section #wall-form,
     #walls-section #wall-overview { overflow: auto; }
-    #walls-section #wall-detail { padding: 1.25rem; }
+    #walls-section #wall-form { padding: 1.25rem; }
     #leads-section #lead-split {
       grid-template-columns: var(--lead-left-w, minmax(22rem, 1fr)) 14px minmax(26rem, 1.15fr);
       min-height: 22rem;
@@ -295,6 +295,15 @@
       border-color: #0ea5e9;
       background: #e0f2fe;
       color: #0369a1;
+    }
+    .wall-image-preview {
+      display: block;
+      max-width: 100%;
+      max-height: 10rem;
+      margin-top: 0.6rem;
+      border-radius: 0.6rem;
+      object-fit: contain;
+      background: #f8fafc;
     }
     .rma-photo-preview {
       display: block;
@@ -1096,6 +1105,8 @@
                         <th class="py-3 px-4 font-medium" data-col="customer">End customer <span class="dash-col-caret">▾</span><span class="dash-col-grip" aria-hidden="true"></span></th>
                         <th class="py-3 px-4 font-medium" data-col="site">Site <span class="dash-col-caret">▾</span><span class="dash-col-grip" aria-hidden="true"></span></th>
                         <th class="py-3 px-4 font-medium" data-col="pitch">Pitch <span class="dash-col-caret">▾</span><span class="dash-col-grip" aria-hidden="true"></span></th>
+                        <th class="py-3 px-4 font-medium" data-col="panel">Panel <span class="dash-col-caret">▾</span><span class="dash-col-grip" aria-hidden="true"></span></th>
+                        <th class="py-3 px-4 font-medium" data-col="controller">Controller <span class="dash-col-caret">▾</span><span class="dash-col-grip" aria-hidden="true"></span></th>
                         <th class="py-3 px-4 font-medium" data-col="ship">Ship date <span class="dash-col-caret">▾</span><span class="dash-col-grip" aria-hidden="true"></span></th>
                         <th class="py-3 px-4 font-medium" data-col="wstart">Warranty start <span class="dash-col-caret">▾</span><span class="dash-col-grip" aria-hidden="true"></span></th>
                         <th class="py-3 px-4 font-medium" data-col="warranty">Warranty end <span class="dash-col-caret">▾</span><span class="dash-col-grip" aria-hidden="true"></span></th>
@@ -1118,11 +1129,18 @@
                 <input type="hidden" id="wall-id">
                 <h2 id="wall-title" class="font-semibold text-lg">New Installed Wall</h2>
                 <p id="wall-sub" class="text-sm text-slate-500 mt-1"></p>
+                <div class="mt-4">
+                  <div id="wall-image-drop" class="portal-co-drop" tabindex="0">Drop image</div>
+                  <input id="wall-image-input" type="file" accept="image/jpeg,image/png,image/webp,.jpg,.jpeg,.png,.webp" hidden>
+                  <img id="wall-image-preview" class="wall-image-preview" alt="" hidden>
+                </div>
                 <div class="grid sm:grid-cols-2 gap-3 text-sm mt-4">
                   <label class="sm:col-span-2">Wall name<input id="wall-name" required class="w-full mt-1 bg-slate-800 border border-slate-700 rounded-lg px-3 py-2"></label>
                   <label>End customer<input id="wall-end" class="w-full mt-1 bg-slate-800 border border-slate-700 rounded-lg px-3 py-2"></label>
                   <label>Installer<input id="wall-installer" class="w-full mt-1 bg-slate-800 border border-slate-700 rounded-lg px-3 py-2"></label>
                   <label>Pitch<input id="wall-pitch" class="w-full mt-1 bg-slate-800 border border-slate-700 rounded-lg px-3 py-2"></label>
+                  <label>Panel<input id="wall-panel" class="w-full mt-1 bg-slate-800 border border-slate-700 rounded-lg px-3 py-2" placeholder="Series and pitch"></label>
+                  <label>Controller<input id="wall-controller" class="w-full mt-1 bg-slate-800 border border-slate-700 rounded-lg px-3 py-2" placeholder="NovaStar box or spare"></label>
                   <label>Ship date<input id="wall-ship" type="date" class="w-full mt-1 bg-slate-800 border border-slate-700 rounded-lg px-3 py-2"></label>
                   <label>Warranty start<input id="wall-wstart" type="date" required class="w-full mt-1 bg-slate-800 border border-slate-700 rounded-lg px-3 py-2"></label>
                   <label>Warranty end<input id="wall-wend" type="date" required class="w-full mt-1 bg-slate-800 border border-slate-700 rounded-lg px-3 py-2"></label>
@@ -1778,6 +1796,6 @@
       <div id="file-preview-body" class="portal-file-preview-body"></div>
     </div>
   </div>
-  <script src="/js/portal.js?v=tablesave1"></script>
+  <script src="/js/portal.js?v=wallphoto2"></script>
 </body>
 </html>
