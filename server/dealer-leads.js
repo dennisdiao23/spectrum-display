@@ -166,7 +166,7 @@ async function dealerLabel(store, customerId) {
   return (customer && (customer.displayName || customer.companyName)) || 'Dealer';
 }
 
-async function syncAcceptedLead(store, saved) {
+async function syncAcceptedLead(store, saved, opts) {
   if (!saved || !saved.crmLeadId || !store || typeof store.getCrmLead !== 'function') return null;
   const lead = await store.getCrmLead(saved.crmLeadId);
   if (!lead) return null;
@@ -185,7 +185,7 @@ async function syncAcceptedLead(store, saved) {
     await store.updateCrmLead(lead.id, { status: 'working' });
   }
   const name = await dealerLabel(store, saved.customerId);
-  if (typeof store.createCrmActivity === 'function') {
+  if (!(opts && opts.silent) && typeof store.createCrmActivity === 'function') {
     await store.createCrmActivity({
       type: 'note',
       subject: name + ' accepted this lead',
@@ -297,7 +297,7 @@ function sqliteApi(db, store) {
         INSERT INTO dealer_leads (
           number, customer_id, project, contact_name, contact_email, contact_phone,
           city, state, interest, notes, status, reply_note, replied_at, created_at, updated_at
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'sent', '', '', ?, ?)
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'accepted', '', '', ?, ?)
       `).run(
         nextNumberFrom(numbers),
         asId(input.customerId),
@@ -312,6 +312,7 @@ function sqliteApi(db, store) {
         stamp,
         stamp
       );
+      db.prepare("UPDATE dealer_leads SET stage = 'new', stage_updated_at = ? WHERE id = ?").run(stamp, info.lastInsertRowid);
       const names = await dealerNames(store);
       const row = getRow(info.lastInsertRowid);
       return formatRow(row, { admin: true, dealerName: names[String(row.customer_id)] || '' });
@@ -319,6 +320,18 @@ function sqliteApi(db, store) {
     async listPortalLeads(user) {
       const customerId = dealerCustomerId(user);
       if (!customerId) return [];
+      const waiting = db.prepare("SELECT id FROM dealer_leads WHERE customer_id = ? AND status = 'sent'").all(customerId);
+      for (let i = 0; i < waiting.length; i += 1) {
+        const stamp = nowIso();
+        db.prepare(
+          "UPDATE dealer_leads SET status = 'accepted', stage = CASE WHEN stage = '' THEN 'new' ELSE stage END, stage_updated_at = CASE WHEN stage_updated_at = '' THEN ? ELSE stage_updated_at END, updated_at = ? WHERE id = ?"
+        ).run(stamp, stamp, waiting[i].id);
+        const opened = formatRow(getRow(waiting[i].id));
+        const dealId = await syncAcceptedLead(store, opened, { silent: true });
+        if (dealId && !opened.crmDealId) {
+          db.prepare('UPDATE dealer_leads SET crm_deal_id = ? WHERE id = ?').run(asId(dealId), waiting[i].id);
+        }
+      }
       return db.prepare(
         "SELECT * FROM dealer_leads WHERE customer_id = ? AND status != 'reassigned' ORDER BY datetime(created_at) DESC, id DESC"
       ).all(customerId).map(function (row) { return formatRow(row); });
@@ -346,11 +359,15 @@ function sqliteApi(db, store) {
     async setPortalLeadStage(user, id, body) {
       const row = getRow(id);
       if (!row || String(row.customer_id) !== dealerCustomerId(user) || row.status === 'reassigned') return null;
-      if (row.status !== 'accepted') {
-        throw Object.assign(new Error('Accept the lead before you move it.'), { code: 'invalid' });
+      if (row.status !== 'accepted' && row.status !== 'sent') {
+        throw Object.assign(new Error('This lead is closed.'), { code: 'invalid' });
       }
+      if (row.status === 'sent') {
+        db.prepare("UPDATE dealer_leads SET status = 'accepted', stage = CASE WHEN stage = '' THEN 'new' ELSE stage END, updated_at = ? WHERE id = ?").run(nowIso(), id);
+      }
+      const current = getRow(id);
       const stage = pipelineStage(body && body.stage);
-      if (row.stage === stage) return formatRow(row);
+      if (current.stage === stage) return formatRow(current);
       const stamp = nowIso();
       db.prepare('UPDATE dealer_leads SET stage = ?, stage_updated_at = ?, updated_at = ? WHERE id = ?').run(stage, stamp, stamp, id);
       const saved = formatRow(getRow(id));
@@ -375,7 +392,7 @@ function sqliteApi(db, store) {
           number, customer_id, project, contact_name, contact_email, contact_phone,
           city, state, interest, notes, status, reply_note, replied_at,
           crm_lead_id, crm_deal_id, stage, stage_updated_at, created_at, updated_at
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'sent', '', '', ?, NULL, '', '', ?, ?)
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'accepted', '', '', ?, NULL, 'new', ?, ?, ?)
       `).run(
         nextNumberFrom(numbers),
         asId(customerId),
@@ -389,8 +406,14 @@ function sqliteApi(db, store) {
         note,
         asId(lead.id),
         stamp,
+        stamp,
         stamp
       );
+      const placed = formatRow(getRow(info.lastInsertRowid));
+      const dealId = await syncAcceptedLead(store, placed, { silent: true });
+      if (dealId) {
+        db.prepare('UPDATE dealer_leads SET crm_deal_id = ?, updated_at = ? WHERE id = ?').run(asId(dealId), nowIso(), info.lastInsertRowid);
+      }
       const name = await dealerLabel(store, customerId);
       if (typeof store.createCrmActivity === 'function') {
         await store.createCrmActivity({
@@ -496,9 +519,11 @@ function supabaseApi(supabase, store) {
         state: input.state,
         interest: input.interest,
         notes: input.notes,
-        status: 'sent',
+        status: 'accepted',
         reply_note: '',
         replied_at: '',
+        stage: 'new',
+        stage_updated_at: stamp,
         created_at: stamp,
         updated_at: stamp
       };
@@ -510,6 +535,24 @@ function supabaseApi(supabase, store) {
     async listPortalLeads(user) {
       const customerId = dealerCustomerId(user);
       if (!customerId) return [];
+      const waiting = await supabase.from('dealer_leads').select('*').eq('customer_id', customerId).eq('status', 'sent');
+      throwIf(waiting.error, 'Could not load your leads.');
+      for (let i = 0; i < (waiting.data || []).length; i += 1) {
+        const row = waiting.data[i];
+        const stamp = nowIso();
+        const opened = await supabase.from('dealer_leads').update({
+          status: 'accepted',
+          stage: row.stage || 'new',
+          stage_updated_at: row.stage_updated_at || stamp,
+          updated_at: stamp
+        }).eq('id', row.id).select('*').single();
+        throwIf(opened.error, 'Could not load your leads.');
+        const saved = formatRow(opened.data);
+        const dealId = await syncAcceptedLead(store, saved, { silent: true });
+        if (dealId && !saved.crmDealId) {
+          await supabase.from('dealer_leads').update({ crm_deal_id: asId(dealId) }).eq('id', row.id);
+        }
+      }
       const { data, error } = await supabase.from('dealer_leads').select('*').eq('customer_id', customerId).neq('status', 'reassigned').order('created_at', { ascending: false });
       throwIf(error, 'Could not load your leads.');
       return (data || []).map(function (row) { return formatRow(row); });
@@ -540,10 +583,19 @@ function supabaseApi(supabase, store) {
       return saved;
     },
     async setPortalLeadStage(user, id, body) {
-      const row = await getRow(id);
+      let row = await getRow(id);
       if (!row || String(row.customer_id) !== dealerCustomerId(user) || row.status === 'reassigned') return null;
-      if (row.status !== 'accepted') {
-        throw Object.assign(new Error('Accept the lead before you move it.'), { code: 'invalid' });
+      if (row.status !== 'accepted' && row.status !== 'sent') {
+        throw Object.assign(new Error('This lead is closed.'), { code: 'invalid' });
+      }
+      if (row.status === 'sent') {
+        const opened = await supabase.from('dealer_leads').update({
+          status: 'accepted',
+          stage: row.stage || 'new',
+          updated_at: nowIso()
+        }).eq('id', id).select('*').single();
+        throwIf(opened.error, 'Could not save this lead.');
+        row = opened.data;
       }
       const stage = pipelineStage(body && body.stage);
       if ((row.stage || '') === stage) return formatRow(row);
@@ -585,17 +637,22 @@ function supabaseApi(supabase, store) {
         state: trim(lead.state, 40),
         interest: trim(lead.projectType, 240),
         notes: note,
-        status: 'sent',
+        status: 'accepted',
         reply_note: '',
         replied_at: '',
         crm_lead_id: asId(lead.id),
-        stage: '',
-        stage_updated_at: '',
+        stage: 'new',
+        stage_updated_at: stamp,
         created_at: stamp,
         updated_at: stamp
       };
-      const { error } = await supabase.from('dealer_leads').insert(fields).select('*').single();
+      const { data: inserted, error } = await supabase.from('dealer_leads').insert(fields).select('*').single();
       throwIf(error, 'Could not send this lead.');
+      const placed = formatRow(inserted);
+      const dealId = await syncAcceptedLead(store, placed, { silent: true });
+      if (dealId) {
+        await supabase.from('dealer_leads').update({ crm_deal_id: asId(dealId), updated_at: nowIso() }).eq('id', inserted.id);
+      }
       const name = await dealerLabel(store, customerId);
       if (typeof store.createCrmActivity === 'function') {
         await store.createCrmActivity({

@@ -457,10 +457,13 @@ async function main() {
     const qs = req.url.includes('?') ? req.url.slice(req.url.indexOf('?')) : '';
     res.redirect(301, '/portal' + qs);
   });
-  ['/portal/book', '/portal/quotes', '/portal/orders', '/portal/walls', '/portal/registrations', '/portal/incoming', '/portal/leads', '/portal/rmas', '/portal/projects', '/portal/panels', '/portal/calculator', '/portal/company', '/portal/updates', '/portal/guide'].forEach(function (route) {
+  app.get(['/portal/incoming', '/portal/incoming/', '/portal/incoming/:id', '/portal/incoming/:id/'], function (req, res) {
+    res.redirect(302, '/portal/leads' + (req.params.id ? '/' + req.params.id : ''));
+  });
+  ['/portal/book', '/portal/quotes', '/portal/orders', '/portal/walls', '/portal/registrations', '/portal/leads', '/portal/rmas', '/portal/projects', '/portal/panels', '/portal/calculator', '/portal/company', '/portal/updates', '/portal/guide'].forEach(function (route) {
     app.get([route, route + '/'], sendPortal);
   });
-  app.get(['/portal/quotes/:id', '/portal/quotes/:id/', '/portal/orders/:id', '/portal/orders/:id/', '/portal/registrations/:id', '/portal/registrations/:id/', '/portal/incoming/:id', '/portal/incoming/:id/', '/portal/leads/:id', '/portal/leads/:id/', '/portal/rmas/:id', '/portal/rmas/:id/', '/portal/walls/:id', '/portal/walls/:id/'], sendPortal);
+  app.get(['/portal/quotes/:id', '/portal/quotes/:id/', '/portal/orders/:id', '/portal/orders/:id/', '/portal/registrations/:id', '/portal/registrations/:id/', '/portal/leads/:id', '/portal/leads/:id/', '/portal/rmas/:id', '/portal/rmas/:id/', '/portal/walls/:id', '/portal/walls/:id/'], sendPortal);
 
   const OLD_SOLUTION_REDIRECTS = [
     ['/solutions/retail-hospitality.html', '/retail-hospitality'],

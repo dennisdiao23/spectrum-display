@@ -1,6 +1,20 @@
 {
-  "build": "2026-10-02-brands-prices",
+  "build": "2026-10-02-dealer-lead-board",
   "notes": [
+    {
+      "id": "2026-10-02-dealer-lead-board",
+      "date": "2026-10-02",
+      "apps": ["portal", "company"],
+      "title": "A new lead starts in New",
+      "removed": [
+        "Incoming, and Accept and Decline on a lead."
+      ],
+      "added": [
+        "A new lead from Spectrum shows on Leads, in the New column, with the list and the detail under the board."
+      ],
+      "how": "Open Leads. The card is already in New. Drag it when the job moves. The list under the board opens the same lead. To turn a lead down, call or email Spectrum.",
+      "kind": "feature"
+    },
     {
       "id": "2026-10-02-brands-prices",
       "date": "2026-10-02",
@@ -40,7 +54,7 @@
       "added": [
         "A Leads inbox for jobs Spectrum sends you."
       ],
-      "how": "Open Leads. Accept or decline the one we sent. There is no button to add your own. Your own jobs stay in Deal registration.",
+      "how": "Open Leads. A new lead is already in New. Drag the card as the job moves. To turn one down, call or email Spectrum. Your own jobs stay in Deal registration.",
       "kind": "feature"
     },
     {
@@ -53,7 +67,7 @@
       "added": [
         "A Leads page under Dealer."
       ],
-      "how": "Open Dealer, then Leads. Send a lead to one dealer. They accept or decline it in the portal. They cannot add their own list on that page.",
+      "how": "Open Dealer, then Leads, or send a company lead with Send to dealer. It shows on their Leads board in New. They cannot add their own list on that page.",
       "kind": "feature"
     },
     {
