@@ -24772,7 +24772,8 @@
           }
         }
         renderInvDetailSpecs();
-        if (msg) msg.classList.add('hidden');
+        if (bad) showMsg('Spec sheets must be PDF.', true);
+        else if (msg) msg.classList.add('hidden');
       } catch (err) {
         showMsg(err.message || 'Could not save the spec sheet.', true);
       }
