@@ -1,17 +1,6 @@
 {
-  "build": "2026-10-02-price-from",
+  "build": "2026-10-01-notes-split",
   "notes": [
-    {
-      "id": "2026-10-02-price-from",
-      "date": "2026-10-02",
-      "apps": ["company"],
-      "title": "Price level percent can start from cost",
-      "changed": [
-        "On a price level, the percent can start from Cost, Sell price, Dealer price, or Net price."
-      ],
-      "how": "Open Settings, then Price level. On Percentage, pick Decrease by or Increase by, enter the percent, then pick From. Cost uses the item cost. Sell price uses the sell price.",
-      "kind": "feature"
-    },
     {
       "id": "2026-10-01-price-level",
       "date": "2026-10-01",
