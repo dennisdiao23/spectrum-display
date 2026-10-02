@@ -35,7 +35,7 @@
   <link rel="stylesheet" href="/css/company-dash.css?v=kpicards1" />
   <script src="/js/address-autocomplete.js"></script>
   <script src="/js/company-chat.js?v=po-ship1"></script>
-  <script src="/js/company-crm.js?v=dealerpipe1"></script>
+  <script src="/js/company-crm.js?v=leadcalc1"></script>
   <script src="/js/company-staff.js?v=staff6"></script>
   <script src="/js/company-traffic.js?v=loc1"></script>
   <script src="/js/company-website-control.js?v=webctrl7"></script>
@@ -2579,6 +2579,7 @@
                   <button type="button" class="cc-detail-tab" data-crm-lead-tab="email" role="tab" aria-selected="false">Email</button>
                   <button type="button" class="cc-detail-tab" data-crm-lead-tab="activity" role="tab" aria-selected="false">Activity</button>
                   <button type="button" class="cc-detail-tab" data-crm-lead-tab="deals" role="tab" aria-selected="false">Deals</button>
+                  <button type="button" class="cc-detail-tab" data-crm-lead-tab="calculator" role="tab" aria-selected="false">Calculator</button>
                 </div>
                 <div id="crm-lead-panel-details" class="cc-detail-panel" role="tabpanel">
                   <div class="crm-seq-box" id="crm-lead-seq-box">
@@ -2604,6 +2605,13 @@
                 </div>
                 <div id="crm-lead-panel-activity" class="cc-detail-panel hidden" role="tabpanel" hidden>
                   <div id="crm-lead-acts"></div>
+                </div>
+                <div id="crm-lead-panel-calculator" class="cc-detail-panel hidden" role="tabpanel" hidden>
+                  <div id="crm-lead-calc-summary" class="crm-calc-summary">No wall on this lead yet.</div>
+                  <div class="crm-seq-actions">
+                    <a id="crm-lead-calc-open" class="cc-detail-btn cc-detail-btn-primary" href="/led-wall-calculator" target="_blank" rel="noopener">Open live calculator</a>
+                  </div>
+                  <iframe id="crm-lead-calc-frame" class="crm-calc-frame" title="LED wall calculator" hidden></iframe>
                 </div>
                 <div id="crm-lead-panel-deals" class="cc-detail-panel hidden" role="tabpanel" hidden>
                   <div class="overflow-x-auto rounded-2xl border border-slate-800">
