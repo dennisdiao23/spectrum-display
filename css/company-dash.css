@@ -8151,8 +8151,31 @@ body.dash-split-lock #crm-pipe-section .crm-board {
 .inv-spec-row a:hover { text-decoration: underline; }
 .inv-spec-remove { border: 0; background: transparent; color: #64748b; font-size: 0.8rem; cursor: pointer; }
 .inv-spec-remove:hover { color: #b91c1c; }
-.inv-spec-add { display: inline-flex; margin-top: 0.35rem; cursor: pointer; }
-.inv-spec-add input { display: none; }
+.inv-spec-drop {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.2rem;
+  min-height: 7.5rem;
+  margin: 0.35rem 0 0.75rem;
+  padding: 1rem;
+  border: 1.5px dashed #94a3b8;
+  border-radius: 0.9rem;
+  background: #f8fafc;
+  color: #475569;
+  text-align: center;
+  cursor: pointer;
+}
+.inv-spec-drop strong { color: #0f172a; font-size: 0.95rem; }
+.inv-spec-drop span { font-size: 0.8rem; }
+.inv-spec-drop input { display: none; }
+.inv-spec-drop.is-over {
+  border-color: #0284c7;
+  background: #e0f2fe;
+  color: #0369a1;
+}
+.inv-spec-drop.hidden { display: none; }
 .inv-kit-table,
 .inv-kit-detail-table {
   table-layout: auto;
@@ -9862,5 +9885,65 @@ body.dash-split-lock #settings-pane.space-y-6 > :not([hidden]) {
   body.portal-app #sales-section.so-doc-open #so-overview,
   body.portal-app #sales-section.so-doc-open #so-inv-overview {
     display: grid !important;
+  }
+
+  body.company-app .company-main:has(#dashboard-section:not(.hidden)) {
+    overflow: auto;
+    display: block;
+    padding-top: 0;
+    padding-bottom: calc(var(--dash-tabbar-h, 0px) + 1.5rem);
+  }
+
+  body.company-app .company-main:has(#dashboard-section:not(.hidden)) #dash-panel,
+  body.company-app #dashboard-section:not(.hidden) {
+    display: block;
+    height: auto;
+    min-height: 0;
+    overflow: visible;
+    flex: none;
+  }
+
+  body.company-app #dashboard-section:not(.hidden) .dash-home {
+    display: flex;
+    flex-direction: column;
+    height: auto;
+    overflow: visible;
+    flex: none;
+  }
+
+  body.company-app .dash-home-grid,
+  body.company-app .dash-home-detail,
+  body.company-app .dash-home-panel,
+  body.company-app .dash-home-lobby {
+    height: auto;
+    min-height: 0;
+    overflow: visible;
+    flex: none;
+  }
+
+  body.company-app .dash-home-grid {
+    grid-template-rows: auto auto;
+  }
+
+  body.company-app .dash-detail-list {
+    overflow: visible;
+    flex: none;
+    max-height: none;
+  }
+
+  body.company-app .dash-lobby-window {
+    height: 22rem;
+    min-height: 22rem;
+    overflow: hidden;
+    flex: none;
+  }
+
+  body.company-app .dash-home-kpis {
+    position: sticky;
+    top: 0;
+    z-index: 5;
+    background: var(--dash-bg);
+    padding-top: 0.85rem;
+    padding-bottom: 0.65rem;
   }
 }
