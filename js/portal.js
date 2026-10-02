@@ -2181,6 +2181,30 @@
     bookSku = row.getAttribute('data-sku') || '';
     renderBook();
   });
+  (function bindLeadResizer() {
+    const bar = document.querySelector('#lead-split .dash-split-resizer');
+    const split = $('lead-split');
+    if (!bar || !split) return;
+    bar.addEventListener('pointerdown', function (e) {
+      if (isMobileDash()) return;
+      e.preventDefault();
+      const startX = e.clientX;
+      const leftPane = split.querySelector('.dash-split-left');
+      const left = leftPane ? leftPane.getBoundingClientRect().width : 640;
+      document.body.classList.add('dash-col-resizing');
+      function move(ev) {
+        const next = Math.max(360, Math.min(split.getBoundingClientRect().width - 280, left + (ev.clientX - startX)));
+        split.style.setProperty('--lead-left-w', next + 'px');
+      }
+      function up() {
+        document.body.classList.remove('dash-col-resizing');
+        window.removeEventListener('pointermove', move);
+        window.removeEventListener('pointerup', up);
+      }
+      window.addEventListener('pointermove', move);
+      window.addEventListener('pointerup', up);
+    });
+  })();
   (function bindBookResizer() {
     const bar = $('inv-split-resizer');
     const split = $('inv-split');
