@@ -39,6 +39,10 @@
   </style>
   <link rel="stylesheet" href="/css/company-dash.css?v=portalkpi1" />
   <style>
+    /* Dealer is writing a Request Quote. Spectrum fills these when the quote comes back. */
+    #so-detail.is-request .so-request-back { display: none !important; }
+  </style>
+  <style>
     #inventory-section .inv-split-left .cc-table-wrap { overflow: auto; }
     #inventory-section table.dash-cols[data-cols="dealer-book"] { min-width: 1080px; width: max-content; }
     #inventory-section #inv-item-panel,
@@ -318,11 +322,6 @@
       <a href="/portal/registrations" data-view="registrations" class="dash-nav-link">
         <svg class="dash-nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 3h8l4 4v14a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1z"/><path d="M15 3v5h5"/><path d="M9 13h6M9 17h4"/></svg>
         <span>Deal registration</span>
-      </a>
-      <a href="/portal/incoming" data-view="incoming" class="dash-nav-link">
-        <svg class="dash-nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 6h16v12H4z"/><path d="m4 7 8 6 8-6"/></svg>
-        <span>Incoming</span>
-        <span id="portal-incoming-badge" class="dash-nav-unread hidden"></span>
       </a>
       <a href="/portal/leads" data-view="leads" class="dash-nav-link">
         <svg class="dash-nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 6h16M4 12h16M4 18h10"/></svg>
@@ -637,14 +636,15 @@
         </div>
       </section>
 
-      <section id="incoming-section" class="hidden">
+      <section id="leads-section" class="hidden">
         <div class="cc-list-inner">
-          <p class="text-sm text-slate-500 mb-3">Leads Spectrum sent you. Accept to put one on your Leads board, or decline it. You cannot add your own jobs here.</p>
-          <p id="incoming-error" class="hidden text-sm text-red-400 mb-3"></p>
-          <div class="dash-split" id="incoming-split">
+          <p class="text-sm text-slate-500 mb-3">Leads Spectrum sends you. A new one starts in New. Drag a card to update the stage. Spectrum sees the same move. To turn a lead down, call or email Spectrum.</p>
+          <p id="lead-error" class="hidden text-sm text-red-400 mb-3"></p>
+          <div class="crm-board" id="plead-board"></div>
+          <div class="dash-split" id="lead-split" style="margin-top:1rem;min-height:18rem">
             <div class="dash-split-left">
               <div class="cc-table-card rounded-2xl border border-slate-800">
-                <div class="cc-table-wrap overflow-x-auto">
+                <div class="cc-table-wrap overflow-x-auto" style="max-height:22rem;overflow:auto">
                   <table class="w-full text-sm dash-cols" data-cols="leads">
                     <thead class="text-left text-slate-400 border-b border-slate-800">
                       <tr>
@@ -652,62 +652,38 @@
                         <th class="py-3 px-4 font-medium" data-col="project">Project <span class="dash-col-caret">▾</span><span class="dash-col-grip" aria-hidden="true"></span></th>
                         <th class="py-3 px-4 font-medium" data-col="contact">Contact <span class="dash-col-caret">▾</span><span class="dash-col-grip" aria-hidden="true"></span></th>
                         <th class="py-3 px-4 font-medium" data-col="city">City <span class="dash-col-caret">▾</span><span class="dash-col-grip" aria-hidden="true"></span></th>
-                        <th class="py-3 px-4 font-medium" data-col="status">Status <span class="dash-col-caret">▾</span><span class="dash-col-grip" aria-hidden="true"></span></th>
+                        <th class="py-3 px-4 font-medium" data-col="status">Stage <span class="dash-col-caret">▾</span><span class="dash-col-grip" aria-hidden="true"></span></th>
                       </tr>
                     </thead>
-                    <tbody id="incoming-table" class="text-slate-200"></tbody>
+                    <tbody id="lead-table" class="text-slate-200"></tbody>
                   </table>
                 </div>
               </div>
             </div>
-            <div class="dash-split-resizer" role="separator" aria-orientation="vertical" aria-label="Resize incoming panels" tabindex="0"></div>
+            <div class="dash-split-resizer" role="separator" aria-orientation="vertical" aria-label="Resize lead panels" tabindex="0"></div>
             <div class="dash-split-right">
-              <div id="incoming-overview" class="inv-right-panel">
-                <p class="inv-overview-lead">Select a lead Spectrum sent you.</p>
+              <div id="plead-overview" class="inv-right-panel">
+                <p class="inv-overview-lead">Select a lead. To turn one down, call or email Spectrum.</p>
               </div>
-              <div id="incoming-detail" class="inv-right-panel hidden" style="padding:1.25rem;overflow:auto">
-                <h2 id="incoming-title" class="font-semibold text-lg">Lead</h2>
-                <p id="incoming-status" class="text-sm text-slate-500 mt-1"></p>
-                <dl id="incoming-fields" class="grid sm:grid-cols-2 gap-x-6 gap-y-3 text-sm mt-4"></dl>
-                <p id="incoming-notes" class="text-sm mt-4"></p>
-                <div id="incoming-actions" class="mt-4 space-y-3">
-                  <label class="text-sm block">Note for Spectrum
-                    <textarea id="incoming-note" rows="2" class="w-full mt-1 bg-slate-800 border border-slate-700 rounded-lg px-3 py-2"></textarea>
-                  </label>
-                  <div class="flex flex-wrap gap-2">
-                    <button type="button" id="incoming-accept" class="px-4 py-2 rounded-full bg-sky-500 hover:bg-sky-400 text-white text-sm font-semibold">Accept</button>
-                    <button type="button" id="incoming-decline" class="px-4 py-2 rounded-full border border-slate-600 text-sm">Decline</button>
-                  </div>
-                </div>
-                <p id="incoming-reply" class="hidden text-sm mt-4"></p>
-                <p id="incoming-msg" class="hidden text-sm mt-3"></p>
+              <div id="plead-detail" class="inv-right-panel hidden" style="padding:1.25rem;overflow:auto">
+                <h2 id="plead-title" class="font-semibold text-lg">Lead</h2>
+                <p id="plead-meta" class="text-sm text-slate-500 mt-1"></p>
+                <dl id="plead-fields" class="grid sm:grid-cols-2 gap-x-6 gap-y-3 text-sm mt-4"></dl>
+                <p id="plead-notes" class="text-sm mt-4"></p>
+                <label class="text-sm block" style="margin-top:0.75rem">Stage
+                  <select id="plead-stage" class="w-full mt-1 bg-slate-800 border border-slate-700 rounded-lg px-3 py-2">
+                    <option value="new">New</option>
+                    <option value="qualified">Qualified</option>
+                    <option value="quoted">Quoted</option>
+                    <option value="negotiation">Negotiation</option>
+                    <option value="won">Won</option>
+                    <option value="lost">Lost</option>
+                  </select>
+                </label>
+                <p class="text-sm text-slate-500 mt-3">To turn this lead down, call or email Spectrum.</p>
+                <p id="plead-msg" class="hidden text-sm mt-3"></p>
               </div>
             </div>
-          </div>
-        </div>
-      </section>
-
-      <section id="leads-section" class="hidden">
-        <div class="cc-list-inner">
-          <p class="text-sm text-slate-500 mb-3">Accepted leads. Drag a card to the next stage. Spectrum sees the same move on the company lead.</p>
-          <p id="lead-error" class="hidden text-sm text-red-400 mb-3"></p>
-          <div class="crm-board" id="plead-board"></div>
-          <div id="plead-detail" class="hidden" style="margin-top:1rem;padding:1rem;border:1px solid #1e293b;border-radius:1rem;max-width:36rem">
-            <h2 id="plead-title" class="font-semibold text-lg">Lead</h2>
-            <p id="plead-meta" class="text-sm text-slate-500 mt-1"></p>
-            <dl id="plead-fields" class="grid sm:grid-cols-2 gap-x-6 gap-y-3 text-sm mt-4"></dl>
-            <p id="plead-notes" class="text-sm mt-4"></p>
-            <label class="text-sm block" style="margin-top:0.75rem">Stage
-              <select id="plead-stage" class="w-full mt-1 bg-slate-800 border border-slate-700 rounded-lg px-3 py-2">
-                <option value="new">New</option>
-                <option value="qualified">Qualified</option>
-                <option value="quoted">Quoted</option>
-                <option value="negotiation">Negotiation</option>
-                <option value="won">Won</option>
-                <option value="lost">Lost</option>
-              </select>
-            </label>
-            <p id="plead-msg" class="hidden text-sm mt-3"></p>
           </div>
         </div>
       </section>
@@ -828,7 +804,7 @@
           </div>
           <div class="cc-list-toolbar cc-list-tools">
             <input id="so-search" type="search" placeholder="Search number, customer, PO" class="cc-list-search bg-slate-800 border border-slate-700 rounded-full px-3 py-1.5 text-sm">
-            <button id="so-new-btn" type="button" class="cc-list-add-btn px-4 py-2 rounded-full bg-sky-500 hover:bg-sky-400 text-white text-sm font-semibold">New sales quote</button>
+            <button id="so-new-btn" type="button" class="cc-list-add-btn px-4 py-2 rounded-full bg-sky-500 hover:bg-sky-400 text-white text-sm font-semibold">New Request Quote</button>
           </div>
           <p id="so-error" class="hidden text-sm text-red-400 mb-3"></p>
           <div id="so-split" class="dash-split so-split" style="--so-left-w: min(720px, 58vw)">
@@ -858,7 +834,7 @@
             <div id="so-split-right" class="dash-split-right">
               <div id="so-overview-panel" class="inv-right-panel">
                 <div class="inv-overview-summary">
-                  <p class="inv-overview-lead">Select a request quote to read it. New sales quote starts a request for Spectrum to price.</p>
+                  <p class="inv-overview-lead">Select a request quote to read it. New Request Quote starts a request for Spectrum to price.</p>
                 </div>
               </div>
               <div id="so-detail" class="hidden so-doc">
@@ -906,7 +882,7 @@
                       <div class="so-doc-scroll">
                         <div class="so-doc-legacy-title">
                           <div class="so-doc-legacy-copy">
-                            <h2 id="so-title" class="font-semibold text-lg">New sales quote</h2>
+                            <h2 id="so-title" class="font-semibold text-lg">New Request Quote</h2>
                             <p class="so-doc-note">Save sends this quote to Spectrum. The price is your dealer price.</p>
                           </div>
                           <div class="doc-head-actions">
@@ -921,7 +897,7 @@
                           </div>
                           <div class="so-doc-top">
                             <div class="so-doc-idline">
-                              <label class="so-field so-f-customer"><span>Customer</span>
+                              <label class="so-field so-f-customer so-request-back"><span>Customer</span>
                                 <input id="so-customer" type="text" readonly>
                               </label>
                               <label class="so-field so-f-number"><span id="so-number-label">Quote no.</span>
@@ -934,10 +910,10 @@
                                 <label class="so-field so-f-date"><span>Date</span>
                                   <input id="so-issue" type="date">
                                 </label>
-                                <label class="so-field so-f-po"><span>P.O. number</span>
+                                <label class="so-field so-f-po so-request-back"><span>P.O. number</span>
                                   <input id="so-po" type="text">
                                 </label>
-                                <label class="so-field so-f-terms"><span>Terms</span>
+                                <label class="so-field so-f-terms so-request-back"><span>Terms</span>
                                   <select id="so-terms">
                                     <option value="30% deposit / balance before ship">30% deposit / balance before ship</option>
                                     <option value="Due on receipt">Due on receipt</option>
@@ -947,7 +923,7 @@
                                     <option value="Net 60">Net 60</option>
                                   </select>
                                 </label>
-                                <label class="so-field so-f-due"><span id="so-due-label">Valid until</span>
+                                <label class="so-field so-f-due so-request-back"><span id="so-due-label">Valid until</span>
                                   <input id="so-due" type="date">
                                 </label>
                                 <label class="so-field so-f-status"><span>Status</span>
@@ -955,7 +931,7 @@
                                     <option value="draft">Draft</option>
                                   </select>
                                 </label>
-                                <label class="so-field so-f-so"><span>S.O. No.</span>
+                                <label class="so-field so-f-so so-request-back"><span>S.O. No.</span>
                                   <input id="so-so-number" type="text">
                                 </label>
                                 <label class="so-field so-f-rep"><span>Rep</span>
@@ -970,15 +946,15 @@
                                 <label class="so-field so-f-ship-via"><span>Ship via</span>
                                   <input id="so-ship-via" type="text">
                                 </label>
-                                <label class="so-field so-f-tracking"><span>Tracking</span>
+                                <label class="so-field so-f-tracking so-request-back"><span>Tracking</span>
                                   <input id="so-tracking" type="text">
                                 </label>
                               </div>
                             </div>
-                            <label class="so-field so-field-name"><span>Customer name</span>
+                            <label class="so-field so-field-name so-request-back"><span>Customer name</span>
                               <input id="so-customer-name" type="text" readonly>
                             </label>
-                            <label class="so-field so-field-email"><span>Email</span>
+                            <label class="so-field so-field-email so-request-back"><span>Email</span>
                               <input id="so-customer-email" type="email" readonly>
                             </label>
                           </div>
@@ -1026,14 +1002,14 @@
                             <p id="so-msg" class="hidden text-sm"></p>
                           </div>
                           <div class="so-doc-totals">
-                            <label class="so-field so-field-inline"><span>Discount $</span>
+                            <label class="so-field so-field-inline so-request-back"><span>Discount $</span>
                               <input id="so-discount" type="number" step="0.01" min="0" value="0">
                             </label>
-                            <label class="so-field so-field-inline"><span>Tax %</span>
+                            <label class="so-field so-field-inline so-request-back"><span>Tax %</span>
                               <input id="so-tax-rate" type="number" step="0.01" min="0" value="0">
                             </label>
                             <div class="so-doc-total-row"><span>Subtotal</span><span id="so-subtotal">$0.00</span></div>
-                            <div class="so-doc-total-row"><span>Tax</span><span id="so-tax">$0.00</span></div>
+                            <div class="so-doc-total-row so-request-back"><span>Tax</span><span id="so-tax">$0.00</span></div>
                             <div class="so-doc-total-row is-grand"><span>Total</span><span id="so-grand">$0.00</span></div>
                             <div class="so-doc-total-row" id="so-payments-row"><span>Payments applied</span><span id="so-payments-applied">$0.00</span></div>
                             <div class="so-doc-total-row" id="so-balance-row"><span>Balance due</span><span id="so-balance-due">$0.00</span></div>

@@ -32,7 +32,7 @@
     #company-boot .boot-login button[type="submit"]{background:#fff!important;color:#000!important;border:0}
     #company-boot .boot-login button[type="submit"]:hover{background:#e8e8e8!important}
   </style>
-  <link rel="stylesheet" href="/css/company-dash.css?v=brands1" />
+  <link rel="stylesheet" href="/css/company-dash.css?v=brands2" />
   <script src="/js/address-autocomplete.js"></script>
   <script src="/js/company-chat.js?v=po-ship1"></script>
   <script src="/js/company-crm.js?v=dealerpipe1"></script>
@@ -41,7 +41,7 @@
   <script src="/js/company-website-control.js?v=webctrl7"></script>
   <script src="/js/print-form.js?v=forms21"></script>
   <script src="/js/brand-prices.js?v=brands1"></script>
-  <script src="/js/settings-brands.js?v=brands1"></script>
+  <script src="/js/settings-brands.js?v=brands2"></script>
   <script src="/js/app-help.js?v=help6"></script>
   <script src="/js/app-notes.js?v=guidevid1"></script>
   <script>
@@ -2863,7 +2863,7 @@
       <div id="dealer-leads-section" class="hidden">
         <div class="cc-list-inner">
           <div class="cc-list-toolbar cc-list-tools">
-            <p class="text-sm text-slate-500" style="margin:0">A lead you send to one dealer. They accept or decline it. They cannot add their own jobs on this page.</p>
+            <p class="text-sm text-slate-500" style="margin:0">A lead you send to one dealer. It shows on their Leads board in New. They cannot add their own jobs on this page.</p>
             <button id="dlead-new-btn" type="button" class="cc-list-add-btn px-4 py-2 rounded-full bg-sky-500 hover:bg-sky-400 text-white text-sm font-semibold">Send a lead</button>
           </div>
           <p id="dlead-error" class="hidden text-sm text-red-400 mb-3"></p>
@@ -3754,6 +3754,40 @@
               </div>
               <p id="sb-msg" class="hidden text-sm mt-3"></p>
             </div>
+          </div>
+        </div>
+      </div>
+
+      <div id="sb-review" class="cc-leave" hidden>
+        <div class="mail-card sb-review-card" role="dialog" aria-modal="true" aria-labelledby="sb-review-title">
+          <div class="mail-card-head">
+            <p id="sb-review-title" class="mail-card-title">Review price changes</p>
+          </div>
+          <div class="mail-card-body">
+            <p id="sb-review-note" class="text-sm text-slate-600 mb-3"></p>
+            <div class="cc-table-wrap overflow-auto" style="max-height:24rem">
+              <table class="w-full text-sm">
+                <thead class="text-left text-slate-500">
+                  <tr>
+                    <th class="py-2 px-2">Item</th>
+                    <th class="py-2 px-2">SKU</th>
+                    <th class="py-2 px-2">Brand</th>
+                    <th class="py-2 px-2">Cost</th>
+                    <th class="py-2 px-2">Sell price old</th>
+                    <th class="py-2 px-2">Sell price new</th>
+                    <th class="py-2 px-2">Dealer price old</th>
+                    <th class="py-2 px-2">Dealer price new</th>
+                    <th class="py-2 px-2">Integrator price old</th>
+                    <th class="py-2 px-2">Integrator price new</th>
+                  </tr>
+                </thead>
+                <tbody id="sb-review-rows"></tbody>
+              </table>
+            </div>
+          </div>
+          <div class="mail-card-actions">
+            <button type="button" id="sb-review-back" class="cc-leave-no">Back</button>
+            <button type="button" id="sb-review-confirm" class="cc-leave-yes">Confirm and update</button>
           </div>
         </div>
       </div>
@@ -5199,7 +5233,7 @@
     </a>
   </nav>
 
-  <link rel="stylesheet" href="/css/company-dash.css?v=brands1" />
+  <link rel="stylesheet" href="/css/company-dash.css?v=brands2" />
   <link rel="stylesheet" href="/css/company-tw.css?v=boot1" />
 
   <script>
