@@ -49,6 +49,15 @@
     #inventory-section #inv-overview-panel { overflow: auto; }
     #sales-section .dash-split-left .cc-table-wrap { overflow: auto; }
     #sales-section table.dash-cols[data-cols="sales"] { min-width: 1100px; width: max-content; }
+    @media (min-width: 901px) {
+      #walls-section:not(.hidden) {
+        display: flex;
+        flex-direction: column;
+        flex: 1 1 auto;
+        min-height: calc(100dvh - 8.5rem);
+        overflow: hidden;
+      }
+    }
     body.inv-layout-lock #walls-section:not(.hidden) {
       flex: 1 1 auto;
       min-height: 0;
@@ -60,11 +69,15 @@
     body.inv-layout-lock #walls-section .cc-list-toolbar,
     body.inv-layout-lock #walls-section #wall-error { flex-shrink: 0; }
     #wall-workspace,
-    #wall-list-wrap {
+    #wall-list-wrap,
+    #walls-section #wall-split {
       display: flex;
       flex-direction: column;
       min-height: 0;
       flex: 1 1 auto;
+    }
+    #walls-section #wall-split {
+      display: grid;
     }
     #walls-section .inv-split-left .cc-table-wrap { overflow: auto; }
     #walls-section table.dash-cols[data-cols="walls"] { min-width: 980px; width: max-content; }
