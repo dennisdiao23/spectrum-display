@@ -491,6 +491,9 @@ async function main() {
     res.sendFile(path.join(ROOT, 'solutions.html'));
   });
   const staticLong = { maxAge: '7d', etag: true, lastModified: true };
+  app.use(['/uploads/dealer', '/data'], function (_req, res) {
+    res.status(404).type('text/plain').send('Not found.');
+  });
   app.use('/uploads', express.static(path.join(ROOT, 'uploads'), staticLong));
   app.use('/css', express.static(path.join(ROOT, 'css'), staticLong));
   // JS must revalidate with HTML. A 7-day /js cache left calculator pages calling
@@ -1115,7 +1118,7 @@ async function main() {
       if (siteUser && siteUser.id) app.user_id = siteUser.id;
       const attachments = [];
       if (req.file && req.file.buffer) {
-        const saved = require('./dealer-portal').saveResaleFile(req.file);
+        const saved = await store.saveApplicationCertificate(req.file);
         app.resale_certificate_name = saved.name;
         app.resale_certificate_url = saved.url;
         attachments.push({
@@ -1356,6 +1359,46 @@ async function main() {
       if (!req.file) return res.status(400).json({ ok: false, error: 'Choose a PDF, JPG, or PNG.' });
       res.json({ ok: true, file: await store.addDealerFile(req.dealer, req.file) });
     } catch (err) { dealerDocError(err, res, next); }
+  });
+
+  function sendPrivateDealerFile(res, row, buffer) {
+    const portal = require('./dealer-portal');
+    if (!buffer) {
+      res.status(404).type('text/plain').send('This file is no longer on the server. Upload it again.');
+      return;
+    }
+    const stored = (row.url || row.name || '');
+    res.set('Content-Type', portal.dealerContentType(stored));
+    res.set('X-Content-Type-Options', 'nosniff');
+    res.set('Cache-Control', 'private, no-store');
+    res.set('Content-Disposition', 'inline; filename="' + portal.dealerDownloadName(row.name) + '"');
+    res.send(buffer);
+  }
+
+  app.get('/api/dealer/files/:id', requireDealer, async function (req, res, next) {
+    try {
+      const row = await store.getDealerOwnedFile(req.dealer, req.params.id);
+      if (!row) return res.status(404).type('text/plain').send('File not found.');
+      sendPrivateDealerFile(res, row, await store.readDealerFile(row));
+    } catch (err) { next(err); }
+  });
+
+  app.get('/api/admin/company-customers/:id/dealer-files/:fileId/file', requireAdmin, requireCustomerOrDealer('view'), async function (req, res, next) {
+    try {
+      const customer = await requireDealerCustomer(req, res);
+      if (!customer) return;
+      const row = await store.getDealerFileForCustomer(customer.id, req.params.fileId);
+      if (!row) return res.status(404).type('text/plain').send('File not found.');
+      sendPrivateDealerFile(res, row, await store.readDealerFile(row));
+    } catch (err) { next(err); }
+  });
+
+  app.get('/api/admin/dealer-applications/:id/certificate', requireAdmin, requireCustomerOrDealer('view'), async function (req, res, next) {
+    try {
+      const file = await store.readApplicationCertificate(req.params.id);
+      if (!file) return res.status(404).type('text/plain').send('File not found.');
+      sendPrivateDealerFile(res, { name: file.name, url: file.url }, file.buffer);
+    } catch (err) { next(err); }
   });
 
   app.get('/api/admin/company-customers/:id/dealer-files', requireAdmin, requireCustomerOrDealer('view'), async function (req, res, next) {
