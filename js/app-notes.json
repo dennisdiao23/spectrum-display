@@ -1,6 +1,16 @@
 {
-  "build": "2026-10-01-notes-split",
+  "build": "2026-10-02-portal-company",
   "notes": [
+    {
+      "id": "2026-10-02-portal-company",
+      "date": "2026-10-02",
+      "apps": ["portal"],
+      "title": "Company page is read-only",
+      "changed": [
+        "Company details are shorter, and you cannot edit them."
+      ],
+      "how": "Open Settings, then Company. Name, address, tax ID, and logo are text. Spectrum changes those in Company. You can still upload a file and change your portal password."
+    },
     {
       "id": "2026-10-01-price-level",
       "date": "2026-10-01",
@@ -553,7 +563,7 @@
       },
       {
         "title": "Settings → Company",
-        "text": "Your dealer company on the portal. Name, address, logo, and files. You can view, download, and upload. Spectrum staff can also delete a file."
+        "text": "Your dealer company on the portal. Name, address, tax ID, and logo are text. Spectrum changes those in Company. You can upload a file and change your portal password."
       },
       {
         "title": "Settings → What’s new",
