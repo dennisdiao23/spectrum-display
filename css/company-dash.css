@@ -7543,17 +7543,31 @@ body.is-pf-dragging.is-pf-col-dragging * {
   align-items: start;
 }
 .dash-home-kpis .dash-kpi-icon { grid-row: 1 / span 4; }
-.dash-home-kpis .dash-kpi-spark {
+.dash-home-kpis .dash-kpi-spark-wrap {
   grid-column: 2;
   grid-row: 4;
   display: block;
+  position: relative;
   width: 100%;
   height: 1.7rem;
   margin-top: 0.2rem;
   min-width: 0;
-  overflow: hidden;
-  overflow: clip;
 }
+.dash-home-kpis .dash-kpi-spark {
+  display: block;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+}
+.dash-kpi-spark-dot {
+  position: absolute;
+  width: 0.5rem;
+  height: 0.5rem;
+  margin: -0.25rem 0 0 -0.25rem;
+  border-radius: 50%;
+  pointer-events: none;
+}
+.dash-kpi-spark-dot[hidden] { display: none; }
 .dash-home-kpis .dash-kpi-value {
   font-size: 1.45rem;
   overflow: hidden;
