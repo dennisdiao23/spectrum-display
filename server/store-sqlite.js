@@ -1478,7 +1478,7 @@ function createSqliteStore() {
     async brandPriceChanges(brandId, brandName, rules) {
       const bp = require('./brand-prices');
       const items = db.prepare(
-        'SELECT id, sku, name, brand_id, category, cost, price, dealer_net, integrator_price FROM inventory_items WHERE brand_id = ?'
+        'SELECT id, sku, name, brand_id, category, cost, local_warehouse_cost, price, dealer_net, integrator_price FROM inventory_items WHERE brand_id = ?'
       ).all(brandId);
       return bp.priceChanges(items, rules, brandId, brandName);
     },

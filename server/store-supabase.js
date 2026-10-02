@@ -2515,7 +2515,7 @@ function createSupabaseStore() {
     async brandPriceChanges(brandId, brandName, rules) {
       const bp = require('./brand-prices');
       const { data, error } = await supabase.from('inventory_items')
-        .select('id, sku, name, brand_id, category, cost, price, dealer_net, integrator_price')
+        .select('id, sku, name, brand_id, category, cost, local_warehouse_cost, price, dealer_net, integrator_price')
         .eq('brand_id', brandId);
       throwIf(error, 'Could not read inventory for this brand.');
       return bp.priceChanges(data || [], rules, brandId, brandName);

@@ -152,6 +152,7 @@
           ? '<span class="text-slate-500">Cost, increase by</span>'
           : '<select data-sb-basis data-sb-key="' + esc(rule.priceKey) + '" data-sb-type="' + esc(type) + '" disabled>' +
             '<option value="cost"' + (rule.basis === 'cost' ? ' selected' : '') + '>Cost, increase by</option>' +
+            '<option value="local"' + (rule.basis === 'local' ? ' selected' : '') + '>Local Cost, increase by</option>' +
             '<option value="sell"' + (rule.basis === 'sell' ? ' selected' : '') + '>Sell price, decrease by</option>' +
             '</select>';
         html += '<tr class="border-t border-slate-800" data-sb-row="' + esc(type) + '">' +
