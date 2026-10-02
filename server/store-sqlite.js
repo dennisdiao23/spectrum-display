@@ -1008,12 +1008,12 @@ function createSqliteStore() {
       const info = db.prepare(`
         INSERT INTO inventory_items (
           sku, mpn, item_kind, name, brand_id, category, pitch, unit, panel_type, packaging_type, qty, low_at, price, cost, dealer_net,
-          local_warehouse_cost, weight, panel_w, panel_h, description, image, gallery, notes, created_at, updated_at
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+          integrator_price, local_warehouse_cost, weight, panel_w, panel_h, description, image, gallery, notes, created_at, updated_at
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
       `).run(
         fields.sku, fields.mpn || '', fields.item_kind || 'item', fields.name, fields.brand_id, fields.category || '', fields.pitch, fields.unit, fields.panel_type || '',
         fields.packaging_type || '', itemQty,
-        fields.low_at, fields.price, fields.cost, fields.dealer_net,
+        fields.low_at, fields.price, fields.cost, fields.dealer_net, fields.integrator_price || 0,
         fields.local_warehouse_cost != null ? fields.local_warehouse_cost : 0, fields.weight,
         fields.panel_w, fields.panel_h, fields.description, fields.image,
         JSON.stringify(inv.parseGallery(fields.gallery)), fields.notes,
@@ -1053,6 +1053,7 @@ function createSqliteStore() {
         cost: input.cost != null ? input.cost : Number(current.cost) || 0,
         localWarehouseCost: input.localWarehouseCost != null ? input.localWarehouseCost : Number(current.local_warehouse_cost) || 0,
         dealerNet: input.dealerNet != null ? input.dealerNet : Number(current.dealer_net) || 0,
+        integratorPrice: input.integratorPrice != null ? input.integratorPrice : Number(current.integrator_price) || 0,
         weight: input.weight != null ? input.weight : Number(current.weight) || 0,
         panelW: input.panelW != null ? input.panelW : Number(current.panel_w) || 0,
         panelH: input.panelH != null ? input.panelH : Number(current.panel_h) || 0,
@@ -1089,14 +1090,14 @@ function createSqliteStore() {
         UPDATE inventory_items SET
           sku = ?, mpn = ?, item_kind = ?, name = ?, brand_id = ?, category = ?, pitch = ?, unit = ?, panel_type = ?, packaging_type = ?,
           qty = ?, low_at = ?, price = ?,
-          cost = ?, dealer_net = ?, local_warehouse_cost = ?, weight = ?, panel_w = ?, panel_h = ?,
+          cost = ?, dealer_net = ?, integrator_price = ?, local_warehouse_cost = ?, weight = ?, panel_w = ?, panel_h = ?,
           description = ?, image = ?, gallery = ?, notes = ?, updated_at = ?
         WHERE id = ?
       `).run(
         next.sku, next.mpn, next.itemKind, next.name, next.brandId, next.category, next.pitch, next.unit, next.panelType, next.packagingType,
         becomingKit ? 0 : current.qty,
         next.lowAt, next.price,
-        next.cost, next.dealerNet, next.localWarehouseCost, next.weight, next.panelW, next.panelH,
+        next.cost, next.dealerNet, next.integratorPrice, next.localWarehouseCost, next.weight, next.panelW, next.panelH,
         next.description, next.image, JSON.stringify(inv.parseGallery(next.gallery)), next.notes, dbUtil.nowIso(), id
       );
       saveInventoryKitLines(db, id, Object.assign({}, input, { itemKind: next.itemKind }), current.item_kind);
@@ -1204,17 +1205,23 @@ function createSqliteStore() {
       attachMapsToListedProducts(db, [updated]);
       return updated;
     },
+    _attachCustomerPriceOverrides(customers) {
+      const bp = require('./brand-prices');
+      return bp.attachOverrides(customers, bp.listOverridesSqlite(db));
+    },
     async listCompanyCustomers() {
       const cc = require('./company-customers');
-      return db.prepare(
+      const customers = db.prepare(
         'SELECT * FROM company_customers ORDER BY company_name COLLATE NOCASE, contact_last COLLATE NOCASE, id DESC'
       ).all().map(cc.formatCustomer);
+      return this._attachCustomerPriceOverrides(customers);
     },
     async getCompanyCustomer(id) {
       const cc = require('./company-customers');
       const customer = cc.formatCustomer(db.prepare('SELECT * FROM company_customers WHERE id = ?').get(id));
       if (!customer) return null;
       customer.contacts = await this.listCustomerContacts(id);
+      this._attachCustomerPriceOverrides([customer]);
       return customer;
     },
     async _upsertCustomerPrimaryContact(customerId, customerInput) {
@@ -1237,6 +1244,9 @@ function createSqliteStore() {
         keys.map(function () { return '?'; }).join(', ') + ', ?, ?)'
       ).run(...keys.map(function (k) { return fields[k]; }).concat([stamp, stamp]));
       await this._upsertCustomerPrimaryContact(info.lastInsertRowid, input);
+      if (Array.isArray(payload && payload.priceOverrides)) {
+        require('./brand-prices').saveOverridesSqlite(db, info.lastInsertRowid, payload.priceOverrides);
+      }
       return this.getCompanyCustomer(info.lastInsertRowid);
     },
     async updateCompanyCustomer(id, payload) {
@@ -1250,6 +1260,9 @@ function createSqliteStore() {
         'UPDATE company_customers SET ' + keys.map(function (k) { return k + ' = ?'; }).join(', ') + ', updated_at = ? WHERE id = ?'
       ).run(...keys.map(function (k) { return fields[k]; }).concat([dbUtil.nowIso(), id]));
       await this._upsertCustomerPrimaryContact(id, input);
+      if (Array.isArray(payload && payload.priceOverrides)) {
+        require('./brand-prices').saveOverridesSqlite(db, id, payload.priceOverrides);
+      }
       return this.getCompanyCustomer(id);
     },
     async deleteCompanyCustomer(id) {
@@ -1454,6 +1467,12 @@ function createSqliteStore() {
     },
     async deletePriceLevel(id) {
       return require('./price-levels').deleteSqlite(db, id);
+    },
+    async listBrandPriceRules() {
+      return require('./brand-prices').listSqlite(db);
+    },
+    async saveBrandPriceRules(brandId, rules) {
+      return require('./brand-prices').saveSqlite(db, brandId, rules);
     },
     async savePrintForm(type, template) {
       const pf = require('./print-forms');

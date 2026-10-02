@@ -1771,3 +1771,32 @@ grant all on public.price_level_customers to service_role;
 grant all on public.price_level_items to service_role;
 grant all on public.price_level_brands to service_role;
 grant all on public.price_level_overrides to service_role;
+
+alter table public.inventory_items add column if not exists integrator_price double precision not null default 0;
+
+create table if not exists public.brand_price_rules (
+  id bigint generated always as identity primary key,
+  brand_id text not null,
+  product_type text not null default '',
+  price_key text not null,
+  basis text not null default 'cost',
+  adjust_dir text not null default 'increase',
+  adjust_pct double precision not null default 0,
+  unique (brand_id, product_type, price_key)
+);
+create table if not exists public.customer_brand_price_overrides (
+  customer_id bigint not null references public.company_customers(id) on delete cascade,
+  brand_id text not null,
+  adjust_pct double precision not null default 0,
+  primary key (customer_id, brand_id)
+);
+alter table public.brand_price_rules enable row level security;
+alter table public.customer_brand_price_overrides enable row level security;
+drop policy if exists brand_price_rules_admin_all on public.brand_price_rules;
+create policy brand_price_rules_admin_all on public.brand_price_rules
+for all using (public.is_spectrum_admin()) with check (public.is_spectrum_admin());
+drop policy if exists customer_brand_price_overrides_admin_all on public.customer_brand_price_overrides;
+create policy customer_brand_price_overrides_admin_all on public.customer_brand_price_overrides
+for all using (public.is_spectrum_admin()) with check (public.is_spectrum_admin());
+grant all on public.brand_price_rules to service_role;
+grant all on public.customer_brand_price_overrides to service_role;

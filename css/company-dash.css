@@ -1165,7 +1165,8 @@ html.dash-scroll-lock body.company-app {
   padding: 1.5rem;
 }
 #so-saved,
-#so-delete-confirm {
+#so-delete-confirm,
+#inv-cost-ask {
   z-index: 200;
 }
 .cc-leave.is-open {
@@ -3605,6 +3606,8 @@ body.po-split-lock #dash-panel.space-y-8 > :not([hidden]) {
   margin-top: 0 !important;
 }
 body.inv-layout-lock #inventory-section:not(.hidden),
+body.dash-split-lock #settings-pane:not(.hidden),
+body.dash-split-lock #brands-section:not(.hidden),
 body.dash-split-lock #customers-section:not(.hidden),
 body.dash-split-lock #crm-lead-section:not(.hidden),
 body.dash-split-lock #crm-pipe-section:not(.hidden),
@@ -9456,4 +9459,22 @@ body.app-help-on #header-chat.is-help-target {
 .pl-check-list {
   display: grid;
   gap: 0.35rem;
+}
+#sb-detail,
+#sb-empty {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow: auto;
+  padding: 1rem 1.1rem 1.5rem;
+}
+body.dash-split-lock #settings-pane.space-y-6 > :not([hidden]) {
+  margin-top: 0 !important;
+}
+#sb-rules select,
+#cc-price-rows input {
+  background: #fff;
+  color: #0f172a;
+  border: 1px solid #cbd5e1;
+  border-radius: 0.4rem;
+  padding: 0.25rem 0.45rem;
 }

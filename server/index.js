@@ -328,7 +328,7 @@ async function main() {
     '/company/settings',
     '/company/settings/company',
     '/company/settings/forms',
-    '/company/settings/price-levels',
+    '/company/settings/brands',
     '/company/settings/updates',
     '/company/settings/guide',
     '/company/chat',
@@ -352,7 +352,10 @@ async function main() {
     sendCompany(req, res);
   });
   app.get(['/company/settings/users/:id', '/company/settings/users/:id/'], sendCompany);
-  app.get(['/company/settings/price-levels/:id', '/company/settings/price-levels/:id/'], sendCompany);
+  app.get(['/company/settings/brands/:id', '/company/settings/brands/:id/'], sendCompany);
+  app.get(['/company/settings/price-levels', '/company/settings/price-levels/', '/company/settings/price-levels/:id', '/company/settings/price-levels/:id/'], function (_req, res) {
+    res.redirect(302, '/company/settings/brands');
+  });
   app.get(['/company/crm/leads/:id', '/company/crm/leads/:id/'], sendCompany);
   app.get(['/company/crm/pipeline/:id', '/company/crm/pipeline/:id/'], sendCompany);
   app.get(['/company/crm/activities/:id', '/company/crm/activities/:id/'], sendCompany);
@@ -3659,41 +3662,75 @@ async function main() {
     } catch (err) { next(err); }
   });
 
-  app.get('/api/admin/price-levels', requireAdmin, requirePerm('settings', 'view'), async function (_req, res, next) {
+  app.get('/api/admin/settings/brands', requireAdmin, requirePerm('settings', 'view'), async function (_req, res, next) {
     try {
-      res.json({ ok: true, levels: await store.listPriceLevels() });
+      const brands = await store.listBrands();
+      const rules = await store.listBrandPriceRules();
+      res.json({ ok: true, brands: brands, rules: rules });
     } catch (err) { next(err); }
   });
 
-  app.get('/api/admin/price-levels/:id', requireAdmin, requirePerm('settings', 'view'), async function (req, res, next) {
+  app.post('/api/admin/settings/brands', requireAdmin, requirePerm('settings', 'edit'), async function (req, res, next) {
     try {
-      const level = await store.getPriceLevel(req.params.id);
-      if (!level) return res.status(404).json({ ok: false, error: 'Price level not found.' });
-      res.json({ ok: true, level: level });
-    } catch (err) { next(err); }
-  });
-
-  app.post('/api/admin/price-levels', requireAdmin, requirePerm('settings', 'edit'), async function (req, res, next) {
-    try {
-      res.json({ ok: true, level: await store.savePriceLevel(null, req.body || {}) });
+      const body = req.body || {};
+      const name = String(body.name || '').trim();
+      if (!name) return res.status(400).json({ ok: false, error: 'Name the brand.' });
+      let id = slugify(name);
+      if (!id) return res.status(400).json({ ok: false, error: 'Name the brand.' });
+      let n = 2;
+      while (await store.getBrand(id)) {
+        id = slugify(name) + '-' + n;
+        n += 1;
+      }
+      const brand = await store.createBrand({ id: id, name: name, tagline: '', logo: '', description: '', image: '', hidden: false });
+      const rules = await store.saveBrandPriceRules(brand.id, body.rules || []);
+      res.json({ ok: true, brand: brand, rules: rules });
     } catch (err) {
-      res.status(400).json({ ok: false, error: err.message || 'Could not save the price level.' });
+      res.status(400).json({ ok: false, error: err.message || 'Could not save the brand.' });
     }
   });
 
-  app.put('/api/admin/price-levels/:id', requireAdmin, requirePerm('settings', 'edit'), async function (req, res, next) {
+  app.put('/api/admin/settings/brands/:id', requireAdmin, requirePerm('settings', 'edit'), async function (req, res, next) {
     try {
-      res.json({ ok: true, level: await store.savePriceLevel(req.params.id, req.body || {}) });
+      const existing = await store.getBrand(req.params.id);
+      if (!existing) return res.status(404).json({ ok: false, error: 'Brand not found.' });
+      const body = req.body || {};
+      const name = String(body.name || existing.name || '').trim();
+      if (!name) return res.status(400).json({ ok: false, error: 'Name the brand.' });
+      const brand = await store.updateBrand(req.params.id, {
+        name: name,
+        tagline: existing.tagline || '',
+        description: existing.description || '',
+        logo: existing.logo || '',
+        image: existing.image || '',
+        hidden: !!existing.hidden
+      });
+      const rules = await store.saveBrandPriceRules(brand.id, body.rules || []);
+      res.json({ ok: true, brand: brand, rules: rules });
     } catch (err) {
-      res.status(400).json({ ok: false, error: err.message || 'Could not save the price level.' });
+      res.status(400).json({ ok: false, error: err.message || 'Could not save the brand.' });
     }
+  });
+
+  app.get('/api/admin/price-levels', requireAdmin, requirePerm('settings', 'view'), async function (_req, res) {
+    res.json({ ok: true, levels: [] });
+  });
+
+  app.get('/api/admin/price-levels/:id', requireAdmin, requirePerm('settings', 'view'), async function (_req, res) {
+    res.status(404).json({ ok: false, error: 'Price level was removed. Use Settings → Brands.' });
+  });
+
+  app.post('/api/admin/price-levels', requireAdmin, requirePerm('settings', 'edit'), async function (_req, res) {
+    res.status(410).json({ ok: false, error: 'Price level was removed. Use Settings → Brands.' });
+  });
+
+  app.put('/api/admin/price-levels/:id', requireAdmin, requirePerm('settings', 'edit'), async function (_req, res) {
+    res.status(410).json({ ok: false, error: 'Price level was removed. Use Settings → Brands.' });
   });
 
   app.delete('/api/admin/price-levels/:id', requireAdmin, requirePerm('settings', 'edit'), async function (req, res, next) {
     try {
-      const ok = await store.deletePriceLevel(req.params.id);
-      if (!ok) return res.status(404).json({ ok: false, error: 'Price level not found.' });
-      res.json({ ok: true });
+      res.status(410).json({ ok: false, error: 'Price level was removed. Use Settings → Brands.' });
     } catch (err) {
       res.status(400).json({ ok: false, error: err.message || 'Could not delete the price level.' });
     }

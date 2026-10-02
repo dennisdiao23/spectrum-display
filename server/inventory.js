@@ -815,7 +815,13 @@ function normalizeItemInput(body, opts) {
     );
   }
   if (!patch || src.dealerNet != null || src.dealer_net != null) {
-    out.dealerNet = nonNegNumber(src.dealerNet != null ? src.dealerNet : src.dealer_net, 'Dealer net');
+    out.dealerNet = nonNegNumber(src.dealerNet != null ? src.dealerNet : src.dealer_net, 'Dealer price');
+  }
+  if (!patch || src.integratorPrice != null || src.integrator_price != null) {
+    out.integratorPrice = nonNegNumber(
+      src.integratorPrice != null ? src.integratorPrice : src.integrator_price,
+      'Integrator price'
+    );
   }
   if (!patch || src.weight != null) {
     out.weight = nonNegNumber(src.weight, 'Panel weight');
@@ -843,6 +849,7 @@ function normalizeItemInput(body, opts) {
   if (!patch && out.cost == null) out.cost = 0;
   if (!patch && out.localWarehouseCost == null) out.localWarehouseCost = 0;
   if (!patch && out.dealerNet == null) out.dealerNet = 0;
+  if (!patch && out.integratorPrice == null) out.integratorPrice = 0;
   if (!patch && out.weight == null) out.weight = 0;
   if (!patch && out.panelW == null) out.panelW = 0;
   if (!patch && out.panelH == null) out.panelH = 0;
@@ -888,6 +895,7 @@ function dbFieldsFromInput(input) {
   if (input.cost != null) row.cost = input.cost;
   if (input.localWarehouseCost != null) row.local_warehouse_cost = input.localWarehouseCost;
   if (input.dealerNet != null) row.dealer_net = input.dealerNet;
+  if (input.integratorPrice != null) row.integrator_price = input.integratorPrice;
   if (input.weight != null) row.weight = input.weight;
   if (input.panelW != null) row.panel_w = input.panelW;
   if (input.panelH != null) row.panel_h = input.panelH;
@@ -1061,6 +1069,7 @@ function formatItem(row, brandName, maps, locations) {
     cost: Number(row && row.cost) || 0,
     localWarehouseCost: Number(row && row.local_warehouse_cost) || 0,
     dealerNet: Number(row && row.dealer_net) || 0,
+    integratorPrice: Number(row && row.integrator_price) || 0,
     weight: Number(row && row.weight) || 0,
     panelW: Number(row && row.panel_w) || 0,
     panelH: Number(row && row.panel_h) || 0,
