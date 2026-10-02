@@ -40,6 +40,7 @@
   let openTabs = [];
   let bookFilter = 'all';
   let bookSku = '';
+  let bookDetailTab = 'details';
   const tabLabel = { home: 'Dashboard', book: 'Dealer book', quotes: 'Request Quote', orders: 'Purchase Order', walls: 'Installed walls', registrations: 'Deal registration', leads: 'Leads', rmas: 'RMA', projects: 'Projects', panels: 'Saved Panel', calculator: 'Calculator', company: 'Company', updates: 'What’s new', guide: 'Dealer guide' };
   const tabIcon = {
     home: '<svg class="dash-master-tab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="8" height="8" rx="1.5"/><rect x="13" y="3" width="8" height="8" rx="1.5"/><rect x="3" y="13" width="8" height="8" rx="1.5"/><rect x="13" y="13" width="8" height="8" rx="1.5"/></svg>',
@@ -1211,6 +1212,65 @@
       return '<tr><td>' + esc(loc.name) + '</td><td>' + esc(loc.type || '—') + '</td><td>' + esc(loc.qty) + '</td><td>' + (loc.tracked ? 'Yes' : 'No') + '</td></tr>';
     }).join('');
     $('inv-detail-locations-empty').classList.toggle('hidden', locs.length > 0);
+    renderBookTabs(item);
+  }
+  function setBookDetailTab(name) {
+    bookDetailTab = name === 'specs' || name === 'image' ? name : 'details';
+    document.querySelectorAll('#book-detail-tabs [data-book-tab]').forEach(function (btn) {
+      const on = btn.getAttribute('data-book-tab') === bookDetailTab;
+      btn.classList.toggle('is-on', on);
+      btn.setAttribute('aria-selected', on ? 'true' : 'false');
+    });
+    ['details', 'specs', 'image'].forEach(function (key) {
+      const panel = $('book-panel-' + key);
+      if (!panel) return;
+      const on = key === bookDetailTab;
+      panel.classList.toggle('hidden', !on);
+      panel.hidden = !on;
+    });
+  }
+  function renderBookTabs(item) {
+    const read = $('book-detail-read');
+    if (read) {
+      const size = item.panelW && item.panelH ? (item.panelW + ' × ' + item.panelH) : '—';
+      const rows = [
+        ['SKU', item.sku || '—'],
+        ['Name', item.name || '—'],
+        ['Description', item.description || '—'],
+        ['Brand', item.brand || '—'],
+        ['Category', item.category || '—'],
+        ['Unit', item.unit || '—'],
+        ['Pitch', item.pitchLabel || item.pitch || '—'],
+        ['Panel size', size],
+        ['Dealer price', money(item.dealerNet)]
+      ];
+      read.innerHTML = rows.map(function (pair) {
+        return '<div><dt>' + esc(pair[0]) + '</dt><dd>' + esc(pair[1]) + '</dd></div>';
+      }).join('');
+    }
+    const docs = item.docs || [];
+    const specList = $('book-detail-specs');
+    if (specList) {
+      specList.innerHTML = docs.map(function (doc) {
+        return '<li class="inv-spec-row"><a href="' + esc(doc.url) + '" target="_blank" rel="noopener">' + esc(doc.name || 'Spec sheet') + '</a></li>';
+      }).join('');
+    }
+    const specEmpty = $('book-detail-specs-empty');
+    if (specEmpty) specEmpty.classList.toggle('hidden', docs.length > 0);
+    const urls = [];
+    if (item.image) urls.push(item.image);
+    (item.gallery || []).forEach(function (url) {
+      if (url && urls.indexOf(url) === -1) urls.push(url);
+    });
+    const images = $('book-detail-images');
+    if (images) {
+      images.innerHTML = urls.map(function (url) {
+        return '<img src="' + esc(url) + '" alt="">';
+      }).join('');
+    }
+    const imageEmpty = $('book-detail-images-empty');
+    if (imageEmpty) imageEmpty.classList.toggle('hidden', urls.length > 0);
+    setBookDetailTab(bookDetailTab);
   }
   function renderBook() {
     const categories = [];
@@ -2489,6 +2549,11 @@
     if (filter && filter.closest('#inventory-section')) {
       setBookFilter(filter.getAttribute('data-filter') || filter.getAttribute('data-inv-filter'));
       renderBook();
+      return;
+    }
+    const tab = e.target.closest('#book-detail-tabs [data-book-tab]');
+    if (tab) {
+      setBookDetailTab(tab.getAttribute('data-book-tab'));
       return;
     }
     const row = e.target.closest('#inventory-table tr[data-sku]');
