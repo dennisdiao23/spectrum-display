@@ -473,7 +473,7 @@
       return;
     }
     title.textContent = 'Dealer book';
-    sub.textContent = 'Priced SKUs and on-hand. Factory cost is not shown.';
+    sub.textContent = 'Your prices and how many are on hand.';
     open.href = '/portal/book';
     open.textContent = 'Open Dealer book →';
     const low = book.filter(function (item) { return item.status === 'low'; }).length;
@@ -1315,14 +1315,14 @@
     const note = document.querySelector('#so-detail .so-doc-note');
     if (note) {
       note.textContent = order
-        ? 'Save sends a draft sales order to Spectrum. Price is your dealer net. There is no online checkout.'
-        : 'Save sends a draft sales quote to Spectrum. Price is your dealer net. Factory cost is not shown.';
+        ? 'Save sends this order to Spectrum. The price is your dealer price.'
+        : 'Save sends this quote to Spectrum. The price is your dealer price.';
     }
     const lead = document.querySelector('#so-overview-panel .inv-overview-lead');
     if (lead) {
       lead.textContent = order
-        ? 'Select a purchase order to view it here. New sales order opens a draft for Spectrum. Factory cost is not on this page.'
-        : 'Select a request quote to view it here. New sales quote opens a draft for Spectrum. Factory cost is not on this page.';
+        ? 'Select a purchase order to see the lines and where it stands. New sales order starts an order with Spectrum.'
+        : 'Select a request quote to read it. New sales quote starts a request for Spectrum to price.';
     }
     const openLabel = $('so-side-open-label');
     if (openLabel) openLabel.textContent = order ? 'Open purchase orders' : 'Open request quotes';
@@ -1432,7 +1432,7 @@
     const host = docSection(kind);
     host.innerHTML =
       '<div class="flex items-center justify-between gap-3">' +
-        '<p class="text-sm text-slate-500">Send creates a draft ' + (kind === 'order' ? 'Sales Order' : 'Sales Quote') + ' in Company. There is no online checkout. Factory cost is not shown.</p>' +
+        '<p class="text-sm text-slate-500">Send this ' + noun + ' to Spectrum. The price is your dealer price.</p>' +
         '<a class="px-4 py-2 rounded-full bg-sky-500 text-white text-sm font-semibold" href="/portal/' + (kind === 'order' ? 'orders' : 'quotes') + '/new">New ' + noun + '</a>' +
       '</div>' +
       '<div class="cc-table-card rounded-2xl border"><div class="cc-table-wrap overflow-auto" style="max-height:40vh"><table class="w-full text-sm"><thead><tr>' +
