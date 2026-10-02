@@ -1,6 +1,30 @@
 {
-  "build": "2026-10-02-spec-pdfs",
+  "build": "2026-10-02-spec-pdf-open",
   "notes": [
+    {
+      "id": "2026-10-02-spec-pdf-open-company",
+      "date": "2026-10-02",
+      "apps": ["company"],
+      "title": "Spec PDFs open",
+      "changed": [
+        "Product Spec downloads the sheet instead of stopping at NovaStar’s Access Denied page."
+      ],
+      "added": [
+        "Spectrum’s own product PDF is listed on Product Spec for BK, MK, and XP."
+      ]
+    },
+    {
+      "id": "2026-10-02-spec-pdf-open-portal",
+      "date": "2026-10-02",
+      "apps": ["portal"],
+      "title": "Spec PDFs open",
+      "changed": [
+        "Product Spec in Dealer book downloads the sheet instead of stopping at NovaStar’s Access Denied page."
+      ],
+      "added": [
+        "Spectrum’s own product PDF is listed on Product Spec for BK, MK, and XP."
+      ]
+    },
     {
       "id": "2026-10-02-spec-pdfs-company",
       "date": "2026-10-02",

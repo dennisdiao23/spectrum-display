@@ -19,6 +19,7 @@ const { publicAdmin, hasPerm, canSeeInventoryCosts, redactInventoryCosts, redact
 const shopStore = require('./shop-store');
 const shopifySync = require('./shopify-sync');
 const dbUtil = require('./db');
+const specPdf = require('./spec-pdf');
 
 const ROOT = path.join(__dirname, '..');
 const COOKIE = 'spectrum_admin';
@@ -1198,6 +1199,24 @@ async function main() {
       res.send(body.buffer);
     } catch (err) {
       res.status(404).type('text/plain').send('Image not found.');
+    }
+  });
+
+  app.get('/api/spec-pdf', async function (req, res) {
+    const target = specPdf.allowedSpecPdfUrl(req.query.url);
+    if (!target) return res.status(400).type('text/plain').send('Spec sheet not available.');
+    try {
+      const upstream = await specPdf.fetchSpecPdf(target);
+      const type = String(upstream.headers.get('content-type') || '');
+      res.set('Content-Type', type.indexOf('pdf') !== -1 ? type : 'application/pdf');
+      res.set('Content-Disposition', 'inline; filename="' + specPdf.specPdfName(target) + '"');
+      res.set('Cache-Control', 'public, max-age=86400');
+      const len = upstream.headers.get('content-length');
+      if (len) res.set('Content-Length', len);
+      const { Readable } = require('stream');
+      Readable.fromWeb(upstream.body).pipe(res);
+    } catch (err) {
+      if (!res.headersSent) res.status(err.status || 502).type('text/plain').send('Spec sheet could not be downloaded.');
     }
   });
 
