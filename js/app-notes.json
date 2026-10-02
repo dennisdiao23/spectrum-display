@@ -513,7 +513,7 @@
       },
       {
         "title": "Dealer → Deal registration",
-        "text": "A named job a dealer registered. Accept it until a date, or decline it with a reason. Protection is that job only."
+        "text": "A named job a dealer registered. Accept it until a date, or decline it with a reason. Protection is that job only. Click a column header to sort, move, hide, or resize the list."
       },
       {
         "title": "Dealer → RMA",

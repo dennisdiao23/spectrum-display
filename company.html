@@ -2849,14 +2849,18 @@
             <div class="dash-split-left">
               <div class="cc-table-card rounded-2xl border border-slate-800">
                 <div class="cc-table-wrap overflow-x-auto">
-                  <table class="w-full text-sm">
+                  <table class="w-full text-sm dash-cols" data-cols="deal-registrations">
                     <thead class="text-left text-slate-400 border-b border-slate-800">
                       <tr>
-                        <th class="py-3 px-4 font-medium">Number</th>
-                        <th class="py-3 px-4 font-medium">Dealer</th>
-                        <th class="py-3 px-4 font-medium">End customer</th>
-                        <th class="py-3 px-4 font-medium">Job</th>
-                        <th class="py-3 px-4 font-medium">Status</th>
+                        <th class="py-3 px-4 font-medium" data-col="number" data-lock="start">Number <span class="dash-col-caret">▾</span><span class="dash-col-grip" aria-hidden="true"></span></th>
+                        <th class="py-3 px-4 font-medium" data-col="dealer">Dealer <span class="dash-col-caret">▾</span><span class="dash-col-grip" aria-hidden="true"></span></th>
+                        <th class="py-3 px-4 font-medium" data-col="customer">End customer <span class="dash-col-caret">▾</span><span class="dash-col-grip" aria-hidden="true"></span></th>
+                        <th class="py-3 px-4 font-medium" data-col="job">Job <span class="dash-col-caret">▾</span><span class="dash-col-grip" aria-hidden="true"></span></th>
+                        <th class="py-3 px-4 font-medium" data-col="site">Site <span class="dash-col-caret">▾</span><span class="dash-col-grip" aria-hidden="true"></span></th>
+                        <th class="py-3 px-4 font-medium" data-col="status">Status <span class="dash-col-caret">▾</span><span class="dash-col-grip" aria-hidden="true"></span></th>
+                        <th class="py-3 px-4 font-medium" data-col="expected">Expected <span class="dash-col-caret">▾</span><span class="dash-col-grip" aria-hidden="true"></span></th>
+                        <th class="py-3 px-4 font-medium" data-col="selling">Selling <span class="dash-col-caret">▾</span><span class="dash-col-grip" aria-hidden="true"></span></th>
+                        <th class="py-3 px-4 font-medium" data-col="contact">Contact <span class="dash-col-caret">▾</span><span class="dash-col-grip" aria-hidden="true"></span></th>
                       </tr>
                     </thead>
                     <tbody id="dreg-table" class="text-slate-200"></tbody>
@@ -10058,7 +10062,8 @@
       roles: ['name', 'website', 'inventory', 'users'],
       'website-products': ['photo', 'product', 'brand', 'type', 'pitch', 'price', 'website', 'store'],
       'website-store': ['photo', 'product', 'brand', 'collection', 'featured', 'buy', 'onHand', 'sort', 'store'],
-      'website-accounts': ['name', 'email', 'type', 'markup', 'company', 'created']
+      'website-accounts': ['name', 'email', 'type', 'markup', 'company', 'created'],
+      'deal-registrations': ['number', 'dealer', 'customer', 'job', 'site', 'status']
     };
 
     let dashColMine = {};
@@ -20778,19 +20783,41 @@
     }
     function renderDealRegistrations() {
       const tbody = document.getElementById('dreg-table');
-      if (!tbody) return;
+      const table = tbody && tbody.closest('table');
+      if (!tbody || !table) return;
+      applyColOrder(table);
       if (!dregRows.length) {
-        tbody.innerHTML = '<tr><td class="py-6 px-4 text-slate-500" colspan="5">No deal registrations yet.</td></tr>';
+        tbody.innerHTML = '<tr><td class="py-6 px-4 text-slate-500" colspan="' + dashColSpan(table) + '">No deal registrations yet.</td></tr>';
         return;
       }
-      tbody.innerHTML = dregRows.map(function (row) {
+      const sorted = sortColRows(dregRows, table, function (row, col) {
+        if (col === 'number') return row.number || '';
+        if (col === 'dealer') return row.dealerName || '';
+        if (col === 'customer') return row.endCustomer || '';
+        if (col === 'job') return row.jobName || '';
+        if (col === 'site') return [row.siteCity, row.siteState].filter(Boolean).join(', ');
+        if (col === 'status') return dregStatusLabel(row);
+        if (col === 'expected') return row.expectedDate || '';
+        if (col === 'selling') return row.selling || '';
+        if (col === 'contact') return row.contactName || '';
+        return '';
+      });
+      tbody.innerHTML = sorted.map(function (row) {
         const on = String(row.id) === String(dregOpenId);
+        const site = [row.siteCity, row.siteState].filter(Boolean).join(', ');
+        const contact = [row.contactName, row.contactEmail].filter(Boolean).join(' · ');
         return '<tr class="border-b border-slate-800 hover:bg-slate-900/80 cursor-pointer' + (on ? ' is-active' : '') + '" data-dreg-id="' + esc(row.id) + '">' +
-          '<td class="py-3 px-4 font-medium">' + esc(row.number || '') + '</td>' +
-          '<td class="py-3 px-4">' + esc(row.dealerName || '—') + '</td>' +
-          '<td class="py-3 px-4">' + esc(row.endCustomer || '—') + '</td>' +
-          '<td class="py-3 px-4">' + esc(row.jobName || '—') + '</td>' +
-          '<td class="py-3 px-4">' + esc(dregStatusLabel(row)) + '</td></tr>';
+          dashOrderedCells(table, {
+            number: '<td class="py-3 px-4 font-medium">' + esc(row.number || '') + '</td>',
+            dealer: '<td class="py-3 px-4">' + esc(row.dealerName || '—') + '</td>',
+            customer: '<td class="py-3 px-4">' + esc(row.endCustomer || '—') + '</td>',
+            job: '<td class="py-3 px-4">' + esc(row.jobName || '—') + '</td>',
+            site: '<td class="py-3 px-4">' + esc(site || '—') + '</td>',
+            status: '<td class="py-3 px-4">' + esc(dregStatusLabel(row)) + '</td>',
+            expected: '<td class="py-3 px-4">' + esc(row.expectedDate || '—') + '</td>',
+            selling: '<td class="py-3 px-4">' + esc(row.selling || '—') + '</td>',
+            contact: '<td class="py-3 px-4">' + esc(contact || '—') + '</td>'
+          }) + '</tr>';
       }).join('');
     }
     function showDealRegistration(row) {
