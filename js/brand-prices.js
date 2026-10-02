@@ -42,7 +42,9 @@
 
   function lockedBasis(priceKey, basis) {
     if (priceKey === 'sell') return { basis: 'cost', adjustDir: 'increase' };
-    if (String(basis || '').toLowerCase() === 'sell') return { basis: 'sell', adjustDir: 'decrease' };
+    var v = String(basis || '').toLowerCase();
+    if (v === 'sell') return { basis: 'sell', adjustDir: 'decrease' };
+    if (v === 'local') return { basis: 'local', adjustDir: 'increase' };
     return { basis: 'cost', adjustDir: 'increase' };
   }
 
@@ -76,6 +78,7 @@
     var sellOld = money(cur.sell != null ? cur.sell : cur.price);
     var dealerOld = money(cur.dealer != null ? cur.dealer : cur.dealerNet);
     var integratorOld = money(cur.integrator != null ? cur.integrator : cur.integratorPrice);
+    var localOld = money(cur.local != null ? cur.local : cur.localWarehouseCost);
     var overrides = pctByKey || {};
     function hitFor(key) {
       if (overrides[key] != null && Number(overrides[key]) > 0) {
@@ -92,8 +95,9 @@
     function side(key, old) {
       var hit = hitFor(key);
       if (!hit) return old;
-      if (!(Number(cost) > 0) && hit.basis !== 'sell') return old;
       if (hit.basis === 'sell') return applyPct(sell, 'decrease', hit.pct);
+      if (hit.basis === 'local') return Number(localOld) > 0 ? applyPct(localOld, 'increase', hit.pct) : old;
+      if (!(Number(cost) > 0)) return old;
       return applyPct(cost, 'increase', hit.pct);
     }
     return { sell: sell, dealer: side('dealer', dealerOld), integrator: side('integrator', integratorOld) };
@@ -102,6 +106,7 @@
   function describeRule(rule) {
     if (!rule || !(Number(rule.adjustPct) > 0)) return 'Leave unchanged';
     var pct = Number(rule.adjustPct) || 0;
+    if (rule.basis === 'local') return 'Local cost, increase ' + pct + '%';
     if (rule.priceKey === 'sell' || rule.basis === 'cost') return 'Cost, increase ' + pct + '%';
     return 'Sell price, decrease ' + pct + '%';
   }
@@ -127,7 +132,8 @@
       return pricesFromCost(brandId, item.category || '', item.cost, pctByKey, {
         sell: item.price,
         dealer: item.dealerNet,
-        integrator: item.integratorPrice
+        integrator: item.integratorPrice,
+        local: item.localWarehouseCost
       })[key];
     }
     if (key === 'dealer') return money(item.dealerNet);

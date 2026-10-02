@@ -40,8 +40,8 @@
   <script src="/js/company-traffic.js?v=loc1"></script>
   <script src="/js/company-website-control.js?v=webctrl7"></script>
   <script src="/js/print-form.js?v=forms21"></script>
-  <script src="/js/brand-prices.js?v=brands3"></script>
-  <script src="/js/settings-brands.js?v=brands5"></script>
+  <script src="/js/brand-prices.js?v=brands6"></script>
+  <script src="/js/settings-brands.js?v=brands6"></script>
   <script src="/js/app-help.js?v=help6"></script>
   <script src="/js/app-notes.js?v=guidevid1"></script>
   <script>
@@ -3741,7 +3741,7 @@
                 <label class="so-field"><span>Name</span><input id="sb-name" type="text" maxlength="120"></label>
               </div>
               <div id="sb-pane-price" class="hidden mt-4">
-                <p class="text-sm text-slate-500 mb-3">A percent of 0 leaves that price unchanged. Click Edit to change one percent. Sell price is cost increased by a percent. Retail and Residential use Sell price. Dealer price is for customer type Dealer. Integrator price is for customer type AV Integrator. Those two can be cost increased by a percent, or Sell price decreased by a percent. A product type left at 0 uses the All products percent.</p>
+                <p class="text-sm text-slate-500 mb-3">A percent of 0 leaves that price unchanged. Click Edit to change one percent. Sell price is cost increased by a percent. Retail and Residential use Sell price. Dealer price is for customer type Dealer. Integrator price is for customer type AV Integrator. Those two can be cost increased by a percent, Local Cost increased by a percent, or Sell price decreased by a percent. Local Cost uses Local warehouse cost. A product type left at 0 uses the All products percent.</p>
                 <div class="cc-table-card rounded-2xl border border-slate-800">
                   <div class="cc-table-wrap overflow-auto" style="max-height:28rem">
                     <table class="w-full text-sm">
@@ -24863,7 +24863,8 @@
         const preview = SpectrumBrandPrices.pricesFromCost(brandId, invCategoryFromForm(), nextCost, null, {
           sell: Number(document.getElementById('inv-price').value),
           dealer: Number(document.getElementById('inv-dealer-net').value),
-          integrator: Number((document.getElementById('inv-integrator') || {}).value)
+          integrator: Number((document.getElementById('inv-integrator') || {}).value),
+          local: Number((document.getElementById('inv-local-cost') || {}).value)
         });
         const sellNow = Number(document.getElementById('inv-price').value) || 0;
         const dealerNow = Number(document.getElementById('inv-dealer-net').value) || 0;
