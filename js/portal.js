@@ -883,6 +883,8 @@
         { id: 'customer', label: 'End customer' },
         { id: 'site', label: 'Site' },
         { id: 'pitch', label: 'Pitch' },
+        { id: 'panel', label: 'Panel' },
+        { id: 'controller', label: 'Controller' },
         { id: 'ship', label: 'Ship date' },
         { id: 'wstart', label: 'Warranty start' },
         { id: 'warranty', label: 'Warranty end' },
@@ -3881,6 +3883,8 @@
     setWallField('wall-end', creating ? '' : (row.endCustomer || ''));
     setWallField('wall-installer', creating ? '' : (row.installer || ''));
     setWallField('wall-pitch', creating ? '' : (row.pitch || ''));
+    setWallField('wall-panel', creating ? '' : (row.panel || ''));
+    setWallField('wall-controller', creating ? '' : (row.controller || ''));
     setWallField('wall-ship', creating ? '' : (row.shipDate || ''));
     setWallField('wall-wstart', creating ? '' : (row.warrantyStart || row.shipDate || ''));
     setWallField('wall-wend', creating ? '' : (row.warrantyEnd || ''));
@@ -3888,6 +3892,14 @@
     setWallField('wall-city', creating ? '' : (row.siteCity || ''));
     setWallField('wall-state', creating ? '' : (row.siteState || ''));
     setWallField('wall-zip', creating ? '' : (row.siteZip || ''));
+    wallImageFile = null;
+    const preview = $('wall-image-preview');
+    const drop = $('wall-image-drop');
+    if (preview) {
+      preview.hidden = !(row && row.imageUrl);
+      preview.src = row && row.imageUrl ? row.imageUrl : '';
+    }
+    if (drop) drop.textContent = row && row.imageUrl ? 'Drop a new image' : 'Drop image';
     const msg = $('wall-msg');
     if (msg) { msg.textContent = ''; msg.classList.add('hidden'); }
     $('wall-serials').innerHTML = !creating && (row.serials || []).length
@@ -3901,6 +3913,7 @@
       }).join('')
       : '';
     showWallForm(true);
+    showWallImage(creating ? '' : (row.imageUrl || ''), creating || !row.imageUrl ? 'Drop image' : 'Drop a new image');
   }
   function showWall(row) {
     if (!row) {
@@ -3920,7 +3933,7 @@
     const q = String(($('wall-search') && $('wall-search').value) || '').trim().toLowerCase();
     const list = walls.filter(function (row) {
       if (!q) return true;
-      const blob = [row.wallName, row.number, row.endCustomer, row.pitch, wallSite(row), row.siteStreet, row.shipDate, row.warrantyStart, row.warrantyEnd].join(' ').toLowerCase();
+      const blob = [row.wallName, row.number, row.endCustomer, row.pitch, row.panel, row.controller, wallSite(row), row.siteStreet, row.shipDate, row.warrantyStart, row.warrantyEnd].join(' ').toLowerCase();
       return blob.indexOf(q) !== -1;
     });
     const soon = walls.filter(wallWarrantySoon).length;
@@ -3933,6 +3946,8 @@
       if (col === 'customer') return row.endCustomer || '';
       if (col === 'site') return wallSite(row);
       if (col === 'pitch') return row.pitch || '';
+      if (col === 'panel') return row.panel || '';
+      if (col === 'controller') return row.controller || '';
       if (col === 'ship') return row.shipDate || '';
       if (col === 'wstart') return row.warrantyStart || row.shipDate || '';
       if (col === 'warranty') return row.warrantyEnd || '';
@@ -3948,6 +3963,8 @@
           customer: '<td class="py-3 px-4">' + esc(row.endCustomer || '—') + '</td>',
           site: '<td class="py-3 px-4">' + esc(wallSite(row)) + '</td>',
           pitch: '<td class="py-3 px-4">' + esc(row.pitch || '—') + '</td>',
+          panel: '<td class="py-3 px-4">' + esc(row.panel || '—') + '</td>',
+          controller: '<td class="py-3 px-4">' + esc(row.controller || '—') + '</td>',
           ship: '<td class="py-3 px-4">' + esc(row.shipDate || '—') + '</td>',
           wstart: '<td class="py-3 px-4">' + esc(row.warrantyStart || row.shipDate || '—') + '</td>',
           warranty: '<td class="py-3 px-4">' + esc(row.warrantyEnd || '—') + '</td>',
@@ -3983,14 +4000,53 @@
       endCustomer: $('wall-end').value,
       installer: $('wall-installer').value,
       pitch: $('wall-pitch').value,
+      panel: $('wall-panel').value,
+      controller: $('wall-controller').value,
       shipDate: $('wall-ship').value,
       warrantyStart: $('wall-wstart').value,
       warrantyEnd: $('wall-wend').value,
       siteStreet: $('wall-street').value,
       siteCity: $('wall-city').value,
       siteState: $('wall-state').value,
-      siteZip: $('wall-zip').value
+      siteZip: $('wall-zip').value,
+      imageUrl: wallImageUrl
     };
+  }
+  let wallImageFile = null;
+  let wallImageUrl = '';
+  function showWallImage(url, label) {
+    wallImageUrl = url || '';
+    const preview = $('wall-image-preview');
+    const drop = $('wall-image-drop');
+    if (preview) {
+      preview.hidden = !wallImageUrl;
+      preview.src = wallImageUrl;
+    }
+    if (drop) drop.textContent = label || (wallImageUrl ? 'Drop a new image' : 'Drop image');
+  }
+  function takeWallImage(file) {
+    const msg = $('wall-msg');
+    if (!file || (!/^image\/(jpeg|png|webp)$/.test(file.type || '') && !/\.(png|jpe?g|webp)$/i.test(file.name || ''))) {
+      if (msg) {
+        msg.classList.remove('hidden');
+        msg.className = 'text-sm mt-2 text-red-400';
+        msg.textContent = 'Drop a JPG, PNG, or WebP image.';
+      }
+      return;
+    }
+    wallImageFile = file;
+    showWallImage(URL.createObjectURL(file), file.name);
+  }
+  async function uploadWallImage() {
+    if (!wallImageFile) return wallImageUrl;
+    const body = new FormData();
+    body.append('file', wallImageFile);
+    const saved = await api('/api/dealer/files', { method: 'POST', body: body });
+    const url = saved && saved.file && (saved.file.url || saved.file.href) || '';
+    if (!url) throw new Error('The image did not upload.');
+    wallImageFile = null;
+    wallImageUrl = url;
+    return url;
   }
   async function saveWall(event) {
     event.preventDefault();
@@ -4000,10 +4056,11 @@
     msg.className = 'text-sm mt-2 text-slate-500';
     msg.textContent = 'Saving…';
     try {
+      const imageUrl = await uploadWallImage();
       const saved = await api(id ? ('/api/dealer/walls/' + id) : '/api/dealer/walls', {
         method: id ? 'PUT' : 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(wallPayload())
+        body: JSON.stringify(Object.assign(wallPayload(), { imageUrl: imageUrl }))
       });
       const wall = saved.wall;
       if (wall && wall.id) goWall(wall.id, true);
@@ -4049,6 +4106,37 @@
   });
   if ($('wall-new-btn')) $('wall-new-btn').addEventListener('click', function () { goWall('new', true); });
   if ($('wall-form')) $('wall-form').addEventListener('submit', saveWall);
+  (function bindWallImageDrop() {
+    const drop = $('wall-image-drop');
+    const input = $('wall-image-input');
+    if (!drop || !input) return;
+    drop.addEventListener('click', function () { input.click(); });
+    drop.addEventListener('keydown', function (e) {
+      if (e.key === 'Enter' || e.key === ' ') {
+        e.preventDefault();
+        input.click();
+      }
+    });
+    ['dragenter', 'dragover'].forEach(function (name) {
+      drop.addEventListener(name, function (e) {
+        e.preventDefault();
+        drop.classList.add('is-over');
+      });
+    });
+    ['dragleave', 'drop'].forEach(function (name) {
+      drop.addEventListener(name, function (e) {
+        e.preventDefault();
+        drop.classList.remove('is-over');
+      });
+    });
+    drop.addEventListener('drop', function (e) {
+      const file = e.dataTransfer && e.dataTransfer.files && e.dataTransfer.files[0];
+      if (file) takeWallImage(file);
+    });
+    input.addEventListener('change', function () {
+      if (input.files && input.files[0]) takeWallImage(input.files[0]);
+    });
+  })();
 
   document.addEventListener('click', function (e) {
     if (!e.target.closest('#so-sku-menu') && !e.target.closest('[data-line="sku"]')) closeSkuMenu();

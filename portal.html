@@ -297,6 +297,15 @@
       background: #e0f2fe;
       color: #0369a1;
     }
+    .wall-image-preview {
+      display: block;
+      max-width: 100%;
+      max-height: 10rem;
+      margin-top: 0.6rem;
+      border-radius: 0.6rem;
+      object-fit: contain;
+      background: #f8fafc;
+    }
     .portal-co-table-wrap {
       margin-top: 0.75rem;
       max-height: 16rem;
@@ -1085,6 +1094,8 @@
                         <th class="py-3 px-4 font-medium" data-col="customer">End customer <span class="dash-col-caret">▾</span><span class="dash-col-grip" aria-hidden="true"></span></th>
                         <th class="py-3 px-4 font-medium" data-col="site">Site <span class="dash-col-caret">▾</span><span class="dash-col-grip" aria-hidden="true"></span></th>
                         <th class="py-3 px-4 font-medium" data-col="pitch">Pitch <span class="dash-col-caret">▾</span><span class="dash-col-grip" aria-hidden="true"></span></th>
+                        <th class="py-3 px-4 font-medium" data-col="panel">Panel <span class="dash-col-caret">▾</span><span class="dash-col-grip" aria-hidden="true"></span></th>
+                        <th class="py-3 px-4 font-medium" data-col="controller">Controller <span class="dash-col-caret">▾</span><span class="dash-col-grip" aria-hidden="true"></span></th>
                         <th class="py-3 px-4 font-medium" data-col="ship">Ship date <span class="dash-col-caret">▾</span><span class="dash-col-grip" aria-hidden="true"></span></th>
                         <th class="py-3 px-4 font-medium" data-col="wstart">Warranty start <span class="dash-col-caret">▾</span><span class="dash-col-grip" aria-hidden="true"></span></th>
                         <th class="py-3 px-4 font-medium" data-col="warranty">Warranty end <span class="dash-col-caret">▾</span><span class="dash-col-grip" aria-hidden="true"></span></th>
@@ -1112,6 +1123,8 @@
                   <label>End customer<input id="wall-end" class="w-full mt-1 bg-slate-800 border border-slate-700 rounded-lg px-3 py-2"></label>
                   <label>Installer<input id="wall-installer" class="w-full mt-1 bg-slate-800 border border-slate-700 rounded-lg px-3 py-2"></label>
                   <label>Pitch<input id="wall-pitch" class="w-full mt-1 bg-slate-800 border border-slate-700 rounded-lg px-3 py-2"></label>
+                  <label>Panel<input id="wall-panel" class="w-full mt-1 bg-slate-800 border border-slate-700 rounded-lg px-3 py-2" placeholder="Series and pitch"></label>
+                  <label>Controller<input id="wall-controller" class="w-full mt-1 bg-slate-800 border border-slate-700 rounded-lg px-3 py-2" placeholder="NovaStar box or spare"></label>
                   <label>Ship date<input id="wall-ship" type="date" class="w-full mt-1 bg-slate-800 border border-slate-700 rounded-lg px-3 py-2"></label>
                   <label>Warranty start<input id="wall-wstart" type="date" required class="w-full mt-1 bg-slate-800 border border-slate-700 rounded-lg px-3 py-2"></label>
                   <label>Warranty end<input id="wall-wend" type="date" required class="w-full mt-1 bg-slate-800 border border-slate-700 rounded-lg px-3 py-2"></label>
@@ -1119,6 +1132,12 @@
                   <label>City<input id="wall-city" class="w-full mt-1 bg-slate-800 border border-slate-700 rounded-lg px-3 py-2"></label>
                   <label>State<input id="wall-state" class="w-full mt-1 bg-slate-800 border border-slate-700 rounded-lg px-3 py-2"></label>
                   <label>ZIP<input id="wall-zip" class="w-full mt-1 bg-slate-800 border border-slate-700 rounded-lg px-3 py-2"></label>
+                  <div class="sm:col-span-2">
+                    <p class="font-medium">Image</p>
+                    <div id="wall-image-drop" class="portal-co-drop" tabindex="0">Drop image</div>
+                    <input id="wall-image-input" type="file" accept="image/jpeg,image/png,image/webp,.jpg,.jpeg,.png,.webp" hidden>
+                    <img id="wall-image-preview" class="wall-image-preview" alt="" hidden>
+                  </div>
                 </div>
                 <button id="wall-save" type="submit" class="mt-4 px-4 py-2 rounded-full bg-sky-500 hover:bg-sky-400 text-white text-sm font-semibold">Save</button>
                 <p id="wall-msg" class="hidden text-sm mt-2"></p>
@@ -1760,6 +1779,6 @@
       <div id="file-preview-body" class="portal-file-preview-body"></div>
     </div>
   </div>
-  <script src="/js/portal.js?v=speccards1"></script>
+  <script src="/js/portal.js?v=wallphoto1"></script>
 </body>
 </html>

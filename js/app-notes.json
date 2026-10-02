@@ -1,6 +1,18 @@
 {
-  "build": "2026-10-02-new-installed-wall",
+  "build": "2026-10-02-wall-image-gear",
   "notes": [
+    {
+      "id": "2026-10-02-wall-image-gear",
+      "date": "2026-10-02",
+      "apps": ["portal"],
+      "title": "A wall can have a photo, panel, and controller",
+      "added": [
+        "Drop an image on New Installed Wall.",
+        "Panel and Controller on the wall."
+      ],
+      "how": "Open Installed walls and click New Installed Wall. Drop a JPG, PNG, or WebP on Drop image. Type the panel and the controller. Save.",
+      "kind": "feature"
+    },
     {
       "id": "2026-10-02-new-installed-wall",
       "date": "2026-10-02",
@@ -725,7 +737,7 @@
       },
       {
         "title": "Installed walls",
-        "text": "Walls you installed. Click New Installed Wall to add one, including the warranty start and end. The card shows how many. Open a row to change it.",
+        "text": "Walls you installed. Click New Installed Wall to add one, including the photo, the panel, the controller, and the warranty start and end.",
         "video": "/assets/portal-guide/walls.mp4"
       },
       {

@@ -137,7 +137,10 @@ function readPortalWall(body) {
     siteCity: trim(body && body.siteCity, 80),
     siteState: trim(body && body.siteState, 40),
     siteZip: trim(body && body.siteZip, 20),
-    siteCountry: trim(body && body.siteCountry, 80)
+    siteCountry: trim(body && body.siteCountry, 80),
+    panel: trim(body && body.panel, 160),
+    controller: trim(body && body.controller, 160),
+    imageUrl: trim(body && body.imageUrl, 400)
   };
 }
 
@@ -166,6 +169,9 @@ function formatWall(row, serials, spares) {
     siteState: row.site_state || '',
     siteZip: row.site_zip || '',
     siteCountry: row.site_country || '',
+    panel: row.panel || '',
+    controller: row.controller || '',
+    imageUrl: row.image_url || '',
     serials: (serials || []).map(function (item) {
       return { kind: item.kind || 'cabinet', kindLabel: SERIAL_KINDS[item.kind] || 'Cabinet', serial: item.serial || '' };
     }),
@@ -230,6 +236,9 @@ function ensureInstalledWalls(db) {
     CREATE UNIQUE INDEX IF NOT EXISTS installed_walls_order_idx ON installed_walls (sales_doc_id);
   `);
   try { db.exec("ALTER TABLE installed_walls ADD COLUMN warranty_start TEXT NOT NULL DEFAULT ''"); } catch (e) { /* already present */ }
+  try { db.exec("ALTER TABLE installed_walls ADD COLUMN panel TEXT NOT NULL DEFAULT ''"); } catch (e) { /* already present */ }
+  try { db.exec("ALTER TABLE installed_walls ADD COLUMN controller TEXT NOT NULL DEFAULT ''"); } catch (e) { /* already present */ }
+  try { db.exec("ALTER TABLE installed_walls ADD COLUMN image_url TEXT NOT NULL DEFAULT ''"); } catch (e) { /* already present */ }
   db.exec(`
     CREATE TABLE IF NOT EXISTS installed_wall_serials (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -296,8 +305,8 @@ function sqliteApi(db, store) {
         INSERT INTO installed_walls (
           number, sales_doc_id, order_number, customer_id, wall_name, end_customer, installer, pitch,
           selected_cob, ship_date, warranty_start, warranty_end, support_end,
-          site_street, site_city, site_state, site_zip, site_country, created_at, updated_at
-        ) VALUES (?, NULL, '', ?, ?, ?, ?, ?, 0, ?, ?, ?, '', ?, ?, ?, ?, ?, ?, ?)
+          site_street, site_city, site_state, site_zip, site_country, panel, controller, image_url, created_at, updated_at
+        ) VALUES (?, NULL, '', ?, ?, ?, ?, ?, 0, ?, ?, ?, '', ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
       `).run(
         nextNumberFrom(numbers),
         customerId,
@@ -313,6 +322,9 @@ function sqliteApi(db, store) {
         input.siteState,
         input.siteZip,
         input.siteCountry,
+        input.panel,
+        input.controller,
+        input.imageUrl,
         stamp,
         stamp
       );
@@ -328,12 +340,14 @@ function sqliteApi(db, store) {
           wall_name = ?, end_customer = ?, installer = ?, pitch = ?,
           ship_date = ?, warranty_start = ?, warranty_end = ?,
           site_street = ?, site_city = ?, site_state = ?, site_zip = ?, site_country = ?,
+          panel = ?, controller = ?, image_url = ?,
           updated_at = ?
         WHERE id = ?
       `).run(
         input.wallName, input.endCustomer, input.installer, input.pitch,
         input.shipDate, input.warrantyStart, input.warrantyEnd,
         input.siteStreet, input.siteCity, input.siteState, input.siteZip, input.siteCountry,
+        input.panel, input.controller, input.imageUrl,
         stamp, id
       );
       return present(db.prepare('SELECT * FROM installed_walls WHERE id = ?').get(id));
@@ -490,6 +504,9 @@ function supabaseApi(supabase, store) {
         site_state: input.siteState,
         site_zip: input.siteZip,
         site_country: input.siteCountry,
+        panel: input.panel,
+        controller: input.controller,
+        image_url: input.imageUrl,
         created_at: stamp,
         updated_at: stamp
       }).select('*').single();
@@ -514,6 +531,9 @@ function supabaseApi(supabase, store) {
         site_state: input.siteState,
         site_zip: input.siteZip,
         site_country: input.siteCountry,
+        panel: input.panel,
+        controller: input.controller,
+        image_url: input.imageUrl,
         updated_at: nowIso()
       }).eq('id', id);
       throwIf(updated.error, 'Could not save this wall.');
