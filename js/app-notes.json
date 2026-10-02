@@ -1,6 +1,16 @@
 {
-  "build": "2026-10-02-new-request-quote",
+  "build": "2026-10-02-inv-filter-pills",
   "notes": [
+    {
+      "id": "2026-10-02-inv-filter-pills",
+      "date": "2026-10-02",
+      "apps": ["company"],
+      "title": "Inventory filters are rounded",
+      "changed": [
+        "Brand, Type, Unit, Stock place, Photo, and Spec sheet use the same rounded shape as the search bar.",
+        "Clear is a rounded button."
+      ]
+    },
     {
       "id": "2026-10-02-new-request-quote",
       "date": "2026-10-02",
