@@ -67,11 +67,14 @@
     sharp: 'view',
     res: '4k',
     fill: 'fill',
+    shrink: 100,
     front: false,
     sun: false,
     budget: 0,
     openingW: 4.877,
     openingH: 2.743,
+    screenW: 4.877,
+    screenH: 2.743,
     viewM: 3.658,
     selectedKey: '',
     results: [],
@@ -102,6 +105,46 @@
   };
 
   var rankTimer = 0;
+  var drag = null;
+
+  function shrinkK() {
+    return Math.max(0.2, Math.min(1, (Number(state.shrink) || 100) / 100));
+  }
+
+  function clampedScreen() {
+    return {
+      w: Math.min(state.openingW, Math.max(0.3, state.screenW || state.openingW)),
+      h: Math.min(state.openingH, Math.max(0.3, state.screenH || state.openingH))
+    };
+  }
+
+  function targetScreen() {
+    var k = shrinkK();
+    if (state.fill === 'custom') {
+      var s = clampedScreen();
+      return { w: s.w * k, h: s.h * k };
+    }
+    return { w: state.openingW * k, h: state.openingH * k };
+  }
+
+  function paintFillUi() {
+    paintChipGroup(document.getElementById('finder-fill'), 'data-fill', state.fill);
+    var box = document.getElementById('finder-custom-box');
+    if (box) box.classList.remove('hidden');
+    var val = document.getElementById('finder-shrink-val');
+    if (val) val.textContent = Math.round(state.shrink) + '%';
+    var slider = document.getElementById('finder-shrink');
+    if (slider && String(slider.value) !== String(state.shrink)) slider.value = String(state.shrink);
+  }
+
+  function ensureCustomFromOpening() {
+    if (state.fill === 'custom') return;
+    state.fill = 'custom';
+    state.screenW = state.openingW;
+    state.screenH = state.openingH;
+    paintFillUi();
+    syncScreenFields();
+  }
 
   function blobOf(s) {
     return [s.type, s.name, s.description, s.badge, s.lead, (s.cats || []).join(' ')].join(' ').toLowerCase();
@@ -203,20 +246,6 @@
     var rows = Math.max(1, Math.floor((openingH + 0.0001) / s.cabinetH));
     cols = Math.min(100, cols);
     rows = Math.min(100, rows);
-    if (state.fill === '16:9') {
-      var best = { cols: cols, rows: rows, err: 99 };
-      var c, r, w, h, err;
-      for (c = 1; c <= cols; c++) {
-        r = Math.max(1, Math.round(c * s.cabinetW / (16 / 9) / s.cabinetH));
-        if (r < 1 || r > rows) continue;
-        w = c * s.cabinetW;
-        h = r * s.cabinetH;
-        err = Math.abs(w / h - 16 / 9);
-        if (err < best.err) best = { cols: c, rows: r, err: err };
-      }
-      cols = best.cols;
-      rows = best.rows;
-    }
     return {
       cols: cols,
       rows: rows,
@@ -267,9 +296,10 @@
     var area = grid.w * grid.h;
     var unit = pricePerM2(s, pitchInfo.pitch);
     var cost = unit > 0 ? applyPrice(unit * area) : 0;
-    var unused = Math.max(0, state.openingW - grid.w) * state.openingH +
-      grid.w * Math.max(0, state.openingH - grid.h);
-    var fillFrac = area / Math.max(0.01, state.openingW * state.openingH);
+    var box = targetScreen();
+    var unused = Math.max(0, box.w - grid.w) * box.h +
+      grid.w * Math.max(0, box.h - grid.h);
+    var fillFrac = area / Math.max(0.01, box.w * box.h);
     var cab = hooks.cabinetPixels(s, pitchInfo.pitch);
     var pxW = grid.cols * cab.w;
     var pxH = grid.rows * cab.h;
@@ -321,9 +351,11 @@
       return matchesEnv(s) && matchesInstall(s);
     });
     var scored = [];
+    var box = targetScreen();
     list.forEach(function (s) {
-      var grid = fitGrid(s, state.openingW, state.openingH);
+      var grid = fitGrid(s, box.w, box.h);
       if (grid.cols < 1 || grid.rows < 1) return;
+      if (grid.w > box.w + 0.02 || grid.h > box.h + 0.02) return;
       if (grid.w > state.openingW + 0.02 || grid.h > state.openingH + 0.02) return;
       var pitchInfo = pickPitch(s, grid);
       if (!pitchInfo) return;
@@ -367,10 +399,11 @@
     state.cheaper = [];
     if (!cur) return;
     var ideas = [];
+    var box = targetScreen();
     catalogList().filter(function (s) {
       return matchesEnv(s) && matchesInstall(s);
     }).forEach(function (s) {
-      var grid = fitGrid(s, state.openingW, state.openingH);
+      var grid = fitGrid(s, box.w, box.h);
       (s.pitches || []).forEach(function (p) {
         p = Number(p);
         if (!(p > cur.pitch)) return;
@@ -394,7 +427,7 @@
     var shrinkH = state.openingH;
     state.openingW = Math.max(0.5, state.openingW * 0.92);
     catalogList().filter(function (s) { return s.brandId === cur.brandId && s.id === cur.seriesId; }).forEach(function (s) {
-      var grid = fitGrid(s, state.openingW, state.openingH);
+      var grid = fitGrid(s, Math.min(box.w, state.openingW), state.openingH);
       var info = pickPitch(s, grid);
       if (!info) return;
       var cand = scoreCandidate(s, grid, info);
@@ -418,7 +451,8 @@
     catalogList().filter(function (s) {
       return matchesEnv(s) && matchesInstall(s);
     }).forEach(function (s) {
-      var grid = fitGrid(s, state.openingW, state.openingH);
+      var t = targetScreen();
+      var grid = fitGrid(s, t.w, t.h);
       var info = pickPitch(s, grid);
       if (!info) return;
       var cand = scoreCandidate(s, grid, info);
@@ -451,7 +485,7 @@
     var bits = [];
     bits.push(item.reason || '');
     bits.push(item.cols + '×' + item.rows + ' panels · ' + item.pxW.toLocaleString() + ' × ' + item.pxH.toLocaleString() + ' px.');
-    if (item.fillFrac < 0.92) {
+    if (item.w < state.openingW * 0.92 || item.h < state.openingH * 0.92) {
       bits.push('Screen is ' + sizeLabel(item.w, item.h) + ' inside a ' + sizeLabel(state.openingW, state.openingH) + ' wall.');
     }
     if (item.overBudget) bits.push('Over the budget you entered.');
@@ -509,6 +543,37 @@
     setVal('finder-view-in', vFt.inch);
     var slider = document.getElementById('finder-view-slider');
     if (slider) slider.value = String(Math.round(state.viewM * 10) / 10);
+    syncScreenFields();
+    paintFillUi();
+  }
+
+  function syncScreenFields() {
+    var unit = hooks.getUnit();
+    var mBox = document.getElementById('finder-screen-m');
+    var ftBox = document.getElementById('finder-screen-ft');
+    if (mBox) mBox.classList.toggle('hidden', unit !== 'm');
+    if (ftBox) ftBox.classList.toggle('hidden', unit !== 'ft');
+    if (state.fill === 'fill') {
+      state.screenW = state.openingW;
+      state.screenH = state.openingH;
+    } else {
+      var s = clampedScreen();
+      state.screenW = s.w;
+      state.screenH = s.h;
+    }
+    var t = targetScreen();
+    var wM = document.getElementById('finder-sw');
+    var hM = document.getElementById('finder-sh');
+    if (wM) wM.value = t.w.toFixed(2);
+    if (hM) hM.value = t.h.toFixed(2);
+    var W = hooks.ftInFromMeters(t.w);
+    var H = hooks.ftInFromMeters(t.h);
+    setVal('finder-sw-ft', W.ft);
+    setVal('finder-sw-in', W.inch);
+    setVal('finder-sh-ft', H.ft);
+    setVal('finder-sh-in', H.inch);
+    var hint = document.getElementById('finder-screen-hint');
+    if (hint) hint.textContent = '≈ ' + t.w.toFixed(2) + ' m × ' + t.h.toFixed(2) + ' m';
   }
 
   function setVal(id, v) {
@@ -531,6 +596,33 @@
         document.getElementById('finder-h-in').value
       ));
     }
+    if (state.fill === 'fill') {
+      state.screenW = state.openingW;
+      state.screenH = state.openingH;
+    } else {
+      state.screenW = Math.min(state.screenW, state.openingW);
+      state.screenH = Math.min(state.screenH, state.openingH);
+    }
+  }
+
+  function readScreenFromDom() {
+    var unit = hooks.getUnit();
+    if (unit === 'm') {
+      state.screenW = Math.max(0.3, parseFloat(document.getElementById('finder-sw').value) || state.screenW);
+      state.screenH = Math.max(0.3, parseFloat(document.getElementById('finder-sh').value) || state.screenH);
+    } else {
+      state.screenW = Math.max(0.3, hooks.metersFromFtIn(
+        document.getElementById('finder-sw-ft').value,
+        document.getElementById('finder-sw-in').value
+      ));
+      state.screenH = Math.max(0.3, hooks.metersFromFtIn(
+        document.getElementById('finder-sh-ft').value,
+        document.getElementById('finder-sh-in').value
+      ));
+    }
+    var s = clampedScreen();
+    state.screenW = s.w;
+    state.screenH = s.h;
   }
 
   function readViewFromDom(source) {
@@ -635,16 +727,9 @@
     var ledH = (info && info.ledH) || 135;
     var empty = document.documentElement.classList.contains('finder-empty');
     if (empty) {
-      screenW = state.fill === '16:9'
-        ? Math.min(state.openingW, state.openingH * (16 / 9))
-        : state.openingW;
-      screenH = state.fill === '16:9'
-        ? screenW / (16 / 9)
-        : state.openingH;
-      if (screenH > state.openingH) {
-        screenH = state.openingH;
-        screenW = screenH * (16 / 9);
-      }
+      var t = targetScreen();
+      screenW = t.w;
+      screenH = t.h;
     }
     var padX = 10;
     var padY = 10;
@@ -662,6 +747,11 @@
       ghost.hidden = !empty;
       ghost.style.width = ledW + 'px';
       ghost.style.height = ledH + 'px';
+    }
+    var screenBox = document.getElementById('finder-screen-box');
+    if (screenBox) {
+      screenBox.style.width = ledW + 'px';
+      screenBox.style.height = ledH + 'px';
     }
     if (wrap) wrap.classList.toggle('finder-hidden-led', !!(empty && finderOn));
   }
@@ -723,8 +813,20 @@
     if (fill) fill.addEventListener('click', function (e) {
       var btn = e.target.closest('[data-fill]');
       if (!btn) return;
-      state.fill = btn.getAttribute('data-fill');
-      paintChipGroup(fill, 'data-fill', state.fill);
+      var next = btn.getAttribute('data-fill');
+      if (next === 'custom' && state.fill !== 'custom') {
+        var cur = targetScreen();
+        state.screenW = cur.w / shrinkK();
+        state.screenH = cur.h / shrinkK();
+      }
+      state.fill = next === 'custom' ? 'custom' : 'fill';
+      if (state.fill === 'fill') {
+        state.shrink = 100;
+        state.screenW = state.openingW;
+        state.screenH = state.openingH;
+      }
+      paintFillUi();
+      syncScreenFields();
       scheduleRank();
     });
     ['finder-front', 'finder-sun'].forEach(function (id) {
@@ -749,8 +851,30 @@
         readOpeningFromDom();
         var hint = document.getElementById('finder-ft-hint');
         if (hint) hint.textContent = '≈ ' + state.openingW.toFixed(2) + ' m × ' + state.openingH.toFixed(2) + ' m';
+        syncScreenFields();
         scheduleRank();
       });
+    });
+    ['finder-sw', 'finder-sh', 'finder-sw-ft', 'finder-sw-in', 'finder-sh-ft', 'finder-sh-in'].forEach(function (id) {
+      var el = document.getElementById(id);
+      if (!el) return;
+      el.addEventListener('input', function () {
+        state.fill = 'custom';
+        state.shrink = 100;
+        paintFillUi();
+        readScreenFromDom();
+        var hint = document.getElementById('finder-screen-hint');
+        if (hint) hint.textContent = '≈ ' + state.screenW.toFixed(2) + ' m × ' + state.screenH.toFixed(2) + ' m';
+        scheduleRank();
+      });
+    });
+    var shrinkEl = document.getElementById('finder-shrink');
+    if (shrinkEl) shrinkEl.addEventListener('input', function () {
+      state.shrink = Math.max(20, Math.min(100, parseFloat(shrinkEl.value) || 100));
+      paintFillUi();
+      syncScreenFields();
+      if (typeof global.updateDesign === 'function') global.updateDesign();
+      scheduleRank();
     });
     ['finder-view-m', 'finder-view-ft', 'finder-view-in', 'finder-view-slider'].forEach(function (id) {
       var el = document.getElementById(id);
@@ -790,6 +914,100 @@
       var item = selected();
       if (item) applyKey(item.key);
       if (typeof hooks.switchToCalculator === 'function') hooks.switchToCalculator();
+    });
+    bindHandles();
+  }
+
+  function handleDelta(d, dx, dy) {
+    var dw;
+    var dh;
+    if (d.corner === 'nw') {
+      dw = -2 * dx * d.mppX;
+      dh = -2 * dy * d.mppY;
+    } else if (d.corner === 'ne') {
+      dw = 2 * dx * d.mppX;
+      dh = -2 * dy * d.mppY;
+    } else if (d.corner === 'sw') {
+      dw = -2 * dx * d.mppX;
+      dh = 2 * dy * d.mppY;
+    } else {
+      dw = 2 * dx * d.mppX;
+      dh = 2 * dy * d.mppY;
+    }
+    return { dw: dw, dh: dh };
+  }
+
+  function onHandleMove(e) {
+    if (!drag) return;
+    var dlt = handleDelta(drag, e.clientX - drag.x, e.clientY - drag.y);
+    if (drag.kind === 'wall') {
+      state.openingW = Math.max(0.5, Math.min(80, drag.ow + dlt.dw));
+      state.openingH = Math.max(0.5, Math.min(60, drag.oh + dlt.dh));
+      if (state.fill === 'fill') {
+        state.screenW = state.openingW;
+        state.screenH = state.openingH;
+      } else {
+        state.screenW = Math.min(state.screenW, state.openingW);
+        state.screenH = Math.min(state.screenH, state.openingH);
+      }
+    } else {
+      state.fill = 'custom';
+      state.shrink = 100;
+      state.screenW = Math.max(0.3, Math.min(state.openingW, drag.sw + dlt.dw));
+      state.screenH = Math.max(0.3, Math.min(state.openingH, drag.sh + dlt.dh));
+      paintFillUi();
+    }
+    syncUnitFields();
+    if (typeof global.updateDesign === 'function') global.updateDesign();
+    scheduleRank();
+  }
+
+  function onHandleUp() {
+    drag = null;
+    document.documentElement.classList.remove('finder-dragging');
+    window.removeEventListener('pointermove', onHandleMove);
+    window.removeEventListener('pointerup', onHandleUp);
+    window.removeEventListener('pointercancel', onHandleUp);
+    scheduleRank();
+  }
+
+  function bindHandles() {
+    var frame = document.getElementById('room-wall');
+    if (!frame || frame.getAttribute('data-finder-handles') === '1') return;
+    frame.setAttribute('data-finder-handles', '1');
+    frame.addEventListener('pointerdown', function (e) {
+      var h = e.target.closest('.finder-handle');
+      if (!h || !document.documentElement.classList.contains('finder-mode')) return;
+      e.preventDefault();
+      e.stopPropagation();
+      var kind = h.getAttribute('data-handle');
+      var corner = h.getAttribute('data-corner');
+      var rect = frame.getBoundingClientRect();
+      if (kind === 'screen') {
+        var vis = targetScreen();
+        state.fill = 'custom';
+        state.shrink = 100;
+        state.screenW = vis.w;
+        state.screenH = vis.h;
+        paintFillUi();
+        syncScreenFields();
+      }
+      drag = {
+        kind: kind,
+        corner: corner,
+        x: e.clientX,
+        y: e.clientY,
+        ow: state.openingW,
+        oh: state.openingH,
+        sw: state.screenW,
+        sh: state.screenH,
+        mppX: state.openingW / Math.max(8, rect.width),
+        mppY: state.openingH / Math.max(8, rect.height)
+      };
+      document.documentElement.classList.add('finder-dragging');
+      window.addEventListener('pointermove', onHandleMove);
+      window.addEventListener('pointerup', onHandleUp);
+      window.addEventListener('pointercancel', onHandleUp);
     });
   }
 
@@ -838,7 +1056,7 @@
       paintChipGroup(document.getElementById('finder-install'), 'data-install', state.install);
       paintChipGroup(document.getElementById('finder-sharp'), 'data-sharp', state.sharp);
       paintChipGroup(document.getElementById('finder-res'), 'data-res', state.res);
-      paintChipGroup(document.getElementById('finder-fill'), 'data-fill', state.fill);
+      paintFillUi();
       var viewBox = document.getElementById('finder-view-box');
       var resBox = document.getElementById('finder-res-box');
       if (viewBox) viewBox.classList.toggle('hidden', state.sharp !== 'view');
@@ -861,6 +1079,10 @@
     },
     getFill: function () {
       return state.fill;
+    },
+    getTarget: function () {
+      if (!document.documentElement.classList.contains('finder-mode')) return null;
+      return targetScreen();
     },
     layoutPreview: layoutPreview,
     setMode: setMode,
