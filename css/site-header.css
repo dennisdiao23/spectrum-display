@@ -49,12 +49,13 @@ body:not(.designer-app) {
   padding-left: var(--site-gutter);
   padding-right: var(--site-gutter);
 }
-html:not(.is-logged-in) .pricing-only,
+html:not(.is-logged-in):not(.designer-embed) .pricing-only,
 html:not(.is-logged-in) .site-cart,
 html:not(.is-logged-in) .site-tabbar {
   display: none !important;
 }
-html.is-logged-in .guest-pricing {
+html.is-logged-in .guest-pricing,
+html.designer-embed .guest-pricing {
   display: none !important;
 }
 .guest-pricing {

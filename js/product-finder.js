@@ -456,6 +456,11 @@
     });
   }
 
+  function canSeePrices() {
+    if (document.documentElement.classList.contains('designer-embed')) return true;
+    return !!(global.SpectrumAuth && SpectrumAuth.isLoggedIn && SpectrumAuth.isLoggedIn());
+  }
+
   function money(n) {
     if (global.SpectrumPricing && SpectrumPricing.money) return SpectrumPricing.money(n);
     return n ? ('$' + Math.round(n).toLocaleString()) : 'Request quote';
@@ -648,7 +653,8 @@
         '" data-finder-key="' + item.key + '">' +
         '<div class="flex items-center justify-between gap-2">' +
         '<span class="text-[10px] uppercase tracking-wide text-sky-300">' + item.badge + '</span>' +
-        '<span class="text-xs font-semibold text-sky-400">' + (item.cost ? money(item.cost) : 'Request quote') + '</span>' +
+        '<span class="text-xs font-semibold text-sky-400 pricing-only">' + (item.cost ? money(item.cost) : 'Request quote') + '</span>' +
+        '<span class="text-xs text-slate-500 guest-pricing">' + ((global.t && t('price.signIn')) || 'Sign in for pricing') + '</span>' +
         '</div>' +
         '<div class="font-medium text-sm text-slate-100">' + cardTitle(item) + '</div>' +
         '<div class="text-xs text-slate-400">' + item.panels + ' panels · ' + item.cols + '×' + item.rows +
@@ -664,7 +670,9 @@
     if (!host) return;
     if (!state.selectedKey || !state.cheaper.length) {
       host.innerHTML = state.selectedKey
-        ? '<p class="text-xs text-slate-500">This is already among the lower-cost fits. Try a coarser pitch in Calculator, or a smaller wall.</p>'
+        ? (canSeePrices()
+          ? '<p class="text-xs text-slate-500">This is already among the lower-cost fits. Try a coarser pitch in Calculator, or a smaller wall.</p>'
+          : '')
         : '';
       return;
     }
@@ -673,8 +681,9 @@
       var save = cur && cur.cost && item.cost ? cur.cost - item.cost : 0;
       return '<button type="button" class="finder-card w-full text-left p-3 rounded-xl border border-slate-800 hover:border-sky-500/60 space-y-1" data-finder-key="' + item.key + '">' +
         '<div class="flex justify-between gap-2 text-sm"><span class="text-slate-200">' + cardTitle(item) + '</span>' +
-        '<span class="text-sky-400 font-medium">' + (item.cost ? money(item.cost) : '—') + '</span></div>' +
-        '<div class="text-xs text-slate-500">' + item.reason + (save > 0 ? ' Saves ' + money(save) + '.' : '') + '</div>' +
+        '<span class="text-sky-400 font-medium pricing-only">' + (item.cost ? money(item.cost) : '—') + '</span></div>' +
+        '<div class="text-xs text-slate-500">' + item.reason +
+        (save > 0 ? '<span class="pricing-only"> Saves ' + money(save) + '.</span>' : '') + '</div>' +
         '</button>';
     }).join('');
   }
@@ -1063,6 +1072,12 @@
       else setMode('calc');
       global.addEventListener('spectrum:catalog', function () {
         if (document.documentElement.classList.contains('finder-mode')) scheduleRank();
+      });
+      global.addEventListener('spectrum:auth', function () {
+        renderResults();
+      });
+      global.addEventListener('spectrum:pricing', function () {
+        renderResults();
       });
     },
     setUnit: function () {
