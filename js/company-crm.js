@@ -811,9 +811,10 @@
     }).join('');
   }
 
-  function leadCalcUrl(lead) {
+  function leadCalcUrl(lead, locked) {
     var q = lead && lead.calculatorQuery ? String(lead.calculatorQuery).replace(/^\?/, '') : '';
     var url = '/led-wall-calculator?lead=' + encodeURIComponent(lead && lead.id || '') + '&embed=1';
+    if (locked) url += '&viewonly=1';
     if (q) url += '&' + q;
     return url;
   }
@@ -821,13 +822,15 @@
   function fillLeadCalculator(lead) {
     var summary = $('crm-lead-calc-summary');
     var open = $('crm-lead-calc-open');
-    var shot = $('crm-lead-calc-shot');
+    var frame = $('crm-lead-calc-frame');
     var text = calcSummaryHtml(lead);
     if (summary) summary.textContent = text || 'No wall on this lead yet. Open the live calculator to size it. It saves on this lead.';
-    if (shot) {
-      var preview = lead && lead.calculatorPreview;
-      shot.classList.toggle('hidden', !preview);
-      if (preview) shot.src = preview;
+    if (frame && S.leadTab === 'calculator' && lead && lead.id) {
+      var next = leadCalcUrl(lead, true);
+      if (frame.getAttribute('data-src') !== next) {
+        frame.setAttribute('data-src', next);
+        frame.src = next;
+      }
     }
     if (open) {
       open.onclick = function (ev) {
