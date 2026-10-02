@@ -86,6 +86,10 @@ function createSupabaseStore() {
     } catch (e) { /* bucket may already exist */ }
 
     try {
+      await supabase.storage.createBucket('dealer-files', { public: false });
+    } catch (e) { /* bucket may already exist */ }
+
+    try {
       await upsertMissingCatalog();
     } catch (e) {
       console.error('Could not backfill missing catalog series:', e.message || e);
