@@ -32,7 +32,7 @@
     #company-boot .boot-login button[type="submit"]{background:#fff!important;color:#000!important;border:0}
     #company-boot .boot-login button[type="submit"]:hover{background:#e8e8e8!important}
   </style>
-  <link rel="stylesheet" href="/css/company-dash.css?v=brands8" />
+  <link rel="stylesheet" href="/css/company-dash.css?v=dealercols1" />
   <script src="/js/address-autocomplete.js"></script>
   <script src="/js/company-chat.js?v=po-ship1"></script>
   <script src="/js/company-crm.js?v=leadview1"></script>
@@ -5279,7 +5279,7 @@
     </a>
   </nav>
 
-  <link rel="stylesheet" href="/css/company-dash.css?v=brands8" />
+  <link rel="stylesheet" href="/css/company-dash.css?v=dealercols1" />
   <link rel="stylesheet" href="/css/company-tw.css?v=boot1" />
 
   <script>
@@ -5296,6 +5296,7 @@
     let editingRoleId = null;
     let websiteSubTab = 'products';
     let ccListScope = 'customer';
+    let applyStoredCcSplit = function () {};
     let settingsSubTab = 'staff';
     let salesSubTab = 'quotes';
     let adminRoles = [];
@@ -9104,6 +9105,9 @@
       if (view === 'dealer' || view === 'customers') {
         ccListScope = view === 'dealer' ? 'dealer' : 'customer';
         if (typeof syncCcScopeView === 'function') syncCcScopeView();
+        requestAnimationFrame(function () {
+          if (typeof applyStoredCcSplit === 'function') applyStoredCcSplit();
+        });
       }
       document.getElementById('crm-lead-section').classList.toggle('hidden', view !== 'leads' && view !== 'crm');
       document.getElementById('crm-pipe-section').classList.toggle('hidden', view !== 'pipeline');
@@ -11337,7 +11341,6 @@
         }
         return Math.max(64, Math.round(paneWidth / visibleCols.length));
       });
-      const fitted = shrinkInvSplitWidths(widths, paneWidth);
       Array.prototype.forEach.call(table.querySelectorAll('thead th[data-col]'), function (th) {
         const col = th.getAttribute('data-col');
         if (th.hidden || visibleCols.indexOf(col) === -1) {
@@ -11345,15 +11348,17 @@
           return;
         }
         const idx = visibleCols.indexOf(col);
-        th.style.width = fitted[idx] + 'px';
+        th.style.width = widths[idx] + 'px';
+        th.style.minWidth = widths[idx] + 'px';
       });
       Array.prototype.forEach.call(table.querySelectorAll('thead th:not([data-col])'), function (th) {
         th.style.width = '0px';
         th.style.minWidth = '0';
         th.style.padding = '0';
       });
-      table.style.width = '100%';
-      table.style.maxWidth = '100%';
+      const total = widths.reduce(function (sum, n) { return sum + n; }, 0);
+      table.style.width = Math.max(paneWidth, total) + 'px';
+      table.style.maxWidth = '';
     }
 
     function refreshCustomerSplitCols() {
@@ -12450,19 +12455,20 @@
       if (typeof ResizeObserver !== 'undefined') {
         let done = false;
         const finish = function () {
-          if (done) return;
+          if (done || !ready()) return;
           done = true;
           try { ro.disconnect(); } catch (err) {}
           fn();
         };
         const ro = new ResizeObserver(function () {
-          if (ready()) finish();
+          finish();
         });
         ro.observe(split);
-        setTimeout(finish, 2500);
       } else {
         requestAnimationFrame(function () {
-          requestAnimationFrame(fn);
+          requestAnimationFrame(function () {
+            if (ready()) fn();
+          });
         });
       }
     }
@@ -12589,13 +12595,19 @@
         const existing = parseInt(split.style.getPropertyValue('--dash-left-w'), 10);
         if (!existing || existing < MIN_LEFT) split.style.setProperty('--dash-left-w', target + 'px');
         whenInvSplitReady(split, function () {
-          const start = parseInt(split.style.getPropertyValue('--dash-left-w'), 10) || target;
-          const clamped = clampLeft(start);
-          if (Math.abs(clamped - start) > 2) split.style.setProperty('--dash-left-w', clamped + 'px');
-          fitCcTabWidths();
-          refreshCustomerSplitCols();
+          applyLeft(parseInt(split.style.getPropertyValue('--dash-left-w'), 10) || target, { save: false });
         });
       }
+      applyStoredCcSplit = function () {
+        const saved = ccSplitLeftFromPrefs();
+        const bootCss = bootCssLeftPx();
+        const target = saved >= MIN_LEFT ? saved : (bootCss >= MIN_LEFT ? bootCss : MIN_LEFT);
+        split.style.setProperty('--dash-left-w', target + 'px');
+        whenInvSplitReady(split, function () {
+          applyLeft(target, { save: false });
+        });
+        refreshCustomerSplitCols();
+      };
       if (resizer.dataset.ready !== '1') {
         resizer.dataset.ready = '1';
         let dragging = false;

@@ -4097,6 +4097,15 @@ body.po-split-lock .po-split {
   padding: 0 !important;
   overflow: hidden;
 }
+#cc-table-wrap {
+  overflow-x: auto;
+}
+#cc-split-left table.dash-cols[data-cols="customers"] th[data-col],
+#cc-split-left table.dash-cols[data-cols="customers"] td {
+  min-width: 5.5rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
 body.inv-layout-lock .inv-right-panel,
 body.inv-layout-lock .inv-activity-wrap,
 body.inv-layout-lock #inv-item-panel .cc-detail-panel,
