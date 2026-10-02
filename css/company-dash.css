@@ -1282,6 +1282,9 @@ html.dash-scroll-lock body.company-app {
   background: #fff5f5 !important;
   font-weight: 650;
 }
+#sb-review-grid:not(.is-local) .sb-review-local {
+  display: none;
+}
 #sb-review .sb-review-actions {
   display: flex;
   gap: 0.35rem;

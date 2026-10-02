@@ -323,11 +323,15 @@
     bits.push('The percents are saved.');
     if (skipped) bits.push(skipped + (skipped === 1 ? ' item has no cost, so its prices stay as they are.' : ' items have no cost, so their prices stay as they are.'));
     if (note) note.textContent = bits.join(' ');
+    var grid = $('sb-review-grid');
+    var showLocal = !!data.sellUsesLocal;
+    if (grid) grid.classList.toggle('is-local', showLocal);
     body.innerHTML = changes.length ? changes.map(function (row) {
       return '<tr class="border-t border-slate-200" data-sb-change="' + esc(row.id) + '" data-sb-cost="' + esc(row.cost) + '">' +
         '<td class="py-2 px-2">' + esc(row.name) + '</td>' +
         '<td class="py-2 px-2">' + esc(row.sku) + '</td>' +
         '<td class="py-2 px-2">' + moneyText(row.cost) + '</td>' +
+        '<td class="py-2 px-2 sb-review-local">' + moneyText(row.localCost) + '</td>' +
         '<td class="py-2 px-2">' + moneyText(row.sellOld) + '</td>' +
         '<td class="py-2 px-2"><input data-sb-new="sell" type="number" min="0" step="0.01" value="' + esc(row.sellNew) + '"></td>' +
         '<td class="py-2 px-2">' + moneyText(row.dealerOld) + '</td>' +
@@ -336,7 +340,7 @@
         '<td class="py-2 px-2"><input data-sb-new="integrator" type="number" min="0" step="0.01" value="' + esc(row.integratorNew) + '"></td>' +
         '<td class="py-2 px-2 sb-review-actions"><button type="button" class="cc-leave-no" data-sb-skip>Skip</button> <button type="button" class="cc-leave-yes hidden" data-sb-allow>Confirm</button></td>' +
         '</tr>';
-    }).join('') : '<tr><td class="py-4 px-2 text-slate-500" colspan="10">Nothing to update.</td></tr>';
+    }).join('') : '<tr><td class="py-4 px-2 text-slate-500" colspan="11">Nothing to update.</td></tr>';
     body.querySelectorAll('tr[data-sb-change]').forEach(paintReviewRow);
     syncReviewConfirm();
     if (confirmBtn) confirmBtn.classList.toggle('hidden', !changes.length);
