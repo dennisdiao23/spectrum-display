@@ -12,6 +12,7 @@
     tab: 'brand',
     types: [],
     priceTouched: false,
+    pending: null,
     ready: false
   };
 
@@ -245,6 +246,72 @@
     S.go('/company/settings/brands/' + encodeURIComponent(id));
   }
 
+  function jsonBody(payload) {
+    return {
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    };
+  }
+
+  function moneyText(n) {
+    var v = Number(n);
+    if (!isFinite(v)) return '—';
+    return '$' + v.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  }
+
+  function hideReview() {
+    var box = $('sb-review');
+    if (!box) return;
+    box.hidden = true;
+    box.classList.remove('is-open');
+  }
+
+  function showReview(data) {
+    var box = $('sb-review');
+    var note = $('sb-review-note');
+    var body = $('sb-review-rows');
+    var confirmBtn = $('sb-review-confirm');
+    if (!box || !body) return;
+    var changes = data.changes || [];
+    var skipped = Number(data.skippedNoCost) || 0;
+    var bits = [];
+    if (changes.length) bits.push(changes.length + (changes.length === 1 ? ' item will change.' : ' items will change.'));
+    else bits.push('No inventory prices change.');
+    bits.push('The percents are saved.');
+    if (skipped) bits.push(skipped + (skipped === 1 ? ' item has no cost, so its prices stay as they are.' : ' items have no cost, so their prices stay as they are.'));
+    if (note) note.textContent = bits.join(' ');
+    body.innerHTML = changes.length ? changes.map(function (row) {
+      return '<tr class="border-t border-slate-200">' +
+        '<td class="py-2 px-2">' + esc(row.name) + '</td>' +
+        '<td class="py-2 px-2">' + esc(row.sku) + '</td>' +
+        '<td class="py-2 px-2">' + esc(row.brand) + '</td>' +
+        '<td class="py-2 px-2">' + moneyText(row.cost) + '</td>' +
+        '<td class="py-2 px-2">' + moneyText(row.sellOld) + '</td>' +
+        '<td class="py-2 px-2">' + moneyText(row.sellNew) + '</td>' +
+        '<td class="py-2 px-2">' + moneyText(row.dealerOld) + '</td>' +
+        '<td class="py-2 px-2">' + moneyText(row.dealerNew) + '</td>' +
+        '<td class="py-2 px-2">' + moneyText(row.integratorOld) + '</td>' +
+        '<td class="py-2 px-2">' + moneyText(row.integratorNew) + '</td>' +
+        '</tr>';
+    }).join('') : '<tr><td class="py-4 px-2 text-slate-500" colspan="10">Nothing to update.</td></tr>';
+    if (confirmBtn) confirmBtn.classList.toggle('hidden', !changes.length);
+    box.hidden = false;
+    box.classList.add('is-open');
+  }
+
+  async function saveBrand(confirm) {
+    var name = String(($('sb-name') && $('sb-name').value) || '').trim();
+    var rules = S.pending ? S.pending.rules : (S.priceTouched ? rulesFor(brandKey()) : rulesFor(S.brand.id));
+    var payload = { name: name, rules: rules, confirm: !!confirm };
+    var saved;
+    if (!S.brand.id) {
+      saved = await S.api('/api/admin/settings/brands', Object.assign({ method: 'POST' }, jsonBody(payload)));
+    } else {
+      saved = await S.api('/api/admin/settings/brands/' + encodeURIComponent(S.brand.id), Object.assign({ method: 'PUT' }, jsonBody(payload)));
+    }
+    return saved;
+  }
+
   async function save() {
     if (!S.brand || !S.canEdit()) return;
     showMsg('');
@@ -256,27 +323,38 @@
       renderDetail();
       return;
     }
-    var rules = S.priceTouched ? rulesFor(brandKey()) : rulesFor(S.brand.id);
+    S.pending = {
+      rules: S.priceTouched ? rulesFor(brandKey()) : rulesFor(S.brand.id)
+    };
     try {
-      var saved;
-      if (!S.brand.id) {
-        saved = await S.api('/api/admin/settings/brands', {
-          method: 'POST',
-          body: JSON.stringify({ name: name, rules: rules })
-        });
-      } else {
-        saved = await S.api('/api/admin/settings/brands/' + encodeURIComponent(S.brand.id), {
-          method: 'PUT',
-          body: JSON.stringify({ name: name, rules: rules })
-        });
-      }
+      var saved = await saveBrand(false);
       S.brand = saved.brand;
-      showMsg('Saved.', true);
+      S.pending.rules = saved.rules || S.pending.rules;
+      S.priceTouched = false;
       await load();
       S.go('/company/settings/brands/' + encodeURIComponent(S.brand.id));
+      showReview(saved);
+      showMsg('Percents saved. Review the price changes before they update inventory.', true);
     } catch (err) {
       showMsg(err.message || 'Could not save.');
     }
+  }
+
+  async function confirmReview() {
+    if (!S.brand || !S.brand.id || !S.pending) return;
+    var confirmBtn = $('sb-review-confirm');
+    if (confirmBtn) confirmBtn.disabled = true;
+    try {
+      var saved = await saveBrand(true);
+      hideReview();
+      S.pending = null;
+      var n = (saved.changes || []).length;
+      showMsg(n ? ('Updated ' + n + (n === 1 ? ' item.' : ' items.')) : 'Saved. No inventory prices changed.', true);
+      await load();
+    } catch (err) {
+      showMsg(err.message || 'Could not update inventory.');
+    }
+    if (confirmBtn) confirmBtn.disabled = false;
   }
 
   function bind() {
@@ -292,6 +370,10 @@
     });
     var saveBtn = $('sb-save');
     if (saveBtn) saveBtn.addEventListener('click', save);
+    var reviewBack = $('sb-review-back');
+    if (reviewBack) reviewBack.addEventListener('click', hideReview);
+    var reviewConfirm = $('sb-review-confirm');
+    if (reviewConfirm) reviewConfirm.addEventListener('click', confirmReview);
     var tabBrand = $('sb-tab-brand');
     var tabPrice = $('sb-tab-price');
     if (tabBrand) tabBrand.addEventListener('click', function () {

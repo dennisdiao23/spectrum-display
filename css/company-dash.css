@@ -1166,8 +1166,14 @@ html.dash-scroll-lock body.company-app {
 }
 #so-saved,
 #so-delete-confirm,
-#inv-cost-ask {
+#inv-cost-ask,
+#sb-review {
   z-index: 200;
+}
+.sb-review-card {
+  width: min(72rem, 100%);
+  max-height: calc(100vh - 3rem);
+  overflow: auto;
 }
 .cc-leave.is-open {
   display: flex;

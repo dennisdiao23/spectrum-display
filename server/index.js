@@ -3710,6 +3710,20 @@ async function main() {
     } catch (err) { next(err); }
   });
 
+  async function saveBrandWithPrices(brand, rules, confirm) {
+    const savedRules = await store.saveBrandPriceRules(brand.id, rules || []);
+    const preview = await store.brandPriceChanges(brand.id, brand.name, savedRules);
+    if (confirm) await store.applyBrandPriceChanges(preview.changes);
+    return {
+      ok: true,
+      brand: brand,
+      rules: savedRules,
+      changes: preview.changes,
+      skippedNoCost: preview.skippedNoCost,
+      applied: !!confirm
+    };
+  }
+
   app.get('/api/admin/settings/brands', requireAdmin, requirePerm('settings', 'view'), async function (_req, res, next) {
     try {
       const brands = await store.listBrands();
@@ -3731,8 +3745,8 @@ async function main() {
         n += 1;
       }
       const brand = await store.createBrand({ id: id, name: name, tagline: '', logo: '', description: '', image: '', hidden: false });
-      const rules = await store.saveBrandPriceRules(brand.id, body.rules || []);
-      res.json({ ok: true, brand: brand, rules: rules });
+      const saved = await saveBrandWithPrices(brand, body.rules || [], !!body.confirm);
+      res.json(saved);
     } catch (err) {
       res.status(400).json({ ok: false, error: err.message || 'Could not save the brand.' });
     }
@@ -3753,8 +3767,8 @@ async function main() {
         image: existing.image || '',
         hidden: !!existing.hidden
       });
-      const rules = await store.saveBrandPriceRules(brand.id, body.rules || []);
-      res.json({ ok: true, brand: brand, rules: rules });
+      const saved = await saveBrandWithPrices(brand, body.rules || [], !!body.confirm);
+      res.json(saved);
     } catch (err) {
       res.status(400).json({ ok: false, error: err.message || 'Could not save the brand.' });
     }

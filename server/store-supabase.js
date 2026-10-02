@@ -2508,6 +2508,28 @@ function createSupabaseStore() {
     async saveBrandPriceRules(brandId, rules) {
       return require('./brand-prices').saveSupabase(supabase, brandId, rules);
     },
+    async brandPriceChanges(brandId, brandName, rules) {
+      const bp = require('./brand-prices');
+      const { data, error } = await supabase.from('inventory_items')
+        .select('id, sku, name, brand_id, category, cost, price, dealer_net, integrator_price')
+        .eq('brand_id', brandId);
+      throwIf(error, 'Could not read inventory for this brand.');
+      return bp.priceChanges(data || [], rules, brandId, brandName);
+    },
+    async applyBrandPriceChanges(changes) {
+      const stamp = new Date().toISOString();
+      for (let i = 0; i < (changes || []).length; i += 1) {
+        const row = changes[i];
+        const { error } = await supabase.from('inventory_items').update({
+          price: row.sellNew,
+          dealer_net: row.dealerNew,
+          integrator_price: row.integratorNew,
+          updated_at: stamp
+        }).eq('id', row.id);
+        throwIf(error, 'Could not update inventory prices.');
+      }
+      return changes || [];
+    },
     async savePrintForm(type, template) {
       const pf = require('./print-forms');
       const t = pf.normalizeType(type);
