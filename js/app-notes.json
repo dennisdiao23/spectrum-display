@@ -1,6 +1,16 @@
 {
-  "build": "2026-10-02-brands-prices",
+  "build": "2026-10-02-new-request-quote",
   "notes": [
+    {
+      "id": "2026-10-02-new-request-quote",
+      "date": "2026-10-02",
+      "apps": ["portal"],
+      "title": "New Request Quote",
+      "changed": [
+        "The button that starts a quote is named New Request Quote."
+      ],
+      "kind": "update"
+    },
     {
       "id": "2026-10-02-brands-prices",
       "date": "2026-10-02",
@@ -555,7 +565,7 @@
       },
       {
         "title": "Request Quote",
-        "text": "Ask Spectrum to price a job. Send the request here, then come back to read the quote they return."
+        "text": "Ask Spectrum to price a job. Click New Request Quote, then come back to read the quote they return."
       },
       {
         "title": "Purchase Order",

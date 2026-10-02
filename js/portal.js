@@ -1217,7 +1217,7 @@
     $('so-customer-name').value = (doc && doc.customerName) || dealerCompanyName();
     $('so-customer-email').value = (doc && doc.customerEmail) || customer.email || (me && me.user && me.user.email) || '';
     $('so-number').value = (doc && doc.number) || '';
-    $('so-title').textContent = doc && doc.number ? doc.number : (order ? 'New sales order' : 'New sales quote');
+    $('so-title').textContent = doc && doc.number ? doc.number : (order ? 'New sales order' : 'New Request Quote');
     $('so-caption-title').textContent = doc && doc.number ? doc.number : salesLabel(kind);
     $('so-kind-label').textContent = order ? 'Purchase Order' : 'Request Quote';
     $('so-issue').value = (doc && doc.issueDate) || new Date().toISOString().slice(0, 10);
@@ -1309,7 +1309,7 @@
         ? '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h16l-1.5 12H5.5L4 7z"/><path d="M9 7V5a3 3 0 0 1 6 0v2"/></svg>'
         : '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M8 4h8v4H8z"/><path d="M6 8h12v12H6z"/><path d="M9 12h6M9 16h4"/></svg>';
     }
-    $('so-new-btn').textContent = order ? 'New sales order' : 'New sales quote';
+    $('so-new-btn').textContent = order ? 'New sales order' : 'New Request Quote';
     $('so-back').textContent = order ? '← Purchase Order' : '← Request Quote';
     $('so-number-label').textContent = order ? 'Sales order no.' : 'Quote no.';
     const note = document.querySelector('#so-detail .so-doc-note');
@@ -1322,7 +1322,7 @@
     if (lead) {
       lead.textContent = order
         ? 'Select a purchase order to view it here. New sales order opens a draft for Spectrum. Factory cost is not on this page.'
-        : 'Select a request quote to view it here. New sales quote opens a draft for Spectrum. Factory cost is not on this page.';
+        : 'Select a request quote to view it here. New Request Quote opens a draft for Spectrum. Factory cost is not on this page.';
     }
     const openLabel = $('so-side-open-label');
     if (openLabel) openLabel.textContent = order ? 'Open purchase orders' : 'Open request quotes';
