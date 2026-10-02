@@ -427,8 +427,15 @@
     const stroke = color || '#2f6bff';
     svg.setAttribute('viewBox', '0 0 ' + w + ' ' + h);
     svg.innerHTML = '<path d="' + d + '" fill="none" stroke="' + stroke +
-      '" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"></path>' +
-      '<circle cx="' + lastX.toFixed(1) + '" cy="' + lastY.toFixed(1) + '" r="2.2" fill="' + stroke + '"></circle>';
+      '" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" vector-effect="non-scaling-stroke"></path>';
+    const wrap = svg.parentElement;
+    const dot = wrap && wrap.querySelector('.dash-kpi-spark-dot');
+    if (dot) {
+      dot.style.left = (lastX / w * 100) + '%';
+      dot.style.top = (lastY / h * 100) + '%';
+      dot.style.background = stroke;
+      dot.hidden = false;
+    }
   }
   function docsTotal(list) {
     return (list || []).reduce(function (sum, doc) { return sum + (Number(doc.total) || 0); }, 0);
