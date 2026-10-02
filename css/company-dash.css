@@ -9487,3 +9487,49 @@ body.dash-split-lock #settings-pane.space-y-6 > :not([hidden]) {
   border-radius: 0.4rem;
   padding: 0.25rem 0.45rem;
 }
+
+@media (max-width: 900px) {
+  body.portal-app #portal-user {
+    display: none;
+  }
+
+  body.portal-app .dash-home-kpis,
+  body.portal-app .page-kpis,
+  body.portal-app .page-kpis-3 {
+    grid-template-columns: 1fr;
+  }
+
+  body.portal-app .dash-home-kpis .dash-kpi,
+  body.portal-app .page-kpis .dash-kpi {
+    overflow: visible;
+    min-height: 0;
+  }
+
+  body.portal-app .dash-kpi-label,
+  body.portal-app .dash-kpi-hint,
+  body.portal-app .dash-home-kpis .dash-kpi-value {
+    white-space: normal;
+    overflow: visible;
+    text-overflow: clip;
+  }
+
+  body.portal-app .cc-list-toolbar .cc-list-search,
+  body.portal-app .cc-list-toolbar .cc-list-select {
+    flex: 1 1 100%;
+    max-width: none;
+    min-width: 0;
+    width: 100%;
+  }
+
+  body.portal-app .cc-list-toolbar .cc-list-add-btn {
+    margin-left: 0;
+  }
+
+  body.portal-app .so-doc-main,
+  body.portal-app #company-form,
+  body.portal-app .grid.grid-cols-2,
+  body.portal-app .grid.sm\:grid-cols-2 {
+    grid-template-columns: 1fr;
+  }
+}
+

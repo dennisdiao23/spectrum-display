@@ -1,6 +1,19 @@
 {
-  "build": "2026-10-02-brands-prices",
+  "build": "2026-10-02-portal-phone",
   "notes": [
+    {
+      "id": "2026-10-02-portal-phone",
+      "date": "2026-10-02",
+      "apps": ["portal"],
+      "title": "Dealer Portal fits the phone",
+      "changed": [
+        "Dashboard counts show the full name.",
+        "Your name is off the top row on a phone.",
+        "Search and Add sit on their own lines.",
+        "Quote, order, and company forms use one column."
+      ],
+      "how": "Open the Dealer Portal on your phone. Each Dashboard card is its own row, so Request Quote and Purchase Order are not cut off. On Book, Quote, and Orders, the search and buttons wrap. A quote or company form stacks down the page."
+    },
     {
       "id": "2026-10-02-brands-prices",
       "date": "2026-10-02",
