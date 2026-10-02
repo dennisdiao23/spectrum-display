@@ -1,6 +1,20 @@
 {
-  "build": "2026-10-02-quote-line-cols",
+  "build": "2026-10-02-phone-dashboard-scroll",
   "notes": [
+    {
+      "id": "2026-10-02-phone-dashboard-scroll",
+      "date": "2026-10-02",
+      "apps": ["portal", "company"],
+      "title": "The phone dashboard scrolls",
+      "removed": [
+        "The Overview title above the dashboard cards."
+      ],
+      "changed": [
+        "On a phone, swipe the dashboard. The cards stay under the top bar. The detail, then Recent or Lobby, move underneath.",
+        "The last panel stops above the bottom bar."
+      ],
+      "kind": "update"
+    },
     {
       "id": "2026-10-02-quote-line-cols",
       "date": "2026-10-02",
