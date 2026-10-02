@@ -15,6 +15,17 @@
     } catch (e) { /* keep the original link */ }
     return raw;
   }
+  function specPreviewCard(name, href) {
+    const label = name || 'Spec sheet';
+    const preview = href + (href.indexOf('#') === -1 ? '#' : '&') + 'toolbar=0&navpanes=0&scrollbar=0&view=FitH';
+    return '<li class="inv-spec-card">' +
+      '<div class="inv-spec-preview">' +
+        '<iframe src="' + esc(preview) + '" title="' + esc(label) + '" tabindex="-1"></iframe>' +
+        '<a class="inv-spec-card-hit" href="' + esc(href) + '" target="_blank" rel="noopener" aria-label="Open ' + esc(label) + '"></a>' +
+      '</div>' +
+      '<a class="inv-spec-card-name" href="' + esc(href) + '" target="_blank" rel="noopener">' + esc(label) + '</a>' +
+    '</li>';
+  }
   const viewIds = {
     home: 'dashboard-section',
     book: 'inventory-section',
@@ -1270,7 +1281,7 @@
     const specList = $('book-detail-specs');
     if (specList) {
       specList.innerHTML = docs.map(function (doc) {
-        return '<li class="inv-spec-row"><a href="' + esc(specFileHref(doc.url)) + '" target="_blank" rel="noopener">' + esc(doc.name || 'Spec sheet') + '</a></li>';
+        return specPreviewCard(doc.name, specFileHref(doc.url));
       }).join('');
     }
     const specEmpty = $('book-detail-specs-empty');
