@@ -495,7 +495,7 @@
       },
       {
         "title": "Settings → Price level",
-        "text": "A named percent for a group of customers and products. Pick sell price, dealer price, or net price, then raise or lower it. A brand line can use a different percent. Inventory prices stay as they are."
+        "text": "A named percent for a group of customers and products. On Percentage, pick up or down, then From: Cost, Sell price, Dealer price, or Net price. A brand line can use a different percent. Inventory prices stay as they are."
       },
       {
         "title": "Settings → Manage users",

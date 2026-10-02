@@ -6,7 +6,7 @@
 
 const CUSTOMER_TYPES = ['Retail/Commercial', 'Residential', 'AV Integrator', 'Dealer'];
 const PRODUCT_TYPES = ['LED Panel', 'Control', 'Receiving Card', 'Processor', 'Accessory', 'Service', 'Spare'];
-const PRICE_TYPES = ['sell', 'dealer', 'net'];
+const PRICE_TYPES = ['cost', 'sell', 'dealer', 'net'];
 const MODES = ['all', 'type', 'specific'];
 const DIRS = ['increase', 'decrease'];
 const ROUNDINGS = ['none', 'dime', 'dollar'];
@@ -166,6 +166,7 @@ function formatLevel(row, extras) {
 
 function basePrice(item, priceType) {
   if (!item) return 0;
+  if (priceType === 'cost') return money(item.cost);
   if (priceType === 'sell') return money(item.price);
   return money(item.dealerNet != null ? item.dealerNet : item.dealer_net);
 }
