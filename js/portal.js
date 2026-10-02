@@ -1305,7 +1305,7 @@
     const images = $('book-detail-images');
     if (images) {
       images.innerHTML = urls.map(function (url) {
-        return '<img src="' + esc(url) + '" alt="">';
+        return '<a href="' + esc(url) + '"><img src="' + esc(url) + '" alt="Product photo"></a>';
       }).join('');
     }
     const imageEmpty = $('book-detail-images-empty');
@@ -4340,6 +4340,28 @@
     if (name !== 'home' && openTabs.indexOf(name) === -1) openTabs.push(name);
     renderView(name);
     renderMasterTabs();
+  });
+  document.addEventListener('click', function (e) {
+    const link = e.target.closest('.inv-detail-images a');
+    if (!link) return;
+    e.preventDefault();
+    let box = document.getElementById('inv-image-full');
+    if (!box) {
+      box = document.createElement('div');
+      box.id = 'inv-image-full';
+      box.className = 'inv-image-full';
+      box.hidden = true;
+      box.innerHTML = '<button type="button" class="inv-image-full-close" aria-label="Close">×</button><img alt="Product photo">';
+      document.body.appendChild(box);
+      box.addEventListener('click', function (ev) {
+        if (ev.target === box || ev.target.closest('.inv-image-full-close')) box.hidden = true;
+      });
+      document.addEventListener('keydown', function (ev) {
+        if (ev.key === 'Escape') box.hidden = true;
+      });
+    }
+    box.querySelector('img').src = link.getAttribute('href');
+    box.hidden = false;
   });
   bindPortalTabbar();
   boot();
