@@ -267,6 +267,44 @@
     box.classList.remove('is-open');
   }
 
+  function underCost(value, cost) {
+    var n = Number(value);
+    var c = Number(cost);
+    return isFinite(n) && isFinite(c) && c > 0 && n < c;
+  }
+
+  function paintReviewRow(row) {
+    if (!row) return;
+    var cost = Number(row.getAttribute('data-sb-cost'));
+    var under = false;
+    row.querySelectorAll('[data-sb-new]').forEach(function (input) {
+      var bad = underCost(input.value, cost);
+      input.classList.toggle('is-under', bad);
+      if (bad) under = true;
+    });
+    if (!under) row.removeAttribute('data-sb-ok');
+    var allowBtn = row.querySelector('[data-sb-allow]');
+    if (allowBtn) {
+      allowBtn.classList.toggle('hidden', !under);
+      allowBtn.textContent = row.getAttribute('data-sb-ok') === '1' ? 'Confirmed' : 'Confirm';
+    }
+    row.classList.toggle('has-under', under && row.getAttribute('data-sb-ok') !== '1');
+  }
+
+  function syncReviewConfirm() {
+    var confirmBtn = $('sb-review-confirm');
+    if (!confirmBtn) return;
+    var blocked = false;
+    document.querySelectorAll('#sb-review-rows tr[data-sb-change]').forEach(function (row) {
+      if (row.classList.contains('is-skipped')) return;
+      if (row.classList.contains('has-under')) blocked = true;
+    });
+    var any = document.querySelector('#sb-review-rows tr[data-sb-change]:not(.is-skipped)');
+    confirmBtn.disabled = blocked || !any;
+    confirmBtn.classList.toggle('is-locked', blocked);
+    confirmBtn.title = blocked ? 'A price is under cost. Confirm that row, change the price, or skip it.' : '';
+  }
+
   function showReview(data) {
     var box = $('sb-review');
     var note = $('sb-review-note');
@@ -282,10 +320,9 @@
     if (skipped) bits.push(skipped + (skipped === 1 ? ' item has no cost, so its prices stay as they are.' : ' items have no cost, so their prices stay as they are.'));
     if (note) note.textContent = bits.join(' ');
     body.innerHTML = changes.length ? changes.map(function (row) {
-      return '<tr class="border-t border-slate-200" data-sb-change="' + esc(row.id) + '">' +
+      return '<tr class="border-t border-slate-200" data-sb-change="' + esc(row.id) + '" data-sb-cost="' + esc(row.cost) + '">' +
         '<td class="py-2 px-2">' + esc(row.name) + '</td>' +
         '<td class="py-2 px-2">' + esc(row.sku) + '</td>' +
-        '<td class="py-2 px-2">' + esc(row.brand) + '</td>' +
         '<td class="py-2 px-2">' + moneyText(row.cost) + '</td>' +
         '<td class="py-2 px-2">' + moneyText(row.sellOld) + '</td>' +
         '<td class="py-2 px-2"><input data-sb-new="sell" type="number" min="0" step="0.01" value="' + esc(row.sellNew) + '"></td>' +
@@ -293,10 +330,13 @@
         '<td class="py-2 px-2"><input data-sb-new="dealer" type="number" min="0" step="0.01" value="' + esc(row.dealerNew) + '"></td>' +
         '<td class="py-2 px-2">' + moneyText(row.integratorOld) + '</td>' +
         '<td class="py-2 px-2"><input data-sb-new="integrator" type="number" min="0" step="0.01" value="' + esc(row.integratorNew) + '"></td>' +
-        '<td class="py-2 px-2"><button type="button" class="text-sm text-slate-600" data-sb-skip>Skip</button></td>' +
+        '<td class="py-2 px-2 sb-review-actions"><button type="button" class="text-sm text-slate-600" data-sb-skip>Skip</button> <button type="button" class="text-sm text-red-600 hidden" data-sb-allow>Confirm</button></td>' +
         '</tr>';
-    }).join('') : '<tr><td class="py-4 px-2 text-slate-500" colspan="11">Nothing to update.</td></tr>';
+    }).join('') : '<tr><td class="py-4 px-2 text-slate-500" colspan="10">Nothing to update.</td></tr>';
+    body.querySelectorAll('tr[data-sb-change]').forEach(paintReviewRow);
+    syncReviewConfirm();
     if (confirmBtn) confirmBtn.classList.toggle('hidden', !changes.length);
+    syncReviewConfirm();
     box.hidden = false;
     box.classList.add('is-open');
   }
@@ -362,6 +402,7 @@
   async function confirmReview() {
     if (!S.brand || !S.brand.id || !S.pending) return;
     var confirmBtn = $('sb-review-confirm');
+    if (confirmBtn && confirmBtn.disabled) return;
     if (confirmBtn) confirmBtn.disabled = true;
     try {
       var saved = await saveBrand(true);
@@ -395,13 +436,26 @@
     if (reviewConfirm) reviewConfirm.addEventListener('click', confirmReview);
     var reviewRows = $('sb-review-rows');
     if (reviewRows) reviewRows.addEventListener('click', function (e) {
+      var row = e.target.closest('tr');
+      var allow = e.target.closest('[data-sb-allow]');
+      if (allow && row) {
+        row.setAttribute('data-sb-ok', '1');
+        paintReviewRow(row);
+        syncReviewConfirm();
+        return;
+      }
       var skip = e.target.closest('[data-sb-skip]');
-      if (!skip) return;
-      var row = skip.closest('tr');
-      if (!row) return;
+      if (!skip || !row) return;
       var on = row.classList.toggle('is-skipped');
       skip.textContent = on ? 'Undo' : 'Skip';
       row.querySelectorAll('input').forEach(function (input) { input.disabled = on; });
+      syncReviewConfirm();
+    });
+    if (reviewRows) reviewRows.addEventListener('input', function (e) {
+      var row = e.target.closest('tr');
+      if (!row) return;
+      paintReviewRow(row);
+      syncReviewConfirm();
     });
     var tabBrand = $('sb-tab-brand');
     var tabPrice = $('sb-tab-price');
