@@ -1,6 +1,17 @@
 {
-  "build": "2026-10-02-new-request-quote",
+  "build": "2026-10-02-quote-line-cols",
   "notes": [
+    {
+      "id": "2026-10-02-quote-line-cols",
+      "date": "2026-10-02",
+      "apps": ["portal"],
+      "title": "Quote lines show sell price",
+      "changed": [
+        "On a Request Quote, SKU is the first column and Item is next to it.",
+        "Sell price sits in front of Dealer price."
+      ],
+      "kind": "update"
+    },
     {
       "id": "2026-10-02-new-request-quote",
       "date": "2026-10-02",
@@ -596,7 +607,7 @@
       },
       {
         "title": "Request Quote",
-        "text": "Ask Spectrum to price a job. Click New Request Quote and add the lines. Customer, terms, and tax stay off this page until Spectrum sends the quote back.",
+        "text": "Ask Spectrum to price a job. Click New Request Quote. SKU is first, then the item. Sell price is shown before your dealer price.",
         "video": "/assets/portal-guide/quotes.mp4"
       },
       {

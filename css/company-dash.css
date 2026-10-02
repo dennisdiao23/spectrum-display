@@ -1207,6 +1207,29 @@ html.dash-scroll-lock body.company-app {
   background: #f8fafc;
   color: #334155;
 }
+#sb-review .mail-card.sb-review-card {
+  width: calc(100vw - 1.25rem);
+  max-width: none;
+  height: calc(100vh - 1.25rem);
+  max-height: calc(100vh - 1.25rem);
+}
+#sb-review .sb-review-table {
+  max-height: calc(100vh - 10.5rem);
+}
+#sb-review .sb-review-table th,
+#sb-review .sb-review-table td {
+  white-space: nowrap;
+}
+#sb-review input.is-under {
+  color: #dc2626;
+  border-color: #dc2626;
+  font-weight: 650;
+}
+#sb-review-confirm.is-locked,
+#sb-review-confirm:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
 .cc-leave.is-open {
   display: flex;
 }
@@ -3044,46 +3067,69 @@ html.dash-scroll-lock body.company-app {
 .inv-adv-panel {
   display: flex;
   flex-wrap: wrap;
-  align-items: flex-end;
-  gap: 0.65rem 0.75rem;
-  margin: 0.35rem 0 0.55rem;
-  padding: 0.75rem 0.85rem;
-  border: 1px solid #334155;
-  border-radius: 1rem;
-  background: #0f172a;
+  align-items: center;
+  gap: 0.45rem 0.85rem;
+  margin: 0.15rem 0 0.45rem;
+  padding: 0;
+  border: 0;
+  background: transparent;
 }
 .inv-adv-panel.hidden,
 .inv-adv-panel[hidden] { display: none; }
 .inv-adv-field {
-  display: flex;
-  flex-direction: column;
-  gap: 0.2rem;
-  font-size: 0.68rem;
-  font-weight: 600;
-  letter-spacing: 0.02em;
-  color: #94a3b8;
+  display: inline-flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 0.4rem;
+  margin: 0;
+  font-size: 0.75rem;
+  font-weight: 650;
+  color: var(--dash-muted);
 }
+.company-main .inv-adv-field select,
 .inv-adv-field select {
-  min-width: 9rem;
-  background: #1e293b;
-  color: #e2e8f0;
-  border: 1px solid #334155;
-  border-radius: 999px;
-  padding: 0.4rem 0.75rem;
+  -webkit-appearance: none;
+  appearance: none;
+  min-width: 7.5rem;
+  height: 2rem;
+  margin: 0;
+  background-color: #fff !important;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 8'%3E%3Cpath fill='none' stroke='%237b87a2' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round' d='M1 1.5 6 6.5 11 1.5'/%3E%3C/svg%3E") !important;
+  background-repeat: no-repeat !important;
+  background-position: right 0.7rem center !important;
+  background-size: 0.65rem !important;
+  color: #122046 !important;
+  border: 1px solid #d5dcea !important;
+  border-radius: 999px !important;
+  padding: 0.2rem 1.7rem 0.2rem 0.8rem;
+  font: inherit;
   font-size: 0.8125rem;
-  font-weight: 500;
+  font-weight: 600;
+  line-height: 1.2;
+  cursor: pointer;
+}
+.inv-adv-field select:hover,
+.company-main .inv-adv-field select:hover {
+  border-color: #c5d0e4 !important;
 }
 .inv-adv-clear {
-  margin-left: auto;
-  border: 0;
-  background: transparent;
-  color: #7dd3fc;
-  font-size: 0.8125rem;
-  font-weight: 600;
+  margin: 0;
+  height: 2rem;
+  border: 1px solid #d5dcea;
+  border-radius: 999px;
+  background: #fff;
+  color: #243056;
+  font: inherit;
+  font-size: 0.75rem;
+  font-weight: 700;
   cursor: pointer;
-  padding: 0.4rem 0.2rem;
+  padding: 0 0.9rem;
 }
-.inv-adv-clear:hover { color: #fff; }
+.inv-adv-clear:hover {
+  background: #f7f9fc;
+  border-color: #c5d0e4;
+  color: #122046;
+}
 .cc-list-desc {
   margin: 0;
   font-size: 0.8125rem;
@@ -9670,6 +9716,12 @@ body.dash-split-lock #settings-pane.space-y-6 > :not([hidden]) {
   body.portal-app .page-kpis-3 {
     grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 0.65rem;
+  }
+
+  body.portal-app .dash-home-kpis > .dash-kpi:last-child:nth-child(odd),
+  body.portal-app .page-kpis > .dash-kpi:last-child:nth-child(odd),
+  body.company-app:not(.portal-app) .page-kpis:not(.page-kpis-5):not(.page-kpis-6) > .dash-kpi:last-child:nth-child(odd) {
+    grid-column: 1 / -1;
   }
 
   body.portal-app .dash-home-kpis .dash-kpi,
