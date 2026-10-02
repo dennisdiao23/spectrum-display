@@ -93,9 +93,7 @@
     const nameEl = $('portal-dealer-name');
     const img = $('portal-dealer-logo');
     const mark = $('portal-dealer-mark');
-    const btn = $('portal-dealer-logo-btn');
     const signedIn = !!me;
-    if (btn) btn.title = 'Dealer logo';
     const name = signedIn
       ? (dealerCompanyName() || (me.user && me.user.name) || 'Dealer')
       : 'Dealer Portal';
