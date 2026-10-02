@@ -1,17 +1,6 @@
 {
-  "build": "2026-10-02-portal-files",
+  "build": "2026-10-02-new-request-quote",
   "notes": [
-    {
-      "id": "2026-10-02-portal-files",
-      "date": "2026-10-02",
-      "apps": ["portal"],
-      "title": "Files open in a preview",
-      "changed": [
-        "Files are in a table, with View and Download buttons."
-      ],
-      "how": "Open Settings, then Company. Drop a file next to Choose File, or pick one and click Upload. View opens the file in a window on the page. Download saves it.",
-      "kind": "update"
-    },
     {
       "id": "2026-10-02-new-request-quote",
       "date": "2026-10-02",

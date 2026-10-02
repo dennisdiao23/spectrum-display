@@ -203,18 +203,23 @@
     }
     .portal-co-file-row input[type="file"] {
       font-size: 0.95rem;
-      flex: 1 1 11rem;
-      max-width: 15rem;
+      flex: 1 1 12rem;
+      max-width: 16rem;
       min-width: 0;
     }
     .portal-co-drop {
-      min-width: 7.5rem;
-      padding: 0.42rem 0.75rem;
-      border: 1px dashed #94a3b8;
-      border-radius: 0.55rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 100%;
+      min-height: 7.5rem;
+      margin-top: 0.65rem;
+      padding: 1.25rem 1rem;
+      border: 1.5px dashed #94a3b8;
+      border-radius: 0.75rem;
       color: #334155;
-      font-size: 0.95rem;
-      font-weight: 600;
+      font-size: 1.15rem;
+      font-weight: 700;
       text-align: center;
       background: #f8fafc;
     }
@@ -1411,9 +1416,9 @@
             <p class="portal-co-help">Upload a resale certificate or other PDF, JPG, or PNG. You can view and download. Spectrum staff can also delete.</p>
             <div class="portal-co-file-row">
               <input id="file-input" type="file" accept=".pdf,.jpg,.jpeg,.png,application/pdf,image/jpeg,image/png">
-              <div id="file-drop" class="portal-co-drop">Drop file</div>
               <button type="submit" class="portal-co-btn">Upload</button>
             </div>
+            <div id="file-drop" class="portal-co-drop">Drop file</div>
             <div class="portal-co-table-wrap">
               <table class="portal-co-files">
                 <thead>
