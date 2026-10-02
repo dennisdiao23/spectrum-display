@@ -948,7 +948,7 @@
                 <div class="grid sm:grid-cols-2 gap-3 text-sm">
                   <label class="sm:col-span-2">End customer company<input id="dr-end" required class="w-full mt-1 bg-slate-800 border border-slate-700 rounded-lg px-3 py-2"></label>
                   <label class="sm:col-span-2">Job name<input id="dr-job" required class="w-full mt-1 bg-slate-800 border border-slate-700 rounded-lg px-3 py-2"></label>
-                  <label class="sm:col-span-2">Job site street<input id="dr-street" required class="w-full mt-1 bg-slate-800 border border-slate-700 rounded-lg px-3 py-2"></label>
+                  <label class="sm:col-span-2">Job site street<input id="dr-street" required class="w-full mt-1 bg-slate-800 border border-slate-700 rounded-lg px-3 py-2" placeholder="Start typing an address" autocomplete="off" data-places-fields="dr-street,,dr-city,dr-state"></label>
                   <label>City<input id="dr-city" required class="w-full mt-1 bg-slate-800 border border-slate-700 rounded-lg px-3 py-2"></label>
                   <label>State<input id="dr-state" required class="w-full mt-1 bg-slate-800 border border-slate-700 rounded-lg px-3 py-2"></label>
                   <label class="sm:col-span-2">What you are selling<input id="dr-selling" required class="w-full mt-1 bg-slate-800 border border-slate-700 rounded-lg px-3 py-2" placeholder="Indoor wall, size, pitch"></label>
@@ -1779,6 +1779,7 @@
       <div id="file-preview-body" class="portal-file-preview-body"></div>
     </div>
   </div>
+  <script src="/js/address-autocomplete.js?v=dealreg1"></script>
   <script src="/js/portal.js?v=rmaphoto1"></script>
 </body>
 </html>
