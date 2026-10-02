@@ -3765,15 +3765,36 @@ async function main() {
     } catch (err) { next(err); }
   });
 
-  async function saveBrandWithPrices(brand, rules, confirm) {
+  async function saveBrandWithPrices(brand, rules, confirm, posted) {
     const savedRules = await store.saveBrandPriceRules(brand.id, rules || []);
     const preview = await store.brandPriceChanges(brand.id, brand.name, savedRules);
-    if (confirm) await store.applyBrandPriceChanges(preview.changes);
+    let changes = preview.changes;
+    if (confirm) {
+      if (Array.isArray(posted)) {
+        const allowed = {};
+        preview.changes.forEach(function (row) { allowed[String(row.id)] = row; });
+        changes = [];
+        posted.forEach(function (row) {
+          if (!row || row.skip) return;
+          const base = allowed[String(row.id)];
+          if (!base) return;
+          const sellNew = Number(row.sellNew);
+          const dealerNew = Number(row.dealerNew);
+          const integratorNew = Number(row.integratorNew);
+          changes.push(Object.assign({}, base, {
+            sellNew: isFinite(sellNew) && sellNew >= 0 ? Math.round(sellNew * 100) / 100 : base.sellNew,
+            dealerNew: isFinite(dealerNew) && dealerNew >= 0 ? Math.round(dealerNew * 100) / 100 : base.dealerNew,
+            integratorNew: isFinite(integratorNew) && integratorNew >= 0 ? Math.round(integratorNew * 100) / 100 : base.integratorNew
+          }));
+        });
+      }
+      await store.applyBrandPriceChanges(changes);
+    }
     return {
       ok: true,
       brand: brand,
       rules: savedRules,
-      changes: preview.changes,
+      changes: confirm ? changes : preview.changes,
       skippedNoCost: preview.skippedNoCost,
       applied: !!confirm
     };
@@ -3800,7 +3821,7 @@ async function main() {
         n += 1;
       }
       const brand = await store.createBrand({ id: id, name: name, tagline: '', logo: '', description: '', image: '', hidden: false });
-      const saved = await saveBrandWithPrices(brand, body.rules || [], !!body.confirm);
+      const saved = await saveBrandWithPrices(brand, body.rules || [], !!body.confirm, body.changes);
       res.json(saved);
     } catch (err) {
       res.status(400).json({ ok: false, error: err.message || 'Could not save the brand.' });
@@ -3822,7 +3843,7 @@ async function main() {
         image: existing.image || '',
         hidden: !!existing.hidden
       });
-      const saved = await saveBrandWithPrices(brand, body.rules || [], !!body.confirm);
+      const saved = await saveBrandWithPrices(brand, body.rules || [], !!body.confirm, body.changes);
       res.json(saved);
     } catch (err) {
       res.status(400).json({ ok: false, error: err.message || 'Could not save the brand.' });

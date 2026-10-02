@@ -150,7 +150,7 @@
       map[type].forEach(function (rule) {
         var basis = rule.priceKey === 'sell'
           ? '<span class="text-slate-500">Cost, increase by</span>'
-          : '<select data-sb-basis data-sb-key="' + esc(rule.priceKey) + '" data-sb-type="' + esc(type) + '">' +
+          : '<select data-sb-basis data-sb-key="' + esc(rule.priceKey) + '" data-sb-type="' + esc(type) + '" disabled>' +
             '<option value="cost"' + (rule.basis === 'cost' ? ' selected' : '') + '>Cost, increase by</option>' +
             '<option value="sell"' + (rule.basis === 'sell' ? ' selected' : '') + '>Sell price, decrease by</option>' +
             '</select>';
@@ -158,7 +158,8 @@
           '<td class="py-2 px-3">' + esc(type || 'All products') + '</td>' +
           '<td class="py-2 px-3">' + esc(bp().priceLabel(rule.priceKey)) + '</td>' +
           '<td class="py-2 px-3">' + basis + '</td>' +
-          '<td class="py-2 px-3"><input data-sb-pct data-sb-key="' + esc(rule.priceKey) + '" data-sb-type="' + esc(type) + '" type="number" min="0" step="0.01" value="' + esc(rule.adjustPct) + '" class="w-24 bg-slate-800 border border-slate-700 rounded px-2 py-1"></td>' +
+          '<td class="py-2 px-3"><input data-sb-pct data-sb-key="' + esc(rule.priceKey) + '" data-sb-type="' + esc(type) + '" type="number" min="0" step="0.01" value="' + esc(rule.adjustPct) + '" readonly class="w-24 border border-slate-300 rounded px-2 py-1">' +
+          '<button type="button" class="text-sm text-sky-600 ml-2" data-sb-edit>Edit</button></td>' +
           '<td class="py-2 px-3">' + (type && rule.priceKey === 'sell'
             ? '<button type="button" class="text-sm text-red-400" data-sb-remove-type="' + esc(type) + '">Remove</button>'
             : '') + '</td></tr>';
@@ -281,28 +282,46 @@
     if (skipped) bits.push(skipped + (skipped === 1 ? ' item has no cost, so its prices stay as they are.' : ' items have no cost, so their prices stay as they are.'));
     if (note) note.textContent = bits.join(' ');
     body.innerHTML = changes.length ? changes.map(function (row) {
-      return '<tr class="border-t border-slate-200">' +
+      return '<tr class="border-t border-slate-200" data-sb-change="' + esc(row.id) + '">' +
         '<td class="py-2 px-2">' + esc(row.name) + '</td>' +
         '<td class="py-2 px-2">' + esc(row.sku) + '</td>' +
         '<td class="py-2 px-2">' + esc(row.brand) + '</td>' +
         '<td class="py-2 px-2">' + moneyText(row.cost) + '</td>' +
         '<td class="py-2 px-2">' + moneyText(row.sellOld) + '</td>' +
-        '<td class="py-2 px-2">' + moneyText(row.sellNew) + '</td>' +
+        '<td class="py-2 px-2"><input data-sb-new="sell" type="number" min="0" step="0.01" value="' + esc(row.sellNew) + '"></td>' +
         '<td class="py-2 px-2">' + moneyText(row.dealerOld) + '</td>' +
-        '<td class="py-2 px-2">' + moneyText(row.dealerNew) + '</td>' +
+        '<td class="py-2 px-2"><input data-sb-new="dealer" type="number" min="0" step="0.01" value="' + esc(row.dealerNew) + '"></td>' +
         '<td class="py-2 px-2">' + moneyText(row.integratorOld) + '</td>' +
-        '<td class="py-2 px-2">' + moneyText(row.integratorNew) + '</td>' +
+        '<td class="py-2 px-2"><input data-sb-new="integrator" type="number" min="0" step="0.01" value="' + esc(row.integratorNew) + '"></td>' +
+        '<td class="py-2 px-2"><button type="button" class="text-sm text-slate-600" data-sb-skip>Skip</button></td>' +
         '</tr>';
-    }).join('') : '<tr><td class="py-4 px-2 text-slate-500" colspan="10">Nothing to update.</td></tr>';
+    }).join('') : '<tr><td class="py-4 px-2 text-slate-500" colspan="11">Nothing to update.</td></tr>';
     if (confirmBtn) confirmBtn.classList.toggle('hidden', !changes.length);
     box.hidden = false;
     box.classList.add('is-open');
+  }
+
+  function readReviewChanges() {
+    return Array.prototype.map.call(document.querySelectorAll('#sb-review-rows tr[data-sb-change]'), function (row) {
+      function val(name) {
+        var input = row.querySelector('[data-sb-new="' + name + '"]');
+        return input ? input.value : '';
+      }
+      return {
+        id: row.getAttribute('data-sb-change'),
+        sellNew: val('sell'),
+        dealerNew: val('dealer'),
+        integratorNew: val('integrator'),
+        skip: row.classList.contains('is-skipped')
+      };
+    });
   }
 
   async function saveBrand(confirm) {
     var name = String(($('sb-name') && $('sb-name').value) || '').trim();
     var rules = S.pending ? S.pending.rules : (S.priceTouched ? rulesFor(brandKey()) : rulesFor(S.brand.id));
     var payload = { name: name, rules: rules, confirm: !!confirm };
+    if (confirm) payload.changes = readReviewChanges();
     var saved;
     if (!S.brand.id) {
       saved = await S.api('/api/admin/settings/brands', Object.assign({ method: 'POST' }, jsonBody(payload)));
@@ -374,6 +393,16 @@
     if (reviewBack) reviewBack.addEventListener('click', hideReview);
     var reviewConfirm = $('sb-review-confirm');
     if (reviewConfirm) reviewConfirm.addEventListener('click', confirmReview);
+    var reviewRows = $('sb-review-rows');
+    if (reviewRows) reviewRows.addEventListener('click', function (e) {
+      var skip = e.target.closest('[data-sb-skip]');
+      if (!skip) return;
+      var row = skip.closest('tr');
+      if (!row) return;
+      var on = row.classList.toggle('is-skipped');
+      skip.textContent = on ? 'Undo' : 'Skip';
+      row.querySelectorAll('input').forEach(function (input) { input.disabled = on; });
+    });
     var tabBrand = $('sb-tab-brand');
     var tabPrice = $('sb-tab-price');
     if (tabBrand) tabBrand.addEventListener('click', function () {
@@ -389,6 +418,24 @@
     var rulesBody = $('sb-rules');
     if (rulesBody) rulesBody.addEventListener('input', function () { S.priceTouched = true; });
     if (rulesBody) rulesBody.addEventListener('click', function (e) {
+      var edit = e.target.closest('[data-sb-edit]');
+      if (edit) {
+        rulesBody.querySelectorAll('[data-sb-pct]').forEach(function (input) { input.readOnly = true; });
+        rulesBody.querySelectorAll('[data-sb-basis]').forEach(function (sel) { sel.disabled = true; });
+        rulesBody.querySelectorAll('[data-sb-edit]').forEach(function (btn) { btn.classList.remove('is-on'); });
+        var row = edit.closest('tr');
+        var input = row && row.querySelector('[data-sb-pct]');
+        var basis = row && row.querySelector('[data-sb-basis]');
+        if (input) {
+          input.readOnly = false;
+          input.focus();
+          input.select();
+        }
+        if (basis) basis.disabled = false;
+        edit.classList.add('is-on');
+        S.priceTouched = true;
+        return;
+      }
       var btn = e.target.closest('[data-sb-remove-type]');
       if (!btn) return;
       var type = btn.getAttribute('data-sb-remove-type');

@@ -1170,10 +1170,42 @@ html.dash-scroll-lock body.company-app {
 #sb-review {
   z-index: 200;
 }
+#sb-review .mail-card-body,
+#sb-review .sb-review-body {
+  display: flex;
+  flex-direction: column;
+  grid-template-columns: none;
+  padding-top: 0;
+}
+.sb-review-note {
+  margin: 0;
+  padding: 0.85rem 1.15rem 0.35rem;
+  color: #475569;
+  font-size: 0.875rem;
+}
 .sb-review-card {
-  width: min(72rem, 100%);
-  max-height: calc(100vh - 3rem);
-  overflow: auto;
+  width: min(96rem, calc(100vw - 2rem));
+  max-height: calc(100vh - 2rem);
+  overflow: hidden;
+}
+.sb-review-table {
+  max-height: min(32rem, calc(100vh - 14rem));
+  width: 100%;
+}
+.sb-review-table input {
+  width: 6.5rem;
+  background: #fff;
+  color: #0f172a;
+  border: 1px solid #cbd5e1;
+  border-radius: 0.35rem;
+  padding: 0.2rem 0.4rem;
+}
+#sb-review tr.is-skipped {
+  opacity: 0.45;
+}
+#sb-rules input[readonly] {
+  background: #f8fafc;
+  color: #334155;
 }
 .cc-leave.is-open {
   display: flex;

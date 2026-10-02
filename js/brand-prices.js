@@ -59,22 +59,48 @@
     return rules.some(function (row) { return String(row.brandId) === String(brandId); });
   }
 
-  function pricesFromCost(brandId, productType, cost, pctByKey) {
+  function activeRule(brandId, productType, priceKey) {
+    var type = String(productType || '').trim();
+    var list = rules.filter(function (row) {
+      return String(row.brandId) === String(brandId) && row.priceKey === priceKey;
+    });
+    var specific = type ? list.find(function (row) { return row.productType === type; }) : null;
+    if (specific && Number(specific.adjustPct) > 0) return specific;
+    var general = list.find(function (row) { return !row.productType; });
+    if (general && Number(general.adjustPct) > 0) return general;
+    return null;
+  }
+
+  function pricesFromCost(brandId, productType, cost, pctByKey, current) {
+    var cur = current || {};
+    var sellOld = money(cur.sell != null ? cur.sell : cur.price);
+    var dealerOld = money(cur.dealer != null ? cur.dealer : cur.dealerNet);
+    var integratorOld = money(cur.integrator != null ? cur.integrator : cur.integratorPrice);
     var overrides = pctByKey || {};
-    var sellRule = ruleFor(brandId, productType, 'sell') || { adjustPct: 0, basis: 'cost', priceKey: 'sell' };
-    var sellPct = overrides.sell != null ? overrides.sell : sellRule.adjustPct;
-    var sell = applyPct(cost, 'increase', sellPct);
-    function side(key) {
-      var rule = ruleFor(brandId, productType, key) || { adjustPct: 0, basis: 'sell', priceKey: key };
-      var pct = overrides[key] != null ? overrides[key] : rule.adjustPct;
-      if (rule.basis === 'sell') return applyPct(sell, 'decrease', pct);
-      return applyPct(cost, 'increase', pct);
+    function hitFor(key) {
+      if (overrides[key] != null && Number(overrides[key]) > 0) {
+        var rule = activeRule(brandId, productType, key);
+        var basis = rule ? rule.basis : (key === 'sell' ? 'cost' : 'sell');
+        return { pct: Number(overrides[key]), basis: key === 'sell' ? 'cost' : basis };
+      }
+      var found = activeRule(brandId, productType, key);
+      if (!found) return null;
+      return { pct: Number(found.adjustPct), basis: key === 'sell' ? 'cost' : found.basis };
     }
-    return { sell: sell, dealer: side('dealer'), integrator: side('integrator') };
+    var sellHit = hitFor('sell');
+    var sell = sellHit && Number(cost) > 0 ? applyPct(cost, 'increase', sellHit.pct) : sellOld;
+    function side(key, old) {
+      var hit = hitFor(key);
+      if (!hit) return old;
+      if (!(Number(cost) > 0) && hit.basis !== 'sell') return old;
+      if (hit.basis === 'sell') return applyPct(sell, 'decrease', hit.pct);
+      return applyPct(cost, 'increase', hit.pct);
+    }
+    return { sell: sell, dealer: side('dealer', dealerOld), integrator: side('integrator', integratorOld) };
   }
 
   function describeRule(rule) {
-    if (!rule) return 'Not set';
+    if (!rule || !(Number(rule.adjustPct) > 0)) return 'Leave unchanged';
     var pct = Number(rule.adjustPct) || 0;
     if (rule.priceKey === 'sell' || rule.basis === 'cost') return 'Cost, increase ' + pct + '%';
     return 'Sell price, decrease ' + pct + '%';
@@ -98,7 +124,11 @@
     if (hit && brandHasRules(brandId)) {
       var pctByKey = {};
       pctByKey[key] = hit.adjustPct;
-      return pricesFromCost(brandId, item.category || '', item.cost, pctByKey)[key];
+      return pricesFromCost(brandId, item.category || '', item.cost, pctByKey, {
+        sell: item.price,
+        dealer: item.dealerNet,
+        integrator: item.integratorPrice
+      })[key];
     }
     if (key === 'dealer') return money(item.dealerNet);
     if (key === 'integrator' && item.integratorPrice != null && item.integratorPrice !== '') return money(item.integratorPrice);
