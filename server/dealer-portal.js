@@ -2023,5 +2023,7 @@ module.exports = {
   publicPriceBookItem,
   dealerContentType,
   dealerDownloadName,
-  alreadyDealerError
+  alreadyDealerError,
+  saveDealerUpload,
+  readDealerBytes
 };

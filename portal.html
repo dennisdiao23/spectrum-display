@@ -37,7 +37,7 @@
     #company-boot .portal-boot-login button[type="submit"]{background:#fff;color:#000;border:0}
     #company-boot .portal-boot-login button[type="submit"]:hover{background:#e8e8e8}
   </style>
-  <link rel="stylesheet" href="/css/company-dash.css?v=speccards1" />
+  <link rel="stylesheet" href="/css/company-dash.css?v=rmaphoto1" />
   <style>
     /* Dealer is writing a Request Quote. Spectrum fills these when the quote comes back. */
     #so-detail.is-request .so-request-back { display: none !important; }
@@ -48,7 +48,6 @@
     #inventory-section #inv-item-panel,
     #inventory-section #inv-overview-panel { overflow: auto; }
     #sales-section .dash-split-left .cc-table-wrap { overflow: auto; }
-    #sales-section table.dash-cols[data-cols="sales"] { min-width: 1100px; width: max-content; }
     @media (min-width: 901px) {
       #walls-section:not(.hidden) {
         display: flex;
@@ -306,6 +305,18 @@
       object-fit: contain;
       background: #f8fafc;
     }
+    .rma-photo-preview {
+      display: block;
+      width: 100%;
+      max-height: 16rem;
+      margin-top: 0.65rem;
+      object-fit: contain;
+      background: #f8fafc;
+      border: 1px solid #e2e8f0;
+      border-radius: 0.75rem;
+    }
+    .rma-photo-preview.hidden { display: none !important; }
+    #rma-photo-drop { cursor: pointer; }
     .portal-co-table-wrap {
       margin-top: 0.75rem;
       max-height: 16rem;
@@ -1206,6 +1217,13 @@
                   <div id="rma-lines" class="space-y-2"></div>
                 </div>
                 <label class="block text-sm">Notes<textarea id="rma-notes" rows="3" class="w-full mt-1 bg-slate-800 border border-slate-700 rounded-lg px-3 py-2"></textarea></label>
+                <div id="rma-photo-block">
+                  <p class="text-sm font-semibold" style="margin:0">Picture</p>
+                  <input id="rma-photo-input" type="file" accept="image/jpeg,image/png,.jpg,.jpeg,.png" hidden>
+                  <div id="rma-photo-drop" class="portal-co-drop" role="button" tabindex="0">Drop picture</div>
+                  <img id="rma-photo-preview" class="rma-photo-preview hidden" alt="">
+                  <button id="rma-photo-clear" type="button" class="hidden text-sm text-slate-500">Remove picture</button>
+                </div>
                 <button id="rma-save" type="submit" class="px-4 py-2 rounded-full bg-sky-500 hover:bg-sky-400 text-white text-sm font-semibold">Submit</button>
                 <p id="rma-msg" class="hidden text-sm"></p>
               </form>
@@ -1778,6 +1796,6 @@
       <div id="file-preview-body" class="portal-file-preview-body"></div>
     </div>
   </div>
-  <script src="/js/portal.js?v=wallphoto1"></script>
+  <script src="/js/portal.js?v=wallphoto2"></script>
 </body>
 </html>

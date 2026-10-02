@@ -3,6 +3,8 @@
  * This does not create a credit, a replacement order, or a shipping label.
  */
 
+const path = require('path');
+
 const REASONS = {
   defective: 'Defective',
   wrong: 'Wrong item',
@@ -75,6 +77,12 @@ function formatRow(row, extras) {
     lines: lines,
     notes: row.notes || '',
     status: row.status || 'submitted',
+    photoName: row.photo_name || '',
+    photoUrl: row.photo_url
+      ? (extra.admin
+        ? '/api/admin/dealer-rmas/' + row.id + '/photo'
+        : '/api/dealer/rmas/' + row.id + '/photo')
+      : '',
     createdAt: row.created_at || '',
     updatedAt: row.updated_at || ''
   };
@@ -113,11 +121,36 @@ function ensureDealerRmas(db) {
       lines_json TEXT NOT NULL DEFAULT '[]',
       notes TEXT NOT NULL DEFAULT '',
       status TEXT NOT NULL DEFAULT 'submitted',
+      photo_name TEXT NOT NULL DEFAULT '',
+      photo_url TEXT NOT NULL DEFAULT '',
       created_at TEXT NOT NULL,
       updated_at TEXT NOT NULL
     );
     CREATE INDEX IF NOT EXISTS dealer_rmas_customer_idx ON dealer_rmas (customer_id, created_at);
   `);
+  const cols = db.prepare('PRAGMA table_info(dealer_rmas)').all().map(function (col) { return col.name; });
+  if (cols.indexOf('photo_name') === -1) db.exec("ALTER TABLE dealer_rmas ADD COLUMN photo_name TEXT NOT NULL DEFAULT ''");
+  if (cols.indexOf('photo_url') === -1) db.exec("ALTER TABLE dealer_rmas ADD COLUMN photo_url TEXT NOT NULL DEFAULT ''");
+}
+
+function pictureFile(file) {
+  if (!file || !file.buffer) return null;
+  const mime = String(file.mimetype || '').toLowerCase();
+  let ext = path.extname(file.originalname || '').toLowerCase();
+  if (ext !== '.jpg' && ext !== '.jpeg' && ext !== '.png') {
+    if (mime === 'image/png') ext = '.png';
+    else if (mime === 'image/jpeg' || mime === 'image/jpg') ext = '.jpg';
+    else return null;
+    file.originalname = String(file.originalname || 'picture').replace(/\.[^.]+$/, '') + ext;
+  }
+  return file;
+}
+
+async function storePicture(file, customerId, supabase) {
+  const picture = pictureFile(file);
+  if (!picture) return null;
+  const portal = require('./dealer-portal');
+  return portal.saveDealerUpload(picture, customerId, supabase);
 }
 
 function sqliteApi(db, store) {
@@ -146,18 +179,21 @@ function sqliteApi(db, store) {
       if (!row || String(row.customer_id) !== dealerCustomerId(user)) return null;
       return formatRow(row);
     },
-    async createPortalRma(user, body) {
+    async createPortalRma(user, body, file) {
       const customerId = dealerCustomerId(user);
       if (!customerId) {
         throw Object.assign(new Error('This portal login is not linked to a dealer company.'), { code: 'no_customer' });
       }
       const input = readInput(body);
+      const picture = await storePicture(file, customerId, null);
+      if (file && !picture) throw Object.assign(new Error('Picture must be a JPG or PNG.'), { code: 'invalid' });
       const numbers = db.prepare('SELECT number FROM dealer_rmas').all().map(function (row) { return row.number; });
       const stamp = nowIso();
       const info = db.prepare(`
         INSERT INTO dealer_rmas (
-          number, customer_id, dealer_user_id, order_ref, reason, lines_json, notes, status, created_at, updated_at
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, 'submitted', ?, ?)
+          number, customer_id, dealer_user_id, order_ref, reason, lines_json, notes, status,
+          photo_name, photo_url, created_at, updated_at
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, 'submitted', ?, ?, ?, ?)
       `).run(
         nextNumberFrom(numbers),
         customerId,
@@ -166,10 +202,32 @@ function sqliteApi(db, store) {
         input.reason,
         JSON.stringify(input.lines),
         input.notes,
+        picture ? picture.name : '',
+        picture ? picture.url : '',
         stamp,
         stamp
       );
       return formatRow(getRow(info.lastInsertRowid));
+    },
+    async readPortalRmaPhoto(user, id) {
+      const row = getRow(id);
+      if (!row || String(row.customer_id) !== dealerCustomerId(user) || !row.photo_url) return null;
+      const portal = require('./dealer-portal');
+      return {
+        name: row.photo_name || 'picture',
+        url: row.photo_url,
+        buffer: await portal.readDealerBytes(row.photo_url, null)
+      };
+    },
+    async readDealerRmaPhoto(id) {
+      const row = getRow(id);
+      if (!row || !row.photo_url) return null;
+      const portal = require('./dealer-portal');
+      return {
+        name: row.photo_name || 'picture',
+        url: row.photo_url,
+        buffer: await portal.readDealerBytes(row.photo_url, null)
+      };
     }
   };
 }
@@ -201,12 +259,14 @@ function supabaseApi(supabase, store) {
       if (!data || String(data.customer_id) !== dealerCustomerId(user)) return null;
       return formatRow(data);
     },
-    async createPortalRma(user, body) {
+    async createPortalRma(user, body, file) {
       const customerId = dealerCustomerId(user);
       if (!customerId) {
         throw Object.assign(new Error('This portal login is not linked to a dealer company.'), { code: 'no_customer' });
       }
       const input = readInput(body);
+      const picture = await storePicture(file, customerId, supabase);
+      if (file && !picture) throw Object.assign(new Error('Picture must be a JPG or PNG.'), { code: 'invalid' });
       const rows = await allRows();
       const stamp = nowIso();
       const fields = {
@@ -218,12 +278,36 @@ function supabaseApi(supabase, store) {
         lines_json: JSON.stringify(input.lines),
         notes: input.notes,
         status: 'submitted',
+        photo_name: picture ? picture.name : '',
+        photo_url: picture ? picture.url : '',
         created_at: stamp,
         updated_at: stamp
       };
       const { data, error } = await supabase.from('dealer_rmas').insert(fields).select('*').single();
       throwIf(error, 'Could not save this RMA.');
       return formatRow(data);
+    },
+    async readPortalRmaPhoto(user, id) {
+      const { data, error } = await supabase.from('dealer_rmas').select('*').eq('id', id).maybeSingle();
+      throwIf(error, 'Could not load this picture.');
+      if (!data || String(data.customer_id) !== dealerCustomerId(user) || !data.photo_url) return null;
+      const portal = require('./dealer-portal');
+      return {
+        name: data.photo_name || 'picture',
+        url: data.photo_url,
+        buffer: await portal.readDealerBytes(data.photo_url, supabase)
+      };
+    },
+    async readDealerRmaPhoto(id) {
+      const { data, error } = await supabase.from('dealer_rmas').select('*').eq('id', id).maybeSingle();
+      throwIf(error, 'Could not load this picture.');
+      if (!data || !data.photo_url) return null;
+      const portal = require('./dealer-portal');
+      return {
+        name: data.photo_name || 'picture',
+        url: data.photo_url,
+        buffer: await portal.readDealerBytes(data.photo_url, supabase)
+      };
     }
   };
 }
