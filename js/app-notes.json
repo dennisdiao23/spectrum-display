@@ -1,6 +1,17 @@
 {
-  "build": "2026-10-02-new-installed-wall",
+  "build": "2026-10-02-rma-picture",
   "notes": [
+    {
+      "id": "2026-10-02-rma-picture",
+      "date": "2026-10-02",
+      "apps": ["portal", "company"],
+      "title": "Picture on a new RMA",
+      "added": [
+        "Drop a picture on New RMA. Spectrum sees it with the return."
+      ],
+      "how": "Open RMA and click New RMA. Drop a JPG or PNG in Drop picture, or click the box to choose one. Submit sends the picture with the return.",
+      "kind": "feature"
+    },
     {
       "id": "2026-10-02-new-installed-wall",
       "date": "2026-10-02",
@@ -597,7 +608,7 @@
       },
       {
         "title": "Dealer → RMA",
-        "text": "Return requests from dealers. Open one to see the order, the reason, and where it stands. This does not create a credit or a shipping label."
+        "text": "Return requests from dealers. Open one to see the order, the reason, the picture, and where it stands. This does not create a credit or a shipping label."
       },
       {
         "title": "Inventory",
@@ -730,7 +741,7 @@
       },
       {
         "title": "RMA",
-        "text": "Start a return on something you ordered. Choose a reason and the items. Open it later for the return number and where it stands.",
+        "text": "Start a return on something you ordered. Choose a reason and the items. Drop a picture of the problem. Open it later for the return number, the picture, and where it stands.",
         "video": "/assets/portal-guide/rma.mp4"
       },
       {

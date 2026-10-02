@@ -32,7 +32,7 @@
     #company-boot .boot-login button[type="submit"]{background:#fff!important;color:#000!important;border:0}
     #company-boot .boot-login button[type="submit"]:hover{background:#e8e8e8!important}
   </style>
-  <link rel="stylesheet" href="/css/company-dash.css?v=dealercols2" />
+  <link rel="stylesheet" href="/css/company-dash.css?v=rmaphoto1" />
   <script src="/js/address-autocomplete.js"></script>
   <script src="/js/company-chat.js?v=po-ship1"></script>
   <script src="/js/company-crm.js?v=leadview1"></script>
@@ -2993,6 +2993,7 @@
                 <dl id="rma-admin-fields" class="grid sm:grid-cols-2 gap-x-6 gap-y-3 text-sm mt-4"></dl>
                 <div id="rma-admin-lines" class="mt-4 text-sm"></div>
                 <p id="rma-admin-notes" class="text-sm mt-4"></p>
+                <img id="rma-admin-photo" class="rma-photo-preview hidden" alt="">
               </div>
             </div>
           </div>
@@ -5279,7 +5280,7 @@
     </a>
   </nav>
 
-  <link rel="stylesheet" href="/css/company-dash.css?v=dealercols2" />
+  <link rel="stylesheet" href="/css/company-dash.css?v=rmaphoto1" />
   <link rel="stylesheet" href="/css/company-tw.css?v=boot1" />
 
   <script>
@@ -20929,6 +20930,17 @@
         }).join('')
         : '';
       document.getElementById('rma-admin-notes').textContent = row.notes || '';
+      const photo = document.getElementById('rma-admin-photo');
+      if (photo) {
+        if (row.photoUrl) {
+          photo.src = row.photoUrl;
+          photo.alt = row.photoName || 'RMA picture';
+          photo.classList.remove('hidden');
+        } else {
+          photo.removeAttribute('src');
+          photo.classList.add('hidden');
+        }
+      }
       renderDealerRmaTable();
     }
     function renderDealerRmaTable() {
