@@ -9695,6 +9695,12 @@ body.dash-split-lock #settings-pane.space-y-6 > :not([hidden]) {
     gap: 0.65rem;
   }
 
+  body.portal-app .dash-home-kpis > .dash-kpi:last-child:nth-child(odd),
+  body.portal-app .page-kpis > .dash-kpi:last-child:nth-child(odd),
+  body.company-app:not(.portal-app) .page-kpis:not(.page-kpis-5):not(.page-kpis-6) > .dash-kpi:last-child:nth-child(odd) {
+    grid-column: 1 / -1;
+  }
+
   body.portal-app .dash-home-kpis .dash-kpi,
   body.portal-app .page-kpis .dash-kpi {
     min-height: 0;
