@@ -457,10 +457,13 @@ async function main() {
     const qs = req.url.includes('?') ? req.url.slice(req.url.indexOf('?')) : '';
     res.redirect(301, '/portal' + qs);
   });
-  ['/portal/book', '/portal/quotes', '/portal/orders', '/portal/walls', '/portal/registrations', '/portal/incoming', '/portal/leads', '/portal/rmas', '/portal/projects', '/portal/panels', '/portal/calculator', '/portal/company', '/portal/updates', '/portal/guide'].forEach(function (route) {
+  app.get(['/portal/incoming', '/portal/incoming/', '/portal/incoming/:id', '/portal/incoming/:id/'], function (req, res) {
+    res.redirect(302, '/portal/leads' + (req.params.id ? '/' + req.params.id : ''));
+  });
+  ['/portal/book', '/portal/quotes', '/portal/orders', '/portal/walls', '/portal/registrations', '/portal/leads', '/portal/rmas', '/portal/projects', '/portal/panels', '/portal/calculator', '/portal/company', '/portal/updates', '/portal/guide'].forEach(function (route) {
     app.get([route, route + '/'], sendPortal);
   });
-  app.get(['/portal/quotes/:id', '/portal/quotes/:id/', '/portal/orders/:id', '/portal/orders/:id/', '/portal/registrations/:id', '/portal/registrations/:id/', '/portal/incoming/:id', '/portal/incoming/:id/', '/portal/leads/:id', '/portal/leads/:id/', '/portal/rmas/:id', '/portal/rmas/:id/', '/portal/walls/:id', '/portal/walls/:id/'], sendPortal);
+  app.get(['/portal/quotes/:id', '/portal/quotes/:id/', '/portal/orders/:id', '/portal/orders/:id/', '/portal/registrations/:id', '/portal/registrations/:id/', '/portal/leads/:id', '/portal/leads/:id/', '/portal/rmas/:id', '/portal/rmas/:id/', '/portal/walls/:id', '/portal/walls/:id/'], sendPortal);
 
   const OLD_SOLUTION_REDIRECTS = [
     ['/solutions/retail-hospitality.html', '/retail-hospitality'],
@@ -3762,6 +3765,20 @@ async function main() {
     } catch (err) { next(err); }
   });
 
+  async function saveBrandWithPrices(brand, rules, confirm) {
+    const savedRules = await store.saveBrandPriceRules(brand.id, rules || []);
+    const preview = await store.brandPriceChanges(brand.id, brand.name, savedRules);
+    if (confirm) await store.applyBrandPriceChanges(preview.changes);
+    return {
+      ok: true,
+      brand: brand,
+      rules: savedRules,
+      changes: preview.changes,
+      skippedNoCost: preview.skippedNoCost,
+      applied: !!confirm
+    };
+  }
+
   app.get('/api/admin/settings/brands', requireAdmin, requirePerm('settings', 'view'), async function (_req, res, next) {
     try {
       const brands = await store.listBrands();
@@ -3783,8 +3800,8 @@ async function main() {
         n += 1;
       }
       const brand = await store.createBrand({ id: id, name: name, tagline: '', logo: '', description: '', image: '', hidden: false });
-      const rules = await store.saveBrandPriceRules(brand.id, body.rules || []);
-      res.json({ ok: true, brand: brand, rules: rules });
+      const saved = await saveBrandWithPrices(brand, body.rules || [], !!body.confirm);
+      res.json(saved);
     } catch (err) {
       res.status(400).json({ ok: false, error: err.message || 'Could not save the brand.' });
     }
@@ -3805,8 +3822,8 @@ async function main() {
         image: existing.image || '',
         hidden: !!existing.hidden
       });
-      const rules = await store.saveBrandPriceRules(brand.id, body.rules || []);
-      res.json({ ok: true, brand: brand, rules: rules });
+      const saved = await saveBrandWithPrices(brand, body.rules || [], !!body.confirm);
+      res.json(saved);
     } catch (err) {
       res.status(400).json({ ok: false, error: err.message || 'Could not save the brand.' });
     }
