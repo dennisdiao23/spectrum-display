@@ -4826,7 +4826,10 @@
             <div class="cc-field">
               <label>Cost ($)</label>
               <input id="inv-cost" form="inv-item-form" type="number" min="0" step="0.01">
-              <p class="cc-note" style="margin-top:0.35rem">China factory FOB.</p>
+              <p class="cc-note" style="margin-top:0.35rem">China factory FOB. Per panel.</p>
+              <label style="margin-top:0.85rem">Per m² cost ($)</label>
+              <input id="inv-cost-m2" form="inv-item-form" type="number" min="0" step="0.01">
+              <p class="cc-note" style="margin-top:0.35rem">Fills Cost when Cost is empty, using panel size W × H.</p>
             </div>
             <div class="cc-field">
               <label>Local warehouse cost ($)</label>
@@ -13815,7 +13818,7 @@
     }
 
     function invFormSnapshot() {
-      const ids = ['inv-item-kind', 'inv-name', 'inv-sku', 'inv-mpn', 'inv-brand', 'inv-category', 'inv-category-new', 'inv-unit', 'inv-panel-type', 'inv-packaging-type', 'inv-item-pitch', 'inv-qty-init', 'inv-item-low', 'inv-weight', 'inv-panel-w', 'inv-panel-h', 'inv-item-notes', 'inv-description', 'inv-price', 'inv-dealer-net', 'inv-integrator', 'inv-cost', 'inv-local-cost'];
+      const ids = ['inv-item-kind', 'inv-name', 'inv-sku', 'inv-mpn', 'inv-brand', 'inv-category', 'inv-category-new', 'inv-unit', 'inv-panel-type', 'inv-packaging-type', 'inv-item-pitch', 'inv-qty-init', 'inv-item-low', 'inv-weight', 'inv-panel-w', 'inv-panel-h', 'inv-item-notes', 'inv-description', 'inv-price', 'inv-dealer-net', 'inv-integrator', 'inv-cost', 'inv-cost-m2', 'inv-local-cost'];
       const vals = ids.map(function (id) {
         const el = document.getElementById(id);
         return el ? String(el.value || '') : '';
@@ -13942,6 +13945,8 @@
       fillInvCategories(item && item.category);
       document.getElementById('inv-description').value = (item && item.description) || '';
       document.getElementById('inv-cost').value = item && item.cost != null ? item.cost : '';
+      const costM2 = document.getElementById('inv-cost-m2');
+      if (costM2) costM2.value = item && item.costPerM2 != null ? item.costPerM2 : '';
       document.getElementById('inv-local-cost').value = item && item.localWarehouseCost != null ? item.localWarehouseCost : '';
       document.getElementById('inv-dealer-net').value = item && item.dealerNet != null ? item.dealerNet : '';
       const invIntegrator = document.getElementById('inv-integrator');
@@ -24851,6 +24856,29 @@
       else invSpecDocs.splice(i, 1);
       renderInvSpecEditor();
     });
+    function syncCostFromPerM2() {
+      const costEl = document.getElementById('inv-cost');
+      const perEl = document.getElementById('inv-cost-m2');
+      const wEl = document.getElementById('inv-panel-w');
+      const hEl = document.getElementById('inv-panel-h');
+      if (!costEl || !perEl) return;
+      const raw = String(costEl.value || '').trim();
+      const cost = raw === '' ? 0 : Number(raw);
+      if (cost > 0) return;
+      const per = Number(perEl.value) || 0;
+      if (per <= 0) return;
+      const w = Number(wEl && wEl.value) || 0;
+      const h = Number(hEl && hEl.value) || 0;
+      const next = (per > 0 && w > 0 && h > 0)
+        ? Math.round(per * (w / 1000) * (h / 1000) * 100) / 100
+        : 0;
+      costEl.value = String(next);
+    }
+    ['inv-cost-m2', 'inv-panel-w', 'inv-panel-h'].forEach(function (id) {
+      const el = document.getElementById(id);
+      if (!el) return;
+      el.addEventListener('input', syncCostFromPerM2);
+    });
     document.getElementById('inv-item-form').addEventListener('submit', async function (e) {
       e.preventDefault();
       const nextCost = Number(document.getElementById('inv-cost').value);
@@ -24892,7 +24920,9 @@
       fd.append('category', invCategoryFromForm());
       fd.append('description', document.getElementById('inv-description').value);
       if (canSeeCosts()) {
+        syncCostFromPerM2();
         fd.append('cost', document.getElementById('inv-cost').value);
+        fd.append('costPerM2', document.getElementById('inv-cost-m2').value);
         fd.append('localWarehouseCost', document.getElementById('inv-local-cost').value);
       }
       fd.append('dealerNet', document.getElementById('inv-dealer-net').value);

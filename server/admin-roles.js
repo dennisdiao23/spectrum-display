@@ -355,6 +355,8 @@ function redactInventoryCosts(item) {
   if (!item || typeof item !== 'object') return item;
   const out = Object.assign({}, item);
   delete out.cost;
+  delete out.costPerM2;
+  delete out.cost_per_m2;
   delete out.localWarehouseCost;
   delete out.local_warehouse_cost;
   delete out.buildCost;
@@ -376,6 +378,8 @@ function redactInventoryCostList(items) {
 function stripInventoryCostWrites(body) {
   if (!body || typeof body !== 'object') return body;
   delete body.cost;
+  delete body.costPerM2;
+  delete body.cost_per_m2;
   delete body.localWarehouseCost;
   delete body.local_warehouse_cost;
   return body;

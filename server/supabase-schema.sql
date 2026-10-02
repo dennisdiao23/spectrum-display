@@ -400,6 +400,7 @@ alter table public.inventory_items add column if not exists description text not
 alter table public.inventory_items add column if not exists cost double precision not null default 0;
 alter table public.inventory_items add column if not exists dealer_net double precision not null default 0;
 alter table public.inventory_items add column if not exists local_warehouse_cost double precision not null default 0;
+alter table public.inventory_items add column if not exists cost_per_m2 double precision not null default 0;
 alter table public.inventory_items add column if not exists weight double precision not null default 0;
 alter table public.inventory_items add column if not exists panel_w double precision not null default 0;
 alter table public.inventory_items add column if not exists panel_h double precision not null default 0;
