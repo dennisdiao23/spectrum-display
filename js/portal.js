@@ -275,6 +275,32 @@
       });
     }
   }
+  function showPageProblem(name, err) {
+    const section = viewEl(name);
+    if (!section) return;
+    let box = section.querySelector('[data-page-problem]');
+    if (!box) {
+      box = document.createElement('p');
+      box.setAttribute('data-page-problem', '1');
+      box.className = 'text-sm text-red-400';
+      box.style.margin = '0.75rem 1rem';
+      section.insertBefore(box, section.firstChild);
+    }
+    box.textContent = (err && err.message) ? err.message : 'This page could not open.';
+  }
+  function runPage(name, fn) {
+    const section = viewEl(name);
+    const old = section && section.querySelector('[data-page-problem]');
+    if (old) old.remove();
+    try {
+      const result = fn();
+      if (result && typeof result.then === 'function') {
+        result.catch(function (err) { showPageProblem(name, err); });
+      }
+    } catch (err) {
+      showPageProblem(name, err);
+    }
+  }
   function renderView(name) {
     const seen = {};
     views.forEach(function (view) {
@@ -303,21 +329,21 @@
     const sales = $('sales-section');
     if (sales) sales.classList.toggle('so-split-on', onSales);
     if (name === 'home') {
-      renderHome();
+      runPage(name, function () { renderHome(); });
       refreshHomeData();
       startDashOverviewLoop();
     } else {
       stopDashOverviewLoop();
     }
-    if (name === 'book') renderBook();
-    if (name === 'quotes' || name === 'orders') renderQuotes();
-    if (name === 'registrations') renderRegistrations();
-    if (name === 'leads') paintLeadBoard();
-    if (name === 'rmas') renderRmas();
-    if (name === 'walls') renderWalls();
-    if (name === 'projects') loadProjects();
-    if (name === 'panels') loadPanels();
-    if (name === 'company') loadCompany();
+    if (name === 'book') runPage(name, function () { renderBook(); });
+    if (name === 'quotes' || name === 'orders') runPage(name, function () { renderQuotes(); });
+    if (name === 'registrations') runPage(name, function () { renderRegistrations(); });
+    if (name === 'leads') runPage(name, function () { paintLeadBoard(); });
+    if (name === 'rmas') runPage(name, function () { renderRmas(); });
+    if (name === 'walls') runPage(name, function () { renderWalls(); });
+    if (name === 'projects') runPage(name, function () { loadProjects(); });
+    if (name === 'panels') runPage(name, function () { loadPanels(); });
+    if (name === 'company') runPage(name, function () { loadCompany(); });
     if ((name === 'updates' || name === 'guide') && window.SpectrumNotes) SpectrumNotes.paint();
     if (window.SpectrumHelp) SpectrumHelp.setPage(name);
   }
@@ -487,9 +513,31 @@
   function selectHome(name) {
     selectDashOverview(name);
   }
+  function acceptedLeads() {
+    return (leads || []).filter(function (row) { return row && row.status === 'accepted'; });
+  }
+  function waitingLeads() {
+    return (leads || []).filter(function (row) { return row && row.status === 'sent'; });
+  }
+  function paintIncomingBadge() {
+    const link = document.querySelector('#portal-nav a[data-view="leads"]');
+    if (!link) return;
+    let badge = link.querySelector('.dash-nav-count');
+    const n = waitingLeads().length;
+    if (!n) {
+      if (badge) badge.hidden = true;
+      return;
+    }
+    if (!badge) {
+      badge = document.createElement('span');
+      badge.className = 'dash-nav-count';
+      link.appendChild(badge);
+    }
+    badge.hidden = false;
+    badge.textContent = String(n);
+  }
   function renderHome() {
-    const openLeads = acceptedLeads();
-    const waiting = waitingLeads();
+    const openLeads = boardLeads();
     const quoteDrafts = docs.quote.filter(function (doc) { return doc.status === 'draft'; }).length;
     const orderDrafts = docs.order.filter(function (doc) { return doc.status === 'draft'; }).length;
     const quoteTotal = docsTotal(docs.quote);
@@ -503,9 +551,7 @@
     if (orderEl) orderEl.textContent = dashMoney(orderTotal);
     if (wallEl) wallEl.textContent = dashCount(walls.length);
     const leadHint = $('dash-hint-leads');
-    if (leadHint) {
-      leadHint.textContent = waiting.length ? (waiting.length + ' waiting') : 'Accepted leads';
-    }
+    if (leadHint) leadHint.textContent = 'On your board';
     const quoteHint = $('dash-hint-quotes');
     if (quoteHint) {
       const bits = [docs.quote.length ? (docs.quote.length + ' quotes') : 'Sales quotes'];
@@ -561,7 +607,6 @@
     ]).then(function (saved) {
       leads = (saved[0] && saved[0].leads) || [];
       walls = (saved[1] && saved[1].walls) || [];
-      paintIncomingBadge();
       if (pathView() === 'home') renderHome();
     }).catch(function () {});
   }
@@ -613,15 +658,14 @@
       return;
     }
     title.textContent = 'Leads';
-    sub.textContent = 'Accepted leads on your board. Incoming waits on Incoming.';
+    sub.textContent = 'Leads Spectrum sent you. A new one starts in New.';
     open.href = '/portal/leads';
     open.textContent = 'Open Leads →';
-    const openLeads = acceptedLeads();
-    const waiting = waitingLeads();
-    stats.innerHTML = chip(dashCount(openLeads.length), 'On board') + chip(dashCount(waiting.length), 'Waiting');
+    const openLeads = boardLeads();
+    stats.innerHTML = chip(dashCount(openLeads.length), 'On board');
     list.innerHTML = openLeads.slice(0, 8).map(function (row) {
       return dashRow(row.project || row.number || 'Lead', [row.stageLabel || 'New', leadPlace(row)].filter(Boolean).join(' · '), row.contactName || '');
-    }).join('') || '<p class="dash-activity-empty">No accepted leads yet. Incoming is where Spectrum sends new jobs.</p>';
+    }).join('') || '<p class="dash-activity-empty">No leads yet. Spectrum sends these.</p>';
   }
   function stockLabel(status) {
     if (status === 'out') return 'Out';
@@ -1360,7 +1404,7 @@
     $('so-customer-name').value = (doc && doc.customerName) || dealerCompanyName();
     $('so-customer-email').value = (doc && doc.customerEmail) || customer.email || (me && me.user && me.user.email) || '';
     $('so-number').value = (doc && doc.number) || '';
-    $('so-title').textContent = doc && doc.number ? doc.number : (order ? 'New sales order' : 'New Request Quote');
+    $('so-title').textContent = doc && doc.number ? doc.number : (order ? 'New Purchase Order' : 'New Request Quote');
     $('so-caption-title').textContent = doc && doc.number ? doc.number : salesLabel(kind);
     $('so-kind-label').textContent = order ? 'Purchase Order' : 'Request Quote';
     $('so-issue').value = (doc && doc.issueDate) || new Date().toISOString().slice(0, 10);
@@ -1452,7 +1496,17 @@
         ? '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h16l-1.5 12H5.5L4 7z"/><path d="M9 7V5a3 3 0 0 1 6 0v2"/></svg>'
         : '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M8 4h8v4H8z"/><path d="M6 8h12v12H6z"/><path d="M9 12h6M9 16h4"/></svg>';
     }
-    $('so-new-btn').textContent = order ? 'New sales order' : 'New Request Quote';
+    const phoneNew = isMobileDash();
+    const newBtn = $('so-new-btn');
+    newBtn.textContent = order ? 'New Purchase Order' : 'New Request Quote';
+    newBtn.disabled = phoneNew;
+    newBtn.classList.toggle('is-phone-off', phoneNew);
+    newBtn.setAttribute('aria-disabled', phoneNew ? 'true' : 'false');
+    const ribbonNew = $('so-ribbon-new');
+    if (ribbonNew) {
+      ribbonNew.disabled = phoneNew;
+      ribbonNew.title = phoneNew ? 'Only available on the desktop app or a tablet.' : 'New';
+    }
     $('so-back').textContent = order ? '← Purchase Order' : '← Request Quote';
     $('so-number-label').textContent = order ? 'Sales order no.' : 'Quote no.';
     const note = document.querySelector('#so-detail .so-doc-note');
@@ -1464,7 +1518,7 @@
     const lead = document.querySelector('#so-overview-panel .inv-overview-lead');
     if (lead) {
       lead.textContent = order
-        ? 'Select a purchase order to see the lines and where it stands. New sales order starts an order with Spectrum.'
+        ? 'Select a purchase order to see the lines and where it stands. New Purchase Order starts an order with Spectrum.'
         : 'Select a request quote to read it. New Request Quote starts a request for Spectrum to price.';
     }
     const openLabel = $('so-side-open-label');
@@ -1483,6 +1537,7 @@
     renderMasterTabs();
   }
   function goQuote(id, push) {
+    if (String(id) === 'new' && isMobileDash()) return;
     goSales(salesTab(), id, push);
   }
   function renderQuotes() {
@@ -1825,23 +1880,99 @@
     text('co-zip', c.billZip);
     text('co-country', c.billCountry);
   }
+  function setCoStatus(el, text, kind) {
+    if (!el) return;
+    const wide = el.classList.contains('portal-co-wide');
+    el.hidden = !text;
+    el.textContent = text || '';
+    el.className = 'portal-co-status' + (wide ? ' portal-co-wide' : '') + (kind ? ' is-' + kind : '');
+  }
+  function requestLine(request) {
+    if (!request) return { text: '', kind: '' };
+    if (request.status === 'waiting') return { text: 'Waiting for Spectrum.', kind: 'waiting' };
+    if (request.status === 'accepted') return { text: 'Spectrum accepted this.', kind: 'accepted' };
+    if (request.status === 'declined') return { text: 'Spectrum declined this.', kind: 'declined' };
+    return { text: '', kind: '' };
+  }
+  function paintAccount(data) {
+    const user = data.user || {};
+    const name = $('account-name');
+    const email = $('account-email');
+    if (name) name.textContent = user.name || '—';
+    if (email) email.textContent = user.email || '';
+    const others = (data.users || []).filter(function (row) {
+      return String(row.email || '').toLowerCase() !== String(user.email || '').toLowerCase();
+    });
+    const list = $('account-others');
+    if (list) {
+      list.innerHTML = others.length
+        ? others.map(function (row) {
+          return '<li>' + esc(row.name || '—') + ' · ' + esc(row.email || '') + '</li>';
+        }).join('')
+        : '<li class="portal-co-help">No other logins.</li>';
+    }
+    const userCard = (data.requests && data.requests.user) || null;
+    const userLine = requestLine(userCard);
+    setCoStatus($('user-request-status'), userLine.text, userLine.kind);
+    const addBtn = $('user-add-btn');
+    const waitingUser = userCard && userCard.status === 'waiting';
+    if (addBtn) {
+      addBtn.disabled = !!waitingUser;
+      addBtn.hidden = !!waitingUser;
+    }
+    if (waitingUser) {
+      const form = $('user-add-form');
+      if (form) form.hidden = true;
+    }
+  }
+  function paintCompanyRequest(data) {
+    const card = (data.requests && data.requests.company) || null;
+    const line = requestLine(card);
+    setCoStatus($('co-request-status'), line.text, line.kind);
+    const btn = $('co-update-btn');
+    const waiting = card && card.status === 'waiting';
+    if (btn) {
+      btn.disabled = !!waiting;
+      btn.hidden = !!waiting;
+    }
+    if (waiting) {
+      const form = $('co-update-form');
+      if (form) form.hidden = true;
+    }
+  }
+  function fillCompanyEditor(customer) {
+    const c = customer || {};
+    $('co-edit-display').value = c.displayName || '';
+    $('co-edit-phone').value = c.phone || '';
+    $('co-edit-first').value = c.contactFirst || '';
+    $('co-edit-last').value = c.contactLast || '';
+    $('co-edit-web').value = c.website || '';
+    $('co-edit-tax').value = c.taxId || '';
+    $('co-edit-street').value = c.billStreet || '';
+    $('co-edit-city').value = c.billCity || '';
+    $('co-edit-state').value = c.billState || '';
+    $('co-edit-zip').value = c.billZip || '';
+    $('co-edit-country').value = c.billCountry || 'United States';
+  }
   async function loadCompany() {
     const data = await api('/api/dealer/company');
     if (me) {
       me.customer = data.customer || me.customer;
       if (data.logo) me.logo = data.logo;
+      me.user = data.user || me.user;
     }
     paintDealerBrand();
     fillCompany(data.customer);
-    $('login-email-label').textContent = (data.user && data.user.email) || '';
+    paintCompanyRequest(data);
+    paintAccount(data);
     $('file-list').innerHTML = (data.files || []).map(function (file) {
       const when = file.createdAt ? new Date(file.createdAt).toLocaleString() : '';
-      return '<li class="flex flex-wrap items-center gap-x-3 gap-y-1">' +
+      return '<li>' +
         '<span>' + esc(file.name || 'File') + '</span>' +
-        (when ? '<span class="text-slate-500">' + esc(when) + '</span>' : '') +
-        '<a class="text-sky-600" href="' + esc(file.url) + '" target="_blank" rel="noopener">View</a>' +
-        '<a class="text-sky-600" href="' + esc(file.url) + '" download>Download</a></li>';
-    }).join('') || '<li class="text-slate-500">No files yet.</li>';
+        (when ? ' <span class="portal-co-help">' + esc(when) + '</span>' : '') +
+        ' <a class="text-sky-600" href="' + esc(file.url) + '" target="_blank" rel="noopener">View</a>' +
+        ' <a class="text-sky-600" href="' + esc(file.url) + '" download>Download</a></li>';
+    }).join('') || '<li class="portal-co-help">No files yet.</li>';
   }
 
   $('login-form').onsubmit = async function (e) {
@@ -1865,15 +1996,23 @@
       if (!ok) return;
       const wait = 1000 - (Date.now() - started);
       if (wait > 0) await new Promise(function (resolve) { setTimeout(resolve, wait); });
-      showApp();
     } catch (error) {
       stillBootLogo();
       showPortalBoot();
       $('login-panel').classList.remove('hidden');
       err.textContent = error.message;
       err.classList.remove('hidden');
+      return;
     } finally {
       if (btn) btn.disabled = false;
+    }
+    try {
+      showApp();
+    } catch (error) {
+      hidePortalBoot();
+      $('login-panel').classList.add('hidden');
+      $('portal-nav').classList.remove('hidden');
+      showPageProblem(pathView(), error);
     }
   };
   $('portal-logout').onclick = async function () {
@@ -1907,6 +2046,10 @@
   $('so-search').addEventListener('input', renderQuoteTable);
   $('so-new-btn').addEventListener('click', function () { goQuote('new', true); });
   $('so-ribbon-new').addEventListener('click', function () { goQuote('new', true); });
+  window.matchMedia('(max-width: 900px)').addEventListener('change', function () {
+    const sec = $('sales-section');
+    if (sec && !sec.classList.contains('hidden')) renderQuotes();
+  });
   $('so-ribbon-find').addEventListener('click', function () {
     if (isMobileDash() && quoteRoute()) goQuote('', true);
     if ($('so-search')) $('so-search').focus();
@@ -2181,6 +2324,30 @@
     bookSku = row.getAttribute('data-sku') || '';
     renderBook();
   });
+  (function bindLeadResizer() {
+    const bar = document.querySelector('#lead-split .dash-split-resizer');
+    const split = $('lead-split');
+    if (!bar || !split) return;
+    bar.addEventListener('pointerdown', function (e) {
+      if (isMobileDash()) return;
+      e.preventDefault();
+      const startX = e.clientX;
+      const leftPane = split.querySelector('.dash-split-left');
+      const left = leftPane ? leftPane.getBoundingClientRect().width : 640;
+      document.body.classList.add('dash-col-resizing');
+      function move(ev) {
+        const next = Math.max(360, Math.min(split.getBoundingClientRect().width - 280, left + (ev.clientX - startX)));
+        split.style.setProperty('--lead-left-w', next + 'px');
+      }
+      function up() {
+        document.body.classList.remove('dash-col-resizing');
+        window.removeEventListener('pointermove', move);
+        window.removeEventListener('pointerup', up);
+      }
+      window.addEventListener('pointermove', move);
+      window.addEventListener('pointerup', up);
+    });
+  })();
   (function bindBookResizer() {
     const bar = $('inv-split-resizer');
     const split = $('inv-split');
@@ -2205,6 +2372,74 @@
       window.addEventListener('pointerup', up);
     });
   })();
+  $('co-update-btn').onclick = function () {
+    if ($('co-update-btn').disabled) return;
+    fillCompanyEditor(me && me.customer);
+    setCoStatus($('co-update-msg'), '', '');
+    $('co-update-form').hidden = false;
+  };
+  $('co-update-cancel').onclick = function () {
+    $('co-update-form').hidden = true;
+    setCoStatus($('co-update-msg'), '', '');
+  };
+  $('co-update-form').onsubmit = async function (e) {
+    e.preventDefault();
+    const msg = $('co-update-msg');
+    try {
+      await api('/api/dealer/requests', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          kind: 'company',
+          displayName: $('co-edit-display').value,
+          phone: $('co-edit-phone').value,
+          contactFirst: $('co-edit-first').value,
+          contactLast: $('co-edit-last').value,
+          website: $('co-edit-web').value,
+          taxId: $('co-edit-tax').value,
+          billStreet: $('co-edit-street').value,
+          billCity: $('co-edit-city').value,
+          billState: $('co-edit-state').value,
+          billZip: $('co-edit-zip').value,
+          billCountry: $('co-edit-country').value
+        })
+      });
+      $('co-update-form').hidden = true;
+      await loadCompany();
+    } catch (err) {
+      setCoStatus(msg, err.message, 'declined');
+    }
+  };
+  $('user-add-btn').onclick = function () {
+    if ($('user-add-btn').disabled) return;
+    $('user-add-name').value = '';
+    $('user-add-email').value = '';
+    setCoStatus($('user-add-msg'), '', '');
+    $('user-add-form').hidden = false;
+  };
+  $('user-add-cancel').onclick = function () {
+    $('user-add-form').hidden = true;
+    setCoStatus($('user-add-msg'), '', '');
+  };
+  $('user-add-form').onsubmit = async function (e) {
+    e.preventDefault();
+    const msg = $('user-add-msg');
+    try {
+      await api('/api/dealer/requests', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          kind: 'user',
+          name: $('user-add-name').value,
+          email: $('user-add-email').value
+        })
+      });
+      $('user-add-form').hidden = true;
+      await loadCompany();
+    } catch (err) {
+      setCoStatus(msg, err.message, 'declined');
+    }
+  };
   $('file-form').onsubmit = async function (e) {
     e.preventDefault();
     const msg = $('file-msg');
@@ -2215,12 +2450,10 @@
     try {
       await api('/api/dealer/files', { method: 'POST', body: body });
       input.value = '';
-      msg.textContent = 'Uploaded.';
-      msg.className = 'text-sm text-sky-600';
+      setCoStatus(msg, 'Uploaded.', 'accepted');
       loadCompany();
     } catch (err) {
-      msg.textContent = err.message;
-      msg.className = 'text-sm text-red-500';
+      setCoStatus(msg, err.message, 'declined');
     }
   };
   $('password-form').onsubmit = async function (e) {
@@ -2234,11 +2467,9 @@
       });
       $('pw-current').value = '';
       $('pw-next').value = '';
-      msg.textContent = 'Password updated.';
-      msg.className = 'text-sm text-sky-600';
+      setCoStatus(msg, 'Password updated.', 'accepted');
     } catch (err) {
-      msg.textContent = err.message;
-      msg.className = 'text-sm text-red-500';
+      setCoStatus(msg, err.message, 'declined');
     }
   };
   const PORTAL_PIN_MAX = 5;

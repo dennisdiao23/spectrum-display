@@ -150,7 +150,7 @@
       map[type].forEach(function (rule) {
         var basis = rule.priceKey === 'sell'
           ? '<span class="text-slate-500">Cost, increase by</span>'
-          : '<select data-sb-basis data-sb-key="' + esc(rule.priceKey) + '" data-sb-type="' + esc(type) + '">' +
+          : '<select data-sb-basis data-sb-key="' + esc(rule.priceKey) + '" data-sb-type="' + esc(type) + '" disabled>' +
             '<option value="cost"' + (rule.basis === 'cost' ? ' selected' : '') + '>Cost, increase by</option>' +
             '<option value="sell"' + (rule.basis === 'sell' ? ' selected' : '') + '>Sell price, decrease by</option>' +
             '</select>';
@@ -158,7 +158,8 @@
           '<td class="py-2 px-3">' + esc(type || 'All products') + '</td>' +
           '<td class="py-2 px-3">' + esc(bp().priceLabel(rule.priceKey)) + '</td>' +
           '<td class="py-2 px-3">' + basis + '</td>' +
-          '<td class="py-2 px-3"><input data-sb-pct data-sb-key="' + esc(rule.priceKey) + '" data-sb-type="' + esc(type) + '" type="number" min="0" step="0.01" value="' + esc(rule.adjustPct) + '" class="w-24 bg-slate-800 border border-slate-700 rounded px-2 py-1"></td>' +
+          '<td class="py-2 px-3"><input data-sb-pct data-sb-key="' + esc(rule.priceKey) + '" data-sb-type="' + esc(type) + '" type="number" min="0" step="0.01" value="' + esc(rule.adjustPct) + '" readonly class="w-24 border border-slate-300 rounded px-2 py-1">' +
+          '<button type="button" class="text-sm text-sky-600 ml-2" data-sb-edit>Edit</button></td>' +
           '<td class="py-2 px-3">' + (type && rule.priceKey === 'sell'
             ? '<button type="button" class="text-sm text-red-400" data-sb-remove-type="' + esc(type) + '">Remove</button>'
             : '') + '</td></tr>';
@@ -266,6 +267,44 @@
     box.classList.remove('is-open');
   }
 
+  function underCost(value, cost) {
+    var n = Number(value);
+    var c = Number(cost);
+    return isFinite(n) && isFinite(c) && c > 0 && n < c;
+  }
+
+  function paintReviewRow(row) {
+    if (!row) return;
+    var cost = Number(row.getAttribute('data-sb-cost'));
+    var under = false;
+    row.querySelectorAll('[data-sb-new]').forEach(function (input) {
+      var bad = underCost(input.value, cost);
+      input.classList.toggle('is-under', bad);
+      if (bad) under = true;
+    });
+    if (!under) row.removeAttribute('data-sb-ok');
+    var allowBtn = row.querySelector('[data-sb-allow]');
+    if (allowBtn) {
+      allowBtn.classList.toggle('hidden', !under);
+      allowBtn.textContent = row.getAttribute('data-sb-ok') === '1' ? 'Confirmed' : 'Confirm';
+    }
+    row.classList.toggle('has-under', under && row.getAttribute('data-sb-ok') !== '1');
+  }
+
+  function syncReviewConfirm() {
+    var confirmBtn = $('sb-review-confirm');
+    if (!confirmBtn) return;
+    var blocked = false;
+    document.querySelectorAll('#sb-review-rows tr[data-sb-change]').forEach(function (row) {
+      if (row.classList.contains('is-skipped')) return;
+      if (row.classList.contains('has-under')) blocked = true;
+    });
+    var any = document.querySelector('#sb-review-rows tr[data-sb-change]:not(.is-skipped)');
+    confirmBtn.disabled = blocked || !any;
+    confirmBtn.classList.toggle('is-locked', blocked);
+    confirmBtn.title = blocked ? 'A price is under cost. Confirm that row, change the price, or skip it.' : '';
+  }
+
   function showReview(data) {
     var box = $('sb-review');
     var note = $('sb-review-note');
@@ -281,28 +320,48 @@
     if (skipped) bits.push(skipped + (skipped === 1 ? ' item has no cost, so its prices stay as they are.' : ' items have no cost, so their prices stay as they are.'));
     if (note) note.textContent = bits.join(' ');
     body.innerHTML = changes.length ? changes.map(function (row) {
-      return '<tr class="border-t border-slate-200">' +
+      return '<tr class="border-t border-slate-200" data-sb-change="' + esc(row.id) + '" data-sb-cost="' + esc(row.cost) + '">' +
         '<td class="py-2 px-2">' + esc(row.name) + '</td>' +
         '<td class="py-2 px-2">' + esc(row.sku) + '</td>' +
-        '<td class="py-2 px-2">' + esc(row.brand) + '</td>' +
         '<td class="py-2 px-2">' + moneyText(row.cost) + '</td>' +
         '<td class="py-2 px-2">' + moneyText(row.sellOld) + '</td>' +
-        '<td class="py-2 px-2">' + moneyText(row.sellNew) + '</td>' +
+        '<td class="py-2 px-2"><input data-sb-new="sell" type="number" min="0" step="0.01" value="' + esc(row.sellNew) + '"></td>' +
         '<td class="py-2 px-2">' + moneyText(row.dealerOld) + '</td>' +
-        '<td class="py-2 px-2">' + moneyText(row.dealerNew) + '</td>' +
+        '<td class="py-2 px-2"><input data-sb-new="dealer" type="number" min="0" step="0.01" value="' + esc(row.dealerNew) + '"></td>' +
         '<td class="py-2 px-2">' + moneyText(row.integratorOld) + '</td>' +
-        '<td class="py-2 px-2">' + moneyText(row.integratorNew) + '</td>' +
+        '<td class="py-2 px-2"><input data-sb-new="integrator" type="number" min="0" step="0.01" value="' + esc(row.integratorNew) + '"></td>' +
+        '<td class="py-2 px-2 sb-review-actions"><button type="button" class="text-sm text-slate-600" data-sb-skip>Skip</button> <button type="button" class="text-sm text-red-600 hidden" data-sb-allow>Confirm</button></td>' +
         '</tr>';
     }).join('') : '<tr><td class="py-4 px-2 text-slate-500" colspan="10">Nothing to update.</td></tr>';
+    body.querySelectorAll('tr[data-sb-change]').forEach(paintReviewRow);
+    syncReviewConfirm();
     if (confirmBtn) confirmBtn.classList.toggle('hidden', !changes.length);
+    syncReviewConfirm();
     box.hidden = false;
     box.classList.add('is-open');
+  }
+
+  function readReviewChanges() {
+    return Array.prototype.map.call(document.querySelectorAll('#sb-review-rows tr[data-sb-change]'), function (row) {
+      function val(name) {
+        var input = row.querySelector('[data-sb-new="' + name + '"]');
+        return input ? input.value : '';
+      }
+      return {
+        id: row.getAttribute('data-sb-change'),
+        sellNew: val('sell'),
+        dealerNew: val('dealer'),
+        integratorNew: val('integrator'),
+        skip: row.classList.contains('is-skipped')
+      };
+    });
   }
 
   async function saveBrand(confirm) {
     var name = String(($('sb-name') && $('sb-name').value) || '').trim();
     var rules = S.pending ? S.pending.rules : (S.priceTouched ? rulesFor(brandKey()) : rulesFor(S.brand.id));
     var payload = { name: name, rules: rules, confirm: !!confirm };
+    if (confirm) payload.changes = readReviewChanges();
     var saved;
     if (!S.brand.id) {
       saved = await S.api('/api/admin/settings/brands', Object.assign({ method: 'POST' }, jsonBody(payload)));
@@ -343,6 +402,7 @@
   async function confirmReview() {
     if (!S.brand || !S.brand.id || !S.pending) return;
     var confirmBtn = $('sb-review-confirm');
+    if (confirmBtn && confirmBtn.disabled) return;
     if (confirmBtn) confirmBtn.disabled = true;
     try {
       var saved = await saveBrand(true);
@@ -374,6 +434,29 @@
     if (reviewBack) reviewBack.addEventListener('click', hideReview);
     var reviewConfirm = $('sb-review-confirm');
     if (reviewConfirm) reviewConfirm.addEventListener('click', confirmReview);
+    var reviewRows = $('sb-review-rows');
+    if (reviewRows) reviewRows.addEventListener('click', function (e) {
+      var row = e.target.closest('tr');
+      var allow = e.target.closest('[data-sb-allow]');
+      if (allow && row) {
+        row.setAttribute('data-sb-ok', '1');
+        paintReviewRow(row);
+        syncReviewConfirm();
+        return;
+      }
+      var skip = e.target.closest('[data-sb-skip]');
+      if (!skip || !row) return;
+      var on = row.classList.toggle('is-skipped');
+      skip.textContent = on ? 'Undo' : 'Skip';
+      row.querySelectorAll('input').forEach(function (input) { input.disabled = on; });
+      syncReviewConfirm();
+    });
+    if (reviewRows) reviewRows.addEventListener('input', function (e) {
+      var row = e.target.closest('tr');
+      if (!row) return;
+      paintReviewRow(row);
+      syncReviewConfirm();
+    });
     var tabBrand = $('sb-tab-brand');
     var tabPrice = $('sb-tab-price');
     if (tabBrand) tabBrand.addEventListener('click', function () {
@@ -389,6 +472,24 @@
     var rulesBody = $('sb-rules');
     if (rulesBody) rulesBody.addEventListener('input', function () { S.priceTouched = true; });
     if (rulesBody) rulesBody.addEventListener('click', function (e) {
+      var edit = e.target.closest('[data-sb-edit]');
+      if (edit) {
+        rulesBody.querySelectorAll('[data-sb-pct]').forEach(function (input) { input.readOnly = true; });
+        rulesBody.querySelectorAll('[data-sb-basis]').forEach(function (sel) { sel.disabled = true; });
+        rulesBody.querySelectorAll('[data-sb-edit]').forEach(function (btn) { btn.classList.remove('is-on'); });
+        var row = edit.closest('tr');
+        var input = row && row.querySelector('[data-sb-pct]');
+        var basis = row && row.querySelector('[data-sb-basis]');
+        if (input) {
+          input.readOnly = false;
+          input.focus();
+          input.select();
+        }
+        if (basis) basis.disabled = false;
+        edit.classList.add('is-on');
+        S.priceTouched = true;
+        return;
+      }
       var btn = e.target.closest('[data-sb-remove-type]');
       if (!btn) return;
       var type = btn.getAttribute('data-sb-remove-type');

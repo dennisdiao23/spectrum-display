@@ -1,16 +1,6 @@
 {
-  "build": "2026-10-02-inv-filter-pills",
+  "build": "2026-10-02-new-request-quote",
   "notes": [
-    {
-      "id": "2026-10-02-inv-filter-pills",
-      "date": "2026-10-02",
-      "apps": ["company"],
-      "title": "Inventory filters are rounded",
-      "changed": [
-        "Brand, Type, Unit, Stock place, Photo, and Spec sheet use the same rounded shape as the search bar.",
-        "Clear is a rounded button."
-      ]
-    },
     {
       "id": "2026-10-02-new-request-quote",
       "date": "2026-10-02",
@@ -626,7 +616,7 @@
       },
       {
         "title": "Settings → Company",
-        "text": "Your company on the portal. Keep the name, address, and logo here, and upload files such as your resale certificate."
+        "text": "Your company on the portal. The lines are read-only. Update sends a card for Spectrum to review. Account user shows your name and login. Change password is there. Add user sends a name and email for Spectrum to review. You can still upload files."
       },
       {
         "title": "Settings → What’s new",
