@@ -6,8 +6,11 @@
       "date": "2026-10-02",
       "apps": ["portal", "company"],
       "title": "The phone dashboard scrolls",
+      "removed": [
+        "The Overview title above the dashboard cards."
+      ],
       "changed": [
-        "On a phone, the dashboard moves when you swipe. The cards stay on top, then the detail, then Recent or Lobby.",
+        "On a phone, swipe the dashboard. The cards stay under the top bar. The detail, then Recent or Lobby, move underneath.",
         "The last panel stops above the bottom bar."
       ],
       "kind": "update"
