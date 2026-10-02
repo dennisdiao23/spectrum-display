@@ -15,6 +15,17 @@
     } catch (e) { /* keep the original link */ }
     return raw;
   }
+  function specPreviewCard(name, href) {
+    const label = name || 'Spec sheet';
+    const preview = href + (href.indexOf('#') === -1 ? '#' : '&') + 'toolbar=0&navpanes=0&scrollbar=0&view=FitH';
+    return '<li class="inv-spec-card">' +
+      '<div class="inv-spec-preview">' +
+        '<iframe src="' + esc(preview) + '" title="' + esc(label) + '" tabindex="-1"></iframe>' +
+        '<a class="inv-spec-card-hit" href="' + esc(href) + '" target="_blank" rel="noopener" aria-label="Open ' + esc(label) + '"></a>' +
+      '</div>' +
+      '<a class="inv-spec-card-name" href="' + esc(href) + '" target="_blank" rel="noopener">' + esc(label) + '</a>' +
+    '</li>';
+  }
   const viewIds = {
     home: 'dashboard-section',
     book: 'inventory-section',
@@ -965,16 +976,20 @@
       splitLeftPx: Number.isFinite(splitLeftPx) && splitLeftPx >= 160 ? splitLeftPx : 0
     };
   }
+  function sendPortalPrefs() {
+    clearTimeout(portalPrefsTimer);
+    portalPrefsTimer = null;
+    api('/api/dealer/column-prefs', {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ prefs: portalPrefs })
+    }).catch(function () {});
+  }
   function persistPortalPrefs() {
     clearTimeout(portalPrefsTimer);
-    portalPrefsTimer = setTimeout(function () {
-      api('/api/dealer/column-prefs', {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ prefs: portalPrefs })
-      }).catch(function () {});
-    }, 300);
+    portalPrefsTimer = setTimeout(sendPortalPrefs, 300);
   }
+  window.addEventListener('pagehide', sendPortalPrefs);
   function saveColState(name, state) {
     portalPrefs[name] = state;
     try { localStorage.setItem(colKey(name), JSON.stringify(state)); } catch (err) {}
@@ -993,6 +1008,7 @@
     place('lead-split', '--lead-left-w', colState('leads').splitLeftPx);
     place('dr-split', '--dash-left-w', colState('registrations').splitLeftPx);
     place('rma-split', '--rma-left-w', colState('rmas').splitLeftPx);
+    place('so-split', '--so-left-w', colState('sales').splitLeftPx);
   }
   function savePortalSplit(name, px) {
     const state = colState(name);
@@ -1024,6 +1040,7 @@
       }
     }
     applyPortalSplits();
+    Object.keys(PORTAL_COLS).forEach(function (name) { applyCols(name); });
   }
   function applyCols(name) {
     const table = portalTable(name);
@@ -1273,7 +1290,7 @@
     const specList = $('book-detail-specs');
     if (specList) {
       specList.innerHTML = docs.map(function (doc) {
-        return '<li class="inv-spec-row"><a href="' + esc(specFileHref(doc.url)) + '" target="_blank" rel="noopener">' + esc(doc.name || 'Spec sheet') + '</a></li>';
+        return specPreviewCard(doc.name, specFileHref(doc.url));
       }).join('');
     }
     const specEmpty = $('book-detail-specs-empty');
@@ -2660,6 +2677,32 @@
       window.addEventListener('pointerup', up);
     });
   })();
+  (function bindSalesResizer() {
+    const split = $('so-split');
+    const bar = $('so-split-resizer');
+    if (!bar || !split) return;
+    bar.addEventListener('pointerdown', function (e) {
+      if (isMobileDash()) return;
+      e.preventDefault();
+      const startX = e.clientX;
+      const leftPane = $('so-split-left');
+      const left = leftPane ? leftPane.getBoundingClientRect().width : 720;
+      document.body.classList.add('dash-col-resizing');
+      function move(ev) {
+        const next = Math.max(420, Math.min(split.getBoundingClientRect().width - 320, left + (ev.clientX - startX)));
+        split.style.setProperty('--so-left-w', next + 'px');
+      }
+      function up() {
+        document.body.classList.remove('dash-col-resizing');
+        window.removeEventListener('pointermove', move);
+        window.removeEventListener('pointerup', up);
+        const width = parseInt(split.style.getPropertyValue('--so-left-w'), 10);
+        if (width) savePortalSplit('sales', width);
+      }
+      window.addEventListener('pointermove', move);
+      window.addEventListener('pointerup', up);
+    });
+  })();
   (function bindRmaResizer() {
     const bar = document.querySelector('#rma-split .dash-split-resizer');
     const split = $('rma-split');
@@ -3450,6 +3493,62 @@
       };
     });
   }
+  let rmaPhotoFile = null;
+  let rmaPhotoUrl = '';
+  function rmaPictureOk(file) {
+    if (!file) return false;
+    const type = String(file.type || '').toLowerCase();
+    const name = String(file.name || '').toLowerCase();
+    return type === 'image/jpeg' || type === 'image/png' || /\.jpe?g$/.test(name) || /\.png$/.test(name);
+  }
+  function clearRmaPhotoPick() {
+    rmaPhotoFile = null;
+    if (rmaPhotoUrl) URL.revokeObjectURL(rmaPhotoUrl);
+    rmaPhotoUrl = '';
+    const input = $('rma-photo-input');
+    if (input) input.value = '';
+  }
+  function paintRmaPhoto(row) {
+    const drop = $('rma-photo-drop');
+    const img = $('rma-photo-preview');
+    const clear = $('rma-photo-clear');
+    const locked = !!row;
+    clearRmaPhotoPick();
+    if (!drop || !img) return;
+    if (locked && row.photoUrl) {
+      drop.classList.add('hidden');
+      if (clear) clear.classList.add('hidden');
+      img.src = row.photoUrl;
+      img.alt = row.photoName || 'RMA picture';
+      img.classList.remove('hidden');
+      return;
+    }
+    img.removeAttribute('src');
+    img.classList.add('hidden');
+    if (clear) clear.classList.add('hidden');
+    drop.classList.toggle('hidden', locked);
+    drop.textContent = 'Drop picture';
+  }
+  function stageRmaPhoto(file) {
+    if (!rmaPictureOk(file)) {
+      setRmaMsg('Picture must be a JPG or PNG.', false);
+      return;
+    }
+    clearRmaPhotoPick();
+    rmaPhotoFile = file;
+    rmaPhotoUrl = URL.createObjectURL(file);
+    const img = $('rma-photo-preview');
+    const drop = $('rma-photo-drop');
+    const clear = $('rma-photo-clear');
+    if (img) {
+      img.src = rmaPhotoUrl;
+      img.alt = file.name || 'RMA picture';
+      img.classList.remove('hidden');
+    }
+    if (drop) drop.textContent = file.name || 'Drop picture';
+    if (clear) clear.classList.remove('hidden');
+    setRmaMsg('', true);
+  }
   function fillRmaForm(row) {
     const locked = !!row;
     $('rma-id').value = row ? row.id : '';
@@ -3463,6 +3562,7 @@
     $('rma-reason').disabled = locked;
     $('rma-save').classList.toggle('hidden', locked);
     paintRmaLines(row ? row.lines : [], locked);
+    paintRmaPhoto(row);
     $('rma-form').classList.remove('hidden');
     $('rma-overview').classList.add('hidden');
     setRmaMsg('', true);
@@ -3538,19 +3638,53 @@
     if (row) row.remove();
     if (!$('rma-lines').querySelector('.rma-line')) paintRmaLines([], false);
   });
+  (function bindRmaPhoto() {
+    const drop = $('rma-photo-drop');
+    const input = $('rma-photo-input');
+    if (!drop || !input) return;
+    drop.addEventListener('click', function () { input.click(); });
+    drop.addEventListener('keydown', function (e) {
+      if (e.key === 'Enter' || e.key === ' ') {
+        e.preventDefault();
+        input.click();
+      }
+    });
+    input.addEventListener('change', function () {
+      const file = input.files && input.files[0];
+      if (file) stageRmaPhoto(file);
+    });
+    ['dragenter', 'dragover'].forEach(function (name) {
+      drop.addEventListener(name, function (e) {
+        e.preventDefault();
+        drop.classList.add('is-over');
+      });
+    });
+    ['dragleave', 'drop'].forEach(function (name) {
+      drop.addEventListener(name, function (e) {
+        e.preventDefault();
+        drop.classList.remove('is-over');
+      });
+    });
+    drop.addEventListener('drop', function (e) {
+      const file = e.dataTransfer && e.dataTransfer.files && e.dataTransfer.files[0];
+      if (file) stageRmaPhoto(file);
+    });
+    const clear = $('rma-photo-clear');
+    if (clear) clear.addEventListener('click', function () { paintRmaPhoto(null); });
+  })();
   $('rma-form').addEventListener('submit', async function (e) {
     e.preventDefault();
     setRmaMsg('');
     try {
+      const body = new FormData();
+      body.append('orderRef', $('rma-order').value);
+      body.append('reason', $('rma-reason').value);
+      body.append('lines', JSON.stringify(readRmaLines()));
+      body.append('notes', $('rma-notes').value);
+      if (rmaPhotoFile) body.append('photo', rmaPhotoFile, rmaPhotoFile.name || 'picture.jpg');
       const saved = await api('/api/dealer/rmas', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          orderRef: $('rma-order').value,
-          reason: $('rma-reason').value,
-          lines: readRmaLines(),
-          notes: $('rma-notes').value
-        })
+        body: body
       });
       const id = saved.rma && saved.rma.id;
       if (id) goRma(id, true);
