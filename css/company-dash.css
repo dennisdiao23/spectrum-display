@@ -8209,12 +8209,14 @@ body.dash-split-lock #crm-pipe-section .crm-board {
 .inv-spec-row a:hover { text-decoration: underline; }
 .inv-spec-remove { border: 0; background: transparent; color: #64748b; font-size: 0.8rem; cursor: pointer; }
 .inv-spec-remove:hover { color: #b91c1c; }
-.inv-spec-drop {
+.inv-spec-drop,
+.cc-field label.inv-spec-drop {
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
   gap: 0.2rem;
+  width: auto;
   min-height: 7.5rem;
   margin: 0.35rem 0 0.75rem;
   padding: 1rem;
@@ -8224,16 +8226,31 @@ body.dash-split-lock #crm-pipe-section .crm-board {
   color: #475569;
   text-align: center;
   cursor: pointer;
+  font-size: 0.95rem;
+  font-weight: 600;
 }
-.inv-spec-drop strong { color: #0f172a; font-size: 0.95rem; }
-.inv-spec-drop span { font-size: 0.8rem; }
-.inv-spec-drop input { display: none; }
-.inv-spec-drop.is-over {
+.inv-spec-drop strong,
+.cc-field label.inv-spec-drop strong { color: #0f172a; font-size: 0.95rem; }
+.inv-spec-drop span,
+.cc-field label.inv-spec-drop span { font-size: 0.8rem; font-weight: 500; }
+.inv-spec-drop input,
+.cc-field .inv-spec-drop input[type="file"] {
+  display: none !important;
+  width: 0 !important;
+  height: 0 !important;
+  padding: 0 !important;
+  border: 0 !important;
+  position: absolute;
+  opacity: 0;
+}
+.inv-spec-drop.is-over,
+.cc-field label.inv-spec-drop.is-over {
   border-color: #0284c7;
   background: #e0f2fe;
   color: #0369a1;
 }
-.inv-spec-drop.hidden { display: none; }
+.inv-spec-drop.hidden,
+.cc-field label.inv-spec-drop.hidden { display: none !important; }
 .inv-kit-table,
 .inv-kit-detail-table {
   table-layout: auto;
