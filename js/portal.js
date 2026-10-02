@@ -976,16 +976,20 @@
       splitLeftPx: Number.isFinite(splitLeftPx) && splitLeftPx >= 160 ? splitLeftPx : 0
     };
   }
+  function sendPortalPrefs() {
+    clearTimeout(portalPrefsTimer);
+    portalPrefsTimer = null;
+    api('/api/dealer/column-prefs', {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ prefs: portalPrefs })
+    }).catch(function () {});
+  }
   function persistPortalPrefs() {
     clearTimeout(portalPrefsTimer);
-    portalPrefsTimer = setTimeout(function () {
-      api('/api/dealer/column-prefs', {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ prefs: portalPrefs })
-      }).catch(function () {});
-    }, 300);
+    portalPrefsTimer = setTimeout(sendPortalPrefs, 300);
   }
+  window.addEventListener('pagehide', sendPortalPrefs);
   function saveColState(name, state) {
     portalPrefs[name] = state;
     try { localStorage.setItem(colKey(name), JSON.stringify(state)); } catch (err) {}
@@ -1004,6 +1008,7 @@
     place('lead-split', '--lead-left-w', colState('leads').splitLeftPx);
     place('dr-split', '--dash-left-w', colState('registrations').splitLeftPx);
     place('rma-split', '--rma-left-w', colState('rmas').splitLeftPx);
+    place('so-split', '--so-left-w', colState('sales').splitLeftPx);
   }
   function savePortalSplit(name, px) {
     const state = colState(name);
@@ -1035,6 +1040,7 @@
       }
     }
     applyPortalSplits();
+    Object.keys(PORTAL_COLS).forEach(function (name) { applyCols(name); });
   }
   function applyCols(name) {
     const table = portalTable(name);
@@ -2666,6 +2672,32 @@
         window.removeEventListener('pointerup', up);
         const width = parseInt(split.style.getPropertyValue('--inv-left-w'), 10);
         if (width) savePortalSplit('dealer-book', width);
+      }
+      window.addEventListener('pointermove', move);
+      window.addEventListener('pointerup', up);
+    });
+  })();
+  (function bindSalesResizer() {
+    const split = $('so-split');
+    const bar = $('so-split-resizer');
+    if (!bar || !split) return;
+    bar.addEventListener('pointerdown', function (e) {
+      if (isMobileDash()) return;
+      e.preventDefault();
+      const startX = e.clientX;
+      const leftPane = $('so-split-left');
+      const left = leftPane ? leftPane.getBoundingClientRect().width : 720;
+      document.body.classList.add('dash-col-resizing');
+      function move(ev) {
+        const next = Math.max(420, Math.min(split.getBoundingClientRect().width - 320, left + (ev.clientX - startX)));
+        split.style.setProperty('--so-left-w', next + 'px');
+      }
+      function up() {
+        document.body.classList.remove('dash-col-resizing');
+        window.removeEventListener('pointermove', move);
+        window.removeEventListener('pointerup', up);
+        const width = parseInt(split.style.getPropertyValue('--so-left-w'), 10);
+        if (width) savePortalSplit('sales', width);
       }
       window.addEventListener('pointermove', move);
       window.addEventListener('pointerup', up);
