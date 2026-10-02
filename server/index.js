@@ -356,6 +356,7 @@ async function main() {
   app.get(['/company/settings/price-levels', '/company/settings/price-levels/', '/company/settings/price-levels/:id', '/company/settings/price-levels/:id/'], function (_req, res) {
     res.redirect(302, '/company/settings/brands');
   });
+  app.get(['/company/crm/leads/:id/wall', '/company/crm/leads/:id/wall/'], sendCompany);
   app.get(['/company/crm/leads/:id', '/company/crm/leads/:id/'], sendCompany);
   app.get(['/company/crm/pipeline/:id', '/company/crm/pipeline/:id/'], sendCompany);
   app.get(['/company/crm/activities/:id', '/company/crm/activities/:id/'], sendCompany);

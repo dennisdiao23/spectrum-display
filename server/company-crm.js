@@ -538,6 +538,13 @@ function normalizeLead(input) {
   };
 }
 
+function stripLeadPreviews(leads) {
+  (leads || []).forEach(function (lead) {
+    if (lead) lead.calculatorPreview = '';
+  });
+  return leads;
+}
+
 function formatLead(row) {
   if (!row) return null;
   const first = row.contact_first || '';
@@ -567,6 +574,7 @@ function formatLead(row) {
     notes: row.notes || '',
     calculatorQuery: row.calculator_query || row.calculatorQuery || '',
     calculatorSummary: parseCalculatorSummary(row.calculator_summary || row.calculatorSummary),
+    calculatorPreview: row.calculator_preview || row.calculatorPreview || '',
     convertedCustomerId: row.converted_customer_id || null,
     mergedIntoId: row.merged_into_id || null,
     createdAt: row.created_at || '',
@@ -1014,6 +1022,7 @@ function ensureCompanyCrm(db) {
     'ALTER TABLE company_crm_deals ADD COLUMN probability INTEGER NOT NULL DEFAULT -1',
     "ALTER TABLE company_crm_leads ADD COLUMN calculator_query TEXT NOT NULL DEFAULT ''",
     "ALTER TABLE company_crm_leads ADD COLUMN calculator_summary TEXT NOT NULL DEFAULT ''",
+    "ALTER TABLE company_crm_leads ADD COLUMN calculator_preview TEXT NOT NULL DEFAULT ''",
     "ALTER TABLE company_crm_deals ADD COLUMN calculator_query TEXT NOT NULL DEFAULT ''",
     "ALTER TABLE company_crm_deals ADD COLUMN calculator_summary TEXT NOT NULL DEFAULT ''",
     "ALTER TABLE company_crm_activities ADD COLUMN assigned_to TEXT NOT NULL DEFAULT ''",
@@ -1293,8 +1302,8 @@ function sqliteApi(db, store) {
       const rows = db.prepare(
         'SELECT * FROM company_crm_leads ORDER BY datetime(updated_at) DESC, id DESC'
       ).all().map(formatLead);
-      if (opts && opts.includeApplicationLeads) return withDealerHandoff(store, rows);
-      return withDealerHandoff(store, visibleCrmLeads(rows));
+      if (opts && opts.includeApplicationLeads) return withDealerHandoff(store, rows).then(stripLeadPreviews);
+      return withDealerHandoff(store, visibleCrmLeads(rows)).then(stripLeadPreviews);
     },
     async getCrmLead(id) {
       const lead = formatLead(db.prepare('SELECT * FROM company_crm_leads WHERE id = ?').get(id));
@@ -1738,8 +1747,9 @@ function sqliteApi(db, store) {
       const src = payload || {};
       const query = trim(src.query || src.calculatorQuery || current.calculatorQuery, 2000);
       const summary = calculatorSummaryText(src.summary != null ? src.summary : (src.calculatorSummary != null ? src.calculatorSummary : current.calculatorSummary));
-      db.prepare('UPDATE company_crm_leads SET calculator_query = ?, calculator_summary = ?, updated_at = ? WHERE id = ?')
-        .run(query, summary, nowIso(), id);
+      const preview = trim(src.preview || src.calculatorPreview || current.calculatorPreview, 500000);
+      db.prepare('UPDATE company_crm_leads SET calculator_query = ?, calculator_summary = ?, calculator_preview = ?, updated_at = ? WHERE id = ?')
+        .run(query, summary, preview, nowIso(), id);
       return this.getCrmLead(id);
     },
     async saveCrmDealCalculator(id, payload) {
@@ -1901,8 +1911,8 @@ function supabaseApi(supabase, store) {
         .order('id', { ascending: false });
       throwIf(error, 'Could not list leads.');
       const rows = (data || []).map(formatLead);
-      if (opts && opts.includeApplicationLeads) return withDealerHandoff(store, rows);
-      return withDealerHandoff(store, visibleCrmLeads(rows));
+      if (opts && opts.includeApplicationLeads) return withDealerHandoff(store, rows).then(stripLeadPreviews);
+      return withDealerHandoff(store, visibleCrmLeads(rows)).then(stripLeadPreviews);
     },
     async getCrmLead(id) {
       const data = await fetchLeadRow(id);
@@ -2556,9 +2566,11 @@ function supabaseApi(supabase, store) {
       const src = payload || {};
       const query = trim(src.query || src.calculatorQuery || current.calculatorQuery, 2000);
       const summary = calculatorSummaryText(src.summary != null ? src.summary : (src.calculatorSummary != null ? src.calculatorSummary : current.calculatorSummary));
+      const preview = trim(src.preview || src.calculatorPreview || current.calculatorPreview, 500000);
       const { error } = await supabase.from('company_crm_leads').update({
         calculator_query: query,
         calculator_summary: summary,
+        calculator_preview: preview,
         updated_at: nowIso()
       }).eq('id', id);
       throwIf(error, 'Could not save this wall.');
