@@ -852,6 +852,7 @@
       lock: 'wall',
       cols: [
         { id: 'wall', label: 'Wall' },
+        { id: 'number', label: 'Number' },
         { id: 'customer', label: 'End customer' },
         { id: 'site', label: 'Site' },
         { id: 'pitch', label: 'Pitch' },
@@ -3775,11 +3776,27 @@
       }).join('')
       : '<p class="text-slate-500">No spare kit on site.</p>';
   }
+  function wallWarrantySoon(row) {
+    if (!row || !row.warrantyEnd) return false;
+    const end = new Date(String(row.warrantyEnd) + 'T12:00:00');
+    if (Number.isNaN(end.getTime())) return false;
+    return (end.getTime() - Date.now()) / 86400000 < 90;
+  }
   function renderWallTable() {
     const openId = wallIdFromPath();
+    const q = String(($('wall-search') && $('wall-search').value) || '').trim().toLowerCase();
+    const list = walls.filter(function (row) {
+      if (!q) return true;
+      const blob = [row.wallName, row.number, row.endCustomer, row.pitch, wallSite(row), row.siteStreet, row.shipDate, row.warrantyEnd].join(' ').toLowerCase();
+      return blob.indexOf(q) !== -1;
+    });
+    const soon = walls.filter(wallWarrantySoon).length;
+    if ($('wall-stat')) $('wall-stat').textContent = String(walls.length);
+    if ($('wall-hint')) $('wall-hint').textContent = soon ? (soon + (soon === 1 ? ' warranty ending' : ' warranties ending')) : 'On site';
     applyCols('walls');
-    const sorted = colSort('walls', walls, function (row, col) {
+    const sorted = colSort('walls', list, function (row, col) {
       if (col === 'wall') return row.wallName || row.number || '';
+      if (col === 'number') return row.number || '';
       if (col === 'customer') return row.endCustomer || '';
       if (col === 'site') return wallSite(row);
       if (col === 'pitch') return row.pitch || '';
@@ -3792,7 +3809,8 @@
       const on = openId && String(openId) === String(row.id);
       return '<tr class="border-b border-slate-800 hover:bg-slate-900/80 cursor-pointer' + (on ? ' is-active' : '') + '" data-wall-id="' + esc(row.id) + '">' +
         colCells('walls', {
-          wall: '<td class="py-3 px-4 font-medium">' + esc(row.wallName || row.number) + '</td>',
+          wall: '<td class="py-3 px-4 font-medium">' + esc(row.wallName || row.number || 'Installed wall') + '</td>',
+          number: '<td class="py-3 px-4">' + esc(row.number || '—') + '</td>',
           customer: '<td class="py-3 px-4">' + esc(row.endCustomer || '—') + '</td>',
           site: '<td class="py-3 px-4">' + esc(wallSite(row)) + '</td>',
           pitch: '<td class="py-3 px-4">' + esc(row.pitch || '—') + '</td>',
@@ -3800,7 +3818,7 @@
           warranty: '<td class="py-3 px-4">' + esc(row.warrantyEnd || '—') + '</td>',
           spares: '<td class="py-3 px-4">' + esc(row.spareQty || 0) + '</td>'
         }) + '</tr>';
-    }).join('') : '<tr><td class="py-6 px-4 text-slate-500" colspan="' + colSpan('walls') + '">No installed walls yet.</td></tr>';
+    }).join('') : '<tr><td class="py-6 px-4 text-slate-500" colspan="' + colSpan('walls') + '">' + (q ? 'No walls match that search.' : 'No installed walls yet.') + '</td></tr>';
   }
   async function renderWalls() {
     const err = $('wall-error');
@@ -3820,6 +3838,7 @@
     const row = walls.find(function (item) { return String(item.id) === String(route); });
     showWall(row || null);
   }
+  if ($('wall-search')) $('wall-search').addEventListener('input', renderWallTable);
   $('wall-table').addEventListener('click', function (e) {
     const tr = e.target.closest('[data-wall-id]');
     if (!tr) return;
