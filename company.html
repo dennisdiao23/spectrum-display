@@ -32,10 +32,10 @@
     #company-boot .boot-login button[type="submit"]{background:#fff!important;color:#000!important;border:0}
     #company-boot .boot-login button[type="submit"]:hover{background:#e8e8e8!important}
   </style>
-  <link rel="stylesheet" href="/css/company-dash.css?v=brands5" />
+  <link rel="stylesheet" href="/css/company-dash.css?v=leadwall3" />
   <script src="/js/address-autocomplete.js"></script>
   <script src="/js/company-chat.js?v=po-ship1"></script>
-  <script src="/js/company-crm.js?v=leadcalc1"></script>
+  <script src="/js/company-crm.js?v=leadwall1"></script>
   <script src="/js/company-staff.js?v=staff6"></script>
   <script src="/js/company-traffic.js?v=loc1"></script>
   <script src="/js/company-website-control.js?v=webctrl7"></script>
@@ -2610,10 +2610,10 @@
                 </div>
                 <div id="crm-lead-panel-calculator" class="cc-detail-panel hidden" role="tabpanel" hidden>
                   <div id="crm-lead-calc-summary" class="crm-calc-summary">No wall on this lead yet.</div>
+                  <img id="crm-lead-calc-shot" class="crm-lead-shot hidden" alt="Saved wall">
                   <div class="crm-seq-actions">
-                    <a id="crm-lead-calc-open" class="cc-detail-btn cc-detail-btn-primary" href="/led-wall-calculator" target="_blank" rel="noopener">Open live calculator</a>
+                    <button type="button" id="crm-lead-calc-open" class="cc-detail-btn cc-detail-btn-primary">Open live calculator</button>
                   </div>
-                  <iframe id="crm-lead-calc-frame" class="crm-calc-frame" title="LED wall calculator" hidden></iframe>
                 </div>
                 <div id="crm-lead-panel-deals" class="cc-detail-panel hidden" role="tabpanel" hidden>
                   <div class="overflow-x-auto rounded-2xl border border-slate-800">
@@ -4000,6 +4000,9 @@
     <section id="calculator-section" class="hidden">
       <iframe id="company-calculator-frame" title="LED Wall Calculator"></iframe>
     </section>
+    <section id="lead-wall-section" class="hidden">
+      <iframe id="lead-wall-frame" title="Lead calculator"></iframe>
+    </section>
   </main>
   </div>
   <div id="crm-drawer-scrim" class="cc-drawer-scrim"></div>
@@ -5245,7 +5248,7 @@
     </a>
   </nav>
 
-  <link rel="stylesheet" href="/css/company-dash.css?v=brands5" />
+  <link rel="stylesheet" href="/css/company-dash.css?v=leadwall3" />
   <link rel="stylesheet" href="/css/company-tw.css?v=boot1" />
 
   <script>
@@ -5441,6 +5444,8 @@
       if (p === '/company/customers') return 'customers';
       if (/^\/company\/customers\/\d+$/.test(p)) return 'customers';
       if (p === '/company/crm' || p === '/company/crm/leads') return 'leads';
+      var leadWall = p.match(/^\/company\/crm\/leads\/(\d+)\/wall$/);
+      if (leadWall) return 'leadcalc-' + leadWall[1];
       if (/^\/company\/crm\/leads\/\d+$/.test(p)) return 'leads';
       if (p === '/company/crm/pipeline') return 'pipeline';
       if (/^\/company\/crm\/pipeline\/\d+$/.test(p)) return 'pipeline';
@@ -5490,6 +5495,8 @@
       if (name === 'customers') return '/company/customers';
       if (name === 'dealer') return '/company/dealers';
       if (name === 'crm' || name === 'leads') return '/company/crm/leads';
+      var leadCalc = String(name || '').match(/^leadcalc-(\d+)$/);
+      if (leadCalc) return '/company/crm/leads/' + leadCalc[1] + '/wall';
       if (name === 'pipeline') return '/company/crm/pipeline';
       if (name === 'activities') return '/company/crm/activities';
       if (name === 'orders') return '/company/sales/orders';
@@ -5890,6 +5897,7 @@
       if (doc) return doc.kind === 'po' ? 'vendor' : 'customer';
       if (name === 'dashboard') return 'dashboard';
       if (name === 'calculator') return 'calculator';
+      if (/^leadcalc-\d+$/.test(name)) return 'leadwall';
       if (name === 'chat') return 'chat';
       if (name === 'products' || name === 'store' || name === 'accounts' || name === 'traffic' || name === 'website') return 'website';
       if (name === 'installed-walls') return 'customer';
@@ -6353,6 +6361,7 @@
     }
 
     function masterTabIcon(name) {
+      if (/^leadcalc-\d+$/.test(String(name || ''))) return MASTER_TAB_ICON.calculator;
       const doc = parseDocMasterTab(name);
       if (doc) {
         if (doc.kind === 'po') return MASTER_TAB_ICON['purchase-orders'];
@@ -8863,10 +8872,53 @@
       if (!frame) return;
       if (!raw && frame.getAttribute('src')) return;
       const next = calculatorFrameUrl(raw);
+      if (frame.getAttribute('data-src') !== next) {
+        frame.setAttribute('data-src', next);
+        frame.src = next;
+      }
+    }
+    async function loadLeadWallFrame(id) {
+      const frame = document.getElementById('lead-wall-frame');
+      if (!frame) return;
+      let query = '';
+      try {
+        const res = await fetch('/api/admin/crm/leads/' + encodeURIComponent(id), { credentials: 'include' });
+        const data = await res.json();
+        const lead = data && data.lead;
+        query = lead && lead.calculatorQuery ? String(lead.calculatorQuery).replace(/^\?/, '') : '';
+        if (lead) setMasterTabCaption('leadcalc-' + id, lead.companyName || lead.displayName || ('Lead ' + id));
+      } catch (err) {}
+      const next = '/led-wall-calculator?lead=' + encodeURIComponent(id) + '&embed=1' + (query ? '&' + query : '');
       if (frame.getAttribute('data-src') === next) return;
       frame.setAttribute('data-src', next);
       frame.src = next;
     }
+    window.openLeadCalculatorTab = function (lead) {
+      if (!lead || !lead.id) return;
+      const name = 'leadcalc-' + lead.id;
+      setMasterTabCaption(name, lead.companyName || lead.displayName || ('Lead ' + lead.id));
+      openCompanyTab(name, true);
+    };
+    window.addEventListener('message', function (event) {
+      if (event.origin !== window.location.origin) return;
+      const data = event.data || {};
+      if (!data || data.type !== 'spectrum-lead-wall') return;
+      const shot = document.getElementById('crm-lead-calc-shot');
+      if (shot && data.preview) {
+        shot.src = data.preview;
+        shot.classList.remove('hidden');
+      }
+      const summary = document.getElementById('crm-lead-calc-summary');
+      const sum = data.summary;
+      if (summary && sum) {
+        const bits = [];
+        if (sum.seriesName || sum.series || sum.brand) bits.push([sum.brand, sum.seriesName || sum.series].filter(Boolean).join(' '));
+        if (sum.sizeLabel) bits.push(sum.sizeLabel);
+        if (sum.pitch) bits.push('P' + sum.pitch);
+        if (sum.cabinets) bits.push(sum.cabinets + ' panels');
+        if (bits.length) summary.textContent = bits.join(' · ');
+      }
+    });
 
     function showAdminTab(name) {
       if (typeof ccDrawerNeedsLeave === 'function' && ccDrawerNeedsLeave()) {
@@ -8940,12 +8992,16 @@
       else stopDashOverviewLoop();
       const chatSec = document.getElementById('chat-section');
       if (chatSec) chatSec.classList.toggle('hidden', view !== 'chat');
+      const leadWallId = String(name || '').match(/^leadcalc-(\d+)$/);
       const dashPanelEl = document.getElementById('dash-panel');
-      if (dashPanelEl && currentAdminUser) dashPanelEl.classList.toggle('hidden', view === 'calculator');
+      if (dashPanelEl && currentAdminUser) dashPanelEl.classList.toggle('hidden', view === 'calculator' || !!leadWallId);
       const calcSec = document.getElementById('calculator-section');
       if (calcSec) calcSec.classList.toggle('hidden', view !== 'calculator');
-      document.body.classList.toggle('calc-lock', view === 'calculator');
+      const wallSec = document.getElementById('lead-wall-section');
+      if (wallSec) wallSec.classList.toggle('hidden', !leadWallId);
+      document.body.classList.toggle('calc-lock', view === 'calculator' || !!leadWallId);
       if (view === 'calculator') ensureCalculator('');
+      if (leadWallId) loadLeadWallFrame(leadWallId[1]);
       document.body.classList.toggle('chat-page-on', view === 'chat' && isMobileDash());
       if (view === 'chat') {
         if (isMobileDash() && window.SpectrumChat && typeof SpectrumChat.openPage === 'function') {
