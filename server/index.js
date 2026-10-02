@@ -3862,6 +3862,9 @@ async function main() {
       rules: savedRules,
       changes: confirm ? changes : preview.changes,
       skippedNoCost: preview.skippedNoCost,
+      sellUsesLocal: (savedRules || []).some(function (rule) {
+        return rule.priceKey === 'sell' && rule.basis === 'local' && Number(rule.adjustPct) > 0;
+      }),
       applied: !!confirm
     };
   }

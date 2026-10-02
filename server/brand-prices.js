@@ -168,6 +168,7 @@ function priceChanges(items, rules, brandId, brandName) {
       sku: item.sku || '',
       brand: brandName || id,
       cost: cost,
+      localCost: local,
       sellOld: sellOld,
       sellNew: next.sell,
       dealerOld: dealerOld,
