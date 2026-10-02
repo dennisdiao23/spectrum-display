@@ -878,7 +878,33 @@
       border-radius: 8px;
       background: #fff;
     }
+    html.calc-viewonly .site-header,
+    html.calc-viewonly .designer-toolbar,
+    html.calc-viewonly .designer-controls-pane,
+    html.calc-viewonly .preview-extras,
+    html.calc-viewonly .zoom-controls,
+    html.calc-viewonly .preview-foot,
+    html.calc-viewonly #designer-deal-bar,
+    html.calc-viewonly .finder-handle {
+      display: none !important;
+    }
+    html.calc-viewonly body {
+      overflow: hidden;
+      pointer-events: none;
+    }
+    html.calc-viewonly .designer-layout,
+    html.calc-viewonly .preview-pane,
+    html.calc-viewonly .preview-sticky,
+    html.calc-viewonly .preview-frame {
+      display: block;
+      height: 100%;
+    }
+    html.calc-viewonly .preview-viewport {
+      height: 100vh;
+      pointer-events: none;
+    }
   </style>
+  <script>if (location.search.indexOf('viewonly=1') !== -1) document.documentElement.classList.add('calc-viewonly');</script>
 </head>
 <body class="designer-app bg-slate-950 text-slate-100 antialiased">
   <header class="site-header" id="site-header">
@@ -3175,7 +3201,6 @@
         const data = await res.json().catch(function () { return {}; });
         if (!res.ok || !data.ok) throw new Error(data.error || 'Could not save to deal.');
         setDealStatus(crmLeadId && !crmDealId ? 'Saved to lead' : 'Saved to deal');
-        if (crmLeadId && !crmDealId) rememberLeadShot();
         return true;
       } catch (err) {
         setDealStatus(err.message || 'Could not save');
@@ -3183,35 +3208,6 @@
       } finally {
         crmDealSaving = false;
       }
-    }
-
-    let leadShotTimer = null;
-    function rememberLeadShot() {
-      if (leadShotTimer) clearTimeout(leadShotTimer);
-      leadShotTimer = setTimeout(captureLeadShot, 500);
-    }
-    async function captureLeadShot() {
-      const viewport = document.getElementById('preview-viewport');
-      if (!viewport || !crmLeadId || crmDealId || typeof html2canvas !== 'function' || !lastDealCalc) return;
-      try {
-        const full = await html2canvas(viewport, { scale: 0.4, backgroundColor: '#020617', logging: false, useCORS: true });
-        const preview = full.toDataURL('image/jpeg', 0.7);
-        if (!preview || preview.length > 450000) return;
-        await fetch('/api/admin/crm/leads/' + encodeURIComponent(crmLeadId) + '/calculator', {
-          method: 'POST',
-          credentials: 'include',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ query: lastDealCalc.query, summary: lastDealCalc.summary, preview: preview })
-        });
-        if (window.parent && window.parent !== window) {
-          window.parent.postMessage({
-            type: 'spectrum-lead-wall',
-            leadId: crmLeadId,
-            preview: preview,
-            summary: lastDealCalc.summary
-          }, window.location.origin);
-        }
-      } catch (err) { /* picture is optional */ }
     }
 
     function scheduleDealSave() {

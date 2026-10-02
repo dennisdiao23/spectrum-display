@@ -32,10 +32,10 @@
     #company-boot .boot-login button[type="submit"]{background:#fff!important;color:#000!important;border:0}
     #company-boot .boot-login button[type="submit"]:hover{background:#e8e8e8!important}
   </style>
-  <link rel="stylesheet" href="/css/company-dash.css?v=dashunpin2" />
+  <link rel="stylesheet" href="/css/company-dash.css?v=leadview2" />
   <script src="/js/address-autocomplete.js"></script>
   <script src="/js/company-chat.js?v=po-ship1"></script>
-  <script src="/js/company-crm.js?v=leadwall1"></script>
+  <script src="/js/company-crm.js?v=leadview1"></script>
   <script src="/js/company-staff.js?v=staff6"></script>
   <script src="/js/company-traffic.js?v=loc1"></script>
   <script src="/js/company-website-control.js?v=webctrl7"></script>
@@ -2610,7 +2610,10 @@
                 </div>
                 <div id="crm-lead-panel-calculator" class="cc-detail-panel hidden" role="tabpanel" hidden>
                   <div id="crm-lead-calc-summary" class="crm-calc-summary">No wall on this lead yet.</div>
-                  <img id="crm-lead-calc-shot" class="crm-lead-shot hidden" alt="Saved wall">
+                  <div class="crm-lead-preview">
+                    <iframe id="crm-lead-calc-frame" class="crm-lead-preview-frame" title="Wall preview" tabindex="-1"></iframe>
+                    <div class="crm-lead-preview-lock" aria-hidden="true"></div>
+                  </div>
                   <div class="crm-seq-actions">
                     <button type="button" id="crm-lead-calc-open" class="cc-detail-btn cc-detail-btn-primary">Open live calculator</button>
                   </div>
@@ -5248,7 +5251,7 @@
     </a>
   </nav>
 
-  <link rel="stylesheet" href="/css/company-dash.css?v=dashunpin2" />
+  <link rel="stylesheet" href="/css/company-dash.css?v=leadview2" />
   <link rel="stylesheet" href="/css/company-tw.css?v=boot1" />
 
   <script>
