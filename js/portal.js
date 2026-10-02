@@ -2953,6 +2953,15 @@
       e.stopPropagation();
       document.body.classList.remove('dash-open');
       const group = a.getAttribute('data-tabbar-group');
+      if (group && isMobileDash()) {
+        const rowOpen = document.body.classList.contains('dash-tabbar-sub-open') && document.body.getAttribute('data-tabbar-sub-group') === group;
+        if (rowOpen) closePortalTabSub();
+        else {
+          openPortal(a.getAttribute('data-view') || 'home', true);
+          showPortalTabSub(group);
+        }
+        return;
+      }
       if (group) {
         if (document.body.classList.contains('dash-tabbar-sub-open') && document.body.getAttribute('data-tabbar-sub-group') === group) closePortalTabSub();
         else showPortalTabSub(group);
@@ -3001,6 +3010,7 @@
         if (!document.body.classList.contains('dash-tabbar-on') || portalTabEditing) return;
         const y = main.scrollTop;
         const delta = y - lastY;
+        if (isMobileDash() && document.body.classList.contains('dash-tabbar-sub-open') && Math.abs(delta) > 4) closePortalTabSub();
         if (y <= 48) document.body.classList.remove('dash-tabbar-hidden');
         else if (delta > 8) {
           document.body.classList.add('dash-tabbar-hidden');
@@ -3009,6 +3019,16 @@
         lastY = y;
       }, { passive: true });
     }
+    document.addEventListener('pointerdown', function (e) {
+      if (!isMobileDash() || !document.body.classList.contains('dash-tabbar-sub-open')) return;
+      if (!e.target.closest || !e.target.closest('.company-main')) return;
+      closePortalTabSub();
+    }, true);
+    window.addEventListener('blur', function () {
+      if (!isMobileDash() || !document.body.classList.contains('dash-tabbar-sub-open')) return;
+      const el = document.activeElement;
+      if (el && el.tagName === 'IFRAME') closePortalTabSub();
+    });
   }
 
   $('dash-menu-btn').onclick = function () {

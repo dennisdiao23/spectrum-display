@@ -903,6 +903,27 @@ body.dash-col-resizing * {
   color: #fff !important;
   border-color: #2f6bff !important;
 }
+.company-main button.rounded-full {
+  -webkit-appearance: none;
+  appearance: none;
+  border: 1px solid #d5dcea !important;
+  background: #fff;
+  color: #243056 !important;
+  box-shadow: none;
+}
+.company-main button.rounded-full.bg-sky-500,
+.company-main button.rounded-full.bg-sky-500\/20,
+.company-main button.rounded-full.text-sky-300 {
+  background: #2f6bff !important;
+  color: #fff !important;
+  border-color: #2f6bff !important;
+}
+.company-main button.rounded-full.text-red-400,
+.company-main button.rounded-full.text-red-500 {
+  background: #fff !important;
+  color: #dc2626 !important;
+  border-color: #fecaca !important;
+}
 .company-main .bg-slate-900,
 .company-main .bg-slate-900\/50,
 .company-main .bg-slate-900\/60,
@@ -2683,7 +2704,8 @@ html.dash-scroll-lock body.company-app {
     position: fixed;
     inset: 0;
     z-index: 65;
-    background: rgba(7, 21, 58, 0.22);
+    background: transparent;
+    pointer-events: none;
   }
 
   body.company-app.dash-tabbar-on .dash-tabbar:not([hidden]) {
