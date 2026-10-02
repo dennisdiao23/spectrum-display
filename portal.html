@@ -50,7 +50,7 @@
     #sales-section .dash-split-left .cc-table-wrap { overflow: auto; }
     #sales-section table.dash-cols[data-cols="sales"] { min-width: 1100px; width: max-content; }
     #leads-section #lead-split {
-      grid-template-columns: var(--lead-left-w, minmax(28rem, 1.45fr)) 14px minmax(16rem, 1fr);
+      grid-template-columns: var(--lead-left-w, minmax(22rem, 1fr)) 14px minmax(26rem, 1.15fr);
       min-height: 22rem;
     }
     #leads-section .dash-split-left .cc-table-wrap {
@@ -69,23 +69,38 @@
       z-index: 3;
       background: #fff;
     }
-    #leads-section .plead-wall {
-      position: relative;
-      height: 16rem;
+    #plead-detail .crm-detail-facts {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 0.5rem;
       margin-top: 0.75rem;
-      border-radius: 0.75rem;
-      overflow: hidden;
-      background: #020617;
     }
-    #leads-section .plead-wall iframe {
-      width: 100%;
-      height: 100%;
-      border: 0;
-      pointer-events: none;
+    #plead-detail .crm-detail-facts .cc-detail-dl > div {
+      display: block;
+      margin-bottom: 0.35rem;
     }
-    #leads-section .plead-wall-lock {
-      position: absolute;
-      inset: 0;
+    #plead-detail .crm-detail-facts .cc-detail-dl dt {
+      width: auto;
+    }
+    #plead-detail .crm-detail-facts .cc-detail-dl dd {
+      margin: 0;
+      min-width: 0;
+      white-space: normal;
+      overflow-wrap: anywhere;
+    }
+    #plead-detail .crm-lead-preview {
+      height: 16rem;
+      max-height: 16rem;
+      flex: 0 0 16rem;
+    }
+    #plead-detail .cc-detail-panel {
+      min-height: 0;
+      flex: 0 1 auto;
+    }
+    #plead-detail #plead-stage {
+      background: #fff;
+      color: #0f172a;
+      border: 1px solid var(--dash-line);
     }
     .dash-cols td[hidden] { display: none !important; }
     #so-customer[readonly],
@@ -888,29 +903,71 @@
               <div id="plead-overview" class="inv-right-panel">
                 <p class="inv-overview-lead">Select a lead. To turn one down, call or email Spectrum.</p>
               </div>
-              <div id="plead-detail" class="inv-right-panel hidden" style="padding:1.25rem;overflow:auto">
-                <h2 id="plead-title" class="font-semibold text-lg">Lead</h2>
-                <p id="plead-meta" class="text-sm text-slate-500 mt-1"></p>
-                <dl id="plead-fields" class="grid sm:grid-cols-2 gap-x-6 gap-y-3 text-sm mt-4"></dl>
-                <p id="plead-notes" class="text-sm mt-4"></p>
-                <p id="plead-calc" class="text-sm mt-3"></p>
-                <div id="plead-wall" class="plead-wall hidden">
-                  <iframe id="plead-calc-frame" title="Wall preview" tabindex="-1"></iframe>
-                  <div class="plead-wall-lock" aria-hidden="true"></div>
+              <div id="plead-detail" class="inv-right-panel hidden" style="overflow:auto">
+                <div class="cc-detail-hero">
+                  <h2 id="plead-title" class="font-semibold text-lg">Lead</h2>
+                  <p id="plead-meta" class="cc-detail-subname"></p>
+                  <div class="crm-detail-facts">
+                    <div class="cc-detail-block">
+                      <h3>Contact</h3>
+                      <dl class="cc-detail-dl">
+                        <div><dt>Name</dt><dd id="plead-card-name">—</dd></div>
+                        <div><dt>Email</dt><dd id="plead-card-email">—</dd></div>
+                        <div><dt>Phone</dt><dd id="plead-card-phone">—</dd></div>
+                      </dl>
+                    </div>
+                    <div class="cc-detail-block">
+                      <h3>Lead</h3>
+                      <dl class="cc-detail-dl">
+                        <div><dt>Stage</dt><dd id="plead-card-stage">—</dd></div>
+                        <div><dt title="What they want">Want</dt><dd id="plead-card-interest">—</dd></div>
+                        <div><dt>Project</dt><dd id="plead-card-project">—</dd></div>
+                      </dl>
+                    </div>
+                    <div class="cc-detail-block">
+                      <h3>Location</h3>
+                      <dl class="cc-detail-dl">
+                        <div><dt>City</dt><dd id="plead-card-city">—</dd></div>
+                      </dl>
+                    </div>
+                  </div>
                 </div>
-                <button type="button" id="plead-calc-open" class="hidden px-4 py-2 rounded-full bg-sky-500 hover:bg-sky-400 text-white text-sm font-semibold mt-2">Open in calculator</button>
-                <label class="text-sm block" style="margin-top:0.75rem">Stage
-                  <select id="plead-stage" class="w-full mt-1 bg-slate-800 border border-slate-700 rounded-lg px-3 py-2">
-                    <option value="new">New</option>
-                    <option value="qualified">Qualified</option>
-                    <option value="quoted">Quoted</option>
-                    <option value="negotiation">Negotiation</option>
-                    <option value="won">Won</option>
-                    <option value="lost">Lost</option>
-                  </select>
-                </label>
-                <p class="text-sm text-slate-500 mt-3">To turn this lead down, call or email Spectrum.</p>
-                <p id="plead-msg" class="hidden text-sm mt-3"></p>
+                <div class="cc-detail-tabs" role="tablist">
+                  <button type="button" class="cc-detail-tab is-on" data-plead-tab="details" role="tab" aria-selected="true">Details</button>
+                  <button type="button" class="cc-detail-tab" data-plead-tab="contact" role="tab" aria-selected="false">Contact</button>
+                  <button type="button" class="cc-detail-tab" data-plead-tab="calculator" role="tab" aria-selected="false">Calculator</button>
+                </div>
+                <div id="plead-panel-details" class="cc-detail-panel" role="tabpanel">
+                  <div id="plead-notes" class="cc-detail-notes-box">—</div>
+                  <label class="text-sm block" style="margin-top:0.85rem">Stage
+                    <select id="plead-stage" class="w-full mt-1 rounded-lg px-3 py-2">
+                      <option value="new">New</option>
+                      <option value="qualified">Qualified</option>
+                      <option value="quoted">Quoted</option>
+                      <option value="negotiation">Negotiation</option>
+                      <option value="won">Won</option>
+                      <option value="lost">Lost</option>
+                    </select>
+                  </label>
+                  <p class="text-sm text-slate-500 mt-3">To turn this lead down, call or email Spectrum.</p>
+                  <p id="plead-msg" class="hidden text-sm mt-3"></p>
+                </div>
+                <div id="plead-panel-contact" class="cc-detail-panel hidden" role="tabpanel" hidden>
+                  <dl class="cc-detail-dl">
+                    <div><dt>Name</dt><dd id="plead-contact-name">—</dd></div>
+                    <div><dt>Email</dt><dd id="plead-contact-email">—</dd></div>
+                    <div><dt>Phone</dt><dd id="plead-contact-phone">—</dd></div>
+                    <div><dt>City</dt><dd id="plead-contact-city">—</dd></div>
+                  </dl>
+                </div>
+                <div id="plead-panel-calculator" class="cc-detail-panel hidden" role="tabpanel" hidden>
+                  <div id="plead-calc" class="crm-calc-summary">No wall on this lead yet.</div>
+                  <div id="plead-wall" class="crm-lead-preview hidden">
+                    <iframe id="plead-calc-frame" class="crm-lead-preview-frame" title="Wall preview" tabindex="-1"></iframe>
+                    <div class="crm-lead-preview-lock" aria-hidden="true"></div>
+                  </div>
+                  <button type="button" id="plead-calc-open" class="hidden px-4 py-2 rounded-full bg-sky-500 hover:bg-sky-400 text-white text-sm font-semibold mt-3">Open in calculator</button>
+                </div>
               </div>
             </div>
           </div>
@@ -1585,6 +1642,6 @@
       <div id="file-preview-body" class="portal-file-preview-body"></div>
     </div>
   </div>
-  <script src="/js/portal.js?v=baropen2"></script>
+  <script src="/js/portal.js?v=leadcards1"></script>
 </body>
 </html>

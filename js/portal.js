@@ -3424,12 +3424,26 @@
     if (!q) return '';
     return '/led-wall-calculator?embed=1&viewonly=1&' + q;
   }
-  function leadFieldsHtml(row) {
-    return '<div><dt class="text-slate-500">Contact</dt><dd>' + esc(row.contactName || '—') + '</dd></div>' +
-      '<div><dt class="text-slate-500">Email</dt><dd>' + esc(row.contactEmail || '—') + '</dd></div>' +
-      '<div><dt class="text-slate-500">Phone</dt><dd>' + esc(row.contactPhone || '—') + '</dd></div>' +
-      '<div><dt class="text-slate-500">City</dt><dd>' + esc(leadPlace(row)) + '</dd></div>' +
-      '<div class="sm:col-span-2"><dt class="text-slate-500">What they want</dt><dd>' + esc(row.interest || '—') + '</dd></div>';
+  let leadDetailTab = 'details';
+  function setText(id, value) {
+    const el = $(id);
+    if (el) el.textContent = value || '—';
+  }
+  function setLeadTab(name) {
+    leadDetailTab = name === 'contact' || name === 'calculator' ? name : 'details';
+    ['details', 'contact', 'calculator'].forEach(function (tab) {
+      const btn = document.querySelector('#plead-detail [data-plead-tab="' + tab + '"]');
+      const panel = $('plead-panel-' + tab);
+      const on = tab === leadDetailTab;
+      if (btn) {
+        btn.classList.toggle('is-on', on);
+        btn.setAttribute('aria-selected', on ? 'true' : 'false');
+      }
+      if (panel) {
+        panel.classList.toggle('hidden', !on);
+        panel.hidden = !on;
+      }
+    });
   }
   function setBoxMsg(id, text, ok) {
     const el = $(id);
@@ -3466,12 +3480,22 @@
     box.classList.remove('hidden');
     $('plead-title').textContent = row.project || row.number || 'Lead';
     $('plead-meta').textContent = (row.number || '') + ' · ' + (row.stageLabel || 'New');
-    $('plead-fields').innerHTML = leadFieldsHtml(row);
+    setText('plead-card-name', row.contactName);
+    setText('plead-card-email', row.contactEmail);
+    setText('plead-card-phone', row.contactPhone);
+    setText('plead-card-stage', row.stageLabel || 'New');
+    setText('plead-card-interest', row.interest);
+    setText('plead-card-project', row.project);
+    setText('plead-card-city', leadPlace(row));
+    setText('plead-contact-name', row.contactName);
+    setText('plead-contact-email', row.contactEmail);
+    setText('plead-contact-phone', row.contactPhone);
+    setText('plead-contact-city', leadPlace(row));
     const notes = $('plead-notes');
-    if (notes) notes.textContent = row.notes ? ('Notes: ' + row.notes) : '';
+    if (notes) notes.textContent = row.notes || 'No notes yet.';
     const wall = calcSummaryText(row);
     const wallEl = $('plead-calc');
-    if (wallEl) wallEl.textContent = wall || '';
+    if (wallEl) wallEl.textContent = wall || 'No wall on this lead yet.';
     const wallBox = $('plead-wall');
     const frame = $('plead-calc-frame');
     const wallUrl = leadWallUrl(row);
@@ -3496,6 +3520,7 @@
       };
     }
     $('plead-stage').value = row.stage || 'new';
+    setLeadTab(leadDetailTab);
     setBoxMsg('plead-msg', '', true);
   }
   function renderLeadTable() {
@@ -3619,6 +3644,14 @@
       const id = pathId('leads');
       if (!id) return;
       movePortalLead(id, $('plead-stage').value);
+    });
+  }
+  const pleadTabs = document.querySelector('#plead-detail .cc-detail-tabs');
+  if (pleadTabs) {
+    pleadTabs.addEventListener('click', function (e) {
+      const btn = e.target.closest('[data-plead-tab]');
+      if (!btn) return;
+      setLeadTab(btn.getAttribute('data-plead-tab'));
     });
   }
 
