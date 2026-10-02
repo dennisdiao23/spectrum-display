@@ -887,14 +887,21 @@ body.dash-col-resizing * {
 .company-main .hover\:bg-sky-400:hover {
   background: #2158e8 !important;
 }
-.company-main .inv-filter {
-  background: #eef2ff;
-  color: #3b4a72;
+.company-main .inv-filter,
+.company-main button.inv-adv-toggle {
+  -webkit-appearance: none;
+  appearance: none;
+  border: 1px solid #d5dcea !important;
+  border-radius: 999px;
+  background: #fff;
+  color: #243056 !important;
+  box-shadow: none;
 }
 .company-main .inv-filter.bg-sky-500\/20,
 .company-main .inv-filter.text-sky-300 {
   background: #2f6bff !important;
   color: #fff !important;
+  border-color: #2f6bff !important;
 }
 .company-main .bg-slate-900,
 .company-main .bg-slate-900\/50,
@@ -3145,10 +3152,10 @@ html.dash-scroll-lock body.company-app {
   line-height: 1.35;
   color: #5c6b8a;
 }
-.inv-adv-toggle.is-on {
-  background: rgba(14, 165, 233, 0.2);
-  color: #7dd3fc;
-  border-color: transparent;
+.company-main button.inv-adv-toggle.is-on {
+  background: #eef3ff !important;
+  color: #2f6bff !important;
+  border-color: #c5d2ea !important;
 }
 .inv-adv-panel {
   display: flex;
