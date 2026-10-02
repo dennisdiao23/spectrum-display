@@ -1381,7 +1381,7 @@
     $('so-customer-name').value = (doc && doc.customerName) || dealerCompanyName();
     $('so-customer-email').value = (doc && doc.customerEmail) || customer.email || (me && me.user && me.user.email) || '';
     $('so-number').value = (doc && doc.number) || '';
-    $('so-title').textContent = doc && doc.number ? doc.number : (order ? 'New sales order' : 'New Request Quote');
+    $('so-title').textContent = doc && doc.number ? doc.number : (order ? 'New Purchase Order' : 'New Request Quote');
     $('so-caption-title').textContent = doc && doc.number ? doc.number : salesLabel(kind);
     $('so-kind-label').textContent = order ? 'Purchase Order' : 'Request Quote';
     $('so-issue').value = (doc && doc.issueDate) || new Date().toISOString().slice(0, 10);
@@ -1473,7 +1473,17 @@
         ? '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h16l-1.5 12H5.5L4 7z"/><path d="M9 7V5a3 3 0 0 1 6 0v2"/></svg>'
         : '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M8 4h8v4H8z"/><path d="M6 8h12v12H6z"/><path d="M9 12h6M9 16h4"/></svg>';
     }
-    $('so-new-btn').textContent = order ? 'New sales order' : 'New Request Quote';
+    const phoneNew = isMobileDash();
+    const newBtn = $('so-new-btn');
+    newBtn.textContent = order ? 'New Purchase Order' : 'New Request Quote';
+    newBtn.disabled = phoneNew;
+    newBtn.classList.toggle('is-phone-off', phoneNew);
+    newBtn.setAttribute('aria-disabled', phoneNew ? 'true' : 'false');
+    const ribbonNew = $('so-ribbon-new');
+    if (ribbonNew) {
+      ribbonNew.disabled = phoneNew;
+      ribbonNew.title = phoneNew ? 'Only available on the desktop app or a tablet.' : 'New';
+    }
     $('so-back').textContent = order ? '← Purchase Order' : '← Request Quote';
     $('so-number-label').textContent = order ? 'Sales order no.' : 'Quote no.';
     const note = document.querySelector('#so-detail .so-doc-note');
@@ -1485,7 +1495,7 @@
     const lead = document.querySelector('#so-overview-panel .inv-overview-lead');
     if (lead) {
       lead.textContent = order
-        ? 'Select a purchase order to see the lines and where it stands. New sales order starts an order with Spectrum.'
+        ? 'Select a purchase order to see the lines and where it stands. New Purchase Order starts an order with Spectrum.'
         : 'Select a request quote to read it. New Request Quote starts a request for Spectrum to price.';
     }
     const openLabel = $('so-side-open-label');
@@ -1504,6 +1514,7 @@
     renderMasterTabs();
   }
   function goQuote(id, push) {
+    if (String(id) === 'new' && isMobileDash()) return;
     goSales(salesTab(), id, push);
   }
   function renderQuotes() {
@@ -2012,6 +2023,10 @@
   $('so-search').addEventListener('input', renderQuoteTable);
   $('so-new-btn').addEventListener('click', function () { goQuote('new', true); });
   $('so-ribbon-new').addEventListener('click', function () { goQuote('new', true); });
+  window.matchMedia('(max-width: 900px)').addEventListener('change', function () {
+    const sec = $('sales-section');
+    if (sec && !sec.classList.contains('hidden')) renderQuotes();
+  });
   $('so-ribbon-find').addEventListener('click', function () {
     if (isMobileDash() && quoteRoute()) goQuote('', true);
     if ($('so-search')) $('so-search').focus();
