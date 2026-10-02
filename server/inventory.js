@@ -1328,6 +1328,23 @@ function seedSpecDocsBySeries() {
   return bySeries;
 }
 
+function spectrumOwnDocs(item, seeds) {
+  const blob = specMatchKey([
+    item.brandId, item.brandName, item.brand, item.name, item.sku, item.mpn, item.category
+  ].filter(Boolean).join(' '));
+  const brand = specMatchKey(item.brandId || item.brandName || item.brand || '');
+  if (brand !== 'spectrum' && blob.indexOf('spectrum') === -1) return [];
+  const rules = [
+    ['xp', /xpseries|spectrumxp/],
+    ['mk', /mkseries|spectrummk/],
+    ['bk', /bkseries|spectrumbk|bkcob/]
+  ];
+  for (let i = 0; i < rules.length; i++) {
+    if (rules[i][1].test(blob) && seeds[rules[i][0]]) return seeds[rules[i][0]];
+  }
+  return [];
+}
+
 function attachWebsiteSpecs(items, products) {
   const seeds = seedSpecDocsBySeries();
   const byProductId = {};
@@ -1359,6 +1376,7 @@ function attachWebsiteSpecs(items, products) {
       if (!docs.length && m.seriesId && seeds[String(m.seriesId)]) docs = seeds[String(m.seriesId)];
       extra = extra.concat(docs);
     });
+    extra = extra.concat(spectrumOwnDocs(item, seeds));
     if (!extra.length) {
       const keys = [specMatchKey(item.name), specMatchKey(item.sku), specMatchKey(item.mpn)].filter(function (key) {
         return key.length >= 5;

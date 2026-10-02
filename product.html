@@ -484,6 +484,21 @@
     function esc(s) {
       return String(s || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/"/g,'&quot;');
     }
+    function specFileHref(url) {
+      const raw = String(url || '').trim();
+      if (!raw || raw.charAt(0) === '/') return raw;
+      try {
+        const parsed = new URL(raw);
+        const host = parsed.hostname.toLowerCase();
+        const nova = host === 'oss.novastar.tech'
+          || host === 'en-website001.oss-us-east-1.aliyuncs.com'
+          || host === 'en-website001.oss-accelerate.aliyuncs.com';
+        if (parsed.protocol === 'https:' && nova && /\.pdf$/i.test(parsed.pathname)) {
+          return '/api/spec-pdf?url=' + encodeURIComponent(raw);
+        }
+      } catch (e) { /* keep the original link */ }
+      return raw;
+    }
 
     function applyProductView() {
       document.querySelectorAll('h1').forEach(h => {
@@ -871,7 +886,7 @@
                 '<ul class="mt-5 space-y-3">' +
                   files.map(function (f) {
                     return '<li><a class="inline-flex items-center gap-3 text-sm text-sky-400 hover:text-sky-300" href="' +
-                      esc(f.url) + '" target="_blank" rel="noopener" download>' +
+                      esc(specFileHref(f.url)) + '" target="_blank" rel="noopener" download>' +
                       '<span class="grid grid-cols-2 gap-0.5 w-3.5 h-3.5 shrink-0" aria-hidden="true">' +
                         '<span class="bg-sky-400/80 rounded-[1px]"></span><span class="bg-sky-400/80 rounded-[1px]"></span>' +
                         '<span class="bg-sky-400/80 rounded-[1px]"></span><span class="bg-sky-400/80 rounded-[1px]"></span>' +

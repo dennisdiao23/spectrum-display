@@ -1,5 +1,20 @@
 (function () {
   const $ = function (id) { return document.getElementById(id); };
+  function specFileHref(url) {
+    const raw = String(url || '').trim();
+    if (!raw || raw.charAt(0) === '/') return raw;
+    try {
+      const parsed = new URL(raw);
+      const host = parsed.hostname.toLowerCase();
+      const nova = host === 'oss.novastar.tech'
+        || host === 'en-website001.oss-us-east-1.aliyuncs.com'
+        || host === 'en-website001.oss-accelerate.aliyuncs.com';
+      if (parsed.protocol === 'https:' && nova && /\.pdf$/i.test(parsed.pathname)) {
+        return '/api/spec-pdf?url=' + encodeURIComponent(raw);
+      }
+    } catch (e) { /* keep the original link */ }
+    return raw;
+  }
   const viewIds = {
     home: 'dashboard-section',
     book: 'inventory-section',
@@ -1253,7 +1268,7 @@
     const specList = $('book-detail-specs');
     if (specList) {
       specList.innerHTML = docs.map(function (doc) {
-        return '<li class="inv-spec-row"><a href="' + esc(doc.url) + '" target="_blank" rel="noopener">' + esc(doc.name || 'Spec sheet') + '</a></li>';
+        return '<li class="inv-spec-row"><a href="' + esc(specFileHref(doc.url)) + '" target="_blank" rel="noopener">' + esc(doc.name || 'Spec sheet') + '</a></li>';
       }).join('');
     }
     const specEmpty = $('book-detail-specs-empty');
