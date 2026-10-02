@@ -37,7 +37,7 @@
     #company-boot .portal-boot-login button[type="submit"]{background:#fff;color:#000;border:0}
     #company-boot .portal-boot-login button[type="submit"]:hover{background:#e8e8e8}
   </style>
-  <link rel="stylesheet" href="/css/company-dash.css?v=baropen1" />
+  <link rel="stylesheet" href="/css/company-dash.css?v=baropen2" />
   <style>
     /* Dealer is writing a Request Quote. Spectrum fills these when the quote comes back. */
     #so-detail.is-request .so-request-back { display: none !important; }
@@ -68,6 +68,24 @@
       top: 0;
       z-index: 3;
       background: #fff;
+    }
+    #leads-section .plead-wall {
+      position: relative;
+      height: 16rem;
+      margin-top: 0.75rem;
+      border-radius: 0.75rem;
+      overflow: hidden;
+      background: #020617;
+    }
+    #leads-section .plead-wall iframe {
+      width: 100%;
+      height: 100%;
+      border: 0;
+      pointer-events: none;
+    }
+    #leads-section .plead-wall-lock {
+      position: absolute;
+      inset: 0;
     }
     .dash-cols td[hidden] { display: none !important; }
     #so-customer[readonly],
@@ -876,6 +894,10 @@
                 <dl id="plead-fields" class="grid sm:grid-cols-2 gap-x-6 gap-y-3 text-sm mt-4"></dl>
                 <p id="plead-notes" class="text-sm mt-4"></p>
                 <p id="plead-calc" class="text-sm mt-3"></p>
+                <div id="plead-wall" class="plead-wall hidden">
+                  <iframe id="plead-calc-frame" title="Wall preview" tabindex="-1"></iframe>
+                  <div class="plead-wall-lock" aria-hidden="true"></div>
+                </div>
                 <button type="button" id="plead-calc-open" class="hidden px-4 py-2 rounded-full bg-sky-500 hover:bg-sky-400 text-white text-sm font-semibold mt-2">Open in calculator</button>
                 <label class="text-sm block" style="margin-top:0.75rem">Stage
                   <select id="plead-stage" class="w-full mt-1 bg-slate-800 border border-slate-700 rounded-lg px-3 py-2">
@@ -1563,6 +1585,6 @@
       <div id="file-preview-body" class="portal-file-preview-body"></div>
     </div>
   </div>
-  <script src="/js/portal.js?v=baropen1"></script>
+  <script src="/js/portal.js?v=baropen2"></script>
 </body>
 </html>

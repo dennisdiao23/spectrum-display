@@ -256,6 +256,7 @@
     $('portal-logout').classList.remove('hidden');
     $('portal-user').textContent = (me && me.user && (me.user.name || me.user.email)) || '';
     paintDealerBrand();
+    applyPortalSplits();
     openPortal(pathView(), false);
     applyPortalTabbar();
     if (window.SpectrumHelp) {
@@ -406,7 +407,7 @@
     const nums = (values && values.length) ? values : [0];
     const w = 120;
     const h = 28;
-    const pad = 2.4;
+    const pad = 4;
     const min = Math.min.apply(null, nums);
     const max = Math.max.apply(null, nums);
     function xAt(i) {
@@ -901,11 +902,17 @@
     const spec = PORTAL_COLS[name];
     return spec ? spec.lock : '';
   }
+  let portalPrefs = {};
+  let portalPrefsTimer = null;
+  function savedColRecord(name) {
+    const remote = portalPrefs && portalPrefs[name];
+    if (remote && typeof remote === 'object') return remote;
+    try { return JSON.parse(localStorage.getItem(colKey(name)) || 'null'); } catch (err) { return null; }
+  }
   function colState(name) {
     const known = colKnown(name);
     const lock = colLock(name);
-    let saved = null;
-    try { saved = JSON.parse(localStorage.getItem(colKey(name)) || 'null'); } catch (err) { saved = null; }
+    let saved = savedColRecord(name);
     if (!saved || typeof saved !== 'object' || !known.length) {
       return { order: known.slice(), hidden: [], sortCol: '', sortDir: '', widths: {} };
     }
@@ -921,16 +928,72 @@
     known.forEach(function (id) {
       if (order.indexOf(id) === -1 && hidden.indexOf(id) === -1) order.push(id);
     });
+    const splitLeftPx = parseInt(saved.splitLeftPx, 10);
     return {
       order: order,
       hidden: hidden,
       sortCol: known.indexOf(saved.sortCol) !== -1 ? saved.sortCol : '',
       sortDir: saved.sortDir === 'asc' || saved.sortDir === 'desc' ? saved.sortDir : '',
-      widths: saved.widths && typeof saved.widths === 'object' ? saved.widths : {}
+      widths: saved.widths && typeof saved.widths === 'object' ? saved.widths : {},
+      splitLeftPx: Number.isFinite(splitLeftPx) && splitLeftPx >= 160 ? splitLeftPx : 0
     };
   }
+  function persistPortalPrefs() {
+    clearTimeout(portalPrefsTimer);
+    portalPrefsTimer = setTimeout(function () {
+      api('/api/dealer/column-prefs', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ prefs: portalPrefs })
+      }).catch(function () {});
+    }, 300);
+  }
   function saveColState(name, state) {
+    portalPrefs[name] = state;
     try { localStorage.setItem(colKey(name), JSON.stringify(state)); } catch (err) {}
+    persistPortalPrefs();
+  }
+  function applyPortalSplits() {
+    function place(id, prop, px) {
+      const el = $(id);
+      if (!el || !px) return;
+      el.style.setProperty(prop, px + 'px');
+    }
+    place('inv-split', '--inv-left-w', colState('dealer-book').splitLeftPx);
+    place('proj-split', '--inv-left-w', colState('projects').splitLeftPx);
+    place('panel-split', '--inv-left-w', colState('panels').splitLeftPx);
+    place('lead-split', '--lead-left-w', colState('leads').splitLeftPx);
+  }
+  function savePortalSplit(name, px) {
+    const state = colState(name);
+    state.splitLeftPx = Math.round(px);
+    saveColState(name, state);
+  }
+  function seedPrefsFromLocal() {
+    const out = {};
+    Object.keys(PORTAL_COLS).forEach(function (name) {
+      try {
+        const saved = JSON.parse(localStorage.getItem(colKey(name)) || 'null');
+        if (saved && typeof saved === 'object') out[name] = saved;
+      } catch (err) {}
+    });
+    return out;
+  }
+  async function loadPortalPrefs() {
+    try {
+      const data = await api('/api/dealer/column-prefs');
+      portalPrefs = (data && data.prefs) || {};
+    } catch (err) {
+      portalPrefs = {};
+    }
+    if (!portalPrefs || !Object.keys(portalPrefs).length) {
+      const seeded = seedPrefsFromLocal();
+      if (Object.keys(seeded).length) {
+        portalPrefs = seeded;
+        persistPortalPrefs();
+      }
+    }
+    applyPortalSplits();
   }
   function applyCols(name) {
     const table = portalTable(name);
@@ -2254,6 +2317,8 @@
         document.body.classList.remove('inv-split-dragging');
         window.removeEventListener('pointermove', move);
         window.removeEventListener('pointerup', up);
+        const width = parseInt(split.style.getPropertyValue('--inv-left-w'), 10);
+        if (width) savePortalSplit('projects', width);
       }
       window.addEventListener('pointermove', move);
       window.addEventListener('pointerup', up);
@@ -2285,6 +2350,8 @@
         document.body.classList.remove('inv-split-dragging');
         window.removeEventListener('pointermove', move);
         window.removeEventListener('pointerup', up);
+        const width = parseInt(split.style.getPropertyValue('--inv-left-w'), 10);
+        if (width) savePortalSplit('panels', width);
       }
       window.addEventListener('pointermove', move);
       window.addEventListener('pointerup', up);
@@ -2440,6 +2507,8 @@
         document.body.classList.remove('dash-col-resizing');
         window.removeEventListener('pointermove', move);
         window.removeEventListener('pointerup', up);
+        const width = parseInt(split.style.getPropertyValue('--lead-left-w'), 10);
+        if (width) savePortalSplit('leads', width);
       }
       window.addEventListener('pointermove', move);
       window.addEventListener('pointerup', up);
@@ -2464,6 +2533,8 @@
         document.body.classList.remove('inv-split-dragging');
         window.removeEventListener('pointermove', move);
         window.removeEventListener('pointerup', up);
+        const width = parseInt(split.style.getPropertyValue('--inv-left-w'), 10);
+        if (width) savePortalSplit('dealer-book', width);
       }
       window.addEventListener('pointermove', move);
       window.addEventListener('pointerup', up);
@@ -2963,6 +3034,7 @@
     const holdBoot = !!(opts && opts.holdBoot);
     try {
       me = await api('/api/dealer/me');
+      await loadPortalPrefs();
       const priced = await api('/api/dealer/book');
       book = priced.items || [];
       await refreshDocs();
@@ -3341,7 +3413,16 @@
     else if (sum.width && sum.height) bits.push(sum.width + ' × ' + sum.height + (sum.unit ? ' ' + sum.unit : ''));
     if (sum.pitch) bits.push('P' + sum.pitch);
     if (sum.cabinets) bits.push(sum.cabinets + ' panels');
+    if (sum.estimate) {
+      const amount = Number(sum.estimate) || 0;
+      bits.push('$' + amount.toLocaleString(undefined, { maximumFractionDigits: 0 }));
+    }
     return bits.join(' · ');
+  }
+  function leadWallUrl(row) {
+    const q = row && row.calculatorQuery ? String(row.calculatorQuery).replace(/^\?/, '') : '';
+    if (!q) return '';
+    return '/led-wall-calculator?embed=1&viewonly=1&' + q;
   }
   function leadFieldsHtml(row) {
     return '<div><dt class="text-slate-500">Contact</dt><dd>' + esc(row.contactName || '—') + '</dd></div>' +
@@ -3386,10 +3467,25 @@
     $('plead-title').textContent = row.project || row.number || 'Lead';
     $('plead-meta').textContent = (row.number || '') + ' · ' + (row.stageLabel || 'New');
     $('plead-fields').innerHTML = leadFieldsHtml(row);
-    $('plead-notes').textContent = row.notes || '';
+    const notes = $('plead-notes');
+    if (notes) notes.textContent = row.notes ? ('Notes: ' + row.notes) : '';
     const wall = calcSummaryText(row);
     const wallEl = $('plead-calc');
     if (wallEl) wallEl.textContent = wall || '';
+    const wallBox = $('plead-wall');
+    const frame = $('plead-calc-frame');
+    const wallUrl = leadWallUrl(row);
+    if (wallBox && frame) {
+      wallBox.classList.toggle('hidden', !wallUrl);
+      if (wallUrl && frame.getAttribute('data-src') !== wallUrl) {
+        frame.setAttribute('data-src', wallUrl);
+        frame.src = wallUrl;
+      }
+      if (!wallUrl) {
+        frame.removeAttribute('data-src');
+        frame.removeAttribute('src');
+      }
+    }
     const openCalc = $('plead-calc-open');
     if (openCalc) {
       openCalc.classList.toggle('hidden', !(row.calculatorQuery));
