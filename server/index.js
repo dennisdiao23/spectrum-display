@@ -1332,6 +1332,17 @@ async function main() {
     } catch (err) { dealerDocError(err, res, next); }
   });
 
+  app.post('/api/dealer/requests', requireDealer, async function (req, res, next) {
+    try {
+      const kind = String((req.body && req.body.kind) || '');
+      if (kind !== 'company' && kind !== 'user') {
+        return res.status(400).json({ ok: false, error: 'Choose a company update or a new user.' });
+      }
+      const request = await store.createDealerRequest(req.dealer, kind, req.body || {});
+      res.json({ ok: true, request: request });
+    } catch (err) { dealerDocError(err, res, next); }
+  });
+
   app.post('/api/dealer/logo', requireDealer, dealerInquiryUpload.single('file'), async function (req, res, next) {
     try {
       if (!req.file) return res.status(400).json({ ok: false, error: 'Choose a JPG or PNG logo.' });
@@ -2084,6 +2095,47 @@ async function main() {
     return String(customer && customer.customerType || '').trim().toLowerCase() === 'dealer';
   }
 
+  app.get('/api/admin/company-customers/:id/dealer-requests', requireAdmin, requireCustomerOrDealer('view'), async function (req, res, next) {
+    try {
+      const customer = await requireDealerCustomer(req, res);
+      if (!customer) return;
+      const requests = await store.listDealerRequestCards(customer.id);
+      res.json({ ok: true, requests: requests });
+    } catch (err) { next(err); }
+  });
+
+  app.post('/api/admin/company-customers/:id/dealer-requests/:requestId/accept', requireAdmin, requireCustomerOrDealer('edit'), async function (req, res, next) {
+    try {
+      const customer = await requireDealerCustomer(req, res);
+      if (!customer) return;
+      const request = await store.getDealerRequest(req.params.requestId);
+      if (!request || String(request.customerId) !== String(customer.id)) {
+        return res.status(404).json({ ok: false, error: 'Request not found.' });
+      }
+      if (request.status !== 'waiting') return res.status(400).json({ ok: false, error: 'That card is already reviewed.' });
+      if (request.kind !== 'company') {
+        return res.status(400).json({ ok: false, error: 'Create the portal login to accept a new user.' });
+      }
+      const saved = await store.updateCompanyCustomer(customer.id, Object.assign({}, customer, request.payload || {}));
+      const reviewed = await store.reviewDealerRequest(request.id, 'accepted', req.admin);
+      res.json({ ok: true, customer: saved, request: reviewed });
+    } catch (err) { next(err); }
+  });
+
+  app.post('/api/admin/company-customers/:id/dealer-requests/:requestId/decline', requireAdmin, requireCustomerOrDealer('edit'), async function (req, res, next) {
+    try {
+      const customer = await requireDealerCustomer(req, res);
+      if (!customer) return;
+      const request = await store.getDealerRequest(req.params.requestId);
+      if (!request || String(request.customerId) !== String(customer.id)) {
+        return res.status(404).json({ ok: false, error: 'Request not found.' });
+      }
+      if (request.status !== 'waiting') return res.status(400).json({ ok: false, error: 'That card is already reviewed.' });
+      const reviewed = await store.reviewDealerRequest(request.id, 'declined', req.admin);
+      res.json({ ok: true, request: reviewed });
+    } catch (err) { next(err); }
+  });
+
   app.get('/api/admin/company-customers/:id/portal-logins', requireAdmin, async function (req, res, next) {
     try {
       const customer = await store.getCompanyCustomer(req.params.id);
@@ -2119,6 +2171,9 @@ async function main() {
         customerId: customer.id,
         applicationId: null
       });
+      if (store.acceptDealerUserRequestByEmail) {
+        await store.acceptDealerUserRequestByEmail(customer.id, user.email, req.admin);
+      }
       res.json({ ok: true, user: user });
     } catch (err) {
       if (err && err.status === 403) return res.status(403).json({ ok: false, error: err.message });

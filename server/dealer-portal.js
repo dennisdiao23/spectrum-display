@@ -260,6 +260,50 @@ function lockedCompanyError(message) {
   return Object.assign(new Error(message), { code: 'protected' });
 }
 
+const COMPANY_REQUEST_FIELDS = ['displayName', 'contactFirst', 'contactLast', 'phone', 'website', 'taxId', 'billStreet', 'billCity', 'billState', 'billZip', 'billCountry'];
+
+function companyRequestPayload(body) {
+  const src = body || {};
+  const out = {};
+  COMPANY_REQUEST_FIELDS.forEach(function (key) {
+    const max = key === 'billStreet' || key === 'displayName' || key === 'website' ? 200 : 80;
+    out[key] = trim(src[key], max);
+  });
+  return out;
+}
+
+function userRequestPayload(body) {
+  const name = trim(body && body.name, 120);
+  const email = trim(body && body.email, 160).toLowerCase();
+  if (!name) throw Object.assign(new Error('Enter a name.'), { code: 'invalid' });
+  if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+    throw Object.assign(new Error('Enter a valid email.'), { code: 'invalid' });
+  }
+  return { name: name, email: email };
+}
+
+function formatDealerRequest(row) {
+  if (!row) return null;
+  return {
+    id: row.id,
+    customerId: row.customer_id == null ? '' : String(row.customer_id),
+    kind: row.kind || '',
+    status: row.status || '',
+    payload: parseJson(row.payload, {}),
+    createdAt: row.created_at || '',
+    reviewedAt: row.reviewed_at || '',
+    reviewedBy: row.reviewed_by || ''
+  };
+}
+
+function latestRequestCards(rows) {
+  const out = { company: null, user: null };
+  (rows || []).forEach(function (row) {
+    if (row && out[row.kind] == null) out[row.kind] = row;
+  });
+  return out;
+}
+
 function dealerLogoUrl(files) {
   const hit = (files || []).find(function (file) {
     return file && file.name === DEALER_LOGO_NAME && file.url;
@@ -959,6 +1003,18 @@ function ensureDealerPortal(db) {
       created_at TEXT NOT NULL,
       updated_at TEXT NOT NULL
     );
+    CREATE TABLE IF NOT EXISTS dealer_requests (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      customer_id INTEGER NOT NULL,
+      dealer_user_id INTEGER,
+      kind TEXT NOT NULL,
+      status TEXT NOT NULL DEFAULT 'waiting',
+      payload TEXT NOT NULL DEFAULT '{}',
+      created_at TEXT NOT NULL,
+      reviewed_at TEXT NOT NULL DEFAULT '',
+      reviewed_by TEXT NOT NULL DEFAULT ''
+    );
+    CREATE INDEX IF NOT EXISTS dealer_requests_customer_idx ON dealer_requests (customer_id, kind, status);
   `);
 }
 
@@ -1161,16 +1217,69 @@ function sqliteApi(db, store) {
       const files = customerId
         ? db.prepare('SELECT * FROM dealer_files WHERE customer_id = ? ORDER BY datetime(created_at) DESC, id DESC').all(customerId).map(formatDealerFile)
         : [];
+      const users = customerId ? await this.listDealerUsersForCustomer(customerId) : [];
+      const requests = customerId ? await this.listDealerRequestCards(customerId) : { company: null, user: null };
       return {
         user: formatDealerUser(user),
         customer: publicDealerCustomer(customer),
         application: application,
         files: publicDealerFiles(files),
-        logo: dealerLogoUrl(files)
+        logo: dealerLogoUrl(files),
+        users: users,
+        requests: requests
       };
     },
     async updateDealerCompany() {
       throw lockedCompanyError('Spectrum updates company details in Company.');
+    },
+    async listDealerRequestCards(customerId) {
+      if (!customerId) return { company: null, user: null };
+      const rows = db.prepare(
+        'SELECT * FROM dealer_requests WHERE customer_id = ? ORDER BY datetime(created_at) DESC, id DESC'
+      ).all(customerId).map(formatDealerRequest);
+      return latestRequestCards(rows);
+    },
+    async getDealerRequest(id) {
+      return formatDealerRequest(db.prepare('SELECT * FROM dealer_requests WHERE id = ?').get(id));
+    },
+    async createDealerRequest(user, kind, body) {
+      const customerId = await resolveDealerCustomerId(store, user);
+      if (!customerId) throw noCustomerError();
+      const payload = kind === 'user' ? userRequestPayload(body) : companyRequestPayload(body);
+      const waiting = db.prepare(
+        "SELECT id FROM dealer_requests WHERE customer_id = ? AND kind = ? AND status = 'waiting'"
+      ).get(customerId, kind);
+      if (waiting) throw Object.assign(new Error('Spectrum is already reviewing a card.'), { code: 'invalid' });
+      if (kind === 'user') {
+        const existing = db.prepare('SELECT id FROM dealer_users WHERE lower(email) = ?').get(payload.email);
+        if (existing) throw Object.assign(new Error('That login already exists.'), { code: 'invalid' });
+      }
+      const stamp = nowIso();
+      const info = db.prepare(
+        'INSERT INTO dealer_requests (customer_id, dealer_user_id, kind, status, payload, created_at, reviewed_at, reviewed_by) VALUES (?, ?, ?, ?, ?, ?, ?, ?)'
+      ).run(customerId, user && user.id || null, kind, 'waiting', JSON.stringify(payload), stamp, '', '');
+      return formatDealerRequest(db.prepare('SELECT * FROM dealer_requests WHERE id = ?').get(info.lastInsertRowid));
+    },
+    async reviewDealerRequest(id, status, reviewer) {
+      const row = db.prepare('SELECT * FROM dealer_requests WHERE id = ?').get(id);
+      if (!row || row.status !== 'waiting') return null;
+      const stamp = nowIso();
+      const name = reviewer && (reviewer.name || reviewer.email) || '';
+      db.prepare(
+        'UPDATE dealer_requests SET status = ?, reviewed_at = ?, reviewed_by = ? WHERE id = ?'
+      ).run(status, stamp, String(name).slice(0, 120), id);
+      return formatDealerRequest(db.prepare('SELECT * FROM dealer_requests WHERE id = ?').get(id));
+    },
+    async acceptDealerUserRequestByEmail(customerId, email, reviewer) {
+      const want = trim(email, 160).toLowerCase();
+      const rows = db.prepare(
+        "SELECT * FROM dealer_requests WHERE customer_id = ? AND kind = 'user' AND status = 'waiting' ORDER BY id DESC"
+      ).all(customerId);
+      const hit = rows.find(function (row) {
+        return String((parseJson(row.payload, {}).email) || '').toLowerCase() === want;
+      });
+      if (!hit) return null;
+      return this.reviewDealerRequest(hit.id, 'accepted', reviewer);
     },
     async listDealerAssets(customerId) {
       if (!customerId) return { files: [], logo: '' };
@@ -1514,16 +1623,82 @@ function supabaseApi(supabase, store) {
         : { data: [], error: null };
       throwIfMissing(error, 'Could not load company files.');
       const files = (data || []).map(formatDealerFile);
+      const users = customerId ? await this.listDealerUsersForCustomer(customerId) : [];
+      const requests = customerId ? await this.listDealerRequestCards(customerId) : { company: null, user: null };
       return {
         user: formatDealerUser(user),
         customer: publicDealerCustomer(customer),
         application: application,
         files: publicDealerFiles(files),
-        logo: dealerLogoUrl(files)
+        logo: dealerLogoUrl(files),
+        users: users,
+        requests: requests
       };
     },
     async updateDealerCompany() {
       throw lockedCompanyError('Spectrum updates company details in Company.');
+    },
+    async listDealerRequestCards(customerId) {
+      if (!customerId) return { company: null, user: null };
+      const { data, error } = await supabase.from('dealer_requests').select('*').eq('customer_id', customerId).order('created_at', { ascending: false });
+      throwIfMissing(error, 'Could not load dealer requests.');
+      return latestRequestCards((data || []).map(formatDealerRequest));
+    },
+    async getDealerRequest(id) {
+      const { data, error } = await supabase.from('dealer_requests').select('*').eq('id', id).maybeSingle();
+      throwIfMissing(error, 'Could not load the request.');
+      return formatDealerRequest(data);
+    },
+    async createDealerRequest(user, kind, body) {
+      const customerId = await resolveDealerCustomerId(store, user);
+      if (!customerId) throw noCustomerError();
+      const payload = kind === 'user' ? userRequestPayload(body) : companyRequestPayload(body);
+      const waiting = await supabase.from('dealer_requests').select('id').eq('customer_id', customerId).eq('kind', kind).eq('status', 'waiting').limit(1);
+      throwIfMissing(waiting.error, 'Could not check open requests.');
+      if (waiting.data && waiting.data.length) {
+        throw Object.assign(new Error('Spectrum is already reviewing a card.'), { code: 'invalid' });
+      }
+      if (kind === 'user') {
+        const existing = await supabase.from('dealer_users').select('id').eq('email', payload.email).maybeSingle();
+        throwIfMissing(existing.error, 'Could not check that email.');
+        if (existing.data) throw Object.assign(new Error('That login already exists.'), { code: 'invalid' });
+      }
+      const stamp = nowIso();
+      const inserted = await supabase.from('dealer_requests').insert({
+        customer_id: customerId,
+        dealer_user_id: user && user.id || null,
+        kind: kind,
+        status: 'waiting',
+        payload: JSON.stringify(payload),
+        created_at: stamp,
+        reviewed_at: '',
+        reviewed_by: ''
+      }).select('*').single();
+      throwIfMissing(inserted.error, 'Could not send the card.');
+      return formatDealerRequest(inserted.data);
+    },
+    async reviewDealerRequest(id, status, reviewer) {
+      const current = await this.getDealerRequest(id);
+      if (!current || current.status !== 'waiting') return null;
+      const stamp = nowIso();
+      const name = reviewer && (reviewer.name || reviewer.email) || '';
+      const updated = await supabase.from('dealer_requests').update({
+        status: status,
+        reviewed_at: stamp,
+        reviewed_by: String(name).slice(0, 120)
+      }).eq('id', id).eq('status', 'waiting').select('*').maybeSingle();
+      throwIfMissing(updated.error, 'Could not update the request.');
+      return formatDealerRequest(updated.data) || current;
+    },
+    async acceptDealerUserRequestByEmail(customerId, email, reviewer) {
+      const want = trim(email, 160).toLowerCase();
+      const { data, error } = await supabase.from('dealer_requests').select('*').eq('customer_id', customerId).eq('kind', 'user').eq('status', 'waiting').order('id', { ascending: false });
+      throwIfMissing(error, 'Could not load user requests.');
+      const hit = (data || []).find(function (row) {
+        return String((parseJson(row.payload, {}).email) || '').toLowerCase() === want;
+      });
+      if (!hit) return null;
+      return this.reviewDealerRequest(hit.id, 'accepted', reviewer);
     },
     async listDealerAssets(customerId) {
       if (!customerId) return { files: [], logo: '' };
