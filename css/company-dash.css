@@ -1238,9 +1238,21 @@ html.dash-scroll-lock body.company-app {
   white-space: nowrap;
 }
 #sb-review input.is-under {
-  color: #dc2626;
-  border-color: #dc2626;
+  color: #dc2626 !important;
+  border-color: #dc2626 !important;
+  background: #fff5f5 !important;
   font-weight: 650;
+}
+#sb-review .sb-review-actions {
+  display: flex;
+  gap: 0.35rem;
+  align-items: center;
+}
+#sb-review .sb-review-actions .cc-leave-no,
+#sb-review .sb-review-actions .cc-leave-yes {
+  min-width: 0;
+  padding: 0.28rem 0.7rem;
+  font-size: 0.8rem;
 }
 #sb-review-confirm.is-locked,
 #sb-review-confirm:disabled {
