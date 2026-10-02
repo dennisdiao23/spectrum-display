@@ -1383,6 +1383,7 @@
             <select id="inv-location-filter" class="cc-list-select bg-slate-800 border border-slate-700 rounded-full px-3 py-1.5 text-sm" aria-label="Filter by location">
               <option value="">All locations</option>
             </select>
+            <button type="button" id="inv-adv-toggle" class="inv-adv-toggle px-3 py-1.5 rounded-full text-xs font-medium text-slate-300 border border-slate-600" aria-expanded="false" aria-controls="inv-adv-panel">Filters</button>
             <div class="cc-list-filters">
               <button type="button" data-inv-filter="all" class="inv-filter px-3 py-1.5 rounded-full text-xs font-medium bg-sky-500/20 text-sky-300">All</button>
               <button type="button" data-inv-filter="low" class="inv-filter px-3 py-1.5 rounded-full text-xs font-medium text-slate-400 hover:text-white">Low</button>
@@ -1390,6 +1391,47 @@
               <button type="button" data-inv-filter="inactive" class="inv-filter px-3 py-1.5 rounded-full text-xs font-medium text-slate-400 hover:text-white">Inactive</button>
             </div>
             <button id="inv-new-btn" type="button" class="cc-list-add-btn px-4 py-2 rounded-full bg-sky-500 hover:bg-sky-400 text-white text-sm font-semibold">Add inventory item</button>
+          </div>
+          <div id="inv-adv-panel" class="inv-adv-panel hidden" hidden>
+            <label class="inv-adv-field">Brand
+              <select id="inv-adv-brand" aria-label="Filter by brand"><option value="">All brands</option></select>
+            </label>
+            <label class="inv-adv-field">Type
+              <select id="inv-adv-kind" aria-label="Filter by type">
+                <option value="">All types</option>
+                <option value="item">Item</option>
+                <option value="kit">Kit</option>
+              </select>
+            </label>
+            <label class="inv-adv-field">Unit
+              <select id="inv-adv-unit" aria-label="Filter by unit">
+                <option value="">All units</option>
+                <option value="panels">Panels</option>
+                <option value="each">Each</option>
+              </select>
+            </label>
+            <label class="inv-adv-field">Stock place
+              <select id="inv-adv-place" aria-label="Filter by stock place">
+                <option value="">Any place</option>
+                <option value="ours">Our warehouse</option>
+                <option value="vendor">Vendor</option>
+              </select>
+            </label>
+            <label class="inv-adv-field">Photo
+              <select id="inv-adv-photo" aria-label="Filter by photo">
+                <option value="">Any photo</option>
+                <option value="yes">Has a photo</option>
+                <option value="no">No photo</option>
+              </select>
+            </label>
+            <label class="inv-adv-field">Spec sheet
+              <select id="inv-adv-spec" aria-label="Filter by spec sheet">
+                <option value="">Any spec sheet</option>
+                <option value="yes">Has a spec sheet</option>
+                <option value="no">No spec sheet</option>
+              </select>
+            </label>
+            <button type="button" id="inv-adv-clear" class="inv-adv-clear">Clear</button>
           </div>
           <p id="inventory-error" class="hidden text-sm text-red-400 mb-3"></p>
           <div id="inv-split" class="inv-split">
@@ -9115,6 +9157,8 @@
     let inventoryFilter = 'all';
     let inventoryCategoryFilter = '';
     let inventoryLocationFilter = '';
+    let inventoryAdvOpen = false;
+    let inventoryAdv = { brand: '', kind: '', unit: '', place: '', photo: '', spec: '' };
     let ccFilter = 'all';
     let vnFilter = 'all';
     let caFilter = 'all';
@@ -11791,6 +11835,58 @@
       }
     }
 
+    function invAdvCount() {
+      return ['brand', 'kind', 'unit', 'place', 'photo', 'spec'].filter(function (key) {
+        return inventoryAdv[key];
+      }).length;
+    }
+    function paintInvAdvButton() {
+      const btn = document.getElementById('inv-adv-toggle');
+      const panel = document.getElementById('inv-adv-panel');
+      if (!btn) return;
+      const n = invAdvCount();
+      btn.textContent = n ? ('Filters · ' + n) : 'Filters';
+      btn.classList.toggle('is-on', n > 0 || inventoryAdvOpen);
+      btn.setAttribute('aria-expanded', inventoryAdvOpen ? 'true' : 'false');
+      if (panel) {
+        panel.classList.toggle('hidden', !inventoryAdvOpen);
+        panel.hidden = !inventoryAdvOpen;
+      }
+    }
+    function fillInvAdvBrands() {
+      const sel = document.getElementById('inv-adv-brand');
+      if (!sel) return;
+      const names = [];
+      (inventoryItems || []).forEach(function (item) {
+        const name = String(item.brandName || '').trim();
+        if (name && names.indexOf(name) === -1) names.push(name);
+      });
+      names.sort(function (a, b) { return a.localeCompare(b, undefined, { sensitivity: 'base' }); });
+      if (inventoryAdv.brand && names.indexOf(inventoryAdv.brand) === -1) inventoryAdv.brand = '';
+      sel.innerHTML = '<option value="">All brands</option>' + names.map(function (name) {
+        return '<option value="' + esc(name) + '"' + (name === inventoryAdv.brand ? ' selected' : '') + '>' + esc(name) + '</option>';
+      }).join('');
+    }
+    function invHasPhoto(item) {
+      return !!(item && (item.image || (item.gallery && item.gallery[0])));
+    }
+    function invHasSpec(item) {
+      return !!(item && item.docs && item.docs.length);
+    }
+    function invMatchesAdv(item) {
+      if (inventoryAdv.brand && String(item.brandName || '') !== inventoryAdv.brand) return false;
+      if (inventoryAdv.kind === 'kit' && !invIsKit(item)) return false;
+      if (inventoryAdv.kind === 'item' && invIsKit(item)) return false;
+      if (inventoryAdv.unit && String(item.unit || '') !== inventoryAdv.unit) return false;
+      if (inventoryAdv.place === 'ours' && (Number(item.qty) || 0) <= 0) return false;
+      if (inventoryAdv.place === 'vendor' && invVendorQty(item) <= 0) return false;
+      if (inventoryAdv.photo === 'yes' && !invHasPhoto(item)) return false;
+      if (inventoryAdv.photo === 'no' && invHasPhoto(item)) return false;
+      if (inventoryAdv.spec === 'yes' && !invHasSpec(item)) return false;
+      if (inventoryAdv.spec === 'no' && invHasSpec(item)) return false;
+      return true;
+    }
+
     function invCategoryFromForm() {
       const sel = document.getElementById('inv-category');
       if (sel && sel.value === '__new__') {
@@ -11802,6 +11898,8 @@
     function renderInventoryTable() {
       fillInvCategoryFilter();
       fillInvLocationFilter();
+      fillInvAdvBrands();
+      paintInvAdvButton();
       const q = (document.getElementById('inv-search').value || '').trim().toLowerCase();
       const rows = inventoryItems.filter(function (item) {
         if (inventoryFilter === 'inactive') {
@@ -11813,6 +11911,7 @@
         if (inventoryFilter === 'out' && item.status !== 'out') return false;
         if (inventoryCategoryFilter && String(item.category || '') !== inventoryCategoryFilter) return false;
         if (inventoryLocationFilter && itemQtyAtLocation(item, inventoryLocationFilter) <= 0) return false;
+        if (!invMatchesAdv(item)) return false;
         if (q) {
           const blob = ((item.sku || '') + ' ' + (item.name || '') + ' ' + (item.brandName || '') + ' ' + (item.category || '') + ' ' + (item.pitchLabel || '') + ' ' + (item.description || '') + ' ' + (item.warehouse || '') + ' ' + (item.bin || '') + (invIsKit(item) ? ' kit' : '')).toLowerCase();
           if (blob.indexOf(q) === -1) return false;
@@ -24189,6 +24288,26 @@
     });
     document.getElementById('inv-location-filter').addEventListener('change', function () {
       inventoryLocationFilter = this.value || '';
+      renderInventoryTable();
+    });
+    document.getElementById('inv-adv-toggle').addEventListener('click', function () {
+      inventoryAdvOpen = !inventoryAdvOpen;
+      paintInvAdvButton();
+    });
+    document.getElementById('inv-adv-panel').addEventListener('change', function (e) {
+      const sel = e.target.closest('select');
+      if (!sel || !sel.id) return;
+      const key = sel.id.replace('inv-adv-', '');
+      if (!Object.prototype.hasOwnProperty.call(inventoryAdv, key)) return;
+      inventoryAdv[key] = sel.value || '';
+      renderInventoryTable();
+    });
+    document.getElementById('inv-adv-clear').addEventListener('click', function () {
+      inventoryAdv = { brand: '', kind: '', unit: '', place: '', photo: '', spec: '' };
+      ['brand', 'kind', 'unit', 'place', 'photo', 'spec'].forEach(function (key) {
+        const sel = document.getElementById('inv-adv-' + key);
+        if (sel) sel.value = '';
+      });
       renderInventoryTable();
     });
     document.getElementById('inv-category').addEventListener('change', function () {
