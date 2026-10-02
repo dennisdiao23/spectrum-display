@@ -1,6 +1,17 @@
 {
-  "build": "2026-10-02-new-request-quote",
+  "build": "2026-10-02-portal-files",
   "notes": [
+    {
+      "id": "2026-10-02-portal-files",
+      "date": "2026-10-02",
+      "apps": ["portal"],
+      "title": "Files open in a preview",
+      "changed": [
+        "Files are in a table, with View and Download buttons."
+      ],
+      "how": "Open Settings, then Company. Drop a file next to Choose File, or pick one and click Upload. View opens the file in a window on the page. Download saves it.",
+      "kind": "update"
+    },
     {
       "id": "2026-10-02-new-request-quote",
       "date": "2026-10-02",
@@ -616,7 +627,7 @@
       },
       {
         "title": "Settings → Company",
-        "text": "Your company on the portal. The lines are read-only. Update sends a card for Spectrum to review. Account user shows your name and login. Change password is there. Add user sends a name and email for Spectrum to review. You can still upload files."
+        "text": "Your company on the portal. The lines are read-only. Update sends a card for Spectrum to review. Account user shows your name and login. Change password is there. Add user sends a name and email for Spectrum to review. Files are in a table. Drop a file or choose one. View opens a preview. Download saves it."
       },
       {
         "title": "Settings → What’s new",

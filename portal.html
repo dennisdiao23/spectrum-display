@@ -202,6 +202,110 @@
       margin-top: 0.55rem;
     }
     .portal-co-file-row input[type="file"] { font-size: 0.95rem; max-width: 100%; }
+    .portal-co-drop {
+      min-width: 7.5rem;
+      padding: 0.42rem 0.75rem;
+      border: 1px dashed #94a3b8;
+      border-radius: 0.55rem;
+      color: #334155;
+      font-size: 0.95rem;
+      font-weight: 600;
+      text-align: center;
+      background: #f8fafc;
+    }
+    .portal-co-drop.is-over {
+      border-color: #0ea5e9;
+      background: #e0f2fe;
+      color: #0369a1;
+    }
+    .portal-co-table-wrap {
+      margin-top: 0.75rem;
+      max-height: 16rem;
+      overflow: auto;
+      border: 1px solid #e2e8f0;
+      border-radius: 0.55rem;
+    }
+    .portal-co-files {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.95rem;
+    }
+    .portal-co-files th {
+      position: sticky;
+      top: 0;
+      z-index: 1;
+      background: #f8fafc;
+      text-align: left;
+      font-weight: 600;
+      color: #64748b;
+      padding: 0.5rem 0.65rem;
+      border-bottom: 1px solid #e2e8f0;
+    }
+    .portal-co-files td {
+      padding: 0.45rem 0.65rem;
+      border-bottom: 1px solid #eef2f6;
+      vertical-align: middle;
+      color: #0f172a;
+    }
+    .portal-co-files tr:last-child td { border-bottom: 0; }
+    .portal-co-file-actions {
+      white-space: nowrap;
+      text-align: right;
+    }
+    .portal-co-file-actions .portal-co-btn { margin-left: 0.35rem; text-decoration: none; }
+    .portal-file-preview {
+      position: fixed;
+      inset: 0;
+      z-index: 80;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 1.25rem;
+      background: rgba(15, 23, 42, 0.55);
+    }
+    .portal-file-preview[hidden] { display: none !important; }
+    .portal-file-preview-card {
+      width: min(52rem, 100%);
+      max-height: min(40rem, calc(100vh - 2.5rem));
+      display: flex;
+      flex-direction: column;
+      background: #fff;
+      border-radius: 0.85rem;
+      overflow: hidden;
+      box-shadow: 0 18px 50px rgba(15, 23, 42, 0.28);
+    }
+    .portal-file-preview-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 0.75rem;
+      padding: 0.7rem 0.85rem;
+      border-bottom: 1px solid #e2e8f0;
+    }
+    .portal-file-preview-head p {
+      margin: 0;
+      font-size: 1rem;
+      font-weight: 700;
+      color: #0f172a;
+    }
+    .portal-file-preview-body {
+      min-height: 16rem;
+      overflow: auto;
+      background: #f8fafc;
+    }
+    .portal-file-preview-body img {
+      display: block;
+      max-width: 100%;
+      height: auto;
+      margin: 0 auto;
+    }
+    .portal-file-preview-body iframe {
+      display: block;
+      width: 100%;
+      height: min(32rem, calc(100vh - 8rem));
+      border: 0;
+      background: #fff;
+    }
     .portal-co-form {
       margin-top: 0.75rem;
       padding-top: 0.75rem;
@@ -1302,9 +1406,21 @@
             <p class="portal-co-help">Upload a resale certificate or other PDF, JPG, or PNG. You can view and download. Spectrum staff can also delete.</p>
             <div class="portal-co-file-row">
               <input id="file-input" type="file" accept=".pdf,.jpg,.jpeg,.png,application/pdf,image/jpeg,image/png">
+              <div id="file-drop" class="portal-co-drop">Drop file</div>
               <button type="submit" class="portal-co-btn">Upload</button>
             </div>
-            <ul id="file-list"></ul>
+            <div class="portal-co-table-wrap">
+              <table class="portal-co-files">
+                <thead>
+                  <tr>
+                    <th>File</th>
+                    <th>Date</th>
+                    <th></th>
+                  </tr>
+                </thead>
+                <tbody id="file-list"></tbody>
+              </table>
+            </div>
             <p id="file-msg" class="portal-co-status" hidden></p>
           </form>
           <div class="portal-co-card portal-co-side">
@@ -1397,6 +1513,15 @@
   </div>
   <script src="/js/app-help.js?v=guidevid1"></script>
   <script src="/js/app-notes.js?v=guidevid1"></script>
-  <script src="/js/portal.js?v=portalnew2"></script>
+  <div id="file-preview" class="portal-file-preview" hidden>
+    <div class="portal-file-preview-card" role="dialog" aria-modal="true" aria-labelledby="file-preview-title">
+      <div class="portal-file-preview-head">
+        <p id="file-preview-title">File</p>
+        <button type="button" id="file-preview-close" class="portal-co-btn">Close</button>
+      </div>
+      <div id="file-preview-body" class="portal-file-preview-body"></div>
+    </div>
+  </div>
+  <script src="/js/portal.js?v=portalfiles1"></script>
 </body>
 </html>
