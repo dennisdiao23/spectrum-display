@@ -3245,6 +3245,17 @@
   function leadPlace(row) {
     return [row.city, row.state].filter(Boolean).join(', ') || '—';
   }
+  function calcSummaryText(row) {
+    const sum = row && row.calculatorSummary;
+    if (!sum) return '';
+    const bits = [];
+    if (sum.seriesName || sum.series || sum.brand) bits.push([sum.brand, sum.seriesName || sum.series].filter(Boolean).join(' '));
+    if (sum.sizeLabel) bits.push(sum.sizeLabel);
+    else if (sum.width && sum.height) bits.push(sum.width + ' × ' + sum.height + (sum.unit ? ' ' + sum.unit : ''));
+    if (sum.pitch) bits.push('P' + sum.pitch);
+    if (sum.cabinets) bits.push(sum.cabinets + ' panels');
+    return bits.join(' · ');
+  }
   function leadFieldsHtml(row) {
     return '<div><dt class="text-slate-500">Contact</dt><dd>' + esc(row.contactName || '—') + '</dd></div>' +
       '<div><dt class="text-slate-500">Email</dt><dd>' + esc(row.contactEmail || '—') + '</dd></div>' +
@@ -3289,6 +3300,18 @@
     $('plead-meta').textContent = (row.number || '') + ' · ' + (row.stageLabel || 'New');
     $('plead-fields').innerHTML = leadFieldsHtml(row);
     $('plead-notes').textContent = row.notes || '';
+    const wall = calcSummaryText(row);
+    const wallEl = $('plead-calc');
+    if (wallEl) wallEl.textContent = wall || '';
+    const openCalc = $('plead-calc-open');
+    if (openCalc) {
+      openCalc.classList.toggle('hidden', !(row.calculatorQuery));
+      openCalc.onclick = function () {
+        const q = String(row.calculatorQuery || '').replace(/^\?/, '');
+        ensureCalculator('/led-wall-calculator' + (q ? '?' + q : ''));
+        openPortal('calculator', true);
+      };
+    }
     $('plead-stage').value = row.stage || 'new';
     setBoxMsg('plead-msg', '', true);
   }
