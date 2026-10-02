@@ -44,6 +44,77 @@
       display: grid;
       gap: 2rem;
     }
+    .designer-mode-tabs {
+      display: flex;
+      flex: 0 0 auto;
+      margin: 0 0 0.7rem;
+      border: 1px solid #334155;
+      border-radius: 999px;
+      overflow: hidden;
+      background: #0f172a;
+    }
+    .designer-mode-tab {
+      flex: 1 1 0;
+      padding: 0.55rem 0.6rem;
+      font-size: 0.78rem;
+      font-weight: 600;
+      color: #94a3b8;
+      background: transparent;
+      border: 0;
+      cursor: pointer;
+    }
+    .designer-mode-tab.is-on {
+      background: rgba(14, 165, 233, 0.18);
+      color: #7dd3fc;
+    }
+    .finder-card + .finder-card { margin-top: 0.55rem; }
+    .room-wall-frame {
+      position: relative;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-sizing: border-box;
+    }
+    .room-wall-frame.is-on {
+      background:
+        linear-gradient(180deg, #5c534a 0%, #3f372f 55%, #2f2924 100%);
+      box-shadow:
+        inset 0 0 0 1px rgba(255, 255, 255, 0.08),
+        0 18px 40px rgba(0, 0, 0, 0.45);
+      border: 7px solid #1c1814;
+    }
+    .room-wall-tag {
+      display: none;
+      position: absolute;
+      left: 50%;
+      top: 0;
+      transform: translate(-50%, calc(-100% - 8px));
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.04em;
+      color: #f8fafc;
+      background: rgba(2, 6, 23, 0.9);
+      border: 1px solid rgba(148, 163, 184, 0.55);
+      border-radius: 999px;
+      padding: 3px 9px;
+      white-space: nowrap;
+      pointer-events: none;
+      z-index: 7;
+    }
+    .room-wall-frame.is-on .room-wall-tag { display: block; }
+    .finder-ghost {
+      position: absolute;
+      left: 50%;
+      top: 50%;
+      transform: translate(-50%, -50%);
+      border: 2px dashed rgba(125, 211, 252, 0.75);
+      background: rgba(15, 23, 42, 0.42);
+      pointer-events: none;
+      z-index: 3;
+    }
+    html.finder-empty .wall-container.finder-hidden-led {
+      visibility: hidden;
+    }
     .designer-toolbar {
       z-index: 40;
       height: var(--designer-bar-h);
@@ -898,7 +969,12 @@
       
       <!-- Controls -->
       <div class="designer-controls-pane min-w-0">
+      <div class="designer-mode-tabs" role="tablist" aria-label="Calculator mode">
+        <button type="button" class="designer-mode-tab is-on" role="tab" data-mode="calc" aria-selected="true">Calculator</button>
+        <button type="button" class="designer-mode-tab" role="tab" data-mode="finder" aria-selected="false">Product Finder</button>
+      </div>
       <div class="designer-controls space-y-5">
+        <div id="calc-pane" class="space-y-5">
         <!-- 1. Product -->
         <div class="p-5 rounded-2xl border border-slate-800 bg-slate-900/60 space-y-4">
           <h2 class="font-semibold text-base" data-i18n="designer.choose">1. Choose Product</h2>
@@ -1154,6 +1230,125 @@
             Request Quote for This Design
           </a>
         </div>
+        </div>
+
+        <div id="finder-pane" class="space-y-5" hidden>
+          <div class="p-5 rounded-2xl border border-slate-800 bg-slate-900/60 space-y-4">
+            <div class="flex items-center justify-between gap-2">
+              <h2 class="font-semibold text-base">1. Wall size</h2>
+              <div class="flex rounded-full border border-slate-600 overflow-hidden text-xs font-medium">
+                <button type="button" class="unit-btn px-3.5 py-1.5 bg-sky-500/20 text-sky-300 border-r border-slate-600" data-unit="ft">Feet / in</button>
+                <button type="button" class="unit-btn px-3.5 py-1.5 text-slate-400 hover:text-white hover:bg-slate-800" data-unit="m">Meters (m)</button>
+              </div>
+            </div>
+            <p class="text-xs text-slate-500">Opening where the screen goes. Preview draws this wall behind the LED.</p>
+            <div id="finder-size-m" class="hidden grid grid-cols-2 gap-3">
+              <div>
+                <label class="block text-xs text-slate-400 mb-1">Width (m)</label>
+                <input id="finder-w" type="number" step="0.1" min="0.5" max="80" value="4.88" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-sky-500">
+              </div>
+              <div>
+                <label class="block text-xs text-slate-400 mb-1">Height (m)</label>
+                <input id="finder-h" type="number" step="0.1" min="0.5" max="60" value="2.74" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-sky-500">
+              </div>
+            </div>
+            <div id="finder-size-ft" class="space-y-2">
+              <div class="grid grid-cols-2 gap-3">
+                <div>
+                  <label class="block text-xs text-slate-400 mb-1">Width</label>
+                  <div class="flex gap-1.5">
+                    <input id="finder-w-ft" type="number" step="1" min="0" max="260" value="16" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-2 py-2 text-sm focus:outline-none focus:border-sky-500">
+                    <span class="text-xs text-slate-500 self-center">ft</span>
+                    <input id="finder-w-in" type="number" step="1" min="0" max="11" value="0" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-2 py-2 text-sm focus:outline-none focus:border-sky-500">
+                    <span class="text-xs text-slate-500 self-center">in</span>
+                  </div>
+                </div>
+                <div>
+                  <label class="block text-xs text-slate-400 mb-1">Height</label>
+                  <div class="flex gap-1.5">
+                    <input id="finder-h-ft" type="number" step="1" min="0" max="200" value="9" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-2 py-2 text-sm focus:outline-none focus:border-sky-500">
+                    <span class="text-xs text-slate-500 self-center">ft</span>
+                    <input id="finder-h-in" type="number" step="1" min="0" max="11" value="0" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-2 py-2 text-sm focus:outline-none focus:border-sky-500">
+                    <span class="text-xs text-slate-500 self-center">in</span>
+                  </div>
+                </div>
+              </div>
+              <p id="finder-ft-hint" class="text-xs text-slate-500">≈ 4.88 m × 2.74 m</p>
+            </div>
+            <div id="finder-fill" class="flex flex-wrap gap-1.5 text-xs font-medium">
+              <button type="button" class="px-2.5 py-1 rounded-full border border-sky-500 bg-sky-500/20 text-sky-300" data-fill="fill">Fill the wall</button>
+              <button type="button" class="px-2.5 py-1 rounded-full border border-slate-700 text-slate-400 hover:text-white hover:border-sky-500" data-fill="16:9">Keep 16:9</button>
+            </div>
+          </div>
+
+          <div class="p-5 rounded-2xl border border-slate-800 bg-slate-900/60 space-y-4">
+            <h2 class="font-semibold text-base">2. Use</h2>
+            <div>
+              <label class="block text-xs text-slate-400 mb-1.5">Environment</label>
+              <div id="finder-env" class="flex flex-wrap gap-1.5 text-xs font-medium">
+                <button type="button" class="px-2.5 py-1 rounded-full border border-sky-500 bg-sky-500/20 text-sky-300" data-env="indoor">Indoor</button>
+                <button type="button" class="px-2.5 py-1 rounded-full border border-slate-700 text-slate-400 hover:text-white hover:border-sky-500" data-env="outdoor">Outdoor</button>
+              </div>
+            </div>
+            <div>
+              <label class="block text-xs text-slate-400 mb-1.5">Install</label>
+              <div id="finder-install" class="flex flex-wrap gap-1.5 text-xs font-medium">
+                <button type="button" class="px-2.5 py-1 rounded-full border border-sky-500 bg-sky-500/20 text-sky-300" data-install="installed">Installed</button>
+                <button type="button" class="px-2.5 py-1 rounded-full border border-slate-700 text-slate-400 hover:text-white hover:border-sky-500" data-install="rental">Rental</button>
+              </div>
+            </div>
+          </div>
+
+          <div class="p-5 rounded-2xl border border-slate-800 bg-slate-900/60 space-y-4">
+            <h2 class="font-semibold text-base">3. How sharp</h2>
+            <div id="finder-sharp" class="flex flex-wrap gap-1.5 text-xs font-medium">
+              <button type="button" class="px-2.5 py-1 rounded-full border border-sky-500 bg-sky-500/20 text-sky-300" data-sharp="view">Viewing distance</button>
+              <button type="button" class="px-2.5 py-1 rounded-full border border-slate-700 text-slate-400 hover:text-white hover:border-sky-500" data-sharp="res">Resolution</button>
+            </div>
+            <div id="finder-view-box" class="space-y-2">
+              <input id="finder-view-slider" type="range" min="1" max="20" step="0.1" value="3.7" class="w-full">
+              <div id="finder-view-ft-wrap" class="flex gap-1.5 items-center">
+                <input id="finder-view-ft" type="number" step="1" min="1" max="80" value="12" class="w-20 bg-slate-800 border border-slate-700 rounded-lg px-2 py-2 text-sm focus:outline-none focus:border-sky-500">
+                <span class="text-xs text-slate-500">ft</span>
+                <input id="finder-view-in" type="number" step="1" min="0" max="11" value="0" class="w-16 bg-slate-800 border border-slate-700 rounded-lg px-2 py-2 text-sm focus:outline-none focus:border-sky-500">
+                <span class="text-xs text-slate-500">in</span>
+              </div>
+              <div id="finder-view-m-wrap" class="hidden">
+                <input id="finder-view-m" type="number" step="0.1" min="0.5" max="30" value="3.7" class="w-28 bg-slate-800 border border-slate-700 rounded-lg px-2 py-2 text-sm focus:outline-none focus:border-sky-500">
+                <span class="text-xs text-slate-500 ml-1">m</span>
+              </div>
+            </div>
+            <div id="finder-res-box" class="hidden">
+              <div id="finder-res" class="flex flex-wrap gap-1.5 text-xs font-medium">
+                <button type="button" class="px-2.5 py-1 rounded-full border border-slate-700 text-slate-400 hover:text-white hover:border-sky-500" data-res="1080">1080</button>
+                <button type="button" class="px-2.5 py-1 rounded-full border border-slate-700 text-slate-400 hover:text-white hover:border-sky-500" data-res="2k">2K</button>
+                <button type="button" class="px-2.5 py-1 rounded-full border border-sky-500 bg-sky-500/20 text-sky-300" data-res="4k">4K</button>
+                <button type="button" class="px-2.5 py-1 rounded-full border border-slate-700 text-slate-400 hover:text-white hover:border-sky-500" data-res="8k">8K</button>
+              </div>
+            </div>
+          </div>
+
+          <div class="p-5 rounded-2xl border border-slate-800 bg-slate-900/60 space-y-3">
+            <h2 class="font-semibold text-base">Optional</h2>
+            <div class="flex flex-wrap gap-1.5 text-xs font-medium">
+              <button type="button" id="finder-front" class="px-2.5 py-1 rounded-full border border-slate-700 text-slate-400 hover:text-white hover:border-sky-500">Front service</button>
+              <button type="button" id="finder-sun" class="px-2.5 py-1 rounded-full border border-slate-700 text-slate-400 hover:text-white hover:border-sky-500">Window / sunlight</button>
+            </div>
+            <div>
+              <label class="block text-xs text-slate-400 mb-1">Budget cap (optional)</label>
+              <input id="finder-budget" type="number" min="0" step="100" placeholder="No cap" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-sky-500">
+            </div>
+          </div>
+
+          <div class="p-5 rounded-2xl border border-slate-800 bg-slate-900/60 space-y-3">
+            <h2 class="font-semibold text-base">4. Recommended panels</h2>
+            <p class="text-xs text-slate-500">From the website catalog. Click a card to put it on the wall.</p>
+            <div id="finder-results" class="space-y-2"></div>
+            <button type="button" id="finder-cheaper-btn" class="w-full inline-flex justify-center items-center px-4 py-2 rounded-full border border-slate-600 hover:border-sky-500 text-slate-200 text-sm font-medium">Find cheaper</button>
+            <div id="finder-cheaper" class="space-y-2"></div>
+            <button type="button" id="finder-use-calc" class="w-full inline-flex justify-center items-center px-5 py-2.5 rounded-full bg-sky-500 hover:bg-sky-400 text-white font-semibold text-sm transition">Use in Calculator</button>
+          </div>
+        </div>
       </div>
       <div id="controls-scroll-hint" class="controls-scroll-hint" hidden aria-hidden="true">
         <span class="controls-scroll-mouse" aria-hidden="true">
@@ -1208,6 +1403,9 @@
                 <div class="scale-figure is-on" id="scale-figure" title="1.75 m adult for scale">
                   <img src="assets/content/scale-figure.png" alt="" width="276" height="864">
                 </div>
+              <div class="room-wall-frame" id="room-wall">
+                <span class="room-wall-tag" id="room-wall-tag"></span>
+                <div class="finder-ghost" id="finder-ghost" hidden></div>
                 <div class="wall-container glow-edge" id="wall-wrapper">
                   <div class="content-layer empty" id="content-layer"></div>
                   <div id="wall-preview" class="cabinet-grid relative labels-off"></div>
@@ -1225,6 +1423,7 @@
                     <span id="dim-diag">—</span>
                   </div>
                 </div>
+              </div>
                 <div class="wall-balance" id="wall-balance" aria-hidden="true"></div>
               </div>
             </div>
@@ -1314,6 +1513,7 @@
   <script src="js/control-systems.js?v=20260908-h2cvt"></script>
   <script src="js/product-photo.js?v=ph5"></script>
   <script src="js/catalog-api.js?v=ph4"></script>
+  <script src="js/product-finder.js?v=pf2"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="js/supabase-client.js"></script>
   <script src="js/pricing.js"></script>
@@ -1735,31 +1935,66 @@
       const rect = viewport ? viewport.getBoundingClientRect() : { width: 640, height: 460 };
       const availW = Math.max(80, rect.width * 0.666);
       const availH = Math.max(80, rect.height * 0.823);
-      const wallAspect = (cols * cabinetW) / Math.max(rows * cabinetH, 0.001);
-      const actualH = rows * cabinetH;
+      const finderOn = document.documentElement.classList.contains('finder-mode');
+      const empty = document.documentElement.classList.contains('finder-empty');
+      const opening = finderOn && window.SpectrumFinder && SpectrumFinder.getOpening
+        ? SpectrumFinder.getOpening()
+        : null;
+      const screenW = cols * cabinetW;
+      const screenH = rows * cabinetH;
+      let fitW = screenW;
+      let fitH = screenH;
+      if (opening && opening.w > 0 && opening.h > 0) {
+        fitW = opening.w;
+        fitH = opening.h;
+      }
+      const wallAspect = fitW / Math.max(fitH, 0.001);
+      const figureRefH = (opening && opening.h) ? opening.h : screenH;
       const figureOn = figureMode === 'person' && viewMode !== 'wiring';
-      const figHfrac = PERSON_HEIGHT_M / Math.max(actualH, 0.3);
+      const figHfrac = PERSON_HEIGHT_M / Math.max(figureRefH, 0.3);
       const figAspect = 276 / 864;
       const figGap = 28;
-      let wallH = availH;
-      let wallW = wallH * wallAspect;
-      if (wallW > availW) {
-        wallW = availW;
-        wallH = wallW / wallAspect;
+      let roomH = availH;
+      let roomW = roomH * wallAspect;
+      if (roomW > availW) {
+        roomW = availW;
+        roomH = roomW / wallAspect;
       }
       if (figureOn) {
-        const figW = Math.max(12, figHfrac * wallH) * figAspect;
-        const totalW = wallW + 2 * (figW + figGap);
+        const figW = Math.max(12, figHfrac * roomH) * figAspect;
+        const totalW = roomW + 2 * (figW + figGap);
         const maxGroup = Math.max(120, rect.width * 0.98);
         if (totalW > maxGroup) {
           const scale = maxGroup / totalW;
-          wallW *= scale;
-          wallH *= scale;
+          roomW *= scale;
+          roomH *= scale;
         }
       }
-      const cellW = Math.max(2, (wallW - (cols - 1) * GRID_GAP_PX) / cols);
-      const cellH = Math.max(2, (wallH - (rows - 1) * GRID_GAP_PX) / rows);
-      return { cellW: cellW, cellH: cellH };
+      let ledBoxW = roomW;
+      let ledBoxH = roomH;
+      if (opening && opening.w > 0) {
+        let useW = screenW;
+        let useH = screenH;
+        if (empty) {
+          const fill = (window.SpectrumFinder && SpectrumFinder.getFill && SpectrumFinder.getFill()) || 'fill';
+          if (fill === '16:9') {
+            useW = Math.min(opening.w, opening.h * (16 / 9));
+            useH = useW / (16 / 9);
+            if (useH > opening.h) {
+              useH = opening.h;
+              useW = useH * (16 / 9);
+            }
+          } else {
+            useW = opening.w;
+            useH = opening.h;
+          }
+        }
+        ledBoxW = roomW * (useW / fitW);
+        ledBoxH = roomH * (useH / fitH);
+      }
+      const cellW = Math.max(2, (ledBoxW - (cols - 1) * GRID_GAP_PX) / cols);
+      const cellH = Math.max(2, (ledBoxH - (rows - 1) * GRID_GAP_PX) / rows);
+      return { cellW: cellW, cellH: cellH, roomW: roomW, roomH: roomH, ledW: ledBoxW, ledH: ledBoxH };
     }
     function snapToLockedAspect(axis) {
       const series = getCurrentSeries();
@@ -1906,10 +2141,12 @@
         b.classList.toggle('text-slate-400', !on);
       });
       if (unit === 'ft') syncFtFromMeters();
+      if (window.SpectrumFinder && SpectrumFinder.setUnit) SpectrumFinder.setUnit(unit);
       updateDesign();
     }
-    document.getElementById('unit-m').addEventListener('click', () => setSizeUnit('m'));
-    document.getElementById('unit-ft').addEventListener('click', () => setSizeUnit('ft'));
+    document.querySelectorAll('.unit-btn').forEach(function (btn) {
+      btn.addEventListener('click', function () { setSizeUnit(btn.dataset.unit); });
+    });
     [widthFtEl, widthInEl].forEach(el => {
       el.addEventListener('input', () => {
         lastSizeAxis = 'w';
@@ -2546,6 +2783,16 @@
       // Match content layer size
       contentLayer.style.width = preview.style.width;
       contentLayer.style.height = preview.style.height;
+      if (window.SpectrumFinder && SpectrumFinder.layoutPreview) {
+        SpectrumFinder.layoutPreview({
+          screenW: actualW,
+          screenH: actualH,
+          ledW: parseFloat(preview.style.width) || fitted.ledW,
+          ledH: parseFloat(preview.style.height) || fitted.ledH,
+          roomW: fitted.roomW,
+          roomH: fitted.roomH
+        });
+      }
 
       preview.innerHTML = '';
       const wiringOn = viewMode === 'wiring';
@@ -2594,7 +2841,11 @@
       if (figEl) {
         figEl.classList.toggle('is-on', figureOn);
         const wallHpx = parseFloat(preview.style.height) || 1;
-        const figH = Math.max(18, (PERSON_HEIGHT_M / Math.max(actualH, 0.3)) * wallHpx);
+        const opening = window.SpectrumFinder && SpectrumFinder.getOpening && SpectrumFinder.getOpening();
+        const refH = (document.documentElement.classList.contains('finder-mode') && opening && opening.h)
+          ? opening.h
+          : actualH;
+        const figH = Math.max(18, (PERSON_HEIGHT_M / Math.max(refH, 0.3)) * (fitted.roomH || wallHpx));
         figEl.style.setProperty('--figure-h', figH + 'px');
         figEl.style.setProperty('--figure-scale', String(figH / 864));
         if (transformRoot) transformRoot.style.setProperty('--figure-h', figH + 'px');
@@ -3392,6 +3643,39 @@
     }
     screensWEl.addEventListener('input', () => applyScreenCount('w'));
     screensHEl.addEventListener('input', () => applyScreenCount('h'));
+
+    function applyFinderPick(pick) {
+      if (!pick) return;
+      document.documentElement.classList.remove('finder-empty');
+      if (pick.fillMode === '16:9') {
+        aspectLock = '16:9';
+        lastAspectChoice = '16:9';
+      } else {
+        aspectLock = 'free';
+      }
+      if (brandEl && pick.brandId) brandEl.value = pick.brandId;
+      if (seriesEl && pick.seriesId) seriesEl.value = pick.seriesId;
+      populateSeries();
+      if (seriesEl && pick.seriesId) seriesEl.value = pick.seriesId;
+      if (pitchEl && pick.pitch != null) pitchEl.value = String(pick.pitch);
+      populatePitch();
+      if (pitchEl && pick.pitch != null) pitchEl.value = String(pick.pitch);
+      if (screensWEl) screensWEl.value = pick.cols;
+      if (screensHEl) screensHEl.value = pick.rows;
+      applyScreenCount('w');
+    }
+    window.updateDesign = updateDesign;
+    if (window.SpectrumFinder) {
+      SpectrumFinder.init({
+        applyPick: applyFinderPick,
+        switchToCalculator: function () { SpectrumFinder.setMode('calc'); },
+        fmtFtIn: fmtFtIn,
+        ftInFromMeters: ftInFromMeters,
+        metersFromFtIn: metersFromFtIn,
+        getUnit: function () { return sizeUnit; },
+        cabinetPixels: cabinetPixels
+      });
+    }
 
     function applyResolutionPreset(key) {
       const series = getCurrentSeries();
