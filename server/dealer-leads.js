@@ -67,6 +67,81 @@ function actorName(actor) {
   return trim((actor && (actor.name || actor.email)) || '', 120);
 }
 
+function pushWallToDealersSqlite(db, lead) {
+  const fields = calculatorFieldsFromLead(lead);
+  if (!lead || lead.id == null || (!fields.query && !fields.summary)) return;
+  db.prepare("UPDATE dealer_leads SET calculator_query = ?, calculator_summary = ?, updated_at = ? WHERE crm_lead_id = ? AND status != 'reassigned'")
+    .run(fields.query, fields.summary, nowIso(), asId(lead.id));
+}
+
+function freshenSqliteWalls(db, rows) {
+  const ids = [];
+  (rows || []).forEach(function (row) {
+    if (row && row.crm_lead_id) ids.push(row.crm_lead_id);
+  });
+  if (!ids.length) return;
+  let found = [];
+  try {
+    found = db.prepare(
+      'SELECT id, calculator_query, calculator_summary FROM company_crm_leads WHERE id IN (' + ids.map(function () { return '?'; }).join(',') + ')'
+    ).all(...ids);
+  } catch (err) {
+    return;
+  }
+  const map = {};
+  found.forEach(function (lead) { map[String(lead.id)] = lead; });
+  (rows || []).forEach(function (row) {
+    const lead = map[String(row.crm_lead_id)];
+    if (!lead) return;
+    const query = trim(lead.calculator_query, 2000);
+    const summary = trim(lead.calculator_summary, 4000);
+    if (!query && !summary) return;
+    if (query === (row.calculator_query || '') && summary === (row.calculator_summary || '')) return;
+    db.prepare('UPDATE dealer_leads SET calculator_query = ?, calculator_summary = ?, updated_at = ? WHERE id = ?')
+      .run(query, summary, nowIso(), row.id);
+    row.calculator_query = query;
+    row.calculator_summary = summary;
+  });
+}
+
+async function pushWallToDealersSupabase(supabase, lead) {
+  const fields = calculatorFieldsFromLead(lead);
+  if (!lead || lead.id == null || (!fields.query && !fields.summary)) return;
+  await supabase.from('dealer_leads').update({
+    calculator_query: fields.query,
+    calculator_summary: fields.summary,
+    updated_at: nowIso()
+  }).eq('crm_lead_id', asId(lead.id)).neq('status', 'reassigned');
+}
+
+async function freshenSupabaseWalls(supabase, rows) {
+  const ids = [];
+  (rows || []).forEach(function (row) {
+    if (row && row.crm_lead_id != null) ids.push(asId(row.crm_lead_id));
+  });
+  if (!ids.length) return;
+  const found = await supabase.from('company_crm_leads').select('id, calculator_query, calculator_summary').in('id', ids);
+  if (found.error || !found.data) return;
+  const map = {};
+  found.data.forEach(function (lead) { map[String(lead.id)] = lead; });
+  for (let i = 0; i < rows.length; i += 1) {
+    const row = rows[i];
+    const lead = map[String(row.crm_lead_id)];
+    if (!lead) continue;
+    const query = trim(lead.calculator_query, 2000);
+    const summary = trim(lead.calculator_summary, 4000);
+    if (!query && !summary) continue;
+    if (query === (row.calculator_query || '') && summary === (row.calculator_summary || '')) continue;
+    await supabase.from('dealer_leads').update({
+      calculator_query: query,
+      calculator_summary: summary,
+      updated_at: nowIso()
+    }).eq('id', row.id);
+    row.calculator_query = query;
+    row.calculator_summary = summary;
+  }
+}
+
 function calculatorFieldsFromLead(lead) {
   const query = trim(lead && lead.calculatorQuery, 2000);
   let summary = '';
@@ -279,6 +354,7 @@ function ensureDealerLeads(db) {
 }
 
 function sqliteApi(db, store) {
+  const saveCompanyWall = store.saveCrmLeadCalculator;
   function getRow(id) {
     return db.prepare('SELECT * FROM dealer_leads WHERE id = ?').get(id);
   }
@@ -333,6 +409,12 @@ function sqliteApi(db, store) {
       const row = getRow(info.lastInsertRowid);
       return formatRow(row, { admin: true, dealerName: names[String(row.customer_id)] || '' });
     },
+    async saveCrmLeadCalculator(id, payload) {
+      if (typeof saveCompanyWall !== 'function') return null;
+      const saved = await saveCompanyWall.call(store, id, payload);
+      if (saved) pushWallToDealersSqlite(db, saved);
+      return saved;
+    },
     async listPortalLeads(user) {
       const customerId = dealerCustomerId(user);
       if (!customerId) return [];
@@ -348,9 +430,11 @@ function sqliteApi(db, store) {
           db.prepare('UPDATE dealer_leads SET crm_deal_id = ? WHERE id = ?').run(asId(dealId), waiting[i].id);
         }
       }
-      return db.prepare(
+      const rows = db.prepare(
         "SELECT * FROM dealer_leads WHERE customer_id = ? AND status != 'reassigned' ORDER BY datetime(created_at) DESC, id DESC"
-      ).all(customerId).map(function (row) { return formatRow(row); });
+      ).all(customerId);
+      freshenSqliteWalls(db, rows);
+      return rows.map(function (row) { return formatRow(row); });
     },
     async getPortalLead(user, id) {
       const row = getRow(id);
@@ -485,6 +569,7 @@ function sqliteApi(db, store) {
 }
 
 function supabaseApi(supabase, store) {
+  const saveCompanyWall = store.saveCrmLeadCalculator;
   async function getRow(id) {
     const { data, error } = await supabase.from('dealer_leads').select('*').eq('id', id).maybeSingle();
     throwIf(error, 'Could not load this lead.');
@@ -548,6 +633,12 @@ function supabaseApi(supabase, store) {
       const names = await dealerNames(store);
       return formatRow(data, { admin: true, dealerName: names[String(data.customer_id)] || '' });
     },
+    async saveCrmLeadCalculator(id, payload) {
+      if (typeof saveCompanyWall !== 'function') return null;
+      const saved = await saveCompanyWall.call(store, id, payload);
+      if (saved) await pushWallToDealersSupabase(supabase, saved);
+      return saved;
+    },
     async listPortalLeads(user) {
       const customerId = dealerCustomerId(user);
       if (!customerId) return [];
@@ -571,7 +662,9 @@ function supabaseApi(supabase, store) {
       }
       const { data, error } = await supabase.from('dealer_leads').select('*').eq('customer_id', customerId).neq('status', 'reassigned').order('created_at', { ascending: false });
       throwIf(error, 'Could not load your leads.');
-      return (data || []).map(function (row) { return formatRow(row); });
+      const rows = data || [];
+      await freshenSupabaseWalls(supabase, rows);
+      return rows.map(function (row) { return formatRow(row); });
     },
     async getPortalLead(user, id) {
       const row = await getRow(id);
