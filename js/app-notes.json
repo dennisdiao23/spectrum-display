@@ -1,6 +1,17 @@
 {
-  "build": "2026-10-02-start-here-card",
+  "build": "2026-10-02-po-stock-bands",
   "notes": [
+    {
+      "id": "2026-10-02-po-stock-bands",
+      "date": "2026-10-02",
+      "apps": ["portal"],
+      "title": "Purchase order stock is a range",
+      "changed": [
+        "On a purchase order line, On hand does not show the exact count."
+      ],
+      "how": "Open Purchase Order and add a line. On hand shows Out of Stock when none are available, Low Stock when fewer than 10 are available, then 10+, 50+, 100+, or 500+. Dealer book still shows the count.",
+      "kind": "update"
+    },
     {
       "id": "2026-10-02-start-here",
       "date": "2026-10-02",
@@ -640,7 +651,7 @@
       },
       {
         "title": "Purchase Order",
-        "text": "Orders you have placed. Open one for the lines, ship date, and tracking.",
+        "text": "Orders you have placed. Open one for the lines, ship date, and tracking. On hand shows a range, not the exact count.",
         "video": "/assets/portal-guide/orders.mp4"
       },
       {

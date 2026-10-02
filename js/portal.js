@@ -1384,6 +1384,20 @@
   function blankQuoteLine() {
     return { item: '', sku: '', description: '', qty: '', unitPrice: '' };
   }
+  function poStockLabel(qty) {
+    const n = Number(qty);
+    if (!Number.isFinite(n) || n <= 0) return 'Out of Stock';
+    if (n < 10) return 'Low Stock';
+    if (n >= 500) return '500+';
+    if (n >= 100) return '100+';
+    if (n >= 50) return '50+';
+    return '10+';
+  }
+  function lineOnHand(inv) {
+    if (!inv) return { text: '—', qty: '' };
+    if (salesKind() !== 'order') return { text: String(inv.qty), qty: inv.qty };
+    return { text: poStockLabel(inv.qty), qty: inv.qty };
+  }
   function quoteLineRow(line, index) {
     const item = line || blankQuoteLine();
     const inv = bookBySku(item.sku);
@@ -1392,13 +1406,14 @@
     const amount = (Number(qty) || 0) * (Number(price) || 0);
     const has = !!(item.sku || item.item || item.description || Number(price));
     const sell = inv && Number(inv.listPrice) ? money(inv.listPrice) : '—';
+    const hand = lineOnHand(inv);
     return '<tr class="border-b so-line">' +
       '<td class="py-2 px-1 so-line-lead"><span class="so-line-num">' + (index + 1) + '</span></td>' +
       '<td class="py-2 px-2" data-col="sku"><div class="so-sku-search"><svg class="so-sku-search-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><circle cx="11" cy="11" r="6"/><path d="m20 20-3.5-3.5"/></svg><input data-line="sku" type="search" autocomplete="off" placeholder="Search SKU, name, brand" value="' + esc(item.sku || '') + '"></div></td>' +
       '<td class="py-2 px-2" data-col="item"><input data-line="item" value="' + esc(item.item || (inv && inv.name) || '') + '"></td>' +
       '<td class="py-2 px-2" data-col="description"><input data-line="description" value="' + esc(item.description || '') + '"></td>' +
       '<td class="py-2 px-2" data-col="qty"><input data-line="qty" type="number" min="0" step="1" value="' + esc(qty) + '"></td>' +
-      '<td class="py-2 px-2 tabular-nums so-inv-read" data-col="onHand" data-line="onHand">' + (inv ? esc(inv.qty) : '—') + '</td>' +
+      '<td class="py-2 px-2 tabular-nums so-inv-read" data-col="onHand" data-line="onHand" data-qty="' + esc(hand.qty) + '">' + esc(hand.text) + '</td>' +
       '<td class="py-2 px-2 tabular-nums so-inv-read" data-col="sell" data-line="sell">' + sell + '</td>' +
       '<td class="py-2 px-2 tabular-nums so-inv-read" data-col="dealer" data-line="dealer">' + (inv ? money(inv.dealerNet) : '—') + '</td>' +
       '<td class="py-2 px-2" data-col="price"><input data-line="unitPrice" type="number" step="0.01" readonly value="' + esc(price === '' ? '' : price) + '"></td>' +
@@ -1425,6 +1440,10 @@
     const input = td.querySelector('input, select, textarea');
     if (input && (col === 'qty' || col === 'price')) return Number(input.value) || 0;
     if (input) return input.value || '';
+    if (col === 'onHand') {
+      const raw = td.getAttribute('data-qty');
+      if (raw != null && raw !== '') return Number(raw) || 0;
+    }
     if (col === 'onHand' || col === 'amount' || col === 'sell' || col === 'dealer') {
       const n = Number(String(td.textContent || '').replace(/[^0-9.-]/g, ''));
       return isNaN(n) ? 0 : n;
@@ -1496,7 +1515,11 @@
       const onHand = row.querySelector('[data-line="onHand"]');
       const sell = row.querySelector('[data-line="sell"]');
       const dealer = row.querySelector('[data-line="dealer"]');
-      if (onHand) onHand.textContent = inv ? String(inv.qty) : '—';
+      if (onHand) {
+        const hand = lineOnHand(inv);
+        onHand.textContent = hand.text;
+        onHand.setAttribute('data-qty', hand.qty === '' ? '' : String(hand.qty));
+      }
       if (sell) sell.textContent = inv && Number(inv.listPrice) ? money(inv.listPrice) : '—';
       if (dealer) dealer.textContent = inv ? money(inv.dealerNet) : '—';
       const amt = qty * price;
