@@ -2402,6 +2402,7 @@ html.dash-scroll-lock body.company-app {
 
 @media (max-width: 1100px) {
   .dash-home-kpis,
+  .dash-home-kpis-4,
   .page-kpis,
   .page-kpis-3 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .dash-home-grid {
@@ -7373,6 +7374,15 @@ body.is-pf-dragging.is-pf-col-dragging * {
 .dash-home-kpis .dash-kpi[data-home="crm"][aria-pressed="true"]::after { background: #0e7490; }
 .dash-home-kpis .dash-kpi[data-home="customer"].is-on::after,
 .dash-home-kpis .dash-kpi[data-home="customer"][aria-pressed="true"]::after { background: #d39b12; }
+.dash-home-kpis .dash-kpi[data-home="leads"].is-on::after,
+.dash-home-kpis .dash-kpi[data-home="leads"][aria-pressed="true"]::after { background: #0e7490; }
+.dash-home-kpis .dash-kpi[data-home="quotes"].is-on::after,
+.dash-home-kpis .dash-kpi[data-home="quotes"][aria-pressed="true"]::after { background: #2f6bff; }
+.dash-home-kpis .dash-kpi[data-home="orders"].is-on::after,
+.dash-home-kpis .dash-kpi[data-home="orders"][aria-pressed="true"]::after { background: #1f9d57; }
+.dash-home-kpis .dash-kpi[data-home="walls"].is-on::after,
+.dash-home-kpis .dash-kpi[data-home="walls"][aria-pressed="true"]::after { background: #d39b12; }
+.dash-home-kpis-4 { grid-template-columns: repeat(4, minmax(0, 1fr)); }
 .dash-home-kpis.is-looping .dash-kpi.is-on::after,
 .dash-home-kpis.is-looping .dash-kpi[aria-pressed="true"]::after {
   animation: dash-kpi-loop var(--dash-loop-ms) linear;
@@ -7400,6 +7410,7 @@ body.is-pf-dragging.is-pf-col-dragging * {
 .page-kpis-5 { grid-template-columns: repeat(5, minmax(0, 1fr)); }
 @media (max-width: 1400px) {
   .dash-home-kpis { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .dash-home-kpis-4 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .page-kpis-6 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
   .page-kpis-5 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
 }
