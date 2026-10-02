@@ -32,7 +32,7 @@
     #company-boot .boot-login button[type="submit"]{background:#fff!important;color:#000!important;border:0}
     #company-boot .boot-login button[type="submit"]:hover{background:#e8e8e8!important}
   </style>
-  <link rel="stylesheet" href="/css/company-dash.css?v=kpicards1" />
+  <link rel="stylesheet" href="/css/company-dash.css?v=invfilters1" />
   <script src="/js/address-autocomplete.js"></script>
   <script src="/js/company-chat.js?v=po-ship1"></script>
   <script src="/js/company-crm.js?v=leadcalc1"></script>
@@ -41,7 +41,7 @@
   <script src="/js/company-website-control.js?v=webctrl7"></script>
   <script src="/js/print-form.js?v=forms21"></script>
   <script src="/js/brand-prices.js?v=brands3"></script>
-  <script src="/js/settings-brands.js?v=brands3"></script>
+  <script src="/js/settings-brands.js?v=brands4"></script>
   <script src="/js/app-help.js?v=help6"></script>
   <script src="/js/app-notes.js?v=guidevid1"></script>
   <script>
@@ -1391,44 +1391,44 @@
           </div>
           <div id="inv-adv-panel" class="inv-adv-panel hidden" hidden>
             <label class="inv-adv-field">Brand
-              <select id="inv-adv-brand" aria-label="Filter by brand"><option value="">All brands</option></select>
+              <select id="inv-adv-brand" class="rounded-full" aria-label="Filter by brand"><option value="">All brands</option></select>
             </label>
             <label class="inv-adv-field">Type
-              <select id="inv-adv-kind" aria-label="Filter by type">
+              <select id="inv-adv-kind" class="rounded-full" aria-label="Filter by type">
                 <option value="">All types</option>
                 <option value="item">Item</option>
                 <option value="kit">Kit</option>
               </select>
             </label>
             <label class="inv-adv-field">Unit
-              <select id="inv-adv-unit" aria-label="Filter by unit">
+              <select id="inv-adv-unit" class="rounded-full" aria-label="Filter by unit">
                 <option value="">All units</option>
                 <option value="panels">Panels</option>
                 <option value="each">Each</option>
               </select>
             </label>
             <label class="inv-adv-field">Stock place
-              <select id="inv-adv-place" aria-label="Filter by stock place">
+              <select id="inv-adv-place" class="rounded-full" aria-label="Filter by stock place">
                 <option value="">Any place</option>
                 <option value="ours">Our warehouse</option>
                 <option value="vendor">Vendor</option>
               </select>
             </label>
             <label class="inv-adv-field">Photo
-              <select id="inv-adv-photo" aria-label="Filter by photo">
+              <select id="inv-adv-photo" class="rounded-full" aria-label="Filter by photo">
                 <option value="">Any photo</option>
                 <option value="yes">Has a photo</option>
                 <option value="no">No photo</option>
               </select>
             </label>
             <label class="inv-adv-field">Spec sheet
-              <select id="inv-adv-spec" aria-label="Filter by spec sheet">
+              <select id="inv-adv-spec" class="rounded-full" aria-label="Filter by spec sheet">
                 <option value="">Any spec sheet</option>
                 <option value="yes">Has a spec sheet</option>
                 <option value="no">No spec sheet</option>
               </select>
             </label>
-            <button type="button" id="inv-adv-clear" class="inv-adv-clear">Clear</button>
+            <button type="button" id="inv-adv-clear" class="inv-adv-clear rounded-full">Clear</button>
           </div>
           <p id="inventory-error" class="hidden text-sm text-red-400 mb-3"></p>
           <div id="inv-split" class="inv-split">
@@ -3780,7 +3780,6 @@
                   <tr>
                     <th class="py-2 px-2">Item</th>
                     <th class="py-2 px-2">SKU</th>
-                    <th class="py-2 px-2">Brand</th>
                     <th class="py-2 px-2">Cost</th>
                     <th class="py-2 px-2">Sell price old</th>
                     <th class="py-2 px-2">Sell price new</th>
@@ -5243,7 +5242,7 @@
     </a>
   </nav>
 
-  <link rel="stylesheet" href="/css/company-dash.css?v=kpicards1" />
+  <link rel="stylesheet" href="/css/company-dash.css?v=invfilters1" />
   <link rel="stylesheet" href="/css/company-tw.css?v=boot1" />
 
   <script>
