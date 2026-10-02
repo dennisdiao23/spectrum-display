@@ -2253,6 +2253,28 @@ html.dash-scroll-lock body.company-app {
   flex-direction: column;
   position: relative;
 }
+.dash-home-lobby.is-start-here {
+  display: grid;
+  grid-template-rows: minmax(0, 1fr) minmax(0, 1fr);
+}
+.dash-start-here {
+  min-height: 0;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  border-bottom: 1px solid var(--dash-line);
+}
+.dash-start-here.hidden { display: none; }
+.dash-recent-wrap {
+  min-height: 0;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 auto;
+}
+.dash-home-lobby .dash-detail-list {
+  padding: 0 1.15rem 0.85rem;
+}
 .dash-home-panel.dash-home-lobby:hover {
   transform: none;
   box-shadow: 0 10px 30px rgba(16, 32, 71, 0.04);
