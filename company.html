@@ -32,7 +32,7 @@
     #company-boot .boot-login button[type="submit"]{background:#fff!important;color:#000!important;border:0}
     #company-boot .boot-login button[type="submit"]:hover{background:#e8e8e8!important}
   </style>
-  <link rel="stylesheet" href="/css/company-dash.css?v=pillbtns1" />
+  <link rel="stylesheet" href="/css/company-dash.css?v=sparkdot2" />
   <script src="/js/address-autocomplete.js"></script>
   <script src="/js/company-chat.js?v=po-ship1"></script>
   <script src="/js/company-crm.js?v=leadview1"></script>
@@ -403,7 +403,10 @@
               </span>
               <strong class="dash-kpi-value" id="dash-stat-website">—</strong>
               <span class="dash-kpi-hint" id="dash-hint-website">Unique visitors today</span>
-              <svg class="dash-kpi-spark" id="dash-spark-website" viewBox="0 0 120 28" preserveAspectRatio="none" aria-hidden="true"></svg>
+              <span class="dash-kpi-spark-wrap">
+                <svg class="dash-kpi-spark" id="dash-spark-website" viewBox="0 0 120 28" preserveAspectRatio="none" aria-hidden="true"></svg>
+                <span class="dash-kpi-spark-dot" hidden></span>
+              </span>
             </button>
             <button type="button" class="dash-kpi" data-home="inventory" aria-pressed="false">
               <span class="dash-kpi-icon dash-kpi-icon-inventory" aria-hidden="true">
@@ -414,7 +417,10 @@
               </span>
               <strong class="dash-kpi-value" id="dash-stat-inventory">—</strong>
               <span class="dash-kpi-hint" id="dash-hint-inventory">On hand</span>
-              <svg class="dash-kpi-spark" id="dash-spark-inventory" viewBox="0 0 120 28" preserveAspectRatio="none" aria-hidden="true"></svg>
+              <span class="dash-kpi-spark-wrap">
+                <svg class="dash-kpi-spark" id="dash-spark-inventory" viewBox="0 0 120 28" preserveAspectRatio="none" aria-hidden="true"></svg>
+                <span class="dash-kpi-spark-dot" hidden></span>
+              </span>
             </button>
             <button type="button" class="dash-kpi" data-home="vendor" aria-pressed="false">
               <span class="dash-kpi-icon dash-kpi-icon-vendor" aria-hidden="true">
@@ -425,7 +431,10 @@
               </span>
               <strong class="dash-kpi-value" id="dash-stat-vendor">—</strong>
               <span class="dash-kpi-hint" id="dash-hint-vendor">Pending PO</span>
-              <svg class="dash-kpi-spark" id="dash-spark-vendor" viewBox="0 0 120 28" preserveAspectRatio="none" aria-hidden="true"></svg>
+              <span class="dash-kpi-spark-wrap">
+                <svg class="dash-kpi-spark" id="dash-spark-vendor" viewBox="0 0 120 28" preserveAspectRatio="none" aria-hidden="true"></svg>
+                <span class="dash-kpi-spark-dot" hidden></span>
+              </span>
             </button>
             <button type="button" class="dash-kpi" data-home="crm" aria-pressed="false">
               <span class="dash-kpi-icon dash-kpi-icon-crm" aria-hidden="true">
@@ -436,7 +445,10 @@
               </span>
               <strong class="dash-kpi-value" id="dash-stat-crm">—</strong>
               <span class="dash-kpi-hint" id="dash-hint-crm">Open leads</span>
-              <svg class="dash-kpi-spark" id="dash-spark-crm" viewBox="0 0 120 28" preserveAspectRatio="none" aria-hidden="true"></svg>
+              <span class="dash-kpi-spark-wrap">
+                <svg class="dash-kpi-spark" id="dash-spark-crm" viewBox="0 0 120 28" preserveAspectRatio="none" aria-hidden="true"></svg>
+                <span class="dash-kpi-spark-dot" hidden></span>
+              </span>
             </button>
             <button type="button" class="dash-kpi" data-home="customer" aria-pressed="false">
               <span class="dash-kpi-icon dash-kpi-icon-customers" aria-hidden="true">
@@ -447,7 +459,10 @@
               </span>
               <strong class="dash-kpi-value" id="dash-stat-customer">—</strong>
               <span class="dash-kpi-hint" id="dash-hint-customer">Quotes, orders, invoices</span>
-              <svg class="dash-kpi-spark" id="dash-spark-customer" viewBox="0 0 120 28" preserveAspectRatio="none" aria-hidden="true"></svg>
+              <span class="dash-kpi-spark-wrap">
+                <svg class="dash-kpi-spark" id="dash-spark-customer" viewBox="0 0 120 28" preserveAspectRatio="none" aria-hidden="true"></svg>
+                <span class="dash-kpi-spark-dot" hidden></span>
+              </span>
             </button>
           </div>
           <div class="dash-home-grid">
@@ -5254,7 +5269,7 @@
     </a>
   </nav>
 
-  <link rel="stylesheet" href="/css/company-dash.css?v=pillbtns1" />
+  <link rel="stylesheet" href="/css/company-dash.css?v=sparkdot2" />
   <link rel="stylesheet" href="/css/company-tw.css?v=boot1" />
 
   <script>
@@ -7584,8 +7599,15 @@
       const stroke = color || '#2f6bff';
       svg.setAttribute('viewBox', '0 0 ' + w + ' ' + h);
       svg.innerHTML = '<path d="' + d + '" fill="none" stroke="' + stroke +
-        '" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"></path>' +
-        '<circle cx="' + lastX.toFixed(1) + '" cy="' + lastY.toFixed(1) + '" r="2.2" fill="' + stroke + '"></circle>';
+        '" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" vector-effect="non-scaling-stroke"></path>';
+      const wrap = svg.parentElement;
+      const dot = wrap && wrap.querySelector('.dash-kpi-spark-dot');
+      if (dot) {
+        dot.style.left = (lastX / w * 100) + '%';
+        dot.style.top = (lastY / h * 100) + '%';
+        dot.style.background = stroke;
+        dot.hidden = false;
+      }
     }
 
     function dashChip(value, label) {
@@ -8870,6 +8892,7 @@
       const params = new URLSearchParams(qIndex === -1 ? '' : value.slice(qIndex + 1));
       params.set('embed', '1');
       params.delete('portal');
+      params.set('v', 'calcpreview1');
       const base = path.indexOf('/led-wall-calculator') === 0 ? path : '/led-wall-calculator';
       return base + '?' + params.toString();
     }

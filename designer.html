@@ -426,6 +426,27 @@
         border-bottom: 1px solid #1e293b;
         box-shadow: 0 10px 24px rgba(0, 0, 0, 0.35);
       }
+      html.designer-embed {
+        --nav-h: 0px;
+      }
+      html.designer-embed body.designer-app {
+        padding-top: 0 !important;
+      }
+      html.designer-embed .preview-sticky {
+        top: var(--designer-bar-h);
+      }
+      html.designer-embed .preview-sticky.is-away {
+        position: relative;
+        top: auto;
+        box-shadow: none;
+      }
+      html.designer-embed .preview-sticky.is-pinned {
+        animation: preview-slide-in 0.22s ease;
+      }
+      @keyframes preview-slide-in {
+        from { transform: translateY(-105%); }
+        to { transform: none; }
+      }
       .preview-frame .preview-meta {
         padding: 0.35rem 0.5rem;
         gap: 0.5rem;
@@ -4112,6 +4133,38 @@
       setTimeout(sync, 1200);
     })();
 
+  </script>
+  <script>
+    (function () {
+      if (!document.documentElement.classList.contains('designer-embed')) return;
+      var preview = document.querySelector('.preview-sticky');
+      if (!preview) return;
+      var mq = window.matchMedia('(max-width: 1023px)');
+      var last = window.scrollY || 0;
+      function onScroll() {
+        var y = window.scrollY || document.documentElement.scrollTop || 0;
+        if (!mq.matches) {
+          preview.classList.remove('is-away', 'is-pinned');
+          last = y;
+          return;
+        }
+        if (y < 16) {
+          preview.classList.remove('is-away', 'is-pinned');
+        } else if (y > last + 4) {
+          if (!preview.classList.contains('is-away')) {
+            preview.classList.add('is-away');
+            preview.classList.remove('is-pinned');
+          }
+        } else if (y < last - 4) {
+          if (!preview.classList.contains('is-pinned')) {
+            preview.classList.remove('is-away');
+            preview.classList.add('is-pinned');
+          }
+        }
+        last = y;
+      }
+      window.addEventListener('scroll', onScroll, { passive: true });
+    })();
   </script>
 </body>
 </html>
