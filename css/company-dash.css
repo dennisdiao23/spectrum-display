@@ -7944,6 +7944,15 @@ body.dash-split-lock #crm-pipe-section .crm-board {
   border-radius: 0.55rem;
   background: #fff;
 }
+.inv-spec-list { list-style: none; margin: 0 0 0.75rem; padding: 0; display: flex; flex-direction: column; gap: 0.4rem; }
+.inv-spec-list:empty { display: none; }
+.inv-spec-row { display: flex; align-items: center; justify-content: space-between; gap: 0.75rem; padding: 0.55rem 0.75rem; border: 1px solid #e2e8f0; border-radius: 0.75rem; background: #fff; }
+.inv-spec-row a, .inv-spec-name { color: #0369a1; font-size: 0.9rem; font-weight: 600; text-decoration: none; }
+.inv-spec-row a:hover { text-decoration: underline; }
+.inv-spec-remove { border: 0; background: transparent; color: #64748b; font-size: 0.8rem; cursor: pointer; }
+.inv-spec-remove:hover { color: #b91c1c; }
+.inv-spec-add { display: inline-flex; margin-top: 0.35rem; cursor: pointer; }
+.inv-spec-add input { display: none; }
 .inv-kit-table,
 .inv-kit-detail-table {
   table-layout: auto;

@@ -1008,15 +1008,15 @@ function createSqliteStore() {
       const info = db.prepare(`
         INSERT INTO inventory_items (
           sku, mpn, item_kind, name, brand_id, category, pitch, unit, panel_type, packaging_type, qty, low_at, price, cost, dealer_net,
-          local_warehouse_cost, weight, panel_w, panel_h, description, image, gallery, notes, created_at, updated_at
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+          local_warehouse_cost, weight, panel_w, panel_h, description, image, gallery, docs, notes, created_at, updated_at
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
       `).run(
         fields.sku, fields.mpn || '', fields.item_kind || 'item', fields.name, fields.brand_id, fields.category || '', fields.pitch, fields.unit, fields.panel_type || '',
         fields.packaging_type || '', itemQty,
         fields.low_at, fields.price, fields.cost, fields.dealer_net,
         fields.local_warehouse_cost != null ? fields.local_warehouse_cost : 0, fields.weight,
         fields.panel_w, fields.panel_h, fields.description, fields.image,
-        JSON.stringify(inv.parseGallery(fields.gallery)), fields.notes,
+        JSON.stringify(inv.parseGallery(fields.gallery)), JSON.stringify(inv.parseDocs(fields.docs)), fields.notes,
         stamp, stamp
       );
       if (isKit) {
@@ -1059,6 +1059,7 @@ function createSqliteStore() {
         description: input.description != null ? input.description : (current.description || ''),
         image: input.image != null ? input.image : (current.image || ''),
         gallery: input.gallery != null ? input.gallery : inv.parseGallery(current.gallery),
+        docs: input.docs != null ? input.docs : inv.parseDocs(current.docs),
         notes: input.notes != null ? input.notes : (current.notes || ''),
         category: inv.resolveItemCategory(input.category, current.category, {
           sku: input.sku != null && input.sku !== '' ? input.sku : (current.sku || ''),
@@ -1090,14 +1091,14 @@ function createSqliteStore() {
           sku = ?, mpn = ?, item_kind = ?, name = ?, brand_id = ?, category = ?, pitch = ?, unit = ?, panel_type = ?, packaging_type = ?,
           qty = ?, low_at = ?, price = ?,
           cost = ?, dealer_net = ?, local_warehouse_cost = ?, weight = ?, panel_w = ?, panel_h = ?,
-          description = ?, image = ?, gallery = ?, notes = ?, updated_at = ?
+          description = ?, image = ?, gallery = ?, docs = ?, notes = ?, updated_at = ?
         WHERE id = ?
       `).run(
         next.sku, next.mpn, next.itemKind, next.name, next.brandId, next.category, next.pitch, next.unit, next.panelType, next.packagingType,
         becomingKit ? 0 : current.qty,
         next.lowAt, next.price,
         next.cost, next.dealerNet, next.localWarehouseCost, next.weight, next.panelW, next.panelH,
-        next.description, next.image, JSON.stringify(inv.parseGallery(next.gallery)), next.notes, dbUtil.nowIso(), id
+        next.description, next.image, JSON.stringify(inv.parseGallery(next.gallery)), JSON.stringify(inv.parseDocs(next.docs)), next.notes, dbUtil.nowIso(), id
       );
       saveInventoryKitLines(db, id, Object.assign({}, input, { itemKind: next.itemKind }), current.item_kind);
       if (!becomingKit && (input.warehouseId || input.bin != null)) {
@@ -2002,6 +2003,14 @@ function createSqliteStore() {
     },
     async saveUpload(file) {
       const prepared = await img.prepareUpload(file);
+      const name = img.newUploadName(prepared.ext);
+      return {
+        publicUrl: img.writeLocalUpload(name, prepared.buffer),
+        storageUrl: ''
+      };
+    },
+    async saveSpecUpload(file) {
+      const prepared = img.prepareSpecUpload(file);
       const name = img.newUploadName(prepared.ext);
       return {
         publicUrl: img.writeLocalUpload(name, prepared.buffer),
