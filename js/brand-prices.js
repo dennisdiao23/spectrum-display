@@ -41,8 +41,11 @@
   }
 
   function lockedBasis(priceKey, basis) {
-    if (priceKey === 'sell') return { basis: 'cost', adjustDir: 'increase' };
     var v = String(basis || '').toLowerCase();
+    if (priceKey === 'sell') {
+      if (v === 'local') return { basis: 'local', adjustDir: 'increase' };
+      return { basis: 'cost', adjustDir: 'increase' };
+    }
     if (v === 'sell') return { basis: 'sell', adjustDir: 'decrease' };
     if (v === 'local') return { basis: 'local', adjustDir: 'increase' };
     return { basis: 'cost', adjustDir: 'increase' };
@@ -83,15 +86,19 @@
     function hitFor(key) {
       if (overrides[key] != null && Number(overrides[key]) > 0) {
         var rule = activeRule(brandId, productType, key);
-        var basis = rule ? rule.basis : (key === 'sell' ? 'cost' : 'sell');
-        return { pct: Number(overrides[key]), basis: key === 'sell' ? 'cost' : basis };
+        var basis = rule && (rule.basis === 'local' || rule.basis === 'sell') ? rule.basis : (key === 'sell' ? 'cost' : (rule ? rule.basis : 'cost'));
+        return { pct: Number(overrides[key]), basis: basis };
       }
       var found = activeRule(brandId, productType, key);
       if (!found) return null;
-      return { pct: Number(found.adjustPct), basis: key === 'sell' ? 'cost' : found.basis };
+      return { pct: Number(found.adjustPct), basis: found.basis };
     }
     var sellHit = hitFor('sell');
-    var sell = sellHit && Number(cost) > 0 ? applyPct(cost, 'increase', sellHit.pct) : sellOld;
+    var sell = (function () {
+      if (!sellHit) return sellOld;
+      if (sellHit.basis === 'local') return Number(localOld) > 0 ? applyPct(localOld, 'increase', sellHit.pct) : sellOld;
+      return Number(cost) > 0 ? applyPct(cost, 'increase', sellHit.pct) : sellOld;
+    })();
     function side(key, old) {
       var hit = hitFor(key);
       if (!hit) return old;
