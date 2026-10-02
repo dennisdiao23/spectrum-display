@@ -330,7 +330,7 @@
         '<td class="py-2 px-2"><input data-sb-new="dealer" type="number" min="0" step="0.01" value="' + esc(row.dealerNew) + '"></td>' +
         '<td class="py-2 px-2">' + moneyText(row.integratorOld) + '</td>' +
         '<td class="py-2 px-2"><input data-sb-new="integrator" type="number" min="0" step="0.01" value="' + esc(row.integratorNew) + '"></td>' +
-        '<td class="py-2 px-2 sb-review-actions"><button type="button" class="text-sm text-slate-600" data-sb-skip>Skip</button> <button type="button" class="text-sm text-red-600 hidden" data-sb-allow>Confirm</button></td>' +
+        '<td class="py-2 px-2 sb-review-actions"><button type="button" class="cc-leave-no" data-sb-skip>Skip</button> <button type="button" class="cc-leave-yes hidden" data-sb-allow>Confirm</button></td>' +
         '</tr>';
     }).join('') : '<tr><td class="py-4 px-2 text-slate-500" colspan="10">Nothing to update.</td></tr>';
     body.querySelectorAll('tr[data-sb-change]').forEach(paintReviewRow);
