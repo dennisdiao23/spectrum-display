@@ -2026,6 +2026,7 @@ function createSupabaseStore() {
       if (input.lowAt != null) patch.low_at = input.lowAt;
       if (input.price != null) patch.price = input.price;
       if (input.cost != null) patch.cost = input.cost;
+      if (input.costPerM2 != null) patch.cost_per_m2 = input.costPerM2;
       if (input.localWarehouseCost != null) patch.local_warehouse_cost = input.localWarehouseCost;
       if (input.dealerNet != null) patch.dealer_net = input.dealerNet;
       if (input.integratorPrice != null) patch.integrator_price = input.integratorPrice;

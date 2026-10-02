@@ -234,6 +234,7 @@ function openDb() {
     "ALTER TABLE inventory_items ADD COLUMN cost REAL NOT NULL DEFAULT 0",
     "ALTER TABLE inventory_items ADD COLUMN dealer_net REAL NOT NULL DEFAULT 0",
     "ALTER TABLE inventory_items ADD COLUMN local_warehouse_cost REAL NOT NULL DEFAULT 0",
+    "ALTER TABLE inventory_items ADD COLUMN cost_per_m2 REAL NOT NULL DEFAULT 0",
     "ALTER TABLE inventory_items ADD COLUMN weight REAL NOT NULL DEFAULT 0",
     "ALTER TABLE inventory_items ADD COLUMN panel_w REAL NOT NULL DEFAULT 0",
     "ALTER TABLE inventory_items ADD COLUMN panel_h REAL NOT NULL DEFAULT 0",
