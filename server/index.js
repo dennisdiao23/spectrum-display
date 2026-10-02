@@ -1264,6 +1264,17 @@ async function main() {
     } catch (err) { next(err); }
   });
 
+  app.post('/api/dealer/demo-reset', requireDealer, async function (req, res, next) {
+    try {
+      const demo = require('./dealer-demo');
+      if (!demo.isDemoEmail(req.dealer && req.dealer.email)) {
+        return res.status(403).json({ ok: false, error: 'Reset is only for the demo portal.' });
+      }
+      const result = await demo.resetDealerDemo(store);
+      res.json({ ok: true, customerId: result.customerId });
+    } catch (err) { dealerDocError(err, res, next); }
+  });
+
   app.post('/api/dealer/password', requireDealer, async function (req, res, next) {
     try {
       const nextPassword = String((req.body && req.body.password) || '');
