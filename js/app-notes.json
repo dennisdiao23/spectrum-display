@@ -1,6 +1,17 @@
 {
-  "build": "2026-10-02-new-request-quote",
+  "build": "2026-10-02-phone-dashboard-scroll",
   "notes": [
+    {
+      "id": "2026-10-02-phone-dashboard-scroll",
+      "date": "2026-10-02",
+      "apps": ["portal", "company"],
+      "title": "The phone dashboard scrolls",
+      "changed": [
+        "On a phone, the dashboard moves when you swipe. The cards stay on top, then the detail, then Recent or Lobby.",
+        "The last panel stops above the bottom bar."
+      ],
+      "kind": "update"
+    },
     {
       "id": "2026-10-02-new-request-quote",
       "date": "2026-10-02",

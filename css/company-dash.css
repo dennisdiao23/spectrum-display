@@ -9805,4 +9805,54 @@ body.dash-split-lock #settings-pane.space-y-6 > :not([hidden]) {
   body.portal-app #sales-section.so-doc-open #so-inv-overview {
     display: grid !important;
   }
+
+  body.company-app .company-main:has(#dashboard-section:not(.hidden)) {
+    overflow: auto;
+    display: block;
+    padding-bottom: calc(var(--dash-tabbar-h, 0px) + 1.5rem);
+  }
+
+  body.company-app .company-main:has(#dashboard-section:not(.hidden)) #dash-panel,
+  body.company-app #dashboard-section:not(.hidden) {
+    display: block;
+    height: auto;
+    min-height: 0;
+    overflow: visible;
+    flex: none;
+  }
+
+  body.company-app #dashboard-section:not(.hidden) .dash-home {
+    display: flex;
+    flex-direction: column;
+    height: auto;
+    overflow: visible;
+    flex: none;
+  }
+
+  body.company-app .dash-home-grid,
+  body.company-app .dash-home-detail,
+  body.company-app .dash-home-panel,
+  body.company-app .dash-home-lobby {
+    height: auto;
+    min-height: 0;
+    overflow: visible;
+    flex: none;
+  }
+
+  body.company-app .dash-home-grid {
+    grid-template-rows: auto auto;
+  }
+
+  body.company-app .dash-detail-list {
+    overflow: visible;
+    flex: none;
+    max-height: none;
+  }
+
+  body.company-app .dash-lobby-window {
+    height: 22rem;
+    min-height: 22rem;
+    overflow: hidden;
+    flex: none;
+  }
 }
