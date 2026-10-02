@@ -13,6 +13,17 @@
       "kind": "feature"
     },
     {
+      "id": "2026-10-02-portal-rma",
+      "date": "2026-10-02",
+      "apps": ["portal"],
+      "title": "RMA fills the page",
+      "changed": [
+        "RMA uses the same wide list and card as Dealer book."
+      ],
+      "how": "Open RMA. The list is on the left. Click a column header to sort, move, hide, or resize it. Drag the divider if you want the list wider. New RMA, or a row, opens the return in the card on the right.",
+      "kind": "update"
+    },
+    {
       "id": "2026-10-02-installed-walls-card",
       "date": "2026-10-02",
       "apps": ["portal"],

@@ -37,7 +37,7 @@
     #company-boot .portal-boot-login button[type="submit"]{background:#fff;color:#000;border:0}
     #company-boot .portal-boot-login button[type="submit"]:hover{background:#e8e8e8}
   </style>
-  <link rel="stylesheet" href="/css/company-dash.css?v=regcols1" />
+  <link rel="stylesheet" href="/css/company-dash.css?v=rmacard2" />
   <style>
     /* Dealer is writing a Request Quote. Spectrum fills these when the quote comes back. */
     #so-detail.is-request .so-request-back { display: none !important; }
@@ -1138,7 +1138,7 @@
             <button id="rma-new-btn" type="button" class="cc-list-add-btn px-4 py-2 rounded-full bg-sky-500 hover:bg-sky-400 text-white text-sm font-semibold">New RMA</button>
           </div>
           <p id="rma-error" class="hidden text-sm text-red-400 mb-3"></p>
-          <div class="dash-split" id="rma-split">
+          <div class="dash-split" id="rma-split" style="--rma-left-w: min(720px, 58vw)">
             <div class="dash-split-left">
               <div class="cc-table-card rounded-2xl border border-slate-800">
                 <div class="cc-table-wrap overflow-x-auto">
@@ -1160,7 +1160,10 @@
             <div class="dash-split-resizer" role="separator" aria-orientation="vertical" aria-label="Resize RMA panels" tabindex="0"></div>
             <div class="dash-split-right">
               <div id="rma-overview" class="inv-right-panel">
-                <p class="inv-overview-lead">Select an RMA, or start a new return.</p>
+                <div class="inv-overview-summary">
+                  <h2 class="font-semibold text-lg" style="margin:0 0 0.35rem">RMA</h2>
+                  <p class="inv-overview-lead">Select an RMA, or start a new return. Spectrum reviews it. This does not create a credit or a replacement order.</p>
+                </div>
               </div>
               <form id="rma-form" class="inv-right-panel hidden space-y-4" style="padding:1.25rem;overflow:auto">
                 <input type="hidden" id="rma-id">
