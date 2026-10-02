@@ -1339,7 +1339,7 @@
             <div class="flex justify-between"><span class="text-slate-400" data-i18n="designer.ports">Data ports</span><span id="res-ports" class="font-medium">—</span></div>
             <div class="flex justify-between"><span class="text-slate-400" data-i18n="designer.processor">Processor</span><span id="res-processor" class="font-medium text-right text-xs sm:text-sm">—</span></div>
             <div class="flex justify-between hidden" id="res-playback-row" style="display:none"><span class="text-slate-400">Playback</span><span id="res-playback" class="font-medium text-right text-xs sm:text-sm">—</span></div>
-            <div class="flex justify-between border-t border-slate-800 pt-2.5 mt-1 pricing-only"><span class="text-slate-400" data-i18n="designer.estPrice">Sell Price</span><span id="res-price" class="font-semibold text-sky-400">—</span></div>
+            <div class="flex justify-between border-t border-slate-800 pt-2.5 mt-1 pricing-only"><span id="res-price-label" class="text-slate-400" data-i18n="designer.estPrice">Sell Price</span><span id="res-price" class="font-semibold text-sky-400">—</span></div>
           </div>
           <a id="quote-btn" href="/contact" class="mt-5 w-full inline-flex justify-center items-center px-5 py-2.5 rounded-full bg-sky-500 hover:bg-sky-400 text-white font-semibold text-sm transition">
             Request Quote for This Design
@@ -1681,18 +1681,35 @@
 
   <script src="js/control-systems.js?v=20260908-h2cvt"></script>
   <script src="js/product-photo.js?v=ph5"></script>
-  <script src="js/catalog-api.js?v=ph4"></script>
-  <script src="js/product-finder.js?v=pf6"></script>
+  <script src="js/catalog-api.js?v=ph5"></script>
+  <script src="js/product-finder.js?v=pf7"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="js/supabase-client.js"></script>
   <script src="js/pricing.js"></script>
   <script src="js/auth.js"></script>
   <script src="js/site-header.js?v=dealer-portal-v3"></script>
-  <script src="js/i18n.js?v=v2b"></script>
+  <script src="js/i18n.js?v=v2c"></script>
   <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
   <script>
     window.SPECTRUM_PRODUCTS = window.SPECTRUM_PRODUCTS || {};
     const products = window.SPECTRUM_PRODUCTS;
+    function dealerPortalMode() {
+      return document.documentElement.classList.contains('designer-portal');
+    }
+    function formatDealerMoney(n) {
+      const v = Math.round((Number(n) || 0) * 100) / 100;
+      return '$' + v.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    }
+    function dealerEachForSeries(series, pitch) {
+      const map = (series && series.pitchInventory) || {};
+      let row = map[String(pitch)];
+      if (!row && pitch !== '' && !isNaN(Number(pitch))) row = map[String(Number(pitch))];
+      return (row && Number(row.dealerEach)) || 0;
+    }
+    if (dealerPortalMode()) {
+      const priceLabel = document.getElementById('res-price-label');
+      if (priceLabel) priceLabel.setAttribute('data-i18n', 'designer.dealerPrice');
+    }
 
     // Sample content (CSS gradients / patterns as fallbacks)
         const samples = {
@@ -2837,7 +2854,9 @@
       const sellCabinets = (window.SpectrumPricing && SpectrumPricing.apply)
         ? SpectrumPricing.apply(basePrice)
         : basePrice;
-      const sellPrice = sellCabinets + controlPrice;
+      const dealerEach = (!isCustomPanel() && dealerPortalMode()) ? dealerEachForSeries(series, pitch) : 0;
+      const dealerWall = dealerEach > 0 ? Math.round(dealerEach * panels * 100) / 100 : 0;
+      const sellPrice = (dealerPortalMode() && !isCustomPanel()) ? dealerWall : (sellCabinets + controlPrice);
 
       // Results
       // area label set below with dual units
@@ -2878,8 +2897,8 @@
         // Tailwind `flex` wins over the HTML hidden attribute; set display directly.
         playRow.style.display = showPlayback ? 'flex' : 'none';
       }
-      document.getElementById('res-price').textContent = canSeeSellPrice()
-        ? ('$' + sellPrice.toLocaleString())
+      document.getElementById('res-price').textContent = canSeeSellPrice() && sellPrice > 0
+        ? (dealerPortalMode() && !isCustomPanel() ? formatDealerMoney(sellPrice) : ('$' + Math.round(sellPrice).toLocaleString()))
         : '—';
       const Wft = ftInFromMeters(actualW);
       const Hft = ftInFromMeters(actualH);
@@ -3039,8 +3058,8 @@
         controlId: controlSel.processor ? controlSel.processor.id : '',
         controlQty: controlSel.qty || 0,
         playbackId: controlSel.playback ? controlSel.playback.id : '',
-        price: canSeeSellPrice()
-          ? ('$' + sellPrice.toLocaleString())
+        price: canSeeSellPrice() && sellPrice > 0
+          ? (dealerPortalMode() && !isCustomPanel() ? formatDealerMoney(sellPrice) : ('$' + Math.round(sellPrice).toLocaleString()))
           : '',
         mount: MOUNT_LABELS[mountType] || mountType,
         voltage: voltage + 'V',
@@ -3679,7 +3698,7 @@
         + '</table></div></div>'
         + '<p class="note">Receiving cards are included in each panel. Do not add spare receiving cards to a new-wall quote.</p>'
         + (spec.price
-          ? '<div class="price"><span>Sell Price</span><strong>' + escHtml(spec.price) + '</strong></div>'
+          ? '<div class="price"><span>' + (dealerPortalMode() ? 'Dealer price' : 'Sell Price') + '</span><strong>' + escHtml(spec.price) + '</strong></div>'
           : '')
         + '<footer>Estimates only — not a formal quote. Power, weight, circuits, and processor counts are typical for this series and grid; confirm on site. Prices exclude installation, structure, processing extras, and freight. '
         + 'Open this design: ' + escHtml(spec.designerUrl) + '<br>© 2026 Spectrum Display Inc. · spectrumdisplay.com</footer>'
