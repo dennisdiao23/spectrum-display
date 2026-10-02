@@ -1972,13 +1972,37 @@
     paintCompanyRequest(data);
     paintAccount(data);
     $('file-list').innerHTML = (data.files || []).map(function (file) {
-      const when = file.createdAt ? new Date(file.createdAt).toLocaleString() : '';
-      return '<li>' +
-        '<span>' + esc(file.name || 'File') + '</span>' +
-        (when ? ' <span class="portal-co-help">' + esc(when) + '</span>' : '') +
-        ' <a class="text-sky-600" href="' + esc(file.url) + '" target="_blank" rel="noopener">View</a>' +
-        ' <a class="text-sky-600" href="' + esc(file.url) + '" download>Download</a></li>';
-    }).join('') || '<li class="portal-co-help">No files yet.</li>';
+      const when = file.createdAt ? new Date(file.createdAt).toLocaleString() : '—';
+      const name = file.name || 'File';
+      const url = file.url || '';
+      return '<tr>' +
+        '<td>' + esc(name) + '</td>' +
+        '<td>' + esc(when) + '</td>' +
+        '<td class="portal-co-file-actions">' +
+          '<button type="button" class="portal-co-btn" data-file-view data-file-name="' + esc(name) + '" data-file-url="' + esc(url) + '">View</button>' +
+          '<a class="portal-co-btn" href="' + esc(url) + '" download>Download</a>' +
+        '</td></tr>';
+    }).join('') || '<tr><td colspan="3">No files yet.</td></tr>';
+  }
+  function closeFilePreview() {
+    const box = $('file-preview');
+    const body = $('file-preview-body');
+    if (box) box.hidden = true;
+    if (body) body.innerHTML = '';
+  }
+  function openFilePreview(name, url) {
+    const box = $('file-preview');
+    const body = $('file-preview-body');
+    const title = $('file-preview-title');
+    if (!box || !body) return;
+    if (title) title.textContent = name || 'File';
+    const ext = String(url || '').split('?')[0].split('.').pop().toLowerCase();
+    if (ext === 'pdf') {
+      body.innerHTML = '<iframe src="' + esc(url) + '" title="' + esc(name || 'File') + '"></iframe>';
+    } else {
+      body.innerHTML = '<img src="' + esc(url) + '" alt="' + esc(name || 'File') + '">';
+    }
+    box.hidden = false;
   }
 
   $('login-form').onsubmit = async function (e) {
@@ -2446,6 +2470,49 @@
       setCoStatus(msg, err.message, 'declined');
     }
   };
+  $('file-list').addEventListener('click', function (e) {
+    const btn = e.target.closest('[data-file-view]');
+    if (!btn) return;
+    openFilePreview(btn.getAttribute('data-file-name') || 'File', btn.getAttribute('data-file-url') || '');
+  });
+  $('file-preview').addEventListener('click', function (e) {
+    if (e.target === $('file-preview')) closeFilePreview();
+  });
+  $('file-preview-close').addEventListener('click', closeFilePreview);
+  document.addEventListener('keydown', function (e) {
+    if (e.key === 'Escape' && $('file-preview') && !$('file-preview').hidden) closeFilePreview();
+  });
+  (function bindFileDrop() {
+    const drop = $('file-drop');
+    const input = $('file-input');
+    const form = $('file-form');
+    if (!drop || !input || !form) return;
+    ['dragenter', 'dragover'].forEach(function (name) {
+      drop.addEventListener(name, function (e) {
+        e.preventDefault();
+        drop.classList.add('is-over');
+      });
+    });
+    ['dragleave', 'drop'].forEach(function (name) {
+      drop.addEventListener(name, function (e) {
+        e.preventDefault();
+        drop.classList.remove('is-over');
+      });
+    });
+    drop.addEventListener('drop', function (e) {
+      const file = e.dataTransfer && e.dataTransfer.files && e.dataTransfer.files[0];
+      if (!file) return;
+      if (!/\.(pdf|png|jpe?g)$/i.test(file.name || '')) {
+        setCoStatus($('file-msg'), 'Choose a PDF, JPG, or PNG.', 'declined');
+        return;
+      }
+      const list = new DataTransfer();
+      list.items.add(file);
+      input.files = list.files;
+      if (form.requestSubmit) form.requestSubmit();
+      else form.dispatchEvent(new Event('submit', { cancelable: true }));
+    });
+  })();
   $('file-form').onsubmit = async function (e) {
     e.preventDefault();
     const msg = $('file-msg');
