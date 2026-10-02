@@ -103,6 +103,15 @@ const dealerInquiryUpload = multer({
   }
 });
 
+const rmaPhotoUpload = multer({
+  storage: multer.memoryStorage(),
+  limits: { fileSize: 10 * 1024 * 1024, files: 1 },
+  fileFilter: function (_req, file, cb) {
+    const ok = /^image\/(jpeg|png)$/i.test(file.mimetype || '');
+    cb(ok ? null : new Error('Picture must be a JPG or PNG.'), ok);
+  }
+});
+
 const staffEmailUpload = multer({
   storage: multer.memoryStorage(),
   limits: { fileSize: 8 * 1024 * 1024, files: 1 },
@@ -1519,10 +1528,28 @@ async function main() {
     } catch (err) { next(err); }
   });
 
-  app.post('/api/dealer/rmas', requireDealer, async function (req, res, next) {
+  app.post('/api/dealer/rmas', requireDealer, function (req, res, next) {
+    const type = String(req.headers['content-type'] || '');
+    if (type.indexOf('multipart/form-data') !== 0) return next();
+    rmaPhotoUpload.single('photo')(req, res, function (err) {
+      if (err) return res.status(400).json({ ok: false, error: err.message || 'Picture must be a JPG or PNG.' });
+      if (req.body && typeof req.body.lines === 'string') {
+        try { req.body.lines = JSON.parse(req.body.lines || '[]'); } catch (parseErr) { req.body.lines = []; }
+      }
+      next();
+    });
+  }, async function (req, res, next) {
     try {
-      res.json({ ok: true, rma: await store.createPortalRma(req.dealer, req.body || {}) });
+      res.json({ ok: true, rma: await store.createPortalRma(req.dealer, req.body || {}, req.file) });
     } catch (err) { dealerDocError(err, res, next); }
+  });
+
+  app.get('/api/dealer/rmas/:id/photo', requireDealer, async function (req, res, next) {
+    try {
+      const photo = await store.readPortalRmaPhoto(req.dealer, req.params.id);
+      if (!photo) return res.status(404).type('text/plain').send('Picture not found.');
+      sendPrivateDealerFile(res, photo, photo.buffer);
+    } catch (err) { next(err); }
   });
 
   app.get('/api/dealer/leads', requireDealer, async function (req, res, next) {
@@ -3522,6 +3549,14 @@ async function main() {
   app.get('/api/admin/rmas', requireAdmin, requirePerm('dealer', 'view'), async function (_req, res, next) {
     try {
       res.json({ ok: true, rmas: await store.listDealerRmas() });
+    } catch (err) { next(err); }
+  });
+
+  app.get('/api/admin/dealer-rmas/:id/photo', requireAdmin, requirePerm('dealer', 'view'), async function (req, res, next) {
+    try {
+      const photo = await store.readDealerRmaPhoto(req.params.id);
+      if (!photo) return res.status(404).type('text/plain').send('Picture not found.');
+      sendPrivateDealerFile(res, photo, photo.buffer);
     } catch (err) { next(err); }
   });
 

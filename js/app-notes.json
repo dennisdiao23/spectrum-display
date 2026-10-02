@@ -597,7 +597,7 @@
       },
       {
         "title": "Dealer → RMA",
-        "text": "Return requests from dealers. Open one to see the order, the reason, and where it stands. This does not create a credit or a shipping label."
+        "text": "Return requests from dealers. Open one to see the order, the reason, the picture, and where it stands. This does not create a credit or a shipping label."
       },
       {
         "title": "Inventory",
@@ -730,7 +730,7 @@
       },
       {
         "title": "RMA",
-        "text": "Start a return on something you ordered. Choose a reason and the items. Open it later for the return number and where it stands.",
+        "text": "Start a return on something you ordered. Choose a reason and the items. Drop a picture of the problem. Open it later for the return number, the picture, and where it stands.",
         "video": "/assets/portal-guide/rma.mp4"
       },
       {
