@@ -3067,46 +3067,69 @@ html.dash-scroll-lock body.company-app {
 .inv-adv-panel {
   display: flex;
   flex-wrap: wrap;
-  align-items: flex-end;
-  gap: 0.65rem 0.75rem;
-  margin: 0.35rem 0 0.55rem;
-  padding: 0.75rem 0.85rem;
-  border: 1px solid #334155;
-  border-radius: 1rem;
-  background: #0f172a;
+  align-items: center;
+  gap: 0.45rem 0.85rem;
+  margin: 0.15rem 0 0.45rem;
+  padding: 0;
+  border: 0;
+  background: transparent;
 }
 .inv-adv-panel.hidden,
 .inv-adv-panel[hidden] { display: none; }
 .inv-adv-field {
-  display: flex;
-  flex-direction: column;
-  gap: 0.2rem;
-  font-size: 0.68rem;
-  font-weight: 600;
-  letter-spacing: 0.02em;
-  color: #94a3b8;
+  display: inline-flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 0.4rem;
+  margin: 0;
+  font-size: 0.75rem;
+  font-weight: 650;
+  color: var(--dash-muted);
 }
+.company-main .inv-adv-field select,
 .inv-adv-field select {
-  min-width: 9rem;
-  background: #1e293b;
-  color: #e2e8f0;
-  border: 1px solid #334155;
-  border-radius: 999px;
-  padding: 0.4rem 0.75rem;
+  -webkit-appearance: none;
+  appearance: none;
+  min-width: 7.5rem;
+  height: 2rem;
+  margin: 0;
+  background-color: #fff !important;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 8'%3E%3Cpath fill='none' stroke='%237b87a2' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round' d='M1 1.5 6 6.5 11 1.5'/%3E%3C/svg%3E") !important;
+  background-repeat: no-repeat !important;
+  background-position: right 0.7rem center !important;
+  background-size: 0.65rem !important;
+  color: #122046 !important;
+  border: 1px solid #d5dcea !important;
+  border-radius: 999px !important;
+  padding: 0.2rem 1.7rem 0.2rem 0.8rem;
+  font: inherit;
   font-size: 0.8125rem;
-  font-weight: 500;
+  font-weight: 600;
+  line-height: 1.2;
+  cursor: pointer;
+}
+.inv-adv-field select:hover,
+.company-main .inv-adv-field select:hover {
+  border-color: #c5d0e4 !important;
 }
 .inv-adv-clear {
-  margin-left: auto;
-  border: 0;
-  background: transparent;
-  color: #7dd3fc;
-  font-size: 0.8125rem;
-  font-weight: 600;
+  margin: 0;
+  height: 2rem;
+  border: 1px solid #d5dcea;
+  border-radius: 999px;
+  background: #fff;
+  color: #243056;
+  font: inherit;
+  font-size: 0.75rem;
+  font-weight: 700;
   cursor: pointer;
-  padding: 0.4rem 0.2rem;
+  padding: 0 0.9rem;
 }
-.inv-adv-clear:hover { color: #fff; }
+.inv-adv-clear:hover {
+  background: #f7f9fc;
+  border-color: #c5d0e4;
+  color: #122046;
+}
 .cc-list-desc {
   margin: 0;
   font-size: 0.8125rem;
@@ -8093,8 +8116,31 @@ body.dash-split-lock #crm-pipe-section .crm-board {
 .inv-spec-row a:hover { text-decoration: underline; }
 .inv-spec-remove { border: 0; background: transparent; color: #64748b; font-size: 0.8rem; cursor: pointer; }
 .inv-spec-remove:hover { color: #b91c1c; }
-.inv-spec-add { display: inline-flex; margin-top: 0.35rem; cursor: pointer; }
-.inv-spec-add input { display: none; }
+.inv-spec-drop {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.2rem;
+  min-height: 7.5rem;
+  margin: 0.35rem 0 0.75rem;
+  padding: 1rem;
+  border: 1.5px dashed #94a3b8;
+  border-radius: 0.9rem;
+  background: #f8fafc;
+  color: #475569;
+  text-align: center;
+  cursor: pointer;
+}
+.inv-spec-drop strong { color: #0f172a; font-size: 0.95rem; }
+.inv-spec-drop span { font-size: 0.8rem; }
+.inv-spec-drop input { display: none; }
+.inv-spec-drop.is-over {
+  border-color: #0284c7;
+  background: #e0f2fe;
+  color: #0369a1;
+}
+.inv-spec-drop.hidden { display: none; }
 .inv-kit-table,
 .inv-kit-detail-table {
   table-layout: auto;

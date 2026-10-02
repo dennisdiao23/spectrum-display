@@ -2503,6 +2503,14 @@ async function main() {
     } catch (err) { next(err); }
   });
 
+  app.post('/api/admin/crm/leads/:id/calculator', requireAdmin, requireCrmEdit('leads'), async function (req, res, next) {
+    try {
+      const lead = await store.saveCrmLeadCalculator(req.params.id, req.body || {});
+      if (!lead) return res.status(404).json({ ok: false, error: 'Lead not found.' });
+      res.json({ ok: true, lead: lead });
+    } catch (err) { next(err); }
+  });
+
   app.post('/api/admin/crm/deals/:id/calculator', requireAdmin, requireCrmEdit('pipeline'), async function (req, res, next) {
     try {
       const deal = await store.saveCrmDealCalculator(req.params.id, req.body || {});

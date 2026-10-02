@@ -67,6 +67,15 @@ function actorName(actor) {
   return trim((actor && (actor.name || actor.email)) || '', 120);
 }
 
+function calculatorFieldsFromLead(lead) {
+  const query = trim(lead && lead.calculatorQuery, 2000);
+  let summary = '';
+  if (lead && lead.calculatorSummary && typeof lead.calculatorSummary === 'object') {
+    try { summary = JSON.stringify(lead.calculatorSummary).slice(0, 4000); } catch (err) { summary = ''; }
+  }
+  return { query: query, summary: summary };
+}
+
 function readInput(body) {
   const project = trim(body && body.project, 160);
   if (!project) throw Object.assign(new Error('Add a project name.'), { code: 'invalid' });
@@ -113,6 +122,13 @@ function formatRow(row, extras) {
     crmDealId: row.crm_deal_id ? String(row.crm_deal_id) : '',
     stage: row.stage || '',
     stageLabel: stageLabel(row.stage || ''),
+    calculatorQuery: row.calculator_query || '',
+    calculatorSummary: (function () {
+      try {
+        const parsed = JSON.parse(row.calculator_summary || '');
+        return parsed && typeof parsed === 'object' ? parsed : null;
+      } catch (err) { return null; }
+    })(),
     stageUpdatedAt: row.stage_updated_at || '',
     createdAt: row.created_at || '',
     updatedAt: row.updated_at || ''
@@ -256,7 +272,7 @@ function ensureDealerLeads(db) {
     );
     CREATE INDEX IF NOT EXISTS dealer_leads_customer_idx ON dealer_leads (customer_id, created_at);
   `);
-  ['crm_lead_id INTEGER', 'crm_deal_id INTEGER', "stage TEXT NOT NULL DEFAULT ''", "stage_updated_at TEXT NOT NULL DEFAULT ''"].forEach(function (column) {
+  ['crm_lead_id INTEGER', 'crm_deal_id INTEGER', "stage TEXT NOT NULL DEFAULT ''", "stage_updated_at TEXT NOT NULL DEFAULT ''", "calculator_query TEXT NOT NULL DEFAULT ''", "calculator_summary TEXT NOT NULL DEFAULT ''"].forEach(function (column) {
     try { db.exec('ALTER TABLE dealer_leads ADD COLUMN ' + column); } catch (err) { /* already present */ }
   });
   db.exec('CREATE INDEX IF NOT EXISTS dealer_leads_crm_lead_idx ON dealer_leads (crm_lead_id);');
@@ -411,9 +427,9 @@ function sqliteApi(db, store) {
       );
       const placed = formatRow(getRow(info.lastInsertRowid));
       const dealId = await syncAcceptedLead(store, placed, { silent: true });
-      if (dealId) {
-        db.prepare('UPDATE dealer_leads SET crm_deal_id = ?, updated_at = ? WHERE id = ?').run(asId(dealId), nowIso(), info.lastInsertRowid);
-      }
+      const wall = calculatorFieldsFromLead(lead);
+      db.prepare('UPDATE dealer_leads SET crm_deal_id = ?, calculator_query = ?, calculator_summary = ?, updated_at = ? WHERE id = ?')
+        .run(dealId ? asId(dealId) : null, wall.query, wall.summary, nowIso(), info.lastInsertRowid);
       const name = await dealerLabel(store, customerId);
       if (typeof store.createCrmActivity === 'function') {
         await store.createCrmActivity({
@@ -650,9 +666,13 @@ function supabaseApi(supabase, store) {
       throwIf(error, 'Could not send this lead.');
       const placed = formatRow(inserted);
       const dealId = await syncAcceptedLead(store, placed, { silent: true });
-      if (dealId) {
-        await supabase.from('dealer_leads').update({ crm_deal_id: asId(dealId), updated_at: nowIso() }).eq('id', inserted.id);
-      }
+      const wall = calculatorFieldsFromLead(lead);
+      await supabase.from('dealer_leads').update({
+        crm_deal_id: dealId ? asId(dealId) : null,
+        calculator_query: wall.query,
+        calculator_summary: wall.summary,
+        updated_at: nowIso()
+      }).eq('id', inserted.id);
       const name = await dealerLabel(store, customerId);
       if (typeof store.createCrmActivity === 'function') {
         await store.createCrmActivity({
