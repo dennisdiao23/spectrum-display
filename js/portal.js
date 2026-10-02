@@ -884,6 +884,7 @@
         { id: 'site', label: 'Site' },
         { id: 'pitch', label: 'Pitch' },
         { id: 'ship', label: 'Ship date' },
+        { id: 'wstart', label: 'Warranty start' },
         { id: 'warranty', label: 'Warranty end' },
         { id: 'spares', label: 'Spares' }
       ]
@@ -1002,6 +1003,7 @@
     place('panel-split', '--inv-left-w', colState('panels').splitLeftPx);
     place('lead-split', '--lead-left-w', colState('leads').splitLeftPx);
     place('dr-split', '--dash-left-w', colState('registrations').splitLeftPx);
+    place('rma-split', '--rma-left-w', colState('rmas').splitLeftPx);
   }
   function savePortalSplit(name, px) {
     const state = colState(name);
@@ -2669,6 +2671,32 @@
       window.addEventListener('pointerup', up);
     });
   })();
+  (function bindRmaResizer() {
+    const bar = document.querySelector('#rma-split .dash-split-resizer');
+    const split = $('rma-split');
+    if (!bar || !split) return;
+    bar.addEventListener('pointerdown', function (e) {
+      if (isMobileDash()) return;
+      e.preventDefault();
+      const startX = e.clientX;
+      const leftPane = split.querySelector('.dash-split-left');
+      const left = leftPane ? leftPane.getBoundingClientRect().width : 720;
+      document.body.classList.add('inv-split-dragging');
+      function move(ev) {
+        const next = Math.max(420, Math.min(split.getBoundingClientRect().width - 320, left + (ev.clientX - startX)));
+        split.style.setProperty('--rma-left-w', next + 'px');
+      }
+      function up() {
+        document.body.classList.remove('inv-split-dragging');
+        window.removeEventListener('pointermove', move);
+        window.removeEventListener('pointerup', up);
+        const width = parseInt(split.style.getPropertyValue('--rma-left-w'), 10);
+        if (width) savePortalSplit('rmas', width);
+      }
+      window.addEventListener('pointermove', move);
+      window.addEventListener('pointerup', up);
+    });
+  })();
   $('co-update-btn').onclick = function () {
     if ($('co-update-btn').disabled) return;
     fillCompanyEditor(me && me.customer);
@@ -3835,35 +3863,51 @@
     renderView('walls');
     renderMasterTabs();
   }
-  function showWall(row) {
-    if (!row) {
-      $('wall-detail').classList.add('hidden');
-      $('wall-overview').classList.remove('hidden');
-      return;
-    }
-    $('wall-overview').classList.add('hidden');
-    $('wall-detail').classList.remove('hidden');
-    $('wall-title').textContent = row.wallName || row.number || 'Installed wall';
-    const support = row.selectedCob && row.supportEnd ? (' · Support end ' + row.supportEnd) : '';
-    $('wall-sub').textContent = (row.number || '') + (row.orderNumber ? (' · Order ' + row.orderNumber) : '') + support;
-    const site = [row.siteStreet, [row.siteCity, row.siteState].filter(Boolean).join(', '), row.siteZip, row.siteCountry].filter(Boolean).join('\n');
-    $('wall-fields').innerHTML =
-      '<div><dt class="text-slate-500">End customer</dt><dd>' + esc(row.endCustomer || '—') + '</dd></div>' +
-      '<div><dt class="text-slate-500">Installer</dt><dd>' + esc(row.installer || '—') + '</dd></div>' +
-      '<div><dt class="text-slate-500">Pitch</dt><dd>' + esc(row.pitch || '—') + '</dd></div>' +
-      '<div><dt class="text-slate-500">Ship date</dt><dd>' + esc(row.shipDate || '—') + '</dd></div>' +
-      '<div><dt class="text-slate-500">Warranty end</dt><dd>' + esc(row.warrantyEnd || '—') + '</dd></div>' +
-      '<div class="sm:col-span-2"><dt class="text-slate-500">Site</dt><dd style="white-space:pre-line">' + esc(site || '—') + '</dd></div>';
-    $('wall-serials').innerHTML = (row.serials || []).length
+  function setWallField(id, value) {
+    const el = $(id);
+    if (el) el.value = value == null ? '' : value;
+  }
+  function showWallForm(open) {
+    $('wall-form').classList.toggle('hidden', !open);
+    $('wall-overview').classList.toggle('hidden', open);
+  }
+  function fillWallForm(row) {
+    const creating = !row;
+    setWallField('wall-id', creating ? '' : row.id);
+    $('wall-title').textContent = creating ? 'New Installed Wall' : (row.wallName || row.number || 'Installed wall');
+    const support = row && row.selectedCob && row.supportEnd ? (' · Support end ' + row.supportEnd) : '';
+    $('wall-sub').textContent = creating ? 'Enter the wall and the warranty dates.' : ((row.number || '') + (row.orderNumber ? (' · Order ' + row.orderNumber) : '') + support);
+    setWallField('wall-name', creating ? '' : (row.wallName || ''));
+    setWallField('wall-end', creating ? '' : (row.endCustomer || ''));
+    setWallField('wall-installer', creating ? '' : (row.installer || ''));
+    setWallField('wall-pitch', creating ? '' : (row.pitch || ''));
+    setWallField('wall-ship', creating ? '' : (row.shipDate || ''));
+    setWallField('wall-wstart', creating ? '' : (row.warrantyStart || row.shipDate || ''));
+    setWallField('wall-wend', creating ? '' : (row.warrantyEnd || ''));
+    setWallField('wall-street', creating ? '' : (row.siteStreet || ''));
+    setWallField('wall-city', creating ? '' : (row.siteCity || ''));
+    setWallField('wall-state', creating ? '' : (row.siteState || ''));
+    setWallField('wall-zip', creating ? '' : (row.siteZip || ''));
+    const msg = $('wall-msg');
+    if (msg) { msg.textContent = ''; msg.classList.add('hidden'); }
+    $('wall-serials').innerHTML = !creating && (row.serials || []).length
       ? '<p class="font-semibold mb-2">Serials</p>' + row.serials.map(function (line) {
         return '<div>' + esc(line.kindLabel || line.kind) + ' · ' + esc(line.serial) + '</div>';
       }).join('')
-      : '<p class="text-slate-500">No serials yet.</p>';
-    $('wall-spares').innerHTML = (row.spares || []).length
+      : '';
+    $('wall-spares').innerHTML = !creating && (row.spares || []).length
       ? '<p class="font-semibold mb-2">Spare kit on site</p>' + row.spares.map(function (line) {
         return '<div>' + esc(line.sku) + ' · ' + esc(line.qty) + '</div>';
       }).join('')
-      : '<p class="text-slate-500">No spare kit on site.</p>';
+      : '';
+    showWallForm(true);
+  }
+  function showWall(row) {
+    if (!row) {
+      showWallForm(false);
+      return;
+    }
+    fillWallForm(row);
   }
   function wallWarrantySoon(row) {
     if (!row || !row.warrantyEnd) return false;
@@ -3876,7 +3920,7 @@
     const q = String(($('wall-search') && $('wall-search').value) || '').trim().toLowerCase();
     const list = walls.filter(function (row) {
       if (!q) return true;
-      const blob = [row.wallName, row.number, row.endCustomer, row.pitch, wallSite(row), row.siteStreet, row.shipDate, row.warrantyEnd].join(' ').toLowerCase();
+      const blob = [row.wallName, row.number, row.endCustomer, row.pitch, wallSite(row), row.siteStreet, row.shipDate, row.warrantyStart, row.warrantyEnd].join(' ').toLowerCase();
       return blob.indexOf(q) !== -1;
     });
     const soon = walls.filter(wallWarrantySoon).length;
@@ -3890,6 +3934,7 @@
       if (col === 'site') return wallSite(row);
       if (col === 'pitch') return row.pitch || '';
       if (col === 'ship') return row.shipDate || '';
+      if (col === 'wstart') return row.warrantyStart || row.shipDate || '';
       if (col === 'warranty') return row.warrantyEnd || '';
       if (col === 'spares') return Number(row.spareQty) || 0;
       return '';
@@ -3904,6 +3949,7 @@
           site: '<td class="py-3 px-4">' + esc(wallSite(row)) + '</td>',
           pitch: '<td class="py-3 px-4">' + esc(row.pitch || '—') + '</td>',
           ship: '<td class="py-3 px-4">' + esc(row.shipDate || '—') + '</td>',
+          wstart: '<td class="py-3 px-4">' + esc(row.warrantyStart || row.shipDate || '—') + '</td>',
           warranty: '<td class="py-3 px-4">' + esc(row.warrantyEnd || '—') + '</td>',
           spares: '<td class="py-3 px-4">' + esc(row.spareQty || 0) + '</td>'
         }) + '</tr>';
@@ -3924,8 +3970,50 @@
     }
     renderWallTable();
     const route = wallIdFromPath();
+    if (route === 'new') {
+      fillWallForm(null);
+      return;
+    }
     const row = walls.find(function (item) { return String(item.id) === String(route); });
     showWall(row || null);
+  }
+  function wallPayload() {
+    return {
+      wallName: $('wall-name').value,
+      endCustomer: $('wall-end').value,
+      installer: $('wall-installer').value,
+      pitch: $('wall-pitch').value,
+      shipDate: $('wall-ship').value,
+      warrantyStart: $('wall-wstart').value,
+      warrantyEnd: $('wall-wend').value,
+      siteStreet: $('wall-street').value,
+      siteCity: $('wall-city').value,
+      siteState: $('wall-state').value,
+      siteZip: $('wall-zip').value
+    };
+  }
+  async function saveWall(event) {
+    event.preventDefault();
+    const msg = $('wall-msg');
+    const id = $('wall-id').value;
+    msg.classList.remove('hidden');
+    msg.className = 'text-sm mt-2 text-slate-500';
+    msg.textContent = 'Saving…';
+    try {
+      const saved = await api(id ? ('/api/dealer/walls/' + id) : '/api/dealer/walls', {
+        method: id ? 'PUT' : 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(wallPayload())
+      });
+      const wall = saved.wall;
+      if (wall && wall.id) goWall(wall.id, true);
+      else renderWalls();
+      msg.className = 'text-sm mt-2 text-sky-600';
+      msg.textContent = 'Saved.';
+    } catch (err) {
+      msg.className = 'text-sm mt-2 text-red-400';
+      msg.textContent = err.message || 'Could not save this wall.';
+    }
   }
   if ($('wall-search')) $('wall-search').addEventListener('input', renderWallTable);
   (function bindWallResizer() {
@@ -3959,6 +4047,8 @@
     if (!tr) return;
     goWall(tr.getAttribute('data-wall-id'), true);
   });
+  if ($('wall-new-btn')) $('wall-new-btn').addEventListener('click', function () { goWall('new', true); });
+  if ($('wall-form')) $('wall-form').addEventListener('submit', saveWall);
 
   document.addEventListener('click', function (e) {
     if (!e.target.closest('#so-sku-menu') && !e.target.closest('[data-line="sku"]')) closeSkuMenu();

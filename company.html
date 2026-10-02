@@ -5296,6 +5296,7 @@
     let editingRoleId = null;
     let websiteSubTab = 'products';
     let ccListScope = 'customer';
+    let applyStoredCcSplit = function () {};
     let settingsSubTab = 'staff';
     let salesSubTab = 'quotes';
     let adminRoles = [];
@@ -9104,6 +9105,9 @@
       if (view === 'dealer' || view === 'customers') {
         ccListScope = view === 'dealer' ? 'dealer' : 'customer';
         if (typeof syncCcScopeView === 'function') syncCcScopeView();
+        requestAnimationFrame(function () {
+          if (typeof applyStoredCcSplit === 'function') applyStoredCcSplit();
+        });
       }
       document.getElementById('crm-lead-section').classList.toggle('hidden', view !== 'leads' && view !== 'crm');
       document.getElementById('crm-pipe-section').classList.toggle('hidden', view !== 'pipeline');
@@ -10964,7 +10968,7 @@
           px = saved ? parseInt(saved, 10) : 0;
         } catch (err) {}
       }
-      const MIN_LEFT = 400;
+      const MIN_LEFT = 520;
       const target = px >= MIN_LEFT ? px : 0;
       if (!target) return;
       split.style.setProperty('--dash-left-w', target + 'px');
@@ -11325,19 +11329,19 @@
       const hasPx = visibleCols.some(function (col) {
         return state.widths[col] && String(state.widths[col]).indexOf('px') !== -1;
       });
+      const CC_COL_MIN_PX = 140;
       const widths = visibleCols.map(function (col) {
         const saved = state.widths[col];
         if (hasPx && saved && String(saved).indexOf('px') !== -1) {
           const n = Math.round(parseFloat(saved));
-          if (n > 0) return Math.max(64, n);
+          if (n > 0) return Math.max(CC_COL_MIN_PX, n);
         }
         if (saved && String(saved).indexOf('%') !== -1) {
           const pct = parseFloat(saved);
-          if (pct > 0) return Math.max(64, Math.round(paneWidth * pct / 100));
+          if (pct > 0) return Math.max(CC_COL_MIN_PX, Math.round(paneWidth * pct / 100));
         }
-        return Math.max(64, Math.round(paneWidth / visibleCols.length));
+        return Math.max(CC_COL_MIN_PX, Math.round(paneWidth / visibleCols.length));
       });
-      const fitted = shrinkInvSplitWidths(widths, paneWidth);
       Array.prototype.forEach.call(table.querySelectorAll('thead th[data-col]'), function (th) {
         const col = th.getAttribute('data-col');
         if (th.hidden || visibleCols.indexOf(col) === -1) {
@@ -11345,15 +11349,17 @@
           return;
         }
         const idx = visibleCols.indexOf(col);
-        th.style.width = fitted[idx] + 'px';
+        th.style.width = widths[idx] + 'px';
+        th.style.minWidth = widths[idx] + 'px';
       });
       Array.prototype.forEach.call(table.querySelectorAll('thead th:not([data-col])'), function (th) {
         th.style.width = '0px';
         th.style.minWidth = '0';
         th.style.padding = '0';
       });
-      table.style.width = '100%';
-      table.style.maxWidth = '100%';
+      const total = widths.reduce(function (sum, n) { return sum + n; }, 0);
+      table.style.width = Math.max(paneWidth, total) + 'px';
+      table.style.maxWidth = '';
     }
 
     function refreshCustomerSplitCols() {
@@ -12450,19 +12456,20 @@
       if (typeof ResizeObserver !== 'undefined') {
         let done = false;
         const finish = function () {
-          if (done) return;
+          if (done || !ready()) return;
           done = true;
           try { ro.disconnect(); } catch (err) {}
           fn();
         };
         const ro = new ResizeObserver(function () {
-          if (ready()) finish();
+          finish();
         });
         ro.observe(split);
-        setTimeout(finish, 2500);
       } else {
         requestAnimationFrame(function () {
-          requestAnimationFrame(fn);
+          requestAnimationFrame(function () {
+            if (ready()) fn();
+          });
         });
       }
     }
@@ -12546,8 +12553,8 @@
       const split = document.getElementById('cc-split');
       const resizer = document.getElementById('cc-split-resizer');
       if (!split || !resizer) return;
-      const MIN_LEFT = 400;
-      const MIN_RIGHT = 600;
+      const MIN_LEFT = 520;
+      const MIN_RIGHT = 480;
       const RESIZER_W = 14;
       function effectiveMins(total) {
         if (total >= MIN_LEFT + MIN_RIGHT + RESIZER_W) {
@@ -12589,13 +12596,19 @@
         const existing = parseInt(split.style.getPropertyValue('--dash-left-w'), 10);
         if (!existing || existing < MIN_LEFT) split.style.setProperty('--dash-left-w', target + 'px');
         whenInvSplitReady(split, function () {
-          const start = parseInt(split.style.getPropertyValue('--dash-left-w'), 10) || target;
-          const clamped = clampLeft(start);
-          if (Math.abs(clamped - start) > 2) split.style.setProperty('--dash-left-w', clamped + 'px');
-          fitCcTabWidths();
-          refreshCustomerSplitCols();
+          applyLeft(parseInt(split.style.getPropertyValue('--dash-left-w'), 10) || target, { save: false });
         });
       }
+      applyStoredCcSplit = function () {
+        const saved = ccSplitLeftFromPrefs();
+        const bootCss = bootCssLeftPx();
+        const target = saved >= MIN_LEFT ? saved : (bootCss >= MIN_LEFT ? bootCss : MIN_LEFT);
+        split.style.setProperty('--dash-left-w', target + 'px');
+        whenInvSplitReady(split, function () {
+          applyLeft(target, { save: false });
+        });
+        refreshCustomerSplitCols();
+      };
       if (resizer.dataset.ready !== '1') {
         resizer.dataset.ready = '1';
         let dragging = false;

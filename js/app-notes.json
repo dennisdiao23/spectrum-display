@@ -1,6 +1,28 @@
 {
-  "build": "2026-10-02-installed-walls-card",
+  "build": "2026-10-02-new-installed-wall",
   "notes": [
+    {
+      "id": "2026-10-02-new-installed-wall",
+      "date": "2026-10-02",
+      "apps": ["portal"],
+      "title": "Add an installed wall",
+      "added": [
+        "New Installed Wall. You enter the wall, the site, and the warranty start and end dates."
+      ],
+      "how": "Open Installed walls. Click New Installed Wall. Enter the wall name and the warranty start and end. Save. Open a row later to change it.",
+      "kind": "feature"
+    },
+    {
+      "id": "2026-10-02-portal-rma",
+      "date": "2026-10-02",
+      "apps": ["portal"],
+      "title": "RMA fills the page",
+      "changed": [
+        "RMA uses the same wide list and card as Dealer book."
+      ],
+      "how": "Open RMA. The list is on the left. Click a column header to sort, move, hide, or resize it. Drag the divider if you want the list wider. New RMA, or a row, opens the return in the card on the right.",
+      "kind": "update"
+    },
     {
       "id": "2026-10-02-installed-walls-card",
       "date": "2026-10-02",
@@ -703,7 +725,7 @@
       },
       {
         "title": "Installed walls",
-        "text": "Walls you installed. The card shows how many. Search the table, then open one for the address, serials, spare parts, and when the warranty ends.",
+        "text": "Walls you installed. Click New Installed Wall to add one, including the warranty start and end. The card shows how many. Open a row to change it.",
         "video": "/assets/portal-guide/walls.mp4"
       },
       {
