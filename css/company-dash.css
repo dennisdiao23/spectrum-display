@@ -3977,6 +3977,20 @@ body.po-split-lock #po-section #po-error {
 #so-split {
   grid-template-columns: var(--so-left-w, var(--so-split-left-boot, 400px)) 14px minmax(0, 1fr);
 }
+#dr-split .cc-table-wrap {
+  overflow-x: auto;
+}
+#dr-split table.dash-cols[data-cols="registrations"] {
+  min-width: 860px;
+}
+#dr-split table.dash-cols[data-cols="registrations"] th:nth-child(5),
+#dr-split table.dash-cols[data-cols="registrations"] td:nth-child(5) {
+  min-width: 12rem;
+}
+#dr-split table.dash-cols[data-cols="registrations"] thead th {
+  white-space: nowrap;
+  text-overflow: clip;
+}
 #po-split {
   grid-template-columns: var(--po-left-w, var(--po-split-left-boot, 400px)) 14px minmax(0, 1fr);
 }
