@@ -8128,8 +8128,31 @@ body.dash-split-lock #crm-pipe-section .crm-board {
 .inv-spec-row a:hover { text-decoration: underline; }
 .inv-spec-remove { border: 0; background: transparent; color: #64748b; font-size: 0.8rem; cursor: pointer; }
 .inv-spec-remove:hover { color: #b91c1c; }
-.inv-spec-add { display: inline-flex; margin-top: 0.35rem; cursor: pointer; }
-.inv-spec-add input { display: none; }
+.inv-spec-drop {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.2rem;
+  min-height: 7.5rem;
+  margin: 0.35rem 0 0.75rem;
+  padding: 1rem;
+  border: 1.5px dashed #94a3b8;
+  border-radius: 0.9rem;
+  background: #f8fafc;
+  color: #475569;
+  text-align: center;
+  cursor: pointer;
+}
+.inv-spec-drop strong { color: #0f172a; font-size: 0.95rem; }
+.inv-spec-drop span { font-size: 0.8rem; }
+.inv-spec-drop input { display: none; }
+.inv-spec-drop.is-over {
+  border-color: #0284c7;
+  background: #e0f2fe;
+  color: #0369a1;
+}
+.inv-spec-drop.hidden { display: none; }
 .inv-kit-table,
 .inv-kit-detail-table {
   table-layout: auto;
