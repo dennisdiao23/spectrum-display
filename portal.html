@@ -45,6 +45,7 @@
     #inventory-section #inv-overview-panel { overflow: auto; }
     #sales-section .dash-split-left .cc-table-wrap { overflow: auto; }
     #sales-section table.dash-cols[data-cols="sales"] { min-width: 1100px; width: max-content; }
+    .dash-cols td[hidden] { display: none !important; }
     #so-customer[readonly],
     #so-number[readonly],
     #so-customer-name[readonly],
@@ -484,14 +485,14 @@
             <div class="dash-split-left">
               <div class="cc-table-card rounded-2xl border border-slate-800">
                 <div class="cc-table-wrap overflow-x-auto">
-                  <table class="w-full text-sm">
+                  <table class="w-full text-sm dash-cols" data-cols="registrations">
                     <thead class="text-left text-slate-400 border-b border-slate-800">
                       <tr>
-                        <th class="py-3 px-4 font-medium">Number</th>
-                        <th class="py-3 px-4 font-medium">End customer</th>
-                        <th class="py-3 px-4 font-medium">Job</th>
-                        <th class="py-3 px-4 font-medium">Site</th>
-                        <th class="py-3 px-4 font-medium">Status</th>
+                        <th class="py-3 px-4 font-medium" data-col="number" data-lock="start">Number <span class="dash-col-caret">▾</span><span class="dash-col-grip" aria-hidden="true"></span></th>
+                        <th class="py-3 px-4 font-medium" data-col="customer">End customer <span class="dash-col-caret">▾</span><span class="dash-col-grip" aria-hidden="true"></span></th>
+                        <th class="py-3 px-4 font-medium" data-col="job">Job <span class="dash-col-caret">▾</span><span class="dash-col-grip" aria-hidden="true"></span></th>
+                        <th class="py-3 px-4 font-medium" data-col="site">Site <span class="dash-col-caret">▾</span><span class="dash-col-grip" aria-hidden="true"></span></th>
+                        <th class="py-3 px-4 font-medium" data-col="status">Status <span class="dash-col-caret">▾</span><span class="dash-col-grip" aria-hidden="true"></span></th>
                       </tr>
                     </thead>
                     <tbody id="dr-table" class="text-slate-200"></tbody>
@@ -540,14 +541,14 @@
             <div class="dash-split-left">
               <div class="cc-table-card rounded-2xl border border-slate-800">
                 <div class="cc-table-wrap overflow-x-auto">
-                  <table class="w-full text-sm">
+                  <table class="w-full text-sm dash-cols" data-cols="leads">
                     <thead class="text-left text-slate-400 border-b border-slate-800">
                       <tr>
-                        <th class="py-3 px-4 font-medium">Number</th>
-                        <th class="py-3 px-4 font-medium">Project</th>
-                        <th class="py-3 px-4 font-medium">Contact</th>
-                        <th class="py-3 px-4 font-medium">City</th>
-                        <th class="py-3 px-4 font-medium">Status</th>
+                        <th class="py-3 px-4 font-medium" data-col="number" data-lock="start">Number <span class="dash-col-caret">▾</span><span class="dash-col-grip" aria-hidden="true"></span></th>
+                        <th class="py-3 px-4 font-medium" data-col="project">Project <span class="dash-col-caret">▾</span><span class="dash-col-grip" aria-hidden="true"></span></th>
+                        <th class="py-3 px-4 font-medium" data-col="contact">Contact <span class="dash-col-caret">▾</span><span class="dash-col-grip" aria-hidden="true"></span></th>
+                        <th class="py-3 px-4 font-medium" data-col="city">City <span class="dash-col-caret">▾</span><span class="dash-col-grip" aria-hidden="true"></span></th>
+                        <th class="py-3 px-4 font-medium" data-col="status">Status <span class="dash-col-caret">▾</span><span class="dash-col-grip" aria-hidden="true"></span></th>
                       </tr>
                     </thead>
                     <tbody id="incoming-table" class="text-slate-200"></tbody>
@@ -615,16 +616,16 @@
             <div class="dash-split-left">
               <div class="cc-table-card rounded-2xl border border-slate-800">
                 <div class="cc-table-wrap overflow-x-auto">
-                  <table class="w-full text-sm">
+                  <table class="w-full text-sm dash-cols" data-cols="walls">
                     <thead class="text-left text-slate-400 border-b border-slate-800">
                       <tr>
-                        <th class="py-3 px-4 font-medium">Wall</th>
-                        <th class="py-3 px-4 font-medium">End customer</th>
-                        <th class="py-3 px-4 font-medium">Site</th>
-                        <th class="py-3 px-4 font-medium">Pitch</th>
-                        <th class="py-3 px-4 font-medium">Ship date</th>
-                        <th class="py-3 px-4 font-medium">Warranty end</th>
-                        <th class="py-3 px-4 font-medium">Spares</th>
+                        <th class="py-3 px-4 font-medium" data-col="wall" data-lock="start">Wall <span class="dash-col-caret">▾</span><span class="dash-col-grip" aria-hidden="true"></span></th>
+                        <th class="py-3 px-4 font-medium" data-col="customer">End customer <span class="dash-col-caret">▾</span><span class="dash-col-grip" aria-hidden="true"></span></th>
+                        <th class="py-3 px-4 font-medium" data-col="site">Site <span class="dash-col-caret">▾</span><span class="dash-col-grip" aria-hidden="true"></span></th>
+                        <th class="py-3 px-4 font-medium" data-col="pitch">Pitch <span class="dash-col-caret">▾</span><span class="dash-col-grip" aria-hidden="true"></span></th>
+                        <th class="py-3 px-4 font-medium" data-col="ship">Ship date <span class="dash-col-caret">▾</span><span class="dash-col-grip" aria-hidden="true"></span></th>
+                        <th class="py-3 px-4 font-medium" data-col="warranty">Warranty end <span class="dash-col-caret">▾</span><span class="dash-col-grip" aria-hidden="true"></span></th>
+                        <th class="py-3 px-4 font-medium" data-col="spares">Spares <span class="dash-col-caret">▾</span><span class="dash-col-grip" aria-hidden="true"></span></th>
                       </tr>
                     </thead>
                     <tbody id="wall-table" class="text-slate-200"></tbody>
@@ -660,14 +661,14 @@
             <div class="dash-split-left">
               <div class="cc-table-card rounded-2xl border border-slate-800">
                 <div class="cc-table-wrap overflow-x-auto">
-                  <table class="w-full text-sm">
+                  <table class="w-full text-sm dash-cols" data-cols="rmas">
                     <thead class="text-left text-slate-400 border-b border-slate-800">
                       <tr>
-                        <th class="py-3 px-4 font-medium">Number</th>
-                        <th class="py-3 px-4 font-medium">Date</th>
-                        <th class="py-3 px-4 font-medium">Order or PO</th>
-                        <th class="py-3 px-4 font-medium">Reason</th>
-                        <th class="py-3 px-4 font-medium">Status</th>
+                        <th class="py-3 px-4 font-medium" data-col="number" data-lock="start">Number <span class="dash-col-caret">▾</span><span class="dash-col-grip" aria-hidden="true"></span></th>
+                        <th class="py-3 px-4 font-medium" data-col="date">Date <span class="dash-col-caret">▾</span><span class="dash-col-grip" aria-hidden="true"></span></th>
+                        <th class="py-3 px-4 font-medium" data-col="order">Order or PO <span class="dash-col-caret">▾</span><span class="dash-col-grip" aria-hidden="true"></span></th>
+                        <th class="py-3 px-4 font-medium" data-col="reason">Reason <span class="dash-col-caret">▾</span><span class="dash-col-grip" aria-hidden="true"></span></th>
+                        <th class="py-3 px-4 font-medium" data-col="status">Status <span class="dash-col-caret">▾</span><span class="dash-col-grip" aria-hidden="true"></span></th>
                       </tr>
                     </thead>
                     <tbody id="rma-table" class="text-slate-200"></tbody>
@@ -733,15 +734,15 @@
                   <table class="w-full text-sm dash-cols" data-cols="sales">
                     <thead class="text-left text-slate-400 border-b border-slate-800">
                       <tr>
-                        <th class="py-3 px-4 font-medium" data-col="number">Number</th>
-                        <th class="py-3 px-4 font-medium" data-col="customer">Customer</th>
-                        <th class="py-3 px-4 font-medium" data-col="date">Date</th>
-                        <th class="py-3 px-4 font-medium" data-col="status">Status</th>
-                        <th class="py-3 px-4 font-medium" data-col="total">Total</th>
-                        <th class="py-3 px-4 font-medium" data-col="po">PO number</th>
-                        <th class="py-3 px-4 font-medium" data-col="due">Valid until</th>
-                        <th class="py-3 px-4 font-medium" data-col="terms">Terms</th>
-                        <th class="py-3 px-4 font-medium" data-col="notes">Notes</th>
+                        <th class="py-3 px-4 font-medium" data-col="number" data-lock="start">Number <span class="dash-col-caret">▾</span><span class="dash-col-grip" aria-hidden="true"></span></th>
+                        <th class="py-3 px-4 font-medium" data-col="customer">Customer <span class="dash-col-caret">▾</span><span class="dash-col-grip" aria-hidden="true"></span></th>
+                        <th class="py-3 px-4 font-medium" data-col="date">Date <span class="dash-col-caret">▾</span><span class="dash-col-grip" aria-hidden="true"></span></th>
+                        <th class="py-3 px-4 font-medium" data-col="status">Status <span class="dash-col-caret">▾</span><span class="dash-col-grip" aria-hidden="true"></span></th>
+                        <th class="py-3 px-4 font-medium" data-col="total">Total <span class="dash-col-caret">▾</span><span class="dash-col-grip" aria-hidden="true"></span></th>
+                        <th class="py-3 px-4 font-medium" data-col="po">PO number <span class="dash-col-caret">▾</span><span class="dash-col-grip" aria-hidden="true"></span></th>
+                        <th class="py-3 px-4 font-medium" data-col="due">Valid until <span class="dash-col-caret">▾</span><span class="dash-col-grip" aria-hidden="true"></span></th>
+                        <th class="py-3 px-4 font-medium" data-col="terms">Terms <span class="dash-col-caret">▾</span><span class="dash-col-grip" aria-hidden="true"></span></th>
+                        <th class="py-3 px-4 font-medium" data-col="notes">Notes <span class="dash-col-caret">▾</span><span class="dash-col-grip" aria-hidden="true"></span></th>
                       </tr>
                     </thead>
                     <tbody id="so-table" class="text-slate-200"></tbody>
@@ -897,14 +898,14 @@
                               <thead>
                                 <tr>
                                   <th class="py-2 px-1 font-medium so-line-num-h" data-lock="start">#</th>
-                                  <th class="py-2 px-3 font-medium" data-col="item">Item</th>
-                                  <th class="py-2 px-3 font-medium" data-col="sku">SKU</th>
-                                  <th class="py-2 px-3 font-medium" data-col="description">Description</th>
-                                  <th class="py-2 px-3 font-medium" data-col="qty">Qty</th>
-                                  <th class="py-2 px-3 font-medium" data-col="onHand">On hand</th>
-                                  <th class="py-2 px-3 font-medium" data-col="dealer">Dealer Price</th>
-                                  <th class="py-2 px-3 font-medium" data-col="price">Price</th>
-                                  <th class="py-2 px-3 font-medium" data-col="amount">Amount</th>
+                                  <th class="py-2 px-3 font-medium" data-col="item" data-lock="start">Item <span class="dash-col-caret">▾</span><span class="dash-col-grip" aria-hidden="true"></span></th>
+                                  <th class="py-2 px-3 font-medium" data-col="sku">SKU <span class="dash-col-caret">▾</span><span class="dash-col-grip" aria-hidden="true"></span></th>
+                                  <th class="py-2 px-3 font-medium" data-col="description">Description <span class="dash-col-caret">▾</span><span class="dash-col-grip" aria-hidden="true"></span></th>
+                                  <th class="py-2 px-3 font-medium" data-col="qty">Qty <span class="dash-col-caret">▾</span><span class="dash-col-grip" aria-hidden="true"></span></th>
+                                  <th class="py-2 px-3 font-medium" data-col="onHand">On hand <span class="dash-col-caret">▾</span><span class="dash-col-grip" aria-hidden="true"></span></th>
+                                  <th class="py-2 px-3 font-medium" data-col="dealer">Dealer Price <span class="dash-col-caret">▾</span><span class="dash-col-grip" aria-hidden="true"></span></th>
+                                  <th class="py-2 px-3 font-medium" data-col="price">Price <span class="dash-col-caret">▾</span><span class="dash-col-grip" aria-hidden="true"></span></th>
+                                  <th class="py-2 px-3 font-medium" data-col="amount">Amount <span class="dash-col-caret">▾</span><span class="dash-col-grip" aria-hidden="true"></span></th>
                                   <th class="py-2 px-1 font-medium so-line-acts-h"></th>
                                 </tr>
                               </thead>
@@ -992,13 +993,13 @@
                     <table class="w-full text-sm dash-cols" data-cols="projects">
                       <thead class="text-left text-slate-400 border-b border-slate-800">
                         <tr>
-                          <th class="py-3 px-4 font-medium">Project</th>
-                          <th class="py-3 px-4 font-medium">Brand</th>
-                          <th class="py-3 px-4 font-medium">Series</th>
-                          <th class="py-3 px-4 font-medium">Size</th>
-                          <th class="py-3 px-4 font-medium">Pitch</th>
-                          <th class="py-3 px-4 font-medium">Panels</th>
-                          <th class="py-3 px-4 font-medium">Saved</th>
+                          <th class="py-3 px-4 font-medium" data-col="title" data-lock="start">Project <span class="dash-col-caret">▾</span><span class="dash-col-grip" aria-hidden="true"></span></th>
+                          <th class="py-3 px-4 font-medium" data-col="brand">Brand <span class="dash-col-caret">▾</span><span class="dash-col-grip" aria-hidden="true"></span></th>
+                          <th class="py-3 px-4 font-medium" data-col="series">Series <span class="dash-col-caret">▾</span><span class="dash-col-grip" aria-hidden="true"></span></th>
+                          <th class="py-3 px-4 font-medium" data-col="size">Size <span class="dash-col-caret">▾</span><span class="dash-col-grip" aria-hidden="true"></span></th>
+                          <th class="py-3 px-4 font-medium" data-col="pitch">Pitch <span class="dash-col-caret">▾</span><span class="dash-col-grip" aria-hidden="true"></span></th>
+                          <th class="py-3 px-4 font-medium" data-col="panels">Panels <span class="dash-col-caret">▾</span><span class="dash-col-grip" aria-hidden="true"></span></th>
+                          <th class="py-3 px-4 font-medium" data-col="saved">Saved <span class="dash-col-caret">▾</span><span class="dash-col-grip" aria-hidden="true"></span></th>
                         </tr>
                       </thead>
                       <tbody id="proj-table" class="text-slate-200"></tbody>
@@ -1054,12 +1055,12 @@
                     <table class="w-full text-sm dash-cols" data-cols="panels">
                       <thead class="text-left text-slate-400 border-b border-slate-800">
                         <tr>
-                          <th class="py-3 px-4 font-medium">Name</th>
-                          <th class="py-3 px-4 font-medium">Size</th>
-                          <th class="py-3 px-4 font-medium">Pitch</th>
-                          <th class="py-3 px-4 font-medium">Type</th>
-                          <th class="py-3 px-4 font-medium">Weight</th>
-                          <th class="py-3 px-4 font-medium">Saved</th>
+                          <th class="py-3 px-4 font-medium" data-col="name" data-lock="start">Name <span class="dash-col-caret">▾</span><span class="dash-col-grip" aria-hidden="true"></span></th>
+                          <th class="py-3 px-4 font-medium" data-col="size">Size <span class="dash-col-caret">▾</span><span class="dash-col-grip" aria-hidden="true"></span></th>
+                          <th class="py-3 px-4 font-medium" data-col="pitch">Pitch <span class="dash-col-caret">▾</span><span class="dash-col-grip" aria-hidden="true"></span></th>
+                          <th class="py-3 px-4 font-medium" data-col="type">Type <span class="dash-col-caret">▾</span><span class="dash-col-grip" aria-hidden="true"></span></th>
+                          <th class="py-3 px-4 font-medium" data-col="weight">Weight <span class="dash-col-caret">▾</span><span class="dash-col-grip" aria-hidden="true"></span></th>
+                          <th class="py-3 px-4 font-medium" data-col="saved">Saved <span class="dash-col-caret">▾</span><span class="dash-col-grip" aria-hidden="true"></span></th>
                         </tr>
                       </thead>
                       <tbody id="panel-table" class="text-slate-200"></tbody>
@@ -1212,6 +1213,6 @@
   </div>
   <script src="/js/app-help.js?v=help6"></script>
   <script src="/js/app-notes.js?v=newsbar3"></script>
-  <script src="/js/portal.js?v=dealerpipe1"></script>
+  <script src="/js/portal.js?v=dealerpipe2"></script>
 </body>
 </html>
