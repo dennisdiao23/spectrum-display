@@ -3883,7 +3883,8 @@ body.dash-split-lock #control-section:not(.hidden),
 body.dash-split-lock #store-section:not(.hidden),
 body.dash-split-lock #accounts-section:not(.hidden),
 body.so-split-lock #sales-section:not(.hidden),
-body.po-split-lock #po-section:not(.hidden) {
+body.po-split-lock #po-section:not(.hidden),
+body.dash-split-lock #rmas-section:not(.hidden) {
   flex: 1 1 auto;
   min-height: 0;
   overflow: hidden;
@@ -3915,6 +3916,8 @@ body.dash-split-lock #products-section .wp-list-head,
 body.dash-split-lock #control-section .wc-list-head,
 body.dash-split-lock #store-section .ws-list-head,
 body.dash-split-lock #accounts-section .wa-list-head,
+body.dash-split-lock #rmas-section .cc-list-toolbar,
+body.dash-split-lock #rmas-section #rma-error,
 body.so-split-lock #sales-section .page-kpis,
 body.so-split-lock #sales-section .cc-list-toolbar,
 body.so-split-lock #sales-section #so-error,
@@ -3977,20 +3980,6 @@ body.po-split-lock #po-section #po-error {
 #so-split {
   grid-template-columns: var(--so-left-w, var(--so-split-left-boot, 400px)) 14px minmax(0, 1fr);
 }
-#dr-split .cc-table-wrap {
-  overflow-x: auto;
-}
-#dr-split table.dash-cols[data-cols="registrations"] {
-  min-width: 860px;
-}
-#dr-split table.dash-cols[data-cols="registrations"] th:nth-child(5),
-#dr-split table.dash-cols[data-cols="registrations"] td:nth-child(5) {
-  min-width: 12rem;
-}
-#dr-split table.dash-cols[data-cols="registrations"] thead th {
-  white-space: nowrap;
-  text-overflow: clip;
-}
 #po-split {
   grid-template-columns: var(--po-left-w, var(--po-split-left-boot, 400px)) 14px minmax(0, 1fr);
 }
@@ -4014,6 +4003,23 @@ body.po-split-lock #po-section #po-error {
 }
 #da-split {
   grid-template-columns: var(--da-left-w, var(--da-split-left-boot, 680px)) 14px minmax(0, 1fr);
+}
+#rma-split {
+  grid-template-columns: var(--rma-left-w, 720px) 14px minmax(0, 1fr);
+}
+#rma-overview .inv-overview-summary {
+  padding: 1.15rem 1.25rem 1.35rem;
+}
+#rma-form {
+  padding: 1.15rem 1.25rem 1.5rem;
+  overflow: auto;
+}
+#rma-form input,
+#rma-form select,
+#rma-form textarea {
+  background: #fff;
+  border: 1px solid #e2e8f0;
+  color: #0f172a;
 }
 body.inv-layout-lock .inv-split,
 body.dash-split-lock .dash-split,
