@@ -2024,6 +2024,7 @@ function createSupabaseStore() {
       if (input.cost != null) patch.cost = input.cost;
       if (input.localWarehouseCost != null) patch.local_warehouse_cost = input.localWarehouseCost;
       if (input.dealerNet != null) patch.dealer_net = input.dealerNet;
+      if (input.integratorPrice != null) patch.integrator_price = input.integratorPrice;
       if (input.weight != null) patch.weight = input.weight;
       if (input.panelW != null) patch.panel_w = input.panelW;
       if (input.panelH != null) patch.panel_h = input.panelH;
@@ -2204,7 +2205,16 @@ function createSupabaseStore() {
         .order('company_name', { ascending: true })
         .order('contact_last', { ascending: true });
       throwIf(error, 'Could not list customers.');
-      return (data || []).map(cc.formatCustomer);
+      const customers = (data || []).map(cc.formatCustomer);
+      return await this._attachCustomerPriceOverrides(customers);
+    },
+    async _attachCustomerPriceOverrides(customers) {
+      const bp = require('./brand-prices');
+      try {
+        return bp.attachOverrides(customers, await bp.listOverridesSupabase(supabase));
+      } catch (err) {
+        return bp.attachOverrides(customers, []);
+      }
     },
     async getCompanyCustomer(id) {
       const cc = require('./company-customers');
@@ -2213,6 +2223,7 @@ function createSupabaseStore() {
       const customer = cc.formatCustomer(data);
       if (!customer) return null;
       customer.contacts = await this.listCustomerContacts(id);
+      await this._attachCustomerPriceOverrides([customer]);
       return customer;
     },
     async _upsertCustomerPrimaryContact(customerId, customerInput) {
@@ -2234,6 +2245,9 @@ function createSupabaseStore() {
       const { data, error } = await supabase.from('company_customers').insert(fields).select('*').single();
       throwIf(error, 'Could not add customer.');
       await this._upsertCustomerPrimaryContact(data.id, input);
+      if (Array.isArray(payload && payload.priceOverrides)) {
+        await require('./brand-prices').saveOverridesSupabase(supabase, data.id, payload.priceOverrides);
+      }
       return this.getCompanyCustomer(data.id);
     },
     async updateCompanyCustomer(id, payload) {
@@ -2245,6 +2259,9 @@ function createSupabaseStore() {
       throwIf(error, 'Could not save customer.');
       if (!data) return null;
       await this._upsertCustomerPrimaryContact(id, input);
+      if (Array.isArray(payload && payload.priceOverrides)) {
+        await require('./brand-prices').saveOverridesSupabase(supabase, id, payload.priceOverrides);
+      }
       return this.getCompanyCustomer(id);
     },
     async deleteCompanyCustomer(id) {
@@ -2484,6 +2501,12 @@ function createSupabaseStore() {
     },
     async deletePriceLevel(id) {
       return require('./price-levels').deleteSupabase(supabase, id);
+    },
+    async listBrandPriceRules() {
+      return require('./brand-prices').listSupabase(supabase);
+    },
+    async saveBrandPriceRules(brandId, rules) {
+      return require('./brand-prices').saveSupabase(supabase, brandId, rules);
     },
     async savePrintForm(type, template) {
       const pf = require('./print-forms');
