@@ -1306,6 +1306,12 @@ async function main() {
     } catch (err) { next(err); }
   });
 
+  app.get('/api/dealer/panel-prices', requireDealer, async function (req, res, next) {
+    try {
+      res.json({ ok: true, prices: await store.getDealerPanelPrices() });
+    } catch (err) { next(err); }
+  });
+
   app.get('/api/dealer/book', requireDealer, async function (req, res, next) {
     try {
       res.json({ ok: true, items: await store.getDealerPriceBook() });

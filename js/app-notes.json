@@ -1,6 +1,17 @@
 {
-  "build": "2026-10-02-list-cols-readable",
+  "build": "2026-10-02-portal-dealer-price",
   "notes": [
+    {
+      "id": "2026-10-02-portal-dealer-price",
+      "date": "2026-10-02",
+      "apps": ["portal"],
+      "title": "Calculator uses dealer price",
+      "changed": [
+        "Recommended panels and the wall total use your Dealer price."
+      ],
+      "how": "Open Calculator. Each card is your Dealer price for one panel times how many panels are on the wall. The total uses that same count.",
+      "kind": "update"
+    },
     {
       "id": "2026-10-02-list-cols-readable",
       "date": "2026-10-02",

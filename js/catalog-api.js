@@ -116,6 +116,40 @@
     });
   }
 
+  function mergeDealerEach(prices) {
+    const target = global.SPECTRUM_PRODUCTS || {};
+    Object.keys(target).forEach(function (brandId) {
+      ((target[brandId] && target[brandId].series) || []).forEach(function (s) {
+        const byPitch = (prices && prices[String(s.dbId)]) || {};
+        s.pitchInventory = s.pitchInventory || {};
+        Object.keys(s.pitchInventory).forEach(function (pitch) {
+          if (s.pitchInventory[pitch]) delete s.pitchInventory[pitch].dealerEach;
+        });
+        Object.keys(byPitch).forEach(function (pitch) {
+          s.pitchInventory[pitch] = Object.assign({}, s.pitchInventory[pitch], { dealerEach: byPitch[pitch] });
+        });
+      });
+    });
+  }
+
+  function loadDealerPanelPrices() {
+    if (!document.documentElement.classList.contains('designer-portal')) return Promise.resolve(false);
+    return fetch('/api/dealer/panel-prices', {
+      credentials: 'same-origin',
+      headers: { Accept: 'application/json' }
+    }).then(function (res) { return res.ok ? res.json() : null; }).then(function (data) {
+      if (!(data && data.ok)) {
+        mergeDealerEach({});
+        return false;
+      }
+      mergeDealerEach(data.prices || {});
+      return true;
+    }).catch(function () {
+      mergeDealerEach({});
+      return false;
+    });
+  }
+
   function mergeStock(stock) {
     const target = global.SPECTRUM_PRODUCTS || {};
     Object.keys(target).forEach(function (brandId) {
@@ -240,6 +274,8 @@
     .then(function (data) {
       applyCatalog(data && data.ok ? data.products : {});
       authReadyPromise().then(function () { return loadCatalogStock(); }).then(function () {
+        return loadDealerPanelPrices();
+      }).then(function () {
         if (global.SPECTRUM_PRODUCTS) {
           global.SPECTRUM_PRODUCT_LIST = rebuildList(global.SPECTRUM_PRODUCTS);
         }

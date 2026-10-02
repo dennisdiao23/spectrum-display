@@ -205,10 +205,46 @@
     return !rental || /\bfixed/.test(catStr(s));
   }
 
+  function dealerPortal() {
+    return document.documentElement.classList.contains('designer-portal');
+  }
+
   function pricePerM2(s, pitch) {
     var map = s.pitchInventory || {};
     var key = String(pitch);
     return (map[key] && (Number(map[key].price) || 0)) || 0;
+  }
+
+  function dealerEach(s, pitch) {
+    var map = s.pitchInventory || {};
+    var key = String(pitch);
+    var row = map[key];
+    if (!row && pitch !== '' && !isNaN(Number(pitch))) row = map[String(Number(pitch))];
+    return (row && (Number(row.dealerEach) || 0)) || 0;
+  }
+
+  function pitchIsPriced(s, pitch) {
+    if (dealerPortal()) return dealerEach(s, pitch) > 0;
+    return pricePerM2(s, pitch) > 0;
+  }
+
+  function wallCost(s, pitch, grid) {
+    if (dealerPortal()) {
+      var each = dealerEach(s, pitch);
+      var panels = grid.cols * grid.rows;
+      return each > 0 && panels > 0 ? Math.round(each * panels * 100) / 100 : 0;
+    }
+    var unit = pricePerM2(s, pitch);
+    var area = grid.w * grid.h;
+    return unit > 0 ? applyPrice(unit * area) : 0;
+  }
+
+  function formatMoney(n) {
+    if (dealerPortal()) {
+      var v = Math.round((Number(n) || 0) * 100) / 100;
+      return '$' + v.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    }
+    return money(n);
   }
 
   function applyPrice(n) {
@@ -248,7 +284,7 @@
 
   function pickPitch(s, grid) {
     var pitches = (s.pitches || []).slice().map(Number).filter(function (p) {
-      return p > 0 && pricePerM2(s, p) > 0;
+      return p > 0 && pitchIsPriced(s, p);
     });
     pitches.sort(function (a, b) { return a - b; });
     if (!pitches.length) return null;
@@ -288,8 +324,7 @@
 
   function scoreCandidate(s, grid, pitchInfo) {
     var area = grid.w * grid.h;
-    var unit = pricePerM2(s, pitchInfo.pitch);
-    var cost = unit > 0 ? applyPrice(unit * area) : 0;
+    var cost = wallCost(s, pitchInfo.pitch, grid);
     var box = targetScreen();
     var unused = Math.max(0, box.w - grid.w) * box.h +
       grid.w * Math.max(0, box.h - grid.h);
@@ -353,7 +388,7 @@
       if (grid.w > state.openingW + 0.02 || grid.h > state.openingH + 0.02) return;
       var pitchInfo = pickPitch(s, grid);
       if (!pitchInfo) return;
-      if (!(pricePerM2(s, pitchInfo.pitch) > 0)) return;
+      if (!pitchIsPriced(s, pitchInfo.pitch)) return;
       scored.push(scoreCandidate(s, grid, pitchInfo));
     });
 
@@ -653,7 +688,7 @@
         '" data-finder-key="' + item.key + '">' +
         '<div class="flex items-center justify-between gap-2">' +
         '<span class="text-[10px] uppercase tracking-wide text-sky-300">' + item.badge + '</span>' +
-        '<span class="text-xs font-semibold text-sky-400 pricing-only">' + (item.cost ? money(item.cost) : 'Request quote') + '</span>' +
+        '<span class="text-xs font-semibold text-sky-400 pricing-only">' + (item.cost ? formatMoney(item.cost) : 'Request quote') + '</span>' +
         '<span class="text-xs text-slate-500 guest-pricing">' + ((global.t && t('price.signIn')) || 'Sign in for pricing') + '</span>' +
         '</div>' +
         '<div class="font-medium text-sm text-slate-100">' + cardTitle(item) + '</div>' +
@@ -681,9 +716,9 @@
       var save = cur && cur.cost && item.cost ? cur.cost - item.cost : 0;
       return '<button type="button" class="finder-card w-full text-left p-3 rounded-xl border border-slate-800 hover:border-sky-500/60 space-y-1" data-finder-key="' + item.key + '">' +
         '<div class="flex justify-between gap-2 text-sm"><span class="text-slate-200">' + cardTitle(item) + '</span>' +
-        '<span class="text-sky-400 font-medium pricing-only">' + (item.cost ? money(item.cost) : '—') + '</span></div>' +
+        '<span class="text-sky-400 font-medium pricing-only">' + (item.cost ? formatMoney(item.cost) : '—') + '</span></div>' +
         '<div class="text-xs text-slate-500">' + item.reason +
-        (save > 0 ? '<span class="pricing-only"> Saves ' + money(save) + '.</span>' : '') + '</div>' +
+        (save > 0 ? '<span class="pricing-only"> Saves ' + formatMoney(save) + '.</span>' : '') + '</div>' +
         '</button>';
     }).join('');
   }
