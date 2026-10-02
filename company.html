@@ -32,7 +32,7 @@
     #company-boot .boot-login button[type="submit"]{background:#fff!important;color:#000!important;border:0}
     #company-boot .boot-login button[type="submit"]:hover{background:#e8e8e8!important}
   </style>
-  <link rel="stylesheet" href="/css/company-dash.css?v=dealercols2" />
+  <link rel="stylesheet" href="/css/company-dash.css?v=listcols1" />
   <script src="/js/address-autocomplete.js"></script>
   <script src="/js/company-chat.js?v=po-ship1"></script>
   <script src="/js/company-crm.js?v=leadview1"></script>
@@ -43,7 +43,7 @@
   <script src="/js/brand-prices.js?v=brands7"></script>
   <script src="/js/settings-brands.js?v=brands8"></script>
   <script src="/js/app-help.js?v=help6"></script>
-  <script src="/js/app-notes.js?v=guidevid1"></script>
+  <script src="/js/app-notes.js?v=listcols1"></script>
   <script>
     if ('serviceWorker' in navigator && location.pathname.indexOf('/company') === 0) {
       navigator.serviceWorker.register('/company/sw.js', { scope: '/company' });
@@ -5279,7 +5279,7 @@
     </a>
   </nav>
 
-  <link rel="stylesheet" href="/css/company-dash.css?v=dealercols2" />
+  <link rel="stylesheet" href="/css/company-dash.css?v=listcols1" />
   <link rel="stylesheet" href="/css/company-tw.css?v=boot1" />
 
   <script>
@@ -5297,6 +5297,7 @@
     let websiteSubTab = 'products';
     let ccListScope = 'customer';
     let applyStoredCcSplit = function () {};
+    const restoreSplitById = {};
     let settingsSubTab = 'staff';
     let salesSubTab = 'quotes';
     let adminRoles = [];
@@ -9105,9 +9106,6 @@
       if (view === 'dealer' || view === 'customers') {
         ccListScope = view === 'dealer' ? 'dealer' : 'customer';
         if (typeof syncCcScopeView === 'function') syncCcScopeView();
-        requestAnimationFrame(function () {
-          if (typeof applyStoredCcSplit === 'function') applyStoredCcSplit();
-        });
       }
       document.getElementById('crm-lead-section').classList.toggle('hidden', view !== 'leads' && view !== 'crm');
       document.getElementById('crm-pipe-section').classList.toggle('hidden', view !== 'pipeline');
@@ -9272,6 +9270,9 @@
       const roleNew = document.getElementById('role-new-btn');
       if (roleNew) roleNew.classList.toggle('hidden', !canEdit('settings'));
       if ((view === 'staff' || view === 'roles') && canManageChatAi()) loadChatAiSettings();
+      requestAnimationFrame(function () {
+        if (typeof restoreOpenListSplits === 'function') restoreOpenListSplits();
+      });
     }
 
     let inventoryItems = [];
@@ -11110,14 +11111,15 @@
       status: 12
     };
     const INV_COL_MIN_PX = 50;
+    const LIST_COL_MIN_PX = 120;
 
     function invSplitColWidthPx(col, savedWidth, paneWidth) {
       if (savedWidth && String(savedWidth).indexOf('px') !== -1) {
         const n = Math.round(parseFloat(savedWidth));
-        if (n > 0) return Math.max(INV_COL_MIN_PX, n);
+        if (n > 0) return Math.max(LIST_COL_MIN_PX, n);
       }
       const pct = INV_SPLIT_COL_DEFAULT_PCT[col] || 12;
-      return Math.max(INV_COL_MIN_PX, Math.round(paneWidth * pct / 100));
+      return Math.max(LIST_COL_MIN_PX, Math.round(paneWidth * pct / 100));
     }
 
     function shrinkInvSplitWidths(widths, paneWidth) {
@@ -11291,23 +11293,23 @@
         return state.hidden.indexOf(id) === -1;
       });
       if (!visibleCols.length) return;
-      const widths = shrinkInvSplitWidths(
-        visibleCols.map(function (col) {
-          return invSplitColWidthPx(col, state.widths[col], paneWidth);
-        }),
-        paneWidth
-      );
+      const widths = visibleCols.map(function (col) {
+        return invSplitColWidthPx(col, state.widths[col], paneWidth);
+      });
       Array.prototype.forEach.call(table.querySelectorAll('thead th[data-col]'), function (th) {
         const col = th.getAttribute('data-col');
         if (th.hidden || visibleCols.indexOf(col) === -1) {
           th.style.width = '';
+          th.style.minWidth = '';
           return;
         }
         const idx = visibleCols.indexOf(col);
         th.style.width = widths[idx] + 'px';
+        th.style.minWidth = widths[idx] + 'px';
       });
-      table.style.width = '100%';
-      table.style.maxWidth = '100%';
+      const total = widths.reduce(function (sum, n) { return sum + n; }, 0);
+      table.style.width = Math.max(paneWidth, total) + 'px';
+      table.style.maxWidth = '';
     }
 
     function refreshInventorySplitCols() {
@@ -12474,6 +12476,16 @@
       }
     }
 
+    function restoreOpenListSplits() {
+      Object.keys(restoreSplitById).forEach(function (id) {
+        const el = document.getElementById(id);
+        if (!el) return;
+        const host = el.closest('[id$="-section"], [id$="-pane"]');
+        if (host && (host.classList.contains('hidden') || host.hidden)) return;
+        if (typeof restoreSplitById[id] === 'function') restoreSplitById[id]();
+      });
+    }
+
     function initInvSplitResize() {
       const split = document.getElementById('inv-split');
       const resizer = document.getElementById('inv-split-resizer');
@@ -12518,6 +12530,15 @@
           fitInvTabWidths();
         });
       }
+      restoreSplitById['inv-split'] = function () {
+        const saved = invSplitLeftFromPrefs();
+        const target = saved >= MIN_LEFT ? saved : MIN_LEFT;
+        split.style.setProperty('--inv-left-w', target + 'px');
+        whenInvSplitReady(split, function () {
+          applyLeft(target, { save: false });
+        });
+        refreshInventorySplitCols();
+      };
       if (resizer.dataset.ready !== '1') {
         resizer.dataset.ready = '1';
         let dragging = false;
@@ -12609,6 +12630,7 @@
         });
         refreshCustomerSplitCols();
       };
+      restoreSplitById['cc-split'] = applyStoredCcSplit;
       if (resizer.dataset.ready !== '1') {
         resizer.dataset.ready = '1';
         let dragging = false;
@@ -12707,6 +12729,16 @@
           fit();
         });
       }
+      restoreSplitById[cfg.splitId] = function () {
+        const saved = fromPrefs();
+        const bootCss = bootCssLeftPx();
+        const target = saved >= MIN_LEFT ? saved : (bootCss >= MIN_LEFT ? bootCss : MIN_LEFT);
+        split.style.setProperty(cssVar, target + 'px');
+        whenInvSplitReady(split, function () {
+          applyLeft(target, { save: false });
+        });
+        fit();
+      };
       if (resizer.dataset.ready !== '1') {
         resizer.dataset.ready = '1';
         let dragging = false;
@@ -12868,6 +12900,16 @@
           fitSoTabWidths();
         });
       }
+      restoreSplitById['so-split'] = function () {
+        const saved = soSplitLeftFromPrefs();
+        const bootCss = bootCssLeftPx();
+        const target = saved >= MIN_LEFT ? saved : (bootCss >= MIN_LEFT ? bootCss : MIN_LEFT);
+        split.style.setProperty('--so-left-w', target + 'px');
+        whenInvSplitReady(split, function () {
+          applyLeft(target, { save: false });
+        });
+        fitSoTabWidths();
+      };
       if (resizer.dataset.ready !== '1') {
         resizer.dataset.ready = '1';
         let dragging = false;
@@ -12962,6 +13004,16 @@
           fitPoTabWidths();
         });
       }
+      restoreSplitById['po-split'] = function () {
+        const saved = poSplitLeftFromPrefs();
+        const bootCss = bootCssLeftPx();
+        const target = saved >= MIN_LEFT ? saved : (bootCss >= MIN_LEFT ? bootCss : MIN_LEFT);
+        split.style.setProperty('--po-left-w', target + 'px');
+        whenInvSplitReady(split, function () {
+          applyLeft(target, { save: false });
+        });
+        fitPoTabWidths();
+      };
       if (resizer.dataset.ready !== '1') {
         resizer.dataset.ready = '1';
         let dragging = false;

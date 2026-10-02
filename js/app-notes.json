@@ -1,6 +1,18 @@
 {
-  "build": "2026-10-02-new-installed-wall",
+  "build": "2026-10-02-list-cols-readable",
   "notes": [
+    {
+      "id": "2026-10-02-list-cols-readable",
+      "date": "2026-10-02",
+      "apps": ["company", "portal"],
+      "title": "List columns stay readable",
+      "changed": [
+        "Inventory, Vendor, Location, Sales, Purchase Order, Website lists, CRM, Deal registration, RMA, and the other split lists no longer squeeze column names.",
+        "Saved column widths come back when you open that page."
+      ],
+      "how": "Open a list. Column names stay readable. Scroll sideways if there are more columns than the pane. Drag a header edge to resize. Open the page again and those widths are still there.",
+      "kind": "update"
+    },
     {
       "id": "2026-10-02-new-installed-wall",
       "date": "2026-10-02",
