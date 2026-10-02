@@ -1,6 +1,26 @@
 {
-  "build": "2026-10-02-start-here-card",
+  "build": "2026-10-02-spec-pdfs",
   "notes": [
+    {
+      "id": "2026-10-02-spec-pdfs-company",
+      "date": "2026-10-02",
+      "apps": ["company"],
+      "title": "Website spec PDFs are on the item",
+      "added": [
+        "Product Spec on an inventory item lists the PDF from the matching website product."
+      ],
+      "how": "Open Inventory and pick an item. Open Product Spec. The same PDF that is on the website Downloads tab is listed there."
+    },
+    {
+      "id": "2026-10-02-spec-pdfs-portal",
+      "date": "2026-10-02",
+      "apps": ["portal"],
+      "title": "Product Spec shows the website PDF",
+      "added": [
+        "Dealer book Product Spec opens the PDF from the website for that product."
+      ],
+      "how": "Open Dealer book and pick an item. Open Product Spec. The sheet is the same PDF as the website."
+    },
     {
       "id": "2026-10-02-start-here",
       "date": "2026-10-02",
