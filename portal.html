@@ -37,7 +37,7 @@
     #company-boot .portal-boot-login button[type="submit"]{background:#fff;color:#000;border:0}
     #company-boot .portal-boot-login button[type="submit"]:hover{background:#e8e8e8}
   </style>
-  <link rel="stylesheet" href="/css/company-dash.css?v=guidevid1" />
+  <link rel="stylesheet" href="/css/company-dash.css?v=portalkpi1" />
   <style>
     /* Dealer is writing a Request Quote. Spectrum fills these when the quote comes back. */
     #so-detail.is-request .so-request-back { display: none !important; }
@@ -395,40 +395,44 @@
               <h2>Overview</h2>
               <p>A snapshot of each main menu area.</p>
             </div>
-            <div class="dash-home-kpis">
-              <button type="button" class="dash-kpi is-on" data-home="book" aria-pressed="true">
-                <span class="dash-kpi-icon dash-kpi-icon-inventory" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M3 10 12 4.5 21 10v9.5a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V10z"/><path d="M9 20.5V12h6v8.5"/></svg></span>
-                <span class="dash-kpi-meta"><span class="dash-kpi-label">Dealer book</span></span>
-                <strong class="dash-kpi-value" id="dash-stat-book">—</strong>
-                <span class="dash-kpi-hint" id="dash-hint-book">Priced SKUs</span>
+            <div class="dash-home-kpis dash-home-kpis-4">
+              <button type="button" class="dash-kpi is-on" data-home="leads" aria-pressed="true">
+                <span class="dash-kpi-icon dash-kpi-icon-crm" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16l-6.5 8.2V20l-3-1.5v-6.3L4 4z"/></svg></span>
+                <span class="dash-kpi-meta"><span class="dash-kpi-label">Leads</span></span>
+                <strong class="dash-kpi-value" id="dash-stat-leads">—</strong>
+                <span class="dash-kpi-hint" id="dash-hint-leads">Accepted leads</span>
+                <svg class="dash-kpi-spark" id="dash-spark-leads" viewBox="0 0 120 28" preserveAspectRatio="none" aria-hidden="true"></svg>
               </button>
               <button type="button" class="dash-kpi" data-home="quotes" aria-pressed="false">
                 <span class="dash-kpi-icon dash-kpi-icon-website" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M8 4h8v4H8z"/><path d="M6 8h12v12H6z"/><path d="M9 12h6M9 16h4"/></svg></span>
                 <span class="dash-kpi-meta"><span class="dash-kpi-label">Request Quote</span></span>
                 <strong class="dash-kpi-value" id="dash-stat-quotes">—</strong>
                 <span class="dash-kpi-hint" id="dash-hint-quotes">Sales quotes</span>
+                <svg class="dash-kpi-spark" id="dash-spark-quotes" viewBox="0 0 120 28" preserveAspectRatio="none" aria-hidden="true"></svg>
               </button>
               <button type="button" class="dash-kpi" data-home="orders" aria-pressed="false">
                 <span class="dash-kpi-icon dash-kpi-icon-sales" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h16l-1.5 12H5.5L4 7z"/><path d="M9 7V5a3 3 0 0 1 6 0v2"/></svg></span>
                 <span class="dash-kpi-meta"><span class="dash-kpi-label">Purchase Order</span></span>
                 <strong class="dash-kpi-value" id="dash-stat-orders">—</strong>
                 <span class="dash-kpi-hint" id="dash-hint-orders">Sales orders</span>
+                <svg class="dash-kpi-spark" id="dash-spark-orders" viewBox="0 0 120 28" preserveAspectRatio="none" aria-hidden="true"></svg>
               </button>
-              <button type="button" class="dash-kpi" data-home="projects" aria-pressed="false">
-                <span class="dash-kpi-icon dash-kpi-icon-customers" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M3 8h18"/><path d="M8 12h5M8 16h8"/></svg></span>
-                <span class="dash-kpi-meta"><span class="dash-kpi-label">Projects</span></span>
-                <strong class="dash-kpi-value" id="dash-stat-projects">—</strong>
-                <span class="dash-kpi-hint" id="dash-hint-projects">Saved layouts</span>
+              <button type="button" class="dash-kpi" data-home="walls" aria-pressed="false">
+                <span class="dash-kpi-icon dash-kpi-icon-customers" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="12" rx="1.5"/><path d="M8 20h8M12 16v4"/></svg></span>
+                <span class="dash-kpi-meta"><span class="dash-kpi-label">Installed Walls</span></span>
+                <strong class="dash-kpi-value" id="dash-stat-walls">—</strong>
+                <span class="dash-kpi-hint" id="dash-hint-walls">On site</span>
+                <svg class="dash-kpi-spark" id="dash-spark-walls" viewBox="0 0 120 28" preserveAspectRatio="none" aria-hidden="true"></svg>
               </button>
             </div>
             <div class="dash-home-grid">
-              <section class="dash-home-panel dash-home-detail">
+              <section class="dash-home-panel dash-home-detail" id="dash-detail">
                 <div class="dash-home-panel-head">
                   <div>
-                    <h3 id="dash-detail-title">Dealer book</h3>
-                    <p id="dash-detail-sub">Your prices and how many are on hand.</p>
+                    <h3 id="dash-detail-title">Leads</h3>
+                    <p id="dash-detail-sub">Accepted leads on your board.</p>
                   </div>
-                  <a id="dash-detail-open" href="/portal/book">Open Dealer book →</a>
+                  <a id="dash-detail-open" href="/portal/leads">Open Leads →</a>
                 </div>
                 <div class="dash-detail-stats" id="dash-detail-stats"></div>
                 <div class="dash-detail-list" id="dash-detail-list"></div>
@@ -437,7 +441,7 @@
                 <div class="dash-home-panel-head">
                   <div>
                     <h3>Recent</h3>
-                    <p>Latest quotes and orders sent to Spectrum.</p>
+                    <p>Latest leads, quotes, orders, and walls.</p>
                   </div>
                 </div>
                 <div class="dash-detail-list" id="dash-recent-list"></div>
@@ -1291,6 +1295,6 @@
   </div>
   <script src="/js/app-help.js?v=guidevid1"></script>
   <script src="/js/app-notes.js?v=guidevid1"></script>
-  <script src="/js/portal.js?v=requestquote1"></script>
+  <script src="/js/portal.js?v=portalkpi1"></script>
 </body>
 </html>
