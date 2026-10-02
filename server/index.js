@@ -1243,6 +1243,20 @@ async function main() {
     } catch (err) { next(err); }
   });
 
+  app.get('/api/dealer/column-prefs', requireDealer, async function (req, res, next) {
+    try {
+      const prefs = await store.getDealerColumnPrefs(req.dealer.id);
+      res.json({ ok: true, prefs: prefs });
+    } catch (err) { next(err); }
+  });
+
+  app.put('/api/dealer/column-prefs', requireDealer, async function (req, res, next) {
+    try {
+      const prefs = await store.saveDealerColumnPrefs(req.dealer.id, req.body && req.body.prefs);
+      res.json({ ok: true, prefs: prefs });
+    } catch (err) { next(err); }
+  });
+
   app.get('/api/dealer/me', requireDealer, async function (req, res, next) {
     try {
       const company = await store.getDealerCompany(req.dealer);
