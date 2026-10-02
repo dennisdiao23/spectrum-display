@@ -1,6 +1,16 @@
 {
-  "build": "2026-10-02-start-here-card",
+  "build": "2026-10-02-dashboard-unpin",
   "notes": [
+    {
+      "id": "2026-10-02-dashboard-unpin",
+      "date": "2026-10-02",
+      "apps": ["portal", "company"],
+      "title": "Dashboard cards move with the page",
+      "changed": [
+        "On a phone, swipe the dashboard and the cards move up with the detail and Recent or Lobby."
+      ],
+      "kind": "update"
+    },
     {
       "id": "2026-10-02-start-here",
       "date": "2026-10-02",
@@ -24,7 +34,7 @@
         "The Overview title above the dashboard cards."
       ],
       "changed": [
-        "On a phone, swipe the dashboard. The cards stay under the top bar. The detail, then Recent or Lobby, move underneath.",
+        "On a phone, swipe the dashboard. The cards move up with the detail, then Recent or Lobby.",
         "The last panel stops above the bottom bar."
       ],
       "kind": "update"

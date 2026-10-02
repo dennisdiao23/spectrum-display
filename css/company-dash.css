@@ -10010,13 +10010,4 @@ body.dash-split-lock #settings-pane.space-y-6 > :not([hidden]) {
     overflow: hidden;
     flex: none;
   }
-
-  body.company-app .dash-home-kpis {
-    position: sticky;
-    top: 0;
-    z-index: 5;
-    background: var(--dash-bg);
-    padding-top: 0.85rem;
-    padding-bottom: 0.65rem;
-  }
 }
