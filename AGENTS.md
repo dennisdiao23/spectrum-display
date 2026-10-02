@@ -8,6 +8,22 @@ Dennis wants a plan before any implementation — even when he did not ask for o
 - Do this on every task, including follow-ups and “just do it” requests.
 - Present the plan, then wait for Dennis to say **Go**. Do not start coding until he says Go.
 - Keep the plan concrete (screens, clicks, files). Do not estimate calendar time.
+- If the task changes a Company or Dealer Portal screen, the plan must include the exact What’s new card (see the next section). Wait for him to approve that copy. **Go** on a plan that omitted the card is not approval of the card.
+
+## What’s new — required before you build or merge
+
+This applies to every agent, on every task that changes a screen people use in **Company** (`/company`) or **Dealer Portal** (`/portal`). It is not optional and it is not “only if you remember.”
+
+**In the plan, before any code:**
+
+- Paste the exact card Dennis will read: title, Added / Changed / Removed, and How it works when something new was added.
+- One note per app. A Company change does not go in a Dealer Portal note, and a Dealer Portal change does not go in a Company note. If both apps change, write two cards.
+- Plain language. No code, no file names, no PR numbers.
+- If the task does **not** change a Company or Dealer Portal screen, say that in the plan in one line: “No What’s new note. This does not change a Company or Dealer Portal screen.” Do not skip the line.
+
+**After he approves the words**, put that same copy in `js/app-notes.json` in the **same** PR. Bump `build` to a new id (date plus a short name). Fields: `date`, `apps` (`company` or `portal` only — do not use both unless every line is true for both apps), `title`, `added` / `changed` / `removed` (only the lines that apply), and `how` for a new function. Set `mobile: true` when the change is phone-only. Update `guides.company` or `guides.portal` when a menu is added or removed.
+
+**Do not merge** a PR that changes a Company or Dealer Portal screen unless `js/app-notes.json` has that note. If Dennis says **push** and the card was never shown in this chat, paste the card and wait. Do not merge yet. Staff only see the note after push.
 
 ## Bug reports
 
@@ -77,6 +93,7 @@ catalog API and a cookie-session company login used by `/company`, `/company/web
 - **Always include the PR number** (and link) at the end of a finished change.
 - When the user says **push**, that means: `git push` the branch, then **merge the PR into `main`**
   so Railway deploys production. Hosting is Railway-only; merge to `main` triggers deploy.
+  If the PR changes a Company or Dealer Portal screen, do not merge until the What’s new card was shown in this chat and is in `js/app-notes.json`. See **What’s new — required before you build or merge** at the top.
 - If the PR cannot merge (conflicts, failing checks), resolve or report the blocker — do not stop at
   push-only when the user asked to push.
 - After a **push**, wait until Railway production is **online** (deploy SUCCESS and the live site is
@@ -115,15 +132,9 @@ A full click-by-click example is in **Staff Gmail send — you do this once** be
   or equivalent). Header cells need an opaque background so rows do not paint through.
 - Do not drop this when adding a new split-view or list page.
 
-### What’s new notes (Company and Dealer Portal)
+### What’s new notes
 
-When a change **changes a screen** people use in Company or the Dealer Portal, add one note in `js/app-notes.json` in the **same** PR. Bump `build` to a new id (date plus a short name).
-
-- Plain language. No code, no file names, no PR numbers.
-- Fields: `date`, `apps` (`company`, `portal`, or both), `title`, `added` / `changed` / `removed` (only the lines that apply), and `how` when a **new** function is added (what it is for, where to click, what happens).
-- Skip the note if the merge does not change a screen.
-- **Show Dennis the exact What’s new card copy in this chat** (and put the same words in the PR) **before** he says **push**. He must be able to read and edit the note while it is still a draft. Staff only see it after push.
-- Guides (`guides.company` / `guides.portal`) are the lasting “what this menu does” list. Update a guide row when you add or remove a menu.
+The required rule is at the top: **What’s new — required before you build or merge**. Follow that. Do not use this heading as a softer copy.
 
 ## Staff Gmail send — you do this once
 

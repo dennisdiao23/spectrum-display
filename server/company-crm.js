@@ -1261,14 +1261,36 @@ function sqliteFindZoomActivity(db, payload) {
   return null;
 }
 
+async function withDealerHandoff(store, leads) {
+  if (!store || typeof store.attachCrmDealerHandoffs !== 'function') return leads;
+  try {
+    return await store.attachCrmDealerHandoffs(leads);
+  } catch (err) {
+    const msg = String((err && err.message) || '');
+    if (/crm_lead_id|schema cache|column/i.test(msg)) return leads;
+    throw err;
+  }
+}
+
+async function mirrorDealStage(store, deal) {
+  if (!deal || !store || typeof store.mirrorCrmDealStage !== 'function') return;
+  try {
+    await store.mirrorCrmDealStage(deal);
+  } catch (err) {
+    const msg = String((err && err.message) || '');
+    if (/crm_deal_id|schema cache|column/i.test(msg)) return;
+    throw err;
+  }
+}
+
 function sqliteApi(db, store) {
   return {
     async listCrmLeads(opts) {
       const rows = db.prepare(
         'SELECT * FROM company_crm_leads ORDER BY datetime(updated_at) DESC, id DESC'
       ).all().map(formatLead);
-      if (opts && opts.includeApplicationLeads) return rows;
-      return visibleCrmLeads(rows);
+      if (opts && opts.includeApplicationLeads) return withDealerHandoff(store, rows);
+      return withDealerHandoff(store, visibleCrmLeads(rows));
     },
     async getCrmLead(id) {
       const lead = formatLead(db.prepare('SELECT * FROM company_crm_leads WHERE id = ?').get(id));
@@ -1284,7 +1306,7 @@ function sqliteApi(db, store) {
         .filter(function (row) {
           return leadMatchesDuplicate(row, lead.email, lead.companyName, lead.id);
         });
-      return lead;
+      return withDealerHandoff(store, lead);
     },
     async createCrmLead(payload) {
       const input = normalizeLead(payload);
@@ -1454,7 +1476,9 @@ function sqliteApi(db, store) {
       if (!current) return null;
       const input = normalizeDeal(Object.assign({}, formatDeal(current), payload));
       updateRow(db, 'company_crm_deals', id, dealDbFields(input));
-      return this.getCrmDeal(id);
+      const saved = await this.getCrmDeal(id);
+      await mirrorDealStage(store, saved);
+      return saved;
     },
     async deleteCrmDeal(id) {
       const info = db.prepare('DELETE FROM company_crm_deals WHERE id = ?').run(id);
@@ -1863,8 +1887,8 @@ function supabaseApi(supabase, store) {
         .order('id', { ascending: false });
       throwIf(error, 'Could not list leads.');
       const rows = (data || []).map(formatLead);
-      if (opts && opts.includeApplicationLeads) return rows;
-      return visibleCrmLeads(rows);
+      if (opts && opts.includeApplicationLeads) return withDealerHandoff(store, rows);
+      return withDealerHandoff(store, visibleCrmLeads(rows));
     },
     async getCrmLead(id) {
       const data = await fetchLeadRow(id);
@@ -1888,7 +1912,7 @@ function supabaseApi(supabase, store) {
       lead.duplicates = visibleCrmLeads((allLeads.data || []).map(formatLead)).filter(function (row) {
         return leadMatchesDuplicate(row, lead.email, lead.companyName, lead.id);
       });
-      return lead;
+      return withDealerHandoff(store, lead);
     },
     async createCrmLead(payload) {
       const input = normalizeLead(payload);
@@ -2108,7 +2132,9 @@ function supabaseApi(supabase, store) {
       const { data, error } = await supabase.from('company_crm_deals').update(fields).eq('id', id).select('*').maybeSingle();
       throwIf(error, 'Could not save deal.');
       if (!data) return null;
-      return this.getCrmDeal(id);
+      const saved = await this.getCrmDeal(id);
+      await mirrorDealStage(store, saved);
+      return saved;
     },
     async deleteCrmDeal(id) {
       const { data, error } = await supabase.from('company_crm_deals').delete().eq('id', id).select('id');

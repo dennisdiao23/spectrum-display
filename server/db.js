@@ -154,6 +154,7 @@ function openDb() {
   ensureCompanyPayments(db);
   ensurePrintForms(db);
   require('./price-levels').ensureSqlite(db);
+  require('./brand-prices').ensureSqlite(db);
   ensureInventoryVendors(db);
   ensurePartyContacts(db);
   ensurePurchaseOrders(db);
@@ -244,6 +245,7 @@ function openDb() {
     "ALTER TABLE inventory_items ADD COLUMN gallery TEXT NOT NULL DEFAULT '[]'",
     "ALTER TABLE inventory_items ADD COLUMN mpn TEXT NOT NULL DEFAULT ''",
     "ALTER TABLE inventory_items ADD COLUMN item_kind TEXT NOT NULL DEFAULT 'item'",
+    "ALTER TABLE inventory_items ADD COLUMN integrator_price REAL NOT NULL DEFAULT 0",
     "ALTER TABLE inventory_items ADD COLUMN docs TEXT NOT NULL DEFAULT '[]'"
   ].forEach(function (sql) {
     try { db.exec(sql); } catch (e) { /* already present */ }

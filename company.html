@@ -32,15 +32,16 @@
     #company-boot .boot-login button[type="submit"]{background:#fff!important;color:#000!important;border:0}
     #company-boot .boot-login button[type="submit"]:hover{background:#e8e8e8!important}
   </style>
-  <link rel="stylesheet" href="/css/company-dash.css?v=notesplit1" />
+  <link rel="stylesheet" href="/css/company-dash.css?v=brands1" />
   <script src="/js/address-autocomplete.js"></script>
   <script src="/js/company-chat.js?v=po-ship1"></script>
-  <script src="/js/company-crm.js?v=zoomphone3"></script>
+  <script src="/js/company-crm.js?v=dealerpipe1"></script>
   <script src="/js/company-staff.js?v=staff6"></script>
   <script src="/js/company-traffic.js?v=loc1"></script>
   <script src="/js/company-website-control.js?v=webctrl7"></script>
   <script src="/js/print-form.js?v=forms21"></script>
-  <script src="/js/price-levels.js?v=pl1"></script>
+  <script src="/js/brand-prices.js?v=brands1"></script>
+  <script src="/js/settings-brands.js?v=brands1"></script>
   <script src="/js/app-help.js?v=help6"></script>
   <script src="/js/app-notes.js?v=newsbar3"></script>
   <script>
@@ -345,9 +346,9 @@
             <svg class="dash-nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="5" y="3" width="14" height="18" rx="1.5"/><path d="M8 8h8M8 12h8M8 16h5"/></svg>
             <span>Forms</span>
           </a>
-          <a href="/company/settings/price-levels" id="tab-price-levels" class="dash-sub-link">
-            <svg class="dash-nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 7h16M4 12h10M4 17h7"/><path d="M17 14v6M14 17h6"/></svg>
-            <span>Price level</span>
+          <a href="/company/settings/brands" id="tab-brands" class="dash-sub-link">
+            <svg class="dash-nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 7h16M4 12h10M4 17h7"/><circle cx="17" cy="17" r="3"/></svg>
+            <span>Brands</span>
           </a>
           <a href="/company/settings" id="tab-staff" class="dash-sub-link">
             <svg class="dash-nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="9" cy="8" r="3"/><path d="M3 19c.7-3 2.8-4.5 6-4.5s5.3 1.5 6 4.5"/><circle cx="17" cy="8.5" r="2.3"/><path d="M16.2 14.6c2.2.4 3.8 1.6 4.3 4.4"/></svg>
@@ -605,10 +606,8 @@
           <div>
             <label class="block text-xs text-slate-400 mb-1">Brand</label>
             <select id="brand-id" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm"></select>
-          </div>
-          <div>
-            <label class="block text-xs text-slate-400 mb-1">Or new brand name</label>
-            <input id="brand-name" type="text" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm" placeholder="Leave blank to use selected brand">
+            <p class="text-[11px] text-slate-500 mt-1">Add a brand in Settings → Brands.</p>
+            <input id="brand-name" type="hidden" value="">
           </div>
           <div>
             <label class="block text-xs text-slate-400 mb-1">Product / series name</label>
@@ -870,10 +869,8 @@
           <div>
             <label class="block text-xs text-slate-400 mb-1">Brand</label>
             <select id="ws-brand-id" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm"></select>
-          </div>
-          <div>
-            <label class="block text-xs text-slate-400 mb-1">Or new brand name</label>
-            <input id="ws-brand-name" type="text" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm" placeholder="Leave blank to use selected brand">
+            <p class="text-[11px] text-slate-500 mt-1">Add a brand in Settings → Brands.</p>
+            <input id="ws-brand-name" type="hidden" value="">
           </div>
           <div>
             <label class="block text-xs text-slate-400 mb-1">Type</label>
@@ -1383,6 +1380,7 @@
             <select id="inv-location-filter" class="cc-list-select bg-slate-800 border border-slate-700 rounded-full px-3 py-1.5 text-sm" aria-label="Filter by location">
               <option value="">All locations</option>
             </select>
+            <button type="button" id="inv-adv-toggle" class="inv-adv-toggle px-3 py-1.5 rounded-full text-xs font-medium text-slate-300 border border-slate-600" aria-expanded="false" aria-controls="inv-adv-panel">Filters</button>
             <div class="cc-list-filters">
               <button type="button" data-inv-filter="all" class="inv-filter px-3 py-1.5 rounded-full text-xs font-medium bg-sky-500/20 text-sky-300">All</button>
               <button type="button" data-inv-filter="low" class="inv-filter px-3 py-1.5 rounded-full text-xs font-medium text-slate-400 hover:text-white">Low</button>
@@ -1390,6 +1388,47 @@
               <button type="button" data-inv-filter="inactive" class="inv-filter px-3 py-1.5 rounded-full text-xs font-medium text-slate-400 hover:text-white">Inactive</button>
             </div>
             <button id="inv-new-btn" type="button" class="cc-list-add-btn px-4 py-2 rounded-full bg-sky-500 hover:bg-sky-400 text-white text-sm font-semibold">Add inventory item</button>
+          </div>
+          <div id="inv-adv-panel" class="inv-adv-panel hidden" hidden>
+            <label class="inv-adv-field">Brand
+              <select id="inv-adv-brand" aria-label="Filter by brand"><option value="">All brands</option></select>
+            </label>
+            <label class="inv-adv-field">Type
+              <select id="inv-adv-kind" aria-label="Filter by type">
+                <option value="">All types</option>
+                <option value="item">Item</option>
+                <option value="kit">Kit</option>
+              </select>
+            </label>
+            <label class="inv-adv-field">Unit
+              <select id="inv-adv-unit" aria-label="Filter by unit">
+                <option value="">All units</option>
+                <option value="panels">Panels</option>
+                <option value="each">Each</option>
+              </select>
+            </label>
+            <label class="inv-adv-field">Stock place
+              <select id="inv-adv-place" aria-label="Filter by stock place">
+                <option value="">Any place</option>
+                <option value="ours">Our warehouse</option>
+                <option value="vendor">Vendor</option>
+              </select>
+            </label>
+            <label class="inv-adv-field">Photo
+              <select id="inv-adv-photo" aria-label="Filter by photo">
+                <option value="">Any photo</option>
+                <option value="yes">Has a photo</option>
+                <option value="no">No photo</option>
+              </select>
+            </label>
+            <label class="inv-adv-field">Spec sheet
+              <select id="inv-adv-spec" aria-label="Filter by spec sheet">
+                <option value="">Any spec sheet</option>
+                <option value="yes">Has a spec sheet</option>
+                <option value="no">No spec sheet</option>
+              </select>
+            </label>
+            <button type="button" id="inv-adv-clear" class="inv-adv-clear">Clear</button>
           </div>
           <p id="inventory-error" class="hidden text-sm text-red-400 mb-3"></p>
           <div id="inv-split" class="inv-split">
@@ -1411,7 +1450,7 @@
                       <th class="py-3 px-4 font-medium" data-col="cost">Cost <span class="dash-col-caret">▾</span><span class="dash-col-grip" aria-hidden="true"></span></th>
                       <th class="py-3 px-4 font-medium" data-col="localCost">Local warehouse cost <span class="dash-col-caret">▾</span><span class="dash-col-grip" aria-hidden="true"></span></th>
                       <th class="py-3 px-4 font-medium" data-col="price">Sell price <span class="dash-col-caret">▾</span><span class="dash-col-grip" aria-hidden="true"></span></th>
-                      <th class="py-3 px-4 font-medium" data-col="dealer">Dealer net <span class="dash-col-caret">▾</span><span class="dash-col-grip" aria-hidden="true"></span></th>
+                      <th class="py-3 px-4 font-medium" data-col="dealer">Dealer price <span class="dash-col-caret">▾</span><span class="dash-col-grip" aria-hidden="true"></span></th>
                       <th class="py-3 px-4 font-medium" data-col="photo">Photo <span class="dash-col-caret">▾</span><span class="dash-col-grip" aria-hidden="true"></span></th>
                       <th class="py-3 px-4 font-medium" data-col="website">Website <span class="dash-col-caret">▾</span></th>
                     </tr>
@@ -1476,7 +1515,8 @@
                         <div class="inv-cost-only"><dt>Cost</dt><dd id="inv-detail-cost">—</dd></div>
                         <div class="inv-cost-only"><dt>Local warehouse cost</dt><dd id="inv-detail-local-cost">—</dd></div>
                         <div><dt>Sell price</dt><dd id="inv-detail-price">—</dd></div>
-                        <div><dt>Dealer net</dt><dd id="inv-detail-dealer">—</dd></div>
+                        <div><dt>Dealer price</dt><dd id="inv-detail-dealer">—</dd></div>
+                        <div><dt>Integrator price</dt><dd id="inv-detail-integrator">—</dd></div>
                       </dl>
                     </div>
                     <div class="cc-detail-block">
@@ -2489,10 +2529,21 @@
                     </div>
                     <div class="cc-detail-toolbar-actions inv-detail-hero-actions">
                       <button type="button" id="crm-lead-convert" class="cc-detail-btn cc-detail-btn-primary">Convert to customer</button>
+                      <button type="button" id="crm-lead-send-dealer" class="cc-detail-btn">Send to dealer</button>
                       <button type="button" id="crm-lead-deal" class="cc-detail-btn">New deal</button>
                       <button type="button" id="crm-lead-act" class="cc-detail-btn">Log activity</button>
                       <button type="button" id="crm-lead-edit" class="cc-detail-btn">Edit</button>
                     </div>
+                  </div>
+                  <div id="crm-lead-dealer-box" class="hidden" style="margin:0.75rem 0 0;max-width:28rem">
+                    <label class="text-sm block">Dealer
+                      <select id="crm-lead-dealer" class="w-full mt-1 bg-slate-800 border border-slate-700 rounded-lg px-3 py-2"></select>
+                    </label>
+                    <label class="text-sm block" style="margin-top:0.5rem">Note for the dealer
+                      <textarea id="crm-lead-dealer-note" rows="2" class="w-full mt-1 bg-slate-800 border border-slate-700 rounded-lg px-3 py-2" placeholder="What should the dealer know?"></textarea>
+                    </label>
+                    <button type="button" id="crm-lead-dealer-go" class="cc-detail-btn cc-detail-btn-primary" style="margin-top:0.6rem">Send</button>
+                    <p id="crm-lead-dealer-msg" class="hidden text-sm" style="margin-top:0.4rem"></p>
                   </div>
                   <div class="crm-detail-facts">
                     <div class="cc-detail-block">
@@ -2507,6 +2558,7 @@
                       <h3>Lead</h3>
                       <dl class="cc-detail-dl">
                         <div><dt>Status</dt><dd id="crm-lead-detail-status">—</dd></div>
+                        <div class="sm:col-span-2"><dt>Dealer</dt><dd id="crm-lead-dealer-line">—</dd></div>
                         <div><dt>Type</dt><dd id="crm-lead-detail-kind">—</dd></div>
                         <div><dt>Source</dt><dd id="crm-lead-detail-source">—</dd></div>
                         <div><dt>Project</dt><dd id="crm-lead-detail-project">—</dd></div>
@@ -3642,120 +3694,67 @@
         </div>
       </div>
 
-      <div id="price-levels-section" class="hidden cc-list-inner">
-        <div id="pl-list">
-          <div class="cc-list-toolbar cc-list-tools">
-            <input id="pl-search" type="search" placeholder="Search price levels" class="cc-list-search bg-slate-800 border border-slate-700 rounded-full px-3 py-1.5 text-sm">
-            <button id="pl-new-btn" type="button" class="cc-list-add-btn px-4 py-2 rounded-full bg-sky-500 hover:bg-sky-400 text-white text-sm font-semibold">Add price level</button>
-          </div>
-          <div class="cc-table-card rounded-2xl border border-slate-800">
-            <div class="cc-table-wrap overflow-x-auto">
-              <table class="w-full text-sm">
-                <thead class="text-left text-slate-400 border-b border-slate-800">
-                  <tr>
-                    <th class="py-3 px-4 font-medium">Name</th>
-                    <th class="py-3 px-4 font-medium">Customers</th>
-                    <th class="py-3 px-4 font-medium">Products</th>
-                    <th class="py-3 px-4 font-medium">Adjustment</th>
-                    <th class="py-3 px-4 font-medium">Dates</th>
-                  </tr>
-                </thead>
-                <tbody id="pl-table" class="text-slate-200"></tbody>
-              </table>
-            </div>
-          </div>
-        </div>
-        <div id="pl-editor" class="hidden space-y-4">
-          <div class="flex items-center justify-between gap-3 flex-wrap">
-            <button type="button" id="pl-back" class="text-sm text-sky-400 hover:text-sky-300">← Price levels</button>
-            <div class="flex items-center gap-2">
-              <button type="button" id="pl-delete" class="hidden px-4 py-2 rounded-full border border-slate-200 text-red-500 text-sm">Delete</button>
-              <button type="button" id="pl-save" class="px-4 py-2 rounded-full border border-slate-200 text-sm font-semibold">Save</button>
-              <button type="button" id="pl-save-close" class="px-4 py-2 rounded-full bg-sky-500 hover:bg-sky-400 text-white text-sm font-semibold">Save and close</button>
-            </div>
-          </div>
-          <h2 id="pl-title" class="text-base font-semibold text-slate-800">Price level</h2>
-          <div class="grid gap-3 md:grid-cols-2">
-            <label class="so-field"><span>Name</span><input id="pl-name" type="text" maxlength="120"></label>
-            <label class="so-field"><span>Customer</span>
-              <select id="pl-customer-mode">
-                <option value="all">All customers</option>
-                <option value="type">Customer type</option>
-                <option value="specific">Specific customers</option>
-              </select>
-            </label>
-            <label class="so-field"><span>Products</span>
-              <select id="pl-product-mode">
-                <option value="all">All products</option>
-                <option value="type">Product type</option>
-                <option value="specific">Specific inventory items</option>
-              </select>
-            </label>
-            <label class="so-field"><span>Price type</span>
-              <select id="pl-price-type">
-                <option value="sell">Sell price</option>
-                <option value="dealer">Dealer price</option>
-                <option value="net">Net price</option>
-              </select>
-            </label>
-            <div class="so-field"><span>Percentage</span>
-              <div class="flex gap-2">
-                <select id="pl-adjust-dir">
-                  <option value="decrease">Decrease by</option>
-                  <option value="increase">Increase by</option>
-                </select>
-                <input id="pl-adjust-pct" type="number" min="0" step="0.01" value="0">
-              </div>
-            </div>
-            <label class="so-field"><span>Rounding</span>
-              <select id="pl-rounding">
-                <option value="none">No rounding</option>
-                <option value="dime">Nearest 10 cents</option>
-                <option value="dollar">Nearest dollar</option>
-              </select>
-            </label>
-            <label class="so-field"><span>Start date</span><input id="pl-start" type="date"></label>
-            <label class="so-field"><span>End date</span><input id="pl-end" type="date"></label>
-          </div>
-          <p id="pl-net-note" class="hidden text-sm text-slate-500">Net price uses Dealer net.</p>
-          <div id="pl-customer-types" class="hidden flex flex-wrap gap-3"></div>
-          <div id="pl-product-types" class="hidden flex flex-wrap gap-3"></div>
-          <div>
-            <div class="flex items-center justify-between gap-3 mb-2">
-              <p class="text-sm font-medium text-slate-700">Brand adjustment</p>
-              <button type="button" id="pl-add-brand" class="text-sm text-sky-400 hover:text-sky-300">Add brand</button>
-            </div>
-            <div id="pl-brands"></div>
-          </div>
-          <div class="pf-type-tabs" role="tablist">
-            <button type="button" id="pl-tab-customers">Customers</button>
-            <button type="button" id="pl-tab-products" class="is-on">Products</button>
-          </div>
-          <div id="pl-customers-panel" class="hidden"></div>
-          <div id="pl-products-panel">
-            <div class="flex items-center justify-between gap-3 mb-2">
-              <input id="pl-product-search" type="search" placeholder="Search SKU or description" class="cc-list-search bg-slate-800 border border-slate-700 rounded-full px-3 py-1.5 text-sm">
-              <span id="pl-product-count" class="text-sm text-slate-500"></span>
+      <div id="brands-section" class="hidden cc-list-inner">
+        <div id="sb-split" class="dash-split">
+          <div id="sb-split-left" class="dash-split-left">
+            <div class="cc-list-toolbar cc-list-tools">
+              <input id="sb-search" type="search" placeholder="Search brands" class="cc-list-search bg-slate-800 border border-slate-700 rounded-full px-3 py-1.5 text-sm">
+              <button id="sb-add" type="button" class="cc-list-add-btn px-4 py-2 rounded-full bg-sky-500 hover:bg-sky-400 text-white text-sm font-semibold">Add brand</button>
             </div>
             <div class="cc-table-card rounded-2xl border border-slate-800">
-              <div class="cc-table-wrap overflow-auto" style="max-height:28rem">
+              <div class="cc-table-wrap overflow-auto">
                 <table class="w-full text-sm">
                   <thead class="text-left text-slate-400 border-b border-slate-800">
                     <tr>
-                      <th id="pl-item-col" class="py-3 px-4 font-medium hidden"></th>
-                      <th class="py-3 px-4 font-medium">SKU</th>
-                      <th class="py-3 px-4 font-medium">Description</th>
-                      <th class="py-3 px-4 font-medium">Cost</th>
-                      <th class="py-3 px-4 font-medium" id="pl-price-head">Sell price</th>
-                      <th class="py-3 px-4 font-medium">Adjusted price</th>
+                      <th class="py-3 px-4 font-medium">Brand</th>
                     </tr>
                   </thead>
-                  <tbody id="pl-products" class="text-slate-200"></tbody>
+                  <tbody id="sb-table" class="text-slate-200"></tbody>
                 </table>
               </div>
             </div>
           </div>
-          <p id="pl-msg" class="hidden text-sm"></p>
+          <div id="sb-split-resizer" class="dash-split-resizer" role="separator" aria-orientation="vertical" aria-label="Resize brand panels" tabindex="0"></div>
+          <div id="sb-split-right" class="dash-split-right">
+            <div id="sb-empty" class="p-6 text-sm text-slate-500">Select a brand, or add one. This list is the brand list for inventory, the website, and the store.</div>
+            <div id="sb-detail" class="hidden">
+              <div class="flex items-center justify-between gap-3 flex-wrap mb-3">
+                <h2 id="sb-title" class="text-base font-semibold text-slate-800">Brand</h2>
+                <button type="button" id="sb-save" class="px-4 py-2 rounded-full bg-sky-500 hover:bg-sky-400 text-white text-sm font-semibold">Save</button>
+              </div>
+              <div class="pf-type-tabs" role="tablist">
+                <button type="button" id="sb-tab-brand" class="is-on">Brand</button>
+                <button type="button" id="sb-tab-price">Price setting</button>
+              </div>
+              <div id="sb-pane-brand" class="mt-4 max-w-md">
+                <label class="so-field"><span>Name</span><input id="sb-name" type="text" maxlength="120"></label>
+              </div>
+              <div id="sb-pane-price" class="hidden mt-4">
+                <p class="text-sm text-slate-500 mb-3">Sell price is the first price. It is cost increased by a percent. Retail and Residential use Sell price. Dealer price is for customer type Dealer. Integrator price is for customer type AV Integrator. Those two can be cost increased by a percent, or Sell price decreased by a percent. Add a product type when that type needs its own percent.</p>
+                <div class="cc-table-card rounded-2xl border border-slate-800">
+                  <div class="cc-table-wrap overflow-auto" style="max-height:28rem">
+                    <table class="w-full text-sm">
+                      <thead class="text-left text-slate-400 border-b border-slate-800">
+                        <tr>
+                          <th class="py-3 px-3 font-medium">Product type</th>
+                          <th class="py-3 px-3 font-medium">Price</th>
+                          <th class="py-3 px-3 font-medium">Based on</th>
+                          <th class="py-3 px-3 font-medium">%</th>
+                          <th class="py-3 px-3 font-medium"></th>
+                        </tr>
+                      </thead>
+                      <tbody id="sb-rules" class="text-slate-200"></tbody>
+                    </table>
+                  </div>
+                </div>
+                <div class="flex items-center gap-2 mt-3">
+                  <select id="sb-type-pick" class="bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm"></select>
+                  <button type="button" id="sb-add-type" class="text-sm text-sky-400 hover:text-sky-300">Add product type</button>
+                </div>
+              </div>
+              <p id="sb-msg" class="hidden text-sm mt-3"></p>
+            </div>
+          </div>
         </div>
       </div>
 
@@ -4250,6 +4249,23 @@
               <option>Dealer</option>
             </select>
           </div>
+          <div class="cc-field wide" id="cc-price-block">
+            <label>Price</label>
+            <p class="cc-note" id="cc-price-which">Retail and Residential use Sell price.</p>
+            <div class="cc-table-wrap overflow-auto" style="max-height:16rem">
+              <table class="w-full text-sm">
+                <thead>
+                  <tr>
+                    <th>Brand</th>
+                    <th>Default</th>
+                    <th>Your %</th>
+                  </tr>
+                </thead>
+                <tbody id="cc-price-rows"></tbody>
+              </table>
+            </div>
+            <p class="cc-note">Blank keeps the brand percent. A number replaces it for this customer.</p>
+          </div>
           <div class="cc-field"><label>Phone number</label><input id="cc-company-phone" type="text"></div>
           <div class="cc-field"><label>Website</label><input id="cc-website" type="text" placeholder="https://"></div>
           <div class="cc-field"><label>Fax</label><input id="cc-fax" type="text"></div>
@@ -4566,6 +4582,20 @@
       </div>
     </div>
   </div>
+  <div id="inv-cost-ask" class="cc-leave" hidden>
+    <div class="mail-card" role="dialog" aria-modal="true" aria-labelledby="inv-cost-ask-title">
+      <div class="mail-card-head">
+        <p id="inv-cost-ask-title" class="mail-card-title">Update prices?</p>
+      </div>
+      <div class="mail-card-body">
+        <p id="inv-cost-ask-text" class="text-sm text-slate-600"></p>
+      </div>
+      <div class="mail-card-actions">
+        <button type="button" id="inv-cost-ask-no" class="cc-leave-no">Leave prices</button>
+        <button type="button" id="inv-cost-ask-yes" class="cc-leave-yes">Update prices</button>
+      </div>
+    </div>
+  </div>
   <div id="inv-drawer-scrim" class="cc-drawer-scrim"></div>
   <aside id="inv-drawer" class="cc-drawer" aria-hidden="true">
     <div class="cc-drawer-head">
@@ -4706,8 +4736,9 @@
           <button type="button" class="cc-sec-btn"><span class="cc-sec-label"><svg class="cc-sec-ico" viewBox="0 0 24 24"><path d="M4 7h16l-1.5 12H5.5L4 7z"/><path d="M9 7V5a3 3 0 0 1 6 0v2"/></svg> Sales</span> <span class="cc-sec-chevron">▾</span></button>
           <div class="cc-sec-body">
             <div class="cc-field wide"><label>Description</label><textarea id="inv-description" rows="3" placeholder="What this SKU is on quotes and the website"></textarea></div>
-            <div class="cc-field"><label>Sell price ($)</label><input id="inv-price" type="number" min="0" step="1"><p class="cc-note" style="margin-top:0.35rem">Per m² for panels, each for control.</p></div>
-            <div class="cc-field"><label>Dealer net ($)</label><input id="inv-dealer-net" type="number" min="0" step="0.01"></div>
+            <div class="cc-field"><label>Sell price ($)</label><input id="inv-price" type="number" min="0" step="0.01"><p class="cc-note" style="margin-top:0.35rem">Per m² for panels, each for control. Retail and Residential use this price.</p></div>
+            <div class="cc-field"><label>Dealer price ($)</label><input id="inv-dealer-net" type="number" min="0" step="0.01"></div>
+            <div class="cc-field"><label>Integrator price ($)</label><input id="inv-integrator" type="number" min="0" step="0.01"></div>
           </div>
         </section>
       </form>
@@ -5168,7 +5199,7 @@
     </a>
   </nav>
 
-  <link rel="stylesheet" href="/css/company-dash.css?v=notesplit1" />
+  <link rel="stylesheet" href="/css/company-dash.css?v=brands1" />
   <link rel="stylesheet" href="/css/company-tw.css?v=boot1" />
 
   <script>
@@ -5241,7 +5272,7 @@
         console.error('company boot prefs', err);
       });
       try { bootSpectrumStaff(); } catch (err) { console.error('bootSpectrumStaff', err); }
-      try { bootSpectrumPriceLevels(); } catch (err) { console.error('bootSpectrumPriceLevels', err); }
+      try { bootSpectrumBrands(); } catch (err) { console.error('bootSpectrumBrands', err); }
       let lobbyP = Promise.resolve();
       try {
         const chatP = bootSpectrumChat(admin);
@@ -5327,7 +5358,7 @@
       if (hash === 'settings/guide' || hash === 'guide') return 'guide';
       if (hash === 'settings/company' || hash === 'company') return 'company';
       if (hash === 'settings/forms' || hash === 'forms') return 'forms';
-      if (hash === 'settings/price-levels' || hash === 'price-levels') return 'price-levels';
+      if (hash === 'settings/brands' || hash === 'brands') return 'brands';
       if (hash === 'settings/roles' || hash === 'roles') return 'staff';
       if (hash === 'settings' || hash === 'settings/staff') return 'staff';
       if (hash === 'website/accounts' || hash === 'accounts') return 'accounts';
@@ -5390,7 +5421,7 @@
       if (p === '/company/settings/guide') return 'guide';
       if (p === '/company/settings/company') return 'company';
       if (p === '/company/settings/forms') return 'forms';
-      if (p === '/company/settings/price-levels' || /^\/company\/settings\/price-levels\/[^/]+$/.test(p)) return 'price-levels';
+      if (p === '/company/settings/brands' || /^\/company\/settings\/brands\/[^/]+$/.test(p)) return 'brands';
       if (p === '/company/settings/roles') return 'staff';
       if (/^\/company\/settings\/users(\/|$)/.test(p)) return 'staff';
       if (p === '/company/settings') return 'staff';
@@ -5433,7 +5464,7 @@
       if (name === 'guide') return '/company/settings/guide';
       if (name === 'company') return '/company/settings/company';
       if (name === 'forms') return '/company/settings/forms';
-      if (name === 'price-levels') return '/company/settings/price-levels';
+      if (name === 'brands') return '/company/settings/brands';
       if (name === 'staff' || name === 'roles') return '/company/settings';
       return '/company/website';
     }
@@ -5523,7 +5554,7 @@
         if (canUse('staff')) return 'staff';
         if (canUse('company')) return 'company';
         if (canUse('forms')) return 'forms';
-        if (canUse('price-levels')) return 'price-levels';
+        if (canUse('brands')) return 'brands';
         return 'staff';
       }
       if (canUse('calculator')) return 'calculator';
@@ -5585,7 +5616,7 @@
         if (p === '/company/settings/guide') return 'guide';
         if (p === '/company/settings/company') return 'company';
         if (p === '/company/settings/forms') return 'forms';
-        if (p === '/company/settings/price-levels' || /^\/company\/settings\/price-levels\/[^/]+$/.test(p)) return 'price-levels';
+        if (p === '/company/settings/brands' || /^\/company\/settings\/brands\/[^/]+$/.test(p)) return 'brands';
         if (p === '/company/settings/roles' || p === '/company/settings' || /^\/company\/settings\/users(\/|$)/.test(p)) return 'staff';
         if (p === '/company/website/accounts') return 'accounts';
         if (p === '/company/website/traffic') return 'traffic';
@@ -5701,7 +5732,7 @@
       settings: 'Settings',
       company: 'Company',
       forms: 'Forms',
-      'price-levels': 'Price level',
+      'brands': 'Brands',
       staff: 'Manage users',
       roles: 'Manage users',
       updates: 'What’s new',
@@ -5739,7 +5770,7 @@
     MASTER_TAB_ICON.activities = MASTER_TAB_ICON.crm;
     MASTER_TAB_ICON.company = MASTER_TAB_ICON.settings;
     MASTER_TAB_ICON.forms = MASTER_TAB_ICON.settings;
-    MASTER_TAB_ICON['price-levels'] = MASTER_TAB_ICON.settings;
+    MASTER_TAB_ICON['brands'] = MASTER_TAB_ICON.settings;
     MASTER_TAB_ICON.staff = MASTER_TAB_ICON.settings;
     MASTER_TAB_ICON.roles = MASTER_TAB_ICON.settings;
     MASTER_TAB_ICON.updates = MASTER_TAB_ICON.settings;
@@ -5779,7 +5810,7 @@
       invoices: '/company/sales/invoices',
       company: '/company/settings/company',
       forms: '/company/settings/forms',
-      'price-levels': '/company/settings/price-levels',
+      'brands': '/company/settings/brands',
       staff: '/company/settings',
       updates: '/company/settings/updates',
       guide: '/company/settings/guide'
@@ -5821,7 +5852,7 @@
       if (name === 'vendors' || name === 'purchase-orders') return 'vendor';
       if (name === 'leads' || name === 'pipeline' || name === 'activities' || name === 'crm') return 'crm';
       if (name === 'customers' || name === 'quotes' || name === 'orders' || name === 'invoices' || name === 'sales') return 'customer';
-      if (name === 'staff' || name === 'roles' || name === 'company' || name === 'forms' || name === 'price-levels' || name === 'updates' || name === 'guide') return 'settings';
+      if (name === 'staff' || name === 'roles' || name === 'company' || name === 'forms' || name === 'brands' || name === 'updates' || name === 'guide') return 'settings';
       return '';
     }
 
@@ -5849,7 +5880,7 @@
       if (group === 'vendor') return ['vendors', 'purchase-orders'];
       if (group === 'crm') return ['leads', 'pipeline', 'activities'];
       if (group === 'customer') return ['customers', 'quotes', 'orders', 'invoices', 'sales', 'installed-walls'];
-      if (group === 'settings') return ['company', 'forms', 'price-levels', 'staff', 'roles', 'updates', 'guide'];
+      if (group === 'settings') return ['company', 'forms', 'brands', 'staff', 'roles', 'updates', 'guide'];
       return ['dashboard'];
     }
 
@@ -6435,7 +6466,7 @@
       settings: 'settings',
       company: 'company',
       forms: 'company',
-      'price-levels': 'company',
+      'brands': 'company',
       staff: 'staff',
       roles: 'staff'
     };
@@ -6754,7 +6785,7 @@
       setHidden('tab-guide', false);
       setHidden('tab-company', !canUse('company'));
       setHidden('tab-forms', !canUse('forms'));
-      setHidden('tab-price-levels', !canUse('price-levels'));
+      setHidden('tab-brands', !canUse('brands'));
       setHidden('tab-staff', !canUse('staff'));
       // Dashboard, Website, and Settings stay in the desktop sidebar only.
       setHidden('tabbar-dashboard', true);
@@ -6771,6 +6802,7 @@
 
     function showDash(admin, opts) {
       currentAdminUser = admin;
+      try { loadBrandPriceRules(); } catch (err) {}
       try { localStorage.setItem('dash-active-admin-id', String(admin.id)); } catch (err) {}
       try { applyInvSplitFromCache(); } catch (err) { console.error('applyInvSplitFromCache', err); }
       try { applyCcSplitFromCache(); } catch (err) { console.error('applyCcSplitFromCache', err); }
@@ -6804,7 +6836,7 @@
         if (goCompany(next ? pathForTab(next) : '/company')) return false;
       }
       websiteSubTab = next === 'accounts' ? 'accounts' : next === 'store' ? 'store' : next === 'traffic' ? 'traffic' : 'products';
-      settingsSubTab = next === 'company' ? 'company' : next === 'forms' ? 'forms' : next === 'price-levels' ? 'price-levels' : 'staff';
+      settingsSubTab = next === 'company' ? 'company' : next === 'forms' ? 'forms' : next === 'brands' ? 'brands' : 'staff';
       if (next === 'quotes' || next === 'orders' || next === 'invoices') salesSubTab = next;
       const bootDoc = parseDocMasterTab(next);
       if (bootDoc) {
@@ -8750,7 +8782,7 @@
       activities: '<span id="crm-act-total">0</span> activities — notes, calls, emails, meetings, and tasks.',
       company: '<span id="ca-total">0</span> company accounts — logins and passwords.',
       forms: 'Letter print for Quote, Sales Order, Invoice, and PO. Save a template per type. Print uses that layout, not the editor.',
-      'price-levels': 'A named percent on sell price, dealer price, or net price. Inventory prices stay as they are.'
+      'brands': 'The brand list for inventory, the website, and the store. Open a brand to set Sell, Dealer, and Integrator prices.'
     };
 
     function syncDetailOpenBodyClass() {
@@ -8833,7 +8865,7 @@
       const doc = parseDocMasterTab(name);
       const view = viewTabForMaster(name);
       const onWebsite = view === 'products' || view === 'store' || view === 'accounts' || view === 'traffic';
-      const onSettings = view === 'staff' || view === 'roles' || view === 'company' || view === 'forms' || view === 'price-levels' || view === 'updates' || view === 'guide';
+      const onSettings = view === 'staff' || view === 'roles' || view === 'company' || view === 'forms' || view === 'brands' || view === 'updates' || view === 'guide';
       const onCustomerNav = view === 'quotes' || view === 'orders' || view === 'invoices' || view === 'sales' || view === 'customers' || view === 'installed-walls';
       const onDealerNav = view === 'dealer' || view === 'dealers' || view === 'deal-registrations' || view === 'dealer-leads' || view === 'dealer-rmas';
       const onCrmNav = view === 'leads' || view === 'pipeline' || view === 'activities' || view === 'crm';
@@ -8894,7 +8926,7 @@
       if (whSec) whSec.classList.toggle('wh-split-on', view === 'warehouses' && !isMobileDash());
       document.body.classList.toggle('inv-layout-lock', view === 'inventory' && !isMobileDash());
       document.body.classList.toggle('dash-split-lock',
-        (view === 'customers' || view === 'dealer' || view === 'deal-registrations' || view === 'dealer-leads' || view === 'dealer-rmas' || view === 'vendors' || view === 'warehouses' || view === 'products' || view === 'store' || view === 'accounts' || view === 'dealers' || view === 'leads' || view === 'pipeline' || view === 'activities') && !isMobileDash());
+        (view === 'customers' || view === 'dealer' || view === 'deal-registrations' || view === 'dealer-leads' || view === 'dealer-rmas' || view === 'vendors' || view === 'warehouses' || view === 'products' || view === 'store' || view === 'accounts' || view === 'dealers' || view === 'leads' || view === 'pipeline' || view === 'activities' || view === 'brands') && !isMobileDash());
       const vnSec = document.getElementById('vendors-section');
       if (vnSec) vnSec.classList.toggle('vn-split-on', view === 'vendors' && !isMobileDash());
       const wpSec = document.getElementById('products-section');
@@ -8955,9 +8987,9 @@
       if (trafficSec) trafficSec.classList.toggle('hidden', view !== 'traffic');
       document.getElementById('company-section').classList.toggle('hidden', view !== 'company');
       document.getElementById('forms-section').classList.toggle('hidden', view !== 'forms');
-      const priceLevelsSec = document.getElementById('price-levels-section');
-      if (priceLevelsSec) priceLevelsSec.classList.toggle('hidden', view !== 'price-levels');
-      if (view === 'price-levels' && window.SpectrumPriceLevels) SpectrumPriceLevels.syncRoute();
+      const priceLevelsSec = document.getElementById('brands-section');
+      if (priceLevelsSec) priceLevelsSec.classList.toggle('hidden', view !== 'brands');
+      if (view === 'brands' && window.SpectrumSettingsBrands) SpectrumSettingsBrands.syncRoute();
       document.getElementById('staff-section').classList.toggle('hidden', view !== 'staff' && view !== 'roles');
       const updatesSec = document.getElementById('updates-section');
       if (updatesSec) updatesSec.classList.toggle('hidden', view !== 'updates');
@@ -9012,8 +9044,8 @@
       document.getElementById('tab-invoices').className = navLinkClass(view === 'invoices', !canUse('invoices'), 'sub');
       document.getElementById('tab-company').className = navLinkClass(view === 'company', !canUse('company'), 'sub');
       document.getElementById('tab-forms').className = navLinkClass(view === 'forms', !canUse('forms'), 'sub');
-      const tabPriceLevels = document.getElementById('tab-price-levels');
-      if (tabPriceLevels) tabPriceLevels.className = navLinkClass(view === 'price-levels', !canUse('price-levels'), 'sub');
+      const tabPriceLevels = document.getElementById('tab-brands');
+      if (tabPriceLevels) tabPriceLevels.className = navLinkClass(view === 'brands', !canUse('brands'), 'sub');
       document.getElementById('tab-staff').className = navLinkClass(view === 'staff' || view === 'roles', !canUse('staff'), 'sub');
       const tabUpdates = document.getElementById('tab-updates');
       if (tabUpdates) tabUpdates.className = navLinkClass(view === 'updates', false, 'sub');
@@ -9054,7 +9086,7 @@
         invoices: ['Customer', 'Invoice'],
         company: ['Settings', 'Company accounts'],
         forms: ['Settings', 'Forms'],
-        'price-levels': ['Settings', 'Price level'],
+        'brands': ['Settings', 'Brands'],
         staff: ['Settings', 'Manage users'],
         roles: ['Settings', 'Manage users'],
         updates: ['Settings', 'What’s new'],
@@ -9103,6 +9135,8 @@
     let inventoryFilter = 'all';
     let inventoryCategoryFilter = '';
     let inventoryLocationFilter = '';
+    let inventoryAdvOpen = false;
+    let inventoryAdv = { brand: '', kind: '', unit: '', place: '', photo: '', spec: '' };
     let ccFilter = 'all';
     let vnFilter = 'all';
     let caFilter = 'all';
@@ -9141,6 +9175,7 @@
     let invSpecDocs = [];
     let invSpecNew = [];
     let invDrawerSource = '';
+    let invOpenedCost = 0;
     let invPoLineRow = null;
     let inventoryVendors = [];
     let inventoryWarehouses = [];
@@ -9723,7 +9758,7 @@
         { id: 'cost', label: 'Cost' },
         { id: 'localCost', label: 'Local warehouse cost' },
         { id: 'price', label: 'Sell price' },
-        { id: 'dealer', label: 'Dealer net' },
+        { id: 'dealer', label: 'Dealer price' },
         { id: 'photo', label: 'Photo' },
         { id: 'website', label: 'Website' }
       ],
@@ -10613,20 +10648,34 @@
       });
     }
 
-    function bootSpectrumPriceLevels() {
-      if (!window.SpectrumPriceLevels) return;
-      SpectrumPriceLevels.boot({
+    async function loadBrandPriceRules() {
+      try {
+        const data = await api('/api/admin/settings/brands');
+        if (window.SpectrumBrandPrices) {
+          SpectrumBrandPrices.setRules(data.rules || []);
+          SpectrumBrandPrices.setBrands(data.brands || []);
+        }
+        if (document.getElementById('cc-price-rows') && typeof renderCcPriceRules === 'function') {
+          renderCcPriceRules({ priceOverrides: typeof readCcPriceOverrides === 'function' ? readCcPriceOverrides() : [] });
+        }
+      } catch (err) { /* settings may be closed to this login */ }
+    }
+
+    function bootSpectrumBrands() {
+      if (!window.SpectrumSettingsBrands) return;
+      SpectrumSettingsBrands.boot({
         api: api,
         esc: esc,
-        canEdit: function () { return canEditMenu('company'); },
+        canEdit: function () { return canEditMenu('company') || canEditMenu('settings'); },
         go: function (href) {
-          const next = String(href || '/company/settings/price-levels').replace(/\/+$/, '') || '/company/settings/price-levels';
+          const next = String(href || '/company/settings/brands').replace(/\/+$/, '') || '/company/settings/brands';
           if (next !== companyPath() || location.hash) {
-            history.pushState({ tab: 'price-levels' }, '', next);
+            history.pushState({ tab: 'brands' }, '', next);
           }
-          SpectrumPriceLevels.syncRoute();
+          SpectrumSettingsBrands.syncRoute();
         }
       });
+      loadBrandPriceRules();
     }
 
     function bootSpectrumStaff() {
@@ -11779,6 +11828,58 @@
       }
     }
 
+    function invAdvCount() {
+      return ['brand', 'kind', 'unit', 'place', 'photo', 'spec'].filter(function (key) {
+        return inventoryAdv[key];
+      }).length;
+    }
+    function paintInvAdvButton() {
+      const btn = document.getElementById('inv-adv-toggle');
+      const panel = document.getElementById('inv-adv-panel');
+      if (!btn) return;
+      const n = invAdvCount();
+      btn.textContent = n ? ('Filters · ' + n) : 'Filters';
+      btn.classList.toggle('is-on', n > 0 || inventoryAdvOpen);
+      btn.setAttribute('aria-expanded', inventoryAdvOpen ? 'true' : 'false');
+      if (panel) {
+        panel.classList.toggle('hidden', !inventoryAdvOpen);
+        panel.hidden = !inventoryAdvOpen;
+      }
+    }
+    function fillInvAdvBrands() {
+      const sel = document.getElementById('inv-adv-brand');
+      if (!sel) return;
+      const names = [];
+      (inventoryItems || []).forEach(function (item) {
+        const name = String(item.brandName || '').trim();
+        if (name && names.indexOf(name) === -1) names.push(name);
+      });
+      names.sort(function (a, b) { return a.localeCompare(b, undefined, { sensitivity: 'base' }); });
+      if (inventoryAdv.brand && names.indexOf(inventoryAdv.brand) === -1) inventoryAdv.brand = '';
+      sel.innerHTML = '<option value="">All brands</option>' + names.map(function (name) {
+        return '<option value="' + esc(name) + '"' + (name === inventoryAdv.brand ? ' selected' : '') + '>' + esc(name) + '</option>';
+      }).join('');
+    }
+    function invHasPhoto(item) {
+      return !!(item && (item.image || (item.gallery && item.gallery[0])));
+    }
+    function invHasSpec(item) {
+      return !!(item && item.docs && item.docs.length);
+    }
+    function invMatchesAdv(item) {
+      if (inventoryAdv.brand && String(item.brandName || '') !== inventoryAdv.brand) return false;
+      if (inventoryAdv.kind === 'kit' && !invIsKit(item)) return false;
+      if (inventoryAdv.kind === 'item' && invIsKit(item)) return false;
+      if (inventoryAdv.unit && String(item.unit || '') !== inventoryAdv.unit) return false;
+      if (inventoryAdv.place === 'ours' && (Number(item.qty) || 0) <= 0) return false;
+      if (inventoryAdv.place === 'vendor' && invVendorQty(item) <= 0) return false;
+      if (inventoryAdv.photo === 'yes' && !invHasPhoto(item)) return false;
+      if (inventoryAdv.photo === 'no' && invHasPhoto(item)) return false;
+      if (inventoryAdv.spec === 'yes' && !invHasSpec(item)) return false;
+      if (inventoryAdv.spec === 'no' && invHasSpec(item)) return false;
+      return true;
+    }
+
     function invCategoryFromForm() {
       const sel = document.getElementById('inv-category');
       if (sel && sel.value === '__new__') {
@@ -11790,6 +11891,8 @@
     function renderInventoryTable() {
       fillInvCategoryFilter();
       fillInvLocationFilter();
+      fillInvAdvBrands();
+      paintInvAdvButton();
       const q = (document.getElementById('inv-search').value || '').trim().toLowerCase();
       const rows = inventoryItems.filter(function (item) {
         if (inventoryFilter === 'inactive') {
@@ -11801,6 +11904,7 @@
         if (inventoryFilter === 'out' && item.status !== 'out') return false;
         if (inventoryCategoryFilter && String(item.category || '') !== inventoryCategoryFilter) return false;
         if (inventoryLocationFilter && itemQtyAtLocation(item, inventoryLocationFilter) <= 0) return false;
+        if (!invMatchesAdv(item)) return false;
         if (q) {
           const blob = ((item.sku || '') + ' ' + (item.name || '') + ' ' + (item.brandName || '') + ' ' + (item.category || '') + ' ' + (item.pitchLabel || '') + ' ' + (item.description || '') + ' ' + (item.warehouse || '') + ' ' + (item.bin || '') + (invIsKit(item) ? ' kit' : '')).toLowerCase();
           if (blob.indexOf(q) === -1) return false;
@@ -12812,7 +12916,8 @@
         ['Unit', item.unit || '—'],
         ['Inactive', item.inactive ? 'Yes' : 'No'],
         ['Sell price', item.price != null ? moneyText(item.price) : '—'],
-        ['Dealer net', item.dealerNet != null ? moneyText(item.dealerNet) : '—']
+        ['Dealer price', item.dealerNet != null ? moneyText(item.dealerNet) : '—'],
+        ['Integrator price', item.integratorPrice != null ? moneyText(item.integratorPrice) : '—']
       ];
       if (!kit && invCategoryIsLedPanel(item.category)) {
         rows.splice(7, 0,
@@ -13108,6 +13213,8 @@
       const costLabel = document.querySelector('#inv-detail-cost') && document.getElementById('inv-detail-cost').previousElementSibling;
       if (costLabel && costLabel.tagName === 'DT') costLabel.textContent = kit ? 'Build cost' : 'Cost';
       document.getElementById('inv-detail-price').textContent = money(item.price);
+      const invDetailIntegrator = document.getElementById('inv-detail-integrator');
+      if (invDetailIntegrator) invDetailIntegrator.textContent = money(item.integratorPrice);
       document.getElementById('inv-detail-dealer').textContent = money(item.dealerNet);
       document.getElementById('inv-detail-brand').textContent = item.brandName || '—';
       document.getElementById('inv-detail-category').textContent = item.category || '—';
@@ -13604,7 +13711,7 @@
     }
 
     function invFormSnapshot() {
-      const ids = ['inv-item-kind', 'inv-name', 'inv-sku', 'inv-mpn', 'inv-brand', 'inv-category', 'inv-category-new', 'inv-unit', 'inv-panel-type', 'inv-packaging-type', 'inv-item-pitch', 'inv-qty-init', 'inv-item-low', 'inv-weight', 'inv-panel-w', 'inv-panel-h', 'inv-item-notes', 'inv-description', 'inv-price', 'inv-dealer-net', 'inv-cost', 'inv-local-cost'];
+      const ids = ['inv-item-kind', 'inv-name', 'inv-sku', 'inv-mpn', 'inv-brand', 'inv-category', 'inv-category-new', 'inv-unit', 'inv-panel-type', 'inv-packaging-type', 'inv-item-pitch', 'inv-qty-init', 'inv-item-low', 'inv-weight', 'inv-panel-w', 'inv-panel-h', 'inv-item-notes', 'inv-description', 'inv-price', 'inv-dealer-net', 'inv-integrator', 'inv-cost', 'inv-local-cost'];
       const vals = ids.map(function (id) {
         const el = document.getElementById(id);
         return el ? String(el.value || '') : '';
@@ -13733,6 +13840,9 @@
       document.getElementById('inv-cost').value = item && item.cost != null ? item.cost : '';
       document.getElementById('inv-local-cost').value = item && item.localWarehouseCost != null ? item.localWarehouseCost : '';
       document.getElementById('inv-dealer-net').value = item && item.dealerNet != null ? item.dealerNet : '';
+      const invIntegrator = document.getElementById('inv-integrator');
+      if (invIntegrator) invIntegrator.value = item && item.integratorPrice != null ? item.integratorPrice : '';
+      invOpenedCost = item && item.cost != null && item.cost !== '' ? Number(item.cost) : 0;
       document.getElementById('inv-item-pitch').value = (item && item.pitch) || '';
       document.getElementById('inv-unit').value = (item && item.unit) || 'panels';
       document.getElementById('inv-panel-type').value = (item && item.panelType) || '';
@@ -14500,7 +14610,7 @@
       const onCustomerNav = name === 'sales' || name === 'quotes' || name === 'orders' || name === 'invoices' || name === 'customers' || name === 'installed-walls';
       const onDealerNav = name === 'dealer' || name === 'dealers' || name === 'deal-registrations' || name === 'dealer-leads' || name === 'dealer-rmas';
       const onCrmNav = name === 'leads' || name === 'pipeline' || name === 'activities' || name === 'crm';
-      const onSettings = name === 'staff' || name === 'roles' || name === 'company' || name === 'forms' || name === 'price-levels' || name === 'updates' || name === 'guide';
+      const onSettings = name === 'staff' || name === 'roles' || name === 'company' || name === 'forms' || name === 'brands' || name === 'updates' || name === 'guide';
       const map = {
         'tabbar-dashboard': name === 'dashboard',
         'tabbar-calculator': name === 'calculator',
@@ -15130,6 +15240,7 @@
       set('cc-company', c.companyName || '');
       set('cc-display', c.displayName || '');
       setSelectKeep('cc-type', c.customerType || '');
+      renderCcPriceRules(c);
       set('cc-company-phone', c.phone || '');
       set('cc-email', (primary && primary.email) || c.email || '');
       set('cc-cc', c.emailCc || '');
@@ -15181,6 +15292,38 @@
       syncCcShipFields();
     }
 
+    function renderCcPriceRules(customer) {
+      const note = document.getElementById('cc-price-which');
+      const body = document.getElementById('cc-price-rows');
+      if (!body) return;
+      const type = (document.getElementById('cc-type') || {}).value || (customer && customer.customerType) || '';
+      const BP = window.SpectrumBrandPrices;
+      if (note) note.textContent = BP ? BP.customerPriceNote(type) : 'Retail and Residential use Sell price.';
+      const brands = BP ? BP.brands() : [];
+      const key = BP ? BP.priceKeyForType(type) : 'sell';
+      const overrides = (customer && customer.priceOverrides) || [];
+      if (!brands.length) {
+        body.innerHTML = '<tr><td class="py-3 px-3 text-slate-500" colspan="3">No brands yet. Add them in Settings, then Brands.</td></tr>';
+        return;
+      }
+      body.innerHTML = brands.map(function (brand) {
+        const rule = BP.ruleFor(brand.id, '', key);
+        const hit = overrides.find(function (row) { return String(row.brandId) === String(brand.id); });
+        const pct = hit && hit.adjustPct != null ? hit.adjustPct : '';
+        return '<tr class="border-t border-slate-800">' +
+          '<td class="py-2 px-3">' + esc(brand.name || brand.id) + '</td>' +
+          '<td class="py-2 px-3">' + esc(BP.describeRule(rule)) + '</td>' +
+          '<td class="py-2 px-3"><input data-cc-price-brand="' + esc(brand.id) + '" type="number" min="0" step="0.01" value="' + esc(pct) + '" placeholder="Default"></td>' +
+          '</tr>';
+      }).join('');
+    }
+
+    function readCcPriceOverrides() {
+      return Array.prototype.map.call(document.querySelectorAll('[data-cc-price-brand]'), function (input) {
+        return { brandId: input.getAttribute('data-cc-price-brand'), adjustPct: input.value };
+      }).filter(function (row) { return String(row.adjustPct).trim() !== ''; });
+    }
+
     function readCcForm() {
       const val = function (id) {
         const el = document.getElementById(id);
@@ -15199,6 +15342,7 @@
         companyName: val('cc-company'),
         displayName: val('cc-display'),
         customerType: val('cc-type'),
+        priceOverrides: readCcPriceOverrides(),
         email: val('cc-email'),
         emailCc: val('cc-cc'),
         emailBcc: val('cc-bcc'),
@@ -19355,7 +19499,10 @@
           ? (kitDescriptionFromItem(item) || item.description || item.name || '')
           : (item.description || item.name || '');
       }
-      if (price && (price.value === '' || money(price.value) === 0) && item.price != null) price.value = item.price;
+      const priced = window.SpectrumBrandPrices
+        ? SpectrumBrandPrices.unitPriceForCustomer(item, soCustomerById((document.getElementById('so-customer') || {}).value))
+        : item.price;
+      if (price && (price.value === '' || money(price.value) === 0) && priced != null) price.value = priced;
       if (onHand) onHand.textContent = soInvCell(item.qty != null ? invQtyDisplay(item) : '');
       const costVal = invIsKit(item) ? item.buildCost : item.cost;
       if (cost) cost.textContent = soInvCell(costVal != null ? moneyText(costVal) : '');
@@ -20548,7 +20695,7 @@
       form.classList.add('hidden');
       detail.classList.remove('hidden');
       document.getElementById('dlead-title').textContent = row.project || row.number || 'Lead';
-      document.getElementById('dlead-status').textContent = (row.number || '') + (row.dealerName ? (' · ' + row.dealerName) : '') + ' · ' + (row.statusLabel || 'New');
+      document.getElementById('dlead-status').textContent = (row.number || '') + (row.dealerName ? (' · ' + row.dealerName) : '') + ' · ' + (row.status === 'accepted' && row.stageLabel ? row.stageLabel : (row.statusLabel || 'Waiting'));
       document.getElementById('dlead-fields').innerHTML =
         '<div><dt class="text-slate-500">Contact</dt><dd>' + esc(row.contactName || '—') + '</dd></div>' +
         '<div><dt class="text-slate-500">Email</dt><dd>' + esc(row.contactEmail || '—') + '</dd></div>' +
@@ -20580,7 +20727,7 @@
           '<td class="py-3 px-4">' + esc(row.dealerName || '—') + '</td>' +
           '<td class="py-3 px-4">' + esc(row.project || '—') + '</td>' +
           '<td class="py-3 px-4">' + esc(leadPlace(row)) + '</td>' +
-          '<td class="py-3 px-4">' + esc(row.statusLabel || 'New') + '</td></tr>';
+          '<td class="py-3 px-4">' + esc(row.status === 'accepted' && row.stageLabel ? row.stageLabel : (row.statusLabel || 'Waiting')) + '</td></tr>';
       }).join('');
     }
     async function fillLeadDealers() {
@@ -20884,7 +21031,7 @@
       }
       if (name === 'company') await loadCompanyAccounts();
       if (name === 'forms') await loadPrintFormsEditor();
-      if (name === 'price-levels' && window.SpectrumPriceLevels) await SpectrumPriceLevels.syncRoute();
+      if (name === 'brands' && window.SpectrumSettingsBrands) await SpectrumSettingsBrands.syncRoute();
       if (name === 'staff' || name === 'roles') {
         await loadStaff();
         await loadRoles();
@@ -20901,6 +21048,11 @@
       }
     }
 
+    const ccType = document.getElementById('cc-type');
+    if (ccType) ccType.addEventListener('change', function () {
+      const current = { priceOverrides: readCcPriceOverrides() };
+      renderCcPriceRules(current);
+    });
     document.getElementById('cc-form').addEventListener('click', function (e) {
       const btn = e.target.closest('.cc-sec-btn');
       if (btn) btn.parentElement.classList.toggle('is-open');
@@ -24179,6 +24331,26 @@
       inventoryLocationFilter = this.value || '';
       renderInventoryTable();
     });
+    document.getElementById('inv-adv-toggle').addEventListener('click', function () {
+      inventoryAdvOpen = !inventoryAdvOpen;
+      paintInvAdvButton();
+    });
+    document.getElementById('inv-adv-panel').addEventListener('change', function (e) {
+      const sel = e.target.closest('select');
+      if (!sel || !sel.id) return;
+      const key = sel.id.replace('inv-adv-', '');
+      if (!Object.prototype.hasOwnProperty.call(inventoryAdv, key)) return;
+      inventoryAdv[key] = sel.value || '';
+      renderInventoryTable();
+    });
+    document.getElementById('inv-adv-clear').addEventListener('click', function () {
+      inventoryAdv = { brand: '', kind: '', unit: '', place: '', photo: '', spec: '' };
+      ['brand', 'kind', 'unit', 'place', 'photo', 'spec'].forEach(function (key) {
+        const sel = document.getElementById('inv-adv-' + key);
+        if (sel) sel.value = '';
+      });
+      renderInventoryTable();
+    });
     document.getElementById('inv-category').addEventListener('change', function () {
       const isNew = this.value === '__new__';
       showInvCategoryNew(isNew);
@@ -24309,6 +24481,33 @@
         }
       });
     })();
+    function askInvCostPrices(preview) {
+      return new Promise(function (resolve) {
+        const box = document.getElementById('inv-cost-ask');
+        const text = document.getElementById('inv-cost-ask-text');
+        if (!box || !text) { resolve('leave'); return; }
+        text.textContent = 'Cost changed. Sell price would be ' + moneyText(preview.sell) +
+          '. Dealer price would be ' + moneyText(preview.dealer) +
+          '. Integrator price would be ' + moneyText(preview.integrator) +
+          '. Update those prices from this brand’s price rules?';
+        box.hidden = false;
+        box.classList.add('is-open');
+        function done(choice) {
+          box.hidden = true;
+          box.classList.remove('is-open');
+          yes.removeEventListener('click', onYes);
+          no.removeEventListener('click', onNo);
+          resolve(choice);
+        }
+        function onYes() { done('update'); }
+        function onNo() { done('leave'); }
+        const yes = document.getElementById('inv-cost-ask-yes');
+        const no = document.getElementById('inv-cost-ask-no');
+        yes.addEventListener('click', onYes);
+        no.addEventListener('click', onNo);
+      });
+    }
+
     document.getElementById('inv-spec-files').addEventListener('change', function () {
       const msg = document.getElementById('inv-spec-msg');
       const files = Array.prototype.slice.call(this.files || []);
@@ -24344,6 +24543,22 @@
     });
     document.getElementById('inv-item-form').addEventListener('submit', async function (e) {
       e.preventDefault();
+      const nextCost = Number(document.getElementById('inv-cost').value);
+      const costChanged = isFinite(nextCost) && Math.round(nextCost * 100) !== Math.round((Number(invOpenedCost) || 0) * 100);
+      const brandId = document.getElementById('inv-brand').value;
+      if (costChanged && window.SpectrumBrandPrices) {
+        if (!SpectrumBrandPrices.brandHasRules(brandId)) await loadBrandPriceRules();
+      }
+      if (costChanged && window.SpectrumBrandPrices && SpectrumBrandPrices.brandHasRules(brandId)) {
+        const preview = SpectrumBrandPrices.pricesFromCost(brandId, invCategoryFromForm(), nextCost);
+        const choice = await askInvCostPrices(preview);
+        if (choice === 'update') {
+          document.getElementById('inv-price').value = preview.sell;
+          document.getElementById('inv-dealer-net').value = preview.dealer;
+          const integratorEl = document.getElementById('inv-integrator');
+          if (integratorEl) integratorEl.value = preview.integrator;
+        }
+      }
       const id = document.getElementById('inv-item-id').value;
       const msg = document.getElementById('inv-item-msg');
       const fd = new FormData();
@@ -24359,6 +24574,8 @@
         fd.append('localWarehouseCost', document.getElementById('inv-local-cost').value);
       }
       fd.append('dealerNet', document.getElementById('inv-dealer-net').value);
+      const invIntegratorInput = document.getElementById('inv-integrator');
+      if (invIntegratorInput) fd.append('integratorPrice', invIntegratorInput.value);
       const isPanel = invItemKindFromForm() !== 'kit' && invCategoryIsLedPanel();
       fd.append('pitch', isPanel ? document.getElementById('inv-item-pitch').value : '');
       fd.append('unit', invItemKindFromForm() === 'kit' ? 'each' : document.getElementById('inv-unit').value);
