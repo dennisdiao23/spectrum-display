@@ -3972,7 +3972,7 @@ body.po-split-lock #po-section #po-error {
   grid-template-columns: var(--inv-left-w, var(--inv-split-left-boot, 400px)) 14px minmax(0, 1fr);
 }
 .dash-split {
-  grid-template-columns: var(--dash-left-w, 400px) 14px minmax(0, 1fr);
+  grid-template-columns: var(--dash-left-w, 560px) 14px minmax(0, 1fr);
 }
 #cc-split {
   grid-template-columns: var(--dash-left-w, var(--cc-split-left-boot, 560px)) 14px minmax(0, 1fr);
@@ -4059,16 +4059,16 @@ body.po-split-lock .po-split {
   flex: 1 1 auto;
   min-height: 0;
   max-height: none;
-  overflow-x: hidden;
+  overflow-x: auto;
   overflow-y: auto;
   -webkit-overflow-scrolling: touch;
 }
 .dash-split-left table.dash-cols,
 .inv-split-left table.dash-cols[data-cols="inventory"] {
-  width: 100%;
-  max-width: 100%;
-  min-width: 0;
-  table-layout: fixed;
+  width: max-content;
+  max-width: none;
+  min-width: 100%;
+  table-layout: auto;
 }
 #da-split-left .cc-table-wrap {
   overflow-x: auto;
@@ -4105,7 +4105,18 @@ body.po-split-lock .po-split {
 .dash-split-left table.dash-cols td,
 .inv-split-left table.dash-cols[data-cols="inventory"] th[data-col],
 .inv-split-left table.dash-cols[data-cols="inventory"] td {
-  min-width: 0;
+  min-width: 8.5rem;
+}
+.dash-split-left table.dash-cols th[data-col],
+.inv-split-left table.dash-cols[data-cols="inventory"] th[data-col] {
+  overflow: visible;
+  text-overflow: unset;
+  white-space: nowrap;
+}
+.dash-split-left table:not(.dash-cols) th,
+.dash-split-left table:not(.dash-cols) td {
+  min-width: 8.5rem;
+  white-space: nowrap;
 }
 .dash-split-left table.dash-cols[data-cols="customers"] thead th:not([data-col]),
 .dash-split-left table.dash-cols[data-cols="customers"] tbody td:last-child {

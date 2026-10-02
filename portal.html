@@ -37,7 +37,7 @@
     #company-boot .portal-boot-login button[type="submit"]{background:#fff;color:#000;border:0}
     #company-boot .portal-boot-login button[type="submit"]:hover{background:#e8e8e8}
   </style>
-  <link rel="stylesheet" href="/css/company-dash.css?v=rmaphoto1" />
+  <link rel="stylesheet" href="/css/company-dash.css?v=listcols2" />
   <style>
     /* Dealer is writing a Request Quote. Spectrum fills these when the quote comes back. */
     #so-detail.is-request .so-request-back { display: none !important; }
@@ -45,6 +45,15 @@
   <style>
     #inventory-section .inv-split-left .cc-table-wrap { overflow: auto; }
     #inventory-section table.dash-cols[data-cols="dealer-book"] { min-width: 1080px; width: max-content; }
+    #registrations-section .dash-split-left .cc-table-wrap,
+    #rmas-section .dash-split-left .cc-table-wrap { overflow: auto; }
+    #registrations-section table.dash-cols[data-cols="registrations"],
+    #rmas-section table.dash-cols[data-cols="rmas"] {
+      min-width: 980px;
+      width: max-content;
+      max-width: none;
+      table-layout: auto;
+    }
     #inventory-section #inv-item-panel,
     #inventory-section #inv-overview-panel { overflow: auto; }
     #sales-section .dash-split-left .cc-table-wrap { overflow: auto; }
@@ -1768,7 +1777,7 @@
     <div class="so-sku-menu-list"></div>
   </div>
   <script src="/js/app-help.js?v=guidevid1"></script>
-  <script src="/js/app-notes.js?v=guidevid1"></script>
+  <script src="/js/app-notes.js?v=listcols2"></script>
   <div id="file-preview" class="portal-file-preview" hidden>
     <div class="portal-file-preview-card" role="dialog" aria-modal="true" aria-labelledby="file-preview-title">
       <div class="portal-file-preview-head">
