@@ -37,7 +37,7 @@
     #company-boot .portal-boot-login button[type="submit"]{background:#fff;color:#000;border:0}
     #company-boot .portal-boot-login button[type="submit"]:hover{background:#e8e8e8}
   </style>
-  <link rel="stylesheet" href="/css/company-dash.css?v=portalkpi1" />
+  <link rel="stylesheet" href="/css/company-dash.css?v=portalmobile5" />
   <style>
     /* Dealer is writing a Request Quote. Spectrum fills these when the quote comes back. */
     #so-detail.is-request .so-request-back { display: none !important; }
@@ -78,25 +78,26 @@
     .portal-co {
       display: flex;
       flex-direction: column;
-      gap: 0.65rem;
-      max-width: 52rem;
+      gap: 0.85rem;
+      max-width: 60rem;
     }
     .portal-co-card {
       background: #fff;
       border: 1px solid #e2e8f0;
-      border-radius: 0.7rem;
-      padding: 0.7rem 0.85rem 0.75rem;
+      border-radius: 0.85rem;
+      padding: 1rem 1.1rem 1.05rem;
     }
     .portal-co-head {
       display: flex;
       align-items: center;
-      gap: 0.65rem;
-      margin-bottom: 0.35rem;
+      gap: 0.85rem;
+      margin-bottom: 0.55rem;
     }
+    .portal-co-title { min-width: 0; flex: 1 1 auto; }
     .portal-dealer-logo {
-      width: 2.35rem;
-      height: 2.35rem;
-      border-radius: 0.45rem;
+      width: 3.1rem;
+      height: 3.1rem;
+      border-radius: 0.55rem;
       background: #fff;
       border: 1px solid #e2e8f0;
       display: flex;
@@ -114,7 +115,7 @@
       background: #fff;
     }
     .portal-dealer-mark {
-      font-size: 0.85rem;
+      font-size: 1.05rem;
       font-weight: 800;
       letter-spacing: 0.02em;
       color: #07153a;
@@ -122,31 +123,34 @@
     .portal-dealer-name {
       margin: 0;
       color: #0f172a;
-      font-size: 0.95rem;
+      font-size: 1.25rem;
       font-weight: 700;
       line-height: 1.2;
     }
-    .portal-co-note {
-      margin: 0.1rem 0 0;
-      color: #64748b;
-      font-size: 0.75rem;
-      line-height: 1.3;
+    .portal-co-status {
+      margin: 0.2rem 0 0;
+      font-size: 0.95rem;
+      line-height: 1.35;
+      color: #475569;
     }
+    .portal-co-status.is-waiting { color: #0369a1; }
+    .portal-co-status.is-accepted { color: #047857; }
+    .portal-co-status.is-declined { color: #b91c1c; }
     .portal-co-facts {
       display: grid;
       grid-template-columns: 1fr 1fr;
-      column-gap: 1.25rem;
+      column-gap: 1.5rem;
       margin: 0;
     }
     .portal-co-facts > div {
       display: grid;
-      grid-template-columns: 6.4rem minmax(0, 1fr);
-      gap: 0.35rem;
+      grid-template-columns: 7.4rem minmax(0, 1fr);
+      gap: 0.45rem;
       align-items: baseline;
-      padding: 0.22rem 0;
+      padding: 0.42rem 0;
       border-top: 1px solid #eef2f6;
-      font-size: 0.8125rem;
-      line-height: 1.3;
+      font-size: 1rem;
+      line-height: 1.35;
     }
     .portal-co-facts .portal-co-wide { grid-column: 1 / -1; }
     .portal-co-facts dt { margin: 0; color: #64748b; }
@@ -154,64 +158,103 @@
     .portal-co-actions {
       display: grid;
       grid-template-columns: 1fr 1fr;
-      gap: 0.65rem;
+      gap: 0.85rem;
       align-items: start;
     }
     .portal-co-side h2 {
-      margin: 0 0 0.15rem;
-      font-size: 0.9rem;
+      margin: 0 0 0.25rem;
+      font-size: 1.15rem;
       font-weight: 700;
       color: #0f172a;
     }
-    .portal-co-side > p {
-      margin: 0 0 0.4rem;
+    .portal-co-side > p,
+    .portal-co-help {
+      margin: 0 0 0.55rem;
       color: #64748b;
-      font-size: 0.75rem;
-      line-height: 1.35;
+      font-size: 0.95rem;
+      line-height: 1.4;
     }
-    .portal-co-file-row {
+    .portal-co-kicker {
+      margin: 0.7rem 0 0.15rem;
+      color: #64748b;
+      font-size: 0.8rem;
+      font-weight: 700;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+    }
+    .portal-co-person {
+      margin: 0;
+      color: #0f172a;
+      font-size: 1.05rem;
+      font-weight: 700;
+    }
+    .portal-co-login {
+      margin: 0.1rem 0 0.45rem;
+      color: #334155;
+      font-size: 1rem;
+    }
+    .portal-co-file-row,
+    .portal-co-actions-row {
       display: flex;
       align-items: center;
-      gap: 0.45rem;
+      gap: 0.55rem;
       flex-wrap: wrap;
+      margin-top: 0.55rem;
     }
-    .portal-co-file-row input[type="file"] { font-size: 0.75rem; max-width: 100%; }
+    .portal-co-file-row input[type="file"] { font-size: 0.95rem; max-width: 100%; }
+    .portal-co-form {
+      margin-top: 0.75rem;
+      padding-top: 0.75rem;
+      border-top: 1px solid #e2e8f0;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 0.55rem 0.85rem;
+    }
+    .portal-co-form[hidden] { display: none !important; }
+    .portal-co-form .portal-co-wide { grid-column: 1 / -1; }
     .portal-co-label {
       display: block;
       margin-top: 0.35rem;
       color: #64748b;
-      font-size: 0.75rem;
+      font-size: 0.95rem;
     }
     .portal-co-input {
       display: block;
       width: 100%;
-      margin-top: 0.12rem;
+      margin-top: 0.2rem;
       border: 1px solid #e2e8f0;
-      border-radius: 0.4rem;
-      padding: 0.28rem 0.5rem;
-      font-size: 0.8125rem;
+      border-radius: 0.45rem;
+      padding: 0.45rem 0.65rem;
+      font-size: 1rem;
       background: #fff;
       color: #0f172a;
     }
     .portal-co-btn {
-      padding: 0.28rem 0.7rem;
+      padding: 0.42rem 0.9rem;
       border-radius: 999px;
       border: 1px solid #cbd5e1;
       background: #fff;
       color: #0f172a;
-      font-size: 0.75rem;
+      font-size: 0.95rem;
       font-weight: 600;
     }
-    #file-list {
-      margin: 0.35rem 0 0;
+    .portal-co-btn-primary {
+      background: #0ea5e9;
+      border-color: #0ea5e9;
+      color: #fff;
+    }
+    .portal-co-btn:disabled { opacity: 0.45; }
+    #file-list, #account-others {
+      margin: 0.45rem 0 0;
       padding: 0;
       list-style: none;
-      font-size: 0.8125rem;
+      font-size: 1rem;
     }
-    #file-list li { padding: 0.12rem 0; }
+    #file-list li, #account-others li { padding: 0.18rem 0; }
     @media (max-width: 720px) {
       .portal-co-facts,
-      .portal-co-actions { grid-template-columns: 1fr; }
+      .portal-co-actions,
+      .portal-co-form { grid-template-columns: 1fr; }
     }
     body.inv-layout-lock #projects-section:not(.hidden),
     body.inv-layout-lock #panels-section:not(.hidden) {
@@ -284,7 +327,7 @@
   <script src="https://cdn.tailwindcss.com"></script>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
 </head>
-<body class="company-app antialiased">
+<body class="company-app portal-app antialiased">
   <div id="company-boot" role="status" aria-live="polite">
     <img id="company-boot-logo" src="/assets/spectrum-boot.gif" alt="" width="1104" height="242" />
     <p id="company-boot-msg">Loading Dealer Portal…</p>
@@ -1212,10 +1255,11 @@
               <img id="portal-dealer-logo" alt="" hidden>
               <span id="portal-dealer-mark">D</span>
             </div>
-            <div>
+            <div class="portal-co-title">
               <p id="portal-dealer-name">Dealer Portal</p>
-              <p class="portal-co-note">Spectrum updates this.</p>
+              <p id="co-request-status" class="portal-co-status" hidden></p>
             </div>
+            <button type="button" id="co-update-btn" class="portal-co-btn portal-co-btn-primary">Update</button>
           </div>
           <dl class="portal-co-facts">
             <div><dt>Display name</dt><dd id="co-display">—</dd></div>
@@ -1230,26 +1274,61 @@
             <div><dt>ZIP</dt><dd id="co-zip">—</dd></div>
             <div><dt>Country</dt><dd id="co-country">—</dd></div>
           </dl>
+          <form id="co-update-form" class="portal-co-form" hidden>
+            <label class="portal-co-label">Display name<input id="co-edit-display" class="portal-co-input"></label>
+            <label class="portal-co-label">Phone<input id="co-edit-phone" class="portal-co-input"></label>
+            <label class="portal-co-label">First name<input id="co-edit-first" class="portal-co-input"></label>
+            <label class="portal-co-label">Last name<input id="co-edit-last" class="portal-co-input"></label>
+            <label class="portal-co-label">Website<input id="co-edit-web" class="portal-co-input"></label>
+            <label class="portal-co-label">Tax ID<input id="co-edit-tax" class="portal-co-input"></label>
+            <label class="portal-co-label portal-co-wide">Street<input id="co-edit-street" class="portal-co-input"></label>
+            <label class="portal-co-label">City<input id="co-edit-city" class="portal-co-input"></label>
+            <label class="portal-co-label">State<input id="co-edit-state" class="portal-co-input"></label>
+            <label class="portal-co-label">ZIP<input id="co-edit-zip" class="portal-co-input"></label>
+            <label class="portal-co-label">Country<input id="co-edit-country" class="portal-co-input"></label>
+            <p id="co-update-msg" class="portal-co-wide portal-co-status" hidden></p>
+            <div class="portal-co-actions-row portal-co-wide">
+              <button type="submit" class="portal-co-btn portal-co-btn-primary">Send</button>
+              <button type="button" id="co-update-cancel" class="portal-co-btn">Cancel</button>
+            </div>
+          </form>
         </div>
         <div class="portal-co-actions">
           <form id="file-form" class="portal-co-card portal-co-side">
             <h2>Files</h2>
-            <p>Upload a resale certificate or other PDF, JPG, or PNG. You can view and download. Spectrum staff can also delete.</p>
+            <p class="portal-co-help">Upload a resale certificate or other PDF, JPG, or PNG. You can view and download. Spectrum staff can also delete.</p>
             <div class="portal-co-file-row">
               <input id="file-input" type="file" accept=".pdf,.jpg,.jpeg,.png,application/pdf,image/jpeg,image/png">
               <button type="submit" class="portal-co-btn">Upload</button>
             </div>
             <ul id="file-list"></ul>
-            <p id="file-msg" class="hidden text-sm"></p>
+            <p id="file-msg" class="portal-co-status" hidden></p>
           </form>
-          <form id="password-form" class="portal-co-card portal-co-side">
-            <h2>Portal login</h2>
-            <p id="login-email-label"></p>
-            <label class="portal-co-label">Current password<input id="pw-current" type="password" autocomplete="current-password" class="portal-co-input"></label>
-            <label class="portal-co-label">New password<input id="pw-next" type="password" autocomplete="new-password" class="portal-co-input"></label>
-            <p id="pw-msg" class="hidden text-sm"></p>
-            <button type="submit" class="portal-co-btn" style="margin-top:0.45rem">Change password</button>
-          </form>
+          <div class="portal-co-card portal-co-side">
+            <h2>Account user</h2>
+            <p class="portal-co-kicker">Main user</p>
+            <p id="account-name" class="portal-co-person">—</p>
+            <p id="account-email" class="portal-co-login"></p>
+            <form id="password-form">
+              <label class="portal-co-label">Current password<input id="pw-current" type="password" autocomplete="current-password" class="portal-co-input"></label>
+              <label class="portal-co-label">New password<input id="pw-next" type="password" autocomplete="new-password" class="portal-co-input"></label>
+              <p id="pw-msg" class="portal-co-status" hidden></p>
+              <button type="submit" class="portal-co-btn" style="margin-top:0.55rem">Change password</button>
+            </form>
+            <p class="portal-co-kicker">Other logins</p>
+            <ul id="account-others"></ul>
+            <p id="user-request-status" class="portal-co-status" hidden></p>
+            <button type="button" id="user-add-btn" class="portal-co-btn" style="margin-top:0.45rem">Add user</button>
+            <form id="user-add-form" class="portal-co-form" hidden>
+              <label class="portal-co-label">Name<input id="user-add-name" class="portal-co-input"></label>
+              <label class="portal-co-label">Email<input id="user-add-email" type="email" class="portal-co-input"></label>
+              <p id="user-add-msg" class="portal-co-wide portal-co-status" hidden></p>
+              <div class="portal-co-actions-row portal-co-wide">
+                <button type="submit" class="portal-co-btn portal-co-btn-primary">Send</button>
+                <button type="button" id="user-add-cancel" class="portal-co-btn">Cancel</button>
+              </div>
+            </form>
+          </div>
         </div>
       </section>
     </main>

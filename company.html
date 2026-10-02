@@ -32,7 +32,7 @@
     #company-boot .boot-login button[type="submit"]{background:#fff!important;color:#000!important;border:0}
     #company-boot .boot-login button[type="submit"]:hover{background:#e8e8e8!important}
   </style>
-  <link rel="stylesheet" href="/css/company-dash.css?v=brands2" />
+  <link rel="stylesheet" href="/css/company-dash.css?v=dealerreq2" />
   <script src="/js/address-autocomplete.js"></script>
   <script src="/js/company-chat.js?v=po-ship1"></script>
   <script src="/js/company-crm.js?v=dealerpipe1"></script>
@@ -3165,6 +3165,7 @@
               </div>
             </div>
           </div>
+          <div id="cc-dealer-requests" class="cc-request-wrap hidden"></div>
           <div class="cc-detail-tabs" role="tablist">
             <button type="button" class="cc-detail-tab is-on" data-cc-tab="transactions" role="tab" aria-selected="true">Transaction list</button>
             <button type="button" class="cc-detail-tab" data-cc-tab="emails" role="tab" aria-selected="false">Activities/Emails</button>
@@ -5233,7 +5234,7 @@
     </a>
   </nav>
 
-  <link rel="stylesheet" href="/css/company-dash.css?v=brands2" />
+  <link rel="stylesheet" href="/css/company-dash.css?v=dealerreq2" />
   <link rel="stylesheet" href="/css/company-tw.css?v=boot1" />
 
   <script>
@@ -15943,6 +15944,79 @@
       }).join('');
     }
 
+    function ccRequestValue(value) {
+      const text = String(value || '').trim();
+      return text || '—';
+    }
+
+    function paintCcDealerRequests(cards) {
+      const box = document.getElementById('cc-dealer-requests');
+      if (!box) return;
+      const company = cards && cards.company && cards.company.status === 'waiting' ? cards.company : null;
+      const user = cards && cards.user && cards.user.status === 'waiting' ? cards.user : null;
+      if (!company && !user) {
+        box.classList.add('hidden');
+        box.innerHTML = '';
+        return;
+      }
+      const canAct = ccCanEditDealerFiles();
+      let html = '';
+      if (company) {
+        const now = ccDetailCustomer || {};
+        const next = company.payload || {};
+        const rows = [
+          ['Display name', now.displayName, next.displayName],
+          ['First name', now.contactFirst, next.contactFirst],
+          ['Last name', now.contactLast, next.contactLast],
+          ['Phone', now.phone, next.phone],
+          ['Website', now.website, next.website],
+          ['Tax ID', now.taxId, next.taxId],
+          ['Street', now.billStreet, next.billStreet],
+          ['City', now.billCity, next.billCity],
+          ['State', now.billState, next.billState],
+          ['ZIP', now.billZip, next.billZip],
+          ['Country', now.billCountry, next.billCountry]
+        ];
+        html += '<article class="cc-request-card" data-request-id="' + esc(company.id) + '" data-request-kind="company">' +
+          '<h3>Company update waiting</h3>' +
+          '<p>Now, then what the dealer sent.</p>' +
+          '<dl class="cc-request-grid"><div><dt></dt><dd>Now</dd><dd>Sent</dd></div>' +
+          rows.map(function (row) {
+            return '<div><dt>' + esc(row[0]) + '</dt><dd>' + esc(ccRequestValue(row[1])) + '</dd><dd>' + esc(ccRequestValue(row[2])) + '</dd></div>';
+          }).join('') +
+          '</dl>' +
+          (canAct ? '<div class="cc-request-actions"><button type="button" class="cc-detail-btn cc-detail-btn-primary" data-request-act="accept">Accept</button><button type="button" class="cc-detail-btn" data-request-act="decline">Decline</button></div>' : '') +
+          '</article>';
+      }
+      if (user) {
+        const payload = user.payload || {};
+        html += '<article class="cc-request-card" data-request-id="' + esc(user.id) + '" data-request-kind="user" data-request-name="' + esc(payload.name || '') + '" data-request-email="' + esc(payload.email || '') + '">' +
+          '<h3>New portal user waiting</h3>' +
+          '<p>' + esc(payload.name || '—') + ' · ' + esc(payload.email || '—') + '</p>' +
+          (canAct ? '<div class="cc-request-actions"><button type="button" class="cc-detail-btn cc-detail-btn-primary" data-request-act="accept">Accept</button><button type="button" class="cc-detail-btn" data-request-act="decline">Decline</button></div>' : '') +
+          '</article>';
+      }
+      box.innerHTML = html;
+      box.classList.remove('hidden');
+    }
+
+    async function loadCcDealerRequests() {
+      const box = document.getElementById('cc-dealer-requests');
+      if (!box) return;
+      if (!ccDetailId || !ccIsDealerCustomer(ccDetailCustomer)) {
+        box.classList.add('hidden');
+        box.innerHTML = '';
+        return;
+      }
+      try {
+        const data = await api('/api/admin/company-customers/' + encodeURIComponent(ccDetailId) + '/dealer-requests');
+        paintCcDealerRequests(data.requests || {});
+      } catch (err) {
+        box.classList.remove('hidden');
+        box.innerHTML = '<p class="text-sm text-rose-400">' + esc(err.message || 'Could not load requests.') + '</p>';
+      }
+    }
+
     async function loadCcPortalLogins() {
       const list = document.getElementById('cc-login-list');
       if (!ccDetailId) return;
@@ -16067,6 +16141,7 @@
       const portalForm = document.getElementById('cc-login-form');
       if (portalForm) portalForm.classList.toggle('hidden', !canEdit('customers'));
       fillCcPortalLoginForm();
+      loadCcDealerRequests();
       const canTx = canEdit('quotes') || canEdit('orders') || canEdit('invoices');
       document.getElementById('cc-detail-new').classList.toggle('hidden', !canTx);
       renderCustomerDetailTransactions();
@@ -21206,6 +21281,44 @@
         setCcDetailTab(btn.getAttribute('data-cc-tab'));
       });
     });
+    document.getElementById('cc-dealer-requests').addEventListener('click', async function (e) {
+      const btn = e.target.closest('[data-request-act]');
+      if (!btn || !ccDetailId) return;
+      const card = btn.closest('[data-request-id]');
+      if (!card) return;
+      const id = card.getAttribute('data-request-id');
+      const kind = card.getAttribute('data-request-kind');
+      const act = btn.getAttribute('data-request-act');
+      if (act === 'accept' && kind === 'user') {
+        setCcDetailTab('portal');
+        const email = document.getElementById('cc-login-email');
+        const name = document.getElementById('cc-login-name');
+        const password = document.getElementById('cc-login-password');
+        if (email) email.value = card.getAttribute('data-request-email') || '';
+        if (name) name.value = card.getAttribute('data-request-name') || '';
+        if (password) {
+          password.value = '';
+          password.focus();
+        }
+        const msg = document.getElementById('cc-login-msg');
+        if (msg) {
+          msg.textContent = 'Type a password and create the login.';
+          msg.className = 'text-sm text-sky-400';
+          msg.classList.remove('hidden');
+        }
+        return;
+      }
+      const path = act === 'decline' ? 'decline' : 'accept';
+      btn.disabled = true;
+      try {
+        await api('/api/admin/company-customers/' + encodeURIComponent(ccDetailId) + '/dealer-requests/' + encodeURIComponent(id) + '/' + path, { method: 'POST' });
+        if (path === 'accept') await openCustomerDetail(ccDetailId, { push: false, skipTabBar: true });
+        else await loadCcDealerRequests();
+      } catch (err) {
+        window.alert(err.message || 'Could not update the card.');
+        btn.disabled = false;
+      }
+    });
     document.getElementById('cc-login-form').addEventListener('submit', async function (e) {
       e.preventDefault();
       const msg = document.getElementById('cc-login-msg');
@@ -21231,6 +21344,7 @@
           msg.classList.remove('hidden');
         }
         await loadCcPortalLogins();
+        await loadCcDealerRequests();
       } catch (err) {
         if (msg) {
           msg.textContent = err.message || 'Could not create portal login.';

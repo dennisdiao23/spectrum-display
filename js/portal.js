@@ -1846,23 +1846,99 @@
     text('co-zip', c.billZip);
     text('co-country', c.billCountry);
   }
+  function setCoStatus(el, text, kind) {
+    if (!el) return;
+    const wide = el.classList.contains('portal-co-wide');
+    el.hidden = !text;
+    el.textContent = text || '';
+    el.className = 'portal-co-status' + (wide ? ' portal-co-wide' : '') + (kind ? ' is-' + kind : '');
+  }
+  function requestLine(request) {
+    if (!request) return { text: '', kind: '' };
+    if (request.status === 'waiting') return { text: 'Waiting for Spectrum.', kind: 'waiting' };
+    if (request.status === 'accepted') return { text: 'Spectrum accepted this.', kind: 'accepted' };
+    if (request.status === 'declined') return { text: 'Spectrum declined this.', kind: 'declined' };
+    return { text: '', kind: '' };
+  }
+  function paintAccount(data) {
+    const user = data.user || {};
+    const name = $('account-name');
+    const email = $('account-email');
+    if (name) name.textContent = user.name || '—';
+    if (email) email.textContent = user.email || '';
+    const others = (data.users || []).filter(function (row) {
+      return String(row.email || '').toLowerCase() !== String(user.email || '').toLowerCase();
+    });
+    const list = $('account-others');
+    if (list) {
+      list.innerHTML = others.length
+        ? others.map(function (row) {
+          return '<li>' + esc(row.name || '—') + ' · ' + esc(row.email || '') + '</li>';
+        }).join('')
+        : '<li class="portal-co-help">No other logins.</li>';
+    }
+    const userCard = (data.requests && data.requests.user) || null;
+    const userLine = requestLine(userCard);
+    setCoStatus($('user-request-status'), userLine.text, userLine.kind);
+    const addBtn = $('user-add-btn');
+    const waitingUser = userCard && userCard.status === 'waiting';
+    if (addBtn) {
+      addBtn.disabled = !!waitingUser;
+      addBtn.hidden = !!waitingUser;
+    }
+    if (waitingUser) {
+      const form = $('user-add-form');
+      if (form) form.hidden = true;
+    }
+  }
+  function paintCompanyRequest(data) {
+    const card = (data.requests && data.requests.company) || null;
+    const line = requestLine(card);
+    setCoStatus($('co-request-status'), line.text, line.kind);
+    const btn = $('co-update-btn');
+    const waiting = card && card.status === 'waiting';
+    if (btn) {
+      btn.disabled = !!waiting;
+      btn.hidden = !!waiting;
+    }
+    if (waiting) {
+      const form = $('co-update-form');
+      if (form) form.hidden = true;
+    }
+  }
+  function fillCompanyEditor(customer) {
+    const c = customer || {};
+    $('co-edit-display').value = c.displayName || '';
+    $('co-edit-phone').value = c.phone || '';
+    $('co-edit-first').value = c.contactFirst || '';
+    $('co-edit-last').value = c.contactLast || '';
+    $('co-edit-web').value = c.website || '';
+    $('co-edit-tax').value = c.taxId || '';
+    $('co-edit-street').value = c.billStreet || '';
+    $('co-edit-city').value = c.billCity || '';
+    $('co-edit-state').value = c.billState || '';
+    $('co-edit-zip').value = c.billZip || '';
+    $('co-edit-country').value = c.billCountry || 'United States';
+  }
   async function loadCompany() {
     const data = await api('/api/dealer/company');
     if (me) {
       me.customer = data.customer || me.customer;
       if (data.logo) me.logo = data.logo;
+      me.user = data.user || me.user;
     }
     paintDealerBrand();
     fillCompany(data.customer);
-    $('login-email-label').textContent = (data.user && data.user.email) || '';
+    paintCompanyRequest(data);
+    paintAccount(data);
     $('file-list').innerHTML = (data.files || []).map(function (file) {
       const when = file.createdAt ? new Date(file.createdAt).toLocaleString() : '';
-      return '<li class="flex flex-wrap items-center gap-x-3 gap-y-1">' +
+      return '<li>' +
         '<span>' + esc(file.name || 'File') + '</span>' +
-        (when ? '<span class="text-slate-500">' + esc(when) + '</span>' : '') +
-        '<a class="text-sky-600" href="' + esc(file.url) + '" target="_blank" rel="noopener">View</a>' +
-        '<a class="text-sky-600" href="' + esc(file.url) + '" download>Download</a></li>';
-    }).join('') || '<li class="text-slate-500">No files yet.</li>';
+        (when ? ' <span class="portal-co-help">' + esc(when) + '</span>' : '') +
+        ' <a class="text-sky-600" href="' + esc(file.url) + '" target="_blank" rel="noopener">View</a>' +
+        ' <a class="text-sky-600" href="' + esc(file.url) + '" download>Download</a></li>';
+    }).join('') || '<li class="portal-co-help">No files yet.</li>';
   }
 
   $('login-form').onsubmit = async function (e) {
@@ -2258,6 +2334,74 @@
       window.addEventListener('pointerup', up);
     });
   })();
+  $('co-update-btn').onclick = function () {
+    if ($('co-update-btn').disabled) return;
+    fillCompanyEditor(me && me.customer);
+    setCoStatus($('co-update-msg'), '', '');
+    $('co-update-form').hidden = false;
+  };
+  $('co-update-cancel').onclick = function () {
+    $('co-update-form').hidden = true;
+    setCoStatus($('co-update-msg'), '', '');
+  };
+  $('co-update-form').onsubmit = async function (e) {
+    e.preventDefault();
+    const msg = $('co-update-msg');
+    try {
+      await api('/api/dealer/requests', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          kind: 'company',
+          displayName: $('co-edit-display').value,
+          phone: $('co-edit-phone').value,
+          contactFirst: $('co-edit-first').value,
+          contactLast: $('co-edit-last').value,
+          website: $('co-edit-web').value,
+          taxId: $('co-edit-tax').value,
+          billStreet: $('co-edit-street').value,
+          billCity: $('co-edit-city').value,
+          billState: $('co-edit-state').value,
+          billZip: $('co-edit-zip').value,
+          billCountry: $('co-edit-country').value
+        })
+      });
+      $('co-update-form').hidden = true;
+      await loadCompany();
+    } catch (err) {
+      setCoStatus(msg, err.message, 'declined');
+    }
+  };
+  $('user-add-btn').onclick = function () {
+    if ($('user-add-btn').disabled) return;
+    $('user-add-name').value = '';
+    $('user-add-email').value = '';
+    setCoStatus($('user-add-msg'), '', '');
+    $('user-add-form').hidden = false;
+  };
+  $('user-add-cancel').onclick = function () {
+    $('user-add-form').hidden = true;
+    setCoStatus($('user-add-msg'), '', '');
+  };
+  $('user-add-form').onsubmit = async function (e) {
+    e.preventDefault();
+    const msg = $('user-add-msg');
+    try {
+      await api('/api/dealer/requests', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          kind: 'user',
+          name: $('user-add-name').value,
+          email: $('user-add-email').value
+        })
+      });
+      $('user-add-form').hidden = true;
+      await loadCompany();
+    } catch (err) {
+      setCoStatus(msg, err.message, 'declined');
+    }
+  };
   $('file-form').onsubmit = async function (e) {
     e.preventDefault();
     const msg = $('file-msg');
@@ -2268,12 +2412,10 @@
     try {
       await api('/api/dealer/files', { method: 'POST', body: body });
       input.value = '';
-      msg.textContent = 'Uploaded.';
-      msg.className = 'text-sm text-sky-600';
+      setCoStatus(msg, 'Uploaded.', 'accepted');
       loadCompany();
     } catch (err) {
-      msg.textContent = err.message;
-      msg.className = 'text-sm text-red-500';
+      setCoStatus(msg, err.message, 'declined');
     }
   };
   $('password-form').onsubmit = async function (e) {
@@ -2287,11 +2429,9 @@
       });
       $('pw-current').value = '';
       $('pw-next').value = '';
-      msg.textContent = 'Password updated.';
-      msg.className = 'text-sm text-sky-600';
+      setCoStatus(msg, 'Password updated.', 'accepted');
     } catch (err) {
-      msg.textContent = err.message;
-      msg.className = 'text-sm text-red-500';
+      setCoStatus(msg, err.message, 'declined');
     }
   };
   const PORTAL_PIN_MAX = 5;
