@@ -991,6 +991,7 @@
     place('panel-split', '--inv-left-w', colState('panels').splitLeftPx);
     place('lead-split', '--lead-left-w', colState('leads').splitLeftPx);
     place('dr-split', '--dash-left-w', colState('registrations').splitLeftPx);
+    place('rma-split', '--rma-left-w', colState('rmas').splitLeftPx);
   }
   function savePortalSplit(name, px) {
     const state = colState(name);
@@ -2653,6 +2654,32 @@
         window.removeEventListener('pointerup', up);
         const width = parseInt(split.style.getPropertyValue('--inv-left-w'), 10);
         if (width) savePortalSplit('dealer-book', width);
+      }
+      window.addEventListener('pointermove', move);
+      window.addEventListener('pointerup', up);
+    });
+  })();
+  (function bindRmaResizer() {
+    const bar = document.querySelector('#rma-split .dash-split-resizer');
+    const split = $('rma-split');
+    if (!bar || !split) return;
+    bar.addEventListener('pointerdown', function (e) {
+      if (isMobileDash()) return;
+      e.preventDefault();
+      const startX = e.clientX;
+      const leftPane = split.querySelector('.dash-split-left');
+      const left = leftPane ? leftPane.getBoundingClientRect().width : 720;
+      document.body.classList.add('inv-split-dragging');
+      function move(ev) {
+        const next = Math.max(420, Math.min(split.getBoundingClientRect().width - 320, left + (ev.clientX - startX)));
+        split.style.setProperty('--rma-left-w', next + 'px');
+      }
+      function up() {
+        document.body.classList.remove('inv-split-dragging');
+        window.removeEventListener('pointermove', move);
+        window.removeEventListener('pointerup', up);
+        const width = parseInt(split.style.getPropertyValue('--rma-left-w'), 10);
+        if (width) savePortalSplit('rmas', width);
       }
       window.addEventListener('pointermove', move);
       window.addEventListener('pointerup', up);
