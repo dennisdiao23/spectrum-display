@@ -1,6 +1,17 @@
 {
-  "build": "2026-10-02-dealer-lead-board",
+  "build": "2026-10-02-new-request-quote",
   "notes": [
+    {
+      "id": "2026-10-02-new-request-quote",
+      "date": "2026-10-02",
+      "apps": ["portal"],
+      "title": "New Request Quote",
+      "changed": [
+        "The button that starts a quote is named New Request Quote.",
+        "While you write a Request Quote, Customer, PO number, Terms, Valid until, S.O. No., Tracking, Customer name, Email, Discount, and Tax stay hidden. They show on the quote Spectrum sends back."
+      ],
+      "kind": "update"
+    },
     {
       "id": "2026-10-02-dealer-lead-board",
       "date": "2026-10-02",
@@ -585,7 +596,7 @@
       },
       {
         "title": "Request Quote",
-        "text": "Send Spectrum a job to price. Open it later to read the price that comes back.",
+        "text": "Ask Spectrum to price a job. Click New Request Quote and add the lines. Customer, terms, and tax stay off this page until Spectrum sends the quote back.",
         "video": "/assets/portal-guide/quotes.mp4"
       },
       {
