@@ -35,7 +35,7 @@
   <link rel="stylesheet" href="/css/company-dash.css?v=notesplit1" />
   <script src="/js/address-autocomplete.js"></script>
   <script src="/js/company-chat.js?v=po-ship1"></script>
-  <script src="/js/company-crm.js?v=zoomphone3"></script>
+  <script src="/js/company-crm.js?v=dealerpipe1"></script>
   <script src="/js/company-staff.js?v=staff6"></script>
   <script src="/js/company-traffic.js?v=loc1"></script>
   <script src="/js/company-website-control.js?v=webctrl7"></script>
@@ -2489,10 +2489,21 @@
                     </div>
                     <div class="cc-detail-toolbar-actions inv-detail-hero-actions">
                       <button type="button" id="crm-lead-convert" class="cc-detail-btn cc-detail-btn-primary">Convert to customer</button>
+                      <button type="button" id="crm-lead-send-dealer" class="cc-detail-btn">Send to dealer</button>
                       <button type="button" id="crm-lead-deal" class="cc-detail-btn">New deal</button>
                       <button type="button" id="crm-lead-act" class="cc-detail-btn">Log activity</button>
                       <button type="button" id="crm-lead-edit" class="cc-detail-btn">Edit</button>
                     </div>
+                  </div>
+                  <div id="crm-lead-dealer-box" class="hidden" style="margin:0.75rem 0 0;max-width:28rem">
+                    <label class="text-sm block">Dealer
+                      <select id="crm-lead-dealer" class="w-full mt-1 bg-slate-800 border border-slate-700 rounded-lg px-3 py-2"></select>
+                    </label>
+                    <label class="text-sm block" style="margin-top:0.5rem">Note for the dealer
+                      <textarea id="crm-lead-dealer-note" rows="2" class="w-full mt-1 bg-slate-800 border border-slate-700 rounded-lg px-3 py-2" placeholder="What should the dealer know?"></textarea>
+                    </label>
+                    <button type="button" id="crm-lead-dealer-go" class="cc-detail-btn cc-detail-btn-primary" style="margin-top:0.6rem">Send</button>
+                    <p id="crm-lead-dealer-msg" class="hidden text-sm" style="margin-top:0.4rem"></p>
                   </div>
                   <div class="crm-detail-facts">
                     <div class="cc-detail-block">
@@ -2507,6 +2518,7 @@
                       <h3>Lead</h3>
                       <dl class="cc-detail-dl">
                         <div><dt>Status</dt><dd id="crm-lead-detail-status">—</dd></div>
+                        <div class="sm:col-span-2"><dt>Dealer</dt><dd id="crm-lead-dealer-line">—</dd></div>
                         <div><dt>Type</dt><dd id="crm-lead-detail-kind">—</dd></div>
                         <div><dt>Source</dt><dd id="crm-lead-detail-source">—</dd></div>
                         <div><dt>Project</dt><dd id="crm-lead-detail-project">—</dd></div>
@@ -20548,7 +20560,7 @@
       form.classList.add('hidden');
       detail.classList.remove('hidden');
       document.getElementById('dlead-title').textContent = row.project || row.number || 'Lead';
-      document.getElementById('dlead-status').textContent = (row.number || '') + (row.dealerName ? (' · ' + row.dealerName) : '') + ' · ' + (row.statusLabel || 'New');
+      document.getElementById('dlead-status').textContent = (row.number || '') + (row.dealerName ? (' · ' + row.dealerName) : '') + ' · ' + (row.status === 'accepted' && row.stageLabel ? row.stageLabel : (row.statusLabel || 'Waiting'));
       document.getElementById('dlead-fields').innerHTML =
         '<div><dt class="text-slate-500">Contact</dt><dd>' + esc(row.contactName || '—') + '</dd></div>' +
         '<div><dt class="text-slate-500">Email</dt><dd>' + esc(row.contactEmail || '—') + '</dd></div>' +
@@ -20580,7 +20592,7 @@
           '<td class="py-3 px-4">' + esc(row.dealerName || '—') + '</td>' +
           '<td class="py-3 px-4">' + esc(row.project || '—') + '</td>' +
           '<td class="py-3 px-4">' + esc(leadPlace(row)) + '</td>' +
-          '<td class="py-3 px-4">' + esc(row.statusLabel || 'New') + '</td></tr>';
+          '<td class="py-3 px-4">' + esc(row.status === 'accepted' && row.stageLabel ? row.stageLabel : (row.statusLabel || 'Waiting')) + '</td></tr>';
       }).join('');
     }
     async function fillLeadDealers() {

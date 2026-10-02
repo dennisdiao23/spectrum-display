@@ -477,6 +477,88 @@
     }).join('') + '</div>';
   }
 
+  function dealerHandoffLine(lead) {
+    var handoff = lead && lead.dealerHandoff;
+    if (!handoff) return 'Not sent';
+    var name = handoff.dealerName || 'Dealer';
+    if (handoff.status === 'declined') return 'Declined by ' + name;
+    if (handoff.status === 'accepted') return name + ' · ' + (handoff.stageLabel || 'New');
+    return 'Waiting for ' + name;
+  }
+
+  function setDealerSendMsg(text, ok) {
+    var el = $('crm-lead-dealer-msg');
+    if (!el) return;
+    el.textContent = text || '';
+    el.classList.toggle('hidden', !text);
+    el.classList.toggle('text-red-400', !!(text && ok === false));
+    el.classList.toggle('text-emerald-400', !!(text && ok !== false));
+  }
+
+  async function loadDealerChoices() {
+    var select = $('crm-lead-dealer');
+    if (!select || select.getAttribute('data-ready') === '1') return;
+    var data = await H.api('/api/admin/company-customers');
+    var dealers = (data.customers || []).filter(function (row) {
+      return String(row.customerType || '').trim().toLowerCase() === 'dealer';
+    }).sort(function (a, b) {
+      return String(a.displayName || a.companyName || '').localeCompare(String(b.displayName || b.companyName || ''));
+    });
+    select.innerHTML = dealers.length
+      ? dealers.map(function (row) {
+        var name = row.displayName || row.companyName || 'Dealer';
+        return '<option value="' + esc(row.id) + '">' + esc(name) + '</option>';
+      }).join('')
+      : '<option value="">No dealers yet</option>';
+    select.setAttribute('data-ready', '1');
+  }
+
+  async function toggleSendDealer() {
+    var box = $('crm-lead-dealer-box');
+    if (!box) return;
+    var opening = box.classList.contains('hidden');
+    box.classList.toggle('hidden', !opening);
+    setDealerSendMsg('');
+    if (!opening) return;
+    try {
+      await loadDealerChoices();
+    } catch (err) {
+      setDealerSendMsg(err.message || 'Could not load dealers.', false);
+    }
+  }
+
+  async function sendLeadToDealer() {
+    if (!S.leadId) return;
+    var select = $('crm-lead-dealer');
+    var customerId = select ? select.value : '';
+    if (!customerId) {
+      setDealerSendMsg('Choose a dealer.', false);
+      return;
+    }
+    setDealerSendMsg('');
+    try {
+      var data = await H.api('/api/admin/crm/leads/' + encodeURIComponent(S.leadId) + '/send-dealer', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          customerId: customerId,
+          notes: val('crm-lead-dealer-note')
+        })
+      });
+      if (data.lead) {
+        var idx = S.leads.findIndex(function (row) { return String(row.id) === String(data.lead.id); });
+        if (idx >= 0) S.leads[idx] = data.lead;
+        fillLeadDetail(data.lead);
+      }
+      var box = $('crm-lead-dealer-box');
+      if (box) box.classList.add('hidden');
+      setVal('crm-lead-dealer-note', '');
+      setDealerSendMsg('Sent.', true);
+    } catch (err) {
+      setDealerSendMsg(err.message || 'Could not send this lead.', false);
+    }
+  }
+
   function fillLeadDetail(lead) {
     if (!lead) return;
     S.leadId = String(lead.id);
@@ -486,6 +568,7 @@
     var phoneEl = $('crm-lead-detail-phone');
     if (phoneEl) phoneEl.innerHTML = phoneActionsHtml(lead.phone || lead.mobile);
     setText('crm-lead-detail-status', statusLabel(LEAD_STATUSES, lead.status));
+    setText('crm-lead-dealer-line', dealerHandoffLine(lead));
     setText('crm-lead-detail-kind', kindLabel(lead.kind));
     setText('crm-lead-detail-source', statusLabel(SOURCES, lead.source));
     setText('crm-lead-detail-owner', lead.ownerName || '—');
@@ -538,7 +621,9 @@
     setLeadTab(S.leadTab || 'details');
     renderLeadTable();
     var convertBtn = $('crm-lead-convert');
-    if (convertBtn) convertBtn.classList.toggle('hidden', lead.status === 'converted' || !canEdit('leads'));
+    if (convertBtn) convertBtn.classList.toggle('hidden', !!lead.convertedCustomerId || !canEdit('leads'));
+    var sendBtn = $('crm-lead-send-dealer');
+    if (sendBtn) sendBtn.classList.toggle('hidden', !canEdit('leads'));
     var dup = $('crm-lead-dup');
     if (dup) {
       var dupText = '';
@@ -1597,6 +1682,8 @@
       openLeadDrawer(lead || null);
     });
     if ($('crm-lead-convert')) $('crm-lead-convert').addEventListener('click', convertLead);
+    if ($('crm-lead-send-dealer')) $('crm-lead-send-dealer').addEventListener('click', function () { toggleSendDealer(); });
+    if ($('crm-lead-dealer-go')) $('crm-lead-dealer-go').addEventListener('click', function () { sendLeadToDealer(); });
     if ($('crm-lead-mail')) $('crm-lead-mail').addEventListener('click', function (ev) {
       ev.preventDefault();
       setLeadTab('email');
