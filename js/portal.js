@@ -95,14 +95,7 @@
     const nameEl = $('portal-dealer-name');
     const img = $('portal-dealer-logo');
     const mark = $('portal-dealer-mark');
-    const file = $('portal-dealer-logo-file');
-    const btn = $('portal-dealer-logo-btn');
     const signedIn = !!me;
-    if (file) file.disabled = !signedIn;
-    if (btn) {
-      btn.classList.toggle('is-ready', signedIn);
-      btn.title = signedIn ? 'Upload dealer logo' : 'Dealer logo';
-    }
     const name = signedIn
       ? (dealerCompanyName() || (me.user && me.user.name) || 'Dealer')
       : 'Dealer Portal';
@@ -1671,21 +1664,31 @@
   }
   function fillCompany(customer) {
     const c = customer || {};
-    $('co-name').value = c.companyName || '';
-    $('co-display').value = c.displayName || '';
-    $('co-first').value = c.contactFirst || '';
-    $('co-last').value = c.contactLast || '';
-    $('co-phone').value = c.phone || '';
-    $('co-web').value = c.website || '';
-    $('co-tax').value = c.taxId || '';
-    $('co-street').value = c.billStreet || '';
-    $('co-city').value = c.billCity || '';
-    $('co-state').value = c.billState || '';
-    $('co-zip').value = c.billZip || '';
-    $('co-country').value = c.billCountry || '';
+    function text(id, value) {
+      const el = $(id);
+      if (!el) return;
+      const shown = String(value || '').trim();
+      el.textContent = shown || '—';
+    }
+    text('co-display', c.displayName);
+    text('co-first', c.contactFirst);
+    text('co-last', c.contactLast);
+    text('co-phone', c.phone);
+    text('co-web', c.website);
+    text('co-tax', c.taxId);
+    text('co-street', [c.billStreet, c.billStreet2].filter(Boolean).join(', '));
+    text('co-city', c.billCity);
+    text('co-state', c.billState);
+    text('co-zip', c.billZip);
+    text('co-country', c.billCountry);
   }
   async function loadCompany() {
     const data = await api('/api/dealer/company');
+    if (me) {
+      me.customer = data.customer || me.customer;
+      if (data.logo) me.logo = data.logo;
+    }
+    paintDealerBrand();
     fillCompany(data.customer);
     $('login-email-label').textContent = (data.user && data.user.email) || '';
     $('file-list').innerHTML = (data.files || []).map(function (file) {
@@ -1730,21 +1733,6 @@
       if (btn) btn.disabled = false;
     }
   };
-  $('portal-dealer-logo-file').addEventListener('change', async function () {
-    const input = $('portal-dealer-logo-file');
-    const file = input.files && input.files[0];
-    if (!file || !me) return;
-    const body = new FormData();
-    body.append('file', file);
-    try {
-      const saved = await api('/api/dealer/logo', { method: 'POST', body: body });
-      me.logo = (saved.logo && saved.logo.url) || '';
-      paintDealerBrand();
-    } catch (err) {
-      window.alert(err.message || 'Could not save the logo.');
-    }
-    input.value = '';
-  });
   $('portal-logout').onclick = async function () {
     await api('/api/dealer/logout', { method: 'POST' });
     me = null;
@@ -2056,38 +2044,6 @@
       window.addEventListener('pointerup', up);
     });
   })();
-  $('company-form').onsubmit = async function (e) {
-    e.preventDefault();
-    const msg = $('company-msg');
-    try {
-      const saved = await api('/api/dealer/company', {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          companyName: $('co-name').value,
-          displayName: $('co-display').value,
-          contactFirst: $('co-first').value,
-          contactLast: $('co-last').value,
-          phone: $('co-phone').value,
-          website: $('co-web').value,
-          taxId: $('co-tax').value,
-          billStreet: $('co-street').value,
-          billCity: $('co-city').value,
-          billState: $('co-state').value,
-          billZip: $('co-zip').value,
-          billCountry: $('co-country').value
-        })
-      });
-      fillCompany(saved.customer);
-      if (me) me.customer = saved.customer;
-      paintDealerBrand();
-      msg.textContent = 'Saved. Company customer record updated.';
-      msg.className = 'sm:col-span-2 text-sm text-sky-600';
-    } catch (err) {
-      msg.textContent = err.message;
-      msg.className = 'sm:col-span-2 text-sm text-red-500';
-    }
-  };
   $('file-form').onsubmit = async function (e) {
     e.preventDefault();
     const msg = $('file-msg');

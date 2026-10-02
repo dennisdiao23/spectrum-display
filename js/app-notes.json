@@ -571,7 +571,7 @@
       },
       {
         "title": "Settings → Company",
-        "text": "Your dealer company on the portal. Name, address, logo, and files. You can view, download, and upload. Spectrum staff can also delete a file."
+        "text": "Your dealer company on the portal. Name, address, tax ID, and logo are text. Spectrum changes those in Company. You can upload a file and change your portal password."
       },
       {
         "title": "Settings → What’s new",

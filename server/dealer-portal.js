@@ -256,6 +256,10 @@ function publicDealerCustomer(row) {
 
 const DEALER_LOGO_NAME = 'Dealer logo';
 
+function lockedCompanyError(message) {
+  return Object.assign(new Error(message), { code: 'protected' });
+}
+
 function dealerLogoUrl(files) {
   const hit = (files || []).find(function (file) {
     return file && file.name === DEALER_LOGO_NAME && file.url;
@@ -1165,20 +1169,8 @@ function sqliteApi(db, store) {
         logo: dealerLogoUrl(files)
       };
     },
-    async updateDealerCompany(user, payload) {
-      const customerId = await resolveDealerCustomerId(store, user);
-      if (!customerId || !store.getCompanyCustomer) throw noCustomerError();
-      const current = await store.getCompanyCustomer(customerId);
-      if (!current) throw noCustomerError();
-      const body = payload || {};
-      const keys = ['companyName', 'displayName', 'contactFirst', 'contactLast', 'phone', 'website', 'taxId',
-        'billStreet', 'billStreet2', 'billCity', 'billState', 'billZip', 'billCountry', 'shipSame',
-        'shipStreet', 'shipStreet2', 'shipCity', 'shipState', 'shipZip', 'shipCountry'];
-      const next = Object.assign({}, current);
-      keys.forEach(function (key) {
-        if (body[key] != null) next[key] = body[key];
-      });
-      return publicDealerCustomer(await store.updateCompanyCustomer(customerId, next));
+    async updateDealerCompany() {
+      throw lockedCompanyError('Spectrum updates company details in Company.');
     },
     async listDealerAssets(customerId) {
       if (!customerId) return { files: [], logo: '' };
@@ -1221,9 +1213,8 @@ function sqliteApi(db, store) {
       const customerId = await resolveDealerCustomerId(store, user);
       return this.addDealerFileForCustomer(customerId, file, user);
     },
-    async setDealerLogo(user, file) {
-      const customerId = await resolveDealerCustomerId(store, user);
-      return this.setDealerLogoForCustomer(customerId, file, user);
+    async setDealerLogo() {
+      throw lockedCompanyError('Spectrum updates the logo in Company.');
     },
     async listDealerProjects(user) {
       const customerId = await resolveDealerCustomerId(store, user);
@@ -1531,20 +1522,8 @@ function supabaseApi(supabase, store) {
         logo: dealerLogoUrl(files)
       };
     },
-    async updateDealerCompany(user, payload) {
-      const customerId = await resolveDealerCustomerId(store, user);
-      if (!customerId || !store.getCompanyCustomer) throw noCustomerError();
-      const current = await store.getCompanyCustomer(customerId);
-      if (!current) throw noCustomerError();
-      const body = payload || {};
-      const keys = ['companyName', 'displayName', 'contactFirst', 'contactLast', 'phone', 'website', 'taxId',
-        'billStreet', 'billStreet2', 'billCity', 'billState', 'billZip', 'billCountry', 'shipSame',
-        'shipStreet', 'shipStreet2', 'shipCity', 'shipState', 'shipZip', 'shipCountry'];
-      const next = Object.assign({}, current);
-      keys.forEach(function (key) {
-        if (body[key] != null) next[key] = body[key];
-      });
-      return publicDealerCustomer(await store.updateCompanyCustomer(customerId, next));
+    async updateDealerCompany() {
+      throw lockedCompanyError('Spectrum updates company details in Company.');
     },
     async listDealerAssets(customerId) {
       if (!customerId) return { files: [], logo: '' };
@@ -1600,9 +1579,8 @@ function supabaseApi(supabase, store) {
       const customerId = await resolveDealerCustomerId(store, user);
       return this.addDealerFileForCustomer(customerId, file, user);
     },
-    async setDealerLogo(user, file) {
-      const customerId = await resolveDealerCustomerId(store, user);
-      return this.setDealerLogoForCustomer(customerId, file, user);
+    async setDealerLogo() {
+      throw lockedCompanyError('Spectrum updates the logo in Company.');
     },
     async listDealerProjects(user) {
       const customerId = await resolveDealerCustomerId(store, user);
