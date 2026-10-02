@@ -10,9 +10,9 @@
         "Dashboard counts stay two per row, and the full name shows.",
         "Your name is off the top row on a phone.",
         "Search and Add sit on their own lines.",
-        "Deals, Installed walls, and RMA keep the full column names and slide sideways."
+        "On a phone, the list stays on top and the item you pick sits under it."
       ],
-      "how": "Open the Dealer Portal on your phone. The Dashboard counts stay two per row, and Request Quote and Purchase Order show their full names. On Book, Quote, and Orders, the search and buttons wrap. A quote or company form stacks down the page. On Deals, Installed walls, and RMA, slide the list sideways to read every column."
+      "how": "Open the Dealer Portal on your phone. The Dashboard counts stay two per row. On Book, Deals, Quote, Orders, Projects, Walls, and RMA, the search sits above about 10 rows. The item you pick is under that list. Slide a list sideways when the column names run past the screen."
     },
     {
       "id": "2026-10-02-brands-prices",

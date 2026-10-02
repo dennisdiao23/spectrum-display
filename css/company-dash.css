@@ -9554,5 +9554,35 @@ body.dash-split-lock #settings-pane.space-y-6 > :not([hidden]) {
     text-overflow: clip;
     width: auto;
   }
+
+  body.portal-app .inv-split,
+  body.portal-app .dash-split,
+  body.portal-app #so-split {
+    display: grid;
+    grid-template-columns: 1fr;
+    grid-template-rows: auto auto;
+  }
+
+  body.portal-app .dash-split-resizer,
+  body.portal-app .inv-split-resizer,
+  body.portal-app #so-split-resizer {
+    display: none;
+  }
+
+  body.portal-app .inv-split-left .cc-table-wrap,
+  body.portal-app .dash-split-left .cc-table-wrap {
+    max-height: calc(2.75rem * 11);
+    overflow: auto;
+  }
+
+  body.portal-app #sales-section.so-doc-open #so-split-left,
+  body.portal-app #sales-section.so-doc-open .cc-list-toolbar {
+    display: flex !important;
+  }
+
+  body.portal-app #sales-section.so-doc-open #so-overview,
+  body.portal-app #sales-section.so-doc-open #so-inv-overview {
+    display: grid !important;
+  }
 }
 
