@@ -1,17 +1,6 @@
 {
-  "build": "2026-10-02-phone-kpi-row",
+  "build": "2026-10-02-new-request-quote",
   "notes": [
-    {
-      "id": "2026-10-02-phone-kpi-row",
-      "date": "2026-10-02",
-      "apps": ["portal", "company"],
-      "title": "Cards fill a short row on the phone",
-      "changed": [
-        "A page with one card shows that card across the whole row.",
-        "A page with three cards keeps two on the first row. The third card fills the next row."
-      ],
-      "kind": "update"
-    },
     {
       "id": "2026-10-02-new-request-quote",
       "date": "2026-10-02",
