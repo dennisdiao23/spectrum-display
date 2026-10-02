@@ -1614,6 +1614,12 @@
                   <dl class="cc-detail-read-grid" id="inv-detail-read"></dl>
                 </div>
                 <div id="inv-detail-panel-specs" class="cc-detail-panel hidden" role="tabpanel" hidden>
+                  <label class="inv-spec-drop" id="inv-detail-spec-drop">
+                    <strong>Drop a PDF here</strong>
+                    <span>or click to browse</span>
+                    <input id="inv-detail-spec-files" type="file" accept="application/pdf,.pdf" multiple>
+                  </label>
+                  <p id="inv-detail-specs-msg" class="hidden text-sm mt-2"></p>
                   <ul id="inv-detail-specs" class="inv-spec-list"></ul>
                   <p id="inv-detail-specs-empty" class="cc-detail-empty hidden">No spec sheets yet.</p>
                 </div>
@@ -4767,9 +4773,10 @@
               <p class="cc-note">Manufacturer spec sheets for this SKU. Save item to keep them.</p>
               <ul id="inv-spec-edit-list" class="inv-spec-list"></ul>
               <p id="inv-spec-edit-empty" class="cc-detail-empty">No spec sheets yet.</p>
-              <label class="cc-detail-btn inv-spec-add">
-                Add PDF
-                <input id="inv-spec-files" type="file" accept="application/pdf,.pdf" multiple hidden>
+              <label class="inv-spec-drop" id="inv-spec-drop">
+                <strong>Drop a PDF here</strong>
+                <span>or click to browse</span>
+                <input id="inv-spec-files" type="file" accept="application/pdf,.pdf" multiple>
               </label>
               <p id="inv-spec-msg" class="hidden text-sm mt-2"></p>
             </div>
@@ -13013,8 +13020,10 @@
     function renderInvDetailSpecs() {
       const list = document.getElementById('inv-detail-specs');
       const empty = document.getElementById('inv-detail-specs-empty');
+      const drop = document.getElementById('inv-detail-spec-drop');
       const item = invDetailData && invDetailData.item;
       const docs = (item && item.docs) || [];
+      if (drop) drop.classList.toggle('hidden', !item || !item.id || !canEdit('inventory'));
       if (!list) return;
       list.innerHTML = docs.map(function (doc) {
         return '<li class="inv-spec-row"><a href="' + esc(doc.url) + '" target="_blank" rel="noopener">' + esc(doc.name || 'Spec sheet') + '</a></li>';
@@ -24664,31 +24673,124 @@
       });
     }
 
-    document.getElementById('inv-spec-files').addEventListener('change', function () {
+    function isSpecPdf(file) {
+      return !!(file && (file.type === 'application/pdf' || /\.pdf$/i.test(file.name || '')));
+    }
+    function queueInvSpecFiles(files) {
       const msg = document.getElementById('inv-spec-msg');
-      const files = Array.prototype.slice.call(this.files || []);
-      this.value = '';
+      const list = Array.prototype.slice.call(files || []);
       let rejected = false;
-      files.forEach(function (file) {
-        const pdf = file.type === 'application/pdf' || /\.pdf$/i.test(file.name || '');
-        if (!pdf) {
+      let message = 'Spec sheets must be PDF.';
+      list.forEach(function (file) {
+        if (!isSpecPdf(file)) {
           rejected = true;
+          message = 'Spec sheets must be PDF.';
           return;
         }
         if (invSpecDocs.length + invSpecNew.length >= 20) {
           rejected = true;
-          if (msg) msg.textContent = 'You can keep up to 20 spec sheets.';
+          message = 'You can keep up to 20 spec sheets.';
           return;
         }
         invSpecNew.push({ name: specDocName(file), file: file });
       });
       if (msg) {
-        if (rejected && msg.textContent !== 'You can keep up to 20 spec sheets.') msg.textContent = 'Spec sheets must be PDF.';
+        if (rejected) msg.textContent = message;
         msg.className = 'text-sm mt-2 text-red-500';
         msg.classList.toggle('hidden', !rejected);
       }
       renderInvSpecEditor();
+    }
+    function bindSpecDrop(zone, onFiles) {
+      if (!zone || zone.getAttribute('data-spec-drop') === '1') return;
+      zone.setAttribute('data-spec-drop', '1');
+      let depth = 0;
+      zone.addEventListener('dragenter', function (e) {
+        e.preventDefault();
+        e.stopPropagation();
+        depth += 1;
+        if (e.dataTransfer) e.dataTransfer.dropEffect = 'copy';
+        zone.classList.add('is-over');
+      });
+      zone.addEventListener('dragover', function (e) {
+        e.preventDefault();
+        e.stopPropagation();
+        if (e.dataTransfer) e.dataTransfer.dropEffect = 'copy';
+      });
+      zone.addEventListener('dragleave', function (e) {
+        e.preventDefault();
+        depth = Math.max(0, depth - 1);
+        if (!depth) zone.classList.remove('is-over');
+      });
+      zone.addEventListener('drop', function (e) {
+        e.preventDefault();
+        e.stopPropagation();
+        depth = 0;
+        zone.classList.remove('is-over');
+        const files = e.dataTransfer && e.dataTransfer.files;
+        if (files && files.length) onFiles(files);
+      });
+    }
+    async function saveDetailSpecFiles(files) {
+      const item = invDetailData && invDetailData.item;
+      const msg = document.getElementById('inv-detail-specs-msg');
+      const list = Array.prototype.slice.call(files || []);
+      if (!item || !item.id || !canEdit('inventory')) return;
+      const pdfs = [];
+      let bad = false;
+      list.forEach(function (file) {
+        if (isSpecPdf(file)) pdfs.push(file);
+        else bad = true;
+      });
+      function showMsg(text, badMsg) {
+        if (!msg) return;
+        msg.textContent = text;
+        msg.className = 'text-sm mt-2 ' + (badMsg ? 'text-red-500' : 'text-slate-500');
+        msg.classList.remove('hidden');
+      }
+      if (bad) showMsg('Spec sheets must be PDF.', true);
+      if (!pdfs.length) return;
+      if (((item.docs || []).length + pdfs.length) > 20) {
+        showMsg('You can keep up to 20 spec sheets.', true);
+        return;
+      }
+      const fd = new FormData();
+      fd.append('docs', JSON.stringify(item.docs || []));
+      pdfs.forEach(function (file) { fd.append('docFiles', file, file.name); });
+      showMsg('Saving…', false);
+      try {
+        const data = await api('/api/admin/inventory/' + encodeURIComponent(item.id), { method: 'PUT', body: fd });
+        if (data && data.item) {
+          invDetailData = data;
+          const idx = inventoryItems.findIndex(function (row) { return String(row.id) === String(item.id); });
+          if (idx >= 0) inventoryItems[idx] = Object.assign({}, inventoryItems[idx], data.item);
+          if (String((document.getElementById('inv-item-id') || {}).value || '') === String(item.id)) {
+            invSpecDocs = (data.item.docs || []).map(function (doc) {
+              return { name: doc.name || 'Spec sheet', url: doc.url || '' };
+            }).filter(function (doc) { return doc.url; });
+            renderInvSpecEditor();
+          }
+        }
+        renderInvDetailSpecs();
+        if (bad) showMsg('Spec sheets must be PDF.', true);
+        else if (msg && msg.textContent === 'Saving…') msg.classList.add('hidden');
+      } catch (err) {
+        showMsg(err.message || 'Could not save the spec sheet.', true);
+      }
+    }
+
+    document.getElementById('inv-spec-files').addEventListener('change', function () {
+      const files = Array.prototype.slice.call(this.files || []);
+      this.value = '';
+      queueInvSpecFiles(files);
     });
+    bindSpecDrop(document.getElementById('inv-spec-drop'), queueInvSpecFiles);
+    document.getElementById('inv-detail-spec-files').addEventListener('change', function () {
+      const files = Array.prototype.slice.call(this.files || []);
+      this.value = '';
+      saveDetailSpecFiles(files);
+    });
+    bindSpecDrop(document.getElementById('inv-detail-spec-drop'), saveDetailSpecFiles);
     document.getElementById('inv-spec-edit-list').addEventListener('click', function (e) {
       const btn = e.target.closest('[data-spec-remove]');
       if (!btn) return;
