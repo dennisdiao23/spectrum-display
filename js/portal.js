@@ -1972,12 +1972,19 @@
     paintCompanyRequest(data);
     paintAccount(data);
     $('file-list').innerHTML = (data.files || []).map(function (file) {
-      const when = file.createdAt ? new Date(file.createdAt).toLocaleString() : '—';
       const name = file.name || 'File';
       const url = file.url || '';
+      let when = '<span>—</span>';
+      if (file.createdAt) {
+        const date = new Date(file.createdAt);
+        if (!isNaN(date.getTime())) {
+          when = '<span>' + esc(date.toLocaleDateString(undefined, { month: 'numeric', day: 'numeric', year: 'numeric' })) + '</span>' +
+            '<span>' + esc(date.toLocaleTimeString(undefined, { hour: 'numeric', minute: '2-digit' })) + '</span>';
+        }
+      }
       return '<tr>' +
-        '<td>' + esc(name) + '</td>' +
-        '<td>' + esc(when) + '</td>' +
+        '<td class="portal-co-file-name" title="' + esc(name) + '">' + esc(name) + '</td>' +
+        '<td class="portal-co-file-when">' + when + '</td>' +
         '<td class="portal-co-file-actions">' +
           '<button type="button" class="portal-co-btn" data-file-view data-file-name="' + esc(name) + '" data-file-url="' + esc(url) + '">View</button>' +
           '<a class="portal-co-btn" href="' + esc(url) + '" download>Download</a>' +

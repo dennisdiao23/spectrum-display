@@ -157,10 +157,11 @@
     .portal-co-facts dd { margin: 0; color: #0f172a; min-width: 0; overflow-wrap: anywhere; }
     .portal-co-actions {
       display: grid;
-      grid-template-columns: 1fr 1fr;
+      grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
       gap: 0.85rem;
       align-items: start;
     }
+    .portal-co-side { min-width: 0; }
     .portal-co-side h2 {
       margin: 0 0 0.25rem;
       font-size: 1.15rem;
@@ -231,15 +232,21 @@
     .portal-co-table-wrap {
       margin-top: 0.75rem;
       max-height: 16rem;
-      overflow: auto;
+      overflow-x: hidden;
+      overflow-y: auto;
       border: 1px solid #e2e8f0;
       border-radius: 0.55rem;
     }
     .portal-co-files {
       width: 100%;
+      table-layout: fixed;
       border-collapse: collapse;
       font-size: 0.95rem;
     }
+    .portal-co-files th:nth-child(2),
+    .portal-co-files td:nth-child(2) { width: 7rem; }
+    .portal-co-files th:nth-child(3),
+    .portal-co-files td:nth-child(3) { width: 11.25rem; }
     .portal-co-files th {
       position: sticky;
       top: 0;
@@ -258,11 +265,25 @@
       color: #0f172a;
     }
     .portal-co-files tr:last-child td { border-bottom: 0; }
+    .portal-co-file-name {
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+    .portal-co-file-when span {
+      display: block;
+      white-space: nowrap;
+      line-height: 1.25;
+    }
     .portal-co-file-actions {
       white-space: nowrap;
       text-align: right;
     }
-    .portal-co-file-actions .portal-co-btn { margin-left: 0.35rem; text-decoration: none; }
+    .portal-co-file-actions .portal-co-btn {
+      margin-left: 0.3rem;
+      padding: 0.35rem 0.6rem;
+      text-decoration: none;
+    }
     .portal-file-preview {
       position: fixed;
       inset: 0;
@@ -1535,6 +1556,6 @@
       <div id="file-preview-body" class="portal-file-preview-body"></div>
     </div>
   </div>
-  <script src="/js/portal.js?v=portalfiles3"></script>
+  <script src="/js/portal.js?v=portalfiles4"></script>
 </body>
 </html>
