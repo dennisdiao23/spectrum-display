@@ -1569,6 +1569,21 @@ async function main() {
     } catch (err) { next(err); }
   });
 
+  app.post('/api/dealer/walls', requireDealer, async function (req, res, next) {
+    try {
+      const wall = await store.createPortalInstalledWall(req.dealer, req.body || {});
+      res.json({ ok: true, wall: wall });
+    } catch (err) { dealerDocError(err, res, next); }
+  });
+
+  app.put('/api/dealer/walls/:id', requireDealer, async function (req, res, next) {
+    try {
+      const wall = await store.updatePortalInstalledWall(req.dealer, req.params.id, req.body || {});
+      if (!wall) return res.status(404).json({ ok: false, error: 'Wall not found.' });
+      res.json({ ok: true, wall: wall });
+    } catch (err) { dealerDocError(err, res, next); }
+  });
+
   app.get('/api/dealer/walls/:id', requireDealer, async function (req, res, next) {
     try {
       const wall = await store.getPortalInstalledWall(req.dealer, req.params.id);

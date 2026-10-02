@@ -1070,6 +1070,7 @@
           </div>
           <div class="cc-list-toolbar cc-list-tools">
             <input id="wall-search" type="search" placeholder="Search wall, customer, site" class="cc-list-search bg-slate-800 border border-slate-700 rounded-full px-3 py-1.5 text-sm">
+            <button id="wall-new-btn" type="button" class="cc-list-add-btn px-4 py-2 rounded-full bg-sky-500 hover:bg-sky-400 text-white text-sm font-semibold">New Installed Wall</button>
           </div>
           <p id="wall-error" class="hidden text-sm text-red-400 mb-3"></p>
           <div id="wall-split" class="inv-split" style="--inv-left-w: min(720px, 58vw)">
@@ -1085,6 +1086,7 @@
                         <th class="py-3 px-4 font-medium" data-col="site">Site <span class="dash-col-caret">▾</span><span class="dash-col-grip" aria-hidden="true"></span></th>
                         <th class="py-3 px-4 font-medium" data-col="pitch">Pitch <span class="dash-col-caret">▾</span><span class="dash-col-grip" aria-hidden="true"></span></th>
                         <th class="py-3 px-4 font-medium" data-col="ship">Ship date <span class="dash-col-caret">▾</span><span class="dash-col-grip" aria-hidden="true"></span></th>
+                        <th class="py-3 px-4 font-medium" data-col="wstart">Warranty start <span class="dash-col-caret">▾</span><span class="dash-col-grip" aria-hidden="true"></span></th>
                         <th class="py-3 px-4 font-medium" data-col="warranty">Warranty end <span class="dash-col-caret">▾</span><span class="dash-col-grip" aria-hidden="true"></span></th>
                         <th class="py-3 px-4 font-medium" data-col="spares">Spares <span class="dash-col-caret">▾</span><span class="dash-col-grip" aria-hidden="true"></span></th>
                       </tr>
@@ -1098,16 +1100,31 @@
             <div class="inv-split-right">
               <div id="wall-overview" class="inv-right-panel">
                 <div class="inv-overview-summary">
-                  <p class="inv-overview-lead">Select a wall to see the site, serials, and spare kit.</p>
+                  <p class="inv-overview-lead">Select a wall, or add a new one.</p>
                 </div>
               </div>
-              <div id="wall-detail" class="inv-right-panel hidden">
-                <h2 id="wall-title" class="font-semibold text-lg">Installed wall</h2>
+              <form id="wall-form" class="inv-right-panel hidden">
+                <input type="hidden" id="wall-id">
+                <h2 id="wall-title" class="font-semibold text-lg">New Installed Wall</h2>
                 <p id="wall-sub" class="text-sm text-slate-500 mt-1"></p>
-                <dl id="wall-fields" class="grid sm:grid-cols-2 gap-x-6 gap-y-3 text-sm mt-4"></dl>
+                <div class="grid sm:grid-cols-2 gap-3 text-sm mt-4">
+                  <label class="sm:col-span-2">Wall name<input id="wall-name" required class="w-full mt-1 bg-slate-800 border border-slate-700 rounded-lg px-3 py-2"></label>
+                  <label>End customer<input id="wall-end" class="w-full mt-1 bg-slate-800 border border-slate-700 rounded-lg px-3 py-2"></label>
+                  <label>Installer<input id="wall-installer" class="w-full mt-1 bg-slate-800 border border-slate-700 rounded-lg px-3 py-2"></label>
+                  <label>Pitch<input id="wall-pitch" class="w-full mt-1 bg-slate-800 border border-slate-700 rounded-lg px-3 py-2"></label>
+                  <label>Ship date<input id="wall-ship" type="date" class="w-full mt-1 bg-slate-800 border border-slate-700 rounded-lg px-3 py-2"></label>
+                  <label>Warranty start<input id="wall-wstart" type="date" required class="w-full mt-1 bg-slate-800 border border-slate-700 rounded-lg px-3 py-2"></label>
+                  <label>Warranty end<input id="wall-wend" type="date" required class="w-full mt-1 bg-slate-800 border border-slate-700 rounded-lg px-3 py-2"></label>
+                  <label class="sm:col-span-2">Street<input id="wall-street" class="w-full mt-1 bg-slate-800 border border-slate-700 rounded-lg px-3 py-2"></label>
+                  <label>City<input id="wall-city" class="w-full mt-1 bg-slate-800 border border-slate-700 rounded-lg px-3 py-2"></label>
+                  <label>State<input id="wall-state" class="w-full mt-1 bg-slate-800 border border-slate-700 rounded-lg px-3 py-2"></label>
+                  <label>ZIP<input id="wall-zip" class="w-full mt-1 bg-slate-800 border border-slate-700 rounded-lg px-3 py-2"></label>
+                </div>
+                <button id="wall-save" type="submit" class="mt-4 px-4 py-2 rounded-full bg-sky-500 hover:bg-sky-400 text-white text-sm font-semibold">Save</button>
+                <p id="wall-msg" class="hidden text-sm mt-2"></p>
                 <div id="wall-serials" class="mt-4 text-sm"></div>
                 <div id="wall-spares" class="mt-4 text-sm"></div>
-              </div>
+              </form>
             </div>
           </div>
         </div>
@@ -1743,6 +1760,6 @@
       <div id="file-preview-body" class="portal-file-preview-body"></div>
     </div>
   </div>
-  <script src="/js/portal.js?v=rmacard2"></script>
+  <script src="/js/portal.js?v=wallnew1"></script>
 </body>
 </html>

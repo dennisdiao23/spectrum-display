@@ -84,8 +84,60 @@ function looksCob(doc) {
 
 function datesFor(shipDate, selectedCob) {
   return {
+    warrantyStart: validDate(shipDate) ? shipDate : '',
     warrantyEnd: addYears(shipDate, 3),
     supportEnd: selectedCob ? addYears(shipDate, 5) : ''
+  };
+}
+
+function warrantyFrom(body, current, shipDate, selectedCob) {
+  const startIn = body && Object.prototype.hasOwnProperty.call(body, 'warrantyStart');
+  const endIn = body && Object.prototype.hasOwnProperty.call(body, 'warrantyEnd');
+  if (startIn || endIn) {
+    const start = trim(body.warrantyStart, 20);
+    const end = trim(body.warrantyEnd, 20);
+    if (!validDate(start)) throw Object.assign(new Error('Enter a warranty start date.'), { code: 'invalid' });
+    if (!validDate(end)) throw Object.assign(new Error('Enter a warranty end date.'), { code: 'invalid' });
+    if (end < start) throw Object.assign(new Error('Warranty end is before the start date.'), { code: 'invalid' });
+    return {
+      warrantyStart: start,
+      warrantyEnd: end,
+      supportEnd: selectedCob ? ((current && current.support_end) || addYears(start, 5)) : ''
+    };
+  }
+  if (current && current.warranty_start) {
+    return {
+      warrantyStart: current.warranty_start,
+      warrantyEnd: current.warranty_end || '',
+      supportEnd: current.support_end || ''
+    };
+  }
+  return datesFor(shipDate, selectedCob);
+}
+
+function readPortalWall(body) {
+  const wallName = trim(body && body.wallName, 160);
+  if (!wallName) throw Object.assign(new Error('Enter a wall name.'), { code: 'invalid' });
+  const warrantyStart = trim(body && body.warrantyStart, 20);
+  const warrantyEnd = trim(body && body.warrantyEnd, 20);
+  if (!validDate(warrantyStart)) throw Object.assign(new Error('Enter a warranty start date.'), { code: 'invalid' });
+  if (!validDate(warrantyEnd)) throw Object.assign(new Error('Enter a warranty end date.'), { code: 'invalid' });
+  if (warrantyEnd < warrantyStart) throw Object.assign(new Error('Warranty end is before the start date.'), { code: 'invalid' });
+  const shipDate = trim(body && body.shipDate, 20);
+  if (shipDate && !validDate(shipDate)) throw Object.assign(new Error('Ship date is not a date.'), { code: 'invalid' });
+  return {
+    wallName: wallName,
+    endCustomer: trim(body && body.endCustomer, 160),
+    installer: trim(body && body.installer, 160),
+    pitch: trim(body && body.pitch, 40),
+    shipDate: shipDate,
+    warrantyStart: warrantyStart,
+    warrantyEnd: warrantyEnd,
+    siteStreet: trim(body && body.siteStreet, 160),
+    siteCity: trim(body && body.siteCity, 80),
+    siteState: trim(body && body.siteState, 40),
+    siteZip: trim(body && body.siteZip, 20),
+    siteCountry: trim(body && body.siteCountry, 80)
   };
 }
 
@@ -106,6 +158,7 @@ function formatWall(row, serials, spares) {
     pitch: row.pitch || '',
     selectedCob: cob,
     shipDate: row.ship_date || '',
+    warrantyStart: row.warranty_start || '',
     warrantyEnd: row.warranty_end || '',
     supportEnd: cob ? (row.support_end || '') : '',
     siteStreet: row.site_street || '',
@@ -129,7 +182,7 @@ function readUpdate(body, current) {
   const shipDate = trim(body && body.shipDate, 20) || (current && current.ship_date) || '';
   if (!validDate(shipDate)) throw Object.assign(new Error('Enter a ship date.'), { code: 'invalid' });
   const selectedCob = body && body.selectedCob != null ? flag(body.selectedCob) : flag(current && current.selected_cob);
-  const dates = datesFor(shipDate, selectedCob);
+  const dates = warrantyFrom(body, current, shipDate, selectedCob);
   return {
     wallName: trim(body && body.wallName, 160) || (current && current.wall_name) || '',
     endCustomer: trim(body && body.endCustomer, 160),
@@ -137,6 +190,7 @@ function readUpdate(body, current) {
     pitch: trim(body && body.pitch, 40),
     selectedCob: selectedCob,
     shipDate: shipDate,
+    warrantyStart: dates.warrantyStart,
     warrantyEnd: dates.warrantyEnd,
     supportEnd: dates.supportEnd,
     siteStreet: trim(body && body.siteStreet, 160),
@@ -174,6 +228,9 @@ function ensureInstalledWalls(db) {
       updated_at TEXT NOT NULL
     );
     CREATE UNIQUE INDEX IF NOT EXISTS installed_walls_order_idx ON installed_walls (sales_doc_id);
+  `);
+  try { db.exec("ALTER TABLE installed_walls ADD COLUMN warranty_start TEXT NOT NULL DEFAULT ''"); } catch (e) { /* already present */ }
+  db.exec(`
     CREATE TABLE IF NOT EXISTS installed_wall_serials (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       wall_id INTEGER NOT NULL,
@@ -227,6 +284,60 @@ function sqliteApi(db, store) {
       if (!row || String(row.customer_id) !== dealerCustomerId(user)) return null;
       return present(row);
     },
+    async createPortalInstalledWall(user, body) {
+      const customerId = dealerCustomerId(user);
+      if (!customerId) {
+        throw Object.assign(new Error('Spectrum has not linked a company customer yet.'), { code: 'no_customer' });
+      }
+      const input = readPortalWall(body);
+      const numbers = db.prepare('SELECT number FROM installed_walls').all().map(function (row) { return row.number; });
+      const stamp = nowIso();
+      const info = db.prepare(`
+        INSERT INTO installed_walls (
+          number, sales_doc_id, order_number, customer_id, wall_name, end_customer, installer, pitch,
+          selected_cob, ship_date, warranty_start, warranty_end, support_end,
+          site_street, site_city, site_state, site_zip, site_country, created_at, updated_at
+        ) VALUES (?, NULL, '', ?, ?, ?, ?, ?, 0, ?, ?, ?, '', ?, ?, ?, ?, ?, ?, ?)
+      `).run(
+        nextNumberFrom(numbers),
+        customerId,
+        input.wallName,
+        input.endCustomer,
+        input.installer,
+        input.pitch,
+        input.shipDate,
+        input.warrantyStart,
+        input.warrantyEnd,
+        input.siteStreet,
+        input.siteCity,
+        input.siteState,
+        input.siteZip,
+        input.siteCountry,
+        stamp,
+        stamp
+      );
+      return present(db.prepare('SELECT * FROM installed_walls WHERE id = ?').get(info.lastInsertRowid));
+    },
+    async updatePortalInstalledWall(user, id, body) {
+      const current = db.prepare('SELECT * FROM installed_walls WHERE id = ?').get(id);
+      if (!current || String(current.customer_id) !== dealerCustomerId(user)) return null;
+      const input = readPortalWall(body);
+      const stamp = nowIso();
+      db.prepare(`
+        UPDATE installed_walls SET
+          wall_name = ?, end_customer = ?, installer = ?, pitch = ?,
+          ship_date = ?, warranty_start = ?, warranty_end = ?,
+          site_street = ?, site_city = ?, site_state = ?, site_zip = ?, site_country = ?,
+          updated_at = ?
+        WHERE id = ?
+      `).run(
+        input.wallName, input.endCustomer, input.installer, input.pitch,
+        input.shipDate, input.warrantyStart, input.warrantyEnd,
+        input.siteStreet, input.siteCity, input.siteState, input.siteZip, input.siteCountry,
+        stamp, id
+      );
+      return present(db.prepare('SELECT * FROM installed_walls WHERE id = ?').get(id));
+    },
     async createInstalledWallFromOrder(salesDocId) {
       const doc = await store.getSalesDoc(salesDocId);
       if (!doc || doc.type !== 'order') {
@@ -244,9 +355,9 @@ function sqliteApi(db, store) {
       const info = db.prepare(`
         INSERT INTO installed_walls (
           number, sales_doc_id, order_number, customer_id, wall_name, end_customer, installer, pitch,
-          selected_cob, ship_date, warranty_end, support_end,
+          selected_cob, ship_date, warranty_start, warranty_end, support_end,
           site_street, site_city, site_state, site_zip, site_country, created_at, updated_at
-        ) VALUES (?, ?, ?, ?, ?, ?, '', '', ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        ) VALUES (?, ?, ?, ?, ?, ?, '', '', ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
       `).run(
         nextNumberFrom(numbers),
         doc.id,
@@ -256,6 +367,7 @@ function sqliteApi(db, store) {
         doc.customerName || '',
         cob ? 1 : 0,
         doc.shipDate,
+        dates.warrantyStart,
         dates.warrantyEnd,
         dates.supportEnd,
         doc.shipStreet || '',
@@ -276,13 +388,13 @@ function sqliteApi(db, store) {
       db.prepare(`
         UPDATE installed_walls SET
           wall_name = ?, end_customer = ?, installer = ?, pitch = ?, selected_cob = ?,
-          ship_date = ?, warranty_end = ?, support_end = ?,
+          ship_date = ?, warranty_start = ?, warranty_end = ?, support_end = ?,
           site_street = ?, site_city = ?, site_state = ?, site_zip = ?, site_country = ?,
           updated_at = ?
         WHERE id = ?
       `).run(
         input.wallName, input.endCustomer, input.installer, input.pitch, input.selectedCob ? 1 : 0,
-        input.shipDate, input.warrantyEnd, input.supportEnd,
+        input.shipDate, input.warrantyStart, input.warrantyEnd, input.supportEnd,
         input.siteStreet, input.siteCity, input.siteState, input.siteZip, input.siteCountry,
         stamp, id
       );
@@ -351,6 +463,62 @@ function supabaseApi(supabase, store) {
       if (!data || String(data.customer_id) !== dealerCustomerId(user)) return null;
       return present(data);
     },
+    async createPortalInstalledWall(user, body) {
+      const customerId = dealerCustomerId(user);
+      if (!customerId) {
+        throw Object.assign(new Error('Spectrum has not linked a company customer yet.'), { code: 'no_customer' });
+      }
+      const input = readPortalWall(body);
+      const numbers = await supabase.from('installed_walls').select('number');
+      throwIf(numbers.error, 'Could not assign a wall number.');
+      const stamp = nowIso();
+      const inserted = await supabase.from('installed_walls').insert({
+        number: nextNumberFrom((numbers.data || []).map(function (row) { return row.number; })),
+        order_number: '',
+        customer_id: Number(customerId),
+        wall_name: input.wallName,
+        end_customer: input.endCustomer,
+        installer: input.installer,
+        pitch: input.pitch,
+        selected_cob: false,
+        ship_date: input.shipDate,
+        warranty_start: input.warrantyStart,
+        warranty_end: input.warrantyEnd,
+        support_end: '',
+        site_street: input.siteStreet,
+        site_city: input.siteCity,
+        site_state: input.siteState,
+        site_zip: input.siteZip,
+        site_country: input.siteCountry,
+        created_at: stamp,
+        updated_at: stamp
+      }).select('*').single();
+      throwIf(inserted.error, 'Could not create this wall.');
+      return present(inserted.data);
+    },
+    async updatePortalInstalledWall(user, id, body) {
+      const current = await supabase.from('installed_walls').select('*').eq('id', id).maybeSingle();
+      throwIf(current.error, 'Could not load this wall.');
+      if (!current.data || String(current.data.customer_id) !== dealerCustomerId(user)) return null;
+      const input = readPortalWall(body);
+      const updated = await supabase.from('installed_walls').update({
+        wall_name: input.wallName,
+        end_customer: input.endCustomer,
+        installer: input.installer,
+        pitch: input.pitch,
+        ship_date: input.shipDate,
+        warranty_start: input.warrantyStart,
+        warranty_end: input.warrantyEnd,
+        site_street: input.siteStreet,
+        site_city: input.siteCity,
+        site_state: input.siteState,
+        site_zip: input.siteZip,
+        site_country: input.siteCountry,
+        updated_at: nowIso()
+      }).eq('id', id);
+      throwIf(updated.error, 'Could not save this wall.');
+      return this.getPortalInstalledWall(user, id);
+    },
     async createInstalledWallFromOrder(salesDocId) {
       const doc = await store.getSalesDoc(salesDocId);
       if (!doc || doc.type !== 'order') {
@@ -378,6 +546,7 @@ function supabaseApi(supabase, store) {
         pitch: '',
         selected_cob: cob,
         ship_date: doc.shipDate,
+        warranty_start: dates.warrantyStart,
         warranty_end: dates.warrantyEnd,
         support_end: dates.supportEnd,
         site_street: doc.shipStreet || '',
@@ -404,6 +573,7 @@ function supabaseApi(supabase, store) {
         pitch: input.pitch,
         selected_cob: input.selectedCob,
         ship_date: input.shipDate,
+        warranty_start: input.warrantyStart,
         warranty_end: input.warrantyEnd,
         support_end: input.supportEnd,
         site_street: input.siteStreet,
