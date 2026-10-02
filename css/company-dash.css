@@ -2332,33 +2332,26 @@ html.dash-scroll-lock body.company-app {
 .dash-home-right.is-start-here {
   display: grid;
   grid-template-columns: minmax(0, 1fr);
-  grid-template-rows: minmax(0, 1fr) minmax(0, 1fr);
+  grid-template-rows: auto minmax(0, 1fr);
   align-items: stretch;
 }
 .dash-home-right.is-start-here > .dash-home-panel {
   flex: unset;
   height: auto;
 }
+.dash-home-right.is-start-here > .dash-start-here {
+  flex: none;
+  min-height: 0;
+  overflow: hidden;
+}
 .dash-home-right > .dash-home-panel:hover {
   transform: none;
   box-shadow: 0 10px 30px rgba(16, 32, 71, 0.04);
   border-color: var(--dash-line);
 }
-.dash-home-panel.dash-start-here {
-  padding: 0.75rem 1.15rem 0.5rem;
-}
-.dash-start-here .dash-home-panel-head {
-  margin-bottom: 0.3rem;
-}
-.dash-start-here .start-here-row {
-  padding: 0.38rem 0;
-}
-.dash-start-here .start-here-row strong {
-  font-size: 0.86rem;
-}
-.dash-start-here .start-here-row div span {
-  font-size: 0.74rem;
-  margin-top: 0.04rem;
+.dash-start-here .dash-detail-list {
+  flex: 0 1 auto;
+  overflow: hidden;
 }
 .dash-home-lobby {
   padding: 0;
@@ -7535,6 +7528,9 @@ body.is-pf-dragging.is-pf-col-dragging * {
   width: 100%;
   height: 1.7rem;
   margin-top: 0.2rem;
+  min-width: 0;
+  overflow: hidden;
+  overflow: clip;
 }
 .dash-home-kpis .dash-kpi-value {
   font-size: 1.45rem;
@@ -7548,15 +7544,17 @@ body.is-pf-dragging.is-pf-col-dragging * {
 .dash-home-kpis .dash-kpi {
   position: relative;
   overflow: hidden;
+  isolation: isolate;
 }
 .dash-home-kpis .dash-kpi.is-on::after,
 .dash-home-kpis .dash-kpi[aria-pressed="true"]::after {
   content: "";
   position: absolute;
-  left: 0;
-  right: 0;
+  left: 1.05rem;
+  right: 1.05rem;
   bottom: 0;
   height: 3px;
+  border-radius: 999px 999px 0 0;
   transform: scaleX(0);
   transform-origin: left center;
   background: #2f6bff;

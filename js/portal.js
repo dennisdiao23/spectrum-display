@@ -407,7 +407,7 @@
     const nums = (values && values.length) ? values : [0];
     const w = 120;
     const h = 28;
-    const pad = 2.4;
+    const pad = 4;
     const min = Math.min.apply(null, nums);
     const max = Math.max.apply(null, nums);
     function xAt(i) {
