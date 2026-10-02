@@ -1,5 +1,5 @@
 {
-  "build": "2026-10-02-start-here",
+  "build": "2026-10-02-start-here-card",
   "notes": [
     {
       "id": "2026-10-02-start-here",
@@ -7,10 +7,10 @@
       "apps": ["portal"],
       "title": "Start here on Dashboard",
       "added": [
-        "A Start here list on the right side of Dashboard. It uses the top half. Recent sits in the bottom half."
+        "A Start here card on the right side of Dashboard. It uses the top half. Recent is its own card in the bottom half."
       ],
       "changed": [
-        "When every Start here step is done, the list goes away and Recent uses the whole right side."
+        "When every Start here step is done, the Start here card goes away and Recent uses the whole right side."
       ],
       "how": "Open Dashboard. Use Open on Dealer book, Calculator, Deal registration, and Request Quote. A step checks itself when it is saved. When all four are done, only Recent stays on the right.",
       "kind": "feature"
@@ -570,7 +570,7 @@
     "portal": [
       {
         "title": "Dashboard",
-        "text": "Your home page. The right side shows Start here on top and Recent below. Finish every Start here step and Recent fills the right side.",
+        "text": "Your home page. The right side shows a Start here card on top and a Recent card below. Finish every Start here step and Recent fills the right side.",
         "video": "/assets/portal-guide/dashboard.mp4"
       },
       {

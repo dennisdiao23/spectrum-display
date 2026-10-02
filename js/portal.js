@@ -609,12 +609,12 @@
     return startHereSteps().some(function (step) { return !step.done; });
   }
   function renderStartHere() {
-    const lobby = $('dash-lobby') || document.querySelector('.dash-home-lobby');
+    const col = $('dash-home-right') || document.querySelector('.dash-home-right');
     const wrap = $('dash-start-here');
     const list = $('dash-start-list');
     const sub = $('dash-start-sub');
     const open = startHereOpen();
-    if (lobby) lobby.classList.toggle('is-start-here', open);
+    if (col) col.classList.toggle('is-start-here', open);
     if (wrap) wrap.classList.toggle('hidden', !open);
     if (!open || !list) return;
     const steps = startHereSteps();
@@ -2063,7 +2063,7 @@
     selectDashOverview(kpi.getAttribute('data-home'));
   });
   (function bindDashOverviewLoopHold() {
-    ['dash-detail', 'dash-lobby', 'dash-home'].forEach(function (id) {
+    ['dash-detail', 'dash-home-right', 'dash-home'].forEach(function (id) {
       const el = id === 'dash-home'
         ? document.querySelector('#dash-home .dash-home-kpis')
         : document.getElementById(id);

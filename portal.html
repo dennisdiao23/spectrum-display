@@ -37,7 +37,7 @@
     #company-boot .portal-boot-login button[type="submit"]{background:#fff;color:#000;border:0}
     #company-boot .portal-boot-login button[type="submit"]:hover{background:#e8e8e8}
   </style>
-  <link rel="stylesheet" href="/css/company-dash.css?v=starthere2" />
+  <link rel="stylesheet" href="/css/company-dash.css?v=starthere3" />
   <style>
     /* Dealer is writing a Request Quote. Spectrum fills these when the quote comes back. */
     #so-detail.is-request .so-request-back { display: none !important; }
@@ -500,8 +500,8 @@
                 <div class="dash-detail-stats" id="dash-detail-stats"></div>
                 <div class="dash-detail-list" id="dash-detail-list"></div>
               </section>
-              <section class="dash-home-panel dash-home-lobby" id="dash-lobby">
-                <div id="dash-start-here" class="dash-start-here hidden">
+              <div class="dash-home-right" id="dash-home-right">
+                <section class="dash-home-panel dash-start-here hidden" id="dash-start-here">
                   <div class="dash-home-panel-head">
                     <div>
                       <h3>Start here</h3>
@@ -509,8 +509,8 @@
                     </div>
                   </div>
                   <div class="dash-detail-list" id="dash-start-list"></div>
-                </div>
-                <div class="dash-recent-wrap">
+                </section>
+                <section class="dash-home-panel dash-home-recent" id="dash-lobby">
                   <div class="dash-home-panel-head">
                     <div>
                       <h3>Recent</h3>
@@ -518,8 +518,8 @@
                     </div>
                   </div>
                   <div class="dash-detail-list" id="dash-recent-list"></div>
-                </div>
-              </section>
+                </section>
+              </div>
             </div>
           </div>
         </div>
@@ -1408,6 +1408,6 @@
   </div>
   <script src="/js/app-help.js?v=guidevid1"></script>
   <script src="/js/app-notes.js?v=guidevid1"></script>
-  <script src="/js/portal.js?v=starthere2"></script>
+  <script src="/js/portal.js?v=starthere3"></script>
 </body>
 </html>

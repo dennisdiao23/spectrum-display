@@ -2244,6 +2244,39 @@ html.dash-scroll-lock body.company-app {
 .dash-home-grid > .dash-home-panel:hover {
   transform: none;
 }
+.dash-home-right {
+  min-height: 0;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  overflow: hidden;
+}
+.dash-home-right > .dash-home-panel {
+  min-height: 0;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 auto;
+}
+.dash-home-right.is-start-here {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  grid-template-rows: minmax(0, 1fr) minmax(0, 1fr);
+  align-items: stretch;
+}
+.dash-home-right.is-start-here > .dash-home-panel {
+  flex: unset;
+  height: auto;
+}
+.dash-home-right > .dash-home-panel:hover {
+  transform: none;
+  box-shadow: 0 10px 30px rgba(16, 32, 71, 0.04);
+  border-color: var(--dash-line);
+}
+.dash-start-here .start-here-row {
+  padding: 0.5rem 0;
+}
 .dash-home-lobby {
   padding: 0;
   min-height: 0;
@@ -2252,49 +2285,6 @@ html.dash-scroll-lock body.company-app {
   display: flex;
   flex-direction: column;
   position: relative;
-}
-.dash-home-lobby.is-start-here {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr);
-  grid-template-rows: 50% 50%;
-  align-items: stretch;
-}
-.dash-home-lobby.is-start-here > .dash-start-here,
-.dash-home-lobby.is-start-here > .dash-recent-wrap {
-  min-height: 0;
-  overflow: hidden;
-}
-.dash-start-here {
-  min-height: 0;
-  overflow: hidden;
-  display: flex;
-  flex-direction: column;
-  border-bottom: 1px solid var(--dash-line);
-}
-.dash-start-here.hidden { display: none; }
-.dash-recent-wrap {
-  min-height: 0;
-  overflow: hidden;
-  display: flex;
-  flex-direction: column;
-  flex: 1 1 auto;
-}
-.dash-home-lobby .dash-detail-list {
-  padding: 0 1.15rem 0.85rem;
-}
-.dash-start-here .dash-detail-list {
-  padding-bottom: 0.45rem;
-}
-.dash-start-here .start-here-row {
-  padding: 0.36rem 0;
-  gap: 0.55rem;
-}
-.dash-start-here .start-here-row strong {
-  font-size: 0.84rem;
-}
-.dash-start-here .start-here-row div span {
-  font-size: 0.72rem;
-  margin-top: 0.04rem;
 }
 .dash-home-panel.dash-home-lobby:hover {
   transform: none;
@@ -2305,9 +2295,6 @@ html.dash-scroll-lock body.company-app {
   padding: 1.05rem 1.15rem 0.8rem;
   margin-bottom: 0;
   flex-shrink: 0;
-}
-.dash-home-lobby .dash-start-here .dash-home-panel-head {
-  padding: 0.7rem 1.15rem 0.35rem;
 }
 .dash-lobby-window {
   flex: 1 1 0%;
