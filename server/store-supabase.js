@@ -1299,10 +1299,36 @@ function createSupabaseStore() {
       .limit(40);
     throwIf(mErr, 'Could not read inventory history.');
     const item = await formatInventoryRow(row, byItem[String(row.id)] || [], await locationsForItem(id));
+    const decorated = await decorateInventoryItem(item);
+    await saveWebsiteSpecs([decorated]);
     return {
-      item: await decorateInventoryItem(item),
+      item: decorated,
       moves: moves || []
     };
+  }
+
+  async function saveWebsiteSpecs(items) {
+    const inv = require('./inventory');
+    let products = [];
+    try {
+      const { data, error } = await supabase.from('products').select('id, name, series_id, details');
+      if (!error) {
+        products = (data || []).map(function (row) {
+          return { dbId: row.id, id: row.series_id, seriesId: row.series_id, name: row.name, details: row.details };
+        });
+      }
+    } catch (e) { products = []; }
+    inv.attachWebsiteSpecs(items, products);
+    const writes = inv.takeWebsiteSpecWrites(items);
+    const stamp = new Date().toISOString();
+    for (let i = 0; i < writes.length; i++) {
+      const row = writes[i];
+      const { error } = await supabase.from('inventory_items').update({
+        docs: row.docs,
+        updated_at: stamp
+      }).eq('id', row.id);
+      if (error) console.error('Could not save website spec PDFs:', error.message || error);
+    }
   }
 
   const api = {
@@ -1933,7 +1959,9 @@ function createSupabaseStore() {
           locMap[String(row.id)] || []
         );
       });
-      return inv.attachKitsToItems(formatted, await loadKitLineRows());
+      const withKits = inv.attachKitsToItems(formatted, await loadKitLineRows());
+      await saveWebsiteSpecs(withKits);
+      return withKits;
     },
     async listInventoryActivity(limit) {
       return fetchInventoryActivity(limit);
