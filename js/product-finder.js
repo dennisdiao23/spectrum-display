@@ -208,15 +208,7 @@
   function pricePerM2(s, pitch) {
     var map = s.pitchInventory || {};
     var key = String(pitch);
-    var mapped = map[key] && (Number(map[key].price) || 0);
-    if (mapped > 0) return mapped;
-    var min = 0;
-    Object.keys(map).forEach(function (k) {
-      var n = Number(map[k] && map[k].price) || 0;
-      if (n > 0 && (!min || n < min)) min = n;
-    });
-    if (min > 0) return min;
-    return Number(s.pricePerM2) || 0;
+    return (map[key] && (Number(map[key].price) || 0)) || 0;
   }
 
   function applyPrice(n) {
@@ -255,7 +247,9 @@
   }
 
   function pickPitch(s, grid) {
-    var pitches = (s.pitches || []).slice().map(Number).filter(function (p) { return p > 0; });
+    var pitches = (s.pitches || []).slice().map(Number).filter(function (p) {
+      return p > 0 && pricePerM2(s, p) > 0;
+    });
     pitches.sort(function (a, b) { return a - b; });
     if (!pitches.length) return null;
     var chosen = pitches[0];
@@ -359,6 +353,7 @@
       if (grid.w > state.openingW + 0.02 || grid.h > state.openingH + 0.02) return;
       var pitchInfo = pickPitch(s, grid);
       if (!pitchInfo) return;
+      if (!(pricePerM2(s, pitchInfo.pitch) > 0)) return;
       scored.push(scoreCandidate(s, grid, pitchInfo));
     });
 
