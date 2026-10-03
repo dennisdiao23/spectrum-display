@@ -4017,6 +4017,15 @@ body.po-split-lock #po-section #po-error {
   min-height: 0;
   flex: 1 1 auto;
 }
+#dreg-split table.dash-cols th[data-col] {
+  overflow: visible;
+}
+#dreg-split .dash-col-grip {
+  right: 0;
+  width: 16px;
+  z-index: 8;
+  touch-action: none;
+}
 #rma-split {
   grid-template-columns: var(--rma-left-w, 720px) 14px minmax(0, 1fr);
 }

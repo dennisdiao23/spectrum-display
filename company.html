@@ -11717,39 +11717,72 @@
       applyColOrder(table);
       table.querySelectorAll('thead th').forEach(function (th) {
         const grip = th.querySelector('.dash-col-grip');
-        if (grip) {
-          grip.addEventListener('mousedown', function (e) {
-            e.preventDefault();
-            e.stopPropagation();
-            closeColMenu();
-            const startX = e.clientX;
-            const startW = th.getBoundingClientRect().width;
-            grip.classList.add('is-drag');
-            document.body.classList.add('dash-col-resizing');
-            function move(ev) {
-              th.style.width = Math.max(64, Math.round(startW + ev.clientX - startX)) + 'px';
+        let colResizing = false;
+        function beginColResize(e) {
+          if (colResizing) return;
+          if (e.button != null && e.button !== 0) return;
+          colResizing = true;
+          e.preventDefault();
+          e.stopPropagation();
+          closeColMenu();
+          const startX = e.clientX;
+          const startW = th.getBoundingClientRect().width;
+          const dealReg = dashColKey(table) === 'deal-registrations';
+          const minPx = dealReg ? LIST_COL_MIN_PX : 64;
+          if (grip) grip.classList.add('is-drag');
+          document.body.classList.add('dash-col-resizing');
+          function move(ev) {
+            if (Math.abs(ev.clientX - startX) > 3) table.dataset.colDrag = '1';
+            const next = Math.max(minPx, Math.round(startW + ev.clientX - startX));
+            th.style.width = next + 'px';
+            if (dealReg) {
+              th.style.minWidth = next + 'px';
+              let total = 0;
+              Array.prototype.forEach.call(table.querySelectorAll('thead th[data-col]'), function (cell) {
+                if (cell.hidden) return;
+                const n = parseFloat(cell.style.width);
+                total += n > 0 ? n : cell.getBoundingClientRect().width;
+              });
+              const wrap = table.closest('.cc-table-wrap');
+              const pane = wrap ? wrap.clientWidth : 0;
+              table.style.width = Math.max(pane, Math.round(total)) + 'px';
             }
-            function up() {
-              grip.classList.remove('is-drag');
-              document.body.classList.remove('dash-col-resizing');
-              document.removeEventListener('mousemove', move);
-              document.removeEventListener('mouseup', up);
-              const state = loadColState(table);
-              const col = th.getAttribute('data-col');
-              if (col) state.widths[col] = th.style.width || Math.round(th.getBoundingClientRect().width) + 'px';
-              saveColState(table, state);
-              if (dashColKey(table) === 'inventory') fitInventorySplitCols(table);
-              if (dashColKey(table) === 'customers') fitCustomerSplitCols(table);
-              if (dashColKey(table) === 'deal-registrations') fitDealRegCols(table);
-              if (dashColKey(table) === 'so-lines') fitSoLineCols(table);
-              if (dashColKey(table) === 'po-lines') fitPoLineCols(table);
-            }
-            document.addEventListener('mousemove', move);
-            document.addEventListener('mouseup', up);
-          });
+          }
+          function up() {
+            colResizing = false;
+            if (grip) grip.classList.remove('is-drag');
+            document.body.classList.remove('dash-col-resizing');
+            document.removeEventListener('mousemove', move);
+            document.removeEventListener('mouseup', up);
+            document.removeEventListener('pointermove', move);
+            document.removeEventListener('pointerup', up);
+            const state = loadColState(table);
+            const col = th.getAttribute('data-col');
+            if (col) state.widths[col] = Math.round(th.getBoundingClientRect().width) + 'px';
+            saveColState(table, state);
+            if (dashColKey(table) === 'inventory') fitInventorySplitCols(table);
+            if (dashColKey(table) === 'customers') fitCustomerSplitCols(table);
+            if (dashColKey(table) === 'deal-registrations') fitDealRegCols(table);
+            if (dashColKey(table) === 'so-lines') fitSoLineCols(table);
+            if (dashColKey(table) === 'po-lines') fitPoLineCols(table);
+          }
+          document.addEventListener('mousemove', move);
+          document.addEventListener('mouseup', up);
+          document.addEventListener('pointermove', move);
+          document.addEventListener('pointerup', up);
+        }
+        if (grip) grip.addEventListener('mousedown', beginColResize);
+        if (dashColKey(table) === 'deal-registrations' && th.getAttribute('data-col')) {
+          th._beginColResize = beginColResize;
         }
         if (th.getAttribute('data-col')) {
           th.addEventListener('click', function (e) {
+            if (table.dataset.colDrag === '1') {
+              delete table.dataset.colDrag;
+              e.preventDefault();
+              e.stopPropagation();
+              return;
+            }
             if (e.target.closest('.dash-col-grip')) return;
             if (!document.getElementById('dash-col-menu').hidden &&
               document.getElementById('dash-col-menu')._table === table &&
@@ -11761,6 +11794,18 @@
           });
         }
       });
+      if (dashColKey(table) === 'deal-registrations') {
+        table.addEventListener('pointerdown', function (e) {
+          const th = e.target.closest('thead th[data-col]');
+          if (!th || !table.contains(th)) return;
+          const box = th.getBoundingClientRect();
+          let host = null;
+          if (box.right - e.clientX <= 18) host = th;
+          else if (e.clientX - box.left <= 12) host = th.previousElementSibling;
+          if (!host || typeof host._beginColResize !== 'function') return;
+          host._beginColResize(e);
+        }, true);
+      }
     }
 
     const dashColMenu = document.getElementById('dash-col-menu');
