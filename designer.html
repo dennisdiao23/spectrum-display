@@ -6,8 +6,8 @@
   <link rel="icon" href="/favicon.ico" sizes="48x48" />
   <link rel="icon" type="image/png" href="/assets/favicon-32.png" sizes="32x32" />
   <link rel="apple-touch-icon" href="/assets/apple-touch-icon.png?v=whites2" />
-  <script src="js/i18n-boot.js"></script>
-  <link rel="stylesheet" href="css/site-header.css?v=v2a" />
+  <script src="js/i18n-boot.js?v=v2c"></script>
+  <link rel="stylesheet" href="css/site-header.css?v=v2c" />
   <title>LED Wall Calculator | Spectrum Display</title>
   <meta name="description" content="LED wall calculator from Spectrum Display Inc. Size panels, pixel pitch, power, weight, and estimated price for indoor, outdoor, and rental LED video walls." />
   <link rel="canonical" href="https://www.spectrumdisplay.com/led-wall-calculator" />
@@ -1339,7 +1339,7 @@
             <div class="flex justify-between"><span class="text-slate-400" data-i18n="designer.ports">Data ports</span><span id="res-ports" class="font-medium">—</span></div>
             <div class="flex justify-between"><span class="text-slate-400" data-i18n="designer.processor">Processor</span><span id="res-processor" class="font-medium text-right text-xs sm:text-sm">—</span></div>
             <div class="flex justify-between hidden" id="res-playback-row" style="display:none"><span class="text-slate-400">Playback</span><span id="res-playback" class="font-medium text-right text-xs sm:text-sm">—</span></div>
-            <div class="flex justify-between border-t border-slate-800 pt-2.5 mt-1 pricing-only"><span class="text-slate-400" data-i18n="designer.estPrice">Est. Price</span><span id="res-price" class="font-semibold text-sky-400">—</span></div>
+            <div class="flex justify-between border-t border-slate-800 pt-2.5 mt-1 pricing-only"><span id="res-price-label" class="text-slate-400" data-i18n="designer.estPrice">Sell Price</span><span id="res-price" class="font-semibold text-sky-400">—</span></div>
           </div>
           <a id="quote-btn" href="/contact" class="mt-5 w-full inline-flex justify-center items-center px-5 py-2.5 rounded-full bg-sky-500 hover:bg-sky-400 text-white font-semibold text-sm transition">
             Request Quote for This Design
@@ -1681,18 +1681,42 @@
 
   <script src="js/control-systems.js?v=20260908-h2cvt"></script>
   <script src="js/product-photo.js?v=ph5"></script>
-  <script src="js/catalog-api.js?v=ph4"></script>
-  <script src="js/product-finder.js?v=pf4"></script>
+  <script src="js/catalog-api.js?v=ph6"></script>
+  <script src="js/product-finder.js?v=pf9"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="js/supabase-client.js"></script>
   <script src="js/pricing.js"></script>
   <script src="js/auth.js"></script>
   <script src="js/site-header.js?v=dealer-portal-v3"></script>
-  <script src="js/i18n.js?v=v2a"></script>
+  <script src="js/i18n.js?v=v2c"></script>
   <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
   <script>
     window.SPECTRUM_PRODUCTS = window.SPECTRUM_PRODUCTS || {};
     const products = window.SPECTRUM_PRODUCTS;
+    function dealerPortalMode() {
+      return document.documentElement.classList.contains('designer-portal');
+    }
+    function formatDealerMoney(n) {
+      const v = Math.round((Number(n) || 0) * 100) / 100;
+      return '$' + v.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    }
+    function dealerEachForSeries(series, pitch) {
+      const map = (series && series.pitchInventory) || {};
+      let row = map[String(pitch)];
+      if (!row && pitch !== '' && !isNaN(Number(pitch))) row = map[String(Number(pitch))];
+      return (row && Number(row.dealerEach)) || 0;
+    }
+    function sellEachForSeries(series, pitch) {
+      const map = (series && series.pitchInventory) || {};
+      let row = map[String(pitch)];
+      if (!row && pitch !== '' && !isNaN(Number(pitch))) row = map[String(Number(pitch))];
+      return (row && Number(row.price)) || 0;
+    }
+    let activeBookEach = 0;
+    if (dealerPortalMode()) {
+      const priceLabel = document.getElementById('res-price-label');
+      if (priceLabel) priceLabel.setAttribute('data-i18n', 'designer.dealerPrice');
+    }
 
     // Sample content (CSS gradients / patterns as fallbacks)
         const samples = {
@@ -2831,13 +2855,20 @@
         loadEl.textContent = 'Wall load: ' + totalPx.toLocaleString() + ' px  ·  size with ~20% headroom: ' + need.toLocaleString() + ' px' +
           (controlSel.processor ? '  ·  ' + (window.SpectrumControl ? SpectrumControl.formatPixels(controlSel.processor.maxPixels) : '') + ' capacity' + kit : '');
       }
-      const basePrice = Math.round(actualArea * series.pricePerM2);
-      const controlPrice = controlUnitPrice(controlSel.processor) * (controlSel.qty || 0)
-        + controlUnitPrice(controlSel.playback);
-      const sellCabinets = (window.SpectrumPricing && SpectrumPricing.apply)
-        ? SpectrumPricing.apply(basePrice)
-        : basePrice;
-      const sellPrice = sellCabinets + controlPrice;
+      let sellPrice = 0;
+      if (dealerPortalMode() && activeBookEach > 0) {
+        sellPrice = Math.round(activeBookEach * panels * 100) / 100;
+      } else if (dealerPortalMode() && !isCustomPanel()) {
+        const dealerEach = dealerEachForSeries(series, pitch);
+        sellPrice = dealerEach > 0 ? Math.round(dealerEach * panels * 100) / 100 : 0;
+      } else if (!isCustomPanel()) {
+        const rawEach = sellEachForSeries(series, pitch);
+        const each = (window.SpectrumPricing && SpectrumPricing.apply) ? SpectrumPricing.apply(rawEach) : rawEach;
+        sellPrice = each > 0 ? each * panels : 0;
+      } else {
+        const basePrice = Math.round(actualArea * series.pricePerM2);
+        sellPrice = (window.SpectrumPricing && SpectrumPricing.apply) ? SpectrumPricing.apply(basePrice) : basePrice;
+      }
 
       // Results
       // area label set below with dual units
@@ -2878,8 +2909,8 @@
         // Tailwind `flex` wins over the HTML hidden attribute; set display directly.
         playRow.style.display = showPlayback ? 'flex' : 'none';
       }
-      document.getElementById('res-price').textContent = (window.SpectrumAuth && SpectrumAuth.isLoggedIn && SpectrumAuth.isLoggedIn())
-        ? ('$' + sellPrice.toLocaleString())
+      document.getElementById('res-price').textContent = canSeeSellPrice() && sellPrice > 0
+        ? (dealerPortalMode() && !isCustomPanel() ? formatDealerMoney(sellPrice) : ('$' + Math.round(sellPrice).toLocaleString()))
         : '—';
       const Wft = ftInFromMeters(actualW);
       const Hft = ftInFromMeters(actualH);
@@ -3039,8 +3070,8 @@
         controlId: controlSel.processor ? controlSel.processor.id : '',
         controlQty: controlSel.qty || 0,
         playbackId: controlSel.playback ? controlSel.playback.id : '',
-        price: (window.SpectrumAuth && SpectrumAuth.isLoggedIn && SpectrumAuth.isLoggedIn())
-          ? ('$' + sellPrice.toLocaleString())
+        price: canSeeSellPrice() && sellPrice > 0
+          ? (dealerPortalMode() && !isCustomPanel() ? formatDealerMoney(sellPrice) : ('$' + Math.round(sellPrice).toLocaleString()))
           : '',
         mount: MOUNT_LABELS[mountType] || mountType,
         voltage: voltage + 'V',
@@ -3079,6 +3110,9 @@
 
     function isLoggedIn() {
       return !!(window.SpectrumAuth && SpectrumAuth.isLoggedIn());
+    }
+    function canSeeSellPrice() {
+      return document.documentElement.classList.contains('designer-embed') || isLoggedIn();
     }
     function flashSaveToast(msg) {
       const toast = document.getElementById('save-toast');
@@ -3676,7 +3710,7 @@
         + '</table></div></div>'
         + '<p class="note">Receiving cards are included in each panel. Do not add spare receiving cards to a new-wall quote.</p>'
         + (spec.price
-          ? '<div class="price"><span>Estimated price</span><strong>' + escHtml(spec.price) + '</strong></div>'
+          ? '<div class="price"><span>' + (dealerPortalMode() ? 'Dealer price' : 'Sell Price') + '</span><strong>' + escHtml(spec.price) + '</strong></div>'
           : '')
         + '<footer>Estimates only — not a formal quote. Power, weight, circuits, and processor counts are typical for this series and grid; confirm on site. Prices exclude installation, structure, processing extras, and freight. '
         + 'Open this design: ' + escHtml(spec.designerUrl) + '<br>© 2026 Spectrum Display Inc. · spectrumdisplay.com</footer>'
@@ -3817,6 +3851,22 @@
     function applyFinderPick(pick) {
       if (!pick) return;
       document.documentElement.classList.remove('finder-empty');
+      if (pick.book) {
+        activeBookEach = Number(pick.dealerEach) || 0;
+        aspectLock = 'free';
+        lastAspectChoice = 'free';
+        if (brandEl) brandEl.value = 'custom';
+        setCustomMode(true);
+        if (customNameEl) customNameEl.value = pick.name || pick.sku || 'Panel';
+        if (customWEl) customWEl.value = String(Math.round((Number(pick.cabinetW) || 0.5) * 1000 * 10) / 10);
+        if (customHEl) customHEl.value = String(Math.round((Number(pick.cabinetH) || 0.5) * 1000 * 10) / 10);
+        if (customPitchEl) customPitchEl.value = String(pick.pitch);
+        if (screensWEl) screensWEl.value = pick.cols;
+        if (screensHEl) screensHEl.value = pick.rows;
+        applyScreenCount('w');
+        return;
+      }
+      activeBookEach = 0;
       if (pick.fillMode === '16:9') {
         aspectLock = '16:9';
         lastAspectChoice = '16:9';

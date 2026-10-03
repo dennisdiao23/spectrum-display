@@ -1334,6 +1334,22 @@ function createSupabaseStore() {
   const api = {
     name: 'supabase',
     ready: seedIfEmpty(),
+    async listProductInventoryMaps() {
+      const { data, error } = await supabase.from('product_inventory_map').select('*');
+      if (error) return [];
+      return data || [];
+    },
+    async getDealerPanelPrices() {
+      const inv = require('./inventory');
+      try {
+        const items = await this.listInventory();
+        const { data: maps, error: mErr } = await supabase.from('product_inventory_map').select('*');
+        if (mErr) return {};
+        return inv.dealerPanelPrices(maps || [], items || []);
+      } catch (e) {
+        return {};
+      }
+    },
     async getCatalogStock() {
       const inv = require('./inventory');
       try {

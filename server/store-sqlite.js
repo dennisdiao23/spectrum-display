@@ -624,6 +624,27 @@ function createSqliteStore() {
       attachInventoryToCatalog(db, catalog);
       return catalog;
     },
+    async listProductInventoryMaps() {
+      try {
+        return db.prepare('SELECT * FROM product_inventory_map').all();
+      } catch {
+        return [];
+      }
+    },
+    async getDealerPanelPrices() {
+      const inv = require('./inventory');
+      try {
+        const items = db.prepare('SELECT * FROM inventory_items').all();
+        const maps = db.prepare('SELECT * FROM product_inventory_map').all();
+        const locs = locationsByItem(db);
+        const formatted = items.map(function (row) {
+          return inv.formatItem(row, '', [], locs[String(row.id)] || []);
+        });
+        return inv.dealerPanelPrices(maps, formatted);
+      } catch {
+        return {};
+      }
+    },
     async getCatalogStock() {
       const inv = require('./inventory');
       try {

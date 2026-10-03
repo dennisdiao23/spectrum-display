@@ -1211,6 +1211,24 @@ function applyToCatalog(catalog, maps, items) {
   return catalog;
 }
 
+function dealerPanelPrices(maps, items) {
+  const byId = {};
+  (items || []).forEach(function (it) {
+    byId[String(it.id)] = it;
+  });
+  const out = {};
+  (maps || []).forEach(function (m) {
+    const item = byId[String(m.item_id)];
+    if (!item || itemIsInactive(item)) return;
+    const each = Number(item.dealerNet != null ? item.dealerNet : item.dealer_net) || 0;
+    if (!(each > 0)) return;
+    const pid = String(m.product_id);
+    if (!out[pid]) out[pid] = {};
+    out[pid][pitchKey(m.pitch)] = each;
+  });
+  return out;
+}
+
 function catalogStock(maps, items) {
   const byId = {};
   (items || []).forEach(function (it) {
@@ -1525,6 +1543,7 @@ module.exports = {
   cheapestMappedPrice,
   applyToCatalog,
   catalogStock,
+  dealerPanelPrices,
   mapsByProduct,
   mapsByItem,
   attachWebsiteSpecs,

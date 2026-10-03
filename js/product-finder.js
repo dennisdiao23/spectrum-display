@@ -147,7 +147,9 @@
   }
 
   function blobOf(s) {
-    return [s.type, s.name, s.description, s.badge, s.lead, (s.cats || []).join(' ')].join(' ').toLowerCase();
+    var cats = s.cats;
+    var catText = Array.isArray(cats) ? cats.join(' ') : String(cats || '');
+    return [s.type, s.name, s.description, s.badge, s.lead, catText].join(' ').toLowerCase();
   }
 
   function catsOf(s) {
@@ -205,18 +207,48 @@
     return !rental || /\bfixed/.test(catStr(s));
   }
 
+  function dealerPortal() {
+    return document.documentElement.classList.contains('designer-portal');
+  }
+
   function pricePerM2(s, pitch) {
     var map = s.pitchInventory || {};
     var key = String(pitch);
-    var mapped = map[key] && (Number(map[key].price) || 0);
-    if (mapped > 0) return mapped;
-    var min = 0;
-    Object.keys(map).forEach(function (k) {
-      var n = Number(map[k] && map[k].price) || 0;
-      if (n > 0 && (!min || n < min)) min = n;
-    });
-    if (min > 0) return min;
-    return Number(s.pricePerM2) || 0;
+    return (map[key] && (Number(map[key].price) || 0)) || 0;
+  }
+
+  function dealerEach(s, pitch) {
+    var map = s.pitchInventory || {};
+    var key = String(pitch);
+    var row = map[key];
+    if (!row && pitch !== '' && !isNaN(Number(pitch))) row = map[String(Number(pitch))];
+    return (row && (Number(row.dealerEach) || 0)) || 0;
+  }
+
+  function pitchIsPriced(s, pitch) {
+    if (dealerPortal()) return dealerEach(s, pitch) > 0;
+    return pricePerM2(s, pitch) > 0;
+  }
+
+  function wallCost(s, pitch, grid) {
+    var panels = grid.cols * grid.rows;
+    if (!(panels > 0)) return 0;
+    if (dealerPortal()) {
+      var dealer = dealerEach(s, pitch);
+      return dealer > 0 ? Math.round(dealer * panels * 100) / 100 : 0;
+    }
+    var each = pricePerM2(s, pitch);
+    if (!(each > 0)) return 0;
+    return applyPrice(each) * panels;
+  }
+
+  function formatMoney(n) {
+    var v = Math.round((Number(n) || 0) * 100) / 100;
+    if (!v) return dealerPortal() ? '$0.00' : 'Request quote';
+    var cents = Math.round(v * 100) % 100 !== 0;
+    return '$' + v.toLocaleString(undefined, cents
+      ? { minimumFractionDigits: 2, maximumFractionDigits: 2 }
+      : { maximumFractionDigits: 0 });
   }
 
   function applyPrice(n) {
@@ -224,7 +256,36 @@
     return Math.round(Number(n) || 0);
   }
 
+  function bookPanels() {
+    var items = global.SPECTRUM_DEALER_BOOK || [];
+    var out = [];
+    items.forEach(function (item) {
+      var pitch = Number(item.pitch);
+      var w = Number(item.cabinetW) || 0;
+      var h = Number(item.cabinetH) || 0;
+      if (!(pitch > 0) || !(w > 0.05) || !(h > 0.05) || !(Number(item.dealerNet) > 0)) return;
+      var inv = {};
+      inv[String(pitch)] = { dealerEach: Number(item.dealerNet) || 0, price: Number(item.listPrice) || 0 };
+      out.push({
+        brandId: 'book',
+        brandName: item.brand || '',
+        id: item.sku || (item.name + ':' + pitch),
+        name: item.name || item.sku || 'Panel',
+        sku: item.sku || '',
+        cabinetW: w,
+        cabinetH: h,
+        pitches: [pitch],
+        pitchInventory: inv,
+        type: item.category || '',
+        cats: String(item.category || '').split(/\s+/).filter(Boolean),
+        book: true
+      });
+    });
+    return out;
+  }
+
   function catalogList() {
+    if (dealerPortal()) return bookPanels();
     var products = global.SPECTRUM_PRODUCTS || {};
     var out = [];
     Object.keys(products).forEach(function (brandId) {
@@ -255,7 +316,9 @@
   }
 
   function pickPitch(s, grid) {
-    var pitches = (s.pitches || []).slice().map(Number).filter(function (p) { return p > 0; });
+    var pitches = (s.pitches || []).slice().map(Number).filter(function (p) {
+      return p > 0 && pitchIsPriced(s, p);
+    });
     pitches.sort(function (a, b) { return a - b; });
     if (!pitches.length) return null;
     var chosen = pitches[0];
@@ -294,8 +357,7 @@
 
   function scoreCandidate(s, grid, pitchInfo) {
     var area = grid.w * grid.h;
-    var unit = pricePerM2(s, pitchInfo.pitch);
-    var cost = unit > 0 ? applyPrice(unit * area) : 0;
+    var cost = wallCost(s, pitchInfo.pitch, grid);
     var box = targetScreen();
     var unused = Math.max(0, box.w - grid.w) * box.h +
       grid.w * Math.max(0, box.h - grid.h);
@@ -326,6 +388,11 @@
       pxH: pxH,
       panels: grid.cols * grid.rows,
       cost: cost,
+      book: !!s.book,
+      sku: s.sku || '',
+      cabinetW: s.cabinetW,
+      cabinetH: s.cabinetH,
+      dealerEach: dealerEach(s, pitchInfo.pitch),
       fillFrac: fillFrac,
       unused: unused,
       pitchErr: pitchErr,
@@ -359,12 +426,17 @@
       if (grid.w > state.openingW + 0.02 || grid.h > state.openingH + 0.02) return;
       var pitchInfo = pickPitch(s, grid);
       if (!pitchInfo) return;
+      if (!pitchIsPriced(s, pitchInfo.pitch)) return;
       scored.push(scoreCandidate(s, grid, pitchInfo));
     });
 
-    var value = uniqueBySeries(scored.slice().sort(function (a, b) { return a.scoreValue - b.scoreValue; }));
-    var fit = uniqueBySeries(scored.slice().sort(function (a, b) { return a.scoreFit - b.scoreFit; }));
-    var fine = uniqueBySeries(scored.slice().sort(function (a, b) { return a.scoreFine - b.scoreFine; }));
+    function rank(list, score) {
+      var sorted = list.slice().sort(score);
+      return dealerPortal() ? sorted : uniqueBySeries(sorted);
+    }
+    var value = rank(scored, function (a, b) { return a.scoreValue - b.scoreValue; });
+    var fit = rank(scored, function (a, b) { return a.scoreFit - b.scoreFit; });
+    var fine = rank(scored, function (a, b) { return a.scoreFine - b.scoreFine; });
 
     var picks = [];
     function add(item, badge) {
@@ -459,6 +531,11 @@
       cand.reason = reason;
       if (cur.cost > 0 && cand.cost > 0 && cand.cost < cur.cost) ideas.push(cand);
     });
+  }
+
+  function canSeePrices() {
+    if (document.documentElement.classList.contains('designer-embed')) return true;
+    return !!(global.SpectrumAuth && SpectrumAuth.isLoggedIn && SpectrumAuth.isLoggedIn());
   }
 
   function money(n) {
@@ -642,7 +719,9 @@
     var host = document.getElementById('finder-results');
     if (!host) return;
     if (!state.results.length) {
-      host.innerHTML = '<p class="text-xs text-slate-500">No catalog panels match indoor/outdoor and installed/rental for this wall. Try the other environment, or switch to Calculator and pick a series.</p>';
+      host.innerHTML = dealerPortal()
+        ? '<p class="text-xs text-slate-500">No Dealer book panels with a size match this wall.</p>'
+        : '<p class="text-xs text-slate-500">No catalog panels match indoor/outdoor and installed/rental for this wall. Try the other environment, or switch to Calculator and pick a series.</p>';
       renderCheaper();
       return;
     }
@@ -653,7 +732,8 @@
         '" data-finder-key="' + item.key + '">' +
         '<div class="flex items-center justify-between gap-2">' +
         '<span class="text-[10px] uppercase tracking-wide text-sky-300">' + item.badge + '</span>' +
-        '<span class="text-xs font-semibold text-sky-400">' + (item.cost ? money(item.cost) : 'Request quote') + '</span>' +
+        '<span class="text-xs font-semibold text-sky-400 pricing-only">' + (item.cost ? formatMoney(item.cost) : 'Request quote') + '</span>' +
+        '<span class="text-xs text-slate-500 guest-pricing">' + ((global.t && t('price.signIn')) || 'Sign in for pricing') + '</span>' +
         '</div>' +
         '<div class="font-medium text-sm text-slate-100">' + cardTitle(item) + '</div>' +
         '<div class="text-xs text-slate-400">' + item.panels + ' panels · ' + item.cols + '×' + item.rows +
@@ -669,7 +749,9 @@
     if (!host) return;
     if (!state.selectedKey || !state.cheaper.length) {
       host.innerHTML = state.selectedKey
-        ? '<p class="text-xs text-slate-500">This is already among the lower-cost fits. Try a coarser pitch in Calculator, or a smaller wall.</p>'
+        ? (canSeePrices()
+          ? '<p class="text-xs text-slate-500">This is already among the lower-cost fits. Try a coarser pitch in Calculator, or a smaller wall.</p>'
+          : '')
         : '';
       return;
     }
@@ -678,8 +760,9 @@
       var save = cur && cur.cost && item.cost ? cur.cost - item.cost : 0;
       return '<button type="button" class="finder-card w-full text-left p-3 rounded-xl border border-slate-800 hover:border-sky-500/60 space-y-1" data-finder-key="' + item.key + '">' +
         '<div class="flex justify-between gap-2 text-sm"><span class="text-slate-200">' + cardTitle(item) + '</span>' +
-        '<span class="text-sky-400 font-medium">' + (item.cost ? money(item.cost) : '—') + '</span></div>' +
-        '<div class="text-xs text-slate-500">' + item.reason + (save > 0 ? ' Saves ' + money(save) + '.' : '') + '</div>' +
+        '<span class="text-sky-400 font-medium pricing-only">' + (item.cost ? formatMoney(item.cost) : '—') + '</span></div>' +
+        '<div class="text-xs text-slate-500">' + item.reason +
+        (save > 0 ? '<span class="pricing-only"> Saves ' + formatMoney(save) + '.</span>' : '') + '</div>' +
         '</button>';
     }).join('');
   }
@@ -694,6 +777,12 @@
     document.documentElement.classList.remove('finder-empty');
     if (typeof hooks.applyPick === 'function') {
       hooks.applyPick({
+        book: !!item.book,
+        sku: item.sku || '',
+        name: item.name || '',
+        cabinetW: item.w && item.cols ? item.w / item.cols : item.cabinetW,
+        cabinetH: item.h && item.rows ? item.h / item.rows : item.cabinetH,
+        dealerEach: item.dealerEach,
         brandId: item.brandId,
         seriesId: item.seriesId,
         pitch: item.pitch,
@@ -1068,6 +1157,12 @@
       else setMode('calc');
       global.addEventListener('spectrum:catalog', function () {
         if (document.documentElement.classList.contains('finder-mode')) scheduleRank();
+      });
+      global.addEventListener('spectrum:auth', function () {
+        renderResults();
+      });
+      global.addEventListener('spectrum:pricing', function () {
+        renderResults();
       });
     },
     setUnit: function () {

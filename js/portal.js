@@ -264,7 +264,7 @@
     const params = new URLSearchParams(qIndex === -1 ? '' : value.slice(qIndex + 1));
     params.set('embed', '1');
     params.set('portal', '1');
-    params.set('v', 'calcpreview1');
+    params.set('v', 'dealerbook1');
     const base = path.indexOf('/led-wall-calculator') === 0 ? path : '/led-wall-calculator';
     return base + '?' + params.toString();
   }
