@@ -32,7 +32,7 @@
     #company-boot .boot-login button[type="submit"]{background:#fff!important;color:#000!important;border:0}
     #company-boot .boot-login button[type="submit"]:hover{background:#e8e8e8!important}
   </style>
-  <link rel="stylesheet" href="/css/company-dash.css?v=imgsize1" />
+  <link rel="stylesheet" href="/css/company-dash.css?v=dreg1" />
   <script src="/js/address-autocomplete.js"></script>
   <script src="/js/company-chat.js?v=po-ship1"></script>
   <script src="/js/company-crm.js?v=leadview1"></script>
@@ -79,6 +79,8 @@
         if (daPx && daPx >= 560) document.documentElement.style.setProperty('--da-split-left-boot', daPx + 'px');
         var whPx = prefs.warehouses && prefs.warehouses.splitLeftPx;
         if (whPx && whPx >= 160) document.documentElement.style.setProperty('--wh-split-left-boot', whPx + 'px');
+        var dregPx = prefs['deal-registrations'] && prefs['deal-registrations'].splitLeftPx;
+        if (dregPx && dregPx >= 160) document.documentElement.style.setProperty('--dreg-split-left-boot', dregPx + 'px');
         if (localStorage.getItem('dash-sidebar-collapsed') === '1' &&
             window.matchMedia('(min-width: 901px) and (any-pointer: coarse)').matches) {
           document.documentElement.classList.add('dash-sidebar-collapsed');
@@ -2843,9 +2845,35 @@
 
       <div id="deal-registrations-section" class="hidden">
         <div class="cc-list-inner">
-          <p class="text-sm text-slate-500 mb-3">Named jobs dealers registered. Accept sets the protection end date. Decline needs a reason the dealer can read. Protection is one job, not a territory.</p>
+          <div class="page-kpis cc-list-kpis" id="dreg-kpis">
+            <button type="button" class="dash-kpi is-on" data-dreg-filter="all" aria-pressed="true">
+              <span class="dash-kpi-icon dash-kpi-icon-customers" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="3" width="16" height="18" rx="2"/><path d="M8 8h8M8 12h8M8 16h5"/></svg></span>
+              <span class="dash-kpi-label">All</span>
+              <strong class="dash-kpi-value" id="dreg-stat-all">—</strong>
+              <span class="dash-kpi-hint">Every job</span>
+            </button>
+            <button type="button" class="dash-kpi" data-dreg-filter="waiting" aria-pressed="false">
+              <span class="dash-kpi-icon dash-kpi-icon-website" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="8"/><path d="M12 8v4l3 2"/></svg></span>
+              <span class="dash-kpi-label">Waiting</span>
+              <strong class="dash-kpi-value" id="dreg-stat-waiting">—</strong>
+              <span class="dash-kpi-hint">Needs a decision</span>
+            </button>
+            <button type="button" class="dash-kpi" data-dreg-filter="protected" aria-pressed="false">
+              <span class="dash-kpi-icon dash-kpi-icon-inventory" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3 5 6v6c0 4.2 2.8 7.4 7 9 4.2-1.6 7-4.8 7-9V6l-7-3z"/></svg></span>
+              <span class="dash-kpi-label">Protected</span>
+              <strong class="dash-kpi-value" id="dreg-stat-protected">—</strong>
+              <span class="dash-kpi-hint">Accepted jobs</span>
+            </button>
+            <button type="button" class="dash-kpi" data-dreg-filter="declined" aria-pressed="false">
+              <span class="dash-kpi-icon dash-kpi-icon-overdue" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="m9 9 6 6M15 9l-6 6"/></svg></span>
+              <span class="dash-kpi-label">Declined</span>
+              <strong class="dash-kpi-value" id="dreg-stat-declined">—</strong>
+              <span class="dash-kpi-hint">Turned down</span>
+            </button>
+          </div>
+          <p class="text-sm text-slate-500 mb-3 dreg-list-head">Named jobs dealers registered. Accept sets the protection end date. Decline needs a reason the dealer can read. Protection is one job, not a territory.</p>
           <p id="dreg-error" class="hidden text-sm text-red-400 mb-3"></p>
-          <div class="dash-split">
+          <div class="dash-split" id="dreg-split">
             <div class="dash-split-left">
               <div class="cc-table-card rounded-2xl border border-slate-800">
                 <div class="cc-table-wrap overflow-x-auto">
@@ -2868,7 +2896,7 @@
                 </div>
               </div>
             </div>
-            <div class="dash-split-resizer" role="separator" aria-orientation="vertical" aria-label="Resize registration panels" tabindex="0"></div>
+            <div id="dreg-split-resizer" class="dash-split-resizer" role="separator" aria-orientation="vertical" aria-label="Resize registration panels" tabindex="0"></div>
             <div class="dash-split-right">
               <div id="dreg-overview" class="inv-right-panel">
                 <p class="inv-overview-lead">Select a registration to accept or decline it.</p>
@@ -5280,7 +5308,7 @@
     </a>
   </nav>
 
-  <link rel="stylesheet" href="/css/company-dash.css?v=imgsize1" />
+  <link rel="stylesheet" href="/css/company-dash.css?v=dreg1" />
   <link rel="stylesheet" href="/css/company-tw.css?v=boot1" />
 
   <script>
@@ -10050,6 +10078,17 @@
         { id: 'markup', label: 'Markup %' },
         { id: 'company', label: 'Company' },
         { id: 'created', label: 'Created' }
+      ],
+      'deal-registrations': [
+        { id: 'number', label: 'Number' },
+        { id: 'dealer', label: 'Dealer' },
+        { id: 'customer', label: 'End customer' },
+        { id: 'job', label: 'Job' },
+        { id: 'site', label: 'Site' },
+        { id: 'status', label: 'Status' },
+        { id: 'expected', label: 'Expected' },
+        { id: 'selling', label: 'Selling' },
+        { id: 'contact', label: 'Contact' }
       ]
     };
 
@@ -10480,6 +10519,9 @@
         const wh = dashColMine.warehouses;
         const whPx = wh && wh.splitLeftPx ? parseInt(wh.splitLeftPx, 10) : 0;
         if (whPx >= 160) document.documentElement.style.setProperty('--wh-split-left-boot', whPx + 'px');
+        const dreg = dashColMine['deal-registrations'];
+        const dregPx = dreg && dreg.splitLeftPx ? parseInt(dreg.splitLeftPx, 10) : 0;
+        if (dregPx >= 160) document.documentElement.style.setProperty('--dreg-split-left-boot', dregPx + 'px');
       } catch (err) {}
     }
 
@@ -11090,6 +11132,7 @@
       });
       if (dashColKey(table) === 'inventory') fitInventorySplitCols(table);
       if (dashColKey(table) === 'customers') fitCustomerSplitCols(table);
+      if (dashColKey(table) === 'deal-registrations') fitDealRegCols(table);
       if (dashColKey(table) === 'so-lines') fitSoLineCols(table);
       if (dashColKey(table) === 'po-lines') fitPoLineCols(table);
     }
@@ -11272,6 +11315,18 @@
       state.splitLeftPx = Math.round(px);
       saveColState(table, state);
     }
+    function dregSplitLeftFromPrefs() {
+      const saved = tableStateFromPrefs(dashColMine, 'deal-registrations') || tableStateFromPrefs(dashColOwner, 'deal-registrations');
+      const px = saved && saved.splitLeftPx ? parseInt(saved.splitLeftPx, 10) : 0;
+      return px >= 160 ? px : 0;
+    }
+    function saveDregSplitLeftPx(px) {
+      const table = document.querySelector('table.dash-cols[data-cols="deal-registrations"]');
+      if (!table) return;
+      const state = loadColState(table);
+      state.splitLeftPx = Math.round(px);
+      saveColState(table, state);
+    }
 
     function migrateLegacyInvSplitPref() {
       if (invSplitLeftFromPrefs() <= 0) return;
@@ -11368,6 +11423,41 @@
     function refreshCustomerSplitCols() {
       const table = document.querySelector('table.dash-cols[data-cols="customers"]');
       if (table) fitCustomerSplitCols(table);
+    }
+
+    function fitDealRegCols(table) {
+      if (!table || dashColKey(table) !== 'deal-registrations') return;
+      const wrap = table.closest('.cc-table-wrap');
+      if (!wrap || !wrap.closest('#dreg-split')) return;
+      const paneWidth = wrap.clientWidth;
+      if (paneWidth < 120) return;
+      const state = loadColState(table);
+      const visibleCols = state.order.filter(function (id) {
+        return state.hidden.indexOf(id) === -1;
+      });
+      if (!visibleCols.length) return;
+      const widths = visibleCols.map(function (col) {
+        const saved = state.widths[col];
+        if (saved && String(saved).indexOf('px') !== -1) {
+          const n = Math.round(parseFloat(saved));
+          if (n > 0) return Math.max(LIST_COL_MIN_PX, n);
+        }
+        return Math.max(LIST_COL_MIN_PX, Math.round(paneWidth / visibleCols.length));
+      });
+      Array.prototype.forEach.call(table.querySelectorAll('thead th[data-col]'), function (th) {
+        const col = th.getAttribute('data-col');
+        if (th.hidden || visibleCols.indexOf(col) === -1) {
+          th.style.width = '';
+          th.style.minWidth = '';
+          return;
+        }
+        const px = widths[visibleCols.indexOf(col)] + 'px';
+        th.style.width = px;
+        th.style.minWidth = px;
+      });
+      const total = widths.reduce(function (sum, n) { return sum + n; }, 0);
+      table.style.width = Math.max(paneWidth, total) + 'px';
+      table.style.maxWidth = '';
     }
 
     const SO_LINE_COL_PCT = {
@@ -11618,6 +11708,7 @@
       else if (name === 'website-products') renderProducts(websiteProducts);
       else if (name === 'website-store') renderStoreItems(storeItems);
       else if (name === 'website-accounts') renderAccountsTable(websiteAccounts);
+      else if (name === 'deal-registrations') renderDealRegistrations();
     }
 
     function enableColumnResize(table) {
@@ -11649,6 +11740,7 @@
               saveColState(table, state);
               if (dashColKey(table) === 'inventory') fitInventorySplitCols(table);
               if (dashColKey(table) === 'customers') fitCustomerSplitCols(table);
+              if (dashColKey(table) === 'deal-registrations') fitDealRegCols(table);
               if (dashColKey(table) === 'so-lines') fitSoLineCols(table);
               if (dashColKey(table) === 'po-lines') fitPoLineCols(table);
             }
@@ -12846,6 +12938,22 @@
         save: saveDaSplitLeftPx,
         minLeft: 640,
         minRight: 280
+      });
+    }
+    function initDregSplitResize() {
+      initNamedSplitResize({
+        splitId: 'dreg-split',
+        resizerId: 'dreg-split-resizer',
+        cssVar: '--dreg-left-w',
+        bootVar: '--dreg-split-left-boot',
+        fromPrefs: dregSplitLeftFromPrefs,
+        save: saveDregSplitLeftPx,
+        minLeft: 640,
+        minRight: 320,
+        fit: function () {
+          const table = document.querySelector('table.dash-cols[data-cols="deal-registrations"]');
+          if (table) fitDealRegCols(table);
+        }
       });
     }
 
@@ -20884,6 +20992,7 @@
 
     let dregRows = [];
     let dregOpenId = '';
+    let dregFilter = 'all';
     function dregStatusLabel(row) {
       if (!row) return '';
       if (row.status === 'protected') return 'Protected until ' + (row.protectUntil || '');
@@ -20898,16 +21007,53 @@
       const day = String(d.getDate()).padStart(2, '0');
       return d.getFullYear() + '-' + m + '-' + day;
     }
+    function dregBucket(row) {
+      if (!row) return '';
+      if (row.status === 'protected') return 'protected';
+      if (row.status === 'declined') return 'declined';
+      if (row.status === 'expired') return 'expired';
+      return 'waiting';
+    }
+    function setDregFilter(name) {
+      dregFilter = name === 'waiting' || name === 'protected' || name === 'declined' ? name : 'all';
+      document.querySelectorAll('#dreg-kpis .dash-kpi').forEach(function (btn) {
+        const on = btn.getAttribute('data-dreg-filter') === dregFilter;
+        btn.classList.toggle('is-on', on);
+        btn.setAttribute('aria-pressed', on ? 'true' : 'false');
+      });
+    }
+    function paintDregStats() {
+      const counts = { all: dregRows.length, waiting: 0, protected: 0, declined: 0 };
+      dregRows.forEach(function (row) {
+        const bucket = dregBucket(row);
+        if (counts[bucket] != null) counts[bucket] += 1;
+      });
+      const allEl = document.getElementById('dreg-stat-all');
+      const waitEl = document.getElementById('dreg-stat-waiting');
+      const protEl = document.getElementById('dreg-stat-protected');
+      const decEl = document.getElementById('dreg-stat-declined');
+      if (allEl) allEl.textContent = String(counts.all);
+      if (waitEl) waitEl.textContent = String(counts.waiting);
+      if (protEl) protEl.textContent = String(counts.protected);
+      if (decEl) decEl.textContent = String(counts.declined);
+    }
     function renderDealRegistrations() {
       const tbody = document.getElementById('dreg-table');
       const table = tbody && tbody.closest('table');
       if (!tbody || !table) return;
+      paintDregStats();
       applyColOrder(table);
-      if (!dregRows.length) {
-        tbody.innerHTML = '<tr><td class="py-6 px-4 text-slate-500" colspan="' + dashColSpan(table) + '">No deal registrations yet.</td></tr>';
+      const visible = dregFilter === 'all' ? dregRows : dregRows.filter(function (row) { return dregBucket(row) === dregFilter; });
+      if (!visible.length) {
+        const empty = !dregRows.length ? 'No deal registrations yet.'
+          : (dregFilter === 'waiting' ? 'No jobs waiting.'
+            : dregFilter === 'protected' ? 'No protected jobs.'
+              : dregFilter === 'declined' ? 'No declined jobs.'
+                : 'No deal registrations yet.');
+        tbody.innerHTML = '<tr><td class="py-6 px-4 text-slate-500" colspan="' + dashColSpan(table) + '">' + empty + '</td></tr>';
         return;
       }
-      const sorted = sortColRows(dregRows, table, function (row, col) {
+      const sorted = sortColRows(visible, table, function (row, col) {
         if (col === 'number') return row.number || '';
         if (col === 'dealer') return row.dealerName || '';
         if (col === 'customer') return row.endCustomer || '';
@@ -21268,6 +21414,15 @@
         box.classList.add('hidden');
       }
     }
+    const dregKpis = document.getElementById('dreg-kpis');
+    if (dregKpis) {
+      dregKpis.addEventListener('click', function (e) {
+        const btn = e.target.closest('[data-dreg-filter]');
+        if (!btn) return;
+        setDregFilter(btn.getAttribute('data-dreg-filter'));
+        renderDealRegistrations();
+      });
+    }
     document.getElementById('dreg-table').addEventListener('click', function (e) {
       const tr = e.target.closest('[data-dreg-id]');
       if (!tr) return;
@@ -21366,6 +21521,7 @@
       }
       if (name === 'deal-registrations') {
         await loadDealRegistrations();
+        if (!isMobileDash()) initDregSplitResize();
       }
       if (name === 'dealer-leads') {
         await loadDealerLeads();
@@ -26624,10 +26780,12 @@
         const onDealers = !!(dealers && !dealers.classList.contains('hidden'));
         const dealerLeads = document.getElementById('dealer-leads-section');
         const onDealerLeads = !!(dealerLeads && !dealerLeads.classList.contains('hidden'));
+        const dregSec = document.getElementById('deal-registrations-section');
+        const onDreg = !!(dregSec && !dregSec.classList.contains('hidden'));
         const onCrm = !!((crmLead && !crmLead.classList.contains('hidden')) ||
           (crmPipe && !crmPipe.classList.contains('hidden')) ||
           (crmAct && !crmAct.classList.contains('hidden')));
-        document.body.classList.toggle('dash-split-lock', (onCustomers || onVendors || onWarehouses || onProducts || onControl || onStore || onAccounts || onDealers || onDealerLeads || onCrm) && desktop);
+        document.body.classList.toggle('dash-split-lock', (onCustomers || onVendors || onWarehouses || onProducts || onControl || onStore || onAccounts || onDealers || onDealerLeads || onDreg || onCrm) && desktop);
         if (vn) vn.classList.toggle('vn-split-on', onVendors && desktop);
         if (warehouses) warehouses.classList.toggle('wh-split-on', onWarehouses && desktop);
         if (products) products.classList.remove('wp-split-on');

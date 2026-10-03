@@ -3882,6 +3882,7 @@ body.dash-split-lock #products-section:not(.hidden),
 body.dash-split-lock #control-section:not(.hidden),
 body.dash-split-lock #store-section:not(.hidden),
 body.dash-split-lock #accounts-section:not(.hidden),
+body.dash-split-lock #deal-registrations-section:not(.hidden),
 body.so-split-lock #sales-section:not(.hidden),
 body.po-split-lock #po-section:not(.hidden),
 body.dash-split-lock #rmas-section:not(.hidden) {
@@ -3916,6 +3917,9 @@ body.dash-split-lock #products-section .wp-list-head,
 body.dash-split-lock #control-section .wc-list-head,
 body.dash-split-lock #store-section .ws-list-head,
 body.dash-split-lock #accounts-section .wa-list-head,
+body.dash-split-lock #deal-registrations-section .cc-list-kpis,
+body.dash-split-lock #deal-registrations-section .dreg-list-head,
+body.dash-split-lock #deal-registrations-section #dreg-error,
 body.dash-split-lock #rmas-section .cc-list-toolbar,
 body.dash-split-lock #rmas-section #rma-error,
 body.so-split-lock #sales-section .page-kpis,
@@ -4003,6 +4007,15 @@ body.po-split-lock #po-section #po-error {
 }
 #da-split {
   grid-template-columns: var(--da-left-w, var(--da-split-left-boot, 680px)) 14px minmax(0, 1fr);
+}
+#dreg-split {
+  grid-template-columns: var(--dreg-left-w, var(--dreg-split-left-boot, 720px)) 14px minmax(0, 1fr);
+}
+#deal-registrations-section .cc-list-inner {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  flex: 1 1 auto;
 }
 #rma-split {
   grid-template-columns: var(--rma-left-w, 720px) 14px minmax(0, 1fr);

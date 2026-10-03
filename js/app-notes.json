@@ -1,6 +1,20 @@
 {
-  "build": "2026-10-02-portal-dealer-price",
+  "build": "2026-10-03-deal-registration-cards",
   "notes": [
+    {
+      "id": "2026-10-03-deal-registration-cards",
+      "date": "2026-10-03",
+      "apps": ["company"],
+      "title": "Deal registration cards",
+      "added": [
+        "Cards at the top of Deal registration for All, Waiting, Protected, and Declined."
+      ],
+      "changed": [
+        "The list divider and column widths stay the way you set them."
+      ],
+      "how": "Open Dealer, then Deal registration. Click a card to show only those jobs. Drag a column edge to change its width. Drag the divider to make the list wider. Open the page again and those sizes are still yours.",
+      "kind": "feature"
+    },
     {
       "id": "2026-10-02-portal-dealer-price",
       "date": "2026-10-02",
