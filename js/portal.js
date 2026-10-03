@@ -3187,22 +3187,50 @@
       if (inside) return;
       setPortalTabEditing(false);
     });
-    const main = document.querySelector('.company-main');
-    if (main) {
-      let lastY = main.scrollTop;
-      main.addEventListener('scroll', function () {
-        if (!document.body.classList.contains('dash-tabbar-on') || portalTabEditing) return;
-        const y = main.scrollTop;
-        const delta = y - lastY;
-        if (isMobileDash() && document.body.classList.contains('dash-tabbar-sub-open') && Math.abs(delta) > 4) closePortalTabSub();
-        if (y <= 48) document.body.classList.remove('dash-tabbar-hidden');
-        else if (delta > 8) {
-          document.body.classList.add('dash-tabbar-hidden');
-          closePortalTabSub();
-        } else if (delta < -8) document.body.classList.remove('dash-tabbar-hidden');
-        lastY = y;
-      }, { passive: true });
+    const lastBarScroll = new WeakMap();
+    function movePortalBar(node, y) {
+      if (!isMobileDash() || !document.body.classList.contains('dash-tabbar-on') || portalTabEditing) return;
+      const prev = lastBarScroll.has(node) ? lastBarScroll.get(node) : y;
+      const delta = y - prev;
+      lastBarScroll.set(node, y);
+      if (Math.abs(delta) < 1) return;
+      if (document.body.classList.contains('dash-tabbar-sub-open') && Math.abs(delta) > 4) closePortalTabSub();
+      if (y <= 48) document.body.classList.remove('dash-tabbar-hidden');
+      else if (delta > 8) {
+        document.body.classList.add('dash-tabbar-hidden');
+        closePortalTabSub();
+      } else if (delta < -8) document.body.classList.remove('dash-tabbar-hidden');
     }
+    document.addEventListener('scroll', function (e) {
+      const node = e.target === document ? (document.scrollingElement || document.documentElement) : e.target;
+      if (!node || typeof node.scrollTop !== 'number') return;
+      movePortalBar(node, node.scrollTop || 0);
+    }, true);
+    function bindPortalFrameScroll(frame) {
+      if (!frame) return;
+      function attach() {
+        let win;
+        try { win = frame.contentWindow; } catch (err) { return; }
+        if (!win || win.__portalBarScroll) return;
+        win.__portalBarScroll = true;
+        let last = 0;
+        win.addEventListener('scroll', function () {
+          const y = win.scrollY || (win.document.documentElement && win.document.documentElement.scrollTop) || 0;
+          const delta = y - last;
+          last = y;
+          if (!isMobileDash() || !document.body.classList.contains('dash-tabbar-on') || portalTabEditing) return;
+          if (document.body.classList.contains('dash-tabbar-sub-open') && Math.abs(delta) > 4) closePortalTabSub();
+          if (y <= 48) document.body.classList.remove('dash-tabbar-hidden');
+          else if (delta > 8) {
+            document.body.classList.add('dash-tabbar-hidden');
+            closePortalTabSub();
+          } else if (delta < -8) document.body.classList.remove('dash-tabbar-hidden');
+        }, { passive: true });
+      }
+      frame.addEventListener('load', attach);
+      if (frame.getAttribute('src')) attach();
+    }
+    bindPortalFrameScroll($('portal-calculator-frame'));
     document.addEventListener('pointerdown', function (e) {
       if (!isMobileDash() || !document.body.classList.contains('dash-tabbar-sub-open')) return;
       if (!e.target.closest || !e.target.closest('.company-main')) return;
