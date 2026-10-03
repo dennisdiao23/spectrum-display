@@ -1,6 +1,21 @@
 {
-  "build": "2026-10-03-dealer-book-phone",
+  "build": "2026-10-03-dash-four-kpis",
   "notes": [
+    {
+      "id": "2026-10-03-dash-four-kpis",
+      "date": "2026-10-03",
+      "apps": ["company"],
+      "title": "Phone Dashboard has four cards",
+      "removed": [
+        "Customer on the phone Dashboard."
+      ],
+      "changed": [
+        "The phone Dashboard keeps Website, Inventory, Vendor, and CRM."
+      ],
+      "how": "Open Company on your phone. Dashboard shows four cards. Customer is still in the side menu.",
+      "kind": "update",
+      "mobile": true
+    },
     {
       "id": "2026-10-03-dealer-book-phone",
       "date": "2026-10-03",
