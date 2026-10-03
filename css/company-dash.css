@@ -10155,7 +10155,8 @@ body.dash-split-lock #settings-pane.space-y-6 > :not([hidden]) {
 
   body.portal-app .inv-split,
   body.portal-app .dash-split,
-  body.portal-app #so-split {
+  body.portal-app #so-split,
+  body.portal-app #rma-split {
     display: grid;
     grid-template-columns: 1fr;
     grid-template-rows: auto auto;
@@ -10171,6 +10172,11 @@ body.dash-split-lock #settings-pane.space-y-6 > :not([hidden]) {
   body.portal-app .dash-split-left .cc-table-wrap {
     max-height: calc(2.75rem * 11);
     overflow: auto;
+  }
+
+  body.portal-app #rma-split .dash-split-left .cc-table-wrap {
+    max-height: calc(2.75rem * 11) !important;
+    overflow: auto !important;
   }
 
   body.portal-app #sales-section.so-doc-open #so-split-left,
