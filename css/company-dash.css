@@ -2737,6 +2737,15 @@ html.dash-scroll-lock body.company-app {
     pointer-events: none;
   }
 
+  body.company-app.dash-open.dash-tabbar-on:not(.dash-tabbar-hidden) .dash-sidebar {
+    padding-bottom: calc(var(--dash-tabbar-h) + 0.85rem);
+    overflow: auto;
+  }
+
+  body.company-app.dash-open.dash-tabbar-on.dash-tabbar-sub-open:not(.dash-tabbar-hidden) .dash-sidebar {
+    padding-bottom: calc(var(--dash-tabbar-h) + var(--dash-tabbar-sub-h) + 1.15rem);
+  }
+
   .dash-tabbar a {
     display: flex;
     flex: 1 1 0;

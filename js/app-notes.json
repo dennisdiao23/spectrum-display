@@ -17,6 +17,17 @@
       "kind": "feature"
     },
     {
+      "id": "2026-10-03-phone-bar-hide",
+      "date": "2026-10-03",
+      "apps": ["portal", "company"],
+      "title": "The phone bar gets out of the way",
+      "changed": [
+        "On a phone, swipe down and the bottom bar slides away. Swipe up and it comes back.",
+        "Open the left menu while the bar is showing and Company sits above the bar."
+      ],
+      "kind": "update"
+    },
+    {
       "id": "2026-10-03-dealer-book-calc",
       "date": "2026-10-03",
       "apps": ["portal"],
