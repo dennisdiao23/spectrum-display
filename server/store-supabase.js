@@ -85,9 +85,10 @@ function createSupabaseStore() {
       await supabase.storage.createBucket(BUCKET, { public: true });
     } catch (e) { /* bucket may already exist */ }
 
-    try {
-      await supabase.storage.createBucket('dealer-files', { public: false });
-    } catch (e) { /* bucket may already exist */ }
+    const dealerBucket = await supabase.storage.createBucket('dealer-files', { public: false });
+    if (dealerBucket && dealerBucket.error && !/already exists|duplicate/i.test(String(dealerBucket.error.message || ''))) {
+      console.error('Could not create dealer-files bucket:', dealerBucket.error.message || dealerBucket.error);
+    }
 
     try {
       await upsertMissingCatalog();

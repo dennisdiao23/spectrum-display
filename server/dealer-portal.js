@@ -847,10 +847,20 @@ function parsePrivateRef(url) {
   return { customerId: '', storedName: storedName, legacy: true };
 }
 
+function storageErrorMessage(error) {
+  if (!error) return '';
+  return String(error.message || error.error || error);
+}
+
+function bucketAlreadyExists(error) {
+  return /already exists|duplicate/i.test(storageErrorMessage(error));
+}
+
 async function ensureDealerBucket(supabase) {
-  try {
-    await supabase.storage.createBucket(DEALER_BUCKET, { public: false });
-  } catch (err) { /* bucket may already exist */ }
+  const created = await supabase.storage.createBucket(DEALER_BUCKET, { public: false });
+  if (created && created.error && !bucketAlreadyExists(created.error)) {
+    console.error('Could not create dealer-files bucket:', storageErrorMessage(created.error));
+  }
 }
 
 async function saveDealerUpload(file, customerId, supabase) {
@@ -877,6 +887,7 @@ async function saveDealerUpload(file, customerId, supabase) {
       });
     }
     if (uploaded.error) {
+      console.error('Could not store dealer file:', storageErrorMessage(uploaded.error));
       try { fs.unlinkSync(path.join(dir, storedName)); } catch (err) { /* ignore */ }
       throw Object.assign(new Error('Could not store the file.'), { code: 'invalid' });
     }
