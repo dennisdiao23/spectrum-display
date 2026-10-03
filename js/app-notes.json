@@ -1,6 +1,20 @@
 {
-  "build": "2026-10-03-rma-stack",
+  "build": "2026-10-03-phone-leads",
   "notes": [
+    {
+      "id": "2026-10-03-phone-leads",
+      "date": "2026-10-03",
+      "apps": ["portal"],
+      "mobile": true,
+      "title": "Leads fit the phone",
+      "changed": [
+        "On a phone, Leads shows one stage at a time. Swipe to the next stage.",
+        "Tap a card and the lead fills the screen. Change the stage there.",
+        "The phone page no longer slides sideways."
+      ],
+      "how": "Open Leads. Swipe the stages. Tap a card. Pick a stage, or open Contact or Calculator. Back returns to the board.",
+      "kind": "update"
+    },
     {
       "id": "2026-10-03-rma-stack",
       "date": "2026-10-03",
