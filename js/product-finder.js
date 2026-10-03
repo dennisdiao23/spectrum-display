@@ -147,7 +147,9 @@
   }
 
   function blobOf(s) {
-    return [s.type, s.name, s.description, s.badge, s.lead, (s.cats || []).join(' ')].join(' ').toLowerCase();
+    var cats = s.cats;
+    var catText = Array.isArray(cats) ? cats.join(' ') : String(cats || '');
+    return [s.type, s.name, s.description, s.badge, s.lead, catText].join(' ').toLowerCase();
   }
 
   function catsOf(s) {
@@ -275,7 +277,7 @@
         pitches: [pitch],
         pitchInventory: inv,
         type: item.category || '',
-        cats: item.category || '',
+        cats: String(item.category || '').split(/\s+/).filter(Boolean),
         book: true
       });
     });
