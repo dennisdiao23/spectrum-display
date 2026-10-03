@@ -132,6 +132,23 @@
     });
   }
 
+  function loadDealerBook() {
+    if (!document.documentElement.classList.contains('designer-portal')) {
+      global.SPECTRUM_DEALER_BOOK = [];
+      return Promise.resolve(false);
+    }
+    return fetch('/api/dealer/book', {
+      credentials: 'same-origin',
+      headers: { Accept: 'application/json' }
+    }).then(function (res) { return res.ok ? res.json() : null; }).then(function (data) {
+      global.SPECTRUM_DEALER_BOOK = (data && data.ok && data.items) || [];
+      return true;
+    }).catch(function () {
+      global.SPECTRUM_DEALER_BOOK = [];
+      return false;
+    });
+  }
+
   function loadDealerPanelPrices() {
     if (!document.documentElement.classList.contains('designer-portal')) return Promise.resolve(false);
     return fetch('/api/dealer/panel-prices', {
@@ -274,7 +291,7 @@
     .then(function (data) {
       applyCatalog(data && data.ok ? data.products : {});
       authReadyPromise().then(function () { return loadCatalogStock(); }).then(function () {
-        return loadDealerPanelPrices();
+        return loadDealerBook().then(function () { return loadDealerPanelPrices(); });
       }).then(function () {
         if (global.SPECTRUM_PRODUCTS) {
           global.SPECTRUM_PRODUCT_LIST = rebuildList(global.SPECTRUM_PRODUCTS);

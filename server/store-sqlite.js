@@ -624,6 +624,13 @@ function createSqliteStore() {
       attachInventoryToCatalog(db, catalog);
       return catalog;
     },
+    async listProductInventoryMaps() {
+      try {
+        return db.prepare('SELECT * FROM product_inventory_map').all();
+      } catch {
+        return [];
+      }
+    },
     async getDealerPanelPrices() {
       const inv = require('./inventory');
       try {

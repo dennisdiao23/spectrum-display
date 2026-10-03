@@ -434,8 +434,43 @@ async function websiteSavedFor(store, email) {
   }
 }
 
-function pricedBookItems(items) {
-  return (items || []).map(publicPriceBookItem).filter(function (item) {
+function cabinetMeters(panelW, panelH, fallback) {
+  const w = Number(panelW) || 0;
+  const h = Number(panelH) || 0;
+  if (w > 0 && h > 0) {
+    return {
+      cabinetW: w > 20 ? w / 1000 : w,
+      cabinetH: h > 20 ? h / 1000 : h
+    };
+  }
+  const cab = fallback || {};
+  return {
+    cabinetW: Number(cab.cabinetW) || 0,
+    cabinetH: Number(cab.cabinetH) || 0
+  };
+}
+
+function buildDealerBook(items, maps, catalog) {
+  const products = {};
+  Object.keys(catalog || {}).forEach(function (brandId) {
+    ((catalog[brandId] && catalog[brandId].series) || []).forEach(function (series) {
+      if (series && series.dbId != null) products[String(series.dbId)] = series;
+    });
+  });
+  const cabinetByItem = {};
+  (maps || []).forEach(function (row) {
+    const product = products[String(row.product_id)];
+    if (!product) return;
+    cabinetByItem[String(row.item_id)] = product;
+  });
+  return (items || []).map(function (item) {
+    const book = publicPriceBookItem(item);
+    if (!book) return null;
+    const size = cabinetMeters(item.panelW, item.panelH, cabinetByItem[String(item.id)]);
+    book.cabinetW = size.cabinetW;
+    book.cabinetH = size.cabinetH;
+    return book;
+  }).filter(function (item) {
     return item && Number(item.dealerNet) > 0;
   });
 }
@@ -1245,7 +1280,9 @@ function sqliteApi(db, store) {
     },
     async getDealerPriceBook() {
       const items = await store.listInventory();
-      return pricedBookItems(items);
+      const catalog = await store.getCatalog();
+      const maps = store.listProductInventoryMaps ? await store.listProductInventoryMaps() : [];
+      return buildDealerBook(items, maps, catalog);
     },
     async getDealerPortalMe(user) {
       const application = await this.getDealerApplicationForUser({
@@ -1679,7 +1716,9 @@ function supabaseApi(supabase, store) {
     },
     async getDealerPriceBook() {
       const items = await store.listInventory();
-      return pricedBookItems(items);
+      const catalog = await store.getCatalog();
+      const maps = store.listProductInventoryMaps ? await store.listProductInventoryMaps() : [];
+      return buildDealerBook(items, maps, catalog);
     },
     async getDealerPortalMe(user) {
       const application = await this.getDealerApplicationForUser({
