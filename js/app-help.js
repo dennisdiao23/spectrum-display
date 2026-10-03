@@ -26,6 +26,7 @@
     orders: ['Sales Order', 'A confirmed sale. What they are buying, where it ships, and where the order stands.'],
     invoices: ['Invoice', 'What they owe. Send it, then mark it paid when the money comes in.'],
     'installed-walls': ['Installed walls', 'A wall that has shipped. Open one for the site, serials, spare kit, and warranty dates.'],
+    'wall-installation': ['Wall Installation', 'Prepare one installed wall. Save photos and drawings, draw power and data, fill the NovaStar steps, check off the job, then open the user menu for that wall.'],
     sales: ['Sales Quote', 'A price you send before they buy. Build it, email it, and turn it into an order when they say yes.'],
     chat: ['Chat', 'A message to other staff. Use it while you are still on the quote, order, or customer you are talking about.'],
     company: ['Company', 'Your company name, address, and logo. This is what prints on quotes, orders, and invoices.'],
