@@ -91,6 +91,8 @@ catalog API and a cookie-session company login used by `/company`, `/company/web
 ### Agent workflow preferences (Dennis)
 
 - **Always include the PR number** (and link) at the end of a finished change.
+- When reporting a **merge** or that CI is green on `main`, always include the **PR number** (and
+  link). Example: `CI is green on main for PR #197.`
 - When the user says **push**, that means: `git push` the branch, then **merge the PR into `main`**
   so Railway deploys production. Hosting is Railway-only; merge to `main` triggers deploy.
   If the PR changes a Company or Dealer Portal screen, do not merge until the What’s new card was shown in this chat and is in `js/app-notes.json`. See **What’s new — required before you build or merge** at the top.
