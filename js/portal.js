@@ -2228,17 +2228,25 @@
     if (box) box.hidden = true;
     if (body) body.innerHTML = '';
   }
+  function fileKind(name) {
+    const ext = String(name || '').split('?')[0].split('.').pop().toLowerCase();
+    if (ext === 'pdf') return 'pdf';
+    if (ext === 'png' || ext === 'jpg' || ext === 'jpeg') return 'image';
+    return '';
+  }
   function openFilePreview(name, url) {
     const box = $('file-preview');
     const body = $('file-preview-body');
     const title = $('file-preview-title');
     if (!box || !body) return;
     if (title) title.textContent = name || 'File';
-    const ext = String(url || '').split('?')[0].split('.').pop().toLowerCase();
-    if (ext === 'pdf') {
+    const kind = fileKind(name) || fileKind(url);
+    if (kind === 'pdf') {
       body.innerHTML = '<iframe src="' + esc(url) + '" title="' + esc(name || 'File') + '"></iframe>';
-    } else {
+    } else if (kind === 'image') {
       body.innerHTML = '<img src="' + esc(url) + '" alt="' + esc(name || 'File') + '">';
+    } else {
+      body.innerHTML = '<p class="portal-co-help">This file opens with Download.</p>';
     }
     box.hidden = false;
   }
