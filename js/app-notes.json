@@ -1,6 +1,20 @@
 {
-  "build": "2026-10-03-wall-installation",
+  "build": "2026-10-03-dealer-book-phone",
   "notes": [
+    {
+      "id": "2026-10-03-dealer-book-phone",
+      "date": "2026-10-03",
+      "apps": ["portal"],
+      "title": "Dealer book on your phone",
+      "changed": [
+        "The category list and the All, Low, and Out chips are gone.",
+        "SKU, Description, and Photo stay off the list.",
+        "Tap a row and the page moves down to that item."
+      ],
+      "how": "Open Dealer book on your phone. The list still shows ten rows. Search still works. Tap a row. The item opens under the list, and the page moves down to it. The SKU, description, and photo are on that item.",
+      "kind": "update",
+      "mobile": true
+    },
     {
       "id": "2026-10-03-wall-installation",
       "date": "2026-10-03",

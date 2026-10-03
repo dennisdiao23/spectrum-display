@@ -10173,6 +10173,33 @@ body.dash-split-lock #settings-pane.space-y-6 > :not([hidden]) {
     overflow: auto;
   }
 
+  body.portal-app #inventory-section #inv-category-filter,
+  body.portal-app #inventory-section .cc-list-filters {
+    display: none;
+  }
+
+  body.portal-app #inventory-section #book-table-wrap {
+    --book-phone-row-h: 2.75rem;
+    --book-phone-head-h: 2.5rem;
+    max-height: calc(var(--book-phone-head-h) + var(--book-phone-row-h) * 10);
+    overflow: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  body.portal-app #inventory-section table.dash-cols[data-cols="dealer-book"] thead th {
+    height: var(--book-phone-head-h);
+  }
+
+  body.portal-app #inventory-section table.dash-cols[data-cols="dealer-book"] tbody tr {
+    height: var(--book-phone-row-h);
+  }
+
+  body.portal-app #inventory-section table.dash-cols[data-cols="dealer-book"] th,
+  body.portal-app #inventory-section table.dash-cols[data-cols="dealer-book"] td {
+    padding-top: 0.4rem;
+    padding-bottom: 0.4rem;
+  }
+
   body.portal-app #sales-section.so-doc-open #so-split-left,
   body.portal-app #sales-section.so-doc-open .cc-list-toolbar {
     display: flex !important;

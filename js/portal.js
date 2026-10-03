@@ -801,7 +801,7 @@
   }
   function bookRows() {
     const q = String(($('inv-search') && $('inv-search').value) || '').trim().toLowerCase();
-    const category = ($('inv-category-filter') && $('inv-category-filter').value) || '';
+    const category = isMobileDash() ? '' : (($('inv-category-filter') && $('inv-category-filter').value) || '');
     return book.filter(function (item) {
       if (bookFilter === 'low' && item.status !== 'low') return false;
       if (bookFilter === 'out' && item.status !== 'out') return false;
@@ -1044,10 +1044,27 @@
     applyPortalSplits();
     Object.keys(PORTAL_COLS).forEach(function (name) { applyCols(name); });
   }
+  const BOOK_PHONE_HIDE = { sku: true, description: true, photo: true };
+  function displayColState(name) {
+    const state = colState(name);
+    if (name !== 'dealer-book' || !isMobileDash()) return state;
+    const hidden = state.hidden.filter(function (id) { return !BOOK_PHONE_HIDE[id]; });
+    colKnown(name).forEach(function (id) {
+      if (BOOK_PHONE_HIDE[id]) hidden.push(id);
+    });
+    return {
+      order: state.order.filter(function (id) { return !BOOK_PHONE_HIDE[id]; }),
+      hidden: hidden,
+      sortCol: state.sortCol,
+      sortDir: state.sortDir,
+      widths: state.widths,
+      splitLeftPx: state.splitLeftPx
+    };
+  }
   function applyCols(name) {
     const table = portalTable(name);
     if (!table) return;
-    const state = colState(name);
+    const state = displayColState(name);
     const row = table.querySelector('thead tr');
     if (!row) return;
     const startLocked = Array.prototype.filter.call(row.children, function (th) {
@@ -1103,7 +1120,16 @@
     return colState(name).order.length || 1;
   }
   function applyBookCols() { applyCols('dealer-book'); }
-  function bookColState() { return colState('dealer-book'); }
+  function bookColState() { return displayColState('dealer-book'); }
+  function scrollBookDetailIntoView() {
+    if (!isMobileDash()) return;
+    const panel = $('inv-item-panel');
+    if (!panel || panel.classList.contains('hidden')) return;
+    requestAnimationFrame(function () {
+      try { panel.scrollIntoView({ behavior: 'smooth', block: 'start' }); }
+      catch (err) { panel.scrollIntoView(true); }
+    });
+  }
   function bookSortValue(item, col) {
     if (col === 'name') return item.name || '';
     if (col === 'sku') return item.sku || '';
@@ -2317,6 +2343,8 @@
   window.matchMedia('(max-width: 900px)').addEventListener('change', function () {
     const sec = $('sales-section');
     if (sec && !sec.classList.contains('hidden')) renderQuotes();
+    const bookSec = $('inventory-section');
+    if (bookSec && !bookSec.classList.contains('hidden')) renderBook();
   });
   $('so-ribbon-find').addEventListener('click', function () {
     if (isMobileDash() && quoteRoute()) goQuote('', true);
@@ -2600,6 +2628,7 @@
     if (!row) return;
     bookSku = row.getAttribute('data-sku') || '';
     renderBook();
+    scrollBookDetailIntoView();
   });
   (function bindRegistrationResizer() {
     const split = $('dr-split');
