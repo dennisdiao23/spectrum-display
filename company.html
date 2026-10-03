@@ -32,7 +32,7 @@
     #company-boot .boot-login button[type="submit"]{background:#fff!important;color:#000!important;border:0}
     #company-boot .boot-login button[type="submit"]:hover{background:#e8e8e8!important}
   </style>
-  <link rel="stylesheet" href="/css/company-dash.css?v=imgsize1" />
+  <link rel="stylesheet" href="/css/company-dash.css?v=barhide1" />
   <script src="/js/address-autocomplete.js"></script>
   <script src="/js/company-chat.js?v=po-ship1"></script>
   <script src="/js/company-crm.js?v=leadview1"></script>
@@ -5280,7 +5280,7 @@
     </a>
   </nav>
 
-  <link rel="stylesheet" href="/css/company-dash.css?v=imgsize1" />
+  <link rel="stylesheet" href="/css/company-dash.css?v=barhide1" />
   <link rel="stylesheet" href="/css/company-tw.css?v=boot1" />
 
   <script>
@@ -15305,46 +15305,53 @@
       if (el && el.tagName === 'IFRAME') closeTabbarSub();
     });
     const tabbarMain = document.querySelector('.company-main');
-    if (tabbarMain) {
-      let tabbarMainY = tabbarMain.scrollTop;
-      tabbarMain.addEventListener('scroll', function () {
-        if (!isMobileDash() || !document.body.classList.contains('dash-tabbar-sub-open')) return;
-        const y = tabbarMain.scrollTop;
-        if (Math.abs(y - tabbarMainY) > 4) closeTabbarSub();
-        tabbarMainY = y;
-      }, { passive: true });
-    }
     (function initDashTabbarScroll() {
-      let lastY = window.scrollY || document.documentElement.scrollTop || 0;
-      let ticking = false;
-      const THRESHOLD = 8;
+      const lastBarScroll = new WeakMap();
       const TOP = 48;
-
-      function onScroll() {
-        if (!document.body.classList.contains('dash-tabbar-on') || document.body.classList.contains('dash-tabbar-editing')) {
-          ticking = false;
-          return;
-        }
-        const y = window.scrollY || document.documentElement.scrollTop || 0;
-        const delta = y - lastY;
-        if (y <= TOP) {
-          document.body.classList.remove('dash-tabbar-hidden');
-        } else if (delta > THRESHOLD) {
+      function moveBar(node, y) {
+        if (!isMobileDash() || !document.body.classList.contains('dash-tabbar-on') || document.body.classList.contains('dash-tabbar-editing')) return;
+        const prev = lastBarScroll.has(node) ? lastBarScroll.get(node) : y;
+        const delta = y - prev;
+        lastBarScroll.set(node, y);
+        if (Math.abs(delta) < 1) return;
+        if (document.body.classList.contains('dash-tabbar-sub-open') && Math.abs(delta) > 4) closeTabbarSub();
+        if (y <= TOP) document.body.classList.remove('dash-tabbar-hidden');
+        else if (delta > 8) {
           document.body.classList.add('dash-tabbar-hidden');
           closeTabbarSub();
-        } else if (delta < -THRESHOLD) {
-          document.body.classList.remove('dash-tabbar-hidden');
-        }
-        lastY = y;
-        ticking = false;
+        } else if (delta < -8) document.body.classList.remove('dash-tabbar-hidden');
       }
-
-      window.addEventListener('scroll', function () {
-        if (!ticking) {
-          window.requestAnimationFrame(onScroll);
-          ticking = true;
+      document.addEventListener('scroll', function (e) {
+        const node = e.target === document ? (document.scrollingElement || document.documentElement) : e.target;
+        if (!node || typeof node.scrollTop !== 'number') return;
+        moveBar(node, node.scrollTop || 0);
+      }, true);
+      function bindFrame(frame) {
+        if (!frame) return;
+        function attach() {
+          let win;
+          try { win = frame.contentWindow; } catch (err) { return; }
+          if (!win || win.__companyBarScroll) return;
+          win.__companyBarScroll = true;
+          let last = 0;
+          win.addEventListener('scroll', function () {
+            const y = win.scrollY || (win.document.documentElement && win.document.documentElement.scrollTop) || 0;
+            const delta = y - last;
+            last = y;
+            if (!isMobileDash() || !document.body.classList.contains('dash-tabbar-on') || document.body.classList.contains('dash-tabbar-editing')) return;
+            if (document.body.classList.contains('dash-tabbar-sub-open') && Math.abs(delta) > 4) closeTabbarSub();
+            if (y <= TOP) document.body.classList.remove('dash-tabbar-hidden');
+            else if (delta > 8) {
+              document.body.classList.add('dash-tabbar-hidden');
+              closeTabbarSub();
+            } else if (delta < -8) document.body.classList.remove('dash-tabbar-hidden');
+          }, { passive: true });
         }
-      }, { passive: true });
+        frame.addEventListener('load', attach);
+        if (frame.getAttribute('src')) attach();
+      }
+      bindFrame(document.getElementById('company-calculator-frame'));
+      if (tabbarMain) lastBarScroll.set(tabbarMain, tabbarMain.scrollTop || 0);
     })();
     let companyCustomers = [];
     let salesDocs = [];
