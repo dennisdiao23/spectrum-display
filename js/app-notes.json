@@ -1,6 +1,28 @@
 {
-  "build": "2026-10-02-portal-dealer-price",
+  "build": "2026-10-03-dealer-book-calc",
   "notes": [
+    {
+      "id": "2026-10-03-dealer-book-calc",
+      "date": "2026-10-03",
+      "apps": ["portal"],
+      "title": "Calculator uses your Dealer book",
+      "changed": [
+        "Recommended panels come from your Dealer book. The same product line can show on more than one card."
+      ],
+      "how": "Open Calculator. The cards are the same panels as in Dealer book. Each card is your Dealer price for one panel times how many panels are on the wall. The total uses that same count.",
+      "kind": "update"
+    },
+    {
+      "id": "2026-10-03-sell-price-per-panel",
+      "date": "2026-10-03",
+      "apps": ["company"],
+      "title": "Calculator uses sell price per panel",
+      "changed": [
+        "Recommended panels and the wall total use Sell price times the panel count."
+      ],
+      "how": "Open Calculator. Each card is the Sell price of one panel times how many panels are on the wall. The total uses that same count.",
+      "kind": "update"
+    },
     {
       "id": "2026-10-02-portal-dealer-price",
       "date": "2026-10-02",

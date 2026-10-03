@@ -1334,6 +1334,11 @@ function createSupabaseStore() {
   const api = {
     name: 'supabase',
     ready: seedIfEmpty(),
+    async listProductInventoryMaps() {
+      const { data, error } = await supabase.from('product_inventory_map').select('*');
+      if (error) return [];
+      return data || [];
+    },
     async getDealerPanelPrices() {
       const inv = require('./inventory');
       try {

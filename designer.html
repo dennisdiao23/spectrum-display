@@ -1681,8 +1681,8 @@
 
   <script src="js/control-systems.js?v=20260908-h2cvt"></script>
   <script src="js/product-photo.js?v=ph5"></script>
-  <script src="js/catalog-api.js?v=ph5"></script>
-  <script src="js/product-finder.js?v=pf7"></script>
+  <script src="js/catalog-api.js?v=ph6"></script>
+  <script src="js/product-finder.js?v=pf8"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="js/supabase-client.js"></script>
   <script src="js/pricing.js"></script>
@@ -1706,6 +1706,13 @@
       if (!row && pitch !== '' && !isNaN(Number(pitch))) row = map[String(Number(pitch))];
       return (row && Number(row.dealerEach)) || 0;
     }
+    function sellEachForSeries(series, pitch) {
+      const map = (series && series.pitchInventory) || {};
+      let row = map[String(pitch)];
+      if (!row && pitch !== '' && !isNaN(Number(pitch))) row = map[String(Number(pitch))];
+      return (row && Number(row.price)) || 0;
+    }
+    let activeBookEach = 0;
     if (dealerPortalMode()) {
       const priceLabel = document.getElementById('res-price-label');
       if (priceLabel) priceLabel.setAttribute('data-i18n', 'designer.dealerPrice');
@@ -2848,15 +2855,20 @@
         loadEl.textContent = 'Wall load: ' + totalPx.toLocaleString() + ' px  ·  size with ~20% headroom: ' + need.toLocaleString() + ' px' +
           (controlSel.processor ? '  ·  ' + (window.SpectrumControl ? SpectrumControl.formatPixels(controlSel.processor.maxPixels) : '') + ' capacity' + kit : '');
       }
-      const basePrice = Math.round(actualArea * series.pricePerM2);
-      const controlPrice = controlUnitPrice(controlSel.processor) * (controlSel.qty || 0)
-        + controlUnitPrice(controlSel.playback);
-      const sellCabinets = (window.SpectrumPricing && SpectrumPricing.apply)
-        ? SpectrumPricing.apply(basePrice)
-        : basePrice;
-      const dealerEach = (!isCustomPanel() && dealerPortalMode()) ? dealerEachForSeries(series, pitch) : 0;
-      const dealerWall = dealerEach > 0 ? Math.round(dealerEach * panels * 100) / 100 : 0;
-      const sellPrice = (dealerPortalMode() && !isCustomPanel()) ? dealerWall : (sellCabinets + controlPrice);
+      let sellPrice = 0;
+      if (dealerPortalMode() && activeBookEach > 0) {
+        sellPrice = Math.round(activeBookEach * panels * 100) / 100;
+      } else if (dealerPortalMode() && !isCustomPanel()) {
+        const dealerEach = dealerEachForSeries(series, pitch);
+        sellPrice = dealerEach > 0 ? Math.round(dealerEach * panels * 100) / 100 : 0;
+      } else if (!isCustomPanel()) {
+        const rawEach = sellEachForSeries(series, pitch);
+        const each = (window.SpectrumPricing && SpectrumPricing.apply) ? SpectrumPricing.apply(rawEach) : rawEach;
+        sellPrice = each > 0 ? each * panels : 0;
+      } else {
+        const basePrice = Math.round(actualArea * series.pricePerM2);
+        sellPrice = (window.SpectrumPricing && SpectrumPricing.apply) ? SpectrumPricing.apply(basePrice) : basePrice;
+      }
 
       // Results
       // area label set below with dual units
@@ -3839,6 +3851,22 @@
     function applyFinderPick(pick) {
       if (!pick) return;
       document.documentElement.classList.remove('finder-empty');
+      if (pick.book) {
+        activeBookEach = Number(pick.dealerEach) || 0;
+        aspectLock = 'free';
+        lastAspectChoice = 'free';
+        if (brandEl) brandEl.value = 'custom';
+        setCustomMode(true);
+        if (customNameEl) customNameEl.value = pick.name || pick.sku || 'Panel';
+        if (customWEl) customWEl.value = String(Math.round((Number(pick.cabinetW) || 0.5) * 1000 * 10) / 10);
+        if (customHEl) customHEl.value = String(Math.round((Number(pick.cabinetH) || 0.5) * 1000 * 10) / 10);
+        if (customPitchEl) customPitchEl.value = String(pick.pitch);
+        if (screensWEl) screensWEl.value = pick.cols;
+        if (screensHEl) screensHEl.value = pick.rows;
+        applyScreenCount('w');
+        return;
+      }
+      activeBookEach = 0;
       if (pick.fillMode === '16:9') {
         aspectLock = '16:9';
         lastAspectChoice = '16:9';

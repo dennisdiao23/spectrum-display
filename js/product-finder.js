@@ -229,22 +229,24 @@
   }
 
   function wallCost(s, pitch, grid) {
+    var panels = grid.cols * grid.rows;
+    if (!(panels > 0)) return 0;
     if (dealerPortal()) {
-      var each = dealerEach(s, pitch);
-      var panels = grid.cols * grid.rows;
-      return each > 0 && panels > 0 ? Math.round(each * panels * 100) / 100 : 0;
+      var dealer = dealerEach(s, pitch);
+      return dealer > 0 ? Math.round(dealer * panels * 100) / 100 : 0;
     }
-    var unit = pricePerM2(s, pitch);
-    var area = grid.w * grid.h;
-    return unit > 0 ? applyPrice(unit * area) : 0;
+    var each = pricePerM2(s, pitch);
+    if (!(each > 0)) return 0;
+    return applyPrice(each) * panels;
   }
 
   function formatMoney(n) {
-    if (dealerPortal()) {
-      var v = Math.round((Number(n) || 0) * 100) / 100;
-      return '$' + v.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-    }
-    return money(n);
+    var v = Math.round((Number(n) || 0) * 100) / 100;
+    if (!v) return dealerPortal() ? '$0.00' : 'Request quote';
+    var cents = Math.round(v * 100) % 100 !== 0;
+    return '$' + v.toLocaleString(undefined, cents
+      ? { minimumFractionDigits: 2, maximumFractionDigits: 2 }
+      : { maximumFractionDigits: 0 });
   }
 
   function applyPrice(n) {
@@ -252,7 +254,36 @@
     return Math.round(Number(n) || 0);
   }
 
+  function bookPanels() {
+    var items = global.SPECTRUM_DEALER_BOOK || [];
+    var out = [];
+    items.forEach(function (item) {
+      var pitch = Number(item.pitch);
+      var w = Number(item.cabinetW) || 0;
+      var h = Number(item.cabinetH) || 0;
+      if (!(pitch > 0) || !(w > 0.05) || !(h > 0.05) || !(Number(item.dealerNet) > 0)) return;
+      var inv = {};
+      inv[String(pitch)] = { dealerEach: Number(item.dealerNet) || 0, price: Number(item.listPrice) || 0 };
+      out.push({
+        brandId: 'book',
+        brandName: item.brand || '',
+        id: item.sku || (item.name + ':' + pitch),
+        name: item.name || item.sku || 'Panel',
+        sku: item.sku || '',
+        cabinetW: w,
+        cabinetH: h,
+        pitches: [pitch],
+        pitchInventory: inv,
+        type: item.category || '',
+        cats: item.category || '',
+        book: true
+      });
+    });
+    return out;
+  }
+
   function catalogList() {
+    if (dealerPortal()) return bookPanels();
     var products = global.SPECTRUM_PRODUCTS || {};
     var out = [];
     Object.keys(products).forEach(function (brandId) {
@@ -355,6 +386,11 @@
       pxH: pxH,
       panels: grid.cols * grid.rows,
       cost: cost,
+      book: !!s.book,
+      sku: s.sku || '',
+      cabinetW: s.cabinetW,
+      cabinetH: s.cabinetH,
+      dealerEach: dealerEach(s, pitchInfo.pitch),
       fillFrac: fillFrac,
       unused: unused,
       pitchErr: pitchErr,
@@ -392,9 +428,13 @@
       scored.push(scoreCandidate(s, grid, pitchInfo));
     });
 
-    var value = uniqueBySeries(scored.slice().sort(function (a, b) { return a.scoreValue - b.scoreValue; }));
-    var fit = uniqueBySeries(scored.slice().sort(function (a, b) { return a.scoreFit - b.scoreFit; }));
-    var fine = uniqueBySeries(scored.slice().sort(function (a, b) { return a.scoreFine - b.scoreFine; }));
+    function rank(list, score) {
+      var sorted = list.slice().sort(score);
+      return dealerPortal() ? sorted : uniqueBySeries(sorted);
+    }
+    var value = rank(scored, function (a, b) { return a.scoreValue - b.scoreValue; });
+    var fit = rank(scored, function (a, b) { return a.scoreFit - b.scoreFit; });
+    var fine = rank(scored, function (a, b) { return a.scoreFine - b.scoreFine; });
 
     var picks = [];
     function add(item, badge) {
@@ -677,7 +717,9 @@
     var host = document.getElementById('finder-results');
     if (!host) return;
     if (!state.results.length) {
-      host.innerHTML = '<p class="text-xs text-slate-500">No catalog panels match indoor/outdoor and installed/rental for this wall. Try the other environment, or switch to Calculator and pick a series.</p>';
+      host.innerHTML = dealerPortal()
+        ? '<p class="text-xs text-slate-500">No Dealer book panels with a size match this wall.</p>'
+        : '<p class="text-xs text-slate-500">No catalog panels match indoor/outdoor and installed/rental for this wall. Try the other environment, or switch to Calculator and pick a series.</p>';
       renderCheaper();
       return;
     }
@@ -733,6 +775,12 @@
     document.documentElement.classList.remove('finder-empty');
     if (typeof hooks.applyPick === 'function') {
       hooks.applyPick({
+        book: !!item.book,
+        sku: item.sku || '',
+        name: item.name || '',
+        cabinetW: item.w && item.cols ? item.w / item.cols : item.cabinetW,
+        cabinetH: item.h && item.rows ? item.h / item.rows : item.cabinetH,
+        dealerEach: item.dealerEach,
         brandId: item.brandId,
         seriesId: item.seriesId,
         pitch: item.pitch,
