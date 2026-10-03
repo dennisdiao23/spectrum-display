@@ -94,6 +94,15 @@ const chatUpload = multer({
   }
 });
 
+const wallInstallUpload = multer({
+  storage: multer.memoryStorage(),
+  limits: { fileSize: 12 * 1024 * 1024, files: 1 },
+  fileFilter: function (_req, file, cb) {
+    const ok = /^(application\/pdf|image\/(jpeg|png|webp))$/i.test(file.mimetype || '') || /\.(pdf|jpe?g|png|webp)$/i.test(file.originalname || '');
+    cb(ok ? null : new Error('Choose a PDF, JPG, PNG, or WebP.'), ok);
+  }
+});
+
 const dealerInquiryUpload = multer({
   storage: multer.memoryStorage(),
   limits: { fileSize: 10 * 1024 * 1024, files: 1 },
@@ -327,6 +336,7 @@ async function main() {
     '/company/inventory/purchase-orders',
     '/company/inventory/receipt-shipments',
     '/company/installed-walls',
+    '/company/wall-installation',
     '/company/crm',
     '/company/crm/leads',
     '/company/crm/pipeline',
@@ -355,6 +365,7 @@ async function main() {
   });
   app.get(['/company/customers/:id', '/company/customers/:id/'], sendCompany);
   app.get(['/company/installed-walls/:id', '/company/installed-walls/:id/'], sendCompany);
+  app.get(['/company/wall-installation/:id', '/company/wall-installation/:id/'], sendCompany);
   app.get(['/company/dealers/:id', '/company/dealers/:id/'], function (req, res) {
     if (!/^\d+$/.test(String(req.params.id || ''))) {
       return res.redirect(302, '/company/dealers');
@@ -3549,6 +3560,73 @@ async function main() {
       const wall = await store.updateInstalledWall(req.params.id, req.body || {});
       if (!wall) return res.status(404).json({ ok: false, error: 'Wall not found.' });
       res.json({ ok: true, wall: wall });
+    } catch (err) { dealerDocError(err, res, next); }
+  });
+
+  app.get('/api/admin/wall-installations', requireAdmin, requirePerm('orders', 'view'), async function (_req, res, next) {
+    try {
+      res.json({
+        ok: true,
+        walls: await store.listInstalledWalls(),
+        jobs: await store.listWallInstallationJobs(),
+        designs: await store.listWallInstallationDesigns()
+      });
+    } catch (err) { next(err); }
+  });
+
+  app.post('/api/admin/wall-installations', requireAdmin, requirePerm('orders', 'edit'), async function (req, res, next) {
+    try {
+      const wall = await store.getInstalledWall((req.body || {}).wallId);
+      if (!wall) return res.status(404).json({ ok: false, error: 'Installed wall not found.' });
+      res.json({ ok: true, job: await store.createWallInstallation(wall) });
+    } catch (err) { dealerDocError(err, res, next); }
+  });
+
+  app.get('/api/admin/wall-installations/:id', requireAdmin, requirePerm('orders', 'view'), async function (req, res, next) {
+    try {
+      const job = await store.getWallInstallation(req.params.id);
+      if (!job) return res.status(404).json({ ok: false, error: 'Installation not found.' });
+      res.json({ ok: true, job: job });
+    } catch (err) { next(err); }
+  });
+
+  app.put('/api/admin/wall-installations/:id', requireAdmin, requirePerm('orders', 'edit'), async function (req, res, next) {
+    try {
+      const job = await store.updateWallInstallation(req.params.id, req.body || {});
+      if (!job) return res.status(404).json({ ok: false, error: 'Installation not found.' });
+      res.json({ ok: true, job: job });
+    } catch (err) { dealerDocError(err, res, next); }
+  });
+
+  app.post('/api/admin/wall-installations/:id/files', requireAdmin, requirePerm('orders', 'edit'), wallInstallUpload.single('file'), async function (req, res, next) {
+    try {
+      if (!req.file) return res.status(400).json({ ok: false, error: 'Choose a PDF, JPG, PNG, or WebP.' });
+      const file = await store.addWallInstallationFile(req.params.id, req.file, (req.body || {}).kind);
+      if (!file) return res.status(404).json({ ok: false, error: 'Installation not found.' });
+      res.json({ ok: true, file: file });
+    } catch (err) { dealerDocError(err, res, next); }
+  });
+
+  app.get('/api/admin/wall-installations/:id/files/:fileId', requireAdmin, requirePerm('orders', 'view'), async function (req, res, next) {
+    try {
+      const row = await store.getWallInstallationFile(req.params.id, req.params.fileId);
+      if (!row) return res.status(404).type('text/plain').send('File not found.');
+      const buffer = await store.readWallInstallationFile(row);
+      if (!buffer) return res.status(404).type('text/plain').send('This file is no longer on the server.');
+      const files = require('./wall-installation');
+      res.set('Content-Type', files.contentType(row.url || row.name));
+      res.set('X-Content-Type-Options', 'nosniff');
+      res.set('Cache-Control', 'private, no-store');
+      res.set('Content-Disposition', 'inline; filename="' + files.downloadName(row.name) + '"');
+      res.send(buffer);
+    } catch (err) { next(err); }
+  });
+
+  app.delete('/api/admin/wall-installations/:id/files/:fileId', requireAdmin, requirePerm('orders', 'edit'), async function (req, res, next) {
+    try {
+      const gone = await store.deleteWallInstallationFile(req.params.id, req.params.fileId);
+      if (!gone) return res.status(404).json({ ok: false, error: 'File not found.' });
+      res.json({ ok: true });
     } catch (err) { dealerDocError(err, res, next); }
   });
 

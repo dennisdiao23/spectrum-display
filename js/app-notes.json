@@ -1,6 +1,21 @@
 {
-  "build": "2026-10-03-dealer-book-calc",
+  "build": "2026-10-03-wall-installation",
   "notes": [
+    {
+      "id": "2026-10-03-wall-installation",
+      "date": "2026-10-03",
+      "apps": ["company"],
+      "title": "Wall Installation",
+      "added": [
+        "Wall Installation, for preparing one wall in Company.",
+        "Photos, drawings, and files saved on that wall.",
+        "A pad to draw power and data.",
+        "NovaStar steps filled from the wall, and a checklist.",
+        "A user menu for that wall, with if this, try this."
+      ],
+      "how": "Open Customer, then Wall Installation, and click a wall. Add photos and drawings. Draw the power and data runs. On Setup, click Fill from this wall, then edit the steps. Check off the list. Open User menu for the steps and the if-this list for that wall only.",
+      "kind": "feature"
+    },
     {
       "id": "2026-10-03-dealer-book-calc",
       "date": "2026-10-03",

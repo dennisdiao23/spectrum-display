@@ -32,7 +32,7 @@
     #company-boot .boot-login button[type="submit"]{background:#fff!important;color:#000!important;border:0}
     #company-boot .boot-login button[type="submit"]:hover{background:#e8e8e8!important}
   </style>
-  <link rel="stylesheet" href="/css/company-dash.css?v=imgsize1" />
+  <link rel="stylesheet" href="/css/company-dash.css?v=wallinstall1" />
   <script src="/js/address-autocomplete.js"></script>
   <script src="/js/company-chat.js?v=po-ship1"></script>
   <script src="/js/company-crm.js?v=leadview1"></script>
@@ -42,8 +42,9 @@
   <script src="/js/print-form.js?v=forms21"></script>
   <script src="/js/brand-prices.js?v=brands7"></script>
   <script src="/js/settings-brands.js?v=brands8"></script>
-  <script src="/js/app-help.js?v=help6"></script>
-  <script src="/js/app-notes.js?v=listcols2"></script>
+  <script src="/js/app-help.js?v=help7"></script>
+  <script src="/js/app-notes.js?v=wallinstall1"></script>
+  <script src="/js/wall-installation.js?v=wallinstall1"></script>
   <script>
     if ('serviceWorker' in navigator && location.pathname.indexOf('/company') === 0) {
       navigator.serviceWorker.register('/company/sw.js', { scope: '/company' });
@@ -228,6 +229,10 @@
           <a href="/company/installed-walls" id="tab-installed-walls" class="dash-sub-link">
             <svg class="dash-nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4" width="18" height="12" rx="1.5"/><path d="M8 20h8M12 16v4"/></svg>
             <span>Installed walls</span>
+          </a>
+          <a href="/company/wall-installation" id="tab-wall-installation" class="dash-sub-link">
+            <svg class="dash-nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 19h16"/><path d="M6 19V9l6-4 6 4v10"/><path d="M10 19v-5h4v5"/></svg>
+            <span>Wall Installation</span>
           </a>
         </div>
       </div>
@@ -3071,6 +3076,123 @@
         </div>
       </div>
 
+      <div id="wall-installation-section" class="hidden">
+        <div id="wi-list" class="cc-list-inner">
+          <div class="cc-list-head">
+            <p class="text-sm text-slate-500">Prepare one installed wall. Photos, the wire map, NovaStar steps, and the checklist stay on that wall.</p>
+            <button id="wi-new" type="button" class="cc-list-add-btn px-4 py-2 rounded-full bg-sky-500 hover:bg-sky-400 text-white text-sm font-semibold">New install</button>
+          </div>
+          <div id="wi-pick" class="hidden wi-pick">
+            <label>Installed wall
+              <select id="wi-pick-wall"></select>
+            </label>
+            <button id="wi-pick-start" type="button" class="px-4 py-2 rounded-full bg-sky-500 text-white text-sm font-semibold">Start</button>
+          </div>
+          <p id="wi-error" class="hidden text-sm text-red-400 mb-3"></p>
+          <div class="cc-table-card rounded-2xl border border-slate-800">
+            <div class="cc-table-wrap">
+              <table class="w-full text-sm">
+                <thead>
+                  <tr>
+                    <th class="py-3 px-4 font-medium">Wall</th>
+                    <th class="py-3 px-4 font-medium">Site</th>
+                    <th class="py-3 px-4 font-medium">Panel</th>
+                    <th class="py-3 px-4 font-medium">Controller</th>
+                    <th class="py-3 px-4 font-medium">Job</th>
+                  </tr>
+                </thead>
+                <tbody id="wi-table"></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+        <div id="wi-job" class="hidden wi-job">
+          <div class="wi-job-bar">
+            <button id="wi-back" type="button">Walls</button>
+            <h2 id="wi-job-title">Wall Installation</h2>
+          </div>
+          <div class="wi-tabs" role="tablist">
+            <button type="button" data-wi-tab="wall" class="is-on">Wall</button>
+            <button type="button" data-wi-tab="files">Files</button>
+            <button type="button" data-wi-tab="pad">Wire pad</button>
+            <button type="button" data-wi-tab="setup">Setup</button>
+            <button type="button" data-wi-tab="check">Checklist</button>
+            <button type="button" id="wi-user-open">User menu</button>
+          </div>
+          <div id="wi-panel-wall">
+            <form id="wi-wall-form" class="wi-form">
+              <label class="sm:col-span-2">Calculator design<select id="wi-design"></select></label>
+              <label class="sm:col-span-2">Name<input id="wi-name" required></label>
+              <label class="sm:col-span-2">Site<input id="wi-site"></label>
+              <label>Panel<input id="wi-panel"></label>
+              <label>Pitch<input id="wi-pitch"></label>
+              <label>Size<input id="wi-size" placeholder="16 × 9 ft"></label>
+              <label>Cabinet count<input id="wi-count" inputmode="numeric"></label>
+              <label>Columns<input id="wi-cols" inputmode="numeric"></label>
+              <label>Rows<input id="wi-rows" inputmode="numeric"></label>
+              <label class="sm:col-span-2">Controller<input id="wi-controller" placeholder="NovaStar box"></label>
+              <div class="sm:col-span-2">
+                <button type="submit" class="wi-save px-4 py-2 rounded-full bg-sky-500 text-white text-sm font-semibold">Save</button>
+                <p id="wi-wall-msg" class="hidden text-sm"></p>
+              </div>
+            </form>
+          </div>
+          <div id="wi-panel-files" class="hidden">
+            <p class="text-sm text-slate-500">Drop site photos, drawings, and PDFs. They stay on this wall.</p>
+            <input id="wi-file" type="file" accept=".pdf,.jpg,.jpeg,.png,.webp,application/pdf,image/jpeg,image/png,image/webp">
+            <p id="wi-file-msg" class="hidden text-sm"></p>
+            <div class="cc-table-wrap">
+              <table class="w-full text-sm">
+                <thead><tr><th class="py-2 px-3">File</th><th class="py-2 px-3">Kind</th><th></th></tr></thead>
+                <tbody id="wi-files"></tbody>
+              </table>
+            </div>
+          </div>
+          <div id="wi-panel-pad" class="hidden">
+            <div class="wi-tools">
+              <button type="button" data-wi-tool="power" class="is-on">Power</button>
+              <button type="button" data-wi-tool="data">Data</button>
+              <button type="button" id="wi-save-pad" class="wi-save">Save</button>
+              <button type="button" id="wi-export">Export</button>
+            </div>
+            <p class="text-sm text-slate-500">Click a cabinet, then click where the run ends. Click the same cabinet to end at the source.</p>
+            <div id="wi-grid" class="wi-grid"></div>
+            <div id="wi-runs"></div>
+            <p id="wi-pad-msg" class="hidden text-sm"></p>
+          </div>
+          <div id="wi-panel-setup" class="hidden">
+            <div class="wi-tools">
+              <button type="button" id="wi-fill">Fill from this wall</button>
+              <button type="button" id="wi-add-step">Add line</button>
+              <button type="button" id="wi-save-steps" class="wi-save">Save</button>
+            </div>
+            <div id="wi-steps"></div>
+            <p id="wi-step-msg" class="hidden text-sm"></p>
+          </div>
+          <div id="wi-panel-check" class="hidden">
+            <div id="wi-checks"></div>
+            <p id="wi-check-msg" class="hidden text-sm"></p>
+          </div>
+        </div>
+        <div id="wi-user" class="wi-user hidden">
+          <div class="wi-user-card">
+            <div class="wi-user-bar">
+              <p id="wi-user-title">This wall</p>
+              <button type="button" id="wi-print">Print</button>
+              <button type="button" id="wi-user-close">Close</button>
+            </div>
+            <dl id="wi-user-facts" class="wi-facts"></dl>
+            <img id="wi-user-map" alt="" hidden>
+            <h3>Wire map</h3>
+            <ul id="wi-user-runs"></ul>
+            <h3>Setup</h3>
+            <ol id="wi-user-steps"></ol>
+            <h3>If this, try this</h3>
+            <dl id="wi-user-if" class="wi-facts"></dl>
+          </div>
+        </div>
+      </div>
+
       <div id="customers-section" class="hidden">
         <div id="cc-workspace" class="cc-workspace">
         <div id="customers-list-wrap" class="cc-list-inner">
@@ -5280,7 +5402,7 @@
     </a>
   </nav>
 
-  <link rel="stylesheet" href="/css/company-dash.css?v=imgsize1" />
+  <link rel="stylesheet" href="/css/company-dash.css?v=wallinstall1" />
   <link rel="stylesheet" href="/css/company-tw.css?v=boot1" />
 
   <script>
@@ -5446,6 +5568,7 @@
       if (hash === 'settings' || hash === 'settings/staff') return 'staff';
       if (hash === 'website/accounts' || hash === 'accounts') return 'accounts';
       if (hash === 'installed-walls') return 'installed-walls';
+      if (hash === 'wall-installation') return 'wall-installation';
       if (hash === 'dealers/rmas' || hash === 'rmas') return 'dealer-rmas';
       if (hash === 'dealers/leads') return 'dealer-leads';
       if (hash === 'dealers/registrations' || hash === 'registrations') return 'deal-registrations';
@@ -5470,6 +5593,7 @@
       if (p === '/company/calculator') return 'calculator';
       if (p === '/company' || p === '/company/dashboard') return 'dashboard';
       if (p === '/company/installed-walls' || /^\/company\/installed-walls\/\d+$/.test(p)) return 'installed-walls';
+      if (p === '/company/wall-installation' || /^\/company\/wall-installation\/\d+$/.test(p)) return 'wall-installation';
       if (p === '/company/dealers/rmas') return 'dealer-rmas';
       if (p === '/company/dealers/leads') return 'dealer-leads';
       if (p === '/company/dealers/registrations') return 'deal-registrations';
@@ -5540,6 +5664,7 @@
       if (doc) return pathForDocMaster(doc.kind, doc.id);
       if (name === 'accounts') return '/company/website/accounts';
       if (name === 'installed-walls') return '/company/installed-walls';
+      if (name === 'wall-installation') return '/company/wall-installation';
       if (name === 'dealers') return '/company/dealers/applications';
       if (name === 'deal-registrations') return '/company/dealers/registrations';
       if (name === 'dealer-leads') return '/company/dealers/leads';
@@ -5658,6 +5783,7 @@
       try {
         const p = new URL(href, location.origin).pathname.replace(/\/+$/, '') || '/company';
         if (p === '/company/installed-walls' || /^\/company\/installed-walls\/\d+$/.test(p)) return 'installed-walls';
+        if (p === '/company/wall-installation' || /^\/company\/wall-installation\/\d+$/.test(p)) return 'wall-installation';
         if (p === '/company/dealers/rmas') return 'dealer-rmas';
         if (p === '/company/dealers/leads') return 'dealer-leads';
         if (p === '/company/dealers/registrations') return 'deal-registrations';
@@ -5790,6 +5916,7 @@
       accounts: 'Accounts',
       dealer: 'Dealer',
       'installed-walls': 'Installed walls',
+      'wall-installation': 'Wall Installation',
       dealers: 'Applications',
       'deal-registrations': 'Deal registration',
       'dealer-leads': 'Leads',
@@ -5842,6 +5969,7 @@
       'receipt-shipments': '<svg class="dash-master-tab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 7h16l-1.5 12H5.5L4 7z"/><path d="M9 7V5a3 3 0 0 1 6 0v2"/><path d="M9 14h6M9 18h4"/></svg>',
       crm: '<svg class="dash-master-tab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 4h16l-6.5 8.2V20l-3-1.5v-6.3L4 4z"/></svg>'
     };
+    MASTER_TAB_ICON['wall-installation'] = '<svg class="dash-master-tab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 19h16"/><path d="M6 19V9l6-4 6 4v10"/><path d="M10 19v-5h4v5"/></svg>';
     MASTER_TAB_ICON.products = MASTER_TAB_ICON.website;
     MASTER_TAB_ICON.store = MASTER_TAB_ICON.website;
     MASTER_TAB_ICON.accounts = MASTER_TAB_ICON.customer;
@@ -5877,6 +6005,7 @@
       accounts: '/company/website/accounts',
       dealer: '/company/dealers',
       'installed-walls': '/company/installed-walls',
+      'wall-installation': '/company/wall-installation',
       dealers: '/company/dealers/applications',
       'deal-registrations': '/company/dealers/registrations',
       'dealer-leads': '/company/dealers/leads',
@@ -5934,7 +6063,7 @@
       if (/^leadcalc-\d+$/.test(name)) return 'leadwall';
       if (name === 'chat') return 'chat';
       if (name === 'products' || name === 'store' || name === 'accounts' || name === 'traffic' || name === 'website') return 'website';
-      if (name === 'installed-walls') return 'customer';
+      if (name === 'installed-walls' || name === 'wall-installation') return 'customer';
       if (name === 'dealer' || name === 'dealers' || name === 'deal-registrations' || name === 'dealer-leads' || name === 'dealer-rmas') return 'dealer';
       if (name === 'inventory' || name === 'warehouses' || name === 'receipt-shipments') return 'inventory';
       if (name === 'vendors' || name === 'purchase-orders') return 'vendor';
@@ -5962,12 +6091,12 @@
       if (group === 'chat') return ['chat'];
       if (group === 'calculator') return ['calculator'];
       if (group === 'website') return ['products', 'store', 'accounts', 'traffic'];
-      if (group === 'installed') return ['customers', 'quotes', 'orders', 'invoices', 'sales', 'installed-walls'];
+      if (group === 'installed') return ['customers', 'quotes', 'orders', 'invoices', 'sales', 'installed-walls', 'wall-installation'];
       if (group === 'dealer') return ['dealer', 'dealers', 'deal-registrations', 'dealer-leads', 'dealer-rmas'];
       if (group === 'inventory') return ['inventory', 'warehouses', 'receipt-shipments'];
       if (group === 'vendor') return ['vendors', 'purchase-orders'];
       if (group === 'crm') return ['leads', 'pipeline', 'activities'];
-      if (group === 'customer') return ['customers', 'quotes', 'orders', 'invoices', 'sales', 'installed-walls'];
+      if (group === 'customer') return ['customers', 'quotes', 'orders', 'invoices', 'sales', 'installed-walls', 'wall-installation'];
       if (group === 'settings') return ['company', 'forms', 'brands', 'staff', 'roles', 'updates', 'guide'];
       return ['dashboard'];
     }
@@ -6536,6 +6665,7 @@
       'dealer-leads': 'dealer',
       'dealer-rmas': 'dealer',
       'installed-walls': 'orders',
+      'wall-installation': 'orders',
       traffic: 'products',
       control: 'products',
       inventory: 'inventory',
@@ -6833,6 +6963,7 @@
       setHidden('tab-store', !canUse('store'));
       setHidden('tab-accounts', !canUse('accounts'));
       setHidden('tab-installed-walls', !canUse('orders'));
+      setHidden('tab-wall-installation', !canUse('orders'));
       setHidden('tab-dealer', !canUseDealerNav());
       setHidden('tab-dealer-list', !canUse('dealer'));
       setHidden('tab-dealers', !canUse('dealers'));
@@ -6935,6 +7066,7 @@
       try { rememberMasterTab(next || 'dashboard'); } catch (err) { console.error('rememberMasterTab', err); }
       try { bootSpectrumCrm(admin); } catch (err) { console.error('bootSpectrumCrm', err); }
       try { bootSpectrumTraffic(); } catch (err) { console.error('bootSpectrumTraffic', err); }
+      try { bootSpectrumWallInstall(); } catch (err) { console.error('bootSpectrumWallInstall', err); }
       try { bootSpectrumWebsiteControl(); } catch (err) { console.error('bootSpectrumWebsiteControl', err); }
       try {
         showAdminTab(next || 'dashboard');
@@ -9006,7 +9138,7 @@
       const view = viewTabForMaster(name);
       const onWebsite = view === 'products' || view === 'store' || view === 'accounts' || view === 'traffic';
       const onSettings = view === 'staff' || view === 'roles' || view === 'company' || view === 'forms' || view === 'brands' || view === 'updates' || view === 'guide';
-      const onCustomerNav = view === 'quotes' || view === 'orders' || view === 'invoices' || view === 'sales' || view === 'customers' || view === 'installed-walls';
+      const onCustomerNav = view === 'quotes' || view === 'orders' || view === 'invoices' || view === 'sales' || view === 'customers' || view === 'installed-walls' || view === 'wall-installation';
       const onDealerNav = view === 'dealer' || view === 'dealers' || view === 'deal-registrations' || view === 'dealer-leads' || view === 'dealer-rmas';
       const onCrmNav = view === 'leads' || view === 'pipeline' || view === 'activities' || view === 'crm';
       const onSales = view === 'quotes' || view === 'orders' || view === 'invoices' || view === 'sales';
@@ -9123,6 +9255,8 @@
       if (dregSec) dregSec.classList.toggle('hidden', view !== 'deal-registrations');
       const iwSec = document.getElementById('installed-walls-section');
       if (iwSec) iwSec.classList.toggle('hidden', view !== 'installed-walls');
+      const wiSec = document.getElementById('wall-installation-section');
+      if (wiSec) wiSec.classList.toggle('hidden', view !== 'wall-installation');
       const leadSec = document.getElementById('dealer-leads-section');
       if (leadSec) leadSec.classList.toggle('hidden', view !== 'dealer-leads');
       const rmaSec = document.getElementById('dealer-rmas-section');
@@ -9155,6 +9289,8 @@
       document.getElementById('tab-customer').className = navLinkClass(onCustomerNav, !canUseCustomerNav());
       const tabWalls = document.getElementById('tab-installed-walls');
       if (tabWalls) tabWalls.className = navLinkClass(view === 'installed-walls', !canUse('orders'), 'sub');
+      const tabInstall = document.getElementById('tab-wall-installation');
+      if (tabInstall) tabInstall.className = navLinkClass(view === 'wall-installation', !canUse('orders'), 'sub');
       const tabDealer = document.getElementById('tab-dealer');
       if (tabDealer) tabDealer.className = navLinkClass(onDealerNav, !canUseDealerNav());
       const tabDealerList = document.getElementById('tab-dealer-list');
@@ -9213,6 +9349,7 @@
         'deal-registrations': ['Dealer', 'Deal registration'],
         'dealer-leads': ['Dealer', 'Leads'],
         'installed-walls': ['Customer', 'Installed walls'],
+        'wall-installation': ['Customer', 'Wall Installation'],
         'dealer-rmas': ['Dealer', 'RMA'],
         traffic: ['Website', 'Traffic'],
         inventory: ['Inventory', ''],
@@ -10743,6 +10880,19 @@
       dashTabPath[tab] = href;
       if (companyPath() !== href) history.pushState({ tab: tab }, '', href);
       openCompanyTab(tab, false, { restorePath: href, reload: true });
+    }
+
+    function bootSpectrumWallInstall() {
+      if (!window.SpectrumWallInstall) return;
+      SpectrumWallInstall.boot({
+        api: api,
+        esc: esc,
+        canEdit: canEdit('orders'),
+        setPath: function (href) {
+          dashTabPath['wall-installation'] = href;
+          if (companyPath() !== href) history.pushState({ tab: 'wall-installation' }, '', href);
+        }
+      });
     }
 
     function bootSpectrumTraffic() {
@@ -14885,7 +15035,7 @@
       const onWebsite = name === 'products' || name === 'store' || name === 'accounts' || name === 'traffic';
       const onInventory = name === 'inventory' || name === 'warehouses' || name === 'receipt-shipments';
       const onVendorNav = name === 'vendors' || name === 'purchase-orders';
-      const onCustomerNav = name === 'sales' || name === 'quotes' || name === 'orders' || name === 'invoices' || name === 'customers' || name === 'installed-walls';
+      const onCustomerNav = name === 'sales' || name === 'quotes' || name === 'orders' || name === 'invoices' || name === 'customers' || name === 'installed-walls' || name === 'wall-installation';
       const onDealerNav = name === 'dealer' || name === 'dealers' || name === 'deal-registrations' || name === 'dealer-leads' || name === 'dealer-rmas';
       const onCrmNav = name === 'leads' || name === 'pipeline' || name === 'activities' || name === 'crm';
       const onSettings = name === 'staff' || name === 'roles' || name === 'company' || name === 'forms' || name === 'brands' || name === 'updates' || name === 'guide';
@@ -21363,6 +21513,9 @@
       }
       if (name === 'installed-walls') {
         await loadInstalledWalls();
+      }
+      if (name === 'wall-installation') {
+        if (window.SpectrumWallInstall) await SpectrumWallInstall.load();
       }
       if (name === 'deal-registrations') {
         await loadDealRegistrations();
