@@ -3919,7 +3919,7 @@
     const col = board && board.querySelector('.crm-col[data-stage="' + stage + '"]');
     if (!board || !col) return;
     const left = col.getBoundingClientRect().left - board.getBoundingClientRect().left + board.scrollLeft;
-    board.scrollLeft = left;
+    board.scrollTo(left, 0);
   }
   function renderLeadTable() {
     const body = $('lead-table');
