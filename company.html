@@ -8116,9 +8116,6 @@
           refreshBtn.textContent = 'Refreshing…';
         }
         if (typeof syncDashHomeKpis === 'function') syncDashHomeKpis();
-        else document.querySelectorAll('#dash-home .dash-kpi').forEach(function (el) {
-          el.classList.toggle('hidden', !canDashOverview(el.getAttribute('data-home')));
-        });
         try {
           const data = await api('/api/admin/dashboard');
           dashCounts = Object.assign({}, dashCounts, data.counts || {});
