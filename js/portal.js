@@ -3760,6 +3760,7 @@
     { id: 'won', label: 'Won' },
     { id: 'lost', label: 'Lost' }
   ];
+  let leadPhoneStage = 'new';
   function pathId(section) {
     const parts = location.pathname.replace(/\/+$/, '').split('/');
     if (parts[2] === section && parts[3]) return parts[3];
@@ -3895,6 +3896,30 @@
     $('plead-stage').value = row.stage || 'new';
     setLeadTab(leadDetailTab);
     setBoxMsg('plead-msg', '', true);
+    syncLeadPhone();
+  }
+  function syncLeadPhone() {
+    const section = $('leads-section');
+    if (!section) return;
+    const detail = $('plead-detail');
+    const open = isMobileDash() && !!pathId('leads') && detail && !detail.classList.contains('hidden');
+    section.classList.toggle('lead-doc-open', open);
+    const board = $('plead-board');
+    if (board) {
+      board.querySelectorAll('.crm-card').forEach(function (card) {
+        card.draggable = !isMobileDash();
+      });
+    }
+    if (!open) scrollPhoneLeadStage();
+  }
+  function scrollPhoneLeadStage() {
+    if (!isMobileDash()) return;
+    const stage = LEAD_STAGES.some(function (item) { return item.id === leadPhoneStage; }) ? leadPhoneStage : 'new';
+    const board = $('plead-board');
+    const col = board && board.querySelector('.crm-col[data-stage="' + stage + '"]');
+    if (!board || !col) return;
+    const left = col.getBoundingClientRect().left - board.getBoundingClientRect().left + board.scrollLeft;
+    board.scrollTo(left, 0);
   }
   function renderLeadTable() {
     const body = $('lead-table');
@@ -3934,7 +3959,7 @@
         '<div class="crm-col-cards">' +
         (cards.length ? cards.map(function (row) {
           const on = String(row.id) === String(openId);
-          return '<button type="button" class="crm-card' + (on ? ' is-on' : '') + '" draggable="true" data-plead-id="' + esc(row.id) + '">' +
+          return '<button type="button" class="crm-card' + (on ? ' is-on' : '') + '" draggable="' + (isMobileDash() ? 'false' : 'true') + '" data-plead-id="' + esc(row.id) + '">' +
             '<strong>' + esc(row.project || row.number || 'Lead') + '</strong>' +
             '<span>' + esc(row.contactName || row.contactEmail || '') + '</span>' +
             '<span>' + esc(leadPlace(row)) + '</span></button>';
@@ -3944,6 +3969,7 @@
     renderLeadTable();
     const row = rows.find(function (item) { return String(item.id) === String(openId); });
     showBoardLead(row || null);
+    syncLeadPhone();
   }
   async function paintLeadBoard() {
     const err = $('lead-error');
@@ -3971,6 +3997,7 @@
       });
       if (saved.lead) {
         leads = leads.map(function (item) { return String(item.id) === String(saved.lead.id) ? saved.lead : item; });
+        if (String(saved.lead.id) === String(id)) leadPhoneStage = saved.lead.stage || stage;
       }
       renderLeadBoard();
     } catch (err) {
@@ -3989,9 +4016,12 @@
     $('plead-board').addEventListener('click', function (e) {
       const card = e.target.closest('[data-plead-id]');
       if (!card) return;
+      const col = card.closest('.crm-col');
+      if (col) leadPhoneStage = col.getAttribute('data-stage') || 'new';
       goPortalLead('leads', card.getAttribute('data-plead-id'), true);
     });
     $('plead-board').addEventListener('dragstart', function (e) {
+      if (isMobileDash()) { e.preventDefault(); return; }
       const card = e.target.closest('[data-plead-id]');
       if (!card) return;
       e.dataTransfer.setData('text/plain', card.getAttribute('data-plead-id'));
@@ -4005,6 +4035,7 @@
       if (e.target.closest('.crm-col')) e.preventDefault();
     });
     $('plead-board').addEventListener('drop', function (e) {
+      if (isMobileDash()) return;
       const col = e.target.closest('.crm-col');
       if (!col) return;
       e.preventDefault();
@@ -4016,7 +4047,16 @@
     $('plead-stage').addEventListener('change', function () {
       const id = pathId('leads');
       if (!id) return;
+      leadPhoneStage = $('plead-stage').value || 'new';
       movePortalLead(id, $('plead-stage').value);
+    });
+  }
+  if ($('plead-back')) {
+    $('plead-back').addEventListener('click', function () {
+      const id = pathId('leads');
+      const row = leads.find(function (item) { return String(item.id) === String(id); });
+      if (row) leadPhoneStage = row.stage || 'new';
+      goPortalLead('leads', '', true);
     });
   }
   const pleadTabs = document.querySelector('#plead-detail .cc-detail-tabs');
@@ -4390,6 +4430,7 @@
       const open = !!quoteRoute();
       sales.classList.toggle('so-doc-open', !onQuotes && open);
     }
+    if (pathView() === 'leads') syncLeadPhone();
   });
   window.addEventListener('popstate', function () {
     if (!me) return;

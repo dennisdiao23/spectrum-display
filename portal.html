@@ -96,6 +96,8 @@
       grid-template-columns: var(--lead-left-w, minmax(22rem, 1fr)) 14px minmax(26rem, 1.15fr);
       min-height: 22rem;
     }
+    #plead-back { display: none; }
+    .lead-phone-note { display: none; }
     #leads-section .dash-split-left .cc-table-wrap {
       overflow: auto;
       max-height: min(32rem, 48vh);
@@ -144,6 +146,69 @@
       background: #fff;
       color: #0f172a;
       border: 1px solid var(--dash-line);
+    }
+    @media (max-width: 900px) {
+      #leads-section,
+      #leads-section .cc-list-inner {
+        min-width: 0;
+        max-width: 100%;
+      }
+      .lead-desk-note { display: none; }
+      .lead-phone-note { display: block; }
+      #leads-section .crm-board {
+        display: flex;
+        flex-direction: row;
+        align-items: stretch;
+        gap: 0;
+        width: 100%;
+        min-width: 0;
+        max-width: 100%;
+        min-height: 0;
+        height: auto;
+        overflow-x: auto;
+        overflow-y: hidden;
+        scroll-snap-type: x mandatory;
+        overscroll-behavior-x: contain;
+        -webkit-overflow-scrolling: touch;
+        padding-bottom: 0;
+      }
+      #leads-section .crm-col {
+        flex: 0 0 100%;
+        width: 100%;
+        min-width: 0;
+        max-width: 100%;
+        scroll-snap-align: start;
+        scroll-snap-stop: always;
+        box-sizing: border-box;
+      }
+      #leads-section #lead-split { display: none; }
+      #leads-section.lead-doc-open .lead-phone-note,
+      #leads-section.lead-doc-open #lead-error,
+      #leads-section.lead-doc-open #plead-board { display: none; }
+      #leads-section.lead-doc-open #lead-split {
+        display: block;
+        min-height: 0;
+        grid-template-columns: 1fr;
+      }
+      #leads-section.lead-doc-open .dash-split-left,
+      #leads-section.lead-doc-open .dash-split-resizer,
+      #leads-section.lead-doc-open #plead-overview { display: none !important; }
+      #leads-section.lead-doc-open .dash-split-right {
+        display: block;
+        overflow: visible;
+        background: transparent;
+      }
+      #leads-section.lead-doc-open #plead-back { display: inline-flex; }
+      #leads-section.lead-doc-open #plead-detail {
+        overflow: visible;
+        padding: 0;
+      }
+      #plead-detail .crm-detail-facts { grid-template-columns: 1fr; }
+      #plead-detail .crm-lead-preview {
+        height: 12rem;
+        max-height: 12rem;
+        flex: 0 0 12rem;
+      }
     }
     .dash-cols td[hidden] { display: none !important; }
     #so-customer[readonly],
@@ -988,7 +1053,8 @@
 
       <section id="leads-section" class="hidden">
         <div class="cc-list-inner">
-          <p class="text-sm text-slate-500 mb-3">Leads Spectrum sends you. A new one starts in New. Drag a card to update the stage. Spectrum sees the same move. To turn a lead down, call or email Spectrum.</p>
+          <p class="lead-desk-note text-sm text-slate-500 mb-3">Leads Spectrum sends you. A new one starts in New. Drag a card to update the stage. Spectrum sees the same move. To turn a lead down, call or email Spectrum.</p>
+          <p class="lead-phone-note text-sm text-slate-500 mb-3">Leads Spectrum sends you. Swipe to the next stage. Tap a card to open it. To turn a lead down, call or email Spectrum.</p>
           <p id="lead-error" class="hidden text-sm text-red-400 mb-3"></p>
           <div class="crm-board" id="plead-board"></div>
           <div class="dash-split" id="lead-split" style="margin-top:1rem;min-height:18rem">
@@ -1016,6 +1082,7 @@
                 <p class="inv-overview-lead">Select a lead. To turn one down, call or email Spectrum.</p>
               </div>
               <div id="plead-detail" class="inv-right-panel hidden" style="overflow:auto">
+                <button type="button" id="plead-back" class="so-doc-back">← Leads</button>
                 <div class="cc-detail-hero">
                   <h2 id="plead-title" class="font-semibold text-lg">Lead</h2>
                   <p id="plead-meta" class="cc-detail-subname"></p>
@@ -1805,6 +1872,6 @@
       <div id="file-preview-body" class="portal-file-preview-body"></div>
     </div>
   </div>
-  <script src="/js/portal.js?v=bookphone1"></script>
+  <script src="/js/portal.js?v=leadphone1"></script>
 </body>
 </html>
