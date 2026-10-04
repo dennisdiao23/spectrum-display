@@ -17,6 +17,16 @@
       "mobile": true
     },
     {
+      "id": "2026-10-03-rma-stack",
+      "date": "2026-10-03",
+      "apps": ["portal"],
+      "title": "RMA list is on top",
+      "changed": [
+        "On a phone, the RMA list is on top and the return you pick is underneath."
+      ],
+      "kind": "update"
+    },
+    {
       "id": "2026-10-03-dealer-book-phone",
       "date": "2026-10-03",
       "apps": ["portal"],
