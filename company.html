@@ -32,7 +32,7 @@
     #company-boot .boot-login button[type="submit"]{background:#fff!important;color:#000!important;border:0}
     #company-boot .boot-login button[type="submit"]:hover{background:#e8e8e8!important}
   </style>
-  <link rel="stylesheet" href="/css/company-dash.css?v=wallinstall2" />
+  <link rel="stylesheet" href="/css/company-dash.css?v=dash4kpi2" />
   <script src="/js/address-autocomplete.js"></script>
   <script src="/js/company-chat.js?v=po-ship1"></script>
   <script src="/js/company-crm.js?v=leadview1"></script>
@@ -43,7 +43,7 @@
   <script src="/js/brand-prices.js?v=brands7"></script>
   <script src="/js/settings-brands.js?v=brands8"></script>
   <script src="/js/app-help.js?v=help7"></script>
-  <script src="/js/app-notes.js?v=wallinstall1"></script>
+  <script src="/js/app-notes.js?v=dash4kpi2"></script>
   <script src="/js/wall-installation.js?v=wallinstall1"></script>
   <script>
     if ('serviceWorker' in navigator && location.pathname.indexOf('/company') === 0) {
@@ -5402,7 +5402,7 @@
     </a>
   </nav>
 
-  <link rel="stylesheet" href="/css/company-dash.css?v=wallinstall2" />
+  <link rel="stylesheet" href="/css/company-dash.css?v=dash4kpi2" />
   <link rel="stylesheet" href="/css/company-tw.css?v=boot1" />
 
   <script>
@@ -7694,8 +7694,17 @@
       if (name === 'inventory') return canUseInventoryNav();
       if (name === 'vendor') return canUseVendorNav();
       if (name === 'crm') return canUseCrmNav();
-      if (name === 'customer') return canUseCustomerNav();
+      if (name === 'customer') return canUseCustomerNav() && !isMobileDash();
       return false;
+    }
+
+    function syncDashHomeKpis() {
+      document.querySelectorAll('#dash-home .dash-kpi').forEach(function (el) {
+        el.classList.toggle('hidden', !canDashOverview(el.getAttribute('data-home')));
+      });
+      if (dashOverview && !canDashOverview(dashOverview)) {
+        selectDashOverview(firstDashOverview(), { fromLoad: true, force: true });
+      }
     }
 
     function dashCount(n) {
@@ -8106,9 +8115,7 @@
           refreshBtn.disabled = true;
           refreshBtn.textContent = 'Refreshing…';
         }
-        document.querySelectorAll('#dash-home .dash-kpi').forEach(function (el) {
-          el.classList.toggle('hidden', !canDashOverview(el.getAttribute('data-home')));
-        });
+        if (typeof syncDashHomeKpis === 'function') syncDashHomeKpis();
         try {
           const data = await api('/api/admin/dashboard');
           dashCounts = Object.assign({}, dashCounts, data.counts || {});
@@ -26805,6 +26812,7 @@
         if (mobile === lastMobile) return;
         lastMobile = mobile;
         syncSplitLayoutLock();
+        if (typeof syncDashHomeKpis === 'function') syncDashHomeKpis();
         if (currentAdminUser) renderDashTabBar();
         const inv = document.getElementById('inventory-section');
         if (currentAdminUser && inv && !inv.classList.contains('hidden')) {

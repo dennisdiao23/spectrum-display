@@ -10072,6 +10072,13 @@ body.dash-split-lock #settings-pane.space-y-6 > :not([hidden]) {
     gap: 0.65rem;
   }
 
+  body.company-app:not(.portal-app) .dash-home-kpis {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  body.company-app:not(.portal-app) .dash-home-kpis > .dash-kpi[data-home="customer"] {
+    display: none !important;
+  }
+
   body.portal-app .dash-home-kpis > .dash-kpi:last-child:nth-child(odd),
   body.portal-app .page-kpis > .dash-kpi:last-child:nth-child(odd),
   body.company-app:not(.portal-app) .page-kpis:not(.page-kpis-5):not(.page-kpis-6) > .dash-kpi:last-child:nth-child(odd) {
